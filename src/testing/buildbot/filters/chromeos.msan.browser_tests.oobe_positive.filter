@@ -5,6 +5,7 @@ ActiveDirectoryJoinTest.*
 ActiveDirectoryLoginAutocompleteTest.*
 ActiveDirectoryLoginTest.*
 All/PinSetupScreenTest.*
+All/EnrollmentScreenDynamicTPMTest.*
 All/EphemeralUserOobeTest.*
 All/GestureNavigationScreenTest.*
 All/MergeSessionTest.*
@@ -13,6 +14,7 @@ All/OobeGuestButtonPolicy.*
 All/OobeInteractiveUITest.*
 All/OobeLocalizationTest.*
 All/OobeZeroTouchInteractiveUITest.*
+All/OsInstallScreenStringsTest.*
 All/ParameterizedArcTermsOfServiceScreenTest.*
 All/PendingUpdateScreenTest.*
 All/PublicSessionOobeTest.*

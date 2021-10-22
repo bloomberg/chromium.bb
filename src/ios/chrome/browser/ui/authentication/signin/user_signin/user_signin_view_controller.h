@@ -16,6 +16,12 @@
 // screen.
 - (BOOL)unifiedConsentCoordinatorHasIdentity;
 
+// Returns whether there are policies disabling Sync for at least one data type.
+- (BOOL)unifiedConsentCoordinatorHasManagedSyncDataType;
+
+// Returns true if there are account restrictions.
+- (BOOL)unifiedConsentCoordinatorhasAccountRestrictions;
+
 // Performs add account operation.
 - (void)userSigninViewControllerDidTapOnAddAccount;
 
@@ -27,6 +33,9 @@
 
 // Performs operations to skip sign-in or undo existing sign-in.
 - (void)userSigninViewControllerDidTapOnSignin;
+
+// Performs operations needed to open learn more page.
+- (void)userSigninViewControllerDidTapOnLearnMoreURL;
 
 @end
 

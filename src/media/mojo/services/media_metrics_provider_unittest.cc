@@ -29,6 +29,9 @@ class MediaMetricsProviderTest : public testing::Test {
  public:
   MediaMetricsProviderTest() { ResetMetricRecorders(); }
 
+  MediaMetricsProviderTest(const MediaMetricsProviderTest&) = delete;
+  MediaMetricsProviderTest& operator=(const MediaMetricsProviderTest&) = delete;
+
   ~MediaMetricsProviderTest() override { base::RunLoop().RunUntilIdle(); }
 
   void Initialize(bool is_mse,
@@ -74,8 +77,6 @@ class MediaMetricsProviderTest : public testing::Test {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
   ukm::SourceId source_id_;
   mojo::Remote<mojom::MediaMetricsProvider> provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaMetricsProviderTest);
 };
 
 #define EXPECT_UKM(name, value) \
@@ -119,9 +120,9 @@ TEST_F(MediaMetricsProviderTest, TestUkm) {
   // Now try one with different values and optional parameters set.
   const std::string kTestOrigin2 = "https://test2.google.com/";
   const std::string kClearKeyKeySystem = "org.w3.clearkey";
-  const base::TimeDelta kMetadataTime = base::TimeDelta::FromSeconds(1);
-  const base::TimeDelta kFirstFrameTime = base::TimeDelta::FromSeconds(2);
-  const base::TimeDelta kPlayReadyTime = base::TimeDelta::FromSeconds(3);
+  const base::TimeDelta kMetadataTime = base::Seconds(1);
+  const base::TimeDelta kFirstFrameTime = base::Seconds(2);
+  const base::TimeDelta kPlayReadyTime = base::Seconds(3);
 
   ResetMetricRecorders();
   Initialize(false, false, false, kTestOrigin2, mojom::MediaURLScheme::kHttps);
@@ -183,9 +184,9 @@ TEST_F(MediaMetricsProviderTest, TestUkmMediaStream) {
 
   // Now try one with different values and optional parameters set.
   const std::string kTestOrigin2 = "https://test2.google.com/";
-  const base::TimeDelta kMetadataTime = base::TimeDelta::FromSeconds(1);
-  const base::TimeDelta kFirstFrameTime = base::TimeDelta::FromSeconds(2);
-  const base::TimeDelta kPlayReadyTime = base::TimeDelta::FromSeconds(3);
+  const base::TimeDelta kMetadataTime = base::Seconds(1);
+  const base::TimeDelta kFirstFrameTime = base::Seconds(2);
+  const base::TimeDelta kPlayReadyTime = base::Seconds(3);
 
   ResetMetricRecorders();
   Initialize(false, false, false, kTestOrigin2, mojom::MediaURLScheme::kMissing,

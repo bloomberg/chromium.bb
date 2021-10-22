@@ -39,6 +39,10 @@ namespace {
 class TestDataReceiver {
  public:
   TestDataReceiver() = default;
+
+  TestDataReceiver(const TestDataReceiver&) = delete;
+  TestDataReceiver& operator=(const TestDataReceiver&) = delete;
+
   virtual ~TestDataReceiver() = default;
 
   bool data_received() const { return data_received_; }
@@ -60,14 +64,16 @@ class TestDataReceiver {
  private:
   bool data_received_ = false;
   std::string data_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDataReceiver);
 };
 
 }  // namespace
 
 // Base class for ChromeOS offline terms tests.
 class ChromeOSTermsTest : public testing::Test {
+ public:
+  ChromeOSTermsTest(const ChromeOSTermsTest&) = delete;
+  ChromeOSTermsTest& operator=(const ChromeOSTermsTest&) = delete;
+
  protected:
   ChromeOSTermsTest() {}
   ~ChromeOSTermsTest() override = default;
@@ -137,8 +143,6 @@ class ChromeOSTermsTest : public testing::Test {
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
 
   std::unique_ptr<AboutUIHTMLSource> tested_html_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeOSTermsTest);
 };
 
 TEST_F(ChromeOSTermsTest, NoData) {
@@ -160,6 +164,11 @@ TEST_F(ChromeOSTermsTest, NoData) {
 
 // Demo mode ARC++ ToS and privacy policy test.
 class DemoModeChromeOSTermsTest : public ChromeOSTermsTest {
+ public:
+  DemoModeChromeOSTermsTest(const DemoModeChromeOSTermsTest&) = delete;
+  DemoModeChromeOSTermsTest& operator=(const DemoModeChromeOSTermsTest&) =
+      delete;
+
  protected:
   DemoModeChromeOSTermsTest() = default;
   ~DemoModeChromeOSTermsTest() override = default;
@@ -224,8 +233,6 @@ class DemoModeChromeOSTermsTest : public ChromeOSTermsTest {
 
  private:
   std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemoModeChromeOSTermsTest);
 };
 
 TEST_F(DemoModeChromeOSTermsTest, TermsSimpleRegion) {

@@ -21,7 +21,6 @@
 #include "aom_dsp/aom_dsp_common.h"
 
 CYCLIC_REFRESH *av1_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
-  size_t last_coded_q_map_size;
   CYCLIC_REFRESH *const cr = aom_calloc(1, sizeof(*cr));
   if (cr == NULL) return NULL;
 
@@ -30,21 +29,12 @@ CYCLIC_REFRESH *av1_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
     av1_cyclic_refresh_free(cr);
     return NULL;
   }
-  last_coded_q_map_size = mi_rows * mi_cols * sizeof(*cr->last_coded_q_map);
-  cr->last_coded_q_map = aom_malloc(last_coded_q_map_size);
-  if (cr->last_coded_q_map == NULL) {
-    av1_cyclic_refresh_free(cr);
-    return NULL;
-  }
-  assert(MAXQ <= 255);
-  memset(cr->last_coded_q_map, MAXQ, last_coded_q_map_size);
   return cr;
 }
 
 void av1_cyclic_refresh_free(CYCLIC_REFRESH *cr) {
   if (cr != NULL) {
     aom_free(cr->map);
-    aom_free(cr->last_coded_q_map);
     aom_free(cr);
   }
 }
@@ -69,9 +59,9 @@ static int candidate_refresh_aq(const CYCLIC_REFRESH *cr,
        mv.col > cr->motion_thresh || mv.col < -cr->motion_thresh ||
        !is_inter_block(mbmi)))
     return CR_SEGMENT_ID_BASE;
-  else if (bsize >= BLOCK_16X16 && rate < cr->thresh_rate_sb &&
-           is_inter_block(mbmi) && mbmi->mv[0].as_int == 0 &&
-           cr->rate_boost_fac > 10)
+  else if (is_compound || (bsize >= BLOCK_16X16 && rate < cr->thresh_rate_sb &&
+                           is_inter_block(mbmi) && mbmi->mv[0].as_int == 0 &&
+                           cr->rate_boost_fac > 10))
     // More aggressive delta-q for bigger blocks with zero motion.
     return CR_SEGMENT_ID_BOOST2;
   else
@@ -155,6 +145,7 @@ void av1_cyclic_reset_segment_skip(const AV1_COMP *cpi, MACROBLOCK *const x,
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
+  int sh = cpi->cyclic_refresh->skip_over4x4 ? 2 : 1;
   const int prev_segment_id = mbmi->segment_id;
   mbmi->segment_id = av1_get_spatial_seg_pred(cm, xd, &cdf_num);
   if (prev_segment_id != mbmi->segment_id) {
@@ -164,8 +155,8 @@ void av1_cyclic_reset_segment_skip(const AV1_COMP *cpi, MACROBLOCK *const x,
     const int xmis = AOMMIN(cm->mi_params.mi_cols - mi_col, bw);
     const int ymis = AOMMIN(cm->mi_params.mi_rows - mi_row, bh);
     const int block_index = mi_row * cm->mi_params.mi_cols + mi_col;
-    for (int mi_y = 0; mi_y < ymis; mi_y++) {
-      for (int mi_x = 0; mi_x < xmis; mi_x++) {
+    for (int mi_y = 0; mi_y < ymis; mi_y += sh) {
+      for (int mi_x = 0; mi_x < xmis; mi_x += sh) {
         const int map_offset =
             block_index + mi_y * cm->mi_params.mi_cols + mi_x;
         cr->map[map_offset] = 0;
@@ -200,6 +191,7 @@ void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi, MACROBLOCK *const x,
   const int block_index = mi_row * cm->mi_params.mi_cols + mi_col;
   const int refresh_this_block =
       candidate_refresh_aq(cr, mbmi, rate, dist, bsize);
+  int sh = cpi->cyclic_refresh->skip_over4x4 ? 2 : 1;
   // Default is to not update the refresh map.
   int new_map_value = cr->map[block_index];
 
@@ -229,8 +221,8 @@ void av1_cyclic_refresh_update_segment(const AV1_COMP *cpi, MACROBLOCK *const x,
 
   // Update entries in the cyclic refresh map with new_map_value, and
   // copy mbmi->segment_id into global segmentation map.
-  for (int mi_y = 0; mi_y < ymis; mi_y++) {
-    for (int mi_x = 0; mi_x < xmis; mi_x++) {
+  for (int mi_y = 0; mi_y < ymis; mi_y += sh) {
+    for (int mi_x = 0; mi_x < xmis; mi_x += sh) {
       const int map_offset = block_index + mi_y * cm->mi_params.mi_cols + mi_x;
       cr->map[map_offset] = new_map_value;
       cpi->enc_seg.map[map_offset] = mbmi->segment_id;
@@ -342,13 +334,6 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     int sb_col_index = i - sb_row_index * sb_cols;
     int mi_row = sb_row_index * cm->seq_params->mib_size;
     int mi_col = sb_col_index * cm->seq_params->mib_size;
-    // TODO(any): Ensure the population of
-    // cpi->common.features.allow_screen_content_tools and use the same instead
-    // of cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN
-    int qindex_thresh = cpi->oxcf.tune_cfg.content == AOM_CONTENT_SCREEN
-                            ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2,
-                                             cm->quant_params.base_qindex)
-                            : 0;
     assert(mi_row >= 0 && mi_row < mi_params->mi_rows);
     assert(mi_col >= 0 && mi_col < mi_params->mi_cols);
     bl_index = mi_row * mi_params->mi_cols + mi_col;
@@ -363,7 +348,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
         // for possible boost/refresh (segment 1). The segment id may get
         // reset to 0 later if block gets coded anything other than GLOBALMV.
         if (cr->map[bl_index2] == 0) {
-          if (cr->last_coded_q_map[bl_index2] > qindex_thresh) sum_map += 4;
+          sum_map += 4;
         } else if (cr->map[bl_index2] < 0) {
           cr->map[bl_index2]++;
         }
@@ -399,10 +384,21 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   double weight_segment = 0;
   int qp_thresh = AOMMIN(20, rc->best_quality << 1);
   int qp_max_thresh = 118 * MAXQ >> 7;
+  // Although this segment feature for RTC is only used for
+  // blocks >= 8X8, for more efficient coding of the seg map
+  // cur_frame->seg_map needs to set at 4x4 along with the
+  // function av1_cyclic_reset_segment_skip(). Skipping over
+  // 4x4 will therefore have small bdrate loss (~0.2%), so
+  // we use it only for speed > 9 for now.
+  // Also if loop-filter deltas is applied via segment, then
+  // we need to set cr->skip_over4x4 = 1.
+  cr->skip_over4x4 = (cpi->oxcf.speed > 9) ? 1 : 0;
   cr->apply_cyclic_refresh = 1;
   if (frame_is_intra_only(cm) || is_lossless_requested(&cpi->oxcf.rc_cfg) ||
       cpi->svc.temporal_layer_id > 0 ||
       p_rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
+      (cpi->svc.number_spatial_layers > 1 &&
+       cpi->svc.layer_context[cpi->svc.temporal_layer_id].is_key_frame) ||
       (rc->frames_since_key > 20 &&
        p_rc->avg_frame_qindex[INTER_FRAME] > qp_max_thresh) ||
       (rc->avg_frame_low_motion < 45 && rc->frames_since_key > 40)) {
@@ -410,6 +406,7 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
     return;
   }
   cr->percent_refresh = 10;
+  if (cpi->svc.number_temporal_layers > 2) cr->percent_refresh = 15;
   cr->max_qdelta_perc = 60;
   cr->time_for_refresh = 0;
   cr->motion_thresh = 32;
@@ -418,7 +415,8 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   // periods of the refresh cycle, after a key frame.
   // Account for larger interval on base layer for temporal layers.
   if (cr->percent_refresh > 0 &&
-      rc->frames_since_key < 400 / cr->percent_refresh) {
+      rc->frames_since_key <
+          (4 * cpi->svc.number_temporal_layers) * (100 / cr->percent_refresh)) {
     cr->rate_ratio_qdelta = 3.0;
   } else {
     cr->rate_ratio_qdelta = 2.0;
@@ -477,9 +475,6 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     memset(seg_map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
     av1_disable_segmentation(&cm->seg);
     if (cm->current_frame.frame_type == KEY_FRAME) {
-      memset(cr->last_coded_q_map, MAXQ,
-             cm->mi_params.mi_rows * cm->mi_params.mi_cols *
-                 sizeof(*cr->last_coded_q_map));
       cr->sb_index = 0;
     }
     return;

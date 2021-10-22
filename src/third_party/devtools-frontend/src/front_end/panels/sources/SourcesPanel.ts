@@ -363,8 +363,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  private onCurrentTargetChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const target = (event.data as SDK.Target.Target | null);
+  private onCurrentTargetChanged({data: target}: Common.EventTarget.EventTargetEvent<SDK.Target.Target|null>): void {
     this.setTarget(target);
   }
   paused(): boolean {
@@ -643,8 +642,8 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  private editorSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const uiSourceCode = (event.data as Workspace.UISourceCode.UISourceCode);
+  private editorSelected(event: Common.EventTarget.EventTargetEvent<Workspace.UISourceCode.UISourceCode>): void {
+    const uiSourceCode = event.data;
     if (this.editorView.mainWidget() &&
         Common.Settings.Settings.instance().moduleSetting('autoRevealInNavigator').get()) {
       this.revealInNavigator(uiSourceCode, true);
@@ -685,7 +684,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     return target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
   }
 
-  private longResume(_event: Common.EventTarget.EventTargetEvent): void {
+  private longResume(): void {
     const debuggerModel = this.prepareToResume();
     if (debuggerModel) {
       debuggerModel.skipAllPausesUntilReloadOrTimeout(500);
@@ -693,7 +692,7 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
     }
   }
 
-  private terminateExecution(_event: Common.EventTarget.EventTargetEvent): void {
+  private terminateExecution(): void {
     const debuggerModel = this.prepareToResume();
     if (debuggerModel) {
       debuggerModel.runtimeModel().terminateExecution();
@@ -1111,10 +1110,9 @@ export class SourcesPanel extends UI.Panel.Panel implements UI.ContextMenu.Provi
       return;
     }
     const entry = items[0].webkitGetAsEntry();
-    if (!entry.isDirectory) {
-      return;
+    if (entry && entry.isDirectory) {
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.upgradeDraggedFileSystemPermissions(entry.filesystem);
     }
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.upgradeDraggedFileSystemPermissions(entry.filesystem);
   }
 }
 

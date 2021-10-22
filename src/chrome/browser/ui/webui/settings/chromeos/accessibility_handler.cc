@@ -26,8 +26,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -110,7 +110,7 @@ void AccessibilityHandler::HandleRecordSelectedShowShelfNavigationButtonsValue(
   args->GetBoolean(0, &enabled);
 
   a11y_nav_buttons_toggle_metrics_reporter_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(10),
+      FROM_HERE, base::Seconds(10),
       base::BindOnce(&RecordShowShelfNavigationButtonsValueChange, enabled));
 }
 
@@ -233,7 +233,7 @@ void AccessibilityHandler::MaybeAddDictationLocales() {
   if (!features::IsExperimentalAccessibilityDictationOfflineEnabled())
     return;
 
-  base::flat_map<std::string, bool> locales =
+  base::flat_map<std::string, ash::Dictation::LocaleData> locales =
       ash::Dictation::GetAllSupportedLocales();
 
   // Get application locale.
@@ -245,7 +245,7 @@ void AccessibilityHandler::MaybeAddDictationLocales() {
   input_method::InputMethodManager* ime_manager =
       input_method::InputMethodManager::Get();
   std::vector<std::string> input_method_ids =
-      ime_manager->GetActiveIMEState()->GetActiveInputMethodIds();
+      ime_manager->GetActiveIMEState()->GetEnabledInputMethodIds();
   std::vector<std::string> ime_languages;
   ime_manager->GetInputMethodUtil()->GetLanguageCodesFromInputMethodIds(
       input_method_ids, &ime_languages);
@@ -274,7 +274,8 @@ void AccessibilityHandler::MaybeAddDictationLocales() {
     option.SetKey("name",
                   base::Value(l10n_util::GetDisplayNameForLocale(
                       locale.first, application_locale, /*is_for_ui=*/true)));
-    option.SetKey("offline", base::Value(locale.second));
+    option.SetKey("worksOffline", base::Value(locale.second.works_offline));
+    option.SetKey("installed", base::Value(locale.second.installed));
 
     // We can recommend languages that match the current application
     // locale, IME languages or enabled preferred languages.

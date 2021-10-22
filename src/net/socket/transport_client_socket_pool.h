@@ -101,6 +101,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
         const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
         const NetLogWithSource& net_log);
 
+    Request(const Request&) = delete;
+    Request& operator=(const Request&) = delete;
+
     ~Request();
 
     ClientSocketHandle* handle() const { return handle_; }
@@ -141,8 +144,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     const NetLogWithSource net_log_;
     const SocketTag socket_tag_;
     ConnectJob* job_;
-
-    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   TransportClientSocketPool(
@@ -152,6 +153,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       const ProxyServer& proxy_server,
       bool is_for_websockets,
       const CommonConnectJobParams* common_connect_job_params);
+
+  TransportClientSocketPool(const TransportClientSocketPool&) = delete;
+  TransportClientSocketPool& operator=(const TransportClientSocketPool&) =
+      delete;
 
   // Creates a socket pool with an alternative ConnectJobFactory, for use in
   // testing.
@@ -598,7 +603,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   base::TimeDelta ConnectRetryInterval() const {
     // TODO(mbelshe): Make this tuned dynamically based on measured RTT.
     //                For now, just use the max retry interval.
-    return base::TimeDelta::FromMilliseconds(kMaxConnectRetryIntervalMs);
+    return base::Milliseconds(kMaxConnectRetryIntervalMs);
   }
 
   // TODO(mmenke): de-inline these.
@@ -792,8 +797,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   SSLClientContext* const ssl_client_context_;
 
   base::WeakPtrFactory<TransportClientSocketPool> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };
 
 }  // namespace net

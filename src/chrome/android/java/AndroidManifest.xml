@@ -177,7 +177,7 @@ by a child template that "extends" this file.
         android:largeHeap="false"
         android:manageSpaceActivity="@string/manage_space_activity"
         android:supportsRtl="true"
-        android:zygotePreloadName="org.chromium.content.app.ZygotePreload"
+        android:zygotePreloadName="{{ zygote_preload_class }}"
         {% if backup_key is defined %}
         android:allowBackup="true"
         android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
@@ -646,13 +646,13 @@ by a child template that "extends" this file.
 
         <!-- Activities for feed. -->
         <activity android:name="org.chromium.chrome.browser.app.feedmanagement.FeedManagementActivity"
-            android:theme="@style/Base.Theme.Chromium.Settings"
+            android:theme="@style/Theme.Chromium.Settings"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
         </activity>
         <activity android:name="org.chromium.chrome.browser.app.followmanagement.FollowManagementActivity"
-            android:theme="@style/Base.Theme.Chromium.Settings"
+            android:theme="@style/Theme.Chromium.Settings"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"
             android:exported="false"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">

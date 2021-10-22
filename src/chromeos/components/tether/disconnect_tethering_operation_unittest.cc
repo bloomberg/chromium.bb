@@ -30,20 +30,20 @@ namespace tether {
 
 namespace {
 
-constexpr base::TimeDelta kDisconnectTetheringRequestTime =
-    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kDisconnectTetheringRequestTime = base::Seconds(3);
 
 // Used to verify the DisonnectTetheringOperation notifies the observer when
 // appropriate.
 class MockOperationObserver : public DisconnectTetheringOperation::Observer {
  public:
   MockOperationObserver() = default;
+
+  MockOperationObserver(const MockOperationObserver&) = delete;
+  MockOperationObserver& operator=(const MockOperationObserver&) = delete;
+
   ~MockOperationObserver() = default;
 
   MOCK_METHOD2(OnOperationFinished, void(const std::string&, bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockOperationObserver);
 };
 
 }  // namespace

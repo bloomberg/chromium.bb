@@ -76,9 +76,9 @@ using ::testing::StrictMock;
 constexpr int16_t kBackgroundScanningDeviceFoundRSSIThreshold = -80;
 constexpr int16_t kBackgroundScanningDeviceLostRSSIThreshold = -100;
 constexpr base::TimeDelta kBackgroundScanningDeviceFoundTimeout =
-    base::TimeDelta::FromSeconds(1);
+    base::Seconds(1);
 constexpr base::TimeDelta kBackgroundScanningDeviceLostTimeout =
-    base::TimeDelta::FromSeconds(5);
+    base::Seconds(5);
 // This pattern value encodes the Fast Initiation service ID of 0xfe2c and the
 // model ID of 0xfc128e.
 constexpr uint8_t kBackgroundScanningFilterPatternValue[] = {0x2c, 0xfe, 0xfc,
@@ -149,6 +149,10 @@ int GetDeviceIndexByAddress(const BluetoothAdapter::DeviceList& devices,
 class FakeBleScanParserImpl : public data_decoder::mojom::BleScanParser {
  public:
   FakeBleScanParserImpl() = default;
+
+  FakeBleScanParserImpl(const FakeBleScanParserImpl&) = delete;
+  FakeBleScanParserImpl& operator=(const FakeBleScanParserImpl&) = delete;
+
   ~FakeBleScanParserImpl() override = default;
 
   // mojom::BleScanParser:
@@ -156,8 +160,6 @@ class FakeBleScanParserImpl : public data_decoder::mojom::BleScanParser {
              ParseCallback callback) override {
     std::move(callback).Run(nullptr);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBleScanParserImpl);
 };
 #endif
 

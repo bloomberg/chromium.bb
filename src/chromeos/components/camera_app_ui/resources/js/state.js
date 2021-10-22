@@ -48,6 +48,8 @@ export const State = {
   PLATFORM_SUPPORT_SCAN_DOCUMENT: 'platform-support-scan-document',
   PLAYING_RESULT_VIDEO: 'playing-result-video',
   PRINT_PERFORMANCE_LOGS: 'print-performance-logs',
+  RECORD_TYPE_GIF: 'record-type-gif',
+  RECORD_TYPE_NORMAL: 'record-type-normal',
   // Starts/Ends when start/stop event of MediaRecorder is triggered.
   RECORDING: 'recording',
   // Binds with paused state of MediaRecorder.
@@ -58,11 +60,13 @@ export const State = {
   REVIEW_RESULT: 'review-result',
   REVIEW_VIDEO_RESULT: 'review-video-result',
   SAVE_METADATA: 'save-metadata',
+  SCREEN_OFF_AUTO: 'screen-off-auto',
   SHOULD_HANDLE_INTENT_RESULT: 'should-handle-intent-result',
   SHOW_METADATA: 'show-metadata',
   SHOW_SCAN_DOCUMENT_OPTIONS: 'show-scan-document-options',
   SHOW_SCAN_MODE: 'show-scan-mode',
-  SCREEN_OFF_AUTO: 'screen-off-auto',
+  SHOW_GIF_RECORDING_OPTION: 'show-gif-recording-option',
+  SHUTTER_PROGRESSING: 'shutter-progressing',
   STREAMING: 'streaming',
   SUSPEND: 'suspend',
   TABLET: 'tablet',
@@ -117,6 +121,21 @@ export function addObserver(state, observer) {
     allObservers.set(state, observers);
   }
   observers.add(observer);
+}
+
+/**
+ * Adds one-time observer function to be called on any state change.
+ * @param {!StateUnion} state State to be observed.
+ * @param {!StateObserver} observer Observer function called with
+ *     newly changed value.
+ */
+export function addOneTimeObserver(state, observer) {
+  /** @type {StateObserver} */
+  const wrappedObserver = (...args) => {
+    observer(...args);
+    removeObserver(state, wrappedObserver);
+  };
+  addObserver(state, wrappedObserver);
 }
 
 /**

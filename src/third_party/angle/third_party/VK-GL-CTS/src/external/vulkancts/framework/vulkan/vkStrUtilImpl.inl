@@ -607,6 +607,8 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV:				return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_GENERATED_COMMANDS_FEATURES_NV";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV:				return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_INHERITED_VIEWPORT_SCISSOR_FEATURES_NV";
 		case VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV:					return "VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_VIEWPORT_SCISSOR_INFO_NV";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR:				return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_FEATURES_KHR";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES_KHR:			return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_INTEGER_DOT_PRODUCT_PROPERTIES_KHR";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT:					return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES_EXT:				return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TEXEL_BUFFER_ALIGNMENT_PROPERTIES_EXT";
 		case VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM:			return "VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDER_PASS_TRANSFORM_INFO_QCOM";
@@ -673,6 +675,7 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT:								return "VK_STRUCTURE_TYPE_VERTEX_INPUT_BINDING_DESCRIPTION_2_EXT";
 		case VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT:							return "VK_STRUCTURE_TYPE_VERTEX_INPUT_ATTRIBUTE_DESCRIPTION_2_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT:									return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DRM_PROPERTIES_EXT";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT:		return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_TOPOLOGY_LIST_RESTART_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_IMPORT_MEMORY_ZIRCON_HANDLE_INFO_FUCHSIA:							return "VK_STRUCTURE_TYPE_IMPORT_MEMORY_ZIRCON_HANDLE_INFO_FUCHSIA";
 		case VK_STRUCTURE_TYPE_MEMORY_ZIRCON_HANDLE_PROPERTIES_FUCHSIA:								return "VK_STRUCTURE_TYPE_MEMORY_ZIRCON_HANDLE_PROPERTIES_FUCHSIA";
 		case VK_STRUCTURE_TYPE_MEMORY_GET_ZIRCON_HANDLE_INFO_FUCHSIA:								return "VK_STRUCTURE_TYPE_MEMORY_GET_ZIRCON_HANDLE_INFO_FUCHSIA";
@@ -692,6 +695,7 @@ const char* getStructureTypeName (VkStructureType value)
 		case VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES_EXT:							return "VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT:								return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT:							return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT";
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT:			return "VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PAGEABLE_DEVICE_LOCAL_MEMORY_FEATURES_EXT";
 		case VK_STRUCTURE_TYPE_MAX_ENUM:															return "VK_STRUCTURE_TYPE_MAX_ENUM";
 		default:																					return DE_NULL;
 	}
@@ -1526,6 +1530,7 @@ const char* getAttachmentLoadOpName (VkAttachmentLoadOp value)
 		case VK_ATTACHMENT_LOAD_OP_LOAD:		return "VK_ATTACHMENT_LOAD_OP_LOAD";
 		case VK_ATTACHMENT_LOAD_OP_CLEAR:		return "VK_ATTACHMENT_LOAD_OP_CLEAR";
 		case VK_ATTACHMENT_LOAD_OP_DONT_CARE:	return "VK_ATTACHMENT_LOAD_OP_DONT_CARE";
+		case VK_ATTACHMENT_LOAD_OP_NONE_EXT:	return "VK_ATTACHMENT_LOAD_OP_NONE_EXT";
 		case VK_ATTACHMENT_LOAD_OP_MAX_ENUM:	return "VK_ATTACHMENT_LOAD_OP_MAX_ENUM";
 		default:								return DE_NULL;
 	}
@@ -1537,7 +1542,7 @@ const char* getAttachmentStoreOpName (VkAttachmentStoreOp value)
 	{
 		case VK_ATTACHMENT_STORE_OP_STORE:		return "VK_ATTACHMENT_STORE_OP_STORE";
 		case VK_ATTACHMENT_STORE_OP_DONT_CARE:	return "VK_ATTACHMENT_STORE_OP_DONT_CARE";
-		case VK_ATTACHMENT_STORE_OP_NONE_QCOM:	return "VK_ATTACHMENT_STORE_OP_NONE_QCOM";
+		case VK_ATTACHMENT_STORE_OP_NONE_EXT:	return "VK_ATTACHMENT_STORE_OP_NONE_EXT";
 		case VK_ATTACHMENT_STORE_OP_MAX_ENUM:	return "VK_ATTACHMENT_STORE_OP_MAX_ENUM";
 		default:								return DE_NULL;
 	}
@@ -1680,6 +1685,7 @@ const char* getDriverIdName (VkDriverId value)
 		case VK_DRIVER_ID_MOLTENVK:						return "VK_DRIVER_ID_MOLTENVK";
 		case VK_DRIVER_ID_COREAVI_PROPRIETARY:			return "VK_DRIVER_ID_COREAVI_PROPRIETARY";
 		case VK_DRIVER_ID_JUICE_PROPRIETARY:			return "VK_DRIVER_ID_JUICE_PROPRIETARY";
+		case VK_DRIVER_ID_VERISILICON_PROPRIETARY:		return "VK_DRIVER_ID_VERISILICON_PROPRIETARY";
 		case VK_DRIVER_ID_MAX_ENUM:						return "VK_DRIVER_ID_MAX_ENUM";
 		default:										return DE_NULL;
 	}
@@ -3120,15 +3126,6 @@ tcu::Format::Bitfield<32> getImageViewCreateFlagsStr (VkImageViewCreateFlags val
 	return tcu::Format::Bitfield<32>(value, DE_ARRAY_BEGIN(s_desc), DE_ARRAY_END(s_desc));
 }
 
-tcu::Format::Bitfield<32> getShaderModuleCreateFlagsStr (VkShaderModuleCreateFlags value)
-{
-	static const tcu::Format::BitDesc s_desc[] =
-	{
-		tcu::Format::BitDesc(VK_SHADER_MODULE_CREATE_FLAG_BITS_MAX_ENUM,	"VK_SHADER_MODULE_CREATE_FLAG_BITS_MAX_ENUM"),
-	};
-	return tcu::Format::Bitfield<32>(value, DE_ARRAY_BEGIN(s_desc), DE_ARRAY_END(s_desc));
-}
-
 tcu::Format::Bitfield<32> getPipelineCacheCreateFlagsStr (VkPipelineCacheCreateFlags value)
 {
 	static const tcu::Format::BitDesc s_desc[] =
@@ -3833,9 +3830,10 @@ tcu::Format::Bitfield<32> getGeometryInstanceFlagsKHRStr (VkGeometryInstanceFlag
 	static const tcu::Format::BitDesc s_desc[] =
 	{
 		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR,		"VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR"),
-		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_TRIANGLE_FRONT_COUNTERCLOCKWISE_BIT_KHR,	"VK_GEOMETRY_INSTANCE_TRIANGLE_FRONT_COUNTERCLOCKWISE_BIT_KHR"),
+		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_TRIANGLE_FLIP_FACING_BIT_KHR,				"VK_GEOMETRY_INSTANCE_TRIANGLE_FLIP_FACING_BIT_KHR"),
 		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_FORCE_OPAQUE_BIT_KHR,						"VK_GEOMETRY_INSTANCE_FORCE_OPAQUE_BIT_KHR"),
 		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR,					"VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR"),
+		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_TRIANGLE_FRONT_COUNTERCLOCKWISE_BIT_KHR,	"VK_GEOMETRY_INSTANCE_TRIANGLE_FRONT_COUNTERCLOCKWISE_BIT_KHR"),
 		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV,				"VK_GEOMETRY_INSTANCE_TRIANGLE_CULL_DISABLE_BIT_NV"),
 		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_TRIANGLE_FRONT_COUNTERCLOCKWISE_BIT_NV,	"VK_GEOMETRY_INSTANCE_TRIANGLE_FRONT_COUNTERCLOCKWISE_BIT_NV"),
 		tcu::Format::BitDesc(VK_GEOMETRY_INSTANCE_FORCE_OPAQUE_BIT_NV,						"VK_GEOMETRY_INSTANCE_FORCE_OPAQUE_BIT_NV"),
@@ -4189,6 +4187,11 @@ tcu::Format::Bitfield<32> getQueryPoolCreateFlagsStr (VkQueryPoolCreateFlags val
 }
 
 tcu::Format::Bitfield<32> getBufferViewCreateFlagsStr (VkBufferViewCreateFlags value)
+{
+	return tcu::Format::Bitfield<32>(value, DE_NULL, DE_NULL);
+}
+
+tcu::Format::Bitfield<32> getShaderModuleCreateFlagsStr (VkShaderModuleCreateFlags value)
 {
 	return tcu::Format::Bitfield<32>(value, DE_NULL, DE_NULL);
 }
@@ -8217,6 +8220,55 @@ std::ostream& operator<< (std::ostream& s, const VkPipelineExecutableInternalRep
 	return s;
 }
 
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR& value)
+{
+	s << "VkPhysicalDeviceShaderIntegerDotProductFeaturesKHR = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tshaderIntegerDotProduct = " << value.shaderIntegerDotProduct << '\n';
+	s << '}';
+	return s;
+}
+
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR& value)
+{
+	s << "VkPhysicalDeviceShaderIntegerDotProductPropertiesKHR = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tintegerDotProduct8BitUnsignedAccelerated = " << value.integerDotProduct8BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProduct8BitSignedAccelerated = " << value.integerDotProduct8BitSignedAccelerated << '\n';
+	s << "\tintegerDotProduct8BitMixedSignednessAccelerated = " << value.integerDotProduct8BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProduct4x8BitPackedUnsignedAccelerated = " << value.integerDotProduct4x8BitPackedUnsignedAccelerated << '\n';
+	s << "\tintegerDotProduct4x8BitPackedSignedAccelerated = " << value.integerDotProduct4x8BitPackedSignedAccelerated << '\n';
+	s << "\tintegerDotProduct4x8BitPackedMixedSignednessAccelerated = " << value.integerDotProduct4x8BitPackedMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProduct16BitUnsignedAccelerated = " << value.integerDotProduct16BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProduct16BitSignedAccelerated = " << value.integerDotProduct16BitSignedAccelerated << '\n';
+	s << "\tintegerDotProduct16BitMixedSignednessAccelerated = " << value.integerDotProduct16BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProduct32BitUnsignedAccelerated = " << value.integerDotProduct32BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProduct32BitSignedAccelerated = " << value.integerDotProduct32BitSignedAccelerated << '\n';
+	s << "\tintegerDotProduct32BitMixedSignednessAccelerated = " << value.integerDotProduct32BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProduct64BitUnsignedAccelerated = " << value.integerDotProduct64BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProduct64BitSignedAccelerated = " << value.integerDotProduct64BitSignedAccelerated << '\n';
+	s << "\tintegerDotProduct64BitMixedSignednessAccelerated = " << value.integerDotProduct64BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating8BitUnsignedAccelerated = " << value.integerDotProductAccumulatingSaturating8BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating8BitSignedAccelerated = " << value.integerDotProductAccumulatingSaturating8BitSignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated = " << value.integerDotProductAccumulatingSaturating8BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated = " << value.integerDotProductAccumulatingSaturating4x8BitPackedUnsignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated = " << value.integerDotProductAccumulatingSaturating4x8BitPackedSignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated = " << value.integerDotProductAccumulatingSaturating4x8BitPackedMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating16BitUnsignedAccelerated = " << value.integerDotProductAccumulatingSaturating16BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating16BitSignedAccelerated = " << value.integerDotProductAccumulatingSaturating16BitSignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated = " << value.integerDotProductAccumulatingSaturating16BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating32BitUnsignedAccelerated = " << value.integerDotProductAccumulatingSaturating32BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating32BitSignedAccelerated = " << value.integerDotProductAccumulatingSaturating32BitSignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated = " << value.integerDotProductAccumulatingSaturating32BitMixedSignednessAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating64BitUnsignedAccelerated = " << value.integerDotProductAccumulatingSaturating64BitUnsignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating64BitSignedAccelerated = " << value.integerDotProductAccumulatingSaturating64BitSignedAccelerated << '\n';
+	s << "\tintegerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated = " << value.integerDotProductAccumulatingSaturating64BitMixedSignednessAccelerated << '\n';
+	s << '}';
+	return s;
+}
+
 std::ostream& operator<< (std::ostream& s, const VkPipelineLibraryCreateInfoKHR& value)
 {
 	s << "VkPipelineLibraryCreateInfoKHR = {\n";
@@ -11383,6 +11435,17 @@ std::ostream& operator<< (std::ostream& s, const VkPhysicalDeviceDrmPropertiesEX
 	return s;
 }
 
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT& value)
+{
+	s << "VkPhysicalDevicePrimitiveTopologyListRestartFeaturesEXT = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tprimitiveTopologyListRestart = " << value.primitiveTopologyListRestart << '\n';
+	s << "\tprimitiveTopologyPatchListRestart = " << value.primitiveTopologyPatchListRestart << '\n';
+	s << '}';
+	return s;
+}
+
 std::ostream& operator<< (std::ostream& s, const VkSubpassShadingPipelineCreateInfoHUAWEI& value)
 {
 	s << "VkSubpassShadingPipelineCreateInfoHUAWEI = {\n";
@@ -11534,6 +11597,16 @@ std::ostream& operator<< (std::ostream& s, const VkMultiDrawIndexedInfoEXT& valu
 	s << "\tfirstIndex = " << value.firstIndex << '\n';
 	s << "\tindexCount = " << value.indexCount << '\n';
 	s << "\tvertexOffset = " << value.vertexOffset << '\n';
+	s << '}';
+	return s;
+}
+
+std::ostream& operator<< (std::ostream& s, const VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT& value)
+{
+	s << "VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT = {\n";
+	s << "\tsType = " << value.sType << '\n';
+	s << "\tpNext = " << value.pNext << '\n';
+	s << "\tpageableDeviceLocalMemory = " << value.pageableDeviceLocalMemory << '\n';
 	s << '}';
 	return s;
 }

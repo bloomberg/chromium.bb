@@ -36,7 +36,7 @@ namespace {
 
 #if !defined(OS_ANDROID)
 constexpr base::TimeDelta kProfileActivityThreshold =
-    base::TimeDelta::FromDays(28);  // Should be integral number of weeks.
+    base::Days(28);  // Should be integral number of weeks.
 #endif
 
 enum class ProfileType {
@@ -426,10 +426,6 @@ void ProfileMetrics::LogProfileSyncInfo(ProfileSync metric) {
   DCHECK(metric < NUM_PROFILE_SYNC_METRICS);
   base::UmaHistogramEnumeration("Profile.SyncCustomize", metric,
                                 NUM_PROFILE_SYNC_METRICS);
-}
-
-void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
-  base::UmaHistogramBoolean("Profile.Delete", profile_was_signed_in);
 }
 
 #if defined(OS_ANDROID)

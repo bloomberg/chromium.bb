@@ -27,20 +27,19 @@ export class OnboardingLandingPage extends PolymerElement {
     return html`{__html_template__}`;
   }
 
-  static get properties() {
-    return {
-      /** @private {ShimlessRmaServiceInterface} */
-      shimlessRmaService_: {
-        type: Object,
-        value: null,
-      },
-    };
+  constructor() {
+    super();
+    /** @private {ShimlessRmaServiceInterface} */
+    this.shimlessRmaService_ = getShimlessRmaService();
   }
 
   /** @override */
   ready() {
     super.ready();
-    this.shimlessRmaService_ = getShimlessRmaService();
+    this.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: false},
+        ));
   }
 
   /** @return {!Promise<StateResult>} */

@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
+#include "chrome/browser/ash/login/easy_unlock/smartlock_feature_usage_metrics.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
@@ -56,6 +57,9 @@ class EasyUnlockServiceRegular
       std::unique_ptr<EasyUnlockNotificationController> notification_controller,
       device_sync::DeviceSyncClient* device_sync_client,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
+
+  EasyUnlockServiceRegular(const EasyUnlockServiceRegular&) = delete;
+  EasyUnlockServiceRegular& operator=(const EasyUnlockServiceRegular&) = delete;
 
   ~EasyUnlockServiceRegular() override;
 
@@ -144,6 +148,10 @@ class EasyUnlockServiceRegular
   // Used to determine the FeatureState of Smart Lock.
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
 
+  // Tracks Smart Lock feature usage for the Standard Feature Usage Logging
+  // (SFUL) framework.
+  std::unique_ptr<SmartLockFeatureUsageMetrics> feature_usage_metrics_;
+
   // Stores the unlock keys for EasyUnlock before the current device sync, so we
   // can compare it to the unlock keys after syncing.
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_before_sync_;
@@ -158,8 +166,6 @@ class EasyUnlockServiceRegular
   PrefChangeRegistrar registrar_;
 
   base::WeakPtrFactory<EasyUnlockServiceRegular> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegular);
 };
 
 }  // namespace ash

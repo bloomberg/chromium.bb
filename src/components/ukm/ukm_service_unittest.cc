@@ -73,6 +73,9 @@ class TestRecordingHelper {
     recorder_->DisableSamplingForTesting();
   }
 
+  TestRecordingHelper(const TestRecordingHelper&) = delete;
+  TestRecordingHelper& operator=(const TestRecordingHelper&) = delete;
+
   void UpdateSourceURL(SourceId source_id, const GURL& url) {
     recorder_->UpdateSourceURL(source_id, url);
   }
@@ -88,8 +91,6 @@ class TestRecordingHelper {
 
  private:
   UkmRecorder* recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRecordingHelper);
 };
 
 namespace {
@@ -105,12 +106,13 @@ class ScopedUkmFeatureParams {
                                                             params);
   }
 
+  ScopedUkmFeatureParams(const ScopedUkmFeatureParams&) = delete;
+  ScopedUkmFeatureParams& operator=(const ScopedUkmFeatureParams&) = delete;
+
   ~ScopedUkmFeatureParams() {}
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUkmFeatureParams);
 };
 
 class MockDemographicMetricsProvider
@@ -131,6 +133,9 @@ class UkmServiceTest : public testing::Test {
     UkmService::RegisterPrefs(prefs_.registry());
     ClearPrefs();
   }
+
+  UkmServiceTest(const UkmServiceTest&) = delete;
+  UkmServiceTest& operator=(const UkmServiceTest&) = delete;
 
   void ClearPrefs() {
     prefs_.ClearPref(prefs::kUkmClientId);
@@ -176,9 +181,6 @@ class UkmServiceTest : public testing::Test {
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(UkmServiceTest);
 };
 
 }  // namespace
@@ -991,7 +993,7 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       // ensures each source has a unique timestamp to avoid flakes. Should take
       // between 1-15ms per documented resolution of base::TimeTicks.
       while (base::TimeTicks::Now() == last_time) {
-        base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+        base::PlatformThread::Sleep(base::Milliseconds(1));
       }
 
       ids.push_back(GetNonWhitelistedSourceId(i));
@@ -1562,10 +1564,10 @@ TEST_F(UkmServiceTest, FilterCanRemoveMetrics) {
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   // This event sticks around albeit with a single metric instead of two.
-  TestEvent1(id).SetCpuTime(1).SetNet_MediaBytes(0).Record(&service);
+  TestEvent1(id).SetCpuTime(1).SetNet_CacheBytes2(0).Record(&service);
 
   // This event is discarded because its only metric gets stripped out.
-  TestEvent1(id).SetNet_MediaBytes(0).Record(&service);
+  TestEvent1(id).SetNet_CacheBytes2(0).Record(&service);
 
   service.Flush();
   ASSERT_EQ(1, GetPersistedLogCount());

@@ -101,6 +101,10 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
       : id_(id),
         buffer_(std::move(buffer)),
         release_cb_(std::move(release_cb)) {}
+
+  InputBuffer(const InputBuffer&) = delete;
+  InputBuffer& operator=(const InputBuffer&) = delete;
+
   ~InputBuffer() {
     DVLOGF(4) << "id = " << id_;
     if (release_cb_)
@@ -116,8 +120,6 @@ class VaapiVideoDecodeAccelerator::InputBuffer {
   const int32_t id_ = -1;
   const scoped_refptr<DecoderBuffer> buffer_;
   base::OnceCallback<void(int32_t id)> release_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputBuffer);
 };
 
 void VaapiVideoDecodeAccelerator::NotifyStatus(Status status) {
@@ -183,12 +185,6 @@ VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
 bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                              Client* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-#if defined(USE_X11)
-  // TODO(crbug/1116701): implement decode acceleration when running with Ozone.
-  if (features::IsUsingOzonePlatform())
-    return false;
-#endif
 
   vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
 
@@ -1213,12 +1209,11 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
 
 VaapiVideoDecodeAccelerator::BufferAllocationMode
 VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
   // The IMPORT mode is used for Android on Chrome OS, so this doesn't apply
   // here.
   DCHECK_NE(output_mode_, VideoDecodeAccelerator::Config::OutputMode::IMPORT);
   // TODO(crbug/1116701): get video decode acceleration working with ozone.
-  DCHECK(!features::IsUsingOzonePlatform());
   // For H.264 on older devices, another +1 is experimentally needed for
   // high-to-high resolution changes.
   // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and

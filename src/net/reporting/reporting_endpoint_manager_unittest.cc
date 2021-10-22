@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "net/base/backoff_entry.h"
+#include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/schemeful_site.h"
 #include "net/reporting/reporting_cache.h"
@@ -33,6 +34,10 @@ class TestReportingCache : public ReportingCache {
   TestReportingCache(const url::Origin& expected_origin,
                      const std::string& expected_group)
       : expected_origin_(expected_origin), expected_group_(expected_group) {}
+
+  TestReportingCache(const TestReportingCache&) = delete;
+  TestReportingCache& operator=(const TestReportingCache&) = delete;
+
   ~TestReportingCache() override = default;
 
   void SetEndpoint(const ReportingEndpoint& reporting_endpoint) {
@@ -136,6 +141,7 @@ class TestReportingCache : public ReportingCache {
   }
   void OnParsedReportingEndpointsHeader(
       const base::UnguessableToken& reporting_source,
+      const IsolationInfo& isolation_info,
       std::vector<ReportingEndpoint> endpoints) override {
     NOTREACHED();
   }
@@ -220,8 +226,14 @@ class TestReportingCache : public ReportingCache {
   }
   void SetV1EndpointForTesting(const ReportingEndpointGroupKey& group_key,
                                const base::UnguessableToken& reporting_source,
+                               const IsolationInfo& isolation_info,
                                const GURL& url) override {
     NOTREACHED();
+  }
+  IsolationInfo GetIsolationInfoForEndpoint(
+      const ReportingEndpoint& endpoint) const override {
+    NOTREACHED();
+    return IsolationInfo();
   }
 
  private:
@@ -231,8 +243,6 @@ class TestReportingCache : public ReportingCache {
   std::map<NetworkIsolationKey, std::vector<ReportingEndpoint>>
       reporting_endpoints_;
   base::flat_set<base::UnguessableToken> expired_sources_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestReportingCache);
 };
 
 class ReportingEndpointManagerTest : public testing::Test {
@@ -299,8 +309,8 @@ TEST_F(ReportingEndpointManagerTest, Endpoint) {
 TEST_F(ReportingEndpointManagerTest, BackedOffEndpoint) {
   ASSERT_EQ(2.0, policy_.endpoint_backoff_policy.multiply_factor);
 
-  base::TimeDelta initial_delay = base::TimeDelta::FromMilliseconds(
-      policy_.endpoint_backoff_policy.initial_delay_ms);
+  base::TimeDelta initial_delay =
+      base::Milliseconds(policy_.endpoint_backoff_policy.initial_delay_ms);
 
   SetEndpoint(kEndpoint);
 
@@ -423,7 +433,7 @@ TEST_F(ReportingEndpointManagerTest, Priority) {
 
   // Advance the current time far enough to clear out the primary endpoint's
   // backoff clock.  This should bring the primary endpoint back into play.
-  clock_.Advance(base::TimeDelta::FromMinutes(2));
+  clock_.Advance(base::Minutes(2));
   ReportingEndpoint endpoint3 =
       endpoint_manager_->FindEndpointForDelivery(kGroupKey);
   ASSERT_TRUE(endpoint3);

@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.management.ManagementPage;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -36,7 +37,6 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -65,7 +65,6 @@ public class NativePageFactory {
     private final WindowAndroid mWindowAndroid;
     private final Supplier<Long> mLastUserInteractionTimeSupplier;
     private final BooleanSupplier mHadWarmStartSupplier;
-    private final TabCreatorManager mTabCreatorManager;
     private final JankTracker mJankTracker;
     private final Supplier<Toolbar> mToolbarSupplier;
     private NewTabPageUma mNewTabPageUma;
@@ -82,8 +81,7 @@ public class NativePageFactory {
             @NonNull Supplier<ShareDelegate> shareDelegateSupplier,
             @NonNull WindowAndroid windowAndroid,
             @NonNull Supplier<Long> lastUserInteractionTimeSupplier,
-            @NonNull BooleanSupplier hadWarmStartSupplier,
-            @NonNull TabCreatorManager tabCreatorManager, @NonNull JankTracker jankTracker,
+            @NonNull BooleanSupplier hadWarmStartSupplier, @NonNull JankTracker jankTracker,
             @NonNull Supplier<Toolbar> toolbarSupplier) {
         mActivity = activity;
         mBottomSheetController = sheetController;
@@ -96,18 +94,16 @@ public class NativePageFactory {
         mWindowAndroid = windowAndroid;
         mLastUserInteractionTimeSupplier = lastUserInteractionTimeSupplier;
         mHadWarmStartSupplier = hadWarmStartSupplier;
-        mTabCreatorManager = tabCreatorManager;
         mJankTracker = jankTracker;
         mToolbarSupplier = toolbarSupplier;
     }
 
     private NativePageBuilder getBuilder() {
         if (mNativePageBuilder == null) {
-            mNativePageBuilder =
-                    new NativePageBuilder(mActivity, this::getNewTabPageUma, mBottomSheetController,
-                            mBrowserControlsManager, mCurrentTabSupplier, mSnackbarManagerSupplier,
-                            mLifecycleDispatcher, mTabModelSelector, mShareDelegateSupplier,
-                            mWindowAndroid, mTabCreatorManager, mJankTracker, mToolbarSupplier);
+            mNativePageBuilder = new NativePageBuilder(mActivity, this::getNewTabPageUma,
+                    mBottomSheetController, mBrowserControlsManager, mCurrentTabSupplier,
+                    mSnackbarManagerSupplier, mLifecycleDispatcher, mTabModelSelector,
+                    mShareDelegateSupplier, mWindowAndroid, mJankTracker, mToolbarSupplier);
         }
         return mNativePageBuilder;
     }
@@ -133,7 +129,6 @@ public class NativePageFactory {
         private final TabModelSelector mTabModelSelector;
         private final Supplier<ShareDelegate> mShareDelegateSupplier;
         private final WindowAndroid mWindowAndroid;
-        private final TabCreatorManager mTabCreatorManager;
         private final JankTracker mJankTracker;
         private final Supplier<Toolbar> mToolbarSupplier;
 
@@ -143,8 +138,7 @@ public class NativePageFactory {
                 Supplier<SnackbarManager> snackbarManagerSupplier,
                 ActivityLifecycleDispatcher lifecycleDispatcher, TabModelSelector tabModelSelector,
                 Supplier<ShareDelegate> shareDelegateSupplier, WindowAndroid windowAndroid,
-                TabCreatorManager tabCreatorManager, JankTracker jankTracker,
-                Supplier<Toolbar> toolbarSupplier) {
+                JankTracker jankTracker, Supplier<Toolbar> toolbarSupplier) {
             mActivity = activity;
             mUma = uma;
             mBottomSheetController = sheetController;
@@ -155,7 +149,6 @@ public class NativePageFactory {
             mTabModelSelector = tabModelSelector;
             mShareDelegateSupplier = shareDelegateSupplier;
             mWindowAndroid = windowAndroid;
-            mTabCreatorManager = tabCreatorManager;
             mJankTracker = jankTracker;
             mToolbarSupplier = toolbarSupplier;
         }
@@ -199,7 +192,7 @@ public class NativePageFactory {
             return new HistoryPage(mActivity,
                     new TabShim(tab, mBrowserControlsManager, mTabModelSelector),
                     mSnackbarManagerSupplier.get(), mTabModelSelector.isIncognitoSelected(),
-                    mTabCreatorManager, mCurrentTabSupplier);
+                    mCurrentTabSupplier);
         }
 
         protected NativePage buildRecentTabsPage(Tab tab) {
@@ -222,6 +215,11 @@ public class NativePageFactory {
             } else {
                 return null;
             }
+        }
+
+        protected NativePage buildManagementPage(Tab tab) {
+            return new ManagementPage(new TabShim(tab, mBrowserControlsManager, mTabModelSelector),
+                    Profile.fromWebContents(tab.getWebContents()));
         }
     }
 
@@ -270,6 +268,13 @@ public class NativePageFactory {
                 break;
             case NativePageType.LAUNCHPAD:
                 page = getBuilder().buildLaunchpadPage(tab);
+                break;
+            case NativePageType.MANAGEMENT:
+                if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MANAGEMENT_PAGE)) {
+                    return null;
+                }
+
+                page = getBuilder().buildManagementPage(tab);
                 break;
             default:
                 assert false;

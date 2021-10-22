@@ -718,10 +718,8 @@ class ShellUtil {
   static bool GetOldUserSpecificRegistrySuffix(std::wstring* suffix);
 
   // Associates a set of file extensions with a particular application in the
-  // Windows registry, for the current user only. If an extension has no
-  // existing default association, the given application becomes the default.
-  // Otherwise, the application is added to the Open With menu for this type,
-  // but does not become the default.
+  // Windows registry, for the current user only. The application is added to
+  // the Open With menu for these types, but does not become the default.
   //
   // |prog_id| is the ProgId used by Windows for file associations with this
   // application. Must not be empty or start with a '.'.
@@ -808,9 +806,6 @@ class ShellUtil {
   // This method is not supported and should not be called in Windows versions
   // prior to Win8, where write access to HKLM is required.
   static bool RemoveAppProtocolAssociations(const std::wstring& prog_id);
-
-  // Returns the browser's ProgId for the current install.
-  static std::wstring GetProgIdForBrowser(const base::FilePath& chrome_exe);
 
   // Retrieves the file path of the application registered as the
   // shell->open->command for |prog_id|. This only queries the user's

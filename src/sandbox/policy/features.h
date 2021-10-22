@@ -39,12 +39,17 @@ SANDBOX_POLICY_EXPORT extern const base::Feature
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
-// Returns whether the Network Service LPAC Sandbox is supported by the current
-// Windows platform.
-SANDBOX_POLICY_EXPORT bool IsNetworkServiceSandboxLPACSupported();
-// Returns whether Network Service Sandbox is enabled in LPAC mode.
-SANDBOX_POLICY_EXPORT bool IsNetworkServiceSandboxLPACEnabled();
+// Returns whether the Network Service Sandbox is supported by the current
+// Windows platform. Call this function rather than checking the
+// kNetworkServiceSandbox feature directly.
+SANDBOX_POLICY_EXPORT bool IsWinNetworkServiceSandboxSupported();
 #endif
+
+// Returns whether the network sandbox is enabled for the current platform
+// configuration. This might be overridden by the content embedder so prefer
+// calling ContentBrowserClient::ShouldSandboxNetworkService().
+SANDBOX_POLICY_EXPORT bool IsNetworkSandboxEnabled();
+
 }  // namespace features
 }  // namespace policy
 }  // namespace sandbox

@@ -249,3 +249,19 @@ export const findMyDeviceStatusToString = new Map([
   [FindMyDeviceStatus.OFF, 'Off'],
   [FindMyDeviceStatus.ON, 'On'],
 ]);
+
+/**
+ * @enum{number}
+ */
+export const FileType = {
+  IMAGE: 0,
+  VIDEO: 1,
+};
+
+/**
+ * @typedef {{
+ *   numberOfThumbnails: number,
+ *   fileType: !FileType,
+ * }}
+ */
+export let CameraRollManager;

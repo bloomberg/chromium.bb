@@ -24,7 +24,7 @@
 #include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/test_ax_tree_manager.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 // Helper macro for testing selection values and maintain
 // correct stack tracing and failure causality.
@@ -1098,8 +1098,8 @@ TEST(AXTreeTest, MultipleIgnoredChangesDoesNotBreakCache) {
 
   EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
   EXPECT_EQ(0u, tree.GetFromId(2)->GetUnignoredChildCount());
-  EXPECT_FALSE(tree.GetFromId(2)->data().HasState(ax::mojom::State::kIgnored));
-  EXPECT_TRUE(tree.GetFromId(3)->data().HasState(ax::mojom::State::kIgnored));
+  EXPECT_FALSE(tree.GetFromId(2)->HasState(ax::mojom::State::kIgnored));
+  EXPECT_TRUE(tree.GetFromId(3)->HasState(ax::mojom::State::kIgnored));
 }
 
 TEST(AXTreeTest, NodeToClearUpdatesParentUnignoredCount) {

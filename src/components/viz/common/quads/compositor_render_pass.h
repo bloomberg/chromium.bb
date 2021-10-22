@@ -26,9 +26,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/rrect_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace base {
 namespace trace_event {
@@ -50,6 +50,9 @@ using CompositorRenderPassId = base::IdTypeU64<CompositorRenderPass>;
 // CompositorRenderPassId within its surface id.
 class VIZ_COMMON_EXPORT CompositorRenderPass : public RenderPassInternal {
  public:
+  CompositorRenderPass(const CompositorRenderPass&) = delete;
+  CompositorRenderPass& operator=(const CompositorRenderPass&) = delete;
+
   ~CompositorRenderPass();
 
   static std::unique_ptr<CompositorRenderPass> Create();
@@ -125,9 +128,6 @@ class VIZ_COMMON_EXPORT CompositorRenderPass : public RenderPassInternal {
   explicit CompositorRenderPass(size_t num_layers);
   CompositorRenderPass(size_t shared_quad_state_list_size,
                        size_t quad_list_size);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompositorRenderPass);
 };
 
 using CompositorRenderPassList =

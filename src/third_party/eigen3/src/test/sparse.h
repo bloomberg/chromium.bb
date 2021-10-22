@@ -102,55 +102,6 @@ initSparse(double density,
   //sparseMat.finalize();
 }
 
-template<typename Scalar,int Opt1,int Opt2,typename Index> void
-initSparse(double density,
-           Matrix<Scalar,Dynamic,Dynamic, Opt1>& refMat,
-           DynamicSparseMatrix<Scalar, Opt2, Index>& sparseMat,
-           int flags = 0,
-           std::vector<Matrix<Index,2,1> >* zeroCoords = 0,
-           std::vector<Matrix<Index,2,1> >* nonzeroCoords = 0)
-{
-  enum { IsRowMajor = DynamicSparseMatrix<Scalar,Opt2,Index>::IsRowMajor };
-  sparseMat.setZero();
-  sparseMat.reserve(int(refMat.rows()*refMat.cols()*density));
-  for(int j=0; j<sparseMat.outerSize(); j++)
-  {
-    sparseMat.startVec(j); // not needed for DynamicSparseMatrix
-    for(int i=0; i<sparseMat.innerSize(); i++)
-    {
-      int ai(i), aj(j);
-      if(IsRowMajor)
-        std::swap(ai,aj);
-      Scalar v = (internal::random<double>(0,1) < density) ? internal::random<Scalar>() : Scalar(0);
-      if ((flags&ForceNonZeroDiag) && (i==j))
-      {
-        v = internal::random<Scalar>()*Scalar(3.);
-        v = v*v + Scalar(5.);
-      }
-      if ((flags & MakeLowerTriangular) && aj>ai)
-        v = Scalar(0);
-      else if ((flags & MakeUpperTriangular) && aj<ai)
-        v = Scalar(0);
-
-      if ((flags&ForceRealDiag) && (i==j))
-        v = numext::real(v);
-
-      if (v!=Scalar(0))
-      {
-        sparseMat.insertBackByOuterInner(j,i) = v;
-        if (nonzeroCoords)
-          nonzeroCoords->push_back(Matrix<Index,2,1> (ai,aj));
-      }
-      else if (zeroCoords)
-      {
-        zeroCoords->push_back(Matrix<Index,2,1> (ai,aj));
-      }
-      refMat(ai,aj) = v;
-    }
-  }
-  sparseMat.finalize();
-}
-
 template<typename Scalar,int Options,typename Index> void
 initSparse(double density,
            Matrix<Scalar,Dynamic,1>& refVec,

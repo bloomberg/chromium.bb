@@ -86,7 +86,8 @@ void HttpServer::SendOverWebSocket(
   if (connection == nullptr)
     return;
   DCHECK(connection->web_socket());
-  connection->web_socket()->Send(data, traffic_annotation);
+  connection->web_socket()->Send(
+      data, WebSocketFrameHeader::OpCodeEnum::kOpCodeText, traffic_annotation);
 }
 
 void HttpServer::SendRaw(int connection_id,
@@ -255,7 +256,8 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
         Close(connection->id());
         return ERR_CONNECTION_CLOSED;
       }
-      delegate_->OnWebSocketMessage(connection->id(), std::move(message));
+      if (result == WebSocket::FRAME_OK_FINAL)
+        delegate_->OnWebSocketMessage(connection->id(), std::move(message));
       if (HasClosedConnection(connection))
         return ERR_CONNECTION_CLOSED;
       continue;

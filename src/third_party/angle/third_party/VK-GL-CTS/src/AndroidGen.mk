@@ -178,6 +178,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/image/vktImageAtomicOperationTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageAtomicSpirvShaders.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageCompressionTranscodingSupport.cpp \
+	external/vulkancts/modules/vulkan/image/vktImageDepthStencilDescriptorTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageLoadStoreTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageLoadStoreUtil.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageMisalignedCubeTests.cpp \
@@ -186,6 +187,8 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/image/vktImageMultisampleLoadStoreTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageMutableTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageQualifiersTests.cpp \
+	external/vulkancts/modules/vulkan/image/vktImageSampleCompressedTextureTests.cpp \
+	external/vulkancts/modules/vulkan/image/vktImageSampleDrawnCubeFaceTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageSizeTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageSubresourceLayoutTests.cpp \
 	external/vulkancts/modules/vulkan/image/vktImageTests.cpp \
@@ -331,6 +334,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/reconvergence/vktReconvergenceTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassDepthStencilResolveTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassFragmentDensityMapTests.cpp \
+	external/vulkancts/modules/vulkan/renderpass/vktRenderPassLoadStoreOpNoneTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassMultipleSubpassesMultipleCommandBuffersTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassMultisampleResolveTests.cpp \
 	external/vulkancts/modules/vulkan/renderpass/vktRenderPassMultisampleTests.cpp \
@@ -408,6 +412,7 @@ LOCAL_SRC_FILES := \
 	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmImageSamplerTests.cpp \
 	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmIndexingTests.cpp \
 	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmInstructionTests.cpp \
+	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmIntegerDotProductTests.cpp \
 	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmLoopDepInfTests.cpp \
 	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmLoopDepLenTests.cpp \
 	external/vulkancts/modules/vulkan/spirv_assembly/vktSpvAsmNonSemanticInfoTests.cpp \

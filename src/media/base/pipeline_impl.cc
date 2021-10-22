@@ -59,6 +59,10 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   RendererWrapper(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
                   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
                   MediaLog* media_log);
+
+  RendererWrapper(const RendererWrapper&) = delete;
+  RendererWrapper& operator=(const RendererWrapper&) = delete;
+
   ~RendererWrapper() final;
 
   void Start(StartType start_type,
@@ -233,7 +237,6 @@ class PipelineImpl::RendererWrapper final : public DemuxerHost,
   PipelineStatusCB error_cb_;
 
   base::WeakPtrFactory<RendererWrapper> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(RendererWrapper);
 };
 
 PipelineImpl::RendererWrapper::RendererWrapper(
@@ -892,12 +895,10 @@ void PipelineImpl::RendererWrapper::OnPipelineError(PipelineStatus error) {
   if (status_ != PIPELINE_OK)
     return;
 
-  // Don't report pipeline error events to the media log here. The embedder
-  // will log this when Client::OnError is called. If the pipeline is already
-  // stopped or stopping we also don't want to log any event. In case we are
-  // suspending or suspended, the error may be recoverable, so don't propagate
-  // it now, instead let the subsequent seek during resume propagate it if
-  // it's unrecoverable.
+  // If the pipeline is already stopping or stopped we don't need to report an
+  // error. Similarly if the pipeline is suspending or suspended, the error may
+  // be recoverable, so don't propagate it now, instead let the subsequent seek
+  // during resume propagate it if it's unrecoverable.
   if (state_ == kStopping || state_ == kStopped || state_ == kSuspending ||
       state_ == kSuspended) {
     return;
@@ -980,6 +981,7 @@ void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
 }
 
 void PipelineImpl::RendererWrapper::CompleteSuspend(PipelineStatus status) {
+  DVLOG(1) << __func__ << ": status=" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(kSuspending, state_);
 
@@ -1667,8 +1669,9 @@ void PipelineImpl::OnSeekDone(bool is_suspended) {
   seek_time_ = kNoTimestamp;
   is_suspended_ = is_suspended;
 
-  DCHECK(seek_cb_);
-  std::move(seek_cb_).Run(PIPELINE_OK);
+  // `seek_cb_` could have been reset in OnError().
+  if (seek_cb_)
+    std::move(seek_cb_).Run(PIPELINE_OK);
 }
 
 void PipelineImpl::OnSuspendDone() {
@@ -1677,8 +1680,10 @@ void PipelineImpl::OnSuspendDone() {
   DCHECK(IsRunning());
 
   is_suspended_ = true;
-  DCHECK(suspend_cb_);
-  std::move(suspend_cb_).Run(PIPELINE_OK);
+
+  // `suspend_cb_` could have been reset in OnError().
+  if (suspend_cb_)
+    std::move(suspend_cb_).Run(PIPELINE_OK);
 }
 
 }  // namespace media

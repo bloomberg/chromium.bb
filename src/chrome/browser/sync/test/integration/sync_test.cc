@@ -150,13 +150,16 @@ class FakePerUserTopicSubscriptionManager
             /*url_loader_factory=*/nullptr,
             /*project_id*/ kInvalidationGCMSenderId,
             /*migrate_prefs=*/false) {}
+
+  FakePerUserTopicSubscriptionManager(
+      const FakePerUserTopicSubscriptionManager&) = delete;
+  FakePerUserTopicSubscriptionManager& operator=(
+      const FakePerUserTopicSubscriptionManager&) = delete;
+
   ~FakePerUserTopicSubscriptionManager() override = default;
 
   void UpdateSubscribedTopics(const invalidation::Topics& topics,
                               const std::string& instance_id_token) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakePerUserTopicSubscriptionManager);
 };
 
 std::unique_ptr<invalidation::FCMNetworkHandler> CreateFCMNetworkHandler(
@@ -222,12 +225,11 @@ SyncTest::FakeInstanceID::FakeInstanceID(const std::string& app_id,
     : instance_id::InstanceID(app_id, gcm_driver),
       token_(GenerateNextToken()) {}
 
-void SyncTest::FakeInstanceID::GetToken(
-    const std::string& authorized_entity,
-    const std::string& scope,
-    base::TimeDelta time_to_live,
-    std::set<Flags> flags,
-    GetTokenCallback callback) {
+void SyncTest::FakeInstanceID::GetToken(const std::string& authorized_entity,
+                                        const std::string& scope,
+                                        base::TimeDelta time_to_live,
+                                        std::set<Flags> flags,
+                                        GetTokenCallback callback) {
   std::move(callback).Run(token_, instance_id::InstanceID::Result::SUCCESS);
 }
 
@@ -666,10 +668,7 @@ bool SyncTest::SetupClients() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // SyncSettingsCategorization makes several types (e.g. APPS, APP_LIST,
   // PRINTERS) into OS sync types. OS sync is on-by-default, so enable it here.
-  // TODO(https://crbug.com/1227417): Remove SplitSettingsSync after migrating
-  // the affected tests.
-  if (chromeos::features::IsSplitSettingsSyncEnabled() ||
-      chromeos::features::IsSyncSettingsCategorizationEnabled()) {
+  if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
     for (int i = 0; i < num_clients(); ++i) {
       GetSyncService(i)->GetUserSettings()->SetOsSyncFeatureEnabled(true);
     }

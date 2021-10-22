@@ -310,15 +310,7 @@ static void configure_static_seg_features(AV1_COMP *cpi) {
   const RATE_CONTROL *const rc = &cpi->rc;
   struct segmentation *const seg = &cm->seg;
 
-  double avg_q;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  avg_q = (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
-              ? cpi->ppi->p_rc.temp_avg_q
-              : cpi->rc.avg_q;
-#else
-  avg_q = rc->avg_q;
-#endif
-
+  double avg_q = cpi->ppi->p_rc.avg_q;
   int high_q = (int)(avg_q > 48.0);
   int qi_delta;
 
@@ -561,15 +553,30 @@ void av1_set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
       cpi->ppi->p_rc.arf_q = *q;
   }
 
-  if (cpi->oxcf.q_cfg.use_fixed_qp_offsets && cpi->oxcf.rc_cfg.mode == AOM_Q &&
-      is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
-    const double qstep_ratio =
-        0.2 + (1.0 - (double)cpi->rc.active_worst_quality / MAXQ) * 0.3;
-    *q = av1_get_q_index_from_qstep_ratio(
-        cpi->rc.active_worst_quality, qstep_ratio, cm->seq_params->bit_depth);
-    *top_index = *bottom_index = *q;
-    if (gf_group->update_type[cpi->gf_frame_index] == ARF_UPDATE)
-      cpi->ppi->p_rc.arf_q = *q;
+  if (cpi->oxcf.q_cfg.use_fixed_qp_offsets && cpi->oxcf.rc_cfg.mode == AOM_Q) {
+    if (is_frame_tpl_eligible(gf_group, cpi->gf_frame_index)) {
+      const double qratio_grad =
+          cpi->ppi->p_rc.baseline_gf_interval > 20 ? 0.2 : 0.3;
+      const double qstep_ratio =
+          0.2 +
+          (1.0 - (double)cpi->rc.active_worst_quality / MAXQ) * qratio_grad;
+      *q = av1_get_q_index_from_qstep_ratio(
+          cpi->rc.active_worst_quality, qstep_ratio, cm->seq_params->bit_depth);
+      *top_index = *bottom_index = *q;
+      if (gf_group->update_type[cpi->gf_frame_index] == ARF_UPDATE ||
+          gf_group->update_type[cpi->gf_frame_index] == KF_UPDATE ||
+          gf_group->update_type[cpi->gf_frame_index] == GF_UPDATE)
+        cpi->ppi->p_rc.arf_q = *q;
+    } else if (gf_group->layer_depth[cpi->gf_frame_index] <
+               gf_group->max_layer_depth) {
+      int this_height = gf_group->layer_depth[cpi->gf_frame_index];
+      int arf_q = cpi->ppi->p_rc.arf_q;
+      while (this_height > 1) {
+        arf_q = (arf_q + cpi->oxcf.rc_cfg.cq_level + 1) / 2;
+        --this_height;
+      }
+      *top_index = *bottom_index = *q = arf_q;
+    }
   }
 #endif
 
@@ -754,7 +761,8 @@ BLOCK_SIZE av1_select_sb_size(const AV1EncoderConfig *const oxcf, int width,
   // Force 64x64 superblock size to increase resolution in perceptual
   // AQ mode.
   if (oxcf->mode == ALLINTRA &&
-      oxcf->q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI)
+      (oxcf->q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI ||
+       oxcf->q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED))
     return BLOCK_64X64;
 
   assert(oxcf->tool_cfg.superblock_size == AOM_SUPERBLOCK_SIZE_DYNAMIC);
@@ -775,7 +783,8 @@ BLOCK_SIZE av1_select_sb_size(const AV1EncoderConfig *const oxcf, int width,
   // pass encoding, which is why this heuristic is not configured as a
   // speed-feature.
   if (oxcf->superres_cfg.superres_mode == AOM_SUPERRES_NONE &&
-      oxcf->resize_cfg.resize_mode == RESIZE_NONE && oxcf->speed >= 1) {
+      oxcf->resize_cfg.resize_mode == RESIZE_NONE &&
+      (oxcf->speed >= 1 || oxcf->mode == REALTIME)) {
     return AOMMIN(width, height) > 480 ? BLOCK_128X128 : BLOCK_64X64;
   }
 
@@ -879,16 +888,7 @@ static void screen_content_tools_determination(
     int *projected_size_pass, PSNR_STATS *psnr) {
   AV1_COMMON *const cm = &cpi->common;
   FeatureFlags *const features = &cm->features;
-  int projected_frame_size;
-#if CONFIG_FRAME_PARALLEL_ENCODE
-  projected_frame_size =
-      (cpi->ppi->gf_group.frame_parallel_level[cpi->gf_frame_index] > 0)
-          ? cpi->ppi->p_rc.temp_projected_frame_size
-          : cpi->rc.projected_frame_size;
-#else
-  projected_frame_size = cpi->rc.projected_frame_size;
-#endif
-  projected_size_pass[pass] = projected_frame_size;
+  projected_size_pass[pass] = cpi->rc.projected_frame_size;
 #if CONFIG_AV1_HIGHBITDEPTH
   const uint32_t in_bit_depth = cpi->oxcf.input_cfg.input_bit_depth;
   const uint32_t bit_depth = cpi->td.mb.e_mbd.bd;
@@ -1009,7 +1009,7 @@ void av1_determine_sc_tools_with_encoding(AV1_COMP *cpi, const int q_orig) {
     set_encoding_params_for_screen_content(cpi, pass);
     av1_set_quantizer(cm, q_cfg->qm_minlevel, q_cfg->qm_maxlevel,
                       q_for_screen_content_quick_run,
-                      q_cfg->enable_chroma_deltaq);
+                      q_cfg->enable_chroma_deltaq, q_cfg->enable_hdr_deltaq);
     av1_set_speed_features_qindex_dependent(cpi, oxcf->speed);
     if (q_cfg->deltaq_mode != NO_DELTA_Q || q_cfg->enable_chroma_deltaq)
       av1_init_quantizer(&cpi->enc_quant_dequant_params, &cm->quant_params,

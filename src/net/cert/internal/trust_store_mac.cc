@@ -370,6 +370,9 @@ class TrustDomainCache {
     DCHECK(policy_oid_);
   }
 
+  TrustDomainCache(const TrustDomainCache&) = delete;
+  TrustDomainCache& operator=(const TrustDomainCache&) = delete;
+
   // (Re-)Initializes the cache with the certs in |domain_| set to UNKNOWN trust
   // status.
   void Initialize() {
@@ -437,8 +440,6 @@ class TrustDomainCache {
   const SecTrustSettingsDomain domain_;
   const CFStringRef policy_oid_;
   base::flat_map<SHA256HashValue, TrustStatusDetails> trust_status_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrustDomainCache);
 };
 
 SHA256HashValue CalculateFingerprint256(const der::Input& buffer) {
@@ -454,6 +455,11 @@ SHA256HashValue CalculateFingerprint256(const der::Input& buffer) {
 // function pointer and different contexts.
 class KeychainTrustSettingsChangedNotifier {
  public:
+  KeychainTrustSettingsChangedNotifier(
+      const KeychainTrustSettingsChangedNotifier&) = delete;
+  KeychainTrustSettingsChangedNotifier& operator=(
+      const KeychainTrustSettingsChangedNotifier&) = delete;
+
   // Registers |callback| to be run when the keychain trust settings change.
   // Must be called on the network notification thread.  |callback| will be run
   // on the network notification thread. The returned subscription must be
@@ -493,8 +499,6 @@ class KeychainTrustSettingsChangedNotifier {
   }
 
   base::RepeatingClosureList callback_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeychainTrustSettingsChangedNotifier);
 };
 
 // Observes keychain events and increments the value returned by Iteration()
@@ -508,6 +512,9 @@ class KeychainTrustObserver {
             &KeychainTrustObserver::RegisterCallbackOnNotificationThread,
             base::Unretained(this)));
   }
+
+  KeychainTrustObserver(const KeychainTrustObserver&) = delete;
+  KeychainTrustObserver& operator=(const KeychainTrustObserver&) = delete;
 
   // Destroying the observer unregisters the callback. Must be destroyed on the
   // notification thread in order to safely release |subscription_|.
@@ -533,8 +540,6 @@ class KeychainTrustObserver {
   base::CallbackListSubscription subscription_;
 
   base::subtle::Atomic64 iteration_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(KeychainTrustObserver);
 };
 
 }  // namespace
@@ -597,6 +602,9 @@ class TrustStoreMac::TrustImplDomainCache : public TrustStoreMac::TrustImpl {
         user_domain_cache_(kSecTrustSettingsDomainUser, policy_oid) {
     keychain_observer_ = std::make_unique<KeychainTrustObserver>();
   }
+
+  TrustImplDomainCache(const TrustImplDomainCache&) = delete;
+  TrustImplDomainCache& operator=(const TrustImplDomainCache&) = delete;
 
   ~TrustImplDomainCache() override {
     GetNetworkNotificationThreadMac()->DeleteSoon(
@@ -671,8 +679,6 @@ class TrustStoreMac::TrustImplDomainCache : public TrustStoreMac::TrustImpl {
   TrustDomainCache system_domain_cache_;
   TrustDomainCache admin_domain_cache_;
   TrustDomainCache user_domain_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrustImplDomainCache);
 };
 
 // TrustImplNoCache is the simplest approach which calls
@@ -680,6 +686,9 @@ class TrustStoreMac::TrustImplDomainCache : public TrustStoreMac::TrustImpl {
 class TrustStoreMac::TrustImplNoCache : public TrustStoreMac::TrustImpl {
  public:
   explicit TrustImplNoCache(CFStringRef policy_oid) : policy_oid_(policy_oid) {}
+
+  TrustImplNoCache(const TrustImplNoCache&) = delete;
+  TrustImplNoCache& operator=(const TrustImplNoCache&) = delete;
 
   ~TrustImplNoCache() override = default;
 
@@ -707,8 +716,6 @@ class TrustStoreMac::TrustImplNoCache : public TrustStoreMac::TrustImpl {
 
  private:
   const CFStringRef policy_oid_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrustImplNoCache);
 };
 
 // TrustImplMRUCache is calls SecTrustSettingsCopyTrustSettings on every cert
@@ -720,6 +727,9 @@ class TrustStoreMac::TrustImplMRUCache : public TrustStoreMac::TrustImpl {
       : policy_oid_(policy_oid), trust_status_cache_(cache_size) {
     keychain_observer_ = std::make_unique<KeychainTrustObserver>();
   }
+
+  TrustImplMRUCache(const TrustImplMRUCache&) = delete;
+  TrustImplMRUCache& operator=(const TrustImplMRUCache&) = delete;
 
   ~TrustImplMRUCache() override {
     GetNetworkNotificationThreadMac()->DeleteSoon(
@@ -843,8 +853,6 @@ class TrustStoreMac::TrustImplMRUCache : public TrustStoreMac::TrustImpl {
   // not cache their results, as it isn't clear whether the calculated result
   // applies to the new or old trust settings.
   int64_t iteration_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(TrustImplMRUCache);
 };
 
 TrustStoreMac::TrustStoreMac(CFStringRef policy_oid,

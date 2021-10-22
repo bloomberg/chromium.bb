@@ -1033,13 +1033,12 @@ static void set_noise_profile(AudioFFTDeNoiseContext *s,
     double temp[15];
     double sum = 0.0, d1;
     float new_noise_floor;
-    int i, n;
+    int i = 0, n;
 
     for (int m = 0; m < 15; m++)
         temp[m] = sample_noise[m];
 
     if (new_profile) {
-        i = 0;
         for (int m = 0; m < 5; m++) {
             sum = 0.0;
             for (n = 0; n < 15; n++)
@@ -1224,8 +1223,8 @@ static int output_frame(AVFilterLink *inlink)
 
     s->block_count++;
     td.in = in;
-    ctx->internal->execute(ctx, filter_channel, &td, NULL,
-                           FFMIN(outlink->channels, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, filter_channel, &td, NULL,
+                      FFMIN(outlink->channels, ff_filter_get_nb_threads(ctx)));
 
     out = ff_get_audio_buffer(outlink, s->sample_advance);
     if (!out) {
@@ -1349,31 +1348,19 @@ static av_cold void uninit(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
-    AVFilterChannelLayouts *layouts = NULL;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_FLTP,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
@@ -1412,7 +1399,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1420,7 +1406,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_afftdn = {
@@ -1431,8 +1416,8 @@ const AVFilter ff_af_afftdn = {
     .priv_class      = &afftdn_class,
     .activate        = activate,
     .uninit          = uninit,
-    .inputs          = inputs,
-    .outputs         = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .process_command = process_command,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
                        AVFILTER_FLAG_SLICE_THREADS,

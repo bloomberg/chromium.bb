@@ -11,6 +11,10 @@
 #import "ios/web/web_state/ui/crw_touch_tracking_recognizer.h"
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace web {
 
 enum class NavigationInitiationType;
@@ -94,15 +98,6 @@ class WebStateImpl;
 // Returns the latest navigation item created for new navigation, which is
 // stored in navigation context.
 - (web::NavigationItemImpl*)lastPendingItemForNewNavigation;
-
-// Replaces the currently displayed content with |contentView|.  The content
-// view will be dismissed for the next navigation.
-- (void)showTransientContentView:(UIView<CRWScrollableContent>*)contentView;
-
-// Clear the transient content view, if one is shown. This is a delegate
-// method for WebStateImpl::ClearTransientContent(). Callers should use the
-// WebStateImpl API instead of calling this method directly.
-- (void)clearTransientContentView;
 
 // Removes the back WebView. DANGER: this method is exposed for the sole purpose
 // of allowing NavigationManagerImpl to reset the back-forward history. Please
@@ -202,6 +197,20 @@ class WebStateImpl;
 // Injects the windowID into the main frame of the current webpage.
 // TODO(crbug.com/905939): Remove WindowID.
 - (void)injectWindowID;
+
+#pragma mark Navigation Message Handlers
+
+// Handles a navigation hash change message for the current webpage.
+- (void)handleNavigationHashChange;
+
+// Handles a navigation will change message for the current webpage.
+- (void)handleNavigationWillChangeState;
+
+// Handles a navigation did push state message for the current webpage.
+- (void)handleNavigationDidPushStateMessage:(base::Value*)message;
+
+// Handles a navigation did replace state message for the current webpage.
+- (void)handleNavigationDidReplaceStateMessage:(base::Value*)message;
 
 #pragma mark CRWJSInjectionEvaluator
 

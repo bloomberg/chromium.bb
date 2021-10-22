@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/tab_footprint_aggregator.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/metrics/metrics_data_validation.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_operations.h"
@@ -213,6 +214,14 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"malloc/allocated_objects", "Malloc.AllocatedObjects", MetricSize::kLarge,
      kEffectiveSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetMalloc_AllocatedObjects},
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+    // TODO(keishi): Add brp_quarantined metrics for the Blink partitions.
+    {"malloc/partitions/allocator", "Malloc.BRPQuarantined", MetricSize::kSmall,
+     "brp_quarantined_size", EmitTo::kSizeInUmaOnly, nullptr},
+    {"malloc/partitions/allocator", "Malloc.BRPQuarantinedCount",
+     MetricSize::kTiny, "brp_quarantined_count", EmitTo::kSizeInUmaOnly,
+     nullptr},
+#endif
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     {"malloc/partitions/allocator/thread_cache", "Malloc.ThreadCache",
      MetricSize::kSmall, kSize, EmitTo::kSizeInUmaOnly, nullptr},
@@ -235,11 +244,6 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"media/webmediaplayer", "WebMediaPlayer.Instances", MetricSize::kTiny,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmOnly,
      &Memory_Experimental::SetNumberOfWebMediaPlayers},
-    {"net", "Net", MetricSize::kSmall, kEffectiveSize, EmitTo::kSizeInUkmAndUma,
-     &Memory_Experimental::SetNet},
-    {"net/url_request_context", "Net.UrlRequestContext", MetricSize::kSmall,
-     kEffectiveSize, EmitTo::kSizeInUkmAndUma,
-     &Memory_Experimental::SetNet_UrlRequestContext},
     {"omnibox", "OmniboxSuggestions", MetricSize::kSmall, kEffectiveSize,
      EmitTo::kSizeInUkmAndUma, &Memory_Experimental::SetOmniboxSuggestions},
     {"parkable_images", "ParkableImage.OnDiskSize", MetricSize::kSmall,
@@ -983,6 +987,12 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 #endif
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                   private_footprint_total_kb / kKiB);
+    // The pseudo metric of Memory.Total.PrivateMemoryFootprint. Only used to
+    // assess field trial data quality.
+    UMA_HISTOGRAM_MEMORY_LARGE_MB(
+        "UMA.Pseudo.Memory.Total.PrivateMemoryFootprint",
+        metrics::GetPseudoMetricsSample(
+            static_cast<double>(private_footprint_total_kb) / kKiB));
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.RendererPrivateMemoryFootprint",
                                   renderer_private_footprint_total_kb / kKiB);
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.SharedMemoryFootprint",

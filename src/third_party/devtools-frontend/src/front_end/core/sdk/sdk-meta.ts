@@ -344,6 +344,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.CONSOLE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.preserveLogUponNavigation),
   settingName: 'preserveConsoleLog',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -440,6 +441,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showAreaNames),
   settingName: 'showGridAreas',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -458,6 +460,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showTrackSizes),
   settingName: 'showGridTrackSizes',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -476,6 +479,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.extendGridLines),
   settingName: 'extendGridLines',
   settingType: Common.Settings.SettingType.BOOLEAN,
@@ -494,6 +498,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.GRID,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showLineLabels),
   settingName: 'showGridLineLabels',
   settingType: Common.Settings.SettingType.ENUM,

@@ -280,8 +280,8 @@ class CC_EXPORT LayerTreeImpl {
     hud_layer_ = layer_impl;
   }
 
-  gfx::ScrollOffset TotalScrollOffset() const;
-  gfx::ScrollOffset TotalMaxScrollOffset() const;
+  gfx::Vector2dF TotalScrollOffset() const;
+  gfx::Vector2dF TotalMaxScrollOffset() const;
 
   void AddPresentationCallbacks(
       std::vector<PresentationTimeCallbackBuffer::MainCallback> callbacks);
@@ -741,8 +741,8 @@ class CC_EXPORT LayerTreeImpl {
     return host_impl_->GetActivelyScrollingType();
   }
 
-  bool CurrentScrollDidCheckerboardLargeArea() {
-    return host_impl_->CurrentScrollDidCheckerboardLargeArea();
+  bool CurrentScrollCheckerboardsDueToNoRecording() {
+    return host_impl_->CurrentScrollCheckerboardsDueToNoRecording();
   }
 
   // These functions are used for plumbing DelegatedInkMetadata from blink

@@ -37,6 +37,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
@@ -46,7 +47,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 
@@ -113,8 +114,7 @@ constexpr char kDragMaximizeSmoothness[] =
 
 // Duration of the cross fade animation used when dragging to unmaximize or
 // dragging to snap maximize.
-constexpr base::TimeDelta kCrossFadeDuration =
-    base::TimeDelta::FromMilliseconds(120);
+constexpr base::TimeDelta kCrossFadeDuration = base::Milliseconds(120);
 
 // The amount of pixels that needs to be moved during a top screen drag to reset
 // dwell time.
@@ -122,13 +122,21 @@ constexpr int kSnapDragDwellTimeResetThreshold = 8;
 
 // Dwell time before snap to maximize. The countdown starts when window dragged
 // into snap region.
-constexpr base::TimeDelta kDwellTime = base::TimeDelta::FromMilliseconds(400);
+constexpr base::TimeDelta kDwellTime = base::Milliseconds(400);
+
+// Dwell time before turning snap top to snap to maximize. The countdown starts
+// when window dragged into snap region.
+constexpr base::TimeDelta kDwellLongTime = base::Milliseconds(1000);
+
 // The min amount of vertical movement needed for to trigger a snap to
 // maximize.
 constexpr int kSnapTriggerVerticalMoveThreshold = 64;
 
 // Current instance for use by the WorkspaceWindowResizerTest.
 WorkspaceWindowResizer* instance = nullptr;
+
+// Possible areas that can trigger windows snap and maximize.
+enum class DragTriggerArea { kLeft, kRight, kBottom, kTop, kInvalid };
 
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
@@ -373,35 +381,109 @@ void ResetFrameRestoreLookKey(WindowState* window_state) {
     window->SetProperty(kFrameRestoreLookKey, false);
 }
 
-// Returns the snap type based on the |location_in_screen|.
+// Returns a work area that excludes area that can trigger snaps.
+gfx::Rect GetNonSnapWorkArea(const display::Display& display,
+                             bool is_horizontal) {
+  gfx::Rect area = display.work_area();
+  gfx::Insets insets;
+
+  // Add tolerance for snapping near each work area edge when there is no
+  // component reducing work area on that edge.
+  // 1. Add tolerance to maximize triggering area, which is also shared with
+  // top snap area for vertical snap.
+  if (area.y() == display.bounds().y())
+    insets.set_top(kScreenEdgeInsetForSnappingTop);
+
+  // 2. Add tolerance to left and right snap area for horizontal snap, or
+  // bottom snap area for vertical snap.
+  if (is_horizontal) {
+    // Without the left shelf, i.e. the left edge of work area aligns with that
+    // of the display, add snap area tolerance to the left edge. On contrary,
+    // users need to drag pass the right edge of the left shelf to trigger snap.
+    if (area.x() == display.bounds().x())
+      insets.set_left(kScreenEdgeInsetForSnappingSides);
+    if (area.right() == display.bounds().right())
+      insets.set_right(kScreenEdgeInsetForSnappingSides);
+  } else {
+    // Always add tolerance for bottom snapping work area regardless of whether
+    // there is any bottom component that alters work area or not to reduce
+    // long-distance dragging overhead.
+    insets.set_bottom(kScreenEdgeInsetForSnappingSides);
+  }
+  area.Inset(insets);
+  return area;
+}
+
+// Returns the drag area for snap and maximize that is activated by mouse
+// pointing at |location_in_screen| given the |display| and its |orientation|.
+// Possible drag area for landscape orientation are left, right, and top
+// (maximize), while those for portrait orientation are top and bottom.
+DragTriggerArea GetActiveDragAreaForSnapAndMaximize(
+    const gfx::PointF& location_in_screen,
+    const display::Display& display,
+    bool is_horizontal) {
+  const gfx::Rect non_snap_area = GetNonSnapWorkArea(display, is_horizontal);
+  // The drag area on one of the four sides of screen is activated for snap and
+  // maximize when |location_in_screen| is outside non-snap area. For example,
+  // if the location is far left beyond the left edge of |non_snap_area| of
+  // landscape display, the drag is in |DragTriggerArea::kLeft| snappable area.
+  if (is_horizontal) {
+    if (location_in_screen.x() <= non_snap_area.x())
+      return DragTriggerArea::kLeft;
+    if (location_in_screen.x() >= non_snap_area.right() - 1)
+      return DragTriggerArea::kRight;
+  } else if (location_in_screen.y() >= non_snap_area.bottom() - 1) {
+    return DragTriggerArea::kBottom;
+  }
+  return location_in_screen.y() <= non_snap_area.y()
+             ? DragTriggerArea::kTop
+             : DragTriggerArea::kInvalid;
+}
+
+// Returns the snap type based on the |location_in_screen|. In portrait snap,
+// maximize happens only after holding snap top, so this function returns
+// the initial snap top i.e. type |WorkspaceWindowResizer::SnapType::kPrimary|
+// for primary portrait or |kSecondary| for secondary portrait. Then
+// |dwell_countdown_timer_| will update to |kMaximize| maximize type once the
+// time is out in `Drag()`.
 WorkspaceWindowResizer::SnapType GetSnapType(
     const display::Display& display,
     const gfx::PointF& location_in_screen) {
-  gfx::Rect area = display.work_area();
-  // Add tolerance for snapping near each display edge that is the same as the
-  // corresponding work area edge. For example, assuming the shelf is the only
-  // element that alters work area, dragging a window to the left edge when the
-  // shelf is aligned to the bottom will trigger a window snap if the location
-  // is between 0 and |kScreenEdgeInsetForSnappingSides|, but dragging a window
-  // to the left edge when the shelf is aligned to the left will trigger a
-  // window snap once it is past the shelf's right edge.
-  gfx::Insets insets;
-  if (area.x() == display.bounds().x())
-    insets.set_left(kScreenEdgeInsetForSnappingSides);
-  if (area.right() == display.bounds().right())
-    insets.set_right(kScreenEdgeInsetForSnappingSides);
-  if (area.y() == display.bounds().y())
-    insets.set_top(kScreenEdgeInsetForSnappingTop);
-  area.Inset(insets);
+  const chromeos::OrientationType orientation =
+      GetSnapDisplayOrientation(display);
+  const bool is_horizontal = chromeos::IsLandscapeOrientation(orientation);
+  const DragTriggerArea drag_area = GetActiveDragAreaForSnapAndMaximize(
+      location_in_screen, display, is_horizontal);
 
-  if (location_in_screen.x() <= area.x())
-    return WorkspaceWindowResizer::SnapType::kPrimary;
-  else if (location_in_screen.x() >= area.right() - 1)
-    return WorkspaceWindowResizer::SnapType::kSecondary;
-  else if (location_in_screen.y() <= area.y())
+  // In snap horizontal orientation, i.e. no snap top, triggering top area only
+  // triggers maximize.
+  if (is_horizontal && drag_area == DragTriggerArea::kTop)
     return WorkspaceWindowResizer::SnapType::kMaximize;
 
-  return WorkspaceWindowResizer::SnapType::kNone;
+  switch (drag_area) {
+    case DragTriggerArea::kLeft:
+      DCHECK(is_horizontal);
+      return orientation == chromeos::OrientationType::kLandscapePrimary
+                 ? WorkspaceWindowResizer::SnapType::kPrimary
+                 : WorkspaceWindowResizer::SnapType::kSecondary;
+    case DragTriggerArea::kRight:
+      DCHECK(is_horizontal);
+      return orientation == chromeos::OrientationType::kLandscapePrimary
+                 ? WorkspaceWindowResizer::SnapType::kSecondary
+                 : WorkspaceWindowResizer::SnapType::kPrimary;
+    case DragTriggerArea::kTop:
+      DCHECK(!is_horizontal);
+      return orientation == chromeos::OrientationType::kPortraitPrimary
+                 ? WorkspaceWindowResizer::SnapType::kPrimary
+                 : WorkspaceWindowResizer::SnapType::kSecondary;
+    case DragTriggerArea::kBottom:
+      DCHECK(!is_horizontal);
+      return orientation == chromeos::OrientationType::kPortraitPrimary
+                 ? WorkspaceWindowResizer::SnapType::kSecondary
+                 : WorkspaceWindowResizer::SnapType::kPrimary;
+    case DragTriggerArea::kInvalid:
+      return WorkspaceWindowResizer::SnapType::kNone;
+  }
 }
 
 // If |maximize| is true, this is an animation to maximized bounds and an
@@ -490,7 +572,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   if (parent &&
       // TODO(afakhry): Maybe use switchable containers?
       (desks_util::IsDeskContainer(parent) ||
-       parent->GetId() == kShellWindowId_AlwaysOnTopContainer)) {
+       parent->GetId() == kShellWindowId_AlwaysOnTopContainer ||
+       parent->GetId() == kShellWindowId_FloatContainer)) {
     window_resizer = WorkspaceWindowResizer::Create(window_state, {});
   } else {
     window_resizer = DefaultWindowResizer::Create(window_state);
@@ -632,9 +715,29 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
       return;
   }
 
+  if (tab_dragging_recorder_) {
+    // The recorder only works with a single ui::Compositor. ui::Compositor is
+    // per display so the recorder does not work correctly across different
+    // displays. Thus, we give up tab dragging latency data collection if the
+    // drag touches a different display, i.e. not inside the current parent's
+    // bounds.
+    if (!gfx::Rect(GetTarget()->parent()->bounds().size())
+             .Contains(gfx::ToRoundedPoint(location_in_parent))) {
+      tab_dragging_recorder_.reset();
+    } else {
+      tab_dragging_recorder_->RequestNext();
+    }
+  }
+
+  // In case of non-dragging action such as resizing, we do not want to
+  // continue performing any snap or maximize logic. Otherwise, resize top edge
+  // to the top of display will fire maximize |dwell_countdown_timer_|
+  // (crbug.com/1251859).
+  if (details().window_component != HTCAPTION)
+    return;
+
   gfx::PointF location_in_screen = location_in_parent;
   ::wm::ConvertPointToScreen(GetTarget()->parent(), &location_in_screen);
-  SnapType snap_type = ::ash::GetSnapType(GetDisplay(), location_in_screen);
   if (!can_snap_to_maximize_) {
     gfx::PointF initial_location_in_screen =
         details().initial_location_in_parent;
@@ -647,48 +750,54 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
         kSnapTriggerVerticalMoveThreshold;
   }
 
+  const SnapType snap_type = GetSnapType(GetDisplay(), location_in_screen);
   // Start dwell countdown if move window to the top of screen.
-  if (snap_type == SnapType::kMaximize) {
-    bool drag_passed_threshold =
-        (location_in_screen - dwell_location_in_screen_).Length() >
-        kSnapDragDwellTimeResetThreshold;
-    if (!dwell_countdown_timer_.IsRunning() || drag_passed_threshold) {
-      // Do not show snap window if not pass dwell time.
-      // Restart timer if user moves the window significantly.
-      dwell_countdown_timer_.Start(
-          FROM_HERE, kDwellTime,
-          base::BindOnce(&WorkspaceWindowResizer::UpdateSnapPhantomWindow,
-                         weak_ptr_factory_.GetWeakPtr(), location_in_screen,
-                         bounds));
-      // Cancel maximization if drag passed threshold.
-      // Window can still be maximized in next dwell cycle if stays at top of
-      // display.
-      if (drag_passed_threshold) {
-        snap_type_ = SnapType::kNone;
-        snap_phantom_window_controller_.reset();
+  if (IsSnapTopOrMaximize(snap_type)) {
+    if (can_snap_to_maximize_) {
+      const bool drag_passed_threshold =
+          (location_in_screen - dwell_location_in_screen_).Length() >
+          kSnapDragDwellTimeResetThreshold;
+      // If vertical snap state is enabled, update phantom window for top/bottom
+      // snap before setting a timer for maximize phantom to show up.
+      if (chromeos::wm::features::IsVerticalSnapEnabled() &&
+          !snap_phantom_window_controller_ &&
+          snap_type != SnapType::kMaximize) {
+        UpdateSnapPhantomWindow(snap_type);
+        // TODO(crbug.com/1257240): Move maximize cue logic into
+        // `UpdateSnapPhantomWindow()` to handle the cue if needed.
+        if (snap_phantom_window_controller_)
+          snap_phantom_window_controller_->ShowMaximizeCue();
       }
-      dwell_location_in_screen_ = location_in_screen;
+
+      // Start maximize phantom window dwell time if it is not already running
+      // or restart timer if user moves the window significantly.
+      if (!dwell_countdown_timer_.IsRunning() || drag_passed_threshold) {
+        // Use |kDwellLongTime| when snap top phantom window is shown first
+        // before it turns into maximize phantom window.
+        dwell_countdown_timer_.Start(
+            FROM_HERE,
+            (chromeos::wm::features::IsVerticalSnapEnabled() &&
+             snap_type != SnapType::kMaximize)
+                ? kDwellLongTime
+                : kDwellTime,
+            base::BindOnce(&WorkspaceWindowResizer::ShowMaximizePhantom,
+                           weak_ptr_factory_.GetWeakPtr()));
+        // Cancel maximization if drag passed threshold.
+        // Window can still be maximized in next dwell cycle if stays at top of
+        // display.
+        if (drag_passed_threshold) {
+          snap_type_ = SnapType::kNone;
+          snap_phantom_window_controller_.reset();
+        }
+      }
     }
+    dwell_location_in_screen_ = location_in_screen;
   } else {
-    UpdateSnapPhantomWindow(location_in_screen, bounds);
+    UpdateSnapPhantomWindow(snap_type);
     if (dwell_countdown_timer_.IsRunning()) {
       dwell_countdown_timer_.Stop();
     }
     dwell_location_in_screen_ = gfx::PointF();
-  }
-
-  if (tab_dragging_recorder_) {
-    // The recorder only works with a single ui::Compositor. ui::Compositor is
-    // per display so the recorder does not work correctly across different
-    // displays. Thus, we give up tab dragging latency data collection if the
-    // drag touches a different display, i.e. not inside the current parent's
-    // bounds.
-    if (!gfx::Rect(GetTarget()->parent()->bounds().size())
-             .Contains(gfx::ToRoundedPoint(location_in_parent))) {
-      tab_dragging_recorder_.reset();
-      return;
-    }
-    tab_dragging_recorder_->RequestNext();
   }
 }
 
@@ -1334,15 +1443,26 @@ int WorkspaceWindowResizer::PrimaryAxisCoordinate(int x, int y) const {
   return 0;
 }
 
+bool WorkspaceWindowResizer::IsSnapTopOrMaximize(SnapType type) const {
+  if (type == SnapType::kMaximize)
+    return true;
+  switch (GetSnapDisplayOrientation(GetDisplay())) {
+    case chromeos::OrientationType::kPortraitPrimary:
+      return type == SnapType::kPrimary;
+    case chromeos::OrientationType::kPortraitSecondary:
+      return type == SnapType::kSecondary;
+    default:
+      return false;
+  }
+}
+
 void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
-    const gfx::PointF& location_in_screen,
-    const gfx::Rect& bounds) {
+    const SnapType target_snap_type) {
   if (!did_move_or_resize_ || details().window_component != HTCAPTION)
     return;
 
-  display::Display display = GetDisplay();
   SnapType last_type = snap_type_;
-  snap_type_ = GetSnapType(display, location_in_screen);
+  snap_type_ = target_snap_type;
 
   // Reset the controller if no snap or switching snap types. The latter is so
   // that we can have a fade in show animation when switching snap types.
@@ -1359,6 +1479,8 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(
   }
 
   gfx::Rect phantom_bounds;
+  const display::Display display = GetDisplay();
+
   switch (snap_type_) {
     case SnapType::kPrimary:
       phantom_bounds = GetSnappedWindowBounds(
@@ -1523,6 +1645,12 @@ void WorkspaceWindowResizer::EndDragForAttachedWindows(bool revert_drag) {
       window_state->OnCompleteDrag(last_mouse_location_);
     window_state->DeleteDragDetails();
   }
+}
+
+void WorkspaceWindowResizer::ShowMaximizePhantom() {
+  UpdateSnapPhantomWindow(SnapType::kMaximize);
+  if (snap_phantom_window_controller_)
+    snap_phantom_window_controller_->HideMaximizeCue();
 }
 
 display::Display WorkspaceWindowResizer::GetDisplay() const {

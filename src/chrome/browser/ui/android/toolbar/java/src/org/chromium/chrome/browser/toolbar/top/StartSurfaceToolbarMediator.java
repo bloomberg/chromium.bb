@@ -24,8 +24,10 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_HIGHLIGHT;
-import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_VIEW_AT_START;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_VIEW_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_VIEW_TEXT_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.SHOW_ANIMATION;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TAB_SWITCHER_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.TRANSLATION_Y;
@@ -180,12 +182,12 @@ class StartSurfaceToolbarMediator {
 
     void onStartSurfaceStateChanged(
             @StartSurfaceState int newState, boolean shouldShowStartSurfaceToolbar) {
-        updateShowAnimation(newState);
+        updateShowAnimation(newState, shouldShowStartSurfaceToolbar);
         mStartSurfaceState = newState;
         updateLogoVisibility(mIsGoogleSearchEngine);
         updateTabSwitcherButtonVisibility();
         updateIncognitoToggleTabVisibility();
-        updateNewTabButtonVisibility();
+        updateNewTabViewVisibility();
         updateHomeButtonVisibility();
         updateIdentityDisc(mIdentityDiscButtonSupplier.get());
         setStartSurfaceToolbarVisibility(shouldShowStartSurfaceToolbar);
@@ -264,6 +266,8 @@ class StartSurfaceToolbarMediator {
                     mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
                     updateIdentityDisc(mIdentityDiscButtonSupplier.get());
                     updateIncognitoToggleTabVisibility();
+                    // New tab view text is only visible when incognito toggle layout is not shown.
+                    updateNewTabViewTextVisibility();
                 }
 
                 @Override
@@ -314,14 +318,6 @@ class StartSurfaceToolbarMediator {
         return false;
     }
 
-    private boolean isOverviewState(@StartSurfaceState int state) {
-        return state == StartSurfaceState.SHOWN_HOMEPAGE
-                || state == StartSurfaceState.SHOWN_TABSWITCHER
-                || state == StartSurfaceState.SHOWING_START
-                || state == StartSurfaceState.SHOWING_HOMEPAGE
-                || state == StartSurfaceState.SHOWING_TABSWITCHER;
-    }
-
     void setStartSurfaceMode(boolean inStartSurfaceMode) {
         mPropertyModel.set(IN_START_SURFACE_MODE, inStartSurfaceMode);
     }
@@ -336,7 +332,7 @@ class StartSurfaceToolbarMediator {
 
     void onAccessibilityStatusChanged(boolean enabled) {
         mPropertyModel.set(ACCESSIBILITY_ENABLED, enabled);
-        updateNewTabButtonVisibility();
+        updateNewTabViewVisibility();
     }
 
     void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
@@ -414,16 +410,32 @@ class StartSurfaceToolbarMediator {
         }
     }
 
-    private void updateNewTabButtonVisibility() {
+    private void updateNewTabViewVisibility() {
         boolean isShownTabSwitcherState = mStartSurfaceState == StartSurfaceState.SHOWN_TABSWITCHER
                 || mStartSurfaceState == StartSurfaceState.SHOWING_TABSWITCHER;
 
         // This button is only shown for homepage when accessibility is enabled and
         // OverviewListLayout is shown as the tab switcher instead of the start surface.
-        mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE,
+        mPropertyModel.set(NEW_TAB_VIEW_IS_VISIBLE,
                 isShownTabSwitcherState
                         || (ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                                 && !mIsTabGroupsAndroidContinuationEnabled));
+
+        updateNewTabViewAtStart();
+    }
+
+    private void updateNewTabViewAtStart() {
+        if (!mPropertyModel.get(NEW_TAB_VIEW_IS_VISIBLE)) return;
+        mPropertyModel.set(NEW_TAB_VIEW_AT_START, !mPropertyModel.get(HOME_BUTTON_IS_VISIBLE));
+        updateNewTabViewTextVisibility();
+    }
+
+    private void updateNewTabViewTextVisibility() {
+        // Show new tab view text view when new tab view is at start and incognito switch
+        // is hidden.
+        mPropertyModel.set(NEW_TAB_VIEW_TEXT_IS_VISIBLE,
+                mPropertyModel.get(NEW_TAB_VIEW_AT_START) && mHideIncognitoSwitchWhenNoTabs
+                        && !hasIncognitoTabs());
     }
 
     private void updateHomeButtonVisibility() {
@@ -435,6 +447,7 @@ class StartSurfaceToolbarMediator {
         // If start surface is not shown as the homepage, home button shouldn't be shown on tab
         // switcher page.
         mPropertyModel.set(HOME_BUTTON_IS_VISIBLE, shouldShow);
+        updateNewTabViewAtStart();
 
         // If the home button is shown, maybe show the IPH.
         if (mHomeButtonView != null && shouldShow) {
@@ -469,10 +482,30 @@ class StartSurfaceToolbarMediator {
         }
     }
 
-    private void updateShowAnimation(@StartSurfaceState int newState) {
+    private void updateShowAnimation(
+            @StartSurfaceState int newState, boolean shouldShowStartSurfaceToolbar) {
         mPropertyModel.set(SHOW_ANIMATION,
-                mIsAnimationEnabled && isOverviewState(newState)
-                        && isOverviewState(mStartSurfaceState) && newState != mStartSurfaceState);
+                shouldShowStartSurfaceToolbar && mIsAnimationEnabled
+                        && isSwitchingBetweenOverviews(mStartSurfaceState, newState));
+    }
+
+    private boolean isSwitchingBetweenOverviews(
+            @StartSurfaceState int previousState, @StartSurfaceState int newState) {
+        // The previousState should never be SHOWING states because if it's already on overview
+        // page, SHOWING state should've been updated to SHOWN state. The following transitions are
+        // handled:
+        // * SHOWN_HOMEPAGE -> SHOWING_TABSWITCHER
+        // * SHOWN_HOMEPAGE -> SHOWN_TABSWITCHER
+        // * SHOWN_TABSWITCHER -> SHOWING_HOMEPAGE
+        // * SHOWN_TABSWITCHER -> SHOWN_HOMEPAGE
+        return (previousState == StartSurfaceState.SHOWN_HOMEPAGE
+                       && newState == StartSurfaceState.SHOWING_TABSWITCHER)
+                || (previousState == StartSurfaceState.SHOWN_HOMEPAGE
+                        && newState == StartSurfaceState.SHOWN_TABSWITCHER)
+                || (previousState == StartSurfaceState.SHOWN_TABSWITCHER
+                        && newState == StartSurfaceState.SHOWING_HOMEPAGE)
+                || (previousState == StartSurfaceState.SHOWN_TABSWITCHER
+                        && newState == StartSurfaceState.SHOWN_HOMEPAGE);
     }
 
     @VisibleForTesting

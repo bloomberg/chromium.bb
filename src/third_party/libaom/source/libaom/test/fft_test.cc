@@ -126,12 +126,14 @@ TEST_P(FFT2DTest, Correct) {
 TEST_P(FFT2DTest, Benchmark) {
   int n = GetParam().n;
   float sum = 0;
-  for (int i = 0; i < 1000 * (64 - n); ++i) {
+  const int num_trials = 1000 * (64 - n);
+  for (int i = 0; i < num_trials; ++i) {
     input_[i % (n * n)] = 1;
     GetParam().fft(&input_[0], &temp_[0], &output_[0]);
     sum += output_[0];
     input_[i % (n * n)] = 0;
   }
+  EXPECT_NEAR(sum, num_trials, 1e-3);
 }
 
 INSTANTIATE_TEST_SUITE_P(C, FFT2DTest,
@@ -221,12 +223,14 @@ TEST_P(IFFT2DTest, Correctness) {
 TEST_P(IFFT2DTest, Benchmark) {
   int n = GetParam().n;
   float sum = 0;
-  for (int i = 0; i < 1000 * (64 - n); ++i) {
+  const int num_trials = 1000 * (64 - n);
+  for (int i = 0; i < num_trials; ++i) {
     input_[i % (n * n)] = 1;
     GetParam().ifft(&input_[0], &temp_[0], &output_[0]);
     sum += output_[0];
     input_[i % (n * n)] = 0;
   }
+  EXPECT_GE(sum, num_trials / 2);
 }
 INSTANTIATE_TEST_SUITE_P(
     C, IFFT2DTest,

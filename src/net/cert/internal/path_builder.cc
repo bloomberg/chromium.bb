@@ -169,6 +169,9 @@ class CertIssuersIter {
                   const TrustStore* trust_store,
                   base::SupportsUserData* debug_data);
 
+  CertIssuersIter(const CertIssuersIter&) = delete;
+  CertIssuersIter& operator=(const CertIssuersIter&) = delete;
+
   // Gets the next candidate issuer, or clears |*out| when all issuers have been
   // exhausted.
   void GetNextIssuer(IssuerEntry* out);
@@ -223,8 +226,6 @@ class CertIssuersIter {
       pending_async_requests_;
 
   base::SupportsUserData* debug_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertIssuersIter);
 };
 
 CertIssuersIter::CertIssuersIter(scoped_refptr<ParsedCertificate> in_cert,
@@ -331,13 +332,19 @@ void CertIssuersIter::SortRemainingIssuers() {
       [](const IssuerEntry& issuer1, const IssuerEntry& issuer2) {
         // TODO(crbug.com/635205): Add other prioritization hints. (See big list
         // of possible sorting hints in RFC 4158.)
+        const bool issuer1_self_issued = issuer1.cert->normalized_subject() ==
+                                         issuer1.cert->normalized_issuer();
+        const bool issuer2_self_issued = issuer2.cert->normalized_subject() ==
+                                         issuer2.cert->normalized_issuer();
         return std::tie(issuer1.trust_and_key_id_match_ordering,
+                        issuer2_self_issued,
                         // Newer(larger) notBefore & notAfter dates are
                         // preferred, hence |issuer2| is on the LHS of
                         // the comparison and |issuer1| on the RHS.
                         issuer2.cert->tbs().validity_not_before,
                         issuer2.cert->tbs().validity_not_after) <
                std::tie(issuer2.trust_and_key_id_match_ordering,
+                        issuer1_self_issued,
                         issuer1.cert->tbs().validity_not_before,
                         issuer1.cert->tbs().validity_not_after);
       });
@@ -448,6 +455,9 @@ class CertPathIter {
                const TrustStore* trust_store,
                base::SupportsUserData* debug_data);
 
+  CertPathIter(const CertPathIter&) = delete;
+  CertPathIter& operator=(const CertPathIter&) = delete;
+
   // Adds a CertIssuerSource to provide intermediates for use in path building.
   // The |*cert_issuer_source| must remain valid for the lifetime of the
   // CertPathIter.
@@ -477,8 +487,6 @@ class CertPathIter {
   const TrustStore* trust_store_;
 
   base::SupportsUserData* debug_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertPathIter);
 };
 
 CertPathIter::CertPathIter(scoped_refptr<ParsedCertificate> cert,

@@ -33,9 +33,9 @@ class MockConfigurationPolicyProvider;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 
-namespace chromeos {
+namespace ash {
 class DeviceStateMixin;
-}  // namespace chromeos
+}
 
 namespace policy {
 class DevicePolicyCrosTestHelper;
@@ -43,22 +43,22 @@ class DevicePolicyCrosTestHelper;
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-// A mixin that allows to force-install an extension/app via the device policy.
+// A mixin that allows to force-install an extension/app via user or device
+// policy.
 //
 // Encapsulates the following operations:
 // * generating a CRX file,
 // * generating an update manifest,
 // * hosting the update manifest and the CRX via an embedded test server,
-// * configuring the force installation in the device policy.
+// * configuring the force installation in the user/device policy.
 //
-// Example usage (for force-installing into the sign-in profile using the device
-// policy):
+// Example usage (for force-installing using the user-level policy):
 //
 //   class MyTestFixture : ... {
 //    protected:
 //     void SetUpOnMainThread() override {
 //       ...
-//       force_install_mixin_.InitWithDevicePolicyCrosTestHelper(...);
+//       force_install_mixin_.InitWithMockPolicyProvider(...);
 //     }
 //     ExtensionForceInstallMixin force_install_mixin_{&mixin_host_};
 //   };
@@ -72,7 +72,7 @@ class DevicePolicyCrosTestHelper;
 // * "/<extension_id>-<version>.crx" - CRX packages referred to by the update
 //   manifests.
 //
-// TODO(crbug.com/1090941): Add user policy, auto update.
+// TODO(crbug.com/1090941): Add auto update.
 class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
  public:
   // The type of the waiting mode for the force installation operation.
@@ -83,8 +83,6 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
     kPrefSet,
     // Wait until the extension is loaded.
     kLoad,
-    // Wait until the extension's background page is ready.
-    kBackgroundPageReady,
     // Wait until the extension's background page is loaded for the first time.
     kBackgroundPageFirstLoad,
   };
@@ -104,7 +102,7 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void InitWithDeviceStateMixin(Profile* profile,
-                                chromeos::DeviceStateMixin* device_state_mixin);
+                                ash::DeviceStateMixin* device_state_mixin);
   void InitWithDevicePolicyCrosTestHelper(
       Profile* profile,
       policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper);
@@ -141,9 +139,6 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
       const extensions::ExtensionId& extension_id) const;
   // Returns the extension, or null if it's not installed or not enabled yet.
   const extensions::Extension* GetEnabledExtension(
-      const extensions::ExtensionId& extension_id) const;
-  // Returns whether the installed extension's background page is ready.
-  bool IsExtensionBackgroundPageReady(
       const extensions::ExtensionId& extension_id) const;
 
   // InProcessBrowserTestMixin:
@@ -190,7 +185,7 @@ class ExtensionForceInstallMixin final : public InProcessBrowserTestMixin {
   Profile* profile_ = nullptr;
   policy::MockConfigurationPolicyProvider* mock_policy_provider_ = nullptr;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::DeviceStateMixin* device_state_mixin_ = nullptr;
+  ash::DeviceStateMixin* device_state_mixin_ = nullptr;
   policy::DevicePolicyCrosTestHelper* device_policy_cros_test_helper_ = nullptr;
 #endif
 };

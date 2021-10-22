@@ -291,6 +291,9 @@ class BrowserToPageConnector {
 // Throttle is owned externally by the navigation subsystem.
 class TargetHandler::Throttle : public content::NavigationThrottle {
  public:
+  Throttle(const Throttle&) = delete;
+  Throttle& operator=(const Throttle&) = delete;
+
   ~Throttle() override { CleanupPointers(); }
   TargetAutoAttacher* auto_attacher() const { return auto_attacher_; }
   void Clear();
@@ -315,8 +318,6 @@ class TargetHandler::Throttle : public content::NavigationThrottle {
  private:
   void CleanupPointers();
   TargetAutoAttacher* auto_attacher_;
-
-  DISALLOW_COPY_AND_ASSIGN(Throttle);
 };
 
 class TargetHandler::ResponseThrottle : public TargetHandler::Throttle {
@@ -399,6 +400,9 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                                          waiting_for_debugger);
     return id;
   }
+
+  Session(const Session&) = delete;
+  Session& operator=(const Session&) = delete;
 
   ~Session() override {
     if (!agent_host_)
@@ -539,9 +543,12 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
   DevToolsSession* devtools_session_ = nullptr;
   Throttle* throttle_ = nullptr;
   scoped_refptr<DevToolsThrottleHandle> service_worker_throttle_;
-  TargetAutoAttacher* auto_attacher_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(Session);
+  // This is needed to identify sessions associated with given
+  // AutoAttacher to properly support SetAttachedTargetsOfType()
+  // for a TargetHandler that serves as a client to multiple
+  // different TargetAttachers. We don't want a pointer here,
+  // because a session may survive the source AutoAttacher.
+  uintptr_t auto_attacher_id_ = 0;
 };
 
 void TargetHandler::Throttle::CleanupPointers() {
@@ -689,10 +696,8 @@ void TargetHandler::SetAutoAttachInternal(bool auto_attach,
     auto_attacher_->AddClient(this, wait_for_debugger_on_start,
                               std::move(callback));
   } else {
-    while (!auto_attached_sessions_.empty()) {
-      auto it = auto_attached_sessions_.begin();
-      AutoDetach(it->second->auto_attacher_, it->first);
-    }
+    while (!auto_attached_sessions_.empty())
+      auto_attached_sessions_.begin()->second->Detach(false);
     ClearThrottles();
     std::move(callback).Run();
   }
@@ -720,7 +725,7 @@ bool TargetHandler::AutoAttach(TargetAutoAttacher* source,
   std::string session_id =
       Session::Attach(this, host, waiting_for_debugger, flatten_auto_attach_);
   Session* session = attached_sessions_[session_id].get();
-  session->auto_attacher_ = source;
+  session->auto_attacher_id_ = reinterpret_cast<uintptr_t>(source);
   auto_attached_sessions_[host] = session;
   return true;
 }
@@ -742,7 +747,9 @@ void TargetHandler::SetAttachedTargetsOfType(
   for (auto& entry : old_sessions) {
     scoped_refptr<DevToolsAgentHost> host(entry.first);
     bool matches_type = type.empty() || host->GetType() == type;
-    if (matches_type && entry.second->auto_attacher_ == source &&
+    if (matches_type &&
+        entry.second->auto_attacher_id_ ==
+            reinterpret_cast<uintptr_t>(source) &&
         new_hosts.find(host) == new_hosts.end()) {
       AutoDetach(source, host.get());
     }
@@ -759,7 +766,12 @@ void TargetHandler::AutoAttacherDestroyed(TargetAutoAttacher* auto_attacher) {
     if (throttle->auto_attacher() == auto_attacher)
       throttle->Clear();
   }
-
+  for (auto& entry : auto_attached_sessions_) {
+    if (entry.second->auto_attacher_id_ ==
+        reinterpret_cast<uintptr_t>(auto_attacher)) {
+      entry.second->auto_attacher_id_ = 0;
+    }
+  }
   auto_attach_related_targets_.erase(auto_attacher);
 }
 

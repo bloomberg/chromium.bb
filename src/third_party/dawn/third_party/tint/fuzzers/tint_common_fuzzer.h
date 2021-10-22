@@ -15,6 +15,7 @@
 #ifndef FUZZERS_TINT_COMMON_FUZZER_H_
 #define FUZZERS_TINT_COMMON_FUZZER_H_
 
+#include <cassert>
 #include <cstring>
 #include <memory>
 #include <string>
@@ -23,88 +24,15 @@
 
 #include "include/tint/tint.h"
 
+#include "fuzzers/data_builder.h"
+
 namespace tint {
 namespace fuzzers {
 
-class Reader {
- public:
-  Reader(const uint8_t* data, size_t size);
-
-  bool failed() const { return failed_; }
-  const uint8_t* data() { return data_; }
-  size_t size() const { return size_; }
-
-  template <typename T>
-  T read() {
-    T out{};
-    read(&out, sizeof(T));
-    return out;
-  }
-
-  std::string string();
-
-  template <typename T>
-  std::vector<T> vector() {
-    auto count = read<uint8_t>();
-    auto size = static_cast<size_t>(count) * sizeof(T);
-    if (failed_ || size_ < size) {
-      mark_failed();
-      return {};
-    }
-    std::vector<T> out(count);
-    if (!out.empty()) {
-      memcpy(out.data(), data_, size);
-      data_ += size;
-      size_ -= size;
-    }
-    return out;
-  }
-
-  template <typename T>
-  std::vector<T> vector(T (*extract)(Reader*)) {
-    auto count = read<uint8_t>();
-    if (failed_) {
-      return {};
-    }
-    std::vector<T> out(count);
-    for (uint8_t i = 0; i < count; i++) {
-      out[i] = extract(this);
-      if (failed_) {
-        return {};
-      }
-    }
-    return out;
-  }
-  template <typename T>
-  T enum_class(uint8_t count) {
-    auto val = read<uint8_t>();
-    return static_cast<T>(val % count);
-  }
-
- private:
-  void mark_failed();
-  void read(void* out, size_t n);
-
-  const uint8_t* data_;
-  size_t size_;
-  bool failed_ = false;
-};
-
-void ExtractBindingRemapperInputs(Reader* r, tint::transform::DataMap* inputs);
-
-void ExtractFirstIndexOffsetInputs(Reader* r, tint::transform::DataMap* inputs);
-
-void ExtractSingleEntryPointInputs(Reader* r, tint::transform::DataMap* inputs);
-
-void ExtractVertexPullingInputs(Reader* r, tint::transform::DataMap* inputs);
-
-void ExtractSpirvOptions(Reader* r, writer::spirv::Options* options);
-
-void ExtractWgslOptions(Reader* r, writer::wgsl::Options* options);
-
-void ExtractHlslOptions(Reader* r, writer::hlsl::Options* options);
-
-void ExtractMslOptions(Reader* r, writer::msl::Options* options);
+void GenerateSpirvOptions(DataBuilder* b, writer::spirv::Options* options);
+void GenerateWgslOptions(DataBuilder* b, writer::wgsl::Options* options);
+void GenerateHlslOptions(DataBuilder* b, writer::hlsl::Options* options);
+void GenerateMslOptions(DataBuilder* b, writer::msl::Options* options);
 
 enum class InputFormat { kWGSL, kSpv, kNone };
 
@@ -115,9 +43,10 @@ class CommonFuzzer {
   explicit CommonFuzzer(InputFormat input, OutputFormat output);
   ~CommonFuzzer();
 
-  void SetTransformManager(transform::Manager* tm, transform::DataMap inputs) {
+  void SetTransformManager(transform::Manager* tm, transform::DataMap* inputs) {
+    assert((!tm || inputs) && "DataMap must be !nullptr if Manager !nullptr");
     transform_manager_ = tm;
-    transform_inputs_ = std::move(inputs);
+    transform_inputs_ = inputs;
   }
   void EnableInspector() { inspector_enabled_ = true; }
 
@@ -158,9 +87,9 @@ class CommonFuzzer {
  private:
   InputFormat input_;
   OutputFormat output_;
-  transform::Manager* transform_manager_;
-  transform::DataMap transform_inputs_;
-  bool inspector_enabled_;
+  transform::Manager* transform_manager_ = nullptr;
+  transform::DataMap* transform_inputs_ = nullptr;
+  bool inspector_enabled_ = false;
   bool dump_input_ = false;
   tint::diag::List diagnostics_;
 

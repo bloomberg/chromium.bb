@@ -134,7 +134,7 @@ namespace dawn_native { namespace metal {
 
         DAWN_TRY(mCommandContext.PrepareNextCommandBuffer(*mCommandQueue));
 
-        if (IsExtensionEnabled(Extension::TimestampQuery)) {
+        if (IsFeatureEnabled(Feature::TimestampQuery)) {
             // Make a best guess of timestamp period based on device vendor info, and converge it to
             // an accurate value by the following calculations.
             mTimestampPeriod =
@@ -214,6 +214,16 @@ namespace dawn_native { namespace metal {
         if (gpu_info::IsIntel(pciInfo.vendorId)) {
             SetToggle(Toggle::DisableR8RG8Mipmaps, true);
         }
+
+        // On some Intel GPU vertex only render pipeline get wrong depth result if no fragment
+        // shader provided. Create a dummy fragment shader module to work around this issue.
+        if (gpu_info::IsIntel(this->GetAdapter()->GetPCIInfo().vendorId)) {
+            bool useDummyFragmentShader = true;
+            if (gpu_info::IsSkylake(this->GetAdapter()->GetPCIInfo().deviceId)) {
+                useDummyFragmentShader = false;
+            }
+            SetToggle(Toggle::UseDummyFragmentInVertexOnlyPipeline, useDummyFragmentShader);
+        }
     }
 
     ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
@@ -245,9 +255,9 @@ namespace dawn_native { namespace metal {
         const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
         const RenderPipelineDescriptor* descriptor) {
-        return RenderPipeline::Create(this, descriptor);
+        return RenderPipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
@@ -275,13 +285,16 @@ namespace dawn_native { namespace metal {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
-    void Device::CreateComputePipelineAsyncImpl(
-        std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
-        size_t blueprintHash,
-        WGPUCreateComputePipelineAsyncCallback callback,
-        void* userdata) {
-        ComputePipeline::CreateAsync(this, std::move(descriptor), blueprintHash, callback,
-                                     userdata);
+    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                                size_t blueprintHash,
+                                                WGPUCreateComputePipelineAsyncCallback callback,
+                                                void* userdata) {
+        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
+    }
+    void Device::InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                                   WGPUCreateRenderPipelineAsyncCallback callback,
+                                                   void* userdata) {
+        RenderPipeline::InitializeAsync(renderPipeline, callback, userdata);
     }
 
     ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
@@ -299,8 +312,8 @@ namespace dawn_native { namespace metal {
     MaybeError Device::TickImpl() {
         DAWN_TRY(SubmitPendingCommandBuffer());
 
-        // Just run timestamp period calculation when timestamp extension is enabled.
-        if (IsExtensionEnabled(Extension::TimestampQuery)) {
+        // Just run timestamp period calculation when timestamp feature is enabled.
+        if (IsFeatureEnabled(Feature::TimestampQuery)) {
             if (@available(macos 10.15, iOS 14.0, *)) {
                 UpdateTimestampPeriod(GetMTLDevice(), mKalmanInfo.get(), &mCpuTimestamp,
                                       &mGpuTimestamp, &mTimestampPeriod);

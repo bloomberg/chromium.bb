@@ -10,6 +10,8 @@
 #include "ash/components/quick_answers/quick_answers_model.h"
 #include "ash/components/quick_answers/utils/quick_answers_utils.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/quick_answers/quick_answers_state.h"
+#include "ash/public/cpp/quick_answers/test_support/quick_answers_test_base.h"
 #include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -38,7 +40,7 @@ TextLanguagePtr DefaultLanguage() {
 
 }  // namespace
 
-class IntentGeneratorTest : public testing::Test {
+class IntentGeneratorTest : public QuickAnswersTestBase {
  public:
   IntentGeneratorTest() = default;
 
@@ -46,18 +48,18 @@ class IntentGeneratorTest : public testing::Test {
   IntentGeneratorTest& operator=(const IntentGeneratorTest&) = delete;
 
   void SetUp() override {
+    QuickAnswersTestBase::SetUp();
     intent_generator_ = std::make_unique<IntentGenerator>(
         base::BindOnce(&IntentGeneratorTest::IntentGeneratorTestCallback,
                        base::Unretained(this)));
 
-    intent_generator_->UseTextAnnotatorForTesting();
-
-    scoped_feature_list_.InitWithFeatures({features::kQuickAnswersTextAnnotator,
-                                           features::kQuickAnswersTranslation},
-                                          {});
+    QuickAnswersState::Get()->set_use_text_annotator_for_testing();
   }
 
-  void TearDown() override { intent_generator_.reset(); }
+  void TearDown() override {
+    intent_generator_.reset();
+    QuickAnswersTestBase::TearDown();
+  }
 
   void IntentGeneratorTestCallback(const IntentInfo& intent_info) {
     intent_info_ = intent_info;
@@ -218,27 +220,6 @@ TEST_F(IntentGeneratorTest, TranslationIntentWithAnnotation) {
   // translation.
   EXPECT_EQ(IntentType::kDictionary, intent_info_.intent_type);
   EXPECT_EQ("unfathomable", intent_info_.intent_text);
-}
-
-TEST_F(IntentGeneratorTest, TranslationIntentNotEnabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({features::kQuickAnswersTextAnnotator},
-                                       {features::kQuickAnswersTranslation});
-  std::vector<TextLanguagePtr> languages;
-  languages.push_back(DefaultLanguage());
-  UseFakeServiceConnection({}, languages);
-
-  QuickAnswersRequest request;
-  request.selected_text = "quick answers";
-  request.context.device_properties.language = "es";
-  request.context.device_properties.preferred_languages = "es";
-  intent_generator_->GenerateIntent(request);
-
-  task_environment_.RunUntilIdle();
-
-  // Should not generate translation intent since the feature is not enabled.
-  EXPECT_EQ(IntentType::kUnknown, intent_info_.intent_type);
-  EXPECT_EQ("quick answers", intent_info_.intent_text);
 }
 
 TEST_F(IntentGeneratorTest, TranslationIntentDeviceLanguageNotSet) {

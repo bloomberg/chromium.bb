@@ -61,7 +61,7 @@ suite('OsPairedBluetoothListItemTest', function() {
         };
         const getBatteryInfo = () => {
           return pairedBluetoothListItem.shadowRoot.querySelector(
-              'os-settings-bluetooth-device-battery-info');
+              'bluetooth-device-battery-info');
         };
         const getDeviceTypeIcon = () => {
           return pairedBluetoothListItem.shadowRoot.querySelector(
@@ -103,7 +103,9 @@ suite('OsPairedBluetoothListItemTest', function() {
         assertTrue(!!getDeviceName());
         assertEquals(getDeviceName().innerText, nickname);
         assertTrue(!!getBatteryInfo());
-        assertEquals(getBatteryInfo().device, pairedBluetoothListItem.device);
+        assertEquals(
+            getBatteryInfo().device,
+            pairedBluetoothListItem.device.deviceProperties);
         assertEquals(
             getItemA11yLabel(),
             pairedBluetoothListItem.i18n(
@@ -122,7 +124,7 @@ suite('OsPairedBluetoothListItemTest', function() {
 
     const getBatteryInfo = () => {
       return pairedBluetoothListItem.shadowRoot.querySelector(
-          'os-settings-bluetooth-device-battery-info');
+          'bluetooth-device-battery-info');
     };
 
     await setBatteryPercentage(-10);

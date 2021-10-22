@@ -175,9 +175,6 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
 
   FloatRect old_boundaries = ObjectBoundingBox();
 
-  // Make sure we don't wrap text.
-  SetOverrideLogicalWidth(LayoutUnit::Max());
-
   UpdateNGBlockLayout();
   needs_update_bounding_box_ = true;
 
@@ -214,7 +211,7 @@ FloatRect LayoutNGSVGText::ObjectBoundingBox() const {
           continue;
         // Do not use item.RectInContainerFragment() in order to avoid
         // precision loss.
-        bbox.Unite(item.ObjectBoundingBox());
+        bbox.Unite(item.ObjectBoundingBox(*fragment.Items()));
       }
     }
     bounding_box_ = bbox;
@@ -238,6 +235,17 @@ FloatRect LayoutNGSVGText::VisualRectInLocalSVGCoordinates() const {
   if (box.IsEmpty())
     return FloatRect();
   return SVGLayoutSupport::ComputeVisualRectForText(*this, box);
+}
+
+void LayoutNGSVGText::AbsoluteQuads(Vector<FloatQuad>& quads,
+                                    MapCoordinatesFlags mode) const {
+  NOT_DESTROYED();
+  quads.push_back(LocalToAbsoluteQuad(StrokeBoundingBox(), mode));
+}
+
+FloatRect LayoutNGSVGText::LocalBoundingBoxRectForAccessibility() const {
+  NOT_DESTROYED();
+  return StrokeBoundingBox();
 }
 
 bool LayoutNGSVGText::NodeAtPoint(HitTestResult& result,

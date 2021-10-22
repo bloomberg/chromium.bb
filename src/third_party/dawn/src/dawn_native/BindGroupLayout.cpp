@@ -18,7 +18,9 @@
 
 #include "dawn_native/ChainUtils_autogen.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectBase.h"
 #include "dawn_native/ObjectContentHasher.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/PerStage.h"
 #include "dawn_native/ValidationUtils_autogen.h"
 
@@ -56,8 +58,9 @@ namespace dawn_native {
                     return {};
 
                 case wgpu::TextureViewDimension::Undefined:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
     }  // anonymous namespace
 
@@ -149,12 +152,6 @@ namespace dawn_native {
                 if (storageTexture.access == wgpu::StorageTextureAccess::WriteOnly) {
                     allowedStages &= ~wgpu::ShaderStage::Vertex;
                 }
-
-                // TODO(crbug.com/dawn/1025): Remove after the deprecation period.
-                if (storageTexture.access == wgpu::StorageTextureAccess::ReadOnly) {
-                    device->EmitDeprecationWarning(
-                        "Readonly storage textures are deprecated and will be removed.");
-                }
             }
 
             const ExternalTextureBindingLayout* externalTextureBindingLayout = nullptr;
@@ -185,7 +182,6 @@ namespace dawn_native {
 
     namespace {
 
-
         bool operator!=(const BindingInfo& a, const BindingInfo& b) {
             if (a.visibility != b.visibility || a.bindingType != b.bindingType) {
                 return true;
@@ -209,6 +205,7 @@ namespace dawn_native {
                 case BindingInfoType::ExternalTexture:
                     return false;
             }
+            UNREACHABLE();
         }
 
         bool IsBufferBinding(const BindGroupLayoutEntry& binding) {
@@ -364,7 +361,7 @@ namespace dawn_native {
     BindGroupLayoutBase::BindGroupLayoutBase(DeviceBase* device,
                                              const BindGroupLayoutDescriptor* descriptor,
                                              PipelineCompatibilityToken pipelineCompatibilityToken)
-        : CachedObject(device, kLabelNotImplemented),
+        : ApiObjectBase(device, kLabelNotImplemented),
           mBindingInfo(BindingIndex(descriptor->entryCount)),
           mPipelineCompatibilityToken(pipelineCompatibilityToken) {
         std::vector<BindGroupLayoutEntry> sortedBindings(
@@ -391,7 +388,7 @@ namespace dawn_native {
     }
 
     BindGroupLayoutBase::BindGroupLayoutBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-        : CachedObject(device, tag) {
+        : ApiObjectBase(device, tag) {
     }
 
     BindGroupLayoutBase::~BindGroupLayoutBase() {
@@ -404,6 +401,10 @@ namespace dawn_native {
     // static
     BindGroupLayoutBase* BindGroupLayoutBase::MakeError(DeviceBase* device) {
         return new BindGroupLayoutBase(device, ObjectBase::kError);
+    }
+
+    ObjectType BindGroupLayoutBase::GetType() const {
+        return ObjectType::BindGroupLayout;
     }
 
     const BindGroupLayoutBase::BindingMap& BindGroupLayoutBase::GetBindingMap() const {

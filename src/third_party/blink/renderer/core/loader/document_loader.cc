@@ -75,7 +75,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -99,6 +98,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -267,7 +267,6 @@ struct SameSizeAsDocumentLoader
   WebNavigationType navigation_type;
   DocumentLoadTiming document_load_timing;
   base::TimeTicks time_of_last_data_received;
-  Member<ApplicationCacheHostForFrame> application_cache_host;
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider;
   DocumentPolicy::ParsedDocumentPolicy document_policy;
@@ -562,7 +561,6 @@ LocalFrameClient& DocumentLoader::GetLocalFrameClient() const {
 
 DocumentLoader::~DocumentLoader() {
   DCHECK(!frame_);
-  DCHECK(!application_cache_host_);
   DCHECK_EQ(state_, kSentDidFinishLoad);
 }
 
@@ -573,7 +571,6 @@ void DocumentLoader::Trace(Visitor* visitor) const {
   visitor->Trace(parser_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(document_load_timing_);
-  visitor->Trace(application_cache_host_);
   visitor->Trace(cached_metadata_handler_);
   visitor->Trace(prefetched_signed_exchange_manager_);
   visitor->Trace(use_counter_);
@@ -1193,7 +1190,6 @@ DocumentPolicy::ParsedDocumentPolicy DocumentLoader::CreateDocumentPolicy() {
 
 void DocumentLoader::HandleResponse() {
   DCHECK(frame_);
-  application_cache_host_->DidReceiveResponseForMainResource(response_);
 
   if (response_.IsHTTP() && !cors::IsOkStatus(response_.HttpStatusCode())) {
     DCHECK(!IsA<HTMLObjectElement>(frame_->Owner()));
@@ -1480,10 +1476,6 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   if (!frame_)
     return;
 
-  if (application_cache_host_) {
-    application_cache_host_->Detach();
-    application_cache_host_.Clear();
-  }
   service_worker_network_provider_ = nullptr;
   WeakIdentifierMap<DocumentLoader>::NotifyObjectDestroyed(this);
   frame_ = nullptr;
@@ -1528,10 +1520,6 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK_EQ(state_, kNotStarted);
   DCHECK(params_);
   state_ = kProvisional;
-  application_cache_host_ = MakeGarbageCollected<ApplicationCacheHostForFrame>(
-      this, GetFrame()->Client()->GetBrowserInterfaceBroker(),
-      GetFrame()->GetTaskRunner(TaskType::kNetworking),
-      params_->appcache_host_id);
 
   if (url_.IsEmpty() && commit_reason_ != CommitReason::kInitialization)
     url_ = BlankURL();
@@ -1560,11 +1548,6 @@ void DocumentLoader::StartLoadingInternal() {
           url_.GetString(),
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   virtual_time_pauser_.PauseVirtualTime();
-
-  if (!archive_) {
-    application_cache_host_->WillStartLoadingMainResource(this, url_,
-                                                          http_method_);
-  }
 
   // Many parties are interested in resource loading, so we will notify
   // them through various DispatchXXX methods on FrameFetchContext.
@@ -1776,6 +1759,11 @@ void DocumentLoader::DidCommitNavigation() {
         SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
         {SchedulingPolicy::DisableBackForwardCache()});
   }
+
+  // Reset the global |FontPerformance| counter.
+  if (GetFrame()->IsMainFrame() &&
+      GetFrame()->GetDocument()->ShouldMarkFontPerformance())
+    FontPerformance::Reset();
 
   // When a new navigation commits in the frame, subresource loading should be
   // resumed.
@@ -2448,18 +2436,6 @@ void DocumentLoader::CreateParserPostCommit() {
     window->GetOriginTrialContext()->AddForceEnabledTrials(
         force_enabled_origin_trials_);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // Enable Auto Picture-in-Picture feature for the built-in Chrome OS Video
-    // Player app.
-    const url::Origin origin = window->GetSecurityOrigin()->ToUrlOrigin();
-    if (CommonSchemeRegistry::IsExtensionScheme(origin.scheme()) &&
-        origin.DomainIs("jcgeabjmjgoblfofpppfkcoakmfobdko") &&
-        origin.port() == 0) {
-      window->GetOriginTrialContext()->AddFeature(
-          OriginTrialFeature::kAutoPictureInPicture);
-    }
-#endif
-
     OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
         window, &initiator_origin_trial_features_);
   }
@@ -2579,8 +2555,8 @@ void DocumentLoader::RecordUseCountersForCommit() {
     CountUse(WebFeature::kRequiredDocumentPolicy);
 
   FrameClientHintsPreferencesContext hints_context(frame_);
-  for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
-    auto type = static_cast<network::mojom::WebClientHintsType>(i);
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& type = elem.first;
     if (client_hints_preferences_.ShouldSend(type))
       hints_context.CountClientHints(type);
   }
@@ -2648,7 +2624,7 @@ base::TimeDelta DocumentLoader::RemainingTimeToLCPLimit() const {
   DCHECK(!document_load_timing_.NavigationStart().is_null());
   base::TimeTicks lcp_limit =
       document_load_timing_.NavigationStart() +
-      base::TimeDelta::FromMilliseconds(
+      base::Milliseconds(
           features::kAlignFontDisplayAutoTimeoutWithLCPGoalTimeoutParam.Get());
   base::TimeTicks now = clock_->NowTicks();
   if (now < lcp_limit)

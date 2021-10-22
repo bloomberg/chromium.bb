@@ -52,7 +52,6 @@ const CGFloat kArrowDownMargin = 12.;
     _arrowImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _arrowDirection = IdentityButtonControlArrowDown;
     [self updateArrowDirection];
-    _arrowImageView.tintColor = [UIColor colorNamed:kTextPrimaryColor];
     [self addSubview:_arrowImageView];
 
     // Main view with avatar, name and email.
@@ -81,9 +80,7 @@ const CGFloat kArrowDownMargin = 12.;
     AddSameCenterYConstraint(self, _arrowImageView);
     ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
 
-    if (@available(iOS 13.4, *)) {
-      [self addInteraction:[[ViewPointerInteraction alloc] init]];
-    }
+    [self addInteraction:[[ViewPointerInteraction alloc] init]];
 
     // Accessibility.
     self.isAccessibilityElement = YES;
@@ -142,6 +139,7 @@ const CGFloat kArrowDownMargin = 12.;
       break;
     case IdentityButtonControlArrowDown:
       image = [UIImage imageNamed:@"identity_picker_view_arrow_down"];
+      tintColor = [UIColor colorNamed:kTextQuaternaryColor];
       break;
   }
   DCHECK(image);

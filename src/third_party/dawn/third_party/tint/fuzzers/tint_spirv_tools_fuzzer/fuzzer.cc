@@ -21,6 +21,7 @@
 #include "fuzzers/tint_common_fuzzer.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/cli.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/mutator_cache.h"
+#include "fuzzers/tint_spirv_tools_fuzzer/override_cli_params.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/spirv_fuzz_mutator.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/spirv_opt_mutator.h"
 #include "fuzzers/tint_spirv_tools_fuzzer/spirv_reduce_mutator.h"
@@ -33,7 +34,7 @@ namespace spvtools_fuzzer {
 namespace {
 
 struct Context {
-  const FuzzerCliParams params;
+  FuzzerCliParams params;
   std::unique_ptr<MutatorCache> mutator_cache;
 };
 
@@ -46,6 +47,7 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
           ? std::make_unique<MutatorCache>(params.mutator_cache_size)
           : nullptr;
   context = new Context{std::move(params), std::move(mutator_cache)};
+  OverrideCliParams(context->params);
   return 0;
 }
 
@@ -68,7 +70,8 @@ std::unique_ptr<Mutator> CreateMutator(const std::vector<uint32_t>& binary,
 
   assert(!types.empty() && "At least one mutator type must be specified");
   RandomGenerator generator(seed);
-  auto mutator_type = types[generator.GetUInt64(types.size())];
+  auto mutator_type =
+      types[generator.GetUInt32(static_cast<uint32_t>(types.size()))];
 
   const auto& mutator_params = context->params.mutator_params;
   switch (mutator_type) {

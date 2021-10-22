@@ -92,7 +92,7 @@ const uint32_t kPrivateFootprintKb = 2;
 const uint32_t kSharedFootprintKb = 3;
 
 const base::TimeTicks kTimestamp =
-    base::TimeTicks() + base::TimeDelta::FromMicroseconds(100000);
+    base::TimeTicks() + base::Microseconds(100000);
 const uint64_t kTimestampProto = kTimestamp.since_origin().InNanoseconds();
 
 uint64_t GetFakeAddrForVmRegion(int pid, int region_index) {
@@ -130,8 +130,8 @@ memory_instrumentation::mojom::OSMemDump GetFakeOSMemDump(
   );
 }
 
-// crbug.com/1242040: flaky on linux, chromeos and lacros
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// crbug.com/1242040: flaky on linux, chromeos
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_AddChromeDumpToTraceIfEnabled_When_TraceLog_Disabled \
   DISABLED_AddChromeDumpToTraceIfEnabled_When_TraceLog_Disabled
 #else

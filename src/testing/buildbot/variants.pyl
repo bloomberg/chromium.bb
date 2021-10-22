@@ -44,50 +44,56 @@
     },
     'identifier': 'iPhone 6S 12.3.1'
   },
+  'LACROS_TOT': {
+    'args': [
+      '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.filter',
+    ],
+    'identifier': 'Lacros plus ToT ash',
+  },
   'LACROS_VERSION_SKEW_CANARY': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v97.0.4668.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v97.0.4674.0/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 97.0.4668.0',
+    'identifier': 'Lacros version skew testing ash 97.0.4674.0',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v97.0.4668.0',
-          'revision': 'version:97.0.4668.0',
+          'location': 'lacros_version_skew_tests_v97.0.4674.0',
+          'revision': 'version:97.0.4674.0',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_DEV': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v96.0.4657.0/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v96.0.4664.9/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 96.0.4657.0',
+    'identifier': 'Lacros version skew testing ash 96.0.4664.9',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v96.0.4657.0',
-          'revision': 'version:96.0.4657.0',
+          'location': 'lacros_version_skew_tests_v96.0.4664.9',
+          'revision': 'version:96.0.4664.9',
         },
       ],
     },
   },
   'LACROS_VERSION_SKEW_BETA': {
     'args': [
-      '--ash-chrome-path-override=../../lacros_version_skew_tests_v94.0.4606.77/test_ash_chrome',
+      '--ash-chrome-path-override=../../lacros_version_skew_tests_v94.0.4606.97/test_ash_chrome',
       '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter',
     ],
-    'identifier': 'Lacros version skew testing ash 94.0.4606.77',
+    'identifier': 'Lacros version skew testing ash 94.0.4606.97',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/linux-ash-chromium/x86_64/ash.zip',
-          'location': 'lacros_version_skew_tests_v94.0.4606.77',
-          'revision': 'version:94.0.4606.77',
+          'location': 'lacros_version_skew_tests_v94.0.4606.97',
+          'revision': 'version:94.0.4606.97',
         },
       ],
     },
@@ -370,18 +376,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M94/out/Release',
+      '../../weblayer_instrumentation_test_M95/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=94',
+      '--impl-version=95',
     ],
-    'identifier': 'with_impl_from_94',
+    'identifier': 'with_impl_from_95',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.43',
+          'location': 'weblayer_instrumentation_test_M95',
+          'revision': 'version:95.0.4638.43',
         }
       ],
     },
@@ -394,18 +400,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M93/out/Release',
+      '../../weblayer_instrumentation_test_M94/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=93',
+      '--impl-version=94',
     ],
-    'identifier': 'with_impl_from_93',
+    'identifier': 'with_impl_from_94',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.79',
+          'location': 'weblayer_instrumentation_test_M94',
+          'revision': 'version:94.0.4606.81',
         }
       ],
     },
@@ -442,18 +448,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M94/out/Release',
+      '../../weblayer_instrumentation_test_M95/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=94',
+      '--impl-version=95',
     ],
-    'identifier': 'with_impl_from_94',
+    'identifier': 'with_impl_from_95',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.43',
+          'location': 'weblayer_instrumentation_test_M95',
+          'revision': 'version:95.0.4638.43',
         }
       ],
     },
@@ -466,18 +472,18 @@
       '--client-outdir',
       '.',
       '--implementation-outdir',
-      '../../weblayer_instrumentation_test_M93/out/Release',
+      '../../weblayer_instrumentation_test_M94/out/Release',
       '--test-expectations',
       '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--impl-version=93',
+      '--impl-version=94',
     ],
-    'identifier': 'with_impl_from_93',
+    'identifier': 'with_impl_from_94',
     'swarming': {
       'cipd_packages': [
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.79',
+          'location': 'weblayer_instrumentation_test_M94',
+          'revision': 'version:94.0.4606.81',
         }
       ],
     },
@@ -512,6 +518,30 @@
       '--test-runner-outdir',
       '.',
       '--client-outdir',
+      '../../weblayer_instrumentation_test_M95/out/Release',
+      '--implementation-outdir',
+      '.',
+      '--test-expectations',
+      '../../weblayer/browser/android/javatests/skew/expectations.txt',
+      '--client-version=95',
+    ],
+    'identifier': 'with_client_from_95',
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/testing/weblayer-x86',
+          'location': 'weblayer_instrumentation_test_M95',
+          'revision': 'version:95.0.4638.43',
+        }
+      ],
+    },
+  },
+  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE': {
+    'args': [
+      '--webview-apk-path=apks/SystemWebView.apk',
+      '--test-runner-outdir',
+      '.',
+      '--client-outdir',
       '../../weblayer_instrumentation_test_M94/out/Release',
       '--implementation-outdir',
       '.',
@@ -525,31 +555,7 @@
         {
           'cipd_package': 'chromium/testing/weblayer-x86',
           'location': 'weblayer_instrumentation_test_M94',
-          'revision': 'version:94.0.4606.43',
-        }
-      ],
-    },
-  },
-  'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE': {
-    'args': [
-      '--webview-apk-path=apks/SystemWebView.apk',
-      '--test-runner-outdir',
-      '.',
-      '--client-outdir',
-      '../../weblayer_instrumentation_test_M93/out/Release',
-      '--implementation-outdir',
-      '.',
-      '--test-expectations',
-      '../../weblayer/browser/android/javatests/skew/expectations.txt',
-      '--client-version=93',
-    ],
-    'identifier': 'with_client_from_93',
-    'swarming': {
-      'cipd_packages': [
-        {
-          'cipd_package': 'chromium/testing/weblayer-x86',
-          'location': 'weblayer_instrumentation_test_M93',
-          'revision': 'version:93.0.4577.79',
+          'revision': 'version:94.0.4606.81',
         }
       ],
     },
@@ -578,54 +584,96 @@
       ],
     },
   },
-  'CROS_ATLAS_TOT': {
+  'CROS_ATLAS_LKGM': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R96-14200.0.0',
+      'cros_img': 'atlas-release/R96-14263.0.0',
     },
-    'identifier': 'ATLAS_TOT',
+    'identifier': 'ATLAS_LKGM',
   },
-  'CROS_ATLAS_TOT-1': {
+  'CROS_ATLAS_DEV': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R94-14150.17.0',
+      'cros_img': 'atlas-release/R96-14244.0.0',
     },
-    'identifier': 'ATLAS_TOT-1',
+    'identifier': 'ATLAS_DEV',
   },
-  'CROS_ATLAS_TOT-2': {
+  'CROS_ATLAS_BETA': {
     'skylab': {
       'cros_board': 'atlas',
-      'cros_img': 'atlas-release/R93-14092.46.0',
+      'cros_img': 'atlas-release/R94-14150.46.0',
     },
-    'identifier': 'ATLAS_TOT-2',
+    'identifier': 'ATLAS_BETA',
   },
-  'CROS_EVE_TOT': {
+  'CROS_ATLAS_STABLE': {
+    'skylab': {
+      'cros_board': 'atlas',
+      'cros_img': 'atlas-release/R93-14092.66.0',
+    },
+    'identifier': 'ATLAS_STABLE',
+  },
+  'CROS_EVE_LKGM': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R96-14200.0.0',
+      'cros_img': 'eve-release/R96-14263.0.0',
     },
-    'identifier': 'EVE_TOT',
+    'identifier': 'EVE_LKGM',
   },
-  'CROS_EVE_TOT-1': {
+  'CROS_EVE_DEV': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R94-14150.17.0',
+      'cros_img': 'eve-release/R96-14244.0.0',
     },
-    'identifier': 'EVE_TOT-1',
+    'identifier': 'EVE_DEV',
   },
-  'CROS_EVE_TOT-2': {
+  'CROS_EVE_BETA': {
     'skylab': {
       'cros_board': 'eve',
-      'cros_img': 'eve-release/R93-14092.46.0',
+      'cros_img': 'eve-release/R94-14150.46.0',
     },
-    'identifier': 'EVE_TOT-2',
+    'identifier': 'EVE_BETA',
   },
-  'CROS_KEVIN_TOT': {
+  'CROS_EVE_STABLE': {
+    'skylab': {
+      'cros_board': 'eve',
+      'cros_img': 'eve-release/R93-14092.66.0',
+    },
+    'identifier': 'EVE_STABLE',
+  },
+  'CROS_KEVIN_LKGM': {
     'skylab': {
       'cros_board': 'kevin',
-      'cros_img': 'kevin-release/R96-14200.0.0',
+      'cros_img': 'kevin-release/R96-14263.0.0',
     },
-    'identifier': 'KEVIN_TOT',
+    'identifier': 'KEVIN_LKGM',
+  },
+  'CROS_OCTOPUS_LKGM': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_img': 'octopus-release/R96-14263.0.0',
+    },
+    'identifier': 'OCTOPUS_LKGM',
+  },
+  'CROS_OCTOPUS_DEV': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_img': 'octopus-release/R96-14244.0.0',
+    },
+    'identifier': 'OCTOPUS_DEV',
+  },
+  'CROS_OCTOPUS_BETA': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_img': 'octopus-release/R94-14150.46.0',
+    },
+    'identifier': 'OCTOPUS_BETA',
+  },
+  'CROS_OCTOPUS_STABLE': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_img': 'octopus-release/R93-14092.66.0',
+    },
+    'identifier': 'OCTOPUS_STABLE',
   },
   'LACROS_AMD64_GENERIC': {
     'args': [

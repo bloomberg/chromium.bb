@@ -22,6 +22,14 @@
 #include "base/android/build_info.h"
 #endif
 
+namespace {
+
+// FieldTrialParams for `DynamicSchedulerForDraw` and
+// `kDynamicSchedulerForClients`.
+const char kDynamicSchedulerPercentile[] = "percentile";
+
+}  // namespace
+
 namespace features {
 
 // Enables the use of CPU scheduling APIs on Android.
@@ -111,12 +119,6 @@ const base::Feature kUseSetPresentDuration{"UseSetPresentDuration",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // OS_WIN
 
-#if defined(USE_X11)
-// Uses X11 Present Extensions instead of the Vulkan swapchain for presenting.
-const base::Feature kUseX11Present{"UseX11Present",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 // Enables platform supported delegated ink trails instead of Skia backed
 // delegated ink trails.
 const base::Feature kUsePlatformDelegatedInk{"UsePlatformDelegatedInk",
@@ -146,6 +148,13 @@ const char kDraw1Point12Ms[] = "1-pt-12ms";
 const char kDraw2Points6Ms[] = "2-pt-6ms";
 const char kDraw1Point6Ms[] = "1-pt-6ms";
 const char kDraw2Points3Ms[] = "2-pt-3ms";
+
+// Used by Viz to parameterize adjustments to scheduler deadlines.
+const base::Feature kDynamicSchedulerForDraw{"DynamicSchedulerForDraw",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+// User to parameterize adjustments to clients' deadlines.
+const base::Feature kDynamicSchedulerForClients{
+    "DynamicSchedulerForClients", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAdpfEnabled() {
   // TODO(crbug.com/1157620): Limit this to correct android version.
@@ -272,6 +281,32 @@ bool UseSurfaceLayerForVideo() {
 
 bool IsSurfaceSyncThrottling() {
   return base::FeatureList::IsEnabled(kSurfaceSyncThrottling);
+}
+
+// Used by Viz to determine if viz::DisplayScheduler should dynamically adjust
+// its frame deadline. Returns the percentile of historic draw times to base the
+// deadline on. Or absl::nullopt if the feature is disabled.
+absl::optional<double> IsDynamicSchedulerEnabledForDraw() {
+  if (!base::FeatureList::IsEnabled(kDynamicSchedulerForDraw))
+    return absl::nullopt;
+  double result = base::GetFieldTrialParamByFeatureAsDouble(
+      kDynamicSchedulerForDraw, kDynamicSchedulerPercentile, -1.0);
+  if (result < 0.0)
+    return absl::nullopt;
+  return result;
+}
+
+// Used by Viz to determine if the frame deadlines provided to CC should be
+// dynamically adjusted. Returns the percentile of historic draw times to base
+// the deadline on. Or absl::nullopt if the feature is disabled.
+absl::optional<double> IsDynamicSchedulerEnabledForClients() {
+  if (!base::FeatureList::IsEnabled(kDynamicSchedulerForClients))
+    return absl::nullopt;
+  double result = base::GetFieldTrialParamByFeatureAsDouble(
+      kDynamicSchedulerForClients, kDynamicSchedulerPercentile, -1.0);
+  if (result < 0.0)
+    return absl::nullopt;
+  return result;
 }
 
 }  // namespace features

@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/cxx17_backports.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
@@ -38,7 +40,9 @@ namespace {
 
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
+using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::StrEq;
 
 // Keep it in-sync with the `kFinalFallbackName` returned by
 // net::GetSuggestedFilename().
@@ -135,15 +139,15 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
  public:
   // Public for testing.
   using PdfViewPluginBase::accessibility_state;
-  using PdfViewPluginBase::document_load_state;
-  using PdfViewPluginBase::edit_mode;
   using PdfViewPluginBase::engine;
   using PdfViewPluginBase::full_frame;
   using PdfViewPluginBase::HandleMessage;
-  using PdfViewPluginBase::InitializeEngine;
   using PdfViewPluginBase::LoadUrl;
-  using PdfViewPluginBase::set_document_load_state;
-  using PdfViewPluginBase::set_full_frame;
+  using PdfViewPluginBase::SetZoom;
+  using PdfViewPluginBase::UpdateGeometryOnPluginRectChanged;
+  using PdfViewPluginBase::UpdateScroll;
+
+  MOCK_METHOD(std::string, GetURL, (), (override));
 
   MOCK_METHOD(bool, Confirm, (const std::string&), (override));
 
@@ -185,8 +189,6 @@ class FakePdfViewPluginBase : public PdfViewPluginBase {
               CreateUrlLoaderInternal,
               (),
               (override));
-
-  MOCK_METHOD(void, DidOpen, (std::unique_ptr<UrlLoader>, int32_t), (override));
 
   void SendMessage(base::Value message) override {
     sent_messages_.push_back(std::move(message));
@@ -383,7 +385,24 @@ class PdfViewPluginBaseWithEngineTest : public PdfViewPluginBaseTest {
   void SetUp() override {
     auto engine =
         std::make_unique<testing::NiceMock<TestPDFiumEngine>>(&fake_plugin_);
-    fake_plugin_.InitializeEngine(std::move(engine));
+    fake_plugin_.InitializeEngineForTesting(std::move(engine));
+  }
+
+ protected:
+  void SendDefaultViewportMessage() {
+    fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+      "type": "viewport",
+      "userInitiated": false,
+      "zoom": 1,
+      "layoutOptions": {
+        "direction": 2,
+        "defaultPageOrientation": 0,
+        "twoUpViewEnabled": false,
+      },
+      "xOffset": 0,
+      "yOffset": 0,
+      "pinchPhase": 0,
+    })"));
   }
 };
 
@@ -400,7 +419,7 @@ class PdfViewPluginBaseWithDocInfoTest
   void SetUp() override {
     std::unique_ptr<TestPDFiumEngineWithDocInfo> engine =
         std::make_unique<TestPDFiumEngineWithDocInfo>(&fake_plugin_);
-    fake_plugin_.InitializeEngine(std::move(engine));
+    fake_plugin_.InitializeEngineForTesting(std::move(engine));
 
     // Initialize some arbitrary document information for the engine.
     static_cast<TestPDFiumEngineWithDocInfo*>(fake_plugin_.engine())
@@ -481,8 +500,22 @@ TEST_F(PdfViewPluginBaseTest, DocumentLoadProgressResetByLoadUrl) {
   })")));
 }
 
+TEST_F(PdfViewPluginBaseTest,
+       DocumentLoadProgressNotResetByLoadUrlWithPrintPreview) {
+  fake_plugin_.DocumentLoadProgress(2, 100);
+  fake_plugin_.clear_sent_messages();
+  EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).WillOnce([]() {
+    return std::make_unique<testing::NiceMock<MockUrlLoader>>();
+  });
+
+  fake_plugin_.LoadUrl("fake-url", /*is_print_preview=*/true);
+  fake_plugin_.DocumentLoadProgress(3, 100);
+
+  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
+}
+
 TEST_F(PdfViewPluginBaseTest, CreateUrlLoaderInFullFrame) {
-  fake_plugin_.set_full_frame(true);
+  fake_plugin_.set_full_frame_for_testing(true);
   ASSERT_TRUE(fake_plugin_.full_frame());
 
   EXPECT_FALSE(fake_plugin_.GetDidCallStartLoadingForTesting());
@@ -510,13 +543,13 @@ TEST_F(PdfViewPluginBaseTest, CreateUrlLoaderWithoutFullFrame) {
 TEST_F(PdfViewPluginBaseWithDocInfoTest,
        DocumentLoadCompleteInFullFramePdfViewerWithAccessibilityEnabled) {
   // Notify the render frame about document loading.
-  fake_plugin_.set_full_frame(true);
+  fake_plugin_.set_full_frame_for_testing(true);
   ASSERT_TRUE(fake_plugin_.full_frame());
   fake_plugin_.CreateUrlLoader();
 
   ASSERT_FALSE(fake_plugin_.IsPrintPreview());
   ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
 
   // Change the accessibility state to pending so that accessibility can be
   // loaded later.
@@ -534,7 +567,7 @@ TEST_F(PdfViewPluginBaseWithDocInfoTest,
 
   fake_plugin_.DocumentLoadComplete();
   EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kComplete,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_EQ(PdfViewPluginBase::AccessibilityState::kLoaded,
             fake_plugin_.accessibility_state());
 
@@ -553,13 +586,13 @@ TEST_F(PdfViewPluginBaseWithDocInfoTest,
 TEST_F(PdfViewPluginBaseWithDocInfoTest,
        DocumentLoadCompleteInFullFramePdfViewerWithAccessibilityDisabled) {
   // Notify the render frame about document loading.
-  fake_plugin_.set_full_frame(true);
+  fake_plugin_.set_full_frame_for_testing(true);
   ASSERT_TRUE(fake_plugin_.full_frame());
   fake_plugin_.CreateUrlLoader();
 
   ASSERT_FALSE(fake_plugin_.IsPrintPreview());
   ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   ASSERT_EQ(PdfViewPluginBase::AccessibilityState::kOff,
             fake_plugin_.accessibility_state());
 
@@ -574,7 +607,7 @@ TEST_F(PdfViewPluginBaseWithDocInfoTest,
 
   fake_plugin_.DocumentLoadComplete();
   EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kComplete,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_EQ(PdfViewPluginBase::AccessibilityState::kOff,
             fake_plugin_.accessibility_state());
 
@@ -597,7 +630,7 @@ TEST_F(PdfViewPluginBaseWithDocInfoTest,
 
   ASSERT_FALSE(fake_plugin_.IsPrintPreview());
   ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
 
   EXPECT_CALL(fake_plugin_, UserMetricsRecordAction("PDF.LoadSuccess"));
   EXPECT_CALL(fake_plugin_, SetFormFieldInFocus(false));
@@ -608,7 +641,7 @@ TEST_F(PdfViewPluginBaseWithDocInfoTest,
 
   fake_plugin_.DocumentLoadComplete();
   EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kComplete,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
 
   // Check all the sent messages.
   ASSERT_EQ(4u, fake_plugin_.sent_messages().size());
@@ -627,13 +660,13 @@ TEST_F(PdfViewPluginBaseWithoutDocInfoTest, DocumentLoadCompletePostMessages) {
 
   ASSERT_FALSE(fake_plugin_.IsPrintPreview());
   ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_CALL(fake_plugin_, UserMetricsRecordAction("PDF.LoadSuccess"));
   EXPECT_CALL(fake_plugin_, SetFormFieldInFocus(false));
 
   fake_plugin_.DocumentLoadComplete();
   EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kComplete,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
 
   // Check the sent messages when the document doesn't have any metadata,
   // attachments or bookmarks.
@@ -646,12 +679,12 @@ TEST_F(PdfViewPluginBaseWithoutDocInfoTest, DocumentLoadCompletePostMessages) {
 
 TEST_F(PdfViewPluginBaseTest, DocumentLoadFailedWithNotifiedRenderFrame) {
   // Notify the render frame about document loading.
-  fake_plugin_.set_full_frame(true);
+  fake_plugin_.set_full_frame_for_testing(true);
   ASSERT_TRUE(fake_plugin_.full_frame());
   fake_plugin_.CreateUrlLoader();
 
   ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_TRUE(fake_plugin_.GetDidCallStartLoadingForTesting());
 
   EXPECT_CALL(fake_plugin_, UserMetricsRecordAction("PDF.LoadFailure"));
@@ -659,7 +692,7 @@ TEST_F(PdfViewPluginBaseTest, DocumentLoadFailedWithNotifiedRenderFrame) {
 
   fake_plugin_.DocumentLoadFailed();
   EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kFailed,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_FALSE(fake_plugin_.GetDidCallStartLoadingForTesting());
 }
 
@@ -669,18 +702,18 @@ TEST_F(PdfViewPluginBaseTest, DocumentLoadFailedWithoutNotifiedRenderFrame) {
   EXPECT_FALSE(fake_plugin_.GetDidCallStartLoadingForTesting());
 
   ASSERT_EQ(PdfViewPluginBase::DocumentLoadState::kLoading,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_CALL(fake_plugin_, UserMetricsRecordAction("PDF.LoadFailure"));
   EXPECT_CALL(fake_plugin_, PluginDidStopLoading()).Times(0);
 
   fake_plugin_.DocumentLoadFailed();
   EXPECT_EQ(PdfViewPluginBase::DocumentLoadState::kFailed,
-            fake_plugin_.document_load_state());
+            fake_plugin_.document_load_state_for_testing());
   EXPECT_FALSE(fake_plugin_.GetDidCallStartLoadingForTesting());
 }
 
 TEST_F(PdfViewPluginBaseTest, DocumentHasUnsupportedFeatureInFullFrame) {
-  fake_plugin_.set_full_frame(true);
+  fake_plugin_.set_full_frame_for_testing(true);
   ASSERT_TRUE(fake_plugin_.full_frame());
 
   // Arbitrary feature names and their matching metric names.
@@ -746,7 +779,7 @@ TEST_F(PdfViewPluginBaseTest, EnteredEditMode) {
   base::Value expected_response(base::Value::Type::DICTIONARY);
   expected_response.SetStringKey("type", "setIsEditing");
 
-  EXPECT_TRUE(fake_plugin_.edit_mode());
+  EXPECT_TRUE(fake_plugin_.edit_mode_for_testing());
   ASSERT_EQ(1u, fake_plugin_.sent_messages().size());
   EXPECT_EQ(expected_response, fake_plugin_.sent_messages()[0]);
 }
@@ -755,7 +788,7 @@ using PdfViewPluginBaseSaveTest = PdfViewPluginBaseWithEngineTest;
 
 #if BUILDFLAG(ENABLE_INK)
 TEST_F(PdfViewPluginBaseSaveTest, SaveAnnotationInNonEditMode) {
-  ASSERT_FALSE(fake_plugin_.edit_mode());
+  ASSERT_FALSE(fake_plugin_.edit_mode_for_testing());
 
   static constexpr char kSaveAnnotInNonEditModeToken[] =
       "save-annot-in-non-edit-mode-token";
@@ -774,7 +807,7 @@ TEST_F(PdfViewPluginBaseSaveTest, SaveAnnotationInNonEditMode) {
 
 TEST_F(PdfViewPluginBaseSaveTest, SaveAnnotationInEditMode) {
   fake_plugin_.EnteredEditMode();
-  ASSERT_TRUE(fake_plugin_.edit_mode());
+  ASSERT_TRUE(fake_plugin_.edit_mode_for_testing());
 
   static constexpr char kSaveAnnotInEditModeToken[] =
       "save-annot-in-edit-mode-token";
@@ -793,7 +826,7 @@ TEST_F(PdfViewPluginBaseSaveTest, SaveAnnotationInEditMode) {
 #endif  // BUILDFLAG(ENABLE_INK)
 
 TEST_F(PdfViewPluginBaseSaveTest, SaveOriginalInNonEditMode) {
-  ASSERT_FALSE(fake_plugin_.edit_mode());
+  ASSERT_FALSE(fake_plugin_.edit_mode_for_testing());
 
   static constexpr char kSaveOriginalInNonEditModeToken[] =
       "save-original-in-non-edit-mode-token";
@@ -814,7 +847,7 @@ TEST_F(PdfViewPluginBaseSaveTest, SaveOriginalInNonEditMode) {
 
 TEST_F(PdfViewPluginBaseSaveTest, SaveOriginalInEditMode) {
   fake_plugin_.EnteredEditMode();
-  ASSERT_TRUE(fake_plugin_.edit_mode());
+  ASSERT_TRUE(fake_plugin_.edit_mode_for_testing());
 
   static constexpr char kSaveOriginalInEditModeToken[] =
       "save-original-in-edit-mode-token";
@@ -836,7 +869,7 @@ TEST_F(PdfViewPluginBaseSaveTest, SaveOriginalInEditMode) {
 
 #if BUILDFLAG(ENABLE_INK)
 TEST_F(PdfViewPluginBaseSaveTest, SaveEditedInNonEditMode) {
-  ASSERT_FALSE(fake_plugin_.edit_mode());
+  ASSERT_FALSE(fake_plugin_.edit_mode_for_testing());
 
   static constexpr char kSaveEditedInNonEditModeToken[] =
       "save-edited-in-non-edit-mode";
@@ -855,7 +888,7 @@ TEST_F(PdfViewPluginBaseSaveTest, SaveEditedInNonEditMode) {
 
 TEST_F(PdfViewPluginBaseSaveTest, SaveEditedInEditMode) {
   fake_plugin_.EnteredEditMode();
-  ASSERT_TRUE(fake_plugin_.edit_mode());
+  ASSERT_TRUE(fake_plugin_.edit_mode_for_testing());
 
   static constexpr char kSaveEditedInEditModeToken[] =
       "save-edited-in-edit-mode-token";
@@ -882,7 +915,8 @@ TEST_F(PdfViewPluginBaseTest, HandleSetBackgroundColorMessage) {
   EXPECT_EQ(kNewBackgroundColor, fake_plugin_.GetBackgroundColor());
 }
 
-TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageInitially) {
+TEST_F(PdfViewPluginBaseWithEngineTest,
+       HandleViewportMessageBeforeDocumentLoadComplete) {
   auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
   EXPECT_CALL(*engine, ApplyDocumentLayout(DocumentLayout::Options()));
 
@@ -891,6 +925,32 @@ TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageInitially) {
     "userInitiated": false,
     "zoom": 1,
     "layoutOptions": {
+      "direction": 0,
+      "defaultPageOrientation": 0,
+      "twoUpViewEnabled": false,
+    },
+    "xOffset": 0,
+    "yOffset": 0,
+    "pinchPhase": 0,
+  })"));
+
+  EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest,
+       HandleViewportMessageAfterDocumentLoadComplete) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ApplyDocumentLayout(DocumentLayout::Options()));
+
+  fake_plugin_.DocumentLoadComplete();
+  fake_plugin_.clear_sent_messages();
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "viewport",
+    "userInitiated": false,
+    "zoom": 1,
+    "layoutOptions": {
+      "direction": 0,
       "defaultPageOrientation": 0,
       "twoUpViewEnabled": false,
     },
@@ -913,6 +973,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageSubsequently) {
     "userInitiated": false,
     "zoom": 1,
     "layoutOptions": {
+      "direction": 0,
       "defaultPageOrientation": 0,
       "twoUpViewEnabled": false,
     },
@@ -931,6 +992,7 @@ TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageSubsequently) {
     "userInitiated": false,
     "zoom": 1,
     "layoutOptions": {
+      "direction": 0,
       "defaultPageOrientation": 0,
       "twoUpViewEnabled": true,
     },
@@ -940,6 +1002,145 @@ TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageSubsequently) {
   })"));
 
   EXPECT_THAT(fake_plugin_.sent_messages(), IsEmpty());
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, HandleViewportMessageScroll) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  EXPECT_CALL(*engine, ScrolledToXPosition(2));
+  EXPECT_CALL(*engine, ScrolledToYPosition(3));
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "viewport",
+    "userInitiated": false,
+    "zoom": 1,
+    "layoutOptions": {
+      "direction": 2,
+      "defaultPageOrientation": 0,
+      "twoUpViewEnabled": false,
+    },
+    "xOffset": 2,
+    "yOffset": 3,
+    "pinchPhase": 0,
+  })"));
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest,
+       HandleViewportMessageScrollRightToLeft) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  EXPECT_CALL(*engine, ScrolledToXPosition(2));
+  EXPECT_CALL(*engine, ScrolledToYPosition(3));
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "viewport",
+    "userInitiated": false,
+    "zoom": 1,
+    "layoutOptions": {
+      "direction": 1,
+      "defaultPageOrientation": 0,
+      "twoUpViewEnabled": false,
+    },
+    "xOffset": 2,
+    "yOffset": 3,
+    "pinchPhase": 0,
+  })"));
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest,
+       HandleViewportMessageScrollRightToLeftInPrintPreview) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  EXPECT_CALL(*engine, ScrolledToXPosition(14));
+  EXPECT_CALL(*engine, ScrolledToYPosition(3));
+  EXPECT_CALL(fake_plugin_, IsPrintPreview).WillRepeatedly(Return(true));
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "viewport",
+    "userInitiated": false,
+    "zoom": 1,
+    "layoutOptions": {
+      "direction": 1,
+      "defaultPageOrientation": 0,
+      "twoUpViewEnabled": false,
+    },
+    "xOffset": -2,
+    "yOffset": 3,
+    "pinchPhase": 0,
+  })"));
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScroll) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ScrolledToXPosition(0));
+  EXPECT_CALL(*engine, ScrolledToYPosition(0));
+
+  fake_plugin_.UpdateScroll({0, 0});
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollStopped) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ScrolledToXPosition).Times(0);
+  EXPECT_CALL(*engine, ScrolledToYPosition).Times(0);
+
+  fake_plugin_.HandleMessage(base::test::ParseJson(R"({
+    "type": "stopScrolling",
+  })"));
+  fake_plugin_.UpdateScroll({0, 0});
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollUnderflow) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  SendDefaultViewportMessage();
+  EXPECT_CALL(*engine, ScrolledToXPosition(0));
+  EXPECT_CALL(*engine, ScrolledToYPosition(0));
+
+  fake_plugin_.UpdateScroll({-1, -1});
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollOverflow) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  fake_plugin_.UpdateGeometryOnPluginRectChanged({3, 2}, 1.0f);
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  SendDefaultViewportMessage();
+
+  EXPECT_CALL(*engine, ScrolledToXPosition(13));
+  EXPECT_CALL(*engine, ScrolledToYPosition(7));
+
+  fake_plugin_.UpdateScroll({14, 8});
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollOverflowZoomed) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  fake_plugin_.UpdateGeometryOnPluginRectChanged({3, 2}, 1.0f);
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  SendDefaultViewportMessage();
+  fake_plugin_.SetZoom(2.0);
+
+  EXPECT_CALL(*engine, ScrolledToXPosition(29));
+  EXPECT_CALL(*engine, ScrolledToYPosition(16));
+
+  fake_plugin_.UpdateScroll({30, 17});
+}
+
+TEST_F(PdfViewPluginBaseWithEngineTest, UpdateScrollScaled) {
+  auto* engine = static_cast<TestPDFiumEngine*>(fake_plugin_.engine());
+  fake_plugin_.UpdateGeometryOnPluginRectChanged({3, 2}, 2.0f);
+  EXPECT_CALL(*engine, ApplyDocumentLayout)
+      .WillRepeatedly(Return(gfx::Size(16, 9)));
+  SendDefaultViewportMessage();
+
+  EXPECT_CALL(*engine, ScrolledToXPosition(4));
+  EXPECT_CALL(*engine, ScrolledToYPosition(2));
+
+  fake_plugin_.UpdateScroll({2, 1});
 }
 
 TEST_F(PdfViewPluginBaseWithEngineTest, GetContentRestrictions) {
@@ -1028,6 +1229,76 @@ TEST_F(PdfViewPluginBaseWithEngineTest, GetAccessibilityDocInfo) {
   EXPECT_EQ(TestPDFiumEngine::kPageNumber, doc_info.page_count);
   EXPECT_TRUE(doc_info.text_accessible);
   EXPECT_TRUE(doc_info.text_copyable);
+}
+
+class PdfViewPluginBaseSubmitFormTest : public PdfViewPluginBaseTest {
+ public:
+  void SubmitForm(const std::string& url,
+                  base::StringPiece form_data = "data") {
+    EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).WillOnce([this]() {
+      auto mock_loader = std::make_unique<testing::NiceMock<MockUrlLoader>>();
+      EXPECT_CALL(*mock_loader, Open).WillOnce(testing::SaveArg<0>(&request_));
+      return mock_loader;
+    });
+
+    fake_plugin_.SubmitForm(url, form_data.data(), form_data.size());
+  }
+
+  void SubmitFailingForm(const std::string& url) {
+    EXPECT_CALL(fake_plugin_, CreateUrlLoaderInternal).Times(0);
+    constexpr char kFormData[] = "form data";
+    fake_plugin_.SubmitForm(url, kFormData, base::size(kFormData));
+  }
+
+ protected:
+  UrlRequest request_;
+};
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, RequestMethodAndBody) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://www.example.com/path/to/the.pdf"));
+  constexpr char kFormData[] = "form data";
+  SubmitForm(/*url=*/"", kFormData);
+  EXPECT_EQ(request_.method, "POST");
+  EXPECT_THAT(request_.body, StrEq(kFormData));
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, RelativeUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://www.example.com/path/to/the.pdf"));
+  SubmitForm("relative_endpoint");
+  EXPECT_EQ(request_.url, "https://www.example.com/path/to/relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, NoRelativeUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://www.example.com/path/to/the.pdf"));
+  SubmitForm("");
+  EXPECT_EQ(request_.url, "https://www.example.com/path/to/the.pdf");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, AbsoluteUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return("https://a.example.com/path/to/the.pdf"));
+  SubmitForm("https://b.example.com/relative_endpoint");
+  EXPECT_EQ(request_.url, "https://b.example.com/relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, EmptyDocumentUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL).WillOnce(Return(std::string()));
+  SubmitFailingForm("relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, RelativeUrlInvalidDocumentUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return(R"(https://www.%B%Ad.com/path/to/the.pdf)"));
+  SubmitFailingForm("relative_endpoint");
+}
+
+TEST_F(PdfViewPluginBaseSubmitFormTest, AbsoluteUrlInvalidDocumentUrl) {
+  EXPECT_CALL(fake_plugin_, GetURL)
+      .WillOnce(Return(R"(https://www.%B%Ad.com/path/to/the.pdf)"));
+  SubmitFailingForm("https://wwww.example.com");
 }
 
 }  // namespace chrome_pdf

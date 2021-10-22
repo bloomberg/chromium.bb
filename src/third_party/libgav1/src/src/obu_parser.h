@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <memory>
 #include <type_traits>
+#include <utility>
 
 #include "src/buffer_pool.h"
 #include "src/decoder_state.h"

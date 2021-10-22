@@ -293,6 +293,7 @@ static_library("renderer") {
     deps += [
       "//components/pdf/common",
       "//components/pdf/renderer",
+      "//pdf:features",
     ]
 
     if (is_linux || is_chromeos) {
@@ -368,6 +369,7 @@ static_library("renderer") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/renderer",
+      "//pdf:features",
       "//printing",
     ]
     sources += [
@@ -428,8 +430,6 @@ static_library("renderer") {
 
     deps += [
       "//chrome/common/cart:mojo_bindings",
-      "//chrome/common/search:generate_chrome_colors_info",
-      "//chrome/common/search:generate_colors_info",
       "//components/crx_file",
       "//components/search:search",
     ]

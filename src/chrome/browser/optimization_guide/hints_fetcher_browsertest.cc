@@ -67,13 +67,6 @@
 
 namespace {
 
-enum class HintsFetcherRemoteResponseType {
-  kSuccessful = 0,
-  kUnsuccessful = 1,
-  kMalformed = 2,
-  kHung = 3,
-};
-
 constexpr char kGoogleHost[] = "www.google.com";
 
 constexpr char kGoogleSearchUrlPath[] = "/search?q=search_results_page.html";
@@ -125,6 +118,12 @@ std::unique_ptr<net::test_server::HttpResponse> HandleGoogleSearchUrlRequest(
 class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
  public:
   HintsFetcherDisabledBrowserTest() = default;
+
+  HintsFetcherDisabledBrowserTest(const HintsFetcherDisabledBrowserTest&) =
+      delete;
+  HintsFetcherDisabledBrowserTest& operator=(
+      const HintsFetcherDisabledBrowserTest&) = delete;
+
   ~HintsFetcherDisabledBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -229,7 +228,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
         network::mojom::ConnectionType::CONNECTION_2G);
   }
 
-  void SetResponseType(HintsFetcherRemoteResponseType response_type) {
+  void SetResponseType(
+      optimization_guide::HintsFetcherRemoteResponseType response_type) {
     response_type_ = response_type;
   }
 
@@ -301,8 +301,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> origin_server_;
   std::unique_ptr<net::EmbeddedTestServer> hints_server_;
-  HintsFetcherRemoteResponseType response_type_ =
-      HintsFetcherRemoteResponseType::kSuccessful;
+  optimization_guide::HintsFetcherRemoteResponseType response_type_ =
+      optimization_guide::HintsFetcherRemoteResponseType::kSuccessful;
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
@@ -334,7 +334,8 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
     if (!hints_request.hosts().empty())
       VerifyHintsMatchExpectedHostsAndUrls(hints_request);
 
-    if (response_type_ == HintsFetcherRemoteResponseType::kSuccessful) {
+    if (response_type_ ==
+        optimization_guide::HintsFetcherRemoteResponseType::kSuccessful) {
       response->set_code(net::HTTP_OK);
 
       optimization_guide::proto::GetHintsResponse get_hints_response;
@@ -349,15 +350,18 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
       get_hints_response.SerializeToString(&serialized_request);
       response->set_content(serialized_request);
     } else if (response_type_ ==
-               HintsFetcherRemoteResponseType::kUnsuccessful) {
+               optimization_guide::HintsFetcherRemoteResponseType::
+                   kUnsuccessful) {
       response->set_code(net::HTTP_NOT_FOUND);
 
-    } else if (response_type_ == HintsFetcherRemoteResponseType::kMalformed) {
+    } else if (response_type_ ==
+               optimization_guide::HintsFetcherRemoteResponseType::kMalformed) {
       response->set_code(net::HTTP_OK);
 
       std::string serialized_request = "Not a proto";
       response->set_content(serialized_request);
-    } else if (response_type_ == HintsFetcherRemoteResponseType::kHung) {
+    } else if (response_type_ ==
+               optimization_guide::HintsFetcherRemoteResponseType::kHung) {
       return std::make_unique<net::test_server::HungResponse>();
     } else {
       NOTREACHED();
@@ -432,14 +436,15 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
       expect_hints_request_for_hosts_and_urls_;
 
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> ukm_recorder_;
-
-  DISALLOW_COPY_AND_ASSIGN(HintsFetcherDisabledBrowserTest);
 };
 
 // This test class enables OnePlatform Hints.
 class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
  public:
   HintsFetcherBrowserTest() = default;
+
+  HintsFetcherBrowserTest(const HintsFetcherBrowserTest&) = delete;
+  HintsFetcherBrowserTest& operator=(const HintsFetcherBrowserTest&) = delete;
 
   ~HintsFetcherBrowserTest() override = default;
 
@@ -449,8 +454,7 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
         {
             {optimization_guide::features::kOptimizationHints, {}},
             {optimization_guide::features::kRemoteOptimizationGuideFetching,
-             {{"max_concurrent_page_navigation_fetches", "2"},
-              {"onload_delay_for_hints_fetching_ms", "200"}}},
+             {{"max_concurrent_page_navigation_fetches", "2"}}},
             {optimization_guide::features::kOptimizationHintsFieldTrials,
              {{"allowed_field_trial_names",
                "scoped_feature_list_trial_for_OptimizationHintsFetching"}}},
@@ -479,9 +483,6 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
             browser()->profile());
     return keyed_service->GetTopHostProvider();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
 };
 
 // This test creates new browser with no profile and loads a random page with
@@ -562,7 +563,8 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        HintsFetcherWithResponsesSuccessful) {
-  SetResponseType(HintsFetcherRemoteResponseType::kSuccessful);
+  SetResponseType(
+      optimization_guide::HintsFetcherRemoteResponseType::kSuccessful);
 
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -593,7 +595,8 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        HintsFetcherWithResponsesUnsuccessful) {
-  SetResponseType(HintsFetcherRemoteResponseType::kUnsuccessful);
+  SetResponseType(
+      optimization_guide::HintsFetcherRemoteResponseType::kUnsuccessful);
 
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -623,7 +626,8 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        HintsFetcherWithResponsesMalformed) {
-  SetResponseType(HintsFetcherRemoteResponseType::kMalformed);
+  SetResponseType(
+      optimization_guide::HintsFetcherRemoteResponseType::kMalformed);
 
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -657,7 +661,8 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        HintsFetcherWithResponsesUnsuccessfulAtNavigationTime) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
-  SetResponseType(HintsFetcherRemoteResponseType::kUnsuccessful);
+  SetResponseType(
+      optimization_guide::HintsFetcherRemoteResponseType::kUnsuccessful);
 
   // Set the connection online to force a fetch at navigation time.
   SetNetworkConnectionOnline();
@@ -677,13 +682,14 @@ IN_PROC_BROWSER_TEST_F(
     HintsFetcherWithResponsesHungShouldRecordWhenActiveRequestCanceled) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
-  SetResponseType(HintsFetcherRemoteResponseType::kHung);
+  SetResponseType(optimization_guide::HintsFetcherRemoteResponseType::kHung);
 
   // Set the connection online to force a fetch at navigation time.
   SetNetworkConnectionOnline();
 
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(browser(), GURL("https://hung.com/1")));
+  WaitUntilHintsFetcherRequestReceived();
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(browser(), GURL("https://hung.com/2")));
   ASSERT_TRUE(
@@ -1240,7 +1246,7 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherSearchPagePrerenderingBrowserTest,
   // Load a page in the prerender.
   GURL prerender_url = search_results_page_url();
   ResetCountHintsRequestsReceived();
-  prerender_helper()->AddPrerender(prerender_url);
+  int host_id = prerender_helper()->AddPrerender(prerender_url);
   EXPECT_EQ(0u, count_hints_requests_received());
   histogram_tester->ExpectBucketCount(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0, 0);
@@ -1248,7 +1254,9 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherSearchPagePrerenderingBrowserTest,
       optimization_guide::kLoadedHintLocalHistogramString, 1);
 
   // Activate the page from the prerendering.
+  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
   prerender_helper()->NavigatePrimaryPage(prerender_url);
+  EXPECT_TRUE(host_observer.was_activated());
   WaitUntilHintsFetcherRequestReceived();
   EXPECT_EQ(1u, count_hints_requests_received());
   optimization_guide::RetryForHistogramUntilCountReached(

@@ -1068,10 +1068,10 @@ TEST_P(PaintLayerScrollableAreaTest, CompositedStickyDescendant) {
                                    mojom::blink::ScrollType::kUser);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_EQ(FloatSize(0, 50), sticky->FirstFragment()
-                                  .PaintProperties()
-                                  ->StickyTranslation()
-                                  ->Translation2D());
+  EXPECT_EQ(gfx::Vector2dF(0, 50), sticky->FirstFragment()
+                                       .PaintProperties()
+                                       ->StickyTranslation()
+                                       ->Translation2D());
 }
 
 TEST_P(PaintLayerScrollableAreaTest, StickyPositionUseCounter) {
@@ -1377,8 +1377,7 @@ class ScrollTimelineForTest : public ScrollTimeline {
       : ScrollTimeline(document,
                        scroll_source,
                        ScrollTimeline::Vertical,
-                       std::move(scroll_offsets),
-                       100.0),
+                       std::move(scroll_offsets)),
         invalidated_(false) {}
   void Invalidate() override {
     ScrollTimeline::Invalidate();

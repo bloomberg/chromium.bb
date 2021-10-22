@@ -228,7 +228,7 @@ void WaitForOperationConfirmed() {
 
 // Verify clipboard history's features in the multiprofile environment.
 class ClipboardHistoryWithMultiProfileBrowserTest
-    : public chromeos::LoginManagerTest {
+    : public ash::LoginManagerTest {
  public:
   ClipboardHistoryWithMultiProfileBrowserTest() : LoginManagerTest() {
     login_mixin_.AppendRegularUsers(2);
@@ -348,16 +348,16 @@ class ClipboardHistoryWithMultiProfileBrowserTest
     EXPECT_TRUE(item_view->IsSelected());
   }
 
-  // chromeos::LoginManagerTest:
+  // ash::LoginManagerTest:
   void SetUpOnMainThread() override {
-    chromeos::LoginManagerTest::SetUpOnMainThread();
+    ash::LoginManagerTest::SetUpOnMainThread();
     event_generator_ = std::make_unique<ui::test::EventGenerator>(
         ash::Shell::GetPrimaryRootWindow());
   }
 
   AccountId account_id1_;
   AccountId account_id2_;
-  chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
+  ash::LoginManagerMixin login_mixin_{&mixin_host_};
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
 
@@ -1178,11 +1178,9 @@ class FakeDataTransferPolicyController
                       content::RenderFrameHost* rfh,
                       base::OnceCallback<void(bool)> callback) override {}
 
-  bool IsDragDropAllowed(const ui::DataTransferEndpoint* const data_src,
-                         const ui::DataTransferEndpoint* const data_dst,
-                         const bool is_drop) override {
-    return false;
-  }
+  void DropIfAllowed(const ui::DataTransferEndpoint* data_src,
+                     const ui::DataTransferEndpoint* data_dst,
+                     base::OnceClosure drop_cb) override {}
 
  private:
   const url::Origin allowed_origin_;

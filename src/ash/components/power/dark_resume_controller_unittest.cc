@@ -31,6 +31,9 @@ class DarkResumeControllerTest : public testing::Test {
   DarkResumeControllerTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
+  DarkResumeControllerTest(const DarkResumeControllerTest&) = delete;
+  DarkResumeControllerTest& operator=(const DarkResumeControllerTest&) = delete;
+
   ~DarkResumeControllerTest() override = default;
 
   void SetUp() override {
@@ -81,8 +84,6 @@ class DarkResumeControllerTest : public testing::Test {
 
  private:
   device::TestWakeLockProvider wake_lock_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(DarkResumeControllerTest);
 };
 
 TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
@@ -129,7 +130,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
 
   // Move time forward by < |dark_resume_hard_timeout_| and release the
   // partial wake lock. This should instantaneously re-suspend the device.
-  base::TimeDelta small_delay = base::TimeDelta::FromSeconds(1);
+  base::TimeDelta small_delay = base::Seconds(1);
   ASSERT_GT(dark_resume_controller_->GetHardTimeoutForTesting(), small_delay);
   task_environment_.FastForwardBy(
       dark_resume_controller_->GetHardTimeoutForTesting() - small_delay);

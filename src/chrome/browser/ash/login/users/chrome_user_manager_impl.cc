@@ -50,6 +50,7 @@
 #include "chrome/browser/ash/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/external_data/handlers/crostini_ansible_playbook_external_data_handler.h"
+#include "chrome/browser/ash/policy/external_data/handlers/preconfigured_desk_templates_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/print_servers_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/printers_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/user_avatar_image_external_data_handler.h"
@@ -58,6 +59,7 @@
 #include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/policy/networking/user_network_configuration_updater.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/session_length_limiter.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
@@ -67,7 +69,6 @@
 #include "chrome/browser/chromeos/extensions/active_tab_permission_granter_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
 #include "chrome/browser/chromeos/extensions/permissions_updater_delegate_chromeos.h"
-#include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -392,6 +393,9 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
   cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::CrostiniAnsiblePlaybookExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
+  cloud_external_data_policy_handlers_.push_back(
+      std::make_unique<policy::PreconfiguredDeskTemplatesExternalDataHandler>(
+          cros_settings_, device_local_account_policy_service));
 
   // Record the stored session length for enrolled device.
   if (IsEnterpriseManaged())
@@ -569,7 +573,39 @@ void ChromeUserManagerImpl::RemoveUserInternal(
   g_browser_process->profile_manager()
       ->GetProfileAttributesStorage()
       .RemoveProfileByAccountId(account_id);
+  if (!user_added_removed_reporter_intialized_) {
+    CacheRemovedUser(account_id.GetUserEmail(), reason);
+  }
   RemoveNonOwnerUserInternal(account_id, reason, delegate);
+}
+
+void ChromeUserManagerImpl::CacheRemovedUser(
+    const std::string& user_email,
+    user_manager::UserRemovalReason reason) {
+  // There is only a need to cache removed users if they should be reported.
+  bool reporting_enabled = false;
+  chromeos::CrosSettings::Get()->GetBoolean(chromeos::kReportDeviceLoginLogout,
+                                            &reporting_enabled);
+  if (!reporting_enabled) {
+    return;
+  }
+
+  // Unaffiliated users should not have their email reported.
+  if (ShouldReportUser(user_email)) {
+    removed_user_cache_.push_back(std::make_pair(user_email, reason));
+  } else {
+    removed_user_cache_.push_back(std::make_pair("", reason));
+  }
+}
+
+std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
+ChromeUserManagerImpl::GetRemovedUserCache() const {
+  return removed_user_cache_;
+}
+
+void ChromeUserManagerImpl::MarkReporterInitialized() {
+  removed_user_cache_.clear();
+  user_added_removed_reporter_intialized_ = true;
 }
 
 void ChromeUserManagerImpl::SaveUserOAuthStatus(

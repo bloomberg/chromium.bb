@@ -51,6 +51,9 @@ class ScreenshotGrabber::ScopedCursorHider {
         base::WrapUnique(new ScopedCursorHider(window)));
   }
 
+  ScopedCursorHider(const ScopedCursorHider&) = delete;
+  ScopedCursorHider& operator=(const ScopedCursorHider&) = delete;
+
   ~ScopedCursorHider() {
     aura::client::CursorClient* cursor_client =
         aura::client::GetCursorClient(window_);
@@ -60,8 +63,6 @@ class ScreenshotGrabber::ScopedCursorHider {
  private:
   explicit ScopedCursorHider(aura::Window* window) : window_(window) {}
   aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCursorHider);
 };
 #endif
 
@@ -98,7 +99,7 @@ void ScreenshotGrabber::TakeScreenshot(gfx::NativeWindow window,
 bool ScreenshotGrabber::CanTakeScreenshot() {
   return last_screenshot_timestamp_.is_null() ||
          base::TimeTicks::Now() - last_screenshot_timestamp_ >
-             base::TimeDelta::FromMilliseconds(kScreenshotMinimumIntervalInMS);
+             base::Milliseconds(kScreenshotMinimumIntervalInMS);
 }
 
 void ScreenshotGrabber::GrabWindowSnapshotAsyncCallback(

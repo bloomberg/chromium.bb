@@ -155,7 +155,7 @@
 #include "chrome/browser/metrics/family_link_user_metrics_provider.h"
 #include "chrome/browser/metrics/family_user_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
-#include "components/metrics/structured/structured_metrics_provider.h"
+#include "components/metrics/structured/structured_metrics_provider.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
@@ -527,6 +527,11 @@ std::string ChromeMetricsServiceClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
+const network_time::NetworkTimeTracker*
+ChromeMetricsServiceClient::GetNetworkTimeTracker() {
+  return g_browser_process->network_time_tracker();
+}
+
 bool ChromeMetricsServiceClient::GetBrand(std::string* brand_code) {
   return google_brand::GetBrand(brand_code);
 }
@@ -779,7 +784,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   }
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<chromeos::PrinterMetricsProvider>());
+      std::make_unique<ash::PrinterMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::structured::StructuredMetricsProvider>());
@@ -905,7 +910,7 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
       weak_ptr_factory_.GetWeakPtr());
 
   base::TimeDelta timeout =
-      base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration);
+      base::Milliseconds(kMaxHistogramGatheringWaitDuration);
 
   DCHECK_EQ(num_async_histogram_fetches_in_progress_, 0);
   // `callback` is used 2 times below.

@@ -71,15 +71,20 @@ void FastPairDiscoverableScanner::OnDeviceFound(
       *fast_pair_service_data,
       base::BindOnce(&FastPairDiscoverableScanner::OnModelIdRetrieved,
                      weak_pointer_factory_.GetWeakPtr(), device),
-      base::BindOnce(&FastPairDiscoverableScanner::OnProcessStopped,
+      base::BindOnce(&FastPairDiscoverableScanner::OnUtilityProcessStopped,
                      weak_pointer_factory_.GetWeakPtr(), device));
 }
 
 void FastPairDiscoverableScanner::OnModelIdRetrieved(
     device::BluetoothDevice* device,
     const absl::optional<std::string>& model_id) {
-  // Safe to remove from this map because we have successfully parsed it here.
-  model_id_parse_attempts_.erase(device->GetAddress());
+  auto it = model_id_parse_attempts_.find(device->GetAddress());
+
+  // If there's no entry in the map, the device was lost while parsing.
+  if (it == model_id_parse_attempts_.end())
+    return;
+
+  model_id_parse_attempts_.erase(it);
 
   if (!model_id)
     return;
@@ -102,9 +107,17 @@ void FastPairDiscoverableScanner::OnDeviceMetadataRetrieved(
     device::BluetoothDevice* device,
     const std::string model_id,
     DeviceMetadata* device_metadata) {
+  if (!device_metadata) {
+    QP_LOG(WARNING) << __func__
+                    << ": Could not get metadata for id: " << model_id
+                    << ". Ignoring this advertisement";
+    return;
+  }
+
+  auto& details = device_metadata->GetDetails();
   double trigger_distance;
-  if (device_metadata && device_metadata->device.trigger_distance() > 0) {
-    trigger_distance = device_metadata->device.trigger_distance();
+  if (details.trigger_distance() > 0) {
+    trigger_distance = details.trigger_distance();
   } else {
     NOTREACHED();
     trigger_distance = kDefaultRangeInMeters;
@@ -115,15 +128,22 @@ void FastPairDiscoverableScanner::OnDeviceMetadataRetrieved(
                   "trigger_distance="
                << trigger_distance;
 
+  int tx_power = details.ble_tx_power();
+
   range_tracker_->Track(
       device, trigger_distance,
       base::BindRepeating(&FastPairDiscoverableScanner::NotifyDeviceFound,
-                          weak_pointer_factory_.GetWeakPtr(), model_id));
+                          weak_pointer_factory_.GetWeakPtr(), model_id),
+      tx_power == 0 ? absl::nullopt : absl::make_optional(tx_power));
 }
 
 void FastPairDiscoverableScanner::OnDeviceLost(
     device::BluetoothDevice* device) {
   QP_LOG(VERBOSE) << __func__ << ": " << device->GetNameForDisplay();
+
+  // If we have an in-progress attempt to parse for this device, removing it
+  // from this map will ensure the result is ignored.
+  model_id_parse_attempts_.erase(device->GetAddress());
 
   range_tracker_->StopTracking(device);
 
@@ -141,6 +161,8 @@ void FastPairDiscoverableScanner::OnDeviceLost(
 void FastPairDiscoverableScanner::NotifyDeviceFound(
     const std::string model_id,
     device::BluetoothDevice* bluetooth_device) {
+  QP_LOG(VERBOSE) << __func__ << ": Id: " << model_id;
+
   auto device = base::MakeRefCounted<Device>(
       model_id, bluetooth_device->GetAddress(), Protocol::kFastPair);
 
@@ -149,7 +171,7 @@ void FastPairDiscoverableScanner::NotifyDeviceFound(
   found_callback_.Run(device);
 }
 
-void FastPairDiscoverableScanner::OnProcessStopped(
+void FastPairDiscoverableScanner::OnUtilityProcessStopped(
     device::BluetoothDevice* device,
     QuickPairProcessManager::ShutdownReason shutdown_reason) {
   int current_retry_count = model_id_parse_attempts_[device->GetAddress()];
@@ -171,7 +193,7 @@ void FastPairDiscoverableScanner::OnProcessStopped(
       *fast_pair_service_data,
       base::BindOnce(&FastPairDiscoverableScanner::OnModelIdRetrieved,
                      weak_pointer_factory_.GetWeakPtr(), device),
-      base::BindOnce(&FastPairDiscoverableScanner::OnProcessStopped,
+      base::BindOnce(&FastPairDiscoverableScanner::OnUtilityProcessStopped,
                      weak_pointer_factory_.GetWeakPtr(), device));
 }
 

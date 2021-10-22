@@ -135,7 +135,8 @@ void AppServer::MaybeUninstall() {
     if (updater_scope() == UpdaterScope::kSystem)
       command_line.AppendSwitch(kSystemSwitch);
     command_line.AppendSwitch(kEnableLoggingSwitch);
-    command_line.AppendSwitchASCII(kLoggingModuleSwitch, "*/updater/*=2");
+    command_line.AppendSwitchASCII(kLoggingModuleSwitch,
+                                   kLoggingModuleSwitchValue);
     VLOG(2) << "Launching uninstall command: "
             << command_line.GetCommandLineString();
 
@@ -154,9 +155,13 @@ void AppServer::FirstTaskRun() {
 bool AppServer::SwapVersions(GlobalPrefs* global_prefs) {
   global_prefs->SetSwapping(true);
   PrefsCommitPendingWrites(global_prefs->GetPrefService());
-  bool result = SwapRPCInterfaces();
-  if (!result)
+  if (!SwapRPCInterfaces())
     return false;
+  if (!ConvertLegacyUpdaters(base::BindRepeating(
+          &PersistedData::RegisterApp, base::MakeRefCounted<PersistedData>(
+                                           global_prefs->GetPrefService())))) {
+    return false;
+  }
   global_prefs->SetActiveVersion(kUpdaterVersion);
   global_prefs->SetSwapping(false);
   PrefsCommitPendingWrites(global_prefs->GetPrefService());

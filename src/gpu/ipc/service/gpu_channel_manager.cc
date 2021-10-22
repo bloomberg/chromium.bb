@@ -646,11 +646,9 @@ void GpuChannelManager::ScheduleWakeUpGpu() {
   TRACE_EVENT2("gpu", "GpuChannelManager::ScheduleWakeUp", "idle_time",
                (now - last_gpu_access_time_).InMilliseconds(),
                "keep_awake_time", (now - begin_wake_up_time_).InMilliseconds());
-  if (now - last_gpu_access_time_ <
-      base::TimeDelta::FromMilliseconds(kMaxGpuIdleTimeMs))
+  if (now - last_gpu_access_time_ < base::Milliseconds(kMaxGpuIdleTimeMs))
     return;
-  if (now - begin_wake_up_time_ >
-      base::TimeDelta::FromMilliseconds(kMaxKeepAliveTimeMs))
+  if (now - begin_wake_up_time_ > base::Milliseconds(kMaxKeepAliveTimeMs))
     return;
 
   DoWakeUpGpu();
@@ -659,7 +657,7 @@ void GpuChannelManager::ScheduleWakeUpGpu() {
       FROM_HERE,
       base::BindOnce(&GpuChannelManager::ScheduleWakeUpGpu,
                      weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kMaxGpuIdleTimeMs));
+      base::Milliseconds(kMaxGpuIdleTimeMs));
 }
 
 void GpuChannelManager::DoWakeUpGpu() {
@@ -798,11 +796,9 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     gl::GLContextAttribs attribs = gles2::GenerateGLContextAttribs(
         ContextCreationAttribs(), use_passthrough_decoder);
 
-#if !defined(OS_MAC)
     // Disable robust resource initialization for raster decoder and compositor.
     // TODO(crbug.com/1192632): disable robust_resource_initialization for
     // SwANGLE.
-    // TODO(crbug.com/1238413): disable robust_resource_initialization for Mac.
     // TODO(crbug.com/1116174): Currently disabling robust initialization is
     // breaking some tests with OOP canvas. Once that's fixed remove check for
     // kCanvasOopRasterization feature.
@@ -811,7 +807,6 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
         !base::FeatureList::IsEnabled(features::kCanvasOopRasterization)) {
       attribs.robust_resource_initialization = false;
     }
-#endif
 
     attribs.can_skip_validation = !enable_angle_validation;
 

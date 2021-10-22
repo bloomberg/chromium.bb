@@ -118,9 +118,9 @@
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/drag/drag.mojom.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
-#include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
@@ -164,8 +164,7 @@ namespace {
 
 // How long to wait for newly loaded content to send a compositor frame
 // before clearing previously displayed graphics.
-constexpr base::TimeDelta kNewContentRenderingDelay =
-    base::TimeDelta::FromSeconds(4);
+constexpr base::TimeDelta kNewContentRenderingDelay = base::Seconds(4);
 
 bool g_check_for_pending_visual_properties_ack = true;
 
@@ -198,6 +197,11 @@ base::LazyInstance<RoutingIDWidgetMap>::DestructorAtExit
 class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
  public:
   RenderWidgetHostIteratorImpl() = default;
+
+  RenderWidgetHostIteratorImpl(const RenderWidgetHostIteratorImpl&) = delete;
+  RenderWidgetHostIteratorImpl& operator=(const RenderWidgetHostIteratorImpl&) =
+      delete;
+
   ~RenderWidgetHostIteratorImpl() override = default;
 
   void Add(RenderWidgetHost* host) {
@@ -218,8 +222,6 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
  private:
   std::vector<RenderWidgetHostID> hosts_;
   size_t current_index_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
 };
 
 std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
@@ -259,6 +261,11 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
       metadata.push_back(
           DropData::Metadata::CreateForFileSystemUrl(file_system_file.url));
     }
+  }
+
+  if (drop_data.file_contents_source_url.is_valid()) {
+    metadata.push_back(DropData::Metadata::CreateForBinary(
+        drop_data.file_contents_source_url));
   }
 
   for (const auto& custom_data_item : drop_data.custom_data) {
@@ -421,7 +428,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       delegate_(delegate),
       agent_scheduling_group_(agent_scheduling_group),
       routing_id_(routing_id),
-      clock_(base::DefaultTickClock::GetInstance()),
       is_hidden_(hidden),
       latency_tracker_(delegate_),
       hung_renderer_delay_(kHungRendererDelay),
@@ -583,7 +589,7 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
 
 // static
 const base::TimeDelta RenderWidgetHostImpl::kActivationNotificationExpireTime =
-    base::TimeDelta::FromMilliseconds(300);
+    base::Milliseconds(300);
 
 RenderProcessHost* RenderWidgetHostImpl::GetProcess() {
   return agent_scheduling_group_.GetProcess();
@@ -761,8 +767,7 @@ void RenderWidgetHostImpl::ShutdownAndDestroyWidget(bool also_delete) {
 }
 
 void RenderWidgetHostImpl::SetIsLoading(bool is_loading) {
-  is_loading_ = is_loading;
-  power_mode_loading_voter_->VoteFor(is_loading_
+  power_mode_loading_voter_->VoteFor(is_loading
                                          ? power_scheduler::PowerMode::kLoading
                                          : power_scheduler::PowerMode::kIdle);
   if (view_)
@@ -936,6 +941,17 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   // Note: Later in this method, ScreenInfo rects might be overridden!
   visual_properties.screen_infos = GetScreenInfos();
   auto& current_screen_info = visual_properties.screen_infos.mutable_current();
+
+  // For testing, override the raster color profile.
+  // Note: this needs to be done here and not earlier in the pipeline because
+  // Mac uses the display color space to update an NSSurface and this setting
+  // is only for "raster" color space.
+  if (display::Display::HasForceRasterColorProfile()) {
+    for (auto& screen_info : visual_properties.screen_infos.screen_infos) {
+      screen_info.display_color_spaces = gfx::DisplayColorSpaces(
+          display::Display::GetForcedRasterColorProfile());
+    }
+  }
 
   visual_properties.is_fullscreen_granted = delegate_->IsFullscreen();
   visual_properties.window_controls_overlay_rect =
@@ -1200,6 +1216,11 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
         old_screen_info.orientation_type != screen_info.orientation_type;
     if (orientation_changed)
       delegate_->DidChangeScreenOrientation();
+  }
+
+  if (ShouldUseZoomForDSF()) {
+    input_router_->SetDeviceScaleFactor(
+        visual_properties->screen_infos.current().device_scale_factor);
   }
 
   // If we do not have a valid viz::LocalSurfaceId then we are a child frame
@@ -1871,16 +1892,6 @@ void RenderWidgetHostImpl::GetScreenInfo(display::ScreenInfo* result) {
     view_->GetScreenInfo(result);
   else
     display::DisplayUtil::GetDefaultScreenInfo(result);
-
-  if (display::Display::HasForceRasterColorProfile()) {
-    result->display_color_spaces = gfx::DisplayColorSpaces(
-        display::Display::GetForcedRasterColorProfile());
-  }
-
-  // TODO(sievers): find a way to make this done another way so the method
-  // can be const.
-  if (ShouldUseZoomForDSF())
-    input_router_->SetDeviceScaleFactor(result->device_scale_factor);
 }
 
 float RenderWidgetHostImpl::GetDeviceScaleFactor() {
@@ -1921,8 +1932,9 @@ void RenderWidgetHostImpl::DragTargetDragEnterWithMetaData(
         base::BindOnce(&RenderWidgetHostImpl::OnUpdateDragCursor,
                        base::Unretained(this), std::move(callback));
     blink_frame_widget_->DragTargetDragEnter(
-        DropMetaDataToDragData(metadata), client_pt, screen_pt,
-        operations_allowed, key_modifiers, std::move(callback_wrapper));
+        DropMetaDataToDragData(metadata),
+        ConvertWindowPointToViewport(client_pt), screen_pt, operations_allowed,
+        key_modifiers, std::move(callback_wrapper));
   }
 }
 
@@ -1947,10 +1959,8 @@ void RenderWidgetHostImpl::DragTargetDragLeave(
     const gfx::PointF& screen_point) {
   // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
   if (blink_frame_widget_) {
-    gfx::PointF viewport_point = client_point;
-    if (ShouldUseZoomForDSF())
-      viewport_point.Scale(GetScaleFactorForView(GetView()));
-    blink_frame_widget_->DragTargetDragLeave(viewport_point, screen_point);
+    blink_frame_widget_->DragTargetDragLeave(
+        ConvertWindowPointToViewport(client_point), screen_point);
   }
 }
 
@@ -2092,90 +2102,18 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 display::ScreenInfos RenderWidgetHostImpl::GetScreenInfos() {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfos");
 
-  // Use GetScreenInfo here to retain legacy behavior for the current screen.
-  display::ScreenInfo current_screen_info;
-  GetScreenInfo(&current_screen_info);
-
   // If this widget has not been connected to a view yet (or has been
   // disconnected), the display code may be using a fake primary display.
   // In these cases, temporarily return the legacy screen info until
   // it is connected and visual properties updates this correctly.
   if (!view_) {
+    // Use GetScreenInfo here to retain legacy behavior for the current screen.
+    display::ScreenInfo current_screen_info;
+    GetScreenInfo(&current_screen_info);
     return display::ScreenInfos(current_screen_info);
   }
 
-  // TODO(enne): add ScreenInfos to FrameVisualProperties and store these
-  // on CrossProcessFrameConnector.  For now, only return the legacy
-  // screen info for any child widgets to avoid races between visual
-  // property propagation of legacy screen info vs GetAllDisplays.
-  // In the future, child frames should use screen_infos from the connector.
-  if (view_->IsRenderWidgetHostViewChildFrame()) {
-    return display::ScreenInfos(current_screen_info);
-  }
-
-  // Get displays from RenderWidgetHostView, not directly from display::Screen.
-  // This helps maintain consistency with the legacy singular GetScreenInfo().
-  // For example, Mac may cache display info from a remote process NSWindow.
-  const std::vector<display::Display>& displays = view_->GetDisplays();
-
-  // Just return the legacy singular ScreenInfo, if its id is invalid or if the
-  // display::Screen is not initialized; each of which occurs in various tests.
-  // When there are no valid displays, some platforms can also create a
-  // fake default Display as well (e.g. Display::GetDefaultDisplay).
-  if (current_screen_info.display_id == display::kInvalidDisplayId ||
-      current_screen_info.display_id == display::kDefaultDisplayId ||
-      displays.empty()) {
-    return display::ScreenInfos(current_screen_info);
-  }
-
-  // Build multi-screen info from the displays returned by RenderWidgetHostView,
-  // ensure its legacy singular screen info struct is included in this set.
-  display::ScreenInfos result;
-  bool current_display_added = false;
-  for (const auto& display : displays) {
-    if (display.id() == current_screen_info.display_id) {
-      DCHECK(!current_display_added);
-      result.screen_infos.push_back(current_screen_info);
-      result.current_display_id = current_screen_info.display_id;
-      current_display_added = true;
-      continue;
-    }
-    display::ScreenInfo screen_info;
-    display::DisplayUtil::DisplayToScreenInfo(&screen_info, display);
-    if (display::Display::HasForceRasterColorProfile()) {
-      screen_info.display_color_spaces = gfx::DisplayColorSpaces(
-          display::Display::GetForcedRasterColorProfile());
-    }
-    result.screen_infos.push_back(screen_info);
-  }
-
-  if (current_display_added)
-    return result;
-
-  // TODO(enne): temporary debugging logic.  GetScreens() is called during
-  // frequent visual property updates, and so will crash even when the
-  // multi-screen window placement api is not enabled.  Instead of CHECK, do a
-  // dump here so we can check if this is happening without having a full-on
-  // browser crash.
-  static bool have_crash_dumped = false;
-  if (!have_crash_dumped) {
-    have_crash_dumped = true;
-
-    SCOPED_CRASH_KEY_NUMBER("GetScreenInfos", "display_id",
-                            current_screen_info.display_id);
-    SCOPED_CRASH_KEY_NUMBER("GetScreenInfos", "num_displays", displays.size());
-
-    std::string display_ids;
-    for (const auto& display : displays) {
-      base::StringAppendF(&display_ids, "%" PRId64 ",", display.id());
-    }
-    SCOPED_CRASH_KEY_STRING256("GetScreenInfos", "displays", display_ids);
-
-    base::debug::DumpWithoutCrashing();
-  }
-
-  // Fall back to legacy screen info, if we are in a bad state.
-  return display::ScreenInfos(current_screen_info);
+  return view_->GetScreenInfos();
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
@@ -2592,6 +2530,8 @@ void RenderWidgetHostImpl::OnUpdateScreenRectsAck() {
 
   SendScreenRects();
 }
+
+void RenderWidgetHostImpl::OnRenderFrameSubmission() {}
 
 void RenderWidgetHostImpl::OnLocalSurfaceIdChanged(
     const cc::RenderFrameMetadata& metadata) {
@@ -3360,7 +3300,7 @@ void RenderWidgetHostImpl::GotResponseToForceRedraw(int snapshot_id) {
       FROM_HERE,
       base::BindOnce(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
                      weak_factory_.GetWeakPtr(), snapshot_id),
-      base::TimeDelta::FromSecondsD(1. / 6));
+      base::Seconds(1. / 6));
 #else
   WindowSnapshotReachedScreen(snapshot_id);
 #endif

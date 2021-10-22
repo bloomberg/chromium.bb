@@ -8,6 +8,10 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/notification_view_base.h"
 
+namespace views {
+class LabelButton;
+}  // namespace views
+
 namespace message_center {
 
 // Customized NotificationViewBase for notification on all platforms other
@@ -20,6 +24,34 @@ class MESSAGE_CENTER_EXPORT NotificationView : public NotificationViewBase {
   NotificationView(const NotificationView&) = delete;
   NotificationView& operator=(const NotificationView&) = delete;
   ~NotificationView() override;
+
+ private:
+  friend class NotificationViewTest;
+
+  // NotificationViewBase:
+  void CreateOrUpdateTitleView(const Notification& notification) override;
+  void CreateOrUpdateSmallIconView(const Notification& notification) override;
+  std::unique_ptr<views::LabelButton> GenerateNotificationLabelButton(
+      views::Button::PressedCallback callback,
+      const std::u16string& label) override;
+  void UpdateViewForExpandedState(bool expanded) override;
+  gfx::Size GetIconViewSize() const override;
+  void OnThemeChanged() override;
+  void UpdateCornerRadius(int top_radius, int bottom_radius) override;
+  void ToggleInlineSettings(const ui::Event& event) override;
+
+  void UpdateHeaderViewBackgroundColor();
+  SkColor GetNotificationHeaderViewBackgroundColor() const;
+
+  // Update the background that shows behind the `actions_row_`.
+  void UpdateActionButtonsRowBackground();
+
+  // Background animations for toggling inline settings.
+  void AddBackgroundAnimation(const ui::Event& event);
+  void RemoveBackgroundAnimation();
+
+  // Notification title, which is dynamically created inside view hierarchy.
+  views::Label* title_view_ = nullptr;
 };
 
 }  // namespace message_center

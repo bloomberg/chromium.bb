@@ -79,9 +79,11 @@ public class TabUiThemeProvider {
     public static int getTabGroupNumberTextColor(
             Context context, boolean isIncognito, boolean isSelected) {
         if (!themeRefactorEnabled()) {
-            return ApiCompatibilityUtils.getColor(context.getResources(),
-                    isIncognito ? R.color.tab_group_number_text_color_incognito
-                                : R.color.tab_group_number_text_color);
+            return AppCompatResources
+                    .getColorStateList(context,
+                            isIncognito ? R.color.tab_group_number_text_color_incognito
+                                        : R.color.tab_group_number_text_color)
+                    .getDefaultColor();
         }
         if (isIncognito) {
             @ColorRes
@@ -651,18 +653,6 @@ public class TabUiThemeProvider {
         ta.recycle();
 
         return context.getResources().getDimension(marginResourceId);
-    }
-
-    /**
-     * Return the insect dimension around the selection button for tab grid card.
-     * @param context {@link Context} to retrieve dimension.
-     *
-     * @return The insect dimension around the selection button for tab grid card.
-     */
-    public static float getTabGridCardSelectButtonInsectDimension(Context context) {
-        return context.getResources().getDimension(themeRefactorEnabled()
-                        ? R.dimen.tab_grid_card_toggle_button_background_inset
-                        : R.dimen.selection_tab_grid_toggle_button_inset);
     }
 
     /**

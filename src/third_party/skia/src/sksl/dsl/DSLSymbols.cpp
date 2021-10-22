@@ -8,6 +8,7 @@
 #include "include/sksl/DSLSymbols.h"
 
 #include "src/sksl/SkSLIRGenerator.h"
+#include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
 
 namespace SkSL {
@@ -15,19 +16,19 @@ namespace SkSL {
 namespace dsl {
 
 void PushSymbolTable() {
-    DSLWriter::IRGenerator().pushSymbolTable();
+    SymbolTable::Push(&ThreadContext::IRGenerator().symbolTable());
 }
 
 void PopSymbolTable() {
-    DSLWriter::IRGenerator().popSymbolTable();
+    SymbolTable::Pop(&ThreadContext::IRGenerator().symbolTable());
 }
 
 std::shared_ptr<SymbolTable> CurrentSymbolTable() {
-    return DSLWriter::IRGenerator().symbolTable();
+    return ThreadContext::IRGenerator().symbolTable();
 }
 
 DSLPossibleExpression Symbol(skstd::string_view name, PositionInfo pos) {
-    return DSLWriter::IRGenerator().convertIdentifier(pos.offset(), name);
+    return ThreadContext::IRGenerator().convertIdentifier(pos.line(), name);
 }
 
 bool IsType(skstd::string_view name) {
@@ -35,11 +36,12 @@ bool IsType(skstd::string_view name) {
     return s && s->is<Type>();
 }
 
-void AddToSymbolTable(DSLVarBase& var) {
+void AddToSymbolTable(DSLVarBase& var, PositionInfo pos) {
     const SkSL::Variable* skslVar = DSLWriter::Var(var);
     if (skslVar) {
         CurrentSymbolTable()->addWithoutOwnership(skslVar);
     }
+    ThreadContext::ReportErrors(pos);
 }
 
 const String* Retain(String string) {

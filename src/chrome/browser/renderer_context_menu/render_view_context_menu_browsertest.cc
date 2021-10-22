@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/with_feature_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -84,6 +85,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "pdf/pdf_features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,8 +109,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/ui/base/window_pin_type.h"
-#include "chromeos/ui/base/window_properties.h"
+#include "chrome/browser/ui/ash/window_pin_util.h"
 #include "ui/aura/window.h"
 #endif
 
@@ -309,6 +310,12 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
 class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
  public:
   PdfPluginContextMenuBrowserTest() = default;
+
+  PdfPluginContextMenuBrowserTest(const PdfPluginContextMenuBrowserTest&) =
+      delete;
+  PdfPluginContextMenuBrowserTest& operator=(
+      const PdfPluginContextMenuBrowserTest&) = delete;
+
   ~PdfPluginContextMenuBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -400,8 +407,14 @@ class PdfPluginContextMenuBrowserTest : public InProcessBrowserTest {
  private:
   guest_view::TestGuestViewManagerFactory factory_;
   guest_view::TestGuestViewManager* test_guest_view_manager_;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(PdfPluginContextMenuBrowserTest);
+class PdfPluginContextMenuBrowserTestWithUnseasonedOverride
+    : public base::test::WithFeatureOverride,
+      public PdfPluginContextMenuBrowserTest {
+ public:
+  PdfPluginContextMenuBrowserTestWithUnseasonedOverride()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
 };
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
@@ -491,8 +504,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
     EXPECT_TRUE(menu->IsCommandIdEnabled(entry));
 
   // Set locked fullscreen state.
-  browser()->window()->GetNativeWindow()->SetProperty(
-      chromeos::kWindowPinTypeKey, chromeos::WindowPinType::kTrustedPinned);
+  PinWindow(browser()->window()->GetNativeWindow(), /*trusted=*/true);
 
   // All entries are disabled in locked fullscreen (testing only a subset here).
   for (auto entry : entries_to_test)
@@ -531,15 +543,15 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
-                       OpenInAppPresentForURLsInScopeOfNonWindowedWebApp) {
-  InstallTestWebApp(GURL(kAppUrl1), false);
+                       OpenInAppAbsentForURLsInScopeOfNonWindowedWebApp) {
+  InstallTestWebApp(GURL(kAppUrl1), /*open_as_window=*/false);
 
   std::unique_ptr<TestRenderViewContextMenu> menu =
       CreateContextMenuMediaTypeNone(GURL(kAppUrl1), GURL(kAppUrl1));
 
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW));
-  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
+  ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_COPYLINKLOCATION));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKINPROFILE));
   ASSERT_FALSE(menu->IsItemInRangePresent(IDC_OPEN_LINK_IN_PROFILE_FIRST,
@@ -1609,7 +1621,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest,
   EXPECT_EQ(GetLensImageSearchURL(), new_tab->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
+IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithUnseasonedOverride,
                        FullPagePdfHasPageItems) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
 
@@ -1617,7 +1629,7 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
   ASSERT_TRUE(menu->IsItemPresent(IDC_RELOAD));
 }
 
-IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
+IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithUnseasonedOverride,
                        FullPagePdfFullscreenItems) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
 
@@ -1636,10 +1648,13 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
   ASSERT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_ROTATECCW));
 }
 
-IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest,
+IN_PROC_BROWSER_TEST_P(PdfPluginContextMenuBrowserTestWithUnseasonedOverride,
                        IframedPdfHasNoPageItems) {
   TestContextMenuOfPdfInsideWebPage(FILE_PATH_LITERAL("test-iframe-pdf.html"));
 }
+
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    PdfPluginContextMenuBrowserTestWithUnseasonedOverride);
 
 class LoadImageRequestObserver : public content::WebContentsObserver {
  public:

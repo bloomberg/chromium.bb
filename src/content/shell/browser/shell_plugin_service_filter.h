@@ -14,6 +14,10 @@ namespace content {
 class ShellPluginServiceFilter : public PluginServiceFilter {
  public:
   ShellPluginServiceFilter();
+
+  ShellPluginServiceFilter(const ShellPluginServiceFilter&) = delete;
+  ShellPluginServiceFilter& operator=(const ShellPluginServiceFilter&) = delete;
+
   ~ShellPluginServiceFilter() override;
 
   // PluginServiceFilter implementation.
@@ -26,10 +30,6 @@ class ShellPluginServiceFilter : public PluginServiceFilter {
 
   bool CanLoadPlugin(int render_process_id,
                      const base::FilePath& path) override;
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(ShellPluginServiceFilter);
 };
 
 }  // namespace content

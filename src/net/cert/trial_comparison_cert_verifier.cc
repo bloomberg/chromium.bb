@@ -138,6 +138,10 @@ class TrialComparisonCertVerifier::Job {
       const CertVerifier::RequestParams& params,
       const NetLogWithSource& source_net_log,
       TrialComparisonCertVerifier* parent);
+
+  Job(const Job&) = delete;
+  Job& operator=(const Job&) = delete;
+
   ~Job();
 
   // Start the Job, attempting first to verify with the parent's primary
@@ -221,8 +225,6 @@ class TrialComparisonCertVerifier::Job {
   std::unique_ptr<CertVerifier::Request> reverification_request_;
 
   base::WeakPtrFactory<Job> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 // The Request is vended to the TrialComparisonCertVerifier::Verify() callers,
@@ -238,6 +240,10 @@ class TrialComparisonCertVerifier::Job::Request : public CertVerifier::Request {
   Request(TrialComparisonCertVerifier::Job* parent,
           CertVerifyResult* client_result,
           CompletionOnceCallback client_callback);
+
+  Request(const Request&) = delete;
+  Request& operator=(const Request&) = delete;
+
   ~Request() override;
 
   // Called when the Job has completed, and used to invoke the client
@@ -254,8 +260,6 @@ class TrialComparisonCertVerifier::Job::Request : public CertVerifier::Request {
   TrialComparisonCertVerifier::Job* parent_;
   CertVerifyResult* client_result_;
   CompletionOnceCallback client_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
 TrialComparisonCertVerifier::Job::Job(const CertVerifier::Config& config,
@@ -428,9 +432,8 @@ void TrialComparisonCertVerifier::Job::OnPrimaryJobCompleted(int result) {
   // that TrialSecondary histograms will be recorded for, in order to get a
   // direct comparison.
   UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency_TrialPrimary",
-                             primary_latency,
-                             base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(10), 100);
+                             primary_latency, base::Milliseconds(1),
+                             base::Minutes(10), 100);
 
   trial_start_ = base::TimeTicks::Now();
   int rv = parent_->trial_verifier()->Verify(
@@ -449,8 +452,8 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
   trial_error_ = result;
 
   UMA_HISTOGRAM_CUSTOM_TIMES("Net.CertVerifier_Job_Latency_TrialSecondary",
-                             latency, base::TimeDelta::FromMilliseconds(1),
-                             base::TimeDelta::FromMinutes(10), 100);
+                             latency, base::Milliseconds(1), base::Minutes(10),
+                             100);
 
   bool errors_equal = trial_error_ == primary_error_;
   bool details_equal = CertVerifyResultEqual(trial_result_, primary_result_);

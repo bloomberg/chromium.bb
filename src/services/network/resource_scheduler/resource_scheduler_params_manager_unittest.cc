@@ -19,15 +19,18 @@ namespace {
 
 // Should remain synchronized with the values in
 // resouce_scheduler_params_manager.cc.
-constexpr base::TimeDelta kLowerBoundQueuingDuration =
-    base::TimeDelta::FromSeconds(15);
-constexpr base::TimeDelta kUpperBoundQueuingDuration =
-    base::TimeDelta::FromSeconds(120);
+constexpr base::TimeDelta kLowerBoundQueuingDuration = base::Seconds(15);
+constexpr base::TimeDelta kUpperBoundQueuingDuration = base::Seconds(120);
 constexpr int kHttpRttMultiplierForQueuingDuration = 30;
 
 class ResourceSchedulerParamsManagerTest : public testing::Test {
  public:
   ResourceSchedulerParamsManagerTest() {}
+
+  ResourceSchedulerParamsManagerTest(
+      const ResourceSchedulerParamsManagerTest&) = delete;
+  ResourceSchedulerParamsManagerTest& operator=(
+      const ResourceSchedulerParamsManagerTest&) = delete;
 
   ~ResourceSchedulerParamsManagerTest() override {}
 
@@ -157,9 +160,6 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
         return;
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResourceSchedulerParamsManagerTest);
 };
 
 TEST_F(ResourceSchedulerParamsManagerTest, VerifyAllDefaultParams) {

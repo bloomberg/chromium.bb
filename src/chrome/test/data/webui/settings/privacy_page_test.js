@@ -87,9 +87,9 @@ suite('PrivacyPage', function() {
     ClearBrowsingDataBrowserProxyImpl.setInstance(
         testClearBrowsingDataBrowserProxy);
     const testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+    PrivacyPageBrowserProxyImpl.setInstance(testBrowserProxy);
     siteSettingsBrowserProxy = new TestSiteSettingsPrefsBrowserProxy();
-    SiteSettingsPrefsBrowserProxyImpl.instance_ = siteSettingsBrowserProxy;
+    SiteSettingsPrefsBrowserProxyImpl.setInstance(siteSettingsBrowserProxy);
     siteSettingsBrowserProxy.setCookieSettingDescription(testLabels[0]);
     metricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
@@ -149,11 +149,6 @@ suite('PrivacyPage', function() {
 
   test('privacyReviewRowNotVisible', function() {
     assertFalse(isChildVisible(page, '#privacyReviewLinkRow'));
-  });
-
-  test('clearBrowsingDataClass', function() {
-    assertFalse(!!page.shadowRoot.querySelector('#clearBrowsingData')
-                      .classList.contains('hr'));
   });
 
   test('ContentSettingsVisibility', async function() {
@@ -236,11 +231,6 @@ suite('PrivacyReviewEnabled', function() {
     // Ensure the correct Settings page is shown.
     assertEquals(routes.PRIVACY_REVIEW, Router.getInstance().getCurrentRoute());
   });
-
-  test('clearBrowsingDataClass', function() {
-    assertTrue(!!page.shadowRoot.querySelector('#clearBrowsingData')
-                     .classList.contains('hr'));
-  });
 });
 
 suite('PrivacyPageSound', function() {
@@ -260,7 +250,7 @@ suite('PrivacyPageSound', function() {
     loadTimeData.overrideValues({enableBlockAutoplayContentSetting: true});
 
     testBrowserProxy = new TestPrivacyPageBrowserProxy();
-    PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
+    PrivacyPageBrowserProxyImpl.setInstance(testBrowserProxy);
 
     Router.getInstance().navigateTo(routes.SITE_SETTINGS_SOUND);
     document.body.innerHTML = '';

@@ -39,10 +39,12 @@ class StatusAreaWidgetDelegateAnimationSettings
     SetTweenType(gfx::Tween::EASE_OUT);
   }
 
-  ~StatusAreaWidgetDelegateAnimationSettings() override = default;
+  StatusAreaWidgetDelegateAnimationSettings(
+      const StatusAreaWidgetDelegateAnimationSettings&) = delete;
+  StatusAreaWidgetDelegateAnimationSettings& operator=(
+      const StatusAreaWidgetDelegateAnimationSettings&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegateAnimationSettings);
+  ~StatusAreaWidgetDelegateAnimationSettings() override = default;
 };
 
 // Gradient background for the status area shown when it overflows into the
@@ -170,7 +172,14 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
   return focus_cycler->widget_activating() == GetWidget();
 }
 
+std::unique_ptr<StatusAreaWidgetDelegate::PauseCalculatingTargetBounds>
+StatusAreaWidgetDelegate::CreateScopedPauseCalculatingTargetBounds() {
+  return std::make_unique<PauseCalculatingTargetBounds>(this);
+}
+
 void StatusAreaWidgetDelegate::CalculateTargetBounds() {
+  if (is_adding_tray_buttons_)
+    return;
   // Use a grid layout so that the trays can be centered in each cell, and
   // so that the widget gets laid out correctly when tray sizes change.
   views::GridLayout* layout =

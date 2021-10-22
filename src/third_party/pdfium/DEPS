@@ -23,21 +23,25 @@ vars = {
   'pdfium_git': 'https://pdfium.googlesource.com',
 
   # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling abseil
+  # and whatever else without interference from each other.
+  'abseil_revision': 'a46a6332f7b310ce5280d1b9bd7d8b557d445c2d',
+  # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_ndk
   # and whatever else without interference from each other.
   'android_ndk_revision': '401019bf85744311b26c88ced255cd53401af8b7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build
   # and whatever else without interference from each other.
-  'build_revision': 'bbf7f0ed65548c4df862d2a2748e3a9b908a3217',
+  'build_revision': '7b4d37cef8f3c17a7d2152980678f468e18bf119',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling buildtools
   # and whatever else without interference from each other.
-  'buildtools_revision': '37dc929ecb351687006a61744b116cda601753d7',
+  'buildtools_revision': '7ea3a871db68ae2cbbeaf5433a3192a799ef3c11',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'ebf22ea4f9a658d2127a6118dbfca9e1f780cab4',
+  'catapult_revision': 'bb0675d8485993a155f7450aa496b7330b00f114',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang format
   # and whatever else without interference from each other.
@@ -45,7 +49,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang
   # and whatever else without interference from each other.
-  'clang_revision': '6a8e571efd68de48d226950d1e10cb8982e71496',
+  'clang_revision': 'e74330fba0bac614a0a86ff1dedf07543b5fea8a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling clang_dsymutil
   # and whatever else without interference from each other.
@@ -53,27 +57,27 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling code_coverage
   # and whatever else without interference from each other.
-  'code_coverage_revision': 'f59405f5a7efae448431893e2476050515dd87e1',
+  'code_coverage_revision': 'dcc5002488c5b7541569ed08424d3d41d25d93e7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling depot_tools
   # and whatever else without interference from each other.
-  'depot_tools_revision': 'e989bf92dbd9b03e0a2a0d38bdb3614245dfa562',
+  'depot_tools_revision': '0be20a4f76538a0025ce26394f38a50d7b5553d9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': 'efa1a35907ec678186e0828a78e6d1ee96896404',
+  'freetype_revision': 'e942a31007ae695c218270027f2cec03ac0c79cd',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling GN CIPD package version
   # and whatever else without interference from each other.
-  'gn_version': 'git_revision:eea3906f0e2a8d3622080127d2005ff214d51383',
+  'gn_version': 'git_revision:69ec4fca1fa69ddadae13f9e6b7507efa0675263',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling gtest
   # and whatever else without interference from each other.
-  'gtest_revision': '2d924d7a971e9667d76ad09727fb2402b4f8a1e3',
+  'gtest_revision': '955c7f837efad184ec63e771c42542d37545eaef',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling icu
   # and whatever else without interference from each other.
-  'icu_revision': '75e34bcccea0be165c31fdb278b3712c516c5876',
+  'icu_revision': '3f443830bd52d3aa5fab3c1aa2b6d0848bb5039d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling instrumented_lib
   # and whatever else without interference from each other.
@@ -81,7 +85,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jinja2
   # and whatever else without interference from each other.
-  'jinja2_revision': '6ac5f7effd3235be7e6ee34a981214c3f3d95c2c',
+  'jinja2_revision': '6db8da1615a13fdfab925688bc4bf2eb394a73af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling jpeg_turbo
   # and whatever else without interference from each other.
@@ -95,11 +99,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libc++abi
   # and whatever else without interference from each other.
-  'libcxxabi_revision': '24e92c2beed59b76ddabe7ceb5ee4b40f09e0712',
+  'libcxxabi_revision': '17de75220a90f23a16f9f87fbc5c00dce475b726',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libunwind
   # and whatever else without interference from each other.
-  'libunwind_revision': 'b825591df326b2725e6b88bdf74fdc88fefdf460',
+  'libunwind_revision': '44ea7aba6a34a9250e7793418d83f209a480caf4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling markupsafe
   # and whatever else without interference from each other.
@@ -107,23 +111,23 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nasm_source
   # and whatever else without interference from each other.
-  'nasm_source_revision': 'e9be5fd6d723a435ca2da162f9e0ffcb688747c1',
+  'nasm_source_revision': '4e6fe9d1549e4ffb6c804494573e404849dfe7de',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling pdfium_tests
   # and whatever else without interference from each other.
-  'pdfium_tests_revision': '165422e0e969be8f2ccb11ff5a0934e4af664ef3',
+  'pdfium_tests_revision': '3c4d506fe010630ddd74d9a5e288a406dd6886e5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd31b15da6e33f25eae6fcd8ce1b440efc27fe61d',
+  'skia_revision': '96dbf7403e4bc07d5bbab067661e735083c51768',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling tools_memory
   # and whatever else without interference from each other.
-  'tools_memory_revision': '7235d59a2b9a370731802970c0ea3fa1a4933289',
+  'tools_memory_revision': '06f05b48373dcb8b903a166983832221613d45c5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling trace_event
   # and whatever else without interference from each other.
-  'trace_event_revision': '3da1e2fcf66acd5c7194497b4285ac163f32e239',
+  'trace_event_revision': '715537d6007ca71837f48bcb04fc3d482aed2507',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling v8
   # and whatever else without interference from each other.
@@ -131,7 +135,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling zlib
   # and whatever else without interference from each other.
-  'zlib_revision': '563140dd9c24f84bf40919196e9e7666d351cc0d',
+  'zlib_revision': '77c132322fe81a1f5518b326e18c99ebd3281627',
 }
 
 deps = {
@@ -197,6 +201,10 @@ deps = {
 
   'testing/corpus':
     Var('pdfium_git') + '/pdfium_tests@' + Var('pdfium_tests_revision'),
+
+  'third_party/abseil-cpp':
+    Var('chromium_git') + '/chromium/src/third_party/abseil-cpp.git@' +
+        Var('abseil_revision'),
 
   'third_party/android_ndk': {
     'url': Var('chromium_git') + '/android_ndk.git@' +
@@ -321,6 +329,14 @@ include_rules = [
   '+constants',
   '+testing',
   '+third_party/base',
+
+  # Abseil features must be allowlisted explicitly for now. See Chromium's
+  # //styleguide/c++/c++11.html. Allowed features' headers will be listed
+  # explicitly here.
+  '-absl',
+  '-third_party/abseil-cpp',
+  '+third_party/abseil-cpp/absl/types/optional.h',
+  '+third_party/abseil-cpp/absl/types/variant.h',
 ]
 
 specific_include_rules = {

@@ -222,13 +222,36 @@ class RendererVk : angle::NonCopyable
 
     ANGLE_INLINE egl::ContextPriority getDriverPriority(egl::ContextPriority priority)
     {
-        return mCommandQueue.getDriverPriority(priority);
+        if (mFeatures.asyncCommandQueue.enabled)
+        {
+            return mCommandProcessor.getDriverPriority(priority);
+        }
+        else
+        {
+            return mCommandQueue.getDriverPriority(priority);
+        }
+    }
+    ANGLE_INLINE uint32_t getDeviceQueueIndex()
+    {
+        if (mFeatures.asyncCommandQueue.enabled)
+        {
+            return mCommandProcessor.getDeviceQueueIndex();
+        }
+        else
+        {
+            return mCommandQueue.getDeviceQueueIndex();
+        }
     }
 
     // This command buffer should be submitted immediately via queueSubmitOneOff.
     angle::Result getCommandBufferOneOff(vk::Context *context,
                                          bool hasProtectedContent,
                                          vk::PrimaryCommandBuffer *commandBufferOut);
+
+    void resetSecondaryCommandBuffer(vk::CommandBuffer &&commandBuffer)
+    {
+        mCommandBufferRecycler.resetCommandBufferHelper(std::move(commandBuffer));
+    }
 
     // Fire off a single command buffer immediately with default priority.
     // Command buffer must be allocated with getCommandBufferOneOff and is reclaimed.
@@ -262,8 +285,12 @@ class RendererVk : angle::NonCopyable
     {
         if (!sharedGarbage.empty())
         {
-            std::lock_guard<std::mutex> lock(mGarbageMutex);
-            mSharedGarbage.emplace_back(std::move(use), std::move(sharedGarbage));
+            vk::SharedGarbage garbage(std::move(use), std::move(sharedGarbage));
+            if (!garbage.destroyIfComplete(this, getLastCompletedQueueSerial()))
+            {
+                std::lock_guard<std::mutex> lock(mGarbageMutex);
+                mSharedGarbage.push_back(std::move(garbage));
+            }
         }
     }
 
@@ -376,8 +403,11 @@ class RendererVk : angle::NonCopyable
                           egl::ContextPriority priority,
                           const VkPresentInfoKHR &presentInfo);
 
-    vk::CommandBufferHelper *getCommandBufferHelper(bool hasRenderPass);
-    void recycleCommandBufferHelper(vk::CommandBufferHelper *commandBuffer);
+    angle::Result getCommandBufferHelper(vk::Context *context,
+                                         bool hasRenderPass,
+                                         vk::CommandPool *commandPool,
+                                         vk::CommandBufferHelper **commandBufferHelperOut);
+    void recycleCommandBufferHelper(VkDevice device, vk::CommandBufferHelper **commandBuffer);
 
     // Process GPU memory reports
     void processMemoryReportCallback(const VkDeviceMemoryReportCallbackDataEXT &callbackData)
@@ -528,8 +558,8 @@ class RendererVk : angle::NonCopyable
     vk::CommandQueue mCommandQueue;
 
     // Command buffer pool management.
-    std::mutex mCommandBufferHelperFreeListMutex;
-    std::vector<vk::CommandBufferHelper *> mCommandBufferHelperFreeList;
+    std::mutex mCommandBufferRecyclerMutex;
+    vk::CommandBufferRecycler mCommandBufferRecycler;
 
     // Async Command Queue
     vk::CommandProcessor mCommandProcessor;

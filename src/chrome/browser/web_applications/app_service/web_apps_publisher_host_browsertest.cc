@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
@@ -133,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, PublishApps) {
       embedded_test_server()->GetURL("/banners/manifest_test_page.html"));
   mock_app_publisher.Wait();
 
-  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 3U);
+  // OnWebAppInstalled() and OnWebAppInstalledWithOsHooks() lead to updates.
+  EXPECT_EQ(mock_app_publisher.get_deltas().size(), 4U);
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->app_id, app_id);
   EXPECT_EQ(mock_app_publisher.get_deltas().back()->readiness,
             apps::mojom::Readiness::kReady);
@@ -267,6 +269,35 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, LocallyInstalledState) {
             IconEffects::kRoundCorners | IconEffects::kCrOsStandardMask);
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, PolicyId) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL app_url = embedded_test_server()->GetURL("/web_apps/basic.html");
+  const GURL install_url =
+      embedded_test_server()->GetURL("/web_apps/get_manifest.html?basic.json");
+  AppId app_id = InstallWebAppFromPage(browser(), install_url);
+  MockAppPublisher mock_app_publisher;
+  WebAppsPublisherHost web_apps_publisher_host(profile());
+  web_apps_publisher_host.SetPublisherForTesting(&mock_app_publisher);
+  web_apps_publisher_host.Init();
+  mock_app_publisher.Wait();
+
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->publisher_id,
+            app_url.spec());
+  EXPECT_TRUE(mock_app_publisher.get_deltas().back()->policy_id->empty());
+
+  // Set policy to pin the web app.
+  web_app::ExternallyInstalledWebAppPrefs web_app_prefs(
+      browser()->profile()->GetPrefs());
+  web_app_prefs.Insert(install_url, app_id,
+                       web_app::ExternalInstallSource::kExternalPolicy);
+
+  provider().registrar().NotifyWebAppInstalledWithOsHooks(app_id);
+
+  mock_app_publisher.Wait();
+  EXPECT_EQ(mock_app_publisher.get_deltas().back()->policy_id,
+            install_url.spec());
+}
+
 IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, ContentSettings) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL app_url = embedded_test_server()->GetURL("/web_apps/basic.html");
@@ -301,12 +332,12 @@ IN_PROC_BROWSER_TEST_F(WebAppsPublisherHostBrowserTest, ContentSettings) {
 
   const std::vector<apps::mojom::PermissionPtr>& permissions =
       mock_app_publisher.get_deltas().back()->permissions;
-  auto camera_permission = std::find_if(
-      permissions.begin(), permissions.end(),
-      [](const apps::mojom::PermissionPtr& permission) {
-        return permission->permission_id ==
-               static_cast<uint32_t>(ContentSettingsType::MEDIASTREAM_CAMERA);
-      });
+  auto camera_permission =
+      std::find_if(permissions.begin(), permissions.end(),
+                   [](const apps::mojom::PermissionPtr& permission) {
+                     return permission->permission_type ==
+                            apps::mojom::PermissionType::kCamera;
+                   });
   ASSERT_TRUE(camera_permission != permissions.end());
   EXPECT_EQ((*camera_permission)->value_type,
             apps::mojom::PermissionValueType::kTriState);

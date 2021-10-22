@@ -27,9 +27,12 @@ namespace dawn_native { namespace metal {
 
     class RenderPipeline final : public RenderPipelineBase {
       public:
-        static ResultOrError<Ref<RenderPipeline>> Create(
+        static Ref<RenderPipelineBase> CreateUninitialized(
             Device* device,
             const RenderPipelineDescriptor* descriptor);
+        static void InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
+                                    WGPUCreateRenderPipelineAsyncCallback callback,
+                                    void* userdata);
 
         MTLPrimitiveType GetMTLPrimitiveTopology() const;
         MTLWinding GetMTLFrontFace() const;
@@ -45,9 +48,10 @@ namespace dawn_native { namespace metal {
 
         wgpu::ShaderStage GetStagesRequiringStorageBufferLength() const;
 
+        MaybeError Initialize() override;
+
       private:
         using RenderPipelineBase::RenderPipelineBase;
-        MaybeError Initialize(const RenderPipelineDescriptor* descriptor);
 
         MTLVertexDescriptor* MakeVertexDesc();
 

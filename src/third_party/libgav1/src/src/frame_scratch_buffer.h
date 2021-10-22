@@ -17,10 +17,13 @@
 #ifndef LIBGAV1_SRC_FRAME_SCRATCH_BUFFER_H_
 #define LIBGAV1_SRC_FRAME_SCRATCH_BUFFER_H_
 
+#include <array>
 #include <condition_variable>  // NOLINT (unapproved c++11 header)
 #include <cstdint>
 #include <memory>
 #include <mutex>  // NOLINT (unapproved c++11 header)
+#include <new>
+#include <utility>
 
 #include "src/loop_restoration_info.h"
 #include "src/residual_buffer_pool.h"
@@ -46,7 +49,10 @@ using IntraPredictionBuffer =
 
 // Buffer to facilitate decoding a frame. This struct is used only within
 // DecoderImpl::DecodeTiles().
-struct FrameScratchBuffer {
+// The alignment requirement is due to the SymbolDecoderContext member
+// symbol_decoder_context and the TileScratchBufferPool member
+// tile_scratch_buffer_pool.
+struct FrameScratchBuffer : public MaxAlignedAllocable {
   LoopRestorationInfo loop_restoration_info;
   Array2D<int8_t> cdef_index;
   // Encodes the block skip information as a bitmask for the entire frame which

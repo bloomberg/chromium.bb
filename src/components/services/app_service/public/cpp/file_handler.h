@@ -45,15 +45,19 @@ struct FileHandler {
   // matching MIME type or file extension.
   GURL action;
 
+  // The user-visible name for the file type, e.g. "ACME Word Processor document
+  // file". May be empty.
+  std::u16string display_name;
+
   // A collection of MIME type to file extensions mappings that the handler
   // will match on.
   using Accept = std::vector<AcceptEntry>;
   Accept accept;
 
   // The icons defined for this file handler, to be used as file type
-  // association icons in OS surfaces. The sizes in `icons`, when present,
-  // represent the actual size of a bitmap that was downloaded.
-  std::vector<IconInfo> icons;
+  // association icons in OS surfaces. The sizes in `downloaded_icons`, when
+  // present, represent the actual size of a bitmap that was downloaded.
+  std::vector<IconInfo> downloaded_icons;
 };
 using FileHandlers = std::vector<FileHandler>;
 
@@ -61,9 +65,17 @@ using FileHandlers = std::vector<FileHandler>;
 std::set<std::string> GetMimeTypesFromFileHandlers(
     const FileHandlers& file_handlers);
 
+// Get a set of all MIME types supported by |file_handler|.
+std::set<std::string> GetMimeTypesFromFileHandler(
+    const FileHandler& file_handler);
+
 // Get a set of all file extensions supported by any of |file_handlers|.
 std::set<std::string> GetFileExtensionsFromFileHandlers(
     const FileHandlers& file_handlers);
+
+// Get a set of all file extensions supported by |file_handler|.
+std::set<std::string> GetFileExtensionsFromFileHandler(
+    const FileHandler& file_handler);
 
 bool operator==(const FileHandler::AcceptEntry& accept_entry1,
                 const FileHandler::AcceptEntry& accept_entry2);

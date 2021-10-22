@@ -28,7 +28,7 @@
 #include "third_party/skia/include/core/SkTextBlob.h"
 #include "third_party/skia/include/docs/SkPDFDocument.h"
 #include "third_party/skia/include/gpu/GrRecordingContext.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace cc {
 namespace {
@@ -2714,6 +2714,7 @@ PaintOpBuffer::CompositeIterator::CompositeIterator(
     const PaintOpBuffer* buffer,
     const std::vector<size_t>* offsets)
     : using_offsets_(!!offsets) {
+  DCHECK(!buffer->are_ops_destroyed());
   if (using_offsets_)
     offset_iter_.emplace(buffer, offsets);
   else
@@ -2731,7 +2732,8 @@ PaintOpBuffer::PaintOpBuffer()
       has_draw_ops_(false),
       has_draw_text_ops_(false),
       has_save_layer_alpha_ops_(false),
-      has_effects_preventing_lcd_text_for_save_layer_alpha_(false) {}
+      has_effects_preventing_lcd_text_for_save_layer_alpha_(false),
+      are_ops_destroyed_(false) {}
 
 PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
   *this = std::move(other);
@@ -2756,6 +2758,7 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   has_save_layer_alpha_ops_ = other.has_save_layer_alpha_ops_;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ =
       other.has_effects_preventing_lcd_text_for_save_layer_alpha_;
+  are_ops_destroyed_ = other.are_ops_destroyed_;
 
   // Make sure the other pob can destruct safely.
   other.used_ = 0;
@@ -2765,8 +2768,11 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
 }
 
 void PaintOpBuffer::Reset() {
-  for (auto* op : Iterator(this))
-    op->DestroyThis();
+  if (!are_ops_destroyed_) {
+    for (auto* op : Iterator(this)) {
+      op->DestroyThis();
+    }
+  }
 
   // Leave data_ allocated, reserved_ unchanged. ShrinkToFit will take care of
   // that if called.
@@ -2781,6 +2787,7 @@ void PaintOpBuffer::Reset() {
   has_draw_text_ops_ = false;
   has_save_layer_alpha_ops_ = false;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ = false;
+  are_ops_destroyed_ = false;
 }
 
 // When |op| is a nested PaintOpBuffer, this returns the PaintOp inside
@@ -2822,6 +2829,7 @@ PaintOpBuffer::PlaybackFoldingIterator::PlaybackFoldingIterator(
     const std::vector<size_t>* offsets)
     : iter_(buffer, offsets),
       folded_draw_color_(SK_ColorTRANSPARENT, SkBlendMode::kSrcOver) {
+  DCHECK(!buffer->are_ops_destroyed());
   FindNextOp();
 }
 
@@ -2968,7 +2976,6 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
 bool PaintOpBuffer::Deserialize(const volatile void* input,
                                 size_t input_size,
                                 const PaintOp::DeserializeOptions& options) {
-  Reset();
   size_t total_bytes_read = 0u;
   while (total_bytes_read < input_size) {
     const volatile void* next_op =

@@ -57,7 +57,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/chromeos/boot_times_recorder.h"
+#include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #endif
 
@@ -79,11 +79,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/profiling_utils.h"
 #endif
 
-using base::TimeDelta;
 
 namespace browser_shutdown {
 namespace {
@@ -165,38 +163,12 @@ void OnShutdownStarting(ShutdownType type) {
           base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
     }
 
-    auto dump_child_profiling_data =
-        base::BindOnce([]() {
-          // Use a nested WaitForProcessesToDumpProfilingInfo object to wait on
-          // the IO thread. This isn't needed when the |kProcessHostOnUI| on UI
-          // feature is enabled but it doesn't hurt and keeps the code simple.
-          // TODO(sebmarchand): Remove the nested
-          // |WaitForProcessesToDumpProfilingInfo| once the |kProcessHostOnUI|
-          // feature is enabled by default.
-          content::WaitForProcessesToDumpProfilingInfo
-              nested_wait_for_profiling_data;
-          for (content::BrowserChildProcessHostIterator browser_child_iter;
-               !browser_child_iter.Done(); ++browser_child_iter) {
-            browser_child_iter.GetHost()->DumpProfilingData(base::BindOnce(
-                &base::WaitableEvent::Signal,
-                base::Unretained(
-                    nested_wait_for_profiling_data.GetNewWaitableEvent())));
-          }
-          nested_wait_for_profiling_data.WaitForAll();
-        });
-    // Ask all the other child processes to dump their profiling data on the
-    // proper thread depending on whether or not the |kProcessHostOnUI| feature
-    // is enabled.
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      std::move(dump_child_profiling_data).Run();
-    } else {
-      // Ask all the other child processes to dump their profiling data, this
-      // has to be done on the IO thread.
-      content::GetIOThreadTaskRunner({})->PostTaskAndReply(
-          FROM_HERE, std::move(dump_child_profiling_data),
-          base::BindOnce(
-              &base::WaitableEvent::Signal,
-              base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
+    // Ask all the other child processes to dump their profiling data
+    for (content::BrowserChildProcessHostIterator browser_child_iter;
+         !browser_child_iter.Done(); ++browser_child_iter) {
+      browser_child_iter.GetHost()->DumpProfilingData(base::BindOnce(
+          &base::WaitableEvent::Signal,
+          base::Unretained(wait_for_profiling_data.GetNewWaitableEvent())));
     }
 
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -360,7 +332,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
-    TimeDelta shutdown_delta = base::Time::Now() - *g_shutdown_started;
+    base::TimeDelta shutdown_delta = base::Time::Now() - *g_shutdown_started;
     std::string shutdown_ms =
         base::NumberToString(shutdown_delta.InMilliseconds());
     int len = static_cast<int>(shutdown_ms.length()) + 1;
@@ -423,9 +395,9 @@ void ReadLastShutdownFile(ShutdownType type,
     return;
 
   base::UmaHistogramMediumTimes(time2_metric_name,
-                                TimeDelta::FromMilliseconds(shutdown_ms));
+                                base::Milliseconds(shutdown_ms));
   base::UmaHistogramTimes(per_proc_metric_name,
-                          TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
+                          base::Milliseconds(shutdown_ms / num_procs));
   base::UmaHistogramCounts100("Shutdown.renderers.total", num_procs);
   base::UmaHistogramCounts100("Shutdown.renderers.slow", num_procs_slow);
 }

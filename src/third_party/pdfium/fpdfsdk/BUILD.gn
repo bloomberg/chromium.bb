@@ -25,8 +25,6 @@ source_set("fpdfsdk") {
     "cpdfsdk_baannothandler.h",
     "cpdfsdk_customaccess.cpp",
     "cpdfsdk_customaccess.h",
-    "cpdfsdk_fieldaction.cpp",
-    "cpdfsdk_fieldaction.h",
     "cpdfsdk_filewriteadapter.cpp",
     "cpdfsdk_filewriteadapter.h",
     "cpdfsdk_formfillenvironment.cpp",
@@ -69,6 +67,7 @@ source_set("fpdfsdk") {
     "fpdf_thumbnail.cpp",
     "fpdf_transformpage.cpp",
     "fpdf_view.cpp",
+    "ipdfsdk_annothandler.cpp",
     "ipdfsdk_annothandler.h",
   ]
 

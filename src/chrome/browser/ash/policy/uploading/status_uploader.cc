@@ -15,9 +15,13 @@
 #include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
+#include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
+#include "chrome/browser/ash/policy/status_collector/legacy_device_status_collector.h"
 #include "chrome/browser/ash/policy/status_collector/status_collector.h"
+#include "chrome/browser/browser_process.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,8 +37,7 @@ const int kMinUploadDelayMs = 60 * 1000;  // 60 seconds
 // Minimum delay after scheduling an upload
 const int kMinUploadScheduleDelayMs = 60 * 1000;  // 60 seconds
 // Minimum interval between the last upload and the next immediate upload
-constexpr base::TimeDelta kMinImmediateUploadInterval =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kMinImmediateUploadInterval = base::Seconds(10);
 }  // namespace
 
 namespace policy {
@@ -58,6 +61,11 @@ StatusUploader::StatusUploader(
       ash::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kReportUploadFrequency,
           base::BindRepeating(&StatusUploader::RefreshUploadFrequency,
+                              base::Unretained(this)));
+  granular_reporting_subscription_ =
+      ash::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kEnableDeviceGranularReporting,
+          base::BindRepeating(&StatusUploader::UpdateStatusCollector,
                               base::Unretained(this)));
 
   // Update the upload frequency from settings.
@@ -88,7 +96,7 @@ bool StatusUploader::ScheduleNextStatusUpload(bool immediately) {
   // happened, this yields a TimeDelta of kMinUploadScheduleDelayMs).
   base::TimeDelta delay =
       std::max((last_upload_ + upload_frequency_) - now,
-               base::TimeDelta::FromMilliseconds(kMinUploadScheduleDelayMs));
+               base::Milliseconds(kMinUploadScheduleDelayMs));
 
   // The next upload should be scheduled for at least
   // kMinImmediateUploadInterval after the last upload if it is immediately.
@@ -100,6 +108,37 @@ bool StatusUploader::ScheduleNextStatusUpload(bool immediately) {
       base::BindOnce(&StatusUploader::UploadStatus, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, upload_callback_.callback(), delay);
   return true;
+}
+
+void StatusUploader::UpdateStatusCollector() {
+  if (user_manager::UserManager::Get()->GetActiveUser()->IsChild()) {
+    return;
+  }
+
+  ash::CrosSettings* settings = ash::CrosSettings::Get();
+  if (chromeos::CrosSettingsProvider::TRUSTED !=
+      settings->PrepareTrustedValues(
+          base::BindOnce(&StatusUploader::UpdateStatusCollector,
+                         weak_factory_.GetWeakPtr()))) {
+    return;
+  }
+
+  bool granular_reporting_enabled;
+  if (!settings->GetBoolean(chromeos::kEnableDeviceGranularReporting,
+                            &granular_reporting_enabled)) {
+    granular_reporting_enabled = true;
+  }
+  PrefService* local_state = g_browser_process->local_state();
+
+  if (granular_reporting_enabled) {
+    SYSLOG(INFO) << "Enabling granular reporting controls";
+    collector_ = std::make_unique<DeviceStatusCollector>(
+        local_state, chromeos::system::StatisticsProvider::GetInstance());
+  } else {
+    SYSLOG(INFO) << "Disabling granular reporting controls";
+    collector_ = std::make_unique<LegacyDeviceStatusCollector>(
+        local_state, chromeos::system::StatisticsProvider::GetInstance());
+  }
 }
 
 void StatusUploader::RefreshUploadFrequency() {
@@ -121,9 +160,9 @@ void StatusUploader::RefreshUploadFrequency() {
   if (settings->GetInteger(chromeos::kReportUploadFrequency, &frequency)) {
     SYSLOG(INFO) << "Changing status upload frequency from "
                  << upload_frequency_ << " to "
-                 << base::TimeDelta::FromMilliseconds(frequency);
-    upload_frequency_ = base::TimeDelta::FromMilliseconds(
-        std::max(kMinUploadDelayMs, frequency));
+                 << base::Milliseconds(frequency);
+    upload_frequency_ =
+        base::Milliseconds(std::max(kMinUploadDelayMs, frequency));
   }
   // Schedule a new upload with the new frequency - only do this if we've
   // already performed the initial upload, because we want the initial upload
@@ -212,14 +251,8 @@ void StatusUploader::OnStatusReceived(StatusCollectorParams callback_params) {
     return;
   }
 
-  // TODO(crbug.com/1123153): Remove write_protect_switch logging after bugfix.
-  SYSLOG(INFO)
-      << "Starting status upload: has_device_status = " << has_device_status
-      << " write_protect_switch = "
-      << (callback_params.device_status &&
-                  callback_params.device_status->has_write_protect_switch()
-              ? callback_params.device_status->write_protect_switch()
-              : -1);
+  SYSLOG(INFO) << "Starting status upload: has_device_status = "
+               << has_device_status;
 
   client_->UploadDeviceStatus(callback_params.device_status.get(),
                               callback_params.session_status.get(),

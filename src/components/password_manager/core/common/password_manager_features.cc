@@ -68,12 +68,6 @@ const base::Feature KEnablePasswordGenerationForClearTextFields = {
 const base::Feature kFillingAcrossAffiliatedWebsites{
     "FillingAcrossAffiliatedWebsites", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables showing UI button in password fallback sheet.
-// The button opens a different sheet that allows filling a password from any
-// origin.
-const base::Feature kFillingPasswordsFromAnyOrigin{
-    "FillingPasswordsFromAnyOrigin", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
@@ -84,10 +78,6 @@ const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
 // TODO(crbug.com/1164861): Remove once confirmed to be safe (around M92 or so).
 const base::Feature kInferConfirmationPasswordField = {
     "InferConfirmationPasswordField", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables respecting of insecure credential muting state.
-const base::Feature kMutingCompromisedCredentials{
-    "MutingCompromisedCredentials", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables password change flow from leaked password dialog.
 const base::Feature kPasswordChange = {"PasswordChange",

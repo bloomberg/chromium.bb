@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_registrar.h"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -76,6 +77,11 @@ void WebAppRegistrar::AddObserver(AppRegistrarObserver* observer) {
 
 void WebAppRegistrar::RemoveObserver(AppRegistrarObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void WebAppRegistrar::NotifyWebAppProtocolSettingsChanged() {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppProtocolSettingsChanged();
 }
 
 void WebAppRegistrar::NotifyWebAppInstalled(const AppId& app_id) {
@@ -451,12 +457,40 @@ bool WebAppRegistrar::WasInstalledByOem(const AppId& app_id) const {
          web_app->chromeos_data()->oem_installed;
 }
 
-bool WebAppRegistrar::IsApprovedLaunchProtocol(
+bool WebAppRegistrar::IsAllowedLaunchProtocol(
     const AppId& app_id,
     std::string protocol_scheme) const {
   const WebApp* web_app = GetAppById(app_id);
   return web_app &&
-         base::Contains(web_app->approved_launch_protocols(), protocol_scheme);
+         base::Contains(web_app->allowed_launch_protocols(), protocol_scheme);
+}
+
+bool WebAppRegistrar::IsDisallowedLaunchProtocol(
+    const AppId& app_id,
+    std::string protocol_scheme) const {
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && base::Contains(web_app->disallowed_launch_protocols(),
+                                   protocol_scheme);
+}
+
+base::flat_set<std::string> WebAppRegistrar::GetAllAllowedLaunchProtocols()
+    const {
+  base::flat_set<std::string> protocols;
+  for (const WebApp& web_app : GetApps()) {
+    protocols.insert(web_app.allowed_launch_protocols().begin(),
+                     web_app.allowed_launch_protocols().end());
+  }
+  return protocols;
+}
+
+base::flat_set<std::string> WebAppRegistrar::GetAllDisallowedLaunchProtocols()
+    const {
+  base::flat_set<std::string> protocols;
+  for (const WebApp& web_app : GetApps()) {
+    protocols.insert(web_app.disallowed_launch_protocols().begin(),
+                     web_app.disallowed_launch_protocols().end());
+  }
+  return protocols;
 }
 
 int WebAppRegistrar::CountUserInstalledApps() const {
@@ -488,6 +522,12 @@ absl::optional<SkColor> WebAppRegistrar::GetAppBackgroundColor(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->background_color() : absl::nullopt;
+}
+
+absl::optional<SkColor> WebAppRegistrar::GetAppDarkModeThemeColor(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->dark_mode_theme_color() : absl::nullopt;
 }
 
 const GURL& WebAppRegistrar::GetAppStartUrl(const AppId& app_id) const {
@@ -603,7 +643,7 @@ base::Time WebAppRegistrar::GetAppInstallTime(const AppId& app_id) const {
 std::vector<apps::IconInfo> WebAppRegistrar::GetAppIconInfos(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->icon_infos() : std::vector<apps::IconInfo>();
+  return web_app ? web_app->manifest_icons() : std::vector<apps::IconInfo>();
 }
 
 SortedSizesPx WebAppRegistrar::GetAppDownloadedIconSizesAny(

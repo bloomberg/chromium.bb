@@ -66,8 +66,7 @@ constexpr base::FilePath::CharType kAndroidMyFilesDownloadsDir[] =
 
 // How long to wait for new inotify events before building the updated timestamp
 // map.
-const base::TimeDelta kBuildTimestampMapDelay =
-    base::TimeDelta::FromMilliseconds(1000);
+const base::TimeDelta kBuildTimestampMapDelay = base::Milliseconds(1000);
 
 // Providing the similar guarantee as
 // /proc/sys/fs/inotify/max_queued_events
@@ -205,6 +204,10 @@ class ArcFileSystemWatcherService::FileSystemWatcher {
   FileSystemWatcher(const Callback& callback,
                     const base::FilePath& cros_dir,
                     const base::FilePath& android_dir);
+
+  FileSystemWatcher(const FileSystemWatcher&) = delete;
+  FileSystemWatcher& operator=(const FileSystemWatcher&) = delete;
+
   ~FileSystemWatcher();
 
   // Starts watching directory.
@@ -240,8 +243,6 @@ class ArcFileSystemWatcherService::FileSystemWatcher {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<FileSystemWatcher> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileSystemWatcher);
 };
 
 ArcFileSystemWatcherService::FileSystemWatcher::FileSystemWatcher(

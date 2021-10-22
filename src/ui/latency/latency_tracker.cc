@@ -4,6 +4,7 @@
 
 #include "ui/latency/latency_tracker.h"
 
+#include <algorithm>
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -60,6 +61,14 @@ LatencyTracker::~LatencyTracker() = default;
 void LatencyTracker::OnGpuSwapBuffersCompleted(
     std::vector<ui::LatencyInfo> latency_info,
     bool top_controls_visible_height_changed) {
+  // ReportJankyFrame has to process latency infos in increasing trace_id
+  // order, so it can compare the current frame to previous one. Therefore, the
+  // vector is sorted here before passing it down the call chain.
+  std::sort(latency_info.begin(), latency_info.end(),
+            [](const LatencyInfo& x, const LatencyInfo& y) {
+              return x.trace_id() < y.trace_id();
+            });
+
   for (const auto& latency : latency_info) {
     base::TimeTicks gpu_swap_end_timestamp;
     if (!latency.FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
@@ -161,21 +170,6 @@ void LatencyTracker::ReportJankyFrame(base::TimeTicks original_timestamp,
   CONFIRM_EVENT_TIMES_EXIST(original_timestamp, gpu_swap_end_timestamp);
   base::TimeDelta dur = gpu_swap_end_timestamp - original_timestamp;
 
-  uint64_t id = base::trace_event::GetNextGlobalTraceId();
-  uint64_t flow_id = base::trace_event::GetNextGlobalTraceId();
-
-  // Temporary tracing events used to log individual UMA jank metric values
-  // TODO(b/185991751): Delete after the discrepancy is fixed.
-  TRACE_EVENT_BEGIN(
-      "latencyInfo", "InputLatency::ReportJankyFrame", perfetto::Track(id),
-      original_timestamp, "trace_id", latency.trace_id(),
-      [flow_id](perfetto::EventContext ctx) {
-        tracing::FillFlowEvent(
-            ctx, perfetto::protos::pbzero::TrackEvent_LegacyEvent::FLOW_OUT,
-            flow_id);
-      });
-  TRACE_EVENT_END("latencyInfo", perfetto::Track(id), gpu_swap_end_timestamp);
-
   if (first_frame) {
     if (jank_state_.total_update_events_ > 0) {
       // If we have some data from previous scroll, report it to UMA.
@@ -226,14 +220,6 @@ void LatencyTracker::ReportJankyFrame(base::TimeTicks original_timestamp,
 
       if (IsJankyComparison(prev_frames_taken, frames_taken)) {
         UMA_HISTOGRAM_BOOLEAN("Event.Latency.ScrollJank", true);
-        TRACE_EVENT(
-            "latencyInfo", "InputLatency::ConfirmJankyFrame",
-            [this](perfetto::EventContext ctx) {
-              tracing::FillFlowEvent(
-                  ctx,
-                  perfetto::protos::pbzero::TrackEvent_LegacyEvent::FLOW_IN,
-                  prev_flow_id_);
-            });
         jank_state_.janky_update_events_++;
         jank_state_.janky_update_duration_ += jank_state_.prev_duration_;
       } else {
@@ -244,13 +230,6 @@ void LatencyTracker::ReportJankyFrame(base::TimeTicks original_timestamp,
     // The current GestureScrollUpdate is janky compared to the previous one.
     if (IsJankyComparison(frames_taken, prev_frames_taken)) {
       UMA_HISTOGRAM_BOOLEAN("Event.Latency.ScrollJank", true);
-      TRACE_EVENT(
-          "latencyInfo", "InputLatency::ConfirmJankyFrame",
-          [flow_id](perfetto::EventContext ctx) {
-            tracing::FillFlowEvent(
-                ctx, perfetto::protos::pbzero::TrackEvent_LegacyEvent::FLOW_IN,
-                flow_id);
-          });
       jank_state_.janky_update_events_++;
       jank_state_.janky_update_duration_ += dur;
 
@@ -267,7 +246,6 @@ void LatencyTracker::ReportJankyFrame(base::TimeTicks original_timestamp,
   }
 
   jank_state_.prev_duration_ = dur;
-  prev_flow_id_ = flow_id;
 }
 
 void LatencyTracker::ComputeEndToEndLatencyHistograms(

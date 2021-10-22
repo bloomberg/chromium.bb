@@ -24,14 +24,15 @@
 
 namespace {
 
-constexpr base::TimeDelta kUpdatePeriodMs =
-    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kUpdatePeriodMs = base::Milliseconds(1000);
 
 gfx::ImageSkia ScaleBitmap(const SkBitmap& bitmap, gfx::Size size) {
   const gfx::Rect scaled_rect = media::ComputeLetterboxRegion(
       gfx::Rect(0, 0, size.width(), size.height()),
       gfx::Size(bitmap.info().width(), bitmap.info().height()));
 
+  // TODO(crbug.com/1246835): Consider changing to ResizeMethod::BEST after
+  // evaluating the CPU impact.
   const gfx::ImageSkia resized = gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::ImageSkia::CreateFromBitmap(bitmap, 1.f),
       skia::ImageOperations::ResizeMethod::RESIZE_GOOD, scaled_rect.size());

@@ -84,6 +84,10 @@ class TestErrorPageDelegate : public ErrorPageDelegate {
 class SSLBrowserTest : public WebLayerBrowserTest {
  public:
   SSLBrowserTest() = default;
+
+  SSLBrowserTest(const SSLBrowserTest&) = delete;
+  SSLBrowserTest& operator=(const SSLBrowserTest&) = delete;
+
   ~SSLBrowserTest() override = default;
 
   // WebLayerBrowserTest:
@@ -254,9 +258,6 @@ class SSLBrowserTest : public WebLayerBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_mismatched_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_expired_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SSLBrowserTest);
 };
 
 // Tests clicking "take me back" on the interstitial page.
@@ -371,9 +372,9 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, BadClockInterstitial) {
 
   // Set network time back ten minutes.
   BrowserProcess::GetInstance()->GetNetworkTimeTracker()->UpdateNetworkTime(
-      base::Time::Now() - base::TimeDelta::FromMinutes(10),
-      base::TimeDelta::FromMilliseconds(1),   /* resolution */
-      base::TimeDelta::FromMilliseconds(500), /* latency */
+      base::Time::Now() - base::Minutes(10),
+      base::Milliseconds(1),   /* resolution */
+      base::Milliseconds(500), /* latency */
       base::TimeTicks::Now() /* posting time of this update */);
 
   // Now navigating to a page with an expired cert should cause the bad clock

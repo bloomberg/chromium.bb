@@ -111,8 +111,6 @@ static_library("browser") {
     "manage_passwords_referrer.h",
     "move_password_to_account_store_helper.cc",
     "move_password_to_account_store_helper.h",
-    "multi_store_form_fetcher.cc",
-    "multi_store_form_fetcher.h",
     "old_google_credentials_cleaner.cc",
     "old_google_credentials_cleaner.h",
     "origin_credential_store.cc",
@@ -189,8 +187,6 @@ static_library("browser") {
     "password_store_impl.cc",
     "password_store_impl.h",
     "password_store_interface.h",
-    "password_store_proxy_backend.cc",
-    "password_store_proxy_backend.h",
     "password_store_signin_notifier.h",
     "password_store_sync.cc",
     "password_store_sync.h",
@@ -248,6 +244,7 @@ static_library("browser") {
     "ui/saved_passwords_presenter.h",
     "votes_uploader.cc",
     "votes_uploader.h",
+    "webauthn_credentials_delegate.h",
     "well_known_change_password_state.cc",
     "well_known_change_password_state.h",
     "well_known_change_password_util.cc",
@@ -319,6 +316,8 @@ static_library("browser") {
       "password_scripts_fetcher.h",
       "password_scripts_fetcher_impl.cc",
       "password_scripts_fetcher_impl.h",
+      "password_store_proxy_backend.cc",
+      "password_store_proxy_backend.h",
     ]
   }
 
@@ -515,6 +514,8 @@ static_library("test_support") {
     "mock_smart_bubble_stats_store.h",
     "password_manager_test_utils.cc",
     "password_manager_test_utils.h",
+    "site_affiliation/fake_affiliation_service.cc",
+    "site_affiliation/fake_affiliation_service.h",
     "site_affiliation/mock_affiliation_fetcher_factory.cc",
     "site_affiliation/mock_affiliation_fetcher_factory.h",
     "site_affiliation/mock_affiliation_service.cc",
@@ -645,7 +646,6 @@ source_set("unit_tests") {
     "leak_detection_delegate_unittest.cc",
     "leak_detection_dialog_utils_unittest.cc",
     "login_database_unittest.cc",
-    "multi_store_form_fetcher_unittest.cc",
     "old_google_credentials_cleaner_unittest.cc",
     "origin_credential_store_unittest.cc",
     "password_access_authenticator_unittest.cc",
@@ -671,7 +671,6 @@ source_set("unit_tests") {
     "password_reuse_manager_impl_unittest.cc",
     "password_save_manager_impl_unittest.cc",
     "password_store_impl_unittest.cc",
-    "password_store_proxy_backend_unittest.cc",
     "password_store_unittest.cc",
     "password_sync_util_unittest.cc",
     "password_ui_utils_unittest.cc",
@@ -697,7 +696,10 @@ source_set("unit_tests") {
     "well_known_change_password_util_unittest.cc",
   ]
   if (is_android) {
-    sources += [ "password_scripts_fetcher_impl_unittests.cc" ]
+    sources += [
+      "password_scripts_fetcher_impl_unittests.cc",
+      "password_store_proxy_backend_unittest.cc",
+    ]
   }
   if (is_ios) {
     sources += [ "login_database_ios_unittest.cc" ]

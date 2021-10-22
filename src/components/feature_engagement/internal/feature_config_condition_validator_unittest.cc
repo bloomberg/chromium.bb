@@ -161,6 +161,10 @@ class TestEventModel : public EventModel {
 class TestAvailabilityModel : public AvailabilityModel {
  public:
   TestAvailabilityModel() : ready_(true) {}
+
+  TestAvailabilityModel(const TestAvailabilityModel&) = delete;
+  TestAvailabilityModel& operator=(const TestAvailabilityModel&) = delete;
+
   ~TestAvailabilityModel() override = default;
 
   void Initialize(AvailabilityModel::OnInitializedCallback callback,
@@ -188,13 +192,16 @@ class TestAvailabilityModel : public AvailabilityModel {
   bool ready_;
 
   std::map<std::string, absl::optional<uint32_t>> availabilities_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAvailabilityModel);
 };
 
 class TestDisplayLockController : public DisplayLockController {
  public:
   TestDisplayLockController() = default;
+
+  TestDisplayLockController(const TestDisplayLockController&) = delete;
+  TestDisplayLockController& operator=(const TestDisplayLockController&) =
+      delete;
+
   ~TestDisplayLockController() override = default;
 
   std::unique_ptr<DisplayLockHandle> AcquireDisplayLock() override {
@@ -210,13 +217,16 @@ class TestDisplayLockController : public DisplayLockController {
  private:
   // The next result to return from IsDisplayLocked().
   bool next_display_locked_result_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayLockController);
 };
 
 class FeatureConfigConditionValidatorTest : public ::testing::Test {
  public:
   FeatureConfigConditionValidatorTest() = default;
+
+  FeatureConfigConditionValidatorTest(
+      const FeatureConfigConditionValidatorTest&) = delete;
+  FeatureConfigConditionValidatorTest& operator=(
+      const FeatureConfigConditionValidatorTest&) = delete;
 
  protected:
   ConditionValidator::Result GetResultForDayAndEventWindow(
@@ -256,9 +266,6 @@ class FeatureConfigConditionValidatorTest : public ::testing::Test {
   TestDisplayLockController display_lock_controller_;
   FeatureConfigConditionValidator validator_;
   uint32_t current_day_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FeatureConfigConditionValidatorTest);
 };
 
 }  // namespace
@@ -709,7 +716,7 @@ TEST_F(FeatureConfigConditionValidatorTest, SnoozeExpiration) {
 
   // Updating last snooze timestamp.
   event_model_.IncrementSnooze(config.trigger.name, 1u,
-                               baseline - base::TimeDelta::FromDays(4));
+                               baseline - base::Days(4));
 
   // Verify that snooze conditions are met at day 3.
   result = GetResultForDay(config, 3u);
@@ -719,7 +726,7 @@ TEST_F(FeatureConfigConditionValidatorTest, SnoozeExpiration) {
 
   // When last snooze timestamp is too recent.
   event_model_.IncrementSnooze(config.trigger.name, 1u,
-                               baseline - base::TimeDelta::FromDays(2));
+                               baseline - base::Days(2));
   result = GetResultForDay(config, 3u);
   EXPECT_FALSE(result.NoErrors());
   EXPECT_FALSE(result.snooze_expiration_ok);
@@ -727,7 +734,7 @@ TEST_F(FeatureConfigConditionValidatorTest, SnoozeExpiration) {
 
   // Reset the last snooze timestamp.
   event_model_.IncrementSnooze(config.trigger.name, 1u,
-                               baseline - base::TimeDelta::FromDays(4));
+                               baseline - base::Days(4));
   result = GetResultForDay(config, 3u);
   EXPECT_TRUE(result.NoErrors());
   EXPECT_TRUE(result.snooze_expiration_ok);

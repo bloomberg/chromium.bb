@@ -153,6 +153,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                  net::URLRequestContext* url_request_context,
                  const std::vector<std::string>& cors_exempt_header_list);
 
+  NetworkContext(const NetworkContext&) = delete;
+  NetworkContext& operator=(const NetworkContext&) = delete;
+
   ~NetworkContext() override;
 
   // Sets a global CertVerifier to use when initializing all profiles.
@@ -411,7 +414,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SetDocumentReportingEndpoints(
       const base::UnguessableToken& reporting_source,
       const url::Origin& origin,
-      const net::NetworkIsolationKey& network_isolation_key,
+      const net::IsolationInfo& isolation_info,
       const base::flat_map<std::string, std::string>& endpoints) override;
   void SendReportsAndRemoveSource(
       const base::UnguessableToken& reporting_source) override;
@@ -827,8 +830,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       url_loader_factories_;
 
   base::WeakPtrFactory<NetworkContext> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };
 
 }  // namespace network

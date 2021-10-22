@@ -65,13 +65,12 @@ namespace {
 
 // The minimum amount of time that should be spent in serializing code in order
 // to report the elapsed time as a URL-keyed metric.
-constexpr base::TimeDelta kMinSerializationTimeToSend =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kMinSerializationTimeToSend = base::Milliseconds(100);
 
 // When URL-keyed metrics for the amount of time spent in serializing code
 // are sent, the minimum amount of time to wait, in seconds, before
 // sending metrics. Metrics may also be sent once per page transition.
-constexpr base::TimeDelta kMinUKMDelay = base::TimeDelta::FromSeconds(300);
+constexpr base::TimeDelta kMinUKMDelay = base::Seconds(300);
 
 void SetAccessibilityCrashKey(ui::AXMode mode) {
   // Add a crash key with the ax_mode, to enable searching for top crashes that
@@ -200,7 +199,7 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
       GetAccessibilityMode().has_mode(ui::AXMode::kLabelImages)) {
     return;
   }
-  tree_source_->RemoveImageAnnotator();
+  tree_source_->RemoveBlinkImageAnnotator();
   ax_image_annotator_->Destroy();
   ax_image_annotator_.reset();
   page_language_.clear();
@@ -416,7 +415,7 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
       break;
     case ax::mojom::Action::kSignalEndOfTest:
       // Wait for 100ms to allow pending events to come in
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+      base::PlatformThread::Sleep(base::Milliseconds(100));
 
       HandleAXEvent(ui::AXEvent(root.AxID(), ax::mojom::Event::kEndOfTest));
       break;
@@ -707,7 +706,7 @@ void RenderAccessibilityImpl::ScheduleSendPendingAccessibilityEvents(
       // Where the user is not currently navigating or typing,
       // process changes on a delay so that they occur in larger batches,
       // improving efficiency of repetitive mutations.
-      delay = base::TimeDelta::FromMilliseconds(GetDeferredEventsDelay());
+      delay = base::Milliseconds(GetDeferredEventsDelay());
       break;
     case EventScheduleMode::kProcessEventsImmediately:
       // This set of events needed to be processed immediately because of a
@@ -1282,7 +1281,7 @@ void RenderAccessibilityImpl::CreateAXImageAnnotator() {
 
   ax_image_annotator_ =
       std::make_unique<AXImageAnnotator>(this, std::move(annotator));
-  tree_source_->AddImageAnnotator(ax_image_annotator_.get());
+  tree_source_->AddBlinkImageAnnotator(ax_image_annotator_.get());
 }
 
 void RenderAccessibilityImpl::StartOrStopLabelingImages(ui::AXMode old_mode,
@@ -1295,7 +1294,7 @@ void RenderAccessibilityImpl::StartOrStopLabelingImages(ui::AXMode old_mode,
     CreateAXImageAnnotator();
   } else if (old_mode.has_mode(ui::AXMode::kLabelImages) &&
              !new_mode.has_mode(ui::AXMode::kLabelImages)) {
-    tree_source_->RemoveImageAnnotator();
+    tree_source_->RemoveBlinkImageAnnotator();
     ax_image_annotator_->Destroy();
     ax_image_annotator_.reset();
   }

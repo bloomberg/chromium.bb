@@ -10,8 +10,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/printer_event.pb.h"
 
-namespace chromeos {
+namespace ash {
 namespace {
+
+using ::chromeos::Printer;
 
 constexpr int kVendorId = 0x3241;
 constexpr int kProductId = 0x1337;
@@ -24,6 +26,10 @@ constexpr char kEffectiveMakeAndModel[] = "Generic PostScript";
 class PrinterEventTrackerTest : public testing::Test {
  public:
   PrinterEventTrackerTest() = default;
+
+  PrinterEventTrackerTest(const PrinterEventTrackerTest&) = delete;
+  PrinterEventTrackerTest& operator=(const PrinterEventTrackerTest&) = delete;
+
   ~PrinterEventTrackerTest() override = default;
 
  protected:
@@ -36,9 +42,6 @@ class PrinterEventTrackerTest : public testing::Test {
     tracker_.FlushPrinterEvents(&events);
     return events;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrinterEventTrackerTest);
 };
 
 TEST_F(PrinterEventTrackerTest, RecordsWhenEnabled) {
@@ -170,7 +173,7 @@ TEST_F(PrinterEventTrackerTest, InstalledPrinterUserPpd) {
 
 TEST_F(PrinterEventTrackerTest, InstalledUsbPrinter) {
   tracker_.set_logging(true);
-  PrinterDetector::DetectedPrinter usb_printer;
+  chromeos::PrinterDetector::DetectedPrinter usb_printer;
   usb_printer.ppd_search_data.usb_vendor_id = kVendorId;
   usb_printer.ppd_search_data.usb_product_id = kProductId;
   usb_printer.ppd_search_data.usb_manufacturer = kUsbManufacturer;
@@ -227,7 +230,7 @@ TEST_F(PrinterEventTrackerTest, AbandonedNetworkPrinter) {
 TEST_F(PrinterEventTrackerTest, AbandonedUsbPrinter) {
   tracker_.set_logging(true);
 
-  PrinterDetector::DetectedPrinter usb_printer;
+  chromeos::PrinterDetector::DetectedPrinter usb_printer;
   usb_printer.ppd_search_data.usb_vendor_id = kVendorId;
   usb_printer.ppd_search_data.usb_product_id = kProductId;
   usb_printer.ppd_search_data.usb_manufacturer = kUsbManufacturer;
@@ -280,4 +283,4 @@ TEST_F(PrinterEventTrackerTest, RemovedPrinter) {
 }
 
 }  // namespace
-}  // namespace chromeos
+}  // namespace ash

@@ -46,6 +46,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/websockets/websocket_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -311,6 +312,55 @@ class WebSocketTest : public HttpServerTest {
   void OnWebSocketMessage(int connection_id, std::string data) override {}
 };
 
+class WebSocketAcceptingTest : public WebSocketTest {
+ public:
+  void OnWebSocketRequest(int connection_id,
+                          const HttpServerRequestInfo& info) override {
+    HttpServerTest::OnHttpRequest(connection_id, info);
+    server_->AcceptWebSocket(connection_id, info, TRAFFIC_ANNOTATION_FOR_TESTS);
+  }
+
+  void OnWebSocketMessage(int connection_id, std::string data) override {
+    message_ = data;
+    if (message_.length() > 0 && run_loop_) {
+      run_loop_->Quit();
+    }
+  }
+
+  std::string GetMessage() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+    return message_;
+  }
+
+ private:
+  std::string message_;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+std::string EncodeFrame(std::string message,
+                        WebSocketFrameHeader::OpCodeEnum op_code,
+                        bool mask,
+                        bool finish) {
+  WebSocketFrameHeader header(op_code);
+  header.final = finish;
+  header.masked = mask;
+  header.payload_length = message.size();
+  const int header_size = GetWebSocketFrameHeaderSize(header);
+  std::string frame_header;
+  frame_header.resize(header_size);
+  if (mask) {
+    WebSocketMaskingKey masking_key = GenerateWebSocketMaskingKey();
+    WriteWebSocketFrameHeader(header, &masking_key, &frame_header[0],
+                              header_size);
+    MaskWebSocketFramePayload(masking_key, 0, &message[0], message.length());
+  } else {
+    WriteWebSocketFrameHeader(header, nullptr, &frame_header[0], header_size);
+  }
+  return frame_header + message;
+}
+
 TEST_F(HttpServerTest, Request) {
   TestHttpClient client;
   CreateConnection(&client);
@@ -485,6 +535,113 @@ TEST_F(WebSocketTest, RequestWebSocketTrailingJunk) {
   client.ExpectUsedThenDisconnectedWithNoData();
 }
 
+TEST_F(WebSocketAcceptingTest, SendPingFrameWithNoMessage) {
+  TestHttpClient client;
+  CreateConnection(&client);
+  std::string response;
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n\r\n");
+  RunUntilRequestsReceived(1);
+  ASSERT_TRUE(client.ReadResponse(&response));
+  const std::string message = "";
+  const std::string ping_frame =
+      EncodeFrame(message, WebSocketFrameHeader::OpCodeEnum::kOpCodePing,
+                  /* mask= */ true, /* finish= */ true);
+  const std::string pong_frame =
+      EncodeFrame(message, WebSocketFrameHeader::OpCodeEnum::kOpCodePong,
+                  /* mask= */ false, /* finish= */ true);
+  client.Send(ping_frame);
+  ASSERT_TRUE(client.Read(&response, pong_frame.length()));
+  EXPECT_EQ(response, pong_frame);
+}
+
+TEST_F(WebSocketAcceptingTest, SendPingFrameWithMessage) {
+  TestHttpClient client;
+  CreateConnection(&client);
+  std::string response;
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n\r\n");
+  RunUntilRequestsReceived(1);
+  ASSERT_TRUE(client.ReadResponse(&response));
+  const std::string message = "hello";
+  const std::string ping_frame =
+      EncodeFrame(message, WebSocketFrameHeader::OpCodeEnum::kOpCodePing,
+                  /* mask= */ true, /* finish= */ true);
+  const std::string pong_frame =
+      EncodeFrame(message, WebSocketFrameHeader::OpCodeEnum::kOpCodePong,
+                  /* mask= */ false, /* finish= */ true);
+  client.Send(ping_frame);
+  ASSERT_TRUE(client.Read(&response, pong_frame.length()));
+  EXPECT_EQ(response, pong_frame);
+}
+
+TEST_F(WebSocketAcceptingTest, SendPongFrame) {
+  TestHttpClient client;
+  CreateConnection(&client);
+  std::string response;
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n\r\n");
+  RunUntilRequestsReceived(1);
+  ASSERT_TRUE(client.ReadResponse(&response));
+  const std::string ping_frame = EncodeFrame(
+      /* message= */ "", WebSocketFrameHeader::OpCodeEnum::kOpCodePing,
+      /* mask= */ true, /* finish= */ true);
+  const std::string pong_frame_send = EncodeFrame(
+      /* message= */ "", WebSocketFrameHeader::OpCodeEnum::kOpCodePong,
+      /* mask= */ true, /* finish= */ true);
+  const std::string pong_frame_receive = EncodeFrame(
+      /* message= */ "", WebSocketFrameHeader::OpCodeEnum::kOpCodePong,
+      /* mask= */ false, /* finish= */ true);
+  client.Send(pong_frame_send);
+  client.Send(ping_frame);
+  ASSERT_TRUE(client.Read(&response, pong_frame_receive.length()));
+  EXPECT_EQ(response, pong_frame_receive);
+}
+
+TEST_F(WebSocketAcceptingTest, SendLongTextFrame) {
+  TestHttpClient client;
+  CreateConnection(&client);
+  std::string response;
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n\r\n");
+  RunUntilRequestsReceived(1);
+  ASSERT_TRUE(client.ReadResponse(&response));
+  constexpr int kMessageSize = 100000;
+  const std::string text_message(kMessageSize, 'a');
+  const std::string continuation_message(kMessageSize, 'b');
+  const std::string text_frame =
+      EncodeFrame(text_message, WebSocketFrameHeader::OpCodeEnum::kOpCodeText,
+                  /* mask= */ true,
+                  /* finish= */ false);
+  const std::string continuation_frame =
+      EncodeFrame(continuation_message,
+                  WebSocketFrameHeader::OpCodeEnum::kOpCodeContinuation,
+                  /* mask= */ true, /* finish= */ true);
+  client.Send(text_frame);
+  client.Send(continuation_frame);
+  std::string received_message = GetMessage();
+  EXPECT_EQ(
+      static_cast<int>(received_message.length()),
+      static_cast<int>(text_message.length() + continuation_message.length()));
+  EXPECT_EQ(received_message, text_message + continuation_message);
+}
+
 TEST_F(HttpServerTest, RequestWithTooLargeBody) {
   TestHttpClient client;
   CreateConnection(&client);
@@ -562,6 +719,9 @@ TEST_F(HttpServerTest, WrongProtocolRequest) {
 class MockStreamSocket : public StreamSocket {
  public:
   MockStreamSocket() : connected_(true), read_buf_(nullptr), read_buf_len_(0) {}
+
+  MockStreamSocket(const MockStreamSocket&) = delete;
+  MockStreamSocket& operator=(const MockStreamSocket&) = delete;
 
   // StreamSocket
   int Connect(CompletionOnceCallback callback) override {
@@ -653,8 +813,6 @@ class MockStreamSocket : public StreamSocket {
   CompletionOnceCallback read_callback_;
   std::string pending_read_data_;
   NetLogWithSource net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockStreamSocket);
 };
 
 TEST_F(HttpServerTest, RequestWithBodySplitAcrossPackets) {

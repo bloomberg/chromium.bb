@@ -41,6 +41,8 @@
 #include "net/url_request/url_fetcher.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/cpu_utils.h"
+#include "remoting/base/host_settings.h"
 #include "remoting/base/logging.h"
 #include "remoting/base/oauth_token_getter_impl.h"
 #include "remoting/base/oauth_token_getter_proxy.h"
@@ -65,7 +67,6 @@
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/host_power_save_blocker.h"
-#include "remoting/host/host_settings.h"
 #include "remoting/host/host_status_logger.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/ipc_desktop_environment.h"
@@ -216,6 +217,9 @@ class HostProcess : public ConfigWatcher::Delegate,
   HostProcess(std::unique_ptr<ChromotingHostContext> context,
               int* exit_code_out,
               ShutdownWatchdog* shutdown_watchdog);
+
+  HostProcess(const HostProcess&) = delete;
+  HostProcess& operator=(const HostProcess&) = delete;
 
   // ConfigWatcher::Delegate interface.
   void OnConfigUpdated(const std::string& serialized_config) override;
@@ -457,8 +461,6 @@ class HostProcess : public ConfigWatcher::Delegate,
   bool checking_permission_state_ = false;
   bool permission_granted_ = false;
 #endif  // defined(OS_APPLE)
-
-  DISALLOW_COPY_AND_ASSIGN(HostProcess);
 };
 
 HostProcess::HostProcess(std::unique_ptr<ChromotingHostContext> context,
@@ -540,6 +542,10 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
 #if defined(REMOTING_MULTI_PROCESS)
   auto endpoint =
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(*cmd_line);
+  if (!endpoint.is_valid()) {
+    LOG(ERROR) << "IPC channel endpoint provided via command line param was missing or invalid";
+    return false;
+  }
   auto invitation = mojo::IncomingInvitation::Accept(std::move(endpoint));
 
   // Connect to the daemon process.
@@ -847,7 +853,14 @@ void HostProcess::StartOnUiThread() {
     return;
   }
 
-  HostSettings::Initialize();
+  // Determine if the CPU this host is running on meets a set of minimum
+  // requirements. Note that this isn't a perfect solution as it is possible
+  // that the host will have crashed prior to reaching this point in the code,
+  // however this is the earliest time we can log an offline reason to the
+  // directory if it is unsupported.
+  if (!IsCpuSupported()) {
+    report_offline_reason_ = ExitCodeToString(kCpuNotSupported);
+  }
 
   if (!report_offline_reason_.empty()) {
     // Don't need to do any UI initialization.
@@ -855,6 +868,8 @@ void HostProcess::StartOnUiThread() {
         FROM_HERE, base::BindOnce(&HostProcess::StartOnNetworkThread, this));
     return;
   }
+
+  HostSettings::Initialize();
 
   policy_watcher_ = PolicyWatcher::CreateWithTaskRunner(
       context_->file_task_runner(), context_->management_service());
@@ -1579,18 +1594,8 @@ void HostProcess::StartHost() {
         enable_user_interface_);
   }
 
-  // Remote open URL is fully supported on Linux and still in development for
-  // Windows.
-#if defined(OS_LINUX)
-  desktop_environment_options_.set_enable_remote_open_url(true);
-#elif !defined(NDEBUG) && defined(OS_WIN)
-  // The modern default apps settings dialog is only available to Windows 8+.
-  // Given older Windows versions are EOL, we only advertise the feature on
-  // Windows 8+.
-  if (base::win::GetVersion() >= base::win::Version::WIN8) {
-    desktop_environment_options_.set_enable_remote_open_url(true);
-  }
-#endif
+  // The feature is enabled for all Googlers using a supported platform.
+  desktop_environment_options_.set_enable_remote_open_url(is_googler_);
 
   host_ = std::make_unique<ChromotingHost>(
       desktop_environment_factory_.get(), std::move(session_manager),
@@ -1606,7 +1611,7 @@ void HostProcess::StartHost() {
 
   if (max_session_duration_minutes_ > 0) {
     host_->SetMaximumSessionDuration(
-        base::TimeDelta::FromMinutes(max_session_duration_minutes_));
+        base::Minutes(max_session_duration_minutes_));
   }
 
   host_status_logger_ = std::make_unique<HostStatusLogger>(
@@ -1717,8 +1722,7 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
 
     HOST_LOG << "SendHostOfflineReason: sending " << host_offline_reason << ".";
     heartbeat_sender_->SetHostOfflineReason(
-        host_offline_reason,
-        base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
+        host_offline_reason, base::Seconds(kHostOfflineReasonTimeoutSeconds),
         base::BindOnce(&HostProcess::OnHostOfflineReasonAck, this));
     return;  // Shutdown will resume after OnHostOfflineReasonAck.
   }
@@ -1823,8 +1827,7 @@ int HostProcessMain() {
   // TODO(wez): The HostProcess holds a reference to itself until Shutdown().
   // Remove this hack as part of the multi-process refactoring.
   int exit_code = kSuccessExitCode;
-  ShutdownWatchdog shutdown_watchdog(
-      base::TimeDelta::FromSeconds(kShutdownTimeoutSeconds));
+  ShutdownWatchdog shutdown_watchdog(base::Seconds(kShutdownTimeoutSeconds));
   new HostProcess(std::move(context), &exit_code, &shutdown_watchdog);
 
   // Run the main (also UI) task executor until the host no longer needs it.

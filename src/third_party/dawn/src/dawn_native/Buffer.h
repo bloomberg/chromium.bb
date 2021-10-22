@@ -40,7 +40,7 @@ namespace dawn_native {
     static constexpr wgpu::BufferUsage kMappableBufferUsages =
         wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite;
 
-    class BufferBase : public ObjectBase {
+    class BufferBase : public ApiObjectBase {
         enum class BufferState {
             Unmapped,
             Mapped,
@@ -52,6 +52,8 @@ namespace dawn_native {
         BufferBase(DeviceBase* device, const BufferDescriptor* descriptor);
 
         static BufferBase* MakeError(DeviceBase* device, const BufferDescriptor* descriptor);
+
+        ObjectType GetType() const override;
 
         uint64_t GetSize() const;
         uint64_t GetAllocatedSize() const;
@@ -103,8 +105,6 @@ namespace dawn_native {
         MaybeError CopyFromStagingBuffer();
         void CallMapCallback(MapRequestID mapID, WGPUBufferMapAsyncStatus status);
 
-        MaybeError ValidateMap(wgpu::BufferUsage requiredUsage,
-                               WGPUBufferMapAsyncStatus* status) const;
         MaybeError ValidateMapAsync(wgpu::MapMode mode,
                                     size_t offset,
                                     size_t size,

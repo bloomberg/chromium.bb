@@ -14,9 +14,11 @@ generate_css("css_files") {
     "cookieItemsView.css",
     "frameDetailsReportView.css",
     "indexedDBViews.css",
+    "reportingApiReportsView.css",
     "resourcesPanel.css",
     "resourcesSidebar.css",
     "serviceWorkerCacheViews.css",
+    "serviceWorkerUpdateCycleView.css",
     "serviceWorkersView.css",
     "storageView.css",
   ]
@@ -25,8 +27,6 @@ generate_css("css_files") {
 devtools_module("application") {
   sources = [
     "AppManifestView.ts",
-    "ApplicationCacheItemsView.ts",
-    "ApplicationCacheModel.ts",
     "ApplicationPanelCacheSection.ts",
     "ApplicationPanelSidebar.ts",
     "ApplicationPanelTreeElement.ts",
@@ -42,6 +42,9 @@ devtools_module("application") {
     "IndexedDBModel.ts",
     "IndexedDBViews.ts",
     "OpenedWindowDetailsView.ts",
+    "ReportingApiReportsView.ts",
+    "ReportingApiTreeElement.ts",
+    "ReportingApiView.ts",
     "ResourcesPanel.ts",
     "ServiceWorkerCacheViews.ts",
     "ServiceWorkerUpdateCycleView.ts",

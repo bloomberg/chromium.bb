@@ -94,6 +94,12 @@ class RenderFrameHostManagerTestWebUIControllerFactory
     : public WebUIControllerFactory {
  public:
   RenderFrameHostManagerTestWebUIControllerFactory() {}
+
+  RenderFrameHostManagerTestWebUIControllerFactory(
+      const RenderFrameHostManagerTestWebUIControllerFactory&) = delete;
+  RenderFrameHostManagerTestWebUIControllerFactory& operator=(
+      const RenderFrameHostManagerTestWebUIControllerFactory&) = delete;
+
   ~RenderFrameHostManagerTestWebUIControllerFactory() override {}
 
   // WebUIFactory implementation.
@@ -121,14 +127,17 @@ class RenderFrameHostManagerTestWebUIControllerFactory
                       const GURL& url) override {
     return HasWebUIScheme(url);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerTestWebUIControllerFactory);
 };
 
 class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
  public:
   BeforeUnloadFiredWebContentsDelegate() {}
+
+  BeforeUnloadFiredWebContentsDelegate(
+      const BeforeUnloadFiredWebContentsDelegate&) = delete;
+  BeforeUnloadFiredWebContentsDelegate& operator=(
+      const BeforeUnloadFiredWebContentsDelegate&) = delete;
+
   ~BeforeUnloadFiredWebContentsDelegate() override {}
 
   void BeforeUnloadFired(WebContents* web_contents,
@@ -136,14 +145,15 @@ class BeforeUnloadFiredWebContentsDelegate : public WebContentsDelegate {
                          bool* proceed_to_fire_unload) override {
     *proceed_to_fire_unload = proceed;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BeforeUnloadFiredWebContentsDelegate);
 };
 
 class CloseWebContentsDelegate : public WebContentsDelegate {
  public:
   CloseWebContentsDelegate() : close_called_(false) {}
+
+  CloseWebContentsDelegate(const CloseWebContentsDelegate&) = delete;
+  CloseWebContentsDelegate& operator=(const CloseWebContentsDelegate&) = delete;
+
   ~CloseWebContentsDelegate() override {}
 
   void CloseContents(WebContents* web_contents) override {
@@ -154,8 +164,6 @@ class CloseWebContentsDelegate : public WebContentsDelegate {
 
  private:
   bool close_called_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseWebContentsDelegate);
 };
 
 // This observer keeps track of the last deleted RenderViewHost to avoid
@@ -766,10 +774,11 @@ class EnableViewSourceLocalFrame : public content::FakeLocalFrame,
   explicit EnableViewSourceLocalFrame(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
 
-  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
     if (!initialized_) {
       initialized_ = true;
-      Init(render_frame_host->GetRemoteAssociatedInterfaces());
+      Init(navigation_handle->GetRenderFrameHost()
+               ->GetRemoteAssociatedInterfaces());
     }
   }
 
@@ -1130,8 +1139,8 @@ TEST_P(RenderFrameHostManagerTest, NavigateAfterMissingUnloadACK) {
   // mojo::AgentSchedulingGroupHost::DidUnloadRenderFrame isn't received.  This
   // shouldn't happen, but we have seen it when going back quickly across many
   // entries (http://crbug.com/93427).
-  auto back_navigation1 =
-      NavigationSimulatorImpl::CreateHistoryNavigation(-1, contents());
+  auto back_navigation1 = NavigationSimulatorImpl::CreateHistoryNavigation(
+      -1, contents(), false /* is_renderer_initiated */);
   back_navigation1->ReadyToCommit();
   EXPECT_FALSE(rfh2->is_waiting_for_beforeunload_completion());
 
@@ -1807,7 +1816,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   const GURL kUrlA("http://www.google.com/");
   const GURL kUrlB("http://webkit.org/");
 
-  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   // Create a page with two child frames.
   contents()->NavigateAndCommit(kUrlA);
   contents()->GetMainFrame()->OnCreateChildFrame(
@@ -1984,7 +1993,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::mojom::TreeScopeType::kDocument, "frame_name", "uniqueName1",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
-      blink::mojom::FrameOwnerElementType::kIframe);
+      blink::FrameOwnerElementType::kIframe);
   RenderFrameHostManager* iframe =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
   NavigationEntryImpl entry(
@@ -2036,7 +2045,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName1",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
-      blink::mojom::FrameOwnerElementType::kIframe);
+      blink::FrameOwnerElementType::kIframe);
   RenderFrameHostManager* subframe_rfhm =
       contents()->GetFrameTree()->root()->child_at(0)->render_manager();
 
@@ -2234,7 +2243,8 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
   FrameTree* tree1 = contents()->GetFrameTree();
   FrameTreeNode* root1 = tree1->root();
   int process_id = root1->current_frame_host()->GetProcess()->GetID();
-  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
+  const bool is_dummy_frame_for_inner_tree = false;
   tree1->AddFrame(
       root1->current_frame_host(), process_id, 12,
       TestRenderFrameHost::CreateStubFrameRemote(),
@@ -2243,7 +2253,7 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName0",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      kOwnerType, is_dummy_frame_for_inner_tree);
   tree1->AddFrame(
       root1->current_frame_host(), process_id, 13,
       TestRenderFrameHost::CreateStubFrameRemote(),
@@ -2252,7 +2262,7 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName1",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      kOwnerType, is_dummy_frame_for_inner_tree);
 
   std::unique_ptr<TestWebContents> tab2(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2268,7 +2278,7 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName2",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      kOwnerType, is_dummy_frame_for_inner_tree);
   tree2->AddFrame(
       root2->current_frame_host(), process_id, 23,
       TestRenderFrameHost::CreateStubFrameRemote(),
@@ -2277,7 +2287,7 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName3",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      kOwnerType, is_dummy_frame_for_inner_tree);
 
   std::unique_ptr<TestWebContents> tab3(
       TestWebContents::Create(browser_context(), nullptr));
@@ -2298,7 +2308,7 @@ TEST_P(RenderFrameHostManagerTest, TraverseComplexOpenerChain) {
       blink::mojom::TreeScopeType::kDocument, std::string(), "uniqueName4",
       false, blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-      kOwnerType);
+      kOwnerType, is_dummy_frame_for_inner_tree);
 
   root1->child_at(1)->SetOpener(root1->child_at(1));
   root1->SetOpener(root2->child_at(1));
@@ -2381,7 +2391,7 @@ TEST_P(RenderFrameHostManagerTest, PageFocusPropagatesToSubframeProcesses) {
   const GURL kUrlB("http://b.com/");
   const GURL kUrlC("http://c.com/");
 
-  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   // Set up a page at a.com with three subframes: two for b.com and one for
   // c.com.
   contents()->NavigateAndCommit(kUrlA);
@@ -2503,7 +2513,7 @@ TEST_P(RenderFrameHostManagerTest,
   const GURL kUrlB("http://b.com/");
   const GURL kUrlC("http://c.com/");
 
-  constexpr auto kOwnerType = blink::mojom::FrameOwnerElementType::kIframe;
+  constexpr auto kOwnerType = blink::FrameOwnerElementType::kIframe;
   // Set up a page at a.com with a b.com subframe.
   contents()->NavigateAndCommit(kUrlA);
   main_test_rfh()->OnCreateChildFrame(
@@ -2624,7 +2634,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI1) {
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
-  auto reload = NavigationSimulator::CreateFromPending(contents());
+  auto reload =
+      NavigationSimulator::CreateFromPending(contents()->GetController());
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
@@ -2674,7 +2685,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithOneWebUI2) {
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
-  auto reload = NavigationSimulator::CreateFromPending(contents());
+  auto reload =
+      NavigationSimulator::CreateFromPending(contents()->GetController());
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
@@ -2720,7 +2732,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs1) {
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
-  auto reload = NavigationSimulator::CreateFromPending(contents());
+  auto reload =
+      NavigationSimulator::CreateFromPending(contents()->GetController());
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
@@ -2774,7 +2787,8 @@ TEST_P(RenderFrameHostManagerTest, SimultaneousNavigationWithTwoWebUIs2) {
 
   // Starts a reload of the WebUI page.
   contents()->GetController().Reload(ReloadType::NORMAL, true);
-  auto reload = NavigationSimulator::CreateFromPending(contents());
+  auto reload =
+      NavigationSimulator::CreateFromPending(contents()->GetController());
   reload->ReadyToCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
@@ -3074,7 +3088,7 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
       blink::mojom::TreeScopeType::kDocument, "frame1", "uniqueName1", false,
       blink::LocalFrameToken(), base::UnguessableToken::Create(),
       blink::FramePolicy(), blink::mojom::FrameOwnerProperties(),
-      blink::mojom::FrameOwnerElementType::kIframe);
+      blink::FrameOwnerElementType::kIframe);
 
   FrameTreeNode* root = contents()->GetFrameTree()->root();
   RenderFrameHostManager* child = root->child_at(0)->render_manager();

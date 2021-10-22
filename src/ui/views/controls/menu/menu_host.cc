@@ -58,6 +58,10 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
     window_->AddObserver(this);
   }
 
+  PreMenuEventDispatchHandler(const PreMenuEventDispatchHandler&) = delete;
+  PreMenuEventDispatchHandler& operator=(const PreMenuEventDispatchHandler&) =
+      delete;
+
   ~PreMenuEventDispatchHandler() override { StopObserving(); }
 
   // ui::EventHandler overrides.
@@ -83,8 +87,6 @@ class PreMenuEventDispatchHandler : public ui::EventHandler,
   MenuController* menu_controller_;
   SubmenuView* submenu_;
   aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreMenuEventDispatchHandler);
 };
 #endif  // USE_AURA
 
@@ -128,8 +130,10 @@ void MenuHost::InitMenuHost(const InitParams& init_params) {
   bool rounded_border = menu_config.CornerRadiusForMenu(menu_controller) != 0;
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
-  params.shadow_type = bubble_border ? Widget::InitParams::ShadowType::kNone
-                                     : Widget::InitParams::ShadowType::kDrop;
+  params.shadow_type =
+      (bubble_border || (menu_config.win11_style_menus && rounded_border))
+          ? Widget::InitParams::ShadowType::kNone
+          : Widget::InitParams::ShadowType::kDrop;
   params.opacity = (bubble_border || rounded_border)
                        ? Widget::InitParams::WindowOpacity::kTranslucent
                        : Widget::InitParams::WindowOpacity::kOpaque;

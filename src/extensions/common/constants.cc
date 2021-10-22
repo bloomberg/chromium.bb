@@ -67,11 +67,14 @@ const base::FilePath::CharType kStateStoreName[] =
     FILE_PATH_LITERAL("Extension State");
 const base::FilePath::CharType kRulesStoreName[] =
     FILE_PATH_LITERAL("Extension Rules");
+const base::FilePath::CharType kScriptsStoreName[] =
+    FILE_PATH_LITERAL("Extension Scripts");
 const char kWebStoreAppId[] = "ahfgeienlihckogmohjhadlkjgocpleb";
 
 const char kSettingsDatabaseUMAClientName[] = "Settings";
 const char kRulesDatabaseUMAClientName[] = "Rules";
 const char kStateDatabaseUMAClientName[] = "State";
+const char kScriptsDatabaseUMAClientName[] = "Scripts";
 
 const uint8_t kWebstoreSignaturesPublicKey[] = {
     0x30, 0x82, 0x01, 0x22, 0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
@@ -102,6 +105,8 @@ const uint8_t kWebstoreSignaturesPublicKey[] = {
 
 const size_t kWebstoreSignaturesPublicKeySize =
     base::size(kWebstoreSignaturesPublicKey);
+
+const char kUpdateURLData[] = "update_url_data";
 
 const int kMainThreadId = 0;
 
@@ -152,6 +157,9 @@ const char kBeFunkyAppId[] = "fjoomcalbeohjbnlcneddljemclcekeg";
 const char kClipchampAppId[] = "pfepfhbcedkbjdkanpimmmdjfgoddhkg";
 const char kGeForceNowAppId[] = "egmafekfmcnknbdlbfbhafbllplmjlhn";
 const char kZoomAppId[] = "jldpdkiafafcejhceeincjmlkmibemgj";
+const char kGoogleDocAppId[] = "aohghmighlieiainnegkcijnfilokake";
+const char kGoogleSheetsAppId[] = "felcaaldnbdncclmgdcncolpebgiejap";
+const char kGoogleSlidesAppId[] = "aapocclcgogkmnckokdopfmhonfmgoek";
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // TODO(michaelpg): Deprecate old app IDs before adding new ones to avoid bloat.
@@ -183,6 +191,13 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
   return false;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// TODO(https://crbug.com/1257275): remove after default app migration is done.
+bool IsPreinstalledAppId(const std::string& app_id) {
+  return app_id == kGMailAppId || app_id == kGoogleDocAppId ||
+         app_id == kGoogleDriveAppId || app_id == kGoogleSheetsAppId ||
+         app_id == kGoogleSlidesAppId || app_id == kYoutubeAppId;
+}
 
 const char kProdHangoutsExtensionId[] = "nckgahadagoaajjgafhacjanaoiihapd";
 const char* const kHangoutsExtensionIds[6] = {

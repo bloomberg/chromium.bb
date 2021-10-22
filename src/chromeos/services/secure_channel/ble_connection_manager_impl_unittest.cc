@@ -46,12 +46,9 @@ namespace {
 
 const size_t kNumTestDevices = 5;
 
-constexpr base::TimeDelta kScanToAdvertisementTime =
-    base::TimeDelta::FromSeconds(3);
-constexpr base::TimeDelta kAdvertisementToConnectionTime =
-    base::TimeDelta::FromSeconds(2);
-constexpr base::TimeDelta kConnectionToAuthenticationTime =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kScanToAdvertisementTime = base::Seconds(3);
+constexpr base::TimeDelta kAdvertisementToConnectionTime = base::Seconds(2);
+constexpr base::TimeDelta kConnectionToAuthenticationTime = base::Seconds(1);
 
 class FakeBleAdvertiserFactory : public BleAdvertiserImpl::Factory {
  public:
@@ -61,6 +58,9 @@ class FakeBleAdvertiserFactory : public BleAdvertiserImpl::Factory {
       : expected_fake_bluetooth_helper_(expected_fake_bluetooth_helper),
         expected_fake_ble_synchronizer_(expected_fake_ble_synchronizer),
         expected_fake_timer_factory_(expected_fake_timer_factory) {}
+
+  FakeBleAdvertiserFactory(const FakeBleAdvertiserFactory&) = delete;
+  FakeBleAdvertiserFactory& operator=(const FakeBleAdvertiserFactory&) = delete;
 
   ~FakeBleAdvertiserFactory() override = default;
 
@@ -89,8 +89,6 @@ class FakeBleAdvertiserFactory : public BleAdvertiserImpl::Factory {
   FakeBluetoothHelper* expected_fake_bluetooth_helper_;
   FakeBleSynchronizer* expected_fake_ble_synchronizer_;
   FakeTimerFactory* expected_fake_timer_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeBleAdvertiserFactory);
 };
 
 class FakeWeaveClientConnectionFactory
@@ -100,6 +98,11 @@ class FakeWeaveClientConnectionFactory
       scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
           expected_mock_adapter)
       : expected_mock_adapter_(expected_mock_adapter) {}
+
+  FakeWeaveClientConnectionFactory(const FakeWeaveClientConnectionFactory&) =
+      delete;
+  FakeWeaveClientConnectionFactory& operator=(
+      const FakeWeaveClientConnectionFactory&) = delete;
 
   virtual ~FakeWeaveClientConnectionFactory() = default;
 
@@ -132,8 +135,6 @@ class FakeWeaveClientConnectionFactory
   device::MockBluetoothDevice* expected_bluetooth_device_;
 
   FakeConnection* last_created_instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeWeaveClientConnectionFactory);
 };
 
 class FakeSecureChannelFactory : public SecureChannel::Factory {
@@ -142,6 +143,9 @@ class FakeSecureChannelFactory : public SecureChannel::Factory {
       FakeWeaveClientConnectionFactory* fake_weave_client_connection_factory)
       : fake_weave_client_connection_factory_(
             fake_weave_client_connection_factory) {}
+
+  FakeSecureChannelFactory(const FakeSecureChannelFactory&) = delete;
+  FakeSecureChannelFactory& operator=(const FakeSecureChannelFactory&) = delete;
 
   virtual ~FakeSecureChannelFactory() = default;
 
@@ -165,14 +169,18 @@ class FakeSecureChannelFactory : public SecureChannel::Factory {
   FakeWeaveClientConnectionFactory* fake_weave_client_connection_factory_;
 
   FakeSecureChannelConnection* last_created_instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSecureChannelFactory);
 };
 
 class FakeAuthenticatedChannelFactory
     : public AuthenticatedChannelImpl::Factory {
  public:
   FakeAuthenticatedChannelFactory() = default;
+
+  FakeAuthenticatedChannelFactory(const FakeAuthenticatedChannelFactory&) =
+      delete;
+  FakeAuthenticatedChannelFactory& operator=(
+      const FakeAuthenticatedChannelFactory&) = delete;
+
   ~FakeAuthenticatedChannelFactory() override = default;
 
   void SetExpectationsForNextCall(
@@ -214,8 +222,6 @@ class FakeAuthenticatedChannelFactory
   bool expected_to_be_background_advertisement_ = false;
 
   FakeAuthenticatedChannel* last_created_instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAuthenticatedChannelFactory);
 };
 
 }  // namespace

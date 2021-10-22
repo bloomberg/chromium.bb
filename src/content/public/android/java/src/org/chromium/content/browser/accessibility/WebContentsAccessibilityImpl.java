@@ -97,7 +97,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // Constants defined in the N SDK. (API Level 24+25, Android 7)
     public static final int ACTION_SET_PROGRESS = 0x0102003d;
-    private static final String ACTION_ARGUMENT_PROGRESS_VALUE =
+    public static final String ACTION_ARGUMENT_PROGRESS_VALUE =
             "android.view.accessibility.action.ARGUMENT_PROGRESS_VALUE";
 
     // Constants defined in the O SDK. (API Level 26+27, Android 8)
@@ -867,8 +867,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                     return false;
                 }
                 if (arguments == null) return false;
-                String newText = arguments.getString(ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE);
-                if (newText == null) return false;
+                CharSequence bundleText =
+                        arguments.getCharSequence(ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE);
+                if (bundleText == null) return false;
+                String newText = bundleText.toString();
                 WebContentsAccessibilityImplJni.get().setTextFieldValue(
                         mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId, newText);
                 // Match Android framework and set the cursor to the end of the text field.
@@ -974,10 +976,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         action == ACTION_PAGE_RIGHT);
             case ACTION_SET_PROGRESS:
                 if (arguments == null) return false;
-                float value = arguments.getFloat(ACTION_ARGUMENT_PROGRESS_VALUE, -1);
-                if (value == -1) return false;
-                return WebContentsAccessibilityImplJni.get().setRangeValue(
-                        mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId, value);
+                if (!arguments.containsKey(ACTION_ARGUMENT_PROGRESS_VALUE)) return false;
+                return WebContentsAccessibilityImplJni.get().setRangeValue(mNativeObj,
+                        WebContentsAccessibilityImpl.this, virtualViewId,
+                        arguments.getFloat(ACTION_ARGUMENT_PROGRESS_VALUE));
             case ACTION_IME_ENTER:
                 if (mDelegate.getWebContents() != null) {
                     if (ImeAdapterImpl.fromWebContents(mDelegate.getWebContents()) != null) {
@@ -1396,15 +1398,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             return null;
         }
         return event;
-    }
-
-    private Bundle getOrCreateBundleForAccessibilityEvent(AccessibilityEvent event) {
-        Bundle bundle = (Bundle) event.getParcelableData();
-        if (bundle == null) {
-            bundle = new Bundle();
-            event.setParcelableData(bundle);
-        }
-        return bundle;
     }
 
     @Override

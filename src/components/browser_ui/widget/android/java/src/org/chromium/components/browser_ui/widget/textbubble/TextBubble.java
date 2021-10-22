@@ -26,6 +26,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.MathUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.browser_ui.widget.R;
 import org.chromium.ui.widget.AnchoredPopupWindow;
 import org.chromium.ui.widget.RectProvider;
@@ -67,6 +68,9 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
     /** Runnables for snoozable text bubble option. */
     private final Runnable mSnoozeRunnable;
     private final Runnable mSnoozeDismissRunnable;
+
+    /** Time tracking for histograms. */
+    private long mBubbleShowStartTime;
 
     private final Runnable mDismissRunnable = new Runnable() {
         @Override
@@ -342,6 +346,7 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
 
         mPopupWindow.show();
         sBubbles.add(this);
+        mBubbleShowStartTime = System.currentTimeMillis();
     }
 
     /**
@@ -350,6 +355,12 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
      */
     public void dismiss() {
         mPopupWindow.dismiss();
+
+        if (mBubbleShowStartTime != 0) {
+            RecordHistogram.recordTimesHistogram("InProductHelp.TextBubble.ShownTime",
+                    System.currentTimeMillis() - mBubbleShowStartTime);
+            mBubbleShowStartTime = 0;
+        }
     }
 
     /**
@@ -421,8 +432,8 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
 
     /**
      * @param dismiss Whether or not to dismiss this bubble when the screen is tapped.  This will
-     *                happen for both taps inside and outside the popup.  The default is
-     *                {@code false}.
+     *                happen for both taps inside and outside the popup except when a tap is handled
+     *                by child views. The default is {@code false}.
      */
     public void setDismissOnTouchInteraction(boolean dismiss) {
         // For accessibility mode, since there is no timeout value, the bubble can be dismissed
@@ -469,14 +480,28 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         if (mImageDrawable == null) {
             View view = LayoutInflater.from(mContext).inflate(R.layout.textbubble_text, null);
             setText(view.findViewById(R.id.message));
+
+            // Set different paddings for when snooze feature is present.
+            if (mSnoozeRunnable != null || mSnoozeDismissRunnable != null) {
+                int paddingStart = mContext.getResources().getDimensionPixelSize(
+                        R.dimen.text_bubble_with_snooze_padding_horizontal);
+                view.setPadding(paddingStart, view.getPaddingTop(), 0, view.getPaddingBottom());
+            }
+
             if (mSnoozeRunnable != null) {
                 Button snoozeButton = (Button) view.findViewById(R.id.button_snooze);
                 snoozeButton.setVisibility(View.VISIBLE);
-                snoozeButton.setOnClickListener(v -> mSnoozeRunnable.run());
+                snoozeButton.setOnClickListener(v -> {
+                    mSnoozeRunnable.run();
+                    mDismissRunnable.run();
+                });
             } else if (mSnoozeDismissRunnable != null) {
                 Button dismissButton = (Button) view.findViewById(R.id.button_dismiss);
                 dismissButton.setVisibility(View.VISIBLE);
-                dismissButton.setOnClickListener(v -> mSnoozeDismissRunnable.run());
+                dismissButton.setOnClickListener(v -> {
+                    mSnoozeDismissRunnable.run();
+                    mDismissRunnable.run();
+                });
             }
             return view;
         }

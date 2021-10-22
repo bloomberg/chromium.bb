@@ -24,7 +24,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
-#include "extensions/browser/api/declarative_net_request/index_helper.h"
+#include "extensions/browser/api/declarative_net_request/install_index_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
@@ -278,15 +278,16 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   // where possible so that the extension developer is immediately notified.
   auto ruleset_filter = declarative_net_request::FileBackedRulesetSource::
       RulesetFilter::kIncludeAll;
-  auto invalid_rule_parse_behavior =
-      declarative_net_request::RulesetSource::InvalidRuleParseBehavior::kError;
+  auto parse_flags =
+      declarative_net_request::RulesetSource::kRaiseErrorOnInvalidRules |
+      declarative_net_request::RulesetSource::kRaiseWarningOnLargeRegexRules;
 
   // TODO(crbug.com/761107): IndexStaticRulesetsUnsafe will read and parse JSON
   // synchronously. Change this so that we don't need to parse JSON in the
   // browser process.
-  declarative_net_request::IndexHelper::Result result =
-      declarative_net_request::IndexHelper::IndexStaticRulesetsUnsafe(
-          *extension(), ruleset_filter, invalid_rule_parse_behavior);
+  declarative_net_request::InstallIndexHelper::Result result =
+      declarative_net_request::InstallIndexHelper::IndexStaticRulesetsUnsafe(
+          *extension(), ruleset_filter, parse_flags);
   if (result.error) {
     *error = std::move(*result.error);
     return false;

@@ -30,8 +30,7 @@ namespace cc {
 namespace {
 // This is a fudge factor we subtract from the deadline to account
 // for message latency and kernel scheduling variability.
-const base::TimeDelta kDeadlineFudgeFactor =
-    base::TimeDelta::FromMicroseconds(1000);
+const base::TimeDelta kDeadlineFudgeFactor = base::Microseconds(1000);
 }  // namespace
 
 Scheduler::Scheduler(
@@ -169,14 +168,12 @@ void Scheduler::DidSubmitCompositorFrame(uint32_t frame_token,
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Scheduling.Renderer.FrameProduction.TimeUnused",
         cc_frame_time_available_ - cc_begin_impl_to_submit_,
-        base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromMilliseconds(50), 50);
+        base::Microseconds(1), base::Milliseconds(50), 50);
   } else {
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
         "Scheduling.Renderer.FrameProduction.TimeOverused",
         cc_begin_impl_to_submit_ - cc_frame_time_available_,
-        base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromMilliseconds(50), 50);
+        base::Microseconds(1), base::Milliseconds(50), 50);
   }
 
   compositor_frame_reporting_controller_->DidSubmitCompositorFrame(
@@ -649,6 +646,17 @@ void Scheduler::FinishImplFrame() {
       reason = FrameSkippedReason::kDrawThrottled;
 
     SendDidNotProduceFrame(begin_impl_frame_tracker_.Current(), reason);
+
+    // If the current finished impl frame is not the last activated frame, but
+    // the last activated frame has succeeded draw, it means that the drawn
+    // frame would not be submitted and is causing no visible damage.
+    if (begin_impl_frame_tracker_.Current().frame_id !=
+            last_activate_origin_frame_args_.frame_id &&
+        state_machine_.draw_succeeded_in_last_frame()) {
+      compositor_frame_reporting_controller_->DidNotProduceFrame(
+          last_activate_origin_frame_args_.frame_id,
+          FrameSkippedReason::kNoDamage);
+    }
   }
 
   begin_impl_frame_tracker_.Finish();

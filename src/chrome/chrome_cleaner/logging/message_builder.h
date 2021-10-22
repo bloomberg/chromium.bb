@@ -62,17 +62,22 @@ class MessageBuilder {
    public:
     explicit ScopedIndent(MessageBuilder* builder);
     ScopedIndent(ScopedIndent&& other);
+
+    ScopedIndent(const ScopedIndent&) = delete;
+    ScopedIndent& operator=(const ScopedIndent&) = delete;
+
     ~ScopedIndent();
 
     ScopedIndent& operator=(ScopedIndent&& other);
 
    private:
     MessageBuilder* builder_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedIndent);
   };
 
   MessageBuilder() = default;
+
+  MessageBuilder(const MessageBuilder&) = delete;
+  MessageBuilder& operator=(const MessageBuilder&) = delete;
 
   // Appends an EOL character to the result string.
   MessageBuilder& NewLine();
@@ -141,8 +146,6 @@ class MessageBuilder {
 
   std::wstring content_;
   int indentation_level_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };
 
 }  // namespace chrome_cleaner

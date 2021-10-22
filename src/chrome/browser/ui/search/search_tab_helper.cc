@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
@@ -58,12 +57,25 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class NewTabPageConcretePage {
+  kOther = 0,
+  k1PWebUiNtp = 1,
+  k3PWebUiNtp = 2,
+  k3PRemoteNtp = 3,
+  kExtensionNtp = 4,
+  kOffTheRecordNtp = 5,
+  kMaxValue = kOffTheRecordNtp,
+};
 
 bool IsCacheableNTP(content::WebContents* contents) {
   content::NavigationEntry* entry =
@@ -108,6 +120,29 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
   core_tab_helper->set_new_tab_start_time(base::TimeTicks());
 }
 
+void RecordConcreteNtp(content::NavigationHandle* navigation_handle) {
+  NewTabPageConcretePage concrete_page = NewTabPageConcretePage::kOther;
+  if (navigation_handle->GetURL().GetOrigin() ==
+      GURL(chrome::kChromeUINewTabPageURL).GetOrigin()) {
+    concrete_page = NewTabPageConcretePage::k1PWebUiNtp;
+  } else if (navigation_handle->GetURL().GetOrigin() ==
+             GURL(chrome::kChromeUINewTabPageThirdPartyURL).GetOrigin()) {
+    concrete_page = NewTabPageConcretePage::k3PWebUiNtp;
+  } else if (search::IsInstantNTP(navigation_handle->GetWebContents())) {
+    concrete_page = NewTabPageConcretePage::k3PRemoteNtp;
+  } else if (navigation_handle->GetURL().SchemeIs(
+                 extensions::kExtensionScheme)) {
+    concrete_page = NewTabPageConcretePage::kExtensionNtp;
+  } else if (Profile::FromBrowserContext(
+                 navigation_handle->GetWebContents()->GetBrowserContext())
+                 ->IsOffTheRecord() &&
+             navigation_handle->GetURL().GetOrigin() ==
+                 GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+    concrete_page = NewTabPageConcretePage::kOffTheRecordNtp;
+  }
+  base::UmaHistogramEnumeration("NewTabPage.ConcretePage", concrete_page);
+}
+
 }  // namespace
 
 SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
@@ -122,9 +157,6 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
   instant_service_ = InstantServiceFactory::GetForProfile(profile());
   if (instant_service_)
     instant_service_->AddObserver(this);
-
-  chrome_colors_service_ =
-      chrome_colors::ChromeColorsFactory::GetForProfile(profile());
 
   OmniboxTabHelper::CreateForWebContents(web_contents);
   OmniboxTabHelper::FromWebContents(web_contents_)->AddObserver(this);
@@ -161,11 +193,6 @@ void SearchTabHelper::OnTabDeactivated() {
   ipc_router_.OnTabDeactivated();
 }
 
-void SearchTabHelper::OnTabClosing() {
-  if (search::IsInstantNTP(web_contents_) && chrome_colors_service_)
-    chrome_colors_service_->RevertThemeChangesForTab(web_contents_);
-}
-
 void SearchTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
@@ -177,9 +204,10 @@ void SearchTabHelper::DidStartNavigation(
   if (navigation_handle->IsSameDocument())
     return;
 
-  // When navigating away from NTP we should revert all the unconfirmed state.
-  if (search::IsInstantNTP(web_contents_) && chrome_colors_service_)
-    chrome_colors_service_->RevertThemeChangesForTab(web_contents_);
+  if (web_contents_->GetVisibleURL().GetOrigin() ==
+      GURL(chrome::kChromeUINewTabURL).GetOrigin()) {
+    RecordConcreteNtp(navigation_handle);
+  }
 
   if (search::IsNTPOrRelatedURL(navigation_handle->GetURL(), profile())) {
     // Set the title on any pending entry corresponding to the NTP. This
@@ -278,24 +306,6 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
     instant_service_->UndoAllMostVisitedDeletions();
 }
 
-void SearchTabHelper::OnLogEvent(NTPLoggingEventType event,
-                                 base::TimeDelta time) {
-  if (logger_)
-    logger_->LogEvent(event, time);
-}
-
-void SearchTabHelper::OnLogMostVisitedImpression(
-    const ntp_tiles::NTPTileImpression& impression) {
-  if (logger_)
-    logger_->LogMostVisitedImpression(impression);
-}
-
-void SearchTabHelper::OnLogMostVisitedNavigation(
-    const ntp_tiles::NTPTileImpression& impression) {
-  if (logger_)
-    logger_->LogMostVisitedNavigation(impression);
-}
-
 void SearchTabHelper::OnOmniboxInputStateChanged() {
   ipc_router_.SetInputInProgress(IsInputInProgress());
 }
@@ -311,34 +321,6 @@ void SearchTabHelper::OnOmniboxFocusChanged(OmniboxFocusState state,
     ipc_router_.SetInputInProgress(IsInputInProgress());
 }
 
-void SearchTabHelper::OnApplyDefaultTheme() {
-  if (chrome_colors_service_ &&
-      search::DefaultSearchProviderIsGoogle(profile())) {
-    chrome_colors_service_->ApplyDefaultTheme(web_contents_);
-  }
-}
-
-void SearchTabHelper::OnApplyAutogeneratedTheme(SkColor color) {
-  if (chrome_colors_service_ &&
-      search::DefaultSearchProviderIsGoogle(profile())) {
-    chrome_colors_service_->ApplyAutogeneratedTheme(color, web_contents_);
-  }
-}
-
-void SearchTabHelper::OnRevertThemeChanges() {
-  if (chrome_colors_service_ &&
-      search::DefaultSearchProviderIsGoogle(profile())) {
-    chrome_colors_service_->RevertThemeChanges();
-  }
-}
-
-void SearchTabHelper::OnConfirmThemeChanges() {
-  if (chrome_colors_service_ &&
-      search::DefaultSearchProviderIsGoogle(profile())) {
-    chrome_colors_service_->ConfirmThemeChanges();
-  }
-}
-
 Profile* SearchTabHelper::profile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
@@ -347,4 +329,4 @@ bool SearchTabHelper::IsInputInProgress() const {
   return search::IsOmniboxInputInProgress(web_contents_);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SearchTabHelper);

@@ -47,7 +47,6 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
-#include "components/arc/session/arc_dlc_installer.h"
 #include "components/arc/session/arc_session.h"
 #include "components/arc/session/file_system_status.h"
 #include "components/arc/test/connection_holder_util.h"
@@ -110,10 +109,15 @@ std::string GenerateAbstractAddress() {
 }
 
 // TODO(yusukes): Remove this once crosvm becomes 64 bit binary on ARM.
-int GetVmMemorySize(int vm_ram_mib) {
-  const int vm_ram_max_mib =
-      (sizeof(uintptr_t) == 4) ? 3500 : std::numeric_limits<int>::max();
-  return std::min(vm_ram_max_mib, vm_ram_mib);
+void VerifyVmMemorySize(const vm_tools::concierge::StartArcVmRequest& request,
+                        uint32_t vm_ram_mib) {
+  if (sizeof(uintptr_t) == 4) {
+    // We don't set memory_mib on 32 bit devices, so that we fall back to the
+    // original sizing logic in concierge.
+    EXPECT_EQ(request.memory_mib(), 0u);
+  } else {
+    EXPECT_EQ(request.memory_mib(), vm_ram_mib);
+  }
 }
 
 // A debugd client that can fail to start Concierge.
@@ -121,6 +125,10 @@ int GetVmMemorySize(int vm_ram_mib) {
 class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
  public:
   TestDebugDaemonClient() = default;
+
+  TestDebugDaemonClient(const TestDebugDaemonClient&) = delete;
+  TestDebugDaemonClient& operator=(const TestDebugDaemonClient&) = delete;
+
   ~TestDebugDaemonClient() override = default;
 
   void BackupArcBugReport(const cryptohome::AccountIdentifier& id,
@@ -139,8 +147,6 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
  private:
   bool backup_arc_bug_report_called_ = false;
   bool backup_arc_bug_report_result_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDebugDaemonClient);
 };
 
 // A concierge that remembers the parameter passed to StartArcVm.
@@ -148,6 +154,10 @@ class TestDebugDaemonClient : public chromeos::FakeDebugDaemonClient {
 class TestConciergeClient : public chromeos::FakeConciergeClient {
  public:
   static void Initialize() { new TestConciergeClient(); }
+
+  TestConciergeClient(const TestConciergeClient&) = delete;
+  TestConciergeClient& operator=(const TestConciergeClient&) = delete;
+
   ~TestConciergeClient() override = default;
 
   void StopVm(const vm_tools::concierge::StopVmRequest& request,
@@ -195,8 +205,6 @@ class TestConciergeClient : public chromeos::FakeConciergeClient {
   vm_tools::concierge::StartArcVmRequest start_arc_vm_request_;
   vm_tools::concierge::StopVmRequest stop_vm_request_;
   base::OnceClosure on_stop_vm_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestConciergeClient);
 };
 
 // A fake ArcVmBootNotificationServer that listens on an UDS and records
@@ -308,6 +316,9 @@ class ArcVmClientAdapterTest : public testing::Test,
     chromeos::UpstartClient::InitializeFake();
   }
 
+  ArcVmClientAdapterTest(const ArcVmClientAdapterTest&) = delete;
+  ArcVmClientAdapterTest& operator=(const ArcVmClientAdapterTest&) = delete;
+
   ~ArcVmClientAdapterTest() override {
     chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -341,20 +352,18 @@ class ArcVmClientAdapterTest : public testing::Test,
     SetArcVmBootNotificationServerAddressForTesting(
         abstract_addr,
         // connect_timeout_limit
-        base::TimeDelta::FromMilliseconds(100),
+        base::Milliseconds(100),
         // connect_sleep_duration_initial
-        base::TimeDelta::FromMilliseconds(20));
+        base::Milliseconds(20));
 
     chromeos::SessionManagerClient::InitializeFake();
 
     adapter_->SetDemoModeDelegate(&demo_mode_delegate_);
     app_host_ = std::make_unique<FakeAppHost>(arc_bridge_service()->app());
     app_instance_ = std::make_unique<FakeAppInstance>(app_host_.get());
-    arc_dlc_installer_ = std::make_unique<ArcDlcInstaller>();
   }
 
   void TearDown() override {
-    arc_dlc_installer_.reset();
     chromeos::SessionManagerClient::Shutdown();
     adapter_->RemoveObserver(this);
     adapter_.reset();
@@ -639,9 +648,6 @@ class ArcVmClientAdapterTest : public testing::Test,
   FakeDemoModeDelegate demo_mode_delegate_;
   std::unique_ptr<FakeAppHost> app_host_;
   std::unique_ptr<FakeAppInstance> app_instance_;
-  std::unique_ptr<ArcDlcInstaller> arc_dlc_installer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcVmClientAdapterTest);
 };
 
 // Tests that SetUserInfo() doesn't crash.
@@ -660,6 +666,18 @@ TEST_F(ArcVmClientAdapterTest, SetUserInfoEmpty) {
 
 // Tests that StartMiniArc() succeeds by default.
 TEST_F(ArcVmClientAdapterTest, StartMiniArc) {
+  StartMiniArc();
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+
+  StopArcInstance(/*arc_upgraded=*/false);
+}
+
+// Tests that StartMiniArc() still succeeds without the feature.
+TEST_F(ArcVmClientAdapterTest, StartMiniArc_WithPerVCpuCoreScheduling) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(kEnablePerVmCoreScheduling,
+                                    false /* use */);
+
   StartMiniArc();
   EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
 
@@ -1768,8 +1786,7 @@ TEST_F(ArcVmClientAdapterTest, TestConnectToBootNotificationServer) {
 TEST_F(ArcVmClientAdapterTest, TestBootNotificationServerIsNotListening) {
   boot_notification_server()->Stop();
   // Change timeout to 26 seconds to allow for exponential backoff.
-  base::test::ScopedRunLoopTimeout timeout(FROM_HERE,
-                                           base::TimeDelta::FromSeconds(26));
+  base::test::ScopedRunLoopTimeout timeout(FROM_HERE, base::Seconds(26));
 
   StartMiniArcWithParams(false, {});
 }
@@ -1931,7 +1948,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeDisabled) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.memory_mib(), 0u);
+  VerifyVmMemorySize(request, 0u);
 }
 
 // Test that StartArcVmRequest has `memory_mib == system memory` when
@@ -1943,12 +1960,12 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledBig) {
   feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
   base::SystemMemoryInfoKB info;
   ASSERT_TRUE(base::GetSystemMemoryInfo(&info));
-  const uint32_t total_mib = GetVmMemorySize(info.total / 1024);
+  const uint32_t total_mib = info.total / 1024;
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.memory_mib(), total_mib);
+  VerifyVmMemorySize(request, total_mib);
 }
 
 // Test that StartArcVmRequest has `memory_mib == system memory - 1024` when
@@ -1960,12 +1977,12 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledSmall) {
   feature_list.InitAndEnableFeatureWithParameters(kVmMemorySize, params);
   base::SystemMemoryInfoKB info;
   ASSERT_TRUE(base::GetSystemMemoryInfo(&info));
-  const uint32_t total_mib = GetVmMemorySize(info.total / 1024);
+  const uint32_t total_mib = info.total / 1024;
   StartParams start_params(GetPopulatedStartParams());
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.memory_mib(), total_mib - 1024);
+  VerifyVmMemorySize(request, total_mib - 1024);
 }
 
 // Test that StartArcVmRequest has memory_mib unset when kVmMemorySize is
@@ -1983,7 +2000,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledLow) {
   auto request = GetTestConciergeClient()->start_arc_vm_request();
   // The 1024 max_mib is below the 2048 MiB safety cut-off, so we expect
   // memory_mib to be unset.
-  EXPECT_EQ(request.memory_mib(), 0u);
+  VerifyVmMemorySize(request, 0u);
 }
 
 // Test that StartArcVmRequest has `memory_mib == 2049` when kVmMemorySize is
@@ -1999,7 +2016,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledMax) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.memory_mib(), 2049u);
+  VerifyVmMemorySize(request, 2049u);
 }
 
 // Test that StartArcVmRequest has no memory_mib field when getting system
@@ -2022,7 +2039,7 @@ TEST_F(ArcVmClientAdapterTest, ArcVmMemorySizeEnabledNoSystemMemoryInfo) {
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   auto request = GetTestConciergeClient()->start_arc_vm_request();
-  EXPECT_EQ(request.memory_mib(), 0u);
+  VerifyVmMemorySize(request, 0u);
 }
 
 // Test that the correct BalloonPolicyOptions are set on StartArcVmRequest when
@@ -2119,7 +2136,7 @@ TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Default) {
   EXPECT_EQ(boot_notification_server()->connection_count(), 2);
   EXPECT_FALSE(boot_notification_server()->received_data().empty());
   EXPECT_TRUE(base::Contains(boot_notification_server()->received_data(),
-                             "ro.boot.enable_arc_nearby_share=0"));
+                             "ro.boot.enable_arc_nearby_share=1"));
 }
 
 TEST_F(ArcVmClientAdapterTest, UpgradeArc_EnableArcNearbyShare_Enabled) {

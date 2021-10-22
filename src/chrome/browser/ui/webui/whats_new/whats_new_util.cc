@@ -13,7 +13,15 @@ namespace whats_new {
 const char kChromeWhatsNewURL[] = "https://www.google.com/chrome/whats-new/";
 const char kChromeWhatsNewURLShort[] = "google.com/chrome/whats-new/";
 
-bool g_force_enable_for_tests = false;
+bool g_is_remote_content_disabled = false;
+
+void DisableRemoteContentForTests() {
+  g_is_remote_content_disabled = true;
+}
+
+bool IsRemoteContentDisabled() {
+  return g_is_remote_content_disabled;
+}
 
 bool ShouldShowForState(PrefService* local_state) {
   if (!local_state)
@@ -22,6 +30,8 @@ bool ShouldShowForState(PrefService* local_state) {
   if (!base::FeatureList::IsEnabled(features::kChromeWhatsNewUI))
     return false;
 
+  // Show What's New if the page hasn't yet been shown for the current
+  // milestone.
   int last_version = local_state->GetInteger(prefs::kLastWhatsNewVersion);
   return CHROME_VERSION_MAJOR > last_version;
 }

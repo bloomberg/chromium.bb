@@ -131,21 +131,19 @@ void IntentPickerTabHelper::DidFinishNavigation(
   // For a http/https scheme URL navigation, we will check if the
   // url can be handled by some apps, and show intent picker icon
   // or bubble if there are some apps available. We only want to check this if
-  // the navigation happens in the main frame, and the navigation is not the
-  // same document with same URL.
+  // the navigation happens in the primary main frame, and the navigation is not
+  // the same document with same URL.
   // TODO(crbug.com/826982): Check is not error page here. Adding this check
   // will break the browser test, given this is a refactor CL, will add check in
   // follow up CL.
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (navigation_handle->IsInPrimaryMainFrame() &&
       navigation_handle->HasCommitted() &&
       (!navigation_handle->IsSameDocument() ||
        navigation_handle->GetURL() !=
            navigation_handle->GetPreviousMainFrameURL()) &&
       navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
-    apps::MaybeShowIntentPicker(navigation_handle);
+    bool should_show_icon = apps::MaybeShowIntentPicker(navigation_handle);
+    IntentPickerTabHelper::SetShouldShowIcon(web_contents(), should_show_icon);
   }
 }
 
@@ -163,4 +161,4 @@ void IntentPickerTabHelper::OnAppRegistrarDestroyed() {
   registrar_observation_.Reset();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(IntentPickerTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(IntentPickerTabHelper);

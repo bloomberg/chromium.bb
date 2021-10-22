@@ -355,6 +355,10 @@
     "label": "//chromecast/base:cast_base_unittests",
     "type": "console_test_launcher",
   },
+  "cast_cast_core_unittests": {
+    "label": "//chromecast/cast_core:cast_cast_core_unittests",
+    "type": "console_test_launcher",
+  },
   "cast_crash_unittests": {
     "label": "//chromecast/crash:cast_crash_unittests",
     "type": "console_test_launcher",
@@ -467,6 +471,10 @@
   },
   "chrome_official_builder_no_unittests": {
     "label": "//:chrome_official_builder_no_unittests",
+    "type": "additional_compile_target",
+  },
+  "chrome_pkg": {
+    "label": "//chrome/app:chrome_pkg",
     "type": "additional_compile_target",
   },
   "chrome_public_apk": {
@@ -692,6 +700,10 @@
     "label": "//content/test:content_unittests",
     "type": "windowed_test_launcher",
   },
+  "core_runtime_simple": {
+    "label": "//chromecast/cast_core:core_runtime_simple",
+    "type": "additional_compile_target",
+  },
   "courgette_unittests": {
     "label": "//courgette:courgette_unittests",
     "type": "console_test_launcher",
@@ -851,8 +863,8 @@
   "fuchsia_telemetry_gpu_integration_test": {
     "args": [
       "../../content/test/gpu/run_gpu_integration_test_fuchsia.py",
-      "--system-log-file",
-      "${ISOLATED_OUTDIR}/system_log",
+      "--logs-dir",
+      "${ISOLATED_OUTDIR}",
     ],
     "label": "//content/test:fuchsia_telemetry_gpu_integration_test",
     "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
@@ -948,14 +960,6 @@
   "http_pkg": {
     "label": "//fuchsia/http:http_pkg",
     "type": "additonal_compile_target",
-  },
-  "http_service_tests": {
-    "label": "//fuchsia/http:http_service_tests",
-    "type": "console_test_launcher",
-  },
-  "hybrid_browsertest": {
-    "label": "//chrome/test:hybrid_browsertest",
-    "type": "windowed_test_launcher",
   },
   "incremental_javac_junit_tests": {
     "label": "//build/android/test:incremental_javac_junit_tests",
@@ -1491,6 +1495,10 @@
     "label": "//v8:postmortem-metadata",
     "type": "additional_compile_target",
   },
+  "power_sampler_unittests": {
+    "label": "//tools/mac/power:power_sampler_unittests",
+     "type": "console_test_launcher",
+  },
   "ppapi_unittests": {
     "label": "//ppapi:ppapi_unittests",
     "type": "console_test_launcher",
@@ -1777,6 +1785,10 @@
     "label": "//chrome/test:test_ash_chrome",
     "type": "additional_compile_target",
   },
+  "test_cpp_including_rust_unittests": {
+    "label": "//build/rust/tests/test_cpp_including_rust:test_cpp_including_rust_unittests",
+    "type": "console_test_launcher",
+  },
   "third_party/openscreen/src/cast/cast_core/api": {
     "label": "//third_party/openscreen/src/cast/cast_core/api:api",
     "type": "additional_compile_target",
@@ -1807,10 +1819,6 @@
     "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
-  },
-  "traffic_annotation_auditor_unittests": {
-    "label": "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
-    "type": "console_test_launcher",
   },
   "trichrome_chrome_bundle_smoke_test": {
     "label": "//chrome/android:trichrome_chrome_bundle_smoke_test",
@@ -1851,6 +1859,16 @@
   "updater_tests_system": {
     "label": "//chrome/updater:updater_tests_system",
     "type": "console_test_launcher",
+  },
+  "updater_tests_win_uac": {
+    "label": "//chrome/updater:updater_tests_win_uac",
+    "type": "script",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "python3": "true",
+    "args": [
+      "test_service/run_command_as_standard_user.py",
+      "--command=updater_tests.exe",
+    ],
   },
   "upload_trace_processor": {
     "label": "//tools/perf/core/perfetto_binary_roller:upload_trace_processor",

@@ -72,6 +72,10 @@ class UpdateCheckerImpl : public UpdateChecker {
  public:
   UpdateCheckerImpl(scoped_refptr<Configurator> config,
                     PersistedData* metadata);
+
+  UpdateCheckerImpl(const UpdateCheckerImpl&) = delete;
+  UpdateCheckerImpl& operator=(const UpdateCheckerImpl&) = delete;
+
   ~UpdateCheckerImpl() override;
 
   // Overrides for UpdateChecker.
@@ -108,8 +112,6 @@ class UpdateCheckerImpl : public UpdateChecker {
   UpdateCheckCallback update_check_callback_;
   std::unique_ptr<UpdaterState::Attributes> updater_state_attributes_;
   std::unique_ptr<RequestSender> request_sender_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateCheckerImpl);
 };
 
 UpdateCheckerImpl::UpdateCheckerImpl(scoped_refptr<Configurator> config,
@@ -220,7 +222,7 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
   }
 
   const auto request = MakeProtocolRequest(
-      session_id, config_->GetProdId(),
+      !config_->IsPerUserInstall(), session_id, config_->GetProdId(),
       config_->GetBrowserVersion().GetString(), config_->GetLang(),
       config_->GetChannel(), config_->GetOSLongName(),
       config_->GetDownloadPreference(), additional_attributes,

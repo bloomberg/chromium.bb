@@ -21,8 +21,8 @@
 #include "chrome/browser/ash/crostini/crostini_types.mojom-forward.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/ash/crostini/termina_installer.h"
-#include "chrome/browser/chromeos/vm_shutdown_observer.h"
-#include "chrome/browser/chromeos/vm_starting_observer.h"
+#include "chrome/browser/ash/vm_shutdown_observer.h"
+#include "chrome/browser/ash/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/dbus/anomaly_detector/anomaly_detector.pb.h"
@@ -213,6 +213,10 @@ class CrostiniManager : public KeyedService,
   static CrostiniManager* GetForProfile(Profile* profile);
 
   explicit CrostiniManager(Profile* profile);
+
+  CrostiniManager(const CrostiniManager&) = delete;
+  CrostiniManager& operator=(const CrostiniManager&) = delete;
+
   ~CrostiniManager() override;
 
   base::WeakPtr<CrostiniManager> GetWeakPtr();
@@ -933,8 +937,6 @@ class CrostiniManager : public KeyedService,
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<CrostiniManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CrostiniManager);
 };
 
 }  // namespace crostini

@@ -67,6 +67,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
                                    public display::DisplayObserver,
                                    public ui::CompositorObserver {
  public:
+  WindowTreeHost(const WindowTreeHost&) = delete;
+  WindowTreeHost& operator=(const WindowTreeHost&) = delete;
+
   ~WindowTreeHost() override;
 
   // Creates a new WindowTreeHost with the specified |properties|.
@@ -270,8 +273,21 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // during subclass initialization, when the value is needed before InitHost().
   void IntializeDeviceScaleFactor(float device_scale_factor);
 
+  // All calls to changing the visibility of the Compositor funnel into this.
+  // In addition to changing the visibility this may also evict the root frame.
+  void UpdateCompositorVisibility(bool visible);
+
   void DestroyCompositor();
   void DestroyDispatcher();
+
+  // Sets whether the accelerated widget has been made visible. This is called
+  // when platform specific api has been called to make the widget visible. The
+  // widget is not necessarily shown/drawn (it may be occluded or minimized),
+  // but from the OSs perspective, the window may be shown to the user.
+  //
+  // This is called from Show(), subclasses that do not call Show() must call
+  // this.
+  void OnAcceleratedWidgetMadeVisible(bool value);
 
   void CreateCompositor(
       bool force_software_compositor = false,
@@ -394,9 +410,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Set to true if native window occlusion should be calculated.
   bool native_window_occlusion_enabled_ = false;
 
-  base::WeakPtrFactory<WindowTreeHost> weak_factory_{this};
+  bool accelerated_widget_made_visible_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeHost);
+  base::WeakPtrFactory<WindowTreeHost> weak_factory_{this};
 };
 
 }  // namespace aura

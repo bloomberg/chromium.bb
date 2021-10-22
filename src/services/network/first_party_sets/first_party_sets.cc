@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
+#include "base/task/post_task.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/same_party_context.h"
@@ -72,12 +73,16 @@ void FirstPartySets::SetManuallySpecifiedSet(const std::string& flag_value) {
       flag_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY));
 
   ApplyManuallySpecifiedSet();
+  manual_sets_ready_ = true;
+  ClearSiteDataOnChangedSetsIfReady();
 }
 
 base::flat_map<net::SchemefulSite, net::SchemefulSite>*
 FirstPartySets::ParseAndSet(base::StringPiece raw_sets) {
   sets_ = FirstPartySetParser::ParseSetsFromComponentUpdater(raw_sets);
   ApplyManuallySpecifiedSet();
+  component_sets_ready_ = true;
+  ClearSiteDataOnChangedSetsIfReady();
   return &sets_;
 }
 
@@ -86,16 +91,17 @@ bool FirstPartySets::IsContextSamePartyWithSite(
     const net::SchemefulSite* top_frame_site,
     const std::set<net::SchemefulSite>& party_context,
     bool infer_singleton_sets) const {
-  const net::SchemefulSite* site_owner = FindOwner(site, infer_singleton_sets);
-  if (!site_owner)
+  const absl::optional<net::SchemefulSite> site_owner =
+      FindOwner(site, infer_singleton_sets);
+  if (!site_owner.has_value())
     return false;
 
   const auto is_owned_by_site_owner =
-      [this, site_owner,
+      [this, &site_owner,
        infer_singleton_sets](const net::SchemefulSite& context_site) -> bool {
-    const net::SchemefulSite* context_owner =
+    const absl::optional<net::SchemefulSite> context_owner =
         FindOwner(context_site, infer_singleton_sets);
-    return context_owner && *context_owner == *site_owner;
+    return context_owner.has_value() && *context_owner == *site_owner;
   };
 
   if (top_frame_site && !is_owned_by_site_owner(*top_frame_site))
@@ -126,7 +132,8 @@ net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
     const absl::optional<net::SchemefulSite>& top_frame_site,
     const std::set<net::SchemefulSite>& party_context) const {
   constexpr bool infer_singleton_sets = true;
-  const net::SchemefulSite* site_owner = FindOwner(site, infer_singleton_sets);
+  const absl::optional<net::SchemefulSite> site_owner =
+      FindOwner(site, infer_singleton_sets);
   // Note: the `party_context` consists of the intermediate frames (for frame
   // requests) or intermediate frames and current frame for subresource
   // requests.
@@ -147,18 +154,22 @@ net::FirstPartySetsContextType FirstPartySets::ComputeContextType(
              : net::FirstPartySetsContextType::kTopResourceMatchMixed;
 }
 
-const net::SchemefulSite* FirstPartySets::FindOwner(
+const absl::optional<net::SchemefulSite> FirstPartySets::FindOwner(
     const net::SchemefulSite& site,
     bool infer_singleton_sets) const {
-  const auto it = sets_.find(site);
-  if (it == sets_.end())
-    return infer_singleton_sets ? &site : nullptr;
-  return &it->second;
+  net::SchemefulSite normalized_site = site;
+  normalized_site.ConvertWebSocketToHttp();
+  const auto it = sets_.find(normalized_site);
+  if (it != sets_.end())
+    return it->second;
+  if (infer_singleton_sets)
+    return normalized_site;
+  return absl::nullopt;
 }
 
 bool FirstPartySets::IsInNontrivialFirstPartySet(
     const net::SchemefulSite& site) const {
-  return base::Contains(sets_, site);
+  return FindOwner(site, /*infer_singleton_sets=*/false).has_value();
 }
 
 base::flat_map<net::SchemefulSite, std::set<net::SchemefulSite>>
@@ -216,6 +227,51 @@ void FirstPartySets::ApplyManuallySpecifiedSet() {
     sets_.emplace(member, manual_owner);
   }
   sets_.emplace(manual_owner, manual_owner);
+}
+
+void FirstPartySets::SetPersistedSets(base::StringPiece raw_sets) {
+  raw_persisted_sets_ = std::string(raw_sets);
+  persisted_sets_ready_ = true;
+  ClearSiteDataOnChangedSetsIfReady();
+}
+
+void FirstPartySets::SetOnSiteDataCleared(
+    base::OnceCallback<void(const std::string&)> callback) {
+  on_site_data_cleared_ = std::move(callback);
+  ClearSiteDataOnChangedSetsIfReady();
+}
+
+base::flat_set<net::SchemefulSite> FirstPartySets::ComputeSetsDiff(
+    const base::flat_map<net::SchemefulSite, net::SchemefulSite>& old_sets) {
+  if (old_sets.empty())
+    return {};
+
+  base::flat_set<net::SchemefulSite> result;
+  for (const auto& old_pair : old_sets) {
+    const net::SchemefulSite& old_member = old_pair.first;
+    const net::SchemefulSite& old_owner = old_pair.second;
+    const absl::optional<net::SchemefulSite> current_owner =
+        FindOwner(old_member, false);
+    // Look for the removed sites and the ones have owner changed.
+    if (!current_owner || *current_owner != old_owner) {
+      result.emplace(old_member);
+    }
+  }
+  return result;
+}
+
+void FirstPartySets::ClearSiteDataOnChangedSetsIfReady() {
+  if (!persisted_sets_ready_ || !component_sets_ready_ || !manual_sets_ready_ ||
+      on_site_data_cleared_.is_null())
+    return;
+
+  base::flat_set<net::SchemefulSite> diff = ComputeSetsDiff(
+      FirstPartySetParser::DeserializeFirstPartySets(raw_persisted_sets_));
+
+  // TODO(shuuran@chromium.org): Implement site state clearing.
+
+  std::move(on_site_data_cleared_)
+      .Run(FirstPartySetParser::SerializeFirstPartySets(sets_));
 }
 
 }  // namespace network

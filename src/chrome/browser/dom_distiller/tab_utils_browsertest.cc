@@ -92,6 +92,10 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
     scoped_observation_.Observe(
         favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
+
+  FaviconUpdateWaiter(const FaviconUpdateWaiter&) = delete;
+  FaviconUpdateWaiter& operator=(const FaviconUpdateWaiter&) = delete;
+
   ~FaviconUpdateWaiter() override = default;
 
   void Wait() {
@@ -121,8 +125,6 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
                           favicon::FaviconDriverObserver>
       scoped_observation_{this};
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWaiter);
 };
 
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {
@@ -422,7 +424,7 @@ class DistilledPageImageLoadWaiter {
 
   void Wait() {
     base::RepeatingTimer check_timer;
-    check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10), this,
+    check_timer.Start(FROM_HERE, base::Milliseconds(10), this,
                       &DistilledPageImageLoadWaiter::OnTimer);
     runner_.Run();
   }

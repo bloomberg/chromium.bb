@@ -62,14 +62,15 @@ class BarrierBuilder {
       : continuation_(
             base::MakeRefCounted<ContinuationRef>(std::move(continuation))) {}
 
+  BarrierBuilder(const BarrierBuilder&) = delete;
+  BarrierBuilder& operator=(const BarrierBuilder&) = delete;
+
   base::OnceClosure AddClosure() {
     return base::BindOnce([](scoped_refptr<ContinuationRef>) {}, continuation_);
   }
 
  private:
   const scoped_refptr<ContinuationRef> continuation_;
-
-  DISALLOW_COPY_AND_ASSIGN(BarrierBuilder);
 };
 
 class MockDelegate : public StorageAreaImpl::Delegate {
@@ -118,7 +119,7 @@ base::OnceCallback<void(bool, const std::vector<uint8_t>&)> MakeGetCallback(
 StorageAreaImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
   StorageAreaImpl::Options options;
   options.max_size = kTestSizeLimit;
-  options.default_commit_delay = base::TimeDelta::FromSeconds(5);
+  options.default_commit_delay = base::Seconds(5);
   options.max_bytes_per_hour = 10 * 1024 * 1024;
   options.max_commits_per_hour = 60;
   options.cache_mode = cache_mode;
@@ -168,7 +169,6 @@ class StorageAreaImplTest : public testing::Test,
                         const std::vector<uint8_t>& value) {
     base::RunLoop loop;
     db_->database().PostTaskWithThisObject(
-        FROM_HERE,
         base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           ASSERT_TRUE(db.Put(key, value).ok());
           loop.Quit();
@@ -184,7 +184,6 @@ class StorageAreaImplTest : public testing::Test,
     std::vector<uint8_t> value;
     base::RunLoop loop;
     db_->database().PostTaskWithThisObject(
-        FROM_HERE,
         base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           ASSERT_TRUE(db.Get(ToBytes(key), &value).ok());
           loop.Quit();
@@ -197,7 +196,6 @@ class StorageAreaImplTest : public testing::Test,
     base::RunLoop loop;
     leveldb::Status status;
     db_->database().PostTaskWithThisObject(
-        FROM_HERE,
         base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           std::vector<uint8_t> value;
           status = db.Get(ToBytes(key), &value);
@@ -210,7 +208,6 @@ class StorageAreaImplTest : public testing::Test,
   void ClearDatabase() {
     base::RunLoop loop;
     db_->database().PostTaskWithThisObject(
-        FROM_HERE,
         base::BindLambdaForTesting([&](const DomStorageDatabase& db) {
           leveldb::WriteBatch batch;
           ASSERT_TRUE(db.DeletePrefixed({}, &batch).ok());

@@ -81,10 +81,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -356,7 +353,6 @@ static const AVFilterPad mestimate_inputs[] = {
         .filter_frame  = filter_frame,
         .config_props  = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad mestimate_outputs[] = {
@@ -364,7 +360,6 @@ static const AVFilterPad mestimate_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_mestimate = {
@@ -374,6 +369,6 @@ const AVFilter ff_vf_mestimate = {
     .priv_class    = &mestimate_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = mestimate_inputs,
-    .outputs       = mestimate_outputs,
+    FILTER_INPUTS(mestimate_inputs),
+    FILTER_OUTPUTS(mestimate_outputs),
 };

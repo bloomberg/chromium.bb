@@ -1025,6 +1025,25 @@ optional("ndk_images") {
   libs = [ "jnigraphics" ]
 }
 
+optional("graphite") {
+  libs = []
+  frameworks = []
+
+  enabled = skia_enable_graphite
+  public_defines = [ "SK_GRAPHITE_ENABLED" ]
+  public = skia_graphite_public
+  sources = skia_graphite_sources
+  if (skia_use_metal) {
+    public_defines += [ "SK_METAL" ]
+    sources += skia_graphite_mtl_sources
+    if (skia_enable_metal_debug_info) {
+      public_defines += [ "SK_ENABLE_MTL_DEBUG_INFO" ]
+    }
+    frameworks += [ "Metal.framework" ]
+    frameworks += [ "Foundation.framework" ]
+  }
+}
+
 optional("pdf") {
   enabled = skia_use_zlib && skia_enable_pdf
   public_defines = [ "SK_SUPPORT_PDF" ]
@@ -1204,6 +1223,7 @@ skia_component("skia") {
     ":fontmgr_win",
     ":fontmgr_win_gdi",
     ":gpu",
+    ":graphite",
     ":pdf",
     ":skcms",
     ":xps",
@@ -1337,6 +1357,7 @@ skia_component("skia") {
   }
 
   if (is_mac) {
+    public += [ "include/ports/SkCFObject.h" ]
     sources += [
       "src/ports/SkDebug_stdio.cpp",
       "src/ports/SkImageEncoder_CG.cpp",
@@ -1349,6 +1370,7 @@ skia_component("skia") {
   }
 
   if (is_ios) {
+    public += [ "include/ports/SkCFObject.h" ]
     sources += [
       "src/ports/SkDebug_stdio.cpp",
       "src/ports/SkImageEncoder_CG.cpp",
@@ -1779,6 +1801,16 @@ if (skia_enable_tools) {
       sources -= [ "tools/gpu/TestOps.cpp" ]
       sources -= [ "tools/gpu/TestOps.h" ]
     }
+    if (skia_enable_graphite) {
+      sources += [ "tools/graphite/ContextFactory.h" ]
+      sources += [ "tools/graphite/ContextFactory.cpp" ]
+      sources += [ "tools/graphite/GraphiteTestContext.h" ]
+      sources += [ "tools/graphite/GraphiteTestContext.cpp" ]
+      if (skia_use_metal) {
+        sources += [ "tools/graphite/mtl/GraphiteMtlTestContext.h" ]
+        sources += [ "tools/graphite/mtl/MtlTestContext.mm" ]
+      }
+    }
 
     if (is_fuchsia && using_fuchsia_sdk) {
       libs +=
@@ -1981,6 +2013,7 @@ if (skia_enable_tools) {
       ":test",
       ":tool_utils",
       "experimental/skrive:tests",
+      "experimental/sktext:tests",
       "modules/skottie:tests",
       "modules/skparagraph:tests",
       "modules/sksg:tests",
@@ -2624,8 +2657,15 @@ if (skia_enable_tools) {
     if (skia_use_metal) {
       sources += [ "tools/sk_app/MetalWindowContext.mm" ]
       sources += [ "tools/sk_app/MetalWindowContext.h" ]
+      if (skia_enable_graphite) {
+        sources += [ "tools/sk_app/GraphiteMetalWindowContext.mm" ]
+        sources += [ "tools/sk_app/GraphiteMetalWindowContext.h" ]
+      }
       if (is_mac) {
         sources += [ "tools/sk_app/mac/MetalWindowContext_mac.mm" ]
+        if (skia_enable_graphite) {
+          sources += [ "tools/sk_app/mac/GraphiteMetalWindowContext_mac.mm" ]
+        }
       } else if (is_ios) {
         sources += [ "tools/sk_app/ios/MetalWindowContext_ios.mm" ]
       }

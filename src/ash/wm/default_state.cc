@@ -10,6 +10,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_metrics_controller.h"
@@ -162,7 +163,7 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       // bounds are global across workspaces so don't restore to pre-added
       // bounds.
       if (window_state->pre_added_to_workspace_window_bounds() &&
-          !window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey)) {
+          !desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
         bounds = *window_state->pre_added_to_workspace_window_bounds();
       }
 
@@ -520,7 +521,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
           GetSnappedWindowBoundsInParent(window_state->window(), state_type_);
       base::UmaHistogramEnumeration(
           kSnapWindowDeviceOrientationHistogramName,
-          IsDisplayLayoutHorizontal(
+          chromeos::IsDisplayLayoutHorizontal(
               display::Screen::GetScreen()->GetDisplayNearestWindow(window))
               ? SplitViewMetricsController::DeviceOrientation::kLandscape
               : SplitViewMetricsController::DeviceOrientation::kPortrait);
@@ -554,9 +555,6 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       }
       break;
     }
-    case WindowStateType::kFloating:
-      // TODO(shidi): Implement the bounds finder for float.
-      break;
     case WindowStateType::kMaximized:
       bounds_in_parent = screen_util::GetMaximizedWindowBoundsInParent(window);
       break;

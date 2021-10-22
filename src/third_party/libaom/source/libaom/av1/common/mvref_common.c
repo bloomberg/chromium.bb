@@ -982,8 +982,8 @@ static int motion_field_projection(AV1_COMMON *cm,
   return 1;
 }
 
-// cm->ref_frame_side is calculated here, and will be used in av1_copy_frame_
-// mvs() to affect how mvs are copied.
+// cm->ref_frame_side is calculated here, and will be used in
+// av1_copy_frame_mvs() to affect how mvs are copied.
 void av1_calculate_ref_frame_side(AV1_COMMON *cm) {
   const OrderHintInfo *const order_hint_info = &cm->seq_params->order_hint_info;
 

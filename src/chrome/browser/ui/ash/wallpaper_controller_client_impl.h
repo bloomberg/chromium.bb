@@ -39,6 +39,11 @@ class WallpaperControllerClientImpl
       public file_manager::VolumeManagerObserver {
  public:
   WallpaperControllerClientImpl();
+
+  WallpaperControllerClientImpl(const WallpaperControllerClientImpl&) = delete;
+  WallpaperControllerClientImpl& operator=(
+      const WallpaperControllerClientImpl&) = delete;
+
   ~WallpaperControllerClientImpl() override;
 
   // Initializes and connects to ash.
@@ -164,6 +169,7 @@ class WallpaperControllerClientImpl
                                const backdrop::Image& image,
                                const std::string& next_resume_token);
 
+  void OnProfileCreated(user_manager::User* user);
   void ObserveVolumeManagerForActiveUser(user_manager::User* user);
 
   // WallpaperController interface in ash.
@@ -189,8 +195,6 @@ class WallpaperControllerClientImpl
   base::WeakPtrFactory<WallpaperControllerClientImpl> weak_factory_{this};
   base::WeakPtrFactory<WallpaperControllerClientImpl> storage_weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerClientImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_WALLPAPER_CONTROLLER_CLIENT_IMPL_H_

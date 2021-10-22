@@ -47,7 +47,7 @@
 #include "ui/events/scoped_target_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/test_native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -555,14 +555,15 @@ class ScopedTestPaintWidget {
     widget_->GetRootView()->SetBounds(0, 0, 25, 26);
   }
 
+  ScopedTestPaintWidget(const ScopedTestPaintWidget&) = delete;
+  ScopedTestPaintWidget& operator=(const ScopedTestPaintWidget&) = delete;
+
   ~ScopedTestPaintWidget() { widget_->CloseNow(); }
 
   Widget* operator->() { return widget_; }
 
  private:
   Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestPaintWidget);
 };
 
 }  // namespace
@@ -2106,6 +2107,10 @@ class ViewPaintOptimizationTest : public ViewsTestBase {
  public:
   ViewPaintOptimizationTest() = default;
 
+  ViewPaintOptimizationTest(const ViewPaintOptimizationTest&) = delete;
+  ViewPaintOptimizationTest& operator=(const ViewPaintOptimizationTest&) =
+      delete;
+
   ~ViewPaintOptimizationTest() override = default;
 
   void SetUp() override {
@@ -2116,8 +2121,6 @@ class ViewPaintOptimizationTest : public ViewsTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewPaintOptimizationTest);
 };
 
 // Tests that only Views where SchedulePaint was invoked get repainted.
@@ -2206,14 +2209,15 @@ class TestViewWidget {
     EXPECT_TRUE(widget_.GetFocusManager());
   }
 
+  TestViewWidget(const TestViewWidget&) = delete;
+  TestViewWidget& operator=(const TestViewWidget&) = delete;
+
   TestView* view() { return view_; }
   Widget* widget() { return &widget_; }
 
  private:
   TestView* view_;
   Widget widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestViewWidget);
 };
 
 }  // namespace
@@ -2423,6 +2427,11 @@ TEST_F(ViewTest, ViewInHiddenWidgetWithAccelerator) {
 class ToplevelWidgetObserverView : public View {
  public:
   ToplevelWidgetObserverView() = default;
+
+  ToplevelWidgetObserverView(const ToplevelWidgetObserverView&) = delete;
+  ToplevelWidgetObserverView& operator=(const ToplevelWidgetObserverView&) =
+      delete;
+
   ~ToplevelWidgetObserverView() override = default;
 
   // View overrides:
@@ -2442,8 +2451,6 @@ class ToplevelWidgetObserverView : public View {
 
  private:
   Widget* toplevel_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ToplevelWidgetObserverView);
 };
 
 // Test that
@@ -2497,6 +2504,10 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
 class TransformPaintView : public TestView {
  public:
   TransformPaintView() = default;
+
+  TransformPaintView(const TransformPaintView&) = delete;
+  TransformPaintView& operator=(const TransformPaintView&) = delete;
+
   ~TransformPaintView() override = default;
 
   void ClearScheduledPaintRect() { scheduled_paint_rect_ = gfx::Rect(); }
@@ -2511,8 +2522,6 @@ class TransformPaintView : public TestView {
 
  private:
   gfx::Rect scheduled_paint_rect_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransformPaintView);
 };
 
 TEST_F(ViewTest, TransformPaint) {
@@ -2731,6 +2740,10 @@ TEST_F(ViewTest, TransformVisibleBound) {
 class VisibleBoundsView : public View {
  public:
   VisibleBoundsView() = default;
+
+  VisibleBoundsView(const VisibleBoundsView&) = delete;
+  VisibleBoundsView& operator=(const VisibleBoundsView&) = delete;
+
   ~VisibleBoundsView() override = default;
 
   bool received_notification() const { return received_notification_; }
@@ -2746,8 +2759,6 @@ class VisibleBoundsView : public View {
   void OnVisibleBoundsChanged() override { received_notification_ = true; }
 
   bool received_notification_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(VisibleBoundsView);
 };
 
 TEST_F(ViewTest, OnVisibleBoundsChanged) {
@@ -3150,6 +3161,10 @@ TEST_F(ViewTest, ConvertRectWithTransform) {
 class ObserverView : public View {
  public:
   ObserverView();
+
+  ObserverView(const ObserverView&) = delete;
+  ObserverView& operator=(const ObserverView&) = delete;
+
   ~ObserverView() override;
 
   void ResetTestState();
@@ -3174,8 +3189,6 @@ class ObserverView : public View {
   bool has_remove_details_ = false;
   ViewHierarchyChangedDetails add_details_;
   ViewHierarchyChangedDetails remove_details_;
-
-  DISALLOW_COPY_AND_ASSIGN(ObserverView);
 };
 
 ObserverView::ObserverView() = default;
@@ -3337,6 +3350,10 @@ TEST_F(ViewTest, ViewHierarchyChanged) {
 class WidgetObserverView : public View {
  public:
   WidgetObserverView();
+
+  WidgetObserverView(const WidgetObserverView&) = delete;
+  WidgetObserverView& operator=(const WidgetObserverView&) = delete;
+
   ~WidgetObserverView() override;
 
   void ResetTestState();
@@ -3350,8 +3367,6 @@ class WidgetObserverView : public View {
 
   int added_to_widget_count_ = 0;
   int removed_from_widget_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetObserverView);
 };
 
 WidgetObserverView::WidgetObserverView() {
@@ -3762,12 +3777,13 @@ TEST_F(ViewTest, UseMirroredLayoutEnableMirroring) {
 class ActiveWidget : public Widget {
  public:
   ActiveWidget() = default;
+
+  ActiveWidget(const ActiveWidget&) = delete;
+  ActiveWidget& operator=(const ActiveWidget&) = delete;
+
   ~ActiveWidget() override = default;
 
   bool IsActive() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ActiveWidget);
 };
 
 TEST_F(ViewTest, AdvanceFocusIfNecessaryForUnfocusableView) {
@@ -3824,6 +3840,9 @@ class TestLayerAnimator : public ui::LayerAnimator {
  public:
   TestLayerAnimator();
 
+  TestLayerAnimator(const TestLayerAnimator&) = delete;
+  TestLayerAnimator& operator=(const TestLayerAnimator&) = delete;
+
   const gfx::Rect& last_bounds() const { return last_bounds_; }
 
   // LayerAnimator.
@@ -3834,12 +3853,10 @@ class TestLayerAnimator : public ui::LayerAnimator {
 
  private:
   gfx::Rect last_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimator);
 };
 
 TestLayerAnimator::TestLayerAnimator()
-    : ui::LayerAnimator(base::TimeDelta::FromMilliseconds(0)) {}
+    : ui::LayerAnimator(base::Milliseconds(0)) {}
 
 void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
   last_bounds_ = bounds;
@@ -3850,6 +3867,10 @@ class TestingLayerViewObserver : public ViewObserver {
   explicit TestingLayerViewObserver(View* view) : view_(view) {
     view_->AddObserver(this);
   }
+
+  TestingLayerViewObserver(const TestingLayerViewObserver&) = delete;
+  TestingLayerViewObserver& operator=(const TestingLayerViewObserver&) = delete;
+
   ~TestingLayerViewObserver() override { view_->RemoveObserver(this); }
 
   gfx::Rect GetLastLayerBoundsAndReset() {
@@ -3866,8 +3887,6 @@ class TestingLayerViewObserver : public ViewObserver {
 
   gfx::Rect last_layer_bounds_;
   View* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingLayerViewObserver);
 };
 
 }  // namespace
@@ -4309,6 +4328,9 @@ class PaintTrackingView : public View {
  public:
   PaintTrackingView() = default;
 
+  PaintTrackingView(const PaintTrackingView&) = delete;
+  PaintTrackingView& operator=(const PaintTrackingView&) = delete;
+
   bool painted() const { return painted_; }
   void set_painted(bool value) { painted_ = value; }
 
@@ -4316,8 +4338,6 @@ class PaintTrackingView : public View {
 
  private:
   bool painted_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintTrackingView);
 };
 
 // Makes sure child views with layers aren't painted when paint starts at an
@@ -4915,6 +4935,9 @@ class PaintLayerView : public View {
  public:
   PaintLayerView() = default;
 
+  PaintLayerView(const PaintLayerView&) = delete;
+  PaintLayerView& operator=(const PaintLayerView&) = delete;
+
   void PaintChildren(const PaintInfo& info) override {
     last_paint_info_ = std::make_unique<PaintInfo>(info);
     View::PaintChildren(info);
@@ -4926,8 +4949,6 @@ class PaintLayerView : public View {
 
  private:
   std::unique_ptr<PaintInfo> last_paint_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintLayerView);
 };
 
 }  // namespace
@@ -4935,6 +4956,9 @@ class PaintLayerView : public View {
 class ViewLayerPixelCanvasTest : public ViewLayerTest {
  public:
   ViewLayerPixelCanvasTest() = default;
+
+  ViewLayerPixelCanvasTest(const ViewLayerPixelCanvasTest&) = delete;
+  ViewLayerPixelCanvasTest& operator=(const ViewLayerPixelCanvasTest&) = delete;
 
   ~ViewLayerPixelCanvasTest() override = default;
 
@@ -4960,8 +4984,6 @@ class ViewLayerPixelCanvasTest : public ViewLayerTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewLayerPixelCanvasTest);
 };
 
 TEST_F(ViewLayerPixelCanvasTest, SnapLayerToPixel) {
@@ -5163,6 +5185,10 @@ TEST_F(ViewTest, ScopedTargetHandlerReceivesEvents) {
 class WidgetWithCustomTheme : public Widget {
  public:
   explicit WidgetWithCustomTheme(ui::NativeTheme* theme) : theme_(theme) {}
+
+  WidgetWithCustomTheme(const WidgetWithCustomTheme&) = delete;
+  WidgetWithCustomTheme& operator=(const WidgetWithCustomTheme&) = delete;
+
   ~WidgetWithCustomTheme() override = default;
 
   // Widget:
@@ -5170,14 +5196,18 @@ class WidgetWithCustomTheme : public Widget {
 
  private:
   ui::NativeTheme* theme_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetWithCustomTheme);
 };
 
 // See comment above test for details.
 class ViewThatAddsViewInOnThemeChanged : public View {
  public:
   ViewThatAddsViewInOnThemeChanged() { SetPaintToLayer(); }
+
+  ViewThatAddsViewInOnThemeChanged(const ViewThatAddsViewInOnThemeChanged&) =
+      delete;
+  ViewThatAddsViewInOnThemeChanged& operator=(
+      const ViewThatAddsViewInOnThemeChanged&) = delete;
+
   ~ViewThatAddsViewInOnThemeChanged() override = default;
 
   bool on_native_theme_changed_called() const {
@@ -5193,8 +5223,6 @@ class ViewThatAddsViewInOnThemeChanged : public View {
 
  private:
   bool on_native_theme_changed_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewThatAddsViewInOnThemeChanged);
 };
 
 // Creates and adds a new child view to |parent| that has a layer.
@@ -5234,6 +5262,9 @@ class NoLayerWhenHiddenView : public View {
     SetBounds(0, 0, 100, 100);
   }
 
+  NoLayerWhenHiddenView(const NoLayerWhenHiddenView&) = delete;
+  NoLayerWhenHiddenView& operator=(const NoLayerWhenHiddenView&) = delete;
+
   bool was_hidden() const { return was_hidden_; }
 
   // View:
@@ -5252,8 +5283,6 @@ class NoLayerWhenHiddenView : public View {
  private:
   bool was_hidden_ = false;
   RemovedFromWidgetCallback removed_from_widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(NoLayerWhenHiddenView);
 };
 
 // Test that Views can safely manipulate Layers during Widget closure.
@@ -5292,6 +5321,10 @@ class OrderableView : public View {
   static constexpr int VIEW_ID_RAISED = 1000;
 
   OrderableView() = default;
+
+  OrderableView(const OrderableView&) = delete;
+  OrderableView& operator=(const OrderableView&) = delete;
+
   ~OrderableView() override = default;
 
   View::Views GetChildrenInZOrder() override {
@@ -5301,9 +5334,6 @@ class OrderableView : public View {
         [](const View* child) { return child->GetID() != VIEW_ID_RAISED; });
     return children_in_z_order;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OrderableView);
 };
 
 TEST_F(ViewTest, ChildViewZOrderChanged) {
@@ -5610,6 +5640,9 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
  public:
   ViewObserverTest() = default;
 
+  ViewObserverTest(const ViewObserverTest&) = delete;
+  ViewObserverTest& operator=(const ViewObserverTest&) = delete;
+
   ~ViewObserverTest() override = default;
 
   // ViewObserver:
@@ -5684,8 +5717,6 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   View* view_visibility_changed_starting_ = nullptr;
   View* view_bounds_changed_ = nullptr;
   View* view_reordered_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ViewObserverTest);
 };
 
 TEST_F(ViewObserverTest, ViewParentChanged) {
@@ -5772,6 +5803,9 @@ class TestParentView : public View {
  public:
   TestParentView() = default;
 
+  TestParentView(const TestParentView&) = delete;
+  TestParentView& operator=(const TestParentView&) = delete;
+
   void Reset() {
     received_layer_change_notification_ = false;
     layer_change_count_ = 0;
@@ -5796,8 +5830,6 @@ class TestParentView : public View {
 
   // Contains the number of OnChildLayerChanged() notifications for a child.
   int layer_change_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestParentView);
 };
 
 // Tests the following cases.

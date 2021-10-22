@@ -257,6 +257,9 @@ class PageLoadTimingMerger {
   explicit PageLoadTimingMerger(mojom::PageLoadTiming* target)
       : target_(target) {}
 
+  PageLoadTimingMerger(const PageLoadTimingMerger&) = delete;
+  PageLoadTimingMerger& operator=(const PageLoadTimingMerger&) = delete;
+
   // Merge timing values from |new_page_load_timing| into the target
   // PageLoadTiming;
   void Merge(base::TimeDelta navigation_start_offset,
@@ -429,8 +432,6 @@ class PageLoadTimingMerger {
 
   // Whether we merged a new value into |target_|.
   bool should_buffer_timing_update_callback_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PageLoadTimingMerger);
 };
 
 }  // namespace
@@ -447,9 +448,13 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::FrameMetadata::New()),
       subframe_metadata_(mojom::FrameMetadata::New()),
-      page_input_timing_(mojom::InputTiming()),
+      page_input_timing_(mojom::InputTiming::New()),
       mobile_friendliness_(blink::MobileFriendliness()),
       is_prerendered_page_load_(navigation_handle->IsInPrerenderedMainFrame()) {
+  page_input_timing_->max_event_durations =
+      mojom::UserInteractionLatencies::New();
+  page_input_timing_->total_event_durations =
+      mojom::UserInteractionLatencies::New();
 }
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
@@ -741,10 +746,22 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
 
 void PageLoadMetricsUpdateDispatcher::UpdatePageInputTiming(
     const mojom::InputTiming& input_timing_delta) {
-  page_input_timing_.num_input_events += input_timing_delta.num_input_events;
-  page_input_timing_.total_input_delay += input_timing_delta.total_input_delay;
-  page_input_timing_.total_adjusted_input_delay +=
+  page_input_timing_->num_input_events += input_timing_delta.num_input_events;
+  page_input_timing_->total_input_delay += input_timing_delta.total_input_delay;
+  page_input_timing_->total_adjusted_input_delay +=
       input_timing_delta.total_adjusted_input_delay;
+  // On the sending side, we ensure input_timing_delta.max_event_duration and
+  // input_timing_delta.total_event_durations are not null pointers otherwise
+  // VALIDATION_ERROR_UNEXPECTED_NULL_POINTER will be triggered on the receiving
+  // side. But in some tests where the whole input_timing_delta is set as the
+  // default state, input_timing_delta.max_event_durations or
+  // input_timing_delta.total_event_durations can be null.
+  if (input_timing_delta.num_interactions) {
+    responsiveness_metrics_normalization_.AddNewUserInteractionLatencies(
+        input_timing_delta.num_interactions,
+        *(input_timing_delta.max_event_durations),
+        *(input_timing_delta.total_event_durations));
+  }
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
@@ -824,8 +841,7 @@ void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
   if (should_buffer_timing_update_callback) {
     timer_->Start(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(
-            GetBufferTimerDelayMillis(TimerType::kBrowser)),
+        base::Milliseconds(GetBufferTimerDelayMillis(TimerType::kBrowser)),
         base::BindOnce(&PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates,
                        base::Unretained(this)));
   } else if (!timer_->IsRunning()) {

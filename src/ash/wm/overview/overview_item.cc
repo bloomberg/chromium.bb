@@ -54,7 +54,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -102,6 +102,9 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
     DCHECK(!on_animation_finished_.is_null());
   }
 
+  AnimationObserver(const AnimationObserver&) = delete;
+  AnimationObserver& operator=(const AnimationObserver&) = delete;
+
   ~AnimationObserver() override = default;
 
   // ui::ImplicitAnimationObserver:
@@ -117,8 +120,6 @@ class AnimationObserver : public ui::ImplicitAnimationObserver {
  private:
   base::OnceClosure on_animation_started_;
   base::OnceClosure on_animation_finished_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnimationObserver);
 };
 
 OverviewAnimationType GetExitOverviewAnimationTypeForMinimizedWindow(

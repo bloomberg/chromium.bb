@@ -83,6 +83,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   It2MeHost();
 
+  It2MeHost(const It2MeHost&) = delete;
+  It2MeHost& operator=(const It2MeHost&) = delete;
+
   // Enable, disable, or query whether or not the confirm, continue, and
   // disconnect dialogs are shown.
   void set_enable_dialogs(bool enable);
@@ -220,8 +223,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   bool enable_dialogs_ = true;
   bool enable_notifications_ = true;
   bool terminate_upon_input_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };
 
 // Having a factory interface makes it possible for the test to provide a mock
@@ -229,12 +230,13 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 class It2MeHostFactory {
  public:
   It2MeHostFactory();
+
+  It2MeHostFactory(const It2MeHostFactory&) = delete;
+  It2MeHostFactory& operator=(const It2MeHostFactory&) = delete;
+
   virtual ~It2MeHostFactory();
 
   virtual scoped_refptr<It2MeHost> CreateIt2MeHost();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(It2MeHostFactory);
 };
 
 }  // namespace remoting

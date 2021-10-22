@@ -24,6 +24,8 @@
 #include "device/fido/features.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_function_dispatcher.h"
+#include "extensions/browser/pref_names.h"
+#include "extensions/common/extension_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -217,6 +219,11 @@ TEST_F(CryptoTokenPrivateApiTest, RecordSignRequest) {
 class CryptoTokenPermissionTest : public ExtensionApiUnittest {
  public:
   CryptoTokenPermissionTest() = default;
+
+  CryptoTokenPermissionTest(const CryptoTokenPermissionTest&) = delete;
+  CryptoTokenPermissionTest& operator=(const CryptoTokenPermissionTest&) =
+      delete;
+
   ~CryptoTokenPermissionTest() override = default;
 
   void SetUp() override {
@@ -263,6 +270,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
     base::Value::DictStorage dict;
     dict.emplace("appId", app_id);
     dict.emplace("tabId", tab_id_);
+    dict.emplace("frameId", -1);  // Ignored.
     dict.emplace("origin", app_id);
     auto args = std::make_unique<base::Value>(base::Value::Type::LIST);
     args->Append(base::Value(std::move(dict)));
@@ -297,6 +305,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
     base::Value::DictStorage dict;
     dict.emplace("appId", origin);
     dict.emplace("tabId", tab_id_);
+    dict.emplace("frameId", 0 /* main frame */);
     dict.emplace("origin", origin);
     auto args = std::make_unique<base::Value>(base::Value::Type::LIST);
     args->Append(base::Value(std::move(dict)));
@@ -313,8 +322,6 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
  private:
   int tab_id_ = -1;
   std::unique_ptr<permissions::MockPermissionPromptFactory> prompt_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CryptoTokenPermissionTest);
 };
 
 TEST_F(CryptoTokenPermissionTest, AttestationPrompt) {
@@ -360,7 +367,6 @@ TEST_F(CryptoTokenPermissionTest, PolicyOverridesAttestationPrompt) {
 }
 
 TEST_F(CryptoTokenPermissionTest, RequestPrompt) {
-  feature_list_.InitAndEnableFeature(device::kU2fPermissionPrompt);
   const std::vector<permissions::PermissionRequestManager::AutoResponseType>
       actions = {
           permissions::PermissionRequestManager::ACCEPT_ALL,
@@ -381,15 +387,32 @@ TEST_F(CryptoTokenPermissionTest, RequestPrompt) {
 }
 
 TEST_F(CryptoTokenPermissionTest, FeatureFlagOverridesRequestPrompt) {
+  // Disabling the permission prompt feature flag should suppress it.
   feature_list_.InitAndDisableFeature(device::kU2fPermissionPrompt);
   bool result = false;
-
   ASSERT_TRUE(CanMakeU2fApiRequest("https://test.com",
                                    permissions::PermissionRequestManager::NONE,
                                    &result));
-  // The result should only be positive if the user accepted the permissions
-  // prompt.
   EXPECT_TRUE(result);
+}
+
+TEST_F(CryptoTokenPermissionTest, EnterprisePolicyOverridesRequestPrompt) {
+  // Setting the deprecation override policy should cause the prompt to be
+  // suppressed. This should be true even when the API has been
+  // default-disabled, because the policy overrides that too.
+  for (bool api_enabled : {false, true}) {
+    SCOPED_TRACE(api_enabled);
+    feature_list_.InitWithFeatureState(extensions_features::kU2FSecurityKeyAPI,
+                                       api_enabled);
+    browser()->profile()->GetPrefs()->Set(
+        extensions::pref_names::kU2fSecurityKeyApiEnabled, base::Value(true));
+    bool result = false;
+    ASSERT_TRUE(CanMakeU2fApiRequest(
+        "https://test.com", permissions::PermissionRequestManager::NONE,
+        &result));
+    EXPECT_TRUE(result);
+    feature_list_.Reset();
+  }
 }
 
 }  // namespace extensions

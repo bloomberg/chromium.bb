@@ -12,6 +12,7 @@
 #include "ash/accessibility/sticky_keys/sticky_keys_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/constants/ash_constants.h"
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -21,9 +22,12 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/message_center/message_center.h"
 
@@ -34,18 +38,36 @@ namespace ash {
 class TestAccessibilityObserver : public AccessibilityObserver {
  public:
   TestAccessibilityObserver() = default;
+  TestAccessibilityObserver(const TestAccessibilityObserver&) = delete;
+  TestAccessibilityObserver& operator=(const TestAccessibilityObserver&) =
+      delete;
   ~TestAccessibilityObserver() override = default;
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override { ++status_changed_count_; }
 
   int status_changed_count_ = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestAccessibilityObserver);
 };
 
-using AccessibilityControllerTest = AshTestBase;
+class AccessibilityControllerTest : public AshTestBase {
+ protected:
+  AccessibilityControllerTest() = default;
+  AccessibilityControllerTest(const AccessibilityControllerTest&) = delete;
+  AccessibilityControllerTest& operator=(const AccessibilityControllerTest&) =
+      delete;
+  ~AccessibilityControllerTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {media::kLiveCaption, media::kLiveCaptionSystemWideOnChromeOS,
+         ash::features::kOnDeviceSpeechRecognition},
+        {});
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   PrefService* prefs =
@@ -63,6 +85,7 @@ TEST_F(AccessibilityControllerTest, PrefsAreRegistered) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityHighContrastEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityLargeCursorDipSize));
+  EXPECT_TRUE(prefs->FindPreference(::prefs::kLiveCaptionEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kAccessibilityMonoAudioEnabled));
   EXPECT_TRUE(
       prefs->FindPreference(prefs::kAccessibilityScreenMagnifierEnabled));
@@ -237,6 +260,60 @@ TEST_F(AccessibilityControllerTest, LargeCursorTrayMenuVisibility) {
       prefs->IsManagedPreference(prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_FALSE(controller->large_cursor().enabled());
   EXPECT_FALSE(controller->IsLargeCursorSettingVisibleInTray());
+}
+
+TEST_F(AccessibilityControllerTest, SetLiveCaptionEnabled) {
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  EXPECT_FALSE(controller->live_caption().enabled());
+
+  TestAccessibilityObserver observer;
+  controller->AddObserver(&observer);
+  EXPECT_EQ(0, observer.status_changed_count_);
+
+  controller->live_caption().SetEnabled(true);
+  EXPECT_TRUE(controller->live_caption().enabled());
+  EXPECT_EQ(1, observer.status_changed_count_);
+
+  controller->live_caption().SetEnabled(false);
+  EXPECT_FALSE(controller->live_caption().enabled());
+  EXPECT_EQ(2, observer.status_changed_count_);
+
+  controller->RemoveObserver(&observer);
+}
+
+TEST_F(AccessibilityControllerTest, LiveCaptionTrayMenuVisibility) {
+  // Check that when the pref isn't being controlled by any policy will be
+  // visible in the accessibility tray menu despite its value.
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  AccessibilityControllerImpl* controller =
+      Shell::Get()->accessibility_controller();
+  // Check when the value is true and not being controlled by any policy.
+  controller->live_caption().SetEnabled(true);
+  EXPECT_TRUE(controller->live_caption().enabled());
+  EXPECT_FALSE(prefs->IsManagedPreference(::prefs::kLiveCaptionEnabled));
+  EXPECT_TRUE(controller->IsLiveCaptionSettingVisibleInTray());
+  // Check when the value is false and not being controlled by any policy.
+  controller->live_caption().SetEnabled(false);
+  EXPECT_FALSE(controller->live_caption().enabled());
+  EXPECT_FALSE(prefs->IsManagedPreference(::prefs::kLiveCaptionEnabled));
+  EXPECT_TRUE(controller->IsLiveCaptionSettingVisibleInTray());
+
+  // Check that when the pref is managed and being forced on then it will be
+  // visible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      ::prefs::kLiveCaptionEnabled, std::make_unique<base::Value>(true));
+  EXPECT_TRUE(prefs->IsManagedPreference(::prefs::kLiveCaptionEnabled));
+  EXPECT_TRUE(controller->live_caption().enabled());
+  EXPECT_TRUE(controller->IsLiveCaptionSettingVisibleInTray());
+  // Check that when the pref is managed and only being forced off then it will
+  // be invisible.
+  static_cast<TestingPrefServiceSimple*>(prefs)->SetManagedPref(
+      ::prefs::kLiveCaptionEnabled, std::make_unique<base::Value>(false));
+  EXPECT_TRUE(prefs->IsManagedPreference(::prefs::kLiveCaptionEnabled));
+  EXPECT_FALSE(controller->live_caption().enabled());
+  EXPECT_FALSE(controller->IsLiveCaptionSettingVisibleInTray());
 }
 
 TEST_F(AccessibilityControllerTest, HighContrastTrayMenuVisibility) {
@@ -1062,6 +1139,12 @@ class AccessibilityControllerSigninTest
       public testing::WithParamInterface<TestUserLoginType> {
  public:
   AccessibilityControllerSigninTest() = default;
+
+  AccessibilityControllerSigninTest(const AccessibilityControllerSigninTest&) =
+      delete;
+  AccessibilityControllerSigninTest& operator=(
+      const AccessibilityControllerSigninTest&) = delete;
+
   ~AccessibilityControllerSigninTest() = default;
 
   void SimulateLogin() {
@@ -1080,9 +1163,6 @@ class AccessibilityControllerSigninTest
         break;
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerSigninTest);
 };
 
 }  // namespace
@@ -1105,6 +1185,7 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             session->GetSessionState());
   EXPECT_FALSE(accessibility->large_cursor().enabled());
+  EXPECT_FALSE(accessibility->live_caption().enabled());
   EXPECT_FALSE(accessibility->spoken_feedback().enabled());
   EXPECT_FALSE(accessibility->high_contrast().enabled());
   EXPECT_FALSE(accessibility->autoclick().enabled());

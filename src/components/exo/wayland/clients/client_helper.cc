@@ -30,6 +30,8 @@
   }                                                          \
   }
 
+DEFAULT_DELETER(surface_augmenter, surface_augmenter_destroy)
+DEFAULT_DELETER(overlay_prioritizer, overlay_prioritizer_destroy)
 DEFAULT_DELETER(wl_buffer, wl_buffer_destroy)
 DEFAULT_DELETER(wl_callback, wl_callback_destroy)
 DEFAULT_DELETER(wl_compositor, wl_compositor_destroy)
@@ -83,7 +85,10 @@ DEFAULT_DELETER(zcr_keyboard_configuration_v1,
 DEFAULT_DELETER(zcr_keyboard_extension_v1, zcr_keyboard_extension_v1_destroy)
 DEFAULT_DELETER(zcr_notification_shell_v1, zcr_notification_shell_v1_destroy)
 DEFAULT_DELETER(zcr_remote_shell_v1, zcr_remote_shell_v1_destroy)
+DEFAULT_DELETER(zcr_remote_shell_v2, zcr_remote_shell_v2_destroy)
 DEFAULT_DELETER(zcr_stylus_tools_v1, zcr_stylus_tools_v1_destroy)
+DEFAULT_DELETER(zcr_text_input_extension_v1,
+                zcr_text_input_extension_v1_destroy)
 DEFAULT_DELETER(zwp_pointer_gestures_v1, zwp_pointer_gestures_v1_destroy)
 DEFAULT_DELETER(zwp_pointer_constraints_v1, zwp_pointer_constraints_v1_destroy)
 DEFAULT_DELETER(zwp_relative_pointer_manager_v1,
@@ -95,6 +100,7 @@ DEFAULT_DELETER(xdg_toplevel, xdg_toplevel_destroy)
 DEFAULT_DELETER(zxdg_surface_v6, zxdg_surface_v6_destroy)
 DEFAULT_DELETER(zxdg_toplevel_v6, zxdg_toplevel_v6_destroy)
 DEFAULT_DELETER(zxdg_output_manager_v1, zxdg_output_manager_v1_destroy)
+DEFAULT_DELETER(weston_test, weston_test_destroy)
 
 #if defined(USE_GBM)
 DEFAULT_DELETER(gbm_bo, gbm_bo_destroy)

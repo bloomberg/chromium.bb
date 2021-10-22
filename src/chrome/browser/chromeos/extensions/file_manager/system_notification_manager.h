@@ -173,6 +173,16 @@ class SystemNotificationManager {
                                      base::Value::ListView& event_arguments);
 
   /**
+   * Update/remove Drive sync progress notification.
+   * |event| is the event object delivered from EventRouter and
+   * |event_arguments| contains ListView serialized version of
+   * file_manager_private::FileTransferStatus.
+   */
+  std::unique_ptr<message_center::Notification> UpdateDriveSyncNotification(
+      const extensions::Event& event,
+      base::Value::ListView& event_arguments);
+
+  /**
    * Click handler for the removable device notification.
    */
   void HandleRemovableNotificationClick(const std::string& path,
@@ -210,6 +220,12 @@ class SystemNotificationManager {
 
   /**
    * Maps device paths to their mount status.
+   * This is used for removable devices with single/multiple partitions.
+   * e.g. the same device path could have 2 partitions that each generate a
+   * mount event. One partition could have a known file system and the other an
+   *      unknown file system. Different combinations of known/unknown file
+   *      systems on a multi-partition devices require this map to generate
+   *      the correct system notification when errors occur.
    */
   std::map<std::string, enum SystemNotificationManagerMountStatus>
       mount_status_;
@@ -217,6 +233,9 @@ class SystemNotificationManager {
   Profile* const profile_;
   // Reference to non-owned DriveFS event router.
   DriveFsEventRouter* drivefs_event_router_;
+
+  // Cache the application name (used for notification display source).
+  std::u16string app_name_;
 
   // Caches the SWA feature flag.
   bool swa_enabled_;

@@ -135,10 +135,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     LumakeyContext *s = ctx->priv;
     int ret;
 
-    if (ret = av_frame_make_writable(frame))
-        return ret;
-
-    if (ret = ctx->internal->execute(ctx, s->do_lumakey_slice, frame, NULL, FFMIN(frame->height, ff_filter_get_nb_threads(ctx))))
+    if (ret = ff_filter_execute(ctx, s->do_lumakey_slice, frame, NULL,
+                                FFMIN(frame->height, ff_filter_get_nb_threads(ctx))))
         return ret;
 
     return ff_filter_frame(ctx->outputs[0], frame);
@@ -154,13 +152,8 @@ static av_cold int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUVA444P16, AV_PIX_FMT_YUVA422P16, AV_PIX_FMT_YUVA420P16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *formats;
 
-    formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
@@ -179,10 +172,10 @@ static const AVFilterPad lumakey_inputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
+        .flags        = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad lumakey_outputs[] = {
@@ -190,7 +183,6 @@ static const AVFilterPad lumakey_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(LumakeyContext, x)
@@ -211,8 +203,8 @@ const AVFilter ff_vf_lumakey = {
     .priv_size     = sizeof(LumakeyContext),
     .priv_class    = &lumakey_class,
     .query_formats = query_formats,
-    .inputs        = lumakey_inputs,
-    .outputs       = lumakey_outputs,
+    FILTER_INPUTS(lumakey_inputs),
+    FILTER_OUTPUTS(lumakey_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

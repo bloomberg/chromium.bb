@@ -119,7 +119,7 @@ class MockInputApi(object):
 
   def ReadFile(self, filename, mode='rU'):
     if hasattr(filename, 'AbsoluteLocalPath'):
-       filename = filename.AbsoluteLocalPath()
+      filename = filename.AbsoluteLocalPath()
     for file_ in self.files:
       if file_.LocalPath() == filename:
         return '\n'.join(file_.NewContents())
@@ -243,9 +243,10 @@ class MockChange(object):
   current change.
   """
 
-  def __init__(self, changed_files):
+  def __init__(self, changed_files, description=''):
     self._changed_files = changed_files
     self.footers = defaultdict(list)
+    self._description = description
 
   def LocalPaths(self):
     return self._changed_files
@@ -257,3 +258,5 @@ class MockChange(object):
   def GitFootersFromDescription(self):
     return self.footers
 
+  def DescriptionText(self):
+    return self._description

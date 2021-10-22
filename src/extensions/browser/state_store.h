@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
+#include "components/value_store/value_store_frontend.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "extensions/browser/value_store/value_store_frontend.h"
 
 namespace content {
 class BrowserContext;
@@ -35,7 +35,7 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   typedef value_store::ValueStoreFrontend::ReadCallback ReadCallback;
 
   // The kind of extensions data stored in a backend.
-  enum class BackendType { RULES, STATE };
+  enum class BackendType { RULES, STATE, SCRIPTS };
 
   class TestObserver {
    public:
@@ -53,6 +53,10 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   // This variant is useful for testing (using a mock ValueStore).
   StateStore(content::BrowserContext* context,
              std::unique_ptr<value_store::ValueStore> store);
+
+  StateStore(const StateStore&) = delete;
+  StateStore& operator=(const StateStore&) = delete;
+
   ~StateStore() override;
 
   // Register a key for removal upon extension install/uninstall. We remove
@@ -115,8 +119,6 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
 
   base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(StateStore);
 };
 
 }  // namespace extensions

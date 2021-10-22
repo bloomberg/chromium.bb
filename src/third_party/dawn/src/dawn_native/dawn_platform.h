@@ -23,12 +23,21 @@
 #include <dawn_native/wgpu_structs_autogen.h>
 
 namespace dawn_native {
-    // Add an extra buffer usage (readonly storage buffer usage) and an extra texture usage
-    // (readonly storage texture usage) for render pass resource tracking
+    // Extra buffer usages
+    // Add an extra buffer usage and an extra binding type for binding the buffers with QueryResolve
+    // usage as storage buffer in the internal pipeline.
+    static constexpr wgpu::BufferUsage kInternalStorageBuffer =
+        static_cast<wgpu::BufferUsage>(0x40000000);
+
+    // Add an extra buffer usage (readonly storage buffer usage) for render pass resource tracking
     static constexpr wgpu::BufferUsage kReadOnlyStorageBuffer =
         static_cast<wgpu::BufferUsage>(0x80000000);
-    static constexpr wgpu::TextureUsage kReadOnlyStorageTexture =
-        static_cast<wgpu::TextureUsage>(0x80000000);
+
+    // Extra texture usages
+    // Add an extra texture usage (readonly render attachment usage) for render pass resource
+    // tracking
+    static constexpr wgpu::TextureUsage kReadOnlyRenderAttachment =
+        static_cast<wgpu::TextureUsage>(0x40000000);
 
     // Internal usage to help tracking when a subresource is used as render attachment usage
     // more than once in a render pass.
@@ -41,10 +50,6 @@ namespace dawn_native {
     // some bit when wgpu::TextureUsage::Present is removed.
     static constexpr wgpu::TextureUsage kPresentTextureUsage = wgpu::TextureUsage::Present;
 
-    // Add an extra buffer usage and an extra binding type for binding the buffers with QueryResolve
-    // usage as storage buffer in the internal pipeline.
-    static constexpr wgpu::BufferUsage kInternalStorageBuffer =
-        static_cast<wgpu::BufferUsage>(0x40000000);
     static constexpr wgpu::BufferBindingType kInternalStorageBufferBinding =
         static_cast<wgpu::BufferBindingType>(0xFFFFFFFF);
 }  // namespace dawn_native

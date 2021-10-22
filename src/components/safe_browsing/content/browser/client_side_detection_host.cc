@@ -33,10 +33,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -114,19 +116,29 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     remote_endpoint_ = navigation_handle->GetSocketAddress();
   }
 
+  ShouldClassifyUrlRequest(const ShouldClassifyUrlRequest&) = delete;
+  ShouldClassifyUrlRequest& operator=(const ShouldClassifyUrlRequest&) = delete;
+
   void Start() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // We start by doing some simple checks that can run on the UI thread.
     base::UmaHistogramBoolean("SBClientPhishing.ClassificationStart", true);
 
+    if (url_.SchemeIs(content::kChromeUIScheme)) {
+      DontClassifyForPhishing(NO_CLASSIFY_CHROME_UI_PAGE);
+    }
+
+    if (csd_service_->IsLocalResource(remote_endpoint_.address())) {
+      DontClassifyForPhishing(NO_CLASSIFY_LOCAL_RESOURCE);
+    }
+
     // Only classify [X]HTML documents.
     if (mime_type_ != "text/html" && mime_type_ != "application/xhtml+xml") {
       DontClassifyForPhishing(NO_CLASSIFY_UNSUPPORTED_MIME_TYPE);
     }
 
-    if (csd_service_->IsPrivateIPAddress(
-            remote_endpoint_.ToStringWithoutPort())) {
+    if (csd_service_->IsPrivateIPAddress(remote_endpoint_.address())) {
       DontClassifyForPhishing(NO_CLASSIFY_PRIVATE_IP);
     }
 
@@ -196,6 +208,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     NO_CLASSIFY_ALLOWLISTED_BY_POLICY = 12,
     CLASSIFY = 13,
     NO_CLASSIFY_HAS_DELAYED_WARNING = 14,
+    NO_CLASSIFY_LOCAL_RESOURCE = 15,
+    NO_CLASSIFY_CHROME_UI_PAGE = 16,
 
     NO_CLASSIFY_MAX  // Always add new values before this one.
   };
@@ -322,8 +336,6 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   ClientSideDetectionHost* host_;
 
   ShouldClassifyUrlCallback start_phishing_classification_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShouldClassifyUrlRequest);
 };
 
 // static
@@ -588,8 +600,6 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(bool is_from_cache,
       resource.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
       resource.threat_source =
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
-      resource.web_contents_getter =
-          security_interstitials::GetWebContentsGetter(primary_main_frame_id);
       resource.render_process_id = primary_main_frame_id.child_id;
       resource.render_frame_id = primary_main_frame_id.frame_routing_id;
       if (!ui_manager_->IsAllowlisted(resource)) {

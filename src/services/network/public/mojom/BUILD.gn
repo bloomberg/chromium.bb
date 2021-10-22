@@ -337,6 +337,15 @@ mojom("url_loader_base") {
     {
       types = [
         {
+          mojom = "network.mojom.URLLoaderCompletionStatus"
+          cpp = "::network::URLLoaderCompletionStatus"
+        },
+      ]
+      traits_headers = [ "//services/network/public/cpp/url_loader_completion_status_mojom_traits.h" ]
+    },
+    {
+      types = [
+        {
           mojom = "network.mojom.CrossOriginOpenerPolicy"
           cpp = "::network::CrossOriginOpenerPolicy"
         },
@@ -352,6 +361,10 @@ mojom("url_loader_base") {
         {
           mojom = "network.mojom.WebBundleTokenParams"
           cpp = "::network::ResourceRequest::WebBundleTokenParams"
+        },
+        {
+          mojom = "network.mojom.NetLogParams"
+          cpp = "::network::ResourceRequest::NetLogParams"
         },
         {
           mojom = "network.mojom.URLRequest"
@@ -478,12 +491,19 @@ mojom("url_loader_base") {
     {
       types = [
         {
-          mojom = "network.mojom.CTPolicyCompliance"
-          cpp = "::net::ct::CTPolicyCompliance"
-        },
-        {
           mojom = "network.mojom.CorsErrorStatus"
           cpp = "::network::CorsErrorStatus"
+        },
+      ]
+      traits_headers =
+          [ "//services/network/public/cpp/cors/cors_mojom_traits.h" ]
+      traits_public_deps = [ "//base" ]
+    },
+    {
+      types = [
+        {
+          mojom = "network.mojom.CTPolicyCompliance"
+          cpp = "::net::ct::CTPolicyCompliance"
         },
         {
           mojom = "network.mojom.EffectiveConnectionType"
@@ -492,10 +512,6 @@ mojom("url_loader_base") {
         {
           mojom = "network.mojom.OriginPolicy"
           cpp = "::network::OriginPolicy"
-        },
-        {
-          mojom = "network.mojom.URLLoaderCompletionStatus"
-          cpp = "::network::URLLoaderCompletionStatus"
         },
         {
           mojom = "network.mojom.URLRequestRedirectInfo"
@@ -637,6 +653,14 @@ mojom("mojom_network_param") {
           cpp = "::net::HttpVersion"
         },
         {
+          mojom = "network.mojom.ProxyServer"
+          cpp = "::net::ProxyServer"
+        },
+        {
+          mojom = "network.mojom.ResolveErrorInfo"
+          cpp = "::net::ResolveErrorInfo"
+        },
+        {
           mojom = "network.mojom.SSLCertRequestInfo"
           cpp = "::scoped_refptr<::net::SSLCertRequestInfo>"
           nullable_is_same_type = true
@@ -761,6 +785,10 @@ mojom("cookies_mojom") {
         {
           mojom = "network.mojom.CookieOptions"
           cpp = "::net::CookieOptions"
+        },
+        {
+          mojom = "network.mojom.CookiePartitionKeychain"
+          cpp = "::net::CookiePartitionKeychain"
         },
         {
           mojom = "network.mojom.CanonicalCookie"
@@ -911,10 +939,6 @@ mojom("mojom") {
         {
           mojom = "network.mojom.DnsQueryType"
           cpp = "::net::DnsQueryType"
-        },
-        {
-          mojom = "network.mojom.ResolveErrorInfo"
-          cpp = "::net::ResolveErrorInfo"
         },
         {
           mojom = "network.mojom.ResolveHostParameters.Source"

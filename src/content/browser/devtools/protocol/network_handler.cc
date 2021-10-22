@@ -205,7 +205,7 @@ class CookieRetrieverNetworkService
     net::CookieOptions cookie_options = net::CookieOptions::MakeAllInclusive();
     for (const auto& url : urls) {
       cookie_manager->GetCookieList(
-          url, cookie_options,
+          url, cookie_options, net::CookiePartitionKeychain::Todo(),
           base::BindOnce(&CookieRetrieverNetworkService::GotCookies, self));
     }
   }
@@ -786,6 +786,11 @@ GetProtocolBlockedSetCookieReason(net::CookieInclusionStatus status) {
     blockedReasons->push_back(Network::SetCookieBlockedReasonEnum::
                                   SamePartyConflictsWithOtherAttributes);
   }
+  if (status.HasExclusionReason(net::CookieInclusionStatus::
+                                    EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE)) {
+    blockedReasons->push_back(
+        Network::SetCookieBlockedReasonEnum::NameValuePairExceedsMaxSize);
+  }
   if (status.HasExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)) {
     blockedReasons->push_back(
@@ -856,6 +861,11 @@ GetProtocolBlockedCookieReason(net::CookieInclusionStatus status) {
           net::CookieInclusionStatus::EXCLUDE_SAMEPARTY_CROSS_PARTY_CONTEXT)) {
     blockedReasons->push_back(
         Network::CookieBlockedReasonEnum::SamePartyFromCrossPartyContext);
+  }
+  if (status.HasExclusionReason(net::CookieInclusionStatus::
+                                    EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE)) {
+    blockedReasons->push_back(
+        Network::CookieBlockedReasonEnum::NameValuePairExceedsMaxSize);
   }
   if (status.HasExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)) {
@@ -933,6 +943,9 @@ class BackgroundSyncRestorer {
     SetServiceWorkerOfflineStatus(true);
   }
 
+  BackgroundSyncRestorer(const BackgroundSyncRestorer&) = delete;
+  BackgroundSyncRestorer& operator=(const BackgroundSyncRestorer&) = delete;
+
   ~BackgroundSyncRestorer() { SetServiceWorkerOfflineStatus(false); }
 
   void SetStoragePartition(StoragePartition* storage_partition) {
@@ -973,8 +986,6 @@ class BackgroundSyncRestorer {
   StoragePartition* storage_partition_;
   int64_t offline_sw_registration_id_ =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRestorer);
 };
 
 NetworkHandler::NetworkHandler(
@@ -1614,7 +1625,7 @@ Response NetworkHandler::EmulateNetworkConditions(
   if (throttling_enabled) {
     network_conditions = network::mojom::NetworkConditions::New();
     network_conditions->offline = offline;
-    network_conditions->latency = base::TimeDelta::FromMilliseconds(latency);
+    network_conditions->latency = base::Milliseconds(latency);
     network_conditions->download_throughput = download_throughput;
     network_conditions->upload_throughput = upload_throughput;
   }
@@ -2153,6 +2164,12 @@ String BuildCorsError(network::mojom::CorsError cors_error) {
 
     case network::mojom::CorsError::kInsecurePrivateNetwork:
       return protocol::Network::CorsErrorEnum::InsecurePrivateNetwork;
+
+    case network::mojom::CorsError::kInvalidPrivateNetworkAccess:
+      return protocol::Network::CorsErrorEnum::InvalidPrivateNetworkAccess;
+
+    case network::mojom::CorsError::kUnexpectedPrivateNetworkAccess:
+      return protocol::Network::CorsErrorEnum::UnexpectedPrivateNetworkAccess;
   }
 }
 }  // namespace
@@ -3020,6 +3037,10 @@ String NetworkHandler::BuildPrivateNetworkRequestPolicy(
       // TODO(https://crbug.com/1141824): Fix this.
       return protocol::Network::PrivateNetworkRequestPolicyEnum::
           WarnFromInsecureToMorePrivate;
+    case network::mojom::PrivateNetworkRequestPolicy::kPreflightBlock:
+      return protocol::Network::PrivateNetworkRequestPolicyEnum::PreflightBlock;
+    case network::mojom::PrivateNetworkRequestPolicy::kPreflightWarn:
+      return protocol::Network::PrivateNetworkRequestPolicyEnum::PreflightWarn;
   }
 }
 

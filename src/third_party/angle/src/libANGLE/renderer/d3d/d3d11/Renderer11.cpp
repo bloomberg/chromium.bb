@@ -1309,8 +1309,8 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
     outExtensions->streamConsumerGLTextureYUV = true;
     outExtensions->streamProducerD3DTexture   = true;
 
-    outExtensions->flexibleSurfaceCompatibility = true;
-    outExtensions->directComposition            = !!mDCompModule;
+    outExtensions->noConfigContext   = true;
+    outExtensions->directComposition = !!mDCompModule;
 
     // Contexts are virtualized so textures and semaphores can be shared globally
     outExtensions->displayTextureShareGroup   = true;
@@ -1323,7 +1323,7 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
     outExtensions->surfacelessContext = true;
 
     // All D3D feature levels support robust resource init
-    outExtensions->robustResourceInitialization = true;
+    outExtensions->robustResourceInitializationANGLE = true;
 
 #ifdef ANGLE_ENABLE_D3D11_COMPOSITOR_NATIVE_WINDOW
     // Compositor Native Window capabilies require WinVer >= 1803
@@ -2346,7 +2346,7 @@ bool Renderer11::getShareHandleSupport() const
 
     // We only currently support share handles with BGRA surfaces, because
     // chrome needs BGRA. Once chrome fixes this, we should always support them.
-    if (!getNativeExtensions().textureFormatBGRA8888)
+    if (!getNativeExtensions().textureFormatBGRA8888EXT)
     {
         mSupportsShareHandles = false;
         return false;

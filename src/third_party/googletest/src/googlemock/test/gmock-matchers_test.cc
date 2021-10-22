@@ -8405,7 +8405,7 @@ TEST(AnyOfArrayTest, ExplainsMatchResultCorrectly) {
   // Explain with matchers
   const Matcher<int> g1 = AnyOfArray({GreaterThan(1)});
   const Matcher<int> g2 = AnyOfArray({GreaterThan(1), GreaterThan(2)});
-  // Explains the first positiv match and all prior negative matches...
+  // Explains the first positive match and all prior negative matches...
   EXPECT_EQ("which is 1 less than 1", Explain(g1, 0));
   EXPECT_EQ("which is the same as 1", Explain(g1, 1));
   EXPECT_EQ("which is 1 more than 1", Explain(g1, 2));
@@ -8513,6 +8513,12 @@ TEST(ThrowsTest, Examples) {
   EXPECT_THAT(
       std::function<void()>([]() { throw std::runtime_error("message"); }),
       ThrowsMessage<std::runtime_error>(HasSubstr("message")));
+}
+
+TEST(ThrowsTest, PrintsExceptionWhat) {
+  EXPECT_THAT(
+      std::function<void()>([]() { throw std::runtime_error("ABC123XYZ"); }),
+      ThrowsMessage<std::runtime_error>(HasSubstr("ABC123XYZ")));
 }
 
 TEST(ThrowsTest, DoesNotGenerateDuplicateCatchClauseWarning) {
@@ -8628,15 +8634,6 @@ TEST_P(ThrowsPredicateTest, FailWrongTypeNonStd) {
   EXPECT_FALSE(matcher.MatchAndExplain([]() { throw 10; }, &listener));
   EXPECT_THAT(listener.str(),
               HasSubstr("throws an exception of an unknown type"));
-}
-
-TEST_P(ThrowsPredicateTest, FailWrongMessage) {
-  Matcher<std::function<void()>> matcher = GetParam();
-  StringMatchResultListener listener;
-  EXPECT_FALSE(matcher.MatchAndExplain(
-      []() { throw std::runtime_error("wrong message"); }, &listener));
-  EXPECT_THAT(listener.str(), HasSubstr("std::runtime_error"));
-  EXPECT_THAT(listener.str(), Not(HasSubstr("wrong message")));
 }
 
 TEST_P(ThrowsPredicateTest, FailNoThrow) {

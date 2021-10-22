@@ -65,6 +65,9 @@ def RunSteps(api):
   api.gerrit.get_change_description(
       host, change=123, patchset=1)
 
+  api.gerrit.set_change_label(host, 123, 'code-review', -1)
+  api.gerrit.set_change_label(host, 123, 'commit-queue', 1)
+
   api.gerrit.abandon_change(host, 123, 'bad roll')
 
   with api.step.defer_results():

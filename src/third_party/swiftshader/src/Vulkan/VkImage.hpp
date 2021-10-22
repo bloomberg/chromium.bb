@@ -90,7 +90,7 @@ public:
 	int rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	int slicePitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	void *getTexelPointer(const VkOffset3D &offset, const VkImageSubresource &subresource) const;
-	bool isCube() const;
+	bool isCubeCompatible() const;
 	bool is3DSlice() const;
 	uint8_t *end() const;
 	VkDeviceSize getLayerSize(VkImageAspectFlagBits aspect) const;
@@ -133,9 +133,9 @@ private:
 	VkFormat getClearFormat() const;
 	void clear(void *pixelData, VkFormat pixelFormat, const vk::Format &viewFormat, const VkImageSubresourceRange &subresourceRange, const VkRect2D &renderArea);
 	int borderSize() const;
+
 	bool requiresPreprocessing() const;
 	void decompress(const VkImageSubresource &subresource);
-	bool updateCube(const VkImageSubresource &subresource);
 	void decodeETC2(const VkImageSubresource &subresource);
 	void decodeBC(const VkImageSubresource &subresource);
 	void decodeASTC(const VkImageSubresource &subresource);

@@ -368,14 +368,14 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateChildToAboutBlank) {
   // initiate the navigation.
   FrameTreeNode* target =
       contents->GetFrameTree()->root()->child_at(0)->child_at(0);
-  FrameTreeNode* initiator = target->parent()->frame_tree_node();
+  RenderFrameHost* initiator_rfh = target->parent();
 
   // Give the target a name.
   EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));
 
   // Use window.open(about:blank), then poll the document for access.
   EvalJsResult about_blank_origin = EvalJs(
-      initiator,
+      initiator_rfh,
       "new Promise(resolve => {"
       "  var didNavigate = false;"
       "  var intervalID = setInterval(function() {"
@@ -416,15 +416,14 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
   // initiate the navigation.
   FrameTreeNode* target =
       contents->GetFrameTree()->root()->child_at(0)->child_at(0);
-  FrameTreeNode* initiator =
-      target->parent()->frame_tree_node()->parent()->frame_tree_node();
+  RenderFrameHost* initiator_rfh = target->parent()->GetParent();
 
   // Give the target a name.
   EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));
 
   // Use window.open(about:blank), then poll the document for access.
   EvalJsResult about_blank_origin =
-      EvalJs(initiator,
+      EvalJs(initiator_rfh,
              "new Promise((resolve) => {"
              "  var didNavigate = false;"
              "  var intervalID = setInterval(() => {"
@@ -464,8 +463,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToDataUrl) {
   // initiate the navigation.
   FrameTreeNode* target =
       contents->GetFrameTree()->root()->child_at(0)->child_at(0);
-  FrameTreeNode* initiator =
-      target->parent()->frame_tree_node()->parent()->frame_tree_node();
+  RenderFrameHostImpl* initiator_rfh = target->parent()->GetParent();
 
   // Give the target a name.
   EXPECT_TRUE(ExecJs(target, "window.name = 'target';"));
@@ -473,8 +471,8 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, NavigateGrandchildToDataUrl) {
   // Navigate the target frame through the initiator frame.
   {
     TestFrameNavigationObserver observer(target);
-    EXPECT_TRUE(
-        ExecJs(initiator, "window.open('data:text/html,content', 'target');"));
+    EXPECT_TRUE(ExecJs(initiator_rfh,
+                       "window.open('data:text/html,content', 'target');"));
     observer.Wait();
   }
 
@@ -826,13 +824,15 @@ class FencedFrameTreeBrowserTest
 
   FencedFrameTreeBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        blink::features::kFencedFrames,
-        {{"implementation_type",
-          GetParam() ==
-                  blink::features::FencedFramesImplementationType::kShadowDOM
-              ? "shadow_dom"
-              : "mparch"}});
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{blink::features::kFencedFrames,
+          {{"implementation_type",
+            GetParam() ==
+                    blink::features::FencedFramesImplementationType::kShadowDOM
+                ? "shadow_dom"
+                : "mparch"}}},
+         {blink::features::kThirdPartyStoragePartitioning, {}}},
+        {/* disabled_features */});
   }
 
   // `node` is expected to be the child FrameTreeNode created in response to a
@@ -881,7 +881,7 @@ class FencedFrameTreeBrowserTest
     // communicated by nested FrameTrees.
     FencedFrame* fenced_frame = GetMatchingFencedFrameInOuterFrameTree(rfh);
     EXPECT_EQ(url.spec(),
-              EvalJs(rfh->ParentOrOuterDelegateFrame(), navigate_script));
+              EvalJs(rfh->GetParentOrOuterDocument(), navigate_script));
     fenced_frame->WaitForDidStopLoadingForTesting();
   }
 
@@ -949,7 +949,7 @@ class FencedFrameTreeBrowserTest
     EXPECT_TRUE(rfh->frame_tree_node()->IsInFencedFrameTree());
 
     RenderFrameHostImpl* outer_delegate_frame =
-        rfh->GetMainFrame()->ParentOrOuterDelegateFrame();
+        rfh->GetMainFrame()->GetParentOrOuterDocument();
 
     std::vector<FencedFrame*> fenced_frames =
         outer_delegate_frame->GetFencedFrames();
@@ -1173,6 +1173,237 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, CheckIsFencedFrame) {
       GetFencedFrameRootNode(fenced_frame_root_node->child_at(1));
   EXPECT_TRUE(nested_fenced_frame_root_node->IsFencedFrameRoot());
   EXPECT_TRUE(nested_fenced_frame_root_node->IsInFencedFrameTree());
+}
+
+// Tests a nonce is correctly set in the isolation info for a fenced frame tree.
+IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
+                       CheckIsolationInfoAndStorageKeyNonce) {
+  GURL main_url(https_server()->GetURL("a.test", "/hello.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('fencedframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_count());
+
+  auto* fenced_frame = GetFencedFrameRootNode(root->child_at(0));
+  EXPECT_TRUE(fenced_frame->IsFencedFrameRoot());
+  EXPECT_TRUE(fenced_frame->IsInFencedFrameTree());
+
+  // Before we check the IsolationInfo/StorageKey on the fenced frame, we must
+  // navigate it once. This is because the root of a FrameTree does not call
+  // RenderFrameHostImpl::RenderFrameCreated() on its owned RFHI.
+  {
+    // Navigate the fenced frame.
+    GURL fenced_frame_url(https_server()->GetURL("a.test", "/title1.html"));
+    std::string navigate_script =
+        JsReplace("f.src = $1;", fenced_frame_url.spec());
+    NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+        fenced_frame, fenced_frame_url, navigate_script);
+  }
+
+  // There should be a nonce in the IsolationInfo.
+  const net::IsolationInfo& isolation_info =
+      fenced_frame->current_frame_host()->GetIsolationInfoForSubresources();
+  EXPECT_TRUE(isolation_info.nonce().has_value());
+  absl::optional<base::UnguessableToken> fenced_frame_nonce =
+      fenced_frame->fenced_frame_nonce();
+  EXPECT_TRUE(fenced_frame_nonce.has_value());
+  EXPECT_EQ(fenced_frame_nonce.value(), isolation_info.nonce().value());
+
+  // There should be a nonce in the StorageKey.
+  EXPECT_TRUE(
+      fenced_frame->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_EQ(fenced_frame_nonce.value(),
+            fenced_frame->current_frame_host()->storage_key().nonce().value());
+
+  // Add an iframe. It should not have a nonce.
+  EXPECT_TRUE(ExecJs(root,
+                     "var subframe = document.createElement('iframe');"
+                     "document.body.appendChild(subframe);"));
+  EXPECT_EQ(2U, root->child_count());
+  auto* iframe = root->child_at(1);
+  EXPECT_FALSE(iframe->IsFencedFrameRoot());
+  EXPECT_FALSE(iframe->IsInFencedFrameTree());
+  const net::IsolationInfo& iframe_isolation_info =
+      iframe->current_frame_host()->GetIsolationInfoForSubresources();
+  EXPECT_FALSE(iframe_isolation_info.nonce().has_value());
+  EXPECT_FALSE(iframe->current_frame_host()->storage_key().nonce().has_value());
+
+  // Navigate the iframe. It should still not have a nonce.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      iframe, https_server()->GetURL("b.test", "/title1.html")));
+  const net::IsolationInfo& iframe_new_isolation_info =
+      iframe->current_frame_host()->GetIsolationInfoForSubresources();
+
+  EXPECT_FALSE(iframe_new_isolation_info.nonce().has_value());
+  EXPECT_FALSE(iframe->current_frame_host()->storage_key().nonce().has_value());
+
+  // Add a nested iframe inside the fenced frame.
+  EXPECT_TRUE(ExecJs(fenced_frame,
+                     "var iframe_within_ff = document.createElement('iframe');"
+                     "document.body.appendChild(iframe_within_ff);"));
+  EXPECT_EQ(1U, fenced_frame->child_count());
+  EXPECT_FALSE(fenced_frame->child_at(0)->IsFencedFrameRoot());
+  EXPECT_TRUE(fenced_frame->child_at(0)->IsInFencedFrameTree());
+  const net::IsolationInfo& nested_iframe_isolation_info =
+      fenced_frame->child_at(0)
+          ->current_frame_host()
+          ->GetIsolationInfoForSubresources();
+  EXPECT_TRUE(nested_iframe_isolation_info.nonce().has_value());
+
+  // Check that a nested iframe in the fenced frame tree has the same nonce
+  // value as its parent.
+  EXPECT_EQ(fenced_frame_nonce.value(),
+            nested_iframe_isolation_info.nonce().value());
+  absl::optional<base::UnguessableToken> nested_iframe_nonce =
+      fenced_frame->child_at(0)->fenced_frame_nonce();
+  EXPECT_EQ(nested_iframe_isolation_info.nonce().value(),
+            nested_iframe_nonce.value());
+  EXPECT_EQ(fenced_frame_nonce.value(), fenced_frame->child_at(0)
+                                            ->current_frame_host()
+                                            ->storage_key()
+                                            .nonce()
+                                            .value());
+
+  // Navigate the iframe. It should still have the same nonce.
+  {
+    GURL https_url(https_server()->GetURL("b.test", "/title1.html"));
+    std::string navigate_script =
+        JsReplace("iframe_within_ff.src = $1;", https_url.spec());
+    NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+        fenced_frame->child_at(0), https_url, navigate_script);
+  }
+  const net::IsolationInfo& nested_iframe_new_isolation_info =
+      fenced_frame->child_at(0)
+          ->current_frame_host()
+          ->GetIsolationInfoForSubresources();
+  EXPECT_EQ(nested_iframe_new_isolation_info.nonce().value(),
+            nested_iframe_nonce.value());
+  EXPECT_EQ(fenced_frame_nonce.value(), fenced_frame->child_at(0)
+                                            ->current_frame_host()
+                                            ->storage_key()
+                                            .nonce()
+                                            .value());
+
+  // Add a nested fenced frame.
+  EXPECT_TRUE(
+      ExecJs(fenced_frame,
+             "var nested_fenced_frame = document.createElement('fencedframe');"
+             "document.body.appendChild(nested_fenced_frame);"));
+  EXPECT_EQ(2U, fenced_frame->child_count());
+  auto* nested_fenced_frame = GetFencedFrameRootNode(fenced_frame->child_at(1));
+  EXPECT_TRUE(nested_fenced_frame->IsFencedFrameRoot());
+  EXPECT_TRUE(nested_fenced_frame->IsInFencedFrameTree());
+  absl::optional<base::UnguessableToken> nested_fframe_nonce =
+      nested_fenced_frame->fenced_frame_nonce();
+  EXPECT_TRUE(nested_fframe_nonce.has_value());
+
+  // Check that a nested fenced frame has a different value than its parent
+  // fenced frame.
+  EXPECT_NE(fenced_frame_nonce.value(), nested_fframe_nonce.value());
+
+  // Check that the nonce does not change when there is a cross-document
+  // navigation.
+  {
+    // Navigate the fenced frame.
+    GURL fenced_frame_url(https_server()->GetURL("b.test", "/title1.html"));
+    std::string navigate_script =
+        JsReplace("f.src = $1;", fenced_frame_url.spec());
+    NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+        fenced_frame, fenced_frame_url, navigate_script);
+  }
+
+  absl::optional<base::UnguessableToken> new_fenced_frame_nonce =
+      fenced_frame->fenced_frame_nonce();
+  EXPECT_NE(absl::nullopt, new_fenced_frame_nonce);
+  EXPECT_EQ(new_fenced_frame_nonce.value(), fenced_frame_nonce.value());
+}
+
+// Tests that a fenced frame and a same-origin iframe at the same level do not
+// share the same storage partition.
+IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, CheckUniqueStorage) {
+  GURL main_url(https_server()->GetURL("a.test", "/hello.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var f = document.createElement('fencedframe');"
+                     "document.body.appendChild(f);"));
+  EXPECT_EQ(1U, root->child_count());
+
+  auto* fenced_frame = GetFencedFrameRootNode(root->child_at(0));
+  EXPECT_TRUE(fenced_frame->IsFencedFrameRoot());
+  EXPECT_TRUE(fenced_frame->IsInFencedFrameTree());
+
+  // Before we check the storage key on the fenced frame, we must navigate it
+  // once. This is because the root of a FrameTree does not call
+  // RenderFrameHostImpl::RenderFrameCreated() on its owned RFHI.
+  {
+    // Navigate the fenced frame.
+    GURL fenced_frame_url(https_server()->GetURL("a.test", "/title1.html"));
+    std::string navigate_script =
+        JsReplace("f.src = $1;", fenced_frame_url.spec());
+    NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+        fenced_frame, fenced_frame_url, navigate_script);
+  }
+
+  // There should be a nonce in the StorageKey.
+  EXPECT_TRUE(
+      fenced_frame->current_frame_host()->storage_key().nonce().has_value());
+
+  absl::optional<base::UnguessableToken> fenced_frame_nonce =
+      fenced_frame->fenced_frame_nonce();
+  EXPECT_TRUE(fenced_frame_nonce.has_value());
+  EXPECT_EQ(fenced_frame_nonce.value(),
+            fenced_frame->current_frame_host()->storage_key().nonce().value());
+
+  // Add an iframe.
+  EXPECT_TRUE(ExecJs(root,
+                     "var subframe = document.createElement('iframe');"
+                     "document.body.appendChild(subframe);"));
+  EXPECT_EQ(2U, root->child_count());
+  auto* iframe = root->child_at(1);
+  EXPECT_FALSE(iframe->IsFencedFrameRoot());
+  EXPECT_FALSE(iframe->IsInFencedFrameTree());
+  EXPECT_FALSE(iframe->current_frame_host()->storage_key().nonce().has_value());
+
+  // Navigate the iframe. It should still not have a nonce.
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      iframe, https_server()->GetURL("a.test", "/title1.html")));
+
+  EXPECT_FALSE(iframe->current_frame_host()->storage_key().nonce().has_value());
+
+  // Set and read a value in the fenced frame's local storage.
+  EXPECT_TRUE(ExecJs(fenced_frame, "localStorage[\"foo\"] = \"a\""));
+  EXPECT_EQ("a", EvalJs(fenced_frame, "localStorage[\"foo\"]"));
+
+  // Set and read a value in the iframe's local storage.
+  EXPECT_TRUE(ExecJs(iframe, "localStorage[\"foo\"] = \"b\""));
+  EXPECT_EQ("b", EvalJs(iframe, "localStorage[\"foo\"]"));
+
+  // Set and read a value in the top-frame's local storage.
+  EXPECT_TRUE(ExecJs(root, "localStorage[\"foo\"] = \"c\""));
+  EXPECT_EQ("c", EvalJs(root, "localStorage[\"foo\"]"));
+
+  // TODO(crbug.com/1199077) This should return "a" once StorageKey starts
+  // using the nonce for partitioning. Also remove the shadowDOM specific check
+  // once nonce support is complete (for MPArch, possibly due to a separate
+  // process and incomplete nonce support, it is returning "a" on some
+  // platforms).
+  if (GetParam() ==
+      blink::features::FencedFramesImplementationType::kShadowDOM) {
+    EXPECT_EQ("c", EvalJs(fenced_frame, "localStorage[\"foo\"]"));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(

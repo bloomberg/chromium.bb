@@ -188,6 +188,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                   UserInitiatedInfo user_initiated_info,
                   int aborted_chain_size,
                   int aborted_chain_size_same_url);
+
+  PageLoadTracker(const PageLoadTracker&) = delete;
+  PageLoadTracker& operator=(const PageLoadTracker&) = delete;
+
   ~PageLoadTracker() override;
 
   // PageLoadMetricsUpdateDispatcher::Client implementation:
@@ -240,6 +244,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const PageRenderData& GetPageRenderData() const override;
   const NormalizedCLSData& GetNormalizedCLSData(
       BfcacheStrategy bfcache_strategy) const override;
+  const NormalizedResponsivenessMetrics& GetNormalizedResponsivenessMetrics()
+      const override;
   const mojom::InputTiming& GetPageInputTiming() const override;
   const blink::MobileFriendliness& GetMobileFriendliness() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
@@ -425,10 +431,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
-  // The navigation start after the last time when back-forward cache is
-  // restored.
-  base::TimeTicks navigation_start_after_back_forward_cache_restore_;
-
   // The most recent URL of this page load. Updated at navigation start, upon
   // redirection, and at commit time.
   GURL url_;
@@ -508,8 +510,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       largest_contentful_paint_handler_;
   page_load_metrics::LargestContentfulPaintHandler
       experimental_largest_contentful_paint_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
 
 }  // namespace page_load_metrics

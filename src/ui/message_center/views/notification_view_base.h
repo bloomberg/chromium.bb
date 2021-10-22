@@ -16,17 +16,16 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
+#include "ui/message_center/views/notification_input_container.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_observer.h"
-#include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
-class ImageButton;
 class Label;
+class LabelButton;
 class ProgressBar;
 class RadioButton;
-class Textfield;
 }  // namespace views
 
 namespace message_center {
@@ -35,39 +34,6 @@ class NotificationHeaderView;
 class ProportionalImageView;
 
 // TODO(crbug/1241983): Add metadata and builder support to these views.
-
-// NotificationTextButton extends MdText button to allow for placeholder text
-// as well as capitalizing the given label string.
-class MESSAGE_CENTER_EXPORT NotificationTextButton
-    : public views::MdTextButton {
- public:
-  METADATA_HEADER(NotificationTextButton);
-
-  NotificationTextButton(PressedCallback callback,
-                         const std::u16string& label,
-                         const absl::optional<std::u16string>& placeholder);
-  ~NotificationTextButton() override;
-
-  // views::MdTextButton:
-  void UpdateBackgroundColor() override;
-  void OnThemeChanged() override;
-
-  const absl::optional<std::u16string>& placeholder() const {
-    return placeholder_;
-  }
-  void set_placeholder(absl::optional<std::u16string> placeholder) {
-    placeholder_ = std::move(placeholder);
-  }
-  SkColor enabled_color_for_testing() const {
-    return label()->GetEnabledColor();
-  }
-
-  void OverrideTextColor(absl::optional<SkColor> text_color);
-
- private:
-  absl::optional<std::u16string> placeholder_;
-  absl::optional<SkColor> text_color_;
-};
 
 // CompactTitleMessageView shows notification title and message in a single
 // line. This view is used for NOTIFICATION_TYPE_PROGRESS.
@@ -112,49 +78,6 @@ class LargeImageView : public views::View {
   gfx::ImageSkia image_;
 };
 
-class NotificationInputDelegate {
- public:
-  virtual void OnNotificationInputSubmit(size_t index,
-                                         const std::u16string& text) = 0;
-  virtual ~NotificationInputDelegate() = default;
-};
-
-class NotificationInputContainer : public views::View,
-                                   public views::TextfieldController {
- public:
-  explicit NotificationInputContainer(NotificationInputDelegate* delegate);
-  NotificationInputContainer(const NotificationInputContainer&) = delete;
-  NotificationInputContainer& operator=(const NotificationInputContainer&) =
-      delete;
-  ~NotificationInputContainer() override;
-
-  void AnimateBackground(const ui::Event& event);
-
-  // views::View:
-  void AddLayerBeneathView(ui::Layer* layer) override;
-  void RemoveLayerBeneathView(ui::Layer* layer) override;
-  void OnThemeChanged() override;
-  void Layout() override;
-
-  // Overridden from views::TextfieldController:
-  bool HandleKeyEvent(views::Textfield* sender,
-                      const ui::KeyEvent& key_event) override;
-  void OnAfterUserAction(views::Textfield* sender) override;
-
-  views::Textfield* textfield() const { return textfield_; }
-  views::ImageButton* button() const { return button_; }
-
- private:
-  void UpdateButtonImage();
-
-  NotificationInputDelegate* const delegate_;
-
-  views::InkDropContainerView* const ink_drop_container_;
-
-  views::Textfield* const textfield_;
-  views::ImageButton* const button_;
-};
-
 // View that displays all current types of notification (web, basic, image, and
 // list) except the custom notification. Future notification types may be
 // handled by other classes, in which case instances of those classes would be
@@ -184,13 +107,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
 
   void Activate();
 
-  void AddBackgroundAnimation(const ui::Event& event);
-  void RemoveBackgroundAnimation();
-
   // MessageView:
-  void AddGroupNotification(const Notification& notification,
-                            bool newest_first) override;
-  void RemoveGroupNotification(const std::string& notification_id) override;
   void AddLayerBeneathView(ui::Layer* layer) override;
   void RemoveLayerBeneathView(ui::Layer* layer) override;
   void Layout() override;
@@ -209,7 +126,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   bool IsManuallyExpandedOrCollapsed() const override;
   void SetManuallyExpandedOrCollapsed(bool value) override;
   void OnSettingsButtonPressed(const ui::Event& event) override;
-  void OnThemeChanged() override;
 
   // views::InkDropObserver:
   void InkDropAnimationStarted() override;
@@ -218,6 +134,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Overridden from NotificationInputDelegate:
   void OnNotificationInputSubmit(size_t index,
                                  const std::u16string& text) override;
+
+  // Whether the notification view is showing `icon_view_`.
+  virtual bool IsIconViewShown() const;
 
  protected:
   explicit NotificationViewBase(const Notification& notification);
@@ -249,12 +168,63 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Actions row contains inline action buttons and inline textfield.
   std::unique_ptr<views::View> CreateActionsRow();
 
+  // Generate a view to show notification title and other supporting views.
+  static std::unique_ptr<views::Label> GenerateTitleView(
+      const std::u16string& title);
+
+  // Generate a view that shows the inline reply textfield and send message
+  // button.
+  virtual std::unique_ptr<NotificationInputContainer>
+  GenerateNotificationInputContainer();
+
+  // Generate a view that is a views::LabelButton, used in the `actions_row_`.
+  // The base class uses an MdTextButton, but ash does not.
+  virtual std::unique_ptr<views::LabelButton> GenerateNotificationLabelButton(
+      views::Button::PressedCallback callback,
+      const std::u16string& label) = 0;
+
   void CreateOrUpdateViews(const Notification& notification);
 
+  virtual void UpdateViewForExpandedState(bool expanded);
+
+  virtual void CreateOrUpdateTitleView(const Notification& notification) = 0;
+
+  virtual void CreateOrUpdateSmallIconView(
+      const Notification& notification) = 0;
+
+  // Add view to `left_content_` in its appropriate position according to
+  // `left_content_count_`. Return a pointer to added view.
+  template <typename T>
+  T* AddViewToLeftContent(std::unique_ptr<T> view) {
+    return left_content_->AddChildViewAt(std::move(view),
+                                         left_content_count_++);
+  }
+
+  // Reorder the view in `left_content_` according to `left_content_count_`.
+  void ReorderViewInLeftContent(views::View* view);
+
+  // Thic function is called when the UI changes from notification view to
+  // inline settings or vice versa.
+  virtual void ToggleInlineSettings(const ui::Event& event);
+
+  NotificationControlButtonsView* control_buttons_view() {
+    return control_buttons_view_;
+  }
+  NotificationHeaderView* header_row() { return header_row_; }
+  views::View* left_content() { return left_content_; }
+  views::Label* message_view() { return message_view_; }
+  views::View* inline_settings_row() const { return settings_row_; }
   views::View* image_container_view() { return image_container_view_; }
+  views::View* action_buttons_row() { return action_buttons_row_; }
+  views::RadioButton* block_all_button() { return block_all_button_; }
+  bool inline_settings_enabled() const { return inline_settings_enabled_; }
+
   bool IsExpandable() const;
 
   virtual void SetExpandButtonEnabled(bool enabled);
+
+  // Returns the size of `icon_view_`.
+  virtual gfx::Size GetIconViewSize() const = 0;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameExtension);
@@ -263,14 +233,12 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, AppNameWebAppNotification);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, CreateOrUpdateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, ExpandLongMessage);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, InkDropClipRect);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, InlineSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest,
                            InlineSettingsInkDropAnimation);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, NotificationWithoutIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, ShowProgress);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, ShowTimestamp);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestAccentColor);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestActionButtonClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestClick);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, TestClickExpanded);
@@ -289,24 +257,24 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateButtonsStateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateInSettings);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateType);
-  FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UpdateViewsOrderingTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewBaseTest, UseImageAsIcon);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestIconSizing);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, LeftContentResizeForIcon);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, InlineSettingsNotBlock);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, InlineSettingsBlockAll);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestAccentColor);
 
   friend class NotificationViewBaseTest;
 
   class NotificationViewPathGenerator;
 
   void CreateOrUpdateContextTitleView(const Notification& notification);
-  void CreateOrUpdateTitleView(const Notification& notification);
   void CreateOrUpdateMessageView(const Notification& notification);
   void CreateOrUpdateCompactTitleMessageView(const Notification& notification);
   void CreateOrUpdateProgressBarView(const Notification& notification);
   void CreateOrUpdateProgressStatusView(const Notification& notification);
   void CreateOrUpdateListItemViews(const Notification& notification);
   void CreateOrUpdateIconView(const Notification& notification);
-  void CreateOrUpdateSmallIconView(const Notification& notification);
   void CreateOrUpdateImageView(const Notification& notification);
   void CreateOrUpdateActionButtonViews(const Notification& notification);
   void CreateOrUpdateInlineSettingsViews(const Notification& notification);
@@ -315,11 +283,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   void ActionButtonPressed(size_t index, const ui::Event& event);
 
   void ToggleExpanded();
-  void UpdateViewForExpandedState(bool expanded);
-  void ToggleInlineSettings(const ui::Event& event);
-  void UpdateHeaderViewBackgroundColor();
-  SkColor GetNotificationHeaderViewBackgroundColor() const;
-  void UpdateActionButtonsRowBackground();
 
   // Returns the list of children which need to have their layers created or
   // destroyed when the ink drop is visible.
@@ -346,8 +309,9 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
 
-  // Describes if the view should display an expand button in the header view.
-  bool has_expand_button_in_header_view_ = true;
+  // Describes whether the header view is used in an ash notification (ash
+  // notification uses a customized header view).
+  bool header_view_in_ash_notification_ = true;
 
   // Describes whether the view can display inline settings or not.
   bool inline_settings_enabled_ = false;
@@ -363,17 +327,21 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   views::View* right_content_ = nullptr;
 
   // Views which are dynamically created inside view hierarchy.
-  views::Label* title_view_ = nullptr;
   views::Label* message_view_ = nullptr;
   views::Label* status_view_ = nullptr;
   ProportionalImageView* icon_view_ = nullptr;
   views::View* image_container_view_ = nullptr;
-  std::vector<NotificationTextButton*> action_buttons_;
+  std::vector<views::LabelButton*> action_buttons_;
   std::vector<views::View*> item_views_;
   views::ProgressBar* progress_bar_view_ = nullptr;
   CompactTitleMessageView* compact_title_message_view_ = nullptr;
   views::View* action_buttons_row_ = nullptr;
   NotificationInputContainer* inline_reply_ = nullptr;
+
+  // A map from views::LabelButton's in `action_buttons_` to their associated
+  // placeholder strings.
+  std::map<views::LabelButton*, absl::optional<std::u16string>>
+      action_button_to_placeholder_map_;
 
   // Counter for view layouting, which is used during the CreateOrUpdate*
   // phases to keep track of the view ordering. See crbug.com/901045
@@ -382,7 +350,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewBase
   // Views for inline settings.
   views::RadioButton* block_all_button_ = nullptr;
   views::RadioButton* dont_block_button_ = nullptr;
-  NotificationTextButton* settings_done_button_ = nullptr;
+  views::LabelButton* settings_done_button_ = nullptr;
 
   // Owned by views properties. Guaranteed to be not null for the lifetime of
   // |this| because views properties are the last thing cleaned up.

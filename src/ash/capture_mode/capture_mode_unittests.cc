@@ -8,10 +8,13 @@
 #include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/accessibility/magnifier/magnifier_glass.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/capture_mode/capture_label_view.h"
+#include "ash/capture_mode/capture_mode_advanced_settings_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_button.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_settings_entry_view.h"
@@ -21,6 +24,7 @@
 #include "ash/capture_mode/capture_mode_type_view.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
+#include "ash/capture_mode/recording_overlay_controller.h"
 #include "ash/capture_mode/stop_recording_button_tray.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/capture_mode/video_recording_watcher.h"
@@ -29,10 +33,11 @@
 #include "ash/display/output_protection_delegate.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/test/mock_projector_client.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
-#include "ash/public/cpp/projector/projector_controller.h"
 #include "ash/public/cpp/projector/projector_session.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/services/recording/recording_service_test_api.h"
 #include "ash/shell.h"
@@ -244,6 +249,11 @@ class CaptureModeSessionTestApi {
     return session_->capture_mode_settings_view_;
   }
 
+  CaptureModeAdvancedSettingsView* capture_mode_advanced_settings_view() const {
+    EXPECT_TRUE(features::AreImprovedScreenCaptureSettingsEnabled());
+    return session_->capture_mode_advanced_settings_view_;
+  }
+
   views::Widget* capture_mode_settings_widget() const {
     return session_->capture_mode_settings_widget_.get();
   }
@@ -442,8 +452,7 @@ class CaptureModeTest : public AshTestBase {
     while (!controller->is_recording_in_progress()) {
       base::RunLoop run_loop;
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(100));
+          FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
       run_loop.Run();
     }
   }
@@ -472,7 +481,7 @@ class CaptureModeTest : public AshTestBase {
     base::RunLoop loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::BindLambdaForTesting([&]() { loop.Quit(); }),
-        base::TimeDelta::FromSeconds(seconds));
+        base::Seconds(seconds));
     loop.Run();
   }
 
@@ -482,6 +491,18 @@ class CaptureModeTest : public AshTestBase {
         base::BindLambdaForTesting(
             [&run_loop](const base::FilePath& path) { run_loop.Quit(); }));
     run_loop.Run();
+  }
+
+  void WaitForRecordingToStart() {
+    auto* controller = CaptureModeController::Get();
+    auto* test_delegate = static_cast<TestCaptureModeDelegate*>(
+        controller->delegate_for_testing());
+    ASSERT_TRUE(test_delegate);
+    base::RunLoop run_loop;
+    test_delegate->set_on_recording_started_callback(
+        base::BindLambdaForTesting([&run_loop]() { run_loop.Quit(); }));
+    run_loop.Run();
+    ASSERT_TRUE(controller->is_recording_in_progress());
   }
 };
 
@@ -3028,8 +3049,7 @@ TEST_F(CaptureModeTest, NumberOfCaptureRegionAdjustmentsHistogram) {
   histogram_tester.ExpectBucketCount(kTabletHistogram, 0, 1);
 }
 
-// Disabled due to excessive flakiness. https://crbug.com/1245273
-TEST_F(CaptureModeTest, DISABLED_FullscreenCapture) {
+TEST_F(CaptureModeTest, FullscreenCapture) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   CaptureModeController* controller = StartCaptureSession(
@@ -3657,13 +3677,13 @@ TEST_F(CaptureModeMockTimeTest, ConsecutiveScreenshotsHistograms) {
   SelectRegion(capture_region);
   take_n_screenshots(3);
   histogram_tester.ExpectBucketCount(kConsecutiveScreenshotsHistogram, 3, 0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
   histogram_tester.ExpectBucketCount(kConsecutiveScreenshotsHistogram, 3, 1);
 
   // Take only one screenshot. This should not be recorded.
   take_n_screenshots(1);
   histogram_tester.ExpectBucketCount(kConsecutiveScreenshotsHistogram, 1, 0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
   histogram_tester.ExpectBucketCount(kConsecutiveScreenshotsHistogram, 1, 0);
 
   // Take a screenshot, change source and take another screenshot. This should
@@ -3673,7 +3693,7 @@ TEST_F(CaptureModeMockTimeTest, ConsecutiveScreenshotsHistograms) {
                                          CaptureModeType::kImage);
   controller->PerformCapture();
   histogram_tester.ExpectBucketCount(kConsecutiveScreenshotsHistogram, 2, 0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
   histogram_tester.ExpectBucketCount(kConsecutiveScreenshotsHistogram, 2, 1);
 }
 
@@ -3691,7 +3711,7 @@ TEST_F(CaptureModeMockTimeTest, ClearUserCaptureRegionBetweenSessions) {
 
   // Start region image capture again shortly after the previous capture
   // session, we should still be able to reuse the previous capture region.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  task_environment()->FastForwardBy(base::Minutes(1));
   StartImageRegionCapture();
   EXPECT_EQ(capture_region, controller->user_capture_region());
   auto* event_generator = GetEventGenerator();
@@ -3701,7 +3721,7 @@ TEST_F(CaptureModeMockTimeTest, ClearUserCaptureRegionBetweenSessions) {
 
   // Wait for 8 second and then start region image capture again. We should have
   // forgot the previous capture region.
-  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(8));
+  task_environment()->FastForwardBy(base::Minutes(8));
   StartImageRegionCapture();
   EXPECT_EQ(gfx::Rect(), controller->user_capture_region());
 }
@@ -3998,6 +4018,64 @@ TEST_F(CaptureModeTest, AudioRecordingSetting) {
   EXPECT_TRUE(controller->enable_audio_recording());
   StartImageRegionCapture();
   EXPECT_TRUE(controller->enable_audio_recording());
+}
+
+TEST_F(CaptureModeTest, CaptureFolderSetting) {
+  auto* controller = CaptureModeController::Get();
+  auto* test_delegate = controller->delegate_for_testing();
+  const auto default_downloads_folder =
+      test_delegate->GetUserDefaultDownloadsFolder();
+
+  auto capture_folder = controller->GetCurrentCaptureFolder();
+  EXPECT_EQ(capture_folder.path, default_downloads_folder);
+  EXPECT_TRUE(capture_folder.is_default_downloads_folder);
+
+  const base::FilePath custom_folder(FILE_PATH_LITERAL("/home/tests"));
+  controller->SetCustomCaptureFolder(custom_folder);
+
+  capture_folder = controller->GetCurrentCaptureFolder();
+  EXPECT_EQ(capture_folder.path, custom_folder);
+  EXPECT_FALSE(capture_folder.is_default_downloads_folder);
+}
+
+TEST_F(CaptureModeTest, CaptureFolderSetToDefaultDownloads) {
+  auto* controller = CaptureModeController::Get();
+  auto* test_delegate = controller->delegate_for_testing();
+
+  const base::FilePath custom_folder(FILE_PATH_LITERAL("/home/tests"));
+  controller->SetCustomCaptureFolder(custom_folder);
+  auto capture_folder = controller->GetCurrentCaptureFolder();
+  EXPECT_FALSE(capture_folder.is_default_downloads_folder);
+
+  // If the user selects the default downloads folder manually, we should be
+  // able to detect that.
+  const auto default_downloads_folder =
+      test_delegate->GetUserDefaultDownloadsFolder();
+  controller->SetCustomCaptureFolder(default_downloads_folder);
+
+  capture_folder = controller->GetCurrentCaptureFolder();
+  EXPECT_EQ(capture_folder.path, default_downloads_folder);
+  EXPECT_TRUE(capture_folder.is_default_downloads_folder);
+}
+
+TEST_F(CaptureModeTest, CaptureFolderSetToEmptyPath) {
+  auto* controller = CaptureModeController::Get();
+  auto* test_delegate = controller->delegate_for_testing();
+
+  const base::FilePath custom_folder(FILE_PATH_LITERAL("/home/tests"));
+  controller->SetCustomCaptureFolder(custom_folder);
+  auto capture_folder = controller->GetCurrentCaptureFolder();
+  EXPECT_FALSE(capture_folder.is_default_downloads_folder);
+
+  // If we set the custom path to an empty folder to clear, we should revert
+  // back to the default downloads folder.
+  controller->SetCustomCaptureFolder(base::FilePath());
+
+  const auto default_downloads_folder =
+      test_delegate->GetUserDefaultDownloadsFolder();
+  capture_folder = controller->GetCurrentCaptureFolder();
+  EXPECT_EQ(capture_folder.path, default_downloads_folder);
+  EXPECT_TRUE(capture_folder.is_default_downloads_folder);
 }
 
 namespace {
@@ -4357,36 +4435,129 @@ TEST_F(CaptureModeCursorOverlayTest, OverlayBoundsAccountForCursorScaleFactor) {
   }
 }
 
+// -----------------------------------------------------------------------------
 // TODO(afakhry): Add more cursor overlay tests.
 
 // Test fixture to verify capture mode + projector integration.
-class ProjectorCaptureModeIntegrationTests : public CaptureModeTest {
+class ProjectorCaptureModeIntegrationTests
+    : public CaptureModeTest,
+      public ::testing::WithParamInterface<CaptureModeSource> {
  public:
   ProjectorCaptureModeIntegrationTests() = default;
   ~ProjectorCaptureModeIntegrationTests() override = default;
 
+  static constexpr gfx::Rect kUserRegion{20, 50, 60, 70};
+
   // CaptureModeTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kProjector);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kProjector,
+                              features::kProjectorAnnotator},
+        /*disabled_features=*/{});
     CaptureModeTest::SetUp();
     auto* projector_controller = ProjectorController::Get();
     projector_controller->SetClient(&projector_client_);
     // Simulate the availability of speech recognition.
     projector_controller->OnSpeechRecognitionAvailable(true);
+    window_ = CreateTestWindow(gfx::Rect(20, 30, 200, 200));
+    CaptureModeController::Get()->SetUserCaptureRegion(kUserRegion,
+                                                       /*by_user=*/true);
+  }
+
+  void TearDown() override {
+    window_.reset();
+    CaptureModeTest::TearDown();
   }
 
   void StartProjectorModeSession() {
     auto* projector_session = ProjectorSession::Get();
     EXPECT_FALSE(projector_session->is_active());
     auto* projector_controller = ProjectorController::Get();
+    EXPECT_CALL(projector_client_, IsDriveFsMounted())
+        .WillRepeatedly(testing::Return(true));
     projector_controller->StartProjectorSession("projector_data");
     EXPECT_TRUE(projector_session->is_active());
+  }
+
+  void StartRecordingForProjectorFromSource(CaptureModeSource source) {
+    auto* controller = CaptureModeController::Get();
+    controller->SetSource(source);
+    StartProjectorModeSession();
+
+    switch (source) {
+      case CaptureModeSource::kFullscreen:
+      case CaptureModeSource::kRegion:
+        break;
+      case CaptureModeSource::kWindow:
+        auto* generator = GetEventGenerator();
+        generator->MoveMouseTo(window_->GetBoundsInScreen().CenterPoint());
+        break;
+    }
+    CaptureModeTestApi().PerformCapture();
+    WaitForRecordingToStart();
+    EXPECT_TRUE(controller->is_recording_in_progress());
+  }
+
+  void VerifyOverlayEnabledState(aura::Window* overlay_window,
+                                 bool overlay_enabled_state) {
+    if (overlay_enabled_state) {
+      EXPECT_TRUE(overlay_window->IsVisible());
+      EXPECT_EQ(overlay_window->event_targeting_policy(),
+                aura::EventTargetingPolicy::kTargetAndDescendants);
+    } else {
+      EXPECT_FALSE(overlay_window->IsVisible());
+      EXPECT_EQ(overlay_window->event_targeting_policy(),
+                aura::EventTargetingPolicy::kNone);
+    }
+  }
+
+  void VerifyOverlayStacking(aura::Window* overlay_window,
+                             aura::Window* window_being_recorded,
+                             CaptureModeSource source) {
+    auto* parent = overlay_window->parent();
+
+    if (source == CaptureModeSource::kWindow) {
+      // The overlay window should always be the top-most child of the window
+      // being recorded when in window mode.
+      ASSERT_EQ(parent, window_being_recorded);
+      EXPECT_EQ(window_being_recorded->children().back(), overlay_window);
+    } else {
+      auto* menu_container = overlay_window->GetRootWindow()->GetChildById(
+          kShellWindowId_MenuContainer);
+      ASSERT_EQ(parent, menu_container);
+      EXPECT_EQ(menu_container->children().front(), overlay_window);
+    }
+  }
+
+  void VerifyOverlayWindow(aura::Window* overlay_window,
+                           CaptureModeSource source) {
+    auto* controller = CaptureModeController::Get();
+    auto* recording_watcher = controller->video_recording_watcher_for_testing();
+    auto* window_being_recorded = recording_watcher->window_being_recorded();
+
+    VerifyOverlayStacking(overlay_window, window_being_recorded, source);
+
+    switch (source) {
+      case CaptureModeSource::kFullscreen:
+      case CaptureModeSource::kWindow:
+        EXPECT_EQ(overlay_window->bounds(),
+                  gfx::Rect(window_being_recorded->bounds().size()));
+        break;
+
+      case CaptureModeSource::kRegion:
+        EXPECT_EQ(overlay_window->bounds(), kUserRegion);
+        break;
+    }
   }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   MockProjectorClient projector_client_;
+  std::unique_ptr<aura::Window> window_;
 };
+
+// static
+constexpr gfx::Rect ProjectorCaptureModeIntegrationTests::kUserRegion;
 
 TEST_F(ProjectorCaptureModeIntegrationTests, EntryPoint) {
   // With the most recent source type set to kImage, starting capture mode for
@@ -4431,9 +4602,10 @@ TEST_F(ProjectorCaptureModeIntegrationTests, StartEndRecording) {
 
   // Hit Enter to begin recording. The recording session should be marked for
   // projector.
-  SendKey(ui::VKEY_RETURN, GetEventGenerator());
+  PressAndReleaseKey(ui::VKEY_RETURN);
   EXPECT_CALL(projector_client_, StartSpeechRecognition());
   WaitForCountDownToFinish();
+
   EXPECT_FALSE(controller->IsActive());
   EXPECT_TRUE(controller->is_recording_in_progress());
   EXPECT_TRUE(controller->video_recording_watcher_for_testing()
@@ -4441,6 +4613,195 @@ TEST_F(ProjectorCaptureModeIntegrationTests, StartEndRecording) {
 
   EXPECT_CALL(projector_client_, StopSpeechRecognition());
   controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidget) {
+  auto* controller = CaptureModeController::Get();
+  controller->SetSource(CaptureModeSource::kFullscreen);
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForCountDownToFinish();
+  CaptureModeTestApi test_api;
+  RecordingOverlayController* overlay_controller =
+      test_api.GetRecordingOverlayController();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
+
+  auto* projector_controller = ProjectorControllerImpl::Get();
+  projector_controller->OnMarkerPressed();
+  EXPECT_TRUE(overlay_controller->is_enabled());
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/true);
+
+  projector_controller->OnMarkerPressed();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  VerifyOverlayEnabledState(overlay_window, /*overlay_enabled_state=*/false);
+}
+
+TEST_F(ProjectorCaptureModeIntegrationTests, RecordingOverlayDockedMagnifier) {
+  auto* controller = CaptureModeController::Get();
+  controller->SetSource(CaptureModeSource::kFullscreen);
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForCountDownToFinish();
+  CaptureModeTestApi test_api;
+  RecordingOverlayController* overlay_controller =
+      test_api.GetRecordingOverlayController();
+
+  auto* projector_controller = ProjectorControllerImpl::Get();
+  projector_controller->OnMarkerPressed();
+  EXPECT_TRUE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+
+  // Before the docked magnifier gets enabled, the overlay's bounds should match
+  // the root window's bounds.
+  auto* root_window = overlay_window->GetRootWindow();
+  const gfx::Rect root_window_bounds = root_window->bounds();
+  EXPECT_EQ(root_window_bounds, overlay_window->GetBoundsInRootWindow());
+
+  // Once the magnifier is enabled, the overlay should be pushed down so that
+  // it doesn't cover the magnifier viewport.
+  auto* docked_magnifier = Shell::Get()->docked_magnifier_controller();
+  docked_magnifier->SetEnabled(true);
+  const gfx::Rect expected_bounds = gfx::SubtractRects(
+      root_window_bounds,
+      docked_magnifier->GetTotalMagnifierBoundsForRoot(root_window));
+  EXPECT_EQ(expected_bounds, overlay_window->GetBoundsInRootWindow());
+
+  // It should go back to original bounds once the magnifier is disabled.
+  docked_magnifier->SetEnabled(false);
+  EXPECT_EQ(root_window_bounds, overlay_window->GetBoundsInRootWindow());
+}
+
+TEST_P(ProjectorCaptureModeIntegrationTests, RecordingOverlayWidgetBounds) {
+  const auto capture_source = GetParam();
+  StartRecordingForProjectorFromSource(capture_source);
+  CaptureModeTestApi test_api;
+  RecordingOverlayController* overlay_controller =
+      test_api.GetRecordingOverlayController();
+  EXPECT_FALSE(overlay_controller->is_enabled());
+  auto* overlay_window = overlay_controller->GetOverlayNativeWindow();
+  VerifyOverlayWindow(overlay_window, capture_source);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ProjectorCaptureModeIntegrationTests,
+                         testing::Values(CaptureModeSource::kFullscreen,
+                                         CaptureModeSource::kRegion,
+                                         CaptureModeSource::kWindow));
+
+// -----------------------------------------------------------------------------
+// CaptureModeAdvancedSettingsTest:
+
+// Test fixture for CaptureMode advanced settings view.
+class CaptureModeAdvancedSettingsTest : public CaptureModeTest {
+ public:
+  CaptureModeAdvancedSettingsTest() = default;
+  ~CaptureModeAdvancedSettingsTest() override = default;
+
+  // CaptureModeTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kImprovedScreenCaptureSettings);
+    CaptureModeTest::SetUp();
+  }
+
+  CaptureModeAdvancedSettingsView* GetCaptureModeAdvancedSettingsView() const {
+    auto* session = CaptureModeController::Get()->capture_mode_session();
+    DCHECK(session);
+    return CaptureModeSessionTestApi(session)
+        .capture_mode_advanced_settings_view();
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that clicking on audio input buttons updates the state in the
+// controller, and persists between sessions.
+TEST_F(CaptureModeAdvancedSettingsTest, AudioInputSettingsMenu) {
+  auto* controller = StartImageRegionCapture();
+  auto* event_generator = GetEventGenerator();
+
+  // Test that the audio recording preference is defaulted to off.
+  ClickOnView(GetSettingsButton(), event_generator);
+  EXPECT_FALSE(controller->enable_audio_recording());
+
+  CaptureModeAdvancedSettingsView* settings_view =
+      GetCaptureModeAdvancedSettingsView();
+  CaptureModeMenuGroup* audio_input_menu_group =
+      settings_view->GetAudioInputMenuGroupForTesting();
+  views::View* microphone_option =
+      settings_view->GetMicrophoneOptionForTesting();
+  views::View* off_option = settings_view->GetOffOptionForTesting();
+  EXPECT_TRUE(audio_input_menu_group->IsOptionCheckedForTesting(off_option));
+  EXPECT_FALSE(
+      audio_input_menu_group->IsOptionCheckedForTesting(microphone_option));
+
+  // Click on the |microphone| option. It should be checked after click along
+  // with |off| is unchecked. Recording preference is set to microphone.
+  ClickOnView(microphone_option, event_generator);
+  EXPECT_TRUE(
+      audio_input_menu_group->IsOptionCheckedForTesting(microphone_option));
+  EXPECT_FALSE(audio_input_menu_group->IsOptionCheckedForTesting(off_option));
+  EXPECT_TRUE(controller->enable_audio_recording());
+
+  // Test that the user selected audio preference for audio recording is
+  // remembered between sessions.
+  SendKey(ui::VKEY_ESCAPE, event_generator);
+  StartImageRegionCapture();
+  EXPECT_TRUE(controller->enable_audio_recording());
+}
+
+// Tests that when capture label widget overlaps with settings widget, hide
+// capture label widget. Show capture label widget after closing settings
+// widget.
+TEST_F(CaptureModeAdvancedSettingsTest,
+       CaptureLabelViewOverlapsWithSettingsView) {
+  // Update the display size to make sure capture label widget will not overlap
+  // with settings widget
+  UpdateDisplay("1200x1000");
+
+  auto* controller = StartImageRegionCapture();
+  auto* event_generator = GetEventGenerator();
+
+  // Tests that the capture label widget doesn't overlap with settings widget.
+  // Both capture label widget and settings widget are visible.
+  views::Widget* capture_label_widget = GetCaptureModeLabelWidget();
+  ClickOnView(GetSettingsButton(), event_generator);
+  views::Widget* settings_widget = GetCaptureModeSettingsWidget();
+  EXPECT_FALSE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
+      settings_widget->GetWindowBoundsInScreen()));
+  EXPECT_TRUE(capture_label_widget->IsVisible());
+  EXPECT_TRUE(settings_widget->IsVisible());
+
+  // Close settings widget. Capture label widget is visible.
+  ClickOnView(GetSettingsButton(), event_generator);
+  EXPECT_TRUE(capture_label_widget->IsVisible());
+  controller->Stop();
+
+  // Update display size to make capture label widget overlap with settings
+  // widget.
+  UpdateDisplay("1100x800");
+  controller = StartImageRegionCapture();
+
+  // Tests that capture label widget overlaps with settings widget and is hidden
+  // after setting widget is shown.
+  capture_label_widget = GetCaptureModeLabelWidget();
+  ClickOnView(GetSettingsButton(), event_generator);
+  settings_widget = GetCaptureModeSettingsWidget();
+  EXPECT_TRUE(capture_label_widget->GetWindowBoundsInScreen().Intersects(
+      settings_widget->GetWindowBoundsInScreen()));
+  EXPECT_FALSE(GetCaptureModeLabelWidget()->IsVisible());
+  EXPECT_TRUE(settings_widget->IsVisible());
+
+  // Tests that capture label widget is visible after settings widget is closed.
+  ClickOnView(GetSettingsButton(), event_generator);
+  EXPECT_TRUE(capture_label_widget->IsVisible());
 }
 
 }  // namespace ash

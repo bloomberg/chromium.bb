@@ -15,9 +15,9 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
+#include "components/app_restore/restore_data.h"
 #include "components/desks_storage/core/desk_model.h"
 #include "components/desks_storage/core/desk_template.h"
-#include "components/full_restore/restore_data.h"
 #include "components/sync/protocol/workspace_desk_specifics.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -92,7 +92,7 @@ std::unique_ptr<ash::DeskTemplate> ConvertValueToDeskTemplate(
   DCHECK(restore_data_value_ptr);
 
   desk_template->set_desk_restore_data(
-      std::make_unique<full_restore::RestoreData>(
+      std::make_unique<app_restore::RestoreData>(
           std::move(restore_data_value_ptr)));
   return desk_template;
 }
@@ -272,12 +272,30 @@ void LocalDeskDataManager::DeleteAllEntries(
                      std::move(callback)));
 }
 
-std::size_t LocalDeskDataManager::GetTemplateCount() const {
+std::size_t LocalDeskDataManager::GetEntryCount() const {
   return templates_.size();
 }
 
 std::size_t LocalDeskDataManager::GetMaxEntryCount() const {
   return kMaxTemplateCount;
+}
+
+std::vector<base::GUID> LocalDeskDataManager::GetAllEntryUuids() const {
+  std::vector<base::GUID> keys;
+  for (const auto& it : templates_) {
+    DCHECK_EQ(it.first, it.second->uuid());
+    keys.emplace_back(it.first);
+  }
+  return keys;
+}
+
+bool LocalDeskDataManager::IsReady() const {
+  return cache_status_ == CacheStatus::kOk;
+}
+
+bool LocalDeskDataManager::IsSyncing() const {
+  // Local storage backend never syncs to server.
+  return false;
 }
 
 void LocalDeskDataManager::EnsureCacheIsLoaded() {

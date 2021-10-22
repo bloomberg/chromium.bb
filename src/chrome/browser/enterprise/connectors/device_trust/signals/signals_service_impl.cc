@@ -7,7 +7,10 @@
 #include <memory>
 #include <utility>
 
-#include "chrome/browser/enterprise/connectors/device_trust/attestation/common/proto/device_trust_attestation_ca.pb.h"
+#include "base/barrier_closure.h"
+#include "base/bind.h"
+#include "base/callback.h"
+#include "chrome/browser/enterprise/connectors/device_trust/attestation/common/signals_type.h"
 #include "chrome/browser/enterprise/connectors/device_trust/signals/decorators/common/signals_decorator.h"
 
 namespace enterprise_connectors {
@@ -18,14 +21,25 @@ SignalsServiceImpl::SignalsServiceImpl(
 
 SignalsServiceImpl::~SignalsServiceImpl() = default;
 
-std::unique_ptr<DeviceTrustSignals> SignalsServiceImpl::CollectSignals() {
-  auto signals = std::make_unique<DeviceTrustSignals>();
+void SignalsServiceImpl::CollectSignals(CollectSignalsCallback callback) {
+  auto signals = std::make_unique<SignalsType>();
+  auto* signals_ptr = signals.get();
+
+  auto barrier_closure = base::BarrierClosure(
+      signals_decorators_.size(),
+      base::BindOnce(&SignalsServiceImpl::OnSignalsDecorated,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(signals)));
 
   for (const auto& decorator : signals_decorators_) {
-    decorator->Decorate(*signals);
+    decorator->Decorate(*signals_ptr, barrier_closure);
   }
+}
 
-  return signals;
+void SignalsServiceImpl::OnSignalsDecorated(
+    CollectSignalsCallback callback,
+    std::unique_ptr<SignalsType> signals) {
+  std::move(callback).Run(std::move(signals));
 }
 
 }  // namespace enterprise_connectors

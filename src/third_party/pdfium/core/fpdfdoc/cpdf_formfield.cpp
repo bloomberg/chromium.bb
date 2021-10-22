@@ -7,7 +7,6 @@
 #include "core/fpdfdoc/cpdf_formfield.h"
 
 #include <map>
-#include <memory>
 #include <set>
 #include <utility>
 
@@ -780,8 +779,8 @@ bool CPDF_FormField::UseSelectedIndicesObject() const {
     return false;
 
   // Verify that the number of values is equal to |selected_indices_size|. Then,
-  // count the number of occurances of each of the distinct values in the values
-  // object.
+  // count the number of occurrences of each of the distinct values in the
+  // values object.
   std::map<WideString, size_t> values;
   const CPDF_Array* pValueArray = pValueObject->AsArray();
   if (pValueArray) {

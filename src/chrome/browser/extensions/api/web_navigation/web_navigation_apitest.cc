@@ -81,6 +81,11 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
     browser->tab_strip_model()->AddObserver(this);
   }
 
+  DelayLoadStartAndExecuteJavascript(
+      const DelayLoadStartAndExecuteJavascript&) = delete;
+  DelayLoadStartAndExecuteJavascript& operator=(
+      const DelayLoadStartAndExecuteJavascript&) = delete;
+
   ~DelayLoadStartAndExecuteJavascript() override {}
 
   // TabStripModelObserver:
@@ -173,8 +178,6 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
   bool has_user_gesture_ = false;
   bool script_was_executed_ = false;
   content::RenderFrameHost* rfh_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayLoadStartAndExecuteJavascript);
 };
 
 // Handles requests for URLs with paths of "/test*" sent to the test server, so
@@ -285,7 +288,14 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, FormSubmission) {
   ASSERT_TRUE(RunExtensionTest("webnavigation/formSubmission")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, Download) {
+// TODO(https://crbug.com/1250311):
+// WebNavigationApiTestWithContextType.Download test is flaky.
+#if defined(OS_WIN)
+#define MAYBE_Download DISABLED_Download
+#else
+#define MAYBE_Download Download
+#endif
+IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, MAYBE_Download) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::DownloadManager* download_manager =
       browser()->profile()->GetDownloadManager();
@@ -400,11 +410,10 @@ IN_PROC_BROWSER_TEST_P(WebNavigationApiTestWithContextType, UserAction) {
 
   // Get the child frame, which will be the one associated with the context
   // menu.
-  std::vector<content::RenderFrameHost*> frames = tab->GetAllFrames();
-  EXPECT_EQ(2UL, frames.size());
-  EXPECT_TRUE(frames[1]->GetParent());
+  content::RenderFrameHost* child_frame = ChildFrameAt(tab, 0);
+  ASSERT_TRUE(child_frame);
 
-  TestRenderViewContextMenu menu(frames[1], params);
+  TestRenderViewContextMenu menu(child_frame, params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 

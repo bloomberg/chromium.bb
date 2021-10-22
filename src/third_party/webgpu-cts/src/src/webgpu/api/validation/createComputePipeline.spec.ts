@@ -62,13 +62,9 @@ class F extends ValidationTest {
         this.shouldReject('OperationError', this.device.createComputePipelineAsync(descriptor));
       }
     } else {
-      if (_success) {
+      this.expectValidationError(() => {
         this.device.createComputePipeline(descriptor);
-      } else {
-        this.expectValidationError(() => {
-          this.device.createComputePipeline(descriptor);
-        });
-      }
+      }, !_success);
     }
   }
 }
@@ -180,11 +176,52 @@ g.test('pipeline_layout,device_mismatch')
     'Tests createComputePipeline(Async) cannot be called with a pipeline layout created from another device'
   )
   .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
-  .unimplemented();
+  .fn(async t => {
+    const { isAsync, mismatched } = t.params;
+
+    if (mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const layoutDescriptor = { bindGroupLayouts: [] };
+    const layout = mismatched
+      ? t.mismatchedDevice.createPipelineLayout(layoutDescriptor)
+      : t.device.createPipelineLayout(layoutDescriptor);
+
+    const descriptor = {
+      layout,
+      compute: {
+        module: t.getShaderModule('compute', 'main'),
+        entryPoint: 'main',
+      },
+    };
+
+    t.doCreateComputePipelineTest(isAsync, !mismatched, descriptor);
+  });
 
 g.test('shader_module,device_mismatch')
   .desc(
     'Tests createComputePipeline(Async) cannot be called with a shader module created from another device'
   )
   .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
-  .unimplemented();
+  .fn(async t => {
+    const { isAsync, mismatched } = t.params;
+
+    if (mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const code = '[[stage(compute), workgroup_size(1)]] fn main() {}';
+    const module = mismatched
+      ? t.mismatchedDevice.createShaderModule({ code })
+      : t.device.createShaderModule({ code });
+
+    const descriptor = {
+      compute: {
+        module,
+        entryPoint: 'main',
+      },
+    };
+
+    t.doCreateComputePipelineTest(isAsync, !mismatched, descriptor);
+  });

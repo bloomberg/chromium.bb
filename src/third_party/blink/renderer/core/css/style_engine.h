@@ -106,6 +106,27 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     base::AutoReset<bool> in_removal_;
   };
 
+  class DetachLayoutTreeScope {
+    STACK_ALLOCATED();
+
+   public:
+    explicit DetachLayoutTreeScope(StyleEngine& engine)
+        : engine_(engine)
+#if DCHECK_IS_ON()
+          ,
+          in_detach_scope_(&engine.in_detach_scope_, true)
+#endif  // DCHECK_IS_ON()
+    {
+    }
+    ~DetachLayoutTreeScope() { engine_.MarkForLayoutTreeChangesAfterDetach(); }
+
+   private:
+    StyleEngine& engine_;
+#if DCHECK_IS_ON()
+    base::AutoReset<bool> in_detach_scope_;
+#endif  // DCHECK_IS_ON()
+  };
+
   // There are a few instances where we are marking nodes style dirty from
   // within style recalc. That is generally not allowed, and if allowed we must
   // make sure we mark inside the subtree we are currently traversing, be sure
@@ -467,6 +488,19 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   }
   void SkipStyleRecalcForContainer() { skipped_container_recalc_ = true; }
   void ChangeRenderingForHTMLSelect(HTMLSelectElement& select);
+  void DetachedFromParent(LayoutObject* parent) {
+    // This method will be called for every LayoutObject while detaching a
+    // subtree. Since the trees are detached bottom up, the last parent passed
+    // in will be the parent of one of the roots being detached.
+    if (in_dom_removal_) {
+#if DCHECK_IS_ON()
+      DCHECK(in_detach_scope_)
+          << "A DetachLayoutTreeScope must wrap a DOMRemovalScope to handle "
+             "and reset parent_for_detached_subtree_";
+#endif  // DCHECK_IS_ON()
+      parent_for_detached_subtree_ = parent;
+    }
+  }
 
   void SetColorSchemeFromMeta(const CSSValue* color_scheme);
   const CSSValue* GetMetaColorSchemeValue() const { return meta_color_scheme_; }
@@ -574,15 +608,23 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void ClearPropertyRules();
   void ClearScrollTimelineRules();
 
-  void AddPropertyRulesFromSheets(const ActiveStyleSheetVector&);
-  void AddScrollTimelineRulesFromSheets(const ActiveStyleSheetVector&);
+  class AtRuleCascadeMap;
+
+  void AddPropertyRulesFromSheets(AtRuleCascadeMap&,
+                                  const ActiveStyleSheetVector&,
+                                  bool is_user_style);
+  void AddScrollTimelineRulesFromSheets(AtRuleCascadeMap&,
+                                        const ActiveStyleSheetVector&,
+                                        bool is_user_style);
 
   // Returns true if any @font-face rules are added.
   bool AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
-  void AddPropertyRules(const RuleSet&);
-  void AddScrollTimelineRules(const RuleSet&);
+  void AddPropertyRules(AtRuleCascadeMap&, const RuleSet&, bool is_user_style);
+  void AddScrollTimelineRules(AtRuleCascadeMap&,
+                              const RuleSet&,
+                              bool is_user_style);
   bool UserKeyframeStyleShouldOverride(
       const StyleRuleKeyframes* new_rule,
       const StyleRuleKeyframes* existing_rule) const;
@@ -599,6 +641,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void PropagateWritingModeAndDirectionToHTMLRoot();
 
   void RecalcStyle(StyleRecalcChange, const StyleRecalcContext&);
+
+  // We may need to update whitespaces in the layout tree after a flat tree
+  // removal which caused a layout subtree to be detached.
+  void MarkForLayoutTreeChangesAfterDetach();
 
   Member<Document> document_;
 
@@ -655,6 +701,9 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   bool in_layout_tree_rebuild_{false};
   bool in_container_query_style_recalc_{false};
   bool in_dom_removal_{false};
+#if DCHECK_IS_ON()
+  bool in_detach_scope_{false};
+#endif  // DCHECK_IS_ON()
   bool in_apply_animation_update_{false};
   bool viewport_style_dirty_{false};
   bool fonts_need_update_{false};
@@ -750,6 +799,12 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   HeapHashSet<Member<TextTrack>> text_tracks_;
   Member<Element> vtt_originating_element_;
+
+  // When removing subtrees from the flat tree DOM, whitespace siblings of the
+  // root may need to be updated. The LayoutObject parent of the detached
+  // subtree is stored here during in_dom_removal_ and is marked for whitespace
+  // re-attachment after the removal.
+  Member<LayoutObject> parent_for_detached_subtree_;
 };
 
 }  // namespace blink

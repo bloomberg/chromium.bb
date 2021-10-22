@@ -47,6 +47,10 @@ namespace {
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() : prefs_(test::PrefServiceForTesting()) {}
+
+  MockAutofillClient(const MockAutofillClient&) = delete;
+  MockAutofillClient& operator=(const MockAutofillClient&) = delete;
+
   ~MockAutofillClient() override = default;
   PrefService* GetPrefs() override {
     return const_cast<PrefService*>(base::as_const(*this).GetPrefs());
@@ -55,14 +59,15 @@ class MockAutofillClient : public TestAutofillClient {
 
  private:
   std::unique_ptr<PrefService> prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
 class MockSuggestionsHandler
     : public AutocompleteHistoryManager::SuggestionsHandler {
  public:
   MockSuggestionsHandler() {}
+
+  MockSuggestionsHandler(const MockSuggestionsHandler&) = delete;
+  MockSuggestionsHandler& operator=(const MockSuggestionsHandler&) = delete;
 
   MOCK_METHOD(void,
               OnSuggestionsReturned,
@@ -77,8 +82,6 @@ class MockSuggestionsHandler
 
  private:
   base::WeakPtrFactory<MockSuggestionsHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockSuggestionsHandler);
 };
 }  // namespace
 
@@ -484,10 +487,6 @@ TEST_F(AutocompleteHistoryManagerTest,
 // it has a meaningless name.
 TEST_F(AutocompleteHistoryManagerTest,
        DoQuerySuggestionsForMeaninglessFieldNames_FilterName) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndEnableFeature(
-      features::kAutocompleteFilterForMeaningfulNames);
-
   auto suggestions_handler = std::make_unique<MockSuggestionsHandler>();
   int test_query_id = 2;
   std::u16string test_name = u"input_123";
@@ -517,10 +516,6 @@ TEST_F(AutocompleteHistoryManagerTest,
 // because the field's name is meaningful.
 TEST_F(AutocompleteHistoryManagerTest,
        DoQuerySuggestionsForMeaninglessFieldNames_PassName) {
-  base::test::ScopedFeatureList scoped_feature;
-  scoped_feature.InitAndEnableFeature(
-      features::kAutocompleteFilterForMeaningfulNames);
-
   auto suggestions_handler = std::make_unique<MockSuggestionsHandler>();
   int test_query_id = 2;
   std::u16string test_name = u"addressline_1";
@@ -726,13 +721,11 @@ TEST_F(AutocompleteHistoryManagerTest,
 
   std::vector<AutofillEntry> expected_values = {
       GetAutofillEntry(test_name, test_value,
-                       AutofillClock::Now() - base::TimeDelta::FromDays(30),
-                       AutofillClock::Now() -
-                           base::TimeDelta::FromDays(days_since_last_use)),
+                       AutofillClock::Now() - base::Days(30),
+                       AutofillClock::Now() - base::Days(days_since_last_use)),
       GetAutofillEntry(test_name, other_test_value,
-                       AutofillClock::Now() - base::TimeDelta::FromDays(30),
-                       AutofillClock::Now() -
-                           base::TimeDelta::FromDays(days_since_last_use))};
+                       AutofillClock::Now() - base::Days(30),
+                       AutofillClock::Now() - base::Days(days_since_last_use))};
 
   std::unique_ptr<WDTypedResult> mocked_results =
       GetMockedDbResults(expected_values);

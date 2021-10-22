@@ -60,7 +60,7 @@ namespace skgpu::v1 {
 /**
  * A helper object to orchestrate commands (draws, etc...) for GrSurfaces that are GrRenderTargets.
  */
-class SurfaceDrawContext : public SurfaceFillContext {
+class SurfaceDrawContext final : public SurfaceFillContext {
 public:
     static std::unique_ptr<SurfaceDrawContext> Make(GrRecordingContext*,
                                                     GrColorType,
@@ -117,10 +117,6 @@ public:
             GrProtected = GrProtected::kNo,
             GrSurfaceOrigin = kBottomLeft_GrSurfaceOrigin,
             SkBudgeted = SkBudgeted::kYes);
-
-    // These match the definitions in SkSurface & GrSurface.h, for whence they came
-    typedef void* ReleaseContext;
-    typedef void (*ReleaseProc)(ReleaseContext);
 
     // Creates a SurfaceDrawContext that wraps the passed in GrBackendTexture.
     static std::unique_ptr<SurfaceDrawContext> MakeFromBackendTexture(
@@ -715,7 +711,6 @@ private:
     bool fPreserveOpsOnFullClear_TestingOnly = false;
 #endif
     SkGlyphRunListPainter fGlyphPainter;
-    using INHERITED = SurfaceFillContext;
 };
 
 } // namespace skgpu::v1

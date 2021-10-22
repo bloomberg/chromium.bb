@@ -323,8 +323,7 @@ void StatisticsProviderImpl::SignalStatisticsLoaded() {
     // and unblock pending WaitForStatisticsLoaded() calls.
     statistics_loaded_.Signal();
 
-    // TODO(crbug.com/1123153): Downgrade to VLOG(1) after the bug is fixed.
-    LOG(WARNING) << "Finished loading statistics.";
+    VLOG(1) << "Finished loading statistics.";
   }
 
   // Schedule callbacks that were in |statistics_loaded_callbacks_|.
@@ -341,7 +340,7 @@ bool StatisticsProviderImpl::WaitForStatisticsLoaded() {
   // happen except during OOBE.
   base::Time start_time = base::Time::Now();
   base::ScopedAllowBaseSyncPrimitives allow_wait;
-  statistics_loaded_.TimedWait(base::TimeDelta::FromSeconds(kTimeoutSecs));
+  statistics_loaded_.TimedWait(base::Seconds(kTimeoutSecs));
 
   base::TimeDelta dtime = base::Time::Now() - start_time;
   if (statistics_loaded_.IsSignaled()) {
@@ -622,8 +621,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     region_ =
         command_line->GetSwitchValueASCII(chromeos::switches::kCrosRegion);
     machine_info_[kRegionKey] = region_;
-    // TODO(crbug.com/1123153): Downgrade to VLOG(1) after the bug is fixed.
-    LOG(WARNING) << "CrOS region set to '" << region_ << "'";
+    VLOG(1) << "CrOS region set to '" << region_ << "'";
   }
 
   LoadRegionsFile(base::FilePath(kCrosRegions));
@@ -676,8 +674,7 @@ void StatisticsProviderImpl::LoadOemManifestFromFile(
   machine_flags_[kOemKeyboardDrivenOobeKey] = oem_manifest.keyboard_driven_oobe;
 
   oem_manifest_loaded_ = true;
-  // TODO(crbug.com/1123153): Downgrade to VLOG(1) after the bug is fixed.
-  LOG(WARNING) << "Loaded OEM Manifest statistics from " << file.value();
+  VLOG(1) << "Loaded OEM Manifest statistics from " << file.value();
 }
 
 StatisticsProviderImpl* StatisticsProviderImpl::GetInstance() {

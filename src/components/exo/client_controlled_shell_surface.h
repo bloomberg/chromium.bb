@@ -21,10 +21,6 @@
 namespace ash {
 class NonClientFrameViewAsh;
 class WideFrameView;
-
-namespace mojom {
-enum class WindowPinType;
-}
 }  // namespace ash
 
 namespace chromeos {
@@ -67,6 +63,11 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
                                bool can_minimize,
                                int container,
                                bool default_scale_cancellation);
+
+  ClientControlledShellSurface(const ClientControlledShellSurface&) = delete;
+  ClientControlledShellSurface& operator=(const ClientControlledShellSurface&) =
+      delete;
+
   ~ClientControlledShellSurface() override;
 
   Delegate* set_delegate(std::unique_ptr<Delegate> delegate) {
@@ -175,7 +176,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // foreground and the display can be rotated (e.g. tablet mode), apply the
   // behavior defined by |orientation_lock|. See more details in
   // //ash/display/screen_orientation_controller.h.
-  void SetOrientationLock(ash::OrientationLockType orientation_lock);
+  void SetOrientationLock(chromeos::OrientationType orientation_lock);
 
   // Set the accessibility ID provided by client for the surface. If
   // |accessibility_id| is negative value, it will unset the ID.
@@ -194,8 +195,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
   void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
-  void SetSnappedToLeft() override;
-  void SetSnappedToRight() override;
+  void SetSnappedToPrimary() override;
+  void SetSnappedToSecondary() override;
   void SetPip() override;
   void UnsetPip() override;
 
@@ -326,8 +327,6 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   SurfaceFrameType pending_frame_type_ = SurfaceFrameType::NONE;
 
-  chromeos::WindowPinType current_pin_;
-
   bool can_maximize_ = true;
 
   std::unique_ptr<chromeos::ImmersiveFullscreenController>
@@ -339,8 +338,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
 
   // The orientation to be applied when widget is being created. Only set when
   // widget is not created yet orientation lock is being set.
-  ash::OrientationLockType initial_orientation_lock_ =
-      ash::OrientationLockType::kAny;
+  chromeos::OrientationType initial_orientation_lock_ =
+      chromeos::OrientationType::kAny;
   // The extra title to be applied when widget is being created.
   std::u16string initial_extra_title_ = std::u16string();
 
@@ -376,8 +375,6 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   absl::optional<int32_t> client_accessibility_id_;
 
   bool pending_resize_lock_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientControlledShellSurface);
 };
 
 }  // namespace exo

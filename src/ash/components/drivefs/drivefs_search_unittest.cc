@@ -28,6 +28,9 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
  public:
   MockDriveFs() = default;
 
+  MockDriveFs(const MockDriveFs&) = delete;
+  MockDriveFs& operator=(const MockDriveFs&) = delete;
+
   DriveFs* GetForwardingInterface() override {
     NOTREACHED();
     return nullptr;
@@ -53,7 +56,6 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
 
  private:
   mojo::Receiver<mojom::SearchQuery> search_receiver_{this};
-  DISALLOW_COPY_AND_ASSIGN(MockDriveFs);
 };
 
 class DriveFsSearchTest : public testing::Test {
@@ -285,7 +287,7 @@ TEST_F(DriveFsSearchTest, Search_SharedWithMeCaching) {
   EXPECT_TRUE(called);
 
   // Time has passed...
-  clock_.Advance(base::TimeDelta::FromHours(1));
+  clock_.Advance(base::Hours(1));
 
   params = mojom::QueryParameters::New();
   params->query_source = mojom::QueryParameters::QuerySource::kCloudOnly;

@@ -14,13 +14,13 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
+#include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions.pb.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions/key_permissions_pref_util.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_test_util.h"
-#include "chrome/browser/chromeos/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -96,6 +96,7 @@ class KeyPermissionsManagerBrowserTestBase
     test_util::GenerateKeyExecutionWaiter generate_key_waiter;
     GetPlatformKeysService()->GenerateRSAKey(GetToken(),
                                              /*modulus_length_bits=*/2048,
+                                             /*sw_backed=*/false,
                                              generate_key_waiter.GetCallback());
     generate_key_waiter.Wait();
     return generate_key_waiter.public_key_spki_der();

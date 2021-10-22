@@ -15,9 +15,11 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -37,11 +39,12 @@
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "components/app_restore/full_restore_info.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/window_properties.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
-#include "components/full_restore/full_restore_info.h"
-#include "components/full_restore/full_restore_utils.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -88,6 +91,9 @@ class ShellSurfaceWidget : public views::Widget {
  public:
   ShellSurfaceWidget() = default;
 
+  ShellSurfaceWidget(const ShellSurfaceWidget&) = delete;
+  ShellSurfaceWidget& operator=(const ShellSurfaceWidget&) = delete;
+
   // Overridden from views::Widget:
   void OnKeyEvent(ui::KeyEvent* event) override {
     if (GetFocusManager()->GetFocusedView() &&
@@ -100,9 +106,6 @@ class ShellSurfaceWidget : public views::Widget {
       event->SetHandled();
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceWidget);
 };
 
 class CustomFrameView : public ash::NonClientFrameViewAsh {
@@ -117,6 +120,9 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
     if (!enabled)
       NonClientFrameViewAsh::SetShouldPaintHeader(false);
   }
+
+  CustomFrameView(const CustomFrameView&) = delete;
+  CustomFrameView& operator=(const CustomFrameView&) = delete;
 
   ~CustomFrameView() override = default;
 
@@ -188,14 +194,16 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
 
  private:
   ShellSurfaceBase* const shell_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };
 
 class CustomWindowTargeter : public aura::WindowTargeter {
  public:
   explicit CustomWindowTargeter(ShellSurfaceBase* shell_surface)
       : shell_surface_(shell_surface), widget_(shell_surface->GetWidget()) {}
+
+  CustomWindowTargeter(const CustomWindowTargeter&) = delete;
+  CustomWindowTargeter& operator=(const CustomWindowTargeter&) = delete;
+
   ~CustomWindowTargeter() override = default;
 
   // Overridden from aura::WindowTargeter:
@@ -264,8 +272,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
   ShellSurfaceBase* shell_surface_;
   views::Widget* const widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
 // A place holder to disable default implementation created by
@@ -274,15 +280,17 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 class CustomWindowStateDelegate : public ash::WindowStateDelegate {
  public:
   CustomWindowStateDelegate() {}
+
+  CustomWindowStateDelegate(const CustomWindowStateDelegate&) = delete;
+  CustomWindowStateDelegate& operator=(const CustomWindowStateDelegate&) =
+      delete;
+
   ~CustomWindowStateDelegate() override {}
 
   // Overridden from ash::WindowStateDelegate:
   bool ToggleFullscreen(ash::WindowState* window_state) override {
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowStateDelegate);
 };
 
 void CloseAllShellSurfaceTransientChildren(aura::Window* window) {
@@ -332,6 +340,13 @@ ShellSurfaceBase::ShellSurfaceBase(Surface* surface,
 }
 
 ShellSurfaceBase::~ShellSurfaceBase() {
+  // If the surface was TrustedPinned, we have to unpin first as this might have
+  // locked down some system functions.
+  if (current_pinned_state_ == chromeos::WindowPinType::kTrustedPinned) {
+    pending_pinned_state_ = chromeos::WindowPinType::kNone;
+    UpdatePinned();
+  }
+
   // Close the overlay in case the window is deleted by the server.
   overlay_widget_.reset();
 
@@ -464,24 +479,26 @@ void ShellSurfaceBase::SetUseImmersiveForFullscreen(bool value) {
     SetShellUseImmersiveForFullscreen(widget_->GetNativeWindow(), value);
 }
 
-void ShellSurfaceBase::ShowSnapPreviewToLeft() {
-  ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kLeft);
+void ShellSurfaceBase::ShowSnapPreviewToPrimary() {
+  ShowSnapPreview(widget_->GetNativeWindow(),
+                  chromeos::SnapDirection::kPrimary);
 }
 
-void ShellSurfaceBase::ShowSnapPreviewToRight() {
-  ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kRight);
+void ShellSurfaceBase::ShowSnapPreviewToSecondary() {
+  ShowSnapPreview(widget_->GetNativeWindow(),
+                  chromeos::SnapDirection::kSecondary);
 }
 
 void ShellSurfaceBase::HideSnapPreview() {
   ShowSnapPreview(widget_->GetNativeWindow(), chromeos::SnapDirection::kNone);
 }
 
-void ShellSurfaceBase::SetSnappedToLeft() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kLeft);
+void ShellSurfaceBase::SetSnappedToPrimary() {
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kPrimary);
 }
 
-void ShellSurfaceBase::SetSnappedToRight() {
-  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kRight);
+void ShellSurfaceBase::SetSnappedToSecondary() {
+  CommitSnap(widget_->GetNativeWindow(), chromeos::SnapDirection::kSecondary);
 }
 
 void ShellSurfaceBase::UnsetSnap() {
@@ -550,6 +567,36 @@ void ShellSurfaceBase::SetInitialWorkspace(const char* initial_workspace) {
     initial_workspace_ = std::string(initial_workspace);
   else
     initial_workspace_.reset();
+}
+
+void ShellSurfaceBase::Pin(bool trusted) {
+  pending_pinned_state_ = trusted ? chromeos::WindowPinType::kTrustedPinned
+                                  : chromeos::WindowPinType::kPinned;
+  UpdatePinned();
+}
+
+void ShellSurfaceBase::Unpin() {
+  // Only need to do something when we have to set a pinned mode.
+  if (pending_pinned_state_ == chromeos::WindowPinType::kNone)
+    return;
+
+  // Remove any pending pin states which might not have been applied yet.
+  pending_pinned_state_ = chromeos::WindowPinType::kNone;
+  UpdatePinned();
+}
+
+void ShellSurfaceBase::UpdatePinned() {
+  if (!widget_) {
+    // It is possible to get here before the widget has actually been created.
+    // The state will be set once the widget gets created.
+    return;
+  }
+  if (current_pinned_state_ != pending_pinned_state_) {
+    ash::ShellDelegate* shell = ash::Shell::Get()->shell_delegate();
+    auto* window = widget_->GetNativeWindow();
+    shell->SetPinnedFromExo(window, pending_pinned_state_);
+    current_pinned_state_ = pending_pinned_state_;
+  }
 }
 
 void ShellSurfaceBase::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
@@ -1023,8 +1070,7 @@ void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
     } else if (key == chromeos::kFrameRestoreLookKey) {
       root_surface()->SetFrameLocked(
           window->GetProperty(chromeos::kFrameRestoreLookKey));
-    } else if (key == aura::client::kVisibleOnAllWorkspacesKey ||
-               key == aura::client::kWindowWorkspaceKey) {
+    } else if (key == aura::client::kWindowWorkspaceKey) {
       root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
     }
   }
@@ -1161,7 +1207,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   full_restore::ModifyWidgetParams(params.init_properties_container.GetProperty(
-                                       full_restore::kRestoreWindowIdKey),
+                                       app_restore::kRestoreWindowIdKey),
                                    &params);
 #endif
 
@@ -1171,6 +1217,9 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   widget_ = new ShellSurfaceWidget;
   widget_->Init(std::move(params));
   widget_->AddObserver(this);
+
+  // As setting the pinned mode may have come in earlier we apply it now.
+  UpdatePinned();
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName(base::StringPrintf("ExoShellSurface-%d", shell_id++));
@@ -1215,6 +1264,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   }
 
   root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
+
+  WMHelper::GetInstance()->NotifyExoWindowCreated(widget_->GetNativeWindow());
 }
 
 ShellSurfaceBase::OverlayParams::OverlayParams(

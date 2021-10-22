@@ -75,6 +75,10 @@ bool Mixer::SortData::operator<(const SortData& other) const {
 class Mixer::Group {
  public:
   explicit Group(size_t max_results) : max_results_(max_results) {}
+
+  Group(const Group&) = delete;
+  Group& operator=(const Group&) = delete;
+
   ~Group() {}
 
   void AddProvider(SearchProvider* provider) {
@@ -110,8 +114,6 @@ class Mixer::Group {
 
   Providers providers_;  // Not owned.
   SortedResults results_;
-
-  DISALLOW_COPY_AND_ASSIGN(Group);
 };
 
 Mixer::Mixer(AppListModelUpdater* model_updater,
@@ -123,7 +125,8 @@ void Mixer::InitializeRankers(Profile* profile) {
   search_result_ranker_ = std::make_unique<SearchResultRanker>(profile);
   search_result_ranker_->InitializeRankers(search_controller_);
 
-  if (app_list_features::IsSuggestedFilesEnabled()) {
+  if (app_list_features::IsSuggestedFilesEnabled() ||
+      app_list_features::IsSuggestedLocalFilesEnabled()) {
     chip_ranker_ = std::make_unique<ChipRanker>(profile);
   }
 }

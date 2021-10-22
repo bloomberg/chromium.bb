@@ -79,7 +79,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static void threshold8(const uint8_t *src, const uint8_t *ref, uint8_t *dst, int threshold, int w)
@@ -191,8 +191,8 @@ static int process_frame(FFFrameSync *fs)
         td.ref = ref;
         td.dst = out;
 
-        ctx->internal->execute(ctx, threshold_slice, &td, NULL, FFMIN(s->planeheight[2],
-                                                                ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, threshold_slice, &td, NULL,
+                          FFMIN(s->planeheight[2], ff_filter_get_nb_threads(ctx)));
     }
     out->pts = av_rescale_q(s->fs.pts, s->fs.time_base, outlink->time_base);
 
@@ -270,7 +270,6 @@ static const AVFilterPad maskedthreshold_inputs[] = {
         .name         = "reference",
         .type         = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad maskedthreshold_outputs[] = {
@@ -279,7 +278,6 @@ static const AVFilterPad maskedthreshold_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 AVFILTER_DEFINE_CLASS(maskedthreshold);
@@ -292,8 +290,8 @@ const AVFilter ff_vf_maskedthreshold = {
     .uninit        = uninit,
     .activate      = activate,
     .query_formats = query_formats,
-    .inputs        = maskedthreshold_inputs,
-    .outputs       = maskedthreshold_outputs,
+    FILTER_INPUTS(maskedthreshold_inputs),
+    FILTER_OUTPUTS(maskedthreshold_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

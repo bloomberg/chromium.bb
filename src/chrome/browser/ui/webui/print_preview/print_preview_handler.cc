@@ -30,6 +30,7 @@
 #include "chrome/browser/bad_message.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/printing/prefs_util.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
@@ -59,7 +60,6 @@
 #include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "components/prefs/pref_service.h"
-#include "components/printing/browser/prefs_util.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
@@ -811,9 +811,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     PrintDocumentTypeBuckets doc_type =
         is_pdf ? PrintDocumentTypeBuckets::kPdfDocument
                : PrintDocumentTypeBuckets::kHtmlDocument;
-    size_t average_page_size_in_kb = data->size() / page_count;
-    average_page_size_in_kb /= 1024;
-    ReportPrintDocumentTypeAndSizeHistograms(doc_type, average_page_size_in_kb);
+    ReportPrintDocumentTypeHistograms(doc_type);
   }
   ReportUserActionHistogram(user_action);
 

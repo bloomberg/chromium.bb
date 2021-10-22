@@ -137,8 +137,7 @@ IntentGenerator::~IntentGenerator() {
 }
 
 void IntentGenerator::GenerateIntent(const QuickAnswersRequest& request) {
-  if (features::ShouldUseQuickAnswersTextAnnotator() ||
-      use_text_annotator_for_testing_) {
+  if (ash::QuickAnswersState::Get()->ShouldUseQuickAnswersTextAnnotator()) {
     // Load text classifier.
     chromeos::machine_learning::ServiceConnection::GetInstance()
         ->GetMachineLearningService()
@@ -151,10 +150,6 @@ void IntentGenerator::GenerateIntent(const QuickAnswersRequest& request) {
 
   std::move(complete_callback_)
       .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
-}
-
-void IntentGenerator::UseTextAnnotatorForTesting() {
-  use_text_annotator_for_testing_ = true;
 }
 
 void IntentGenerator::LoadModelCallback(const QuickAnswersRequest& request,
@@ -195,18 +190,16 @@ void IntentGenerator::AnnotationCallback(
     auto intent_type_map = GetIntentTypeMap();
     auto it = intent_type_map.find(type);
     if (it != intent_type_map.end()) {
-      if (features::IsQuickAnswersV2Enabled()) {
-        // Skip the entity if the corresponding intent type is disabled.
-        bool definition_disabled =
-            !ash::QuickAnswersState::Get()->definition_enabled();
-        bool unit_conversion_disabled =
-            !ash::QuickAnswersState::Get()->unit_conversion_enabled();
-        if ((it->second == IntentType::kDictionary && definition_disabled) ||
-            (it->second == IntentType::kUnit && unit_conversion_disabled)) {
-          // Fallback to language detection for generating translation intent.
-          MaybeGenerateTranslationIntent(request);
-          return;
-        }
+      // Skip the entity if the corresponding intent type is disabled.
+      bool definition_disabled =
+          !ash::QuickAnswersState::Get()->definition_enabled();
+      bool unit_conversion_disabled =
+          !ash::QuickAnswersState::Get()->unit_conversion_enabled();
+      if ((it->second == IntentType::kDictionary && definition_disabled) ||
+          (it->second == IntentType::kUnit && unit_conversion_disabled)) {
+        // Fallback to language detection for generating translation intent.
+        MaybeGenerateTranslationIntent(request);
+        return;
       }
       // Skip the entity for definition annonation.
       if (it->second == IntentType::kDictionary &&
@@ -229,15 +222,8 @@ void IntentGenerator::MaybeGenerateTranslationIntent(
     const QuickAnswersRequest& request) {
   DCHECK(complete_callback_);
 
-  if (features::IsQuickAnswersV2Enabled() &&
-      (!ash::QuickAnswersState::Get()->translation_enabled() ||
-       features::IsQuickAnswersV2TranslationDisabled())) {
-    std::move(complete_callback_)
-        .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
-    return;
-  }
-
-  if (!features::IsQuickAnswersTranslationEnabled()) {
+  if (!ash::QuickAnswersState::Get()->translation_enabled() ||
+      features::IsQuickAnswersV2TranslationDisabled()) {
     std::move(complete_callback_)
         .Run(IntentInfo(request.selected_text, IntentType::kUnknown));
     return;

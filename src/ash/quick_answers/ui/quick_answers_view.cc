@@ -60,10 +60,6 @@ constexpr gfx::Insets kContentViewInsets(8, 0, 8, 16);
 constexpr float kHoverStateAlpha = 0.06f;
 constexpr int kMaxRows = 3;
 
-// Assistant icon.
-constexpr int kAssistantIconSizeDip = 16;
-constexpr gfx::Insets kAssistantIconInsets(10, 10, 0, 8);
-
 // Google icon.
 constexpr int kGoogleIconSizeDip = 16;
 constexpr gfx::Insets kGoogleIconInsets(10, 10, 0, 10);
@@ -78,11 +74,6 @@ constexpr int kLineHeightDip = 20;
 
 // Spacing between labels in the horizontal elements view.
 constexpr int kLabelSpacingDip = 2;
-
-// Dogfood button.
-constexpr int kDogfoodButtonMarginDip = 4;
-constexpr int kDogfoodButtonSizeDip = 20;
-constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
 
 // Settings button.
 constexpr int kSettingsButtonMarginDip = 4;
@@ -393,19 +384,11 @@ void QuickAnswersView::InitLayout() {
       .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
 
   // Add branding icon.
-  if (chromeos::features::IsQuickAnswersV2Enabled()) {
-    AddGoogleIcon();
-  } else {
-    AddAssistantIcon();
-  }
+  AddGoogleIcon();
 
   AddContentView();
 
-  if (chromeos::features::IsQuickAnswersV2Enabled()) {
-    AddSettingsButton();
-  } else if (chromeos::features::IsQuickAnswersDogfood()) {
-    AddDogfoodButton();
-  }
+  AddSettingsButton();
 }
 
 void QuickAnswersView::InitWidget() {
@@ -445,27 +428,6 @@ void QuickAnswersView::AddContentView() {
   AddTextElement({l10n_util::GetStringUTF8(IDS_ASH_QUICK_ANSWERS_VIEW_LOADING),
                   gfx::kGoogleGrey700},
                  content_view_);
-}
-
-void QuickAnswersView::AddDogfoodButton() {
-  auto* dogfood_view = AddChildView(std::make_unique<View>());
-  auto* layout =
-      dogfood_view->SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kVertical)
-      .SetInteriorMargin(gfx::Insets(kDogfoodButtonMarginDip))
-      .SetCrossAxisAlignment(views::LayoutAlignment::kEnd);
-  dogfood_button_ =
-      dogfood_view->AddChildView(std::make_unique<views::ImageButton>(
-          base::BindRepeating(&QuickAnswersUiController::OnDogfoodButtonPressed,
-                              base::Unretained(controller_))));
-  dogfood_button_->SetImage(
-      views::Button::ButtonState::STATE_NORMAL,
-      gfx::CreateVectorIcon(kDogfoodIcon, kDogfoodButtonSizeDip,
-                            kDogfoodButtonColor));
-  dogfood_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_ASH_QUICK_ANSWERS_DOGFOOD_BUTTON_TOOLTIP_TEXT));
-  dogfood_button_->button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::kOnPress);
 }
 
 void QuickAnswersView::AddSettingsButton() {
@@ -525,15 +487,6 @@ void QuickAnswersView::AddPhoneticsAudioButton(const GURL& phonetics_audio,
       views::CreateEmptyBorder(gfx::Insets(kPhoneticsAudioButtonBorderDip)));
 }
 
-void QuickAnswersView::AddAssistantIcon() {
-  // Add Assistant icon.
-  auto* assistant_icon =
-      main_view_->AddChildView(std::make_unique<views::ImageView>());
-  assistant_icon->SetBorder(views::CreateEmptyBorder(kAssistantIconInsets));
-  assistant_icon->SetImage(gfx::CreateVectorIcon(
-      chromeos::kAssistantIcon, kAssistantIconSizeDip, gfx::kPlaceholderColor));
-}
-
 void QuickAnswersView::AddGoogleIcon() {
   // Add Google icon.
   auto* google_icon =
@@ -553,9 +506,9 @@ void QuickAnswersView::UpdateBounds() {
 
   // Multi-line labels need to be resized to be compatible with |desired_width|.
   if (first_answer_label_) {
-    int label_desired_width =
-        desired_width - kMainViewInsets.width() - kContentViewInsets.width() -
-        kAssistantIconInsets.width() - kAssistantIconSizeDip;
+    int label_desired_width = desired_width - kMainViewInsets.width() -
+                              kContentViewInsets.width() -
+                              kGoogleIconInsets.width() - kGoogleIconSizeDip;
     first_answer_label_->SizeToFit(label_desired_width);
   }
 
@@ -615,9 +568,7 @@ void QuickAnswersView::UpdateQuickAnswerResult(
     auto* answer_label =
         static_cast<Label*>(first_answer_view->children().front());
     GetViewAccessibility().OverrideDescription(l10n_util::GetStringFUTF8(
-        chromeos::features::IsQuickAnswersV2Enabled()
-            ? IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE_V2
-            : IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE,
+        IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_DESC_TEMPLATE_V2,
         title_label->GetText(), answer_label->GetText()));
   }
 
@@ -645,8 +596,7 @@ void QuickAnswersView::UpdateQuickAnswerResult(
         IDS_ASH_QUICK_ANSWERS_VIEW_A11Y_INFO_ALERT_TEXT));
   }
 
-  if (chromeos::features::IsQuickAnswersV2Enabled() &&
-      quick_answer.result_type == ResultType::kNoResult && is_internal_) {
+  if (quick_answer.result_type == ResultType::kNoResult && is_internal_) {
     report_query_view_ = base_view_->AddChildView(
         std::make_unique<ReportQueryView>(base::BindRepeating(
             &QuickAnswersUiController::OnReportQueryButtonPressed,
@@ -668,8 +618,6 @@ std::vector<views::View*> QuickAnswersView::GetFocusableViews() {
     focusable_views.push_back(retry_label_);
   if (report_query_view_ && report_query_view_->GetVisible())
     focusable_views.push_back(report_query_view_);
-  if (dogfood_button_ && dogfood_button_->GetVisible())
-    focusable_views.push_back(dogfood_button_);
   return focusable_views;
 }
 

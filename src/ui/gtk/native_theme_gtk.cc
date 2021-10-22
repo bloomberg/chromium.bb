@@ -5,11 +5,12 @@
 #include "ui/gtk/native_theme_gtk.h"
 
 #include "base/strings/strcat.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gtk/gtk_color_mixers.h"
 #include "ui/gtk/gtk_compat.h"
 #include "ui/gtk/gtk_util.h"
@@ -189,8 +190,10 @@ void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
   // have a light variant and aren't affected by the setting.  Because of this,
   // experimentally check if the theme is dark by checking if the window
   // background color is dark.
-  set_use_dark_colors(IsForcedDarkMode() || color_utils::IsDark(GetSystemColor(
-                                                kColorId_WindowBackground)));
+  const auto window_bg_color = SkColorFromColorId(ui::kColorWindowBackground);
+  set_use_dark_colors(
+      IsForcedDarkMode() ||
+      (window_bg_color && color_utils::IsDark(window_bg_color.value())));
   set_preferred_color_scheme(CalculatePreferredColorScheme());
 
   // GTK doesn't have a native high contrast setting.  Rather, it's implied by

@@ -14,7 +14,7 @@
 #include "src/gpu/glsl/GrGLSLBlend.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
-#include "src/sksl/dsl/priv/DSLWriter.h"
+#include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 
 GrGLSLShaderBuilder::GrGLSLShaderBuilder(GrGLSLProgramBuilder* program)
@@ -85,8 +85,12 @@ void GrGLSLShaderBuilder::emitFunctionPrototype(GrSLType returnType,
     this->functions().append(";\n");
 }
 
+void GrGLSLShaderBuilder::emitFunctionPrototype(const char* declaration) {
+    this->functions().appendf("%s;\n", declaration);
+}
+
 void GrGLSLShaderBuilder::codeAppend(std::unique_ptr<SkSL::Statement> stmt) {
-    SkASSERT(SkSL::dsl::DSLWriter::CurrentProcessor());
+    SkASSERT(SkSL::ThreadContext::CurrentProcessor());
     SkASSERT(stmt);
     this->codeAppend(stmt->description().c_str());
     if (stmt->is<SkSL::VarDeclaration>()) {

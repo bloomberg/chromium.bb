@@ -73,8 +73,7 @@ bool IsGMBAllowed(IntSize size,
                   const CanvasResourceParams& params,
                   const gpu::Capabilities& caps) {
   return gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-             gfx::Size(size), params.GetBufferFormat(),
-             gfx::BufferPlane::DEFAULT) &&
+             gfx::Size(size), params.GetBufferFormat()) &&
          gpu::IsImageFromGpuMemoryBufferFormatSupported(
              params.GetBufferFormat(), caps);
 }
@@ -500,16 +499,19 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   void WillDraw() override { WillDrawInternal(true); }
 
-  void RasterRecord(sk_sp<cc::PaintRecord> last_recording) override {
+  void RasterRecord(sk_sp<cc::PaintRecord> last_recording,
+                    bool preserve_recording) override {
     if (!use_oop_rasterization_) {
-      CanvasResourceProvider::RasterRecord(std::move(last_recording));
+      CanvasResourceProvider::RasterRecord(std::move(last_recording),
+                                           preserve_recording);
       return;
     }
     WillDrawInternal(true);
     const bool needs_clear = !is_cleared_;
     is_cleared_ = true;
     RasterRecordOOP(last_recording, needs_clear,
-                    resource()->GetOrCreateGpuMailbox(kUnverifiedSyncToken));
+                    resource()->GetOrCreateGpuMailbox(kUnverifiedSyncToken),
+                    preserve_recording);
   }
 
   bool ShouldReplaceTargetBuffer(
@@ -822,15 +824,17 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
         ColorParams().GetSkColorSpace(), &props);
   }
 
-  void RasterRecord(sk_sp<cc::PaintRecord> last_recording) override {
+  void RasterRecord(sk_sp<cc::PaintRecord> last_recording,
+                    bool preserve_recording) override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::RasterRecord");
     if (!use_oop_rasterization_) {
-      CanvasResourceProvider::RasterRecord(std::move(last_recording));
+      CanvasResourceProvider::RasterRecord(std::move(last_recording),
+                                           preserve_recording);
       return;
     }
     WillDraw();
     RasterRecordOOP(last_recording, initial_needs_clear_,
-                    resource_->GetBackBufferMailbox());
+                    resource_->GetBackBufferMailbox(), preserve_recording);
     initial_needs_clear_ = false;
   }
 
@@ -1277,6 +1281,10 @@ CanvasResourceProvider::GetOrCreateCanvasImageProvider() {
   return canvas_image_provider_.get();
 }
 
+void CanvasResourceProvider::DidPinImage(size_t bytes) {
+  total_pinned_image_bytes_ += bytes;
+}
+
 cc::PaintCanvas* CanvasResourceProvider::Canvas(bool needs_will_draw) {
   // TODO(https://crbug.com/1211912): Video frames don't work without
   // WillDrawIfNeeded(), but we are getting memory leak on CreatePattern
@@ -1287,8 +1295,7 @@ cc::PaintCanvas* CanvasResourceProvider::Canvas(bool needs_will_draw) {
   if (!recorder_) {
     // A raw pointer is safe here because the callback is only used by the
     // |recorder_|.
-    recorder_ = std::make_unique<MemoryManagedPaintRecorder>(WTF::BindRepeating(
-        &CanvasResourceProvider::SetNeedsFlush, WTF::Unretained(this)));
+    recorder_ = std::make_unique<MemoryManagedPaintRecorder>(this);
 
     return recorder_->beginRecording(Size().Width(), Size().Height());
   }
@@ -1368,20 +1375,32 @@ GrDirectContext* CanvasResourceProvider::GetGrContext() const {
 }
 
 sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvas() {
+  return FlushCanvasInternal(false);
+}
+
+sk_sp<cc::PaintRecord>
+CanvasResourceProvider::FlushCanvasAndPreserveRecording() {
+  return FlushCanvasInternal(true);
+}
+
+sk_sp<cc::PaintRecord> CanvasResourceProvider::FlushCanvasInternal(
+    bool preserve_recording) {
   if (!HasRecordedDrawOps())
     return nullptr;
   sk_sp<cc::PaintRecord> last_recording = recorder_->finishRecordingAsPicture();
-  RasterRecord(last_recording);
-  needs_flush_ = false;
+  RasterRecord(last_recording, preserve_recording);
+  total_pinned_image_bytes_ = 0;
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(Size().Width(), Size().Height());
   if (restore_clip_stack_callback_)
     restore_clip_stack_callback_.Run(canvas);
+  if (!preserve_recording)
+    return nullptr;
   return last_recording;
 }
 
-void CanvasResourceProvider::RasterRecord(
-    sk_sp<cc::PaintRecord> last_recording) {
+void CanvasResourceProvider::RasterRecord(sk_sp<cc::PaintRecord> last_recording,
+                                          bool) {
   EnsureSkiaCanvas();
   skia_canvas_->drawPicture(std::move(last_recording));
   GetSkSurface()->flushAndSubmit();
@@ -1390,7 +1409,8 @@ void CanvasResourceProvider::RasterRecord(
 void CanvasResourceProvider::RasterRecordOOP(
     sk_sp<cc::PaintRecord> last_recording,
     bool needs_clear,
-    gpu::Mailbox mailbox) {
+    gpu::Mailbox mailbox,
+    bool preserve_recording) {
   if (IsGpuContextLost())
     return;
   gpu::raster::RasterInterface* ri = RasterInterface();
@@ -1421,7 +1441,8 @@ void CanvasResourceProvider::RasterRecordOOP(
 
   ri->RasterCHROMIUM(list.get(), GetOrCreateCanvasImageProvider(), size,
                      full_raster_rect, playback_rect, post_translate,
-                     post_scale, false /* requires_clear */, &max_op_size_hint);
+                     post_scale, false /* requires_clear */, &max_op_size_hint,
+                     preserve_recording);
 
   ri->EndRasterCHROMIUM();
 }
@@ -1577,6 +1598,7 @@ void CanvasResourceProvider::SkipQueuedDrawCommands() {
   recorder_->finishRecordingAsPicture();
   cc::PaintCanvas* canvas =
       recorder_->beginRecording(Size().Width(), Size().Height());
+  total_pinned_image_bytes_ = 0;
   if (restore_clip_stack_callback_)
     restore_clip_stack_callback_.Run(canvas);
 }

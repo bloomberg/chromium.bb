@@ -114,6 +114,11 @@ class ClientControlledStateDelegate
   explicit ClientControlledStateDelegate(
       ClientControlledShellSurface* shell_surface)
       : shell_surface_(shell_surface) {}
+
+  ClientControlledStateDelegate(const ClientControlledStateDelegate&) = delete;
+  ClientControlledStateDelegate& operator=(
+      const ClientControlledStateDelegate&) = delete;
+
   ~ClientControlledStateDelegate() override {}
 
   // Overridden from ash::ClientControlledState::Delegate:
@@ -136,8 +141,6 @@ class ClientControlledStateDelegate
 
  private:
   ClientControlledShellSurface* shell_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientControlledStateDelegate);
 };
 
 // A WindowStateDelegate that implements ToggleFullscreen behavior for
@@ -148,6 +151,12 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
       ClientControlledShellSurface* shell_surface,
       ash::ClientControlledState::Delegate* delegate)
       : shell_surface_(shell_surface), delegate_(delegate) {}
+
+  ClientControlledWindowStateDelegate(
+      const ClientControlledWindowStateDelegate&) = delete;
+  ClientControlledWindowStateDelegate& operator=(
+      const ClientControlledWindowStateDelegate&) = delete;
+
   ~ClientControlledWindowStateDelegate() override {}
 
   // Overridden from ash::WindowStateDelegate:
@@ -216,8 +225,6 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
  private:
   ClientControlledShellSurface* shell_surface_;
   ash::ClientControlledState::Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientControlledWindowStateDelegate);
 };
 
 bool IsPinned(const ash::WindowState* window_state) {
@@ -229,6 +236,9 @@ class CaptionButtonModel : public chromeos::CaptionButtonModel {
   CaptionButtonModel(uint32_t visible_button_mask, uint32_t enabled_button_mask)
       : visible_button_mask_(visible_button_mask),
         enabled_button_mask_(enabled_button_mask) {}
+
+  CaptionButtonModel(const CaptionButtonModel&) = delete;
+  CaptionButtonModel& operator=(const CaptionButtonModel&) = delete;
 
   // Overridden from ash::CaptionButtonModel:
   bool IsVisible(views::CaptionButtonIcon icon) const override {
@@ -244,8 +254,6 @@ class CaptionButtonModel : public chromeos::CaptionButtonModel {
  private:
   uint32_t visible_button_mask_;
   uint32_t enabled_button_mask_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptionButtonModel);
 };
 
 // EventTargetingBlocker blocks the event targeting by setting NONE targeting
@@ -254,6 +262,9 @@ class CaptionButtonModel : public chromeos::CaptionButtonModel {
 class EventTargetingBlocker : aura::WindowObserver {
  public:
   EventTargetingBlocker() = default;
+
+  EventTargetingBlocker(const EventTargetingBlocker&) = delete;
+  EventTargetingBlocker& operator=(const EventTargetingBlocker&) = delete;
 
   ~EventTargetingBlocker() override {
     if (window_)
@@ -291,8 +302,6 @@ class EventTargetingBlocker : aura::WindowObserver {
            std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
       event_targeting_blocker_map_;
   aura::Window* window_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(EventTargetingBlocker);
 };
 
 }  // namespace
@@ -303,12 +312,14 @@ class ClientControlledShellSurface::ScopedSetBoundsLocally {
       : state_(shell_surface->client_controlled_state_) {
     state_->set_bounds_locally(true);
   }
+
+  ScopedSetBoundsLocally(const ScopedSetBoundsLocally&) = delete;
+  ScopedSetBoundsLocally& operator=(const ScopedSetBoundsLocally&) = delete;
+
   ~ScopedSetBoundsLocally() { state_->set_bounds_locally(false); }
 
  private:
   ash::ClientControlledState* const state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSetBoundsLocally);
 };
 
 class ClientControlledShellSurface::ScopedLockedToRoot {
@@ -317,12 +328,14 @@ class ClientControlledShellSurface::ScopedLockedToRoot {
       : window_(widget->GetNativeWindow()) {
     window_->SetProperty(ash::kLockedToRootKey, true);
   }
+
+  ScopedLockedToRoot(const ScopedLockedToRoot&) = delete;
+  ScopedLockedToRoot& operator=(const ScopedLockedToRoot&) = delete;
+
   ~ScopedLockedToRoot() { window_->ClearProperty(ash::kLockedToRootKey); }
 
  private:
   aura::Window* const window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedLockedToRoot);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -334,7 +347,6 @@ ClientControlledShellSurface::ClientControlledShellSurface(
     int container,
     bool default_scale_cancellation)
     : ShellSurfaceBase(surface, gfx::Point(), can_minimize, container),
-      current_pin_(chromeos::WindowPinType::kNone),
       use_default_scale_cancellation_(default_scale_cancellation) {
   server_side_resize_ = true;
 }
@@ -421,8 +433,12 @@ void ClientControlledShellSurface::SetPinned(chromeos::WindowPinType type) {
   if (!widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
-  widget_->GetNativeWindow()->SetProperty(chromeos::kWindowPinTypeKey, type);
-  current_pin_ = type;
+  if (type == chromeos::WindowPinType::kNone) {
+    ash::WindowState::Get(widget_->GetNativeWindow())->Restore();
+  } else {
+    bool trusted = type == chromeos::WindowPinType::kTrustedPinned;
+    ash::window_util::PinWindow(widget_->GetNativeWindow(), trusted);
+  }
 }
 
 void ClientControlledShellSurface::SetSystemUiVisibility(bool autohide) {
@@ -598,7 +614,7 @@ void ClientControlledShellSurface::SetExtraTitle(
 }
 
 void ClientControlledShellSurface::SetOrientationLock(
-    ash::OrientationLockType orientation_lock) {
+    chromeos::OrientationType orientation_lock) {
   TRACE_EVENT1("exo", "ClientControlledShellSurface::SetOrientationLock",
                "orientation_lock", static_cast<int>(orientation_lock));
 
@@ -630,7 +646,6 @@ void ClientControlledShellSurface::RebindRootSurface(
     bool can_minimize,
     int container,
     bool default_scale_cancellation) {
-  current_pin_ = chromeos::WindowPinType::kNone;
   use_default_scale_cancellation_ = default_scale_cancellation;
   ShellSurfaceBase::RebindRootSurface(root_surface, can_minimize, container);
 }
@@ -779,13 +794,13 @@ void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
   }
 }
 
-void ClientControlledShellSurface::SetSnappedToLeft() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToLeft");
+void ClientControlledShellSurface::SetSnappedToPrimary() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToPrimary");
   pending_window_state_ = chromeos::WindowStateType::kPrimarySnapped;
 }
 
-void ClientControlledShellSurface::SetSnappedToRight() {
-  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToRight");
+void ClientControlledShellSurface::SetSnappedToSecondary() {
+  TRACE_EVENT0("exo", "ClientControlledShellSurface::SetSnappedToSecondary");
   pending_window_state_ = chromeos::WindowStateType::kSecondarySnapped;
 }
 
@@ -1087,7 +1102,7 @@ void ClientControlledShellSurface::InitializeWindowState(
       frame_visible_button_mask_, frame_enabled_button_mask_));
   UpdateAutoHideFrame();
   UpdateFrameWidth();
-  if (initial_orientation_lock_ != ash::OrientationLockType::kAny)
+  if (initial_orientation_lock_ != chromeos::OrientationType::kAny)
     SetOrientationLock(initial_orientation_lock_);
   if (initial_extra_title_ != std::u16string())
     SetExtraTitle(initial_extra_title_);
@@ -1404,7 +1419,7 @@ void ClientControlledShellSurface::
     ui::Compositor* compositor =
         widget_->GetNativeWindow()->layer()->GetCompositor();
     orientation_compositor_lock_ = compositor->GetCompositorLock(
-        this, base::TimeDelta::FromMilliseconds(kOrientationLockTimeoutMs));
+        this, base::Milliseconds(kOrientationLockTimeoutMs));
   }
 }
 

@@ -54,6 +54,9 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
     OnWillChangeFocus(NULL, focus_manager_->GetFocusedView());
   }
 
+  ViewFocusChangeWaiter(const ViewFocusChangeWaiter&) = delete;
+  ViewFocusChangeWaiter& operator=(const ViewFocusChangeWaiter&) = delete;
+
   ~ViewFocusChangeWaiter() override {
     focus_manager_->RemoveFocusChangeListener(this);
   }
@@ -78,8 +81,6 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   views::FocusManager* focus_manager_;
   int previous_view_id_;
   base::WeakPtrFactory<ViewFocusChangeWaiter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ViewFocusChangeWaiter);
 };
 
 class SendKeysMenuListener : public AppMenuButtonObserver {
@@ -93,6 +94,9 @@ class SendKeysMenuListener : public AppMenuButtonObserver {
     observation_.Observe(app_menu_button);
   }
 
+  SendKeysMenuListener(const SendKeysMenuListener&) = delete;
+  SendKeysMenuListener& operator=(const SendKeysMenuListener&) = delete;
+
   ~SendKeysMenuListener() override = default;
 
   // AppMenuButtonObserver:
@@ -102,7 +106,7 @@ class SendKeysMenuListener : public AppMenuButtonObserver {
       SendKeyPress(browser_, ui::VKEY_ESCAPE);
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-          base::TimeDelta::FromMilliseconds(200));
+          base::Milliseconds(200));
     } else {
       DCHECK(observation_.IsObserving());
       observation_.Reset();
@@ -124,13 +128,14 @@ class SendKeysMenuListener : public AppMenuButtonObserver {
 
   base::ScopedObservation<AppMenuButton, AppMenuButtonObserver> observation_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(SendKeysMenuListener);
 };
 
 class KeyboardAccessTest : public InProcessBrowserTest {
  public:
   KeyboardAccessTest() {}
+
+  KeyboardAccessTest(const KeyboardAccessTest&) = delete;
+  KeyboardAccessTest& operator=(const KeyboardAccessTest&) = delete;
 
   // Use the keyboard to select "New Tab" from the app menu.
   // This test depends on the fact that there is one menu and that
@@ -174,9 +179,6 @@ class KeyboardAccessTest : public InProcessBrowserTest {
   // It verifies that the menu when dismissed by sending the ESC key it does
   // not display twice.
   void TestMenuKeyboardAccessAndDismiss();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeyboardAccessTest);
 };
 
 void KeyboardAccessTest::TestMenuKeyboardAccess(bool alternate_key_sequence,

@@ -1,17 +1,20 @@
-uniform float unknownInput;
+/*#pragma settings RewriteSwitchStatements*/
 
-void main() {
+uniform half4 colorGreen, colorRed;
+
+half4 main(float2 coords) {
     // Basic switch test.
-    half value;
-    switch (int(unknownInput)) {
+    half4 color;
+    switch (int(colorGreen.g)) {
         case 0:
-            value = 0.0;
+            color = colorRed;
             break;
         case 1:
-            value = 1.0;
+            color = colorGreen;
             break;
         default:
-            value = 2.0;
+            color = colorRed;
+            break;
     }
-    sk_FragColor = value.xxxx;
+    return color;
 }

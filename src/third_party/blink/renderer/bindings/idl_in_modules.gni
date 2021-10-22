@@ -6,10 +6,6 @@ import("//third_party/blink/renderer/config.gni")
 
 # Statically-defined (not runtime-generated) IDL files in 'modules' component
 # for production.
-#
-# CAUTION: static_idl_files_in_modules is used only by a new V8 bindings
-# generator, which is under development.  You have to update
-# modules/modules_idl_files.gni in addition to this list.
 static_idl_files_in_modules = get_path_info(
         [
           "//third_party/blink/renderer/modules/ad_auction/auction_ad.idl",
@@ -95,7 +91,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.idl",
           "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.idl",
           "//third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_settings.idl",
-          "//third_party/blink/renderer/modules/canvas/canvas2d/hit_region_options.idl",
           "//third_party/blink/renderer/modules/canvas/canvas2d/path_2d.idl",
           "//third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_module.idl",
           "//third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.idl",
@@ -108,6 +103,7 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/clipboard/clipboard_item.idl",
           "//third_party/blink/renderer/modules/clipboard/clipboard_item_options.idl",
           "//third_party/blink/renderer/modules/clipboard/navigator_clipboard.idl",
+          "//third_party/blink/renderer/modules/closewatcher/close_watcher.idl",
           "//third_party/blink/renderer/modules/compression/compression_stream.idl",
           "//third_party/blink/renderer/modules/compression/decompression_stream.idl",
           "//third_party/blink/renderer/modules/compute_pressure/compute_pressure_observer.idl",
@@ -441,7 +437,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/mediastream/navigator_media_stream.idl",
           "//third_party/blink/renderer/modules/mediastream/navigator_user_media.idl",
           "//third_party/blink/renderer/modules/mediastream/overconstrained_error.idl",
-          "//third_party/blink/renderer/modules/modalclosewatcher/modal_close_watcher.idl",
           "//third_party/blink/renderer/modules/native_io/native_io_file.idl",
           "//third_party/blink/renderer/modules/native_io/native_io_file_manager.idl",
           "//third_party/blink/renderer/modules/native_io/native_io_file_sync.idl",
@@ -478,7 +473,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/payments/basic_card_request.idl",
           "//third_party/blink/renderer/modules/payments/can_make_payment_event.idl",
           "//third_party/blink/renderer/modules/payments/can_make_payment_event_init.idl",
-          "//third_party/blink/renderer/modules/payments/can_make_payment_response.idl",
           "//third_party/blink/renderer/modules/payments/goods/digital_goods_service.idl",
           "//third_party/blink/renderer/modules/payments/goods/dom_window_digital_goods.idl",
           "//third_party/blink/renderer/modules/payments/goods/item_details.idl",
@@ -1017,7 +1011,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/webgpu/gpu_storage_texture_binding_layout.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_supported_features.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_supported_limits.idl",
-          "//third_party/blink/renderer/modules/webgpu/gpu_swap_chain.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_texture.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_texture_binding_layout.idl",
           "//third_party/blink/renderer/modules/webgpu/gpu_texture_descriptor.idl",
@@ -1057,15 +1050,13 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/websockets/websocket_connection.idl",
           "//third_party/blink/renderer/modules/websockets/websocket_stream.idl",
           "//third_party/blink/renderer/modules/websockets/websocket_stream_options.idl",
-          "//third_party/blink/renderer/modules/webtransport/bidirectional_stream.idl",
-          "//third_party/blink/renderer/modules/webtransport/datagram_duplex_stream.idl",
-          "//third_party/blink/renderer/modules/webtransport/receive_stream.idl",
-          "//third_party/blink/renderer/modules/webtransport/send_stream.idl",
-          "//third_party/blink/renderer/modules/webtransport/stream_abort_info.idl",
           "//third_party/blink/renderer/modules/webtransport/web_transport.idl",
+          "//third_party/blink/renderer/modules/webtransport/web_transport_bidirectional_stream.idl",
+          "//third_party/blink/renderer/modules/webtransport/web_transport_datagram_duplex_stream.idl",
           "//third_party/blink/renderer/modules/webtransport/web_transport_close_info.idl",
           "//third_party/blink/renderer/modules/webtransport/web_transport_error.idl",
           "//third_party/blink/renderer/modules/webtransport/web_transport_error_init.idl",
+          "//third_party/blink/renderer/modules/webtransport/web_transport_hash.idl",
           "//third_party/blink/renderer/modules/webtransport/web_transport_options.idl",
           "//third_party/blink/renderer/modules/webusb/navigator_usb.idl",
           "//third_party/blink/renderer/modules/webusb/usb.idl",
@@ -1153,7 +1144,12 @@ static_idl_files_in_modules = get_path_info(
         "abspath")
 
 # Direct Sockets
-if (!is_android) {
+# This uses target_os rather than current_os (which is what is_android is set
+# from) for the case of generating the v8 context snapshot for android. When
+# generating the snapshot for android, blink is compiled with
+# current_os="linux" and target_os="android". Using target_os is necessary as
+# we need to compile in the same way as would happen when current_os="android".
+if (target_os != "android") {
   static_idl_files_in_modules += get_path_info(
           [
             "//third_party/blink/renderer/modules/direct_sockets/navigator_socket.idl",
@@ -1165,7 +1161,12 @@ if (!is_android) {
 }
 
 # Serial
-if (!is_android) {
+# This uses target_os rather than current_os (which is what is_android is set
+# from) for the case of generating the v8 context snapshot for android. When
+# generating the snapshot for android, blink is compiled with
+# current_os="linux" and target_os="android". Using target_os is necessary as
+# we need to compile in the same way as would happen when current_os="android".
+if (target_os != "android") {
   static_idl_files_in_modules += get_path_info(
           [
             "//third_party/blink/renderer/modules/serial/navigator_serial.idl",
@@ -1187,7 +1188,6 @@ if (!is_android) {
 static_idl_files_in_modules_for_testing = get_path_info(
         [
           "//third_party/blink/renderer/modules/accessibility/testing/internals_accessibility.idl",
-          "//third_party/blink/renderer/modules/canvas/canvas2d/testing/internals_canvas_rendering_context_2d.idl",
           "//third_party/blink/renderer/modules/mediastream/testing/internals_media_stream.idl",
           "//third_party/blink/renderer/modules/netinfo/testing/internals_net_info.idl",
           "//third_party/blink/renderer/modules/peerconnection/testing/internals_rtc_certificate.idl",

@@ -113,14 +113,13 @@ void TriggerScriptCoordinator::OnGetTriggerScripts(
     (*script_parameters)->MergeWith(trigger_context_->GetScriptParameters());
     trigger_context_->SetScriptParameters(std::move(*script_parameters));
   }
-  trigger_condition_check_interval_ =
-      base::TimeDelta::FromMilliseconds(check_interval_ms);
+  trigger_condition_check_interval_ = base::Milliseconds(check_interval_ms);
   if (trigger_condition_timeout_ms.has_value()) {
     // Note: add 1 for the initial, not-delayed check.
     initial_trigger_condition_evaluations_ =
-        1 + base::ClampCeil<int64_t>(base::TimeDelta::FromMilliseconds(
-                                         *trigger_condition_timeout_ms) /
-                                     trigger_condition_check_interval_);
+        1 + base::ClampCeil<int64_t>(
+                base::Milliseconds(*trigger_condition_timeout_ms) /
+                trigger_condition_check_interval_);
   } else {
     initial_trigger_condition_evaluations_ = -1;
   }
@@ -277,11 +276,10 @@ void TriggerScriptCoordinator::OnTriggerScriptShown(bool success) {
                                            .has_ui_timeout_ms()) {
     ui_timeout_timer_.Start(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(
-            trigger_scripts_[visible_trigger_script_]
-                ->AsProto()
-                .user_interface()
-                .ui_timeout_ms()),
+        base::Milliseconds(trigger_scripts_[visible_trigger_script_]
+                               ->AsProto()
+                               .user_interface()
+                               .ui_timeout_ms()),
         base::BindOnce(&TriggerScriptCoordinator::OnUiTimeoutReached,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -324,40 +322,22 @@ void TriggerScriptCoordinator::Stop(Metrics::TriggerScriptFinishedState state) {
   RunCallback(trigger_ui_type, state, /* trigger_script = */ absl::nullopt);
 }
 
-void TriggerScriptCoordinator::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!is_checking_trigger_conditions_ || !navigation_handle->IsInMainFrame()) {
+void TriggerScriptCoordinator::PrimaryPageChanged(content::Page& page) {
+  // Ignore navigation events if any of the following is true:
+  // - not currently checking for preconditions (i.e., not yet started).
+  if (!is_checking_trigger_conditions_)
     return;
-  }
 
   // A navigation also serves as a boundary for NOT_NOW. This prevents possible
   // race conditions where the UI remains on screen even after navigations.
   for (auto& trigger_script : trigger_scripts_) {
     trigger_script->waiting_for_precondition_no_longer_true(false);
   }
-}
-
-void TriggerScriptCoordinator::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore navigation events if any of the following is true:
-  // - not currently checking for preconditions (i.e., not yet started).
-  // - not in the main frame.
-  // - document does not change (e.g., same page history navigation).
-  // - WebContents stays at the existing URL (e.g., downloads).
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!is_checking_trigger_conditions_ ||
-      !navigation_handle->IsInPrimaryMainFrame() ||
-      navigation_handle->IsSameDocument() ||
-      !navigation_handle->HasCommitted()) {
-    return;
-  }
 
   // Chrome has encountered an error and is now displaying an error message
   // (e.g., network connection lost). This will cancel the current trigger
   // script session.
-  if (navigation_handle->IsErrorPage()) {
+  if (page.GetMainDocument().IsErrorDocument()) {
     Stop(Metrics::TriggerScriptFinishedState::NAVIGATION_ERROR);
     return;
   }
@@ -380,7 +360,7 @@ void TriggerScriptCoordinator::DidFinishNavigation(
     return;
   }
 
-  ukm_source_id_ = ukm::GetSourceIdForWebContentsDocument(web_contents());
+  ukm_source_id_ = page.GetMainDocument().GetPageUkmSourceId();
   dynamic_trigger_conditions_->SetURL(GetCurrentURL());
   RunOutOfScheduleTriggerConditionCheck();
 }
@@ -629,7 +609,7 @@ TriggerScriptCoordinator::GetTriggerUiTypeForVisibleScript() const {
 }
 
 GURL TriggerScriptCoordinator::GetCurrentURL() const {
-  GURL current_url = web_contents()->GetLastCommittedURL();
+  GURL current_url = web_contents()->GetMainFrame()->GetLastCommittedURL();
   if (current_url.is_empty()) {
     return deeplink_url_;
   }

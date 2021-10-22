@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/pref_names.h"
@@ -23,7 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/metrics/structured/neutrino_logging.h"
+#include "components/metrics/structured/neutrino_logging.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {

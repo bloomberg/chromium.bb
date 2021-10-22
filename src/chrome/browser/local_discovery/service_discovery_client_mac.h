@@ -32,6 +32,10 @@ class ServiceDiscoveryClientMac : public ServiceDiscoverySharedClient {
  public:
   ServiceDiscoveryClientMac();
 
+  ServiceDiscoveryClientMac(const ServiceDiscoveryClientMac&) = delete;
+  ServiceDiscoveryClientMac& operator=(const ServiceDiscoveryClientMac&) =
+      delete;
+
  private:
   friend class ServiceDiscoveryClientMacTest;
 
@@ -52,8 +56,6 @@ class ServiceDiscoveryClientMac : public ServiceDiscoverySharedClient {
   void StartThreadIfNotStarted();
 
   std::unique_ptr<base::Thread> service_discovery_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryClientMac);
 };
 
 class ServiceWatcherImplMac : public ServiceWatcher {
@@ -62,6 +64,9 @@ class ServiceWatcherImplMac : public ServiceWatcher {
       const std::string& service_type,
       ServiceWatcher::UpdatedCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
+
+  ServiceWatcherImplMac(const ServiceWatcherImplMac&) = delete;
+  ServiceWatcherImplMac& operator=(const ServiceWatcherImplMac&) = delete;
 
   ~ServiceWatcherImplMac() override;
 
@@ -86,8 +91,6 @@ class ServiceWatcherImplMac : public ServiceWatcher {
   base::scoped_nsobject<NetServiceBrowser> browser_;
 
   base::WeakPtrFactory<ServiceWatcherImplMac> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWatcherImplMac);
 };
 
 class ServiceResolverImplMac : public ServiceResolver {
@@ -96,6 +99,9 @@ class ServiceResolverImplMac : public ServiceResolver {
       const std::string& service_name,
       ServiceResolver::ResolveCompleteCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
+
+  ServiceResolverImplMac(const ServiceResolverImplMac&) = delete;
+  ServiceResolverImplMac& operator=(const ServiceResolverImplMac&) = delete;
 
   ~ServiceResolverImplMac() override;
 
@@ -120,8 +126,6 @@ class ServiceResolverImplMac : public ServiceResolver {
   base::scoped_nsobject<NetServiceResolver> resolver_;
 
   base::WeakPtrFactory<ServiceResolverImplMac> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceResolverImplMac);
 };
 
 // Parses the data out of the |service|, updating the |description| with the

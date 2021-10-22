@@ -13,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_file_handler_manager.h"
 #include "chrome/browser/web_applications/web_app_file_handler_registration.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -21,11 +23,16 @@
 #include "components/services/app_service/public/cpp/share_target.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
+#include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
+#endif
 
 namespace web_app {
 
@@ -48,15 +55,15 @@ void AddSquareIconsFromMap(std::vector<SkBitmap>* square_icons,
 }
 
 // Append non-empty square icons from |icons_map| onto the |square_icons| list,
-// if they are also in |icon_infos|.
+// if they are also in |manifest_icons|.
 void AddSquareIconsFromMapMatchingIconInfos(
     std::vector<SkBitmap>* square_icons,
-    const std::vector<apps::IconInfo>& icon_infos,
+    const std::vector<apps::IconInfo>& manifest_icons,
     const IconsMap& icons_map) {
   for (const auto& url_icon : icons_map) {
     for (const SkBitmap& icon : url_icon.second) {
       if (!icon.empty() && icon.width() == icon.height()) {
-        for (const auto& info : icon_infos) {
+        for (const auto& info : manifest_icons) {
           if (info.url == url_icon.first) {
             square_icons->push_back(icon);
           }
@@ -259,13 +266,13 @@ void PopulateFileHandlingIcons(WebApplicationInfo* web_app_info,
   // purpose and set the size based on what is found in `icons_map`.
   for (auto& file_handler : web_app_info->file_handlers) {
     if (!WebAppFileHandlerManager::IconsEnabled()) {
-      DCHECK(file_handler.icons.empty());
+      DCHECK(file_handler.downloaded_icons.empty());
       continue;
     }
 
-    std::vector<apps::IconInfo> icon_infos;
+    std::vector<apps::IconInfo> manifest_icons;
 
-    for (const auto& icon_info_without_size : file_handler.icons) {
+    for (const auto& icon_info_without_size : file_handler.downloaded_icons) {
       const GURL& src = icon_info_without_size.url;
       // Only store bitmaps for this URL if it's the first time we've seen it.
       bool bitmaps_already_saved_for_url =
@@ -282,14 +289,14 @@ void PopulateFileHandlingIcons(WebApplicationInfo* web_app_info,
         // Add the size to the FileHandler icon metadata.
         apps::IconInfo icon_info_with_size(icon_info_without_size);
         icon_info_with_size.square_size_px = bitmap.width();
-        icon_infos.push_back(std::move(icon_info_with_size));
+        manifest_icons.push_back(std::move(icon_info_with_size));
 
         // Add the bitmap to `other_icon_bitmaps`.
         if (!bitmaps_already_saved_for_url)
           other_icon_bitmaps[src].push_back(bitmap);
       }
     }
-    file_handler.icons = std::move(icon_infos);
+    file_handler.downloaded_icons = std::move(manifest_icons);
   }
 }
 
@@ -305,6 +312,7 @@ apps::FileHandlers CreateFileHandlersFromManifest(
     DCHECK(manifest_file_handler);
     apps::FileHandler web_app_file_handler;
     web_app_file_handler.action = manifest_file_handler->action;
+    web_app_file_handler.display_name = manifest_file_handler->name;
 
     for (const auto& it : manifest_file_handler->accept) {
       apps::FileHandler::AcceptEntry web_app_accept_entry;
@@ -323,8 +331,9 @@ apps::FileHandlers CreateFileHandlersFromManifest(
           icon_info.url = image_resource.src;
           icon_info.purpose =
               ManifestPurposeToIconInfoPurpose(manifest_purpose);
-          // The sizes are not filled in until images are actually downloaded.
-          web_app_file_handler.icons.push_back(std::move(icon_info));
+          web_app_file_handler.downloaded_icons.push_back(std::move(icon_info));
+          // The list will be pruned and the sizes will be filled in when images
+          // are actually downloaded.
         }
       }
     }
@@ -413,7 +422,7 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
   // If any icons are correctly specified in the manifest, they take precedence
   // over any we picked up from web page metadata.
   if (!web_app_icons.empty())
-    web_app_info->icon_infos = std::move(web_app_icons);
+    web_app_info->manifest_icons = std::move(web_app_icons);
 
   // TODO(crbug.com/1218210): Confirm incoming icons to write to web_app_info.
   web_app_info->file_handlers = CreateFileHandlersFromManifest(
@@ -452,7 +461,7 @@ std::vector<GURL> GetValidIconUrlsToDownload(
     const WebApplicationInfo& web_app_info) {
   std::vector<GURL> web_app_info_icon_urls;
   // App icons.
-  for (const apps::IconInfo& info : web_app_info.icon_infos) {
+  for (const apps::IconInfo& info : web_app_info.manifest_icons) {
     if (!info.url.is_valid())
       continue;
     web_app_info_icon_urls.push_back(info.url);
@@ -472,7 +481,7 @@ std::vector<GURL> GetValidIconUrlsToDownload(
 
   // File handling icons.
   for (const auto& file_handler : web_app_info.file_handlers) {
-    for (const auto& icon : file_handler.icons) {
+    for (const auto& icon : file_handler.downloaded_icons) {
       if (!icon.url.is_valid())
         continue;
       web_app_info_icon_urls.push_back(icon.url);
@@ -490,19 +499,19 @@ void PopulateOtherIcons(WebApplicationInfo* web_app_info,
 
 void PopulateProductIcons(WebApplicationInfo* web_app_info,
                           const IconsMap* icons_map) {
-  std::vector<apps::IconInfo> icon_infos_any;
-  std::vector<apps::IconInfo> icon_infos_maskable;
-  std::vector<apps::IconInfo> icon_infos_monochrome;
-  for (apps::IconInfo& icon_info : web_app_info->icon_infos) {
+  std::vector<apps::IconInfo> manifest_icons_any;
+  std::vector<apps::IconInfo> manifest_icons_maskable;
+  std::vector<apps::IconInfo> manifest_icons_monochrome;
+  for (apps::IconInfo& icon_info : web_app_info->manifest_icons) {
     switch (icon_info.purpose) {
       case apps::IconInfo::Purpose::kAny:
-        icon_infos_any.push_back(icon_info);
+        manifest_icons_any.push_back(icon_info);
         break;
       case apps::IconInfo::Purpose::kMaskable:
-        icon_infos_maskable.push_back(icon_info);
+        manifest_icons_maskable.push_back(icon_info);
         break;
       case apps::IconInfo::Purpose::kMonochrome:
-        icon_infos_monochrome.push_back(icon_info);
+        manifest_icons_monochrome.push_back(icon_info);
         break;
     }
   }
@@ -511,13 +520,14 @@ void PopulateProductIcons(WebApplicationInfo* web_app_info,
   std::vector<SkBitmap> square_icons_maskable;
   std::vector<SkBitmap> square_icons_monochrome;
   if (icons_map) {
-    AddSquareIconsFromMapMatchingIconInfos(&square_icons_any, icon_infos_any,
-                                           *icons_map);
+    AddSquareIconsFromMapMatchingIconInfos(&square_icons_any,
+                                           manifest_icons_any, *icons_map);
     AddSquareIconsFromMapMatchingIconInfos(&square_icons_maskable,
-                                           icon_infos_maskable, *icons_map);
-    AddSquareIconsFromMapMatchingIconInfos(&square_icons_monochrome,
-                                           icon_infos_monochrome, *icons_map);
-    // Fall back to using all icons from |icons_map| if none match icon_infos.
+                                           manifest_icons_maskable, *icons_map);
+    AddSquareIconsFromMapMatchingIconInfos(
+        &square_icons_monochrome, manifest_icons_monochrome, *icons_map);
+    // Fall back to using all icons from |icons_map| if none match
+    // manifest_icons.
     if (square_icons_any.empty())
       AddSquareIconsFromMap(&square_icons_any, *icons_map);
   }
@@ -645,10 +655,22 @@ Source::Type InferSourceFromMetricsInstallSource(
     case webapps::WebappInstallSource::ARC:
       return Source::kWebAppStore;
 
+    case webapps::WebappInstallSource::SUB_APP:
+      return Source::kSubApp;
+
     case webapps::WebappInstallSource::COUNT:
       NOTREACHED();
       return Source::kSync;
   }
+}
+
+void CreateWebAppInstallTabHelpers(content::WebContents* web_contents) {
+  webapps::InstallableManager::CreateForWebContents(web_contents);
+  SecurityStateTabHelper::CreateForWebContents(web_contents);
+  favicon::CreateContentFaviconDriverForWebContents(web_contents);
+#if defined(OS_CHROMEOS)
+  webapps::PreRedirectionURLObserver::CreateForWebContents(web_contents);
+#endif
 }
 
 }  // namespace web_app

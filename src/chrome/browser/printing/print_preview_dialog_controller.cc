@@ -78,6 +78,11 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
                                    public content::WebContentsObserver {
  public:
   explicit PrintPreviewDialogDelegate(WebContents* initiator);
+
+  PrintPreviewDialogDelegate(const PrintPreviewDialogDelegate&) = delete;
+  PrintPreviewDialogDelegate& operator=(const PrintPreviewDialogDelegate&) =
+      delete;
+
   ~PrintPreviewDialogDelegate() override;
 
   ui::ModalType GetDialogModalType() const override;
@@ -97,8 +102,6 @@ class PrintPreviewDialogDelegate : public ui::WebDialogDelegate,
   WebContents* initiator() const { return web_contents(); }
 
   bool on_dialog_closed_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewDialogDelegate);
 };
 
 PrintPreviewDialogDelegate::PrintPreviewDialogDelegate(WebContents* initiator)
@@ -348,8 +351,7 @@ void PrintPreviewDialogController::OnInitiatorNavigated(
     static const ui::PageTransition kTransitions[] = {
         ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                   ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-        ui::PAGE_TRANSITION_LINK,
-    };
+        ui::PAGE_TRANSITION_LINK, ui::PAGE_TRANSITION_AUTO_BOOKMARK};
     ui::PageTransition type = details.entry->GetTransitionType();
     for (ui::PageTransition transition : kTransitions) {
       if (ui::PageTransitionTypeIncludingQualifiersIs(type, transition))

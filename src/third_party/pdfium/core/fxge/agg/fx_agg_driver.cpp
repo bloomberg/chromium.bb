@@ -151,7 +151,7 @@ void RgbByteOrderTransferBitmap(const RetainPtr<CFX_DIBitmap>& pBitmap,
     for (int row = 0; row < height; row++) {
       uint8_t* dest_scan = buffer + (dest_top + row) * pitch + dest_left * Bpp;
       const uint8_t* src_scan =
-          pSrcBitmap->GetScanline(src_top + row) + src_left * Bpp;
+          pSrcBitmap->GetScanline(src_top + row).subspan(src_left * Bpp).data();
       if (Bpp == 4) {
         for (int col = 0; col < width; col++) {
           FXARGB_SETRGBORDERDIB(dest_scan,
@@ -177,7 +177,7 @@ void RgbByteOrderTransferBitmap(const RetainPtr<CFX_DIBitmap>& pBitmap,
     for (int row = 0; row < height; row++) {
       uint8_t* dest_scan = dest_buf + row * pitch;
       const uint8_t* src_scan =
-          pSrcBitmap->GetScanline(src_top + row) + src_left * 4;
+          pSrcBitmap->GetScanline(src_top + row).subspan(src_left * 4).data();
       for (int col = 0; col < width; col++) {
         *dest_scan++ = src_scan[2];
         *dest_scan++ = src_scan[1];
@@ -194,7 +194,7 @@ void RgbByteOrderTransferBitmap(const RetainPtr<CFX_DIBitmap>& pBitmap,
     for (int row = 0; row < height; row++) {
       uint8_t* dest_scan = dest_buf + row * pitch;
       const uint8_t* src_scan =
-          pSrcBitmap->GetScanline(src_top + row) + src_left * 3;
+          pSrcBitmap->GetScanline(src_top + row).subspan(src_left * 3).data();
       for (int col = 0; col < width; col++) {
         FXARGB_SETDIB(dest_scan,
                       ArgbEncode(0xff, src_scan[0], src_scan[1], src_scan[2]));
@@ -210,7 +210,7 @@ void RgbByteOrderTransferBitmap(const RetainPtr<CFX_DIBitmap>& pBitmap,
   for (int row = 0; row < height; row++) {
     uint8_t* dest_scan = dest_buf + row * pitch;
     const uint8_t* src_scan =
-        pSrcBitmap->GetScanline(src_top + row) + src_left * 4;
+        pSrcBitmap->GetScanline(src_top + row).subspan(src_left * 4).data();
     for (int col = 0; col < width; col++) {
       FXARGB_SETDIB(dest_scan,
                     ArgbEncode(0xff, src_scan[0], src_scan[1], src_scan[2]));
@@ -322,15 +322,15 @@ class CFX_Renderer {
   void render(const Scanline& sl);
 
  private:
-  typedef void (CFX_Renderer::*CompositeSpanFunc)(uint8_t*,
-                                                  int,
-                                                  int,
-                                                  int,
-                                                  uint8_t*,
-                                                  int,
-                                                  int,
-                                                  uint8_t*,
-                                                  uint8_t*);
+  using CompositeSpanFunc = void (CFX_Renderer::*)(uint8_t*,
+                                                   int,
+                                                   int,
+                                                   int,
+                                                   uint8_t*,
+                                                   int,
+                                                   int,
+                                                   uint8_t*,
+                                                   uint8_t*);
 
   void CompositeSpan(uint8_t* dest_scan,
                      uint8_t* backdrop_scan,

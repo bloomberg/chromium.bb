@@ -38,6 +38,12 @@ class ProximityAuthProfilePrefManager
       PrefService* pref_service,
       chromeos::multidevice_setup::MultiDeviceSetupClient*
           multidevice_setup_client);
+
+  ProximityAuthProfilePrefManager(const ProximityAuthProfilePrefManager&) =
+      delete;
+  ProximityAuthProfilePrefManager& operator=(
+      const ProximityAuthProfilePrefManager&) = delete;
+
   ~ProximityAuthProfilePrefManager() override;
 
   // Initializes the manager to listen to pref changes and sync prefs to the
@@ -54,6 +60,7 @@ class ProximityAuthProfilePrefManager
   bool IsEasyUnlockEnabled() const override;
   void SetEasyUnlockEnabledStateSet() const override;
   bool IsEasyUnlockEnabledStateSet() const override;
+  bool IsSmartLockEligible() const override;
   void SetLastPromotionCheckTimestampMs(int64_t timestamp_ms) override;
   int64_t GetLastPromotionCheckTimestampMs() const override;
   void SetPromotionShownCount(int count) override;
@@ -92,8 +99,6 @@ class ProximityAuthProfilePrefManager
       multidevice_setup_client_ = nullptr;
 
   base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProximityAuthProfilePrefManager);
 };
 
 }  // namespace proximity_auth

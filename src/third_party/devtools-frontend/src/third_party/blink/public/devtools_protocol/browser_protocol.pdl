@@ -408,7 +408,8 @@ experimental domain Animation
       # Animation that was started.
       Animation animation
 
-experimental domain ApplicationCache
+# The domain is deprecated as AppCache is being removed (see crbug.com/582750).
+experimental deprecated domain ApplicationCache
   depends on Page
 
   # Detailed application cache resource information.
@@ -775,6 +776,17 @@ experimental domain Audits
       string targetOrigin
       boolean isWarning
 
+  type GenericIssueErrorType extends string
+    enum
+      CrossOriginPortalPostMessageError
+
+  # Depending on the concrete errorType, different properties are set.
+  type GenericIssueDetails extends object
+    properties
+      # Issues with the same errorType are aggregated in the frontend.
+      GenericIssueErrorType errorType
+      optional Page.FrameId frameId
+
   # A unique identifier for the type of issue. Each type may use one of the
   # optional fields in InspectorIssueDetails to convey more specific
   # information about the kind of issue.
@@ -793,6 +805,7 @@ experimental domain Audits
       QuirksModeIssue
       NavigatorUserAgentIssue
       WasmCrossOriginModuleSharingIssue
+      GenericIssue
 
   # This struct holds a list of optional fields with additional information
   # specific to the kind of issue. When adding a new issue code, please also
@@ -812,6 +825,7 @@ experimental domain Audits
       optional QuirksModeIssueDetails quirksModeIssueDetails
       optional NavigatorUserAgentIssueDetails navigatorUserAgentIssueDetails
       optional WasmCrossOriginModuleSharingIssueDetails wasmCrossOriginModuleSharingIssue
+      optional GenericIssueDetails genericIssueDetails
 
   # A unique id for a DevTools inspector issue. Allows other entities (e.g.
   # exceptions, CDP message, console messages, etc.) to reference an issue.
@@ -4903,6 +4917,7 @@ domain Network
       HeaderDisallowedByPreflightResponse
       RedirectContainsCredentials
       InsecurePrivateNetwork
+      InvalidPrivateNetworkAccess
       NoCorsRedirectModeNotFollow
 
   type CorsErrorStatus extends object
@@ -5151,6 +5166,9 @@ domain Network
       # (which is required in order to use "SameParty"); or specified the "SameSite=Strict"
       # attribute (which is forbidden when using "SameParty").
       SamePartyConflictsWithOtherAttributes
+      # The cookie's name/value pair size exceeded the size limit defined in
+      # RFC6265bis.
+      NameValuePairExceedsMaxSize
 
   # Types of reasons why a cookie may not be sent with a request.
   experimental type CookieBlockedReason extends string
@@ -5195,6 +5213,9 @@ domain Network
       SchemefulSameSiteUnspecifiedTreatedAsLax
       # The cookie had the "SameParty" attribute and the request was made from a cross-party context.
       SamePartyFromCrossPartyContext
+      # The cookie's name/value pair size exceeded the size limit defined in
+      # RFC6265bis.
+      NameValuePairExceedsMaxSize
 
   # A cookie which was not stored from a response with the corresponding reason.
   experimental type BlockedSetCookieWithReason extends object
@@ -6406,6 +6427,22 @@ experimental domain Overlay
       # The style of the descendants' borders.
       optional LineStyle descendantBorder
 
+  type IsolatedElementHighlightConfig extends object
+    properties
+      # A descriptor for the highlight appearance of an element in isolation mode.
+      IsolationModeHighlightConfig isolationModeHighlightConfig
+      # Identifier of the isolated element to highlight.
+      DOM.NodeId nodeId
+
+  type IsolationModeHighlightConfig extends object
+    properties
+      # The fill color of the resizers (default: transparent).
+      optional DOM.RGBA resizerColor
+      # The fill color for resizer handles (default: transparent).
+      optional DOM.RGBA resizerHandleColor
+      # The fill color for the mask covering non-isolated elements (default: transparent).
+      optional DOM.RGBA maskColor
+
   type InspectMode extends string
     enum
       searchForNode
@@ -6620,6 +6657,12 @@ experimental domain Overlay
       # hinge data, null means hideHinge
       optional HingeConfig hingeConfig
 
+  # Show elements in isolation mode with overlays.
+  command setShowIsolatedElements
+    parameters
+      # An array of node identifiers and descriptors for the highlight appearance.
+      array of IsolatedElementHighlightConfig isolatedElementHighlightConfigs
+
   # Fired when the node should be inspected. This happens after call to `setInspectMode` or when
   # user manually inspects an element.
   event inspectNodeRequested
@@ -6715,7 +6758,6 @@ domain Page
       ch-device-memory
       ch-downlink
       ch-ect
-      ch-lang
       ch-prefers-color-scheme
       ch-rtt
       ch-ua
@@ -6801,6 +6843,7 @@ domain Page
       FeatureDisabled
       TokenDisabled
       FeatureDisabledForUser
+      UnknownTrial
 
   # Status for an Origin Trial.
   experimental type OriginTrialStatus extends string
@@ -7234,10 +7277,13 @@ domain Page
       optional binary primaryIcon
 
   # Returns the unique (PWA) app id.
+  # Only returns values if the feature flag 'WebAppEnableManifestId' is enabled
   experimental command getAppId
     returns
-      # Only returns a value if the feature flag 'WebAppEnableManifestId' is enabled
+      # App id, either from manifest's id attribute or computed from start_url
       optional string appId
+      # Recommendation for manifest's id attribute to match current id computed from start_url
+      optional string recommendedId
 
   # Returns all browser cookies. Depending on the backend support, will return detailed cookie
   # information in the `cookies` field.
@@ -7928,6 +7974,7 @@ domain Page
       InjectedStyleSheet
       Dummy
       # Disabled for render frame host reasons
+      # See content/browser/renderer_host/back_forward_cache_disable.h for explanations.
       ContentSecurityHandler
       ContentWebAuthenticationAPI
       ContentFileChooser
@@ -7937,6 +7984,10 @@ domain Page
       ContentWebBluetooth
       ContentWebUSB
       ContentMediaSession
+      ContentMediaSessionService
+      ContentMediaPlay
+
+      # See components/back_forward_cache/back_forward_cache_disable.h for explanations.
       EmbedderPopupBlockerTabHelper
       EmbedderSafeBrowsingTriggeredPopupBlocker
       EmbedderSafeBrowsingThreatDetails

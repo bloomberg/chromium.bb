@@ -7,7 +7,6 @@ import {assert, assertInstanceof} from '../../../chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {StreamConstraints} from '../../../device/stream_constraints.js';
 import {
-  CaptureStream,  // eslint-disable-line no-unused-vars
   StreamManager,
 } from '../../../device/stream_manager.js';
 import * as dom from '../../../dom.js';
@@ -18,6 +17,7 @@ import {I18nString} from '../../../i18n_string.js';
 import {Filenamer} from '../../../models/file_namer.js';
 import * as loadTimeData from '../../../models/load_time_data.js';
 import {
+  GifSaver,
   VideoSaver,  // eslint-disable-line no-unused-vars
 } from '../../../models/video_saver.js';
 import {CrosImageCapture} from '../../../mojo/image_capture.js';
@@ -32,11 +32,13 @@ import {
   NoChunkError,
   PerfEvent,
   Resolution,
+  VideoType,
 } from '../../../type.js';
 import {WaitableEvent} from '../../../waitable_event.js';
+
 import {ModeBase, ModeFactory} from './mode_base.js';
 import {PhotoResult} from './photo.js';  // eslint-disable-line no-unused-vars
-import {RecordTime} from './record_time.js';
+import {GifRecordTime, RecordTime} from './record_time.js';
 
 /**
  * Maps from board name to its default encoding profile and bitrate multiplier.
@@ -54,8 +56,25 @@ const encoderPreference = new Map([
  */
 let avc1Parameters = null;
 
-// The minimum duration of videos captured via cca.
+/**
+ * The minimum duration of videos captured via cca.
+ */
 const MINIMUM_VIDEO_DURATION_IN_MILLISECONDS = 500;
+
+/**
+ * The maximal length of the longer side of gif width or height.
+ */
+const GIF_MAX_SIDE = 640;
+
+/**
+ * Maximum recording time for GIF animation mode.
+ */
+const MAX_GIF_DURATION_MS = 5000;
+
+/**
+ * Sample ratio of grabbing gif frame to be encoded.
+ */
+const GRAB_GIF_FRAME_RATIO = 2;
 
 /**
  * Sets avc1 parameter used in video recording.
@@ -97,12 +116,12 @@ export class VideoResult {
   /**
    * @param {{
    *     resolution: !Resolution,
-   *     duration: (number|undefined),
+   *     duration: number,
    *     videoSaver: !VideoSaver,
    *     everPaused: boolean,
    * }} params
    */
-  constructor({resolution, duration = 0, videoSaver, everPaused}) {
+  constructor({resolution, duration, videoSaver, everPaused}) {
     /**
      * @const {!Resolution}
      * @public
@@ -113,7 +132,7 @@ export class VideoResult {
      * @const {number}
      * @public
      */
-    this.duration = duration || 0;
+    this.duration = duration;
 
     /**
      * @const {!VideoSaver}
@@ -128,6 +147,16 @@ export class VideoResult {
     this.everPaused = everPaused;
   }
 }
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   blob: !Blob,
+ *   resolution: !Resolution,
+ *   duration: number,
+ * }}
+ */
+export let GifResult;
 
 /**
  * Provides functions with external dependency used by video mode and handles
@@ -151,6 +180,14 @@ export class VideoHandler {
   handleResultVideo(video) {}
 
   /**
+   * Handles the result gif video.
+   * @param {!GifResult} result
+   * @return {!Promise}
+   * @abstract
+   */
+  handleResultGif(result) {}
+
+  /**
    * Handles the result video snapshot.
    * @param {!PhotoResult} photo photo Captured video snapshot photo.
    * @param {string} name Name of the video snapshot result to be saved as.
@@ -163,7 +200,22 @@ export class VideoHandler {
    * Plays UI effect when doing video snapshot.
    */
   playShutterEffect() {}
+
+  /**
+   * Gets preview video element.
+   * @return {!HTMLVideoElement}
+   * @abstract
+   */
+  getPreviewVideo() {}
 }
+
+/**
+ * @enum {state.State}
+ */
+const RecordType = {
+  NORMAL: state.State.RECORD_TYPE_NORMAL,
+  GIF: state.State.RECORD_TYPE_GIF,
+};
 
 /**
  * Video mode capture controller.
@@ -204,7 +256,7 @@ export class Video extends ModeBase {
     this.handler_ = handler;
 
     /**
-     * @type {?CaptureStream}
+     * @type {?MediaStream}
      * @private
      */
     this.captureStream_ = null;
@@ -230,6 +282,21 @@ export class Video extends ModeBase {
     this.recordTime_ = new RecordTime();
 
     /**
+     * Record-time for the elapsed gif recording time.
+     * @type {!GifRecordTime}
+     * @private
+     */
+    this.gifRecordTime_ = new GifRecordTime(
+        {maxTime: MAX_GIF_DURATION_MS, onMaxTimeout: () => this.stop_()});
+
+    /**
+     * Record type of ongoing recording.
+     * @type {!RecordType}
+     * @private
+     */
+    this.recordingType_ = RecordType.NORMAL;
+
+    /**
      * Queueing all taking video snapshot jobs requested in a single recording.
      * @type {!AsyncJobQueue}
      * @private
@@ -246,6 +313,8 @@ export class Video extends ModeBase {
 
     /**
      * Whether current recording ever paused/resumed before it ended.
+     * @type {boolean}
+     * @private
      */
     this.everPaused_ = false;
   }
@@ -256,8 +325,32 @@ export class Video extends ModeBase {
   async clear() {
     await this.stopCapture();
     if (this.captureStream_ !== null) {
-      await this.captureStream_.close();
+      await StreamManager.getInstance().closeCaptureStream(this.captureStream_);
+      this.captureStream_ = null;
     }
+  }
+
+  /**
+   * @override
+   */
+  updatePreview(stream) {
+    assert(!state.get(state.State.RECORDING));
+    this.stream_ = stream;
+    this.crosImageCapture_ = new CrosImageCapture(this.getVideoTrack_());
+  }
+
+  /**
+   * @return {!RecordType} Returns record type of checked radio buttons in
+   *     record type option groups.
+   */
+  getToggledRecordOption_() {
+    if (state.get(state.State.SHOULD_HANDLE_INTENT_RESULT) ||
+        !state.get(state.State.EXPERT) ||
+        !state.get(state.State.SHOW_GIF_RECORDING_OPTION)) {
+      return RecordType.NORMAL;
+    }
+    return Object.values(RecordType).find((t) => state.get(t)) ||
+        RecordType.NORMAL;
   }
 
   /**
@@ -359,7 +452,7 @@ export class Video extends ModeBase {
    */
   getRecordingStream_() {
     if (this.captureStream_ !== null) {
-      return this.captureStream_.stream;
+      return this.captureStream_;
     }
     return this.stream_;
   }
@@ -412,8 +505,37 @@ export class Video extends ModeBase {
       throw e;
     }
 
-    if (state.get(state.State.ENABLE_GIF_RECORDING)) {
-      // TODO(b:191950622): Capture frames for GIF encoding.
+    this.recordingType_ = this.getToggledRecordOption_();
+    // TODO(b:191950622): Remove complex state logic bind with this enable flag
+    // after GIF recording move outside of expert mode and replace it with
+    // |RECORD_TYPE_GIF|.
+    state.set(
+        state.State.ENABLE_GIF_RECORDING,
+        this.recordingType_ === RecordType.GIF);
+    if (this.recordingType_ === RecordType.GIF) {
+      const gifName = (new Filenamer()).newVideoName(VideoType.GIF);
+      state.set(state.State.RECORDING, true);
+      this.gifRecordTime_.start({resume: false});
+
+      const gifSaver = await this.captureGif_();
+
+      state.set(state.State.RECORDING, false);
+      this.gifRecordTime_.stop({pause: false});
+
+      // Measure the latency of gif encoder finishing rest of the encoding
+      // works.
+      state.set(PerfEvent.GIF_CAPTURE_POST_PROCESSING, true);
+      const blob = await gifSaver.endWrite();
+      state.set(PerfEvent.GIF_CAPTURE_POST_PROCESSING, false);
+
+      // TODO(b:191950622): Close capture stream before handleResultGif()
+      // opening preview page when multi-stream recording enabled.
+      await this.handler_.handleResultGif({
+        blob,
+        name: gifName,
+        resolution: this.captureResolution_,
+        duration: this.gifRecordTime_.inMilliseconds(),
+      });
     } else {
       this.recordTime_.start({resume: false});
       let /** ?VideoSaver */ videoSaver = null;
@@ -451,7 +573,7 @@ export class Video extends ModeBase {
       try {
         await this.handler_.handleResultVideo(new VideoResult({
           resolution: this.captureResolution_,
-          duration: this.recordTime_.inMinutes(),
+          duration: this.recordTime_.inMilliseconds(),
           videoSaver,
           everPaused: this.everPaused_,
         }));
@@ -470,8 +592,8 @@ export class Video extends ModeBase {
    * @override
    */
   stop_() {
-    if (state.get(state.State.ENABLE_GIF_RECORDING)) {
-      // TODO(b:191950622): Stop Capture GIF Frames.
+    if (this.recordingType_ === RecordType.GIF) {
+      state.set(state.State.RECORDING, false);
     } else {
       sound.cancel(dom.get('#sound-rec-start', HTMLAudioElement));
 
@@ -482,6 +604,50 @@ export class Video extends ModeBase {
         window.removeEventListener('beforeunload', beforeUnloadListener);
       }
     }
+  }
+
+  /**
+   * Starts recording gif animation and waits for stop recording event triggered
+   * by stop shutter or time out over 5 seconds.
+   * @return {!Promise<!GifSaver>} Saves recorded video.
+   * @private
+   */
+  async captureGif_() {
+    // TODO(b:191950622): Grab frames from capture stream when multistream
+    // enabled.
+    const video = this.handler_.getPreviewVideo();
+    let {videoWidth: width, videoHeight: height} = video;
+    if (width > GIF_MAX_SIDE || height > GIF_MAX_SIDE) {
+      const ratio = GIF_MAX_SIDE / Math.max(width, height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+    }
+    const gifSaver = await GifSaver.create(new Resolution(width, height));
+    const canvas = new OffscreenCanvas(width, height);
+    const context = assertInstanceof(
+        canvas.getContext('2d'), OffscreenCanvasRenderingContext2D);
+
+    await new Promise((resolve) => {
+      let encodedFrames = 0;
+      let start = 0.0;
+      const updateCanvas = (now) => {
+        if (start === 0.0) {
+          start = now;
+        }
+        if (!state.get(state.State.RECORDING)) {
+          resolve();
+          return;
+        }
+        encodedFrames++;
+        if (encodedFrames % GRAB_GIF_FRAME_RATIO === 0) {
+          context.drawImage(video, 0, 0, width, height);
+          gifSaver.write(context.getImageData(0, 0, width, height).data);
+        }
+        video.requestVideoFrameCallback(updateCanvas);
+      };
+      video.requestVideoFrameCallback(updateCanvas);
+    });
+    return gifSaver;
   }
 
   /**
@@ -503,6 +669,7 @@ export class Video extends ModeBase {
             saver.write(event.data);
           }
         };
+
         const onstop = async (event) => {
           state.set(state.State.RECORDING, false);
           state.set(state.State.RECORDING_PAUSED, false);

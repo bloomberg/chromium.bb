@@ -14,9 +14,7 @@
 #include "common/Color.h"
 #include "common/MemoryBuffer.h"
 #include "common/angleutils.h"
-
-#include "libANGLE/capture/gl_enum_utils.h"
-
+#include "common/serializer/JsonSerializer.h"
 #include "libANGLE/Buffer.h"
 #include "libANGLE/Caps.h"
 #include "libANGLE/Context.h"
@@ -26,13 +24,12 @@
 #include "libANGLE/ResourceMap.h"
 #include "libANGLE/Sampler.h"
 #include "libANGLE/State.h"
-
 #include "libANGLE/TransformFeedback.h"
 #include "libANGLE/VertexAttribute.h"
 #include "libANGLE/angletypes.h"
+#include "libANGLE/capture/gl_enum_utils.h"
 #include "libANGLE/renderer/FramebufferImpl.h"
 #include "libANGLE/renderer/RenderbufferImpl.h"
-#include "libANGLE/serializer/JsonSerializer.h"
 
 #if !ANGLE_CAPTURE_ENABLED
 #    error Frame capture must be enabled to build this file.
@@ -785,26 +782,35 @@ Result SerializeRenderbuffer(const gl::Context *context,
 
     if (renderbuffer->initState(gl::ImageIndex()) == gl::InitState::Initialized)
     {
-        const gl::InternalFormat &format = *renderbuffer->getFormat().info;
 
-        const gl::Extents size(renderbuffer->getWidth(), renderbuffer->getHeight(), 1);
-        gl::PixelPackState packState;
-        packState.alignment = 1;
+        if (renderbuffer->getWidth() * renderbuffer->getHeight() > 0)
+        {
+            const gl::InternalFormat &format = *renderbuffer->getFormat().info;
 
-        GLenum readFormat = renderbuffer->getImplementationColorReadFormat(context);
-        GLenum readType   = renderbuffer->getImplementationColorReadType(context);
+            const gl::Extents size(renderbuffer->getWidth(), renderbuffer->getHeight(), 1);
+            gl::PixelPackState packState;
+            packState.alignment = 1;
 
-        GLuint bytes   = 0;
-        bool computeOK = format.computePackUnpackEndByte(readType, size, packState, false, &bytes);
-        ASSERT(computeOK);
+            GLenum readFormat = renderbuffer->getImplementationColorReadFormat(context);
+            GLenum readType   = renderbuffer->getImplementationColorReadType(context);
 
-        MemoryBuffer *pixelsPtr = nullptr;
-        ANGLE_CHECK_GL_ALLOC(const_cast<gl::Context *>(context),
-                             scratchBuffer->getInitialized(bytes, &pixelsPtr, 0));
+            GLuint bytes = 0;
+            bool computeOK =
+                format.computePackUnpackEndByte(readType, size, packState, false, &bytes);
+            ASSERT(computeOK);
 
-        ANGLE_TRY(renderbuffer->getImplementation()->getRenderbufferImage(
-            context, packState, nullptr, readFormat, readType, pixelsPtr->data()));
-        json->addBlob("Pixels", pixelsPtr->data(), pixelsPtr->size());
+            MemoryBuffer *pixelsPtr = nullptr;
+            ANGLE_CHECK_GL_ALLOC(const_cast<gl::Context *>(context),
+                                 scratchBuffer->getInitialized(bytes, &pixelsPtr, 0));
+
+            ANGLE_TRY(renderbuffer->getImplementation()->getRenderbufferImage(
+                context, packState, nullptr, readFormat, readType, pixelsPtr->data()));
+            json->addBlob("Pixels", pixelsPtr->data(), pixelsPtr->size());
+        }
+        else
+        {
+            json->addCString("Pixels", "no pixels");
+        }
     }
     else
     {
@@ -1330,7 +1336,7 @@ void SerializeVertexArray(JsonSerializer *json, gl::VertexArray *vertexArray)
 Result SerializeContextToString(const gl::Context *context, std::string *stringOut)
 {
     JsonSerializer json;
-    json.startDocument("Context");
+    json.startGroup("Context");
 
     SerializeContextState(&json, context->getState());
     ScratchBuffer scratchBuffer(1);
@@ -1416,7 +1422,7 @@ Result SerializeContextToString(const gl::Context *context, std::string *stringO
             SerializeVertexArray(&json, vertexArrayPtr);
         }
     }
-    json.endDocument();
+    json.endGroup();
 
     *stringOut = json.data();
 

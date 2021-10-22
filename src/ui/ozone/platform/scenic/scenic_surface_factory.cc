@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/angle/src/common/fuchsia_egl/fuchsia_egl.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/native_pixmap.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
@@ -99,6 +99,10 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
  public:
   explicit GLOzoneEGLScenic(ScenicSurfaceFactory* scenic_surface_factory)
       : scenic_surface_factory_(scenic_surface_factory) {}
+
+  GLOzoneEGLScenic(const GLOzoneEGLScenic&) = delete;
+  GLOzoneEGLScenic& operator=(const GLOzoneEGLScenic&) = delete;
+
   ~GLOzoneEGLScenic() override = default;
 
   // GLOzone:
@@ -127,7 +131,6 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
 
  private:
   ScenicSurfaceFactory* const scenic_surface_factory_;
-  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLScenic);
 };
 
 fuchsia::sysmem::AllocatorHandle ConnectSysmemAllocator() {

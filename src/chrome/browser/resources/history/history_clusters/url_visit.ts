@@ -10,10 +10,11 @@ import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Annotation, URLVisit} from './history_clusters.mojom-webui.js';
+import {MetricsProxyImpl, VisitAction, VisitType} from './metrics_proxy.js';
+import {OpenWindowProxyImpl} from './open_window_proxy.js';
 
 /**
  * @fileoverview This file provides a custom element displaying a visit to a
@@ -54,18 +55,26 @@ class VisitRowElement extends PolymerElement {
   static get properties() {
     return {
       /**
-       * The visit to display.
-       */
-      visit: Object,
-
-      /**
-       * Whether the visit is a top visit.
+       * Whether this is a top visit.
        */
       isTopVisit: {
         type: Boolean,
-        value: false,
         reflectToAttribute: true,
+        value: false,
       },
+
+      /**
+       * The index of the visit in the cluster.
+       */
+      index: {
+        type: Number,
+        value: -1,  // Initialized to an invalid value.
+      },
+
+      /**
+       * The visit to display.
+       */
+      visit: Object,
 
       /**
        * Annotations to show for the visit (e.g., whether page was bookmarked).
@@ -73,15 +82,6 @@ class VisitRowElement extends PolymerElement {
       annotations_: {
         type: Object,
         computed: 'computeAnnotations_(visit)',
-      },
-
-      /**
-       * Whether the visit has related visits, regardless of initial visibility.
-       */
-      hasRelatedVisits_: {
-        type: Boolean,
-        value: false,
-        computed: 'computeHasRelatedVisits_(visit.*)',
       },
 
       /**
@@ -98,32 +98,56 @@ class VisitRowElement extends PolymerElement {
   // Properties
   //============================================================================
 
-  isTopVisit: boolean = false;
-  visit: URLVisit = new URLVisit();
-  private annotations_: Array<string> = [];
-  private hasRelatedVisits_: boolean = false;
+  index: number;
+  visit: URLVisit;
 
   //============================================================================
   // Event handlers
   //============================================================================
 
   private onActionMenuButtonClick_(event: MouseEvent) {
-    // Only handle main (usually the left) and auxiliary (usually the wheel or
-    // the middle) button presses.
-    if (event.button > 1) {
-      return;
-    }
-
     this.$.actionMenu.get().showAt(this.$.actionMenuButton);
+    event.preventDefault();  // Prevent default browser action (navigation).
   }
 
-  private onRemoveAllButtonClick_(event: MouseEvent) {
-    // Only handle main (usually the left) and auxiliary (usually the wheel or
-    // the middle) button presses.
-    if (event.button > 1) {
+  private onAuxClick_() {
+    MetricsProxyImpl.getInstance().recordVisitAction(
+        VisitAction.CLICKED, this.index, this.getVisitType_());
+
+    // Notify the parent <history-cluster> element of this event.
+    this.dispatchEvent(new CustomEvent('visit-clicked', {
+      bubbles: true,
+      composed: true,
+    }));
+  }
+
+  private onClick_(event: MouseEvent) {
+    // Ignore previously handled events.
+    if (event.defaultPrevented) {
       return;
     }
 
+    event.preventDefault();  // Prevent default browser action (navigation).
+
+    // To record metrics.
+    this.onAuxClick_();
+
+    OpenWindowProxyImpl.getInstance().open(this.visit.normalizedUrl.url);
+  }
+
+  private onKeydown_(e: KeyboardEvent) {
+    // To be consistent with <history-list>, only handle Enter, and not Space.
+    if (e.key !== 'Enter') {
+      return;
+    }
+
+    // To record metrics.
+    this.onAuxClick_();
+
+    OpenWindowProxyImpl.getInstance().open(this.visit.normalizedUrl.url);
+  }
+
+  private onRemoveAllButtonClick_() {
     this.dispatchEvent(new CustomEvent('remove-visits', {
       bubbles: true,
       composed: true,
@@ -133,13 +157,7 @@ class VisitRowElement extends PolymerElement {
     this.$.actionMenu.get().close();
   }
 
-  private onRemoveSelfButtonClick_(event: MouseEvent) {
-    // Only handle main (usually the left) and auxiliary (usually the wheel or
-    // the middle) button presses.
-    if (event.button > 1) {
-      return;
-    }
-
+  private onRemoveSelfButtonClick_() {
     this.dispatchEvent(new CustomEvent('remove-visits', {
       bubbles: true,
       composed: true,
@@ -147,6 +165,9 @@ class VisitRowElement extends PolymerElement {
     }));
 
     this.$.actionMenu.get().close();
+
+    MetricsProxyImpl.getInstance().recordVisitAction(
+        VisitAction.DELETED, this.index, this.getVisitType_());
   }
 
   //============================================================================
@@ -164,19 +185,6 @@ class VisitRowElement extends PolymerElement {
         .map((id: string) => loadTimeData.getString(id));
   }
 
-  private computeHasRelatedVisits_(): boolean {
-    return this.visit.relatedVisits
-               .filter(visit => {
-                 // "Ghost" visits with scores of 0 (or below) are never shown.
-                 // TODO(tommycli): If there are only ghost visits within the
-                 // related visits, and the user deletes the top visit, the
-                 // ghost visits don't get deleted and get attached to a nearby
-                 // cluster next time. We should fix this semantics issue.
-                 return visit.score > 0;
-               })
-               .length > 0;
-  }
-
   private computeDebugInfo_(): string {
     if (!loadTimeData.getBoolean('isHistoryClustersDebug')) {
       return '';
@@ -186,10 +194,26 @@ class VisitRowElement extends PolymerElement {
   }
 
   /**
-   * Returns the domain name of `url` without the leading 'www.'.
+   * Returns the domain name without the leading 'www.', if applicable.
    */
-  private getHostnameFromUrl_(url: Url): string {
-    return new URL(url.url).hostname.replace(/^(www\.)/, '');
+  private getHostname_(_visit: URLVisit): string {
+    try {
+      return new URL(this.visit.normalizedUrl.url)
+          .hostname.replace(/^(www\.)/, '')
+          .trim();
+    } catch (err) {
+      return '';
+    }
+  }
+
+  /**
+   * Returns the VisitType based on whether this is a visit to the default
+   * search provider's results page.
+   */
+  private getVisitType_(): VisitType {
+    return this.visit.annotations.includes(Annotation.kSearchResultsPage) ?
+        VisitType.SRP :
+        VisitType.NON_SRP;
   }
 }
 

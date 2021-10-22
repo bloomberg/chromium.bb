@@ -18,6 +18,7 @@
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/crosapi/mojom/app_window_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/automation.mojom.h"
+#include "chromeos/crosapi/mojom/browser_app_instance_registry.mojom.h"
 #include "chromeos/crosapi/mojom/browser_version.mojom.h"
 #include "chromeos/crosapi/mojom/cert_database.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard.mojom.h"
@@ -31,8 +32,10 @@
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
 #include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/crosapi/mojom/identity_manager.mojom.h"
 #include "chromeos/crosapi/mojom/image_writer.mojom.h"
 #include "chromeos/crosapi/mojom/keystore_service.mojom.h"
+#include "chromeos/crosapi/mojom/kiosk_session_service.mojom.h"
 #include "chromeos/crosapi/mojom/local_printer.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
@@ -198,6 +201,10 @@ LacrosService::LacrosService()
       crosapi::mojom::AppWindowTracker, &Crosapi::BindChromeAppWindowTracker,
       Crosapi::MethodMinVersions::kBindChromeAppWindowTrackerMinVersion>();
   ConstructRemote<
+      crosapi::mojom::BrowserAppInstanceRegistry,
+      &Crosapi::BindBrowserAppInstanceRegistry,
+      Crosapi::MethodMinVersions::kBindBrowserAppInstanceRegistryMinVersion>();
+  ConstructRemote<
       crosapi::mojom::BrowserServiceHost, &Crosapi::BindBrowserServiceHost,
       Crosapi::MethodMinVersions::kBindBrowserServiceHostMinVersion>();
   ConstructRemote<
@@ -245,6 +252,9 @@ LacrosService::LacrosService()
       crosapi::mojom::HoldingSpaceService,
       &crosapi::mojom::Crosapi::BindHoldingSpaceService,
       Crosapi::MethodMinVersions::kBindHoldingSpaceServiceMinVersion>();
+  ConstructRemote<crosapi::mojom::IdentityManager,
+                  &crosapi::mojom::Crosapi::BindIdentityManager,
+                  Crosapi::MethodMinVersions::kBindIdentityManagerMinVersion>();
   ConstructRemote<crosapi::mojom::IdleService,
                   &crosapi::mojom::Crosapi::BindIdleService,
                   Crosapi::MethodMinVersions::kBindIdleServiceMinVersion>();
@@ -254,6 +264,9 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::KeystoreService,
                   &crosapi::mojom::Crosapi::BindKeystoreService,
                   Crosapi::MethodMinVersions::kBindKeystoreServiceMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::KioskSessionService, &Crosapi::BindKioskSessionService,
+      Crosapi::MethodMinVersions::kBindKioskSessionServiceMinVersion>();
   ConstructRemote<crosapi::mojom::LocalPrinter,
                   &crosapi::mojom::Crosapi::BindLocalPrinter,
                   Crosapi::MethodMinVersions::kBindLocalPrinterMinVersion>();
@@ -288,6 +301,10 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::SelectFile,
                   &crosapi::mojom::Crosapi::BindSelectFile,
                   Crosapi::MethodMinVersions::kBindSelectFileMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::StructuredMetricsService,
+      &crosapi::mojom::Crosapi::BindStructuredMetricsService,
+      Crosapi::MethodMinVersions::kBindStructuredMetricsServiceMinVersion>();
   ConstructRemote<crosapi::mojom::SystemDisplay, &Crosapi::BindSystemDisplay,
                   Crosapi::MethodMinVersions::kBindSystemDisplayMinVersion>();
   ConstructRemote<crosapi::mojom::TaskManager,

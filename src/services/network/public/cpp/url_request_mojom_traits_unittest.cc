@@ -89,6 +89,18 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.is_revalidating = false;
   original.throttling_profile_id = base::UnguessableToken::Create();
   original.fetch_window_id = base::UnguessableToken::Create();
+  original.web_bundle_token_params =
+      absl::make_optional(ResourceRequest::WebBundleTokenParams(
+          GURL("https://bundle.test/"), base::UnguessableToken::Create(),
+          mojo::PendingRemote<network::mojom::WebBundleHandle>()));
+  original.net_log_params =
+      absl::make_optional(ResourceRequest::NetLogParams());
+  original.devtools_accepted_stream_types =
+      std::vector<net::SourceStream::SourceType>(
+          {net::SourceStream::SourceType::TYPE_BROTLI,
+           net::SourceStream::SourceType::TYPE_GZIP,
+           net::SourceStream::SourceType::TYPE_DEFLATE});
+  original.target_ip_address_space = mojom::IPAddressSpace::kPrivate;
 
   original.trusted_params = ResourceRequest::TrustedParams();
   original.trusted_params->isolation_info = net::IsolationInfo::Create(
@@ -107,15 +119,6 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
       mojom::TrustTokenSignRequestData::kInclude;
   original.trust_token_params->additional_signed_headers.push_back(
       "some_header");
-  original.web_bundle_token_params =
-      absl::make_optional(ResourceRequest::WebBundleTokenParams(
-          GURL("https://bundle.test/"), base::UnguessableToken::Create(),
-          mojo::PendingRemote<network::mojom::WebBundleHandle>()));
-  original.devtools_accepted_stream_types =
-      std::vector<net::SourceStream::SourceType>(
-          {net::SourceStream::SourceType::TYPE_BROTLI,
-           net::SourceStream::SourceType::TYPE_GZIP,
-           net::SourceStream::SourceType::TYPE_DEFLATE});
 
   network::ResourceRequest copied;
   EXPECT_TRUE(
@@ -193,9 +196,8 @@ TEST_F(DataElementDeserializationTest, Bytes) {
 
 TEST_F(DataElementDeserializationTest, File) {
   const base::FilePath kPath = base::FilePath::FromUTF8Unsafe("foobar");
-  DataElement src(DataElementFile(
-      kPath, /*offset=*/3, /*length=*/8,
-      base::Time::UnixEpoch() + base::TimeDelta::FromMinutes(2)));
+  DataElement src(DataElementFile(kPath, /*offset=*/3, /*length=*/8,
+                                  base::Time::UnixEpoch() + base::Minutes(2)));
   DataElement dest;
   ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<mojom::DataElement>(src, dest));

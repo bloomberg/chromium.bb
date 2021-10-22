@@ -53,6 +53,10 @@ class CastWebContentsImpl : public CastWebContents,
  public:
   CastWebContentsImpl(content::WebContents* web_contents,
                       mojom::CastWebViewParamsPtr params);
+
+  CastWebContentsImpl(const CastWebContentsImpl&) = delete;
+  CastWebContentsImpl& operator=(const CastWebContentsImpl&) = delete;
+
   ~CastWebContentsImpl() override;
 
   content::WebContents* web_contents() const override;
@@ -66,7 +70,11 @@ class CastWebContentsImpl : public CastWebContents,
   void SetAppProperties(const std::string& app_id,
                         const std::string& session_id,
                         bool is_audio_app,
-                        const GURL& app_web_url) override;
+                        const GURL& app_web_url,
+                        bool enforce_feature_permissions,
+                        const std::vector<int32_t>& feature_permissions,
+                        const std::vector<std::string>&
+                            additional_feature_permission_origins) override;
   void AddRendererFeatures(base::Value features) override;
   void SetInterfacesForRenderer(
       mojo::PendingRemote<mojom::RemoteInterfaces> remote_interfaces) override;
@@ -221,8 +229,6 @@ class CastWebContentsImpl : public CastWebContents,
 
   SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CastWebContentsImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastWebContentsImpl);
 };
 
 }  // namespace chromecast

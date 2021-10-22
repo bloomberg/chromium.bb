@@ -73,6 +73,10 @@ class NewTabPageUI
       content::WebContentsObserver {
  public:
   explicit NewTabPageUI(content::WebUI* web_ui);
+
+  NewTabPageUI(const NewTabPageUI&) = delete;
+  NewTabPageUI& operator=(const NewTabPageUI&) = delete;
+
   ~NewTabPageUI() override;
 
   static bool IsNewTabPageOrigin(const GURL& url);
@@ -191,6 +195,8 @@ class NewTabPageUI
   void OnCustomLinksEnabledPrefChanged();
   // Callback for when the value of the pref for showing the NTP tiles changes.
   void OnTilesVisibilityPrefChanged();
+  // Called when the NTP (re)loads. Sets mutable load time data.
+  void OnLoad();
 
   std::unique_ptr<NewTabPageHandler> page_handler_;
   mojo::Receiver<new_tab_page::mojom::PageHandlerFactory>
@@ -234,8 +240,6 @@ class NewTabPageUI
   base::WeakPtrFactory<NewTabPageUI> weak_ptr_factory_{this};
 
   WEB_UI_CONTROLLER_TYPE_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(NewTabPageUI);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NEW_TAB_PAGE_NEW_TAB_PAGE_UI_H_

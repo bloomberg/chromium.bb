@@ -135,14 +135,6 @@ message Int32Value {
   optional int32 value = 1;
 }
 
-// Wrapper message for `string`.
-//
-// The JSON representation for `StringValue` is JSON string.
-message StringValue {
-  // The string value.
-  optional string value = 1;
-}
-
 // Wrapper message for `double`.
 //
 // The JSON representation for `DoubleValue` is JSON number.
@@ -259,6 +251,14 @@ enum OptimizationTarget {
   OPTIMIZATION_TARGET_MODEL_VALIDATION = 7;
   // Target for determining entities present on a page.
   OPTIMIZATION_TARGET_PAGE_ENTITIES = 8;
+  // Target for Chrome Permissions Suggestions Service: Notification permission.
+  OPTIMIZATION_TARGET_NOTIFICATION_PERMISSION_PREDICTIONS = 9;
+  // Target that enables data collection on client side for various experiments.
+  OPTIMIZATION_TARGET_SEGMENTATION_DUMMY = 10;
+  // Target for segmentation: Chrome Android Start user.
+  OPTIMIZATION_TARGET_SEGMENTATION_CHROME_START_ANDROID = 11;
+  // Target for segmentation: Query Tiles user.
+  OPTIMIZATION_TARGET_SEGMENTATION_QUERY_TILES = 12;
 }
 
 // The types of models that can be evaluated.

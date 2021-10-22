@@ -41,9 +41,12 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooksImpl;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.feed.shared.FeedFeatures;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.v2.FakeLinearLayoutManager;
+import org.chromium.chrome.browser.feed.v2.FeedProcessScopeDependencyProvider;
+import org.chromium.chrome.browser.feed.v2.FeedProcessScopeDependencyProviderJni;
 import org.chromium.chrome.browser.feed.v2.FeedStream;
 import org.chromium.chrome.browser.feed.v2.FeedStreamJni;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedBridge;
@@ -142,6 +145,8 @@ public class FeedSurfaceCoordinatorTest {
     private Supplier<ShareDelegate> mShareDelegateSupplier;
     @Mock
     private SectionHeaderView mSectionHeaderView;
+    @Mock
+    private BookmarkBridge mBookmarkBridge;
 
     // Mocked JNI.
     @Mock
@@ -151,7 +156,7 @@ public class FeedSurfaceCoordinatorTest {
     @Mock
     private WebFeedBridge.Natives mWebFeedBridgeJniMock;
     @Mock
-    private FeedSurfaceScopeDependencyProvider.Natives mSurfaceScopeJniMock;
+    private FeedProcessScopeDependencyProvider.Natives mProcessScopeJniMock;
     @Mock
     private FeedReliabilityLoggingBridge.Natives mFeedReliabilityLoggingBridgeJniMock;
 
@@ -203,7 +208,7 @@ public class FeedSurfaceCoordinatorTest {
         mocker.mock(FeedStreamJni.TEST_HOOKS, mFeedStreamJniMock);
         mocker.mock(FeedServiceBridgeJni.TEST_HOOKS, mFeedServiceBridgeJniMock);
         mocker.mock(WebFeedBridge.getTestHooksForTesting(), mWebFeedBridgeJniMock);
-        mocker.mock(FeedSurfaceScopeDependencyProviderJni.TEST_HOOKS, mSurfaceScopeJniMock);
+        mocker.mock(FeedProcessScopeDependencyProviderJni.TEST_HOOKS, mProcessScopeJniMock);
         mocker.mock(FeedReliabilityLoggingBridge.getTestHooksForTesting(),
                 mFeedReliabilityLoggingBridgeJniMock);
 
@@ -357,6 +362,6 @@ public class FeedSurfaceCoordinatorTest {
                 ()
                         -> { return null; },
                 new FeedLaunchReliabilityLoggingState(SURFACE_TYPE, SURFACE_CREATION_TIME_NS), null,
-                false, null);
+                false, null, mBookmarkBridge);
     }
 }

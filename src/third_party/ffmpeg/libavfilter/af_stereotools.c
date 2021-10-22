@@ -111,8 +111,7 @@ static int query_formats(AVFilterContext *ctx)
         (ret = ff_set_common_channel_layouts (ctx     , layout             )) < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -364,7 +363,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -372,7 +370,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_stereotools = {
@@ -382,8 +379,8 @@ const AVFilter ff_af_stereotools = {
     .priv_size      = sizeof(StereoToolsContext),
     .priv_class     = &stereotools_class,
     .uninit         = uninit,
-    .inputs         = inputs,
-    .outputs        = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .process_command = process_command,
     .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

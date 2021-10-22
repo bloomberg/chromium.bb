@@ -35,6 +35,12 @@ try:
 except ImportError:  # pragma: no cover
   import urllib.parse as urlparse
 
+# Cache the string-escape codec to ensure subprocess can find it later.
+# See crbug.com/912292#c2 for context.
+# TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
+if sys.version_info.major == 2:
+  codecs.lookup('string-escape')
+
 # How many bytes at a time to read from pipes.
 BUF_SIZE = 256
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, NativeLayer, NativeLayerImpl, PluginProxyImpl, PrintPreviewLinkContainerElement, PrintPreviewSidebarElement, whenReady} from 'chrome://print/print_preview.js';
+import {Destination, DestinationConnectionStatus, DestinationOrigin, DestinationType, NativeLayerImpl, PluginProxyImpl, PrintPreviewLinkContainerElement, PrintPreviewSidebarElement, whenReady} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isWindows} from 'chrome://resources/js/cr.m.js';
 import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
@@ -37,7 +37,7 @@ suite(system_dialog_browsertest.suiteName, function() {
   /** @override */
   setup(function() {
     nativeLayer = new NativeLayerStub();
-    NativeLayerImpl.instance_ = nativeLayer;
+    NativeLayerImpl.setInstance(nativeLayer);
     document.body.innerHTML = '';
 
     const initialSettings = getDefaultInitialSettings();
@@ -45,7 +45,7 @@ suite(system_dialog_browsertest.suiteName, function() {
     nativeLayer.setLocalDestinations(
         [{deviceName: initialSettings.printerName, printerName: 'FooName'}]);
     const pluginProxy = new TestPluginProxy();
-    PluginProxyImpl.instance_ = pluginProxy;
+    PluginProxyImpl.setInstance(pluginProxy);
 
     const page = document.createElement('print-preview-app');
     document.body.appendChild(page);
@@ -67,7 +67,7 @@ suite(system_dialog_browsertest.suiteName, function() {
           assertEquals('FooDevice', page.destination_.id);
           link = isWindows ? linkContainer.$.systemDialogLink :
                              linkContainer.$.openPdfInPreviewLink;
-          printTicketKey = isWindows ? 'showSystemDialog' : 'OpenPDFInPreview';
+          printTicketKey = isWindows ? 'showSystemDialog' : 'openPDFInPreview';
         });
   });
 

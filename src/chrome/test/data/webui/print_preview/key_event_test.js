@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {NativeLayer, NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement} from 'chrome://print/print_preview.js';
+import {NativeLayerImpl, PluginProxyImpl, PrintPreviewAppElement} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isLacros, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -52,12 +52,12 @@ suite(key_event_test.suiteName, function() {
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplateWithAdvancedSettings(1, initialSettings.printerName));
     nativeLayer.setPageCount(3);
-    NativeLayerImpl.instance_ = nativeLayer;
+    NativeLayerImpl.setInstance(nativeLayer);
     // <if expr="chromeos or lacros">
     setNativeLayerCrosInstance();
     // </if>
     const pluginProxy = new TestPluginProxy();
-    PluginProxyImpl.instance_ = pluginProxy;
+    PluginProxyImpl.setInstance(pluginProxy);
 
     document.body.innerHTML = '';
     page = /** @type {!PrintPreviewAppElement} */ (

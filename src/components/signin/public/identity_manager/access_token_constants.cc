@@ -53,6 +53,10 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       // Required by the feedback uploader.
       GaiaConstants::kSupportContentOAuth2Scope,
 
+      // Required by the Google Photos NTP module.
+      GaiaConstants::kPhotosModuleOAuth2Scope,
+      GaiaConstants::kPhotosModuleImageOAuth2Scope,
+
     // Required by ChromeOS only.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       GaiaConstants::kAccountsReauthOAuth2Scope,
@@ -64,10 +68,6 @@ const std::set<std::string> GetUnconsentedOAuth2Scopes() {
       GaiaConstants::kDriveOAuth2Scope,
       GaiaConstants::kDriveReadOnlyOAuth2Scope,
       GaiaConstants::kGCMGroupServerOAuth2Scope,
-      GaiaConstants::kKidFamilyReadonlyOAuth2Scope,
-      GaiaConstants::kKidManagementOAuth2Scope,
-      GaiaConstants::kKidManagementPrivilegedOAuth2Scope,
-      GaiaConstants::kKidsSupervisionSetupChildOAuth2Scope,
       GaiaConstants::kCloudPlatformProjectsOAuth2Scope,
       GaiaConstants::kNearbyShareOAuth2Scope,
       GaiaConstants::kOAuth1LoginScope,

@@ -122,6 +122,8 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("download_home_opened", Comparator(EQUAL, 0), 90, 360);
     config->event_configs.insert(EventConfig(
         "download_completed", Comparator(GREATER_THAN_OR_EQUAL, 1), 90, 360));
+    config->snooze_params.snooze_interval = 7;
+    config->snooze_params.max_limit = 3;
     return config;
   }
   if (kIPHDownloadIndicatorFeature.name == feature->name) {
@@ -381,6 +383,25 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHVideoTutorialTryNowFeature.name == feature->name) {
+    // A config that allows the video tutorials Try Now button click to result
+    // in an IPH bubble. This IPH is shown always regardless of session rate or
+    // any other conditions.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("tutorial_try_now_iph_trigger", Comparator(ANY, 0), 90, 90);
+    config->used = EventConfig("try_now", Comparator(ANY, 0), 90, 90);
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
+
+    return config;
+  }
+
   if (kIPHStartSurfaceTabSwitcherHomeButton.name == feature->name) {
     // A config that allows the StartSurfaceTabSwitcherHomeButton IPH to be
     // shown:
@@ -423,6 +444,102 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                     Comparator(EQUAL, 0), 7, 360));
     return config;
   }
+
+  if (kIPHSharingHubWebnotesStylizeFeature.name == feature->name) {
+    // A config that allows the Webnotes Stylize IPH to be shown up to 6 times,
+    // but only if the feature home hasn't been used in the last 360 days.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("sharing_hub_webnotes_stylize_iph_trigger",
+                                  Comparator(LESS_THAN, 6), 360, 360);
+    config->used = EventConfig("sharing_hub_webnotes_stylize_used",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
+  if (kIPHAutoDarkOptOutFeature.name == feature->name) {
+    // A config that allows the auto dark dialog to be shown when a user
+    // disables the feature for a site in the app menu when:
+    // * They have not yet opened auto dark settings.
+    // * The dialog has been shown 0 times before.
+    // * They have done so more than 5 times.
+    // TODO(crbug.com/1251737): Update this config from test values; Will
+    // likely depend on giving feedback instead of opening settings, since the
+    // primary purpose  of the dialog has changed.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->used =
+        EventConfig("auto_dark_settings_opened", Comparator(EQUAL, 0), 90, 90);
+    config->trigger = EventConfig("auto_dark_opt_out_iph_trigger",
+                                  Comparator(EQUAL, 0), 90, 90);
+    config->event_configs.insert(EventConfig(
+        "auto_dark_disabled_in_app_menu", Comparator(GREATER_THAN, 5), 90, 90));
+    return config;
+  }
+
+  if (kIPHAutoDarkUserEducationMessageFeature.name == feature->name) {
+    // A config that allows the auto dark message to be shown:
+    // * Until the user opens auto dark settings
+    // * 2 times per week
+    // * Up to 6 times (3 weeks)
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->used = EventConfig("auto_dark_settings_opened",
+                               Comparator(EQUAL, 0), 360, 360);
+    config->trigger = EventConfig("auto_dark_user_education_message_trigger",
+                                  Comparator(LESS_THAN, 2), 7, 360);
+    config->event_configs.insert(
+        EventConfig("auto_dark_user_education_message_trigger",
+                    Comparator(LESS_THAN, 6), 360, 360));
+    return config;
+  }
+
+  if (kIPHInstanceSwitcherFeature.name == feature->name) {
+    // A config that allows the 'Manage windows' text bubble IPH to be shown
+    // only once when the user starts using the multi-instance feature by
+    // opening more than one window.
+
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("instance_switcher_iph_trigger", Comparator(LESS_THAN, 1),
+                    k10YearsInDays, k10YearsInDays);
+    config->used = EventConfig("instance_switcher_used", Comparator(EQUAL, 0),
+                               k10YearsInDays, k10YearsInDays);
+    return config;
+  }
+
+  if (kIPHKeyboardAccessoryPaymentVirtualCardFeature.name == feature->name) {
+    // A config that allows the virtual card IPH to be shown when a user
+    // interacts with the payment form and triggers the credit card suggestion
+    // list.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger =
+        EventConfig("keyboard_accessory_payment_virtual_card_iph_trigger",
+                    Comparator(LESS_THAN, 3), 90, 360);
+    config->used = EventConfig("keyboard_accessory_payment_suggestion_accepted",
+                               Comparator(LESS_THAN, 2), 90, 360);
+
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::EXPLICIT;
+    std::vector<std::string> affected_features;
+    affected_features.push_back("IPH_KeyboardAccessoryBarSwiping");
+    session_rate_impact.affected_features = affected_features;
+    config->session_rate_impact = session_rate_impact;
+    return config;
+  }
+
 #endif  // defined(OS_ANDROID)
 
   if (kIPHDummyFeature.name == feature->name) {

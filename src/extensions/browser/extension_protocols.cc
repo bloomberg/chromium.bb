@@ -237,12 +237,12 @@ void ReadResourceFilePathAndLastModifiedTime(
   int64_t delta_seconds = (*last_modified_time - dir_creation_time).InSeconds();
   if (delta_seconds >= 0) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedDelta",
-                                delta_seconds, 1,
-                                base::TimeDelta::FromDays(30).InSeconds(), 50);
+                                delta_seconds, 1, base::Days(30).InSeconds(),
+                                50);
   } else {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ResourceLastModifiedNegativeDelta",
-                                -delta_seconds, 1,
-                                base::TimeDelta::FromDays(30).InSeconds(), 50);
+                                -delta_seconds, 1, base::Days(30).InSeconds(),
+                                50);
   }
 }
 
@@ -469,6 +469,10 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
  public:
   explicit FileLoaderObserver(scoped_refptr<ContentVerifyJob> verify_job)
       : verify_job_(std::move(verify_job)) {}
+
+  FileLoaderObserver(const FileLoaderObserver&) = delete;
+  FileLoaderObserver& operator=(const FileLoaderObserver&) = delete;
+
   ~FileLoaderObserver() override {
     base::AutoLock auto_lock(lock_);
     UMA_HISTOGRAM_COUNTS_1M("ExtensionUrlRequest.TotalKbRead",
@@ -524,12 +528,14 @@ class FileLoaderObserver : public content::FileURLLoaderObserver {
   scoped_refptr<ContentVerifyJob> verify_job_;
   // To synchronize access to all members.
   base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileLoaderObserver);
 };
 
 class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
  public:
+  ExtensionURLLoaderFactory(const ExtensionURLLoaderFactory&) = delete;
+  ExtensionURLLoaderFactory& operator=(const ExtensionURLLoaderFactory&) =
+      delete;
+
   static mojo::PendingRemote<network::mojom::URLLoaderFactory> Create(
       content::BrowserContext* browser_context,
       ukm::SourceIdObj ukm_source_id,
@@ -875,8 +881,6 @@ class ExtensionURLLoaderFactory : public network::SelfDeletingURLLoaderFactory {
   scoped_refptr<extensions::InfoMap> extension_info_map_;
 
   base::CallbackListSubscription browser_context_shutdown_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionURLLoaderFactory);
 };
 
 }  // namespace

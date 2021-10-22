@@ -69,6 +69,9 @@ class LoginDisplayHost {
     virtual void WebDialogViewBoundsChanged(const gfx::Rect& bounds) = 0;
   };
 
+  LoginDisplayHost(const LoginDisplayHost&) = delete;
+  LoginDisplayHost& operator=(const LoginDisplayHost&) = delete;
+
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
 
@@ -114,6 +117,8 @@ class LoginDisplayHost {
   // Result should not be stored.
   virtual WizardController* GetWizardController() = 0;
 
+  virtual WizardContext* GetWizardContext() = 0;
+
   // Returns current KioskLaunchController, if it exists.
   // Result should not be stored.
   virtual KioskLaunchController* GetKioskLaunchController() = 0;
@@ -146,6 +151,9 @@ class LoginDisplayHost {
 
   // Show the os install dialog.
   virtual void ShowOsInstallScreen() = 0;
+
+  // Show the guest terms of service screen.
+  virtual void ShowGuestTosScreen() = 0;
 
   // Hide any visible oobe dialog.
   virtual void HideOobeDialog() = 0;
@@ -253,8 +261,6 @@ class LoginDisplayHost {
 
   // Callback to be executed when WebUI is started.
   base::RepeatingClosure on_wizard_controller_created_for_tests_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHost);
 };
 
 }  // namespace ash

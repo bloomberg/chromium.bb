@@ -22,11 +22,11 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/ash/component_extension_ime_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_keymap.h"
 #include "ui/base/ime/candidate_window.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -508,6 +508,14 @@ gfx::Rect InputMethodEngine::GetAutocorrectCharacterBounds() {
   if (!input_context)
     return gfx::Rect();
   return input_context->GetAutocorrectCharacterBounds();
+}
+
+gfx::Rect InputMethodEngine::GetTextFieldBounds() {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return gfx::Rect();
+  return input_context->GetTextFieldBounds();
 }
 
 bool InputMethodEngine::SetAutocorrectRange(const gfx::Range& range) {

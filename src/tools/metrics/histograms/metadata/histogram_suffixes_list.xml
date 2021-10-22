@@ -5357,241 +5357,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <affected-histogram name="Enterprise.ResourceCacheTiming"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="EventLatencyBreakdowns" separator=".">
-  <suffix name="Activation" label="The duration of the activation stage.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="BeginImplFrameToSendBeginMainFrame"
-      label="The time from when the compositor impl frame is started to when
-             BeginMainFrame is sent.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="BrowserToRendererCompositor"
-      label="The time from when the event is generated until the first
-             compositor stage after the event arrives in the renderer.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="Commit" label="The duration of the commit stage.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="EndActivateToSubmitCompositorFrame"
-      label="The time from when an activation is complete to the next
-             SubmitCompositorFrame.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="EndCommitToActivation"
-      label="The time from when a commit is complete to the beginning of the
-             next activation.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit"
-      label="The time from when the BeginMainFrame is sent to the beginning of
-             the commit.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.Animate"
-      label="The time portion of SendBeginMainFrameToCommit spent on
-             animations.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.BeginMainSentToStarted"
-      label="The time portion of SendBeginMainFrameToCommit spent before
-             starting main thread work.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.Composite"
-      label="The time portion of SendBeginMainFrameToCommit spent on
-             compositing.">
-    <obsolete>
-      Obsolete as of https://crrev.com/794384 and M86.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.CompositeCommit"
-      label="The time portion of SendBeginMainFrameToCommit spent on composite
-             commit.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.CompositingAssignments"
-      label="The time portion of SendBeginMainFrameToCommit spent on updating
-             compositing assignments.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.CompositingInputs"
-      label="The time portion of SendBeginMainFrameToCommit spent on updating
-             compositing inputs.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.HandleInputEvents"
-      label="The time portion of SendBeginMainFrameToCommit spent on handling
-             imput events.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.LayoutUpdate"
-      label="The time portion of SendBeginMainFrameToCommit spent on layout
-             update.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.Paint"
-      label="The time portion of SendBeginMainFrameToCommit spent on paint.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.Prepaint"
-      label="The time portion of SendBeginMainFrameToCommit spent on prepaint.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.ScrollingCoordinator"
-      label="The time portion of SendBeginMainFrameToCommit spent on scrolling
-             coordinator.">
-    <obsolete>
-      Merged into SendBeginMainFrameToCommit.CompositeCommit in
-      https://crrev.com/815947 in M88.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.StyleUpdate"
-      label="The time portion of SendBeginMainFrameToCommit spent on style
-             update.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SendBeginMainFrameToCommit.UpdateLayers"
-      label="The time portion of SendBeginMainFrameToCommit spent on updating
-             layers.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="SubmitCompositorFrameToPresentationCompositorFrame"
-      label="The time from when the compositor frame is submitted to the
-             display compositor to when it is presented.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix
-      name="SubmitCompositorFrameToPresentationCompositorFrame.ReceivedCompositorFrameToStartDraw"
-      label="The time from when the compositor frame is received to when it
-             starts to draw.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix
-      name="SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapStart"
-      label="The time from when the compositor frame is started to draw to
-             when it starts swap.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix
-      name="SubmitCompositorFrameToPresentationCompositorFrame.SubmitToReceiveCompositorFrame"
-      label="The time from when the compositor frame is submitted to when it
-             is received.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix
-      name="SubmitCompositorFrameToPresentationCompositorFrame.SwapEndToPresentationCompositorFrame"
-      label="The time from when the compositor frame ends swap to when it is
-             presented.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix
-      name="SubmitCompositorFrameToPresentationCompositorFrame.SwapStartToSwapEnd"
-      label="The time from when the compositor frame starts to swap to when it
-             ends swap.">
-    <obsolete>
-      Obsolete as of M90. Breakdowns are being tracked in UKM.
-    </obsolete>
-  </suffix>
-  <suffix name="TotalLatency"
-      label="Total latency from when the event is generated until the frame
-             is presented on screen."/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Autoscroll"/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Scrollbar"/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Wheel"/>
-  <affected-histogram name="EventLatency.GestureDoubleTap"/>
-  <affected-histogram name="EventLatency.GestureLongPress"/>
-  <affected-histogram name="EventLatency.GestureLongTap"/>
-  <affected-histogram name="EventLatency.GesturePinchBegin.Touchscreen"/>
-  <affected-histogram name="EventLatency.GesturePinchBegin.Wheel"/>
-  <affected-histogram name="EventLatency.GesturePinchEnd.Touchscreen"/>
-  <affected-histogram name="EventLatency.GesturePinchEnd.Wheel"/>
-  <affected-histogram name="EventLatency.GesturePinchUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.GesturePinchUpdate.Wheel"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Autoscroll"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Scrollbar"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Touchscreen"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Wheel"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Autoscroll"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Scrollbar"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Touchscreen"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Wheel"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Autoscroll"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Scrollbar"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Wheel"/>
-  <affected-histogram name="EventLatency.GestureShowPress"/>
-  <affected-histogram name="EventLatency.GestureTap"/>
-  <affected-histogram name="EventLatency.GestureTapCancel"/>
-  <affected-histogram name="EventLatency.GestureTapDown"/>
-  <affected-histogram name="EventLatency.GestureTapUnconfirmed"/>
-  <affected-histogram name="EventLatency.GestureTwoFingerTap"/>
-  <affected-histogram
-      name="EventLatency.InertialGestureScrollUpdate.Autoscroll"/>
-  <affected-histogram
-      name="EventLatency.InertialGestureScrollUpdate.Scrollbar"/>
-  <affected-histogram
-      name="EventLatency.InertialGestureScrollUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.InertialGestureScrollUpdate.Wheel"/>
-  <affected-histogram name="EventLatency.KeyPressed"/>
-  <affected-histogram name="EventLatency.KeyReleased"/>
-  <affected-histogram name="EventLatency.MouseDragged"/>
-  <affected-histogram name="EventLatency.MousePressed"/>
-  <affected-histogram name="EventLatency.MouseReleased"/>
-  <affected-histogram name="EventLatency.MouseWheel"/>
-  <affected-histogram name="EventLatency.TouchMoved"/>
-  <affected-histogram name="EventLatency.TouchPressed"/>
-  <affected-histogram name="EventLatency.TouchReleased"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="EventLatencyOS" separator=".">
   <suffix name="KEY_PRESSED" label=""/>
   <suffix name="MOUSE_PRESSED" label=""/>
@@ -5618,135 +5383,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       Removed 2021-04-22 - replaced by Event.Latency.OS2.
     </obsolete>
   </affected-histogram>
-</histogram_suffixes>
-
-<histogram_suffixes name="EventLatencyPinchTypes" separator=".">
-  <suffix base="true" name="Touchscreen"
-      label="Event latency for touchscreen pinch events."/>
-  <suffix base="true" name="Wheel"
-      label="Event latency for touchpad pinch events."/>
-  <affected-histogram name="EventLatency.GesturePinchBegin"/>
-  <affected-histogram name="EventLatency.GesturePinchEnd"/>
-  <affected-histogram name="EventLatency.GesturePinchUpdate"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="EventLatencyScrollBreakdowns" separator=".">
-  <suffix name="TotalLatencyToSwapBegin"
-      label="Total latency from when the event is generated until the
-             gpu-swap is started."/>
-  <suffix name="TotalLatencyToSwapEnd"
-      label="Total latency from when the event is generated until the gpu-swap
-             is completed.">
-    <obsolete>
-      Deprecated as of 07/2020. Replaced with TotalLatencyToSwapBegin suffix
-      which measures what we actually intended to measure.
-    </obsolete>
-  </suffix>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Autoscroll"/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Scrollbar"/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate.Wheel"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Autoscroll"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Scrollbar"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Touchscreen"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin.Wheel"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Autoscroll"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Scrollbar"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Touchscreen"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd.Wheel"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Autoscroll"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Scrollbar"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate.Wheel"/>
-  <affected-histogram
-      name="EventLatency.InertialGestureScrollUpdate.Autoscroll"/>
-  <affected-histogram
-      name="EventLatency.InertialGestureScrollUpdate.Scrollbar"/>
-  <affected-histogram
-      name="EventLatency.InertialGestureScrollUpdate.Touchscreen"/>
-  <affected-histogram name="EventLatency.InertialGestureScrollUpdate.Wheel"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="EventLatencyScrollTypes" separator=".">
-  <suffix base="true" name="Autoscroll"
-      label="Event latency for autoscroll events."/>
-  <suffix base="true" name="Scrollbar"
-      label="Event latency for scrollbar scroll events."/>
-  <suffix base="true" name="Touchscreen"
-      label="Event latency for touchscreen scroll events."/>
-  <suffix base="true" name="Wheel"
-      label="Event latency for mousewheel scroll events."/>
-  <affected-histogram name="EventLatency.FirstGestureScrollUpdate"/>
-  <affected-histogram name="EventLatency.GestureScrollBegin"/>
-  <affected-histogram name="EventLatency.GestureScrollEnd"/>
-  <affected-histogram name="EventLatency.GestureScrollUpdate"/>
-  <affected-histogram name="EventLatency.InertialGestureScrollUpdate"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="EventLatencyTotal" separator=".">
-  <suffix name="TotalLatency"
-      label="Total latency from when the event is generated until the frame
-             is presented on screen for all event types."/>
-  <affected-histogram name="EventLatency"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="EventLatencyTypes" separator=".">
-  <suffix base="true" name="FirstGestureScrollUpdate"
-      label="Event latency for the first gesture-scroll-update event in a
-             scroll sequence."/>
-  <suffix base="true" name="GestureDoubleTap"
-      label="Event latency for gesture-double-tap event."/>
-  <suffix base="true" name="GestureLongPress"
-      label="Event latency for gesture-long-press event."/>
-  <suffix base="true" name="GestureLongTap"
-      label="Event latency for gesture-long-tap event."/>
-  <suffix base="true" name="GesturePinchBegin"
-      label="Event latency for gesture-ping-begin event."/>
-  <suffix base="true" name="GesturePinchEnd"
-      label="Event latency for gesture-ping-end event."/>
-  <suffix base="true" name="GesturePinchUpdate"
-      label="Event latency for gesture-ping-update event."/>
-  <suffix base="true" name="GestureScrollBegin"
-      label="Event latency for gesture-scroll-begin event."/>
-  <suffix base="true" name="GestureScrollEnd"
-      label="Event latency for gesture-scroll-end event."/>
-  <suffix base="true" name="GestureScrollUpdate"
-      label="Event latency for non-inertial gesture-scroll-update events in a
-             scroll sequence except for the first one."/>
-  <suffix base="true" name="GestureShowPress"
-      label="Event latency for gesture-show-press event."/>
-  <suffix base="true" name="GestureTap"
-      label="Event latency for gesture-tap event."/>
-  <suffix base="true" name="GestureTapCancel"
-      label="Event latency for gesture-tap-cancel event."/>
-  <suffix base="true" name="GestureTapDown"
-      label="Event latency for gesture-tap-down event."/>
-  <suffix base="true" name="GestureTapUnconfirmed"
-      label="Event latency for gesture-tap-unconfirmed event."/>
-  <suffix base="true" name="GestureTwoFingerTap"
-      label="Event latency for gesture-two-finger-tap event."/>
-  <suffix base="true" name="InertialGestureScrollUpdate"
-      label="Event latency for an inertial gesture-scroll-update event in a
-             scroll sequence."/>
-  <suffix base="true" name="KeyPressed"
-      label="Event latency for key-pressed event."/>
-  <suffix base="true" name="KeyReleased"
-      label="Event latency for key-released event."/>
-  <suffix base="true" name="MouseDragged"
-      label="Event latency for mouse-dragged event."/>
-  <suffix base="true" name="MousePressed"
-      label="Event latency for mouse-pressed event."/>
-  <suffix base="true" name="MouseReleased"
-      label="Event latency for mouse-released event."/>
-  <suffix base="true" name="MouseWheel"
-      label="Event latency for mouse-wheel event."/>
-  <suffix base="true" name="TouchMoved"
-      label="Event latency for touch-moved event."/>
-  <suffix base="true" name="TouchPressed"
-      label="Event latency for touch-pressed event."/>
-  <suffix base="true" name="TouchReleased"
-      label="Event latency for touch-released event."/>
-  <affected-histogram name="EventLatency"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExitFunnels" separator=".">
@@ -7315,6 +6951,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="LegacyTLS" separator=".">
+  <obsolete>
+    No longer is use as of 2021-10.
+  </obsolete>
   <suffix name="LegacyTLS_NotTriggered"
       label="Page didn't trigger legacy TLS warning"/>
   <suffix name="LegacyTLS_Triggered" label="Page triggered legacy TLS warning"/>
@@ -7377,6 +7016,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="CartDatabase" label="Database for chrome cart."/>
   <suffix name="CommerceSubscriptionDatabase"
       label="Database for Chrome commerce subscriptions."/>
+  <suffix name="CouponDatabase" label="Database for coupons in Chrome."/>
   <suffix name="DomDistillerStore" label="Databases for DomDistillerStore">
     <obsolete>
       Deprecated since 2019-10.
@@ -8307,6 +7947,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="Mobile_Messages_Type" separator=".">
+  <suffix name="InfobarTypeAutofillAddressProfile"
+      label="Recorded for Autofill Address Messages."/>
   <suffix name="InfobarTypeConfirm" label="Recorded for Confirm Messages."/>
   <suffix name="InfobarTypePasswordSave"
       label="Recorded for Save Password Messages."/>
@@ -10308,7 +9950,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="MostVisited" label="Loaded client-side suggestions."/>
   <suffix name="NewTab" label="NTP loaded on a new tab."/>
   <suffix name="Startup" label="NTP loaded during browser startup."/>
-  <suffix name="Web" label="Loaded server-side NTP."/>
+  <suffix name="Web" label="Loaded server-side NTP.">
+    <obsolete>
+      Removed in 09 2021.
+    </obsolete>
+  </suffix>
   <suffix name="WebUI3PNTP" label="Loaded 3P WebUI NTP."/>
   <suffix name="WebUINTP" label="Loaded WebUI NTP."/>
   <affected-histogram name="NewTabPage.LoadTime"/>
@@ -10327,7 +9973,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       Deprecated NTP replaced by WebUI NTP M91.
     </obsolete>
   </affected-histogram>
-  <affected-histogram name="NewTabPage.LoadTime.Web"/>
+  <affected-histogram name="NewTabPage.LoadTime.Web">
+    <obsolete>
+      Removed in 09 2021.
+    </obsolete>
+  </affected-histogram>
 </histogram_suffixes>
 
 <histogram_suffixes name="NextTabState" separator="_">
@@ -11078,6 +10728,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Edu-coexistence-login.Done" label=""/>
   <suffix name="Eula.AcceptedWithoutStats" label=""/>
   <suffix name="Eula.AcceptedWithStats" label=""/>
+  <suffix name="Eula.AlreadyAccepted" label=""/>
   <suffix name="Eula.Back" label=""/>
   <suffix name="Family-link-notice.Done" label=""/>
   <suffix name="Fingerprint-setup.Done" label=""/>
@@ -11149,11 +10800,15 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="OptimizationGuide_OptimizationTargets" separator=".">
+  <suffix name="SegmentationChromeStartAndroid" label="Chrome Start Android"/>
+  <suffix name="SegmentationDummyFeature" label="Dummy feature"/>
   <suffix name="LanguageDetection" label="Language detection"/>
   <suffix name="ModelValidation" label="Model validation triggered via CLI"/>
+  <suffix name="NotificationPermissions" label="Notification permissions"/>
   <suffix name="PageEntities" label="Page entities"/>
   <suffix name="PageTopics" label="Page topics"/>
   <suffix name="PainfulPageLoad" label="Painful page load"/>
+  <suffix name="SegmentationQueryTiles" label="Query tiles"/>
   <suffix name="SegmentationNewTab" label="Segmentation: New tab page user"/>
   <suffix name="SegmentationShare" label="Segmentation: Share user"/>
   <suffix name="SegmentationVoice" label="Segmentation: Voice user"/>
@@ -11178,6 +10833,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="OptimizationGuide_OptimizationTypes" separator=".">
+  <suffix name="AboutThisSite"
+      label="Provides 'About this site' data about the site being visited"/>
+  <suffix name="BloomFilterValidation"
+      label="Validates bloom filer allowlist/blocklist based hints"/>
   <suffix name="CompressPublicImages" label="Compresses public images"/>
   <suffix name="DeferAllScript" label="Defers execution of script"/>
   <suffix name="DelayAsyncScriptExecution"
@@ -11218,7 +10877,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
              logged-in"/>
   <suffix name="MerchantTrustSignals"
       label="Provides trust data related to the merchant."/>
-  <suffix name="None" label="No optimization type"/>
+  <suffix name="MetadataFetchValidation"
+      label="Validates metadata fetch on navigation"/>
   <suffix name="NoScript"
       label="Disables the fetching and execution of JavaScript">
     <obsolete>
@@ -12925,28 +12585,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </affected-histogram>
 </histogram_suffixes>
 
-<histogram_suffixes name="PermissionPromptDisposition" separator=".">
-  <suffix name="AnchoredBubble"
-      label="A bubble under the site settings padlock"/>
-  <suffix name="CustomModalDialog" label="Other custom modal dialogs"/>
-  <suffix name="LocationBarLeftChip"
-      label="A chip on the left-hand side of the location bar that shows a
-             bubble when clicked"/>
-  <suffix name="LocationBarLeftQuietChip"
-      label="A less prominent version of a chip on the left-hand side of the
-             location bar that shows a bubble when clicked"/>
-  <suffix name="LocationBarRightAnimatedIcon"
-      label="An animated indicator on the right-hand side of the location bar"/>
-  <suffix name="LocationBarRightStaticIcon"
-      label="A static indicator on the right-hand side of the location bar"/>
-  <suffix name="MiniInfobar"
-      label="An initially-collapsed infobar at the bottom of the page"/>
-  <suffix name="ModalDialog" label="A modal dialog"/>
-  <suffix name="NoneVisible" label="There was no UI being shown"/>
-  <suffix name="NotApplicable" label="No permission prompt at all"/>
-  <affected-histogram name="Permissions.Action.WithDisposition"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PermissionRequestGesture" separator=".">
   <suffix name="Gesture" label="With user gesture"/>
   <suffix name="NoGesture" label="Without user gesture"/>
@@ -13719,23 +13357,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Only counting memory used by Partition allocator."/>
   <suffix name="PartitionAlloc.AllocatedObjects"
       label="Only counting objects allocated using Partition allocator."/>
-  <suffix name="PartitionAlloc.MaxAllocatedMemory.ArrayBuffer"
+  <suffix name="PartitionAlloc.MaxAllocatedSize.ArrayBuffer"
       label="Highwatermark for allocated memory for the ArrayBuffer
              partition."/>
-  <suffix name="PartitionAlloc.MaxAllocatedMemory.Buffer"
+  <suffix name="PartitionAlloc.MaxAllocatedSize.Buffer"
       label="Highwatermark for allocated memory for the Buffer partition."/>
-  <suffix name="PartitionAlloc.MaxAllocatedMemory.FastMalloc"
+  <suffix name="PartitionAlloc.MaxAllocatedSize.FastMalloc"
       label="Highwatermark for allocated memory for the FastMalloc partition."/>
-  <suffix name="PartitionAlloc.MaxAllocatedMemory.Layout"
+  <suffix name="PartitionAlloc.MaxAllocatedSize.Layout"
       label="Highwatermark for allocated memory for the Layout partition."/>
-  <suffix name="PartitionAlloc.MaxCommittedMemory.ArrayBuffer"
+  <suffix name="PartitionAlloc.MaxCommittedSize.ArrayBuffer"
       label="Highwatermark for committed memory for the ArrayBuffer
              partition."/>
-  <suffix name="PartitionAlloc.MaxCommittedMemory.Buffer"
+  <suffix name="PartitionAlloc.MaxCommittedSize.Buffer"
       label="Highwatermark for committed memory for the Buffer partition."/>
-  <suffix name="PartitionAlloc.MaxCommittedMemory.FastMalloc"
+  <suffix name="PartitionAlloc.MaxCommittedSize.FastMalloc"
       label="Highwatermark for committed memory for the FastMalloc partition."/>
-  <suffix name="PartitionAlloc.MaxCommittedMemory.Layout"
+  <suffix name="PartitionAlloc.MaxCommittedSize.Layout"
       label="Highwatermark for committed memory for the Layout partition."/>
   <suffix name="PartitionAlloc.Partitions.ArrayBuffer"
       label="Only counting memory used by Array Buffer partition."/>
@@ -13856,6 +13494,12 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="History" label="Only counting memory used by History service."/>
   <suffix name="LevelDatabase"
       label="Only counting memory used by Level databases."/>
+  <suffix name="Malloc.BRPQuarantined"
+      label="Memory used by objects quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
+  <suffix name="Malloc.BRPQuarantinedCount"
+      label="Number of slots quarantined by BRP, recorded when
+             USE_BACKUP_REF_PTR build flag is enabled."/>
   <suffix name="Malloc.ThreadCache"
       label="Memory used by all thread caches, recorded when PartitionAlloc
              is used as malloc()."/>
@@ -15138,16 +14782,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       label="Records metrics for consumer real time URL lookup service."/>
   <suffix name="Enterprise"
       label="Records metrics for enterprise real time URL lookup service."/>
+  <affected-histogram name="SafeBrowsing.PageLoadToken.RealTimeCheckHasToken"/>
   <affected-histogram name="SafeBrowsing.RT.Backoff.State"/>
   <affected-histogram name="SafeBrowsing.RT.GetCache.Time"/>
   <affected-histogram name="SafeBrowsing.RT.GetCacheResult"/>
   <affected-histogram name="SafeBrowsing.RT.HasTokenInRequest"/>
   <affected-histogram name="SafeBrowsing.RT.HasValidCacheManager"/>
   <affected-histogram name="SafeBrowsing.RT.IsLookupSuccessful"/>
+  <affected-histogram name="SafeBrowsing.RT.IsPopulationMbbOrEsb"/>
   <affected-histogram name="SafeBrowsing.RT.Network.Result"/>
   <affected-histogram name="SafeBrowsing.RT.Network.Time"/>
   <affected-histogram name="SafeBrowsing.RT.Request.Size"/>
   <affected-histogram name="SafeBrowsing.RT.Request.UserPopulation"/>
+  <affected-histogram name="SafeBrowsing.RT.Response.VerdictType"/>
   <affected-histogram name="SafeBrowsing.RT.ThreatInfoSize"/>
 </histogram_suffixes>
 
@@ -15781,7 +15428,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="FETCH_SHARED_WORKER" label="FETCH_SHARED_WORKER"/>
   <suffix name="FETCH_SUB_FRAME" label="FETCH_SUB_FRAME"/>
   <suffix name="FETCH_SUB_RESOURCE" label="FETCH_SUB_RESOURCE"/>
-  <suffix name="FOREIGN_FETCH" label="FOREIGN_FETCH"/>
+  <suffix name="FOREIGN_FETCH" label="FOREIGN_FETCH">
+    <obsolete>
+      Has not been emitted since Foreign Fetch was removed ca. 2018.
+    </obsolete>
+  </suffix>
   <suffix name="GEOFENCING" label="GEOFENCING">
     <obsolete>
       Deprecated as of 5/2016 because geofencing got removed.
@@ -15815,7 +15466,6 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="SYNC" label="SYNC"/>
   <suffix name="UNKNOWN" label="UNKNOWN"/>
   <affected-histogram name="ServiceWorker.EventDispatchingDelay"/>
-  <affected-histogram name="ServiceWorker.StartWorker.StatusByPurpose"/>
   <affected-histogram name="ServiceWorker.StartWorker.Time_DuringStartup"/>
   <affected-histogram
       name="ServiceWorker.StartWorker.Time_ExistingReadyProcess"/>
@@ -15825,6 +15475,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker_FailureStreak" separator="_">
+  <obsolete>
+    Removed in September 2021.
+  </obsolete>
   <suffix name="1" label="Failed one time."/>
   <suffix name="2" label="Failed two times."/>
   <suffix name="3" label="Failed three times."/>
@@ -15832,6 +15485,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="ServiceWorker_LookupRegistrationResult" separator=".">
+  <obsolete>
+    Removed in September 2021.
+  </obsolete>
   <suffix name="DoesNotExist" label="The registration doesn't exist."/>
   <suffix name="Error" label="Failed to look up the registration."/>
   <suffix name="Exists" label="The registration exists."/>
@@ -16498,13 +16154,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram_suffixes name="SharingMessage" separator=".">
   <suffix name="ACK_MESSAGE" label="Ack Message"/>
   <suffix name="CLICK_TO_CALL_MESSAGE" label="Click To Call Message"/>
-  <suffix name="ICE_CANDIDATE_MESSAGE" label="Ice Candidate Message"/>
+  <suffix name="DISCOVERY_REQUEST" label="Discovery Request Message"/>
+  <suffix name="OPTIMIZATION_GUIDE_PUSH_NOTIFICATION"
+      label="Optimization Guide Push Notification Message"/>
+  <suffix name="PEER_CONNECTION_ICE_CANDIDATES_MESSAGE"
+      label="Peer Connection Ice Candidates Message"/>
+  <suffix name="PEER_CONNECTION_OFFER_MESSAGE"
+      label="Peer Connection Offer Message"/>
   <suffix name="PING_MESSAGE" label="Ping Message"/>
   <suffix name="REMOTE_COPY_MESSAGE" label="Remote Copy Message"/>
   <suffix name="SHARED_CLIPBOARD_MESSAGE" label="Shared Clipboard Message"/>
-  <suffix name="SIGNALLING_MESSAGE" label="Signalling Message"/>
   <suffix name="SMS_FETCH_REQUEST" label="SMS Fetch Request"/>
   <suffix name="UNKNOWN_MESSAGE" label="Unknown Message"/>
+  <suffix name="WEB_RTC_SIGNALING_FRAME" label="Web RTC Signalling Message"/>
   <affected-histogram name="Sharing.DeviceLastUpdatedAge">
     <obsolete>
       Removed in M89.
@@ -16692,6 +16354,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram_suffixes>
 
 <histogram_suffixes name="Signin_Reconciler" separator=".">
+  <obsolete>
+    No longer used after 2021-05 and the switch to OAuthMultilogin.
+  </obsolete>
   <suffix name="FirstRun"
       label="First execution of the reconciler after the profile was loaded
              or the new_profile_management flag was toggled."/>
@@ -17444,25 +17109,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="ABORTED" label="When configuration gets aborted."/>
   <suffix name="OK" label="When configuration is successful"/>
   <suffix name="UNRECOVERABLE_ERROR"
-      label="When configuration encounters an unrecoverable error"/>
+      label="When configuration encounters an unrecoverable error">
+    <obsolete>
+      Removed 06/2020, no longer used.
+    </obsolete>
+  </suffix>
   <affected-histogram name="Sync.ConfigureTime_Initial"/>
   <affected-histogram name="Sync.ConfigureTime_Subsequent"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SyncErrorInfoBarType" separator=".">
-  <suffix name="AuthError" label="Auth error."/>
-  <suffix name="ClientOutOfDate" label="Client out of date."/>
-  <suffix name="PassphraseRequired" label="Passphrase required."/>
-  <suffix name="SyncSetupIncomplete" label="Sync setup incomplete."/>
-  <suffix name="TrustedVaultKeyRequiredForEverything"
-      label="Trusted vault keys required for everything."/>
-  <suffix name="TrustedVaultKeyRequiredForPasswords"
-      label="Trusted vault keys required for passwords."/>
-  <suffix name="TrustedVaultRecoverabilityDegradedForEverything"
-      label="Trusted vault recoverability degraded for everything."/>
-  <suffix name="TrustedVaultRecoverabilityDegradedForPasswords"
-      label="Trusted vault recoverability degraded for passwords."/>
-  <affected-histogram name="Signin.SyncErrorInfoBar"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyncFaviconRequestOrigin" separator=".">
@@ -18647,7 +18300,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <suffix name="Eche" label="Eche"/>
   <suffix name="Help" label="Help"/>
   <suffix name="Media" label="Media"/>
-  <suffix name="MediaAudio" label="MediaAudio"/>
+  <suffix name="MediaAudio" label="MediaAudio">
+    <obsolete>
+      Deprecated as of 2021-09-30.
+    </obsolete>
+  </suffix>
   <suffix name="OSFeedback" label="OSFeedback"/>
   <suffix name="OSSettings" label="OS Settings"/>
   <suffix name="Personalization" label="Personalization"/>

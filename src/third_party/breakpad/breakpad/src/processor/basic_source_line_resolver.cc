@@ -246,12 +246,15 @@ int BasicSourceLineResolver::Module::ConstructInlineFrames(
   MemAddr inline_base;
   if (!inlines.RetrieveRange(address, &in, &inline_base, nullptr, nullptr))
     return -1;
+  auto origin = inline_origins_.find(in->origin_id);
+  if (origin == inline_origins_.end())
+    return -1;
 
   StackFrame new_frame = StackFrame(*frame);
-  new_frame.function_name = in->name;
+  new_frame.function_name = origin->second->name;
   // Use the starting adress of the inlined range as inlined function base.
   new_frame.function_base = new_frame.module->base_address() + inline_base;
-  auto it = files_.find(in->source_file_id);
+  auto it = files_.find(origin->second->source_file_id);
   if (it != files_.end())
     new_frame.source_file_name = it->second;
 
@@ -417,8 +420,8 @@ bool BasicSourceLineResolver::Module::ParseInlineOrigin(
   char* origin_name;
   if (SymbolParseHelper::ParseInlineOrigin(inline_origin_line, &origin_id,
                                            &source_file_id, &origin_name)) {
-    inline_origins_.insert(make_pair(
-        origin_id, new InlineOrigin(origin_id, source_file_id, origin_name)));
+    inline_origins_.insert(
+        make_pair(origin_id, new InlineOrigin(source_file_id, origin_name)));
     return true;
   }
   return false;
@@ -432,12 +435,8 @@ BasicSourceLineResolver::Module::ParseInline(char* inline_line) {
   vector<std::pair<MemAddr, MemAddr>> ranges;
   if (SymbolParseHelper::ParseInline(inline_line, &inline_nest_level,
                                      &call_site_line, &origin_id, &ranges)) {
-    auto origin = inline_origins_.find(origin_id);
-    if (origin != inline_origins_.end()) {
-      return linked_ptr<Inline>(
-          new Inline(inline_nest_level, call_site_line, origin->second->name,
-                     origin->second->source_file_id, ranges));
-    }
+    return linked_ptr<Inline>(
+        new Inline(inline_nest_level, call_site_line, origin_id, ranges));
   }
   return linked_ptr<Inline>();
 }

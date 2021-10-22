@@ -86,6 +86,9 @@ class WrapperURLLoaderFactory : public network::mojom::URLLoaderFactory {
       : url_loader_factory_(std::move(url_loader_factory)),
         network_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
+  WrapperURLLoaderFactory(const WrapperURLLoaderFactory&) = delete;
+  WrapperURLLoaderFactory& operator=(const WrapperURLLoaderFactory&) = delete;
+
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
       int32_t request_id,
@@ -117,8 +120,6 @@ class WrapperURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
   // Runner for URLRequestContextGetter network thread.
   scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WrapperURLLoaderFactory);
 };
 
 CommandMapping::CommandMapping(HttpMethod method,
@@ -263,6 +264,20 @@ HttpHandler::HttpHandler(
           kGet, "session/:sessionId/element/active",
           WrapToCommand("GetActiveElement",
                         base::BindRepeating(&ExecuteGetActiveElement))),
+      CommandMapping(
+          kGet, "session/:sessionId/element/:id/shadow",
+          WrapToCommand("GetElementShadowRoot",
+                        base::BindRepeating(&ExecuteGetElementShadowRoot))),
+      CommandMapping(
+          kPost, "session/:sessionId/shadow/:id/element",
+          WrapToCommand(
+              "FindChildElementFromShadowRoot",
+              base::BindRepeating(&ExecuteFindChildElementFromShadowRoot, 50))),
+      CommandMapping(
+          kPost, "session/:sessionId/shadow/:id/elements",
+          WrapToCommand("FindChildElementsFromShadowRoot",
+                        base::BindRepeating(
+                            &ExecuteFindChildElementsFromShadowRoot, 50))),
       CommandMapping(
           kPost, "session/:sessionId/element",
           WrapToCommand("FindElement",
@@ -1281,6 +1296,14 @@ HttpHandler::PrepareStandardResponse(
     case kTabCrashed:
       response = std::make_unique<net::HttpServerResponseInfo>(
           net::HTTP_INTERNAL_SERVER_ERROR);
+      break;
+    case kNoSuchShadowRoot:
+      response =
+          std::make_unique<net::HttpServerResponseInfo>(net::HTTP_NOT_FOUND);
+      break;
+    case kDetachedShadowRoot:
+      response =
+          std::make_unique<net::HttpServerResponseInfo>(net::HTTP_NOT_FOUND);
       break;
 
     default:

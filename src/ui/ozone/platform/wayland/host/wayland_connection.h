@@ -60,6 +60,7 @@ class GtkShell1;
 class ZwpIdleInhibitManager;
 class ZwpPrimarySelectionDeviceManager;
 class XdgForeignWrapper;
+class OverlayPrioritizer;
 
 // These values are persisted to logs.  Entries should not be renumbered and
 // numeric values should never be reused.
@@ -120,12 +121,18 @@ class WaylandConnection {
   uint32_t compositor_version() const { return compositor_version_; }
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
   wp_viewporter* viewporter() const { return viewporter_.get(); }
+  zcr_alpha_compositing_v1* alpha_compositing() const {
+    return alpha_compositing_.get();
+  }
   xdg_wm_base* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
   wl_seat* seat() const { return seat_.get(); }
   wp_presentation* presentation() const { return presentation_.get(); }
   zwp_text_input_manager_v1* text_input_manager_v1() const {
     return text_input_manager_v1_.get();
+  }
+  zcr_text_input_extension_v1* text_input_extension_v1() const {
+    return text_input_extension_v1_.get();
   }
   zwp_linux_explicit_synchronization_v1* linux_explicit_synchronization_v1()
       const {
@@ -233,6 +240,10 @@ class WaylandConnection {
     return zwp_idle_inhibit_manager_.get();
   }
 
+  OverlayPrioritizer* overlay_prioritizer() const {
+    return overlay_prioritizer_.get();
+  }
+
   // Returns whether protocols that support setting window geometry are
   // available.
   bool SupportsSetWindowGeometry() const;
@@ -273,6 +284,7 @@ class WaylandConnection {
   friend class GtkPrimarySelectionDeviceManager;
   friend class GtkShell1;
   friend class OrgKdeKwinIdle;
+  friend class OverlayPrioritizer;
   friend class WaylandDataDeviceManager;
   friend class WaylandDrm;
   friend class WaylandOutput;
@@ -335,8 +347,10 @@ class WaylandConnection {
   wl::Object<zxdg_shell_v6> shell_v6_;
   wl::Object<wp_presentation> presentation_;
   wl::Object<wp_viewporter> viewporter_;
+  wl::Object<zcr_alpha_compositing_v1> alpha_compositing_;
   wl::Object<zcr_keyboard_extension_v1> keyboard_extension_v1_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
+  wl::Object<zcr_text_input_extension_v1> text_input_extension_v1_;
   wl::Object<zwp_linux_explicit_synchronization_v1>
       linux_explicit_synchronization_;
   wl::Object<zxdg_decoration_manager_v1> xdg_decoration_manager_;
@@ -369,6 +383,7 @@ class WaylandConnection {
   std::unique_ptr<WaylandBufferManagerHost> buffer_manager_host_;
   std::unique_ptr<XdgForeignWrapper> xdg_foreign_;
   std::unique_ptr<ZwpIdleInhibitManager> zwp_idle_inhibit_manager_;
+  std::unique_ptr<OverlayPrioritizer> overlay_prioritizer_;
 
   // Clipboard-related objects. |clipboard_| must be declared after all
   // DeviceManager instances it depends on, otherwise tests may crash with

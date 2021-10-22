@@ -45,9 +45,6 @@ class PageInfoUI;
 // closed.
 class PageInfo {
  public:
-  // TODO(palmer): Figure out if it is possible to unify SiteConnectionStatus
-  // and SiteIdentityStatus.
-  //
   // Status of a connection to a website.
   enum SiteConnectionStatus {
     SITE_CONNECTION_STATUS_UNKNOWN = 0,  // No status available.
@@ -148,6 +145,7 @@ class PageInfo {
     PAGE_INFO_SAFETY_TIP_HELP_OPENED = 24,
     PAGE_INFO_CHOOSER_OBJECT_DELETED = 25,
     PAGE_INFO_RESET_DECISIONS_CLICKED = 26,
+    PAGE_INFO_STORE_INFO_CLICKED = 27,
     PAGE_INFO_COUNT
   };
 
@@ -182,6 +180,10 @@ class PageInfo {
   PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
            content::WebContents* web_contents,
            const GURL& url);
+
+  PageInfo(const PageInfo&) = delete;
+  PageInfo& operator=(const PageInfo&) = delete;
+
   ~PageInfo();
 
   // Checks whether this permission is currently the factory default, as set by
@@ -429,8 +431,6 @@ class PageInfo {
   // Description of the Safe Browsing status. Non-empty if
   // MaliciousContentStatus isn't NONE.
   std::u16string safe_browsing_details_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageInfo);
 };
 
 #endif  // COMPONENTS_PAGE_INFO_PAGE_INFO_H_

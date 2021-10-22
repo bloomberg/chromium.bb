@@ -57,6 +57,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
   ScriptTracker(ScriptExecutorDelegate* delegate,
                 ScriptTracker::Listener* listener);
 
+  ScriptTracker(const ScriptTracker&) = delete;
+  ScriptTracker& operator=(const ScriptTracker&) = delete;
+
   ~ScriptTracker() override;
 
   // Updates the set of available |scripts|. This interrupts any pending checks,
@@ -153,13 +156,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // SetScripts() reset this.
   std::vector<std::unique_ptr<Script>> interrupts_;
 
-  // List of scripts that have been executed and their corresponding statuses.
-  //
-  // TODO(b/192823175): Note that this map's only remaining use is in tests and
-  // can be removed once the testing code has been refactored to no longer
-  // depend on this field.
-  std::map<std::string, ScriptExecutor::ScriptStatus> scripts_state_;
-
   std::unique_ptr<BatchElementChecker> batch_element_checker_;
 
   // Path of the scripts found to be runnable so far, in the current check,
@@ -174,8 +170,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   std::string last_script_payload_;
 
   base::WeakPtrFactory<ScriptTracker> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptTracker);
 };
 
 }  // namespace autofill_assistant

@@ -554,9 +554,9 @@ const internal::SchemaData* GetChromeSchemaData();
 
   # Declare arrays of metapolicies.
   f.write('// Arrays of metapolicies.\n' 'namespace metapolicy {\n\n')
-  f.write('extern const char* kMerge[%s];\n' %
+  f.write('extern const char* const kMerge[%s];\n' %
           len(_GetMetapoliciesOfType(policies, METAPOLICY_TYPE['merge'])))
-  f.write('extern const char* kPrecedence[%s];\n\n' %
+  f.write('extern const char* const kPrecedence[%s];\n\n' %
           len(_GetMetapoliciesOfType(policies, METAPOLICY_TYPE['precedence'])))
   f.write('}  // namespace metapolicy\n\n')
 
@@ -1292,7 +1292,7 @@ void SetEnterpriseUsersDefaults(PolicyMap* policy_map) {
   # Populate merge metapolicy array.
   merge_metapolicies = _GetMetapoliciesOfType(policies,
                                               METAPOLICY_TYPE['merge'])
-  f.write('const char* kMerge[%s] = {\n' % len(merge_metapolicies))
+  f.write('const char* const kMerge[%s] = {\n' % len(merge_metapolicies))
   for metapolicy in merge_metapolicies:
     f.write('  key::k%s,\n' % metapolicy)
   f.write('};\n\n')
@@ -1300,7 +1300,8 @@ void SetEnterpriseUsersDefaults(PolicyMap* policy_map) {
   # Populate precedence metapolicy array.
   precedence_metapolicies = _GetMetapoliciesOfType(
       policies, METAPOLICY_TYPE['precedence'])
-  f.write('const char* kPrecedence[%s] = {\n' % len(precedence_metapolicies))
+  f.write('const char* const kPrecedence[%s] = {\n' %
+          len(precedence_metapolicies))
   for metapolicy in precedence_metapolicies:
     f.write('  key::k%s,\n' % metapolicy)
   f.write('};\n\n')
@@ -1463,7 +1464,7 @@ import "policy_common_definitions{full_runtime_suffix}.proto";
 RESERVED_IDS = 2
 
 
-def _WritePolicyProto(f, policy, fields):
+def _WritePolicyProto(f, policy):
   _OutputComment(f, policy.caption + '\n\n' + policy.desc)
   if policy.items is not None:
     _OutputComment(f, '\nValid values:')
@@ -1484,10 +1485,6 @@ def _WritePolicyProto(f, policy, fields):
   f.write('  optional PolicyOptions policy_options = 1;\n')
   f.write('  optional %s %s = 2;\n' % (policy.protobuf_type, policy.name))
   f.write('}\n\n')
-  fields += [
-      '  optional %sProto %s = %s;\n' % (policy.name, policy.name,
-                                         policy.id + RESERVED_IDS)
-  ]
 
 
 def _WriteChromeSettingsProtobuf(policies,
@@ -1510,7 +1507,13 @@ def _WriteChromeSettingsProtobuf(policies,
     # Note: This protobuf also gets the unsupported policies, since it's an
     # exhaustive list of all the supported user policies on any platform.
     if not policy.is_device_only:
-      _WritePolicyProto(f, policy, fields)
+      # Write the individual policy proto into the file
+      _WritePolicyProto(f, policy)
+      # Add to |fields| in order to eventually add to ChromeSettingsProto
+      fields += [
+          '  optional %sProto %s = %s;\n' %
+          (policy.name, policy.name, policy.id + RESERVED_IDS)
+      ]
 
   f.write('// --------------------------------------------------\n'
           '// Big wrapper PB containing the above groups.\n\n'

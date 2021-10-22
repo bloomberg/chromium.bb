@@ -24,6 +24,8 @@
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/commerce/price_alert_util.h"
+#import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/complex_tasks/ios_task_tab_helper.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
@@ -35,7 +37,6 @@
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
-#import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory_impl.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_inserter.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_tab_helper.h"
 #import "ios/chrome/browser/infobars/overlays/translate_overlay_tab_helper.h"
@@ -45,6 +46,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_tab_helper.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_validation_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/passwords/well_known_change_password_tab_helper.h"
@@ -63,7 +65,6 @@
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
 #import "ios/chrome/browser/ui/download/features.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -113,6 +114,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   LoadTimingTabHelper::CreateForWebState(web_state);
   OverscrollActionsTabHelper::CreateForWebState(web_state);
   IOSTaskTabHelper::CreateForWebState(web_state);
+  if (IsPriceAlertsEnabled())
+    ShoppingPersistedDataTabHelper::CreateForWebState(web_state);
   AppLauncherTabHelper::CreateForWebState(web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       web_state);
@@ -122,11 +125,9 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   InvalidUrlTabHelper::CreateForWebState(web_state);
 
-  if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
-    InfobarOverlayRequestInserter::CreateForWebState(web_state);
-    InfobarOverlayTabHelper::CreateForWebState(web_state);
-    TranslateOverlayTabHelper::CreateForWebState(web_state);
-  }
+  InfobarOverlayRequestInserter::CreateForWebState(web_state);
+  InfobarOverlayTabHelper::CreateForWebState(web_state);
+  TranslateOverlayTabHelper::CreateForWebState(web_state);
 
   if (ios::provider::IsTextZoomEnabled()) {
     FontSizeTabHelper::CreateForWebState(web_state);
@@ -154,6 +155,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   NewTabPageTabHelper::CreateForWebState(web_state);
   OpenInTabHelper::CreateForWebState(web_state);
   OptimizationGuideTabHelper::CreateForWebState(web_state);
+  OptimizationGuideValidationTabHelper::CreateForWebState(web_state);
   ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();
   favicon::WebFaviconDriver::CreateForWebState(

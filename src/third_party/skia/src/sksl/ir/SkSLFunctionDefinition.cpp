@@ -7,15 +7,20 @@
 
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
+#include "src/sksl/SkSLIntrinsicMap.h"
 #include "src/sksl/SkSLProgramSettings.h"
+#include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
+#include "src/sksl/transform/SkSLProgramWriter.h"
+
+#include <forward_list>
 
 namespace SkSL {
 
 std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& context,
-                                                                int offset,
+                                                                int line,
                                                                 const FunctionDeclaration& function,
                                                                 std::unique_ptr<Statement> body,
                                                                 bool builtin) {
@@ -28,8 +33,39 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
             , fReferencedIntrinsics(referencedIntrinsics) {}
 
         ~Finalizer() override {
-            SkASSERT(!fBreakableLevel);
-            SkASSERT(!fContinuableLevel);
+            SkASSERT(fBreakableLevel == 0);
+            SkASSERT(fContinuableLevel == std::forward_list<int>{0});
+        }
+
+        void copyIntrinsicIfNeeded(const FunctionDeclaration& function) {
+            if (const ProgramElement* found =
+                    fContext.fIntrinsics->findAndInclude(function.description())) {
+                const FunctionDefinition& original = found->as<FunctionDefinition>();
+
+                // Sort the referenced intrinsics into a consistent order; otherwise our output will
+                // become non-deterministic.
+                std::vector<const FunctionDeclaration*> intrinsics(
+                        original.referencedIntrinsics().begin(),
+                        original.referencedIntrinsics().end());
+                std::sort(intrinsics.begin(), intrinsics.end(),
+                          [](const FunctionDeclaration* a, const FunctionDeclaration* b) {
+                              if (a->isBuiltin() != b->isBuiltin()) {
+                                  return a->isBuiltin() < b->isBuiltin();
+                              }
+                              if (a->fLine != b->fLine) {
+                                  return a->fLine < b->fLine;
+                              }
+                              if (a->name() != b->name()) {
+                                  return a->name() < b->name();
+                              }
+                              return a->description() < b->description();
+                          });
+                for (const FunctionDeclaration* f : intrinsics) {
+                    this->copyIntrinsicIfNeeded(*f);
+                }
+
+                ThreadContext::SharedElements().push_back(found);
+            }
         }
 
         bool functionReturnsValue() const {
@@ -39,9 +75,18 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
         bool visitExpression(Expression& expr) override {
             if (expr.is<FunctionCall>()) {
                 const FunctionDeclaration& func = expr.as<FunctionCall>().function();
-                if (func.isBuiltin() && func.definition()) {
-                    fReferencedIntrinsics->insert(&func);
+                if (func.isBuiltin()) {
+                    if (func.intrinsicKind() == k_dFdy_IntrinsicKind) {
+                        ThreadContext::Inputs().fUseFlipRTUniform = true;
+                    }
+                    if (func.definition()) {
+                        fReferencedIntrinsics->insert(&func);
+                    }
+                    if (!fContext.fConfig->fIsBuiltinCode && fContext.fIntrinsics) {
+                        this->copyIntrinsicIfNeeded(func);
+                    }
                 }
+
             }
             return INHERITED::visitExpression(expr);
         }
@@ -54,7 +99,7 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
                     // issue, we can add normalization before each return statement.
                     if (fContext.fConfig->fKind == ProgramKind::kVertex && fFunction.isMain()) {
                         fContext.fErrors->error(
-                                stmt.fOffset,
+                                stmt.fLine,
                                 "early returns from vertex programs are not supported");
                     }
 
@@ -68,13 +113,13 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
                         } else {
                             // Returning something from a function with a void return type.
                             returnStmt.setExpression(nullptr);
-                            fContext.fErrors->error(returnStmt.fOffset,
+                            fContext.fErrors->error(returnStmt.fLine,
                                                     "may not return a value from a void function");
                         }
                     } else {
                         if (this->functionReturnsValue()) {
                             // Returning nothing from a function with a non-void return type.
-                            fContext.fErrors->error(returnStmt.fOffset,
+                            fContext.fErrors->error(returnStmt.fLine,
                                                     "expected function to return '" +
                                                     fFunction.returnType().displayName() + "'");
                         }
@@ -84,28 +129,37 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
                 case Statement::Kind::kDo:
                 case Statement::Kind::kFor: {
                     ++fBreakableLevel;
-                    ++fContinuableLevel;
+                    ++fContinuableLevel.front();
                     bool result = INHERITED::visitStatement(stmt);
-                    --fContinuableLevel;
+                    --fContinuableLevel.front();
                     --fBreakableLevel;
                     return result;
                 }
                 case Statement::Kind::kSwitch: {
                     ++fBreakableLevel;
+                    fContinuableLevel.push_front(0);
                     bool result = INHERITED::visitStatement(stmt);
+                    fContinuableLevel.pop_front();
                     --fBreakableLevel;
                     return result;
                 }
                 case Statement::Kind::kBreak:
-                    if (!fBreakableLevel) {
-                        fContext.fErrors->error(stmt.fOffset,
+                    if (fBreakableLevel == 0) {
+                        fContext.fErrors->error(stmt.fLine,
                                                 "break statement must be inside a loop or switch");
                     }
                     break;
                 case Statement::Kind::kContinue:
-                    if (!fContinuableLevel) {
-                        fContext.fErrors->error(stmt.fOffset,
-                                                "continue statement must be inside a loop");
+                    if (fContinuableLevel.front() == 0) {
+                        if (std::any_of(fContinuableLevel.begin(),
+                                        fContinuableLevel.end(),
+                                        [](int level) { return level > 0; })) {
+                            fContext.fErrors->error(stmt.fLine,
+                                                   "continue statement cannot be used in a switch");
+                        } else {
+                            fContext.fErrors->error(stmt.fLine,
+                                                    "continue statement must be inside a loop");
+                        }
                     }
                     break;
                 default:
@@ -122,7 +176,8 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
         // how deeply nested we are in breakable constructs (for, do, switch).
         int fBreakableLevel = 0;
         // how deeply nested we are in continuable constructs (for, do).
-        int fContinuableLevel = 0;
+        // We keep a stack (via a forward_list) in order to disallow continue inside of switch.
+        std::forward_list<int> fContinuableLevel{0};
 
         using INHERITED = ProgramWriter;
     };
@@ -131,11 +186,11 @@ std::unique_ptr<FunctionDefinition> FunctionDefinition::Convert(const Context& c
     Finalizer(context, function, &referencedIntrinsics).visitStatement(*body);
 
     if (Analysis::CanExitWithoutReturningValue(function, *body)) {
-        context.fErrors->error(function.fOffset, "function '" + function.name() +
+        context.fErrors->error(function.fLine, "function '" + function.name() +
                                                  "' can exit without returning a value");
     }
 
-    return std::make_unique<FunctionDefinition>(offset, &function, builtin, std::move(body),
+    return std::make_unique<FunctionDefinition>(line, &function, builtin, std::move(body),
                                                 std::move(referencedIntrinsics));
 }
 

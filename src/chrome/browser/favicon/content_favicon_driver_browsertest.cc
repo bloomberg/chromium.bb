@@ -75,6 +75,9 @@ class TestURLLoaderInterceptor {
             base::BindRepeating(&TestURLLoaderInterceptor::InterceptURLRequest,
                                 base::Unretained(this))) {}
 
+  TestURLLoaderInterceptor(const TestURLLoaderInterceptor&) = delete;
+  TestURLLoaderInterceptor& operator=(const TestURLLoaderInterceptor&) = delete;
+
   bool was_loaded(const GURL& url) const {
     return intercepted_urls_.find(url) != intercepted_urls_.end();
   }
@@ -106,8 +109,6 @@ class TestURLLoaderInterceptor {
   std::set<GURL> bypass_cache_urls_;
   content::URLLoaderInterceptor interceptor_;
   std::map<GURL, network::mojom::RequestDestination> destinations_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLLoaderInterceptor);
 };
 
 // Waits for the following the finish:
@@ -120,6 +121,10 @@ class PendingTaskWaiter : public content::WebContentsObserver {
  public:
   explicit PendingTaskWaiter(content::WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
+
+  PendingTaskWaiter(const PendingTaskWaiter&) = delete;
+  PendingTaskWaiter& operator=(const PendingTaskWaiter&) = delete;
+
   ~PendingTaskWaiter() override {}
 
   void AlsoRequireUrl(const GURL& url) { required_url_ = url; }
@@ -171,7 +176,7 @@ class PendingTaskWaiter : public content::WebContentsObserver {
         FROM_HERE,
         base::BindOnce(&PendingTaskWaiter::CheckStopWaitingPeriodically,
                        weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(1));
+        base::Seconds(1));
   }
 
   void EndLoopIfCanStopWaiting() {
@@ -186,14 +191,16 @@ class PendingTaskWaiter : public content::WebContentsObserver {
   GURL required_url_;
   absl::optional<std::u16string> required_title_;
   base::WeakPtrFactory<PendingTaskWaiter> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PendingTaskWaiter);
 };
 
 class PageLoadStopper : public content::WebContentsObserver {
  public:
   explicit PageLoadStopper(content::WebContents* web_contents)
       : WebContentsObserver(web_contents), stop_on_finish_(false) {}
+
+  PageLoadStopper(const PageLoadStopper&) = delete;
+  PageLoadStopper& operator=(const PageLoadStopper&) = delete;
+
   ~PageLoadStopper() override {}
 
   void StopOnDidFinishNavigation() { stop_on_finish_ = true; }
@@ -222,8 +229,6 @@ class PageLoadStopper : public content::WebContentsObserver {
 
   bool stop_on_finish_;
   std::vector<GURL> last_favicon_candidates_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageLoadStopper);
 };
 
 }  // namespace
@@ -234,6 +239,10 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
       : prerender_helper_(
             base::BindRepeating(&ContentFaviconDriverTest::web_contents,
                                 base::Unretained(this))) {}
+
+  ContentFaviconDriverTest(const ContentFaviconDriverTest&) = delete;
+  ContentFaviconDriverTest& operator=(const ContentFaviconDriverTest&) = delete;
+
   ~ContentFaviconDriverTest() override = default;
 
   void SetUp() override {
@@ -297,8 +306,6 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
 
  private:
   content::test::PrerenderTestHelper prerender_helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentFaviconDriverTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest,

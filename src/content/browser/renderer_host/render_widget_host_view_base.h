@@ -35,14 +35,14 @@
 #include "third_party/blink/public/common/page/content_to_visible_time_reporter.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
-#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom-forward.h"
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom-forward.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_action_handler_registry.h"
 #include "ui/base/ime/mojom/text_input_state.mojom-forward.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/display/display.h"
-#include "ui/display/display_list.h"
+#include "ui/display/screen_infos.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -127,6 +127,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   std::unique_ptr<viz::ClientFrameSinkVideoCapturer> CreateVideoCapturer()
       override;
   void GetScreenInfo(display::ScreenInfo* screen_info) override;
+  display::ScreenInfos GetScreenInfos() override;
+
   void EnableAutoResize(const gfx::Size& min_size,
                         const gfx::Size& max_size) override;
   void DisableAutoResize(const gfx::Size& new_size) override;
@@ -144,6 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   bool ShouldVirtualKeyboardOverlayContent() override;
   void NotifyVirtualKeyboardOverlayRect(
       const gfx::Rect& keyboard_rect) override {}
+  bool IsHTMLFormPopup() const override;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
@@ -170,9 +173,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   WidgetType GetWidgetType();
 
   virtual void SendInitialPropertiesIfNeeded() {}
-
-  // Get display info known to this view; must be consistent with GetScreenInfo.
-  virtual const std::vector<display::Display>& GetDisplays() const;
 
   // Called when screen information or native widget bounds change.
   virtual void UpdateScreenInfo();
@@ -604,7 +604,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   WidgetType widget_type_ = WidgetType::kFrame;
 
   // Cached information about the renderer's display environment.
-  display::DisplayList display_list_;
+  display::ScreenInfos screen_infos_;
 
   // Indicates whether keyboard lock is active for this view.
   bool keyboard_locked_ = false;

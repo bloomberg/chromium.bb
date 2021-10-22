@@ -11,6 +11,7 @@ import './autofill_page/payments_section.js';
 import './clear_browsing_data_dialog/clear_browsing_data_dialog.js';
 import './search_engines_page/search_engines_page.js';
 import './privacy_page/privacy_review/privacy_review_description_item.js';
+import './privacy_page/privacy_review/privacy_review_history_sync_fragment.js';
 import './privacy_page/privacy_review/privacy_review_msbb_fragment.js';
 import './privacy_page/privacy_review/privacy_review_page.js';
 import './privacy_page/security_keys_subpage.js';
@@ -23,6 +24,7 @@ import './site_settings/category_setting_exceptions.js';
 import './site_settings/chooser_exception_list.js';
 import './site_settings/media_picker.js';
 import './site_settings/pdf_documents.js';
+import './site_settings/protocol_handlers.js';
 import './site_settings/settings_category_default_radio_group.js';
 import './site_settings/site_data.js';
 import './site_settings/site_details.js';
@@ -76,6 +78,7 @@ export {IncompatibleApplication, IncompatibleApplicationsBrowserProxyImpl} from 
 export {LanguagesBrowserProxy, LanguagesBrowserProxyImpl} from './languages_page/languages_browser_proxy.js';
 export {LanguageSettingsActionType, LanguageSettingsMetricsProxy, LanguageSettingsMetricsProxyImpl, LanguageSettingsPageImpressionType} from './languages_page/languages_settings_metrics_proxy.js';
 export {kMenuCloseDelay, SettingsLanguagesSubpageElement} from './languages_page/languages_subpage.js';
+export {LanguageHelper, LanguagesModel} from './languages_page/languages_types.js';
 // </if>
 // <if expr="not chromeos">
 export {ImportDataBrowserProxyImpl, ImportDataStatus} from './people_page/import_data_browser_proxy.js';
@@ -86,6 +89,7 @@ export {SettingsCookiesPageElement} from './privacy_page/cookies_page.js';
 export {SettingsDoNotTrackToggleElement} from './privacy_page/do_not_track_toggle.js';
 export {PrivacyReviewClearOnExitFragmentElement} from './privacy_page/privacy_review/privacy_review_clear_on_exit_fragment.js';
 export {PrivacyReviewDescriptionItemElement} from './privacy_page/privacy_review/privacy_review_description_item.js';
+export {PrivacyReviewHistorySyncFragmentElement} from './privacy_page/privacy_review/privacy_review_history_sync_fragment.js';
 export {PrivacyReviewMsbbFragmentElement} from './privacy_page/privacy_review/privacy_review_msbb_fragment.js';
 export {SettingsPrivacyReviewPageElement} from './privacy_page/privacy_review/privacy_review_page.js';
 export {BioEnrollDialogPage} from './privacy_page/security_keys_bio_enroll_dialog.js';
@@ -103,10 +107,9 @@ export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, N
 export {CookieDetails, cookieInfo} from './site_settings/cookie_info.js';
 export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception_dialog.js';
 export {LocalDataBrowserProxy, LocalDataBrowserProxyImpl, LocalDataItem} from './site_settings/local_data_browser_proxy.js';
-export {HandlerEntry, ProtocolEntry} from './site_settings/protocol_handlers.js';
+export {AppHandlerEntry, AppProtocolEntry, HandlerEntry, ProtocolEntry} from './site_settings/protocol_handlers.js';
 export {SettingsCategoryDefaultRadioGroupElement} from './site_settings/settings_category_default_radio_group.js';
 export {SiteListElement} from './site_settings/site_list.js';
-export {kControlledByLookup} from './site_settings/site_settings_mixin.js';
 export {ContentSettingProvider, DefaultContentSetting, RawChooserException, RawSiteException, RecentSitePermissions, SiteException, SiteGroup, SiteSettingsPrefsBrowserProxy, SiteSettingsPrefsBrowserProxyImpl, ZoomLevelEntry} from './site_settings/site_settings_prefs_browser_proxy.js';
 export {WebsiteUsageBrowserProxyImpl} from './site_settings/website_usage_browser_proxy.js';
 export {SettingsRecentSitePermissionsElement} from './site_settings_page/recent_site_permissions.js';

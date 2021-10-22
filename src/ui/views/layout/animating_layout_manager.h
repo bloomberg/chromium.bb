@@ -115,6 +115,10 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   };
 
   AnimatingLayoutManager();
+
+  AnimatingLayoutManager(const AnimatingLayoutManager&) = delete;
+  AnimatingLayoutManager& operator=(const AnimatingLayoutManager&) = delete;
+
   ~AnimatingLayoutManager() override;
 
   BoundsAnimationMode bounds_animation_mode() const {
@@ -293,7 +297,7 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
 
   // How long each animation takes. Depending on how far along an animation is,
   // a new target layout will either cause the animation to restart or redirect.
-  base::TimeDelta animation_duration_ = base::TimeDelta::FromMilliseconds(250);
+  base::TimeDelta animation_duration_ = base::Milliseconds(250);
 
   // The motion curve of the animation to perform.
   gfx::Tween::Type tween_type_ = gfx::Tween::EASE_IN_OUT;
@@ -358,8 +362,6 @@ class VIEWS_EXPORT AnimatingLayoutManager : public LayoutManagerBase {
   bool run_queued_actions_is_pending_ = false;
 
   base::WeakPtrFactory<AnimatingLayoutManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AnimatingLayoutManager);
 };
 
 }  // namespace views

@@ -131,7 +131,6 @@ static int config_input(AVFilterLink *inlink)
 
     if (s->do_video) {
         nb_samples = FFMAX(1, av_rescale(inlink->sample_rate, s->frame_rate.den, s->frame_rate.num));
-        inlink->partial_buf_size =
         inlink->min_samples =
         inlink->max_samples = nb_samples;
     }
@@ -356,7 +355,7 @@ static av_cold int init(AVFilterContext *ctx)
         .name         = "out0",
         .type         = AVMEDIA_TYPE_AUDIO,
     };
-    ret = ff_insert_outpad(ctx, 0, &pad);
+    ret = ff_append_outpad(ctx, &pad);
     if (ret < 0)
         return ret;
 
@@ -366,7 +365,7 @@ static av_cold int init(AVFilterContext *ctx)
             .type         = AVMEDIA_TYPE_VIDEO,
             .config_props = config_video_output,
         };
-        ret = ff_insert_outpad(ctx, 1, &pad);
+        ret = ff_append_outpad(ctx, &pad);
         if (ret < 0)
             return ret;
     }
@@ -381,7 +380,6 @@ static const AVFilterPad inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 const AVFilter ff_avf_aphasemeter = {
@@ -391,7 +389,7 @@ const AVFilter ff_avf_aphasemeter = {
     .uninit        = uninit,
     .query_formats = query_formats,
     .priv_size     = sizeof(AudioPhaseMeterContext),
-    .inputs        = inputs,
+    FILTER_INPUTS(inputs),
     .outputs       = NULL,
     .priv_class    = &aphasemeter_class,
     .flags         = AVFILTER_FLAG_DYNAMIC_OUTPUTS,

@@ -14,12 +14,13 @@
 #include <glib-object.h>
 #include <spa/param/format-utils.h>
 #include <spa/param/props.h>
-
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
+#include <unistd.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "absl/memory/memory.h"
@@ -27,11 +28,13 @@
 #include "modules/desktop_capture/desktop_capturer.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
+#include "rtc_base/string_encode.h"
 
 #if defined(WEBRTC_DLOPEN_PIPEWIRE)
 #include "modules/desktop_capture/linux/pipewire_stubs.h"
 using modules_desktop_capture_linux::InitializeStubs;
-using modules_desktop_capture_linux::kModulePipewire03;
+using modules_desktop_capture_linux::kModuleDrm;
+using modules_desktop_capture_linux::kModulePipewire;
 using modules_desktop_capture_linux::StubPathMap;
 #endif  // defined(WEBRTC_DLOPEN_PIPEWIRE)
 
@@ -49,67 +52,116 @@ const int kBytesPerPixel = 4;
 
 #if defined(WEBRTC_DLOPEN_PIPEWIRE)
 const char kPipeWireLib[] = "libpipewire-0.3.so.0";
+const char kDrmLib[] = "libdrm.so.2";
 #endif
 
-// static
-struct dma_buf_sync {
-  uint64_t flags;
+#if !PW_CHECK_VERSION(0, 3, 29)
+#define SPA_POD_PROP_FLAG_MANDATORY (1u << 3)
+#endif
+#if !PW_CHECK_VERSION(0, 3, 33)
+#define SPA_POD_PROP_FLAG_DONT_FIXATE (1u << 4)
+#endif
+
+struct pw_version {
+  int major = 0;
+  int minor = 0;
+  int micro = 0;
 };
-#define DMA_BUF_SYNC_READ (1 << 0)
-#define DMA_BUF_SYNC_START (0 << 2)
-#define DMA_BUF_SYNC_END (1 << 2)
-#define DMA_BUF_BASE 'b'
-#define DMA_BUF_IOCTL_SYNC _IOW(DMA_BUF_BASE, 0, struct dma_buf_sync)
 
-static void SyncDmaBuf(int fd, uint64_t start_or_end) {
-  struct dma_buf_sync sync = {0};
+bool CheckPipeWireVersion(pw_version required_version) {
+  std::vector<std::string> parsed_version;
+  std::string version_string = pw_get_library_version();
+  rtc::split(version_string, '.', &parsed_version);
 
-  sync.flags = start_or_end | DMA_BUF_SYNC_READ;
-
-  while (true) {
-    int ret;
-    ret = ioctl(fd, DMA_BUF_IOCTL_SYNC, &sync);
-    if (ret == -1 && errno == EINTR) {
-      continue;
-    } else if (ret == -1) {
-      RTC_LOG(LS_ERROR) << "Failed to synchronize DMA buffer: "
-                        << g_strerror(errno);
-      break;
-    } else {
-      break;
-    }
+  if (parsed_version.size() != 3) {
+    return false;
   }
+
+  pw_version current_version = {std::stoi(parsed_version.at(0)),
+                                std::stoi(parsed_version.at(1)),
+                                std::stoi(parsed_version.at(2))};
+
+  return (current_version.major > required_version.major) ||
+         (current_version.major == required_version.major &&
+          current_version.minor > required_version.minor) ||
+         (current_version.major == required_version.major &&
+          current_version.minor == required_version.minor &&
+          current_version.micro >= required_version.micro);
+}
+
+spa_pod* BuildFormat(spa_pod_builder* builder,
+                     uint32_t format,
+                     const std::vector<uint64_t>& modifiers) {
+  bool first = true;
+  spa_pod_frame frames[2];
+  spa_rectangle pw_min_screen_bounds = spa_rectangle{1, 1};
+  spa_rectangle pw_max_screen_bounds = spa_rectangle{UINT32_MAX, UINT32_MAX};
+
+  spa_pod_builder_push_object(builder, &frames[0], SPA_TYPE_OBJECT_Format,
+                              SPA_PARAM_EnumFormat);
+  spa_pod_builder_add(builder, SPA_FORMAT_mediaType,
+                      SPA_POD_Id(SPA_MEDIA_TYPE_video), 0);
+  spa_pod_builder_add(builder, SPA_FORMAT_mediaSubtype,
+                      SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw), 0);
+  spa_pod_builder_add(builder, SPA_FORMAT_VIDEO_format, SPA_POD_Id(format), 0);
+
+  if (modifiers.size()) {
+    // SPA_POD_PROP_FLAG_DONT_FIXATE can be used with PipeWire >= 0.3.33
+    if (CheckPipeWireVersion(pw_version{0, 3, 33})) {
+      spa_pod_builder_prop(
+          builder, SPA_FORMAT_VIDEO_modifier,
+          SPA_POD_PROP_FLAG_MANDATORY | SPA_POD_PROP_FLAG_DONT_FIXATE);
+    } else {
+      spa_pod_builder_prop(builder, SPA_FORMAT_VIDEO_modifier,
+                           SPA_POD_PROP_FLAG_MANDATORY);
+    }
+    spa_pod_builder_push_choice(builder, &frames[1], SPA_CHOICE_Enum, 0);
+    // modifiers from the array
+    for (int64_t val : modifiers) {
+      spa_pod_builder_long(builder, val);
+      // Add the first modifier twice as the very first value is the default
+      // option
+      if (first) {
+        spa_pod_builder_long(builder, val);
+        first = false;
+      }
+    }
+    spa_pod_builder_pop(builder, &frames[1]);
+  }
+
+  spa_pod_builder_add(
+      builder, SPA_FORMAT_VIDEO_size,
+      SPA_POD_CHOICE_RANGE_Rectangle(
+          &pw_min_screen_bounds, &pw_min_screen_bounds, &pw_max_screen_bounds),
+      0);
+
+  return static_cast<spa_pod*>(spa_pod_builder_pop(builder, &frames[0]));
 }
 
 class ScopedBuf {
  public:
   ScopedBuf() {}
-  ScopedBuf(unsigned char* map, int map_size, bool is_dma_buf, int fd)
-      : map_(map), map_size_(map_size), is_dma_buf_(is_dma_buf), fd_(fd) {}
+  ScopedBuf(uint8_t* map, int map_size, int fd)
+      : map_(map), map_size_(map_size), fd_(fd) {}
   ~ScopedBuf() {
     if (map_ != MAP_FAILED) {
-      if (is_dma_buf_) {
-        SyncDmaBuf(fd_, DMA_BUF_SYNC_END);
-      }
       munmap(map_, map_size_);
     }
   }
 
   operator bool() { return map_ != MAP_FAILED; }
 
-  void initialize(unsigned char* map, int map_size, bool is_dma_buf, int fd) {
+  void initialize(uint8_t* map, int map_size, int fd) {
     map_ = map;
     map_size_ = map_size;
-    is_dma_buf_ = is_dma_buf;
     fd_ = fd;
   }
 
-  unsigned char* get() { return map_; }
+  uint8_t* get() { return map_; }
 
  protected:
-  unsigned char* map_ = nullptr;
+  uint8_t* map_ = static_cast<uint8_t*>(MAP_FAILED);
   int map_size_;
-  bool is_dma_buf_;
   int fd_;
 };
 
@@ -234,17 +286,26 @@ void BaseCapturerPipeWire::OnStreamParamChanged(void* data,
   auto size = height * stride;
 
   that->desktop_size_ = DesktopSize(width, height);
+#if PW_CHECK_VERSION(0, 3, 0)
+  that->modifier_ = that->spa_video_format_.modifier;
+#endif
 
   uint8_t buffer[1024] = {};
   auto builder = spa_pod_builder{buffer, sizeof(buffer)};
 
   // Setup buffers and meta header for new format.
   const struct spa_pod* params[3];
+  const int buffer_types =
+      spa_pod_find_prop(format, nullptr, SPA_FORMAT_VIDEO_modifier)
+          ? (1 << SPA_DATA_DmaBuf) | (1 << SPA_DATA_MemFd) |
+                (1 << SPA_DATA_MemPtr)
+          : (1 << SPA_DATA_MemFd) | (1 << SPA_DATA_MemPtr);
   params[0] = reinterpret_cast<spa_pod*>(spa_pod_builder_add_object(
       &builder, SPA_TYPE_OBJECT_ParamBuffers, SPA_PARAM_Buffers,
       SPA_PARAM_BUFFERS_size, SPA_POD_Int(size), SPA_PARAM_BUFFERS_stride,
       SPA_POD_Int(stride), SPA_PARAM_BUFFERS_buffers,
-      SPA_POD_CHOICE_RANGE_Int(8, 1, 32)));
+      SPA_POD_CHOICE_RANGE_Int(8, 1, 32), SPA_PARAM_BUFFERS_dataType,
+      SPA_POD_CHOICE_FLAGS_Int(buffer_types)));
   params[1] = reinterpret_cast<spa_pod*>(spa_pod_builder_add_object(
       &builder, SPA_TYPE_OBJECT_ParamMeta, SPA_PARAM_Meta, SPA_PARAM_META_type,
       SPA_POD_Id(SPA_META_Header), SPA_PARAM_META_size,
@@ -348,6 +409,10 @@ BaseCapturerPipeWire::~BaseCapturerPipeWire() {
     g_object_unref(proxy_);
     proxy_ = nullptr;
   }
+
+  if (pw_fd_ != -1) {
+    close(pw_fd_);
+  }
 }
 
 void BaseCapturerPipeWire::InitPortal() {
@@ -359,18 +424,21 @@ void BaseCapturerPipeWire::InitPortal() {
       reinterpret_cast<GAsyncReadyCallback>(OnProxyRequested), this);
 }
 
-void BaseCapturerPipeWire::InitPipeWire() {
+void BaseCapturerPipeWire::Init() {
 #if defined(WEBRTC_DLOPEN_PIPEWIRE)
   StubPathMap paths;
 
-  // Check if the PipeWire library is available.
-  paths[kModulePipewire03].push_back(kPipeWireLib);
+  // Check if the PipeWire and DRM libraries are available.
+  paths[kModulePipewire].push_back(kPipeWireLib);
+  paths[kModuleDrm].push_back(kDrmLib);
   if (!InitializeStubs(paths)) {
     RTC_LOG(LS_ERROR) << "Failed to load the PipeWire library and symbols.";
     portal_init_failed_ = true;
     return;
   }
 #endif  // defined(WEBRTC_DLOPEN_PIPEWIRE)
+
+  egl_dmabuf_ = std::make_unique<EglDmaBuf>();
 
   pw_init(/*argc=*/nullptr, /*argc=*/nullptr);
 
@@ -385,7 +453,7 @@ void BaseCapturerPipeWire::InitPipeWire() {
     return;
   }
 
-  pw_core_ = pw_context_connect(pw_context_, nullptr, 0);
+  pw_core_ = pw_context_connect_fd(pw_context_, pw_fd_, nullptr, 0);
   if (!pw_core_) {
     RTC_LOG(LS_ERROR) << "Failed to connect PipeWire context";
     return;
@@ -419,34 +487,37 @@ void BaseCapturerPipeWire::InitPipeWire() {
 }
 
 pw_stream* BaseCapturerPipeWire::CreateReceivingStream() {
-  spa_rectangle pwMinScreenBounds = spa_rectangle{1, 1};
-  spa_rectangle pwMaxScreenBounds = spa_rectangle{UINT32_MAX, UINT32_MAX};
-
   pw_properties* reuseProps =
       pw_properties_new_string("pipewire.client.reuse=1");
   auto stream = pw_stream_new(pw_core_, "webrtc-consume-stream", reuseProps);
 
-  uint8_t buffer[1024] = {};
-  const spa_pod* params[1];
+  uint8_t buffer[2048] = {};
+  std::vector<uint64_t> modifiers;
+
   spa_pod_builder builder = spa_pod_builder{buffer, sizeof(buffer)};
 
-  params[0] = reinterpret_cast<spa_pod*>(spa_pod_builder_add_object(
-      &builder, SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
-      SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
-      SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
-      SPA_FORMAT_VIDEO_format,
-      SPA_POD_CHOICE_ENUM_Id(5, SPA_VIDEO_FORMAT_BGRx, SPA_VIDEO_FORMAT_RGBx,
-                             SPA_VIDEO_FORMAT_RGBA, SPA_VIDEO_FORMAT_BGRx,
-                             SPA_VIDEO_FORMAT_BGRA),
-      SPA_FORMAT_VIDEO_size,
-      SPA_POD_CHOICE_RANGE_Rectangle(&pwMinScreenBounds, &pwMinScreenBounds,
-                                     &pwMaxScreenBounds),
-      0));
+  std::vector<const spa_pod*> params;
+  const bool has_required_pw_version =
+      CheckPipeWireVersion(pw_version{0, 3, 29});
+  for (uint32_t format : {SPA_VIDEO_FORMAT_BGRA, SPA_VIDEO_FORMAT_RGBA,
+                          SPA_VIDEO_FORMAT_BGRx, SPA_VIDEO_FORMAT_RGBx}) {
+    // Modifiers can be used with PipeWire >= 0.3.29
+    if (has_required_pw_version) {
+      modifiers = egl_dmabuf_->QueryDmaBufModifiers(format);
+
+      if (!modifiers.empty()) {
+        params.push_back(BuildFormat(&builder, format, modifiers));
+      }
+    }
+
+    params.push_back(BuildFormat(&builder, format, /*modifiers=*/{}));
+  }
 
   pw_stream_add_listener(stream, &spa_stream_listener_, &pw_stream_events_,
                          this);
   if (pw_stream_connect(stream, PW_DIRECTION_INPUT, pw_stream_node_id_,
-                        PW_STREAM_FLAG_AUTOCONNECT, params, 1) != 0) {
+                        PW_STREAM_FLAG_AUTOCONNECT, params.data(),
+                        params.size()) != 0) {
     RTC_LOG(LS_ERROR) << "Could not connect receiving stream.";
     portal_init_failed_ = true;
     return nullptr;
@@ -456,25 +527,24 @@ pw_stream* BaseCapturerPipeWire::CreateReceivingStream() {
 }
 
 void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
-  spa_buffer* spaBuffer = buffer->buffer;
+  spa_buffer* spa_buffer = buffer->buffer;
   ScopedBuf map;
+  std::unique_ptr<uint8_t[]> src_unique_ptr;
   uint8_t* src = nullptr;
 
-  if (spaBuffer->datas[0].chunk->size == 0) {
+  if (spa_buffer->datas[0].chunk->size == 0) {
     RTC_LOG(LS_ERROR) << "Failed to get video stream: Zero size.";
     return;
   }
 
-  if (spaBuffer->datas[0].type == SPA_DATA_MemFd ||
-      spaBuffer->datas[0].type == SPA_DATA_DmaBuf) {
+  if (spa_buffer->datas[0].type == SPA_DATA_MemFd) {
     map.initialize(
         static_cast<uint8_t*>(
             mmap(nullptr,
-                 spaBuffer->datas[0].maxsize + spaBuffer->datas[0].mapoffset,
-                 PROT_READ, MAP_PRIVATE, spaBuffer->datas[0].fd, 0)),
-        spaBuffer->datas[0].maxsize + spaBuffer->datas[0].mapoffset,
-        spaBuffer->datas[0].type == SPA_DATA_DmaBuf,
-        spaBuffer->datas[0].fd);
+                 spa_buffer->datas[0].maxsize + spa_buffer->datas[0].mapoffset,
+                 PROT_READ, MAP_PRIVATE, spa_buffer->datas[0].fd, 0)),
+        spa_buffer->datas[0].maxsize + spa_buffer->datas[0].mapoffset,
+        spa_buffer->datas[0].fd);
 
     if (!map) {
       RTC_LOG(LS_ERROR) << "Failed to mmap the memory: "
@@ -482,13 +552,25 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
       return;
     }
 
-    if (spaBuffer->datas[0].type == SPA_DATA_DmaBuf) {
-      SyncDmaBuf(spaBuffer->datas[0].fd, DMA_BUF_SYNC_START);
+    src = SPA_MEMBER(map.get(), spa_buffer->datas[0].mapoffset, uint8_t);
+  } else if (spa_buffer->datas[0].type == SPA_DATA_DmaBuf) {
+    const uint n_planes = spa_buffer->n_datas;
+    int fds[n_planes];
+    uint32_t offsets[n_planes];
+    uint32_t strides[n_planes];
+
+    for (uint32_t i = 0; i < n_planes; ++i) {
+      fds[i] = spa_buffer->datas[i].fd;
+      offsets[i] = spa_buffer->datas[i].chunk->offset;
+      strides[i] = spa_buffer->datas[i].chunk->stride;
     }
 
-    src = SPA_MEMBER(map.get(), spaBuffer->datas[0].mapoffset, uint8_t);
-  } else if (spaBuffer->datas[0].type == SPA_DATA_MemPtr) {
-    src = static_cast<uint8_t*>(spaBuffer->datas[0].data);
+    src_unique_ptr = egl_dmabuf_->ImageFromDmaBuf(
+        desktop_size_, spa_video_format_.format, n_planes, fds, strides,
+        offsets, modifier_);
+    src = src_unique_ptr.get();
+  } else if (spa_buffer->datas[0].type == SPA_DATA_MemPtr) {
+    src = static_cast<uint8_t*>(spa_buffer->datas[0].data);
   }
 
   if (!src) {
@@ -497,7 +579,7 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
 
   struct spa_meta_region* video_metadata =
       static_cast<struct spa_meta_region*>(spa_buffer_find_meta_data(
-          spaBuffer, SPA_META_VideoCrop, sizeof(*video_metadata)));
+          spa_buffer, SPA_META_VideoCrop, sizeof(*video_metadata)));
 
   // Video size from metadata is bigger than an actual video stream size.
   // The metadata are wrong or we should up-scale the video...in both cases
@@ -513,7 +595,6 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
   // Use video metadata when video size from metadata is set and smaller than
   // video stream size, so we need to adjust it.
   bool video_metadata_use = false;
-
   const struct spa_rectangle* video_metadata_size =
       video_metadata ? &video_metadata->region.size : nullptr;
 
@@ -525,7 +606,6 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
     video_metadata_use = true;
   }
 
-  DesktopSize video_size_prev = video_size_;
   if (video_metadata_use) {
     video_size_ =
         DesktopSize(video_metadata_size->width, video_metadata_size->height);
@@ -533,55 +613,41 @@ void BaseCapturerPipeWire::HandleBuffer(pw_buffer* buffer) {
     video_size_ = desktop_size_;
   }
 
+  uint32_t y_offset = video_metadata_use && (video_metadata->region.position.y +
+                                                 video_size_.height() <=
+                                             desktop_size_.height())
+                          ? video_metadata->region.position.y
+                          : 0;
+  uint32_t x_offset = video_metadata_use && (video_metadata->region.position.x +
+                                                 video_size_.width() <=
+                                             desktop_size_.width())
+                          ? video_metadata->region.position.x
+                          : 0;
+
   webrtc::MutexLock lock(&current_frame_lock_);
-  if (!current_frame_ || !video_size_.equals(video_size_prev)) {
-    current_frame_ = std::make_unique<uint8_t[]>(
-        video_size_.width() * video_size_.height() * kBytesPerPixel);
-  }
 
-  const int32_t dst_stride = video_size_.width() * kBytesPerPixel;
-  const int32_t src_stride = spaBuffer->datas[0].chunk->stride;
+  uint8_t* updated_src = src + (spa_buffer->datas[0].chunk->stride * y_offset) +
+                         (kBytesPerPixel * x_offset);
+  current_frame_ = std::make_unique<BasicDesktopFrame>(
+      DesktopSize(video_size_.width(), video_size_.height()));
+  current_frame_->CopyPixelsFrom(
+      updated_src,
+      (spa_buffer->datas[0].chunk->stride - (kBytesPerPixel * x_offset)),
+      DesktopRect::MakeWH(video_size_.width(), video_size_.height()));
 
-  if (src_stride != (desktop_size_.width() * kBytesPerPixel)) {
-    RTC_LOG(LS_ERROR) << "Got buffer with stride different from screen stride: "
-                      << src_stride
-                      << " != " << (desktop_size_.width() * kBytesPerPixel);
-    portal_init_failed_ = true;
-
-    return;
-  }
-
-  // Adjust source content based on metadata video position
-  if (video_metadata_use &&
-      (video_metadata->region.position.y + video_size_.height() <=
-       desktop_size_.height())) {
-    src += src_stride * video_metadata->region.position.y;
-  }
-  const int x_offset =
-      video_metadata_use &&
-              (video_metadata->region.position.x + video_size_.width() <=
-               desktop_size_.width())
-          ? video_metadata->region.position.x * kBytesPerPixel
-          : 0;
-
-  uint8_t* dst = current_frame_.get();
-  for (int i = 0; i < video_size_.height(); ++i) {
-    // Adjust source content based on crop video position if needed
-    src += x_offset;
-    std::memcpy(dst, src, dst_stride);
-    // If both sides decided to go with the RGBx format we need to convert it to
-    // BGRx to match color format expected by WebRTC.
-    if (spa_video_format_.format == SPA_VIDEO_FORMAT_RGBx ||
-        spa_video_format_.format == SPA_VIDEO_FORMAT_RGBA) {
-      ConvertRGBxToBGRx(dst, dst_stride);
+  if (spa_video_format_.format == SPA_VIDEO_FORMAT_RGBx ||
+      spa_video_format_.format == SPA_VIDEO_FORMAT_RGBA) {
+    uint8_t* tmp_src = current_frame_->data();
+    for (int i = 0; i < video_size_.height(); ++i) {
+      // If both sides decided to go with the RGBx format we need to convert it
+      // to BGRx to match color format expected by WebRTC.
+      ConvertRGBxToBGRx(tmp_src, current_frame_->stride());
+      tmp_src += current_frame_->stride();
     }
-    src += src_stride - x_offset;
-    dst += dst_stride;
   }
 }
 
 void BaseCapturerPipeWire::ConvertRGBxToBGRx(uint8_t* frame, uint32_t size) {
-  // Change color format for KDE KWin which uses RGBx and not BGRx
   for (uint32_t i = 0; i < size; i += 4) {
     uint8_t tempR = frame[i];
     uint8_t tempB = frame[i + 2];
@@ -628,7 +694,7 @@ gchar* BaseCapturerPipeWire::PrepareSignalHandle(GDBusConnection* connection,
                                                  const gchar* token) {
   Scoped<gchar> sender(
       g_strdup(g_dbus_connection_get_unique_name(connection) + 1));
-  for (int i = 0; sender.get()[i]; i++) {
+  for (int i = 0; sender.get()[i]; ++i) {
     if (sender.get()[i] == '.') {
       sender.get()[i] = '_';
     }
@@ -719,8 +785,9 @@ void BaseCapturerPipeWire::OnSessionRequestResponseSignal(
   Scoped<GVariant> response_data;
   g_variant_get(parameters, "(u@a{sv})", &portal_response,
                 response_data.receive());
-  g_variant_lookup(response_data.get(), "session_handle", "s",
-                   &that->session_handle_);
+  Scoped<GVariant> session_handle(
+      g_variant_lookup_value(response_data.get(), "session_handle", nullptr));
+  that->session_handle_ = g_variant_dup_string(session_handle.get(), nullptr);
 
   if (!that->session_handle_ || portal_response) {
     RTC_LOG(LS_ERROR)
@@ -1001,7 +1068,7 @@ void BaseCapturerPipeWire::OnOpenPipeWireRemoteRequested(
     return;
   }
 
-  that->InitPipeWire();
+  that->Init();
 }
 
 void BaseCapturerPipeWire::Start(Callback* callback) {
@@ -1020,18 +1087,7 @@ void BaseCapturerPipeWire::CaptureFrame() {
   }
 
   webrtc::MutexLock lock(&current_frame_lock_);
-  if (!current_frame_) {
-    callback_->OnCaptureResult(Result::ERROR_TEMPORARY, nullptr);
-    return;
-  }
-
-  DesktopSize frame_size = video_size_;
-
-  std::unique_ptr<DesktopFrame> result(new BasicDesktopFrame(frame_size));
-  result->CopyPixelsFrom(
-      current_frame_.get(), (frame_size.width() * kBytesPerPixel),
-      DesktopRect::MakeWH(frame_size.width(), frame_size.height()));
-  if (!result) {
+  if (!current_frame_ || !current_frame_->data()) {
     callback_->OnCaptureResult(Result::ERROR_TEMPORARY, nullptr);
     return;
   }
@@ -1039,7 +1095,7 @@ void BaseCapturerPipeWire::CaptureFrame() {
   // TODO(julien.isorce): http://crbug.com/945468. Set the icc profile on the
   // frame, see ScreenCapturerX11::CaptureFrame.
 
-  callback_->OnCaptureResult(Result::SUCCESS, std::move(result));
+  callback_->OnCaptureResult(Result::SUCCESS, std::move(current_frame_));
 }
 
 bool BaseCapturerPipeWire::GetSourceList(SourceList* sources) {

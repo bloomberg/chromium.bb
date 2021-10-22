@@ -237,6 +237,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
                 float scale_y,
                 float inner_tile_scale_y,
                 bool min_y_scale);
+
+  AppListConfig(const AppListConfig&) = delete;
+  AppListConfig& operator=(const AppListConfig&) = delete;
+
   ~AppListConfig();
 
   AppListConfigType type() const { return type_; }
@@ -254,38 +258,8 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_title_width() const { return grid_title_width_; }
   int grid_focus_dimension() const { return grid_focus_dimension_; }
   int grid_focus_corner_radius() const { return grid_focus_corner_radius_; }
-  int grid_fadeout_zone_height() const { return grid_fadeout_zone_height_; }
-  int grid_fadeout_mask_height() const { return grid_fadeout_mask_height_; }
-  int grid_to_page_switcher_margin() const {
-    return grid_to_page_switcher_margin_;
-  }
-  int page_switcher_end_margin() const { return page_switcher_end_margin_; }
-  int suggestion_chip_container_top_margin() const {
-    return suggestion_chip_container_top_margin_;
-  }
-  int suggestion_chip_container_height() const {
-    return suggestion_chip_container_height_;
-  }
   int app_title_max_line_height() const { return app_title_max_line_height_; }
   const gfx::FontList& app_title_font() const { return app_title_font_; }
-  int peeking_app_list_height() const { return peeking_app_list_height_; }
-  int search_box_closed_top_padding() const {
-    return search_box_closed_top_padding_;
-  }
-  int search_box_peeking_top_padding() const {
-    return search_box_peeking_top_padding_;
-  }
-  int search_box_fullscreen_top_padding() const {
-    return search_box_fullscreen_top_padding_;
-  }
-  int search_box_height() const { return search_box_height_; }
-  int search_box_height_for_dense_layout() const {
-    return search_box_height_for_dense_layout_;
-  }
-  int preferred_cols() const { return preferred_cols_; }
-  int preferred_rows() const { return preferred_rows_; }
-  int page_spacing() const { return page_spacing_; }
-  int expand_arrow_tile_height() const { return expand_arrow_tile_height_; }
   int folder_bubble_radius() const { return folder_bubble_radius_; }
   int folder_icon_dimension() const { return folder_icon_dimension_; }
   int folder_unclipped_icon_dimension() const {
@@ -301,11 +275,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   }
   int folder_dropping_circle_radius() const {
     return folder_dropping_circle_radius_;
-  }
-  int page_flip_zone_size() const { return page_flip_zone_size_; }
-  size_t max_folder_pages() const { return max_folder_pages_; }
-  size_t max_folder_items_per_page() const {
-    return max_folder_items_per_page_;
   }
 
   gfx::Size grid_icon_size() const {
@@ -339,14 +308,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
                      item_icon_in_folder_icon_dimension_);
   }
 
-  // The minimal horizontal padding for the apps grid.
-  int GetMinGridHorizontalPadding() const;
-
-  // Returns the ideal apps container margins for the bounds available for app
-  // list content.
-  int GetIdealHorizontalMargin(const gfx::Rect& abailable_bounds) const;
-  int GetIdealVerticalMargin(const gfx::Rect& abailable_bounds) const;
-
  private:
   const AppListConfigType type_;
 
@@ -378,60 +339,11 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   const int grid_focus_dimension_;
   const int grid_focus_corner_radius_;
 
-  // The vertical insets in the apps grid reserved for the grid fade out area.
-  const int grid_fadeout_zone_height_;
-
-  // The height of the masked area in the grid fade out zone.
-  // This is different from |grid_fadeout_zone_height_|, which may include
-  // additional margin outside the fadeout mask.
-  const int grid_fadeout_mask_height_;
-
-  // Horizontal margin between the apps grid and the page switcher UI.
-  const int grid_to_page_switcher_margin_;
-
-  // Minimal horizontal page switcher distance from the app list UI edge.
-  const int page_switcher_end_margin_;
-
-  // The suggestion chip container top margin.
-  const int suggestion_chip_container_top_margin_;
-
-  // The suggestion chip container height.
-  const int suggestion_chip_container_height_;
-
   // The maximum line height for app title in app list.
   const int app_title_max_line_height_;
 
   // The font for app title in app list.
   const gfx::FontList app_title_font_;
-
-  // The height of app list in peeking mode.
-  const int peeking_app_list_height_;
-
-  // The top padding of search box in closed state.
-  const int search_box_closed_top_padding_;
-
-  // The top padding of search box in peeking state.
-  const int search_box_peeking_top_padding_;
-
-  // The top padding of search box in fullscreen state.
-  const int search_box_fullscreen_top_padding_;
-
-  // The preferred search box height.
-  const int search_box_height_;
-
-  // The preferred search box height when the vertical app list contents space
-  // is condensed - normally |search_box_height_| would be used.
-  const int search_box_height_for_dense_layout_;
-
-  // Preferred number of columns and rows in apps grid.
-  const int preferred_cols_;
-  const int preferred_rows_;
-
-  // The spacing between each page.
-  const int page_spacing_;
-
-  // The tile height of expand arrow.
-  const int expand_arrow_tile_height_;
 
   // The folder image bubble radius.
   const int folder_bubble_radius_;
@@ -457,17 +369,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // Radius of the circle, in which if entered, show folder dropping preview
   // UI.
   const int folder_dropping_circle_radius_;
-
-  // Width in pixels of the area on the sides that triggers a page flip.
-  const int page_flip_zone_size_;
-
-  // Max pages allowed in a folder.
-  const size_t max_folder_pages_;
-
-  // Max items per page allowed in a folder.
-  const size_t max_folder_items_per_page_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListConfig);
 };
 
 }  // namespace ash

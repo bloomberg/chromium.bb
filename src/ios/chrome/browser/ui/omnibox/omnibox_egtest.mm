@@ -224,11 +224,9 @@ id<GREYMatcher> SearchCopiedTextButton() {
 // Tests that in compact, a share button is visible.
 // Voice search is not enabled on the bots, so the voice search button is
 // not tested here.
-- (void)testTrailingButton {
-  // TODO(crbug.com/996541) Starting in Xcode 11 beta 6, the share button does
-  // not appear (even with a delay) flakily.
-  if (@available(iOS 13, *))
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
+// TODO(crbug.com/996541) Starting in Xcode 11 beta 6, the share button does
+// not appear (even with a delay) flakily.
+- (void)DISABLED_testTrailingButton {
   [self openPage1];
 
   if ([ChromeEarlGrey isCompactWidth]) {
@@ -689,18 +687,8 @@ id<GREYMatcher> SearchCopiedTextButton() {
 }
 
 // TODO(crbug.com/1067815): Test can't pass on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testNoDefaultMatch testNoDefaultMatch
-#else
-#define MAYBE_testNoDefaultMatch DISABLED_testNoDefaultMatch
-#endif
-- (void)MAYBE_testNoDefaultMatch {
-  // TODO(crbug.com/1105869) Omnibox pasteboard suggestions are currently
-  // disabled on iOS14.
-  if (@available(iOS 14, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS14.");
-  }
-
+// TODO(crbug.com/1253345) Re-enable this test
+- (void)DISABLED_testNoDefaultMatch {
   NSString* copiedText = @"test no default match1";
 
   // Put some text in pasteboard.

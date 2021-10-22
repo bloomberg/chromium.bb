@@ -78,6 +78,10 @@ class CookiesIteratorImpl final : public fuchsia::web::CookiesIterator,
                                  net::CookieChangeCause::INSERTED);
     }
   }
+
+  CookiesIteratorImpl(const CookiesIteratorImpl&) = delete;
+  CookiesIteratorImpl& operator=(const CookiesIteratorImpl&) = delete;
+
   ~CookiesIteratorImpl() override = default;
 
   // fuchsia::web::CookiesIterator implementation:
@@ -148,8 +152,6 @@ class CookiesIteratorImpl final : public fuchsia::web::CookiesIterator,
   // corresponding fuchsia::web::Cookie.
   std::map<net::CanonicalCookie::UniqueCookieKey, fuchsia::web::Cookie>
       queued_cookies_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookiesIteratorImpl);
 };
 
 void OnAllCookiesReceived(
@@ -215,7 +217,7 @@ void CookieManagerImpl::GetCookieList(
           net::CookieOptions::SameSiteCookieContext::MakeInclusive());
 
       cookie_manager_->GetCookieList(
-          GURL(*url), options,
+          GURL(*url), options, net::CookiePartitionKeychain::Todo(),
           base::BindOnce(&OnCookiesAndExcludedReceived, std::move(iterator)));
     } else {
       // TODO(858853): Support filtering by name.

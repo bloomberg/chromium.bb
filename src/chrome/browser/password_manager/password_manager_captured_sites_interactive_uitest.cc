@@ -33,8 +33,7 @@ using captured_sites_test_utils::GetParamAsString;
 
 namespace {
 
-constexpr base::TimeDelta kWaitForSaveFallbackInterval =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kWaitForSaveFallbackInterval = base::Seconds(5);
 
 // Return path to the Password Manager captured sites test root directory. The
 // directory contains subdirectories for different password manager test
@@ -77,13 +76,18 @@ class CapturedSitesPasswordManagerBrowserTest
           TestRecipeReplayChromeFeatureActionExecutor,
       public ::testing::WithParamInterface<CapturedSiteParams> {
  public:
+  CapturedSitesPasswordManagerBrowserTest(
+      const CapturedSitesPasswordManagerBrowserTest&) = delete;
+  CapturedSitesPasswordManagerBrowserTest& operator=(
+      const CapturedSitesPasswordManagerBrowserTest&) = delete;
+
   // TestRecipeReplayChromeFeatureActionExecutor:
   bool AddCredential(const std::string& origin,
                      const std::string& username,
                      const std::string& password) override {
     scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-        PasswordStoreFactory::GetInterfaceForProfile(
-            browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+        PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                            ServiceAccessType::EXPLICIT_ACCESS);
     password_manager::PasswordForm signin_form;
     signin_form.url = GURL(origin);
     signin_form.signon_realm = origin;
@@ -144,8 +148,8 @@ class CapturedSitesPasswordManagerBrowserTest
                                  const std::string& username,
                                  const std::string& password) override {
     scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-        PasswordStoreFactory::GetInterfaceForProfile(
-            browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+        PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                            ServiceAccessType::EXPLICIT_ACCESS);
     FakePasswordStoreBackend* fake_backend =
         static_cast<FakePasswordStoreBackend*>(
             password_store->GetBackendForTesting());
@@ -254,8 +258,6 @@ class CapturedSitesPasswordManagerBrowserTest
   std::unique_ptr<ServerUrlLoader> server_url_loader_;
 
   base::CallbackListSubscription create_services_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(CapturedSitesPasswordManagerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {

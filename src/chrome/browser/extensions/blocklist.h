@@ -53,12 +53,14 @@ class Blocklist : public KeyedService, public base::SupportsWeakPtr<Blocklist> {
         scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
             database_manager);
 
+    ScopedDatabaseManagerForTest(const ScopedDatabaseManagerForTest&) = delete;
+    ScopedDatabaseManagerForTest& operator=(
+        const ScopedDatabaseManagerForTest&) = delete;
+
     ~ScopedDatabaseManagerForTest();
 
    private:
     scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> original_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
   };
 
   using BlocklistStateMap = std::map<std::string, BlocklistState>;
@@ -72,6 +74,9 @@ class Blocklist : public KeyedService, public base::SupportsWeakPtr<Blocklist> {
   using IsBlocklistedCallback = base::OnceCallback<void(BlocklistState)>;
 
   explicit Blocklist(ExtensionPrefs* prefs);
+
+  Blocklist(const Blocklist&) = delete;
+  Blocklist& operator=(const Blocklist&) = delete;
 
   ~Blocklist() override;
 
@@ -160,8 +165,6 @@ class Blocklist : public KeyedService, public base::SupportsWeakPtr<Blocklist> {
   // is a pair of [vector of string ids to check, response closure].
   std::list<std::pair<std::vector<std::string>, base::OnceClosure>>
       state_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(Blocklist);
 };
 
 }  // namespace extensions

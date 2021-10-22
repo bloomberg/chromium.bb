@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/gpu_fence_handle.h"
-#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
-#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
-
 #include <drm_fourcc.h>
+#include <overlay-prioritizer-client-protocol.h>
+
+#include <cstdint>
 #include <memory>
 
 #include "base/files/file_path.h"
@@ -15,12 +14,18 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/overlay_priority_hint.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_buffer_manager_gpu.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
+#include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
+#include "ui/ozone/platform/wayland/test/test_overlay_prioritized_surface.h"
 #include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
@@ -60,6 +65,10 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
       : buffer_manager_(buffer_manager), widget_(widget) {
     buffer_manager_->RegisterSurface(widget_, this);
   }
+
+  MockSurfaceGpu(const MockSurfaceGpu&) = delete;
+  MockSurfaceGpu& operator=(const MockSurfaceGpu&) = delete;
+
   ~MockSurfaceGpu() { buffer_manager_->UnregisterSurface(widget_); }
 
   MOCK_METHOD3(OnSubmission,
@@ -73,8 +82,6 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
  private:
   WaylandBufferManagerGpu* const buffer_manager_;
   const gfx::AcceleratedWidget widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockSurfaceGpu);
 };
 
 }  // namespace
@@ -82,6 +89,10 @@ class MockSurfaceGpu : public WaylandSurfaceGpu {
 class WaylandBufferManagerTest : public WaylandTest {
  public:
   WaylandBufferManagerTest() = default;
+
+  WaylandBufferManagerTest(const WaylandBufferManagerTest&) = delete;
+  WaylandBufferManagerTest& operator=(const WaylandBufferManagerTest&) = delete;
+
   ~WaylandBufferManagerTest() override = default;
 
   void SetUp() override {
@@ -96,6 +107,9 @@ class WaylandBufferManagerTest : public WaylandTest {
     auto interface_ptr = manager_host_->BindInterface();
     buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
                                     false);
+
+    window_->set_update_visual_size_immediately(false);
+    window_->set_apply_pending_state_on_update_visual_size(false);
   }
 
  protected:
@@ -218,9 +232,6 @@ class WaylandBufferManagerTest : public WaylandTest {
 
   MockTerminateGpuCallback callback_;
   WaylandBufferManagerHost* manager_host_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerTest);
 };
 
 TEST_P(WaylandBufferManagerTest, CreateDmabufBasedBuffers) {
@@ -369,8 +380,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
                                             kBufferId1, true /*fail*/);
   }
 
-  // ... impossible to try to destroy an attached buffer if the widget is not
-  // specified.
+  // Can destroy the buffer without specifying the widget.
   {
     EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
     CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
@@ -380,7 +390,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
                                       kDefaultScale, window_->GetBounds());
 
     DestroyBufferAndSetTerminateExpectation(gfx::kNullAcceleratedWidget,
-                                            kBufferId1, true /*fail*/);
+                                            kBufferId1, false /*fail*/);
   }
 
   // Still can destroy the buffer even if it has not been attached to any
@@ -449,17 +459,51 @@ TEST_P(WaylandBufferManagerTest, CommitOverlaysNonExistingBufferId) {
   overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
       INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, 1u,
       kDefaultScale, window_->GetBounds(), gfx::RectF(), window_->GetBounds(),
-      false, gfx::GpuFenceHandle()));
+      false, 1.0f, gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
 
   // Non-existing buffer id
   overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
       0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, 2u, kDefaultScale,
-      window_->GetBounds(), gfx::RectF(), window_->GetBounds(), false,
-      gfx::GpuFenceHandle()));
+      window_->GetBounds(), gfx::RectF(), window_->GetBounds(), false, 1.0f,
+      gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
 
   buffer_manager_gpu_->CommitOverlays(window_->GetWidget(),
                                       std::move(overlay_configs));
 
+  Sync();
+}
+
+TEST_P(WaylandBufferManagerTest, CommitOverlaysWithSameBufferId) {
+  EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(2);
+  CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/, 1u);
+
+  // Re-using the same buffer id across multiple surfaces is allowed.
+  SetTerminateCallbackExpectationAndDestroyChannel(&callback_, false /*fail*/);
+
+  std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlay_configs;
+  overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
+      0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, 1u, kDefaultScale,
+      window_->GetBounds(), gfx::RectF(), window_->GetBounds(), false, 1.0f,
+      gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
+  overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
+      1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, 1u, kDefaultScale,
+      window_->GetBounds(), gfx::RectF(), window_->GetBounds(), false, 1.0f,
+      gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
+
+  buffer_manager_gpu_->CommitOverlays(window_->GetWidget(),
+                                      std::move(overlay_configs));
+
+  Sync();
+  ProcessCreatedBufferResourcesWithExpectation(2u /* expected size */,
+                                               false /* fail */);
+
+  // Destroying the buffer causes all wl_buffer objects to be destroyed.
+  DestroyBufferAndSetTerminateExpectation(window_->GetWidget(), 1u,
+                                          false /*fail*/);
+  SetTerminateCallbackExpectationAndDestroyChannel(&callback_, true /*fail*/);
+  buffer_manager_gpu_->CommitBuffer(window_->GetWidget(), 1u,
+                                    window_->GetBounds(), kDefaultScale,
+                                    window_->GetBounds());
   Sync();
 }
 
@@ -1670,7 +1714,6 @@ TEST_P(WaylandBufferManagerTest, RootSurfaceIsCommittedLast) {
   Sync();
 
   // Ack creation for only the first 2 wl_buffers.
-  LOG(ERROR) << linux_dmabuf->buffer_params().size();
   zwp_linux_buffer_params_v1_send_created(
       linux_dmabuf->buffer_params()[0]->resource(),
       linux_dmabuf->buffer_params()[0]->buffer_resource());
@@ -1690,16 +1733,16 @@ TEST_P(WaylandBufferManagerTest, RootSurfaceIsCommittedLast) {
   std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlay_configs;
   overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
       INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, kBufferId1,
-      kDefaultScale, bounds, gfx::RectF(), bounds, false,
-      gfx::GpuFenceHandle()));
+      kDefaultScale, bounds, gfx::RectF(), bounds, false, 1.0f,
+      gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
   overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
       0, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, kBufferId2,
-      kDefaultScale, bounds, gfx::RectF(), bounds, false,
-      gfx::GpuFenceHandle()));
+      kDefaultScale, bounds, gfx::RectF(), bounds, false, 1.0f,
+      gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
   overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
       1, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, kBufferId3,
-      kDefaultScale, bounds, gfx::RectF(), bounds, false,
-      gfx::GpuFenceHandle()));
+      kDefaultScale, bounds, gfx::RectF(), bounds, false, 1.0f,
+      gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone));
   buffer_manager_gpu_->CommitOverlays(window_->GetWidget(),
                                       std::move(overlay_configs));
   Sync();
@@ -1887,6 +1930,91 @@ TEST_P(WaylandBufferManagerTest,
   Sync();
 
   DestroyBufferAndSetTerminateExpectation(widget, kBufferId1, false /*fail*/);
+}
+
+TEST_P(WaylandBufferManagerTest,
+       DoesNotAttachAndCommitOnHideIfNoBuffersAttached) {
+  EXPECT_TRUE(window_->IsVisible());
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
+
+  constexpr uint32_t kNumberOfCommits = 0;
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Commit()).Times(kNumberOfCommits);
+
+  window_->Hide();
+
+  Sync();
+}
+
+TEST_P(WaylandBufferManagerTest, HasOverlayPrioritizer) {
+  EXPECT_TRUE(connection_->overlay_prioritizer());
+}
+
+TEST_P(WaylandBufferManagerTest, CanSubmitOverlayPriority) {
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
+
+  std::vector<uint32_t> kBufferIds = {1, 2, 3};
+
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(),
+                                  window_->GetWidget());
+
+  auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
+  EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(3);
+  for (auto id : kBufferIds) {
+    CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/, id);
+  }
+
+  Sync();
+
+  for (size_t i = 0; i < kBufferIds.size(); i++) {
+    zwp_linux_buffer_params_v1_send_created(
+        linux_dmabuf->buffer_params()[i]->resource(),
+        linux_dmabuf->buffer_params()[i]->buffer_resource());
+  }
+
+  Sync();
+
+  std::vector<std::pair<gfx::OverlayPriorityHint, uint32_t>> priorities = {
+      {gfx::OverlayPriorityHint::kNone,
+       OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_NONE},
+      {gfx::OverlayPriorityHint::kRegular,
+       OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_REGULAR},
+      {gfx::OverlayPriorityHint::kLowLatencyCanvas,
+       OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_PREFERRED_LOW_LATENCY_CANVAS},
+      {gfx::OverlayPriorityHint::kHardwareProtection,
+       OVERLAY_PRIORITIZED_SURFACE_OVERLAY_PRIORITY_REQUIRED_HARDWARE_PROTECTION}};
+
+  for (const auto& priority : priorities) {
+    std::vector<ui::ozone::mojom::WaylandOverlayConfigPtr> overlay_configs;
+    for (auto id : kBufferIds) {
+      overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
+          id == 1 ? INT32_MIN : id,
+          gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, id, kDefaultScale,
+          window_->GetBounds(), gfx::RectF(), window_->GetBounds(), false, 1.0f,
+          gfx::GpuFenceHandle(), priority.first));
+    }
+
+    buffer_manager_gpu_->CommitOverlays(window_->GetWidget(),
+                                        std::move(overlay_configs));
+
+    Sync();
+
+    for (auto& subsurface : window_->wayland_subsurfaces_) {
+      auto* mock_surface_of_subsurface = server_.GetObject<wl::MockSurface>(
+          subsurface->wayland_surface()->GetSurfaceId());
+      EXPECT_TRUE(mock_surface_of_subsurface);
+      EXPECT_EQ(
+          mock_surface_of_subsurface->prioritized_surface()->overlay_priority(),
+          priority.second);
+
+      mock_surface_of_subsurface->SendFrameCallback();
+    }
+
+    mock_surface->SendFrameCallback();
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

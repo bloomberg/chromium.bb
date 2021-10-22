@@ -168,15 +168,16 @@ void QuirksManager::OnIccFilePathRequestCompleted(
     return;
   }
 
-  double last_check = 0.0;
-  local_state_->GetDictionary(prefs::kQuirksClientLastServerCheck)
-      ->GetDouble(IdToHexString(product_id), &last_check);
+  double last_check =
+      local_state_->GetDictionary(prefs::kQuirksClientLastServerCheck)
+          ->FindDoubleKey(IdToHexString(product_id))
+          .value_or(0.0);
 
   const base::TimeDelta time_since =
       base::Time::Now() - base::Time::FromDoubleT(last_check);
 
   // Don't need server check if we've checked within last 30 days.
-  if (time_since < base::TimeDelta::FromDays(kDaysBetweenServerChecks)) {
+  if (time_since < base::Days(kDaysBetweenServerChecks)) {
     VLOG(2) << time_since.InDays()
             << " days since last Quirks Server check for display "
             << IdToHexString(product_id);

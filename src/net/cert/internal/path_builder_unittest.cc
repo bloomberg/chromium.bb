@@ -20,6 +20,7 @@
 #include "net/cert/internal/verify_certificate_chain.h"
 #include "net/cert/pem.h"
 #include "net/der/input.h"
+#include "net/net_buildflags.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,6 +57,10 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
       issuers_.swap(issuers);
       issuers_iter_ = issuers_.begin();
     }
+
+    StaticAsyncRequest(const StaticAsyncRequest&) = delete;
+    StaticAsyncRequest& operator=(const StaticAsyncRequest&) = delete;
+
     ~StaticAsyncRequest() override = default;
 
     void GetNext(ParsedCertificateList* out_certs) override {
@@ -65,8 +70,6 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
 
     ParsedCertificateList issuers_;
     ParsedCertificateList::iterator issuers_iter_;
-
-    DISALLOW_COPY_AND_ASSIGN(StaticAsyncRequest);
   };
 
   ~AsyncCertIssuerSourceStatic() override = default;
@@ -562,12 +565,12 @@ TEST_F(PathBuilderMultiRootTest, TestTrivialDeadline) {
     if (insufficient_limit) {
       // Set a deadline one millisecond in the past. Path building should fail
       // since the deadline is already past.
-      deadline = base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1);
+      deadline = base::TimeTicks::Now() - base::Milliseconds(1);
     } else {
       // The other tests in this file exercise the case that |SetDeadline|
       // isn't called. Therefore set a sufficient limit for the path to be
       // found.
-      deadline = base::TimeTicks::Now() + base::TimeDelta::FromDays(1);
+      deadline = base::TimeTicks::Now() + base::Days(1);
     }
     path_builder.SetDeadline(deadline);
 
@@ -579,7 +582,7 @@ TEST_F(PathBuilderMultiRootTest, TestTrivialDeadline) {
   }
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
 void AddToStoreWithEKURestriction(HCERTSTORE store,
                                   const scoped_refptr<ParsedCertificate>& cert,
@@ -678,7 +681,7 @@ TEST_F(PathBuilderMultiRootTest, TrustStoreWinNoPathEKURestrictions) {
   auto result = path_builder.Run();
   ASSERT_FALSE(result.HasValidPath());
 }
-#endif  // OS_WIN
+#endif  // defined(OS_WIN) && BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
 class PathBuilderKeyRolloverTest : public ::testing::Test {
  public:
@@ -2115,6 +2118,51 @@ TEST(PathBuilderPrioritizationTest, KeyIdNameAndSerialPrioritization) {
     EXPECT_EQ(int_matching, result.paths[2]->certs[1]);
     EXPECT_EQ(root, result.paths[2]->certs[2]);
   }
+}
+
+TEST(PathBuilderPrioritizationTest, SelfIssuedPrioritization) {
+  std::string test_dir =
+      "net/data/path_builder_unittest/self_issued_prioritization/";
+  scoped_refptr<ParsedCertificate> root1 =
+      ReadCertFromFile(test_dir + "root1.pem");
+  ASSERT_TRUE(root1);
+  scoped_refptr<ParsedCertificate> root1_cross =
+      ReadCertFromFile(test_dir + "root1_cross.pem");
+  ASSERT_TRUE(root1_cross);
+  scoped_refptr<ParsedCertificate> target =
+      ReadCertFromFile(test_dir + "target.pem");
+  ASSERT_TRUE(target);
+
+  SimplePathBuilderDelegate delegate(
+      1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
+  der::GeneralizedTime verify_time = {2017, 3, 1, 0, 0, 0};
+
+  TrustStoreInMemory trust_store;
+  trust_store.AddTrustAnchor(root1);
+  trust_store.AddTrustAnchor(root1_cross);
+  CertPathBuilder path_builder(
+      target, &trust_store, &delegate, verify_time, KeyPurpose::ANY_EKU,
+      InitialExplicitPolicy::kFalse, {AnyPolicy()},
+      InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
+  path_builder.SetExploreAllPaths(true);
+
+  CertPathBuilder::Result result = path_builder.Run();
+  EXPECT_TRUE(result.HasValidPath());
+
+  // Path builder should have built paths to both trusted roots.
+  ASSERT_EQ(2U, result.paths.size());
+
+  // |root1| should have been preferred because it is self-issued, even though
+  // the notBefore date is older than |root1_cross|.
+  EXPECT_TRUE(result.paths[0]->IsValid());
+  ASSERT_EQ(2U, result.paths[0]->certs.size());
+  EXPECT_EQ(target, result.paths[0]->certs[0]);
+  EXPECT_EQ(root1, result.paths[0]->certs[1]);
+
+  EXPECT_TRUE(result.paths[1]->IsValid());
+  ASSERT_EQ(2U, result.paths[1]->certs.size());
+  EXPECT_EQ(target, result.paths[1]->certs[0]);
+  EXPECT_EQ(root1_cross, result.paths[1]->certs[1]);
 }
 
 }  // namespace

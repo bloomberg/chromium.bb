@@ -102,7 +102,7 @@ TEST_F(AnimationBuilderTest, SimpleAnimation) {
       second_animating_view->delegate();
 
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
 
   {
     AnimationBuilder()
@@ -147,7 +147,7 @@ TEST_F(AnimationBuilderTest, ModifiedSlowAnimationDuration) {
       second_animating_view->delegate();
 
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
 
   {
     AnimationBuilder()
@@ -192,7 +192,7 @@ TEST_F(AnimationBuilderTest, ModifiedFastAnimationDuration) {
       second_animating_view->delegate();
 
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
 
   {
     AnimationBuilder()
@@ -237,7 +237,7 @@ TEST_F(AnimationBuilderTest, ModifiedZeroAnimationDuration) {
       second_animating_view->delegate();
 
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
 
   {
     AnimationBuilder()
@@ -262,6 +262,32 @@ TEST_F(AnimationBuilderTest, ModifiedZeroAnimationDuration) {
   EXPECT_FLOAT_EQ(second_delegate->GetOpacityForAnimation(), 0.4f);
 }
 
+// This test checks that the callback supplied to .OnEnded is not called before
+// all sequences have finished running. This test will crash if .OnEnded is
+// called prematurely.
+TEST_F(AnimationBuilderTest, ModifiedZeroAnimationDurationWithOnEndedCallback) {
+  ui::ScopedAnimationDurationScaleMode scoped_animation_duration_scale_mode(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+  auto first_animating_view = std::make_unique<TestAnimatibleLayerOwner>();
+  auto second_animating_view = std::make_unique<TestAnimatibleLayerOwner>();
+
+  views::AnimationBuilder b;
+  b.OnEnded(base::BindRepeating(
+                [](TestAnimatibleLayerOwner* layer_owner,
+                   TestAnimatibleLayerOwner* second_layer_owner) {
+                  delete layer_owner;
+                  delete second_layer_owner;
+                },
+                first_animating_view.get(), second_animating_view.get()))
+      .Once()
+      .SetDuration(base::Seconds(3))
+      .SetOpacity(first_animating_view.get(), 0.4f)
+      .SetOpacity(second_animating_view.get(), 0.9f);
+
+  first_animating_view.release();
+  second_animating_view.release();
+}
+
 TEST_F(AnimationBuilderTest, ZeroDurationBlock) {
   TestAnimatibleLayerOwner* first_animating_view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* first_delegate = first_animating_view->delegate();
@@ -269,7 +295,7 @@ TEST_F(AnimationBuilderTest, ZeroDurationBlock) {
   gfx::RoundedCornersF first_corners(6.0f, 6.0f, 6.0f, 6.0f);
   gfx::RoundedCornersF second_corners(12.0f, 12.0f, 12.0f, 12.0f);
 
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
 
   {
     AnimationBuilder()
@@ -297,7 +323,7 @@ TEST_F(AnimationBuilderTest, ZeroDurationBlock) {
 TEST_F(AnimationBuilderTest, CheckTweenType) {
   TestAnimatibleLayerOwner* first_animating_view = CreateTestLayerOwner();
   gfx::Tween::Type tween_type = gfx::Tween::EASE_IN;
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(4);
+  constexpr auto kDelay = base::Seconds(4);
   // Set initial opacity.
   first_animating_view->delegate()->SetOpacityFromAnimation(
       0.0f, ui::PropertyChangeReason::NOT_FROM_ANIMATION);
@@ -321,21 +347,24 @@ TEST_F(AnimationBuilderTest, CheckStartEndCallbacks) {
   TestAnimatibleLayerOwner* first_animating_view = CreateTestLayerOwner();
   TestAnimatibleLayerOwner* second_animating_view = CreateTestLayerOwner();
 
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
   bool started = false;
   bool ended = false;
 
   {
     AnimationBuilder()
-        .Once()
         .OnStarted(
             base::BindOnce([](bool* started) { *started = true; }, &started))
         .OnEnded(base::BindOnce([](bool* ended) { *ended = true; }, &ended))
+        .Once()
         .SetDuration(kDelay)
         .SetOpacity(first_animating_view, 0.4f)
         .Offset(base::TimeDelta())
         .SetDuration(kDelay * 2)
-        .SetOpacity(second_animating_view, 0.9f);
+        .SetOpacity(second_animating_view, 0.9f)
+        .Then()
+        .SetDuration(kDelay)
+        .SetOpacity(second_animating_view, 0.4f);
   }
 
   // Only one Observer should have been created in the above block. Make sure
@@ -346,6 +375,8 @@ TEST_F(AnimationBuilderTest, CheckStartEndCallbacks) {
 
   EXPECT_TRUE(started);
   Step(kDelay * 2);
+  EXPECT_FALSE(ended);
+  Step(kDelay);
   EXPECT_TRUE(ended);
 }
 
@@ -357,27 +388,25 @@ TEST_F(AnimationBuilderTest, CheckOnWillRepeatCallbacks) {
   int second_repeat_count = 0;
 
   TestAnimatibleLayerOwner* first_animating_view = CreateTestLayerOwner();
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(3);
+  constexpr auto kDelay = base::Seconds(3);
   gfx::RoundedCornersF first_rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
   gfx::RoundedCornersF second_rounded_corners(5.0f, 5.0f, 5.0f, 5.0f);
 
   {
     AnimationBuilder b;
-    b.Repeatedly()
+    b.OnWillRepeat(base::BindRepeating([](int& repeat) { repeat = repeat + 1; },
+                                       std::ref(first_repeat_count)))
+        .Repeatedly()
         .SetDuration(kDelay)
-        .OnWillRepeat(
-            base::BindRepeating([](int& repeat) { repeat = repeat + 1; },
-                                std::ref(first_repeat_count)))
         .SetOpacity(first_animating_view, 0.4f)
         .Then()
         .SetDuration(kDelay)
         .SetOpacity(first_animating_view, 0.9f);
 
-    b.Repeatedly()
+    b.OnWillRepeat(base::BindRepeating([](int& repeat) { repeat = repeat + 1; },
+                                       std::ref(second_repeat_count)))
+        .Repeatedly()
         .SetDuration(kDelay)
-        .OnWillRepeat(
-            base::BindRepeating([](int& repeat) { repeat = repeat + 1; },
-                                std::ref(second_repeat_count)))
         .SetRoundedCorners(first_animating_view, first_rounded_corners)
         .Then()
         .SetDuration(kDelay)
@@ -404,8 +433,8 @@ TEST_F(AnimationBuilderTest, DelayedStart) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(1);
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDelay = base::Seconds(1);
+  constexpr auto kDuration = base::Seconds(1);
 
   {
     // clang-format off
@@ -429,7 +458,7 @@ TEST_F(AnimationBuilderTest, TwoKeyFrame) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDuration = base::Seconds(1);
 
   {
     AnimationBuilder()
@@ -452,7 +481,7 @@ TEST_F(AnimationBuilderTest, PauseInTheMiddle) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDuration = base::Seconds(1);
 
   {
     AnimationBuilder()
@@ -482,7 +511,7 @@ TEST_F(AnimationBuilderTest, TwoPropertiesOfDifferentDuration) {
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
   // Make sure that the opacity keyframe finishes at the middle of the rounded
   // corners keyframe.
-  constexpr auto kDurationShort = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDurationShort = base::Seconds(1);
   constexpr auto kDurationLong = kDurationShort * 2;
 
   {
@@ -513,7 +542,7 @@ TEST_F(AnimationBuilderTest, TwoPropertiesOfDifferentStartTime) {
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
   // Make sure that the opacity keyframe finishes at the middle of the rounded
   // corners keyframe.
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDelay = base::Seconds(1);
   constexpr auto kDuration = kDelay * 2;
 
   {
@@ -549,7 +578,7 @@ TEST_F(AnimationBuilderTest, ThenAddsImplicitPause) {
   gfx::RoundedCornersF rounded_corners2(5.0f, 5.0f, 5.0f, 5.0f);
   // Make sure that the first opacity keyframe finishes at the middle of the
   // first rounded corners keyframe.
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDelay = base::Seconds(1);
   constexpr auto kDuration = kDelay * 2;
 
   {
@@ -587,7 +616,7 @@ TEST_F(AnimationBuilderTest, Repeat) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDuration = base::Seconds(1);
 
   {
     AnimationBuilder()
@@ -614,7 +643,7 @@ TEST_F(AnimationBuilderTest, RepeatWithExplicitTrailingPause) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDuration = base::Seconds(1);
 
   {
     AnimationBuilder()
@@ -650,7 +679,7 @@ TEST_F(AnimationBuilderTest, RepeatTwoProperties) {
 
   gfx::RoundedCornersF rounded_corners1(12.0f, 12.0f, 12.0f, 12.0f);
   gfx::RoundedCornersF rounded_corners2(5.0f, 5.0f, 5.0f, 5.0f);
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDuration = base::Seconds(1);
 
   {
     AnimationBuilder()
@@ -688,7 +717,7 @@ TEST_F(AnimationBuilderTest, AtCanSkipThenBlock) {
   gfx::RoundedCornersF rounded_corners2(4.0f, 4.0f, 4.0f, 4.0f);
   // Make sure that the first opacity keyframe finishes at the middle of the
   // first rounded corners keyframe.
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDelay = base::Seconds(1);
   constexpr auto kDuration = kDelay * 2;
 
   {
@@ -733,7 +762,7 @@ TEST_F(AnimationBuilderTest, OffsetCanRewindTime) {
   gfx::RoundedCornersF rounded_corners(12.0f, 12.0f, 12.0f, 12.0f);
   // Make sure that the first opacity keyframe finishes at the middle of the
   // first rounded corners keyframe.
-  constexpr auto kDelay = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDelay = base::Seconds(1);
   constexpr auto kDuration = kDelay * 2;
 
   {
@@ -773,7 +802,7 @@ TEST_F(AnimationBuilderTest, RepeatedlyImplicitlyAppendsTrailingPause) {
   gfx::RoundedCornersF rounded_corners2(4.0f, 4.0f, 4.0f, 4.0f);
   // Make sure that the second opacity keyframe finishes at the middle of the
   // second rounded corners keyframe.
-  constexpr auto kDurationShort = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDurationShort = base::Seconds(1);
   constexpr auto kDurationLong = kDurationShort * 2;
 
   {
@@ -816,7 +845,7 @@ TEST_F(AnimationBuilderTest, RepeatedBlocks) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(1);
+  constexpr auto kDuration = base::Seconds(1);
   constexpr float kOpacity[] = {0.4f, 0.9f, 0.6f};
 
   {
@@ -838,8 +867,8 @@ TEST_F(AnimationBuilderTest, PreemptionStrategyTest) {
   TestAnimatibleLayerOwner* view = CreateTestLayerOwner();
   ui::LayerAnimationDelegate* delegate = view->delegate();
 
-  constexpr auto kStepSize = base::TimeDelta::FromSeconds(1);
-  constexpr auto kDuration = base::TimeDelta::FromSeconds(5);
+  constexpr auto kStepSize = base::Seconds(1);
+  constexpr auto kDuration = base::Seconds(5);
 
   // Set the initial value to animate.
   delegate->SetBrightnessFromAnimation(
@@ -909,7 +938,7 @@ TEST_F(AnimationBuilderTest, AbortHandle) {
   ui::LayerAnimationDelegate* delegate = view->delegate();
   std::unique_ptr<AnimationAbortHandle> abort_handle;
 
-  constexpr auto kStepSize = base::TimeDelta::FromSeconds(1);
+  constexpr auto kStepSize = base::Seconds(1);
   constexpr auto kDuration = kStepSize * 2;
 
   {

@@ -233,6 +233,8 @@ target(link_target_type, "gles2_sources") {
     "shared_image_backing_factory_gl_image.h",
     "shared_image_backing_factory_gl_texture.cc",
     "shared_image_backing_factory_gl_texture.h",
+    "shared_image_backing_factory_raw_draw.cc",
+    "shared_image_backing_factory_raw_draw.h",
     "shared_image_backing_factory_shared_memory.cc",
     "shared_image_backing_factory_shared_memory.h",
     "shared_image_backing_gl_common.cc",
@@ -475,6 +477,10 @@ target(link_target_type, "gles2_sources") {
       "shared_image_representation_skia_vk_android.h",
       "shared_image_video.cc",
       "shared_image_video.h",
+      "shared_image_video_image_reader.cc",
+      "shared_image_video_image_reader.h",
+      "shared_image_video_surface_texture.cc",
+      "shared_image_video_surface_texture.h",
       "stream_texture_shared_image_interface.h",
       "surface_texture_gl_owner.cc",
       "surface_texture_gl_owner.h",
@@ -507,6 +513,7 @@ target(link_target_type, "gles2_sources") {
       "shared_image_representation_d3d.cc",
       "shared_image_representation_d3d.h",
     ]
+    libs = [ "dxguid.lib" ]
   }
 }
 

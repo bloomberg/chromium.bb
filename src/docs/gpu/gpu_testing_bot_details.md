@@ -54,7 +54,6 @@ queries of the bots and see, for example, which GPUs are available.
 
 The waterfall bots run tests on a single GPU type in order to make it easier to
 see regressions or flakiness that affect only a certain type of GPU.
-'Mac FYI GPU ASAN Release' is an exception, running both on Intel and AMD GPUs.
 
 The tryservers like `win10_chromium_x64_rel_ng` which include GPU tests, on the other
 hand, run tests on more than one GPU type. As of this writing, the Windows
@@ -120,8 +119,8 @@ If `cd`'d into `src/`:
 
 1.  `./tools/mb/mb.py isolate //out/Release [target name]`
     *   For example: `./tools/mb/mb.py isolate //out/Release angle_end2end_tests`
-1.  `./tools/luci-go/isolate batcharchive -I https://isolateserver.appspot.com out/Release/[target name].isolated.gen.json`
-    *   For example: `./tools/luci-go/isolate batcharchive -I https://isolateserver.appspot.com out/Release/angle_end2end_tests.isolated.gen.json`
+1.  `./tools/luci-go/isolate batcharchive -cas-instance chromium-swarm out/Release/[target name].isolated.gen.json`
+    *   For example: `./tools/luci-go/isolate batcharchive -cas-instance chromium-swarm out/Release/angle_end2end_tests.isolated.gen.json`
 See the section below on [isolate server credentials](#Isolate-server-credentials).
 
 ### Adding your new isolate to the tests that are run on the bots
@@ -717,7 +716,7 @@ seems worthwhile to continuously test the "next" version of graphics drivers as
 well as the current stable ones.
 
 [sample driver cl]: https://chromium-review.googlesource.com/c/chromium/src/+/1726875
-[updating gold baselines]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/pixel_wrangling.md#how-to-keep-the-bots-green
+[updating gold baselines]: http://go/gpu-pixel-wrangler-info#how-to-keep-the-bots-green
 
 ## Credentials for various servers
 

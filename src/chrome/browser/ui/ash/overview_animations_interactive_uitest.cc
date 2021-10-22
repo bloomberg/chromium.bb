@@ -24,6 +24,10 @@ class OverviewAnimationsTest
       public testing::WithParamInterface<::testing::tuple<int, bool, bool>> {
  public:
   OverviewAnimationsTest() = default;
+
+  OverviewAnimationsTest(const OverviewAnimationsTest&) = delete;
+  OverviewAnimationsTest& operator=(const OverviewAnimationsTest&) = delete;
+
   ~OverviewAnimationsTest() override = default;
 
   // UIPerformanceTest:
@@ -53,8 +57,7 @@ class OverviewAnimationsTest
                        additional_browsers * cost_per_browser;
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromSeconds(wait_seconds));
+        FROM_HERE, run_loop.QuitClosure(), base::Seconds(wait_seconds));
     run_loop.Run();
   }
 
@@ -70,7 +73,6 @@ class OverviewAnimationsTest
 
  private:
   bool tablet_mode_ = false;
-  DISALLOW_COPY_AND_ASSIGN(OverviewAnimationsTest);
 };
 
 // TODO(https://crbug.com/1033653) flaky test

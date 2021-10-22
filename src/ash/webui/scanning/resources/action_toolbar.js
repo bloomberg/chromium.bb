@@ -9,8 +9,6 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ScanningBrowserProxy, ScanningBrowserProxyImpl} from './scanning_browser_proxy.js';
-
 /**
  * @fileoverview
  * 'action-toolbar' is a floating toolbar that contains post-scan page options.
@@ -24,7 +22,7 @@ Polymer({
 
   properties: {
     /** @type {number} */
-    currentPageInView: Number,
+    pageIndex: Number,
 
     /** @type {number} */
     numTotalPages: Number,
@@ -32,29 +30,8 @@ Polymer({
     /** @private {string} */
     pageNumberText_: {
       type: String,
-      computed: 'computePageNumberText_(currentPageInView, numTotalPages)',
+      computed: 'computePageNumberText_(pageIndex, numTotalPages)',
     },
-
-    /** @private {string} */
-    removeButtonTooltip_: String,
-
-    /** @private {string} */
-    rescanButtonTooltip_: String,
-  },
-
-  /** @override */
-  ready() {
-    /** @type {!ScanningBrowserProxy} */
-    const browserProxy = ScanningBrowserProxyImpl.getInstance();
-    browserProxy.getPluralString('removePageButtonLabel', 0)
-        .then(/* @type {string} */ (pluralString) => {
-          this.removeButtonTooltip_ = pluralString;
-        });
-    browserProxy.getPluralString('rescanPageButtonLabel', 0)
-        .then(
-            /* @type {string} */ (pluralString) => {
-              this.rescanButtonTooltip_ = pluralString;
-            });
   },
 
   /**
@@ -62,27 +39,23 @@ Polymer({
    * @private
    */
   computePageNumberText_() {
-    // |currentPageInView| is <= 0 means a page was removed from the multi-page
-    // scan session and the next page in view has not been set yet.
-    if (this.currentPageInView <= 0 || !this.numTotalPages) {
+    if (!this.numTotalPages || this.pageIndex >= this.numTotalPages) {
       return '';
     }
 
     assert(this.numTotalPages > 0);
-    assert(this.currentPageInView <= this.numTotalPages);
-
+    // Add 1 to |pageIndex| to get the corresponding page number.
     return this.i18n(
-        'actionToolbarPageCountText', this.currentPageInView,
-        this.numTotalPages);
+        'actionToolbarPageCountText', this.pageIndex + 1, this.numTotalPages);
   },
 
   /** @private */
   onRemovePageIconClick_() {
-    this.fire('show-remove-page-dialog', this.currentPageInView);
+    this.fire('show-remove-page-dialog', this.pageIndex);
   },
 
   /** @private */
   onRescanPageIconClick_() {
-    this.fire('show-rescan-page-dialog', this.currentPageInView);
+    this.fire('show-rescan-page-dialog', this.pageIndex);
   },
 });

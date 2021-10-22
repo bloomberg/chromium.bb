@@ -4,6 +4,7 @@
 
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/version_info/version_info.h"
@@ -332,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseReportingPrivateApiTest, GetContextInfo) {
       chrome.test.assertEq
         (typeof info.chromeRemoteDesktopAppBlocked, 'boolean');
       chrome.test.assertEq(typeof info.thirdPartyBlockingEnabled,'%s');
-      chrome.test.assertEq(typeof info.osFirewall,'string');
+      chrome.test.assertEq(typeof info.osFirewall, 'string');
       chrome.test.assertTrue(info.systemDnsServers instanceof Array);
 
       chrome.test.notifyPass();

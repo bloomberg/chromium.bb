@@ -33,6 +33,10 @@ struct GFX_EXPORT TextRunHarfBuzz {
   // Construct the run with |template_font| since determining the details of a
   // default-constructed gfx::Font is expensive, but it will always be replaced.
   explicit TextRunHarfBuzz(const Font& template_font);
+
+  TextRunHarfBuzz(const TextRunHarfBuzz&) = delete;
+  TextRunHarfBuzz& operator=(const TextRunHarfBuzz&) = delete;
+
   ~TextRunHarfBuzz();
 
   // Returns the corresponding glyph range of the given character range.
@@ -142,15 +146,16 @@ struct GFX_EXPORT TextRunHarfBuzz {
   FontParams font_params;
   ShapeOutput shape;
   float preceding_run_widths = 0.0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TextRunHarfBuzz);
 };
 
 // Manages the list of TextRunHarfBuzz and its logical <-> visual index mapping.
 class TextRunList {
  public:
   TextRunList();
+
+  TextRunList(const TextRunList&) = delete;
+  TextRunList& operator=(const TextRunList&) = delete;
+
   ~TextRunList();
 
   size_t size() const { return runs_.size(); }
@@ -197,8 +202,6 @@ class TextRunList {
   std::vector<int32_t> logical_to_visual_;
 
   float width_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextRunList);
 };
 
 }  // namespace internal
@@ -206,6 +209,10 @@ class TextRunList {
 class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
  public:
   RenderTextHarfBuzz();
+
+  RenderTextHarfBuzz(const RenderTextHarfBuzz&) = delete;
+  RenderTextHarfBuzz& operator=(const RenderTextHarfBuzz&) = delete;
+
   ~RenderTextHarfBuzz() override;
 
   // RenderText:
@@ -315,8 +322,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // The process application locale used to configure text rendering.
   std::string locale_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzz);
 };
 
 }  // namespace gfx

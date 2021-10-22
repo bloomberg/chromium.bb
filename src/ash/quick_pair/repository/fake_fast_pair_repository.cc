@@ -4,6 +4,7 @@
 
 #include "ash/quick_pair/repository/fake_fast_pair_repository.h"
 
+#include "ash/quick_pair/proto/fastpair.pb.h"
 #include "base/strings/string_util.h"
 
 namespace ash {
@@ -16,13 +17,25 @@ FakeFastPairRepository::~FakeFastPairRepository() = default;
 void FakeFastPairRepository::SetFakeMetadata(const std::string& hex_model_id,
                                              nearby::fastpair::Device metadata,
                                              gfx::Image image) {
+  nearby::fastpair::GetObservedDeviceResponse response;
+  response.mutable_device()->CopyFrom(metadata);
+
   data_[base::ToUpperASCII(hex_model_id)] =
-      std::make_unique<DeviceMetadata>(metadata, image);
+      std::make_unique<DeviceMetadata>(response, image);
 }
 
 void FakeFastPairRepository::ClearFakeMetadata(
     const std::string& hex_model_id) {
   data_.erase(base::ToUpperASCII(hex_model_id));
+}
+
+void FakeFastPairRepository::SetCheckAccountKeysResult(
+    absl::optional<PairingMetadata> result) {
+  check_account_key_result_ = result;
+}
+
+bool FakeFastPairRepository::HasKeyForDevice(const std::string& mac_address) {
+  return saved_account_keys_.contains(mac_address);
 }
 
 void FakeFastPairRepository::GetDeviceMetadata(
@@ -43,16 +56,17 @@ void FakeFastPairRepository::IsValidModelId(
   std::move(callback).Run(data_.contains(base::ToUpperASCII(hex_model_id)));
 }
 
-void FakeFastPairRepository::GetAssociatedAccountKey(
-    const std::string& address,
-    const std::string& account_key_filter,
-    base::OnceCallback<void(absl::optional<std::string>)> callback) {
-  std::move(callback).Run(absl::nullopt);
+void FakeFastPairRepository::CheckAccountKeys(
+    const AccountKeyFilter& account_key_filter,
+    CheckAccountKeysCallback callback) {
+  std::move(callback).Run(check_account_key_result_);
 }
 
 void FakeFastPairRepository::AssociateAccountKey(
-    const Device& device,
-    const std::string& account_key) {}
+    scoped_refptr<Device> device,
+    const std::vector<uint8_t>& account_key) {
+  saved_account_keys_[device->address] = account_key;
+}
 
 void FakeFastPairRepository::DeleteAssociatedDevice(
     const device::BluetoothDevice* device) {}

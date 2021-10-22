@@ -210,6 +210,11 @@ const UIStrings = {
    * Chrome's UI language.
    */
   browserLanguage: 'Browser UI language',
+  /**
+   * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
+   * of syncing DevTools settings via Chrome Sync.
+   */
+  enableSync: 'Enable settings sync',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/main-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -583,6 +588,7 @@ UI.ActionRegistration.registerActionExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.theme),
   settingName: 'uiTheme',
   settingType: Common.Settings.SettingType.ENUM,
@@ -613,6 +619,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.panelLayout),
   settingName: 'sidebarPosition',
   settingType: Common.Settings.SettingType.ENUM,
@@ -638,6 +645,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.colorFormat),
   settingName: 'colorFormat',
   settingType: Common.Settings.SettingType.ENUM,
@@ -671,6 +679,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.APPEARANCE,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.enableCtrlShortcutToSwitchPanels),
   titleMac: i18nLazyString(UIStrings.enableShortcutToSwitchPanels),
   settingName: 'shortcutPanelSwitch',
@@ -760,6 +769,17 @@ Common.Settings.registerSettingExtension({
   ],
   reloadRequired: true,
   experiment: Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS,
+});
+
+Common.Settings.registerSettingExtension({
+  category: Common.Settings.SettingCategory.SYNC,
+  // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
+  settingName: 'sync_preferences',
+  settingType: Common.Settings.SettingType.BOOLEAN,
+  title: i18nLazyString(UIStrings.enableSync),
+  defaultValue: false,
+  reloadRequired: true,
+  experiment: Root.Runtime.ExperimentName.SYNC_SETTINGS,
 });
 
 Common.Settings.registerSettingExtension({

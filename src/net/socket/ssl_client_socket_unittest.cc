@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -143,6 +144,11 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
  public:
   explicit SynchronousErrorStreamSocket(std::unique_ptr<StreamSocket> transport)
       : WrappedStreamSocket(std::move(transport)) {}
+
+  SynchronousErrorStreamSocket(const SynchronousErrorStreamSocket&) = delete;
+  SynchronousErrorStreamSocket& operator=(const SynchronousErrorStreamSocket&) =
+      delete;
+
   ~SynchronousErrorStreamSocket() override = default;
 
   // Socket implementation:
@@ -183,8 +189,6 @@ class SynchronousErrorStreamSocket : public WrappedStreamSocket {
 
   bool have_write_error_ = false;
   int pending_write_error_ = OK;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronousErrorStreamSocket);
 };
 
 int SynchronousErrorStreamSocket::Read(IOBuffer* buf,
@@ -560,6 +564,10 @@ class CountingStreamSocket : public WrappedStreamSocket {
 class DeleteSocketCallback : public TestCompletionCallbackBase {
  public:
   explicit DeleteSocketCallback(StreamSocket* socket) : socket_(socket) {}
+
+  DeleteSocketCallback(const DeleteSocketCallback&) = delete;
+  DeleteSocketCallback& operator=(const DeleteSocketCallback&) = delete;
+
   ~DeleteSocketCallback() override = default;
 
   CompletionOnceCallback callback() {
@@ -579,8 +587,6 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
   }
 
   StreamSocket* socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteSocketCallback);
 };
 
 // A mock ExpectCTReporter that remembers the latest violation that was
@@ -691,33 +697,34 @@ class ManySmallRecordsHttpResponse : public test_server::HttpResponse {
   ManySmallRecordsHttpResponse(size_t chunk_size, size_t chunk_count)
       : chunk_size_(chunk_size), chunk_count_(chunk_count) {}
 
-  void SendResponse(const test_server::SendBytesCallback& send,
-                    test_server::SendCompleteCallback done) override {
-    std::string headers = base::StringPrintf(
-        "HTTP/1.1 200 OK\r\n"
-        "Connection: close\r\n"
-        "Content-Length: %zu\r\n"
-        "Content-Type: text/plain\r\n\r\n",
-        chunk_size_ * chunk_count_);
-    send.Run(headers, base::BindOnce(&SendChunks, chunk_size_, chunk_count_,
-                                     send, std::move(done)));
+  void SendResponse(
+      base::WeakPtr<test_server::HttpResponseDelegate> delegate) override {
+    base::StringPairs headers = {
+        {"Connection", "close"},
+        {"Content-Length", base::NumberToString(chunk_size_ * chunk_count_)},
+        {"Content-Type", "text/plain"}};
+    delegate->SendResponseHeaders(HTTP_OK, "OK", headers);
+    SendChunks(chunk_size_, chunk_count_, delegate);
   }
 
  private:
-  static void SendChunks(size_t chunk_size,
-                         size_t chunk_count,
-                         const test_server::SendBytesCallback& send,
-                         test_server::SendCompleteCallback done) {
+  static void SendChunks(
+      size_t chunk_size,
+      size_t chunk_count,
+      base::WeakPtr<test_server::HttpResponseDelegate> delegate) {
+    if (!delegate)
+      return;
+
     if (chunk_count == 0) {
-      std::move(done).Run();
+      delegate->FinishResponse();
       return;
     }
 
     std::string chunk(chunk_size, '*');
     // This assumes that splitting output into separate |send| calls will
     // produce separate TLS records.
-    send.Run(chunk, base::BindOnce(&SendChunks, chunk_size, chunk_count - 1,
-                                   send, std::move(done)));
+    delegate->SendContents(chunk, base::BindOnce(&SendChunks, chunk_size,
+                                                 chunk_count - 1, delegate));
   }
 
   size_t chunk_size_;
@@ -1328,10 +1335,14 @@ int MakeHTTPRequest(StreamSocket* socket, const char* path = "/") {
 class ZeroRTTResponse : public test_server::HttpResponse {
  public:
   ZeroRTTResponse(bool zero_rtt) : zero_rtt_(zero_rtt) {}
+
+  ZeroRTTResponse(const ZeroRTTResponse&) = delete;
+  ZeroRTTResponse& operator=(const ZeroRTTResponse&) = delete;
+
   ~ZeroRTTResponse() override {}
 
-  void SendResponse(const test_server::SendBytesCallback& send,
-                    test_server::SendCompleteCallback done) override {
+  void SendResponse(
+      base::WeakPtr<test_server::HttpResponseDelegate> delegate) override {
     std::string response;
     if (zero_rtt_) {
       response = "1";
@@ -1342,27 +1353,20 @@ class ZeroRTTResponse : public test_server::HttpResponse {
     // Since the EmbeddedTestServer doesn't keep the socket open by default, it
     // is explicitly kept alive to allow the remaining leg of the 0RTT handshake
     // to be received after the early data.
-    send.Run(response, base::BindOnce([]() {}));
+    delegate->SendContents(response);
   }
 
  private:
   bool zero_rtt_;
-
-  DISALLOW_COPY_AND_ASSIGN(ZeroRTTResponse);
 };
 
 std::unique_ptr<test_server::HttpResponse> HandleZeroRTTRequest(
     const test_server::HttpRequest& request) {
-  if (request.GetURL().path() != "/zerortt")
+  if (request.GetURL().path() != "/zerortt" || !request.ssl_info)
     return nullptr;
-  bool zero_rtt = false;
-  if (request.headers.find("Early-Data") != request.headers.end()) {
-    if (request.headers.at("Early-Data") == "1") {
-      zero_rtt = true;
-    }
-  }
 
-  return std::make_unique<ZeroRTTResponse>(zero_rtt);
+  return std::make_unique<ZeroRTTResponse>(
+      request.ssl_info->early_data_received);
 }
 
 class SSLClientSocketZeroRTTTest : public SSLClientSocketTest {
@@ -2015,7 +2019,7 @@ TEST_P(SSLClientSocketVersionTest, Write_WithSynchronousErrorNoRead) {
   int old_write_count = raw_counting_socket->write_count();
   base::RunLoop loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromMilliseconds(100));
+      FROM_HERE, loop.QuitClosure(), base::Milliseconds(100));
   loop.Run();
   EXPECT_EQ(old_write_count, raw_counting_socket->write_count());
 }
@@ -2877,13 +2881,15 @@ TEST_P(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
 
 // Tests that the Certificate Transparency (RFC 6962) TLS extension is
 // supported.
-TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsTLSExtension) {
+TEST_P(SSLClientSocketVersionTest, ConnectSignedCertTimestampsTLSExtension) {
   // Encoding of SCT List containing 'test'.
   base::StringPiece sct_ext("\x00\x06\x00\x04test", 8);
 
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.signed_cert_timestamps_tls_ext = std::string(sct_ext);
-  ASSERT_TRUE(StartTestServer(ssl_options));
+  SSLServerConfig server_config = GetServerConfig();
+  server_config.signed_cert_timestamp_list =
+      std::vector<uint8_t>(sct_ext.begin(), sct_ext.end());
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, server_config));
 
   auto ct_verifier = std::make_unique<MockCTVerifier>();
 
@@ -3115,8 +3121,7 @@ TEST_P(SSLClientSocketVersionTest, IsFatalErrorSetOnFatalError) {
   ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_CHAIN_WRONG_ROOT,
                                       GetServerConfig()));
   int rv;
-  const base::Time expiry =
-      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = base::Time::Now() + base::Seconds(1000);
   transport_security_state_->AddHSTS(host_port_pair().host(), expiry, true);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(SSLConfig(), &rv));
   SSLInfo ssl_info;
@@ -3481,19 +3486,6 @@ TEST_P(SSLClientSocketVersionTest, CertificateErrorNoResume) {
   SSLInfo ssl_info;
   ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
   EXPECT_EQ(SSLInfo::HANDSHAKE_FULL, ssl_info.handshake_type);
-}
-
-// Test that DHE is removed.
-TEST_F(SSLClientSocketTest, NoDHE) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.key_exchanges =
-      SpawnedTestServer::SSLOptions::KEY_EXCHANGE_DHE_RSA;
-  ASSERT_TRUE(StartTestServer(ssl_options));
-
-  SSLConfig ssl_config;
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
-  EXPECT_THAT(rv, IsError(ERR_SSL_VERSION_OR_CIPHER_MISMATCH));
 }
 
 TEST_F(SSLClientSocketTest, RequireECDHE) {
@@ -4302,7 +4294,7 @@ TEST_P(SSLClientSocketVersionTest, CTRequiredHistogramCompliant) {
 
   // Set up the Expect-CT opt-in.
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   transport_security_state_->AddExpectCT(
       host_port_pair().host(), expiry, true /* enforce */,
       GURL("https://example-report.test"), NetworkIsolationKey());
@@ -4387,7 +4379,7 @@ TEST_P(SSLClientSocketVersionTest, CTRequiredHistogramNonCompliant) {
 
   // Set up the Expect-CT opt-in.
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   transport_security_state_->AddExpectCT(
       host_port_pair().host(), expiry, true /* enforce */,
       GURL("https://example-report.test"), NetworkIsolationKey());
@@ -4483,7 +4475,7 @@ TEST_P(SSLClientSocketVersionTest, CTIsRequiredByExpectCT) {
   NetworkIsolationKey network_isolation_key =
       NetworkIsolationKey::CreateTransient();
   const base::Time current_time(base::Time::Now());
-  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = current_time + base::Seconds(1000);
   transport_security_state_->AddExpectCT(
       host_port_pair().host(), expiry, true /* enforce */,
       GURL("https://example-report.test"), network_isolation_key);
@@ -5633,6 +5625,19 @@ TEST_F(SSLClientSocketTest, ECHWrongKeys) {
   EXPECT_THAT(rv, IsError(ERR_FAILED));
 }
 
+TEST_F(SSLClientSocketTest, InvalidECHConfigList) {
+  ASSERT_TRUE(
+      StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, SSLServerConfig()));
+
+  // If the ECHConfigList cannot be parsed at all, report an error to the
+  // caller.
+  SSLConfig client_config;
+  client_config.ech_config_list = {0x00};
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
+  EXPECT_THAT(rv, IsError(ERR_INVALID_ECH_CONFIG_LIST));
+}
+
 class TLS13DowngradeTest
     : public SSLClientSocketTest,
       public ::testing::WithParamInterface<
@@ -5966,8 +5971,7 @@ TEST_F(LegacyTLSDeprecationTest, LegacyTLSErrorsNotFatal) {
   // Connection should fail with ERR_SSL_OBSOLETE_VERSION and the legacy TLS
   // cert status.
   int rv;
-  const base::Time expiry =
-      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  const base::Time expiry = base::Time::Now() + base::Seconds(1000);
   transport_security_state_->AddHSTS(host_port_pair().host(), expiry, true);
   ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
   EXPECT_THAT(rv, IsError(ERR_SSL_OBSOLETE_VERSION));
@@ -6022,7 +6026,8 @@ TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonNoResume) {
 }
 
 // Test 0-RTT logging in the standard ConfirmHandshake-after-acceptance case.
-TEST_F(SSLClientSocketZeroRTTTest, EarlyDataReasonZeroRTT) {
+// Disabled due to flakiness across all platforms: https://crbug.com/1247914.
+TEST_F(SSLClientSocketZeroRTTTest, DISABLED_EarlyDataReasonZeroRTT) {
   const char kReasonHistogram[] = "Net.SSLHandshakeEarlyDataReason";
 
   ASSERT_TRUE(StartServer());

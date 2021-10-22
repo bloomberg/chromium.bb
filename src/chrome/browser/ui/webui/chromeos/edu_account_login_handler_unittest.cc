@@ -11,7 +11,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
+#include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_test_helper.h"
@@ -300,8 +300,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninSuccess) {
       kFakeParentGaiaId, kFakeParentCredential,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       signin::AccessTokenInfo(kFakeAccessToken,
-                              base::Time::Now() + base::TimeDelta::FromHours(1),
-                              "id_token"));
+                              base::Time::Now() + base::Hours(1), "id_token"));
 
   constexpr char fake_rapt[] = "fakeReauthProofToken";
   // Simulate successful fetching of ReAuthProofToken.
@@ -359,8 +358,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleParentSigninReAuthProofTokenFailure) {
       kFakeParentGaiaId, kFakeParentCredential,
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       signin::AccessTokenInfo(kFakeAccessToken,
-                              base::Time::Now() + base::TimeDelta::FromHours(1),
-                              "id_token"));
+                              base::Time::Now() + base::Hours(1), "id_token"));
 
   // Simulate failed fetching of ReAuthProofToken.
   handler()->OnReAuthProofTokenFailure(

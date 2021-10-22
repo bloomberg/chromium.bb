@@ -69,6 +69,11 @@ class IOSChromePasswordManagerClient
   explicit IOSChromePasswordManagerClient(
       id<IOSChromePasswordManagerClientBridge> bridge);
 
+  IOSChromePasswordManagerClient(const IOSChromePasswordManagerClient&) =
+      delete;
+  IOSChromePasswordManagerClient& operator=(
+      const IOSChromePasswordManagerClient&) = delete;
+
   ~IOSChromePasswordManagerClient() override;
 
   // password_manager::PasswordManagerClient implementation.
@@ -101,13 +106,9 @@ class IOSChromePasswordManagerClient
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
   PrefService* GetPrefs() const override;
-  // TODO(crbug.com/1218413): Remove the following two methods once migration
-  // from PasswordStore to PasswordStoreInterface is complete.
-  password_manager::PasswordStore* GetProfilePasswordStore() const override;
-  password_manager::PasswordStore* GetAccountPasswordStore() const override;
-  password_manager::PasswordStoreInterface* GetProfilePasswordStoreInterface()
+  password_manager::PasswordStoreInterface* GetProfilePasswordStore()
       const override;
-  password_manager::PasswordStoreInterface* GetAccountPasswordStoreInterface()
+  password_manager::PasswordStoreInterface* GetAccountPasswordStore()
       const override;
   password_manager::PasswordReuseManager* GetPasswordReuseManager()
       const override;
@@ -204,8 +205,6 @@ class IOSChromePasswordManagerClient
   base::ScopedObservation<PasswordProtectionJavaScriptFeature,
                           InputEventObserver>
       input_event_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(IOSChromePasswordManagerClient);
   base::WeakPtrFactory<IOSChromePasswordManagerClient> weak_factory_{this};
 };
 

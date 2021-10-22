@@ -18,6 +18,7 @@
 #include "dawn_native/CommandAllocator.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/ErrorData.h"
+#include "dawn_native/IndirectDrawMetadata.h"
 #include "dawn_native/PassResourceUsageTracker.h"
 #include "dawn_native/dawn_platform.h"
 
@@ -25,6 +26,7 @@
 
 namespace dawn_native {
 
+    class CommandEncoder;
     class DeviceBase;
     class ObjectBase;
 
@@ -44,6 +46,25 @@ namespace dawn_native {
         inline bool ConsumedError(MaybeError maybeError) {
             if (DAWN_UNLIKELY(maybeError.IsError())) {
                 HandleError(maybeError.AcquireError());
+                return true;
+            }
+            return false;
+        }
+
+        template <typename... Args>
+        inline bool ConsumedError(MaybeError maybeError,
+                                  const char* formatStr,
+                                  const Args&... args) {
+            if (DAWN_UNLIKELY(maybeError.IsError())) {
+                std::unique_ptr<ErrorData> error = maybeError.AcquireError();
+                if (error->GetType() == InternalErrorType::Validation) {
+                    std::string out;
+                    absl::UntypedFormatSpec format(formatStr);
+                    if (absl::FormatUntyped(&out, format, {absl::FormatArg(args)...})) {
+                        error->AppendContext(std::move(out));
+                    }
+                }
+                HandleError(std::move(error));
                 return true;
             }
             return false;
@@ -69,13 +90,33 @@ namespace dawn_native {
                 return false;
             }
             ASSERT(!mWasMovedToIterator);
-            return !ConsumedError(encodeFunction(&mAllocator));
+            return !ConsumedError(encodeFunction(&mPendingCommands));
         }
+
+        template <typename EncodeFunction, typename... Args>
+        inline bool TryEncode(const ObjectBase* encoder,
+                              EncodeFunction&& encodeFunction,
+                              const char* formatStr,
+                              const Args&... args) {
+            if (!CheckCurrentEncoder(encoder)) {
+                return false;
+            }
+            ASSERT(!mWasMovedToIterator);
+            return !ConsumedError(encodeFunction(&mPendingCommands), formatStr, args...);
+        }
+
+        // Must be called prior to encoding a BeginRenderPassCmd. Note that it's OK to call this
+        // and then not actually call EnterPass+ExitRenderPass, for example if some other pass setup
+        // failed validation before the BeginRenderPassCmd could be encoded.
+        void WillBeginRenderPass();
 
         // Functions to set current encoder state
         void EnterPass(const ObjectBase* passEncoder);
-        void ExitPass(const ObjectBase* passEncoder, RenderPassResourceUsage usages);
-        void ExitPass(const ObjectBase* passEncoder, ComputePassResourceUsage usages);
+        MaybeError ExitRenderPass(const ObjectBase* passEncoder,
+                                  RenderPassResourceUsageTracker usageTracker,
+                                  CommandEncoder* commandEncoder,
+                                  IndirectDrawMetadata indirectDrawMetadata);
+        void ExitComputePass(const ObjectBase* passEncoder, ComputePassResourceUsage usages);
         MaybeError Finish();
 
         const RenderPassUsages& GetRenderPassUsages() const;
@@ -83,7 +124,12 @@ namespace dawn_native {
         RenderPassUsages AcquireRenderPassUsages();
         ComputePassUsages AcquireComputePassUsages();
 
+        void PushDebugGroupLabel(const char* groupLabel);
+        void PopDebugGroupLabel();
+
       private:
+        void CommitCommands(CommandAllocator allocator);
+
         bool IsFinished() const;
         void MoveToIterator();
 
@@ -104,12 +150,15 @@ namespace dawn_native {
         ComputePassUsages mComputePassUsages;
         bool mWereComputePassUsagesAcquired = false;
 
-        CommandAllocator mAllocator;
+        CommandAllocator mPendingCommands;
+
+        std::vector<CommandAllocator> mAllocators;
         CommandIterator mIterator;
         bool mWasMovedToIterator = false;
         bool mWereCommandsAcquired = false;
 
         std::unique_ptr<ErrorData> mError;
+        std::vector<std::string> mDebugGroupLabels;
     };
 
 }  // namespace dawn_native

@@ -139,12 +139,13 @@ void CheckContainsOriginStorageRecords(
 // Calls the accessStorage javascript function and awaits its completion for
 // each frame in the active web contents for |browser|.
 void EnsurePageAccessedStorage(content::WebContents* web_contents) {
-  auto frames = web_contents->GetAllFrames();
-  for (auto* frame : frames) {
-    ASSERT_TRUE(content::EvalJs(
-                    frame, "(async () => { return await accessStorage();})()")
-                    .value.GetBool());
-  }
+  web_contents->GetMainFrame()->ForEachRenderFrameHost(
+      base::BindRepeating([](content::RenderFrameHost* frame) {
+        EXPECT_TRUE(
+            content::EvalJs(frame,
+                            "(async () => { return await accessStorage();})()")
+                .value.GetBool());
+      }));
 }
 
 }  // namespace
@@ -504,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(AccessContextAuditBrowserTest, MultipleAccesses) {
 
   // Renavigate to the same pages, this should update the access times on all
   // records.
-  clock.Advance(base::TimeDelta::FromHours(1));
+  clock.Advance(base::Hours(1));
   NavigateToTopLevelPage();
   NavigateToEmbeddedPage();
 

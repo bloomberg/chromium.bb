@@ -17,6 +17,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
+#include "base/test/simple_test_clock.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
+#include "base/time/default_clock.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -30,6 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/active_field_trials.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
@@ -56,6 +62,9 @@ class TestMetricsLog : public MetricsLog {
                  MetricsServiceClient* client)
       : MetricsLog(client_id, session_id, log_type, client) {}
 
+  TestMetricsLog(const TestMetricsLog&) = delete;
+  TestMetricsLog& operator=(const TestMetricsLog&) = delete;
+
   ~TestMetricsLog() override {}
 
   const ChromeUserMetricsExtension& uma_proto() const {
@@ -69,9 +78,6 @@ class TestMetricsLog : public MetricsLog {
   const SystemProfileProto& system_profile() const {
     return uma_proto().system_profile();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestMetricsLog);
 };
 
 // Returns the expected hardware class for a metrics log.
@@ -97,6 +103,10 @@ std::string GetExpectedHardwareClass() {
 class MetricsLogTest : public testing::Test {
  public:
   MetricsLogTest() {}
+
+  MetricsLogTest(const MetricsLogTest&) = delete;
+  MetricsLogTest& operator=(const MetricsLogTest&) = delete;
+
   ~MetricsLogTest() override {}
 
  protected:
@@ -129,9 +139,6 @@ class MetricsLogTest : public testing::Test {
     // TODO(isherman): Verify other data written into the protobuf as a result
     // of this call.
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MetricsLogTest);
 };
 
 TEST_F(MetricsLogTest, LogType) {
@@ -232,7 +239,78 @@ TEST_F(MetricsLogTest, BasicRecord) {
       parsed.system_profile().installer_package());
 #endif
 
+  // Not tested here; instead tested in Timestamps_* tests below.
+  expected.mutable_time_log_created()->CopyFrom(parsed.time_log_created());
+  expected.mutable_time_log_closed()->CopyFrom(parsed.time_log_closed());
+
   EXPECT_EQ(expected.SerializeAsString(), encoded);
+}
+
+TEST_F(MetricsLogTest, Timestamps_InitialStabilityLog) {
+  TestMetricsServiceClient client;
+  std::unique_ptr<base::SimpleTestClock> clock =
+      std::make_unique<base::SimpleTestClock>();
+
+  // Should not have times from initial stability logs.
+  clock->SetNow(base::Time::FromTimeT(1));
+  MetricsLog log("id", 0, MetricsLog::INITIAL_STABILITY_LOG, clock.get(),
+                 nullptr, &client);
+  clock->SetNow(base::Time::FromTimeT(2));
+  log.CloseLog();
+  std::string encoded;
+  log.GetEncodedLog(&encoded);
+  ChromeUserMetricsExtension parsed;
+  ASSERT_TRUE(parsed.ParseFromString(encoded));
+  EXPECT_FALSE(parsed.has_time_log_created());
+  EXPECT_FALSE(parsed.has_time_log_closed());
+}
+
+TEST_F(MetricsLogTest, Timestamps_IndependentLog) {
+  TestMetricsServiceClient client;
+  std::unique_ptr<base::SimpleTestClock> clock =
+      std::make_unique<base::SimpleTestClock>();
+
+  // Should not have times from independent logs.
+  clock->SetNow(base::Time::FromTimeT(1));
+  MetricsLog log("id", 0, MetricsLog::INDEPENDENT_LOG, clock.get(), nullptr,
+                 &client);
+  clock->SetNow(base::Time::FromTimeT(2));
+  log.CloseLog();
+  std::string encoded;
+  log.GetEncodedLog(&encoded);
+  ChromeUserMetricsExtension parsed;
+  ASSERT_TRUE(parsed.ParseFromString(encoded));
+  EXPECT_FALSE(parsed.has_time_log_created());
+  EXPECT_FALSE(parsed.has_time_log_closed());
+}
+
+TEST_F(MetricsLogTest, Timestamps_OngoingLog) {
+  TestMetricsServiceClient client;
+  std::unique_ptr<base::SimpleTestClock> clock =
+      std::make_unique<base::SimpleTestClock>();
+
+  // Should have times from regular (ongoing) logs.
+  clock->SetNow(base::Time::FromTimeT(1));
+  MetricsLog log("id", 0, MetricsLog::ONGOING_LOG, clock.get(), nullptr,
+                 &client);
+  clock->SetNow(base::Time::FromTimeT(2));
+  log.CloseLog();
+  std::string encoded;
+  log.GetEncodedLog(&encoded);
+  ChromeUserMetricsExtension parsed;
+  ASSERT_TRUE(parsed.ParseFromString(encoded));
+  EXPECT_TRUE(parsed.has_time_log_created());
+  EXPECT_EQ(parsed.time_log_created().time_sec(), 1);
+  EXPECT_EQ(parsed.time_log_created().time_source(),
+            ChromeUserMetricsExtension::RealLocalTime::CLIENT_CLOCK);
+  // The timezone should not be set in the time_log_created field.
+  EXPECT_FALSE(parsed.time_log_created().has_time_zone_offset_from_gmt_sec());
+  EXPECT_TRUE(parsed.has_time_log_closed());
+  EXPECT_EQ(parsed.time_log_closed().time_sec(), 2);
+  EXPECT_EQ(parsed.time_log_closed().time_source(),
+            ChromeUserMetricsExtension::RealLocalTime::CLIENT_CLOCK);
+  // The timezone should be set, but we don't check what it is.
+  EXPECT_TRUE(parsed.time_log_closed().has_time_zone_offset_from_gmt_sec());
 }
 
 TEST_F(MetricsLogTest, HistogramBucketFields) {

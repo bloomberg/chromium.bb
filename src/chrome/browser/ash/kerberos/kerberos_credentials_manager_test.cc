@@ -97,7 +97,7 @@ constexpr char kDefaultConfig[] = R"([libdefaults]
 // A long time delta, used to fast forward the task environment until all
 // pending operations are completed. This value should be equal to the maximum
 // time to delay requests on |kBackoffPolicyForManagedAccounts|.
-const base::TimeDelta kLongTimeDelay = base::TimeDelta::FromMinutes(10);
+const base::TimeDelta kLongTimeDelay = base::Minutes(10);
 
 // Fake observer used to test notifications sent by KerberosCredentialsManager
 // on accounts changes.
@@ -179,6 +179,11 @@ class KerberosCredentialsManagerTest : public testing::Test {
 
     mgr_->AddObserver(&observer_);
   }
+
+  KerberosCredentialsManagerTest(const KerberosCredentialsManagerTest&) =
+      delete;
+  KerberosCredentialsManagerTest& operator=(
+      const KerberosCredentialsManagerTest&) = delete;
 
   ~KerberosCredentialsManagerTest() override {
     mgr_->RemoveObserver(&observer_);
@@ -376,7 +381,6 @@ class KerberosCredentialsManagerTest : public testing::Test {
 
  private:
   base::WeakPtrFactory<KerberosCredentialsManagerTest> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(KerberosCredentialsManagerTest);
 };
 
 // The default config sets strong crypto and allows forwardable tickets.

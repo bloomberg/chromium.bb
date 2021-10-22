@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_recalc_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -344,8 +345,16 @@ void HTMLElement::CollectStyleForPresentationAttribute(
           style, CSSPropertyID::kWebkitUserModify, CSSValueID::kReadOnly);
     }
   } else if (name == html_names::kHiddenAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDisplay,
-                                            CSSValueID::kNone);
+    if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
+            GetExecutionContext()) &&
+        EqualIgnoringASCIICase(value, "until-found")) {
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kContentVisibility, CSSValueID::kHidden);
+      EnsureDisplayLockContext().SetActivateForFindInPage(true);
+    } else {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDisplay,
+                                              CSSValueID::kNone);
+    }
   } else if (name == html_names::kDraggableAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kDraggableAttribute);
     if (EqualIgnoringASCIICase(value, "true")) {
@@ -1197,6 +1206,11 @@ static inline bool ElementAffectsDirectionality(const Node* node) {
 void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
   Element::ChildrenChanged(change);
 
+  if (HasDirectionAuto()) {
+    SetSelfOrAncestorHasDirAutoAttribute();
+    GetDocument().SetDirAttributeDirty();
+  }
+
   if (GetDocument().IsDirAttributeDirty()) {
     AdjustDirectionalityIfNeededAfterChildrenChanged(change);
 
@@ -1893,7 +1907,9 @@ void HTMLElement::OnFormAttrChanged(const AttributeModificationParams& params) {
 
 void HTMLElement::OnInertAttrChanged(
     const AttributeModificationParams& params) {
-  UpdateDistributionForUnknownReasons();
+  // The |PropagateInertToChildFrames()| function might need to walk the flat
+  // tree to check for inert parent elements. So update slot assignments here.
+  GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
   if (GetDocument().GetFrame()) {
     GetDocument().GetFrame()->SetIsInert(GetDocument().LocalOwner() &&
                                          GetDocument().LocalOwner()->IsInert());
@@ -2033,18 +2049,15 @@ void HTMLElement::FinishParsingChildren() {
 void HTMLElement::BeginParsingChildren() {
   Element::BeginParsingChildren();
 
-  if (GetDocument().IsDirAttributeDirty()) {
-    if (HasDirectionAuto()) {
-      SetSelfOrAncestorHasDirAutoAttribute();
-    } else if (!ElementAffectsDirectionality(this)) {
-      bool needs_slot_assignment_recalc = false;
-      auto* parent =
-          GetParentForDirectionality(*this, needs_slot_assignment_recalc);
-      if (needs_slot_assignment_recalc)
-        SetNeedsInheritDirectionalityFromParent();
-      else if (parent)
-        SetCachedDirectionality(parent->CachedDirectionality());
-    }
+  if (GetDocument().IsDirAttributeDirty() && !HasDirectionAuto() &&
+      !ElementAffectsDirectionality(this)) {
+    bool needs_slot_assignment_recalc = false;
+    auto* parent =
+        GetParentForDirectionality(*this, needs_slot_assignment_recalc);
+    if (needs_slot_assignment_recalc)
+      SetNeedsInheritDirectionalityFromParent();
+    else if (parent)
+      SetCachedDirectionality(parent->CachedDirectionality());
   }
 }
 

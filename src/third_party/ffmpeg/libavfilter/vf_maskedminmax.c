@@ -54,11 +54,11 @@ static const AVOption maskedminmax_options[] = {
     { NULL }
 };
 
-static av_cold int init(AVFilterContext *ctx)
+static av_cold int maskedmin_init(AVFilterContext *ctx)
 {
     MaskedMinMaxContext *s = ctx->priv;
 
-    s->maskedmin = !strcmp(ctx->filter->name, "maskedmin");
+    s->maskedmin = 1;
 
     return 0;
 }
@@ -87,7 +87,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static void maskedmin8(const uint8_t *src, uint8_t *dst, const uint8_t *f1, const uint8_t *f2, int w)
@@ -221,8 +221,8 @@ static int process_frame(FFFrameSync *fs)
         td.f2 = f2;
         td.dst = out;
 
-        ctx->internal->execute(ctx, maskedminmax_slice, &td, NULL, FFMIN(s->planeheight[0],
-                                                                   ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, maskedminmax_slice, &td, NULL,
+                          FFMIN(s->planeheight[0], ff_filter_get_nb_threads(ctx)));
     }
     out->pts = av_rescale_q(s->fs.pts, s->fs.time_base, outlink->time_base);
 
@@ -313,7 +313,6 @@ static const AVFilterPad maskedminmax_inputs[] = {
         .name         = "filter2",
         .type         = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad maskedminmax_outputs[] = {
@@ -322,7 +321,6 @@ static const AVFilterPad maskedminmax_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 #define maskedmin_options maskedminmax_options
@@ -333,12 +331,12 @@ const AVFilter ff_vf_maskedmin = {
     .description   = NULL_IF_CONFIG_SMALL("Apply filtering with minimum difference of two streams."),
     .priv_class    = &maskedmin_class,
     .priv_size     = sizeof(MaskedMinMaxContext),
-    .init          = init,
+    .init          = maskedmin_init,
     .uninit        = uninit,
     .activate      = activate,
     .query_formats = query_formats,
-    .inputs        = maskedminmax_inputs,
-    .outputs       = maskedminmax_outputs,
+    FILTER_INPUTS(maskedminmax_inputs),
+    FILTER_OUTPUTS(maskedminmax_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };
@@ -351,12 +349,11 @@ const AVFilter ff_vf_maskedmax = {
     .description   = NULL_IF_CONFIG_SMALL("Apply filtering with maximum difference of two streams."),
     .priv_class    = &maskedmax_class,
     .priv_size     = sizeof(MaskedMinMaxContext),
-    .init          = init,
     .uninit        = uninit,
     .activate      = activate,
     .query_formats = query_formats,
-    .inputs        = maskedminmax_inputs,
-    .outputs       = maskedminmax_outputs,
+    FILTER_INPUTS(maskedminmax_inputs),
+    FILTER_OUTPUTS(maskedminmax_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

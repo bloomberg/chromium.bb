@@ -57,9 +57,16 @@ public class SigninPromoController {
     private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
     private static final int MAX_IMPRESSIONS_SETTINGS = 20;
 
+    /** Suffix strings for promo shown count preference. */
+    private static final String BOOKMARKS = "Bookmarks";
+    private static final String NTP = "Ntp";
+    private static final String RECENT_TABS = "RecentTabs";
+    private static final String SETTINGS = "Settings";
+
     private @Nullable DisplayableProfileData mProfileData;
     private @Nullable ImpressionTracker mImpressionTracker;
     private final @AccessPoint int mAccessPoint;
+    // TODO(https://crbug.com/1254399): Remove this field. This is over counted.
     private final @Nullable String mImpressionCountName;
     private final String mImpressionUserActionName;
     private final String mImpressionWithAccountUserActionName;
@@ -115,7 +122,7 @@ public class SigninPromoController {
 
         if (currentTime - lastShownTime >= resetAfterMs) {
             SharedPreferencesManager.getInstance().writeInt(
-                    ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP, 0);
+                    getPromoShowCountPreferenceName(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS), 0);
             SharedPreferencesManager.getInstance().removeKey(
                     ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME);
             SharedPreferencesManager.getInstance().removeKey(
@@ -126,7 +133,9 @@ public class SigninPromoController {
     private static boolean canShowBookmarkPromo() {
         boolean isPromoDismissed = SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_BOOKMARKS_DECLINED, false);
-        return getSigninPromoImpressionsCountBookmarks() < MAX_IMPRESSIONS_BOOKMARKS
+        return SharedPreferencesManager.getInstance().readInt(
+                       getPromoShowCountPreferenceName(SigninAccessPoint.BOOKMARK_MANAGER))
+                < MAX_IMPRESSIONS_BOOKMARKS
                 && !isPromoDismissed;
     }
 
@@ -148,7 +157,7 @@ public class SigninPromoController {
                 ChromeFeatureList.ENHANCED_PROTECTION_PROMO_CARD, "MaxSigninPromoImpressions",
                 Integer.MAX_VALUE);
         if (SharedPreferencesManager.getInstance().readInt(
-                    ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_NTP)
+                    getPromoShowCountPreferenceName(SigninAccessPoint.NTP_CONTENT_SUGGESTIONS))
                         >= maxImpressions
                 || timeElapsedSinceFirstShownExceedsLimit()) {
             return false;
@@ -174,7 +183,7 @@ public class SigninPromoController {
         boolean isPromoDismissed = preferencesManager.readBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED, false);
         return preferencesManager.readInt(
-                       ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS)
+                       getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS))
                 < MAX_IMPRESSIONS_SETTINGS
                 && !isPromoDismissed;
     }
@@ -193,6 +202,21 @@ public class SigninPromoController {
                     AccountUtils.getDefaultAccountIfFulfilled(accountManagerFacade.getAccounts());
         }
         return visibleAccount;
+    }
+
+    @VisibleForTesting
+    public static String getPromoShowCountPreferenceName(@AccessPoint int accessPoint) {
+        switch (accessPoint) {
+            case SigninAccessPoint.BOOKMARK_MANAGER:
+                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(BOOKMARKS);
+            case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
+                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(NTP);
+            case SigninAccessPoint.SETTINGS:
+                return ChromePreferenceKeys.SYNC_PROMO_SHOW_COUNT.createKey(SETTINGS);
+            default:
+                throw new IllegalArgumentException(
+                        "Unexpected value for access point: " + accessPoint);
+        }
     }
 
     /**
@@ -398,6 +422,28 @@ public class SigninPromoController {
         }
     }
 
+    /** Increases promo show count by one. */
+    public void increasePromoShowCount() {
+        if (mAccessPoint != SigninAccessPoint.RECENT_TABS) {
+            SharedPreferencesManager.getInstance().incrementInt(
+                    getPromoShowCountPreferenceName(mAccessPoint));
+        }
+        SharedPreferencesManager.getInstance().incrementInt(
+                ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT);
+
+        if (mAccessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS) {
+            final long currentTime = System.currentTimeMillis();
+            if (SharedPreferencesManager.getInstance().readLong(
+                        ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME)
+                    == 0) {
+                SharedPreferencesManager.getInstance().writeLong(
+                        ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME, currentTime);
+            }
+            SharedPreferencesManager.getInstance().writeLong(
+                    ChromePreferenceKeys.SIGNIN_PROMO_NTP_LAST_SHOWN_TIME, currentTime);
+        }
+    }
+
     private void setupColdState(PersonalizedSigninPromoView view) {
         final Context context = view.getContext();
         view.getImage().setImageResource(R.drawable.chrome_sync_logo);
@@ -492,36 +538,12 @@ public class SigninPromoController {
         if (mImpressionCountName != null) {
             SharedPreferencesManager.getInstance().incrementInt(mImpressionCountName);
         }
-
-        if (mAccessPoint == SigninAccessPoint.NTP_CONTENT_SUGGESTIONS) {
-            final long currentTime = System.currentTimeMillis();
-            if (SharedPreferencesManager.getInstance().readLong(
-                        ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME)
-                    == 0) {
-                SharedPreferencesManager.getInstance().writeLong(
-                        ChromePreferenceKeys.SIGNIN_PROMO_NTP_FIRST_SHOWN_TIME, currentTime);
-            }
-            SharedPreferencesManager.getInstance().writeLong(
-                    ChromePreferenceKeys.SIGNIN_PROMO_NTP_LAST_SHOWN_TIME, currentTime);
-        }
-    }
-
-    @VisibleForTesting
-    public static void setSigninPromoImpressionsCountBookmarksForTests(int count) {
-        SharedPreferencesManager.getInstance().writeInt(
-                ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, count);
     }
 
     @VisibleForTesting
     public static void setPrefSigninPromoDeclinedBookmarksForTests(boolean isDeclined) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.SIGNIN_PROMO_BOOKMARKS_DECLINED, isDeclined);
-    }
-
-    @VisibleForTesting
-    public static int getSigninPromoImpressionsCountBookmarks() {
-        return SharedPreferencesManager.getInstance().readInt(
-                ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS);
     }
 
     @VisibleForTesting

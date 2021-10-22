@@ -29,8 +29,7 @@ namespace {
 
 // Delay for notifying Android about screen brightness changes, added in
 // order to prevent spammy brightness updates.
-constexpr base::TimeDelta kNotifyBrightnessDelay =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kNotifyBrightnessDelay = base::Milliseconds(200);
 
 // Singleton factory for ArcPowerBridge.
 class ArcPowerBridgeFactory
@@ -61,6 +60,10 @@ class ArcPowerBridge::WakeLockRequestor {
   WakeLockRequestor(device::mojom::WakeLockType type,
                     device::mojom::WakeLockProvider* provider)
       : type_(type), provider_(provider) {}
+
+  WakeLockRequestor(const WakeLockRequestor&) = delete;
+  WakeLockRequestor& operator=(const WakeLockRequestor&) = delete;
+
   ~WakeLockRequestor() = default;
 
   // Increments the number of outstanding requests from Android and requests a
@@ -111,8 +114,6 @@ class ArcPowerBridge::WakeLockRequestor {
 
   // Lazily initialized in response to first request.
   mojo::Remote<device::mojom::WakeLock> wake_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(WakeLockRequestor);
 };
 
 // static

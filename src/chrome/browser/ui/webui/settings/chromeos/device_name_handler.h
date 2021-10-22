@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/chromeos/device_name/device_name_store.h"
+#include "chrome/browser/ash/device_name/device_name_store.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace base {
@@ -20,9 +20,13 @@ namespace settings {
 // DeviceNameHandler handles calls from WebUI JS related to getting and setting
 // the device name.
 class DeviceNameHandler : public ::settings::SettingsPageUIHandler,
-                          public chromeos::DeviceNameStore::Observer {
+                          public DeviceNameStore::Observer {
  public:
   DeviceNameHandler();
+
+  DeviceNameHandler(const DeviceNameHandler&) = delete;
+  DeviceNameHandler& operator=(const DeviceNameHandler&) = delete;
+
   ~DeviceNameHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -46,11 +50,8 @@ class DeviceNameHandler : public ::settings::SettingsPageUIHandler,
 
   DeviceNameStore* device_name_store_;
 
-  base::ScopedObservation<chromeos::DeviceNameStore,
-                          chromeos::DeviceNameStore::Observer>
+  base::ScopedObservation<DeviceNameStore, DeviceNameStore::Observer>
       observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceNameHandler);
 };
 
 }  // namespace settings

@@ -135,8 +135,13 @@ const char* const kScrollContainerScript =
 // See |WebController::OnSelectOptionJavascriptResult| for result handling.
 const char* const kSelectOptionScript =
     R"(function(re2, valueSourceAttribute, caseSensitive, strict) {
-      if (this.options == null) return -1;
-      const regexp = RegExp(re2, caseSensitive ? '' : 'i');
+      if (this.options == null) return 31; // INVALID_TARGET
+      let regexp;
+      try {
+        regexp = RegExp(re2, caseSensitive ? '' : 'i');
+      } catch (e) {
+        return 11; // INVALID_ACTION
+      }
       let numResults = 0;
       let newIndex = -1;
       for (let i = 0; i < this.options.length; ++i) {
@@ -148,14 +153,17 @@ const char* const kSelectOptionScript =
           }
         }
       }
-      if (numResults == 1 || (numResults > 1 && !strict)) {
+      if (numResults === 0) {
+        return 16; // OPTION_VALUE_NOT_FOUND
+      }
+      if (numResults == 1 || !strict) {
         this.options.selectedIndex = newIndex;
         const e = document.createEvent('HTMLEvents');
         e.initEvent('change', true, true);
         this.dispatchEvent(e);
-        return 1;
+        return 2; // ACTION_APPLIED
       }
-      return numResults;
+      return 30; // TOO_MANY_OPTION_VALUES_FOUND
     })";
 
 // Javascript to select the option element in a select element. This does *not*
@@ -163,14 +171,14 @@ const char* const kSelectOptionScript =
 // See |WebController::OnSelectOptionJavascriptResult| for result handling.
 const char* const kSelectOptionElementScript =
     R"(function(option) {
-      if (this.options == null) return -1;
+      if (this.options == null) return 31; // INVALID_TARGET
       for (let i = 0; i < this.options.length; ++i) {
         if (this.options[i] === option) {
           this.options.selectedIndex = i;
-          return 1;
+          return 2; // ACTION_APPLIED
         }
       }
-      return 0;
+      return 16; // OPTION_VALUE_NOT_FOUND
     })";
 
 // Javascript to check the option element in a select element against an
@@ -178,8 +186,11 @@ const char* const kSelectOptionElementScript =
 // See |WebController::OnSelectOptionJavascriptResult| for result handling.
 const char* const kCheckOptionElementScript =
     R"(function(option) {
-      if (this.options == null) return -1;
-      return (this.options[this.options.selectedIndex] === option) ? 1 : 0;
+      if (this.options == null) return 31; // INVALID_TARGET
+      if (this.options[this.options.selectedIndex] === option) {
+        return 2; // ACTION_APPLIED
+      }
+      return 26; // ELEMENT_MISMATCH
     })";
 
 // Javascript to highlight an element.
@@ -539,10 +550,6 @@ void WebController::ExecuteVoidJsWithoutArguments(
     const std::string& js_snippet,
     WebControllerErrorInfoProto::WebAction web_action,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  // Wrapping the callback to suppress and free the keyboard.
-  auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
-      element, std::move(callback));
-
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element.object_id())
@@ -552,7 +559,7 @@ void WebController::ExecuteVoidJsWithoutArguments(
       base::BindOnce(&WebController::OnJavaScriptResult,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::BindOnce(&DecorateWebControllerStatus, web_action,
-                                    std::move(wrapped_callback))));
+                                    std::move(callback))));
 }
 
 void WebController::ScrollIntoView(
@@ -738,11 +745,6 @@ void WebController::ClickOrTapElement(
     std::move(callback).Run(status);
     return;
   }
-
-  // Wrapping the callback to suppress and free the keyboard.
-  auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
-      element, std::move(callback));
-
   std::unique_ptr<ClickOrTapWorker> worker =
       std::make_unique<ClickOrTapWorker>(devtools_client_.get());
   auto* ptr = worker.get();
@@ -754,7 +756,7 @@ void WebController::ClickOrTapElement(
           ptr,
           base::BindOnce(&DecorateWebControllerStatus,
                          WebControllerErrorInfoProto::CLICK_OR_TAP_ELEMENT,
-                         std::move(wrapped_callback))));
+                         std::move(callback))));
 }
 
 void WebController::OnClickOrTapElement(
@@ -1137,8 +1139,7 @@ void WebController::SelectOption(
                      weak_ptr_factory_.GetWeakPtr(),
                      base::BindOnce(&DecorateWebControllerStatus,
                                     WebControllerErrorInfoProto::SELECT_OPTION,
-                                    std::move(callback)),
-                     /* status_if_false= */ OPTION_VALUE_NOT_FOUND));
+                                    std::move(callback))));
 }
 
 void WebController::SelectOptionElement(
@@ -1160,8 +1161,7 @@ void WebController::SelectOptionElement(
           weak_ptr_factory_.GetWeakPtr(),
           base::BindOnce(&DecorateWebControllerStatus,
                          WebControllerErrorInfoProto::SELECT_OPTION_ELEMENT,
-                         std::move(callback)),
-          /* status_if_false= */ OPTION_VALUE_NOT_FOUND));
+                         std::move(callback))));
 }
 
 void WebController::CheckSelectedOptionElement(
@@ -1183,13 +1183,11 @@ void WebController::CheckSelectedOptionElement(
           weak_ptr_factory_.GetWeakPtr(),
           base::BindOnce(&DecorateWebControllerStatus,
                          WebControllerErrorInfoProto::CHECK_OPTION_ELEMENT,
-                         std::move(callback)),
-          /* status_if_false= */ ELEMENT_MISMATCH));
+                         std::move(callback))));
 }
 
 void WebController::OnSelectOptionJavascriptResult(
     base::OnceCallback<void(const ClientStatus&)> callback,
-    ProcessedActionStatusProto status_if_zero,
     const DevtoolsClient::ReplyStatus& reply_status,
     std::unique_ptr<runtime::CallFunctionOnResult> result) {
   ClientStatus status =
@@ -1198,25 +1196,14 @@ void WebController::OnSelectOptionJavascriptResult(
     std::move(callback).Run(status);
     return;
   }
-  int int_result;
-  if (!SafeGetIntValue(result->GetResult(), &int_result)) {
+  int status_result;
+  if (!SafeGetIntValue(result->GetResult(), &status_result)) {
     std::move(callback).Run(
         UnexpectedDevtoolsErrorStatus(reply_status, __FILE__, __LINE__));
     return;
   }
-  if (int_result < 0) {
-    std::move(callback).Run(ClientStatus(INVALID_TARGET));
-    return;
-  }
-  if (int_result == 0) {
-    std::move(callback).Run(ClientStatus(status_if_zero));
-    return;
-  }
-  if (int_result > 1) {
-    std::move(callback).Run(ClientStatus(TOO_MANY_OPTION_VALUES_FOUND));
-    return;
-  }
-  std::move(callback).Run(OkClientStatus());
+  std::move(callback).Run(
+      ClientStatus(static_cast<ProcessedActionStatusProto>(status_result)));
 }
 
 void WebController::HighlightElement(
@@ -1415,10 +1402,6 @@ void WebController::SendKeyEvents(
     int key_press_delay,
     const ElementFinder::Result& element,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  // Wrapping the callback to suppress and free the keyboard.
-  auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
-      element, std::move(callback));
-
   auto worker =
       std::make_unique<SendKeyboardInputWorker>(devtools_client_.get());
   auto* ptr = worker.get();
@@ -1428,7 +1411,7 @@ void WebController::SendKeyEvents(
       base::BindOnce(&DecorateWebControllerStatus, web_action,
                      base::BindOnce(&WebController::OnSendKeyboardInputDone,
                                     weak_ptr_factory_.GetWeakPtr(), ptr,
-                                    std::move(wrapped_callback))));
+                                    std::move(callback))));
 }
 
 void WebController::OnSendKeyboardInputDone(
@@ -1632,74 +1615,6 @@ void WebController::OnDispatchJsEvent(
 
 base::WeakPtr<WebController> WebController::GetWeakPtr() const {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-WebController::ScopedAssistantActionStateRunning::
-    ScopedAssistantActionStateRunning(
-        content::WebContents* web_contents,
-        content::RenderFrameHost* render_frame_host)
-    : content::WebContentsObserver(web_contents),
-      render_frame_host_(render_frame_host) {
-  SetAssistantActionState(/* running= */ true);
-}
-
-WebController::ScopedAssistantActionStateRunning::
-    ~ScopedAssistantActionStateRunning() {
-  SetAssistantActionState(/* running= */ false);
-}
-
-void WebController::ScopedAssistantActionStateRunning::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host_ == render_frame_host)
-    render_frame_host_ = nullptr;
-}
-
-void WebController::ScopedAssistantActionStateRunning::SetAssistantActionState(
-    bool running) {
-  if (render_frame_host_ == nullptr)
-    return;
-
-  ContentAutofillDriver* content_autofill_driver =
-      ContentAutofillDriver::GetForRenderFrameHost(render_frame_host_);
-  if (content_autofill_driver != nullptr) {
-    content_autofill_driver->GetAutofillAgent()->SetAssistantActionState(
-        running);
-  }
-}
-
-void WebController::RetainAssistantActionRunningStateAndExecuteCallback(
-    std::unique_ptr<ScopedAssistantActionStateRunning> scoped_state,
-    base::OnceCallback<void(const ClientStatus&)> callback,
-    const ClientStatus& client_status) {
-  // Deallocating the ScopedAssistantActionStateRunning sets the running state
-  // to "not running" again.
-  scoped_state.reset();
-
-  std::move(callback).Run(client_status);
-}
-
-base::OnceCallback<void(const ClientStatus&)>
-WebController::GetAssistantActionRunningStateRetainingCallback(
-    const ElementFinder::Result& element_result,
-    base::OnceCallback<void(const ClientStatus&)> callback) {
-  if (element_result.container_frame_host == nullptr) {
-    return callback;
-  }
-  ContentAutofillDriver* content_autofill_driver =
-      ContentAutofillDriver::GetForRenderFrameHost(
-          element_result.container_frame_host);
-  if (content_autofill_driver == nullptr) {
-    return callback;
-  }
-
-  auto scoped_assistant_action_state_running =
-      std::make_unique<ScopedAssistantActionStateRunning>(
-          web_contents_, element_result.container_frame_host);
-
-  return base::BindOnce(
-      &WebController::RetainAssistantActionRunningStateAndExecuteCallback,
-      weak_ptr_factory_.GetWeakPtr(),
-      std::move(scoped_assistant_action_state_running), std::move(callback));
 }
 
 }  // namespace autofill_assistant

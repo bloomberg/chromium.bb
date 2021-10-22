@@ -22,6 +22,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/notification_view.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 
@@ -42,8 +43,7 @@ const char16_t kTextContent[] = u"This is a test notification";
 const char kNotificationCustomViewType[] = "phonehub";
 
 // Time to wait until we enable the reply button
-constexpr base::TimeDelta kWaitForEnableButton =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kWaitForEnableButton = base::Seconds(1);
 
 chromeos::phonehub::Notification CreateNotification(int64_t id) {
   return chromeos::phonehub::Notification(
@@ -269,7 +269,8 @@ TEST_F(PhoneHubNotificationControllerTest, NotificationHasPhoneName) {
 
   auto phonehub_notification_view =
       PhoneHubNotificationController::CreateCustomNotificationView(
-          controller_->weak_ptr_factory_.GetWeakPtr(), *notification);
+          controller_->weak_ptr_factory_.GetWeakPtr(), *notification,
+          /*shown_in_popup=*/true);
   auto* notification_view = static_cast<message_center::NotificationView*>(
       phonehub_notification_view.get());
   views::Label* summary_text_label =
@@ -286,7 +287,8 @@ TEST_F(PhoneHubNotificationControllerTest, ReplyBrieflyDisabled) {
 
   auto phonehub_notification_view =
       PhoneHubNotificationController::CreateCustomNotificationView(
-          controller_->weak_ptr_factory_.GetWeakPtr(), *notification);
+          controller_->weak_ptr_factory_.GetWeakPtr(), *notification,
+          /*shown_in_popup=*/true);
   auto* notification_view = static_cast<message_center::NotificationView*>(
       phonehub_notification_view.get());
   views::View* action_buttons_row = notification_view->GetViewByID(

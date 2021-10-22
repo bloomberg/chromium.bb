@@ -196,7 +196,7 @@ static av_cold int init(AVFilterContext *ctx)
         .type         = AVMEDIA_TYPE_AUDIO,
     };
 
-    ret = ff_insert_outpad(ctx, 0, &pad);
+    ret = ff_append_outpad(ctx, &pad);
     if (ret < 0)
         return ret;
 
@@ -206,7 +206,7 @@ static av_cold int init(AVFilterContext *ctx)
             .type         = AVMEDIA_TYPE_VIDEO,
             .config_props = config_video,
         };
-        ret = ff_insert_outpad(ctx, 1, &vpad);
+        ret = ff_append_outpad(ctx, &vpad);
         if (ret < 0)
             return ret;
     }
@@ -730,8 +730,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
     AVFilterLink *outlink = ctx->outputs[0];
 
     if (!ctx->is_disabled)
-        ctx->internal->execute(ctx, filter_channels, buf, NULL, FFMIN(inlink->channels,
-                                                                ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, filter_channels, buf, NULL,
+                          FFMIN(inlink->channels, ff_filter_get_nb_threads(ctx)));
 
     if (s->draw_curves) {
         AVFrame *clone;
@@ -757,11 +757,10 @@ static const AVFilterPad inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_AUDIO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .config_props   = config_input,
         .filter_frame   = filter_frame,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_anequalizer = {
@@ -772,7 +771,7 @@ const AVFilter ff_af_anequalizer = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = inputs,
+    FILTER_INPUTS(inputs),
     .outputs       = NULL,
     .process_command = process_command,
     .flags         = AVFILTER_FLAG_DYNAMIC_OUTPUTS |

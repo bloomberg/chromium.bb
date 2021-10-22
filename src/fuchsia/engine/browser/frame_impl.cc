@@ -5,6 +5,7 @@
 #include "fuchsia/engine/browser/frame_impl.h"
 
 #include <fuchsia/ui/gfx/cpp/fidl.h>
+#include <lib/fpromise/result.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
@@ -12,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/mem_buffer_util.h"
 #include "base/fuchsia/process_context.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/user_metrics.h"
@@ -36,7 +38,6 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
-#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/context_impl.h"
@@ -88,13 +89,14 @@ class PopupFrameCreationInfoUserData : public base::SupportsUserData::Data {
 class FrameFocusRules : public wm::BaseFocusRules {
  public:
   FrameFocusRules() = default;
+
+  FrameFocusRules(const FrameFocusRules&) = delete;
+  FrameFocusRules& operator=(const FrameFocusRules&) = delete;
+
   ~FrameFocusRules() override = default;
 
   // wm::BaseFocusRules implementation.
   bool SupportsChildActivation(const aura::Window*) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FrameFocusRules);
 };
 
 bool FrameFocusRules::SupportsChildActivation(const aura::Window*) const {
@@ -126,46 +128,46 @@ bool IsUrlMatchedByOriginList(const GURL& url,
   return false;
 }
 
-fx_log_severity_t FuchsiaWebConsoleLogLevelToFxLogSeverity(
+FuchsiaLogSeverity FuchsiaWebConsoleLogLevelToFxLogSeverity(
     fuchsia::web::ConsoleLogLevel level) {
   switch (level) {
     case fuchsia::web::ConsoleLogLevel::DEBUG:
-      return FX_LOG_DEBUG;
+      return FUCHSIA_LOG_DEBUG;
     case fuchsia::web::ConsoleLogLevel::INFO:
-      return FX_LOG_INFO;
+      return FUCHSIA_LOG_INFO;
     case fuchsia::web::ConsoleLogLevel::WARN:
-      return FX_LOG_WARNING;
+      return FUCHSIA_LOG_WARNING;
     case fuchsia::web::ConsoleLogLevel::ERROR:
-      return FX_LOG_ERROR;
+      return FUCHSIA_LOG_ERROR;
     case fuchsia::web::ConsoleLogLevel::NONE:
-      return FX_LOG_NONE;
+      return FUCHSIA_LOG_NONE;
     default:
       // Cope gracefully with callers setting undefined levels.
       DLOG(ERROR) << "Unknown log level:"
                   << static_cast<std::underlying_type<decltype(level)>::type>(
                          level);
-      return FX_LOG_NONE;
+      return FUCHSIA_LOG_NONE;
   }
 }
 
-fx_log_severity_t BlinkConsoleMessageLevelToFxLogSeverity(
+FuchsiaLogSeverity BlinkConsoleMessageLevelToFxLogSeverity(
     blink::mojom::ConsoleMessageLevel level) {
   switch (level) {
     case blink::mojom::ConsoleMessageLevel::kVerbose:
-      return FX_LOG_DEBUG;
+      return FUCHSIA_LOG_DEBUG;
     case blink::mojom::ConsoleMessageLevel::kInfo:
-      return FX_LOG_INFO;
+      return FUCHSIA_LOG_INFO;
     case blink::mojom::ConsoleMessageLevel::kWarning:
-      return FX_LOG_WARNING;
+      return FUCHSIA_LOG_WARNING;
     case blink::mojom::ConsoleMessageLevel::kError:
-      return FX_LOG_ERROR;
+      return FUCHSIA_LOG_ERROR;
   }
 
   // Cope gracefully with callers setting undefined levels.
   DLOG(ERROR) << "Unknown log level:"
               << static_cast<std::underlying_type<decltype(level)>::type>(
                      level);
-  return FX_LOG_NONE;
+  return FUCHSIA_LOG_NONE;
 }
 
 bool IsHeadless() {
@@ -328,10 +330,8 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
                                           fuchsia::mem::Buffer script,
                                           ExecuteJavaScriptCallback callback,
                                           bool need_result) {
-  fuchsia::web::Frame_ExecuteJavaScript_Result result;
   if (!context_->IsJavaScriptInjectionAllowed()) {
-    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
-    callback(std::move(result));
+    callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
     return;
   }
 
@@ -339,15 +339,14 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
   // navigated to a different origin.
   if (!IsUrlMatchedByOriginList(web_contents_->GetLastCommittedURL(),
                                 origins)) {
-    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
-    callback(std::move(result));
+    callback(fpromise::error(fuchsia::web::FrameError::INVALID_ORIGIN));
     return;
   }
 
-  std::u16string script_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(script, &script_utf16)) {
-    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
-    callback(std::move(result));
+  absl::optional<std::u16string> script_utf16 =
+      base::ReadUTF8FromVMOAsUTF16(script);
+  if (!script_utf16) {
+    callback(fpromise::error(fuchsia::web::FrameError::BUFFER_NOT_UTF8));
     return;
   }
 
@@ -355,32 +354,24 @@ void FrameImpl::ExecuteJavaScriptInternal(std::vector<std::string> origins,
   if (need_result) {
     result_callback = base::BindOnce(
         [](ExecuteJavaScriptCallback callback, base::Value result_value) {
-          fuchsia::web::Frame_ExecuteJavaScript_Result result;
-
           std::string result_json;
           if (!base::JSONWriter::Write(result_value, &result_json)) {
-            result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
-            callback(std::move(result));
+            callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
             return;
           }
 
-          fuchsia::web::Frame_ExecuteJavaScript_Response response;
-          response.result = cr_fuchsia::MemBufferFromString(
-              std::move(result_json), "cr-execute-js-response");
-          result.set_response(std::move(response));
-          callback(std::move(result));
+          callback(fpromise::ok(base::MemBufferFromString(
+              std::move(result_json), "cr-execute-js-response")));
         },
         std::move(callback));
   }
 
-  web_contents_->GetMainFrame()->ExecuteJavaScript(script_utf16,
+  web_contents_->GetMainFrame()->ExecuteJavaScript(*script_utf16,
                                                    std::move(result_callback));
 
   if (!need_result) {
     // If no result is required then invoke callback() immediately.
-    fuchsia::web::Frame_ExecuteJavaScript_Result result;
-    result.set_response(fuchsia::web::Frame_ExecuteJavaScript_Response());
-    callback(std::move(result));
+    callback(fpromise::ok(fuchsia::mem::Buffer()));
   }
 }
 
@@ -556,20 +547,17 @@ bool FrameImpl::MaybeHandleCastStreamingMessage(
     return false;
   }
 
-  fuchsia::web::Frame_PostMessage_Result result;
   if (receiver_session_client_ || !IsValidCastStreamingMessage(*message)) {
     // The Cast Streaming MessagePort should only be set once and |message|
     // should be a valid Cast Streaming Message.
-    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
-    (*callback)(std::move(result));
+    (*callback)(fpromise::error(fuchsia::web::FrameError::INVALID_ORIGIN));
     return true;
   }
 
   receiver_session_client_ = std::make_unique<ReceiverSessionClient>(
       std::move((*message->mutable_outgoing_transfer())[0].message_port()),
       IsCastStreamingVideoOnlyAppOrigin(*origin));
-  result.set_response(fuchsia::web::Frame_PostMessage_Response());
-  (*callback)(std::move(result));
+  (*callback)(fpromise::ok());
   return true;
 }
 
@@ -666,14 +654,11 @@ void FrameImpl::ExecuteJavaScriptNoResult(
       std::move(origins), std::move(script),
       [callback = std::move(callback)](
           fuchsia::web::Frame_ExecuteJavaScript_Result result_with_value) {
-        fuchsia::web::Frame_ExecuteJavaScriptNoResult_Result result;
         if (result_with_value.is_err()) {
-          result.set_err(result_with_value.err());
+          callback(fpromise::error(result_with_value.err()));
         } else {
-          result.set_response(
-              fuchsia::web::Frame_ExecuteJavaScriptNoResult_Response());
+          callback(fpromise::ok());
         }
-        callback(std::move(result));
       },
       false);
 }
@@ -685,18 +670,16 @@ void FrameImpl::AddBeforeLoadJavaScript(
     AddBeforeLoadJavaScriptCallback callback) {
   constexpr char kWildcardOrigin[] = "*";
 
-  fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result;
   if (!context_->IsJavaScriptInjectionAllowed()) {
-    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
-    callback(std::move(result));
+    callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
     return;
   }
 
-  std::string script_as_string;
-  if (!cr_fuchsia::StringFromMemBuffer(script, &script_as_string)) {
+  absl::optional<std::string> script_as_string =
+      base::StringFromMemBuffer(script);
+  if (!script_as_string) {
     LOG(ERROR) << "Couldn't read script from buffer.";
-    result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
-    callback(std::move(result));
+    callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
     return;
   }
 
@@ -705,24 +688,22 @@ void FrameImpl::AddBeforeLoadJavaScript(
                   [kWildcardOrigin](base::StringPiece origin) {
                     return origin == kWildcardOrigin;
                   })) {
-    script_injector_.AddScriptForAllOrigins(id, script_as_string);
+    script_injector_.AddScriptForAllOrigins(id, *script_as_string);
   } else {
     std::vector<url::Origin> origins_converted;
     for (const std::string& origin : origins) {
       url::Origin origin_parsed = url::Origin::Create(GURL(origin));
       if (origin_parsed.opaque()) {
-        result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
-        callback(std::move(result));
+        callback(fpromise::error(fuchsia::web::FrameError::INVALID_ORIGIN));
         return;
       }
       origins_converted.push_back(origin_parsed);
     }
 
-    script_injector_.AddScript(id, origins_converted, script_as_string);
+    script_injector_.AddScript(id, origins_converted, *script_as_string);
   }
 
-  result.set_response(fuchsia::web::Frame_AddBeforeLoadJavaScript_Response());
-  callback(std::move(result));
+  callback(fpromise::ok());
 }
 
 void FrameImpl::RemoveBeforeLoadJavaScript(uint64_t id) {
@@ -737,14 +718,12 @@ void FrameImpl::PostMessage(std::string origin,
 
   fuchsia::web::Frame_PostMessage_Result result;
   if (origin.empty()) {
-    result.set_err(fuchsia::web::FrameError::INVALID_ORIGIN);
-    callback(std::move(result));
+    callback(fpromise::error(fuchsia::web::FrameError::INVALID_ORIGIN));
     return;
   }
 
   if (!message.has_data()) {
-    result.set_err(fuchsia::web::FrameError::NO_DATA_IN_MESSAGE);
-    callback(std::move(result));
+    callback(fpromise::error(fuchsia::web::FrameError::NO_DATA_IN_MESSAGE));
     return;
   }
 
@@ -752,10 +731,10 @@ void FrameImpl::PostMessage(std::string origin,
   if (origin != kWildcardOrigin)
     origin_utf16 = base::UTF8ToUTF16(origin);
 
-  std::u16string data_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(message.data(), &data_utf16)) {
-    result.set_err(fuchsia::web::FrameError::BUFFER_NOT_UTF8);
-    callback(std::move(result));
+  absl::optional<std::u16string> data_utf16 =
+      base::ReadUTF8FromVMOAsUTF16(message.data());
+  if (!data_utf16) {
+    callback(fpromise::error(fuchsia::web::FrameError::BUFFER_NOT_UTF8));
     return;
   }
 
@@ -765,8 +744,7 @@ void FrameImpl::PostMessage(std::string origin,
     for (const fuchsia::web::OutgoingTransferable& outgoing :
          message.outgoing_transfer()) {
       if (!outgoing.is_message_port()) {
-        result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
-        callback(std::move(result));
+        callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
         return;
       }
     }
@@ -776,8 +754,7 @@ void FrameImpl::PostMessage(std::string origin,
       blink::WebMessagePort blink_port = cr_fuchsia::BlinkMessagePortFromFidl(
           std::move(outgoing.message_port()));
       if (!blink_port.IsValid()) {
-        result.set_err(fuchsia::web::FrameError::INTERNAL_ERROR);
-        callback(std::move(result));
+        callback(fpromise::error(fuchsia::web::FrameError::INTERNAL_ERROR));
         return;
       }
       message_ports.push_back(std::move(blink_port));
@@ -786,9 +763,8 @@ void FrameImpl::PostMessage(std::string origin,
 
   content::MessagePortProvider::PostMessageToFrame(
       web_contents_->GetPrimaryPage(), std::u16string(), origin_utf16,
-      std::move(data_utf16), std::move(message_ports));
-  result.set_response(fuchsia::web::Frame_PostMessage_Response());
-  callback(std::move(result));
+      std::move(*data_utf16), std::move(message_ports));
+  callback(fpromise::ok());
 }
 
 void FrameImpl::SetNavigationEventListener(
@@ -808,10 +784,10 @@ void FrameImpl::SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel level) {
 
 void FrameImpl::SetConsoleLogSink(fuchsia::logger::LogSinkHandle sink) {
   if (sink) {
-    console_logger_ = base::CreateFxLoggerFromLogSinkWithTag(std::move(sink),
-                                                             console_log_tag_);
+    console_logger_ = base::ScopedFxLogger::CreateFromLogSink(
+        std::move(sink), {console_log_tag_});
   } else {
-    console_logger_ = nullptr;
+    console_logger_ = {};
   }
 }
 
@@ -1056,29 +1032,31 @@ bool FrameImpl::DidAddMessageToConsole(
     const std::u16string& message,
     int32_t line_no,
     const std::u16string& source_id) {
-  fx_log_severity_t severity =
+  FuchsiaLogSeverity severity =
       BlinkConsoleMessageLevelToFxLogSeverity(log_level);
   if (severity < log_level_) {
     // Prevent the default logging mechanism from logging the message.
     return true;
   }
 
-  if (!console_logger_) {
+  if (!console_logger_.is_valid()) {
     // Log via the process' LogSink service if none was set on the Frame.
     // Connect on-demand, so that embedders need not provide a LogSink in the
     // CreateContextParams services, unless they actually enable logging.
-    console_logger_ = base::CreateFxLoggerFromLogSinkWithTag(
+    console_logger_ = base::ScopedFxLogger::CreateFromLogSink(
         base::ComponentContextForProcess()
             ->svc()
             ->Connect<fuchsia::logger::LogSink>(),
-        console_log_tag_);
+        {console_log_tag_});
+
+    if (!console_logger_.is_valid())
+      return false;
   }
 
-  std::string formatted_message =
-      base::StringPrintf("%s:%d : %s", base::UTF16ToUTF8(source_id).data(),
-                         line_no, base::UTF16ToUTF8(message).data());
-  fx_logger_log(console_logger_.get(), severity, nullptr,
-                formatted_message.data());
+  std::string source_id_utf8 = base::UTF16ToUTF8(source_id);
+  std::string message_utf8 = base::UTF16ToUTF8(message);
+  console_logger_.LogMessage(source_id_utf8, line_no, message_utf8, severity);
+
   return true;
 }
 

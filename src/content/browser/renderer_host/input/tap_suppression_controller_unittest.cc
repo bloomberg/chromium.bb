@@ -29,6 +29,10 @@ class MockTapSuppressionController : public TapSuppressionController {
   MockTapSuppressionController(const TapSuppressionController::Config& config)
       : TapSuppressionController(config), last_actions_(NONE), time_() {}
 
+  MockTapSuppressionController(const MockTapSuppressionController&) = delete;
+  MockTapSuppressionController& operator=(const MockTapSuppressionController&) =
+      delete;
+
   ~MockTapSuppressionController() override {}
 
   void NotifyGestureFlingCancelStoppedFling() {
@@ -75,8 +79,6 @@ class MockTapSuppressionController : public TapSuppressionController {
   int last_actions_;
 
   base::TimeTicks time_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockTapSuppressionController);
 };
 
 class TapSuppressionControllerTest : public testing::Test {
@@ -97,7 +99,7 @@ class TapSuppressionControllerTest : public testing::Test {
   static TapSuppressionController::Config GetConfig() {
     TapSuppressionController::Config config;
     config.enabled = true;
-    config.max_cancel_to_down_time = base::TimeDelta::FromMilliseconds(10);
+    config.max_cancel_to_down_time = base::Milliseconds(10);
     return config;
   }
 
@@ -141,8 +143,7 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapInsufficientlyLateTapDown) {
 
   // Wait less than allowed delay between GestureFlingCancel and TapDown, so the
   // TapDown is still considered associated with the GestureFlingCancel.
-  tap_suppression_controller_->AdvanceTime(
-      base::TimeDelta::FromMilliseconds(7));
+  tap_suppression_controller_->AdvanceTime(base::Milliseconds(7));
   EXPECT_EQ(MockTapSuppressionController::NONE,
             tap_suppression_controller_->last_actions());
   EXPECT_EQ(MockTapSuppressionController::LAST_CANCEL_STOPPED_FLING,
@@ -175,8 +176,7 @@ TEST_F(TapSuppressionControllerTest, GFCAckBeforeTapSufficientlyLateTapDown) {
 
   // Wait more than allowed delay between GestureFlingCancel and TapDown, so the
   // TapDown is not considered associated with the GestureFlingCancel.
-  tap_suppression_controller_->AdvanceTime(
-      base::TimeDelta::FromMilliseconds(13));
+  tap_suppression_controller_->AdvanceTime(base::Milliseconds(13));
   EXPECT_EQ(MockTapSuppressionController::NONE,
             tap_suppression_controller_->last_actions());
   EXPECT_EQ(MockTapSuppressionController::LAST_CANCEL_STOPPED_FLING,

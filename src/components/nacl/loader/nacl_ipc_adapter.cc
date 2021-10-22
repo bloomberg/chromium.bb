@@ -69,11 +69,12 @@ struct DescThunker {
       : adapter(adapter_arg) {
   }
 
+  DescThunker(const DescThunker&) = delete;
+  DescThunker& operator=(const DescThunker&) = delete;
+
   ~DescThunker() { adapter->CloseChannel(); }
 
   scoped_refptr<NaClIPCAdapter> adapter;
-
-  DISALLOW_COPY_AND_ASSIGN(DescThunker);
 };
 
 NaClIPCAdapter* ToAdapter(void* handle) {
@@ -225,6 +226,10 @@ int TranslatePepperFileReadWriteOpenFlags(int32_t pp_open_flags) {
 class NaClDescWrapper {
  public:
   explicit NaClDescWrapper(NaClDesc* desc): desc_(desc) {}
+
+  NaClDescWrapper(const NaClDescWrapper&) = delete;
+  NaClDescWrapper& operator=(const NaClDescWrapper&) = delete;
+
   ~NaClDescWrapper() {
     NaClDescUnref(desc_);
   }
@@ -233,7 +238,6 @@ class NaClDescWrapper {
 
  private:
   NaClDesc* desc_;
-  DISALLOW_COPY_AND_ASSIGN(NaClDescWrapper);
 };
 
 std::unique_ptr<NaClDescWrapper> MakeShmRegionNaClDesc(

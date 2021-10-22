@@ -363,11 +363,11 @@ BrowserAccessibility::AXRange CreateAXRange(
     int end_offset,
     ax::mojom::TextAffinity end_affinity) {
   BrowserAccessibility::AXPosition anchor =
-      start_object.PlatformIsLeaf()
+      start_object.IsLeaf()
           ? CreateTextPosition(start_object, start_offset, start_affinity)
           : CreateTreePosition(start_object, start_offset);
   BrowserAccessibility::AXPosition focus =
-      end_object.PlatformIsLeaf()
+      end_object.IsLeaf()
           ? CreateTextPosition(end_object, end_offset, end_affinity)
           : CreateTreePosition(end_object, end_offset);
   // |BrowserAccessibility::AXRange| takes ownership of its anchor and focus.
@@ -490,7 +490,7 @@ NSString* NSStringForStringAttribute(BrowserAccessibility* browserAccessibility,
 // GetState checks the bitmask used in AXNodeData to check
 // if the given state was set on the accessibility object.
 bool GetState(BrowserAccessibility* accessibility, ax::mojom::State state) {
-  return accessibility->GetData().HasState(state);
+  return accessibility->HasState(state);
 }
 
 // Given a search key provided to AXUIElementCountForSearchPredicate or
@@ -864,7 +864,6 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
       {NSAccessibilityOrientationAttribute, @"orientation"},
       {NSAccessibilityOwnsAttribute, @"owns"},
       {NSAccessibilityParentAttribute, @"parent"},
-      {NSAccessibilityPlaceholderValueAttribute, @"placeholderValue"},
       {NSAccessibilityPositionAttribute, @"position"},
       {NSAccessibilityRequiredAttributeChrome, @"required"},
       {NSAccessibilityRoleAttribute, @"role"},
@@ -1692,23 +1691,6 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (![self instanceActive])
     return nil;
   return @(GetState(_owner, ax::mojom::State::kMultiselectable));
-}
-
-- (NSString*)AXPlaceholderValue {
-  return [self placeholderValue];
-}
-
-- (NSString*)placeholderValue {
-  if (![self instanceActive])
-    return nil;
-  ax::mojom::NameFrom nameFrom = static_cast<ax::mojom::NameFrom>(
-      _owner->GetIntAttribute(ax::mojom::IntAttribute::kNameFrom));
-  if (nameFrom == ax::mojom::NameFrom::kPlaceholder) {
-    return base::SysUTF8ToNSString(_owner->GetName());
-  }
-
-  return NSStringForStringAttribute(_owner,
-                                    ax::mojom::StringAttribute::kPlaceholder);
 }
 
 - (NSString*)language {
@@ -2761,10 +2743,6 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   return [attributeToMethodNameMap objectForKey:attribute];
 }
 
-- (void)swapChildren:(base::scoped_nsobject<NSMutableArray>*)other {
-  _children.swap(*other);
-}
-
 - (NSString*)valueForRange:(NSRange)range {
   if (![self instanceActive])
     return nil;
@@ -2825,7 +2803,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   if (selector)
     return [self performSelector:selector];
 
-  return nil;
+  return [super accessibilityAttributeValue:attribute];
 }
 
 - (id)AXStringForRange:(id)parameter {
@@ -3672,12 +3650,12 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
 
   // Position in set and Set size.
   // Only add these attributes for roles that use posinset and setsize.
-  if (ui::IsItemLike(_owner->node()->data().role)) {
+  if (ui::IsItemLike(_owner->GetRole())) {
     [ret addObjectsFromArray:@[
       NSAccessibilityARIAPosInSetAttribute, NSAccessibilityARIASetSizeAttribute
     ]];
   }
-  if (ui::IsSetLike(_owner->node()->data().role))
+  if (ui::IsSetLike(_owner->GetRole()))
     [ret addObject:NSAccessibilityARIASetSizeAttribute];
 
   // Live regions.
@@ -3862,7 +3840,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
     return NO;
 
   return _owner->GetData().HasCheckedState() ||
-         _owner->GetData().role == ax::mojom::Role::kTab;
+         _owner->GetRole() == ax::mojom::Role::kTab;
 }
 
 // Performs the given accessibility action on the webkit accessibility object
@@ -4054,7 +4032,7 @@ id content::AXTextMarkerRangeFrom(id anchor_textmarker, id focus_textmarker) {
   // When an action is triggered on a container with selectable children and
   // one of those children is an active descendant or focused, retarget the
   // action to that child. See https://crbug.com/1114892.
-  if (!ui::IsContainerWithSelectableChildren(_owner->node()->data().role))
+  if (!ui::IsContainerWithSelectableChildren(_owner->GetRole()))
     return _owner;
 
   // Active descendant takes priority over focus, because the webpage author has

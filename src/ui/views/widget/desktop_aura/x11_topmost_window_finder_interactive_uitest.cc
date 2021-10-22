@@ -29,11 +29,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
-#endif
 
 namespace views {
 
@@ -44,6 +40,9 @@ class MinimizeWaiter : public ui::X11PropertyChangeWaiter {
  public:
   explicit MinimizeWaiter(x11::Window window)
       : ui::X11PropertyChangeWaiter(window, "_NET_WM_STATE") {}
+
+  MinimizeWaiter(const MinimizeWaiter&) = delete;
+  MinimizeWaiter& operator=(const MinimizeWaiter&) = delete;
 
   ~MinimizeWaiter() override = default;
 
@@ -57,8 +56,6 @@ class MinimizeWaiter : public ui::X11PropertyChangeWaiter {
     }
     return true;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(MinimizeWaiter);
 };
 
 // Waits till |_NET_CLIENT_LIST_STACKING| is updated to include
@@ -69,6 +66,9 @@ class StackingClientListWaiter : public ui::X11PropertyChangeWaiter {
       : ui::X11PropertyChangeWaiter(ui::GetX11RootWindow(),
                                     "_NET_CLIENT_LIST_STACKING"),
         expected_windows_(expected_windows, expected_windows + count) {}
+
+  StackingClientListWaiter(const StackingClientListWaiter&) = delete;
+  StackingClientListWaiter& operator=(const StackingClientListWaiter&) = delete;
 
   ~StackingClientListWaiter() override = default;
 
@@ -93,8 +93,6 @@ class StackingClientListWaiter : public ui::X11PropertyChangeWaiter {
   }
 
   std::vector<x11::Window> expected_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(StackingClientListWaiter);
 };
 
 void IconifyWindow(x11::Connection* connection, x11::Window window) {
@@ -108,20 +106,23 @@ void IconifyWindow(x11::Connection* connection, x11::Window window) {
 class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
  public:
   X11TopmostWindowFinderTest() = default;
+
+  X11TopmostWindowFinderTest(const X11TopmostWindowFinderTest&) = delete;
+  X11TopmostWindowFinderTest& operator=(const X11TopmostWindowFinderTest&) =
+      delete;
+
   ~X11TopmostWindowFinderTest() override = default;
 
   // DesktopWidgetTestInteractive
   void SetUp() override {
-#if defined(USE_OZONE)
-    // Run tests only for X11 (ozone or not Ozone).
-    if (features::IsUsingOzonePlatform() &&
-        ui::OzonePlatform::GetPlatformNameForTest() != "x11") {
+    // Run tests only for X11.
+    if (ui::OzonePlatform::GetPlatformNameForTest() != "x11") {
       // SetUp still is required to be run. Otherwise, ViewsTestBase CHECKs in
       // the dtor.
       DesktopWidgetTestInteractive::SetUp();
       GTEST_SKIP();
     }
-#endif
+
     // Make X11 synchronous for our display connection. This does not force the
     // window manager to behave synchronously.
     connection()->SynchronizeForTest(true);
@@ -215,9 +216,6 @@ class X11TopmostWindowFinderTest : public test::DesktopWidgetTestInteractive {
                      widget)
                : nullptr;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(X11TopmostWindowFinderTest);
 };
 
 TEST_F(X11TopmostWindowFinderTest, Basic) {

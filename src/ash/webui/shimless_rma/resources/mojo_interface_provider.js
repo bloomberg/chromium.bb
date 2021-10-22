@@ -4,9 +4,9 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
+import {fakeCalibrationComponents, fakeChromeVersion, fakeComponents, fakeDeviceRegions, fakeDeviceSkus, fakeRsuChallengeCode, fakeRsuChallengeQrCode, fakeStates} from './fake_data.js';
 import {FakeShimlessRmaService} from './fake_shimless_rma_service.js'
-import {NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
+import {CalibrationSetupInstruction, NetworkConfigServiceInterface, RmadErrorCode, ShimlessRmaService, ShimlessRmaServiceInterface} from './shimless_rma_types.js';
 
 /**
  * @fileoverview
@@ -50,10 +50,10 @@ function setupFakeShimlessRmaService_() {
   service.setGetComponentListResult(fakeComponents);
   service.setReimageRequiredResult(false);
   service.automaticallyTriggerDisableWriteProtectionObservation();
-  service.automaticallyTriggerProvisioningObservation();
   service.automaticallyTriggerCalibrationObservation();
 
-  service.setGetRsuDisableWriteProtectChallengeResult('##challenge code##')
+  service.setGetRsuDisableWriteProtectChallengeResult(fakeRsuChallengeCode)
+  service.setGetRsuDisableWriteProtectHwidResult('### hwid ###')
   service.setGetRsuDisableWriteProtectChallengeQrCodeResponse(
       fakeRsuChallengeQrCode);
 
@@ -62,6 +62,13 @@ function setupFakeShimlessRmaService_() {
   service.setGetOriginalRegionResult(1);
   service.setGetSkuListResult(fakeDeviceSkus);
   service.setGetOriginalSkuResult(1);
+
+  service.setGetCalibrationSetupInstructionsResult(
+      CalibrationSetupInstruction.kCalibrationInstructionPlaceLidOnFlatSurface);
+  service.setGetCalibrationComponentListResult(fakeCalibrationComponents);
+
+  service.automaticallyTriggerProvisioningObservation();
+  service.automaticallyTriggerFinalizationObservation();
 
   // Set the fake service.
   setShimlessRmaServiceForTesting(service);

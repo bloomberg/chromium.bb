@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_marker_data.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/scoped_svg_paint_state.h"
@@ -152,20 +153,21 @@ class PathWithTemporaryWindingRule {
 void SVGShapePainter::FillShape(GraphicsContext& context,
                                 const PaintFlags& flags,
                                 SkPathFillType fill_type) {
+  AutoDarkMode auto_dark_mode(PaintAutoDarkMode(
+      layout_svg_shape_.StyleRef(), DarkModeFilter::ElementRole::kSVG));
   switch (layout_svg_shape_.GeometryCodePath()) {
     case kRectGeometryFastPath:
       context.DrawRect(layout_svg_shape_.ObjectBoundingBox(), flags,
-                       DarkModeFilter::ElementRole::kSVG);
+                       auto_dark_mode);
       break;
     case kEllipseGeometryFastPath:
       context.DrawOval(layout_svg_shape_.ObjectBoundingBox(), flags,
-                       DarkModeFilter::ElementRole::kSVG);
+                       auto_dark_mode);
       break;
     default: {
       PathWithTemporaryWindingRule path_with_winding(
           layout_svg_shape_.GetPath(), fill_type);
-      context.DrawPath(path_with_winding.GetSkPath(), flags,
-                       DarkModeFilter::ElementRole::kSVG);
+      context.DrawPath(path_with_winding.GetSkPath(), flags, auto_dark_mode);
     }
   }
   PaintTiming& timing = PaintTiming::From(layout_svg_shape_.GetDocument());
@@ -176,22 +178,24 @@ void SVGShapePainter::StrokeShape(GraphicsContext& context,
                                   const PaintFlags& flags) {
   DCHECK(layout_svg_shape_.StyleRef().HasVisibleStroke());
 
+  AutoDarkMode auto_dark_mode(PaintAutoDarkMode(
+      layout_svg_shape_.StyleRef(), DarkModeFilter::ElementRole::kSVG));
+
   switch (layout_svg_shape_.GeometryCodePath()) {
     case kRectGeometryFastPath:
       context.DrawRect(layout_svg_shape_.ObjectBoundingBox(), flags,
-                       DarkModeFilter::ElementRole::kSVG);
+                       auto_dark_mode);
       break;
     case kEllipseGeometryFastPath:
       context.DrawOval(layout_svg_shape_.ObjectBoundingBox(), flags,
-                       DarkModeFilter::ElementRole::kSVG);
+                       auto_dark_mode);
       break;
     default:
       DCHECK(layout_svg_shape_.HasPath());
       const Path* use_path = &layout_svg_shape_.GetPath();
       if (layout_svg_shape_.HasNonScalingStroke())
         use_path = &layout_svg_shape_.NonScalingStrokePath();
-      context.DrawPath(use_path->GetSkPath(), flags,
-                       DarkModeFilter::ElementRole::kSVG);
+      context.DrawPath(use_path->GetSkPath(), flags, auto_dark_mode);
   }
   PaintTiming& timing = PaintTiming::From(layout_svg_shape_.GetDocument());
   timing.MarkFirstContentfulPaint();
@@ -241,16 +245,15 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   canvas->concat(AffineTransformToSkMatrix(transform));
   if (SVGLayoutSupport::IsOverflowHidden(marker))
     canvas->clipRect(marker.Viewport());
-
-  PaintRecordBuilder builder(paint_info.context);
-  PaintInfo marker_paint_info(builder.Context(), paint_info);
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>(paint_info.context);
+  PaintInfo marker_paint_info(builder->Context(), paint_info);
   // It's expensive to track the transformed paint cull rect for each
   // marker so just disable culling. The shape paint call will already
   // be culled if it is outside the paint info cull rect.
   marker_paint_info.ApplyInfiniteCullRect();
 
   SVGContainerPainter(marker).Paint(marker_paint_info);
-  builder.EndRecording(*canvas);
+  builder->EndRecording(*canvas);
 
   canvas->restore();
 }

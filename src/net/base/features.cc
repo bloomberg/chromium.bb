@@ -32,7 +32,7 @@ const base::FeatureParam<double> kDnsTransactionTimeoutMultiplier{
 
 const base::FeatureParam<base::TimeDelta> kDnsMinTransactionTimeout{
     &kDnsTransactionDynamicTimeouts, "DnsMinTransactionTimeout",
-    base::TimeDelta::FromSeconds(12)};
+    base::Seconds(12)};
 
 const base::Feature kDnsHttpssvc{"DnsHttpssvc",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
@@ -64,7 +64,7 @@ const base::FeatureParam<bool> kDnsHttpssvcControlDomainWildcard{
 namespace dns_httpssvc_experiment {
 base::TimeDelta GetExtraTimeAbsolute() {
   DCHECK(base::FeatureList::IsEnabled(features::kDnsHttpssvc));
-  return base::TimeDelta::FromMilliseconds(kDnsHttpssvcExtraTimeMs.Get());
+  return base::Milliseconds(kDnsHttpssvcExtraTimeMs.Get());
 }
 }  // namespace dns_httpssvc_experiment
 
@@ -202,9 +202,6 @@ const base::Feature kSchemefulSameSite{"SchemefulSameSite",
 const base::Feature kTLSLegacyCryptoFallbackForMetrics{
     "TLSLegacyCryptoFallbackForMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kUseLookalikesForNavigationSuggestions{
-    "UseLookalikesForNavigationSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kReportPoorConnectivity{"ReportPoorConnectivity",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -230,12 +227,12 @@ extern const base::FeatureParam<double> kTimeoutTcpConnectAttemptRTTMultiplier(
 extern const base::FeatureParam<base::TimeDelta> kTimeoutTcpConnectAttemptMin(
     &kTimeoutTcpConnectAttempt,
     "TimeoutTcpConnectAttemptMin",
-    base::TimeDelta::FromSeconds(8));
+    base::Seconds(8));
 
 extern const base::FeatureParam<base::TimeDelta> kTimeoutTcpConnectAttemptMax(
     &kTimeoutTcpConnectAttempt,
     "TimeoutTcpConnectAttemptMax",
-    base::TimeDelta::FromSeconds(30));
+    base::Seconds(30));
 
 constexpr base::Feature kFirstPartySets{"FirstPartySets",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -245,7 +242,7 @@ const base::FeatureParam<bool> kFirstPartySetsIsDogfooder{
 
 #if BUILDFLAG(ENABLE_REPORTING)
 const base::Feature kDocumentReporting{"DocumentReporting",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)

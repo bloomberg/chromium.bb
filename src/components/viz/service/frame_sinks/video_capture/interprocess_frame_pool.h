@@ -32,6 +32,10 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
   // |capacity| is the maximum number of pooled VideoFrames; but they can be of
   // any byte size.
   explicit InterprocessFramePool(int capacity);
+
+  InterprocessFramePool(const InterprocessFramePool&) = delete;
+  InterprocessFramePool& operator=(const InterprocessFramePool&) = delete;
+
   ~InterprocessFramePool();
 
   // Reserves a buffer from the pool and creates a VideoFrame to wrap its shared
@@ -117,14 +121,11 @@ class VIZ_SERVICE_EXPORT InterprocessFramePool {
 
   // The amount of time that should elapsed between log warnings about shared
   // memory allocation/mapping failures.
-  static constexpr base::TimeDelta kMinLoggingPeriod =
-      base::TimeDelta::FromSeconds(10);
+  static constexpr base::TimeDelta kMinLoggingPeriod = base::Seconds(10);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<InterprocessFramePool> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(InterprocessFramePool);
 };
 
 }  // namespace viz

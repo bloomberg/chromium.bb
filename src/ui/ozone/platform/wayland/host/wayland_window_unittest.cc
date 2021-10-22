@@ -13,10 +13,13 @@
 #include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/nix/xdg_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_command_line.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -28,9 +31,10 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_priority_hint.h"
 #include "ui/gfx/overlay_transform.h"
-#include "ui/gfx/transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection_test_api.h"
@@ -47,6 +51,7 @@
 #include "ui/ozone/platform/wayland/test/test_wayland_server_thread.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
+#include "ui/ozone/public/ozone_switches.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -135,6 +140,9 @@ class WaylandWindowTest : public WaylandTest {
                           EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
                           EF_LEFT_MOUSE_BUTTON) {}
 
+  WaylandWindowTest(const WaylandWindowTest&) = delete;
+  WaylandWindowTest& operator=(const WaylandWindowTest&) = delete;
+
   void SetUp() override {
     WaylandTest::SetUp();
 
@@ -187,7 +195,8 @@ class WaylandWindowTest : public WaylandTest {
     properties.parent_widget = parent_widget;
 
     auto window = WaylandWindow::Create(delegate, connection_.get(),
-                                        std::move(properties));
+                                        std::move(properties), true, true);
+
     if (window)
       window->Show(false);
     return window;
@@ -274,9 +283,6 @@ class WaylandWindowTest : public WaylandTest {
   wl::MockXdgSurface* xdg_surface_;
 
   MouseEvent test_mouse_event_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WaylandWindowTest);
 };
 
 TEST_P(WaylandWindowTest, SetTitle) {
@@ -316,11 +322,50 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeConfiguresWaylandWindow) {
   window_->UpdateVisualSize(kNormalBounds.size());
 }
 
+// WaylandSurface state changes are sent to wayland compositor when
+// ApplyPendingState() is called.
+TEST_P(WaylandWindowTest, ApplyPendingStatesAndCommit) {
+  window_->set_update_visual_size_immediately(false);
+  window_->set_apply_pending_state_on_update_visual_size(false);
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(
+      window_->root_surface()->GetSurfaceId());
+
+  // Set*() calls do not send wl_surface requests.
+  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).Times(0);
+  EXPECT_CALL(*mock_surface, SetInputRegion(_)).Times(0);
+  EXPECT_CALL(*mock_surface, SetBufferScale(2)).Times(0);
+
+  std::vector<gfx::Rect> region_px = {gfx::Rect{0, 0, 500, 300}};
+  window_->root_surface()->SetOpaqueRegion(&region_px);
+  window_->root_surface()->SetInputRegion(&region_px.back());
+  window_->root_surface()->SetSurfaceBufferScale(2);
+
+  Sync();
+
+  // ApplyPendingState() generates wl_surface requests and Commit() causes a
+  // wayland connection flush.
+  EXPECT_CALL(*mock_surface, SetOpaqueRegion(_)).Times(1);
+  EXPECT_CALL(*mock_surface, SetInputRegion(_)).Times(1);
+  EXPECT_CALL(*mock_surface, SetBufferScale(2)).Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  window_->root_surface()->ApplyPendingState();
+  window_->root_surface()->Commit();
+
+  Sync();
+}
+
 // Checks that decoration insets do not change final bounds and that
 // WaylandToplevelWindow::HandleToplevelConfigure does correct rounding when
 // some sides of insets divides by 2 with remainder.
 TEST_P(WaylandWindowTest, SetDecorationInsets) {
   const auto kNormalBounds = gfx::Rect{0, 0, 956, 556};
+  const auto kHiDpiScale = 2;
+  const auto kHiDpiBounds = gfx::ScaleToRoundedRect(kNormalBounds, kHiDpiScale);
+
+  window_->SetBounds(kNormalBounds);
+
   uint32_t serial = 0;
   auto state = InitializeWlArrayWithActivatedState();
 
@@ -335,10 +380,7 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
 
   Sync();
 
-  // window_->set_update_visual_size_immediately(false);
-  window_->SetBounds(kNormalBounds);
-  // auto* mock_surface = server_.GetObject<wl::MockSurface>(
-  //     window_->root_surface()->GetSurfaceId());
+  // Set insets for normal DPI.
   const gfx::Insets kDecorationInsets = {24, 28, 32, 28};
   auto bounds_with_insets = kNormalBounds;
   bounds_with_insets.Inset(kDecorationInsets);
@@ -348,6 +390,10 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
                                 bounds_with_insets.width(),
                                 bounds_with_insets.height()));
   window_->SetDecorationInsets(&kDecorationInsets);
+  // Setting the decoration insets does not trigger the immediate update of the
+  // window geometry.  Emulate updating the visual size (sending the frame
+  // update) for that.
+  window_->UpdateVisualSize(kNormalBounds.size());
 
   Sync();
 
@@ -361,10 +407,9 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
 
   Sync();
 
-  // Change scale. WaylandToplevelWindow should still configure pending bounds
-  // correctly.
-  EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(1);
-  output->SetScale(2);
+  // Change scale.  This is the only time when we expect the bounds to change.
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kHiDpiBounds))).Times(1);
+  output->SetScale(kHiDpiScale);
   output->Flush();
 
   Sync();
@@ -376,6 +421,10 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
                                 bounds_with_insets.width(),
                                 bounds_with_insets.height()));
   window_->SetDecorationInsets(&kDecorationInsets_2x);
+  // Setting the decoration insets does not trigger the immediate update of the
+  // window geometry.  Emulate updating the visual size (sending the frame
+  // update) for that.
+  window_->UpdateVisualSize(kHiDpiBounds.size());
 
   Sync();
 
@@ -526,7 +575,15 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
                                                kMaximizedBounds.height()));
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kMaximizedBounds)));
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
+  // Emulate a piece of behaviour of BrowserDesktopWindowTreeHostLinux, which is
+  // the real delegate.  Its OnWindowStateChanged() may (through some chain of
+  // calls) invoke SetWindowGeometry(), but that should not happen during the
+  // change of the window state.
+  // See https://crbug.com/1223005.
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _))
+      .Times(1)
+      .WillOnce(
+          testing::Invoke([this]() { window_->SetDecorationInsets({}); }));
   window_->Maximize();
   SendConfigureEvent(xdg_surface_, kMaximizedBounds.width(),
                      kMaximizedBounds.height(), ++serial,
@@ -557,7 +614,15 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
 
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds.width(),
                                                kNormalBounds.height()));
-  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
+  // Emulate a piece of behaviour of BrowserDesktopWindowTreeHostLinux, which is
+  // the real delegate.  Its OnWindowStateChanged() may (through some chain of
+  // calls) invoke SetWindowGeometry(), but that should not happen during the
+  // change of the window state.
+  // See https://crbug.com/1223005.
+  EXPECT_CALL(delegate_, OnWindowStateChanged(_, _))
+      .Times(1)
+      .WillOnce(
+          testing::Invoke([this]() { window_->SetDecorationInsets({}); }));
   EXPECT_CALL(delegate_, OnActivationChanged(_)).Times(0);
   EXPECT_CALL(delegate_, OnBoundsChanged(Eq(kNormalBounds)));
   EXPECT_CALL(*GetXdgToplevel(), UnsetMaximized());
@@ -652,7 +717,7 @@ TEST_P(WaylandWindowTest, StartWithFullscreen) {
   // cannot process them and set a pending state instead, because ShellSurface
   // is not created by that moment.
   auto window = WaylandWindow::Create(&delegate, connection_.get(),
-                                      std::move(properties));
+                                      std::move(properties), true, true);
 
   Sync();
 
@@ -697,7 +762,7 @@ TEST_P(WaylandWindowTest, StartMaximized) {
   // cannot process them and set a pending state instead, because ShellSurface
   // is not created by that moment.
   auto window = WaylandWindow::Create(&delegate, connection_.get(),
-                                      std::move(properties));
+                                      std::move(properties), true, true);
 
   Sync();
 
@@ -1834,27 +1899,29 @@ TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
 TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
   VerifyAndClearExpectations();
 
-  // Creating an output with scale 1.
   wl::TestOutput* main_output = server_.CreateAndInitializeOutput();
   main_output->SetRect(gfx::Rect(0, 0, 1920, 1080));
   main_output->SetScale(1);
   Sync();
 
-  // Creating an output with scale 2.
   wl::TestOutput* secondary_output = server_.CreateAndInitializeOutput();
   secondary_output->SetRect(gfx::Rect(1921, 0, 1920, 1080));
   secondary_output->SetScale(1);
   Sync();
 
-  // Send the window to |output1|.
   wl::MockSurface* surface = server_.GetObject<wl::MockSurface>(
       window_->root_surface()->GetSurfaceId());
   ASSERT_TRUE(surface);
 
-  std::vector<wl::TestOutput*> entered_outputs = {main_output,
-                                                  secondary_output};
-  for (auto* entered_output : entered_outputs) {
-    wl_surface_send_enter(surface->resource(), entered_output->resource());
+  struct {
+    wl::TestOutput* output;
+    const char* label;
+  } screen[] = {{main_output, "main output"},
+                {secondary_output, "secondary output"}};
+
+  for (const auto& entered_output : screen) {
+    wl_surface_send_enter(surface->resource(),
+                          entered_output.output->resource());
     Sync();
     for (auto main_output_scale = 1; main_output_scale < 5;
          main_output_scale++) {
@@ -1869,13 +1936,12 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
         Sync();
 
         gfx::Rect bounds_dip(15, 15, 10, 10);
-        // DesktopWindowTreeHostPlatform has always to use a primary display's
-        // scale to translate initial bounds to pixels. Thus, use primary's
-        // output's scale to make initial bounds.
-        // This code snippet is a copy of
-        // DesktopWindowTreeHostPlatform::ToPixelRect.
+        // DesktopWindowTreeHostPlatform uses the scale of the current display
+        // of the parent window to translate initial bounds of the popup to
+        // pixels.
+        const auto effective_scale = entered_output.output->GetScale();
         gfx::Transform transform;
-        transform.Scale(main_output_scale, main_output_scale);
+        transform.Scale(effective_scale, effective_scale);
         gfx::RectF rect_in_pixels = gfx::RectF(bounds_dip);
         transform.TransformRect(&rect_in_pixels);
         gfx::Rect wayland_popup_bounds = gfx::ToEnclosingRect(rect_in_pixels);
@@ -1889,25 +1955,30 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
         wayland_popup->Show(false);
 
         gfx::Rect expected_bounds = wayland_popup_bounds;
-        if (entered_output == secondary_output) {
+        if (entered_output.output == secondary_output) {
           expected_bounds =
               gfx::ScaleToRoundedRect(bounds_dip, secondary_output_scale);
         }
 
-        EXPECT_EQ(expected_bounds, wayland_popup->GetBounds());
+        EXPECT_EQ(expected_bounds, wayland_popup->GetBounds())
+            << " when the window is on " << entered_output.label
+            << " that has scale " << entered_output.output->GetScale();
       }
     }
-    wl_surface_send_leave(surface->resource(), entered_output->resource());
+    wl_surface_send_leave(surface->resource(),
+                          entered_output.output->resource());
     Sync();
   }
 }
 
-// Same as above except that it verifies that the bounds are also translated if
-// forced scale factor is set.
+// Verifies that when the forced scale factor is set, bounds are always the same
+// regardless of the scale of the display.
 TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScaleForcedScale) {
   VerifyAndClearExpectations();
 
-  display::Display::SetForceDeviceScaleFactor(1.2);
+  const auto forced_scale = 1.2;
+
+  display::Display::SetForceDeviceScaleFactor(forced_scale);
 
   // Creating an output with scale 1.
   wl::TestOutput* main_output = server_.CreateAndInitializeOutput();
@@ -1929,7 +2000,10 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScaleForcedScale) {
   wl_surface_send_enter(surface->resource(), secondary_output->resource());
   Sync();
 
-  gfx::Rect bounds_dip(15, 15, 10, 10);
+  const gfx::Rect bounds_dip{50, 50, 100, 100};
+  const gfx::Rect expected_bounds_px =
+      gfx::ScaleToRoundedRect(bounds_dip, forced_scale);
+
   // DesktopWindowTreeHostPlatform has always to use a primary display's
   // scale to translate initial bounds to pixels. However, the primary display
   // will use forced device scale factor and ignore wl_output's scale. Thus, use
@@ -1949,13 +2023,8 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScaleForcedScale) {
 
   wayland_popup->Show(false);
 
-  gfx::Rect expected_bounds = gfx::ScaleToRoundedRect(
-      wayland_popup_bounds,
-      1.f / display::Display::GetForcedDeviceScaleFactor());
-  expected_bounds = gfx::ScaleToRoundedRect(expected_bounds,
-                                            2 /*secondary display's scale */);
+  EXPECT_EQ(expected_bounds_px, wayland_popup->GetBounds());
 
-  EXPECT_EQ(expected_bounds, wayland_popup->GetBounds());
   wl_surface_send_leave(surface->resource(), secondary_output->resource());
   Sync();
 }
@@ -2561,6 +2630,7 @@ TEST_P(WaylandWindowTest, RemovesReattachesBackgroundOnHideShow) {
   background->z_order = INT32_MIN;
   background->transform = gfx::OVERLAY_TRANSFORM_NONE;
   background->buffer_id = buffer_id1;
+  background->surface_scale_factor = 1;
   overlays.push_back(std::move(background));
   buffer_manager_gpu_->CommitOverlays(window->GetWidget(), std::move(overlays));
   mock_surface->SendFrameCallback();
@@ -2591,6 +2661,7 @@ TEST_P(WaylandWindowTest, RemovesReattachesBackgroundOnHideShow) {
   primary->z_order = 0;
   primary->transform = gfx::OVERLAY_TRANSFORM_NONE;
   primary->buffer_id = buffer_id2;
+  primary->surface_scale_factor = 1;
   overlays.push_back(std::move(primary));
   buffer_manager_gpu_->CommitOverlays(window->GetWidget(), std::move(overlays));
 
@@ -2613,7 +2684,7 @@ TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
 
   MockPlatformWindowDelegate delegate;
   auto window = WaylandWindow::Create(&delegate, connection_.get(),
-                                      std::move(properties));
+                                      std::move(properties), true, true);
   DCHECK(window);
   window->Show(false);
 
@@ -2673,114 +2744,146 @@ TEST_P(WaylandWindowTest, SetsPropertiesOnShow) {
 // Tests that a popup window is created using the serial of button press
 // events as required by the Wayland protocol spec.
 TEST_P(WaylandWindowTest, CreatesPopupOnButtonPressSerial) {
-  wl_seat_send_capabilities(
-      server_.seat()->resource(),
-      WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
+  for (bool use_explicit_grab : {false, true}) {
+    base::test::ScopedCommandLine command_line_;
+    if (use_explicit_grab) {
+      command_line_.GetProcessCommandLine()->AppendSwitch(
+          switches::kUseWaylandExplicitGrab);
+    }
 
-  Sync();
+    wl_seat_send_capabilities(
+        server_.seat()->resource(),
+        WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_KEYBOARD);
 
-  constexpr uint32_t enter_serial = 1;
-  constexpr uint32_t button_press_serial = 2;
-  constexpr uint32_t button_release_serial = 3;
+    Sync();
 
-  wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
-      window_->root_surface()->GetSurfaceId());
-  struct wl_array empty;
-  wl_array_init(&empty);
-  wl_keyboard_send_enter(server_.seat()->keyboard()->resource(), enter_serial,
-                         toplevel_surface->resource(), &empty);
+    constexpr uint32_t enter_serial = 1;
+    constexpr uint32_t button_press_serial = 2;
+    constexpr uint32_t button_release_serial = 3;
 
-  // Send two events - button down and button up.
-  wl_pointer_send_button(server_.seat()->pointer()->resource(),
-                         button_press_serial, 1002, BTN_LEFT,
-                         WL_POINTER_BUTTON_STATE_PRESSED);
-  wl_pointer_send_button(server_.seat()->pointer()->resource(),
-                         button_release_serial, 1004, BTN_LEFT,
-                         WL_POINTER_BUTTON_STATE_RELEASED);
-  Sync();
+    wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
+        window_->root_surface()->GetSurfaceId());
+    struct wl_array empty;
+    wl_array_init(&empty);
+    wl_keyboard_send_enter(server_.seat()->keyboard()->resource(), enter_serial,
+                           toplevel_surface->resource(), &empty);
 
-  // Create a popup window and verify the client used correct serial.
-  MockPlatformWindowDelegate delegate;
-  EXPECT_CALL(delegate, GetMenuType())
-      .WillOnce(Return(MenuType::kRootContextMenu));
-  auto popup = CreateWaylandWindowWithParams(
-      PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
-      &delegate);
-  ASSERT_TRUE(popup);
+    // Send two events - button down and button up.
+    wl_pointer_send_button(server_.seat()->pointer()->resource(),
+                           button_press_serial, 1002, BTN_LEFT,
+                           WL_POINTER_BUTTON_STATE_PRESSED);
+    wl_pointer_send_button(server_.seat()->pointer()->resource(),
+                           button_release_serial, 1004, BTN_LEFT,
+                           WL_POINTER_BUTTON_STATE_RELEASED);
+    Sync();
 
-  Sync();
+    // Create a popup window and verify the client used correct serial.
+    MockPlatformWindowDelegate delegate;
+    EXPECT_CALL(delegate, GetMenuType())
+        .WillOnce(Return(MenuType::kRootContextMenu));
+    auto popup = CreateWaylandWindowWithParams(
+        PlatformWindowType::kMenu, window_->GetWidget(),
+        gfx::Rect(0, 0, 50, 50), &delegate);
+    ASSERT_TRUE(popup);
 
-  auto* test_popup = GetTestXdgPopupByWindow(popup.get());
-  ASSERT_TRUE(test_popup);
-  EXPECT_NE(test_popup->grab_serial(), button_release_serial);
-  EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
+    Sync();
+
+    auto* test_popup = GetTestXdgPopupByWindow(popup.get());
+    ASSERT_TRUE(test_popup);
+    if (use_explicit_grab) {
+      EXPECT_NE(test_popup->grab_serial(), button_release_serial);
+      EXPECT_EQ(test_popup->grab_serial(), button_press_serial);
+    } else {
+      EXPECT_EQ(test_popup->grab_serial(), 0U);
+    }
+  }
 }
 
 // Tests that a popup window is created using the serial of touch down events
 // as required by the Wayland protocol spec.
 TEST_P(WaylandWindowTest, CreatesPopupOnTouchDownSerial) {
-  wl_seat_send_capabilities(
-      server_.seat()->resource(),
-      WL_SEAT_CAPABILITY_TOUCH | WL_SEAT_CAPABILITY_KEYBOARD);
+  for (bool use_explicit_grab : {false, true}) {
+    base::test::ScopedCommandLine command_line_;
+    if (use_explicit_grab) {
+      command_line_.GetProcessCommandLine()->AppendSwitch(
+          switches::kUseWaylandExplicitGrab);
+    }
+    wl_seat_send_capabilities(
+        server_.seat()->resource(),
+        WL_SEAT_CAPABILITY_TOUCH | WL_SEAT_CAPABILITY_KEYBOARD);
 
-  Sync();
+    Sync();
 
-  constexpr uint32_t enter_serial = 1;
-  constexpr uint32_t touch_down_serial = 2;
-  constexpr uint32_t touch_up_serial = 3;
+    constexpr uint32_t enter_serial = 1;
+    constexpr uint32_t touch_down_serial = 2;
+    constexpr uint32_t touch_up_serial = 3;
 
-  wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
-      window_->root_surface()->GetSurfaceId());
-  struct wl_array empty;
-  wl_array_init(&empty);
-  wl_keyboard_send_enter(server_.seat()->keyboard()->resource(), enter_serial,
-                         toplevel_surface->resource(), &empty);
+    wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
+        window_->root_surface()->GetSurfaceId());
+    struct wl_array empty;
+    wl_array_init(&empty);
+    wl_keyboard_send_enter(server_.seat()->keyboard()->resource(), enter_serial,
+                           toplevel_surface->resource(), &empty);
 
-  // Send two events - touch down and touch up.
-  wl_touch_send_down(server_.seat()->touch()->resource(), touch_down_serial, 0,
-                     surface_->resource(), 0 /* id */, wl_fixed_from_int(50),
-                     wl_fixed_from_int(100));
-  wl_touch_send_up(server_.seat()->touch()->resource(), touch_up_serial, 1000,
-                   0 /* id */);
+    // Send two events - touch down and touch up.
+    wl_touch_send_down(server_.seat()->touch()->resource(), touch_down_serial,
+                       0, surface_->resource(), 0 /* id */,
+                       wl_fixed_from_int(50), wl_fixed_from_int(100));
+    wl_touch_send_up(server_.seat()->touch()->resource(), touch_up_serial, 1000,
+                     0 /* id */);
 
-  Sync();
+    Sync();
 
-  // Create a popup window and verify the client used correct serial.
-  MockPlatformWindowDelegate delegate;
-  EXPECT_CALL(delegate, GetMenuType())
-      .WillRepeatedly(Return(MenuType::kRootContextMenu));
-  auto popup = CreateWaylandWindowWithParams(
-      PlatformWindowType::kMenu, window_->GetWidget(), gfx::Rect(0, 0, 50, 50),
-      &delegate);
-  ASSERT_TRUE(popup);
+    // Create a popup window and verify the client used correct serial.
+    MockPlatformWindowDelegate delegate;
+    EXPECT_CALL(delegate, GetMenuType())
+        .WillRepeatedly(Return(MenuType::kRootContextMenu));
+    auto popup = CreateWaylandWindowWithParams(
+        PlatformWindowType::kMenu, window_->GetWidget(),
+        gfx::Rect(0, 0, 50, 50), &delegate);
+    ASSERT_TRUE(popup);
 
-  Sync();
+    Sync();
 
-  auto* test_popup = GetTestXdgPopupByWindow(popup.get());
-  ASSERT_TRUE(test_popup);
+    auto* test_popup = GetTestXdgPopupByWindow(popup.get());
+    ASSERT_TRUE(test_popup);
 
-  // Touch events are the exception. We can't use the serial that was sent
-  // before the "up" event. Otherwise, some compositors may dismiss popups.
-  // Thus, no serial must be used.
-  EXPECT_EQ(test_popup->grab_serial(), 0U);
+    // Touch events are the exception. We can't use the serial that was sent
+    // before the "up" event. Otherwise, some compositors may dismiss popups.
+    // Thus, no serial must be used.
+    EXPECT_EQ(test_popup->grab_serial(), 0U);
 
-  popup->Hide();
+    popup->Hide();
 
-  // Send a single down event now.
-  wl_touch_send_down(server_.seat()->touch()->resource(), touch_down_serial, 0,
-                     surface_->resource(), 0 /* id */, wl_fixed_from_int(50),
-                     wl_fixed_from_int(100));
+    // Send a single down event now.
+    wl_touch_send_down(server_.seat()->touch()->resource(), touch_down_serial,
+                       0, surface_->resource(), 0 /* id */,
+                       wl_fixed_from_int(50), wl_fixed_from_int(100));
 
-  Sync();
+    Sync();
 
-  popup->Show(false);
+    popup->Show(false);
 
-  Sync();
+    Sync();
 
-  test_popup = GetTestXdgPopupByWindow(popup.get());
-  ASSERT_TRUE(test_popup);
+    test_popup = GetTestXdgPopupByWindow(popup.get());
+    ASSERT_TRUE(test_popup);
 
-  EXPECT_EQ(test_popup->grab_serial(), touch_down_serial);
+    uint32_t expected_serial = touch_down_serial;
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+    auto env = base::Environment::Create();
+    if (base::nix::GetDesktopEnvironment(env.get()) ==
+        base::nix::DESKTOP_ENVIRONMENT_GNOME) {
+      // We do not grab with touch events on gnome shell.
+      expected_serial = 0u;
+    }
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (use_explicit_grab) {
+      EXPECT_EQ(test_popup->grab_serial(), expected_serial);
+    } else {
+      EXPECT_EQ(test_popup->grab_serial(), 0U);
+    }
+  }
 }
 
 // Tests nested menu windows get the topmost window in the stack of windows
@@ -2923,8 +3026,8 @@ TEST_P(WaylandWindowTest, OneWaylandSubsurface) {
       wayland_subsurface->wayland_surface()->GetSurfaceId());
   EXPECT_TRUE(mock_surface_subsurface);
   wayland_subsurface->ConfigureAndShowSurface(
-      gfx::OVERLAY_TRANSFORM_NONE, subsurface_bounds, 1 /*buffer_scale*/, true,
-      nullptr, nullptr);
+      subsurface_bounds, gfx::Rect(0, 0, 640, 480) /*parent_bounds_px*/,
+      1 /*buffer_scale*/, nullptr, nullptr);
   connection_->ScheduleFlush();
 
   Sync();
@@ -2950,8 +3053,6 @@ TEST_P(WaylandWindowTest, RepositionPopups) {
       &delegate_);
   EXPECT_TRUE(menu_window);
   EXPECT_TRUE(menu_window->IsVisible());
-
-  menu_window->set_update_visual_size_immediately(true);
 
   Sync();
 
@@ -2995,6 +3096,15 @@ TEST_P(WaylandWindowTest, RepositionPopups) {
   Sync();
 
   VerifyAndClearExpectations();
+}
+
+// If buffers are not attached (aka WaylandBufferManagerHost is not used for
+// buffer management), WaylandSurface::Commit mustn't result in creation of
+// surface sync.
+TEST_P(WaylandWindowTest, DoesNotCreateSurfaceSyncOnCommitWithoutBuffers) {
+  EXPECT_THAT(window_->root_surface()->surface_sync_, nullptr);
+  window_->root_surface()->Commit();
+  EXPECT_THAT(window_->root_surface()->surface_sync_, nullptr);
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,

@@ -15,6 +15,8 @@
 #include "build/build_config.h"
 #include "content/browser/media/audible_metrics.h"
 #include "content/browser/media/media_devices_util.h"
+#include "content/browser/renderer_host/back_forward_cache_disable.h"
+#include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -97,6 +99,10 @@ class MediaWebContentsObserver::PlayerInfo {
   }
 
   bool IsAudible() const { return has_audio_ && is_playing_ && !muted_; }
+
+  GlobalRenderFrameHostId GetFrameRoutingId() const {
+    return id_.frame_routing_id;
+  }
 
  private:
   void NotifyPlayerStarted() {
@@ -265,6 +271,17 @@ void MediaWebContentsObserver::DidUpdateAudioMutingState(bool muted) {
   session_controllers_manager_->WebContentsMutedStateChanged(muted);
 }
 
+void MediaWebContentsObserver::GetHasPlayedBefore(
+    GetHasPlayedBeforeCallback callback) {
+  std::move(callback).Run(has_played_before_);
+}
+
+void MediaWebContentsObserver::BindMediaPlayerObserverClient(
+    mojo::PendingReceiver<media::mojom::MediaPlayerObserverClient>
+        pending_receiver) {
+  receivers_.Add(this, std::move(pending_receiver));
+}
+
 void MediaWebContentsObserver::RequestPersistentVideo(bool value) {
   if (!fullscreen_player_)
     return;
@@ -418,6 +435,13 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnMediaPlaying() {
   if (!player_info)
     return;
 
+  if (!BackForwardCacheImpl::IsMediaPlayAllowed()) {
+    BackForwardCache::DisableForRenderFrameHost(
+        player_info->GetFrameRoutingId(),
+        BackForwardCacheDisable::DisabledReason(
+            BackForwardCacheDisable::DisabledReasonId::kMediaPlay));
+  }
+
   if (!media_web_contents_observer_->session_controllers_manager()->RequestPlay(
           media_player_id_)) {
     // Return early to avoid spamming WebContents with playing/stopped
@@ -429,6 +453,7 @@ void MediaWebContentsObserver::MediaPlayerObserverHostImpl::OnMediaPlaying() {
   if (!player_info->is_playing())
     player_info->SetIsPlaying();
 
+  media_web_contents_observer_->OnMediaPlaying();
   NotifyAudioStreamMonitorIfNeeded();
 }
 
@@ -522,6 +547,10 @@ void MediaWebContentsObserver::OnMediaEffectivelyFullscreenChanged(
       (fullscreen_status !=
        blink::WebFullscreenVideoStatus::kNotEffectivelyFullscreen);
   web_contents_impl()->MediaEffectivelyFullscreenChanged(is_fullscreen);
+}
+
+void MediaWebContentsObserver::OnMediaPlaying() {
+  has_played_before_ = true;
 }
 
 void MediaWebContentsObserver::OnAudioOutputSinkChanged(

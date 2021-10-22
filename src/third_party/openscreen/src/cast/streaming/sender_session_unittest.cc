@@ -168,12 +168,12 @@ class SenderSessionTest : public ::testing::Test {
   SenderSessionTest() : clock_(Clock::time_point{}), task_runner_(&clock_) {}
 
   std::unique_ptr<MockEnvironment> MakeEnvironment() {
-    auto environment_ = std::make_unique<NiceMock<MockEnvironment>>(
+    auto environment = std::make_unique<NiceMock<MockEnvironment>>(
         &FakeClock::now, &task_runner_);
-    ON_CALL(*environment_, GetBoundLocalEndpoint())
+    ON_CALL(*environment, GetBoundLocalEndpoint())
         .WillByDefault(
             Return(IPEndpoint{IPAddress::Parse("127.0.0.1").value(), 12345}));
-    return environment_;
+    return environment;
   }
 
   void SetUp() {

@@ -111,6 +111,9 @@ void PredictionModelDownloadManager::StartDownload(const GURL& download_url) {
                           ui_weak_ptr_factory_.GetWeakPtr());
   download_params.traffic_annotation = net::MutableNetworkTrafficAnnotationTag(
       kOptimizationGuidePredictionModelsTrafficAnnotation);
+  // The downloaded models are all Google-generated, so bypass the safety
+  // checks.
+  download_params.request_params.require_safety_checks = false;
   download_params.request_params.url = download_url;
   download_params.request_params.method = "GET";
   download_params.request_params.request_headers.SetHeader(kGoogApiKey,
@@ -401,7 +404,9 @@ PredictionModelDownloadManager::ProcessUnzippedContents(
     // ReplaceFile failed, log the error code and attempt to utilize base::Move
     // instead as the file could be on a different storage partition.
     UMA_HISTOGRAM_ENUMERATION(
-        "OptimizationGuide.PredictionModelDownloadManager.ReplaceFileError",
+        "OptimizationGuide.PredictionModelDownloadManager.ReplaceFileError." +
+            GetStringNameForOptimizationTarget(
+                model_info.optimization_target()),
         -file_error, -base::File::FILE_ERROR_MAX);
     if (base::Move(move_file.first, move_file.second)) {
       continue;

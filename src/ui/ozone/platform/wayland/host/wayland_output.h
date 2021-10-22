@@ -20,10 +20,12 @@ class XDGOutput;
 // that are available to the application.
 class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
  public:
-  static void Register(WaylandConnection* connection);
+  static constexpr char kInterfaceName[] = "wl_output";
+
   static void Instantiate(WaylandConnection* connection,
                           wl_registry* registry,
                           uint32_t name,
+                          const std::string& interface,
                           uint32_t version);
 
   class Delegate {
@@ -38,6 +40,10 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   };
 
   WaylandOutput(uint32_t output_id, wl_output* output);
+
+  WaylandOutput(const WaylandOutput&) = delete;
+  WaylandOutput& operator=(const WaylandOutput&) = delete;
+
   ~WaylandOutput();
 
   void Initialize(Delegate* delegate);
@@ -91,8 +97,6 @@ class WaylandOutput : public wl::GlobalObjectRegistrar<WaylandOutput> {
   gfx::Rect rect_in_physical_pixels_;
 
   Delegate* delegate_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandOutput);
 };
 
 }  // namespace ui

@@ -13,13 +13,13 @@
 
 #include "base/cxx17_backports.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/mem_buffer_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/test_future.h"
 #include "build/build_config.h"
 #include "components/version_info/version_info.h"
-#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/test/fit_adapter.h"
 #include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/result_receiver.h"
 #include "fuchsia/base/test/test_devtools_list_fetcher.h"
 #include "fuchsia/engine/web_engine_integration_test_base.h"
 #include "media/base/media_switches.h"
@@ -216,7 +216,7 @@ TEST_F(WebEngineIntegrationTest, CreateFrameWithUnclonableFrameParamsFails) {
 
   // Create a buffer and remove the ability clone it by changing its rights to
   // not include ZX_RIGHT_DUPLICATE.
-  auto buffer = cr_fuchsia::MemBufferFromString("some data", "some name");
+  auto buffer = base::MemBufferFromString("some data", "some name");
   zx::vmo unclonable_readonly_vmo;
   EXPECT_EQ(ZX_OK, buffer.vmo.duplicate(kReadRightsWithoutDuplicate,
                                         &unclonable_readonly_vmo));
@@ -255,16 +255,14 @@ TEST_F(WebEngineIntegrationTest, RemoteDebuggingPort) {
   CreateFrameWithParams(std::move(create_frame_params));
 
   // Expect to receive a notification of the selected DevTools port.
-  base::RunLoop run_loop;
-  cr_fuchsia::ResultReceiver<
-      fuchsia::web::Context_GetRemoteDebuggingPort_Result>
-      port_receiver(run_loop.QuitClosure());
+  base::test::TestFuture<fuchsia::web::Context_GetRemoteDebuggingPort_Result>
+      port_receiver;
   context_->GetRemoteDebuggingPort(
-      cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
-  run_loop.Run();
+      cr_fuchsia::CallbackToFitFunction(port_receiver.GetCallback()));
+  port_receiver.Wait();
 
-  ASSERT_TRUE(port_receiver->is_response());
-  uint16_t remote_debugging_port = port_receiver->response().port;
+  ASSERT_TRUE(port_receiver.Get().is_response());
+  uint16_t remote_debugging_port = port_receiver.Get().response().port;
   ASSERT_TRUE(remote_debugging_port != 0);
 
   // Navigate to a URL.
@@ -356,8 +354,8 @@ TEST_F(WebEngineIntegrationMediaTest, PlayAudio) {
   ASSERT_EQ(fake_audio_consumer_service_.num_instances(), 1U);
 
   auto pos = fake_audio_consumer_service_.instance(0)->GetMediaPosition();
-  EXPECT_GT(pos, base::TimeDelta::FromSecondsD(2.0));
-  EXPECT_LT(pos, base::TimeDelta::FromSecondsD(2.5));
+  EXPECT_GT(pos, base::Seconds(2.0));
+  EXPECT_LT(pos, base::Seconds(2.5));
 
   EXPECT_EQ(fake_audio_consumer_service_.instance(0)->session_id(),
             kTestMediaSessionId);
@@ -586,11 +584,13 @@ TEST_F(WebEngineIntegrationCameraTest, CameraNoVideoCaptureProcess) {
 TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
        HardwareVideoDecoderFlag_Provided) {
   // Check that the CodecFactory service is requested.
-  bool is_requested = false;
+  base::RunLoop codec_connected_run_loop;
   zx_status_t status =
       filtered_service_directory().outgoing_directory()->AddPublicService(
           fidl::InterfaceRequestHandler<fuchsia::mediacodec::CodecFactory>(
-              [&is_requested](auto request) { is_requested = true; }));
+              [&codec_connected_run_loop](auto request) {
+                codec_connected_run_loop.Quit();
+              }));
   ZX_CHECK(status == ZX_OK, status) << "AddPublicService";
 
   // The VULKAN flag is required for hardware video decoders to be available.
@@ -605,9 +605,7 @@ TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
   ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
       kAutoplayVp9OpusToEndUrl,
       cr_fuchsia::CreateLoadUrlParamsWithUserActivation()));
-  navigation_listener()->RunUntilTitleEquals("ended");
-
-  EXPECT_TRUE(is_requested);
+  codec_connected_run_loop.Run();
 }
 
 // Check that the CodecFactory service is not requested when

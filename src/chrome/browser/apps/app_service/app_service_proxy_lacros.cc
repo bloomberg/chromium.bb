@@ -11,11 +11,14 @@
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_instance_forwarder.h"
 #include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
+#include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps.h"
 #include "chrome/browser/profiles/profile.h"
@@ -93,10 +96,21 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager),
-      profile_(profile),
-      browser_app_instance_tracker_(
-          apps::BrowserAppInstanceTracker::Create(profile_,
-                                                  app_registry_cache_)) {
+      profile_(profile) {
+  auto* service = chromeos::LacrosService::Get();
+  if (service && service->init_params()->web_apps_enabled &&
+      service->IsAvailable<crosapi::mojom::BrowserAppInstanceRegistry>()) {
+    browser_app_instance_tracker_ =
+        std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
+                                                          app_registry_cache_);
+    auto& registry =
+        chromeos::LacrosService::Get()
+            ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
+    DCHECK(registry);
+    browser_app_instance_forwarder_ =
+        std::make_unique<apps::BrowserAppInstanceForwarder>(
+            *browser_app_instance_tracker_, registry);
+  }
   Initialize();
 }
 
@@ -108,8 +122,6 @@ void AppServiceProxyLacros::Initialize() {
   }
 
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
-
-  Observe(&app_registry_cache_);
 
   web_apps_publisher_host_ =
       std::make_unique<web_app::WebAppsPublisherHost>(profile_);
@@ -278,7 +290,8 @@ void AppServiceProxyLacros::LaunchAppWithIntent(
   auto launch_params = crosapi::mojom::LaunchParams::New();
   launch_params->app_id = app_id;
   launch_params->launch_source = launch_source;
-  launch_params->intent = std::move(intent);
+  launch_params->intent =
+      apps_util::ConvertAppServiceToCrosapiIntent(intent, profile_);
   service->GetRemote<crosapi::mojom::AppServiceProxy>()->Launch(
       std::move(launch_params));
 }
@@ -433,6 +446,16 @@ void AppServiceProxyLacros::AddPreferredApp(
   NOTIMPLEMENTED();
 }
 
+void AppServiceProxyLacros::SetSupportedLinksPreference(
+    const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void AppServiceProxyLacros::RemoveSupportedLinksPreference(
+    const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 void AppServiceProxyLacros::SetWindowMode(const std::string& app_id,
                                           apps::mojom::WindowMode window_mode) {
   NOTIMPLEMENTED();
@@ -449,19 +472,6 @@ void AppServiceProxyLacros::OnApps(std::vector<apps::mojom::AppPtr> deltas,
                                    bool should_notify_initialized) {
   app_registry_cache_.OnApps(std::move(deltas), app_type,
                              should_notify_initialized);
-}
-
-void AppServiceProxyLacros::OnAppUpdate(const apps::AppUpdate& update) {
-  if (!update.ReadinessChanged() ||
-      !apps_util::IsInstalled(update.Readiness())) {
-    return;
-  }
-  preferred_apps_.DeleteAppId(update.AppId());
-}
-
-void AppServiceProxyLacros::OnAppRegistryCacheWillBeDestroyed(
-    apps::AppRegistryCache* cache) {
-  Observe(nullptr);
 }
 
 apps::mojom::IntentFilterPtr AppServiceProxyLacros::FindBestMatchingFilter(

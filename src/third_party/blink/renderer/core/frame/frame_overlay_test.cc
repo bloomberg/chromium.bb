@@ -49,7 +49,7 @@ class SolidColorOverlay : public FrameOverlay::Delegate {
     DrawingRecorder recorder(graphics_context, frame_overlay,
                              DisplayItem::kFrameOverlay,
                              IntRect(IntPoint(), size));
-    graphics_context.FillRect(rect, color_);
+    graphics_context.FillRect(rect, color_, AutoDarkMode::Disabled());
   }
 
  private:
@@ -105,10 +105,10 @@ TEST_P(FrameOverlayTest, AcceleratedCompositing) {
               onDrawRect(SkRect::MakeWH(kViewportWidth, kViewportHeight),
                          Property(&SkPaint::getColor, SK_ColorYELLOW)));
 
-  PaintRecordBuilder builder;
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    frame_overlay->Paint(builder.Context());
-    builder.EndRecording()->Playback(&canvas);
+    frame_overlay->Paint(builder->Context());
+    builder->EndRecording()->Playback(&canvas);
   } else {
     auto* graphics_layer = frame_overlay->GetGraphicsLayer();
     EXPECT_FALSE(graphics_layer->IsHitTestable());
@@ -116,7 +116,7 @@ TEST_P(FrameOverlayTest, AcceleratedCompositing) {
               graphics_layer->GetPropertyTreeState());
     Vector<PreCompositedLayerInfo> pre_composited_layers;
     PaintController::CycleScope cycle_scope;
-    graphics_layer->PaintRecursively(builder.Context(), pre_composited_layers,
+    graphics_layer->PaintRecursively(builder->Context(), pre_composited_layers,
                                      cycle_scope);
     ASSERT_EQ(1u, pre_composited_layers.size());
     SkiaPaintCanvas(&canvas).drawPicture(
@@ -159,7 +159,7 @@ TEST_P(FrameOverlayTest, DeviceEmulationScale) {
         ElementsAre(IsPaintChunk(
             0, 1,
             PaintChunk::Id(frame_overlay->Id(), DisplayItem::kFrameOverlay),
-            state, nullptr, IntRect(0, 0, 800, 600))));
+            state, nullptr, gfx::Rect(0, 0, 800, 600))));
   };
 
   PaintController paint_controller(PaintController::kTransient);

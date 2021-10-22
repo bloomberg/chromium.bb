@@ -44,6 +44,11 @@ class ASH_EXPORT AccessibilityDetailedView
   static constexpr char kClassName[] = "AccessibilityDetailedView";
 
   explicit AccessibilityDetailedView(DetailedViewDelegate* delegate);
+
+  AccessibilityDetailedView(const AccessibilityDetailedView&) = delete;
+  AccessibilityDetailedView& operator=(const AccessibilityDetailedView&) =
+      delete;
+
   ~AccessibilityDetailedView() override;
 
   void OnAccessibilityStatusChanged();
@@ -97,6 +102,7 @@ class ASH_EXPORT AccessibilityDetailedView
   HoverHighlightView* autoclick_view_ = nullptr;
   HoverHighlightView* virtual_keyboard_view_ = nullptr;
   HoverHighlightView* switch_access_view_ = nullptr;
+  HoverHighlightView* live_caption_view_ = nullptr;
   HoverHighlightView* mono_audio_view_ = nullptr;
   HoverHighlightView* caret_highlight_view_ = nullptr;
   HoverHighlightView* highlight_mouse_cursor_view_ = nullptr;
@@ -116,6 +122,7 @@ class ASH_EXPORT AccessibilityDetailedView
   bool autoclick_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
   bool switch_access_enabled_ = false;
+  bool live_caption_enabled_ = false;
   bool mono_audio_enabled_ = false;
   bool caret_highlight_enabled_ = false;
   bool highlight_mouse_cursor_enabled_ = false;
@@ -123,8 +130,6 @@ class ASH_EXPORT AccessibilityDetailedView
   bool sticky_keys_enabled_ = false;
 
   LoginStatus login_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityDetailedView);
 };
 
 }  // namespace tray

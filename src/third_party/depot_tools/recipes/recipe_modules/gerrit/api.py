@@ -226,6 +226,24 @@ class GerritApi(recipe_api.RecipeApi):
         step_test_data=step_test_data,
     ).json.output
 
+  def set_change_label(self,
+                       host,
+                       change,
+                       label_name,
+                       label_value,
+                       name=None,
+                       step_test_data=None):
+    args = [
+        'setlabel', '--host', host, '--change',
+        int(change), '--json_file',
+        self.m.json.output(), '-l', label_name, label_value
+    ]
+    return self(
+        name or 'setlabel',
+        args,
+        step_test_data=step_test_data,
+    ).json.output
+
   def move_changes(self,
                    host,
                    project,

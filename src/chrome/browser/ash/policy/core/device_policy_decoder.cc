@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/off_hours/off_hours_proto_parser.h"
-#include "chrome/browser/chromeos/tpm_firmware_update.h"
+#include "chrome/browser/ash/tpm_firmware_update.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine/update_engine_client.h"
@@ -590,6 +590,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_login_screen_prompt_on_multiple_matching_certificates()) {
+    const em::BooleanPolicyProto& container(
+        policy.login_screen_prompt_on_multiple_matching_certificates());
+    if (container.has_value()) {
+      policies->Set(key::kDeviceLoginScreenPromptOnMultipleMatchingCertificates,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.value()),
+                    nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,
@@ -687,6 +698,12 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                              PolicyMap* policies) {
   if (policy.has_device_reporting()) {
     const em::DeviceReportingProto& container(policy.device_reporting());
+    if (container.has_enable_granular_reporting()) {
+      policies->Set(key::kEnableDeviceGranularReporting, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.enable_granular_reporting()),
+                    nullptr);
+    }
     if (container.has_report_version_info()) {
       policies->Set(key::kReportDeviceVersionInfo, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
@@ -829,6 +846,11 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
       policies->Set(key::kReportDeviceSystemInfo, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.report_system_info()), nullptr);
+    }
+    if (container.has_report_security_status()) {
+      policies->Set(key::kReportDeviceSecurityStatus, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    base::Value(container.report_security_status()), nullptr);
     }
     if (container.has_report_print_jobs()) {
       policies->Set(key::kReportDevicePrintJobs, POLICY_LEVEL_MANDATORY,

@@ -33,6 +33,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -130,19 +131,16 @@ constexpr const int kPasswordRowCornerRadiusDp = 4;
 // Delay after which the password gets cleared if nothing has been typed. It is
 // only running if the display password button is shown, as there is no
 // potential security threat otherwise.
-constexpr base::TimeDelta kClearPasswordAfterDelay =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kClearPasswordAfterDelay = base::Seconds(30);
 
 // Delay after which the password gets back to hidden state, for security.
-constexpr base::TimeDelta kHidePasswordAfterDelay =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kHidePasswordAfterDelay = base::Seconds(5);
 
 constexpr const char kLoginPasswordViewName[] = "LoginPasswordView";
 
 struct FrameParams {
   FrameParams(int duration_in_ms, float opacity_param)
-      : duration(base::TimeDelta::FromMilliseconds(duration_in_ms)),
-        opacity(opacity_param) {}
+      : duration(base::Milliseconds(duration_in_ms)), opacity(opacity_param) {}
 
   base::TimeDelta duration;
   float opacity;
@@ -234,6 +232,11 @@ class LoginPasswordView::LoginTextfield : public views::Textfield {
     SetObscuredGlyphSpacing(kPasswordGlyphSpacing);
     SetBorder(nullptr);
     UpdatePalette(palette);
+
+    // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+    // able to submit accessibility checks, but this focusable View needs to
+    // add a name so that the screen reader knows what to announce.
+    SetProperty(views::kSkipAccessibilityPaintChecks, true);
   }
   LoginTextfield(const LoginTextfield&) = delete;
   LoginTextfield& operator=(const LoginTextfield&) = delete;
@@ -305,6 +308,10 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
   EasyUnlockIcon() : views::ImageButton(PressedCallback()) {
     SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   }
+
+  EasyUnlockIcon(const EasyUnlockIcon&) = delete;
+  EasyUnlockIcon& operator=(const EasyUnlockIcon&) = delete;
+
   ~EasyUnlockIcon() override = default;
 
   void Init(const OnEasyUnlockIconHovered& on_hovered,
@@ -346,10 +353,9 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
       if (immediately_hover_for_test_) {
         on_hovered_.Run();
       } else {
-        invoke_hover_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kDelayBeforeShowingTooltipMs),
-            on_hovered_);
+        invoke_hover_.Start(FROM_HERE,
+                            base::Milliseconds(kDelayBeforeShowingTooltipMs),
+                            on_hovered_);
       }
     }
   }
@@ -436,8 +442,6 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
   bool immediately_hover_for_test_ = false;
 
   EasyUnlockIconState icon_state_ = EasyUnlockIconState::LOCKED;
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockIcon);
 };
 
 class LoginPasswordView::DisplayPasswordButton

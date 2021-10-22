@@ -36,6 +36,7 @@
 #include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_hints.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
@@ -51,6 +52,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_headers.h"
 #include "net/nqe/effective_connection_type.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -70,10 +72,14 @@
 namespace {
 
 using ::content::URLLoaderInterceptor;
+using ::net::test_server::EmbeddedTestServer;
+using ::testing::Contains;
 using ::testing::Eq;
+using ::testing::Key;
+using ::testing::Not;
 using ::testing::Optional;
 
-constexpr unsigned expected_client_hints_number = 14u;
+constexpr unsigned expected_client_hints_number = 13u;
 constexpr int32_t uma_histogram_max_value = 1471228928;
 
 // An interceptor that records count of fetches and client hint headers for
@@ -85,6 +91,11 @@ class ThirdPartyURLLoaderInterceptor {
         interceptor_(base::BindRepeating(
             &ThirdPartyURLLoaderInterceptor::InterceptURLRequest,
             base::Unretained(this))) {}
+
+  ThirdPartyURLLoaderInterceptor(const ThirdPartyURLLoaderInterceptor&) =
+      delete;
+  ThirdPartyURLLoaderInterceptor& operator=(
+      const ThirdPartyURLLoaderInterceptor&) = delete;
 
   ~ThirdPartyURLLoaderInterceptor() = default;
 
@@ -98,11 +109,10 @@ class ThirdPartyURLLoaderInterceptor {
       return false;
 
     request_count_seen_++;
-    for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
-      if (params->url_request.headers.HasHeader(
-              network::kClientHintsNameMapping[i])) {
+    for (const auto& elem : network::GetClientHintToNameMap()) {
+      const auto& header = elem.second;
+      if (params->url_request.headers.HasHeader(header))
         client_hints_count_seen_++;
-      }
     }
     return false;
   }
@@ -114,8 +124,6 @@ class ThirdPartyURLLoaderInterceptor {
   size_t client_hints_count_seen_ = 0u;
 
   URLLoaderInterceptor interceptor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThirdPartyURLLoaderInterceptor);
 };
 
 // Returns true only if |header_value| satisfies ABNF: 1*DIGIT [ "." 1*DIGIT ]
@@ -169,6 +177,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       : http_server_(net::EmbeddedTestServer::TYPE_HTTP),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_cross_origin_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        http2_server_(net::EmbeddedTestServer::TYPE_HTTPS,
+                      net::test_server::HttpConnection::Protocol::kHttp2),
         expect_client_hints_on_main_frame_(false),
         expect_client_hints_on_subresources_(false),
         count_user_agent_hint_headers_seen_(0),
@@ -181,11 +191,15 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         "chrome/test/data/client_hints");
     https_cross_origin_server_.ServeFilesFromSourceDirectory(
         "chrome/test/data/client_hints");
+    http2_server_.ServeFilesFromSourceDirectory("chrome/test/data");
 
     http_server_.RegisterRequestMonitor(
         base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
                             base::Unretained(this)));
     https_server_.RegisterRequestMonitor(
+        base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
+                            base::Unretained(this)));
+    http2_server_.RegisterRequestMonitor(
         base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
                             base::Unretained(this)));
     https_cross_origin_server_.RegisterRequestMonitor(
@@ -198,8 +212,17 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         &ClientHintsBrowserTest::RequestHandlerToFetchCrossOriginIframe,
         base::Unretained(this)));
 
+    http2_server_.AddDefaultHandlers();
+
+    std::vector<std::string> accept_ch_tokens;
+    for (const auto& pair : network::GetClientHintToNameMap())
+      accept_ch_tokens.push_back(pair.second);
+
+    http2_server_.SetAlpsAcceptCH("", base::JoinString(accept_ch_tokens, ","));
+
     EXPECT_TRUE(http_server_.Start());
     EXPECT_TRUE(https_server_.Start());
+    EXPECT_TRUE(http2_server_.Start());
     EXPECT_TRUE(https_cross_origin_server_.Start());
 
     EXPECT_NE(https_server_.base_url(), https_cross_origin_server_.base_url());
@@ -272,12 +295,15 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         https_server_.GetURL("/http_equiv_accept_ch_merge.html");
   }
 
+  ClientHintsBrowserTest(const ClientHintsBrowserTest&) = delete;
+  ClientHintsBrowserTest& operator=(const ClientHintsBrowserTest&) = delete;
+
   ~ClientHintsBrowserTest() override {}
 
   virtual std::unique_ptr<base::FeatureList> EnabledFeatures() {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,LangClientHintHeader,CriticalClientHint,"
+        "UserAgentClientHint,CriticalClientHint,"
         "AcceptCHFrame,PrefersColorSchemeClientHintHeader,"
         "ViewportHeightClientHintHeader",
         "");
@@ -450,6 +476,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return http_equiv_accept_ch_merge_;
   }
 
+  GURL GetHttp2Url(const std::string& relative_url) const {
+    return http2_server_.GetURL(relative_url);
+  }
+
   size_t count_user_agent_hint_headers_seen() const {
     base::AutoLock lock(count_headers_lock_);
     return count_user_agent_hint_headers_seen_;
@@ -574,7 +604,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     bool is_main_frame_navigation =
-        request.GetURL().spec().find(".html") != std::string::npos;
+        (request.GetURL().spec().find(".html") != std::string::npos ||
+         request.GetURL().spec().find("echoheader") != std::string::npos);
 
     if (is_main_frame_navigation &&
         request.GetURL().spec().find("redirect") != std::string::npos) {
@@ -676,18 +707,16 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       }
     }
 
-    for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
-      if (base::Contains(request.headers,
-                         network::kClientHintsNameMapping[i])) {
+    for (const auto& elem : network::GetClientHintToNameMap()) {
+      const auto& header = elem.second;
+      if (base::Contains(request.headers, header)) {
         base::AutoLock lock(count_headers_lock_);
         // The user agent hint is special:
-        if (std::string(network::kClientHintsNameMapping[i]) == "sec-ch-ua") {
+        if (header == "sec-ch-ua") {
           count_user_agent_hint_headers_seen_++;
-        } else if (std::string(network::kClientHintsNameMapping[i]) ==
-                   "sec-ch-ua-mobile") {
+        } else if (header == "sec-ch-ua-mobile") {
           count_ua_mobile_client_hints_headers_seen_++;
-        } else if (std::string(network::kClientHintsNameMapping[i]) ==
-                   "sec-ch-ua-platform") {
+        } else if (header == "sec-ch-ua-platform") {
           count_ua_platform_client_hints_headers_seen_++;
         } else {
           count_client_hints_headers_seen_++;
@@ -698,21 +727,19 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 
   void VerifyClientHintsReceived(bool expect_client_hints,
                                  const net::test_server::HttpRequest& request) {
-    for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
-      SCOPED_TRACE(testing::Message()
-                   << std::string(network::kClientHintsNameMapping[i]));
+    for (const auto& elem : network::GetClientHintToNameMap()) {
+      const auto& header = elem.second;
+      SCOPED_TRACE(testing::Message() << header);
+      SCOPED_TRACE(testing::Message() << request.GetURL().spec());
       // Resource width client hint is only attached on image subresources.
-      if (std::string(network::kClientHintsNameMapping[i]) == "width") {
+      if (header == "width") {
         continue;
       }
 
       // `Sec-CH-UA`, `Sec-CH-UA-Mobile`, and `Sec-CH-UA-Platform` is attached
       // on all requests.
-      if (std::string(network::kClientHintsNameMapping[i]) == "sec-ch-ua" ||
-          std::string(network::kClientHintsNameMapping[i]) ==
-              "sec-ch-ua-mobile" ||
-          std::string(network::kClientHintsNameMapping[i]) ==
-              "sec-ch-ua-platform") {
+      if (header == "sec-ch-ua" || header == "sec-ch-ua-mobile" ||
+          header == "sec-ch-ua-platform") {
         continue;
       }
 
@@ -720,14 +747,18 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
       // in the presence of a valid "UserAgentReduction" Origin Trial token.
       // `Sec-CH-UA-Reduced` is tested via UaReducedOriginTrialBrowserTest
       // below.
-      if (std::string(network::kClientHintsNameMapping[i]) ==
-          "sec-ch-ua-reduced") {
+      if (header == "sec-ch-ua-reduced") {
         continue;
       }
 
-      EXPECT_EQ(
-          expect_client_hints,
-          base::Contains(request.headers, network::kClientHintsNameMapping[i]));
+      // We aren't yet including the new sec-ch-device-memory, sec-ch-dpr,
+      // sec-ch-width, sec-ch-viewport-width
+      if (header == "sec-ch-device-memory" || header == "sec-ch-dpr" ||
+          header == "sec-ch-width" || header == "sec-ch-viewport-width") {
+        continue;
+      }
+
+      EXPECT_EQ(expect_client_hints, base::Contains(request.headers, header));
     }
   }
 
@@ -795,6 +826,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   net::EmbeddedTestServer http_server_;
   net::EmbeddedTestServer https_server_;
   net::EmbeddedTestServer https_cross_origin_server_;
+  net::EmbeddedTestServer http2_server_;
   GURL accept_ch_with_lifetime_http_local_url_;
   GURL http_equiv_accept_ch_with_lifetime_http_local_url_;
   GURL accept_ch_with_lifetime_url_;
@@ -844,8 +876,6 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 
   // Set to 2G in SetUpCommandLine().
   net::EffectiveConnectionType expected_ect = net::EFFECTIVE_CONNECTION_TYPE_2G;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientHintsBrowserTest);
 };
 
 // True if testing for http-equiv correctness. When set to true, the tests
@@ -861,8 +891,7 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
         "AllowClientHintsToThirdParty,UserAgentClientHint,"
-        "LangClientHintHeader,PrefersColorSchemeClientHintHeader,"
-        "ViewportHeightClientHintHeader",
+        "PrefersColorSchemeClientHintHeader,ViewportHeightClientHintHeader",
         "");
     return feature_list;
   }
@@ -873,16 +902,15 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
-  for (size_t i = 0; i < network::kClientHintsNameMappingCount; ++i) {
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& header = elem.second;
     // Do not test for headers that have not been enabled on the blink "stable"
     // yet.
-    if (std::string(network::kClientHintsNameMapping[i]) == "rtt" ||
-        std::string(network::kClientHintsNameMapping[i]) == "downlink" ||
-        std::string(network::kClientHintsNameMapping[i]) == "ect") {
+    if (header == "rtt" || header == "downlink" || header == "ect") {
       continue;
     }
-    EXPECT_TRUE(network::cors::IsCorsSafelistedHeader(
-        network::kClientHintsNameMapping[i], "42" /* value */));
+    EXPECT_TRUE(
+        network::cors::IsCorsSafelistedHeader(header, "42" /* value */));
   }
   EXPECT_FALSE(network::cors::IsCorsSafelistedHeader("not-a-client-hint-header",
                                                      "" /* value */));
@@ -931,6 +959,37 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest, ClientHintsHttps) {
     histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
                                         uma_histogram_max_value, 1);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsAlps) {
+  base::HistogramTester histogram_tester;
+  SetClientHintExpectationsOnMainFrame(true);
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GetHttp2Url("/blank.html")));
+  histogram_tester.ExpectBucketCount(
+      "ClientHints.AcceptCHFrame",
+      content::AcceptCHFrameRestart::kNavigationRestarted, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       ClientHintsAlpsNavigationPreload) {
+  SetClientHintExpectationsOnMainFrame(true);
+  const GURL kCreateServiceWorker =
+      GetHttp2Url("/service_worker/create_service_worker.html");
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kCreateServiceWorker));
+  EXPECT_EQ(
+      "DONE",
+      EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+             "register('/service_worker/navigation_preload_worker.js', '/');"));
+
+  const GURL kEchoHeader =
+      GetHttp2Url("/echoheader?Service-Worker-Navigation-Preload");
+  base::HistogramTester histogram_tester;
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), kEchoHeader));
+  histogram_tester.ExpectBucketCount(
+      "ClientHints.AcceptCHFrame",
+      content::AcceptCHFrameRestart::kNavigationRestarted, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, PRE_ClientHintsClearSession) {
@@ -1922,8 +1981,7 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   expiration_times_dictionary->SetList("client_hints",
                                        std::move(expiration_times_list));
   expiration_times_dictionary->SetDoubleKey(
-      "expiration_time",
-      (base::Time::Now() + base::TimeDelta::FromDays(1)).ToDoubleT());
+      "expiration_time", (base::Time::Now() + base::Days(1)).ToDoubleT());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       without_accept_ch_without_lifetime_url(), GURL(),
       ContentSettingsType::CLIENT_HINTS,
@@ -2147,8 +2205,8 @@ class ClientHintsWebHoldbackBrowserTest : public ClientHintsBrowserTest {
 
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,LangClientHintHeader,"
-        "PrefersColorSchemeClientHintHeader,ViewportHeightClientHintHeader",
+        "UserAgentClientHint,PrefersColorSchemeClientHintHeader,"
+        "ViewportHeightClientHintHeader",
         "");
     feature_list->RegisterFieldTrialOverride(
         features::kNetworkQualityEstimatorWebHoldback.name,
@@ -2220,8 +2278,7 @@ class AcceptCHFrameObserverInterceptor {
 
     std::vector<network::mojom::WebClientHintsType> hints;
     for (auto hint : accept_ch_frame_.value()) {
-      std::string header =
-          network::kClientHintsNameMapping[static_cast<int>(hint)];
+      std::string header = network::GetClientHintToNameMap().at(hint);
       if (!params->url_request.headers.HasHeader(header))
         hints.push_back(hint);
     }
@@ -2232,7 +2289,7 @@ class AcceptCHFrameObserverInterceptor {
     mojo::Remote<network::mojom::AcceptCHFrameObserver> remote(std::move(
         params->url_request.trusted_params->accept_ch_frame_observer));
     remote->OnAcceptCHFrameReceived(params->url_request.url, hints,
-                                    base::DoNothing::Once<int>());
+                                    base::DoNothing());
     // At this point it's expected that either the remote's callback will be
     // called or the URLLoader will be destroyed to make way for a new one.
     // As this is essentially unobservable, RunUntilIdle must be used.
@@ -2266,10 +2323,10 @@ class ClientHintsAcceptCHFrameObserverBrowserTest
 
   std::vector<network::mojom::WebClientHintsType> all_client_hints_types() {
     std::vector<network::mojom::WebClientHintsType> hints;
-    for (size_t i = 0; i < network::kClientHintsNameMappingCount; i++) {
-      hints.push_back(static_cast<network::mojom::WebClientHintsType>(i));
+    for (const auto& elem : network::GetClientHintToNameMap()) {
+      const auto& type = elem.first;
+      hints.push_back(type);
     }
-
     return hints;
   }
 
@@ -2339,12 +2396,10 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     std::unique_ptr<base::FeatureList> feature_list =
         std::make_unique<base::FeatureList>();
-    // Don't include LangClientHintHeader in the enabled features; we will
-    // verify that the Lang header is not included.
+    // Don't include PrefersColorSchemeClientHintHeader in the enabled
+    // features; we will verify that PrefersColorScheme is not included.
     feature_list->InitializeFromCommandLine(
-        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame,"
-        "PrefersColorSchemeClientHintHeader",
-        "");
+        "UserAgentClientHint,CriticalClientHint,AcceptCHFrame", "");
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     InProcessBrowserTest::SetUp();
@@ -2360,8 +2415,8 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return https_server_.GetURL("/critical_ch_ua_full_version.html");
   }
 
-  GURL critical_ch_lang_url() const {
-    return https_server_.GetURL("/critical_ch_lang.html");
+  GURL critical_ch_prefers_color_scheme_url() const {
+    return https_server_.GetURL("/critical_ch_prefers-color-scheme.html");
   }
 
   const absl::optional<std::string>& observed_ch_ua_full_version() {
@@ -2369,9 +2424,9 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     return ch_ua_full_version_;
   }
 
-  const absl::optional<std::string>& observed_ch_lang() {
-    base::AutoLock lock(ch_lang_lock_);
-    return ch_lang_;
+  const absl::optional<std::string>& observed_ch_prefers_color_scheme() {
+    base::AutoLock lock(ch_prefers_color_scheme_lock_);
+    return ch_prefers_color_scheme_;
   }
 
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
@@ -2379,8 +2434,8 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
         request.headers.end()) {
       SetChUaFullVersion(request.headers.at("sec-ch-ua-full-version"));
     }
-    if (request.headers.find("lang") != request.headers.end()) {
-      SetChLang(request.headers.at("lang"));
+    if (request.headers.find("prefers-color-scheme") != request.headers.end()) {
+      SetChPrefersColorScheme(request.headers.at("prefers-color-scheme"));
     }
   }
 
@@ -2390,9 +2445,9 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
     ch_ua_full_version_ = ch_ua_full_version;
   }
 
-  void SetChLang(const std::string& ch_lang) {
-    base::AutoLock lock(ch_lang_lock_);
-    ch_lang_ = ch_lang;
+  void SetChPrefersColorScheme(const std::string& ch_prefers_color_scheme) {
+    base::AutoLock lock(ch_prefers_color_scheme_lock_);
+    ch_prefers_color_scheme_ = ch_prefers_color_scheme;
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2400,8 +2455,9 @@ class CriticalClientHintsBrowserTest : public InProcessBrowserTest {
   base::Lock ch_ua_full_version_lock_;
   absl::optional<std::string> ch_ua_full_version_
       GUARDED_BY(ch_ua_full_version_lock_);
-  base::Lock ch_lang_lock_;
-  absl::optional<std::string> ch_lang_ GUARDED_BY(ch_lang_lock_);
+  base::Lock ch_prefers_color_scheme_lock_;
+  absl::optional<std::string> ch_prefers_color_scheme_
+      GUARDED_BY(ch_prefers_color_scheme_lock_);
 };
 
 // Verify that setting Critical-CH in the response header causes the request to
@@ -2416,24 +2472,22 @@ IN_PROC_BROWSER_TEST_F(CriticalClientHintsBrowserTest,
   const std::string expected_ch_ua_full_version = "\"" + ua.full_version + "\"";
   EXPECT_THAT(observed_ch_ua_full_version(),
               Optional(Eq(expected_ch_ua_full_version)));
-  EXPECT_EQ(observed_ch_lang(), absl::nullopt);
+  EXPECT_EQ(observed_ch_prefers_color_scheme(), absl::nullopt);
 }
 
 // Verify that setting Critical-CH in the response header with a client hint
 // that is filtered out of Accept-CH causes the request to *not* be resent and
 // the critical client hint is not included.
-//
-// NB: When the LangClientHintHeader feature is removed, this test needs to be
-// updated.
 IN_PROC_BROWSER_TEST_F(
     CriticalClientHintsBrowserTest,
     CriticalClientHintFilteredOutOfAcceptChNotInRequestHeader) {
   // On the first navigation request, the client hints in the Critical-CH
   // should be set on the request header, but in this case, the
-  // LangClientHintHeader is not enabled, so the critical client hint won't be
-  // set in the request header.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), critical_ch_lang_url()));
-  EXPECT_EQ(observed_ch_lang(), absl::nullopt);
+  // kPrefersColorSchemeClientHintHeader is not enabled, so the critical client
+  // hint won't be set in the request header.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), critical_ch_prefers_color_scheme_url()));
+  EXPECT_EQ(observed_ch_prefers_color_scheme(), absl::nullopt);
   // The request should not have been resent, so ch-ua-full-version should also
   // not be present.
   EXPECT_EQ(observed_ch_ua_full_version(), absl::nullopt);
@@ -2457,6 +2511,11 @@ class ClientHintsBrowserTestWithEmulatedMedia
 
     test_url_ = https_server_.GetURL("/accept_ch_without_lifetime.html");
   }
+
+  ClientHintsBrowserTestWithEmulatedMedia(
+      const ClientHintsBrowserTestWithEmulatedMedia&) = delete;
+  ClientHintsBrowserTestWithEmulatedMedia& operator=(
+      const ClientHintsBrowserTestWithEmulatedMedia&) = delete;
 
   ~ClientHintsBrowserTestWithEmulatedMedia() override = default;
 
@@ -2490,8 +2549,6 @@ class ClientHintsBrowserTestWithEmulatedMedia
   net::EmbeddedTestServer https_server_;
   GURL test_url_;
   std::string prefers_color_scheme_observed_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientHintsBrowserTestWithEmulatedMedia);
 };
 
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTestWithEmulatedMedia,
@@ -3256,32 +3313,6 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyUaReducedOriginTrialBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyUaReducedOriginTrialBrowserTest,
-                       ThirdPartyIframeUaReducedPolicyNotAllowed) {
-  SetUaReducedPermissionsPolicy(
-      "(self)");  // Only allow self, no third-party sites.
-
-  NavigateAndCheckHeaders(
-      accept_ch_ua_reduced_cross_origin_iframe_request_url(),
-      /*ch_ua_reduced_expected=*/false);
-
-  // Make sure the last intercepted URL was the request for the embedded iframe.
-  EXPECT_EQ(GetLastRequestedURL()->path(), "/simple.html");
-}
-
-IN_PROC_BROWSER_TEST_F(ThirdPartyUaReducedOriginTrialBrowserTest,
-                       ThirdPartySubresourceUaReducedPolicyNotAllowed) {
-  SetUaReducedPermissionsPolicy(
-      "(self)");  // Only allow self, no third-party sites.
-
-  NavigateAndCheckHeaders(
-      accept_ch_ua_reduced_cross_origin_subresource_request_url(),
-      /*ch_ua_reduced_expected=*/false);
-
-  // Make sure the last intercepted URL was the request for the embedded iframe.
-  EXPECT_EQ(GetLastRequestedURL()->path(), "/style.css");
-}
-
-IN_PROC_BROWSER_TEST_F(ThirdPartyUaReducedOriginTrialBrowserTest,
                        ThirdPartyIframeUaReducedInvalidOriginTrialToken) {
   SetUaReducedPermissionsPolicy("*");  // Allow all third-party sites.
   SetValidOTToken(false);              // Origin Trial Token is invalid.
@@ -3305,4 +3336,242 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyUaReducedOriginTrialBrowserTest,
 
   // Make sure the last intercepted URL was the request for the embedded iframe.
   EXPECT_EQ(GetLastRequestedURL()->path(), "/style.css");
+}
+
+// A test fixture for setting Accept-CH and Origin-Trial response headers for
+// third-party embeds.  This suite of tests ensures that third-party embeds
+// with Sec-CH-UA-Reduced and a valid Origin Trial token send a reduced UA
+// string in the User-Agent header, even if the top-level page is not enrolled
+// in the UA reduction origin trial.
+//
+// The Origin Trial token in the header files were generated by running (in
+// tools/origin_trials):
+// generate_token.py https://my-site.com:44444 UserAgentReduction
+//   --is-third-party --expire-timestamp=2000000000
+class ThirdPartyAcceptChUaReducedOriginTrialBrowserTest
+    : public UaReducedOriginTrialBrowserTest {
+ public:
+  ThirdPartyAcceptChUaReducedOriginTrialBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    https_server_.ServeFilesFromSourceDirectory(
+        "chrome/test/data/client_hints");
+    https_server_.RegisterRequestMonitor(base::BindRepeating(
+        &ThirdPartyAcceptChUaReducedOriginTrialBrowserTest::MonitorRequest,
+        base::Unretained(this)));
+    EXPECT_TRUE(https_server_.Start());
+  }
+
+  // The URL that was used to register the Origin Trial token.
+  static constexpr char kThirdPartyOriginUrl[] = "https://my-site.com:44444";
+
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // We use a URLLoaderInterceptor, rather than the EmbeddedTestServer, for
+    // the third-party requests, since the origin trial token in the response
+    // is associated with a fixed origin, whereas EmbeddedTestServer serves
+    // content on a random port.
+    url_loader_interceptor_ = std::make_unique<
+        URLLoaderInterceptor>(base::BindRepeating(
+        &ThirdPartyAcceptChUaReducedOriginTrialBrowserTest::InterceptRequest,
+        base::Unretained(this)));
+  }
+
+  void TearDownOnMainThread() override {
+    url_loader_interceptor_.reset();
+    InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  GURL accept_ch_ua_reduced_cross_origin_iframe_request_url() const {
+    return https_server_.GetURL(
+        "/accept_ch_ua_reduced_cross_origin_iframe_with_ot_request.html");
+  }
+
+  GURL accept_ch_ua_reduced_cross_origin_iframe_with_subrequests_url() const {
+    return https_server_.GetURL(
+        "/accept_ch_ua_reduced_cross_origin_iframe_with_subrequests.html");
+  }
+
+  GURL top_level_with_iframe_redirect_url() const {
+    return https_server_.GetURL("/top_level_with_iframe_redirect.html");
+  }
+
+ protected:
+  const absl::optional<std::string>& GetLastUserAgentHeaderValue() override {
+    base::AutoLock lock(last_request_lock_);
+    return last_user_agent_;
+  }
+
+  const absl::optional<std::string>& GetLastUaReducedClientHintValue()
+      override {
+    base::AutoLock lock(last_request_lock_);
+    return last_sec_ch_ua_reduced_;
+  }
+
+  const absl::optional<GURL>& GetLastRequestedURL() {
+    base::AutoLock lock(last_request_lock_);
+    return last_requested_url_;
+  }
+
+ private:
+  // URLLoaderInterceptor callback.  Handles the third-party embeds and
+  // subresource requests.
+  bool InterceptRequest(URLLoaderInterceptor::RequestParams* params) {
+    const GURL origin = params->url_request.url.GetOrigin();
+    // The interceptor does not handle requests to the EmbeddedTestServer.
+    // Requests also get sent to https://accounts.google.com/ (not sure from
+    // where), so we ignore them as well.
+    if (origin == https_server_.base_url() ||
+        origin == GURL("https://accounts.google.com/")) {
+      return false;
+    }
+
+    SetLastRequestedURL(params->url_request.url);
+    std::string user_agent;
+    params->url_request.headers.GetHeader("user-agent", &user_agent);
+    SetLastUserAgent(&user_agent);
+    std::string sec_ch_ua_reduced;
+    params->url_request.headers.GetHeader("sec-ch-ua-reduced",
+                                          &sec_ch_ua_reduced);
+    SetLastSecChUaReduced(&sec_ch_ua_reduced);
+
+    const std::string path = params->url_request.url.path();
+    if (path == "/style.css" || path == "/basic.html" ||
+        path == "/nested_style.css") {
+      // These paths are known to be the last request (with no subrequest
+      // after them), so verify that the UA string is set appropriately.
+      const bool ch_ua_reduced_expected = true;
+      CheckUaReducedClientHint(ch_ua_reduced_expected);
+      CheckUserAgentReduced(ch_ua_reduced_expected);
+    }
+
+    std::string resource_path = "chrome/test/data/client_hints";
+    resource_path.append(std::string(params->url_request.url.path_piece()));
+
+    URLLoaderInterceptor::WriteResponse(resource_path, params->client.get());
+    return true;
+  }
+
+  // Called by |https_server_|.
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    // All first party requests will have the full UA string, not the reduced
+    // one, since they don't respond with a valid Origin Trial token.
+    CheckUserAgentReduced(request.headers.at("user-agent"),
+                          /*expected_user_agent_reduced=*/false);
+    request.headers.find("sec-ch-ua-reduced");
+    EXPECT_THAT(request.headers, Not(Contains(Key("sec-ch-ua-reduced"))));
+  }
+
+  void SetLastUserAgent(const std::string* value) {
+    base::AutoLock lock(last_request_lock_);
+    if (value != nullptr) {
+      last_user_agent_ = *value;
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  void SetLastSecChUaReduced(const std::string* value) {
+    base::AutoLock lock(last_request_lock_);
+    if (value != nullptr && !value->empty()) {
+      last_sec_ch_ua_reduced_ = *value;
+    } else {
+      last_sec_ch_ua_reduced_ = absl::nullopt;
+    }
+  }
+
+  void SetLastRequestedURL(const GURL& url) {
+    base::AutoLock lock(last_request_lock_);
+    last_requested_url_ = url;
+  }
+
+  std::unique_ptr<URLLoaderInterceptor> url_loader_interceptor_;
+  net::EmbeddedTestServer https_server_;
+  base::Lock last_request_lock_;
+  absl::optional<std::string> last_user_agent_ GUARDED_BY(last_request_lock_);
+  absl::optional<std::string> last_sec_ch_ua_reduced_
+      GUARDED_BY(last_request_lock_);
+  absl::optional<GURL> last_requested_url_ GUARDED_BY(last_request_lock_);
+};
+
+constexpr char
+    ThirdPartyAcceptChUaReducedOriginTrialBrowserTest::kThirdPartyOriginUrl[];
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
+                       ThirdPartyIframeUaReducedWithOriginTrialToken) {
+  const GURL top_level_frame_url =
+      accept_ch_ua_reduced_cross_origin_iframe_request_url();
+  // The first navigation is to opt-into the OT.
+  NavigateAndCheckHeaders(top_level_frame_url,
+                          /*ch_ua_reduced_expected=*/false);
+  NavigateAndCheckHeaders(top_level_frame_url, /*ch_ua_reduced_expected=*/true);
+  // Make sure the last intercepted URL was the request for the embedded iframe.
+  EXPECT_EQ(GetLastRequestedURL()->path(), "/simple_3p_ot.html");
+}
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
+                       ThirdPartyIframeUaReducedWithAllCookiesBlocked) {
+  const GURL top_level_frame_url =
+      accept_ch_ua_reduced_cross_origin_iframe_request_url();
+  const GURL third_party_iframe_url = GURL(kThirdPartyOriginUrl);
+
+  // Block all cookies for the third-party origin.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetContentSettingDefaultScope(third_party_iframe_url, GURL(),
+                                      ContentSettingsType::COOKIES,
+                                      CONTENT_SETTING_BLOCK);
+
+  // The first navigation is to attempt to opt-into the OT for the third-party
+  // embed, which shouldn't happen for this test because third-party cookies
+  // are blocked.
+  NavigateAndCheckHeaders(top_level_frame_url,
+                          /*ch_ua_reduced_expected=*/false);
+  NavigateAndCheckHeaders(top_level_frame_url,
+                          /*ch_ua_reduced_expected=*/false);
+  // Make sure the last intercepted URL was the request for the embedded iframe.
+  EXPECT_EQ(GetLastRequestedURL()->path(), "/simple_3p_ot.html");
+}
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
+                       ThirdPartyIframeUaReducedWithThirdPartyCookiesBlocked) {
+  // Block third-party cookies.
+  browser()->profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
+
+  // The first navigation is to attempt to opt-into the OT for the third-party
+  // embed, which shouldn't happen for this test because cookies are blocked.
+  NavigateAndCheckHeaders(
+      accept_ch_ua_reduced_cross_origin_iframe_request_url(),
+      /*ch_ua_reduced_expected=*/false);
+  NavigateAndCheckHeaders(
+      accept_ch_ua_reduced_cross_origin_iframe_request_url(),
+      /*ch_ua_reduced_expected=*/false);
+  // Make sure the last intercepted URL was the request for the embedded iframe.
+  EXPECT_EQ(GetLastRequestedURL()->path(), "/simple_3p_ot.html");
+}
+
+IN_PROC_BROWSER_TEST_F(ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
+                       ThirdPartyIframeUaReducedWithSubresourceRequests) {
+  // The first navigation is to opt-into the OT.  Since there are subresource
+  // requests, the last processed requests from the first navigation will have
+  // the reduced UA string.
+  NavigateAndCheckHeaders(
+      accept_ch_ua_reduced_cross_origin_iframe_with_subrequests_url(),
+      /*ch_ua_reduced_expected=*/true);
+  NavigateAndCheckHeaders(
+      accept_ch_ua_reduced_cross_origin_iframe_with_subrequests_url(),
+      /*ch_ua_reduced_expected=*/true);
+}
+
+IN_PROC_BROWSER_TEST_F(
+    ThirdPartyAcceptChUaReducedOriginTrialBrowserTest,
+    ThirdPartyIframeUaReducedWithSubresourceRedirectRequests) {
+  // The first navigation is to opt-into the OT.  Since there are subresource
+  // requests, the last processed requests from the first navigation will have
+  // the reduced UA string.
+  NavigateAndCheckHeaders(top_level_with_iframe_redirect_url(),
+                          /*ch_ua_reduced_expected=*/true);
+  NavigateAndCheckHeaders(top_level_with_iframe_redirect_url(),
+                          /*ch_ua_reduced_expected=*/true);
 }

@@ -62,12 +62,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/with_feature_override.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_popup_view.h"
+#include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 #include "ui/views/test/widget_animation_waiter.h"
 
@@ -151,6 +151,11 @@ class ShelfItemFactoryFake : public ShelfModel::ShelfItemFactory {
 class AppListControllerImplTest : public AshTestBase {
  public:
   AppListControllerImplTest() = default;
+
+  AppListControllerImplTest(const AppListControllerImplTest&) = delete;
+  AppListControllerImplTest& operator=(const AppListControllerImplTest&) =
+      delete;
+
   ~AppListControllerImplTest() override = default;
 
   void SetUp() override {
@@ -186,8 +191,6 @@ class AppListControllerImplTest : public AshTestBase {
   int populated_item_count_ = 0;
 
   std::unique_ptr<ShelfItemFactoryFake> shelf_item_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerImplTest);
 };
 
 // Tests that the AppList hides when shelf alignment changes. This necessary
@@ -536,8 +539,8 @@ TEST_F(AppListControllerImplTest, MAYBE_CloseNotificationWithAppListShown) {
 
   // Swipe away notification by gesture. Verifies that AppListView still shows.
   ui::test::EventGenerator* event_generator = GetEventGenerator();
-  event_generator->GestureScrollSequence(
-      drag_start, drag_end, base::TimeDelta::FromMicroseconds(500), 10);
+  event_generator->GestureScrollSequence(drag_start, drag_end,
+                                         base::Microseconds(500), 10);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetAppListView());
   EXPECT_EQ(
@@ -565,6 +568,10 @@ TEST_F(AppListControllerImplTest,
   auto* widget = views::Widget::GetWidgetForNativeView(window1.get());
   std::unique_ptr<views::Textfield> text_field =
       std::make_unique<views::Textfield>();
+  // TODO(crbug.com/1218186): Remove this, this is in place temporarily to be
+  // able to submit accessibility checks, but this focusable View needs to
+  // add a name so that the screen reader knows what to announce.
+  text_field->SetProperty(views::kSkipAccessibilityPaintChecks, true);
 
   // Note that the bounds of |text_field| cannot be too small. Otherwise, it
   // may not receive the gesture event.
@@ -592,7 +599,7 @@ TEST_F(AppListControllerImplTest,
   // launcher to finish. Note that the launcher does not exist before toggling
   // the home button.
   PressHomeButton();
-  const base::TimeDelta delta = base::TimeDelta::FromMilliseconds(200);
+  const base::TimeDelta delta = base::Milliseconds(200);
   do {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -708,9 +715,7 @@ TEST_F(AppListControllerImplTest, SimulateProfileSwapNoCrashOnDestruct) {
 class AppListControllerImplTestWithNotificationBadging
     : public AppListControllerImplTest {
  public:
-  AppListControllerImplTestWithNotificationBadging() {
-    scoped_features_.InitWithFeatures({::features::kNotificationIndicator}, {});
-  }
+  AppListControllerImplTestWithNotificationBadging() = default;
   AppListControllerImplTestWithNotificationBadging(
       const AppListControllerImplTestWithNotificationBadging& other) = delete;
   AppListControllerImplTestWithNotificationBadging& operator=(
@@ -732,9 +737,6 @@ class AppListControllerImplTestWithNotificationBadging
     static_cast<apps::AppRegistryCache::Observer*>(controller)
         ->OnAppUpdate(test_update);
   }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
 };
 
 // Tests that when an app has an update to its notification badge, the change
@@ -974,6 +976,10 @@ class AppListAnimationTest : public AshTestBase,
                              public testing::WithParamInterface<bool> {
  public:
   AppListAnimationTest() = default;
+
+  AppListAnimationTest(const AppListAnimationTest&) = delete;
+  AppListAnimationTest& operator=(const AppListAnimationTest&) = delete;
+
   ~AppListAnimationTest() override = default;
 
   void SetUp() override {
@@ -1022,14 +1028,12 @@ class AppListAnimationTest : public AshTestBase,
   // The app list view y coordinate in peeking state.
   int PeekingHeightTop() const {
     return shown_shelf_bounds_.bottom() -
-           GetAppListView()->GetAppListConfig().peeking_app_list_height();
+           GetAppListView()->GetHeightForState(AppListViewState::kPeeking);
   }
 
  private:
   // Set during setup.
   gfx::Rect shown_shelf_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListAnimationTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(AutoHideShelf, AppListAnimationTest, testing::Bool());
@@ -1172,6 +1176,12 @@ TEST_P(AppListAnimationTest, SearchBoxOpacityDuringShowAndClose) {
 class AppListControllerImplMetricsTest : public AshTestBase {
  public:
   AppListControllerImplMetricsTest() = default;
+
+  AppListControllerImplMetricsTest(const AppListControllerImplMetricsTest&) =
+      delete;
+  AppListControllerImplMetricsTest& operator=(
+      const AppListControllerImplMetricsTest&) = delete;
+
   ~AppListControllerImplMetricsTest() override = default;
 
   void SetUp() override {
@@ -1188,9 +1198,6 @@ class AppListControllerImplMetricsTest : public AshTestBase {
 
   AppListControllerImpl* controller_;
   const base::HistogramTester histogram_tester_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListControllerImplMetricsTest);
 };
 
 // One edge case may do harm to the presentation metrics reporter for tablet
@@ -1254,7 +1261,7 @@ TEST_F(AppListControllerImplMetricsTest,
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint();
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(shelf_center, target_point,
-                                   base::TimeDelta::FromMicroseconds(500), 1);
+                                   base::Microseconds(500), 1);
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
   histogram_tester_.ExpectTotalCount(
@@ -1273,13 +1280,13 @@ TEST_F(AppListControllerImplMetricsTest,
       "Apps.StateTransition.Drag.PresentationTime.MaxLatency.ClamshellMode", 1);
 }
 
-// Tests with feature AppListBubble enabled. This is a separate test suite
+// Tests with the bubble launcher enabled. This is a separate test suite
 // because the feature must be enabled before ash::Shell constructs the
 // AppListControllerImpl.
 class AppListControllerImplAppListBubbleTest : public AshTestBase {
  public:
   AppListControllerImplAppListBubbleTest() {
-    scoped_features_.InitAndEnableFeature(features::kAppListBubble);
+    scoped_features_.InitAndEnableFeature(features::kProductivityLauncher);
   }
   ~AppListControllerImplAppListBubbleTest() override = default;
 
@@ -1454,9 +1461,9 @@ TEST_F(AppListControllerWithAssistantTest, TriggerSearchKeyWhenAppListClosing) {
 class AppListSortTest : public AppListControllerImplTest {
  public:
   AppListSortTest() {
-    feature_list_.InitWithFeatures({ash::features::kLauncherAppSort,
-                                    ash::features::kLauncherRemoveEmptySpace},
-                                   {});
+    feature_list_.InitWithFeatures(
+        {ash::features::kLauncherAppSort, ash::features::kProductivityLauncher},
+        {});
   }
   ~AppListSortTest() override = default;
 

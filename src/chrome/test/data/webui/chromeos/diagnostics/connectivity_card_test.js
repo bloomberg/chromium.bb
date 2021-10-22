@@ -9,6 +9,7 @@ import {fakeCellularNetwork, fakeEthernetNetwork, fakeNetworkGuidInfoList, fakeP
 import {FakeNetworkHealthProvider} from 'chrome://diagnostics/fake_network_health_provider.js';
 import {FakeSystemRoutineController} from 'chrome://diagnostics/fake_system_routine_controller.js';
 import {setNetworkHealthProviderForTesting, setSystemRoutineControllerForTesting} from 'chrome://diagnostics/mojo_interface_provider.js';
+import {RoutineGroup} from 'chrome://diagnostics/routine_group.js';
 import {TestSuiteStatus} from 'chrome://diagnostics/routine_list_executor.js';
 
 import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
@@ -27,12 +28,16 @@ export function connectivityCardTestSuite() {
   let routineController;
 
   /** @type {!Array<!RoutineType>} */
-  const defaultRoutineOverride = [RoutineType.kCaptivePortal];
+  const defaultRoutineOverride = [new RoutineGroup(
+      [RoutineType.kCaptivePortal], 'captivePortalRoutineText')];
 
   suiteSetup(() => {
     provider = new FakeNetworkHealthProvider();
     setNetworkHealthProviderForTesting(provider);
+  });
 
+  setup(() => {
+    document.body.innerHTML = '';
     // Setup a fake routine controller.
     routineController = new FakeSystemRoutineController();
     routineController.setDelayTimeInMillisecondsForTesting(-1);
@@ -49,10 +54,6 @@ export function connectivityCardTestSuite() {
             routine, StandardRoutineResult.kTestPassed));
 
     setSystemRoutineControllerForTesting(routineController);
-  });
-
-  setup(() => {
-    document.body.innerHTML = '';
   });
 
   teardown(() => {
@@ -85,7 +86,12 @@ export function connectivityCardTestSuite() {
    */
   function getRoutines() {
     assertTrue(!!connectivityCardElement);
-    return connectivityCardElement.routines_;
+    let routines = [];
+    for (let routineGroup of connectivityCardElement.routineGroups_) {
+      routines = [...routines, ...routineGroup.routines];
+    }
+
+    return routines;
   }
 
   /**
@@ -116,7 +122,6 @@ export function connectivityCardTestSuite() {
     assertTrue(!!connectivityCardElement);
     const routineSection = dx_utils.getRoutineSection(connectivityCardElement);
     routineSection.routines = routines;
-    routineSection.runTestsAutomatically = true;
   }
 
   /**
@@ -140,33 +145,24 @@ export function connectivityCardTestSuite() {
   test('CardTitleEthernetOnlineInitializedCorrectly', () => {
     return initializeConnectivityCard('ethernetGuid').then(() => {
       dx_utils.assertElementContainsText(
-          connectivityCardElement.$$('#cardTitle'), 'Ethernet (Online)');
+          connectivityCardElement.$$('#cardTitle'), 'Ethernet');
     });
   });
 
-  test('CardConnectionChipInitializedCorrectly', () => {
+  test('CardMacAddressChipInitializedCorrectly', () => {
     return initializeConnectivityCard('ethernetGuid').then(() => {
       dx_utils.assertElementContainsText(
-          connectivityCardElement.$$('#defaultConnectionChip'),
-          connectivityCardElement.i18n('networkDefaultConnectionLabel'));
+          connectivityCardElement.$$('#macAddressChip'),
+          'MAC: 81:C5:A6:30:3F:31');
     });
   });
 
-  test(
-      'ConnectivityCardPopulated', () => {
-        return initializeConnectivityCard('ethernetGuid').then(() => {
-          const ethernetInfoElement = dx_utils.getEthernetInfoElement(
-              connectivityCardElement.$$('network-info'));
-          const linkSpeedDataPoint =
-              dx_utils.getDataPoint(ethernetInfoElement, '#linkSpeed');
-          assertTrue(isVisible(linkSpeedDataPoint));
-          assertEquals(linkSpeedDataPoint.header, 'Link Speed');
-          // TODO(ashleydp): Update expectation when link speed data added.
-          dx_utils.assertTextContains(
-              dx_utils.getDataPointValue(ethernetInfoElement, '#linkSpeed'),
-              '');
-        });
-      });
+  test('CardNetworkIconEthernetOnlineInitializedCorrectly', () => {
+    return initializeConnectivityCard('ethernetGuid').then(() => {
+      assertTrue(isVisible(
+          /** @type {!Element} */ (connectivityCardElement.$$('#icon'))));
+    });
+  });
 
   test('TestsRunAutomaticallyWhenPageIsActive', () => {
     return initializeConnectivityCard('ethernetGuid', true)

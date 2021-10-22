@@ -41,7 +41,7 @@ TEST_F(PowerBookmarkUtilsTest, TestAddAndAccess) {
   SetNodePowerBookmarkMeta(model, node, std::move(meta));
 
   const std::unique_ptr<PowerBookmarkMeta> fetched_meta =
-      GetNodePowerBookmarkMeta(node);
+      GetNodePowerBookmarkMeta(model, node);
 
   EXPECT_EQ(kLeadImageUrl, fetched_meta->lead_image().url());
 }
@@ -60,7 +60,7 @@ TEST_F(PowerBookmarkUtilsTest, TestAddAndDelete) {
   DeleteNodePowerBookmarkMeta(model, node);
 
   const std::unique_ptr<PowerBookmarkMeta> fetched_meta =
-      GetNodePowerBookmarkMeta(node);
+      GetNodePowerBookmarkMeta(model, node);
 
   EXPECT_EQ(nullptr, fetched_meta.get());
 }
@@ -285,6 +285,55 @@ TEST_F(PowerBookmarkUtilsTest, GetBookmarksMatchingPropertiesStringSearch) {
   GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
   ASSERT_EQ(0U, nodes.size());
   nodes.clear();
+}
+
+TEST_F(PowerBookmarkUtilsTest, GetBookmarksMatchingPropertiesFolderSearch) {
+  std::unique_ptr<bookmarks::BookmarkModel> model(
+      bookmarks::TestBookmarkClient::CreateModel());
+  model->AddURL(model->other_node(), 0, u"foo example",
+                GURL("http://www.google.com"));
+
+  model->AddURL(model->other_node(), 0, u"baz example",
+                GURL("http://www.cnn.com"));
+
+  const bookmarks::BookmarkNode* folder =
+      model->AddFolder(model->other_node(), 0, u"test folder");
+
+  const bookmarks::BookmarkNode* node =
+      model->AddURL(folder, 0, u"buz example", GURL("http://www.example.com"));
+
+  std::vector<const bookmarks::BookmarkNode*> nodes;
+  PowerBookmarkQueryFields query;
+  query.word_phrase_query = std::make_unique<std::u16string>();
+
+  *query.word_phrase_query = u"example";
+  query.folder = nullptr;
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
+  ASSERT_EQ(3U, nodes.size());
+  nodes.clear();
+
+  *query.word_phrase_query = u"example";
+  query.folder = folder;
+  GetBookmarksMatchingProperties(model.get(), query, 100, &nodes);
+  ASSERT_EQ(1U, nodes.size());
+  EXPECT_TRUE(node == nodes[0]);
+  nodes.clear();
+}
+
+TEST_F(PowerBookmarkUtilsTest, EncodeAndDecodeForPersistence) {
+  PowerBookmarkMeta meta;
+  meta.set_type(PowerBookmarkType::SHOPPING);
+  meta.mutable_shopping_specifics()->set_title("Example Title");
+
+  std::string encoded_data;
+  EncodeMetaForStorage(meta, &encoded_data);
+
+  PowerBookmarkMeta out_meta;
+  EXPECT_TRUE(DecodeMetaFromStorage(encoded_data, &out_meta));
+
+  ASSERT_EQ(meta.type(), out_meta.type());
+  ASSERT_EQ(meta.shopping_specifics().title(),
+            out_meta.shopping_specifics().title());
 }
 
 }  // namespace

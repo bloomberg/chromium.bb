@@ -376,6 +376,12 @@ _WIN_10_AMD_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('octane'),
     _GetBenchmarkConfig('system_health.common_desktop'),
 ])
+_WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream'),
+    _GetBenchmarkConfig('jetstream2'),
+    _GetBenchmarkConfig('kraken'),
+    _GetBenchmarkConfig('octane'),
+])
 _WIN_7_BENCHMARK_CONFIGS = PerfSuite([
     'loading.desktop',
 ]).Abridge([
@@ -486,6 +492,7 @@ _FUCHSIA_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
 _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
     _GetBenchmarkConfig('blink_perf.shadow_dom'),
+    _GetBenchmarkConfig('system_health.common_desktop'),
 ])
 _ANDROID_PIXEL2_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_mobile'),
@@ -549,7 +556,10 @@ WIN_10 = PerfPlatform(
     ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_CONFIGS,
     26, 'win', executables=_WIN_10_EXECUTABLE_CONFIGS)
 WIN_10_AMD = PerfPlatform('win-10_amd-perf', 'Windows AMD chipset',
-                          _WIN_10_AMD_BENCHMARK_CONFIGS, 2, 'win')
+                          _WIN_10_AMD_BENCHMARK_CONFIGS, 1, 'win')
+WIN_10_AMD_LAPTOP = PerfPlatform('win-10_amd_laptop-perf',
+                                 'Windows 10 Laptop with AMD chipset.',
+                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 1, 'win')
 WIN_7 = PerfPlatform('Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS, 2, 'win')
 WIN_7_GPU = PerfPlatform('Win 7 Nvidia GPU Perf', 'N/A',
                          _WIN_7_GPU_BENCHMARK_CONFIGS, 3, 'win')

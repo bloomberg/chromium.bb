@@ -239,6 +239,11 @@ gpu_mac_builder(
 )
 
 gpu_mac_builder(
+    name = "gpu-fyi-try-mac-amd-retina-asan",
+    pool = "luci.chromium.gpu.mac.retina.amd.try",
+)
+
+gpu_mac_builder(
     name = "gpu-fyi-try-mac-amd-retina-dbg",
     pool = "luci.chromium.gpu.mac.retina.amd.try",
 )
@@ -254,15 +259,13 @@ gpu_mac_builder(
 )
 
 gpu_mac_builder(
-    name = "gpu-fyi-try-mac-arm64-apple-dtk-rel",
-    pool = "luci.chromium.gpu.mac.arm64.apple.dtk.try",
+    name = "gpu-fyi-try-mac-arm64-apple-m1-rel",
+    pool = "luci.chromium.gpu.mac.arm64.apple.m1.try",
 )
 
 gpu_mac_builder(
-    name = "gpu-fyi-try-mac-asan",
-    # This bot actually uses both Mac Retina AMD and Mac Mini Intel resources.
-    # Group it in Mac Retina AMD users pool, since it is smaller.
-    pool = "luci.chromium.gpu.mac.retina.amd.try",
+    name = "gpu-fyi-try-mac-intel-asan",
+    pool = "luci.chromium.gpu.mac.mini.intel.try",
 )
 
 gpu_mac_builder(

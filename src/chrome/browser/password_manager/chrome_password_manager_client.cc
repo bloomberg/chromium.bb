@@ -97,7 +97,6 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -118,7 +117,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/feature_list.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/password_manager/android/account_chooser_dialog_android.h"
@@ -182,6 +180,10 @@ using sessions::SerializedNavigationEntry;
 typedef autofill::SavePasswordProgressLogger Logger;
 
 namespace {
+
+#if !defined(OS_ANDROID)
+static const char kPasswordBreachEntryTrigger[] = "PASSWORD_ENTRY";
+#endif
 
 const syncer::SyncService* GetSyncService(Profile* profile) {
   if (SyncServiceFactory::HasSyncService(profile))
@@ -642,7 +644,7 @@ PrefService* ChromePasswordManagerClient::GetPrefs() const {
   return profile_->GetPrefs();
 }
 
-password_manager::PasswordStore*
+password_manager::PasswordStoreInterface*
 ChromePasswordManagerClient::GetProfilePasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsIncognito
   // itself when it shouldn't access the PasswordStore.
@@ -651,7 +653,7 @@ ChromePasswordManagerClient::GetProfilePasswordStore() const {
       .get();
 }
 
-password_manager::PasswordStore*
+password_manager::PasswordStoreInterface*
 ChromePasswordManagerClient::GetAccountPasswordStore() const {
   // Always use EXPLICIT_ACCESS as the password manager checks IsIncognito
   // itself when it shouldn't access the PasswordStore.
@@ -872,7 +874,8 @@ void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
 void ChromePasswordManagerClient::MaybeReportEnterpriseLoginEvent(
     const GURL& url,
     bool is_federated,
-    const url::Origin& federated_origin) const {
+    const url::Origin& federated_origin,
+    const std::u16string& login_user_name) const {
   if (!base::FeatureList::IsEnabled(policy::features::kLoginEventReporting))
     return;
 
@@ -884,7 +887,25 @@ void ChromePasswordManagerClient::MaybeReportEnterpriseLoginEvent(
 
   // The router is responsible for checking if the reporting of this event type
   // is enabled by the admin.
-  router->OnLoginEvent(url, is_federated, federated_origin);
+  router->OnLoginEvent(url, is_federated, federated_origin, login_user_name);
+}
+
+void ChromePasswordManagerClient::MaybeReportEnterprisePasswordBreachEvent(
+    const std::vector<std::pair<GURL, std::u16string>>& identities) const {
+  if (!base::FeatureList::IsEnabled(
+          policy::features::kPasswordBreachEventReporting)) {
+    return;
+  }
+
+  extensions::SafeBrowsingPrivateEventRouter* router =
+      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
+          profile_);
+  if (!router)
+    return;
+
+  // The router is responsible for checking if the reporting of this event type
+  // is enabled by the admin.
+  router->OnPasswordBreach(kPasswordBreachEntryTrigger, identities);
 }
 #endif
 
@@ -961,8 +982,9 @@ FieldInfoManager* ChromePasswordManagerClient::GetFieldInfoManager() const {
   return FieldInfoManagerFactory::GetForBrowserContext(profile_);
 }
 
-bool ChromePasswordManagerClient::IsWebAuthnAutofillEnabled() const {
-  return base::FeatureList::IsEnabled(features::kWebAuthConditionalUI);
+password_manager::WebAuthnCredentialsDelegate*
+ChromePasswordManagerClient::GetWebAuthnCredentialsDelegate() {
+  return &webauthn_credentials_delegate_;
 }
 
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(
@@ -1201,6 +1223,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       httpauth_manager_(this),
       password_reuse_detection_manager_(this),
       driver_factory_(nullptr),
+      webauthn_credentials_delegate_(this),
       content_credential_manager_(this),
       password_generation_driver_receivers_(web_contents, this),
       observer_(nullptr),
@@ -1520,4 +1543,4 @@ void ChromePasswordManagerClient::OnStateChanged(
     password_manager_.ResetPendingCredentials();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromePasswordManagerClient)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromePasswordManagerClient);

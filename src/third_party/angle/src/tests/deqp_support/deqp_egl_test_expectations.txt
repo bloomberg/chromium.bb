@@ -4,9 +4,6 @@
 
 // See README.md for format.
 
-// Globally disable Metal testing for now
-4235 METAL : dEQP-EGL.* = SKIP
-
 // Only Vulkan and D3D11 support multithreading
 3916 OPENGL : dEQP-EGL.functional.sharing.gles2.multithread.* = SKIP
 3916 OPENGL : dEQP-EGL.functional.multithread.* = SKIP
@@ -21,9 +18,6 @@
 3916 D3D9 : dEQP-EGL.functional.multithread.* = SKIP
 3916 D3D9 : dEQP-EGL.functional.render.multi_thread.* = SKIP
 3916 D3D9 : dEQP-EGL.functional.color_clears.multi_thread.* = SKIP
-
-// Seems to time out on Linux.
-4031916 VULKAN : dEQP-EGL.functional.multithread.* = SKIP
 
 // These tests require pixmap surfaces. On many platforms they are unsupported.
 3917 ANDROID VULKAN : dEQP-EGL.functional.render.multi_thread.* = FAIL
@@ -89,17 +83,6 @@
 2546 WIN : dEQP-EGL.functional.thread_cleanup.* = SKIP
 
 // Windows Vulkan failures
-2635 WIN VULKAN : dEQP-EGL.functional.multicontext.non_shared_clear = FAIL
-2635 WIN VULKAN : dEQP-EGL.functional.multicontext.non_shared_make_current = FAIL
-2635 WIN VULKAN : dEQP-EGL.functional.multicontext.shared_clear = FAIL
-2635 WIN VULKAN : dEQP-EGL.functional.multicontext.shared_make_current = FAIL
-2635 WIN VULKAN : dEQP-EGL.functional.query_surface.set_attribute.pbuffer.rgba8888_depth_stencil = FAIL
-2635 WIN VULKAN : dEQP-EGL.functional.query_surface.set_attribute.pbuffer.rgba8888_no_depth_no_stencil = FAIL
-2715 WIN VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_depth_no_stencil = FAIL
-2715 WIN VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_depth_stencil = FAIL
-2715 WIN VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_no_depth_no_stencil = FAIL
-2715 WIN VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_depth_no_stencil = FAIL
-2715 WIN VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_no_depth_no_stencil = FAIL
 2716 WIN VULKAN : dEQP-EGL.functional.preserve_swap.no_preserve.* = FAIL
 
 // Linux failures
@@ -114,10 +97,6 @@
 2546 LINUX : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_no_depth_no_stencil = FAIL
 
 // Linux Vulkan failures
-2635 LINUX VULKAN : dEQP-EGL.functional.query_surface.set_attribute.pbuffer.rgba8888_depth_stencil = FAIL
-2635 LINUX VULKAN : dEQP-EGL.functional.query_surface.set_attribute.pbuffer.rgba8888_no_depth_no_stencil = FAIL
-2715 LINUX VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_depth_stencil = FAIL
-2715 LINUX VULKAN : dEQP-EGL.functional.query_surface.simple.pbuffer.rgb888_no_depth_no_stencil = FAIL
 2716 LINUX VULKAN : dEQP-EGL.functional.preserve_swap.no_preserve.* = FAIL
 5753 LINUX VULKAN : dEQP-EGL.functional.resize.surface_size.* = FAIL
 
@@ -136,40 +115,46 @@
 2716 ANDROID GLES : dEQP-EGL.functional.preserve_swap.preserve.* = FAIL
 
 // Android failures
-2546 ANDROID : dEQP-EGL.functional.buffer_age.* = FAIL
-3270 ANDROID : dEQP-EGL.functional.choose_config.simple.selection_only.transparent_red_value = FAIL
-3270 ANDROID : dEQP-EGL.functional.choose_config.simple.selection_only.transparent_green_value = FAIL
-3270 ANDROID : dEQP-EGL.functional.choose_config.simple.selection_only.transparent_blue_value = FAIL
-3270 ANDROID : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_red_value = FAIL
-3270 ANDROID : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_green_value = FAIL
-3270 ANDROID : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_blue_value = FAIL
-2546 ANDROID : dEQP-EGL.functional.color_clears.multi_context.* = SKIP
-2546 ANDROID : dEQP-EGL.functional.color_clears.single_context.* = SKIP
-2546 ANDROID : dEQP-EGL.functional.native_color_mapping.native_window.* = SKIP
-2546 ANDROID : dEQP-EGL.functional.native_coord_mapping.native_window.* = SKIP
-2546 ANDROID : dEQP-EGL.functional.negative_api.copy_buffers = FAIL
-2546 ANDROID : dEQP-EGL.functional.partial_update.odd_clear_* = FAIL
-2546 ANDROID : dEQP-EGL.functional.partial_update.odd_render_* = FAIL
-2546 ANDROID : dEQP-EGL.functional.partial_update.render_* = FAIL
-2546 ANDROID : dEQP-EGL.functional.render.multi_context.* = SKIP
-2546 ANDROID : dEQP-EGL.functional.render.single_context.* = SKIP
-2546 ANDROID : dEQP-EGL.functional.thread_cleanup.multi_context_* = SKIP
-2546 ANDROID : dEQP-EGL.functional.thread_cleanup.single_context_* = FAIL
+6533 ANDROID : dEQP-EGL.functional.native_color_mapping.native_window.* = SKIP
+6533 ANDROID : dEQP-EGL.functional.native_coord_mapping.native_window.* = SKIP
 
-// Vulkan
-3081 VULKAN : dEQP-EGL.functional.image.create.gles2_renderbuffer_depth16_depth_buffer = SKIP
-3081 VULKAN : dEQP-EGL.functional.image.create.gles2_renderbuffer_stencil_stencil_buffer = SKIP
-3081 VULKAN : dEQP-EGL.functional.image.modify.renderbuffer_depth16_renderbuffer_clear_depth = SKIP
-3081 VULKAN : dEQP-EGL.functional.image.modify.renderbuffer_stencil_renderbuffer_clear_stencil = SKIP
-3081 VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_renderbuffer_depth16_depth_buffer = SKIP
-3081 VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_renderbuffer_stencil_stencil_buffer = SKIP
+// Nexus 5x failures
+6527 NEXUS5X : dEQP-EGL.functional.buffer_age.* = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.choose_config.simple.selection_only.transparent_red_value = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.choose_config.simple.selection_only.transparent_green_value = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.choose_config.simple.selection_only.transparent_blue_value = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_red_value = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_green_value = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.choose_config.simple.selection_and_sort.transparent_blue_value = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.color_clears.multi_context.* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.color_clears.single_context.* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.negative_api.copy_buffers = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.partial_update.odd_clear_* = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.partial_update.odd_render_* = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.partial_update.render_* = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.render.multi_context.* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.render.single_context.* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.thread_cleanup.multi_context_* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.thread_cleanup.single_context_* = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.query_context.get_current_context.* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.query_context.get_current_display.* = SKIP
+6527 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.r* = FAIL
+6527 NEXUS5X : dEQP-EGL.functional.query_context.query_context.* = SKIP
+
+// Nexus 5x Vulkan
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.image.create.gles2_renderbuffer_depth16_depth_buffer = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.image.create.gles2_renderbuffer_stencil_stencil_buffer = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.image.modify.renderbuffer_depth16_renderbuffer_clear_depth = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.image.modify.renderbuffer_stencil_renderbuffer_clear_stencil = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_renderbuffer_depth16_depth_buffer = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.image.render_multiple_contexts.gles2_renderbuffer_stencil_stencil_buffer = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.create_surface.window.other = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.query_context.get_current_surface.other = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.query_surface.set_attribute.window.other = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.query_surface.simple.window.other = SKIP
+6527 NEXUS5X VULKAN : dEQP-EGL.functional.resize.pixel_density.* = SKIP
 
 // Android Vulkan
-2546 ANDROID VULKAN : dEQP-EGL.functional.create_surface.window.other = SKIP
-2546 ANDROID VULKAN : dEQP-EGL.functional.query_context.get_current_surface.other = SKIP
-2546 ANDROID VULKAN : dEQP-EGL.functional.query_surface.set_attribute.window.other = SKIP
-2546 ANDROID VULKAN : dEQP-EGL.functional.query_surface.simple.window.other = SKIP
-2546 ANDROID VULKAN : dEQP-EGL.functional.resize.pixel_density.* = SKIP
 6277 ANDROID VULKAN : dEQP-EGL.functional.image.api.create_image_gles2_android_native_rgb8 = SKIP
 6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_read_pixels = SKIP
 6277 ANDROID VULKAN : dEQP-EGL.functional.image.create.gles2_android_native_rgb8_texture = SKIP
@@ -199,12 +184,6 @@
 2330 : dEQP-EGL.functional.robustness.create_context.lose_context_on_reset = SKIP
 2330 : dEQP-EGL.functional.robustness.reset_context.fixed_function_pipeline.reset_status.index_buffer_out_of_bounds = SKIP
 2330 : dEQP-EGL.functional.robustness.reset_context.fixed_function_pipeline.reset_status.vertex_buffer_out_of_bounds = SKIP
-
-// Nexus 5x
-2546 NEXUS5X : dEQP-EGL.functional.query_context.get_current_context.* = SKIP
-2546 NEXUS5X : dEQP-EGL.functional.query_context.get_current_display.* = SKIP
-2546 NEXUS5X : dEQP-EGL.functional.query_context.get_current_surface.r* = FAIL
-2546 NEXUS5X : dEQP-EGL.functional.query_context.query_context.* = SKIP
 
 // EGL images with the GL back-ends are not supported
 4606 OPENGL : dEQP-EGL.functional.image.api.create_image_gles2_* = FAIL
@@ -247,3 +226,106 @@
 5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb565_depth_stencil = SKIP
 5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb565_no_depth_stencil = SKIP
 5665 NEXUS5X : dEQP-EGL.functional.surfaceless_context.rgb888_no_depth_stencil = SKIP
+
+//// Metal
+
+6485 MAC METAL : dEQP-EGL.functional.multithread.pbuffer_single_window = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.pbuffer_single_window_context = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.single_window = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.single_window_context = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.pbuffer_context = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.config = SKIP
+6485 MAC METAL : dEQP-EGL.functional.multithread.context = SKIP
+6485 MAC METAL : dEQP-EGL.functional.resize.surface_size.* = FAIL
+6485 MAC METAL : dEQP-EGL.functional.fence_sync.valid.wait* = SKIP
+
+6485 MAC METAL : dEQP-EGL.functional.color_clears.multi_context.gles2.rgba8888_pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.color_clears.multi_context.gles3.rgba8888_pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.color_clears.multi_thread.gles2.rgba8888_pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.color_clears.multi_thread.gles3.rgba8888_pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.color_clears.single_context.gles2.rgba8888_pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.color_clears.single_context.gles3.rgba8888_pbuffer = SKIP
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_neg_x_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_neg_y_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_neg_z_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_pos_x_rgb = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_pos_x_rgba_level0_only = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_pos_y_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_pos_z_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_cubemap_pos_x_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_renderbuffer_depth_component_16 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_renderbuffer_stencil_index8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_renderbuffer_rgba4 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_renderbuffer_rgb565 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_renderbuffer_rgb5_a1 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_red = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_rgb = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_rgba = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_rgba_level0_only = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_luminance = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_luminance_alpha = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.api.create_image_gles2_tex2d_rg = FAIL
+
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_cubemap* = FAIL
+
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_depth16_depth_buffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_rgb565_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_rgb565_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_rgb5_a1_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_rgb5_a1_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_rgba4_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_rgba4_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_renderbuffer_stencil_stencil_buffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgb565_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgb565_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgb5_a1_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgb5_a1_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgb8_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgb8_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgba4_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgba4_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgba8_read_pixels = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.create.gles2_texture_rgba8_texture = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgb565_tex_subimage_rgb565 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgb565_tex_subimage_rgb8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgb5_a1_renderbuffer_clear_color = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgb5_a1_tex_subimage_rgb5_a1 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgba4_tex_subimage_rgba4 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgba4_tex_subimage_rgba8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_rgb565_renderbuffer_clear_color = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_depth16_renderbuffer_clear_depth = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.renderbuffer_stencil_renderbuffer_clear_stencil = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb5_a1_renderbuffer_clear_color = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb5_a1_tex_subimage_rgb5_a1 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb8_renderbuffer_clear_color = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb8_tex_subimage_rgb8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgba4_tex_subimage_rgba4 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgba4_tex_subimage_rgba8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgba8_renderbuffer_clear_color = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgba8_tex_subimage_rgba8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb565_tex_subimage_rgb8 = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb565_renderbuffer_clear_color = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.modify.tex_rgb565_tex_subimage_rgb565 = FAIL
+
+6485 MAC METAL : dEQP-EGL.functional.image.render_multiple_contexts.gles2_cubemap* = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.render_multiple_contexts.gles2_renderbuffer* = FAIL
+6485 MAC METAL : dEQP-EGL.functional.image.render_multiple_contexts.gles2_texture* = FAIL
+
+6485 MAC METAL : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_depth_no_stencil = FAIL
+6485 MAC METAL : dEQP-EGL.functional.query_surface.simple.pbuffer.rgba8888_no_depth_stencil = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.multi_context.gles2.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.multi_context.gles2_gles3.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.multi_context.gles3.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.multi_thread.gles2.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.multi_thread.gles2_gles3.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.multi_thread.gles3.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.single_context.gles2.rgba8888_pbuffer = FAIL
+6485 MAC METAL : dEQP-EGL.functional.render.single_context.gles3.rgba8888_pbuffer = FAIL
+
+6485 MAC METAL : dEQP-EGL.functional.wide_color.pbuffer_8888_colorspace_default = FAIL
+6485 MAC METAL : dEQP-EGL.functional.wide_color.pbuffer_888_colorspace_default = FAIL
+
+// Crashes
+6485 MAC METAL : dEQP-EGL.functional.sharing.gles2.multithread.* = SKIP
+

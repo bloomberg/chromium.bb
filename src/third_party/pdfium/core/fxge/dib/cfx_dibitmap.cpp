@@ -84,8 +84,10 @@ bool CFX_DIBitmap::Copy(const RetainPtr<CFX_DIBBase>& pSrc) {
 
   SetPalette(pSrc->GetPaletteSpan());
   SetAlphaMask(pSrc->GetAlphaMask(), nullptr);
-  for (int row = 0; row < pSrc->GetHeight(); row++)
-    memcpy(m_pBuffer.Get() + row * m_Pitch, pSrc->GetScanline(row), m_Pitch);
+  for (int row = 0; row < pSrc->GetHeight(); row++) {
+    memcpy(m_pBuffer.Get() + row * m_Pitch, pSrc->GetScanline(row).data(),
+           m_Pitch);
+  }
   return true;
 }
 
@@ -95,8 +97,11 @@ uint8_t* CFX_DIBitmap::GetBuffer() const {
   return m_pBuffer.Get();
 }
 
-const uint8_t* CFX_DIBitmap::GetScanline(int line) const {
-  return m_pBuffer.Get() ? m_pBuffer.Get() + line * m_Pitch : nullptr;
+pdfium::span<const uint8_t> CFX_DIBitmap::GetScanline(int line) const {
+  if (!m_pBuffer)
+    return pdfium::span<const uint8_t>();
+
+  return {m_pBuffer.Get() + line * m_Pitch, m_Pitch};
 }
 
 void CFX_DIBitmap::TakeOver(RetainPtr<CFX_DIBitmap>&& pSrcBitmap) {
@@ -246,7 +251,7 @@ void CFX_DIBitmap::TransferWithMultipleBPP(
     uint8_t* dest_scan =
         m_pBuffer.Get() + (dest_top + row) * m_Pitch + dest_left * Bpp;
     const uint8_t* src_scan =
-        pSrcBitmap->GetScanline(src_top + row) + src_left * Bpp;
+        pSrcBitmap->GetScanline(src_top + row).subspan(src_left * Bpp).data();
     memcpy(dest_scan, src_scan, width * Bpp);
   }
 }
@@ -261,7 +266,7 @@ void CFX_DIBitmap::TransferEqualFormatsOneBPP(
     int src_top) {
   for (int row = 0; row < height; ++row) {
     uint8_t* dest_scan = m_pBuffer.Get() + (dest_top + row) * m_Pitch;
-    const uint8_t* src_scan = pSrcBitmap->GetScanline(src_top + row);
+    const uint8_t* src_scan = pSrcBitmap->GetScanline(src_top + row).data();
     for (int col = 0; col < width; ++col) {
       int src_idx = src_left + col;
       int dest_idx = dest_left + col;
@@ -346,8 +351,10 @@ bool CFX_DIBitmap::SetChannelFromBitmap(
   int srcBytes = pSrcClone->GetBPP() / 8;
   int destBytes = pDst->GetBPP() / 8;
   for (int row = 0; row < m_Height; row++) {
-    uint8_t* dest_pos = pDst->GetWritableScanline(row) + destOffset;
-    const uint8_t* src_pos = pSrcClone->GetScanline(row) + srcOffset;
+    uint8_t* dest_pos =
+        pDst->GetWritableScanline(row).subspan(destOffset).data();
+    const uint8_t* src_pos =
+        pSrcClone->GetScanline(row).subspan(srcOffset).data();
     for (int col = 0; col < m_Width; col++) {
       *dest_pos = *src_pos;
       dest_pos += destBytes;
@@ -760,15 +767,16 @@ bool CFX_DIBitmap::CompositeBitmap(int dest_left,
   for (int row = 0; row < height; row++) {
     uint8_t* dest_scan =
         m_pBuffer.Get() + (dest_top + row) * m_Pitch + dest_left * dest_Bpp;
-    const uint8_t* src_scan =
-        pSrcBitmap->GetScanline(src_top + row) + src_left * src_Bpp;
-    const uint8_t* src_scan_extra_alpha =
-        pSrcAlphaMask ? pSrcAlphaMask->GetScanline(src_top + row) + src_left
-                      : nullptr;
-    uint8_t* dst_scan_extra_alpha =
-        m_pAlphaMask
-            ? m_pAlphaMask->GetWritableScanline(dest_top + row) + dest_left
-            : nullptr;
+    pdfium::span<const uint8_t> src_scan =
+        pSrcBitmap->GetScanline(src_top + row).subspan(src_left * src_Bpp);
+    pdfium::span<const uint8_t> src_scan_extra_alpha =
+        pSrcAlphaMask
+            ? pSrcAlphaMask->GetScanline(src_top + row).subspan(src_left)
+            : pdfium::span<const uint8_t>();
+    pdfium::span<uint8_t> dst_scan_extra_alpha =
+        m_pAlphaMask ? m_pAlphaMask->GetWritableScanline(dest_top + row)
+                           .subspan(dest_left)
+                     : pdfium::span<uint8_t>();
     const uint8_t* clip_scan = nullptr;
     if (pClipMask) {
       clip_scan = pClipMask->m_pBuffer.Get() +
@@ -836,11 +844,11 @@ bool CFX_DIBitmap::CompositeMask(int dest_left,
   for (int row = 0; row < height; row++) {
     uint8_t* dest_scan =
         m_pBuffer.Get() + (dest_top + row) * m_Pitch + dest_left * Bpp;
-    const uint8_t* src_scan = pMask->GetScanline(src_top + row);
-    uint8_t* dst_scan_extra_alpha =
-        m_pAlphaMask
-            ? m_pAlphaMask->GetWritableScanline(dest_top + row) + dest_left
-            : nullptr;
+    pdfium::span<const uint8_t> src_scan = pMask->GetScanline(src_top + row);
+    pdfium::span<uint8_t> dst_scan_extra_alpha =
+        m_pAlphaMask ? m_pAlphaMask->GetWritableScanline(dest_top + row)
+                           .subspan(dest_left)
+                     : pdfium::span<uint8_t>();
     const uint8_t* clip_scan = nullptr;
     if (pClipMask) {
       clip_scan = pClipMask->m_pBuffer.Get() +
@@ -851,8 +859,8 @@ bool CFX_DIBitmap::CompositeMask(int dest_left,
       compositor.CompositeBitMaskLine(dest_scan, src_scan, src_left, width,
                                       clip_scan, dst_scan_extra_alpha);
     } else {
-      compositor.CompositeByteMaskLine(dest_scan, src_scan + src_left, width,
-                                       clip_scan, dst_scan_extra_alpha);
+      compositor.CompositeByteMaskLine(dest_scan, src_scan.subspan(src_left),
+                                       width, clip_scan, dst_scan_extra_alpha);
     }
   }
   return true;
@@ -909,8 +917,10 @@ bool CFX_DIBitmap::CompositeRect(int left,
       index = (static_cast<uint8_t>(color) == 0xff) ? 1 : 0;
     }
     for (int row = rect.top; row < rect.bottom; row++) {
-      uint8_t* dest_scan_top = GetWritableScanline(row) + rect.left / 8;
-      uint8_t* dest_scan_top_r = GetWritableScanline(row) + rect.right / 8;
+      uint8_t* dest_scan_top =
+          GetWritableScanline(row).subspan(rect.left / 8).data();
+      uint8_t* dest_scan_top_r =
+          GetWritableScanline(row).subspan(rect.right / 8).data();
       uint8_t left_flag = *dest_scan_top & (255 << (8 - left_shift));
       uint8_t right_flag = *dest_scan_top_r & (255 >> right_shift);
       if (new_width) {
@@ -946,8 +956,9 @@ bool CFX_DIBitmap::CompositeRect(int left,
     for (int row = rect.top; row < rect.bottom; row++) {
       uint8_t* dest_scan = m_pBuffer.Get() + row * m_Pitch + rect.left * Bpp;
       uint8_t* dest_scan_alpha =
-          m_pAlphaMask ? m_pAlphaMask->GetWritableScanline(row) + rect.left
-                       : nullptr;
+          m_pAlphaMask
+              ? m_pAlphaMask->GetWritableScanline(row).subspan(rect.left).data()
+              : nullptr;
       if (dest_scan_alpha)
         memset(dest_scan_alpha, 0xff, width);
 
@@ -990,7 +1001,7 @@ bool CFX_DIBitmap::CompositeRect(int left,
         }
       } else {
         uint8_t* dest_scan_alpha =
-            m_pAlphaMask->GetWritableScanline(row) + rect.left;
+            m_pAlphaMask->GetWritableScanline(row).subspan(rect.left).data();
         for (int col = 0; col < width; col++) {
           uint8_t back_alpha = *dest_scan_alpha;
           if (back_alpha == 0) {
@@ -1059,7 +1070,7 @@ bool CFX_DIBitmap::ConvertFormat(FXDIB_Format dest_format) {
     if (m_pAlphaMask) {
       for (int row = 0; row < m_Height; row++) {
         uint8_t* pDstScanline = dest_buf.get() + row * dest_pitch + 3;
-        const uint8_t* pSrcScanline = m_pAlphaMask->GetScanline(row);
+        const uint8_t* pSrcScanline = m_pAlphaMask->GetScanline(row).data();
         for (int col = 0; col < m_Width; col++) {
           *pDstScanline = *pSrcScanline++;
           pDstScanline += 4;

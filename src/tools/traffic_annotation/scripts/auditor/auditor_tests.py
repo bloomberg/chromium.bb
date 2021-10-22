@@ -38,8 +38,7 @@ class AuditorTest(unittest.TestCase):
                                 no_filtering=False,
                                 test_only=True)
     self.auditor = self.auditor_ui.auditor
-    self.auditor.file_filter.git_file_for_testing = os.path.join(
-        TESTS_DIR, "git_list.txt")
+    self.auditor.file_filter.git_file_for_testing = TESTS_DIR / "git_list.txt"
 
     all_annotations = self.auditor.run_extractor(self.auditor_ui.build_path,
                                                  self.auditor_ui.path_filters,
@@ -57,13 +56,15 @@ class AuditorTest(unittest.TestCase):
   def deserialize(self,
                   file_name: str) -> Tuple[Annotation, List[AuditorError]]:
     file_path = CPP_TESTS_DIR / "extractor_outputs" / file_name
-    with open(file_path) as f:
-      lines = [l.rstrip() for l in f.readlines()]
+    lines = file_path.read_text(encoding="utf-8").splitlines()
 
     annotation = Annotation()
-    extracted_annotation = extractor.Annotation(file_path=lines[0],
+    language = extractor.LANGUAGE_MAPPING[Path(lines[0]).suffix]
+    type_name = extractor.AnnotationType(lines[2])
+    extracted_annotation = extractor.Annotation(language=language,
+                                                file_path=lines[0],
                                                 line_number=int(lines[1]),
-                                                type_name=lines[2],
+                                                type_name=type_name,
                                                 unique_id=lines[3],
                                                 extra_id=lines[4],
                                                 text="\n".join(lines[5:]))
@@ -111,8 +112,8 @@ class AuditorTest(unittest.TestCase):
     """Tests that FileFilter.get_files_from_git() returns correct files given
     a mock git_list.txt file. It also inherently checks
     FileFilter._is_supported_source_file()."""
-    filter = FileFilter()
-    filter.git_file_for_testing = os.path.join(CPP_TESTS_DIR, "git_list.txt")
+    filter = FileFilter([".cc", ".mm"])
+    filter.git_file_for_testing = CPP_TESTS_DIR / "git_list.txt"
     filter.get_files_from_git()
 
     relevant_files = [
@@ -132,8 +133,8 @@ class AuditorTest(unittest.TestCase):
   def test_get_source_files(self):
     """Tests that FileFilter.get_source_files() gives the correct list of
     files, given a mock git_list.txt file."""
-    filter = FileFilter()
-    filter.git_file_for_testing = os.path.join(CPP_TESTS_DIR, "git_list.txt")
+    filter = FileFilter([".cc", ".mm"])
+    filter.git_file_for_testing = CPP_TESTS_DIR / "git_list.txt"
     filter.get_files_from_git()
 
     # Check if all files are returned with no ignore list and directory.
@@ -159,7 +160,7 @@ class AuditorTest(unittest.TestCase):
   def test_is_safelisted(self):
     """Tests if Auditor._is_safe_listed() works as expected. Inherently checks
     Auditor.load_safe_list() as well."""
-    auditor = Auditor()  # use the real safe_list.txt
+    auditor = Auditor(get_current_platform())  # use the real safe_list.txt
     for t in ExceptionType:
       # Anything in /tools directory is safelisted for all types.
       self.assertTrue(auditor._is_safe_listed(Path("tools/something.cc"), t))
@@ -635,38 +636,37 @@ class AuditorTest(unittest.TestCase):
   def test_annotations_xml(self):
     """Tests is annotations.xml has proper content."""
     # annotations.xml should parse without errors.
-    exporter = Exporter()
+    exporter = Exporter(get_current_platform())
     exporter.load_annotations_xml()
     errors = exporter.check_archived_annotations()
     self.assertEqual([], errors)
 
     # The content of annotations.xml shouldn't change when writing it.
-    with open(Exporter.ANNOTATIONS_XML_PATH) as f:
-      old_xml = f.read()
+    old_xml = exporter.annotations_xml_path.read_text(encoding="utf-8")
     new_xml = exporter._generate_serialized_xml()
     self.assertEqual(old_xml, new_xml)
 
   def test_annotations_xml_differences(self):
     """Tests if annotations.xml changes are correctly reported."""
-    exporter = Exporter()
+    exporter = Exporter(get_current_platform())
 
-    with open(os.path.join(CPP_TESTS_DIR, "annotations_sample1.xml")) as f:
-      xml1 = f.read()
-    with open(os.path.join(CPP_TESTS_DIR, "annotations_sample2.xml")) as f:
-      xml2 = f.read()
-    with open(os.path.join(CPP_TESTS_DIR, "annotations_sample3.xml")) as f:
-      xml3 = f.read()
+    xml1 = (CPP_TESTS_DIR /
+            "annotations_sample1.xml").read_text(encoding="utf-8")
+    xml2 = (CPP_TESTS_DIR /
+            "annotations_sample2.xml").read_text(encoding="utf-8")
+    xml3 = (CPP_TESTS_DIR /
+            "annotations_sample3.xml").read_text(encoding="utf-8")
 
     diff12 = exporter._get_xml_differences(xml1, xml2)
     diff13 = exporter._get_xml_differences(xml1, xml3)
     diff23 = exporter._get_xml_differences(xml2, xml3)
 
-    with open(os.path.join(CPP_TESTS_DIR, "annotations_diff12.txt")) as f:
-      expected_diff12 = f.read()
-    with open(os.path.join(CPP_TESTS_DIR, "annotations_diff13.txt")) as f:
-      expected_diff13 = f.read()
-    with open(os.path.join(CPP_TESTS_DIR, "annotations_diff23.txt")) as f:
-      expected_diff23 = f.read()
+    expected_diff12 = (CPP_TESTS_DIR /
+                       "annotations_diff12.txt").read_text(encoding="utf-8")
+    expected_diff13 = (CPP_TESTS_DIR /
+                       "annotations_diff13.txt").read_text(encoding="utf-8")
+    expected_diff23 = (CPP_TESTS_DIR /
+                       "annotations_diff23.txt").read_text(encoding="utf-8")
 
     self.assertEqual(expected_diff12, diff12)
     self.assertEqual(expected_diff13, diff13)

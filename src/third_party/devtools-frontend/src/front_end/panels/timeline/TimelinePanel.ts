@@ -45,6 +45,7 @@ import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
+import historyToolbarButtonStyles from './historyToolbarButton.css.js';
 import timelinePanelStyles from './timelinePanel.css.js';
 import timelineStatusDialogStyles from './timelineStatusDialog.css.js';
 
@@ -447,7 +448,8 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     this.loader = TimelineLoader.loadFromEvents(events, this);
   }
 
-  private onOverviewWindowChanged(event: Common.EventTarget.EventTargetEvent): void {
+  private onOverviewWindowChanged(
+      event: Common.EventTarget.EventTargetEvent<PerfUI.TimelineOverviewPane.WindowChangedEvent>): void {
     if (!this.performanceModel) {
       return;
     }
@@ -500,6 +502,7 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
     // History
     this.panelToolbar.appendSeparator();
     this.panelToolbar.appendToolbarItem(this.historyManager.button());
+    this.panelToolbar.registerCSSFiles([historyToolbarButtonStyles]);
     this.panelToolbar.appendSeparator();
 
     // View
@@ -1244,11 +1247,11 @@ export class TimelinePanel extends UI.Panel.Panel implements Client, TimelineMod
         this.loadFromURL(url);
       }
     } else if (item.kind === 'file') {
-      const entry = items[0].webkitGetAsEntry();
-      if (!entry.isFile) {
+      const file = items[0].getAsFile();
+      if (!file) {
         return;
       }
-      entry.file(this.loadFromFile.bind(this));
+      this.loadFromFile(file);
     }
   }
 }

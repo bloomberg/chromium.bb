@@ -22,7 +22,7 @@
       android:orientation="horizontal"
       android:gravity="center_vertical"
       android:layoutDirection="locale"
-      android:paddingHorizontal="@dimen/ntp_header_lateral_margins_v2" >
+      android:paddingHorizontal="@dimen/ntp_header_lateral_paddings_v2" >
 
     <!-- Null content description for now because UX in flux. -->
     <ImageView
@@ -34,7 +34,6 @@
         android:visibility="invisible"
         android:layout_marginEnd="@dimen/feed_header_icon_margin"
         app:tint="?attr/default_icon_color_disabled"
-        android:tintMode="src_in"
         tools:ignore="contentDescription" />
 
     <com.google.android.material.tabs.TabLayout
@@ -67,5 +66,13 @@
   </LinearLayout>
 
   <include layout="@layout/horizontal_divider" />
+
+  <FrameLayout
+      android:id="@+id/options_content"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:paddingHorizontal="@dimen/ntp_header_lateral_paddings_v2"
+      android:background="@color/default_bg_color_elev_1"
+      android:visibility="gone" />
 
 </org.chromium.chrome.browser.ntp.snippets.SectionHeaderView>

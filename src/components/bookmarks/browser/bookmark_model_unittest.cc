@@ -44,7 +44,6 @@
 
 using base::ASCIIToUTF16;
 using base::Time;
-using base::TimeDelta;
 
 namespace bookmarks {
 namespace {
@@ -320,6 +319,9 @@ class BookmarkModelTest : public testing::Test,
     ClearCounts();
   }
 
+  BookmarkModelTest(const BookmarkModelTest&) = delete;
+  BookmarkModelTest& operator=(const BookmarkModelTest&) = delete;
+
   void BookmarkModelLoaded(BookmarkModel* model, bool ids_reassigned) override {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
@@ -504,8 +506,6 @@ class BookmarkModelTest : public testing::Test,
   int before_remove_all_count_;
   int grouped_changes_beginning_count_;
   int grouped_changes_ended_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelTest);
 };
 
 TEST_F(BookmarkModelTest, InitialState) {
@@ -591,7 +591,7 @@ TEST_F(BookmarkModelTest, AddURLWithCreationTimeAndMetaInfo) {
   const BookmarkNode* root = model_->bookmark_bar_node();
   const std::u16string title(u"foo");
   const GURL url("http://foo.com");
-  const Time time = Time::Now() - TimeDelta::FromDays(1);
+  const Time time = Time::Now() - base::Days(1);
   BookmarkNode::MetaInfoMap meta_info;
   meta_info["foo"] = "bar";
 
@@ -619,7 +619,7 @@ TEST_F(BookmarkModelTest, AddURLWithGUID) {
   const BookmarkNode* root = model_->bookmark_bar_node();
   const std::u16string title(u"foo");
   const GURL url("http://foo.com");
-  const Time time = Time::Now() - TimeDelta::FromDays(1);
+  const Time time = Time::Now() - base::Days(1);
   BookmarkNode::MetaInfoMap meta_info;
   const base::GUID guid = base::GUID::GenerateRandomV4();
 
@@ -677,8 +677,7 @@ TEST_F(BookmarkModelTest, AddFolderWithCreationTime) {
   const BookmarkNode* root = model_->bookmark_bar_node();
   const std::u16string title(u"foo");
   BookmarkNode::MetaInfoMap meta_info;
-  const base::Time creation_time(base::Time::Now() -
-                                 base::TimeDelta::FromDays(1));
+  const base::Time creation_time(base::Time::Now() - base::Days(1));
 
   const BookmarkNode* new_node =
       model_->AddFolder(root, /*index=*/0, title, &meta_info, creation_time);
@@ -889,7 +888,7 @@ TEST_F(BookmarkModelTest, SetDateAdded) {
 
   ClearCounts();
 
-  base::Time new_time = base::Time::Now() + base::TimeDelta::FromMinutes(20);
+  base::Time new_time = base::Time::Now() + base::Minutes(20);
   model_->SetDateAdded(node, new_time);
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 0, 0);
   EXPECT_EQ(new_time, node->date_added());
@@ -936,7 +935,7 @@ TEST_F(BookmarkModelTest, NonMovingMoveCall) {
   const BookmarkNode* root = model_->bookmark_bar_node();
   const std::u16string title(u"foo");
   const GURL url("http://foo.com");
-  const base::Time old_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  const base::Time old_date(base::Time::Now() - base::Days(1));
 
   const BookmarkNode* node = model_->AddURL(root, 0, title, url);
   model_->SetDateFolderModified(root, old_date);
@@ -1170,10 +1169,10 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
       model_->bookmark_bar_node(), 2, u"blah", GURL("http://foo.com/2")));
   BookmarkNode* n4 = AsMutable(model_->AddURL(
       model_->bookmark_bar_node(), 3, u"blah", GURL("http://foo.com/3")));
-  n1->set_date_added(base_time + TimeDelta::FromDays(4));
-  n2->set_date_added(base_time + TimeDelta::FromDays(3));
-  n3->set_date_added(base_time + TimeDelta::FromDays(2));
-  n4->set_date_added(base_time + TimeDelta::FromDays(1));
+  n1->set_date_added(base_time + base::Days(4));
+  n2->set_date_added(base_time + base::Days(3));
+  n3->set_date_added(base_time + base::Days(2));
+  n4->set_date_added(base_time + base::Days(1));
 
   // Make sure order is honored.
   std::vector<const BookmarkNode*> recently_added;
@@ -1203,8 +1202,8 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedUserNodeForURL) {
       AsMutable(model_->AddURL(model_->bookmark_bar_node(), 0, u"blah", url));
   BookmarkNode* n2 =
       AsMutable(model_->AddURL(model_->bookmark_bar_node(), 1, u"blah", url));
-  n1->set_date_added(base_time + TimeDelta::FromDays(4));
-  n2->set_date_added(base_time + TimeDelta::FromDays(3));
+  n1->set_date_added(base_time + base::Days(4));
+  n2->set_date_added(base_time + base::Days(3));
 
   // Make sure order is honored.
   ASSERT_EQ(n1, model_->GetMostRecentlyAddedUserNodeForURL(url));
@@ -1643,6 +1642,9 @@ class BookmarkModelFaviconTest : public testing::Test,
     model_->AddObserver(this);
   }
 
+  BookmarkModelFaviconTest(const BookmarkModelFaviconTest&) = delete;
+  BookmarkModelFaviconTest& operator=(const BookmarkModelFaviconTest&) = delete;
+
   // Emulates the favicon getting asynchronously loaded. In production, the
   // favicon is asynchronously loaded when BookmarkModel::GetFavicon() is
   // called.
@@ -1704,9 +1706,6 @@ class BookmarkModelFaviconTest : public testing::Test,
 
   std::unique_ptr<BookmarkModel> model_;
   std::vector<const BookmarkNode*> updated_nodes_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BookmarkModelFaviconTest);
 };
 
 // Test that BookmarkModel::OnFaviconsChanged() sends a notification that the

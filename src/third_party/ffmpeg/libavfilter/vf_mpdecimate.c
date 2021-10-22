@@ -178,10 +178,7 @@ static int query_formats(AVFilterContext *ctx)
 
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -231,7 +228,6 @@ static const AVFilterPad mpdecimate_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad mpdecimate_outputs[] = {
@@ -239,7 +235,6 @@ static const AVFilterPad mpdecimate_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_mpdecimate = {
@@ -250,6 +245,6 @@ const AVFilter ff_vf_mpdecimate = {
     .priv_size     = sizeof(DecimateContext),
     .priv_class    = &mpdecimate_class,
     .query_formats = query_formats,
-    .inputs        = mpdecimate_inputs,
-    .outputs       = mpdecimate_outputs,
+    FILTER_INPUTS(mpdecimate_inputs),
+    FILTER_OUTPUTS(mpdecimate_outputs),
 };

@@ -14,11 +14,13 @@
 #include "components/services/app_service/app_service_impl.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
+#include "components/services/app_service/public/cpp/intent_test_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/publisher_base.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -82,6 +84,10 @@ class FakePublisher : public apps::PublisherBase {
     }
   }
 
+  bool AppHasSupportedLinksPreference(const std::string& app_id) {
+    return supported_link_apps_.find(app_id) != supported_link_apps_.end();
+  }
+
   std::string load_icon_app_id;
 
  private:
@@ -108,6 +114,15 @@ class FakePublisher : public apps::PublisherBase {
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               apps::mojom::WindowInfoPtr window_info) override {}
+
+  void OnSupportedLinksPreferenceChanged(const std::string& app_id,
+                                         bool open_in_app) override {
+    if (open_in_app) {
+      supported_link_apps_.insert(app_id);
+    } else {
+      supported_link_apps_.erase(app_id);
+    }
+  }
 
   void CallOnApps(apps::mojom::Subscriber* subscriber,
                   std::vector<std::string>& app_ids,
@@ -148,6 +163,7 @@ class FakePublisher : public apps::PublisherBase {
   std::vector<std::string> known_app_ids_;
   std::set<std::string> apps_accessing_camera_;
   std::set<std::string> apps_accessing_microphone_;
+  std::set<std::string> supported_link_apps_;
   mojo::ReceiverSet<apps::mojom::Publisher> receivers_;
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 };
@@ -218,6 +234,11 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     preferred_apps_.DeletePreferredApp(app_id, intent_filter);
   }
 
+  void OnPreferredAppsChanged(
+      apps::mojom::PreferredAppChangesPtr changes) override {
+    preferred_apps_.ApplyBulkUpdate(std::move(changes));
+  }
+
   void InitializePreferredApps(
       PreferredAppsList::PreferredApps preferred_apps) override {
     preferred_apps_.Init(preferred_apps);
@@ -231,7 +252,6 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 
 class AppServiceImplTest : public testing::Test {
  protected:
-  // base::test::TaskEnvironment task_environment_;
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
@@ -368,8 +388,6 @@ TEST_F(AppServiceImplTest, PubSub) {
   }
 }
 
-// TODO(https://crbug.com/1074596) Test to see if the flakiness is fixed. If it
-// is not fixed, please update to the same bug.
 TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -504,6 +522,290 @@ TEST_F(AppServiceImplTest, PreferredAppsPersistency) {
     EXPECT_EQ(kAppId1, impl.GetPreferredAppsForTesting().FindPreferredAppForUrl(
                            filter_url));
   }
+}
+
+TEST_F(AppServiceImplTest, PreferredAppsSetSupportedLinks) {
+  // Test Initialize.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppServiceImpl impl(temp_dir_.GetPath());
+  impl.GetPreferredAppsForTesting().Init();
+
+  const char kAppId1[] = "abcdefg";
+  const char kAppId2[] = "hijklmn";
+  const char kAppId3[] = "opqrstu";
+
+  auto intent_filter_a =
+      apps_util::CreateIntentFilterForUrlScope(GURL("https://www.a.com/"));
+  auto intent_filter_b =
+      apps_util::CreateIntentFilterForUrlScope(GURL("https://www.b.com/"));
+  auto intent_filter_c =
+      apps_util::CreateIntentFilterForUrlScope(GURL("https://www.c.com/"));
+
+  FakeSubscriber sub0(&impl);
+  task_environment_.RunUntilIdle();
+
+  FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
+                     std::vector<std::string>{kAppId1, kAppId2, kAppId3});
+  task_environment_.RunUntilIdle();
+
+  std::vector<apps::mojom::IntentFilterPtr> app_1_filters;
+  app_1_filters.push_back(intent_filter_a.Clone());
+  app_1_filters.push_back(intent_filter_b.Clone());
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId1,
+                                   std::move(app_1_filters));
+
+  std::vector<apps::mojom::IntentFilterPtr> app_2_filters;
+  app_2_filters.push_back(intent_filter_c.Clone());
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId2,
+                                   std::move(app_2_filters));
+
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId1));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId2));
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId3));
+
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(
+                         GURL("https://www.a.com/")));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(
+                         GURL("https://www.b.com/")));
+  EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(
+                         GURL("https://www.c.com/")));
+
+  // App 3 overlaps with both App 1 and 2. Both previous apps should have all
+  // their supported link filters removed.
+  std::vector<apps::mojom::IntentFilterPtr> app_3_filters;
+  app_3_filters.push_back(intent_filter_b.Clone());
+  app_3_filters.push_back(intent_filter_c.Clone());
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId3,
+                                   std::move(app_3_filters));
+
+  task_environment_.RunUntilIdle();
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId1));
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId2));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId3));
+
+  EXPECT_EQ(absl::nullopt, sub0.PreferredApps().FindPreferredAppForUrl(
+                               GURL("https://www.a.com/")));
+  EXPECT_EQ(kAppId3, sub0.PreferredApps().FindPreferredAppForUrl(
+                         GURL("https://www.b.com/")));
+  EXPECT_EQ(kAppId3, sub0.PreferredApps().FindPreferredAppForUrl(
+                         GURL("https://www.c.com/")));
+
+  // Setting App 3 as preferred again should not change anything.
+  app_3_filters = std::vector<apps::mojom::IntentFilterPtr>();
+  app_3_filters.push_back(intent_filter_b.Clone());
+  app_3_filters.push_back(intent_filter_c.Clone());
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId3,
+                                   std::move(app_3_filters));
+  task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId3));
+  EXPECT_EQ(kAppId3, sub0.PreferredApps().FindPreferredAppForUrl(
+                         GURL("https://www.c.com/")));
+
+  impl.RemoveSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId3);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId3));
+  EXPECT_EQ(absl::nullopt, sub0.PreferredApps().FindPreferredAppForUrl(
+                               GURL("https://www.c.com/")));
+}
+
+// Test that app with overlapped supported links works properly.
+TEST_F(AppServiceImplTest, PreferredAppsOverlap) {
+  // Test Initialize.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppServiceImpl impl(temp_dir_.GetPath());
+  impl.GetPreferredAppsForTesting().Init();
+
+  const char kAppId1[] = "abcdefg";
+  const char kAppId2[] = "hijklmn";
+
+  GURL filter_url_1 = GURL("https://www.google.com/abc");
+  GURL filter_url_2 = GURL("http://www.google.com.au/abc");
+  GURL filter_url_3 = GURL("https://www.abc.com/abc");
+
+  auto intent_filter_1 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+  apps_util::AddConditionValue(
+      apps::mojom::ConditionType::kScheme, filter_url_2.scheme(),
+      apps::mojom::PatternMatchType::kNone, intent_filter_1);
+  apps_util::AddConditionValue(
+      apps::mojom::ConditionType::kHost, filter_url_2.host(),
+      apps::mojom::PatternMatchType::kNone, intent_filter_1);
+
+  auto intent_filter_2 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+  apps_util::AddConditionValue(
+      apps::mojom::ConditionType::kScheme, filter_url_2.scheme(),
+      apps::mojom::PatternMatchType::kNone, intent_filter_2);
+  apps_util::AddConditionValue(
+      apps::mojom::ConditionType::kHost, filter_url_2.host(),
+      apps::mojom::PatternMatchType::kNone, intent_filter_2);
+
+  auto intent_filter_3 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+
+  std::vector<apps::mojom::IntentFilterPtr> app_1_filters;
+  app_1_filters.push_back(std::move(intent_filter_1));
+  app_1_filters.push_back(std::move(intent_filter_2));
+  std::vector<apps::mojom::IntentFilterPtr> app_2_filters;
+  app_2_filters.push_back(std::move(intent_filter_3));
+
+  FakeSubscriber sub0(&impl);
+  task_environment_.RunUntilIdle();
+
+  FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
+                     std::vector<std::string>{kAppId1, kAppId2});
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_EQ(0U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(0U, sub0.PreferredApps().GetEntrySize());
+
+  // Test that add preferred app with overlapped filters for same app will
+  // add all entries.
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId1,
+                                   mojo::Clone(app_1_filters));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId1));
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId2));
+  EXPECT_EQ(2U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(2U, sub0.PreferredApps().GetEntrySize());
+
+  // Test that add preferred app with another app that has overlapped filter
+  // will clear all entries from the original app.
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId2,
+                                   mojo::Clone(app_2_filters));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId1));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId2));
+  EXPECT_EQ(1U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(1U, sub0.PreferredApps().GetEntrySize());
+
+  // Test that setting back to app 1 works.
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId1,
+                                   mojo::Clone(app_1_filters));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId1));
+  EXPECT_FALSE(pub0.AppHasSupportedLinksPreference(kAppId2));
+  EXPECT_EQ(2U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(2U, sub0.PreferredApps().GetEntrySize());
+}
+
+// Test that duplicated entry will not be added.
+TEST_F(AppServiceImplTest, PreferredAppsDuplicated) {
+  // Test Initialize.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppServiceImpl impl(temp_dir_.GetPath());
+  impl.GetPreferredAppsForTesting().Init();
+
+  const char kAppId1[] = "abcdefg";
+
+  GURL filter_url = GURL("https://www.google.com/abc");
+
+  auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
+
+  FakeSubscriber sub0(&impl);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
+  EXPECT_EQ(0U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(0U, sub0.PreferredApps().GetEntrySize());
+
+  impl.AddPreferredApp(
+      apps::mojom::AppType::kArc, kAppId1, intent_filter->Clone(),
+      apps_util::CreateIntentFromUrl(filter_url), /*from_publisher=*/true);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
+  EXPECT_EQ(1U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(1U, sub0.PreferredApps().GetEntrySize());
+
+  impl.AddPreferredApp(
+      apps::mojom::AppType::kArc, kAppId1, intent_filter->Clone(),
+      apps_util::CreateIntentFromUrl(filter_url), /*from_publisher=*/true);
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
+  EXPECT_EQ(1U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(1U, sub0.PreferredApps().GetEntrySize());
+}
+
+// Test that duplicated entry will not be added for supported links.
+TEST_F(AppServiceImplTest, PreferredAppsDuplicatedSupportedLink) {
+  // Test Initialize.
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  AppServiceImpl impl(temp_dir_.GetPath());
+  impl.GetPreferredAppsForTesting().Init();
+
+  const char kAppId1[] = "abcdefg";
+
+  GURL filter_url_1 = GURL("https://www.google.com/abc");
+  GURL filter_url_2 = GURL("http://www.google.com.au/abc");
+  GURL filter_url_3 = GURL("https://www.abc.com/abc");
+
+  auto intent_filter_1 = apps_util::CreateIntentFilterForUrlScope(filter_url_1);
+
+  auto intent_filter_2 = apps_util::CreateIntentFilterForUrlScope(filter_url_2);
+
+  auto intent_filter_3 = apps_util::CreateIntentFilterForUrlScope(filter_url_3);
+
+  std::vector<apps::mojom::IntentFilterPtr> app_1_filters;
+  app_1_filters.push_back(std::move(intent_filter_1));
+  app_1_filters.push_back(std::move(intent_filter_2));
+  app_1_filters.push_back(std::move(intent_filter_3));
+
+  FakeSubscriber sub0(&impl);
+  task_environment_.RunUntilIdle();
+
+  FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
+                     std::vector<std::string>{kAppId1});
+  task_environment_.RunUntilIdle();
+
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(absl::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_EQ(0U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(0U, sub0.PreferredApps().GetEntrySize());
+
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId1,
+                                   mojo::Clone(app_1_filters));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId1));
+
+  EXPECT_EQ(3U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(3U, sub0.PreferredApps().GetEntrySize());
+
+  impl.SetSupportedLinksPreference(apps::mojom::AppType::kArc, kAppId1,
+                                   mojo::Clone(app_1_filters));
+  task_environment_.RunUntilIdle();
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_1));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_2));
+  EXPECT_EQ(kAppId1, sub0.PreferredApps().FindPreferredAppForUrl(filter_url_3));
+  EXPECT_TRUE(pub0.AppHasSupportedLinksPreference(kAppId1));
+
+  EXPECT_EQ(3U, impl.GetPreferredAppsForTesting().GetEntrySize());
+  EXPECT_EQ(3U, sub0.PreferredApps().GetEntrySize());
 }
 
 }  // namespace apps

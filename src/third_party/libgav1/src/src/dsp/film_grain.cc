@@ -505,9 +505,8 @@ void BlendNoiseWithImageLuma_C(const void* LIBGAV1_RESTRICT noise_image_ptr,
                                int min_value, int max_luma, int scaling_shift,
                                int width, int height, int start_height,
                                const int16_t* scaling_lut_y,
-                               const void* LIBGAV1_RESTRICT source_plane_y,
-                               ptrdiff_t source_stride_y,
-                               void* LIBGAV1_RESTRICT dest_plane_y,
+                               const void* source_plane_y,
+                               ptrdiff_t source_stride_y, void* dest_plane_y,
                                ptrdiff_t dest_stride_y) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
@@ -536,9 +535,9 @@ void BlendNoiseWithImageChroma_C(
     const void* LIBGAV1_RESTRICT noise_image_ptr, int min_value, int max_chroma,
     int width, int height, int start_height, int subsampling_x,
     int subsampling_y, const int16_t* scaling_lut_uv,
-    const void* LIBGAV1_RESTRICT source_plane_y, ptrdiff_t source_stride_y,
-    const void* LIBGAV1_RESTRICT source_plane_uv, ptrdiff_t source_stride_uv,
-    void* LIBGAV1_RESTRICT dest_plane_uv, ptrdiff_t dest_stride_uv) {
+    const void* source_plane_y, ptrdiff_t source_stride_y,
+    const void* source_plane_uv, ptrdiff_t source_stride_uv,
+    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
 
@@ -597,10 +596,9 @@ void BlendNoiseWithImageChromaWithCfl_C(
     Plane plane, const FilmGrainParams& params,
     const void* LIBGAV1_RESTRICT noise_image_ptr, int min_value, int max_chroma,
     int width, int height, int start_height, int subsampling_x,
-    int subsampling_y, const int16_t* scaling_lut,
-    const void* LIBGAV1_RESTRICT source_plane_y, ptrdiff_t source_stride_y,
-    const void* LIBGAV1_RESTRICT source_plane_uv, ptrdiff_t source_stride_uv,
-    void* LIBGAV1_RESTRICT dest_plane_uv, ptrdiff_t dest_stride_uv) {
+    int subsampling_y, const int16_t* scaling_lut, const void* source_plane_y,
+    ptrdiff_t source_stride_y, const void* source_plane_uv,
+    ptrdiff_t source_stride_uv, void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
   const auto* in_y = static_cast<const Pixel*>(source_plane_y);

@@ -11,7 +11,6 @@
 #include "include/core/SkStringView.h"
 #include "include/private/SkSLModifiers.h"
 #include "include/private/SkSLSymbol.h"
-#include "src/sksl/SkSLPosition.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/spirv.h"
 #include <algorithm>
@@ -142,7 +141,7 @@ public:
                                                  Type::TypeKind typeKind);
 
     /** Creates a struct type with the given fields. */
-    static std::unique_ptr<Type> MakeStructType(int offset, skstd::string_view name,
+    static std::unique_ptr<Type> MakeStructType(int line, skstd::string_view name,
                                                 std::vector<Field> fields);
 
     /** Create a texture type. */
@@ -192,13 +191,19 @@ public:
         return this->displayName();
     }
 
-    bool isPrivate() const {
+    /** Returns true if the program supports this type. Strict ES2 programs can't use ES3 types. */
+    bool isAllowedInES2(const Context& context) const;
+
+    /** Returns true if this type is legal to use in a strict-ES2 program. */
+    virtual bool isAllowedInES2() const {
+        return true;
+    }
+
+    /** Returns true if this type is either private, or contains a private field (recursively). */
+    virtual bool isPrivate() const {
         return this->name().starts_with("$");
     }
 
-    virtual bool allowedInES2() const {
-        return true;
-    }
 
     bool operator==(const Type& other) const {
         return this->name() == other.name();
@@ -511,12 +516,6 @@ public:
     bool isOrContainsArray() const;
 
     /**
-     * Returns true if this type is either itself private or is a struct which contains private
-     * fields (recursively).
-     */
-    bool containsPrivateFields() const;
-
-    /**
      * Returns true if this type is a struct that is too deeply nested.
      */
     bool isTooDeeplyNested() const;
@@ -533,9 +532,9 @@ public:
      * don't make sense, e.g. `highp bool` or `mediump MyStruct`.
      */
     const Type* applyPrecisionQualifiers(const Context& context,
-                                         const Modifiers& modifiers,
+                                         Modifiers* modifiers,
                                          SymbolTable* symbols,
-                                         int offset) const;
+                                         int line) const;
 
     /**
      * Coerces the passed-in expression to this type. If the types are incompatible, reports an
@@ -554,8 +553,8 @@ public:
     SKSL_INT convertArraySize(const Context& context, std::unique_ptr<Expression> size) const;
 
 protected:
-    Type(skstd::string_view name, const char* abbrev, TypeKind kind, int offset = -1)
-        : INHERITED(offset, kSymbolKind, name)
+    Type(skstd::string_view name, const char* abbrev, TypeKind kind, int line = -1)
+        : INHERITED(line, kSymbolKind, name)
         , fTypeKind(kind) {
         SkASSERT(strlen(abbrev) <= kMaxAbbrevLength);
         strcpy(fAbbreviatedName, abbrev);

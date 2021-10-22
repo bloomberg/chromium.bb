@@ -142,19 +142,22 @@ static bool RequireExtOrExtOrExt(const Version &, const Extensions &extensions)
 // R8, RG8
 static bool SizedRGSupport(const Version &clientVersion, const Extensions &extensions)
 {
-    return clientVersion >= Version(3, 0) || (extensions.textureStorage && extensions.textureRG);
+    return clientVersion >= Version(3, 0) ||
+           (extensions.textureStorageEXT && extensions.textureRgEXT);
 }
 
 // R16F, RG16F with HALF_FLOAT_OES type
 static bool SizedHalfFloatOESRGSupport(const Version &clientVersion, const Extensions &extensions)
 {
-    return extensions.textureStorage && extensions.textureHalfFloat && extensions.textureRG;
+    return extensions.textureStorageEXT && extensions.textureHalfFloatOES &&
+           extensions.textureRgEXT;
 }
 
 static bool SizedHalfFloatOESRGTextureAttachmentSupport(const Version &clientVersion,
                                                         const Extensions &extensions)
 {
-    return SizedHalfFloatOESRGSupport(clientVersion, extensions) && extensions.colorBufferHalfFloat;
+    return SizedHalfFloatOESRGSupport(clientVersion, extensions) &&
+           extensions.colorBufferHalfFloatEXT;
 }
 
 // R16F, RG16F with either HALF_FLOAT_OES or HALF_FLOAT types
@@ -179,8 +182,8 @@ static bool SizedHalfFloatRGTextureAttachmentSupport(const Version &clientVersio
     if (clientVersion >= Version(3, 0))
     {
         // WebGL 2 supports EXT_color_buffer_half_float.
-        return extensions.colorBufferFloat ||
-               (extensions.webglCompatibility && extensions.colorBufferHalfFloat);
+        return extensions.colorBufferFloatEXT ||
+               (extensions.webglCompatibilityANGLE && extensions.colorBufferHalfFloatEXT);
     }
     // HALF_FLOAT_OES
     else
@@ -193,20 +196,21 @@ static bool SizedHalfFloatRGRenderbufferSupport(const Version &clientVersion,
                                                 const Extensions &extensions)
 {
     return (clientVersion >= Version(3, 0) ||
-            (extensions.textureHalfFloat && extensions.textureRG)) &&
-           (extensions.colorBufferFloat || extensions.colorBufferHalfFloat);
+            (extensions.textureHalfFloatOES && extensions.textureRgEXT)) &&
+           (extensions.colorBufferFloatEXT || extensions.colorBufferHalfFloatEXT);
 }
 
 // RGB16F, RGBA16F with HALF_FLOAT_OES type
 static bool SizedHalfFloatOESSupport(const Version &clientVersion, const Extensions &extensions)
 {
-    return extensions.textureStorage && extensions.textureHalfFloat;
+    return extensions.textureStorageEXT && extensions.textureHalfFloatOES;
 }
 
 static bool SizedHalfFloatOESTextureAttachmentSupport(const Version &clientVersion,
                                                       const Extensions &extensions)
 {
-    return SizedHalfFloatOESSupport(clientVersion, extensions) && extensions.colorBufferHalfFloat;
+    return SizedHalfFloatOESSupport(clientVersion, extensions) &&
+           extensions.colorBufferHalfFloatEXT;
 }
 
 // RGB16F, RGBA16F with either HALF_FLOAT_OES or HALF_FLOAT types
@@ -234,7 +238,7 @@ static bool SizedHalfFloatFilterSupport(const Version &clientVersion, const Exte
     // HALF_FLOAT_OES
     else
     {
-        return extensions.textureHalfFloatLinear;
+        return extensions.textureHalfFloatLinearOES;
     }
 }
 
@@ -248,7 +252,7 @@ static bool SizedHalfFloatRGBTextureAttachmentSupport(const Version &clientVersi
         // dEQP GLES3 es3fFboColorbufferTests.cpp verifies that texture attachment of GL_RGB16F
         // is possible, so assume that all GLES implementations support it.
         // The WebGL version of the extension explicitly forbids RGB formats.
-        return extensions.colorBufferHalfFloat && !extensions.webglCompatibility;
+        return extensions.colorBufferHalfFloatEXT && !extensions.webglCompatibilityANGLE;
     }
     // HALF_FLOAT_OES
     else
@@ -260,9 +264,9 @@ static bool SizedHalfFloatRGBTextureAttachmentSupport(const Version &clientVersi
 static bool SizedHalfFloatRGBRenderbufferSupport(const Version &clientVersion,
                                                  const Extensions &extensions)
 {
-    return !extensions.webglCompatibility &&
-           ((clientVersion >= Version(3, 0) || extensions.textureHalfFloat) &&
-            extensions.colorBufferHalfFloat);
+    return !extensions.webglCompatibilityANGLE &&
+           ((clientVersion >= Version(3, 0) || extensions.textureHalfFloatOES) &&
+            extensions.colorBufferHalfFloatEXT);
 }
 
 static bool SizedHalfFloatRGBATextureAttachmentSupport(const Version &clientVersion,
@@ -272,8 +276,8 @@ static bool SizedHalfFloatRGBATextureAttachmentSupport(const Version &clientVers
     if (clientVersion >= Version(3, 0))
     {
         // WebGL 2 supports EXT_color_buffer_half_float.
-        return extensions.colorBufferFloat ||
-               (extensions.webglCompatibility && extensions.colorBufferHalfFloat);
+        return extensions.colorBufferFloatEXT ||
+               (extensions.webglCompatibilityANGLE && extensions.colorBufferHalfFloatEXT);
     }
     // HALF_FLOAT_OES
     else
@@ -285,46 +289,46 @@ static bool SizedHalfFloatRGBATextureAttachmentSupport(const Version &clientVers
 static bool SizedHalfFloatRGBARenderbufferSupport(const Version &clientVersion,
                                                   const Extensions &extensions)
 {
-    return (clientVersion >= Version(3, 0) || extensions.textureHalfFloat) &&
-           (extensions.colorBufferFloat || extensions.colorBufferHalfFloat);
+    return (clientVersion >= Version(3, 0) || extensions.textureHalfFloatOES) &&
+           (extensions.colorBufferFloatEXT || extensions.colorBufferHalfFloatEXT);
 }
 
 // R32F, RG32F
 static bool SizedFloatRGSupport(const Version &clientVersion, const Extensions &extensions)
 {
     return clientVersion >= Version(3, 0) ||
-           (extensions.textureStorage && extensions.textureFloatOES && extensions.textureRG);
+           (extensions.textureStorageEXT && extensions.textureFloatOES && extensions.textureRgEXT);
 }
 
 // RGB32F
 static bool SizedFloatRGBSupport(const Version &clientVersion, const Extensions &extensions)
 {
     return clientVersion >= Version(3, 0) ||
-           (extensions.textureStorage && extensions.textureFloatOES) ||
-           extensions.colorBufferFloatRGB;
+           (extensions.textureStorageEXT && extensions.textureFloatOES) ||
+           extensions.colorBufferFloatRgbCHROMIUM;
 }
 
 // RGBA32F
 static bool SizedFloatRGBASupport(const Version &clientVersion, const Extensions &extensions)
 {
     return clientVersion >= Version(3, 0) ||
-           (extensions.textureStorage && extensions.textureFloatOES) ||
-           extensions.colorBufferFloatRGBA;
+           (extensions.textureStorageEXT && extensions.textureFloatOES) ||
+           extensions.colorBufferFloatRgbaCHROMIUM;
 }
 
 static bool SizedFloatRGBARenderableSupport(const Version &clientVersion,
                                             const Extensions &extensions)
 {
     // This logic is the same for both Renderbuffers and TextureAttachment.
-    return extensions.colorBufferFloatRGBA ||  // ES2
-           extensions.colorBufferFloat;        // ES3
+    return extensions.colorBufferFloatRgbaCHROMIUM ||  // ES2
+           extensions.colorBufferFloatEXT;             // ES3
 }
 
 static bool Float32BlendableSupport(const Version &clientVersion, const Extensions &extensions)
 {
     // EXT_float_blend may be exposed on ES2 client contexts. Ensure that RGBA32F is renderable.
-    return (extensions.colorBufferFloatRGBA || extensions.colorBufferFloat) &&
-           extensions.floatBlend;
+    return (extensions.colorBufferFloatRgbaCHROMIUM || extensions.colorBufferFloatEXT) &&
+           extensions.floatBlendEXT;
 }
 
 InternalFormat::InternalFormat()
@@ -373,7 +377,7 @@ GLenum InternalFormat::getReadPixelsFormat(const Extensions &extensions) const
         case GL_BGRA_EXT:
             // BGRA textures may be enabled but calling glReadPixels with BGRA is disallowed without
             // GL_EXT_texture_format_BGRA8888.  Read as RGBA instead.
-            if (!extensions.readFormatBGRA)
+            if (!extensions.readFormatBgraEXT)
             {
                 return GL_RGBA;
             }
@@ -1014,50 +1018,50 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     // clang-format off
 
     //                 | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
-    AddRGBAFormat(&map, GL_R8,                true,  8,  0,  0,  0, 0, GL_RED,          GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, SizedRGSupport,                                    AlwaysSupported, SizedRGSupport,                                    RequireESOrExt<3, 0, &Extensions::textureRG>,    RequireESOrExt<3, 0, &Extensions::textureRG>);
-    AddRGBAFormat(&map, GL_R8_SNORM,          true,  8,  0,  0,  0, 0, GL_RED,          GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                   AlwaysSupported, NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RG8,               true,  8,  8,  0,  0, 0, GL_RG,           GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, SizedRGSupport,                                    AlwaysSupported, SizedRGSupport,                                    RequireESOrExt<3, 0, &Extensions::textureRG>,    RequireESOrExt<3, 0, &Extensions::textureRG>);
-    AddRGBAFormat(&map, GL_RG8_SNORM,         true,  8,  8,  0,  0, 0, GL_RG,           GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                   AlwaysSupported, NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB8,              true,  8,  8,  8,  0, 0, GL_RGB,          GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
-    AddRGBAFormat(&map, GL_RGB8_SNORM,        true,  8,  8,  8,  0, 0, GL_RGB,          GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                   AlwaysSupported, NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB565,            true,  5,  6,  5,  0, 0, GL_RGB,          GL_UNSIGNED_SHORT_5_6_5,           GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireES<2, 0>,                                 RequireES<2, 0>);
-    AddRGBAFormat(&map, GL_RGBA4,             true,  4,  4,  4,  4, 0, GL_RGBA,         GL_UNSIGNED_SHORT_4_4_4_4,         GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireES<2, 0>,                                 RequireES<2, 0>);
-    AddRGBAFormat(&map, GL_RGB5_A1,           true,  5,  5,  5,  1, 0, GL_RGBA,         GL_UNSIGNED_SHORT_5_5_5_1,         GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireES<2, 0>,                                 RequireES<2, 0>);
-    AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
-    AddRGBAFormat(&map, GL_RGBA8_SNORM,       true,  8,  8,  8,  8, 0, GL_RGBA,         GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                   AlwaysSupported, NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB10_A2UI,        true, 10, 10, 10,  2, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT_2_10_10_10_REV,    GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_SRGB8,             true,  8,  8,  8,  0, 0, GL_RGB,          GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, true,  RequireES<3, 0>,                                   AlwaysSupported, NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_SRGB8_ALPHA8,      true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, true,  RequireESOrExt<3, 0, &Extensions::sRGB>,           AlwaysSupported, RequireES<3, 0>,                                   RequireESOrExt<3, 0, &Extensions::sRGB>,         RequireESOrExt<3, 0, &Extensions::sRGB>);
-    AddRGBAFormat(&map, GL_R11F_G11F_B10F,    true, 11, 11, 10,  0, 0, GL_RGB,          GL_UNSIGNED_INT_10F_11F_11F_REV,   GL_FLOAT,               false, RequireES<3, 0>,                                   AlwaysSupported, RequireExt<&Extensions::colorBufferFloat>,         RequireExt<&Extensions::colorBufferFloat>,       RequireExt<&Extensions::colorBufferFloat>);
-    AddRGBAFormat(&map, GL_RGB9_E5,           true,  9,  9,  9,  0, 5, GL_RGB,          GL_UNSIGNED_INT_5_9_9_9_REV,       GL_FLOAT,               false, RequireES<3, 0>,                                   AlwaysSupported, NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_R8I,               true,  8,  0,  0,  0, 0, GL_RED_INTEGER,  GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_R8UI,              true,  8,  0,  0,  0, 0, GL_RED_INTEGER,  GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_R16I,              true, 16,  0,  0,  0, 0, GL_RED_INTEGER,  GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_R16UI,             true, 16,  0,  0,  0, 0, GL_RED_INTEGER,  GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_R32I,              true, 32,  0,  0,  0, 0, GL_RED_INTEGER,  GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_R32UI,             true, 32,  0,  0,  0, 0, GL_RED_INTEGER,  GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RG8I,              true,  8,  8,  0,  0, 0, GL_RG_INTEGER,   GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RG8UI,             true,  8,  8,  0,  0, 0, GL_RG_INTEGER,   GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RG16I,             true, 16, 16,  0,  0, 0, GL_RG_INTEGER,   GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RG16UI,            true, 16, 16,  0,  0, 0, GL_RG_INTEGER,   GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RG32I,             true, 32, 32,  0,  0, 0, GL_RG_INTEGER,   GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RG32UI,            true, 32, 32,  0,  0, 0, GL_RG_INTEGER,   GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RGB8I,             true,  8,  8,  8,  0, 0, GL_RGB_INTEGER,  GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB8UI,            true,  8,  8,  8,  0, 0, GL_RGB_INTEGER,  GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB16I,            true, 16, 16, 16,  0, 0, GL_RGB_INTEGER,  GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB16UI,           true, 16, 16, 16,  0, 0, GL_RGB_INTEGER,  GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB32I,            true, 32, 32, 32,  0, 0, GL_RGB_INTEGER,  GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGB32UI,           true, 32, 32, 32,  0, 0, GL_RGB_INTEGER,  GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  NeverSupported,                                    NeverSupported,                                  NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA8I,            true,  8,  8,  8,  8, 0, GL_RGBA_INTEGER, GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA8UI,           true,  8,  8,  8,  8, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA16I,           true, 16, 16, 16, 16, 0, GL_RGBA_INTEGER, GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA16UI,          true, 16, 16, 16, 16, 0, GL_RGBA_INTEGER, GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA32I,           true, 32, 32, 32, 32, 0, GL_RGBA_INTEGER, GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA32UI,          true, 32, 32, 32, 32, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                   NeverSupported,  RequireES<3, 0>,                                   RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_R8,                true,  8,  0,  0,  0, 0, GL_RED,          GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, SizedRGSupport,                                       AlwaysSupported, SizedRGSupport,                                          RequireESOrExt<3, 0, &Extensions::textureRgEXT>, RequireESOrExt<3, 0, &Extensions::textureRgEXT>);
+    AddRGBAFormat(&map, GL_R8_SNORM,          true,  8,  0,  0,  0, 0, GL_RED,          GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                      AlwaysSupported, NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RG8,               true,  8,  8,  0,  0, 0, GL_RG,           GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, SizedRGSupport,                                       AlwaysSupported, SizedRGSupport,                                          RequireESOrExt<3, 0, &Extensions::textureRgEXT>, RequireESOrExt<3, 0, &Extensions::textureRgEXT>);
+    AddRGBAFormat(&map, GL_RG8_SNORM,         true,  8,  8,  0,  0, 0, GL_RG,           GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                      AlwaysSupported, NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB8,              true,  8,  8,  8,  0, 0, GL_RGB,          GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, RequireESOrExt<3, 0, &Extensions::rgb8Rgba8OES>,    RequireESOrExt<3, 0, &Extensions::rgb8Rgba8OES>);
+    AddRGBAFormat(&map, GL_RGB8_SNORM,        true,  8,  8,  8,  0, 0, GL_RGB,          GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                      AlwaysSupported, NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB565,            true,  5,  6,  5,  0, 0, GL_RGB,          GL_UNSIGNED_SHORT_5_6_5,           GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, RequireES<2, 0>,                                    RequireES<2, 0>);
+    AddRGBAFormat(&map, GL_RGBA4,             true,  4,  4,  4,  4, 0, GL_RGBA,         GL_UNSIGNED_SHORT_4_4_4_4,         GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, RequireES<2, 0>,                                    RequireES<2, 0>);
+    AddRGBAFormat(&map, GL_RGB5_A1,           true,  5,  5,  5,  1, 0, GL_RGBA,         GL_UNSIGNED_SHORT_5_5_5_1,         GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, RequireES<2, 0>,                                    RequireES<2, 0>);
+    AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorageEXT>, RequireESOrExt<3, 0, &Extensions::rgb8Rgba8OES>,    RequireESOrExt<3, 0, &Extensions::rgb8Rgba8OES>);
+    AddRGBAFormat(&map, GL_RGBA8_SNORM,       true,  8,  8,  8,  8, 0, GL_RGBA,         GL_BYTE,                           GL_SIGNED_NORMALIZED,   false, RequireES<3, 0>,                                      AlwaysSupported, NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB10_A2UI,        true, 10, 10, 10,  2, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT_2_10_10_10_REV,    GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_SRGB8,             true,  8,  8,  8,  0, 0, GL_RGB,          GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, true,  RequireES<3, 0>,                                      AlwaysSupported, NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_SRGB8_ALPHA8,      true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, true,  RequireESOrExt<3, 0, &Extensions::sRGBEXT>,           AlwaysSupported, RequireES<3, 0>,                                         RequireESOrExt<3, 0, &Extensions::sRGBEXT>,      RequireESOrExt<3, 0, &Extensions::sRGBEXT>);
+    AddRGBAFormat(&map, GL_R11F_G11F_B10F,    true, 11, 11, 10,  0, 0, GL_RGB,          GL_UNSIGNED_INT_10F_11F_11F_REV,   GL_FLOAT,               false, RequireES<3, 0>,                                      AlwaysSupported, RequireExt<&Extensions::colorBufferFloatEXT>,            RequireExt<&Extensions::colorBufferFloatEXT>,    RequireExt<&Extensions::colorBufferFloatEXT>);
+    AddRGBAFormat(&map, GL_RGB9_E5,           true,  9,  9,  9,  0, 5, GL_RGB,          GL_UNSIGNED_INT_5_9_9_9_REV,       GL_FLOAT,               false, RequireES<3, 0>,                                      AlwaysSupported, NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_R8I,               true,  8,  0,  0,  0, 0, GL_RED_INTEGER,  GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_R8UI,              true,  8,  0,  0,  0, 0, GL_RED_INTEGER,  GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_R16I,              true, 16,  0,  0,  0, 0, GL_RED_INTEGER,  GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_R16UI,             true, 16,  0,  0,  0, 0, GL_RED_INTEGER,  GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_R32I,              true, 32,  0,  0,  0, 0, GL_RED_INTEGER,  GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_R32UI,             true, 32,  0,  0,  0, 0, GL_RED_INTEGER,  GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RG8I,              true,  8,  8,  0,  0, 0, GL_RG_INTEGER,   GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RG8UI,             true,  8,  8,  0,  0, 0, GL_RG_INTEGER,   GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RG16I,             true, 16, 16,  0,  0, 0, GL_RG_INTEGER,   GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RG16UI,            true, 16, 16,  0,  0, 0, GL_RG_INTEGER,   GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RG32I,             true, 32, 32,  0,  0, 0, GL_RG_INTEGER,   GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RG32UI,            true, 32, 32,  0,  0, 0, GL_RG_INTEGER,   GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RGB8I,             true,  8,  8,  8,  0, 0, GL_RGB_INTEGER,  GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB8UI,            true,  8,  8,  8,  0, 0, GL_RGB_INTEGER,  GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB16I,            true, 16, 16, 16,  0, 0, GL_RGB_INTEGER,  GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB16UI,           true, 16, 16, 16,  0, 0, GL_RGB_INTEGER,  GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB32I,            true, 32, 32, 32,  0, 0, GL_RGB_INTEGER,  GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGB32UI,           true, 32, 32, 32,  0, 0, GL_RGB_INTEGER,  GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  NeverSupported,                                          NeverSupported,                                  NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA8I,            true,  8,  8,  8,  8, 0, GL_RGBA_INTEGER, GL_BYTE,                           GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA8UI,           true,  8,  8,  8,  8, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE,                  GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA16I,           true, 16, 16, 16, 16, 0, GL_RGBA_INTEGER, GL_SHORT,                          GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA16UI,          true, 16, 16, 16, 16, 0, GL_RGBA_INTEGER, GL_UNSIGNED_SHORT,                 GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA32I,           true, 32, 32, 32, 32, 0, GL_RGBA_INTEGER, GL_INT,                            GL_INT,                 false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA32UI,          true, 32, 32, 32, 32, 0, GL_RGBA_INTEGER, GL_UNSIGNED_INT,                   GL_UNSIGNED_INT,        false, RequireES<3, 0>,                                      NeverSupported,  RequireES<3, 0>,                                         RequireES<3, 0>,                                 NeverSupported);
 
-    AddRGBAFormat(&map, GL_BGRA8_EXT,         true,  8,  8,  8,  8, 0, GL_BGRA_EXT,     GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,    AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>,    RequireExt<&Extensions::textureFormatBGRA8888>, RequireExt<&Extensions::textureFormatBGRA8888>);
-    AddRGBAFormat(&map, GL_BGRA4_ANGLEX,      true,  4,  4,  4,  4, 0, GL_BGRA_EXT,     GL_UNSIGNED_SHORT_4_4_4_4_REV_EXT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,    AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>,    RequireExt<&Extensions::textureFormatBGRA8888>, RequireExt<&Extensions::textureFormatBGRA8888>);
-    AddRGBAFormat(&map, GL_BGR5_A1_ANGLEX,    true,  5,  5,  5,  1, 0, GL_BGRA_EXT,     GL_UNSIGNED_SHORT_1_5_5_5_REV_EXT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,    AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>,    RequireExt<&Extensions::textureFormatBGRA8888>, RequireExt<&Extensions::textureFormatBGRA8888>);
+    AddRGBAFormat(&map, GL_BGRA8_EXT,         true,  8,  8,  8,  8, 0, GL_BGRA_EXT,     GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888EXT>,    AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888EXT>,    RequireExt<&Extensions::textureFormatBGRA8888EXT>, RequireExt<&Extensions::textureFormatBGRA8888EXT>);
+    AddRGBAFormat(&map, GL_BGRA4_ANGLEX,      true,  4,  4,  4,  4, 0, GL_BGRA_EXT,     GL_UNSIGNED_SHORT_4_4_4_4_REV_EXT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888EXT>,    AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888EXT>,    RequireExt<&Extensions::textureFormatBGRA8888EXT>, RequireExt<&Extensions::textureFormatBGRA8888EXT>);
+    AddRGBAFormat(&map, GL_BGR5_A1_ANGLEX,    true,  5,  5,  5,  1, 0, GL_BGRA_EXT,     GL_UNSIGNED_SHORT_1_5_5_5_REV_EXT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888EXT>,    AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888EXT>,    RequireExt<&Extensions::textureFormatBGRA8888EXT>, RequireExt<&Extensions::textureFormatBGRA8888EXT>);
 
     // Special format that is used for D3D textures that are used within ANGLE via the
     // EGL_ANGLE_d3d_texture_client_buffer extension. We don't allow uploading texture images with
@@ -1067,12 +1071,13 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
 
     // Special format which is not really supported, so always false for all supports.
     AddRGBAFormat(&map, GL_BGRX8_ANGLEX,      true,  8,  8,  8,  0, 0, GL_BGRA_EXT,     GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
+    AddRGBAFormat(&map, GL_RGBX8_ANGLEX,      true,  8,  8,  8,  0, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
     AddRGBAFormat(&map, GL_BGR565_ANGLEX,     true,  5,  6,  5,  0, 0, GL_BGRA_EXT,     GL_UNSIGNED_SHORT_5_6_5,           GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
     AddRGBAFormat(&map, GL_BGR10_A2_ANGLEX,   true, 10, 10, 10,  2, 0, GL_BGRA_EXT,     GL_UNSIGNED_INT_2_10_10_10_REV,    GL_UNSIGNED_NORMALIZED, false, NeverSupported,                                    NeverSupported,  NeverSupported,                                    NeverSupported,                                NeverSupported);
 
     // This format is supported on ES 2.0 with two extensions, so keep it out-of-line to not widen the table above even more.
     //                 | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                                                            | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
-    AddRGBAFormat(&map, GL_RGB10_A2,          true, 10, 10, 10,  2, 0, GL_RGBA,         GL_UNSIGNED_INT_2_10_10_10_REV,    GL_UNSIGNED_NORMALIZED, false, RequireESOrExtAndExt<3, 0, &Extensions::textureStorage, &Extensions::textureFormat2101010REV>,  AlwaysSupported, RequireES<3, 0>,                                   RequireES<3, 0>,                                 RequireES<3, 0>);
+    AddRGBAFormat(&map, GL_RGB10_A2,          true, 10, 10, 10,  2, 0, GL_RGBA,         GL_UNSIGNED_INT_2_10_10_10_REV,    GL_UNSIGNED_NORMALIZED, false, RequireESOrExtAndExt<3, 0, &Extensions::textureStorageEXT, &Extensions::textureType2101010REVEXT>,  AlwaysSupported, RequireES<3, 0>,                                   RequireES<3, 0>,                                 RequireES<3, 0>);
 
     // Floating point formats
     //                 | Internal format |sized| R | G | B | A |S | Format | Type             | Component type | SRGB | Texture supported         | Filterable                                    | Texture attachment                          | Renderbuffer                            | Blend
@@ -1083,9 +1088,9 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     AddRGBAFormat(&map, GL_RG16F,         true, 16, 16,  0,  0, 0, GL_RG,   GL_HALF_FLOAT,     GL_FLOAT,        false, SizedHalfFloatRGSupport,    SizedHalfFloatFilterSupport,                    SizedHalfFloatRGTextureAttachmentSupport,     SizedHalfFloatRGRenderbufferSupport,       SizedHalfFloatRGRenderbufferSupport);
     AddRGBAFormat(&map, GL_RGB16F,        true, 16, 16, 16,  0, 0, GL_RGB,  GL_HALF_FLOAT,     GL_FLOAT,        false, SizedHalfFloatSupport,      SizedHalfFloatFilterSupport,                    SizedHalfFloatRGBTextureAttachmentSupport,    SizedHalfFloatRGBRenderbufferSupport,      SizedHalfFloatRGBRenderbufferSupport);
     AddRGBAFormat(&map, GL_RGBA16F,       true, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT,     GL_FLOAT,        false, SizedHalfFloatSupport,      SizedHalfFloatFilterSupport,                    SizedHalfFloatRGBATextureAttachmentSupport,   SizedHalfFloatRGBARenderbufferSupport,     SizedHalfFloatRGBARenderbufferSupport);
-    AddRGBAFormat(&map, GL_R32F,          true, 32,  0,  0,  0, 0, GL_RED,  GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGSupport,        RequireExt<&Extensions::textureFloatLinearOES>, RequireExt<&Extensions::colorBufferFloat>,    RequireExt<&Extensions::colorBufferFloat>, Float32BlendableSupport);
-    AddRGBAFormat(&map, GL_RG32F,         true, 32, 32,  0,  0, 0, GL_RG,   GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGSupport,        RequireExt<&Extensions::textureFloatLinearOES>, RequireExt<&Extensions::colorBufferFloat>,    RequireExt<&Extensions::colorBufferFloat>, Float32BlendableSupport);
-    AddRGBAFormat(&map, GL_RGB32F,        true, 32, 32, 32,  0, 0, GL_RGB,  GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGBSupport,       RequireExt<&Extensions::textureFloatLinearOES>, RequireExt<&Extensions::colorBufferFloatRGB>, NeverSupported,                            NeverSupported);
+    AddRGBAFormat(&map, GL_R32F,          true, 32,  0,  0,  0, 0, GL_RED,  GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGSupport,        RequireExt<&Extensions::textureFloatLinearOES>, RequireExt<&Extensions::colorBufferFloatEXT>,    RequireExt<&Extensions::colorBufferFloatEXT>, Float32BlendableSupport);
+    AddRGBAFormat(&map, GL_RG32F,         true, 32, 32,  0,  0, 0, GL_RG,   GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGSupport,        RequireExt<&Extensions::textureFloatLinearOES>, RequireExt<&Extensions::colorBufferFloatEXT>,    RequireExt<&Extensions::colorBufferFloatEXT>, Float32BlendableSupport);
+    AddRGBAFormat(&map, GL_RGB32F,        true, 32, 32, 32,  0, 0, GL_RGB,  GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGBSupport,       RequireExt<&Extensions::textureFloatLinearOES>, RequireExt<&Extensions::colorBufferFloatRgbCHROMIUM>, NeverSupported,                            NeverSupported);
     AddRGBAFormat(&map, GL_RGBA32F,       true, 32, 32, 32, 32, 0, GL_RGBA, GL_FLOAT,          GL_FLOAT,        false, SizedFloatRGBASupport,      RequireExt<&Extensions::textureFloatLinearOES>, SizedFloatRGBARenderableSupport,              SizedFloatRGBARenderableSupport,           Float32BlendableSupport);
 
     // ANGLE Depth stencil formats
@@ -1100,186 +1105,186 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
 
     // Luminance alpha formats
     //                | Internal format           |sized| L | A | Format            | Type             | Component type        | Texture supported                                                           | Filterable                                     | Texture attachment | Renderbuffer | Blend
-    AddLUMAFormat(&map, GL_ALPHA8_EXT,             true,  0,  8, GL_ALPHA,           GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, RequireExt<&Extensions::textureStorage>,                                      AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE8_EXT,         true,  8,  0, GL_LUMINANCE,       GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, RequireExt<&Extensions::textureStorage>,                                      AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE8_ALPHA8_EXT,  true,  8,  8, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, RequireExt<&Extensions::textureStorage>,                                      AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_ALPHA16F_EXT,           true,  0, 16, GL_ALPHA,           GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorage, &Extensions::textureHalfFloat>, RequireExt<&Extensions::textureHalfFloatLinear>, NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE16F_EXT,       true, 16,  0, GL_LUMINANCE,       GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorage, &Extensions::textureHalfFloat>, RequireExt<&Extensions::textureHalfFloatLinear>, NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE_ALPHA16F_EXT, true, 16, 16, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorage, &Extensions::textureHalfFloat>, RequireExt<&Extensions::textureHalfFloatLinear>, NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_ALPHA32F_EXT,           true,  0, 32, GL_ALPHA,           GL_FLOAT,          GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorage, &Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE32F_EXT,       true, 32,  0, GL_LUMINANCE,       GL_FLOAT,          GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorage, &Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE_ALPHA32F_EXT, true, 32, 32, GL_LUMINANCE_ALPHA, GL_FLOAT,          GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorage, &Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_ALPHA8_EXT,             true,  0,  8, GL_ALPHA,           GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, RequireExt<&Extensions::textureStorageEXT>,                                      AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE8_EXT,         true,  8,  0, GL_LUMINANCE,       GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, RequireExt<&Extensions::textureStorageEXT>,                                      AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE8_ALPHA8_EXT,  true,  8,  8, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, RequireExt<&Extensions::textureStorageEXT>,                                      AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_ALPHA16F_EXT,           true,  0, 16, GL_ALPHA,           GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorageEXT, &Extensions::textureHalfFloatOES>, RequireExt<&Extensions::textureHalfFloatLinearOES>, NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE16F_EXT,       true, 16,  0, GL_LUMINANCE,       GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorageEXT, &Extensions::textureHalfFloatOES>, RequireExt<&Extensions::textureHalfFloatLinearOES>, NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE_ALPHA16F_EXT, true, 16, 16, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorageEXT, &Extensions::textureHalfFloatOES>, RequireExt<&Extensions::textureHalfFloatLinearOES>, NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_ALPHA32F_EXT,           true,  0, 32, GL_ALPHA,           GL_FLOAT,          GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorageEXT, &Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE32F_EXT,       true, 32,  0, GL_LUMINANCE,       GL_FLOAT,          GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorageEXT, &Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE_ALPHA32F_EXT, true, 32, 32, GL_LUMINANCE_ALPHA, GL_FLOAT,          GL_FLOAT,               RequireExtAndExt<&Extensions::textureStorageEXT, &Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
 
     // Compressed formats, From ES 3.0.1 spec, table 3.16
     //                       | Internal format                             |W |H |D | BS |CC| SRGB | Texture supported                                                                                                         | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_R11_EAC,                        4, 4, 1,  64, 1, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedEACR11UnsignedTextureOES>,              AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_R11_EAC,                 4, 4, 1,  64, 1, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedEACR11SignedTextureOES>,                AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RG11_EAC,                       4, 4, 1, 128, 2, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedEACRG11UnsignedTextureOES>,             AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_RG11_EAC,                4, 4, 1, 128, 2, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedEACRG11SignedTextureOES>,               AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_ETC2,                      4, 4, 1,  64, 3, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedETC2RGB8TextureOES>,                    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ETC2,                     4, 4, 1,  64, 3, true,  RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedETC2sRGB8TextureOES>,                   AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2,  4, 4, 1,  64, 3, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedETC2PunchthroughARGB8TextureOES>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2, 4, 4, 1,  64, 3, true,  RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedETC2PunchthroughAsRGB8AlphaTextureOES>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA8_ETC2_EAC,                 4, 4, 1, 128, 4, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedETC2RGBA8TextureOES>,                   AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,          4, 4, 1, 128, 4, true,  RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureETC, &Extensions::compressedETC2sRGB8Alpha8TextureOES>,             AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_R11_EAC,                        4, 4, 1,  64, 1, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedEACR11UnsignedTextureOES>,              AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_R11_EAC,                 4, 4, 1,  64, 1, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedEACR11SignedTextureOES>,                AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RG11_EAC,                       4, 4, 1, 128, 2, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedEACRG11UnsignedTextureOES>,             AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_RG11_EAC,                4, 4, 1, 128, 2, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedEACRG11SignedTextureOES>,               AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_ETC2,                      4, 4, 1,  64, 3, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedETC2RGB8TextureOES>,                    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ETC2,                     4, 4, 1,  64, 3, true,  RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedETC2SRGB8TextureOES>,                   AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2,  4, 4, 1,  64, 3, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedETC2PunchthroughARGBA8TextureOES>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2, 4, 4, 1,  64, 3, true,  RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedETC2PunchthroughASRGB8AlphaTextureOES>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA8_ETC2_EAC,                 4, 4, 1, 128, 4, false, RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedETC2RGBA8TextureOES>,                   AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,          4, 4, 1, 128, 4, true,  RequireESOrExtOrExt<3, 0, &Extensions::compressedTextureEtcANGLE, &Extensions::compressedETC2SRGB8Alpha8TextureOES>,             AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_EXT_texture_compression_dxt1
     //                       | Internal format                   |W |H |D | BS |CC| SRGB | Texture supported                                    | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,    4, 4, 1,  64, 3, false, RequireExt<&Extensions::textureCompressionDXT1>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,   4, 4, 1,  64, 4, false, RequireExt<&Extensions::textureCompressionDXT1>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_S3TC_DXT1_EXT,    4, 4, 1,  64, 3, false, RequireExt<&Extensions::textureCompressionDxt1EXT>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT,   4, 4, 1,  64, 4, false, RequireExt<&Extensions::textureCompressionDxt1EXT>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_ANGLE_texture_compression_dxt3
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE, 4, 4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionDXT3>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE, 4, 4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionDxt3ANGLE>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_ANGLE_texture_compression_dxt5
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE, 4, 4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionDXT5>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE, 4, 4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionDxt5ANGLE>,       AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_OES_compressed_ETC1_RGB8_texture
     AddCompressedFormat(&map, GL_ETC1_RGB8_OES,                   4, 4, 1,  64, 3, false, RequireExt<&Extensions::compressedETC1RGB8TextureOES>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_EXT_texture_compression_s3tc_srgb
     //                       | Internal format                       |W |H |D | BS |CC|SRGB | Texture supported                                 | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_S3TC_DXT1_EXT,       4, 4, 1,  64, 3, true, RequireExt<&Extensions::textureCompressionS3TCsRGB>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, 4, 4, 1,  64, 4, true, RequireExt<&Extensions::textureCompressionS3TCsRGB>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT, 4, 4, 1, 128, 4, true, RequireExt<&Extensions::textureCompressionS3TCsRGB>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT, 4, 4, 1, 128, 4, true, RequireExt<&Extensions::textureCompressionS3TCsRGB>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_S3TC_DXT1_EXT,       4, 4, 1,  64, 3, true, RequireExt<&Extensions::textureCompressionS3tcSrgbEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT, 4, 4, 1,  64, 4, true, RequireExt<&Extensions::textureCompressionS3tcSrgbEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT, 4, 4, 1, 128, 4, true, RequireExt<&Extensions::textureCompressionS3tcSrgbEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT, 4, 4, 1, 128, 4, true, RequireExt<&Extensions::textureCompressionS3tcSrgbEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_KHR_texture_compression_astc_ldr and KHR_texture_compression_astc_hdr and GL_OES_texture_compression_astc
     //                       | Internal format                          | W | H |D | BS |CC| SRGB | Texture supported                                    | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x4_KHR,            4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x4_KHR,            5,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x5_KHR,            5,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x5_KHR,            6,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x6_KHR,            6,  6, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_8x5_KHR,            8,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_8x6_KHR,            8,  6, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_8x8_KHR,            8,  8, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x5_KHR,          10,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x6_KHR,          10,  6, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x8_KHR,          10,  8, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x10_KHR,         10, 10, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_12x10_KHR,         12, 10, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_12x12_KHR,         12, 12, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x4_KHR,            4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x4_KHR,            5,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x5_KHR,            5,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x5_KHR,            6,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x6_KHR,            6,  6, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_8x5_KHR,            8,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_8x6_KHR,            8,  6, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_8x8_KHR,            8,  8, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x5_KHR,          10,  5, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x6_KHR,          10,  6, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x8_KHR,          10,  8, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_10x10_KHR,         10, 10, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_12x10_KHR,         12, 10, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_12x12_KHR,         12, 12, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR,    4,  4, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR,    5,  4, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR,    5,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR,    6,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR,    6,  6, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR,    8,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR,    8,  6, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR,    8,  8, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR,  10,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR,  10,  6, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR,  10,  8, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR, 10, 10, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR, 12, 10, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR, 12, 12, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCLDRKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR,    4,  4, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR,    5,  4, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR,    5,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR,    6,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR,    6,  6, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR,    8,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR,    8,  6, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR,    8,  8, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR,  10,  5, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR,  10,  6, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR,  10,  8, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR, 10, 10, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR, 12, 10, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR, 12, 12, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcLdrKHR>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_3x3x3_OES,          3,  3, 3, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x3x3_OES,          4,  3, 3, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x4x3_OES,          4,  4, 3, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x4x4_OES,          4,  4, 4, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x4x4_OES,          5,  4, 4, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x5x4_OES,          5,  5, 4, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x5x5_OES,          5,  5, 5, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x5x5_OES,          6,  5, 5, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x6x5_OES,          6,  6, 5, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x6x6_OES,          6,  6, 6, 128, 4, false, RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_3x3x3_OES,          3,  3, 3, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x3x3_OES,          4,  3, 3, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x4x3_OES,          4,  4, 3, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_4x4x4_OES,          4,  4, 4, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x4x4_OES,          5,  4, 4, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x5x4_OES,          5,  5, 4, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_5x5x5_OES,          5,  5, 5, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x5x5_OES,          6,  5, 5, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x6x5_OES,          6,  6, 5, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_ASTC_6x6x6_OES,          6,  6, 6, 128, 4, false, RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_3x3x3_OES,  3,  3, 3, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x3x3_OES,  4,  3, 3, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x3_OES,  4,  4, 3, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x4_OES,  4,  4, 4, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4x4_OES,  5,  4, 4, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x4_OES,  5,  5, 4, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x5_OES,  5,  5, 5, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5x5_OES,  6,  5, 5, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x5_OES,  6,  6, 5, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x6_OES,  6,  6, 6, 128, 4, true,  RequireExt<&Extensions::textureCompressionASTCOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_3x3x3_OES,  3,  3, 3, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x3x3_OES,  4,  3, 3, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x3_OES,  4,  4, 3, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4x4_OES,  4,  4, 4, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4x4_OES,  5,  4, 4, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x4_OES,  5,  5, 4, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5x5_OES,  5,  5, 5, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5x5_OES,  6,  5, 5, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x5_OES,  6,  6, 5, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6x6_OES,  6,  6, 6, 128, 4, true,  RequireExt<&Extensions::textureCompressionAstcOES>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From EXT_texture_compression_rgtc
     //                       | Internal format                        | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_RED_RGTC1_EXT,              4,  4, 1,  64, 1, false, RequireExt<&Extensions::textureCompressionRGTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_RED_RGTC1_EXT,       4,  4, 1,  64, 1, false, RequireExt<&Extensions::textureCompressionRGTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RED_GREEN_RGTC2_EXT,        4,  4, 1, 128, 2, false, RequireExt<&Extensions::textureCompressionRGTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT, 4,  4, 1, 128, 2, false, RequireExt<&Extensions::textureCompressionRGTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RED_RGTC1_EXT,              4,  4, 1,  64, 1, false, RequireExt<&Extensions::textureCompressionRgtcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_RED_RGTC1_EXT,       4,  4, 1,  64, 1, false, RequireExt<&Extensions::textureCompressionRgtcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RED_GREEN_RGTC2_EXT,        4,  4, 1, 128, 2, false, RequireExt<&Extensions::textureCompressionRgtcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT, 4,  4, 1, 128, 2, false, RequireExt<&Extensions::textureCompressionRgtcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From EXT_texture_compression_bptc
     //                       | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT,   4,  4, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT,   4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT, 4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBptcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT,   4,  4, 1, 128, 4, true,  RequireExt<&Extensions::textureCompressionBptcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_EXT,   4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBptcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_EXT, 4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBptcEXT>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_IMG_texture_compression_pvrtc
     //                       | Internal format                       | W | H | D | BS |CC| SRGB | Texture supported                                 | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,      4,  4,  1,  64,  3, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,      8,  4,  1,  64,  3, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,     4,  4,  1,  64,  4, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG,     8,  4,  1,  64,  4, false, RequireExt<&Extensions::compressedTexturePVRTC>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG,      4,  4,  1,  64,  3, false, RequireExt<&Extensions::textureCompressionPvrtcIMG>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG,      8,  4,  1,  64,  3, false, RequireExt<&Extensions::textureCompressionPvrtcIMG>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG,     4,  4,  1,  64,  4, false, RequireExt<&Extensions::textureCompressionPvrtcIMG>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG,     8,  4,  1,  64,  4, false, RequireExt<&Extensions::textureCompressionPvrtcIMG>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_EXT_pvrtc_sRGB
     //                       | Internal format                             | W | H | D | BS |CC| SRGB | Texture supported                                                                               | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT,           8,  4,  1,  64,  3, true, RequireExtAndExt<&Extensions::compressedTexturePVRTC, &Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT,           4,  4,  1,  64,  3, true, RequireExtAndExt<&Extensions::compressedTexturePVRTC, &Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT,     8,  4,  1,  64,  4, true, RequireExtAndExt<&Extensions::compressedTexturePVRTC, &Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT,     4,  4,  1,  64,  4, true, RequireExtAndExt<&Extensions::compressedTexturePVRTC, &Extensions::compressedTexturePVRTCsRGB>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT,           8,  4,  1,  64,  3, true, RequireExtAndExt<&Extensions::textureCompressionPvrtcIMG, &Extensions::pvrtcSRGBEXT>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT,           4,  4,  1,  64,  3, true, RequireExtAndExt<&Extensions::textureCompressionPvrtcIMG, &Extensions::pvrtcSRGBEXT>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT,     8,  4,  1,  64,  4, true, RequireExtAndExt<&Extensions::textureCompressionPvrtcIMG, &Extensions::pvrtcSRGBEXT>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT,     4,  4,  1,  64,  4, true, RequireExtAndExt<&Extensions::textureCompressionPvrtcIMG, &Extensions::pvrtcSRGBEXT>,    AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // For STENCIL_INDEX8 we chose a normalized component type for the following reasons:
     // - Multisampled buffer are disallowed for non-normalized integer component types and we want to support it for STENCIL_INDEX8
     // - All other stencil formats (all depth-stencil) are either float or normalized
     // - It affects only validation of internalformat in RenderbufferStorageMultisample.
     //                         | Internal format  |sized|D |S |X | Format          | Type            | Component type        | Texture supported                               | Filterable    | Texture attachment                              | Renderbuffer   | Blend
-    AddDepthStencilFormat(&map, GL_STENCIL_INDEX8, true, 0, 8, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, GL_UNSIGNED_NORMALIZED, RequireESOrExt<1, 0, &Extensions::stencilIndex8>, NeverSupported, RequireESOrExt<1, 0, &Extensions::stencilIndex8>, RequireES<1, 0>, RequireES<1, 0>);
+    AddDepthStencilFormat(&map, GL_STENCIL_INDEX8, true, 0, 8, 0, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, GL_UNSIGNED_NORMALIZED, RequireESOrExt<1, 0, &Extensions::textureStencil8OES>, NeverSupported, RequireESOrExt<1, 0, &Extensions::textureStencil8OES>, RequireES<1, 0>, RequireES<1, 0>);
 
     // From GL_ANGLE_lossy_etc_decode
     //                       | Internal format                                                |W |H |D |BS |CC| SRGB | Texture supported                      | Filterable     | Texture attachment | Renderbuffer  | Blend
-    AddCompressedFormat(&map, GL_ETC1_RGB8_LOSSY_DECODE_ANGLE,                                 4, 4, 1, 64, 3, false, RequireExt<&Extensions::lossyETCDecode>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_LOSSY_DECODE_ETC2_ANGLE,                      4, 4, 1, 64, 3, false, RequireExt<&Extensions::lossyETCDecode>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_LOSSY_DECODE_ETC2_ANGLE,                     4, 4, 1, 64, 3, true,  RequireExt<&Extensions::lossyETCDecode>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE,  4, 4, 1, 64, 3, false, RequireExt<&Extensions::lossyETCDecode>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
-    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE, 4, 4, 1, 64, 3, true,  RequireExt<&Extensions::lossyETCDecode>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_ETC1_RGB8_LOSSY_DECODE_ANGLE,                                 4, 4, 1, 64, 3, false, RequireExt<&Extensions::lossyEtcDecodeANGLE>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_LOSSY_DECODE_ETC2_ANGLE,                      4, 4, 1, 64, 3, false, RequireExt<&Extensions::lossyEtcDecodeANGLE>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_LOSSY_DECODE_ETC2_ANGLE,                     4, 4, 1, 64, 3, true,  RequireExt<&Extensions::lossyEtcDecodeANGLE>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE,  4, 4, 1, 64, 3, false, RequireExt<&Extensions::lossyEtcDecodeANGLE>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    AddCompressedFormat(&map, GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_LOSSY_DECODE_ETC2_ANGLE, 4, 4, 1, 64, 3, true,  RequireExt<&Extensions::lossyEtcDecodeANGLE>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     // From GL_EXT_texture_norm16
     //                 | Internal format    |sized| R | G | B | A |S | Format | Type             | Component type        | SRGB | Texture supported                     | Filterable     | Texture attachment                    | Renderbuffer                          | Blend
-    AddRGBAFormat(&map, GL_R16_EXT,          true, 16,  0,  0,  0, 0, GL_RED,  GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, RequireExt<&Extensions::textureNorm16>, RequireExt<&Extensions::textureNorm16>, RequireExt<&Extensions::textureNorm16>);
-    AddRGBAFormat(&map, GL_R16_SNORM_EXT,    true, 16,  0,  0,  0, 0, GL_RED,  GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
-    AddRGBAFormat(&map, GL_RG16_EXT,         true, 16, 16,  0,  0, 0, GL_RG,   GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, RequireExt<&Extensions::textureNorm16>, RequireExt<&Extensions::textureNorm16>, RequireExt<&Extensions::textureNorm16>);
-    AddRGBAFormat(&map, GL_RG16_SNORM_EXT,   true, 16, 16,  0,  0, 0, GL_RG,   GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
-    AddRGBAFormat(&map, GL_RGB16_EXT,        true, 16, 16, 16,  0, 0, GL_RGB,  GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
-    AddRGBAFormat(&map, GL_RGB16_SNORM_EXT,  true, 16, 16, 16,  0, 0, GL_RGB,  GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA16_EXT,       true, 16, 16, 16, 16, 0, GL_RGBA, GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, RequireExt<&Extensions::textureNorm16>, RequireExt<&Extensions::textureNorm16>, RequireExt<&Extensions::textureNorm16>);
-    AddRGBAFormat(&map, GL_RGBA16_SNORM_EXT, true, 16, 16, 16, 16, 0, GL_RGBA, GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_R16_EXT,          true, 16,  0,  0,  0, 0, GL_RED,  GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, RequireExt<&Extensions::textureNorm16EXT>, RequireExt<&Extensions::textureNorm16EXT>, RequireExt<&Extensions::textureNorm16EXT>);
+    AddRGBAFormat(&map, GL_R16_SNORM_EXT,    true, 16,  0,  0,  0, 0, GL_RED,  GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_RG16_EXT,         true, 16, 16,  0,  0, 0, GL_RG,   GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, RequireExt<&Extensions::textureNorm16EXT>, RequireExt<&Extensions::textureNorm16EXT>, RequireExt<&Extensions::textureNorm16EXT>);
+    AddRGBAFormat(&map, GL_RG16_SNORM_EXT,   true, 16, 16,  0,  0, 0, GL_RG,   GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_RGB16_EXT,        true, 16, 16, 16,  0, 0, GL_RGB,  GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_RGB16_SNORM_EXT,  true, 16, 16, 16,  0, 0, GL_RGB,  GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA16_EXT,       true, 16, 16, 16, 16, 0, GL_RGBA, GL_UNSIGNED_SHORT, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, RequireExt<&Extensions::textureNorm16EXT>, RequireExt<&Extensions::textureNorm16EXT>, RequireExt<&Extensions::textureNorm16EXT>);
+    AddRGBAFormat(&map, GL_RGBA16_SNORM_EXT, true, 16, 16, 16, 16, 0, GL_RGBA, GL_SHORT,          GL_SIGNED_NORMALIZED,   false, RequireExt<&Extensions::textureNorm16EXT>, AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
 
     // From EXT_texture_sRGB_R8
     //                 | Internal format    |sized| R | G | B | A |S | Format | Type             | Component type        | SRGB | Texture supported                     | Filterable     | Texture attachment                    | Renderbuffer                          | Blend
-    AddRGBAFormat(&map, GL_SR8_EXT,          true,  8,  0,  0,  0, 0, GL_RED,  GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGBR8EXT>,     AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_SR8_EXT,          true,  8,  0,  0,  0, 0, GL_RED,  GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::textureSRGBR8EXT>,     AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
 
     // From EXT_texture_sRGB_RG8
     //                 | Internal format    |sized| R | G | B | A |S | Format | Type             | Component type        | SRGB | Texture supported                     | Filterable     | Texture attachment                    | Renderbuffer                          | Blend
-    AddRGBAFormat(&map, GL_SRG8_EXT,         true,  8,  8,  0,  0, 0, GL_RG,   GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGBRG8EXT>,    AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
+    AddRGBAFormat(&map, GL_SRG8_EXT,         true,  8,  8,  0,  0, 0, GL_RG,   GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::textureSRGBRG8EXT>,    AlwaysSupported, NeverSupported,                         NeverSupported,                         NeverSupported);
 
     // Unsized formats
-    //                  | Internal format  |sized |    R | G | B | A |S |X   | Format           | Type                          | Component type        | SRGB | Texture supported                               | Filterable     | Texture attachment                            | Renderbuffer  | Blend
-    AddRGBAXFormat(&map, GL_RED,            false, FB< 8,  0,  0,  0, 0, 0>(), GL_RED,            GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureRG>,               AlwaysSupported, RequireExt<&Extensions::textureRG>,             NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RED,            false, FB< 8,  0,  0,  0, 0, 0>(), GL_RED,            GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                   NeverSupported,  NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RED,            false, FB<16,  0,  0,  0, 0, 0>(), GL_RED,            GL_UNSIGNED_SHORT,              GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>,           AlwaysSupported, RequireExt<&Extensions::textureNorm16>,         NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RG,             false, FB< 8,  8,  0,  0, 0, 0>(), GL_RG,             GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureRG>,               AlwaysSupported, RequireExt<&Extensions::textureRG>,             NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RG,             false, FB< 8,  8,  0,  0, 0, 0>(), GL_RG,             GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                   NeverSupported,  NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RG,             false, FB<16, 16,  0,  0, 0, 0>(), GL_RG,             GL_UNSIGNED_SHORT,              GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>,           AlwaysSupported, RequireExt<&Extensions::textureNorm16>,         NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGB,            false, FB< 8,  8,  8,  0, 0, 0>(), GL_RGB,            GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                  AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGB,            false, FB< 5,  6,  5,  0, 0, 0>(), GL_RGB,            GL_UNSIGNED_SHORT_5_6_5,        GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                  AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGB,            false, FB< 8,  8,  8,  0, 0, 0>(), GL_RGB,            GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                   NeverSupported,  NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGB,            false, FB<10, 10, 10,  0, 0, 2>(), GL_RGB,            GL_UNSIGNED_INT_2_10_10_10_REV, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormat2101010REV>, AlwaysSupported, NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 4,  4,  4,  4, 0, 0>(), GL_RGBA,           GL_UNSIGNED_SHORT_4_4_4_4,      GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                  AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 5,  5,  5,  1, 0, 0>(), GL_RGBA,           GL_UNSIGNED_SHORT_5_5_5_1,      GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                  AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 8,  8,  8,  8, 0, 0>(), GL_RGBA,           GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                  AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGBA,           false, FB<16, 16, 16, 16, 0, 0>(), GL_RGBA,           GL_UNSIGNED_SHORT,              GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16>,           AlwaysSupported, RequireExt<&Extensions::textureNorm16>,         NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGBA,           false, FB<10, 10, 10,  2, 0, 0>(), GL_RGBA,           GL_UNSIGNED_INT_2_10_10_10_REV, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormat2101010REV>, AlwaysSupported, NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 8,  8,  8,  8, 0, 0>(), GL_RGBA,           GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                   NeverSupported,  NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_SRGB,           false, FB< 8,  8,  8,  0, 0, 0>(), GL_SRGB,           GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGB>,                    AlwaysSupported, NeverSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAXFormat(&map, GL_SRGB_ALPHA_EXT, false, FB< 8,  8,  8,  8, 0, 0>(), GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGB>,                    AlwaysSupported, RequireExt<&Extensions::sRGB>,                  NeverSupported, NeverSupported);
+    //                  | Internal format  |sized |    R | G | B | A |S |X   | Format           | Type                          | Component type        | SRGB | Texture supported                                  | Filterable     | Texture attachment                               | Renderbuffer  | Blend
+    AddRGBAXFormat(&map, GL_RED,            false, FB< 8,  0,  0,  0, 0, 0>(), GL_RED,            GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureRgEXT>,               AlwaysSupported, RequireExt<&Extensions::textureRgEXT>,             NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RED,            false, FB< 8,  0,  0,  0, 0, 0>(), GL_RED,            GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                      NeverSupported,  NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RED,            false, FB<16,  0,  0,  0, 0, 0>(), GL_RED,            GL_UNSIGNED_SHORT,              GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>,           AlwaysSupported, RequireExt<&Extensions::textureNorm16EXT>,         NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RG,             false, FB< 8,  8,  0,  0, 0, 0>(), GL_RG,             GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureRgEXT>,               AlwaysSupported, RequireExt<&Extensions::textureRgEXT>,             NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RG,             false, FB< 8,  8,  0,  0, 0, 0>(), GL_RG,             GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                      NeverSupported,  NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RG,             false, FB<16, 16,  0,  0, 0, 0>(), GL_RG,             GL_UNSIGNED_SHORT,              GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>,           AlwaysSupported, RequireExt<&Extensions::textureNorm16EXT>,         NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGB,            false, FB< 8,  8,  8,  0, 0, 0>(), GL_RGB,            GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                     AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGB,            false, FB< 5,  6,  5,  0, 0, 0>(), GL_RGB,            GL_UNSIGNED_SHORT_5_6_5,        GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                     AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGB,            false, FB< 8,  8,  8,  0, 0, 0>(), GL_RGB,            GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                      NeverSupported,  NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGB,            false, FB<10, 10, 10,  0, 0, 2>(), GL_RGB,            GL_UNSIGNED_INT_2_10_10_10_REV, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureType2101010REVEXT>, AlwaysSupported, NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 4,  4,  4,  4, 0, 0>(), GL_RGBA,           GL_UNSIGNED_SHORT_4_4_4_4,      GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                     AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 5,  5,  5,  1, 0, 0>(), GL_RGBA,           GL_UNSIGNED_SHORT_5_5_5_1,      GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                     AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 8,  8,  8,  8, 0, 0>(), GL_RGBA,           GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, AlwaysSupported,                                     AlwaysSupported, RequireESOrExt<2, 0, &Extensions::framebufferObjectOES>,                                NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGBA,           false, FB<16, 16, 16, 16, 0, 0>(), GL_RGBA,           GL_UNSIGNED_SHORT,              GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureNorm16EXT>,           AlwaysSupported, RequireExt<&Extensions::textureNorm16EXT>,         NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGBA,           false, FB<10, 10, 10,  2, 0, 0>(), GL_RGBA,           GL_UNSIGNED_INT_2_10_10_10_REV, GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureType2101010REVEXT>, AlwaysSupported, NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_RGBA,           false, FB< 8,  8,  8,  8, 0, 0>(), GL_RGBA,           GL_BYTE,                        GL_SIGNED_NORMALIZED,   false, NeverSupported,                                      NeverSupported,  NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_SRGB,           false, FB< 8,  8,  8,  0, 0, 0>(), GL_SRGB,           GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGBEXT>,                    AlwaysSupported, NeverSupported,                                    NeverSupported, NeverSupported);
+    AddRGBAXFormat(&map, GL_SRGB_ALPHA_EXT, false, FB< 8,  8,  8,  8, 0, 0>(), GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, true,  RequireExt<&Extensions::sRGBEXT>,                    AlwaysSupported, RequireExt<&Extensions::sRGBEXT>,                  NeverSupported, NeverSupported);
 #if (defined(ANGLE_PLATFORM_IOS) && !defined(ANGLE_PLATFORM_MACCATALYST)) || (defined(ANGLE_PLATFORM_MACCATALYST) && defined(ANGLE_CPU_ARM64))
     angle::SystemInfo info;
     if (angle::GetSystemInfo(&info))
@@ -1292,11 +1297,11 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
         else
         {
             // Using OpenGL.framework.
-            AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,   AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>, NeverSupported, NeverSupported);
+            AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888EXT>,   AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888EXT>, NeverSupported, NeverSupported);
         }
     }
 #else
-    AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888>,   AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888>, NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_BGRA_EXT,       false,  8,  8,  8,  8, 0, GL_BGRA_EXT,       GL_UNSIGNED_BYTE,               GL_UNSIGNED_NORMALIZED, false, RequireExt<&Extensions::textureFormatBGRA8888EXT>,   AlwaysSupported, RequireExt<&Extensions::textureFormatBGRA8888EXT>, NeverSupported, NeverSupported);
 #endif
 
     // Unsized integer formats
@@ -1333,12 +1338,12 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     AddRGBAFormat(&map, GL_RG,           false, 16, 16,  0,  0, 0, GL_RG,   GL_HALF_FLOAT,                   GL_FLOAT, false, NeverSupported,                                                             NeverSupported,                                  NeverSupported,                                  NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RGB,          false, 16, 16, 16,  0, 0, GL_RGB,  GL_HALF_FLOAT,                   GL_FLOAT, false, NeverSupported,                                                             NeverSupported,                                  NeverSupported,                                  NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RGBA,         false, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT,                   GL_FLOAT, false, NeverSupported,                                                             NeverSupported,                                  NeverSupported,                                  NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RED,          false, 16,  0,  0,  0, 0, GL_RED,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExtAndExt<&Extensions::textureHalfFloat, &Extensions::textureRG>,    RequireExt<&Extensions::textureHalfFloatLinear>, AlwaysSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RG,           false, 16, 16,  0,  0, 0, GL_RG,   GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExtAndExt<&Extensions::textureHalfFloat, &Extensions::textureRG>,    RequireExt<&Extensions::textureHalfFloatLinear>, AlwaysSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RGB,          false, 16, 16, 16,  0, 0, GL_RGB,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloat>,                                  RequireExt<&Extensions::textureHalfFloatLinear>, RequireExt<&Extensions::colorBufferHalfFloat>,   NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RGBA,         false, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloat>,                                  RequireExt<&Extensions::textureHalfFloatLinear>, RequireExt<&Extensions::colorBufferHalfFloat>,   NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RED,          false, 32,  0,  0,  0, 0, GL_RED,  GL_FLOAT,                        GL_FLOAT, false, RequireExtAndExt<&Extensions::textureFloatOES, &Extensions::textureRG>,     RequireExt<&Extensions::textureFloatLinearOES>,  AlwaysSupported,                                 NeverSupported, NeverSupported);
-    AddRGBAFormat(&map, GL_RG,           false, 32, 32,  0,  0, 0, GL_RG,   GL_FLOAT,                        GL_FLOAT, false, RequireExtAndExt<&Extensions::textureFloatOES, &Extensions::textureRG>,     RequireExt<&Extensions::textureFloatLinearOES>,  AlwaysSupported,                                 NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RED,          false, 16,  0,  0,  0, 0, GL_RED,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExtAndExt<&Extensions::textureHalfFloatOES, &Extensions::textureRgEXT>,    RequireExt<&Extensions::textureHalfFloatLinearOES>, AlwaysSupported,                                 NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RG,           false, 16, 16,  0,  0, 0, GL_RG,   GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExtAndExt<&Extensions::textureHalfFloatOES, &Extensions::textureRgEXT>,    RequireExt<&Extensions::textureHalfFloatLinearOES>, AlwaysSupported,                                 NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RGB,          false, 16, 16, 16,  0, 0, GL_RGB,  GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloatOES>,                                  RequireExt<&Extensions::textureHalfFloatLinearOES>, RequireExt<&Extensions::colorBufferHalfFloatEXT>,   NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RGBA,         false, 16, 16, 16, 16, 0, GL_RGBA, GL_HALF_FLOAT_OES,               GL_FLOAT, false, RequireExt<&Extensions::textureHalfFloatOES>,                                  RequireExt<&Extensions::textureHalfFloatLinearOES>, RequireExt<&Extensions::colorBufferHalfFloatEXT>,   NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RED,          false, 32,  0,  0,  0, 0, GL_RED,  GL_FLOAT,                        GL_FLOAT, false, RequireExtAndExt<&Extensions::textureFloatOES, &Extensions::textureRgEXT>,     RequireExt<&Extensions::textureFloatLinearOES>,  AlwaysSupported,                                 NeverSupported, NeverSupported);
+    AddRGBAFormat(&map, GL_RG,           false, 32, 32,  0,  0, 0, GL_RG,   GL_FLOAT,                        GL_FLOAT, false, RequireExtAndExt<&Extensions::textureFloatOES, &Extensions::textureRgEXT>,     RequireExt<&Extensions::textureFloatLinearOES>,  AlwaysSupported,                                 NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RGB,          false, 32, 32, 32,  0, 0, GL_RGB,  GL_FLOAT,                        GL_FLOAT, false, RequireExt<&Extensions::textureFloatOES>,                                   RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,                                  NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RGB,          false,  9,  9,  9,  0, 5, GL_RGB,  GL_UNSIGNED_INT_5_9_9_9_REV,     GL_FLOAT, false, NeverSupported,                                                             NeverSupported,                                  NeverSupported,                                  NeverSupported, NeverSupported);
     AddRGBAFormat(&map, GL_RGB,          false, 11, 11, 10,  0, 0, GL_RGB,  GL_UNSIGNED_INT_10F_11F_11F_REV, GL_FLOAT, false, NeverSupported,                                                             NeverSupported,                                  NeverSupported,                                  NeverSupported, NeverSupported);
@@ -1349,9 +1354,9 @@ static InternalFormatInfoMap BuildInternalFormatInfoMap()
     AddLUMAFormat(&map, GL_ALPHA,           false,  0,  8, GL_ALPHA,           GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, AlwaysSupported,                           AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
     AddLUMAFormat(&map, GL_LUMINANCE,       false,  8,  0, GL_LUMINANCE,       GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, AlwaysSupported,                           AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
     AddLUMAFormat(&map, GL_LUMINANCE_ALPHA, false,  8,  8, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE,  GL_UNSIGNED_NORMALIZED, AlwaysSupported,                           AlwaysSupported,                                 NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_ALPHA,           false,  0, 16, GL_ALPHA,           GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExt<&Extensions::textureHalfFloat>, RequireExt<&Extensions::textureHalfFloatLinear>, NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE,       false, 16,  0, GL_LUMINANCE,       GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExt<&Extensions::textureHalfFloat>, RequireExt<&Extensions::textureHalfFloatLinear>, NeverSupported,      NeverSupported, NeverSupported);
-    AddLUMAFormat(&map, GL_LUMINANCE_ALPHA, false, 16, 16, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExt<&Extensions::textureHalfFloat>, RequireExt<&Extensions::textureHalfFloatLinear>, NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_ALPHA,           false,  0, 16, GL_ALPHA,           GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExt<&Extensions::textureHalfFloatOES>, RequireExt<&Extensions::textureHalfFloatLinearOES>, NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE,       false, 16,  0, GL_LUMINANCE,       GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExt<&Extensions::textureHalfFloatOES>, RequireExt<&Extensions::textureHalfFloatLinearOES>, NeverSupported,      NeverSupported, NeverSupported);
+    AddLUMAFormat(&map, GL_LUMINANCE_ALPHA, false, 16, 16, GL_LUMINANCE_ALPHA, GL_HALF_FLOAT_OES, GL_FLOAT,               RequireExt<&Extensions::textureHalfFloatOES>, RequireExt<&Extensions::textureHalfFloatLinearOES>, NeverSupported,      NeverSupported, NeverSupported);
     AddLUMAFormat(&map, GL_ALPHA,           false,  0, 32, GL_ALPHA,           GL_FLOAT,          GL_FLOAT,               RequireExt<&Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
     AddLUMAFormat(&map, GL_LUMINANCE,       false, 32,  0, GL_LUMINANCE,       GL_FLOAT,          GL_FLOAT,               RequireExt<&Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
     AddLUMAFormat(&map, GL_LUMINANCE_ALPHA, false, 32, 32, GL_LUMINANCE_ALPHA, GL_FLOAT,          GL_FLOAT,               RequireExt<&Extensions::textureFloatOES>,  RequireExt<&Extensions::textureFloatLinearOES>,  NeverSupported,      NeverSupported, NeverSupported);
@@ -1407,6 +1412,64 @@ int GetAndroidHardwareBufferFormatFromChannelSizes(const egl::AttributeMap &attr
     return (glInternalFormat != 0)
                ? angle::android::GLInternalFormatToNativePixelFormat(glInternalFormat)
                : 0;
+}
+
+GLenum GetConfigColorBufferFormat(const egl::Config *config)
+{
+    GLenum componentType = GL_NONE;
+    switch (config->colorComponentType)
+    {
+        case EGL_COLOR_COMPONENT_TYPE_FIXED_EXT:
+            componentType = GL_UNSIGNED_NORMALIZED;
+            break;
+        case EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT:
+            componentType = GL_FLOAT;
+            break;
+        default:
+            UNREACHABLE();
+            return GL_NONE;
+    }
+
+    GLenum colorEncoding = GL_LINEAR;
+
+    for (GLenum sizedInternalFormat : GetAllSizedInternalFormats())
+    {
+        const gl::InternalFormat &internalFormat = GetSizedInternalFormatInfo(sizedInternalFormat);
+
+        if (internalFormat.componentType == componentType &&
+            internalFormat.colorEncoding == colorEncoding &&
+            internalFormat.isChannelSizeCompatible(config->redSize, config->greenSize,
+                                                   config->blueSize, config->alphaSize))
+        {
+            return sizedInternalFormat;
+        }
+    }
+
+    // Only expect to get here if there is no color bits in the config
+    ASSERT(config->redSize == 0 && config->greenSize == 0 && config->blueSize == 0 &&
+           config->alphaSize == 0);
+    return GL_NONE;
+}
+
+GLenum GetConfigDepthStencilBufferFormat(const egl::Config *config)
+{
+    GLenum componentType = GL_UNSIGNED_NORMALIZED;
+
+    for (GLenum sizedInternalFormat : GetAllSizedInternalFormats())
+    {
+        const gl::InternalFormat &internalFormat = GetSizedInternalFormatInfo(sizedInternalFormat);
+
+        if (internalFormat.componentType == componentType &&
+            static_cast<EGLint>(internalFormat.depthBits) == config->depthSize &&
+            static_cast<EGLint>(internalFormat.stencilBits) == config->stencilSize)
+        {
+            return sizedInternalFormat;
+        }
+    }
+
+    // Only expect to get here if there is no depth or stencil bits in the config
+    ASSERT(config->depthSize == 0 && config->stencilSize == 0);
+    return GL_NONE;
 }
 
 static FormatSet BuildAllSizedInternalFormatSet()

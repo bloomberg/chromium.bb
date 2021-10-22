@@ -283,7 +283,6 @@ static int query_formats(AVFilterContext *ctx)
 {
     Stereo3DContext *s = ctx->priv;
     const enum AVPixelFormat *pix_fmts;
-    AVFilterFormats *fmts_list;
 
     switch (s->out.format) {
     case ANAGLYPH_GM_COLOR:
@@ -306,10 +305,7 @@ static int query_formats(AVFilterContext *ctx)
         pix_fmts = other_pix_fmts;
     }
 
-    fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static inline uint8_t ana_convert(const int *coeff, const uint8_t *left, const uint8_t *right)
@@ -941,8 +937,8 @@ copy:
             ThreadData td;
 
             td.ileft = ileft; td.iright = iright; td.out = out;
-            ctx->internal->execute(ctx, filter_slice, &td, NULL,
-                                   FFMIN(s->out.height, ff_filter_get_nb_threads(ctx)));
+            ff_filter_execute(ctx, filter_slice, &td, NULL,
+                              FFMIN(s->out.height, ff_filter_get_nb_threads(ctx)));
         }
         break;
     }
@@ -1100,7 +1096,6 @@ static const AVFilterPad stereo3d_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad stereo3d_outputs[] = {
@@ -1109,7 +1104,6 @@ static const AVFilterPad stereo3d_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_stereo3d = {
@@ -1118,8 +1112,8 @@ const AVFilter ff_vf_stereo3d = {
     .priv_size     = sizeof(Stereo3DContext),
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = stereo3d_inputs,
-    .outputs       = stereo3d_outputs,
+    FILTER_INPUTS(stereo3d_inputs),
+    FILTER_OUTPUTS(stereo3d_outputs),
     .priv_class    = &stereo3d_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

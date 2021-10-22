@@ -21,6 +21,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/net_jni_headers/ProxyChangeListener_jni.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -148,6 +150,7 @@ bool GetProxyRules(const GetPropertyCallback& get_property,
 void GetLatestProxyConfigInternal(const GetPropertyCallback& get_property,
                                   ProxyConfigWithAnnotation* config) {
   ProxyConfig proxy_config;
+  proxy_config.set_from_system(true);
   if (GetProxyRules(get_property, &proxy_config.proxy_rules())) {
     *config =
         ProxyConfigWithAnnotation(proxy_config, NO_TRAFFIC_ANNOTATION_YET);
@@ -214,7 +217,7 @@ std::string ParseOverrideRules(
   for (const auto& rule : override_rules) {
     // Parse the proxy URL.
     ProxyServer proxy_server =
-        ProxyServer::FromURI(rule.proxy_url, ProxyServer::Scheme::SCHEME_HTTP);
+        ProxyUriToProxyServer(rule.proxy_url, ProxyServer::Scheme::SCHEME_HTTP);
     if (!proxy_server.is_valid()) {
       return "Invalid Proxy URL: " + rule.proxy_url;
     } else if (proxy_server.is_quic()) {
@@ -282,6 +285,9 @@ class ProxyConfigServiceAndroid::Delegate
         get_property_callback_(get_property_callback),
         exclude_pac_url_(false),
         has_proxy_override_(false) {}
+
+  Delegate(const Delegate&) = delete;
+  Delegate& operator=(const Delegate&) = delete;
 
   void SetupJNI() {
     DCHECK(InJNISequence());
@@ -486,8 +492,6 @@ class ProxyConfigServiceAndroid::Delegate
   bool exclude_pac_url_;
   // This may only be accessed or modified on the JNI thread
   bool has_proxy_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 ProxyConfigServiceAndroid::ProxyConfigServiceAndroid(

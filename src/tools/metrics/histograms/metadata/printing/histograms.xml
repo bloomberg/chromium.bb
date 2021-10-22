@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Printing.ConversionSize.Emf" units="KB"
-    expires_after="2021-09-30">
+    expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -32,7 +32,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.ConversionSize.EmfWithGdiText" units="KB"
-    expires_after="2021-09-30">
+    expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -42,7 +42,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.ConversionSize.EmfWithReducedRasterization"
-    units="KB" expires_after="2021-09-30">
+    units="KB" expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.ConversionSize.EmfWithReducedRasterizationAndGdiText"
-    units="KB" expires_after="2021-09-30">
+    units="KB" expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -63,7 +63,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.ConversionSize.PostScript2" units="KB"
-    expires_after="2021-09-30">
+    expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -73,7 +73,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.ConversionSize.PostScript3" units="KB"
-    expires_after="2021-09-30">
+    expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -93,7 +93,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.ConversionSize.Pwg" units="KB"
-    expires_after="2021-09-30">
+    expires_after="2022-09-30">
   <owner>thestig@chromium.org</owner>
   <owner>awscreen@chromium.org</owner>
   <summary>
@@ -103,7 +103,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.AddressResolutionResult" enum="BooleanSuccess"
-    expires_after="2022-01-23">
+    expires_after="2022-04-03">
   <owner>skau@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -113,7 +113,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.HighestIppVersion" enum="IppVersion"
-    expires_after="2022-02-06">
+    expires_after="2022-04-17">
   <owner>skau@chromium.org</owner>
   <owner>pawliczek@chromium.org</owner>
   <summary>
@@ -126,6 +126,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Printing.CUPS.IppAttributes" enum="IppAttribute"
     expires_after="M93">
+  <obsolete>
+    Removed 2021-09.
+  </obsolete>
   <owner>vkuzkokov@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>
@@ -136,6 +139,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Printing.CUPS.IppAttributesCount" units="count"
     expires_after="M82">
+  <obsolete>
+    Removed 2021-09.
+  </obsolete>
   <owner>vkuzkokov@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>
@@ -145,7 +151,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
-    expires_after="2022-01-30">
+    expires_after="2022-04-03">
   <owner>skau@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -159,6 +165,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Printing.CUPS.IppAttributesUsed" units="count"
     expires_after="M93">
+  <obsolete>
+    Removed 2021-09.
+  </obsolete>
   <owner>vkuzkokov@chromium.org</owner>
   <owner>skau@chromium.org</owner>
   <summary>
@@ -168,7 +177,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.IppDeviceReachable" enum="BooleanSuccess"
-    expires_after="2022-01-23">
+    expires_after="2022-04-17">
   <owner>skau@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -178,8 +187,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobCancelled" units="ms"
-    expires_after="2021-06-01">
-  <owner>skau@chromium.org</owner>
+    expires_after="2022-04-24">
+  <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
     Records the print job duration of a cancelled print job. Includes time spent
@@ -188,8 +197,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2022-02-06">
-  <owner>skau@chromium.org</owner>
+    expires_after="2022-04-17">
+  <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
     Records the print job duration of a done/completed print job. Includes time
@@ -223,7 +232,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.NearbyNetworkPrintersCount" units="printers"
-    expires_after="2021-11-21">
+    expires_after="2022-04-17">
   <owner>skau@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -234,8 +243,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrintDocumentSize" units="KB"
-    expires_after="2021-10-04">
-  <owner>skau@chromium.org</owner>
+    expires_after="2022-04-17">
+  <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
     Records the total size of the printed document (PDF) sent to CUPS. Only
@@ -244,7 +253,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterAdded" enum="PrinterProtocol"
-    expires_after="2022-02-06">
+    expires_after="2022-04-17">
   <owner>skau@chromium.org</owner>
   <owner>src/chromeos/printing/OWNERS</owner>
   <summary>
@@ -254,7 +263,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterRemoved" enum="PrinterProtocol"
-    expires_after="2022-02-06">
+    expires_after="2022-04-17">
   <owner>skau@chromium.org</owner>
   <owner>src/chromeos/printing/OWNERS</owner>
   <summary>
@@ -264,7 +273,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.PrintersDiscovered" units="printers"
-    expires_after="2022-02-13">
+    expires_after="2022-04-24">
   <owner>skau@chromium.org</owner>
   <owner>src/chromeos/printing/OWNERS</owner>
   <summary>
@@ -357,7 +366,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.ProtocolUsed" enum="PrinterProtocol"
-    expires_after="2022-01-30">
+    expires_after="2022-04-17">
   <owner>skau@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -369,7 +378,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.TotalNetworkPrintersCount" units="printers"
-    expires_after="2022-02-06">
+    expires_after="2022-04-24">
   <owner>skau@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -380,7 +389,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Printing.CUPS.UnknownPpdColorModel" enum="Boolean"
-    expires_after="2021-09-30">
+    expires_after="2022-03-31">
   <owner>dhoss@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>
@@ -445,7 +454,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Printing.PrintBackend.DriversRequiringElevatedPrivilegeEncountered"
-    enum="BooleanFound" expires_after="2021-09-30">
+    enum="BooleanFound" expires_after="2022-03-31">
   <owner>awscreen@chromium.org</owner>
   <owner>thestig@chromium.org</owner>
   <summary>

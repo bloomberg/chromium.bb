@@ -111,6 +111,9 @@ class BlockableProxyResolver : public MockProxyResolver {
 
   BlockableProxyResolver() : state_(State::NONE), condition_(&lock_) {}
 
+  BlockableProxyResolver(const BlockableProxyResolver&) = delete;
+  BlockableProxyResolver& operator=(const BlockableProxyResolver&) = delete;
+
   ~BlockableProxyResolver() override {
     base::AutoLock lock(lock_);
     EXPECT_NE(State::BLOCKED, state_);
@@ -170,8 +173,6 @@ class BlockableProxyResolver : public MockProxyResolver {
   State state_;
   base::Lock lock_;
   base::ConditionVariable condition_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlockableProxyResolver);
 };
 
 // This factory returns new instances of BlockableProxyResolver.
@@ -564,8 +565,7 @@ TEST_F(MultiThreadedProxyResolverTest, SingleThread_CancelRequestByDeleting) {
   // of the worker thread. The test will pass regardless, so this race doesn't
   // cause flakiness. However the destruction during execution is a more
   // interesting case to test.
-  factory().resolvers()[0]->SetResolveLatency(
-      base::TimeDelta::FromMilliseconds(100));
+  factory().resolvers()[0]->SetResolveLatency(base::Milliseconds(100));
 
   // Unblock the worker thread and delete the underlying
   // MultiThreadedProxyResolver immediately.

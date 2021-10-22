@@ -122,7 +122,7 @@ const char kUnreliableResultsTag[] = "UNRELIABLE_RESULTS";
 // the test launcher to people looking at the output (no output for a long
 // time is mysterious and gives no info about what is happening) 3) help
 // debugging in case the process hangs anyway.
-constexpr TimeDelta kOutputTimeout = TimeDelta::FromSeconds(15);
+constexpr TimeDelta kOutputTimeout = Seconds(15);
 
 // Limit of output snippet lines when printing to stdout.
 // Avoids flooding the logs with amount of output that gums up
@@ -198,7 +198,7 @@ void KillSpawnedTestProcesses() {
           "done.\nGiving processes a chance to terminate cleanly... ");
   fflush(stdout);
 
-  PlatformThread::Sleep(TimeDelta::FromMilliseconds(500));
+  PlatformThread::Sleep(Milliseconds(500));
 
   fprintf(stdout, "done.\n");
   fflush(stdout);
@@ -940,6 +940,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_broken_count_(0),
       retries_left_(0),
       retry_limit_(retry_limit),
+      output_bytes_limit_(kOutputSnippetBytesLimit),
       force_run_broken_tests_(false),
       watchdog_timer_(FROM_HERE,
                       kOutputTimeout,
@@ -1175,12 +1176,12 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
 
   TestResult result(original_result);
 
-  if (result.output_snippet.length() > kOutputSnippetBytesLimit) {
+  if (result.output_snippet.length() > output_bytes_limit_) {
     if (result.status == TestResult::TEST_SUCCESS)
       result.status = TestResult::TEST_EXCESSIVE_OUTPUT;
 
     result.output_snippet =
-        TruncateSnippetFocused(result.output_snippet, kOutputSnippetBytesLimit);
+        TruncateSnippetFocused(result.output_snippet, output_bytes_limit_);
   }
 
   bool print_snippet = false;
@@ -1425,6 +1426,20 @@ bool TestLauncher::Init(CommandLine* command_line) {
   force_run_broken_tests_ =
       command_line->HasSwitch(switches::kTestLauncherForceRunBrokenTests);
 
+  if (command_line->HasSwitch(switches::kTestLauncherOutputBytesLimit)) {
+    int output_bytes_limit = -1;
+    if (!StringToInt(command_line->GetSwitchValueASCII(
+                         switches::kTestLauncherOutputBytesLimit),
+                     &output_bytes_limit) ||
+        output_bytes_limit < 0) {
+      LOG(ERROR) << "Invalid value for "
+                 << switches::kTestLauncherOutputBytesLimit;
+      return false;
+    }
+
+    output_bytes_limit_ = output_bytes_limit;
+  }
+
   fprintf(stdout, "Using %zu parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
@@ -1469,7 +1484,7 @@ bool TestLauncher::Init(CommandLine* command_line) {
     }
   }
 
-  skip_diabled_tests_ =
+  skip_disabled_tests_ =
       !command_line->HasSwitch(kGTestRunDisabledTestsFlag) &&
       !command_line->HasSwitch(kIsolatedScriptRunDisabledTestsFlag);
 
@@ -1708,7 +1723,7 @@ bool TestLauncher::ProcessAndValidateTests() {
       pre_tests.erase(test_sequence.back().GetDisabledStrippedName());
     }
     // Skip disabled tests unless explicitly requested.
-    if (!test_info.disabled() || !skip_diabled_tests_)
+    if (!test_info.disabled() || !skip_disabled_tests_)
       tests_to_run.insert(tests_to_run.end(), test_sequence.rbegin(),
                           test_sequence.rend());
   }

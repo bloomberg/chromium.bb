@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -73,12 +73,17 @@ bool IsDisabledByPolicy(const Profile* profile) {
 //------------------
 
 void LogStatus(ItemSuggestCache::Status status) {
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.ItemSuggestCache.Status", status);
+  base::UmaHistogramEnumeration("Apps.AppList.ItemSuggestCache.Status", status);
 }
 
 void LogResponseSize(const int size) {
-  UMA_HISTOGRAM_COUNTS_100000("Apps.AppList.ItemSuggestCache.ResponseSize",
-                              size);
+  base::UmaHistogramCounts100000("Apps.AppList.ItemSuggestCache.ResponseSize",
+                                 size);
+}
+
+void LogLatency(base::TimeDelta latency) {
+  base::UmaHistogramTimes("Apps.AppList.ItemSuggestCache.UpdateCacheLatency",
+                          latency);
 }
 
 //---------------
@@ -179,8 +184,7 @@ ItemSuggestCache::ItemSuggestCache(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : enabled_(kEnabled.Get()),
       server_url_(kServerUrl.Get()),
-      min_time_between_updates_(
-          base::TimeDelta::FromMinutes(kMinMinutesBetweenUpdates.Get())),
+      min_time_between_updates_(base::Minutes(kMinMinutesBetweenUpdates.Get())),
       profile_(profile),
       url_loader_factory_(std::move(url_loader_factory)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -197,8 +201,9 @@ absl::optional<ItemSuggestCache::Results> ItemSuggestCache::GetResults() {
 std::string ItemSuggestCache::GetRequestBody() {
   // We request that ItemSuggest serve our request via particular model by
   // specifying the model name in client_tags. This is a non-standard part of
-  // the API, implemented so we can experiment with model backends. The valid
-  // values for the tag are DCHECKed below.
+  // the API, implemented so we can experiment with model backends. The
+  // client_tags can be set via Finch based on what is expected by the
+  // ItemSuggest backend, and unexpected tags will be assigned a default model.
   static constexpr char kRequestBody[] = R"({
         'client_info': {
           'platform_type': 'CHROME_OS',
@@ -213,12 +218,12 @@ std::string ItemSuggestCache::GetRequestBody() {
       })";
 
   const std::string& model = kModelName.Get();
-  DCHECK(model == "quick_access" || model == "future_access");
   return base::ReplaceStringPlaceholders(kRequestBody, {model}, nullptr);
 }
 
 void ItemSuggestCache::UpdateCache() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  update_start_time_ = base::TimeTicks::Now();
 
   const auto& now = base::Time::Now();
   if (now - time_of_last_update_ < min_time_between_updates_)
@@ -340,6 +345,7 @@ void ItemSuggestCache::OnJsonParsed(
     LogStatus(Status::kNoResultsInResponse);
   } else {
     LogStatus(Status::kOk);
+    LogLatency(base::TimeTicks::Now() - update_start_time_);
     results_ = std::move(results.value());
   }
 }

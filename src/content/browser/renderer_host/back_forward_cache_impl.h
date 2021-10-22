@@ -54,18 +54,12 @@ constexpr base::Feature kBackForwardCacheNoTimeEviction{
     "BackForwardCacheNoTimeEviction", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows pages with cache-control:no-store to enter the back/forward cache.
+// Feature params can specify whether pages with cache-control:no-store can be
+// restored if cookies change / if HTTPOnly cookies change.
 // TODO(crbug.com/1228611): Enable this feature.
 const base::Feature kCacheControlNoStoreEnterBackForwardCache{
     "CacheControlNoStoreEnterBackForwardCache",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Restore pages with cache-control:no-store from back/forward cache if there is
-// no cookie change while the page is in cache.
-// TODO(crbug.com/1228611): Enable this feature.
-const base::Feature
-    kCacheControlNoStoreRestoreFromBackForwardCacheUnlessCookieChange{
-        "CacheControlNoStoreRestoreFromBackForwardCache",
-        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows pages with MediaSession's playback state change to stay eligible for
 // the back/forward cache.
@@ -77,6 +71,10 @@ const base::Feature kBackForwardCacheMediaSessionPlaybackStateChange{
 // back/forward cache.
 const base::Feature kBackForwardCacheMediaSessionService{
     "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allows pages with a media play to stay eligible the back/forward cache.
+constexpr base::Feature kBackForwardCacheMediaPlay{
+    "BackForwardCacheMediaPlay", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // BackForwardCache:
 //
@@ -177,6 +175,9 @@ class CONTENT_EXPORT BackForwardCacheImpl
 
   // Returns whether MediaSession's service is allowed for the BackForwardCache.
   static bool IsMediaSessionServiceAllowed();
+
+  // Returns whether a media play is allowed for the BackForwardCache.
+  static bool IsMediaPlayAllowed();
 
   // Returns whether a RenderFrameHost can be stored into the BackForwardCache
   // right now. Depends on the |render_frame_host| and its children's state.
@@ -357,10 +358,6 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // Returns true if the flag is on for pages with cache-control:no-store to
   // get restored from back/forward cache unless cookies change.
   static bool AllowStoringPagesWithCacheControlNoStore();
-
-  // Returns true if the flag is on for pages with cache-control:no-store to
-  // temporarily enter back/forward cache.
-  static bool AllowRestoringPagesWithCacheControlNoStore();
 
   // Contains the set of stored Entries.
   // Invariant:

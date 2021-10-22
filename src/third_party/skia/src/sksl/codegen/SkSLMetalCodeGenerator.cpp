@@ -110,7 +110,7 @@ void MetalCodeGenerator::writeStructDefinition(const StructDefinition& s) {
     const Type& type = s.type();
     this->writeLine("struct " + type.name() + " {");
     fIndentation++;
-    this->writeFields(type.fields(), type.fOffset);
+    this->writeFields(type.fields(), type.fLine);
     fIndentation--;
     this->writeLine("};");
 }
@@ -123,9 +123,6 @@ void MetalCodeGenerator::writeExpression(const Expression& expr, Precedence pare
     switch (expr.kind()) {
         case Expression::Kind::kBinary:
             this->writeBinaryExpression(expr.as<BinaryExpression>(), parentPrecedence);
-            break;
-        case Expression::Kind::kBoolLiteral:
-            this->writeBoolLiteral(expr.as<BoolLiteral>());
             break;
         case Expression::Kind::kConstructorArray:
         case Expression::Kind::kConstructorStruct:
@@ -149,14 +146,11 @@ void MetalCodeGenerator::writeExpression(const Expression& expr, Precedence pare
         case Expression::Kind::kConstructorCompoundCast:
             this->writeCastConstructor(expr.asAnyConstructor(), "(", ")", parentPrecedence);
             break;
-        case Expression::Kind::kIntLiteral:
-            this->writeIntLiteral(expr.as<IntLiteral>());
-            break;
         case Expression::Kind::kFieldAccess:
             this->writeFieldAccess(expr.as<FieldAccess>());
             break;
-        case Expression::Kind::kFloatLiteral:
-            this->writeFloatLiteral(expr.as<FloatLiteral>());
+        case Expression::Kind::kLiteral:
+            this->writeLiteral(expr.as<Literal>());
             break;
         case Expression::Kind::kFunctionCall:
             this->writeFunctionCall(expr.as<FunctionCall>());
@@ -470,12 +464,11 @@ String MetalCodeGenerator::getInversePolyfill(const ExpressionArray& arguments) 
 void MetalCodeGenerator::writeMatrixCompMult() {
     static constexpr char kMatrixCompMult[] = R"(
 template <int C, int R>
-matrix<float, C, R> matrixCompMult(matrix<float, C, R> a, matrix<float, C, R> b) {
-    matrix<float, C, R> result;
+matrix<float, C, R> matrixCompMult(matrix<float, C, R> a, const matrix<float, C, R> b) {
     for (int c = 0; c < C; ++c) {
-        result[c] = a[c] * b[c];
+        a[c] *= b[c];
     }
-    return result;
+    return a;
 }
 )";
 
@@ -954,13 +947,14 @@ void MetalCodeGenerator::assembleMatrixFromExpressions(const AnyConstructor& cto
     int argPosition = 0;
     auto args = ctor.argumentSpan();
 
+    static constexpr char kSwizzle[] = "xyzw";
     const char* separator = "";
-    for (int r = 0; r < rows; ++r) {
+    for (int c = 0; c < columns; ++c) {
         fExtraFunctions.printf("%s%s%d(", separator, matrixType.c_str(), rows);
         separator = "), ";
 
         const char* columnSeparator = "";
-        for (int c = 0; c < columns; ++c) {
+        for (int r = 0; r < rows;) {
             fExtraFunctions.writeText(columnSeparator);
             columnSeparator = ", ";
 
@@ -969,16 +963,26 @@ void MetalCodeGenerator::assembleMatrixFromExpressions(const AnyConstructor& cto
                 switch (argType.typeKind()) {
                     case Type::TypeKind::kScalar: {
                         fExtraFunctions.printf("x%zu", argIndex);
+                        ++r;
+                        ++argPosition;
                         break;
                     }
                     case Type::TypeKind::kVector: {
-                        fExtraFunctions.printf("x%zu[%d]", argIndex, argPosition);
+                        fExtraFunctions.printf("x%zu.", argIndex);
+                        do {
+                            fExtraFunctions.write8(kSwizzle[argPosition]);
+                            ++r;
+                            ++argPosition;
+                        } while (r < rows && argPosition < argType.columns());
                         break;
                     }
                     case Type::TypeKind::kMatrix: {
-                        fExtraFunctions.printf("x%zu[%d][%d]", argIndex,
-                                               argPosition / argType.rows(),
-                                               argPosition % argType.rows());
+                        fExtraFunctions.printf("x%zu[%d].", argIndex, argPosition / argType.rows());
+                        do {
+                            fExtraFunctions.write8(kSwizzle[argPosition]);
+                            ++r;
+                            ++argPosition;
+                        } while (r < rows && (argPosition % argType.rows()) != 0);
                         break;
                     }
                     default: {
@@ -988,7 +992,6 @@ void MetalCodeGenerator::assembleMatrixFromExpressions(const AnyConstructor& cto
                     }
                 }
 
-                ++argPosition;
                 if (argPosition >= argType.columns() * argType.rows()) {
                     ++argIndex;
                     argPosition = 0;
@@ -1128,7 +1131,7 @@ void MetalCodeGenerator::writeConstructorCompound(const ConstructorCompound& c,
     } else if (c.type().isMatrix()) {
         this->writeConstructorCompoundMatrix(c, parentPrecedence);
     } else {
-        fContext.fErrors->error(c.fOffset, "unsupported compound constructor");
+        fContext.fErrors->error(c.fLine, "unsupported compound constructor");
     }
 }
 
@@ -1673,23 +1676,24 @@ void MetalCodeGenerator::writePostfixExpression(const PostfixExpression& p,
     }
 }
 
-void MetalCodeGenerator::writeBoolLiteral(const BoolLiteral& b) {
-    this->write(b.value() ? "true" : "false");
-}
-
-void MetalCodeGenerator::writeIntLiteral(const IntLiteral& i) {
-    const Type& type = i.type();
-    if (type == *fContext.fTypes.fUInt) {
-        this->write(to_string(i.value() & 0xffffffff) + "u");
-    } else if (type == *fContext.fTypes.fUShort) {
-        this->write(to_string(i.value() & 0xffff) + "u");
-    } else {
-        this->write(to_string(i.value()));
+void MetalCodeGenerator::writeLiteral(const Literal& l) {
+    const Type& type = l.type();
+    if (type.isFloat()) {
+        this->write(to_string(l.floatValue()));
+        return;
     }
-}
-
-void MetalCodeGenerator::writeFloatLiteral(const FloatLiteral& f) {
-    this->write(to_string(f.value()));
+    if (type.isInteger()) {
+        if (type == *fContext.fTypes.fUInt) {
+            this->write(to_string(l.intValue() & 0xffffffff) + "u");
+        } else if (type == *fContext.fTypes.fUShort) {
+            this->write(to_string(l.intValue() & 0xffff) + "u");
+        } else {
+            this->write(to_string(l.intValue()));
+        }
+        return;
+    }
+    SkASSERT(type.isBoolean());
+    this->write(l.boolValue() ? "true" : "false");
 }
 
 void MetalCodeGenerator::writeSetting(const Setting& s) {
@@ -1794,13 +1798,13 @@ bool MetalCodeGenerator::writeFunctionDeclaration(const FunctionDeclaration& f) 
                 const VarDeclaration& var = decls.declaration()->as<VarDeclaration>();
                 if (var.var().type().typeKind() == Type::TypeKind::kSampler) {
                     if (var.var().modifiers().fLayout.fBinding < 0) {
-                        fContext.fErrors->error(decls.fOffset,
+                        fContext.fErrors->error(decls.fLine,
                                                 "Metal samplers must have 'layout(binding=...)'");
                         return false;
                     }
                     if (var.var().type().dimensions() != SpvDim2D) {
                         // Not yet implemented--Skia currently only uses 2D textures.
-                        fContext.fErrors->error(decls.fOffset, "Unsupported texture dimensions");
+                        fContext.fErrors->error(decls.fLine, "Unsupported texture dimensions");
                         return false;
                     }
                     this->write(", texture2d<float> ");
@@ -1956,7 +1960,7 @@ void MetalCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
         structType = &structType->componentType();
     }
     fIndentation++;
-    this->writeFields(structType->fields(), structType->fOffset, &intf);
+    this->writeFields(structType->fields(), structType->fLine, &intf);
     if (fProgram.fInputs.fUseFlipRTUniform) {
         this->writeLine("float2 " SKSL_RTFLIP_NAME ";");
     }
@@ -1978,7 +1982,7 @@ void MetalCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
     this->writeLine(";");
 }
 
-void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int parentOffset,
+void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int parentLine,
                                      const InterfaceBlock* parentIntf) {
     MemoryLayout memoryLayout(MemoryLayout::kMetal_Standard);
     int currentOffset = 0;
@@ -1986,13 +1990,13 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int
         int fieldOffset = field.fModifiers.fLayout.fOffset;
         const Type* fieldType = field.fType;
         if (!MemoryLayout::LayoutIsSupported(*fieldType)) {
-            fContext.fErrors->error(parentOffset, "type '" + fieldType->name() +
-                                                  "' is not permitted here");
+            fContext.fErrors->error(parentLine, "type '" + fieldType->name() +
+                                                "' is not permitted here");
             return;
         }
         if (fieldOffset != -1) {
             if (currentOffset > fieldOffset) {
-                fContext.fErrors->error(parentOffset,
+                fContext.fErrors->error(parentLine,
                         "offset of field '" + field.fName + "' must be at least " +
                         to_string((int) currentOffset));
                 return;
@@ -2006,7 +2010,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int
             }
             int alignment = memoryLayout.alignment(*fieldType);
             if (fieldOffset % alignment) {
-                fContext.fErrors->error(parentOffset,
+                fContext.fErrors->error(parentLine,
                         "offset of field '" + field.fName + "' must be a multiple of " +
                         to_string((int) alignment));
                 return;
@@ -2014,7 +2018,7 @@ void MetalCodeGenerator::writeFields(const std::vector<Type::Field>& fields, int
         }
         size_t fieldSize = memoryLayout.size(*fieldType);
         if (fieldSize > static_cast<size_t>(std::numeric_limits<int>::max() - currentOffset)) {
-            fContext.fErrors->error(parentOffset, "field offset overflow");
+            fContext.fErrors->error(parentLine, "field offset overflow");
             return;
         }
         currentOffset += fieldSize;
@@ -2209,7 +2213,7 @@ void MetalCodeGenerator::writeReturnStatement(const ReturnStatement& r) {
                 this->writeExpression(*r.expression(), Precedence::kTopLevel);
                 this->writeLine(";");
             } else {
-                fContext.fErrors->error(r.fOffset,
+                fContext.fErrors->error(r.fLine,
                         "Metal does not support returning '" +
                         r.expression()->type().description() + "' from main()");
             }
@@ -2245,7 +2249,7 @@ void MetalCodeGenerator::writeUniformStruct() {
                     this->write("struct Uniforms {\n");
                     fUniformBuffer = uniformSet;
                 } else if (uniformSet != fUniformBuffer) {
-                    fContext.fErrors->error(decls.fOffset,
+                    fContext.fErrors->error(decls.fLine,
                             "Metal backend requires all uniforms to have the same "
                             "'layout(set=...)'");
                 }
@@ -2310,7 +2314,7 @@ void MetalCodeGenerator::writeOutputStruct() {
 
                 int location = var.modifiers().fLayout.fLocation;
                 if (location < 0) {
-                    fContext.fErrors->error(var.fOffset,
+                    fContext.fErrors->error(var.fLine,
                             "Metal out variables must have 'layout(location=...)'");
                 } else if (fProgram.fConfig->fKind == ProgramKind::kVertex) {
                     this->write(" [[user(locn" + to_string(location) + ")]]");

@@ -4,29 +4,126 @@
 
 import {OncMojo} from 'chrome://resources/cr_components/chromeos/network/onc_mojo.m.js';
 
-import {Component, ComponentRepairStatus, ComponentType, Network, QrCode, RmadErrorCode, RmaState, StateResult} from './shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationStatus, Component, ComponentRepairStatus, ComponentType, Network, QrCode, RmadErrorCode, RmaState, StateResult} from './shimless_rma_types.js';
 
 /** @type {!Array<!StateResult>} */
 export const fakeStates = [
-  {state: RmaState.kWelcomeScreen, error: RmadErrorCode.kOk},
-  {state: RmaState.kConfigureNetwork, error: RmadErrorCode.kOk},
-  {state: RmaState.kUpdateOs, error: RmadErrorCode.kOk},
-  {state: RmaState.kSelectComponents, error: RmadErrorCode.kOk},
-  {state: RmaState.kChooseDestination, error: RmadErrorCode.kOk},
-  {state: RmaState.kChooseWriteProtectDisableMethod, error: RmadErrorCode.kOk},
-  {state: RmaState.kEnterRSUWPDisableCode, error: RmadErrorCode.kOk},
-  {state: RmaState.kWaitForManualWPDisable, error: RmadErrorCode.kOk},
-  {state: RmaState.kWPDisableComplete, error: RmadErrorCode.kOk},
-  {state: RmaState.kChooseFirmwareReimageMethod, error: RmadErrorCode.kOk},
+  {
+    state: RmaState.kWelcomeScreen,
+    canCancel: true,
+    canGoBack: false,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kConfigureNetwork,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kUpdateOs,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kSelectComponents,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kChooseDestination,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kChooseWriteProtectDisableMethod,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kEnterRSUWPDisableCode,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kVerifyRsu,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kWaitForManualWPDisable,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kWPDisableComplete,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kChooseFirmwareReimageMethod,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
   // TODO(gavindodd): RmaState.kRestock
-  {state: RmaState.kUpdateDeviceInformation, error: RmadErrorCode.kOk},
-  {state: RmaState.kRestock, error: RmadErrorCode.kOk},
-  {state: RmaState.kCheckCalibration, error: RmadErrorCode.kOk},
-  // TODO(gavindodd): RmaState.kSetupCalibration
-  // TODO(gavindodd): RmaState.kRunCalibration
-  {state: RmaState.kProvisionDevice, error: RmadErrorCode.kOk},
+  {
+    state: RmaState.kUpdateDeviceInformation,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kRestock,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kCheckCalibration,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kSetupCalibration,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kRunCalibration,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kProvisionDevice,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
   // TODO(gavindodd): RmaState.kWaitForManualWPEnable
-  {state: RmaState.kRepairComplete, error: RmadErrorCode.kOk},
+  {
+    state: RmaState.kFinalize,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
+  {
+    state: RmaState.kRepairComplete,
+    canCancel: true,
+    canGoBack: true,
+    error: RmadErrorCode.kOk
+  },
 ];
 
 /** @type {!Array<string>} */
@@ -35,6 +132,10 @@ export const fakeChromeVersion = [
   '92.0.999.0',
   '95.0.4444.123',
 ];
+
+/** @type {string} */
+export const fakeRsuChallengeCode =
+    'HRBXHV84NSTHT25WJECYQKB8SARWFTMSWNGFT2FVEEPX69VE99USV3QFBEANDVXGQVL93QK2M6P3DNV4';
 
 /** @type {!QrCode} */
 export const fakeRsuChallengeQrCode = {
@@ -56,6 +157,35 @@ export const fakeComponentsForRepairStateTest = [
   {component: ComponentType.kCamera, state: ComponentRepairStatus.kOriginal},
   {component: ComponentType.kBattery, state: ComponentRepairStatus.kMissing},
   {component: ComponentType.kTouchpad, state: ComponentRepairStatus.kReplaced},
+];
+
+/** @type {!Array<!CalibrationComponentStatus>} */
+export const fakeCalibrationComponents = [
+  {
+    component: ComponentType.kCamera,
+    status: CalibrationStatus.kCalibrationWaiting,
+    progress: 0.0
+  },
+  {
+    component: ComponentType.kBattery,
+    status: CalibrationStatus.kCalibrationComplete,
+    progress: 1.0
+  },
+  {
+    component: ComponentType.kBaseAccelerometer,
+    status: CalibrationStatus.kCalibrationInProgress,
+    progress: 1.0
+  },
+  {
+    component: ComponentType.kLidAccelerometer,
+    status: CalibrationStatus.kCalibrationFailed,
+    progress: 1.0
+  },
+  {
+    component: ComponentType.kTouchpad,
+    status: CalibrationStatus.kCalibrationSkip,
+    progress: 0.0
+  },
 ];
 
 /** @type {!Array<!Network>} */

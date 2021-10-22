@@ -8,7 +8,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as ConsoleComponents from './components/components.js';
 
 import type {LevelsMask} from './ConsoleFilter.js';
 import {ConsoleFilter, FilterType} from './ConsoleFilter.js';
@@ -51,7 +50,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/console/ConsoleSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-export class ConsoleSidebar extends UI.Widget.VBox {
+export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin<EventTypes, typeof UI.Widget.VBox>(UI.Widget.VBox) {
   private readonly tree: UI.TreeOutline.TreeOutlineInShadow;
   private selectedTreeElement: UI.TreeOutline.TreeElement|null;
   private readonly treeElements: FilterTreeElement[];
@@ -63,8 +62,6 @@ export class ConsoleSidebar extends UI.Widget.VBox {
     this.tree = new UI.TreeOutline.TreeOutlineInShadow();
     this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
 
-    const deprecationWarning = new ConsoleComponents.SidebarDeprecation.SidebarDeprecation();
-    this.contentElement.appendChild(deprecationWarning);
     this.contentElement.appendChild(this.tree.element);
     this.selectedTreeElement = null;
     this.treeElements = [];
@@ -131,8 +128,8 @@ export class ConsoleSidebar extends UI.Widget.VBox {
     return true;
   }
 
-  private selectionChanged(event: Common.EventTarget.EventTargetEvent): void {
-    this.selectedTreeElement = (event.data as UI.TreeOutline.TreeElement);
+  private selectionChanged(event: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>): void {
+    this.selectedTreeElement = event.data;
     this.dispatchEventToListeners(Events.FilterSelected);
   }
 
@@ -145,6 +142,10 @@ export class ConsoleSidebar extends UI.Widget.VBox {
 export const enum Events {
   FilterSelected = 'FilterSelected',
 }
+
+export type EventTypes = {
+  [Events.FilterSelected]: void,
+};
 
 class ConsoleSidebarTreeElement extends UI.TreeOutline.TreeElement {
   protected filterInternal: ConsoleFilter;

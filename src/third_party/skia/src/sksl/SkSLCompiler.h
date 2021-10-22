@@ -11,7 +11,6 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
-#include "src/sksl/SkSLASTFile.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLInliner.h"
@@ -47,7 +46,6 @@ namespace dsl {
 class ExternalFunction;
 class FunctionDeclaration;
 class IRGenerator;
-class IRIntrinsicMap;
 class ProgramUsage;
 
 struct LoadedModule {
@@ -234,22 +232,10 @@ private:
     /** Optimize the module. */
     bool optimize(LoadedModule& module);
 
-    /** Eliminates unused functions from a Program, according to the stats in ProgramUsage. */
-    bool removeDeadFunctions(Program& program, ProgramUsage* usage);
-
-    /** Eliminates unreferenced variables from a Program, according to the stats in ProgramUsage. */
-    bool removeDeadGlobalVariables(Program& program, ProgramUsage* usage);
-    bool removeDeadLocalVariables(Program& program, ProgramUsage* usage);
-
-    /** Eliminates unreachable statements from a Program. */
-    void removeUnreachableCode(Program& program, ProgramUsage* usage);
-
     /** Flattens out function calls when it is safe to do so. */
     bool runInliner(const std::vector<std::unique_ptr<ProgramElement>>& elements,
                     std::shared_ptr<SymbolTable> symbols,
                     ProgramUsage* usage);
-
-    Position position(int offset);
 
     CompilerErrorReporter fErrorReporter;
     std::shared_ptr<Context> fContext;
@@ -267,6 +253,7 @@ private:
     // holds ModifiersPools belonging to the core includes for lifetime purposes
     ModifiersPool fCoreModifiers;
 
+    Mangler fMangler;
     Inliner fInliner;
     std::unique_ptr<IRGenerator> fIRGenerator;
 
@@ -278,8 +265,8 @@ private:
     friend class AutoSource;
     friend class ::SkSLCompileBench;
     friend class DSLParser;
+    friend class ThreadContext;
     friend class dsl::DSLCore;
-    friend class dsl::DSLWriter;
 };
 
 }  // namespace SkSL

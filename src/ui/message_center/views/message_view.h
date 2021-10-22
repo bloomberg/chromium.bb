@@ -78,6 +78,10 @@ class MESSAGE_CENTER_EXPORT MessageView
   };
 
   explicit MessageView(const Notification& notification);
+
+  MessageView(const MessageView&) = delete;
+  MessageView& operator=(const MessageView&) = delete;
+
   ~MessageView() override;
 
   // Updates this view with an additional grouped notification. If the view
@@ -85,6 +89,13 @@ class MESSAGE_CENTER_EXPORT MessageView
   // the grouped notification state.
   virtual void AddGroupNotification(const Notification& notification,
                                     bool newest_first) {}
+
+  // Populates this view with a list of grouped notifications, this is intended
+  // to be used for initializing of grouped notifications so it does not
+  // explicitly update the size of the view unlike `AddGroupNotification`.
+  virtual void PopulateGroupNotifications(
+      const std::vector<const Notification*>& notifications) {}
+
   virtual void RemoveGroupNotification(const std::string& notification_id) {}
 
   // Updates this view with the new data contained in the notification.
@@ -170,6 +181,8 @@ class MESSAGE_CENTER_EXPORT MessageView
   std::string notification_id() const { return notification_id_; }
   NotifierId notifier_id() const { return notifier_id_; }
 
+  bool is_active() const { return is_active_; }
+
  protected:
   class HighlightPathGenerator : public views::HighlightPathGenerator {
    public:
@@ -253,8 +266,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   // shape of the notification.
   int top_radius_ = 0;
   int bottom_radius_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
 
 }  // namespace message_center

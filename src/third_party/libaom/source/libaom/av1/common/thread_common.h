@@ -150,6 +150,8 @@ void av1_free_cdef_sync(AV1CdefSync *cdef_sync);
 
 // Deallocate loopfilter synchronization related mutex and data.
 void av1_loop_filter_dealloc(AV1LfSync *lf_sync);
+void av1_loop_filter_alloc(AV1LfSync *lf_sync, AV1_COMMON *cm, int rows,
+                           int width, int num_workers);
 
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                               struct macroblockd *xd, int plane_start,
@@ -164,6 +166,9 @@ void av1_loop_restoration_filter_frame_mt(YV12_BUFFER_CONFIG *frame,
                                           int num_workers, AV1LrSync *lr_sync,
                                           void *lr_ctxt);
 void av1_loop_restoration_dealloc(AV1LrSync *lr_sync, int num_workers);
+void av1_loop_restoration_alloc(AV1LrSync *lr_sync, AV1_COMMON *cm,
+                                int num_workers, int num_rows_lr,
+                                int num_planes, int width);
 #endif
 
 #ifdef __cplusplus

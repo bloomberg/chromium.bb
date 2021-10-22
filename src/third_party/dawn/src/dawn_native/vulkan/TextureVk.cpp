@@ -51,8 +51,9 @@ namespace dawn_native { namespace vulkan {
 
                 case wgpu::TextureViewDimension::e1D:
                 case wgpu::TextureViewDimension::Undefined:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         // Computes which vulkan access type could be required for the given Dawn usage.
@@ -72,9 +73,6 @@ namespace dawn_native { namespace vulkan {
             }
             if (usage & wgpu::TextureUsage::StorageBinding) {
                 flags |= VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-            }
-            if (usage & kReadOnlyStorageTexture) {
-                flags |= VK_ACCESS_SHADER_READ_BIT;
             }
             if (usage & wgpu::TextureUsage::RenderAttachment) {
                 if (format.HasDepthOrStencil()) {
@@ -119,7 +117,7 @@ namespace dawn_native { namespace vulkan {
             if (usage & (wgpu::TextureUsage::CopySrc | wgpu::TextureUsage::CopyDst)) {
                 flags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
-            if (usage & (wgpu::TextureUsage::TextureBinding | kReadOnlyStorageTexture)) {
+            if (usage & wgpu::TextureUsage::TextureBinding) {
                 // TODO(crbug.com/dawn/851): Only transition to the usage we care about to avoid
                 // introducing FS -> VS dependencies that would prevent parallelization on tiler
                 // GPUs
@@ -417,10 +415,14 @@ namespace dawn_native { namespace vulkan {
                 return VK_FORMAT_ASTC_12x12_SRGB_BLOCK;
 
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
+            // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:570): implement depth16unorm
+            case wgpu::TextureFormat::Depth16Unorm:
             case wgpu::TextureFormat::Undefined:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     // Converts the Dawn usage flags to Vulkan usage flags. Also needs the format to choose
@@ -437,7 +439,7 @@ namespace dawn_native { namespace vulkan {
         if (usage & wgpu::TextureUsage::TextureBinding) {
             flags |= VK_IMAGE_USAGE_SAMPLED_BIT;
         }
-        if (usage & (wgpu::TextureUsage::StorageBinding | kReadOnlyStorageTexture)) {
+        if (usage & wgpu::TextureUsage::StorageBinding) {
             flags |= VK_IMAGE_USAGE_STORAGE_BIT;
         }
         if (usage & wgpu::TextureUsage::RenderAttachment) {
@@ -462,7 +464,7 @@ namespace dawn_native { namespace vulkan {
         if (!wgpu::HasZeroOrOneBits(usage)) {
             // Sampled | ReadOnlyStorage is the only possible multi-bit usage, if more appear  we
             // might need additional special-casing.
-            ASSERT(usage == (wgpu::TextureUsage::TextureBinding | kReadOnlyStorageTexture));
+            ASSERT(usage == wgpu::TextureUsage::TextureBinding);
             return VK_IMAGE_LAYOUT_GENERAL;
         }
 
@@ -495,7 +497,6 @@ namespace dawn_native { namespace vulkan {
                 // and store operations on storage images can only be done on the images in
                 // VK_IMAGE_LAYOUT_GENERAL layout.
             case wgpu::TextureUsage::StorageBinding:
-            case kReadOnlyStorageTexture:
                 return VK_IMAGE_LAYOUT_GENERAL;
 
             case wgpu::TextureUsage::RenderAttachment:
@@ -509,8 +510,9 @@ namespace dawn_native { namespace vulkan {
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
             case wgpu::TextureUsage::None:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     VkSampleCountFlagBits VulkanSampleCount(uint32_t sampleCount) {
@@ -519,9 +521,8 @@ namespace dawn_native { namespace vulkan {
                 return VK_SAMPLE_COUNT_1_BIT;
             case 4:
                 return VK_SAMPLE_COUNT_4_BIT;
-            default:
-                UNREACHABLE();
         }
+        UNREACHABLE();
     }
 
     MaybeError ValidateVulkanImageCanBeWrapped(const DeviceBase*,
@@ -854,8 +855,9 @@ namespace dawn_native { namespace vulkan {
                 return VulkanAspectMask(Aspect::Stencil);
             case wgpu::TextureAspect::Plane0Only:
             case wgpu::TextureAspect::Plane1Only:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     void Texture::TweakTransitionForExternalUsage(CommandRecordingContext* recordingContext,

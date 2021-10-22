@@ -185,6 +185,7 @@ class CORE_EXPORT NGPhysicalFragment
            layout_object_->IsRubyBase();
   }
 
+  bool IsSvg() const { return layout_object_->IsSVG(); }
   bool IsSvgText() const { return layout_object_->IsNGSVGText(); }
 
   bool IsTableNGPart() const { return is_table_ng_part_; }
@@ -236,6 +237,12 @@ class CORE_EXPORT NGPhysicalFragment
   // |LayoutObject| after this fragment was placed. See comments in
   // |LayoutNGBlockFlow::UpdateBlockLayout()| and crbug.com/788590
   bool IsPlacedByLayoutNG() const;
+
+  // Returns true if we have a descendant within this formatting context, which
+  // is potentially above our block-start edge.
+  bool MayHaveDescendantAboveBlockStart() const {
+    return may_have_descendant_above_block_start_;
+  }
 
   // The accessors in this class shouldn't be used by layout code directly,
   // instead should be accessed by the NGFragmentBase classes. These accessors

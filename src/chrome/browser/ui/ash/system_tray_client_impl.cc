@@ -9,8 +9,10 @@
 #include "ash/public/cpp/update_types.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -20,14 +22,15 @@
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/set_time_dialog.h"
 #include "chrome/browser/ash/system/system_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -36,7 +39,6 @@
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
-#include "chrome/browser/ui/webui/management/management_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
@@ -300,13 +302,16 @@ void SystemTrayClientImpl::ShowBluetoothSettings() {
       chromeos::settings::mojom::kBluetoothDevicesSubpagePath);
 }
 
+void SystemTrayClientImpl::ShowBluetoothSettings(const std::string& device_id) {
+  base::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
+  ShowSettingsSubPageForActiveUser(base::StrCat(
+      {chromeos::settings::mojom::kBluetoothDeviceDetailSubpagePath,
+       "?id=", device_id}));
+}
+
 void SystemTrayClientImpl::ShowBluetoothPairingDialog(
-    const std::string& address,
-    const std::u16string& name_for_display,
-    bool paired,
-    bool connected) {
-  if (chromeos::BluetoothPairingDialog::ShowDialog(address, name_for_display,
-                                                   paired, connected)) {
+    absl::optional<base::StringPiece> device_address) {
+  if (chromeos::BluetoothPairingDialog::ShowDialog(device_address)) {
     base::RecordAction(
         base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
   }
@@ -429,9 +434,8 @@ void SystemTrayClientImpl::ShowPublicAccountInfo() {
 void SystemTrayClientImpl::ShowEnterpriseInfo() {
   // At the login screen, lock screen, etc. show enterprise help in a window.
   if (SessionManager::Get()->IsUserSessionBlocked()) {
-    scoped_refptr<chromeos::HelpAppLauncher> help_app(
-        new chromeos::HelpAppLauncher(nullptr /* parent_window */));
-    help_app->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_ENTERPRISE);
+    base::MakeRefCounted<ash::HelpAppLauncher>(/*parent_window=*/nullptr)
+        ->ShowHelpTopic(ash::HelpAppLauncher::HELP_ENTERPRISE);
     return;
   }
 
@@ -653,8 +657,10 @@ void SystemTrayClientImpl::UpdateEnterpriseDomainInfo() {
 }
 
 void SystemTrayClientImpl::UpdateEnterpriseAccountDomainInfo(Profile* profile) {
-  const std::string account_manager =
-      profile ? ManagementUIHandler::GetAccountManager(profile) : std::string();
+  std::string account_manager =
+      profile
+          ? chrome::GetAccountManagerIdentity(profile).value_or(std::string())
+          : std::string();
   if (account_manager == last_enterprise_account_domain_manager_)
     return;
 

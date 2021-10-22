@@ -61,7 +61,7 @@ class MODULES_EXPORT LowLatencyVideoRendererAlgorithm {
   // 60fps.
   base::TimeDelta average_frame_duration() const {
     // TODO(crbug.com/1138888): Estimate frame duration from content.
-    return base::TimeDelta::FromMillisecondsD(1000.0 / 60.0);
+    return base::Milliseconds(1000.0 / 60.0);
   }
 
  private:
@@ -109,6 +109,7 @@ class MODULES_EXPORT LowLatencyVideoRendererAlgorithm {
     int no_new_frame_to_render;
     int accumulated_queue_length;
     int accumulated_queue_length_count;
+    int max_queue_length;
     int enter_drain_mode;
     int reduce_steady_state;
     int max_size_drop_queue;

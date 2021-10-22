@@ -35,6 +35,11 @@ class TokenHandleFetcherShutdownNotifierFactory
     return base::Singleton<TokenHandleFetcherShutdownNotifierFactory>::get();
   }
 
+  TokenHandleFetcherShutdownNotifierFactory(
+      const TokenHandleFetcherShutdownNotifierFactory&) = delete;
+  TokenHandleFetcherShutdownNotifierFactory& operator=(
+      const TokenHandleFetcherShutdownNotifierFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<
       TokenHandleFetcherShutdownNotifierFactory>;
@@ -45,8 +50,6 @@ class TokenHandleFetcherShutdownNotifierFactory
     DependsOn(IdentityManagerFactory::GetInstance());
   }
   ~TokenHandleFetcherShutdownNotifierFactory() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TokenHandleFetcherShutdownNotifierFactory);
 };
 
 }  // namespace
@@ -135,7 +138,7 @@ void TokenHandleFetcher::OnNetworkError(int response_code) {
 void TokenHandleFetcher::OnGetTokenInfoResponse(
     std::unique_ptr<base::DictionaryValue> token_info) {
   bool success = false;
-  if (!token_info->HasKey("error")) {
+  if (!token_info->FindKey("error")) {
     std::string handle;
     if (token_info->GetString("token_handle", &handle)) {
       success = true;

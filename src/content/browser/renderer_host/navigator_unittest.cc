@@ -574,7 +574,8 @@ TEST_F(NavigatorTest, NoContent) {
   response->headers = new net::HttpResponseHeaders(
       std::string(kNoContentHeaders, base::size(kNoContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
-      ->CallOnResponseStarted(std::move(response));
+      ->CallOnResponseStarted(std::move(response),
+                              mojo::ScopedDataPipeConsumerHandle());
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -598,7 +599,8 @@ TEST_F(NavigatorTest, NoContent) {
   response->headers = new net::HttpResponseHeaders(
       std::string(kResetContentHeaders, base::size(kResetContentHeaders)));
   GetLoaderForNavigationRequest(main_request)
-      ->CallOnResponseStarted(std::move(response));
+      ->CallOnResponseStarted(std::move(response),
+                              mojo::ScopedDataPipeConsumerHandle());
 
   // There should be no pending nor speculative RenderFrameHost; the navigation
   // was aborted.
@@ -1005,7 +1007,8 @@ TEST_F(NavigatorTest, Reload) {
 
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
   controller().Reload(ReloadType::NORMAL, false);
-  auto reload1 = NavigationSimulator::CreateFromPending(contents());
+  auto reload1 =
+      NavigationSimulator::CreateFromPending(contents()->GetController());
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
@@ -1019,7 +1022,8 @@ TEST_F(NavigatorTest, Reload) {
 
   // Now do a shift+reload.
   controller().Reload(ReloadType::BYPASSING_CACHE, false);
-  auto reload2 = NavigationSimulator::CreateFromPending(contents());
+  auto reload2 =
+      NavigationSimulator::CreateFromPending(contents()->GetController());
   // A NavigationRequest should have been generated.
   main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);

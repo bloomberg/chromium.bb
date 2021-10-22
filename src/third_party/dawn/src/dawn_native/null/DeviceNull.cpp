@@ -28,8 +28,8 @@ namespace dawn_native { namespace null {
         mPCIInfo.name = "Null backend";
         mAdapterType = wgpu::AdapterType::CPU;
 
-        // Enable all extensions by default for the convenience of tests.
-        mSupportedExtensions.extensionsBitSet.set();
+        // Enable all features by default for the convenience of tests.
+        mSupportedFeatures.featuresBitSet.set();
     }
 
     Adapter::~Adapter() = default;
@@ -38,9 +38,9 @@ namespace dawn_native { namespace null {
         return false;
     }
 
-    // Used for the tests that intend to use an adapter without all extensions enabled.
-    void Adapter::SetSupportedExtensions(const std::vector<const char*>& requiredExtensions) {
-        mSupportedExtensions = GetInstance()->ExtensionNamesToExtensionsSet(requiredExtensions);
+    // Used for the tests that intend to use an adapter without all features enabled.
+    void Adapter::SetSupportedFeatures(const std::vector<const char*>& requiredFeatures) {
+        mSupportedFeatures = GetInstance()->FeatureNamesToFeaturesSet(requiredFeatures);
     }
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
@@ -124,7 +124,7 @@ namespace dawn_native { namespace null {
         const QuerySetDescriptor* descriptor) {
         return AcquireRef(new QuerySet(this, descriptor));
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
         const RenderPipelineDescriptor* descriptor) {
         return AcquireRef(new RenderPipeline(this, descriptor));
     }
@@ -356,6 +356,11 @@ namespace dawn_native { namespace null {
                                       const void* data,
                                       size_t size) {
         ToBackend(buffer)->DoWriteBuffer(bufferOffset, data, size);
+        return {};
+    }
+
+    // RenderPipeline
+    MaybeError RenderPipeline::Initialize() {
         return {};
     }
 

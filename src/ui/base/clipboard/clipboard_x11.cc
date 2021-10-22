@@ -82,7 +82,22 @@ std::vector<std::u16string> ClipboardX11::GetStandardFormats(
   std::vector<std::u16string> types;
   auto available_types = x_clipboard_helper_->GetAvailableTypes(buffer);
   for (const auto& mime_type : available_types) {
-    types.push_back(base::UTF8ToUTF16(mime_type));
+    if (mime_type == ClipboardFormatType::HtmlType().GetName() ||
+        mime_type == ClipboardFormatType::SvgType().GetName() ||
+        mime_type == ClipboardFormatType::RtfType().GetName() ||
+        mime_type == ClipboardFormatType::BitmapType().GetName() ||
+        mime_type == ClipboardFormatType::FilenamesType().GetName()) {
+      types.push_back(base::UTF8ToUTF16(mime_type));
+    }
+    // `WriteText` uses the following mime types for text, so if those types are
+    // available, we add kMimeTypeText to the list.
+    if ((mime_type == ClipboardFormatType::PlainTextType().GetName() ||
+         mime_type == kMimeTypeLinuxText || mime_type == kMimeTypeLinuxString ||
+         mime_type == kMimeTypeTextUtf8 ||
+         mime_type == kMimeTypeLinuxUtf8String) &&
+        !base::Contains(types, base::UTF8ToUTF16(kMimeTypeText))) {
+      types.push_back(base::UTF8ToUTF16(kMimeTypeText));
+    }
   }
   return types;
 }
@@ -97,34 +112,19 @@ void ClipboardX11::ReadAvailableTypes(
   DCHECK(types);
 
   types->clear();
-  std::u16string web_custom_data_type =
-      base::UTF8ToUTF16(ClipboardFormatType::WebCustomDataType().GetName());
   for (const auto& mime_type : GetStandardFormats(buffer, data_dst)) {
-    // Special handling for chromium/x-web-custom-data. We must read the data
-    // and deserialize it to find the list of mime types to report.
-    if (mime_type == web_custom_data_type) {
-      auto data(x_clipboard_helper_->Read(
-          buffer, x_clipboard_helper_->GetAtomsForFormat(
-                      ClipboardFormatType::WebCustomDataType())));
-      if (data.IsValid())
-        ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
-    } else {
       types->push_back(mime_type);
-    }
   }
-}
-
-// |data_dst| is not used. It's only passed to be consistent with other
-// platforms.
-std::vector<std::u16string>
-ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer,
-    const DataTransferEndpoint* data_dst) const {
-  DCHECK(CalledOnValidThread());
-  std::vector<std::u16string> format_names;
-  for (const auto& name : x_clipboard_helper_->GetAvailableAtomNames(buffer))
-    format_names.push_back(base::UTF8ToUTF16(name));
-  return format_names;
+  // Special handling for chromium/x-web-custom-data. We must read the data
+  // and deserialize it to find the list of mime types to report.
+  if (IsFormatAvailable(ClipboardFormatType::WebCustomDataType(), buffer,
+                        data_dst)) {
+    auto data(x_clipboard_helper_->Read(
+        buffer, x_clipboard_helper_->GetAtomsForFormat(
+                    ClipboardFormatType::WebCustomDataType())));
+    if (data.IsValid())
+      ReadCustomDataTypes(data.GetData(), data.GetSize(), types);
+  }
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -228,19 +228,6 @@ void ClipboardX11::ReadPng(ClipboardBuffer buffer,
   DCHECK(IsSupportedClipboardBuffer(buffer));
   RecordRead(ClipboardFormatMetric::kPng);
   std::move(callback).Run(ReadPngInternal(buffer));
-}
-
-// |data_dst| is not used. It's only passed to be consistent with other
-// platforms.
-void ClipboardX11::ReadImage(ClipboardBuffer buffer,
-                             const DataTransferEndpoint* data_dst,
-                             ReadImageCallback callback) const {
-  DCHECK(IsSupportedClipboardBuffer(buffer));
-  RecordRead(ClipboardFormatMetric::kImage);
-  auto png_data = ReadPngInternal(buffer);
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(png_data.data(), png_data.size(), &bitmap);
-  std::move(callback).Run(bitmap);
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other

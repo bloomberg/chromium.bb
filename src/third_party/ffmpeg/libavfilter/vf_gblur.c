@@ -64,7 +64,7 @@ static void postscale_c(float *buffer, int length,
 }
 
 static void horiz_slice_c(float *buffer, int width, int height, int steps,
-                          float nu, float bscale)
+                          float nu, float bscale, float *localbuf)
 {
     int step, x, y;
     float *ptr;
@@ -97,9 +97,13 @@ static int filter_horizontally(AVFilterContext *ctx, void *arg, int jobnr, int n
     const int steps = s->steps;
     const float nu = s->nu;
     float *buffer = s->buffer;
+    float *localbuf = NULL;
+
+    if (s->localbuf)
+        localbuf = s->localbuf + s->stride * width * slice_start;
 
     s->horiz_slice(buffer + width * slice_start, width, slice_end - slice_start,
-                   steps, nu, boundaryscale);
+                   steps, nu, boundaryscale, localbuf);
     emms_c();
     return 0;
 }
@@ -138,6 +142,19 @@ static void do_vertical_columns(float *buffer, int width, int height,
     }
 }
 
+static void verti_slice_c(float *buffer, int width, int height,
+                          int slice_start, int slice_end, int steps,
+                          float nu, float boundaryscale)
+{
+    int aligned_end = slice_start + (((slice_end - slice_start) >> 3) << 3);
+    /* Filter vertically along columns (process 8 columns in each step) */
+    do_vertical_columns(buffer, width, height, slice_start, aligned_end,
+                        steps, nu, boundaryscale, 8);
+    /* Filter un-aligned columns one by one */
+    do_vertical_columns(buffer, width, height, aligned_end, slice_end,
+                        steps, nu, boundaryscale, 1);
+}
+
 static int filter_vertically(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
 {
     GBlurContext *s = ctx->priv;
@@ -150,16 +167,10 @@ static int filter_vertically(AVFilterContext *ctx, void *arg, int jobnr, int nb_
     const int steps = s->steps;
     const float nu = s->nuV;
     float *buffer = s->buffer;
-    int aligned_end;
 
-    aligned_end = slice_start + (((slice_end - slice_start) >> 3) << 3);
-    /* Filter vertically along columns (process 8 columns in each step) */
-    do_vertical_columns(buffer, width, height, slice_start, aligned_end,
-                        steps, nu, boundaryscale, 8);
+    s->verti_slice(buffer, width, height, slice_start, slice_end,
+                   steps, nu, boundaryscale);
 
-    /* Filter un-aligned columns one by one */
-    do_vertical_columns(buffer, width, height, aligned_end, slice_end,
-                        steps, nu, boundaryscale, 1);
     return 0;
 }
 
@@ -196,9 +207,12 @@ static void gaussianiir2d(AVFilterContext *ctx, int plane)
 
     td.width = width;
     td.height = height;
-    ctx->internal->execute(ctx, filter_horizontally, &td, NULL, FFMIN(height, nb_threads));
-    ctx->internal->execute(ctx, filter_vertically, &td, NULL, FFMIN(width, nb_threads));
-    ctx->internal->execute(ctx, filter_postscale, &td, NULL, FFMIN(width * height, nb_threads));
+    ff_filter_execute(ctx, filter_horizontally, &td,
+                      NULL, FFMIN(height, nb_threads));
+    ff_filter_execute(ctx, filter_vertically, &td,
+                      NULL, FFMIN(width, nb_threads));
+    ff_filter_execute(ctx, filter_postscale, &td,
+                      NULL, FFMIN(width * height, nb_threads));
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -227,12 +241,14 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 void ff_gblur_init(GBlurContext *s)
 {
+    s->localbuf = NULL;
     s->horiz_slice = horiz_slice_c;
+    s->verti_slice = verti_slice_c;
     s->postscale_slice = postscale_c;
     if (ARCH_X86)
         ff_gblur_init_x86(s);
@@ -373,6 +389,8 @@ static av_cold void uninit(AVFilterContext *ctx)
     GBlurContext *s = ctx->priv;
 
     av_freep(&s->buffer);
+    if (s->localbuf)
+        av_free(s->localbuf);
 }
 
 static const AVFilterPad gblur_inputs[] = {
@@ -382,7 +400,6 @@ static const AVFilterPad gblur_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad gblur_outputs[] = {
@@ -390,7 +407,6 @@ static const AVFilterPad gblur_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_gblur = {
@@ -400,8 +416,8 @@ const AVFilter ff_vf_gblur = {
     .priv_class    = &gblur_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = gblur_inputs,
-    .outputs       = gblur_outputs,
+    FILTER_INPUTS(gblur_inputs),
+    FILTER_OUTPUTS(gblur_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

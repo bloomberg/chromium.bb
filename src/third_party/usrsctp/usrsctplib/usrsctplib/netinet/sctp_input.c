@@ -745,7 +745,6 @@ sctp_handle_nat_colliding_state(struct sctp_tcb *stcb)
 
 	if ((SCTP_GET_STATE(stcb) == SCTP_STATE_COOKIE_WAIT) ||
 	    (SCTP_GET_STATE(stcb) == SCTP_STATE_COOKIE_ECHOED)) {
-		new_vtag = sctp_select_a_tag(stcb->sctp_ep, stcb->sctp_ep->sctp_lport, stcb->rport, 1);
 		atomic_add_int(&stcb->asoc.refcnt, 1);
 		SCTP_TCB_UNLOCK(stcb);
 		SCTP_INP_INFO_WLOCK();
@@ -754,6 +753,7 @@ sctp_handle_nat_colliding_state(struct sctp_tcb *stcb)
 	} else {
 		return (0);
 	}
+	new_vtag = sctp_select_a_tag(stcb->sctp_ep, stcb->sctp_ep->sctp_lport, stcb->rport, 1);
 	if (SCTP_GET_STATE(stcb) == SCTP_STATE_COOKIE_WAIT) {
 		/* generate a new vtag and send init */
 		LIST_REMOVE(stcb, sctp_asocs);
@@ -2183,7 +2183,6 @@ sctp_process_cookie_new(struct mbuf *m, int iphlen, int offset,
 	union sctp_sockstore store;
 	struct sctp_association *asoc;
 	int init_offset, initack_offset, initack_limit;
-	int retval;
 	int error = 0;
 	uint8_t auth_chunk_buf[SCTP_CHUNK_BUFFER_SIZE];
 #if defined(__APPLE__) && !defined(__Userspace__)
@@ -2337,9 +2336,9 @@ sctp_process_cookie_new(struct mbuf *m, int iphlen, int offset,
 		return (NULL);
 	}
 	/* load all addresses */
-	if ((retval = sctp_load_addresses_from_init(stcb, m,
-	                                            init_offset + sizeof(struct sctp_init_chunk),
-	                                            initack_offset, src, dst, init_src, port)) < 0) {
+	if (sctp_load_addresses_from_init(stcb, m,
+	                                  init_offset + sizeof(struct sctp_init_chunk),
+	                                  initack_offset, src, dst, init_src, port) < 0) {
 #if defined(__APPLE__) && !defined(__Userspace__)
 		atomic_add_int(&stcb->asoc.refcnt, 1);
 		SCTP_TCB_UNLOCK(stcb);
@@ -2477,6 +2476,8 @@ sctp_process_cookie_new(struct mbuf *m, int iphlen, int offset,
 		 * INIT/INIT-ACK/COOKIE arrived. But of course then it
 		 * should have went to the other code.. not here.. oh well..
 		 * a bit of protection is worth having..
+		 *
+		 * XXXMJ unlocked
 		 */
 		stcb->sctp_ep->sctp_flags |= SCTP_PCB_FLAGS_CONNECTED;
 #if defined(__APPLE__) && !defined(__Userspace__)
@@ -3067,7 +3068,6 @@ sctp_handle_cookie_echo(struct mbuf *m, int iphlen, int offset,
 			inp->sctp_context = (*inp_p)->sctp_context;
 			inp->local_strreset_support = (*inp_p)->local_strreset_support;
 			inp->fibnum = (*inp_p)->fibnum;
-			inp->inp_starting_point_for_iterator = NULL;
 #if defined(__Userspace__)
 			inp->ulp_info = (*inp_p)->ulp_info;
 			inp->recv_callback = (*inp_p)->recv_callback;

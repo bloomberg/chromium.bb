@@ -7,7 +7,7 @@
 
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <lib/ui/scenic/cpp/session.h>
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -44,6 +44,9 @@ class SysmemBufferCollection
 
   SysmemBufferCollection();
   explicit SysmemBufferCollection(gfx::SysmemBufferCollectionId id);
+
+  SysmemBufferCollection(const SysmemBufferCollection&) = delete;
+  SysmemBufferCollection& operator=(const SysmemBufferCollection&) = delete;
 
   // Initializes the buffer collection and registers it with Vulkan using the
   // specified |vk_device|. If |token_handle| is null then a new collection
@@ -128,7 +131,7 @@ class SysmemBufferCollection
 
   // Handle for the Vulkan object that holds the same logical buffer collection
   // that is referenced by |collection_|.
-  VkBufferCollectionFUCHSIA vk_buffer_collection_ = VK_NULL_HANDLE;
+  VkBufferCollectionFUCHSIAX vk_buffer_collection_ = VK_NULL_HANDLE;
 
   // |scenic_overlay_view_| view should be used and deleted on the same thread
   // as creation.
@@ -149,8 +152,6 @@ class SysmemBufferCollection
   bool is_protected_ = false;
 
   base::OnceClosure on_deleted_;
-
-  DISALLOW_COPY_AND_ASSIGN(SysmemBufferCollection);
 };
 
 }  // namespace ui

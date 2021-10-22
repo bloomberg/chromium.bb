@@ -41,15 +41,13 @@ protected:
 	Float4 w;     // Used as is
 	Float4 rhw;   // Reciprocal w
 
-	uint32_t outputMasks[RENDERTARGETS];  // TODO(b/162348737): Determine whether unwritten output should be left untouched
-
 	SpirvRoutine routine;
 	const vk::DescriptorSet::Bindings &descriptorSets;
 
 	virtual void setBuiltins(Int &x, Int &y, Float4 (&z)[4], Float4 &w, Int cMask[4], const SampleSet &samples) = 0;
 	virtual void executeShader(Int cMask[4], Int sMask[4], Int zMask[4], const SampleSet &samples) = 0;
 	virtual Bool alphaTest(Int cMask[4], const SampleSet &samples) = 0;
-	virtual void rasterOperation(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], const SampleSet &samples) = 0;
+	virtual void blendColor(Pointer<Byte> cBuffer[4], Int &x, Int sMask[4], Int zMask[4], Int cMask[4], const SampleSet &samples) = 0;
 
 	void quad(Pointer<Byte> cBuffer[4], Pointer<Byte> &zBuffer, Pointer<Byte> &sBuffer, Int cMask[4], Int &x, Int &y) override;
 
@@ -73,6 +71,7 @@ private:
 	void stencilTest(Byte8 &value, VkCompareOp stencilCompareMode, bool isBack);
 	void stencilOperation(Byte8 &newValue, const Byte8 &bufferValue, const PixelProcessor::States::StencilOpState &ops, bool isBack, const Int &zMask, const Int &sMask);
 	void stencilOperation(Byte8 &output, const Byte8 &bufferValue, VkStencilOp operation, bool isBack);
+	Float4 clampDepth(const Float4 &z);
 	Bool depthTest(const Pointer<Byte> &zBuffer, int q, const Int &x, const Float4 &z, const Int &sMask, Int &zMask, const Int &cMask);
 	void depthBoundsTest(const Pointer<Byte> &zBuffer, int q, const Int &x, Int &zMask, Int &cMask);
 

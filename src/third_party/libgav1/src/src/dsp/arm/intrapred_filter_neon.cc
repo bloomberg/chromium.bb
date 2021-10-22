@@ -161,7 +161,136 @@ void Init8bpp() {
 }  // namespace
 }  // namespace low_bitdepth
 
-void IntraPredFilterInit_NEON() { low_bitdepth::Init8bpp(); }
+//------------------------------------------------------------------------------
+#if LIBGAV1_MAX_BITDEPTH >= 10
+namespace high_bitdepth {
+namespace {
+
+alignas(kMaxAlignment) constexpr int16_t
+    kTransposedTaps[kNumFilterIntraPredictors][7][8] = {
+        {{-6, -5, -3, -3, -4, -3, -3, -3},
+         {10, 2, 1, 1, 6, 2, 2, 1},
+         {0, 10, 1, 1, 0, 6, 2, 2},
+         {0, 0, 10, 2, 0, 0, 6, 2},
+         {0, 0, 0, 10, 0, 0, 0, 6},
+         {12, 9, 7, 5, 2, 2, 2, 3},
+         {0, 0, 0, 0, 12, 9, 7, 5}},
+        {{-10, -6, -4, -2, -10, -6, -4, -2},
+         {16, 0, 0, 0, 16, 0, 0, 0},
+         {0, 16, 0, 0, 0, 16, 0, 0},
+         {0, 0, 16, 0, 0, 0, 16, 0},
+         {0, 0, 0, 16, 0, 0, 0, 16},
+         {10, 6, 4, 2, 0, 0, 0, 0},
+         {0, 0, 0, 0, 10, 6, 4, 2}},
+        {{-8, -8, -8, -8, -4, -4, -4, -4},
+         {8, 0, 0, 0, 4, 0, 0, 0},
+         {0, 8, 0, 0, 0, 4, 0, 0},
+         {0, 0, 8, 0, 0, 0, 4, 0},
+         {0, 0, 0, 8, 0, 0, 0, 4},
+         {16, 16, 16, 16, 0, 0, 0, 0},
+         {0, 0, 0, 0, 16, 16, 16, 16}},
+        {{-2, -1, -1, -0, -1, -1, -1, -1},
+         {8, 3, 2, 1, 4, 3, 2, 2},
+         {0, 8, 3, 2, 0, 4, 3, 2},
+         {0, 0, 8, 3, 0, 0, 4, 3},
+         {0, 0, 0, 8, 0, 0, 0, 4},
+         {10, 6, 4, 2, 3, 4, 4, 3},
+         {0, 0, 0, 0, 10, 6, 4, 3}},
+        {{-12, -10, -9, -8, -10, -9, -8, -7},
+         {14, 0, 0, 0, 12, 1, 0, 0},
+         {0, 14, 0, 0, 0, 12, 0, 0},
+         {0, 0, 14, 0, 0, 0, 12, 1},
+         {0, 0, 0, 14, 0, 0, 0, 12},
+         {14, 12, 11, 10, 0, 0, 1, 1},
+         {0, 0, 0, 0, 14, 12, 11, 9}}};
+
+void FilterIntraPredictor_NEON(void* LIBGAV1_RESTRICT const dest,
+                               ptrdiff_t stride,
+                               const void* LIBGAV1_RESTRICT const top_row,
+                               const void* LIBGAV1_RESTRICT const left_column,
+                               FilterIntraPredictor pred, int width,
+                               int height) {
+  const auto* const top = static_cast<const uint16_t*>(top_row);
+  const auto* const left = static_cast<const uint16_t*>(left_column);
+
+  assert(width <= 32 && height <= 32);
+
+  auto* dst = static_cast<uint16_t*>(dest);
+
+  stride >>= 1;
+
+  int16x8_t transposed_taps[7];
+  for (int i = 0; i < 7; ++i) {
+    transposed_taps[i] = vld1q_s16(kTransposedTaps[pred][i]);
+  }
+
+  uint16_t relative_top_left = top[-1];
+  const uint16_t* relative_top = top;
+  uint16_t relative_left[2] = {left[0], left[1]};
+
+  int y = 0;
+  do {
+    uint16_t* row_dst = dst;
+    int x = 0;
+    do {
+      int16x8_t sum =
+          vmulq_s16(transposed_taps[0],
+                    vreinterpretq_s16_u16(vdupq_n_u16(relative_top_left)));
+      for (int i = 1; i < 5; ++i) {
+        sum =
+            vmlaq_s16(sum, transposed_taps[i],
+                      vreinterpretq_s16_u16(vdupq_n_u16(relative_top[i - 1])));
+      }
+      for (int i = 5; i < 7; ++i) {
+        sum =
+            vmlaq_s16(sum, transposed_taps[i],
+                      vreinterpretq_s16_u16(vdupq_n_u16(relative_left[i - 5])));
+      }
+
+      const int16x8_t sum_shifted = vrshrq_n_s16(sum, 4);
+      const uint16x8_t sum_saturated = vminq_u16(
+          vreinterpretq_u16_s16(vmaxq_s16(sum_shifted, vdupq_n_s16(0))),
+          vdupq_n_u16((1 << kBitdepth10) - 1));
+
+      vst1_u16(row_dst, vget_low_u16(sum_saturated));
+      vst1_u16(row_dst + stride, vget_high_u16(sum_saturated));
+
+      // Progress across
+      relative_top_left = relative_top[3];
+      relative_top += 4;
+      relative_left[0] = row_dst[3];
+      relative_left[1] = row_dst[3 + stride];
+      row_dst += 4;
+      x += 4;
+    } while (x < width);
+
+    // Progress down.
+    relative_top_left = left[y + 1];
+    relative_top = dst + stride;
+    relative_left[0] = left[y + 2];
+    relative_left[1] = left[y + 3];
+
+    dst += 2 * stride;
+    y += 2;
+  } while (y < height);
+}
+
+void Init10bpp() {
+  Dsp* dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
+  assert(dsp != nullptr);
+  dsp->filter_intra_predictor = FilterIntraPredictor_NEON;
+}
+
+}  // namespace
+}  // namespace high_bitdepth
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+void IntraPredFilterInit_NEON() {
+  low_bitdepth::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  high_bitdepth::Init10bpp();
+#endif
+}
 
 }  // namespace dsp
 }  // namespace libgav1

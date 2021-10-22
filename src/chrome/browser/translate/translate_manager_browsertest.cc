@@ -235,6 +235,10 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
                             base::Unretained(this)));
   }
 
+  TranslateManagerBrowserTest(const TranslateManagerBrowserTest&) = delete;
+  TranslateManagerBrowserTest& operator=(const TranslateManagerBrowserTest&) =
+      delete;
+
   ~TranslateManagerBrowserTest() override = default;
 
   void WaitUntilLanguageDetermined() { language_determined_waiter_->Wait(); }
@@ -353,8 +357,6 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<TranslateWaiter> language_determined_waiter_;
 
   std::string script_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateManagerBrowserTest);
 };
 
 // Tests that the CLD (Compact Language Detection) works properly.
@@ -1024,7 +1026,7 @@ IN_PROC_BROWSER_TEST_F(OverrideSitePrefsForAutoHrefTranslateBrowserTest,
 #define MAYBE_PageTranslationError PageTranslationError
 #endif
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
-                       DISABLED_PageTranslationError) {
+                       MAYBE_PageTranslationError) {
   SetTranslateScript(kTestValidScript);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
@@ -1351,6 +1353,12 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 
 class TranslateManagerWithSubFrameSupportBrowserTest
     : public TranslateManagerBrowserTest {
+ public:
+  TranslateManagerWithSubFrameSupportBrowserTest(
+      const TranslateManagerWithSubFrameSupportBrowserTest&) = delete;
+  TranslateManagerWithSubFrameSupportBrowserTest& operator=(
+      const TranslateManagerWithSubFrameSupportBrowserTest&) = delete;
+
  protected:
   TranslateManagerWithSubFrameSupportBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(translate::kTranslateSubFrames);
@@ -1358,8 +1366,6 @@ class TranslateManagerWithSubFrameSupportBrowserTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateManagerWithSubFrameSupportBrowserTest);
 };
 
 // Tests that the CLD (Compact Language Detection) works properly.
@@ -2113,6 +2119,14 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
 class TranslateManagerWithMainFrameLanguageDetectionBrowserTest
     : public TranslateManagerBrowserTest {
+ public:
+  TranslateManagerWithMainFrameLanguageDetectionBrowserTest(
+      const TranslateManagerWithMainFrameLanguageDetectionBrowserTest&) =
+      delete;
+  TranslateManagerWithMainFrameLanguageDetectionBrowserTest& operator=(
+      const TranslateManagerWithMainFrameLanguageDetectionBrowserTest&) =
+      delete;
+
  protected:
   TranslateManagerWithMainFrameLanguageDetectionBrowserTest() {
     // Enable sub frame translation but with sub frame language
@@ -2124,9 +2138,6 @@ class TranslateManagerWithMainFrameLanguageDetectionBrowserTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      TranslateManagerWithMainFrameLanguageDetectionBrowserTest);
 };
 
 // Test that iframes can be translated.
@@ -2175,15 +2186,19 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 class TranslateManagerPrerenderBrowserTest
-    : public TranslateManagerBrowserTest {
+    : public TranslateManagerBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  public:
   TranslateManagerPrerenderBrowserTest()
       : prerender_helper_(base::BindRepeating(
             &TranslateManagerPrerenderBrowserTest::web_contents,
-            base::Unretained(this))) {}
-
-  void SetUpOnMainThread() override {
-    TranslateManagerBrowserTest::SetUpOnMainThread();
+            base::Unretained(this))) {
+    if (GetParam() /* enable kTranslateSubFrames */) {
+      scoped_feature_list_.InitAndEnableFeature(translate::kTranslateSubFrames);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          translate::kTranslateSubFrames);
+    }
   }
 
   content::WebContents* web_contents() {
@@ -2192,9 +2207,12 @@ class TranslateManagerPrerenderBrowserTest
 
  protected:
   content::test::PrerenderTestHelper prerender_helper_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(TranslateManagerPrerenderBrowserTest,
+IN_PROC_BROWSER_TEST_P(TranslateManagerPrerenderBrowserTest,
                        SkipPrerenderPage) {
   SetTranslateScript(kTestValidScript);
 
@@ -2248,6 +2266,10 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerPrerenderBrowserTest,
   // Check noisy data was filtered out.
   histograms.ExpectTotalCount("Translate.LanguageDeterminedDuration", 1);
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         TranslateManagerPrerenderBrowserTest,
+                         ::testing::Bool());
 
 }  // namespace
 }  // namespace translate

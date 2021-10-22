@@ -24,13 +24,16 @@ class MockVirtualKeyboardControllerObserver
     : public VirtualKeyboardControllerObserver {
  public:
   MockVirtualKeyboardControllerObserver() = default;
+
+  MockVirtualKeyboardControllerObserver(
+      const MockVirtualKeyboardControllerObserver&) = delete;
+  MockVirtualKeyboardControllerObserver& operator=(
+      const MockVirtualKeyboardControllerObserver&) = delete;
+
   virtual ~MockVirtualKeyboardControllerObserver() = default;
 
   MOCK_METHOD1(OnKeyboardVisible, void(const gfx::Rect&));
   MOCK_METHOD0(OnKeyboardHidden, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockVirtualKeyboardControllerObserver);
 };
 
 class MockInputPane
@@ -45,6 +48,9 @@ class MockInputPane
       ABI::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs*>;
 
   MockInputPane() = default;
+
+  MockInputPane(const MockInputPane&) = delete;
+  MockInputPane& operator=(const MockInputPane&) = delete;
 
   IFACEMETHODIMP TryShow(boolean*) override {
     if (showing_)
@@ -103,11 +109,13 @@ class MockInputPane
   bool showing_ = false;
   Microsoft::WRL::ComPtr<InputPaneEventHandler> show_handler_;
   Microsoft::WRL::ComPtr<InputPaneEventHandler> hide_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockInputPane);
 };
 
 class OnScreenKeyboardTest : public ::testing::Test {
+ public:
+  OnScreenKeyboardTest(const OnScreenKeyboardTest&) = delete;
+  OnScreenKeyboardTest& operator=(const OnScreenKeyboardTest&) = delete;
+
  protected:
   OnScreenKeyboardTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
@@ -123,15 +131,12 @@ class OnScreenKeyboardTest : public ::testing::Test {
   void WaitForEventsWithTimeDelay(int64_t time_delta_ms = 10) {
     base::RunLoop run_loop;
     task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(time_delta_ms));
+        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(time_delta_ms));
     run_loop.Run();
   }
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnScreenKeyboardTest);
 };
 
 // This test validates the on screen keyboard path (tabtip.exe) which is read

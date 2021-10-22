@@ -58,6 +58,21 @@ TEST_F(IndexBufferValidationTest, UndefinedIndexFormat) {
     ASSERT_DEVICE_ERROR(encoder.Finish());
 }
 
+// Test that an invalid index format is disallowed.
+TEST_F(IndexBufferValidationTest, InvalidIndexFormat) {
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.usage = wgpu::BufferUsage::Index;
+    bufferDesc.size = 256;
+    wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
+
+    DummyRenderPass renderPass(device);
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+    pass.SetIndexBuffer(buffer, static_cast<wgpu::IndexFormat>(404));
+    pass.EndPass();
+    ASSERT_DEVICE_ERROR(encoder.Finish());
+}
+
 // Test that for OOB validation of index buffer offset and size.
 TEST_F(IndexBufferValidationTest, IndexBufferOffsetOOBValidation) {
     wgpu::BufferDescriptor bufferDesc;
@@ -73,11 +88,11 @@ TEST_F(IndexBufferValidationTest, IndexBufferOffsetOOBValidation) {
         // Explicit size
         pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 256);
         // Implicit size
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 0);
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, 0);
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, 0);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, wgpu::kWholeSize);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, wgpu::kWholeSize);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, wgpu::kWholeSize);
         // Implicit size of zero
-        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, 0);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, wgpu::kWholeSize);
         pass.EndPass();
         encoder.Finish();
     }
@@ -110,11 +125,11 @@ TEST_F(IndexBufferValidationTest, IndexBufferOffsetOOBValidation) {
         // Explicit size
         encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 256);
         // Implicit size
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 0);
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, 0);
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, 0);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, wgpu::kWholeSize);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256 - 4, wgpu::kWholeSize);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 4, wgpu::kWholeSize);
         // Implicit size of zero
-        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, 0);
+        encoder.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 256, wgpu::kWholeSize);
         encoder.Finish();
     }
 

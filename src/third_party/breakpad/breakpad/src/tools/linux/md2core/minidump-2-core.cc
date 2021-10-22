@@ -600,7 +600,8 @@ ParseSystemInfo(const Options& options, CrashedProcess* crashinfo,
     exit(1);
   }
 #elif defined(__aarch64__)
-  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64_OLD) {
+  if (sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64_OLD &&
+      sysinfo->processor_architecture != MD_CPU_ARCHITECTURE_ARM64) {
     fprintf(stderr,
             "This version of minidump-2-core only supports ARM (64bit).\n");
     exit(1);

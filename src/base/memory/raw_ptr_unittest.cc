@@ -726,7 +726,9 @@ static constexpr PartitionOptions kOpts = {
     PartitionOptions::AlignedAlloc::kDisallowed,
     PartitionOptions::ThreadCache::kDisabled,
     PartitionOptions::Quarantine::kDisallowed,
-    PartitionOptions::Cookie::kAllowed, PartitionOptions::RefCount::kAllowed};
+    PartitionOptions::Cookie::kAllowed,
+    PartitionOptions::BackupRefPtr::kEnabled,
+    PartitionOptions::UseConfigurablePool::kNo};
 
 TEST(BackupRefPtrImpl, Basic) {
   // TODO(bartekn): Avoid using PartitionAlloc API directly. Switch to
@@ -813,6 +815,43 @@ TEST(BackupRefPtrImpl, EndPointer) {
     allocator.root()->Free(raw_ptr5);
     allocator.root()->Free(raw_ptr6);
   }
+}
+
+TEST(BackupRefPtrImpl, QuarantinedBytes) {
+  PartitionAllocGlobalInit(HandleOOM);
+  PartitionAllocator<ThreadSafe> allocator;
+  allocator.init(kOpts);
+  uint64_t* raw_ptr1 = reinterpret_cast<uint64_t*>(
+      allocator.root()->Alloc(sizeof(uint64_t), ""));
+  raw_ptr<uint64_t> wrapped_ptr1 = raw_ptr1;
+  EXPECT_EQ(allocator.root()->total_size_of_brp_quarantined_bytes.load(
+                std::memory_order_relaxed),
+            0U);
+  EXPECT_EQ(allocator.root()->total_count_of_brp_quarantined_slots.load(
+                std::memory_order_relaxed),
+            0U);
+
+  // Memory should get quarantined.
+  allocator.root()->Free(raw_ptr1);
+  EXPECT_GT(allocator.root()->total_size_of_brp_quarantined_bytes.load(
+                std::memory_order_relaxed),
+            0U);
+  EXPECT_EQ(allocator.root()->total_count_of_brp_quarantined_slots.load(
+                std::memory_order_relaxed),
+            1U);
+
+  // Non quarantined free should not effect total_size_of_brp_quarantined_bytes
+  void* raw_ptr2 = allocator.root()->Alloc(sizeof(uint64_t), "");
+  allocator.root()->Free(raw_ptr2);
+
+  // Freeing quarantined memory should bring the size back down to zero.
+  wrapped_ptr1 = nullptr;
+  EXPECT_EQ(allocator.root()->total_size_of_brp_quarantined_bytes.load(
+                std::memory_order_relaxed),
+            0U);
+  EXPECT_EQ(allocator.root()->total_count_of_brp_quarantined_slots.load(
+                std::memory_order_relaxed),
+            0U);
 }
 
 #if DCHECK_IS_ON() || BUILDFLAG(ENABLE_BACKUP_REF_PTR_SLOW_CHECKS)

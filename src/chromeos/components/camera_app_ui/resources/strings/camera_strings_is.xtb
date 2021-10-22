@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
+<translation id="1113173431709655881">Myndavélarstilling</translation>
 <translation id="1175958423215084756">Tengill greindist. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Myndir úr galleríi</translation>
 <translation id="1300209025925956156">Skannaðu skjalið</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> er ekki í sambandi.</translation>
 <translation id="1473110567575736769">3 sekúndna teljari</translation>
 <translation id="1545749641540134597">Skanna QR-kóða</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">Venjuleg</translation>
 <translation id="1620510694547887537">Myndavél</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Ekkert var tekið upp</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">Leita</translation>
 <translation id="2549985041256363841">Hefja upptöku</translation>
 <translation id="2599796128805996109">Aftari myndavél</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> sek.</translation>
+<translation id="2761536921376153655">Gerð leitar</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> er í sambandi.</translation>
 <translation id="2968794441791257519">Myndir og myndskeið sem tekin eru með myndavélinni verða flutt í niðurhalsmöppuna. Þú getur fengið aðgang að þeim í „Skrár“.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">Opna safn</translation>
 <translation id="520537883758714667">Nú er skjalaskönnun í boði</translation>
 <translation id="5268823927180092501">Virkja skjalastillingu í öllum myndavélum</translation>
+<translation id="5317780077021120954">Vista</translation>
 <translation id="5444515100983837161">Settu öll horn skjalsins í rammann. Skönnun virkar betur ef skjalið og bakgrunnurinn eru í mismunandi litum.</translation>
 <translation id="5671277269877808209">Ferningur</translation>
 <translation id="5746169159649715125">Vista sem PDF</translation>
@@ -86,6 +92,7 @@
 
 Ef ábendingin þín snýr að gæðum mynda eða myndskeiða máttu hengja við sýnishorn af mynd eða myndskeiði og lýsa því sem er að. (Til dæmis: myndin er of dökk eða myndefnið er ekki í fókus.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapixlar</translation>
+<translation id="6527303717912515753">Deila</translation>
 <translation id="667999046851023355">Skjal</translation>
 <translation id="6681668084120808868">Taka mynd</translation>
 <translation id="6778482348691154169">Ekki tókst að taka mynd</translation>
@@ -94,15 +101,19 @@ Ef ábendingin þín snýr að gæðum mynda eða myndskeiða máttu hengja við
 <translation id="698156982839284926">3 sekúndur</translation>
 <translation id="712848772518857951">Viltu örugglega fjarlægja <ph name="COUNT" /> atriði?</translation>
 <translation id="7134221860976209830">10 sekúndna teljari</translation>
+<translation id="7191890674911603392">Gerð upptöku</translation>
 <translation id="7243947652761655814">Upplausn myndskeiðs</translation>
 <translation id="7337660886763914220">Villur eru í skráakerfi.</translation>
 <translation id="7450541714075000668">Texti afritaður</translation>
+<translation id="7476762461674917065">Sýna GIF upptökuvalkost</translation>
+<translation id="7488619942230388918">Taka upp GIF-vídeó</translation>
 <translation id="7557677699350329807">Skipta yfir í næstu myndavél</translation>
 <translation id="7607002721634913082">Hlé</translation>
 <translation id="7608223098072244877">4 sinnum 4</translation>
 <translation id="7649070708921625228">Hjálp</translation>
 <translation id="7658239707568436148">Hætta við</translation>
 <translation id="7670511624014457267">60 rammar/sek.</translation>
+<translation id="7726641833034062494">Taka upp venjulegt vídeó</translation>
 <translation id="7983668134180549431">Texti greindist.</translation>
 <translation id="8067883171444229417">Spila myndskeið</translation>
 <translation id="8120146556401698679">Hliðrun, halli og aðdráttur</translation>

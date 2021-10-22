@@ -37,24 +37,23 @@ namespace captured_sites_test_utils {
 //    timer) that causes the RenderFrameHost count to never diminish completely.
 //    Test should stop waiting if a sufficiently large time has expired for the
 //    page to load or for the page to respond to the last user action.
-const base::TimeDelta default_action_timeout = base::TimeDelta::FromSeconds(30);
+const base::TimeDelta default_action_timeout = base::Seconds(30);
 // The amount of time to wait for a page to trigger a paint in response to a
 // an action. The Captured Site Automation Framework uses this timeout to
 // break out of a wait loop after a hover action.
-const base::TimeDelta visual_update_timeout = base::TimeDelta::FromSeconds(20);
+const base::TimeDelta visual_update_timeout = base::Seconds(20);
 // The amount of time to do a precheck on the page before going to a click
 // fallback action.
-const base::TimeDelta click_fallback_timeout = base::TimeDelta::FromSeconds(5);
+const base::TimeDelta click_fallback_timeout = base::Seconds(5);
 // When we cause a scroll event, make sure we give the page a moment to react
 // before continuing.
-const base::TimeDelta scroll_wait_timeout = base::TimeDelta::FromSeconds(2);
+const base::TimeDelta scroll_wait_timeout = base::Seconds(2);
 // Some times, tests tend to need a break that can't be read from the elements
 // play status.
-const base::TimeDelta cool_off_action_timeout = base::TimeDelta::FromSeconds(1);
+const base::TimeDelta cool_off_action_timeout = base::Seconds(1);
 // The time to wait between checks for a page to become idle or active based on
 // the loading status and then the render frame count.
-const base::TimeDelta wait_for_idle_loop_length =
-    base::TimeDelta::FromMilliseconds(500);
+const base::TimeDelta wait_for_idle_loop_length = base::Milliseconds(500);
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 
@@ -100,6 +99,10 @@ void PrintInstructions(const char* test_file_name);
 class IFrameWaiter : public content::WebContentsObserver {
  public:
   explicit IFrameWaiter(content::WebContents* webcontents);
+
+  IFrameWaiter(const IFrameWaiter&) = delete;
+  IFrameWaiter& operator=(const IFrameWaiter&) = delete;
+
   ~IFrameWaiter() override;
   content::RenderFrameHost* WaitForFrameMatchingName(
       const std::string& name,
@@ -130,8 +133,6 @@ class IFrameWaiter : public content::WebContentsObserver {
   std::string frame_name_;
   GURL origin_;
   GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(IFrameWaiter);
 };
 
 // TestRecipeReplayChromeFeatureActionExecutor
@@ -147,6 +148,11 @@ class IFrameWaiter : public content::WebContentsObserver {
 // InProcessBrowserTest exposes its feature to captured site automation.
 class TestRecipeReplayChromeFeatureActionExecutor {
  public:
+  TestRecipeReplayChromeFeatureActionExecutor(
+      const TestRecipeReplayChromeFeatureActionExecutor&) = delete;
+  TestRecipeReplayChromeFeatureActionExecutor& operator=(
+      const TestRecipeReplayChromeFeatureActionExecutor&) = delete;
+
   // Chrome Autofill feature methods.
   // Triggers Chrome Autofill in the specified input element on the specified
   // document.
@@ -173,8 +179,6 @@ class TestRecipeReplayChromeFeatureActionExecutor {
  protected:
   TestRecipeReplayChromeFeatureActionExecutor();
   ~TestRecipeReplayChromeFeatureActionExecutor();
-
-  DISALLOW_COPY_AND_ASSIGN(TestRecipeReplayChromeFeatureActionExecutor);
 };
 
 // TestRecipeReplayer
@@ -207,6 +211,10 @@ class TestRecipeReplayer {
   TestRecipeReplayer(
       Browser* browser,
       TestRecipeReplayChromeFeatureActionExecutor* feature_action_executor);
+
+  TestRecipeReplayer(const TestRecipeReplayer&) = delete;
+  TestRecipeReplayer& operator=(const TestRecipeReplayer&) = delete;
+
   ~TestRecipeReplayer();
   void Setup();
   void Cleanup();
@@ -256,7 +264,7 @@ class TestRecipeReplayer {
   bool RunWebPageReplayCmdAndWaitForExit(
       const std::string& cmd,
       const std::vector<std::string>& args,
-      const base::TimeDelta& timeout = base::TimeDelta::FromSeconds(5));
+      const base::TimeDelta& timeout = base::Seconds(5));
   bool RunWebPageReplayCmd(const std::string& cmd,
                            const std::vector<std::string>& args,
                            base::Process* process);
@@ -366,8 +374,6 @@ class TestRecipeReplayer {
 
   // Overrides the AutofillClock to use the recorded date.
   autofill::TestAutofillClock test_clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRecipeReplayer);
 };
 
 }  // namespace captured_sites_test_utils

@@ -75,8 +75,7 @@ static int query_formats(AVFilterContext *context)
         AV_PIX_FMT_NV12,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    return ff_set_common_formats(context, fmts_list);
+    return ff_set_common_formats_from_list(context, pix_fmts);
 }
 
 #define LOG_FORMAT_CHANNEL_MISMATCH()                       \
@@ -245,76 +244,6 @@ static int copy_uv_planes(DnnProcessingContext *ctx, AVFrame *out, const AVFrame
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFrame *in)
-{
-    AVFilterContext *context  = inlink->dst;
-    AVFilterLink *outlink = context->outputs[0];
-    DnnProcessingContext *ctx = context->priv;
-    DNNReturnType dnn_result;
-    AVFrame *out;
-
-    out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
-    if (!out) {
-        av_frame_free(&in);
-        return AVERROR(ENOMEM);
-    }
-    av_frame_copy_props(out, in);
-
-    dnn_result = ff_dnn_execute_model(&ctx->dnnctx, in, out);
-    if (dnn_result != DNN_SUCCESS){
-        av_log(ctx, AV_LOG_ERROR, "failed to execute model\n");
-        av_frame_free(&in);
-        av_frame_free(&out);
-        return AVERROR(EIO);
-    }
-
-    if (isPlanarYUV(in->format))
-        copy_uv_planes(ctx, out, in);
-
-    av_frame_free(&in);
-    return ff_filter_frame(outlink, out);
-}
-
-static int activate_sync(AVFilterContext *filter_ctx)
-{
-    AVFilterLink *inlink = filter_ctx->inputs[0];
-    AVFilterLink *outlink = filter_ctx->outputs[0];
-    AVFrame *in = NULL;
-    int64_t pts;
-    int ret, status;
-    int got_frame = 0;
-
-    FF_FILTER_FORWARD_STATUS_BACK(outlink, inlink);
-
-    do {
-        // drain all input frames
-        ret = ff_inlink_consume_frame(inlink, &in);
-        if (ret < 0)
-            return ret;
-        if (ret > 0) {
-            ret = filter_frame(inlink, in);
-            if (ret < 0)
-                return ret;
-            got_frame = 1;
-        }
-    } while (ret > 0);
-
-    // if frame got, schedule to next filter
-    if (got_frame)
-        return 0;
-
-    if (ff_inlink_acknowledge_status(inlink, &status, &pts)) {
-        if (status == AVERROR_EOF) {
-            ff_outlink_set_status(outlink, status, pts);
-            return ret;
-        }
-    }
-
-    FF_FILTER_FORWARD_WANTED(outlink, inlink);
-
-    return FFERROR_NOT_READY;
-}
-
 static int flush_frame(AVFilterLink *outlink, int64_t pts, int64_t *out_pts)
 {
     DnnProcessingContext *ctx = outlink->src->priv;
@@ -329,7 +258,7 @@ static int flush_frame(AVFilterLink *outlink, int64_t pts, int64_t *out_pts)
     do {
         AVFrame *in_frame = NULL;
         AVFrame *out_frame = NULL;
-        async_state = ff_dnn_get_async_result(&ctx->dnnctx, &in_frame, &out_frame);
+        async_state = ff_dnn_get_result(&ctx->dnnctx, &in_frame, &out_frame);
         if (out_frame) {
             if (isPlanarYUV(in_frame->format))
                 copy_uv_planes(ctx, out_frame, in_frame);
@@ -346,7 +275,7 @@ static int flush_frame(AVFilterLink *outlink, int64_t pts, int64_t *out_pts)
     return 0;
 }
 
-static int activate_async(AVFilterContext *filter_ctx)
+static int activate(AVFilterContext *filter_ctx)
 {
     AVFilterLink *inlink = filter_ctx->inputs[0];
     AVFilterLink *outlink = filter_ctx->outputs[0];
@@ -371,7 +300,7 @@ static int activate_async(AVFilterContext *filter_ctx)
                 return AVERROR(ENOMEM);
             }
             av_frame_copy_props(out, in);
-            if (ff_dnn_execute_model_async(&ctx->dnnctx, in, out) != DNN_SUCCESS) {
+            if (ff_dnn_execute_model(&ctx->dnnctx, in, out) != DNN_SUCCESS) {
                 return AVERROR(EIO);
             }
         }
@@ -381,7 +310,7 @@ static int activate_async(AVFilterContext *filter_ctx)
     do {
         AVFrame *in_frame = NULL;
         AVFrame *out_frame = NULL;
-        async_state = ff_dnn_get_async_result(&ctx->dnnctx, &in_frame, &out_frame);
+        async_state = ff_dnn_get_result(&ctx->dnnctx, &in_frame, &out_frame);
         if (out_frame) {
             if (isPlanarYUV(in_frame->format))
                 copy_uv_planes(ctx, out_frame, in_frame);
@@ -411,16 +340,6 @@ static int activate_async(AVFilterContext *filter_ctx)
     return 0;
 }
 
-static int activate(AVFilterContext *filter_ctx)
-{
-    DnnProcessingContext *ctx = filter_ctx->priv;
-
-    if (ctx->dnnctx.async)
-        return activate_async(filter_ctx);
-    else
-        return activate_sync(filter_ctx);
-}
-
 static av_cold void uninit(AVFilterContext *ctx)
 {
     DnnProcessingContext *context = ctx->priv;
@@ -435,7 +354,6 @@ static const AVFilterPad dnn_processing_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad dnn_processing_outputs[] = {
@@ -444,7 +362,6 @@ static const AVFilterPad dnn_processing_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_dnn_processing = {
@@ -454,8 +371,8 @@ const AVFilter ff_vf_dnn_processing = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = dnn_processing_inputs,
-    .outputs       = dnn_processing_outputs,
+    FILTER_INPUTS(dnn_processing_inputs),
+    FILTER_OUTPUTS(dnn_processing_outputs),
     .priv_class    = &dnn_processing_class,
     .activate      = activate,
 };

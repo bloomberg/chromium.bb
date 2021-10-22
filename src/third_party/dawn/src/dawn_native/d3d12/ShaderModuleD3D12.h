@@ -58,20 +58,6 @@ namespace dawn_native { namespace d3d12 {
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
         MaybeError Initialize(ShaderModuleParseResult* parseResult);
-
-        ResultOrError<std::string> TranslateToHLSL(const char* entryPointName,
-                                                   SingleShaderStage stage,
-                                                   PipelineLayout* layout,
-                                                   std::string* remappedEntryPointName,
-                                                   FirstOffsetInfo* firstOffsetInfo) const;
-
-        ResultOrError<PersistentCacheKey> CreateHLSLKey(const char* entryPointName,
-                                                        SingleShaderStage stage,
-                                                        const std::string& hlslSource,
-                                                        uint32_t compileFlags) const;
-
-        ResultOrError<uint64_t> GetDXCompilerVersion() const;
-        uint64_t GetD3DCompilerVersion() const;
     };
 
 }}  // namespace dawn_native::d3d12

@@ -2,60 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {LongTouchDetector} from './components/long_touch_detector.m.js';
+
 {
-  const LONG_TOUCH_TIME_MS = 1000;
-
-  class TitleLongTouchDetector {
-    constructor(element, callback) {
-      this.callback_ = callback;
-      /**
-       * This is timeout ID used to kill window timeout that fires "detected"
-       * callback if touch event was cancelled.
-       *
-       * @private {number|null}
-       */
-      this.timeoutId_ = null;
-
-      element.addEventListener('touchstart', () => void this.onTouchStart_());
-      element.addEventListener('touchend', () => void this.killTimer_());
-      element.addEventListener('touchcancel', () => void this.killTimer_());
-
-      element.addEventListener('mousedown', () => void this.onTouchStart_());
-      element.addEventListener('mouseup', () => void this.killTimer_());
-      element.addEventListener('mouseleave', () => void this.killTimer_());
-    }
-
-    /**
-     *  window.setTimeout() callback.
-     *
-     * @private
-     */
-    onTimeout_() {
-      this.killTimer_();
-      this.callback_();
-    }
-
-    /**
-     * @private
-     */
-    onTouchStart_() {
-      this.killTimer_();
-      this.timeoutId_ =
-          window.setTimeout(() => void this.onTimeout_(), LONG_TOUCH_TIME_MS);
-    }
-
-    /**
-     * @private
-     */
-    killTimer_() {
-      if (this.timeoutId_ === null)
-        return;
-
-      window.clearTimeout(this.timeoutId_);
-      this.timeoutId_ = null;
-    }
-  }
-
   Polymer({
     is: 'oobe-welcome-dialog',
 
@@ -100,15 +49,6 @@
         },
         readOnly: true,
       },
-
-      osInstallEnabled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.valueExists('osInstallEnabled') &&
-              loadTimeData.getBoolean('osInstallEnabled');
-        },
-        readOnly: true,
-      },
     },
 
     onBeforeShow() {
@@ -117,7 +57,7 @@
     },
 
     /**
-     * @private {TitleLongTouchDetector}
+     * @private {LongTouchDetector}
      */
     titleLongTouchDetector_: null,
 
@@ -129,30 +69,26 @@
 
     onLanguageClicked_(e) {
       this.focusedElement_ = 'languageSelectionButton';
-      this.fire('language-button-clicked');
+      this.dispatchEvent(new CustomEvent('language-button-clicked', { bubbles: true, composed: true }));
     },
 
     onAccessibilityClicked_() {
       this.focusedElement_ = 'accessibilitySettingsButton';
-      this.fire('accessibility-button-clicked');
+      this.dispatchEvent(new CustomEvent('accessibility-button-clicked', { bubbles: true, composed: true }));
     },
 
     onTimezoneClicked_() {
       this.focusedElement_ = 'timezoneSettingsButton';
-      this.fire('timezone-button-clicked');
+      this.dispatchEvent(new CustomEvent('timezone-button-clicked', { bubbles: true, composed: true }));
     },
 
     onNextClicked_() {
       this.focusedElement_ = 'getStarted';
-      this.fire('next-button-clicked');
-    },
-
-    onOsInstallClicked_() {
-      this.fire('os-install-clicked');
+      this.dispatchEvent(new CustomEvent('next-button-clicked', { bubbles: true, composed: true }));
     },
 
     onDebuggingLinkClicked_() {
-      this.fire('enable-debugging-clicked');
+      this.dispatchEvent(new CustomEvent('enable-debugging-clicked', { bubbles: true, composed: true }));
     },
 
     /*
@@ -161,11 +97,11 @@
      * @private
      */
     onTitleLongTouch_() {
-      this.fire('launch-advanced-options');
+      this.dispatchEvent(new CustomEvent('launch-advanced-options', { bubbles: true, composed: true }));
     },
 
     attached() {
-      this.titleLongTouchDetector_ = new TitleLongTouchDetector(
+      this.titleLongTouchDetector_ = new LongTouchDetector(
           this.$.title, () => void this.onTitleLongTouch_());
       this.$.chromeVoxHint.addEventListener('keydown', (event) => {
         // When the ChromeVox hint dialog is open, allow users to press the
@@ -246,14 +182,14 @@
      * @private
      */
     dismissChromeVoxHint_() {
-      this.fire('chromevox-hint-dismissed');
+      this.dispatchEvent(new CustomEvent('chromevox-hint-dismissed', { bubbles: true, composed: true }));
       this.closeChromeVoxHint();
     },
 
     /** @private */
     activateChromeVox_() {
       this.closeChromeVoxHint();
-      this.fire('chromevox-hint-accepted');
+      this.dispatchEvent(new CustomEvent('chromevox-hint-accepted', { bubbles: true, composed: true }));
     }
   });
 }

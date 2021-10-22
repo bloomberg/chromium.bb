@@ -20,9 +20,15 @@
 namespace wgpu {
 
     static constexpr uint64_t kWholeSize = WGPU_WHOLE_SIZE;
-    // TODO(crbug.com/520): Remove kStrideUndefined in favor of kCopyStrideUndefined.
-    static constexpr uint32_t kStrideUndefined = WGPU_STRIDE_UNDEFINED;
+    {% if 'deprecated' in enabled_tags %}
+        // TODO(crbug.com/520): Remove kStrideUndefined in favor of kCopyStrideUndefined.
+        static constexpr uint32_t kStrideUndefined = WGPU_STRIDE_UNDEFINED;
+    {% endif %}
     static constexpr uint32_t kCopyStrideUndefined = WGPU_COPY_STRIDE_UNDEFINED;
+    static constexpr uint32_t kLimitU32Undefined = WGPU_LIMIT_U32_UNDEFINED;
+    static constexpr uint64_t kLimitU64Undefined = WGPU_LIMIT_U64_UNDEFINED;
+    static constexpr uint32_t kArrayLayerCountUndefined = WGPU_ARRAY_LAYER_COUNT_UNDEFINED;
+    static constexpr uint32_t kMipLevelCountUndefined = WGPU_MIP_LEVEL_COUNT_UNDEFINED;
 
     {% for type in by_category["enum"] %}
         enum class {{as_cppType(type.name)}} : uint32_t {
@@ -69,7 +75,6 @@ namespace wgpu {
         using {{as_cppType(typeDef.name)}} = {{as_cppType(typeDef.type.name)}};
 
     {% endfor %}
-
     template<typename Derived, typename CType>
     class ObjectBase {
       public:
@@ -202,9 +207,16 @@ namespace wgpu {
         SType sType = SType::Invalid;
     };
 
+    struct ChainedStructOut {
+        ChainedStruct * nextInChain = nullptr;
+        SType sType = SType::Invalid;
+    };
+
     {% for type in by_category["structure"] %}
+        {% set Out = "Out" if type.output else "" %}
+        {% set const = "const" if not type.output else "" %}
         {% if type.chained %}
-            struct {{as_cppType(type.name)}} : ChainedStruct {
+            struct {{as_cppType(type.name)}} : ChainedStruct{{Out}} {
                 {{as_cppType(type.name)}}() {
                     sType = SType::{{type.name.CamelCase()}};
                 }
@@ -212,13 +224,13 @@ namespace wgpu {
             struct {{as_cppType(type.name)}} {
         {% endif %}
             {% if type.extensible %}
-                ChainedStruct const * nextInChain = nullptr;
+                ChainedStruct{{Out}} {{const}} * nextInChain = nullptr;
             {% endif %}
             {% for member in type.members %}
                 {% set member_declaration = as_annotated_cppType(member) + render_cpp_default_value(member) %}
                 {% if type.chained and loop.first %}
                     //* Align the first member to ChainedStruct to match the C struct layout.
-                    alignas(ChainedStruct) {{member_declaration}};
+                    alignas(ChainedStruct{{Out}}) {{member_declaration}};
                 {% else %}
                     {{member_declaration}};
                 {% endif %}
@@ -226,7 +238,6 @@ namespace wgpu {
         };
 
     {% endfor %}
-
 }  // namespace wgpu
 
 #endif // WEBGPU_CPP_H_

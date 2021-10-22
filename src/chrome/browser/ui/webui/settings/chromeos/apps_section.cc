@@ -6,10 +6,11 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/app_restore/full_restore_service_factory.h"
 #include "chrome/browser/ash/arc/arc_util.h"
-#include "chrome/browser/ash/full_restore/full_restore_service_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
@@ -22,8 +23,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/os_settings_resources.h"
+#include "components/app_restore/features.h"
 #include "components/arc/arc_prefs.h"
-#include "components/full_restore/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -170,6 +171,20 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
        IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
       {"appManagementCameraPermissionLabel", IDS_APP_MANAGEMENT_CAMERA},
       {"appManagementContactsPermissionLabel", IDS_APP_MANAGEMENT_CONTACTS},
+      {"appManagementIntentOverlapChangeButton",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_CHANGE_BUTTON},
+      {"appManagementIntentOverlapDialogText1App",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_DIALOG_TEXT_1_APP},
+      {"appManagementIntentOverlapDialogText2Apps",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_DIALOG_TEXT_2_APPS},
+      {"appManagementIntentOverlapDialogText3Apps",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_DIALOG_TEXT_3_APPS},
+      {"appManagementIntentOverlapDialogText4Apps",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_DIALOG_TEXT_4_APPS},
+      {"appManagementIntentOverlapDialogText5OrMoreApps",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_DIALOG_TEXT_5_OR_MORE_APPS},
+      {"appManagementIntentOverlapDialogTitle",
+       IDS_APP_MANAGEMENT_INTENT_OVERLAP_DIALOG_TITLE},
       {"appManagementIntentSettingsDialogTitle",
        IDS_APP_MANAGEMENT_INTENT_SETTINGS_DIALOG_TITLE},
       {"appManagementIntentSettingsTitle",
@@ -182,8 +197,7 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
        IDS_APP_MANAGEMENT_INTENT_SHARING_TAB_EXPLANATION},
       {"appManagementLocationPermissionLabel", IDS_APP_MANAGEMENT_LOCATION},
       {"appManagementMicrophonePermissionLabel", IDS_APP_MANAGEMENT_MICROPHONE},
-      {"appManagementMorePermissionsLabel",
-       IDS_APP_MANAGEMENT_MORE_PERMISSIONS},
+      {"appManagementMorePermissionsLabel", IDS_APP_MANAGEMENT_MORE_SETTINGS},
       {"appManagementNoAppsFound", IDS_APP_MANAGEMENT_NO_APPS_FOUND},
       {"appManagementNoPermissions",
        IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
@@ -317,6 +331,8 @@ void AppsSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_APP_NOTIFICATIONS_DO_NOT_DISTURB_TOGGLE_DESCRIPTION},
       {"appNotificationsLinkToBrowserSettingsDescription",
        IDS_SETTINGS_APP_NOTIFICATIONS_LINK_TO_BROWSER_SETTINGS_DESCRIPTION},
+      {"appNotificationsCountDescription",
+       IDS_SETTINGS_APP_NOTIFICATIONS_SUBLABEL_TEXT},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -376,6 +392,11 @@ std::string AppsSection::GetSectionPath() const {
 
 bool AppsSection::LogMetric(mojom::Setting setting, base::Value& value) const {
   // Unimplemented.
+  if (setting == mojom::Setting::kDoNotDisturbOnOff) {
+    base::UmaHistogramBoolean("ChromeOS.Settings.Apps.DoNotDisturbOnOff",
+                              value.GetBool());
+    return true;
+  }
   return false;
 }
 

@@ -59,8 +59,6 @@ enum CurveType { NONE = -1, TRI, QSIN, ESIN, HSIN, LOG, IPAR, QUA, CUB, SQU, CBR
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16P,
         AV_SAMPLE_FMT_S32, AV_SAMPLE_FMT_S32P,
@@ -68,26 +66,15 @@ static int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_DBL, AV_SAMPLE_FMT_DBLP,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static double fade_gain(int curve, int64_t index, int64_t range)
@@ -353,7 +340,6 @@ static const AVFilterPad avfilter_af_afade_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_af_afade_outputs[] = {
@@ -362,7 +348,6 @@ static const AVFilterPad avfilter_af_afade_outputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_afade = {
@@ -371,8 +356,8 @@ const AVFilter ff_af_afade = {
     .query_formats = query_formats,
     .priv_size     = sizeof(AudioFadeContext),
     .init          = init,
-    .inputs        = avfilter_af_afade_inputs,
-    .outputs       = avfilter_af_afade_outputs,
+    FILTER_INPUTS(avfilter_af_afade_inputs),
+    FILTER_OUTPUTS(avfilter_af_afade_outputs),
     .priv_class    = &afade_class,
     .process_command = process_command,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
@@ -641,7 +626,6 @@ static const AVFilterPad avfilter_af_acrossfade_inputs[] = {
         .name         = "crossfade1",
         .type         = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_af_acrossfade_outputs[] = {
@@ -650,7 +634,6 @@ static const AVFilterPad avfilter_af_acrossfade_outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = acrossfade_config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_acrossfade = {
@@ -660,8 +643,8 @@ const AVFilter ff_af_acrossfade = {
     .priv_size     = sizeof(AudioFadeContext),
     .activate      = activate,
     .priv_class    = &acrossfade_class,
-    .inputs        = avfilter_af_acrossfade_inputs,
-    .outputs       = avfilter_af_acrossfade_outputs,
+    FILTER_INPUTS(avfilter_af_acrossfade_inputs),
+    FILTER_OUTPUTS(avfilter_af_acrossfade_outputs),
 };
 
 #endif /* CONFIG_ACROSSFADE_FILTER */

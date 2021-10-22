@@ -21,7 +21,8 @@ void DisplayLockDocumentState::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(intersection_observer_);
   visitor->Trace(display_lock_contexts_);
-  visitor->Trace(forced_node_info_);
+  visitor->Trace(forced_node_infos_);
+  visitor->Trace(forced_range_infos_);
 }
 
 void DisplayLockDocumentState::AddDisplayLockContext(
@@ -180,14 +181,26 @@ void DisplayLockDocumentState::BeginNodeForcedScope(
     const Node* node,
     bool self_was_forced,
     DisplayLockUtilities::ScopedForcedUpdate::Impl* impl) {
-  forced_node_info_.push_back(ForcedNodeInfo(node, self_was_forced, impl));
+  forced_node_infos_.push_back(ForcedNodeInfo(node, self_was_forced, impl));
 }
 
-void DisplayLockDocumentState::EndNodeForcedScope(
+void DisplayLockDocumentState::BeginRangeForcedScope(
+    const Range* range,
     DisplayLockUtilities::ScopedForcedUpdate::Impl* impl) {
-  for (wtf_size_t i = 0; i < forced_node_info_.size(); ++i) {
-    if (forced_node_info_[i].chain == impl) {
-      forced_node_info_.EraseAt(i);
+  forced_range_infos_.push_back(ForcedRangeInfo(range, impl));
+}
+
+void DisplayLockDocumentState::EndForcedScope(
+    DisplayLockUtilities::ScopedForcedUpdate::Impl* impl) {
+  for (wtf_size_t i = 0; i < forced_node_infos_.size(); ++i) {
+    if (forced_node_infos_[i].Chain() == impl) {
+      forced_node_infos_.EraseAt(i);
+      return;
+    }
+  }
+  for (wtf_size_t i = 0; i < forced_range_infos_.size(); ++i) {
+    if (forced_range_infos_[i].Chain() == impl) {
+      forced_range_infos_.EraseAt(i);
       return;
     }
   }
@@ -197,22 +210,60 @@ void DisplayLockDocumentState::EndNodeForcedScope(
 
 void DisplayLockDocumentState::ForceLockIfNeeded(Element* element) {
   DCHECK(element->GetDisplayLockContext());
-  for (wtf_size_t i = 0; i < forced_node_info_.size(); ++i)
-    ForceLockIfNeededForInfo(element, &forced_node_info_[i]);
+  for (ForcedNodeInfo& info : forced_node_infos_)
+    info.ForceLockIfNeeded(element);
+  for (ForcedRangeInfo& info : forced_range_infos_)
+    info.ForceLockIfNeeded(element);
 }
 
-void DisplayLockDocumentState::ForceLockIfNeededForInfo(
-    Element* element,
-    ForcedNodeInfo* forced_node_info) {
-  auto ancestor_view =
-      forced_node_info->self_forced
-          ? FlatTreeTraversal::InclusiveAncestorsOf(*forced_node_info->node)
-          : FlatTreeTraversal::AncestorsOf(*forced_node_info->node);
+void DisplayLockDocumentState::ForcedNodeInfo::ForceLockIfNeeded(
+    Element* new_locked_element) {
+  auto ancestor_view = self_forced_
+                           ? FlatTreeTraversal::InclusiveAncestorsOf(*node_)
+                           : FlatTreeTraversal::AncestorsOf(*node_);
   for (Node& ancestor : ancestor_view) {
-    if (element == &ancestor) {
-      forced_node_info->chain->AddForcedUpdateScopeForContext(
-          element->GetDisplayLockContext());
+    if (new_locked_element == &ancestor) {
+      chain_->AddForcedUpdateScopeForContext(
+          new_locked_element->GetDisplayLockContext());
       break;
+    }
+  }
+}
+
+void DisplayLockDocumentState::ForcedRangeInfo::ForceLockIfNeeded(
+    Element* new_locked_element) {
+  // TODO(crbug.com/1256849): Combine this with the range loop in
+  //   DisplayLockUtilities::ScopedForcedUpdate::Impl::Impl.
+  // Ranges use NodeTraversal::Next to go in between their start and end nodes,
+  // and will access the layout information of each of those nodes. In order to
+  // ensure that each of these nodes has unlocked layout information, we have to
+  // do a scoped unlock for each of those nodes by unlocking all of their flat
+  // tree ancestors.
+  for (Node* node = range_->FirstNode(); node != range_->PastLastNode();
+       node = NodeTraversal::Next(*node)) {
+    if (node->IsChildOfShadowHost()) {
+      // This node may be slotted into another place in the flat tree, so we
+      // have to do a flat tree parent traversal for it.
+      for (Node* ancestor = node; ancestor;
+           ancestor = FlatTreeTraversal::Parent(*ancestor)) {
+        if (ancestor == new_locked_element) {
+          chain_->AddForcedUpdateScopeForContext(
+              new_locked_element->GetDisplayLockContext());
+          return;
+        }
+      }
+    } else if (node == new_locked_element) {
+      chain_->AddForcedUpdateScopeForContext(
+          new_locked_element->GetDisplayLockContext());
+      return;
+    }
+  }
+  for (Node* node = range_->FirstNode(); node;
+       node = FlatTreeTraversal::Parent(*node)) {
+    if (node == new_locked_element) {
+      chain_->AddForcedUpdateScopeForContext(
+          new_locked_element->GetDisplayLockContext());
+      return;
     }
   }
 }

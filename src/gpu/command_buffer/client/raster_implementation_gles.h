@@ -25,6 +25,10 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
  public:
   explicit RasterImplementationGLES(gles2::GLES2Interface* gl,
                                     ContextSupport* context_support);
+
+  RasterImplementationGLES(const RasterImplementationGLES&) = delete;
+  RasterImplementationGLES& operator=(const RasterImplementationGLES&) = delete;
+
   ~RasterImplementationGLES() override;
 
   // Command buffer Flush / Finish.
@@ -101,7 +105,8 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                       const gfx::Vector2dF& post_translate,
                       const gfx::Vector2dF& post_scale,
                       bool requires_clear,
-                      size_t* max_op_size_hint) override;
+                      size_t* max_op_size_hint,
+                      bool preserve_recording = true) override;
   void EndRasterCHROMIUM() override;
 
   // Image decode acceleration.
@@ -187,8 +192,6 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   ContextSupport* context_support_;
   std::unique_ptr<GLHelper> gl_helper_;
   base::WeakPtrFactory<RasterImplementationGLES> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RasterImplementationGLES);
 };
 
 }  // namespace raster

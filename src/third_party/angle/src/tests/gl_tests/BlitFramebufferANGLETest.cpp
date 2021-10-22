@@ -924,9 +924,6 @@ TEST_P(BlitFramebufferANGLETest, BlitStencil)
     // http://anglebug.com/2205
     ANGLE_SKIP_TEST_IF(IsIntel() && IsD3D9());
 
-    // http://anglebug.com/4919
-    ANGLE_SKIP_TEST_IF(IsIntel() && IsMetal());
-
     // http://anglebug.com/5396
     ANGLE_SKIP_TEST_IF(IsAMD() && IsD3D9());
 
@@ -1077,9 +1074,6 @@ TEST_P(BlitFramebufferANGLETest, MultisampledRGBAToBGRA)
 {
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_ANGLE_framebuffer_blit"));
 
-    // VVL report error http://anglebug.com/4694
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     if (!checkExtension("GL_ANGLE_framebuffer_multisample"))
         return;
 
@@ -1095,9 +1089,6 @@ TEST_P(BlitFramebufferANGLETest, MultisampledRGBAToBGRA)
 TEST_P(BlitFramebufferANGLETest, MultisampledBGRAToRGBA)
 {
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_ANGLE_framebuffer_blit"));
-
-    // VVL report error http://anglebug.com/4694
-    ANGLE_SKIP_TEST_IF(IsVulkan());
 
     if (!checkExtension("GL_ANGLE_framebuffer_multisample"))
         return;
@@ -1252,9 +1243,6 @@ class BlitFramebufferTestES31 : public BlitFramebufferTest
 // Tests resolving a multisample depth buffer.
 TEST_P(BlitFramebufferTest, MultisampleDepth)
 {
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     // TODO(oetuaho@nvidia.com): http://crbug.com/837717
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
 
@@ -1329,9 +1317,6 @@ TEST_P(BlitFramebufferTest, BlitMultisampleStencilToDefault)
 {
     // http://anglebug.com/3496
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsOSX());
-
-    // http://anglebug.com/5106
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsIntel() && IsOSX());
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -1459,12 +1444,6 @@ TEST_P(BlitFramebufferTest, MultisampleDepthClear)
 // Test resolving a multisampled stencil buffer.
 TEST_P(BlitFramebufferTest, MultisampleStencil)
 {
-    // Incorrect rendering results seen on AMD Windows OpenGL. http://anglebug.com/2486
-    ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL() && IsWindows());
-
-    // http://anglebug.com/5106
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsIntel() && IsOSX());
-
     GLRenderbuffer renderbuf;
     glBindRenderbuffer(GL_RENDERBUFFER, renderbuf.get());
     glRenderbufferStorageMultisample(GL_RENDERBUFFER, 2, GL_STENCIL_INDEX8, 256, 256);
@@ -1522,9 +1501,6 @@ TEST_P(BlitFramebufferTest, MultisampleStencil)
 // Test resolving a multisampled stencil buffer with scissor.
 TEST_P(BlitFramebufferTest, ScissoredMultisampleStencil)
 {
-    // Incorrect rendering results seen on AMD Windows OpenGL. http://anglebug.com/2486
-    ANGLE_SKIP_TEST_IF(IsAMD() && IsOpenGL() && IsWindows());
-
     // Fails verifying that the middle pixel is red. http://anglebug.com/3496
     ANGLE_SKIP_TEST_IF((IsIntel() || IsAMD()) && IsOSX());
 
@@ -1721,9 +1697,6 @@ TEST_P(BlitFramebufferTest, NonZeroBaseSourceStencil)
     // http://anglebug.com/5001
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsOSX());
 
-    // http://anglebug.com/5106
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsIntel() && IsOSX());
-
     ANGLE_GL_PROGRAM(drawRed, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
 
     // Create a framebuffer with an attachment that has non-zero base
@@ -1787,8 +1760,7 @@ TEST_P(BlitFramebufferTest, NonZeroBaseDestinationStencil)
 {
     // http://anglebug.com/5001
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsOSX());
-    // http://anglebug.com/5106
-    ANGLE_SKIP_TEST_IF(IsMetal() && (IsAMD() || IsIntel()));
+
     // http://anglebug.com/5003
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsWindows());
 
@@ -1859,9 +1831,6 @@ TEST_P(BlitFramebufferTest, NonZeroBaseDestinationStencilStretch)
 
     // http://anglebug.com/5001
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsOSX());
-
-    // http://anglebug.com/5106
-    ANGLE_SKIP_TEST_IF(IsMetal() && (IsAMD() || IsIntel()));
 
     ANGLE_GL_PROGRAM(drawRed, essl3_shaders::vs::Simple(), essl3_shaders::fs::Red());
 
@@ -1980,9 +1949,6 @@ TEST_P(BlitFramebufferTest, BlitSRGBToRGBAndScale)
 // Blit stencil, with scissor and scale it.
 TEST_P(BlitFramebufferTest, BlitStencilScissoredScaled)
 {
-    // http://anglebug.com/5106
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsIntel() && IsOSX());
-
     constexpr GLint kSize = 256;
 
     // Create the destination framebuffer.

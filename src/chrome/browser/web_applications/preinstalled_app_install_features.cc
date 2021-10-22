@@ -18,41 +18,48 @@ namespace {
 constexpr const base::Feature* kPreinstalledAppInstallFeatures[] = {
     &kMigrateDefaultChromeAppToWebAppsGSuite,
     &kMigrateDefaultChromeAppToWebAppsNonGSuite,
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-    &kDefaultChatWebApp,
-    &kDefaultMeetWebApp,
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+    &kDefaultCalculatorWebApp,
 };
 
 bool g_always_enabled_for_testing = false;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 bool IsMigrationFeature(const base::Feature& feature) {
   return &feature == &kMigrateDefaultChromeAppToWebAppsGSuite ||
          &feature == &kMigrateDefaultChromeAppToWebAppsNonGSuite;
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
 // Enables migration of default installed GSuite apps over to their replacement
 // web apps.
 const base::Feature kMigrateDefaultChromeAppToWebAppsGSuite{
-    "MigrateDefaultChromeAppToWebAppsGSuite",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "MigrateDefaultChromeAppToWebAppsGSuite",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_CHROMEOS)
+};
 
 // Enables migration of default installed non-GSuite apps over to their
 // replacement web apps.
 const base::Feature kMigrateDefaultChromeAppToWebAppsNonGSuite{
-    "MigrateDefaultChromeAppToWebAppsNonGSuite",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "MigrateDefaultChromeAppToWebAppsNonGSuite",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_CHROMEOS)
+};
 
 // Enables installing the PWA version of the chrome os calculator instead of the
 // deprecated chrome app.
 const base::Feature kDefaultCalculatorWebApp{"DefaultCalculatorWebApp",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 // Whether to allow the MigrateDefaultChromeAppToWebAppsGSuite and
 // MigrateDefaultChromeAppToWebAppsNonGSuite flags for managed users.
 // Without this flag enabled managed users will not undergo the default web app
@@ -67,14 +74,7 @@ const base::Feature kAllowDefaultWebAppMigrationForChromeOsManagedUsers{
     "AllowDefaultWebAppMigrationForChromeOsManagedUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables default installing the Chat web app.
-const base::Feature kDefaultChatWebApp{"DefaultChatWebApp",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables default installing the Meet web app.
-const base::Feature kDefaultMeetWebApp{"DefaultMeetWebApp",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // defined(OS_CHROMEOS)
 
 bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
                                             const Profile& profile) {
@@ -82,7 +82,7 @@ bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
     return true;
 
   for (const base::Feature* feature : kPreinstalledAppInstallFeatures) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
     // See |kAllowDefaultWebAppMigrationForChromeOsManagedUsers| comment above.
     if (base::FeatureList::IsEnabled(*feature) &&
         feature->name == feature_name && IsMigrationFeature(*feature) &&
@@ -90,7 +90,7 @@ bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
       return base::FeatureList::IsEnabled(
           kAllowDefaultWebAppMigrationForChromeOsManagedUsers);
     }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#endif  // defined(OS_CHROMEOS)
 
     if (feature->name == feature_name)
       return base::FeatureList::IsEnabled(*feature);

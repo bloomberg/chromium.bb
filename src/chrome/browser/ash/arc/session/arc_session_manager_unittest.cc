@@ -91,6 +91,9 @@ class ArcInitialStartHandler : public ArcSessionManagerObserver {
     session_manager->AddObserver(this);
   }
 
+  ArcInitialStartHandler(const ArcInitialStartHandler&) = delete;
+  ArcInitialStartHandler& operator=(const ArcInitialStartHandler&) = delete;
+
   ~ArcInitialStartHandler() override { session_manager_->RemoveObserver(this); }
 
   // ArcSessionManagerObserver:
@@ -105,8 +108,6 @@ class ArcInitialStartHandler : public ArcSessionManagerObserver {
   bool was_called_ = false;
 
   ArcSessionManager* const session_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcInitialStartHandler);
 };
 
 class FileExpansionObserver : public ArcSessionManagerObserver {
@@ -173,6 +174,11 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
             base::BindRepeating(FakeArcSession::Create)));
   }
 
+  ArcSessionManagerInLoginScreenTest(
+      const ArcSessionManagerInLoginScreenTest&) = delete;
+  ArcSessionManagerInLoginScreenTest& operator=(
+      const ArcSessionManagerInLoginScreenTest&) = delete;
+
   ~ArcSessionManagerInLoginScreenTest() override {
     arc_session_manager_->Shutdown();
     arc_session_manager_.reset();
@@ -198,8 +204,6 @@ class ArcSessionManagerInLoginScreenTest : public testing::Test {
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<ArcSessionManager> arc_session_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerInLoginScreenTest);
 };
 
 // We expect mini instance starts to run if EmitLoginPromptVisible signal is
@@ -248,6 +252,11 @@ class ArcSessionManagerTestBase : public testing::Test {
         test_local_state_(std::make_unique<TestingPrefServiceSimple>()) {
     arc::prefs::RegisterLocalStatePrefs(test_local_state_->registry());
   }
+
+  ArcSessionManagerTestBase(const ArcSessionManagerTestBase&) = delete;
+  ArcSessionManagerTestBase& operator=(const ArcSessionManagerTestBase&) =
+      delete;
+
   ~ArcSessionManagerTestBase() override = default;
 
   void SetUp() override {
@@ -352,13 +361,14 @@ class ArcSessionManagerTestBase : public testing::Test {
   user_manager::ScopedUserManager user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingPrefServiceSimple> test_local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTestBase);
 };
 
 class ArcSessionManagerTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerTest() = default;
+
+  ArcSessionManagerTest(const ArcSessionManagerTest&) = delete;
+  ArcSessionManagerTest& operator=(const ArcSessionManagerTest&) = delete;
 
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
@@ -380,9 +390,6 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
     chromeos::CryptohomeMiscClient::Shutdown();
     ArcSessionManagerTestBase::TearDown();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
@@ -562,10 +569,7 @@ TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 
   // Emulate the preference handling.
-  const bool enable_requested = arc_session_manager()->enable_requested();
-  arc_session_manager()->RequestDisable();
-  if (enable_requested)
-    arc_session_manager()->RequestArcDataRemoval();
+  arc_session_manager()->RequestDisableWithArcDataRemoval();
 
   // Wait until data is removed.
   ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
@@ -835,10 +839,7 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
       prefs::kArcManagementTransition,
       static_cast<int>(ArcManagementTransition::CHILD_TO_REGULAR));
   // Simulate ARC shutdown.
-  const bool enable_requested = arc_session_manager()->enable_requested();
-  arc_session_manager()->RequestDisable();
-  if (enable_requested)
-    arc_session_manager()->RequestArcDataRemoval();
+  arc_session_manager()->RequestDisableWithArcDataRemoval();
   EXPECT_EQ(static_cast<int>(ArcManagementTransition::NO_TRANSITION),
             profile()->GetPrefs()->GetInteger(prefs::kArcManagementTransition));
 
@@ -1124,13 +1125,15 @@ class ArcSessionManagerArcAlwaysStartTest : public ArcSessionManagerTest {
  public:
   ArcSessionManagerArcAlwaysStartTest() = default;
 
+  ArcSessionManagerArcAlwaysStartTest(
+      const ArcSessionManagerArcAlwaysStartTest&) = delete;
+  ArcSessionManagerArcAlwaysStartTest& operator=(
+      const ArcSessionManagerArcAlwaysStartTest&) = delete;
+
   void SetUp() override {
     SetArcAlwaysStartWithoutPlayStoreForTesting();
     ArcSessionManagerTest::SetUp();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerArcAlwaysStartTest);
 };
 
 ArcProvisioningResult CreateProvisioningResult(
@@ -1357,12 +1360,14 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 
   // Assign test values to the prefs.
   if (backup_restore_pref_value().is_bool()) {
-    prefs->SetManagedPref(prefs::kArcBackupRestoreEnabled,
-                          backup_restore_pref_value().CreateDeepCopy());
+    prefs->SetManagedPref(
+        prefs::kArcBackupRestoreEnabled,
+        base::Value::ToUniquePtrValue(backup_restore_pref_value().Clone()));
   }
   if (location_service_pref_value().is_bool()) {
-    prefs->SetManagedPref(prefs::kArcLocationServiceEnabled,
-                          location_service_pref_value().CreateDeepCopy());
+    prefs->SetManagedPref(
+        prefs::kArcLocationServiceEnabled,
+        base::Value::ToUniquePtrValue(location_service_pref_value().Clone()));
   }
 
   arc_session_manager()->SetProfile(profile());
@@ -1449,6 +1454,10 @@ class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerKioskTest() = default;
 
+  ArcSessionManagerKioskTest(const ArcSessionManagerKioskTest&) = delete;
+  ArcSessionManagerKioskTest& operator=(const ArcSessionManagerKioskTest&) =
+      delete;
+
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
     const AccountId account_id(
@@ -1456,9 +1465,6 @@ class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddArcKioskAppUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerKioskTest);
 };
 
 TEST_F(ArcSessionManagerKioskTest, AuthFailure) {
@@ -1488,6 +1494,11 @@ class ArcSessionManagerPublicSessionTest : public ArcSessionManagerTestBase {
  public:
   ArcSessionManagerPublicSessionTest() = default;
 
+  ArcSessionManagerPublicSessionTest(
+      const ArcSessionManagerPublicSessionTest&) = delete;
+  ArcSessionManagerPublicSessionTest& operator=(
+      const ArcSessionManagerPublicSessionTest&) = delete;
+
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
     const AccountId account_id(
@@ -1495,9 +1506,6 @@ class ArcSessionManagerPublicSessionTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddPublicAccountUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerPublicSessionTest);
 };
 
 TEST_F(ArcSessionManagerPublicSessionTest, AuthFailure) {
@@ -1530,6 +1538,11 @@ class ArcSessionOobeOptInNegotiatorTest
       public testing::WithParamInterface<bool> {
  public:
   ArcSessionOobeOptInNegotiatorTest() = default;
+
+  ArcSessionOobeOptInNegotiatorTest(const ArcSessionOobeOptInNegotiatorTest&) =
+      delete;
+  ArcSessionOobeOptInNegotiatorTest& operator=(
+      const ArcSessionOobeOptInNegotiatorTest&) = delete;
 
   void SetUp() override {
     ArcSessionManagerTest::SetUp();
@@ -1628,8 +1641,6 @@ class ArcSessionOobeOptInNegotiatorTest
       observer_list_;
   std::unique_ptr<ash::FakeLoginDisplayHost> fake_login_display_host_;
   TestingPrefServiceSimple pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -1739,6 +1750,9 @@ class ArcSessionRetryTest
  public:
   ArcSessionRetryTest() = default;
 
+  ArcSessionRetryTest(const ArcSessionRetryTest&) = delete;
+  ArcSessionRetryTest& operator=(const ArcSessionRetryTest&) = delete;
+
   void SetUp() override {
     ArcSessionManagerTest::SetUp();
 
@@ -1770,9 +1784,6 @@ class ArcSessionRetryTest
     arc_session_manager()->Shutdown();
     ArcSessionManagerTest::TearDown();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionRetryTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All,

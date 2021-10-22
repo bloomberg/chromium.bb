@@ -125,10 +125,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA420P16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 static int config_filter(AVFilterContext *ctx, int start, int end)
@@ -474,8 +471,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     ReadEIA608Context *s = ctx->priv;
     int nb_found;
 
-    ctx->internal->execute(ctx, extract_lines, in, NULL, FFMIN(FFMAX(s->end - s->start + 1, 1),
-                                                               ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, extract_lines, in, NULL,
+                      FFMIN(FFMAX(s->end - s->start + 1, 1), ff_filter_get_nb_threads(ctx)));
 
     nb_found = 0;
     for (int i = 0; i < s->end - s->start + 1; i++) {
@@ -545,7 +542,6 @@ static const AVFilterPad readeia608_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad readeia608_outputs[] = {
@@ -553,7 +549,6 @@ static const AVFilterPad readeia608_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_readeia608 = {
@@ -562,8 +557,8 @@ const AVFilter ff_vf_readeia608 = {
     .priv_size     = sizeof(ReadEIA608Context),
     .priv_class    = &readeia608_class,
     .query_formats = query_formats,
-    .inputs        = readeia608_inputs,
-    .outputs       = readeia608_outputs,
+    FILTER_INPUTS(readeia608_inputs),
+    FILTER_OUTPUTS(readeia608_outputs),
     .uninit        = uninit,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,

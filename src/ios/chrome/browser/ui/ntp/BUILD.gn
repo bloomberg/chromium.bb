@@ -4,10 +4,11 @@
 
 source_set("ntp") {
   sources = [
+    "discover_feed_delegate.h",
+    "discover_feed_preview_delegate.h",
     "new_tab_page_commands.h",
     "new_tab_page_content_delegate.h",
     "new_tab_page_controller_delegate.h",
-    "new_tab_page_feed_delegate.h",
     "new_tab_page_omnibox_positioning.h",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -66,10 +67,10 @@ source_set("coordinator") {
     "//ios/chrome/browser/ui/content_suggestions",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
+    "//ios/chrome/browser/ui/context_menu/link_preview",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/main:scene_state_header",
     "//ios/chrome/browser/ui/main:scene_state_observer",
-    "//ios/chrome/browser/ui/ntp/discover_feed_preview",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/settings/utils",
     "//ios/chrome/browser/url_loading",
@@ -106,6 +107,7 @@ source_set("ntp_internal") {
     "incognito_view_controller.mm",
     "metrics.h",
     "metrics.mm",
+    "new_tab_page_url_loader_delegate.h",
     "new_tab_page_view_controller.h",
     "new_tab_page_view_controller.mm",
     "notification_promo_whats_new.h",

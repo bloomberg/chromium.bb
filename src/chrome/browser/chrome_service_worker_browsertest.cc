@@ -100,6 +100,10 @@ static void ExpectResultAndRun(T expected,
 }
 
 class ChromeServiceWorkerTest : public InProcessBrowserTest {
+ public:
+  ChromeServiceWorkerTest(const ChromeServiceWorkerTest&) = delete;
+  ChromeServiceWorkerTest& operator=(const ChromeServiceWorkerTest&) = delete;
+
  protected:
   ChromeServiceWorkerTest() {
     EXPECT_TRUE(service_worker_dir_.CreateUniqueTempDir());
@@ -187,22 +191,14 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
     msg.encoded_message = msg.owned_encoded_message;
 
     GURL url = embedded_test_server()->GetURL("/scope/");
-    content::GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&content::ServiceWorkerContext::
-                           StartServiceWorkerAndDispatchMessage,
-                       base::Unretained(GetServiceWorkerContext()), url,
-                       blink::StorageKey(url::Origin::Create(url)),
-                       std::move(msg),
-                       base::BindRepeating(&ExpectResultAndRun<bool>, true,
-                                           run_loop.QuitClosure())));
+    GetServiceWorkerContext()->StartServiceWorkerAndDispatchMessage(
+        url, blink::StorageKey(url::Origin::Create(url)), std::move(msg),
+        base::BindRepeating(&ExpectResultAndRun<bool>, true,
+                            run_loop.QuitClosure()));
     run_loop.Run();
   }
 
   base::ScopedTempDir service_worker_dir_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerTest);
 };
 
 // http://crbug.com/368570
@@ -311,6 +307,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 }
 
 class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
+ public:
+  ChromeServiceWorkerFetchTest(const ChromeServiceWorkerFetchTest&) = delete;
+  ChromeServiceWorkerFetchTest& operator=(const ChromeServiceWorkerFetchTest&) =
+      delete;
+
  protected:
   ChromeServiceWorkerFetchTest() {}
   ~ChromeServiceWorkerFetchTest() override {}
@@ -414,8 +415,6 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
         browser(), embedded_test_server()->GetURL("/test.html")));
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchTest);
 };
 
 class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
@@ -424,6 +423,10 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
     scoped_observation_.Observe(
         favicon::ContentFaviconDriver::FromWebContents(web_contents));
   }
+
+  FaviconUpdateWaiter(const FaviconUpdateWaiter&) = delete;
+  FaviconUpdateWaiter& operator=(const FaviconUpdateWaiter&) = delete;
+
   ~FaviconUpdateWaiter() override = default;
 
   void Wait() {
@@ -451,11 +454,15 @@ class FaviconUpdateWaiter : public favicon::FaviconDriverObserver {
                           favicon::FaviconDriverObserver>
       scoped_observation_{this};
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(FaviconUpdateWaiter);
 };
 
 class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
+ public:
+  ChromeServiceWorkerLinkFetchTest(const ChromeServiceWorkerLinkFetchTest&) =
+      delete;
+  ChromeServiceWorkerLinkFetchTest& operator=(
+      const ChromeServiceWorkerLinkFetchTest&) = delete;
+
  protected:
   ChromeServiceWorkerLinkFetchTest() {}
   ~ChromeServiceWorkerLinkFetchTest() override {}
@@ -541,8 +548,6 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
                                      blink::mojom::ManifestPtr) {
     std::move(continuation).Run();
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerLinkFetchTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest, ManifestSameOrigin) {
@@ -603,6 +608,12 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerLinkFetchTest, FaviconOtherOrigin) {
 // expect that the the service worker only see the navigation request for the
 // iframe.
 class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
+ public:
+  ChromeServiceWorkerFetchPPAPITest(const ChromeServiceWorkerFetchPPAPITest&) =
+      delete;
+  ChromeServiceWorkerFetchPPAPITest& operator=(
+      const ChromeServiceWorkerFetchPPAPITest&) = delete;
+
  protected:
   ChromeServiceWorkerFetchPPAPITest() {}
   ~ChromeServiceWorkerFetchPPAPITest() override {}
@@ -641,8 +652,6 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
 
  private:
   std::string test_page_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerFetchPPAPITest);
 };
 
 // Flaky on Windows and Linux ASan. https://crbug.com/1113802
@@ -687,9 +696,6 @@ class ChromeServiceWorkerNavigationHintTest : public ChromeServiceWorkerTest {
       histogram_tester_.ExpectTotalCount(
           "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT", 0);
     }
-    histogram_tester_.ExpectBucketCount(
-        "ServiceWorker.StartForNavigationHint.Result",
-        static_cast<int>(expected_result), 1);
   }
 
   void TestStarted(const char* test_script) {
@@ -799,6 +805,10 @@ class StaticURLDataSource : public content::URLDataSource {
  public:
   StaticURLDataSource(const std::string& source, const std::string& content)
       : source_(source), content_(content) {}
+
+  StaticURLDataSource(const StaticURLDataSource&) = delete;
+  StaticURLDataSource& operator=(const StaticURLDataSource&) = delete;
+
   ~StaticURLDataSource() override = default;
 
   // content::URLDataSource:
@@ -817,8 +827,6 @@ class StaticURLDataSource : public content::URLDataSource {
  private:
   const std::string source_;
   const std::string content_;
-
-  DISALLOW_COPY_AND_ASSIGN(StaticURLDataSource);
 };
 
 // Copied from devtools_browsertest.cc.
@@ -827,6 +835,10 @@ class MockWebUIProvider
  public:
   MockWebUIProvider(const std::string& source, const std::string& content)
       : source_(source), content_(content) {}
+
+  MockWebUIProvider(const MockWebUIProvider&) = delete;
+  MockWebUIProvider& operator=(const MockWebUIProvider&) = delete;
+
   ~MockWebUIProvider() override = default;
 
   std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
@@ -840,7 +852,6 @@ class MockWebUIProvider
  private:
   const std::string source_;
   const std::string content_;
-  DISALLOW_COPY_AND_ASSIGN(MockWebUIProvider);
 };
 
 // Tests that registering a service worker with a chrome:// URL fails.
@@ -902,6 +913,11 @@ enum class ServicifiedFeatures { kNone, kServiceWorker, kNetwork };
 class ChromeServiceWorkerNavigationPreloadTest : public InProcessBrowserTest {
  public:
   ChromeServiceWorkerNavigationPreloadTest() = default;
+
+  ChromeServiceWorkerNavigationPreloadTest(
+      const ChromeServiceWorkerNavigationPreloadTest&) = delete;
+  ChromeServiceWorkerNavigationPreloadTest& operator=(
+      const ChromeServiceWorkerNavigationPreloadTest&) = delete;
 
   void SetUp() override {
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
@@ -968,8 +984,6 @@ class ChromeServiceWorkerNavigationPreloadTest : public InProcessBrowserTest {
 
   // The request that hit the "test" endpoint.
   absl::optional<net::test_server::HttpRequest> received_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerNavigationPreloadTest);
 };
 
 // Tests navigation preload during a navigation in the top-level frame

@@ -595,7 +595,7 @@ Try tapping the mic to ask me anything.
         More settings
       </message>
       <message name="IDS_SCANNING_APP_SCAN_PREVIEW_HELPER_TEXT" desc="The text displayed in the scan preview that explains how to scan a document.">
-        Place your document on the scanner and select Scan to get started
+        To get started, place your document on the scanner
       </message>
       <message name="IDS_SCANNING_APP_SCAN_BUTTON_TEXT" desc="The text displayed for the button that starts a scan.">
         {NUMBER_OF_PAGES, plural,
@@ -697,34 +697,40 @@ Try tapping the mic to ask me anything.
         Show in folder
       </message>
       <message name="IDS_SCANNING_APP_MULTI_PAGE_CHECKBOX_TEXT" desc="The description for the checkbox that starts a multi-page scan job. This checkbox allows users to scan multiple pages from their scanner into a new PDF file.">
-        Scan multiple pages to one PDF
+        Save multiple pages to one PDF
       </message>
       <message name="IDS_SCANNING_APP_SAVE_BUTTON_LABEL" desc="The label for the button to save a scan to a PDF file">
-        Save
+        End &#38; save
       </message>
       <message name="IDS_SCANNING_APP_MULTI_PAGE_SCAN_INSTRUCTIONS_TEXT" desc="The text instructions for a multi-page scan job to tell the user to scan another page from their scanner.">
-        Place another page on the scanner and select Scan to add page.
+        Place another page on the scanner
       </message>
       <message name="IDS_SCANNING_APP_ACTION_TOOLBAR_PAGE_COUNT_TEXT" desc="The text in the action toolbar that shows the current page number and the total number of pages scanned.">
         <ph name="CURRENT_PAGE">$1<ex>2</ex></ph> of <ph name="TOTAL_PAGES">$2<ex>4</ex></ph>
       </message>
-      <message name="IDS_SCANNING_APP_REMOVE_PAGE_BUTTON_LABEL" desc="The label for the button that lets the user delete a page from their scan job.">
+      <message name="IDS_SCANNING_APP_REMOVE_PAGE_DIALOG_TITLE" desc="The text used as the title for the dialog that lets the user delete a page from their scan job.">
         {PAGE_NUMBER, plural,
-        =0 {Remove page}
-        =1 {Remove page {PAGE_NUMBER}}
-        other {Remove page {PAGE_NUMBER}}}
+        =0 {Remove page?}
+        =1 {Remove page {PAGE_NUMBER}?}
+        other {Remove page {PAGE_NUMBER}?}}
+      </message>
+      <message name="IDS_SCANNING_APP_REMOVE_PAGE_BUTTON_LABEL" desc="The label for the button that lets the user delete a page from their scan job.">
+        Remove
+      </message>
+      <message name="IDS_SCANNING_APP_RESCAN_PAGE_DIALOG_TITLE" desc="The text used as the title for the dialog that lets the user rescan a page from their scan job.">
+        {PAGE_NUMBER, plural,
+        =0 {Rescan page?}
+        =1 {Rescan page {PAGE_NUMBER}?}
+        other {Rescan page {PAGE_NUMBER}?}}
       </message>
       <message name="IDS_SCANNING_APP_RESCAN_PAGE_BUTTON_LABEL" desc="The label for the button that lets the user replace a page from their scan job by scanning a new page from their scanner.">
-        {PAGE_NUMBER, plural,
-        =0 {Rescan page}
-        =1 {Rescan page {PAGE_NUMBER}}
-        other {Rescan page {PAGE_NUMBER}}}
+        Rescan
       </message>
-      <message name="IDS_SCANNING_APP_REMOVE_PAGE_CONFIRMATION_TEXT" desc="The text to confirm to the user they want to remove a page from their current multi-page scan session.">
-        Are you sure you want to remove page <ph name="CURRENT_PAGE">$1<ex>2</ex></ph>?
+      <message name="IDS_SCANNING_APP_REMOVE_PAGE_CONFIRMATION_TEXT" desc="The text to confirm to the user they want to remove the last page from their current multi-page scan session.">
+        This is the only page. This will take you to the scanning start screen.
       </message>
       <message name="IDS_SCANNING_APP_RESCAN_PAGE_CONFIRMATION_TEXT" desc="The text to confirm to the user they want to rescan a page from their current multi-page scan session.">
-        Place your document on the scanner and select Rescan to scan and replace page <ph name="CURRENT_PAGE">$1<ex>2</ex></ph>.
+        Place your document on the scanner
       </message>
       <message name="IDS_SCANNING_APP_MULTI_PAGE_SCAN_PROGRESS_TEXT" desc="The text displayed in the multi-page scan section to indicate which page is currently being scanned.">
         Scanning page <ph name="PAGE_NUMBER">$1<ex>4</ex></ph>...
@@ -734,6 +740,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_SCANNING_APP_MULTI_PAGE_CHECKBOX_ARIA_LABEL" is_accessibility_with_no_ui="true" desc="The text read aloud by the screen reader describing the checkbox to start a multi-page scan session.">
         Multi-page scan
+      </message>
+      <message name="IDS_SCANNING_APP_MULTI_PAGE_IMAGE_ARIA_LABEL" is_accessibility_with_no_ui="true" desc="The text read aloud by the screen reader describing what position the image is in in the list of scanned images.">
+        Image <ph name="CURRENT_PAGE">$1<ex>2</ex></ph> of <ph name="TOTAL_PAGES">$2<ex>4</ex></ph>
       </message>
 
       <!-- Diagnostics App -->
@@ -893,6 +902,12 @@ Try tapping the mic to ask me anything.
       <message name="IDS_DIAGNOSTICS_TEST_STOPPED_BADGE_TEXT" desc="The text displayed to indicate that a test has been stopped.">
         STOPPED
       </message>
+      <message name="IDS_DIAGNOSTICS_TEST_SKIPPED_BADGE_TEXT" desc="The text displayed to indicate that a test has been skipped.">
+        SKIPPED
+      </message>
+      <message name="IDS_DIAGNOSTICS_TEST_WARNING_BADGE_TEXT" desc="The text displayed to indicate that a non-critical test failed.">
+        WARNING
+      </message>
       <message name="IDS_DIAGNOSTICS_TEST_RUNNING_TEXT" desc="The text displayed while a test is running.">
         Test running
       </message>
@@ -962,8 +977,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_DIAGNOSTICS_TROUBLESHOOTING_TEXT" desc="The label for the text displayed when an internet network is not in a connected or connecting state.">
         No <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph> connection detected
       </message>
-      <message name="IDS_DIAGNOSTICS_OVERVIEW" desc="The label for the overview navigation panel item.">
-        Overview
+      <message name="IDS_DIAGNOSTICS_SYSTEM" desc="The label for the system navigation panel item.">
+        System
       </message>
       <message name="IDS_DIAGNOSTICS_CONNECTIVITY" desc="The label for the connectivity navigation panel item.">
         Connectivity
@@ -972,6 +987,12 @@ Try tapping the mic to ask me anything.
         {0, plural,
         =1 {Name server}
         other {Name servers}}
+      </message>
+      <message name="IDS_DIAGNOSTICS_DISABLED_TEXT" desc="The label for the text displaed when a network has been disabled.">
+        <ph name="NETWORK_NAME">$1<ex>Wi-Fi</ex></ph> has been disabled
+      </message>
+      <message name="IDS_DIAGNOSTICS_RECONNECT_LINK_TEXT" desc="The text contains a link to the settings page to allow users to reconnect their network.">
+        Visit Settings to reconnect
       </message>
 
       <message name="IDS_DIAGNOSTICS_SETTINGS_LINK_TEXT" desc="The text contains a link to the settings page, allowing a user to set up a new connection.">
@@ -991,6 +1012,110 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_DIAGNOSTICS_EID_LABEL" desc="The label for a Cellular network's EID.">
         EID
+      </message>
+      <message name="IDS_DIAGNOSTICS_LOCAL_NETWORK_GROUP_LABEL" desc="The label for the group of tests related to the device's local network.">
+        Local Network
+      </message>
+      <message name="IDS_DIAGNOSTICS_NAME_RESOLUTION_GROUP_LABEL" desc="The label for the group of tests  about the device's network DNS (domain name servers).">
+        Name Resolution
+      </message>
+      <message name="IDS_DIAGNOSTICS_INTERNET_CONNECTIVITY_GROUP_LABEL" desc="The label for the group of tests related to internet connectivity.">
+        Internet Connectivity
+      </message>
+      <message name="IDS_DIAGNOSTICS_LAN_CONNECTIVITY_FAILED_TEXT" desc="The text that displays when the `Lan Connectivity` test fails.">
+        Unable to contact gateway
+      </message>
+      <message name="IDS_DIAGNOSTICS_GATEWAY_CAN_BE_PINGED_FAILED_TEXT" desc="The text that displays when the `Gateway can be pinged` test fails.">
+        Unable to contact gateway
+      </message>
+      <message name="IDS_DIAGNOSTICS_DNS_RESOLVER_PRESENT_FAILED_TEXT" desc="The text that displays when the `DNS resolver present` test fails.">
+        No DNS servers are configured
+      </message>
+      <message name="IDS_DIAGNOSTICS_DNS_RESOLUTION_FAILED_TEXT" desc="The text that displays when the `DNS resolution` test fails.">
+        Unable to resolve DNS
+      </message>
+      <message name="IDS_DIAGNOSTICS_DNS_LATENCY_FAILED_TEXT" desc="The text that displays when the `DNS latency` test fails.">
+        DNS resolution has high latency
+      </message>
+      <message name="IDS_DIAGNOSTICS_SIGNAL_STRENGTH_FAILED_TEXT" desc="The text that displays when the `Signal strength` test fails.">
+        Low signal strength, try to move closer to the access point
+      </message>
+      <message name="IDS_DIAGNOSTICS_CAPTIVE_PORTAL_FAILED_TEXT" desc="The text that displays when the `Captive portal` test fails.">
+        This network may have a captive portal
+      </message>
+      <message name="IDS_DIAGNOSTICS_HAS_SECURE_WIFI_CONNECTION_FAILED_TEXT" desc="The text that displays when the `Has secure Wi-Fi connection` test fails.">
+        You are using an open network
+      </message>
+      <message name="IDS_DIAGNOSTICS_HTTPS_FIREWALL_FAILED_TEXT" desc="The text that displays when the `HTTPS firewall` test fails.">
+        Unable to connect through firewall to HTTPS (port 443) websites
+      </message>
+      <message name="IDS_DIAGNOSTICS_HTTP_FIREWALL_FAILED_TEXT" desc="The text that displays when the `HTTP firewall` test fails.">
+        Unable to connect through firewall to HTTP (port 80) websites
+      </message>
+      <message name="IDS_DIAGNOSTICS_HTTPS_LATENCY_FAILED_TEXT" desc="The text that displays when the `HTTPS latency` test fails.">
+        High latency to HTTPS (port 443) websites
+      </message>
+      <message name="IDS_DIAGNOSTICS_ARC_PING_FAILED_TEXT" desc="The text that displays when the `ARC ping` test fails.">
+        Unable to contact the gateway from Android
+      </message>
+      <message name="IDS_DIAGNOSTICS_ARC_HTTP_FAILED_TEXT" desc="The text that displays when the `ARC HTTP` test fails.">
+        Unable to connect through firewall to HTTP (port 80) websites from Android
+      </message>
+      <message name="IDS_DIAGNOSTICS_ARC_DNS_RESOLUTION_FAILED_TEXT" desc="The text that displays when the `ARC DNS resolution` test fails.">
+        Unable to resolve DNS from Android
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_NO_IP_ADDRESS_TEXT" desc="The text shown when a network's IP Address is missing.">
+        Unable to obtain IP address
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_VISIT_SETTINGS_TO_CONFIGURE_LINK_TEXT" desc="Help text that directs users to settings to configure their network.">
+        Visit settings to configure
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_MISSING_NAME_SERVERS_TEXT" desc="The text shown when no name servers are configured.">
+        No name servers are configured
+      </message>
+
+      <!-- Input diagnostics -->
+      <message name="IDS_INPUT_DIAGNOSTICS_RUN_TEST" desc="Text for the button that runs a test for a specific input device">
+        Test
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_CATEGORY_KEYBOARD" desc="Section heading for the list of keyboards in the input diagnostics.">
+        Keyboard
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_CATEGORY_TOUCHPAD" desc="Section heading for the list of touchpads in the input diagnostics.">
+        Touchpad
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_CATEGORY_TOUCHSCREEN" desc="Section heading for the list of touchscreens in the input diagnostics.">
+        Touchscreen
+      </message>
+
+      <message name="IDS_INPUT_DIAGNOSTICS_BLUETOOTH_KEYBOARD" desc="Noun phrase that describes a Bluetooth keyboard to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        Bluetooth keyboard
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_BLUETOOTH_TOUCHPAD" desc="Noun phrase that describes a Bluetooth touchpad to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        Bluetooth touchpad
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_BLUETOOTH_TOUCHSCREEN" desc="Noun phrase that describes a Bluetooth touchscreen to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        Bluetooth touchscreen
+      </message>
+
+      <message name="IDS_INPUT_DIAGNOSTICS_INTERNAL_KEYBOARD" desc="Noun phrase that describes an internal keyboard (built-in, as found on a laptop) to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        Internal keyboard
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_INTERNAL_TOUCHPAD" desc="Noun phrase that describes an internal touchpad (built-in, as found on a laptop) to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        Internal touchpad
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_INTERNAL_TOUCHSCREEN" desc="Noun phrase that describes an internal (built-in) touchscreen to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        Internal touchscreen
+      </message>
+
+      <message name="IDS_INPUT_DIAGNOSTICS_USB_KEYBOARD" desc="Noun phrase that describes a USB keyboard to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        USB keyboard
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_USB_TOUCHPAD" desc="Noun phrase that describes a USB touchpad to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        USB touchpad
+      </message>
+      <message name="IDS_INPUT_DIAGNOSTICS_USB_TOUCHSCREEN" desc="Noun phrase that describes a USB touchscreen to the user. Used as a label in a list of input devices in a diagnostic tool.">
+        USB touchscreen
       </message>
 
       <message name="IDS_ECHE_APP_DEFAULT_DEVICE_NAME" desc="The default device name used to display on Android endpoint of Eche app.">
@@ -1167,8 +1292,53 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_VPN_TYPE_OPENVPN" desc="Label for OpenVPN entry of provider type dropdown in Join VPN Network dialog in OS Settings. Note: OpenVPN is a brand name.">
         OpenVPN
       </message>
+      <message name="IDS_ONC_VPN_TYPE_WIREGUARD" desc="Label for WireGuard entry of provider type dropdown in Join VPN Network dialog in OS Settings.">
+        WireGuard
+      </message>
       <message name="IDS_ONC_VPN_TYPE_ARCVPN" desc="ONC Property label for VPN.Type.ARCVPN">
         Android VPN
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_IP_ADDRESS" desc="Label for WireGuard local address.">
+        Client IP address
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_DNS" desc="Label for name servers config on a WireGuard connection.">
+        Name servers
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_MTU" desc="Label for MTU config on a WireGuard connection.">
+        MTU
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_PRIVATE_KEY" desc="Label for WireGuard private key">
+        Private key
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_PUBLIC_KEY" desc="Label for WireGuard local public key or peer public key.">
+        Public key
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_PEER" desc="Label for per-peer properties of a Wireguard connection.">
+        Peer
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_PRESHARED_KEY" desc="Label for WireGuard per-peer preshared key.">
+        Preshared key
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_PERSISTENT_KEEPALIVE" desc="Label for WireGuard persistent keepalive interval.">
+        Persistent keepalive Interval
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_ENDPOINT" desc="Label for WireGuard endpoint.">
+        Endpoint
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_ALLOWED_IP" desc="Label for WireGuard peer allowed ip range.">
+        Allowed IPs
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_KEY" desc="Label for choosing WireGuard key configuration method.">
+        Key
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_KEY_USE_CURRENT" desc="Label for WireGuard key configuration method to use current one.">
+        Use current keypair
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_KEY_GENERATE_NEW" desc="Label for WireGuard key configuration method to let Chrome OS general one.">
+        Generate random keypair
+      </message>
+      <message name="IDS_ONC_VPN_WIREGUARD_KEY_USER_INPUT" desc="Label for WireGuard key configuration method to use user inputed one.">
+        I have a keypair
       </message>
       <message name="IDS_ONC_CELLULAR_ACTIVATION_STATE" desc="ONC Property label for Cellular.ActivationState">
         Activation status
@@ -1603,9 +1773,6 @@ Try tapping the mic to ask me anything.
       <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_GATEWAY" desc="Label for `Gateway` address data-point in `IP Configuration` drawer.">
         Gateway
       </message>
-      <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_MAC_ADDRESS" desc="Label for `MAC Address` data-point in `IP Configuration` drawer.">
-        MAC Address
-      </message>
       <message name="IDS_NETWORK_DIAGNOSTICS_IP_CONFIG_INFO_DRAWER_SUBNET_MASK" desc="Label for `Subnet mask` data-point in `IP Configuration` drawer.">
         Subnet mask
       </message>
@@ -1618,9 +1785,6 @@ Try tapping the mic to ask me anything.
       <message name="IDS_NETWORK_DIAGNOSTICS_AUTHENTICATION" desc="Label for `Authentication` type data-point in network card.">
         Authentication
       </message>
-      <message name="IDS_NETWORK_DIAGNOSTICS_LINK_SPEED" desc="Label for Ethernet `Link Speed` type data-point in network card.">
-        Link Speed
-      </message>
       <message name="IDS_NETWORK_DIAGNOSTICS_SECURITY" desc="Label for `Security` type data-point in network card.">
         Security
       </message>
@@ -1630,14 +1794,50 @@ Try tapping the mic to ask me anything.
       <message name="IDS_NETWORK_DIAGNOSTICS_DNS_NOT_CONFIGURED" desc="Message for when no DNS servers are configured for display in `IP Configuration` drawer.">
         Not configured
       </message>
-      <message name="IDS_NETWORK_DIAGNOSTICS_DEFAULT_CONNECTION" desc="Label for `default connection` chip displayed above network card.">
-        Default connection
-      </message>
       <message name="IDS_NETWORK_DIAGNOSTICS_ARC_HTTP" desc="Label for Network diagnostics `ARC HTTP` test. This test ensures that the device's http requests inside ARC have an acceptable amount of latency">
-        ARC HTTP
+        (Android) HTTP Latency
       </message>
       <message name="IDS_NETWORK_DIAGNOSTICS_ARC_PING" desc="Label for Network diagnostics `ARC PING` test. This test ensures that there is a connection to the network gateway inside ARC.">
-        ARC Ping
+        (Android) Gateway can be Pinged
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_ARC_DNS_RESOLUTION" desc="Label for Network diagnostics `ARC DNS resolution` test. This test ensures that the Domain Name Server (DNS) can resolve network requests inside ARC.">
+        (Android) DNS resolution
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_CDMA1XRTT" desc="Label for Cellular network technology `CDMA1XRTT`.">
+        CDMA1XRTT
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_EDGE" desc="Label for Cellular network technology `EDGE`.">
+        EDGE
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_EVDO" desc="Label for Cellular network technology `EVDO`.">
+        EVDO
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_GPRS" desc="Label for Cellular network technology `GPRS`.">
+        GPRS
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_GSM" desc="Label for Cellular network technology `GMS`.">
+        GSM
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_HSPA" desc="Label for Cellular network technology `HSPA`.">
+        HSPA
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_HSPA_PLUS" desc="Label for Cellular network technology `HSPAPlus`.">
+        HSPAPlus
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_LTE" desc="Label for Cellular network technology `LTE`.">
+        LTE
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_LTE_ADVANCED" desc="Label for Cellular network technology `LTEAdvanced`.">
+        LTEAdvanced
+      </message>
+      <message name="IDS_NETWORK_DIAGNOSTICS_CELLULAR_UMTS" desc="Label for Cellular network technology `UMTS`.">
+        UMTS
+      </message>
+      <message translateable="false" name="IDS_NETWORK_DIAGNOSTICS_MAC_ADDRESS_LABEL" desc="Label for Mac Address.">
+        MAC
+      </message>
+      <message translateable="false" name="IDS_DIAGNOSTICS_TEST_ON_COMPLETED_TEXT" desc="Message annouced in aria-live when all test routines finished.">
+        Diagnostics completed
       </message>
 
       <!-- Personalization App -->
@@ -1695,6 +1895,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PERSONALIZATION_APP_NETWORK_ERROR" desc="Label for the error page when wallpaper information cannot be downloaded">
         Please connect to a network and reload the page to view wallpaper.
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_LOAD_WALLPAPER_ERROR" desc="Label for the error toast notification when loading current wallpaper failed">
+        Something went wrong. Try reopening the app.
       </message>
       <message name="IDS_PERSONALIZATION_APP_SET_WALLPAPER_ERROR" desc="Label for the error toast notification when setting wallpaper failed">
         There was an error. Please try again by choosing other images.

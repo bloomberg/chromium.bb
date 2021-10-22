@@ -203,8 +203,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     hsl2rgb(s->hue, s->saturation, s->lightness, &c[0], &c[1], &c[2]);
     rgb2yuv(c[0], c[1], c[2], &s->c[0], &s->c[1], &s->c[2], s->depth);
 
-    ctx->internal->execute(ctx, do_slice, frame, NULL,
-                           FFMIN(s->planeheight[1], ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, do_slice, frame, NULL,
+                      FFMIN(s->planeheight[1], ff_filter_get_nb_threads(ctx)));
 
     return ff_filter_frame(ctx->outputs[0], frame);
 }
@@ -232,13 +232,7 @@ static av_cold int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *formats = NULL;
-
-    formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 static av_cold int config_input(AVFilterLink *inlink)
@@ -265,11 +259,10 @@ static const AVFilterPad colorize_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
-        .needs_writable = 1,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = filter_frame,
         .config_props   = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad colorize_outputs[] = {
@@ -277,7 +270,6 @@ static const AVFilterPad colorize_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(ColorizeContext, x)
@@ -299,8 +291,8 @@ const AVFilter ff_vf_colorize = {
     .priv_size     = sizeof(ColorizeContext),
     .priv_class    = &colorize_class,
     .query_formats = query_formats,
-    .inputs        = colorize_inputs,
-    .outputs       = colorize_outputs,
+    FILTER_INPUTS(colorize_inputs),
+    FILTER_OUTPUTS(colorize_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

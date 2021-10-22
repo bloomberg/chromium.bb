@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/site_affiliation/affiliation_service.h"
 
 namespace password_manager {
@@ -43,12 +43,9 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
   using AffiliatedRealmsCallback =
       base::OnceCallback<void(const std::vector<std::string>&)>;
 
-  using PasswordFormsCallback =
-      base::OnceCallback<void(std::vector<std::unique_ptr<PasswordForm>>)>;
-
   // The |password_store| must outlive |this|. Both arguments must be non-NULL,
   // except in tests which do not Initialize() the object.
-  AffiliatedMatchHelper(PasswordStore* password_store,
+  AffiliatedMatchHelper(PasswordStoreInterface* password_store,
                         AffiliationService* affiliation_service);
   AffiliatedMatchHelper(const AffiliatedMatchHelper&) = delete;
   AffiliatedMatchHelper& operator=(const AffiliatedMatchHelper&) = delete;
@@ -65,21 +62,6 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
       const PasswordFormDigest& observed_form,
       AffiliatedRealmsCallback result_callback);
 
-  // Retrieves affiliation and branding information about the Android
-  // credentials in |forms|, sets |affiliated_web_realm|, |app_display_name| and
-  // |app_icon_url| of forms, and invokes |result_callback|.
-  // NOTE: When |strategy_on_cache_miss| is set to |FAIL|, this will not issue
-  // an on-demand network request. And if a request to cache fails, no
-  // affiliation and branding information will be injected into corresponding
-  // form.
-  virtual void InjectAffiliationAndBrandingInformation(
-      std::vector<std::unique_ptr<PasswordForm>> forms,
-      AffiliationService::StrategyOnCacheMiss strategy_on_cache_miss,
-      PasswordFormsCallback result_callback);
-
-  // Returns whether or not |form| represents an Android credential.
-  static bool IsValidAndroidCredential(const PasswordFormDigest& form);
-
   // Returns whether or not |form| represents a valid Web credential for the
   // purposes of affiliation-based matching.
   static bool IsValidWebCredential(const PasswordFormDigest& form);
@@ -90,7 +72,9 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
   // browser start-up into web sites using Android credentials.
   // TODO(engedy): See if we can tie this instead to some meaningful event.
   static constexpr base::TimeDelta kInitializationDelayOnStartup =
-      base::TimeDelta::FromSeconds(8);
+      base::Seconds(8);
+
+  AffiliationService* get_affiliation_service() { return affiliation_service_; }
 
  private:
   // Reads all autofillable credentials from the password store and starts
@@ -106,17 +90,6 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
       const AffiliatedFacets& results,
       bool success);
 
-  // Called back by AffiliationService to supply the list of facets
-  // affiliated with the Android credential in |form|. Injects affiliation and
-  // branding information by setting |affiliated_web_realm|, |app_display_name|
-  // and |app_icon_url| on |form| if |success| is true and |results| is
-  // non-empty. Invokes |barrier_closure|.
-  void CompleteInjectAffiliationAndBrandingInformation(
-      PasswordForm* form,
-      base::OnceClosure barrier_closure,
-      const AffiliatedFacets& results,
-      bool success);
-
   // PasswordStoreInterface::Observer:
   void OnLoginsChanged(PasswordStoreInterface* store,
                        const PasswordStoreChangeList& changes) override;
@@ -128,7 +101,7 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override;
 
-  PasswordStore* const password_store_;
+  PasswordStoreInterface* const password_store_;
 
   AffiliationService* affiliation_service_;
 

@@ -22,11 +22,11 @@ async function webGpuInit(canvasWidth, canvasHeight) {
 
   const context = canvas.getContext('webgpu');
   if (!context) {
-    console.warn('Webgpu not supported. canvas.getContext(gpupresent) fails!');
+    console.warn('Webgpu not supported. canvas.getContext("webgpu") fails!');
     return null;
   }
 
-  return { device, context, canvas };
+  return {adapter, device, context, canvas};
 }
 
 const wgslShaders = {
@@ -235,12 +235,12 @@ function createVertexBufferForAnimation(
   const rectVerts = new Float32Array(136);
 
   // (1) Voice bars.
-  // X, Y, width and height of the last video.
+  // X, Y, width and height of the first video.
   const maxColRow = Math.max(videoColumns, videoRows);
   const w = 2.0 / maxColRow;
   const h = 2.0 / maxColRow;
-  const x = -1.0 + w * (videoColumns - 1);
-  const y = 1.0 - h * (videoRows - 1);
+  const x = -1.0;
+  const y = 1.0;
 
   // Width and height of the icon.
   const wIcon = w / videos[0].width * videos[0].height / 8.0;
@@ -269,7 +269,7 @@ function createVertexBufferForAnimation(
     ], array_index);
   }
 
-  // (2) Borders of the last video
+  // (2) Borders of the first video
   const array_index = 10 * 12;
   rectVerts.set([
     x, y, (x + w), y,
@@ -292,12 +292,12 @@ function createVertexBufferForAnimation(
 
 function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
                                addUI, useImportTextureApi) {
-  const { device, context, canvas } = gpuSetting;
+  const {adapter, device, context, canvas} = gpuSetting;
 
   const verticesBuffer = createVertexBuffer(device, videos, videoRows,
                          videoColumns);
 
-  const swapChainFormat = context.getPreferredFormat(device.adapter);
+  const swapChainFormat = context.getPreferredFormat(adapter);
 
   const swapChain = context.configure({
     device,
@@ -518,7 +518,8 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
   const frameTime30Fps = 32;
   let lastTimestamp = performance.now();
 
-  const oneFrame = (timestamp) => {
+  const oneFrame = () => {
+    const timestamp = performance.now();
     const elapsed = timestamp - lastTimestamp;
     if (elapsed < frameTime30Fps) {
       window.requestAnimationFrame(oneFrame);
@@ -572,14 +573,15 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
       });
   };
 
-  const oneFrameWithImportTextureApi = (timestamp) => {
+  const oneFrameWithImportTextureApi = () => {
+    // Target frame rate: 30 fps. rAF might run at 60 fps.
+    const timestamp = performance.now();
     const elapsed = timestamp - lastTimestamp;
     if (elapsed < frameTime30Fps) {
       window.requestAnimationFrame(oneFrameWithImportTextureApi);
       return;
     }
     lastTimestamp = timestamp;
-
 
     // Always import all videos. The video textures are destroyed before the
     // next frame.
@@ -623,6 +625,14 @@ function webGpuDrawVideoFrames(gpuSetting, videos, videoRows, videoColumns,
     }
     passEncoder.endPass();
     device.queue.submit([commandEncoder.finish()]);
+
+    const functionDuration = performance.now() - timestamp;
+    const interval30Fps = 1000.0 / 30;  // 33.3 ms.
+    if (functionDuration > interval30Fps) {
+      console.warn(
+          'rAF callback oneFrameWithImportTextureApi() takes ',
+          functionDuration, 'ms,  longer than 33.3 ms (1sec/30fps)');
+    }
 
     window.requestAnimationFrame(oneFrameWithImportTextureApi);
   };

@@ -728,7 +728,7 @@ TtsBackground = class extends ChromeTtsBase {
    * @private
    */
   getNumberAsDigits_(text) {
-    return text.replace(/\d+/g, function(num) {
+    return text.replace(/[0-9０-９]+/g, function(num) {
       return num.split('').join(' ');
     });
   }
@@ -773,7 +773,6 @@ TtsBackground = class extends ChromeTtsBase {
     // Remove this property so we don't trap ourselves in a loop.
     delete properties[AbstractTts.PHONETIC_CHARACTERS];
 
-    text = text.toLowerCase();
     // If undefined language, use the UI language of the browser as a best
     // guess.
     if (!properties['lang']) {

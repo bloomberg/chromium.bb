@@ -12,6 +12,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chromeos/ui/base/window_pin_type.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -59,6 +60,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
                    const gfx::Point& origin,
                    bool can_minimize,
                    int container);
+
+  ShellSurfaceBase(const ShellSurfaceBase&) = delete;
+  ShellSurfaceBase& operator=(const ShellSurfaceBase&) = delete;
+
   ~ShellSurfaceBase() override;
 
   // Set the callback to run when the user wants the shell surface to be closed.
@@ -173,11 +178,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void OnSetStartupId(const char* startup_id) override;
   void OnSetApplicationId(const char* application_id) override;
   void SetUseImmersiveForFullscreen(bool value) override;
-  void ShowSnapPreviewToLeft() override;
-  void ShowSnapPreviewToRight() override;
+  void ShowSnapPreviewToPrimary() override;
+  void ShowSnapPreviewToSecondary() override;
   void HideSnapPreview() override;
-  void SetSnappedToLeft() override;
-  void SetSnappedToRight() override;
+  void SetSnappedToPrimary() override;
+  void SetSnappedToSecondary() override;
   void UnsetSnap() override;
   void OnActivationRequested() override;
   void OnSetServerStartResize() override;
@@ -189,6 +194,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   void MoveToDesk(int desk_index) override;
   void SetVisibleOnAllWorkspaces() override;
   void SetInitialWorkspace(const char* initial_workspace) override;
+  void Pin(bool trusted) override;
+  void Unpin() override;
 
   // SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -359,6 +366,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   bool IsFrameDecorationSupported(SurfaceFrameType frame_type);
 
+  void UpdatePinned();
+
   aura::Window* parent_ = nullptr;
   bool activatable_ = true;
   bool can_minimize_ = true;
@@ -388,7 +397,11 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool overlay_overlaps_frame_ = true;
   absl::optional<bool> overlay_can_resize_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellSurfaceBase);
+  // Pin members.
+  chromeos::WindowPinType current_pinned_state_ =
+      chromeos::WindowPinType::kNone;
+  chromeos::WindowPinType pending_pinned_state_ =
+      chromeos::WindowPinType::kNone;
 };
 
 }  // namespace exo

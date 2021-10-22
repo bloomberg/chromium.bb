@@ -13,11 +13,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/theme_provider.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_utils.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -46,8 +47,8 @@ std::unique_ptr<views::WebView> CreateWebView(
   // Set background of webview to the same background as the header. This is to
   // prevent personal color themes from showing in the side panel when
   // navigating to a new Lens results panel.
-  webview->SetBackground(views::CreateThemedSolidBackground(
-      host, ui::NativeTheme::kColorId_WindowBackground));
+  webview->SetBackground(
+      views::CreateThemedSolidBackground(host, ui::kColorWindowBackground));
   return webview;
 }
 
@@ -60,8 +61,8 @@ std::unique_ptr<views::ImageButton> CreateControlButton(
   auto button = views::CreateVectorImageButtonWithNativeTheme(pressed_callback,
                                                               icon, dip_size);
   button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
-  button->SetBackground(views::CreateThemedSolidBackground(
-      host, ui::NativeTheme::kColorId_WindowBackground));
+  button->SetBackground(
+      views::CreateThemedSolidBackground(host, ui::kColorWindowBackground));
   button->SetProperty(views::kMarginsKey, margin_insets);
   return button;
 }
@@ -93,11 +94,10 @@ content::WebContents* LensSidePanelView::GetWebContents() {
 
 void LensSidePanelView::OnThemeChanged() {
   views::FlexLayoutView::OnThemeChanged();
-  separator_->SetColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_MenuSeparatorColor));
+  const auto* color_provider = GetColorProvider();
+  separator_->SetColor(color_provider->GetColor(ui::kColorMenuSeparator));
 
-  const SkColor color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
+  const SkColor color = color_provider->GetColor(ui::kColorIcon);
   // kGoogleLensFullLogoIcon is rectangular. We should create a tiled image so
   // that the coordinates and scale are correct. The vector icon should have its
   // own fill color.
@@ -124,8 +124,8 @@ void LensSidePanelView::CreateAndInstallHeader(
 
   // The minimum cross axis size should the expected height of the header.
   header->SetMinimumCrossAxisSize(kDefaultSidePanelHeaderHeight);
-  header->SetBackground(views::CreateThemedSolidBackground(
-      this, ui::NativeTheme::kColorId_WindowBackground));
+  header->SetBackground(
+      views::CreateThemedSolidBackground(this, ui::kColorWindowBackground));
 
   // Create Google Lens Logo branding.
   branding_ = header->AddChildView(std::make_unique<views::ImageView>());

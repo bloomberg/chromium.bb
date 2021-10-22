@@ -113,6 +113,10 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
   explicit MojoCdmVideoFrame(MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
                                  mojo_shared_buffer_done_cb)
       : mojo_shared_buffer_done_cb_(std::move(mojo_shared_buffer_done_cb)) {}
+
+  MojoCdmVideoFrame(const MojoCdmVideoFrame&) = delete;
+  MojoCdmVideoFrame& operator=(const MojoCdmVideoFrame&) = delete;
+
   ~MojoCdmVideoFrame() final = default;
 
   // VideoFrameImpl implementation.
@@ -144,7 +148,7 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
             {static_cast<int32_t>(Stride(cdm::kYPlane)),
              static_cast<int32_t>(Stride(cdm::kUPlane)),
              static_cast<int32_t>(Stride(cdm::kVPlane))},
-            base::TimeDelta::FromMicroseconds(Timestamp()));
+            base::Microseconds(Timestamp()));
 
     // |frame| could fail to be created if the memory can't be mapped into
     // this address space.
@@ -158,8 +162,6 @@ class MojoCdmVideoFrame final : public VideoFrameImpl {
  private:
   MojoSharedBufferVideoFrame::MojoSharedBufferDoneCB
       mojo_shared_buffer_done_cb_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoCdmVideoFrame);
 };
 
 }  // namespace

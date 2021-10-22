@@ -24,7 +24,7 @@ namespace views {
 
 // Amount of time between when the mouse moves outside the Host's zone and when
 // the listener is notified.
-constexpr auto kNotifyListenerTime = base::TimeDelta::FromMilliseconds(300);
+constexpr auto kNotifyListenerTime = base::Milliseconds(300);
 
 class MouseWatcher::Observer : public ui::EventObserver {
  public:
@@ -35,6 +35,9 @@ class MouseWatcher::Observer : public ui::EventObserver {
         {ui::ET_MOUSE_PRESSED, ui::ET_MOUSE_MOVED, ui::ET_MOUSE_EXITED,
          ui::ET_MOUSE_DRAGGED});
   }
+
+  Observer(const Observer&) = delete;
+  Observer& operator=(const Observer&) = delete;
 
   // ui::EventObserver:
   void OnEvent(const ui::Event& event) override {
@@ -95,8 +98,6 @@ class MouseWatcher::Observer : public ui::EventObserver {
 
   // A factory that is used to construct a delayed callback to the listener.
   base::WeakPtrFactory<Observer> notify_listener_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
 MouseWatcherListener::~MouseWatcherListener() = default;

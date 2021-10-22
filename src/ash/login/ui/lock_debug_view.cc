@@ -33,7 +33,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -190,6 +190,12 @@ class LockDebugView::DebugDataDispatcherTransformer
         lock_debug_view_(lock_debug_view) {
     root_dispatcher_->AddObserver(this);
   }
+
+  DebugDataDispatcherTransformer(const DebugDataDispatcherTransformer&) =
+      delete;
+  DebugDataDispatcherTransformer& operator=(
+      const DebugDataDispatcherTransformer&) = delete;
+
   ~DebugDataDispatcherTransformer() override {
     root_dispatcher_->RemoveObserver(this);
   }
@@ -431,12 +437,10 @@ class LockDebugView::DebugDataDispatcherTransformer
       case DebugAuthEnabledState::kTimeWindowLimit:
         debug_dispatcher_.DisableAuthForUser(
             debug_user->account_id,
-            AuthDisabledData(reason,
-                             base::Time::Now() +
-                                 base::TimeDelta::FromHours(user_index) +
-                                 base::TimeDelta::FromHours(8),
-                             base::TimeDelta::FromMinutes(15),
-                             true /*bool disable_lock_screen_media*/));
+            AuthDisabledData(
+                reason,
+                base::Time::Now() + base::Hours(user_index) + base::Hours(8),
+                base::Minutes(15), true /*bool disable_lock_screen_media*/));
         break;
       case DebugAuthEnabledState::kMultiProfilePrimaryOnly:
       case DebugAuthEnabledState::kMultiProfileNotAllowed:
@@ -593,8 +597,6 @@ class LockDebugView::DebugDataDispatcherTransformer
   // direct calls to the lock screen. We need either an instance of
   // LockDebugView or LockContentsView in order to do so.
   LockDebugView* const lock_debug_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(DebugDataDispatcherTransformer);
 };
 
 // In-memory wrapper around LoginDetachableBaseModel used by lock UI.
@@ -606,6 +608,11 @@ class LockDebugView::DebugLoginDetachableBaseModel
   static constexpr int kNullBaseId = -1;
 
   DebugLoginDetachableBaseModel() = default;
+
+  DebugLoginDetachableBaseModel(const DebugLoginDetachableBaseModel&) = delete;
+  DebugLoginDetachableBaseModel& operator=(
+      const DebugLoginDetachableBaseModel&) = delete;
+
   ~DebugLoginDetachableBaseModel() override = default;
 
   bool debugging_pairing_state() const { return pairing_status_.has_value(); }
@@ -719,8 +726,6 @@ class LockDebugView::DebugLoginDetachableBaseModel
   // Maps user account to the last used detachable base ID (base ID being the
   // base's index in kDebugDetachableBases array).
   std::map<AccountId, int> last_used_bases_;
-
-  DISALLOW_COPY_AND_ASSIGN(DebugLoginDetachableBaseModel);
 };
 
 LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,

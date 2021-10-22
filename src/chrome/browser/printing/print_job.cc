@@ -37,7 +37,6 @@
 #include "printing/printing_features.h"
 #endif
 
-using base::TimeDelta;
 
 namespace printing {
 
@@ -594,7 +593,7 @@ void PrintJob::ControlledWorkerShutdown() {
   if (worker_->IsRunning()) {
     content::GetUIThreadTaskRunner({})->PostDelayedTask(
         FROM_HERE, base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
-        base::TimeDelta::FromMilliseconds(100));
+        base::Milliseconds(100));
     return;
   }
 #endif

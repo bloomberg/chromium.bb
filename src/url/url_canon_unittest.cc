@@ -6,8 +6,10 @@
 #include <stddef.h>
 
 #include "base/cxx17_backports.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -2373,6 +2375,11 @@ TEST(URLCanonTest, ResolveRelativeURL) {
       // is not file.
     {"http://host/a", true, false, "/c:\\foo", true, true, true, "http://host/c:/foo"},
     {"http://host/a", true, false, "//c:\\foo", true, true, true, "http://c/foo"},
+      // Cross-platform relative file: resolution behavior.
+    {"file://host/a", true, true, "/", true, true, true, "file://host/"},
+    {"file://host/a", true, true, "//", true, true, true, "file:///"},
+    {"file://host/a", true, true, "/b", true, true, true, "file://host/b"},
+    {"file://host/a", true, true, "//b", true, true, true, "file://b/"},
       // Ensure that ports aren't allowed for hosts relative to a file url.
       // Although the result string shows a host:port portion, the call to
       // resolve the relative URL returns false, indicating parse failure,
@@ -2510,6 +2517,47 @@ TEST(URLCanonTest, DefaultPortForScheme) {
   }
 }
 
+TEST(URLCanonTest, FindWindowsDriveLetter) {
+  struct TestCase {
+    base::StringPiece spec;
+    int begin;
+    int end;  // -1 for end of spec
+    int expected_drive_letter_pos;
+  } cases[] = {
+      {"/", 0, -1, -1},
+
+      {"c:/foo", 0, -1, 0},
+      {"/c:/foo", 0, -1, 1},
+      {"//c:/foo", 0, -1, -1},  // "//" does not canonicalize to "/"
+      {"\\C|\\foo", 0, -1, 1},
+      {"/cd:/foo", 0, -1, -1},  // "/c" does not canonicalize to "/"
+      {"/./c:/foo", 0, -1, 3},
+      {"/.//c:/foo", 0, -1, -1},  // "/.//" does not canonicalize to "/"
+      {"/././c:/foo", 0, -1, 5},
+      {"/abc/c:/foo", 0, -1, -1},  // "/abc/" does not canonicalize to "/"
+      {"/abc/./../c:/foo", 0, -1, 10},
+
+      {"/c:/c:/foo", 3, -1, 4},  // actual input is "/c:/foo"
+      {"/c:/foo", 3, -1, -1},    // actual input is "/foo"
+      {"/c:/foo", 0, 1, -1},     // actual input is "/"
+  };
+
+  for (const auto& c : cases) {
+    int end = c.end;
+    if (end == -1)
+      end = c.spec.size();
+
+    EXPECT_EQ(c.expected_drive_letter_pos,
+              FindWindowsDriveLetter(c.spec.data(), c.begin, end))
+        << "for " << c.spec << "[" << c.begin << ":" << end << "] (UTF-8)";
+
+    std::u16string spec16 = base::ASCIIToUTF16(c.spec);
+    EXPECT_EQ(c.expected_drive_letter_pos,
+              FindWindowsDriveLetter(spec16.data(), c.begin, end))
+        << "for " << c.spec << "[" << c.begin << ":" << end << "] (UTF-16)";
+  }
+}
+
 TEST(URLCanonTest, IDNToASCII) {
   RawCanonOutputW<1024> output;
 
@@ -2559,6 +2607,51 @@ TEST(URLCanonTest, IDNToASCII) {
   str = u"xn--1⁄4";
   EXPECT_FALSE(IDNToASCII(str.data(), str.length(), &output));
   output.set_length(0);
+}
+
+TEST(URLCanonTest, EscapedHostCharToEnum) {
+  EXPECT_EQ(EscapedHostChar::kSpace, EscapedHostCharToEnum(' '));
+  EXPECT_EQ(EscapedHostChar::kBang, EscapedHostCharToEnum('!'));
+  EXPECT_EQ(EscapedHostChar::kDoubleQuote, EscapedHostCharToEnum('"'));
+  EXPECT_EQ(EscapedHostChar::kHash, EscapedHostCharToEnum('#'));
+  EXPECT_EQ(EscapedHostChar::kDollar, EscapedHostCharToEnum('$'));
+  EXPECT_EQ(EscapedHostChar::kAmpersand, EscapedHostCharToEnum('&'));
+  EXPECT_EQ(EscapedHostChar::kSingleQuote, EscapedHostCharToEnum('\''));
+  EXPECT_EQ(EscapedHostChar::kLeftParen, EscapedHostCharToEnum('('));
+  EXPECT_EQ(EscapedHostChar::kRightParen, EscapedHostCharToEnum(')'));
+  EXPECT_EQ(EscapedHostChar::kAsterisk, EscapedHostCharToEnum('*'));
+  EXPECT_EQ(EscapedHostChar::kComma, EscapedHostCharToEnum(','));
+  EXPECT_EQ(EscapedHostChar::kLeftAngle, EscapedHostCharToEnum('<'));
+  EXPECT_EQ(EscapedHostChar::kEquals, EscapedHostCharToEnum('='));
+  EXPECT_EQ(EscapedHostChar::kRightAngle, EscapedHostCharToEnum('>'));
+  EXPECT_EQ(EscapedHostChar::kAt, EscapedHostCharToEnum('@'));
+  EXPECT_EQ(EscapedHostChar::kBackTick, EscapedHostCharToEnum('`'));
+  EXPECT_EQ(EscapedHostChar::kLeftCurly, EscapedHostCharToEnum('{'));
+  EXPECT_EQ(EscapedHostChar::kPipe, EscapedHostCharToEnum('|'));
+  EXPECT_EQ(EscapedHostChar::kRightCurly, EscapedHostCharToEnum('}'));
+
+  EXPECT_EQ(EscapedHostChar::kUnknown, EscapedHostCharToEnum('a'));
+  EXPECT_EQ(EscapedHostChar::kUnknown, EscapedHostCharToEnum('\\'));
+}
+
+TEST(URLCanonTest, EscapedHostCharHistograms) {
+  std::string input("foo  <bar>");
+
+  Component in_comp(0, input.size());
+  Component out_comp;
+  std::string out_str;
+  StdStringCanonOutput output(&out_str);
+
+  base::HistogramTester histogram_tester;
+  bool success = CanonicalizeHost(input.data(), in_comp, &output, &out_comp);
+  ASSERT_TRUE(success);
+  histogram_tester.ExpectBucketCount("URL.Host.DidEscape", 1, 1);
+  histogram_tester.ExpectBucketCount("URL.Host.EscapeChar",
+                                     EscapedHostChar::kSpace, 1);
+  histogram_tester.ExpectBucketCount("URL.Host.EscapeChar",
+                                     EscapedHostChar::kLeftAngle, 1);
+  histogram_tester.ExpectBucketCount("URL.Host.EscapeChar",
+                                     EscapedHostChar::kRightAngle, 1);
 }
 
 }  // namespace url

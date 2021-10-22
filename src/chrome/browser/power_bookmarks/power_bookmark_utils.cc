@@ -7,14 +7,19 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
+#include "base/guid.h"
 #include "base/i18n/string_search.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "chrome/browser/commerce/shopping_list/shopping_data_provider.h"
 #include "chrome/browser/power_bookmarks/proto/power_bookmark_meta.pb.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/models/tree_node_iterator.h"
+#include "url/gurl.h"
 
 namespace power_bookmarks {
 
@@ -23,16 +28,61 @@ const char kPowerBookmarkMetaKey[] = "power_bookmark_meta";
 PowerBookmarkQueryFields::PowerBookmarkQueryFields() = default;
 PowerBookmarkQueryFields::~PowerBookmarkQueryFields() = default;
 
+const bookmarks::BookmarkNode* AddURL(
+    content::WebContents* web_contents,
+    bookmarks::BookmarkModel* model,
+    const bookmarks::BookmarkNode* parent,
+    size_t index,
+    const std::u16string& title,
+    const GURL& url,
+    bookmarks::BookmarkNode::MetaInfoMap* meta_info,
+    absl::optional<base::Time> creation_time,
+    absl::optional<base::GUID> guid) {
+  CHECK(web_contents);
+  CHECK(model);
+
+  // Add meta info if available.
+  // TODO(1247352): Long-term, power bookmarks should not know about individual
+  //                features. Rather features should register themselves as
+  //                providers of this information.
+  shopping_list::ShoppingDataProvider* data_provider =
+      shopping_list::ShoppingDataProvider::FromWebContents(web_contents);
+  bookmarks::BookmarkNode::MetaInfoMap local_meta_info;
+  if (data_provider) {
+    std::unique_ptr<PowerBookmarkMeta> meta =
+        data_provider->GetCurrentMetadata();
+    if (meta) {
+      if (!meta_info)
+        meta_info = &local_meta_info;
+
+      std::string data;
+      EncodeMetaForStorage(*meta.get(), &data);
+      (*meta_info)[kPowerBookmarkMetaKey] = data;
+    }
+  }
+
+  const bookmarks::BookmarkNode* node =
+      model->AddURL(parent, index, title, url, meta_info, creation_time, guid);
+
+  return node;
+}
+
 std::unique_ptr<PowerBookmarkMeta> GetNodePowerBookmarkMeta(
+    bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* node) {
-  std::string proto_string;
-  if (!node || !node->GetMetaInfo(kPowerBookmarkMetaKey, &proto_string))
+  if (!model)
+    return nullptr;
+
+  std::string raw_meta;
+  if (!node || !node->GetMetaInfo(kPowerBookmarkMetaKey, &raw_meta))
     return nullptr;
 
   std::unique_ptr<PowerBookmarkMeta> meta =
       std::make_unique<PowerBookmarkMeta>();
-  if (!meta->ParseFromString(proto_string))
+  if (!DecodeMetaFromStorage(raw_meta, meta.get())) {
     meta.reset();
+    DeleteNodePowerBookmarkMeta(model, node);
+  }
 
   return meta;
 }
@@ -45,9 +95,9 @@ void SetNodePowerBookmarkMeta(bookmarks::BookmarkModel* model,
 
   CHECK(meta);
 
-  std::string proto_string;
-  meta->SerializeToString(&proto_string);
-  model->SetNodeMetaInfo(node, kPowerBookmarkMetaKey, proto_string);
+  std::string data;
+  EncodeMetaForStorage(*meta.get(), &data);
+  model->SetNodeMetaInfo(node, kPowerBookmarkMetaKey, data);
 }
 
 void DeleteNodePowerBookmarkMeta(bookmarks::BookmarkModel* model,
@@ -80,7 +130,7 @@ bool DoBookmarkTagsContainWords(const std::unique_ptr<PowerBookmarkMeta>& meta,
 template <class type>
 void GetBookmarksMatchingPropertiesImpl(
     type& iterator,
-    const bookmarks::BookmarkModel* model,
+    bookmarks::BookmarkModel* model,
     const PowerBookmarkQueryFields& query,
     const std::vector<std::u16string>& query_words,
     size_t max_count,
@@ -93,7 +143,8 @@ void GetBookmarksMatchingPropertiesImpl(
         query_words.empty() || bookmarks::DoesBookmarkContainWords(
                                    node->GetTitle(), node->url(), query_words);
 
-    std::unique_ptr<PowerBookmarkMeta> meta = GetNodePowerBookmarkMeta(node);
+    std::unique_ptr<PowerBookmarkMeta> meta =
+        GetNodePowerBookmarkMeta(model, node);
 
     // Similarly, if the query is empty, we want this test to pass.
     bool tags_match_query =
@@ -153,6 +204,10 @@ void GetBookmarksMatchingProperties(
   if (query.word_phrase_query && query_words.empty() && query.tags.empty())
     return;
 
+  const bookmarks::BookmarkNode* search_folder = model->root_node();
+  if (query.folder && query.folder->is_folder())
+    search_folder = query.folder;
+
   if (query.url) {
     // Shortcut into the BookmarkModel if searching for URL.
     GURL url(*query.url);
@@ -163,12 +218,29 @@ void GetBookmarksMatchingProperties(
     GetBookmarksMatchingPropertiesImpl<bookmarks::VectorIterator>(
         iterator, model, query, query_words, max_count, nodes);
   } else {
-    ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-        model->root_node());
+    ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(search_folder);
     GetBookmarksMatchingPropertiesImpl<
         ui::TreeNodeIterator<const bookmarks::BookmarkNode>>(
         iterator, model, query, query_words, max_count, nodes);
   }
+}
+
+void EncodeMetaForStorage(const PowerBookmarkMeta& meta, std::string* out) {
+  std::string data;
+  meta.SerializeToString(&data);
+  base::Base64Encode(data, out);
+}
+
+bool DecodeMetaFromStorage(const std::string& data, PowerBookmarkMeta* out) {
+  if (!out)
+    return false;
+
+  std::string decoded_data;
+
+  if (!base::Base64Decode(data, &decoded_data))
+    return false;
+
+  return out->ParseFromString(decoded_data);
 }
 
 }  // namespace power_bookmarks

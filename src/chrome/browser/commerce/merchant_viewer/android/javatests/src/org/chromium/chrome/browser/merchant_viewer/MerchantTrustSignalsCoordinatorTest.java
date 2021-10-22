@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.merchant_viewer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.verify;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 
 import androidx.test.filters.SmallTest;
 
@@ -25,6 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
@@ -35,17 +39,22 @@ import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics.MessageClearReason;
+import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator.OmniboxIconController;
 import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignals;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
@@ -114,8 +123,24 @@ public class MerchantTrustSignalsCoordinatorTest {
     @Mock
     private PrefService mMockPrefService;
 
+    @Mock
+    private WindowAndroid mMockWindowAndroid;
+
+    @Mock
+    private OmniboxIconController mMockIconController;
+
+    @Mock
+    private Drawable mMockDrawable;
+
+    @Mock
+    private Tracker mMockTracker;
+
+    @Captor
+    private ArgumentCaptor<Runnable> mOnBottomSheetDismissedCaptor;
+
     private static final String FAKE_HOST = "fake_host";
     private static final String DIFFERENT_HOST = "different_host";
+    private static final String FAKE_URL = "fake_url";
 
     private MerchantTrustSignals mDummyMerchantTrustSignals = MerchantTrustSignals.newBuilder()
                                                                       .setMerchantStarRating(4.5f)
@@ -125,6 +150,7 @@ public class MerchantTrustSignalsCoordinatorTest {
     private MerchantTrustSignalsCoordinator mCoordinator;
     private FeatureList.TestValues mTestValues;
     private String mSerializedTimestamps;
+    private MerchantTrustMessageContext mMessageContext;
 
     @Before
     public void setUp() {
@@ -165,9 +191,14 @@ public class MerchantTrustSignalsCoordinatorTest {
         mTestValues = new FeatureList.TestValues();
         mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
                 MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_WINDOW_DURATION_PARAM, "-1");
+        mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
+                MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_DISABLED_PARAM, "false");
+        mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
+                MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_RATING_THRESHOLD_PARAM, "4.0");
         FeatureList.setTestValues(mTestValues);
 
-        mCoordinator = spy(new MerchantTrustSignalsCoordinator(mMockContext,
+        mMessageContext = new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents);
+        mCoordinator = spy(new MerchantTrustSignalsCoordinator(mMockContext, mMockWindowAndroid,
                 mMockMerchantMessageScheduler, mMockTabProvider, mMockMerchantTrustDataProvider,
                 mMockProfileSupplier, mMockMetrics, mMockDetailsTabCoordinator,
                 mMockMerchantTrustStorageFactory));
@@ -175,6 +206,9 @@ public class MerchantTrustSignalsCoordinatorTest {
                 .when(mCoordinator)
                 .getSiteEngagementScore(any(Profile.class), any(String.class));
         doReturn(mMockPrefService).when(mCoordinator).getPrefService();
+        doReturn(mMockDrawable).when(mCoordinator).getStoreIconDrawable();
+        doReturn(false).when(mCoordinator).isStoreInfoFeatureEnabled();
+        doReturn(true).when(mCoordinator).isOnSecureWebsite(any(WebContents.class));
     }
 
     @After
@@ -185,18 +219,89 @@ public class MerchantTrustSignalsCoordinatorTest {
 
     @SmallTest
     @Test
-    public void testMaybeDisplayMessage() {
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+    public void testFetchTrustSiganl_WithoutScheduledMessage() {
+        setMockTrustSignalsData(null);
 
+        doReturn(null).when(mMockMerchantMessageScheduler).getScheduledMessageContext();
+        mCoordinator.onFinishEligibleNavigation(mMessageContext);
         verify(mMockMerchantMessageScheduler, times(1))
                 .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
-        verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
         verify(mMockMerchantTrustDataProvider, times(1))
                 .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
+    public void testFetchTrustSiganl_WithScheduledMessage() {
+        setMockTrustSignalsData(null);
+
+        doReturn(FAKE_HOST).when(mMockGurl2).getHost();
+        doReturn(DIFFERENT_HOST).when(mMockGurl2).getSpec();
+        doReturn(new MerchantTrustMessageContext(mMockNavigationHandle2, mMockWebContents))
+                .when(mMockMerchantMessageScheduler)
+                .getScheduledMessageContext();
+        mCoordinator.onFinishEligibleNavigation(mMessageContext);
+        verify(mMockMerchantMessageScheduler, times(1))
+                .clear(eq(MessageClearReason.NAVIGATE_TO_SAME_DOMAIN));
+        verify(mMockMerchantTrustDataProvider, times(1))
+                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
+    public void testFetchTrustSiganl_WithScheduledMessage_ForSameUrl() {
+        setMockTrustSignalsData(null);
+
+        doReturn(FAKE_HOST).when(mMockGurl2).getHost();
+        doReturn(FAKE_HOST).when(mMockGurl2).getSpec();
+        doReturn(new MerchantTrustMessageContext(mMockNavigationHandle2, mMockWebContents))
+                .when(mMockMerchantMessageScheduler)
+                .getScheduledMessageContext();
+        mCoordinator.onFinishEligibleNavigation(mMessageContext);
+        verify(mMockMerchantMessageScheduler, times(1))
+                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
+        verify(mMockMerchantTrustDataProvider, times(1))
+                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
+    public void testFetchTrustSiganl_WithScheduledMessage_ForDifferentHost() {
+        setMockTrustSignalsData(null);
+
+        doReturn(DIFFERENT_HOST).when(mMockGurl2).getHost();
+        doReturn(DIFFERENT_HOST).when(mMockGurl2).getSpec();
+        doReturn(new MerchantTrustMessageContext(mMockNavigationHandle2, mMockWebContents))
+                .when(mMockMerchantMessageScheduler)
+                .getScheduledMessageContext();
+        mCoordinator.onFinishEligibleNavigation(mMessageContext);
+        verify(mMockMerchantMessageScheduler, times(1))
+                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
+        verify(mMockMerchantTrustDataProvider, times(1))
+                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
+    public void testMaybeDisplayMessage_ShouldNotExpediteMessage() {
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
+
+        verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
         verify(mMockMerchantMessageScheduler, times(1))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
                         eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
+                        any(Callback.class));
+    }
+
+    @SmallTest
+    @Test
+    public void testMaybeDisplayMessage_ShouldExpediteMessage() {
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, true);
+
+        verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
+        verify(mMockMerchantMessageScheduler, times(1))
+                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
+                        eq((long) MerchantTrustMessageScheduler.MESSAGE_ENQUEUE_NO_DELAY),
                         any(Callback.class));
     }
 
@@ -209,33 +314,22 @@ public class MerchantTrustSignalsCoordinatorTest {
                 .when(mMockMerchantTrustSignalsEvent)
                 .getTimestamp();
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(0))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(0))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
     @Test
-    public void testMaybeDisplayMessage_FirstTime() {
+    public void testMaybeDisplayMessage_NoPreviousEvent() {
         setMockTrustSignalsEventData(FAKE_HOST, null);
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(1))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(1))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
                         eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
@@ -245,20 +339,12 @@ public class MerchantTrustSignalsCoordinatorTest {
     @SmallTest
     @Test
     public void testMaybeDisplayMessage_NoMerchantTrustData() {
-        setMockTrustSignalsData(null);
+        mCoordinator.maybeDisplayMessage(null, mMessageContext, false);
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
-
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
-        verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(1))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
+        verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
         verify(mMockMerchantMessageScheduler, times(0))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
@@ -266,18 +352,12 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testMaybeDisplayMessage_WithInvalidStorage() {
         doReturn(null).when(mMockMerchantTrustStorageFactory).getForLastUsedProfile();
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(0))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(0))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
@@ -285,18 +365,12 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testMaybeDisplayMessage_WithInvalidNavigationHandler() {
         doReturn(null).when(mMockNavigationHandle).getUrl();
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(0))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(0))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
@@ -310,18 +384,12 @@ public class MerchantTrustSignalsCoordinatorTest {
                 .when(mCoordinator)
                 .getSiteEngagementScore(any(Profile.class), any(String.class));
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(0))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(0))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
@@ -335,14 +403,9 @@ public class MerchantTrustSignalsCoordinatorTest {
                 .when(mCoordinator)
                 .getSiteEngagementScore(any(Profile.class), any(String.class));
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(1)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(1))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(1))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
                         eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
@@ -354,63 +417,56 @@ public class MerchantTrustSignalsCoordinatorTest {
     public void testMaybeDisplayMessage_AlreadyReachedMaxAllowedNumber() {
         doReturn(true).when(mCoordinator).hasReachedMaxAllowedMessageNumberInGivenTime();
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1))
-                .clear(eq(MessageClearReason.NAVIGATE_TO_DIFFERENT_DOMAIN));
         verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
-        verify(mMockMerchantTrustDataProvider, times(0))
-                .getDataForNavigationHandle(eq(mMockNavigationHandle), any(Callback.class));
         verify(mMockMerchantMessageScheduler, times(0))
                 .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
-                        eq((long) MerchantViewerConfig.getDefaultTrustSignalsMessageDelay()),
-                        any(Callback.class));
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
     @Test
-    public void testMaybeDisplayMessage_WithScheduledMessage() {
-        doReturn(FAKE_HOST).when(mMockGurl2).getHost();
-        doReturn(DIFFERENT_HOST).when(mMockGurl2).getSpec();
-        doReturn(new MerchantTrustMessageContext(mMockNavigationHandle2, mMockWebContents))
-                .when(mMockMerchantMessageScheduler)
-                .getScheduledMessageContext();
+    public void testMaybeDisplayMessage_OnNonSecureWebsite() {
+        doReturn(false).when(mCoordinator).isOnSecureWebsite(any(WebContents.class));
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(1)).expedite(any(Callback.class));
+        verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
+        verify(mMockMerchantMessageScheduler, times(0))
+                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
     @Test
-    public void testMaybeDisplayMessage_WithScheduledMessage_ForSameUrl() {
-        doReturn(FAKE_HOST).when(mMockGurl2).getHost();
-        doReturn(FAKE_HOST).when(mMockGurl2).getSpec();
-        doReturn(new MerchantTrustMessageContext(mMockNavigationHandle2, mMockWebContents))
-                .when(mMockMerchantMessageScheduler)
-                .getScheduledMessageContext();
+    public void testMaybeDisplayMessage_MessageDisabled() {
+        mTestValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER,
+                MerchantViewerConfig.TRUST_SIGNALS_MESSAGE_DISABLED_PARAM, "true");
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(mDummyMerchantTrustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(0)).expedite(any(Callback.class));
+        verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
+        verify(mMockMerchantMessageScheduler, times(0))
+                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
     @Test
-    public void testMaybeDisplayMessage_WithScheduledMessage_ForDifferentHost() {
-        doReturn(DIFFERENT_HOST).when(mMockGurl2).getHost();
-        doReturn(DIFFERENT_HOST).when(mMockGurl2).getSpec();
-        doReturn(new MerchantTrustMessageContext(mMockNavigationHandle2, mMockWebContents))
-                .when(mMockMerchantMessageScheduler)
-                .getScheduledMessageContext();
+    public void testMaybeDisplayMessage_MerchantRatingBelowThreshold() {
+        MerchantTrustSignals trustSignals = MerchantTrustSignals.newBuilder()
+                                                    .setMerchantStarRating(3.5f)
+                                                    .setMerchantCountRating(100)
+                                                    .setMerchantDetailsPageUrl("")
+                                                    .build();
 
-        mCoordinator.maybeDisplayMessage(
-                new MerchantTrustMessageContext(mMockNavigationHandle, mMockWebContents));
+        mCoordinator.maybeDisplayMessage(trustSignals, mMessageContext, false);
 
-        verify(mMockMerchantMessageScheduler, times(0)).expedite(any(Callback.class));
+        verify(mMockMerchantTrustStorage, times(0)).delete(eq(mMockMerchantTrustSignalsEvent));
+        verify(mMockMerchantMessageScheduler, times(0))
+                .schedule(any(PropertyModel.class), any(MerchantTrustMessageContext.class),
+                        anyLong(), any(Callback.class));
     }
 
     @SmallTest
@@ -428,17 +484,38 @@ public class MerchantTrustSignalsCoordinatorTest {
     @SmallTest
     @Test
     public void testOnMessageDismissed() {
-        mCoordinator.onMessageDismissed(DismissReason.TIMER);
+        mCoordinator.onMessageDismissed(DismissReason.TIMER, FAKE_URL);
         verify(mMockMetrics, times(1)).recordMetricsForMessageDismissed(eq(DismissReason.TIMER));
+        verify(mCoordinator, times(1)).maybeShowStoreIcon(eq(FAKE_URL));
     }
 
     @SmallTest
     @Test
     public void testOnMessagePrimaryAction() {
-        mCoordinator.onMessagePrimaryAction(mDummyMerchantTrustSignals);
+        mCoordinator.onMessagePrimaryAction(mDummyMerchantTrustSignals, FAKE_URL);
         verify(mMockMetrics, times(1)).recordMetricsForMessageTapped();
         verify(mMockDetailsTabCoordinator, times(1))
-                .requestOpenSheet(any(GURL.class), any(String.class));
+                .requestOpenSheet(any(GURL.class), any(String.class),
+                        mOnBottomSheetDismissedCaptor.capture());
+        mOnBottomSheetDismissedCaptor.getValue().run();
+        verify(mCoordinator, times(1)).maybeShowStoreIcon(eq(FAKE_URL));
+    }
+
+    @SmallTest
+    @Test
+    public void testOnStoreInfoClicked() {
+        TrackerFactory.setTrackerForTests(mMockTracker);
+
+        mCoordinator.onStoreInfoClicked(mDummyMerchantTrustSignals);
+        verify(mMockDetailsTabCoordinator, times(1))
+                .requestOpenSheet(any(GURL.class), any(String.class),
+                        mOnBottomSheetDismissedCaptor.capture());
+        verify(mMockTracker, times(1))
+                .notifyEvent(eq(EventConstants.PAGE_INFO_STORE_INFO_ROW_CLICKED));
+        mOnBottomSheetDismissedCaptor.getValue().run();
+        verify(mCoordinator, times(0)).maybeShowStoreIcon(any());
+
+        TrackerFactory.setTrackerForTests(null);
     }
 
     @SmallTest
@@ -472,6 +549,23 @@ public class MerchantTrustSignalsCoordinatorTest {
         timestamps = mSerializedTimestamps.split("_");
         Assert.assertEquals(3, timestamps.length);
         Assert.assertTrue(mCoordinator.hasReachedMaxAllowedMessageNumberInGivenTime());
+    }
+
+    @SmallTest
+    @Test
+    public void testMaybeShowStoreIcon() {
+        doReturn(true).when(mCoordinator).isStoreInfoFeatureEnabled();
+        mCoordinator.setOmniboxIconController(mMockIconController);
+
+        mCoordinator.maybeShowStoreIcon(null);
+        verify(mMockIconController, times(0))
+                .showStoreIcon(eq(mMockWindowAndroid), eq(FAKE_URL), eq(mMockDrawable), anyInt());
+
+        mCoordinator.maybeShowStoreIcon(FAKE_URL);
+        verify(mMockIconController, times(1))
+                .showStoreIcon(eq(mMockWindowAndroid), eq(FAKE_URL), eq(mMockDrawable), anyInt());
+
+        mCoordinator.setOmniboxIconController(null);
     }
 
     private void setMockTrustSignalsData(MerchantTrustSignals trustSignalsData) {

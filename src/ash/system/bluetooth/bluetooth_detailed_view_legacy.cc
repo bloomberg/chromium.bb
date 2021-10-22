@@ -51,32 +51,32 @@ const gfx::VectorIcon& GetBluetoothDeviceIcon(
     BluetoothDeviceInfo::ConnectionState connection_state) {
   switch (device_type) {
     case BluetoothDeviceInfo::DeviceType::kComputer:
-      return ash::kSystemMenuComputerIcon;
+      return ash::kSystemMenuComputerLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kPhone:
-      return ash::kSystemMenuPhoneIcon;
+      return ash::kSystemMenuPhoneLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kAudio:
     case BluetoothDeviceInfo::DeviceType::kCarAudio:
-      return ash::kSystemMenuHeadsetIcon;
+      return ash::kSystemMenuHeadsetLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kVideo:
-      return ash::kSystemMenuVideocamIcon;
+      return ash::kSystemMenuVideocamLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kJoystick:
     case BluetoothDeviceInfo::DeviceType::kGamepad:
-      return ash::kSystemMenuGamepadIcon;
+      return ash::kSystemMenuGamepadLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kKeyboard:
     case BluetoothDeviceInfo::DeviceType::kKeyboardMouseCombo:
-      return ash::kSystemMenuKeyboardIcon;
+      return ash::kSystemMenuKeyboardLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kTablet:
-      return ash::kSystemMenuTabletIcon;
+      return ash::kSystemMenuTabletLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kMouse:
-      return ash::kSystemMenuMouseIcon;
+      return ash::kSystemMenuMouseLegacyIcon;
     case BluetoothDeviceInfo::DeviceType::kModem:
     case BluetoothDeviceInfo::DeviceType::kPeripheral:
-      return ash::kSystemMenuBluetoothIcon;
+      return ash::kSystemMenuBluetoothLegacyIcon;
     default:
       return connection_state ==
                      BluetoothDeviceInfo::ConnectionState::kConnected
-                 ? ash::kSystemMenuBluetoothConnectedIcon
-                 : ash::kSystemMenuBluetoothIcon;
+                 ? ash::kSystemMenuBluetoothConnectedLegacyIcon
+                 : ash::kSystemMenuBluetoothLegacyIcon;
   }
 }
 
@@ -227,7 +227,7 @@ void BluetoothDetailedViewLegacy::UpdateDeviceScrollList(
     index = AddSameTypeDevicesToScrollList(paired_not_connected_devices,
                                            old_device_map, index, false, false);
   } else if (paired_devices_heading_) {
-    scroll_content()->RemoveChildView(paired_devices_heading_);
+    scroll_content()->RemoveChildViewT(paired_devices_heading_);
     paired_devices_heading_ = nullptr;
   }
 
@@ -245,7 +245,7 @@ void BluetoothDetailedViewLegacy::UpdateDeviceScrollList(
 
   if (unpaired_devices_heading_ &&
       (discovered_not_paired_devices.empty() || !has_paired_devices)) {
-    scroll_content()->RemoveChildView(unpaired_devices_heading_);
+    scroll_content()->RemoveChildViewT(unpaired_devices_heading_);
     unpaired_devices_heading_ = nullptr;
   }
 
@@ -259,14 +259,14 @@ void BluetoothDetailedViewLegacy::UpdateDeviceScrollList(
       scroll_content()->ReorderChildView(bluetooth_discovering_label_, index++);
     }
   } else if (bluetooth_discovering_label_) {
-    scroll_content()->RemoveChildView(bluetooth_discovering_label_);
+    scroll_content()->RemoveChildViewT(bluetooth_discovering_label_);
     bluetooth_discovering_label_ = nullptr;
   }
 
   // Remove views for devices from old_device_map that are not in device_map_.
   for (auto& view_and_address : old_device_map) {
     if (device_map_.find(view_and_address.first) == device_map_.end()) {
-      scroll_content()->RemoveChildView(view_and_address.first);
+      scroll_content()->RemoveChildViewT(view_and_address.first);
     }
   }
 

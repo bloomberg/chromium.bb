@@ -43,7 +43,7 @@
 #include "chrome/browser/ui/ash/shelf/extension_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
@@ -94,6 +94,10 @@ std::string GetAppNameInShelfGroup(uint32_t task_id) {
 }
 
 class ShelfContextMenuTest : public ChromeAshTestBase {
+ public:
+  ShelfContextMenuTest(const ShelfContextMenuTest&) = delete;
+  ShelfContextMenuTest& operator=(const ShelfContextMenuTest&) = delete;
+
  protected:
   ShelfContextMenuTest() = default;
   ~ShelfContextMenuTest() override = default;
@@ -247,8 +251,6 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   std::unique_ptr<ChromeShelfItemFactory> shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> shelf_controller_;
   extensions::ExtensionService* extension_service_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfContextMenuTest);
 };
 
 // Verifies that "New Incognito window" menu item in the launcher context
@@ -265,8 +267,8 @@ TEST_F(ShelfContextMenuTest,
       shelf_context_menu->IsCommandIdEnabled(ash::MENU_NEW_INCOGNITO_WINDOW));
 
   // Disable Incognito mode.
-  IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
-                                      IncognitoModePrefs::DISABLED);
+  IncognitoModePrefs::SetAvailability(
+      profile()->GetPrefs(), IncognitoModePrefs::Availability::kDisabled);
   shelf_context_menu =
       CreateShelfContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   menu = GetMenuModel(shelf_context_menu.get());
@@ -288,8 +290,8 @@ TEST_F(ShelfContextMenuTest, NewWindowMenuIsDisabledWhenIncognitoModeForced) {
   EXPECT_TRUE(shelf_context_menu->IsCommandIdEnabled(ash::MENU_NEW_WINDOW));
 
   // Disable Incognito mode.
-  IncognitoModePrefs::SetAvailability(profile()->GetPrefs(),
-                                      IncognitoModePrefs::FORCED);
+  IncognitoModePrefs::SetAvailability(
+      profile()->GetPrefs(), IncognitoModePrefs::Availability::kForced);
   shelf_context_menu =
       CreateShelfContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   menu = GetMenuModel(shelf_context_menu.get());
@@ -683,7 +685,6 @@ TEST_F(ShelfContextMenuTest, CrostiniNormalApp) {
               IsItemEnabledInMenu(menu.get(), ash::CROSTINI_USE_HIGH_DENSITY));
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
-  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
 }
 
 // Confirms the menu items for unregistered crostini apps (i.e. apps that do not
@@ -731,9 +732,9 @@ TEST_F(ShelfContextMenuTest, WebApp) {
   for (int i = 0; i < menu->GetItemCount(); ++i)
     EXPECT_FALSE(menu->GetIconAt(i).IsEmpty());
 
-  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
-  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
-  EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::UNINSTALL));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::SHOW_APP_INFO));
+  EXPECT_TRUE(IsItemEnabledInMenu(menu.get(), ash::MENU_PIN));
 }
 
 }  // namespace

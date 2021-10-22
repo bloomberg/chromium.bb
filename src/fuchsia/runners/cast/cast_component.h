@@ -10,12 +10,14 @@
 #include <fuchsia/media/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
+
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/fuchsia/startup_context.h"
+#include "base/gtest_prod_util.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_fuchsia.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -73,6 +75,10 @@ class CastComponent final : public WebComponent,
                 WebContentRunner* runner,
                 Params params,
                 bool is_headless);
+
+  CastComponent(const CastComponent&) = delete;
+  CastComponent& operator=(const CastComponent&) = delete;
+
   ~CastComponent() override;
 
   void SetOnDestroyedCallback(base::OnceClosure on_destroyed);
@@ -134,8 +140,6 @@ class CastComponent final : public WebComponent,
   uint64_t media_session_id_ = 0;
   zx::eventpair headless_view_token_;
   base::MessagePumpForIO::ZxHandleWatchController headless_disconnect_watch_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastComponent);
 };
 
 #endif  // FUCHSIA_RUNNERS_CAST_CAST_COMPONENT_H_

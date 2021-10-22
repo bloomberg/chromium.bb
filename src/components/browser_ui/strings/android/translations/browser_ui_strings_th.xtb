@@ -51,6 +51,7 @@
 <translation id="2289270750774289114">ถามเมื่อเว็บไซต์ต้องการค้นหาอุปกรณ์บลูทูธใกล้เคียง (แนะนำ)</translation>
 <translation id="2315043854645842844">ระบบปฏิบัติการไม่สนับสนุนการเลือกใบรับรองฝั่งลูกค้า</translation>
 <translation id="2359808026110333948">ต่อไป</translation>
+<translation id="2379925928934107488">เมื่อทำได้ ให้ใช้ธีมมืดกับเว็บไซต์เมื่อ Chrome ใช้ธีมมืด</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{อนุญาตให้เข้าถึง<ph name="PERMISSION_1" /> <ph name="PERMISSION_2" /> และอีก <ph name="NUM_MORE" /> รายการ}other{อนุญาตให้เข้าถึง<ph name="PERMISSION_1" /> <ph name="PERMISSION_2" /> และอีก <ph name="NUM_MORE" /> รายการ}}</translation>
 <translation id="2434158240863470628">ดาวน์โหลดเสร็จสมบูรณ์ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -63,6 +64,7 @@
 <translation id="2570922361219980984">การเข้าถึงตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดการเข้าถึงได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="257931822824936280">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="2586657967955657006">คลิปบอร์ด</translation>
+<translation id="2597457036804169544">ไม่ใช้ธีมมืดกับเว็บไซต์ต่างๆ</translation>
 <translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ใดเว็บไซต์หนึ่ง</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2677748264148917807">ออก</translation>
@@ -101,6 +103,7 @@
 <translation id="3600792891314830896">ปิดเสียงเว็บไซต์ที่เล่นเสียง</translation>
 <translation id="3744111561329211289">ซิงค์ในแบ็กกราวด์</translation>
 <translation id="3763247130972274048">แตะสองครั้งที่ด้านซ้ายหรือขวาของวิดีโอเพื่อข้ามทีละ 10 วินาที</translation>
+<translation id="3797520601150691162">ไม่ใช้ธีมมืดกับบางเว็บไซต์</translation>
 <translation id="381841723434055211">หมายเลขโทรศัพท์</translation>
 <translation id="3835233591525155343">การใช้งานอุปกรณ์ของคุณ</translation>
 <translation id="385051799172605136">กลับ</translation>
@@ -113,6 +116,7 @@
 <translation id="4008040567710660924">อนุญาตคุกกี้ของเว็บไซต์ที่เจาะจง</translation>
 <translation id="4046123991198612571">แทร็กถัดไป</translation>
 <translation id="4165986682804962316">การตั้งค่าเว็บไซต์</translation>
+<translation id="4176463684765177261">ปิดการทำงาน</translation>
 <translation id="4200726100658658164">เปิดการตั้งค่าตำแหน่ง</translation>
 <translation id="4226663524361240545">การแจ้งเตือนอาจทำให้อุปกรณ์สั่น</translation>
 <translation id="4259722352634471385">มีการบล็อกการนำทาง: <ph name="URL" /></translation>
@@ -166,6 +170,7 @@
 <translation id="5505264765875738116">เว็บไซต์ขออนุญาตเพื่อส่งการแจ้งเตือนไม่ได้</translation>
 <translation id="5516455585884385570">เปิดการตั้งค่าการแจ้งเตือน</translation>
 <translation id="5527111080432883924">ถามก่อนอนุญาตให้เว็บไซต์อ่านข้อความและดูรูปภาพจากคลิปบอร์ด (แนะนำ)</translation>
+<translation id="5553374991681107062">ล่าสุด</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5596627076506792578">ตัวเลือกเพิ่มเติม</translation>
 <translation id="5649053991847567735">การดาวน์โหลดโดยอัตโนมัติ</translation>
@@ -180,6 +185,7 @@
 <translation id="5876056640971328065">หยุดวิดีโอชั่วคราว</translation>
 <translation id="5887687176710214216">เข้าชมล่าสุดเมื่อวาน</translation>
 <translation id="5916664084637901428">เปิด</translation>
+<translation id="59174027418879706">เปิดใช้งาน</translation>
 <translation id="5922853908706496913">กำลังแชร์หน้าจอ</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5975083100439434680">ย่อ</translation>
@@ -196,6 +202,7 @@
 <translation id="6196640612572343990">บล็อกคุกกี้ของบุคคลที่สาม</translation>
 <translation id="6216432067784365534">ตัวเลือกสำหรับ<ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">ถอนการติดตั้ง "<ph name="APP_NAME" />" ไหม</translation>
+<translation id="6233545266937675277">ขอมุมมองเดสก์ท็อปของเว็บไซต์</translation>
 <translation id="6262279340360821358">บล็อก<ph name="PERMISSION_1" />และ<ph name="PERMISSION_2" /></translation>
 <translation id="6270391203985052864">เว็บไซต์ขออนุญาตเพื่อส่งการแจ้งเตือนได้</translation>
 <translation id="6295158916970320988">เว็บไซต์ทั้งหมด</translation>
@@ -209,6 +216,7 @@
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{บล็อกการเข้าถึง<ph name="PERMISSION_1" /> <ph name="PERMISSION_2" /> และอีก <ph name="NUM_MORE" /> รายการไว้}other{บล็อกการเข้าถึง<ph name="PERMISSION_1" /> <ph name="PERMISSION_2" /> และอีก <ph name="NUM_MORE" /> รายการไว้}}</translation>
 <translation id="6554732001434021288">เข้าชมล่าสุด <ph name="NUM_DAYS" /> วันที่ผ่านมา</translation>
 <translation id="6561560012278703671">ใช้การส่งข้อความแบบไม่ส่งเสียง (บล็อกข้อความแจ้งเตือนไม่ให้รบกวนคุณ)</translation>
+<translation id="6593061639179217415">เว็บไซต์เวอร์ชันเดสก์ท็อป</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">เนื้อหาที่ได้รับความคุ้มครอง</translation>
 <translation id="662080504995468778">อยู่ต่อ</translation>
@@ -240,6 +248,7 @@
 <translation id="7302486331832100261">คุณมักจะบล็อกการแจ้งเตือน หากต้องการอนุญาต ให้แตะ "รายละเอียด"</translation>
 <translation id="7423098979219808738">ถามก่อน</translation>
 <translation id="7423538860840206698">บล็อกไม่ให้อ่านคลิปบอร์ด</translation>
+<translation id="7425915948813553151">ธีมมืดสำหรับเว็บไซต์</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">มีเว็บไซต์กำลังใช้ไมโครโฟน</translation>
 <translation id="7561196759112975576">ทุกครั้ง</translation>
@@ -263,6 +272,7 @@
 <translation id="7999064672810608036">คุณแน่ใจไหมว่าต้องการล้างข้อมูลในเครื่องทั้งหมด รวมถึงคุกกี้ และรีเซ็ตสิทธิ์ทั้งหมดสำหรับเว็บไซต์นี้</translation>
 <translation id="8007176423574883786">ปิดสำหรับอุปกรณ์นี้</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>
+<translation id="8042586301629853791">จัดเรียงตาม</translation>
 <translation id="8067883171444229417">เล่นวิดีโอ</translation>
 <translation id="8068648041423924542">เลือกใบรับรองไม่ได้</translation>
 <translation id="8087000398470557479">เนื้อหานี้มาจาก <ph name="DOMAIN_NAME" /> และนำส่งโดย Google</translation>
@@ -276,6 +286,7 @@
 <translation id="8211406090763984747">การเชื่อมต่อปลอดภัย</translation>
 <translation id="8249310407154411074">เลื่อนไปบนสุด</translation>
 <translation id="8261506727792406068">ลบ</translation>
+<translation id="8267092878336850213">ขอมุมมองอุปกรณ์เคลื่อนที่ของเว็บไซต์</translation>
 <translation id="8300705686683892304">จัดการโดยแอป</translation>
 <translation id="8324158725704657629">ไม่ต้องถามอีก</translation>
 <translation id="8372893542064058268">อนุญาตให้ใช้การซิงค์ในแบ็กกราวด์สำหรับเว็บไซต์ที่เจาะจง</translation>

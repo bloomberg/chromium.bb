@@ -61,6 +61,7 @@ const char kEnrollmentStepSignin[] = "signin";
 const char kEnrollmentStepAdJoin[] = "ad-join";
 const char kEnrollmentStepSuccess[] = "success";
 const char kEnrollmentStepWorking[] = "working";
+const char kEnrollmentStepTPMChecking[] = "tpm-checking";
 
 // Enrollment mode constants used in the UI. This needs to be kept in sync with
 // oobe_screen_oauth_enrollment.js.
@@ -196,15 +197,19 @@ EnrollmentScreenHandler::EnrollmentScreenHandler(
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
   network_state_informer_->AddObserver(this);
+  set_user_acted_method_path("login.OAuthEnrollmentScreen.userActed");
 }
 
 EnrollmentScreenHandler::~EnrollmentScreenHandler() {
   network_state_informer_->RemoveObserver(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
 // EnrollmentScreenHandler, WebUIMessageHandler implementation --
 
 void EnrollmentScreenHandler::RegisterMessages() {
+  BaseScreenHandler::RegisterMessages();
   AddCallback("toggleFakeEnrollment",
               &EnrollmentScreenHandler::HandleToggleFakeEnrollment);
   AddCallback("oauthEnrollClose", &EnrollmentScreenHandler::HandleClose);
@@ -247,6 +252,16 @@ void EnrollmentScreenHandler::Show() {
 
 void EnrollmentScreenHandler::Hide() {}
 
+void EnrollmentScreenHandler::Bind(ash::EnrollmentScreen* screen) {
+  screen_ = screen;
+  BaseScreenHandler::SetBaseScreen(screen_);
+}
+
+void EnrollmentScreenHandler::Unbind() {
+  screen_ = nullptr;
+  BaseScreenHandler::SetBaseScreen(nullptr);
+}
+
 void EnrollmentScreenHandler::ShowSigninScreen() {
   observe_network_failure_ = true;
   ShowStep(kEnrollmentStepSignin);
@@ -278,7 +293,8 @@ void EnrollmentScreenHandler::ShowUserError(UserErrorType error_type,
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentCloudReadyNotAllowedError() {
-  ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_CLOUD_READY_NOT_ALLOWED, false);
+  ShowScreen(EnrollmentScreenView::kScreenId);
+  CallJS("login.OAuthEnrollmentScreen.showOSNotInstalledError");
 }
 
 void EnrollmentScreenHandler::ShowActiveDirectoryScreen(
@@ -382,8 +398,13 @@ void EnrollmentScreenHandler::ShowAttributePromptScreen(
          location);
 }
 
-void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
+void EnrollmentScreenHandler::ShowEnrollmentWorkingScreen() {
   ShowStep(kEnrollmentStepWorking);
+}
+
+void EnrollmentScreenHandler::ShowEnrollmentTPMCheckingScreen() {
+  ShowScreen(EnrollmentScreenView::kScreenId);
+  ShowStep(kEnrollmentStepTPMChecking);
 }
 
 void EnrollmentScreenHandler::SetEnterpriseDomainInfo(
@@ -439,6 +460,10 @@ void EnrollmentScreenHandler::ShowOtherError(
 
 void EnrollmentScreenHandler::Shutdown() {
   shutdown_ = true;
+}
+
+void EnrollmentScreenHandler::SetIsBrandedBuild(bool is_branded) {
+  CallJS("login.OAuthEnrollmentScreen.setIsBrandedBuild", is_branded);
 }
 
 void EnrollmentScreenHandler::ShowEnrollmentStatus(
@@ -631,6 +656,8 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollSuccessTitle",
                IDS_ENTERPRISE_ENROLLMENT_SUCCESS_TITLE);
   builder->Add("oauthEnrollErrorTitle", IDS_ENTERPRISE_ENROLLMENT_ERROR_TITLE);
+  builder->Add("oauthOSNotInstalledError",
+               IDS_ENTERPRISE_ENROLLMENT_STATUS_CLOUD_READY_NOT_ALLOWED);
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollExplainAttributeLink",
@@ -645,6 +672,11 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   // Do not use AddF for this string as it will be rendered by the JS code.
   builder->Add("oauthEnrollAbeSuccessDomain",
                IDS_ENTERPRISE_ENROLLMENT_SUCCESS_DOMAIN);
+
+  // TPM checking spinner strings.
+  builder->Add("TPMCheckTitle", IDS_TPM_CHECK_TITLE);
+  builder->Add("TPMCheckSubtitle", IDS_TPM_CHECK_SUBTITLE);
+  builder->Add("cancelButton", IDS_CANCEL);
 
   /* Active Directory strings */
   builder->Add("oauthEnrollAdMachineNameInput", IDS_AD_DEVICE_NAME_INPUT_LABEL);
@@ -670,6 +702,10 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("selectEncryption", IDS_AD_ENCRYPTION_SELECTION_SELECT);
   builder->Add("selectConfiguration", IDS_AD_CONFIG_SELECTION_SELECT);
   /* End of Active Directory strings */
+
+  // OS names
+  builder->Add("osInstallChromiumOS", IDS_CHROMIUM_OS_NAME);
+  builder->Add("osInstallCloudReadyOS", IDS_CLOUD_READY_OS_NAME);
 }
 
 void EnrollmentScreenHandler::GetAdditionalParameters(
@@ -888,6 +924,7 @@ void EnrollmentScreenHandler::ContinueAuthenticationWhenCookiesAvailable(
   cookie_manager->GetCookieList(
       GaiaUrls::GetInstance()->gaia_url(),
       net::CookieOptions::MakeAllInclusive(),
+      net::CookiePartitionKeychain::Todo(),
       base::BindOnce(&EnrollmentScreenHandler::OnGetCookiesForCompleteLogin,
                      weak_ptr_factory_.GetWeakPtr(), user));
 }

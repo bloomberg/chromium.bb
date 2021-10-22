@@ -43,7 +43,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2560420686485554789">Faylları endirmək üçün Chromium yaddaşa giriş tələb edir</translation>
 <translation id="2572494885440352020">Chromium Yardım</translation>
 <translation id="2577788541081224677">Bütün cihazlarınızda Chromium elementlərinə giriş etmək üçün daxil olun ki, sinxronizasiyanı aktiv edə biləsiniz.</translation>
-<translation id="2580426763510374355">Chromium OS'i quraşdırın</translation>
 <translation id="2583187216237139145">Bu profilin istifadəsi zamanı yaranan hər hansı bir Chromium datası (əlfəcinlər, tarixçələr, parolların yaradılması və digər ayarlar kimi) iş profili administratoru tərəfindən silinə bilər. <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Güncəlləşmənin tətbiq olunması üçün Chromium OS yenidən başladılmalıdır.</translation>
 <translation id="2648074677641340862">Quraşdırma zamanı əməliyyat sistemi xətası baş verdi. Chromium'u yenidən endirin.</translation>
@@ -56,8 +55,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2847479871509788944">Chromium'dan silin...</translation>
 <translation id="2885378588091291677">Tapşırıq Meneceri</translation>
 <translation id="2910007522516064972">Chromium haqqında</translation>
-<translation id="2944515913673001130"><ph name="BEGIN_PARAGRAPH1" />Son xatırlatma: quraşdırma nəticəsində <ph name="BEGIN_BOLD" />sərt diskdəki bütün data silinəcək<ph name="END_BOLD" />. Lazımlı bütün datanı yedəkləyin.<ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Quraşdırma başladıqdan sonra ləğv edilə bilməz.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="2977470724722393594">Chromium güncəldir</translation>
 <translation id="2983934633046890458">Chromium parolları redaktə etməyə çalışır.</translation>
 <translation id="3032706164202344641">Chromium parollarınızı yoxlaya bilmir. Sonra yenidən cəhd edin.</translation>
@@ -79,7 +76,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="3350761136195634146">Bu hesab ilə Chromium profili artıq mövcuddur</translation>
 <translation id="3406848076815591792">Mövcud Chromium profilinə keçirilsin?</translation>
 <translation id="3430503420100763906">Chromium profilləri ilə bütün Chromium elementlərinizi ayıra bilərsiniz. Dostlarınız və ailəniz üçün profillər yaradın və ya iş və əyləncə arasında bölün.</translation>
-<translation id="3433271666494956603">Chromium OS quraşdırılır</translation>
 <translation id="347328004046849135">Oğurlanmış parol ilə daxil olduqda Chromium sizə bildiriş göndərəcək</translation>
 <translation id="3474745554856756813"><ph name="ITEMS_COUNT" /> element bu cihazdan silinəcək. Sonradan datanızı bərpa etmək üçün Chromiuma <ph name="USER_EMAIL" /> kimi daxil olun.</translation>
 <translation id="3497319089134299931"><ph name="SHORTCUT" /> Chromium profilləri arasında keçid edə bilər</translation>
@@ -107,7 +103,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4264410486868823224"><ph name="MANAGER" /> bu cihazı istifadə etməzdən əvvəl aşağıdakı Xidmət Şərtlərini oxumağınızı və qəbul etməyinizi tələb edir. Bu şərtlər Chromium OS Şərtlərini artırmır, dəyişdirmir və ya məhdudlaşdırmır.</translation>
 <translation id="4271805377592243930">Chromium ilə yardım alın</translation>
 <translation id="4285930937574705105">Naməlum xəta üzündən quraşdırmaq alınmadı. Əgər Chromium hazırda işləyirsə, lütfən, qapadın və yenidən cəhd edin.</translation>
-<translation id="429583012151745428">Quraşdırma davam edir. Cihazı deaktiv etməyin. Quraşdırma iyirmi dəqiqədən çox çəkməməlidir. Quraşdırıldıqdan sonra maşın avtomatik olaraq bağlanacaq.</translation>
 <translation id="4407044323746248786">Chromium'dan istənilən halda çıxılsın?</translation>
 <translation id="4415566066719264597">Chromium'a Arxa Fonda İşləmək İcazəsi Verin</translation>
 <translation id="4423735387467980091">Fərdiləşdirin və Chromium'u kontrol edin</translation>
@@ -201,7 +196,6 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="6734291798041940871">Chromium kompüterinizdəki bütün istifadəçilər üçün artıq quraşdırılıb.</translation>
 <translation id="673636774878526923">Bütün cihazlarınızda Chromium elementlərinə giriş etmək üçün daxil olun və sinxronizasiyanı aktiv edin.</translation>
 <translation id="6774082503108938489">Valideyniniz Chromium üçün "Saytlar, tətbiqlər və artırmalar üçün icazələri" deaktiv edib. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> artırmasının aktiv edilməsinə icazə verilmir.</translation>
-<translation id="6827182711503025204">Chromium OS'i quraşdırdıqda cihazınızdakı bütün data əvəzlənəcəkdir.</translation>
 <translation id="6847869444787758381">Chromium parollarınızın oğurlanıb-oğurlanmadığı haqqında Sizə məlumat verir</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'a kopyalandı)</translation>
@@ -235,10 +229,6 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
       Chromium OS ayarlarına<ph name="LINK_END" /> baxın</translation>
 <translation id="761356813943268536">Chromium kameranızı və mikrofonunuzu işlədir.</translation>
 <translation id="7617377681829253106">Chromium daha da keyfiyyətli oldu</translation>
-<translation id="7627575518938382525"><ph name="BEGIN_PARAGRAPH1" />İşə başlamazdan əvvəl, datanızın güncəl yedəyinin olduğuna əmin olun. Chromium OS'i quraşdırdıqda sərt diskinizdəki bütün data əvəzlənəcəkdir.<ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Google, hər hansı bir data itkisinə görə məsuliyyət daşımır və Chromium OS'in sertifikatsız modellərdə işləyəcəyinə zəmanət vermir. Sertifikatlı modellər haqqında ətraflı məlumat üçün [TBD] bölməsini ziyarət edin.<ph name="END_PARAGRAPH2" />
-          <ph name="BEGIN_PARAGRAPH3" />Chromium OS'in quraşdırılması və datanın silinməsi haqqında ətraflı məlumat: [TBD URL]<ph name="END_PARAGRAPH3" />
-          <ph name="BEGIN_PARAGRAPH4" />Davam etməyə hazırsınızsa, “Chromium OS'i quraşdırın” seçiminə toxunun və quraşdırma zamanı sizi bir neçə asan addımla yönləndirəcəyik. Kompüterinizdə hər hansı bir dəyişiklik etmədən əvvəl təsdiqləmək üçün əlavə bir şansınız olacaq.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="7686590090926151193">Chromium defolt brauzeriniz deyil</translation>
 <translation id="7689606757190482937">Chromium'u cihazlarda sinxronizasiya edin və fərdiləşdirin</translation>
 <translation id="7729447699958282447">Chomium datanızı sinxronizasiya edə bilmədi, çünki sinxronizasiya domeniniz üçün əlçatan deyil.</translation>

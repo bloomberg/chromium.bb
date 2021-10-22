@@ -135,10 +135,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GBRAP,     AV_PIX_FMT_GBRAP10,    AV_PIX_FMT_GBRAP12,    AV_PIX_FMT_GBRAP16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 typedef struct ThreadData {
@@ -672,7 +669,6 @@ static const AVFilterPad fftdnoiz_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad fftdnoiz_outputs[] = {
@@ -681,7 +677,6 @@ static const AVFilterPad fftdnoiz_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .request_frame = request_frame,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_fftdnoiz = {
@@ -691,8 +686,8 @@ const AVFilter ff_vf_fftdnoiz = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = fftdnoiz_inputs,
-    .outputs       = fftdnoiz_outputs,
+    FILTER_INPUTS(fftdnoiz_inputs),
+    FILTER_OUTPUTS(fftdnoiz_outputs),
     .priv_class    = &fftdnoiz_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

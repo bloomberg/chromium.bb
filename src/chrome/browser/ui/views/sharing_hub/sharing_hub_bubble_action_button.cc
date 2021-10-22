@@ -13,6 +13,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -28,8 +30,7 @@ constexpr auto kPrimaryIconBorder = gfx::Insets(6);
 std::unique_ptr<views::ImageView> CreateIconFromVector(
     const gfx::VectorIcon& vector_icon) {
   auto icon = std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-      vector_icon, ui::NativeTheme::kColorId_DefaultIconColor,
-      kPrimaryIconSize));
+      vector_icon, ui::kColorIcon, kPrimaryIconSize));
   icon->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   return icon;
 }
@@ -63,30 +64,18 @@ SharingHubBubbleActionButton::SharingHubBubbleActionButton(
       action_name_for_metrics_(action_info.feature_name_for_metrics) {
   SetEnabled(true);
 
-  // This class wants to pretend to be a menu item visually, so it does its own
-  // hover effects by overriding LabelButton::UpdateBackgroundColor (below). It
-  // isn't sufficient to simply swap out the ink drop color - menu backgrounds
-  // are drawn below the text/icon but the ink drop would be drawn above them,
-  // which looks wrong.
-  // TODO(ellyjones): This removes ~all the benefit of being a HoverButton -
-  // should this class instead subclass LabelButton?
-
-  // TODO(crbug.com/1248181): Reverted to restore keyboard navigation showing
-  // background color highlights, but results in high-contrast mode using
-  // normal colors.
-  // views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
-
   title()->SetTextContext(views::style::CONTEXT_MENU);
+  SetBackground(
+      views::CreateThemedSolidBackground(this, ui::kColorMenuBackground));
 }
 
 SharingHubBubbleActionButton::~SharingHubBubbleActionButton() = default;
 
 void SharingHubBubbleActionButton::UpdateBackgroundColor() {
   // Pretend to be a menu item:
-  SkColor bg_color = GetNativeTheme()->GetSystemColor(
-      GetVisualState() == STATE_HOVERED
-          ? ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor
-          : ui::NativeTheme::kColorId_MenuBackgroundColor);
+  SkColor bg_color = GetColorProvider()->GetColor(
+      GetVisualState() == STATE_HOVERED ? ui::kColorMenuItemBackgroundSelected
+                                        : ui::kColorMenuBackground);
 
   SetBackground(views::CreateSolidBackground(bg_color));
   SetTitleTextStyle(
@@ -114,6 +103,11 @@ void SharingHubBubbleActionButton::GetAccessibleNodeData(
     node_data->SetName(l10n_util::GetStringFUTF16(
         IDS_SHARING_HUB_SHARE_LABEL_ACCESSIBILITY, title()->GetText()));
   }
+}
+
+void SharingHubBubbleActionButton::OnThemeChanged() {
+  HoverButton::OnThemeChanged();
+  UpdateBackgroundColor();
 }
 
 BEGIN_METADATA(SharingHubBubbleActionButton, HoverButton)

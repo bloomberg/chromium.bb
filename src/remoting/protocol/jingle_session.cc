@@ -115,6 +115,10 @@ int GetSequentialId(const std::string& id) {
 class JingleSession::OrderedMessageQueue {
  public:
   OrderedMessageQueue() = default;
+
+  OrderedMessageQueue(const OrderedMessageQueue&) = delete;
+  OrderedMessageQueue& operator=(const OrderedMessageQueue&) = delete;
+
   ~OrderedMessageQueue() = default;
 
   // Returns the list of messages ordered by their sequential IDs.
@@ -131,8 +135,6 @@ class JingleSession::OrderedMessageQueue {
   std::map<int, PendingMessage> queue_;
 
   int next_incoming_ = kAny;
-
-  DISALLOW_COPY_AND_ASSIGN(OrderedMessageQueue);
 };
 
 std::vector<JingleSession::PendingMessage>
@@ -353,7 +355,7 @@ void JingleSession::SendTransportInfo(
       std::move(stanza), base::BindOnce(&JingleSession::OnTransportInfoResponse,
                                         base::Unretained(this)));
   if (request) {
-    request->SetTimeout(base::TimeDelta::FromSeconds(kTransportInfoTimeout));
+    request->SetTimeout(base::Seconds(kTransportInfoTimeout));
     transport_info_requests_.push_back(std::move(request));
   } else {
     LOG(ERROR) << "Failed to send a transport-info message";
@@ -440,7 +442,7 @@ void JingleSession::SendMessage(std::unique_ptr<JingleMessage> message) {
     timeout = kSessionInitiateAndAcceptTimeout;
   }
   if (request) {
-    request->SetTimeout(base::TimeDelta::FromSeconds(timeout));
+    request->SetTimeout(base::Seconds(timeout));
     pending_requests_.push_back(std::move(request));
   } else {
     LOG(ERROR) << "Failed to send a "

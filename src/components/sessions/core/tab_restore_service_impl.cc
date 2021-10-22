@@ -343,7 +343,7 @@ CreateWindowEntryFromCommand(const SessionCommand* command,
       std::make_unique<sessions::TabRestoreService::Window>();
   window->selected_tab_index = fields.selected_tab_index;
   window->timestamp = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(fields.timestamp));
+      base::Microseconds(fields.timestamp));
   *window_id = SessionID::FromSerializedValue(fields.window_id);
   *num_tabs = fields.num_tabs;
 
@@ -430,6 +430,9 @@ class TabRestoreServiceImpl::PersistenceDelegate
       public TabRestoreServiceHelper::Observer {
  public:
   explicit PersistenceDelegate(TabRestoreServiceClient* client);
+
+  PersistenceDelegate(const PersistenceDelegate&) = delete;
+  PersistenceDelegate& operator=(const PersistenceDelegate&) = delete;
 
   ~PersistenceDelegate() override;
 
@@ -569,8 +572,6 @@ class TabRestoreServiceImpl::PersistenceDelegate
 
   // Used when loading previous tabs/session and open tabs/session.
   base::WeakPtrFactory<PersistenceDelegate> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PersistenceDelegate);
 };
 
 TabRestoreServiceImpl::PersistenceDelegate::PersistenceDelegate(
@@ -1117,7 +1118,7 @@ void TabRestoreServiceImpl::PersistenceDelegate::CreateEntriesFromCommands(
           entries.push_back(std::make_unique<Tab>());
           current_tab = static_cast<Tab*>(entries.back().get());
           current_tab->timestamp = base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(payload.timestamp));
+              base::Microseconds(payload.timestamp));
         }
         current_tab->current_navigation_index = payload.index;
         break;

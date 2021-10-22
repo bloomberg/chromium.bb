@@ -28,6 +28,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/cpu.h"
 #include "src/utils/memory.h"
@@ -79,6 +80,12 @@ class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
   struct IntraPredMem {
     void Reset(libvpx_test::ACMRandom* rnd) {
       ASSERT_NE(rnd, nullptr);
+#if LIBGAV1_MSAN
+      // Match the behavior of Tile::IntraPrediction to prevent warnings due to
+      // assembly code (safely) overreading to fill a register.
+      memset(left_mem, 0, sizeof(left_mem));
+      memset(top_mem, 0, sizeof(top_mem));
+#endif  // LIBGAV1_MSAN
       Pixel* const left = left_mem + 16;
       Pixel* const top = top_mem + 16;
       const int mask = (1 << bitdepth) - 1;
@@ -105,6 +112,12 @@ class IntraPredTestBase : public testing::TestWithParam<TransformSize>,
 
     // Set ref_src, top-left, top and left to |pixel|.
     void Set(const Pixel pixel) {
+#if LIBGAV1_MSAN
+      // Match the behavior of Tile::IntraPrediction to prevent warnings due to
+      // assembly code (safely) overreading to fill a register.
+      memset(left_mem, 0, sizeof(left_mem));
+      memset(top_mem, 0, sizeof(top_mem));
+#endif  // LIBGAV1_MSAN
       Pixel* const left = left_mem + 16;
       Pixel* const top = top_mem + 16;
       for (auto& r : ref_src) r = pixel;

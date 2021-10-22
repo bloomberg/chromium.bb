@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/chromeos_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -184,7 +184,7 @@ void WebAppInstallManager::EnqueueInstallAppFromSync(
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
   DCHECK(started_);
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   DCHECK(AreAppsLocallyInstalledBySync());
 #endif
 
@@ -305,7 +305,8 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
     web_application_info->theme_color =
         web_app->sync_fallback_data().theme_color;
     web_application_info->user_display_mode = web_app->user_display_mode();
-    web_application_info->icon_infos = web_app->sync_fallback_data().icon_infos;
+    web_application_info->manifest_icons =
+        web_app->sync_fallback_data().icon_infos;
 
     EnqueueInstallAppFromSync(web_app->app_id(),
                               std::move(web_application_info), callback);

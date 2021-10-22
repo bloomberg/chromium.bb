@@ -12,7 +12,7 @@
 #include "ash/login/ui/animated_rounded_image_view.h"
 #include "ash/login/ui/login_palette.h"
 #include "ash/public/cpp/session/user_info.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -86,6 +86,10 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   // Must call |Init| after construction.
   explicit LoginPasswordView(const LoginPalette& palette);
+
+  LoginPasswordView(const LoginPasswordView&) = delete;
+  LoginPasswordView& operator=(const LoginPasswordView&) = delete;
+
   ~LoginPasswordView() override;
 
   // |on_submit| is called when the user hits enter or has pressed the submit
@@ -214,8 +218,6 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   bool should_show_easy_unlock_ = false;
 
   bool is_capslock_higlight_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginPasswordView);
 };
 
 }  // namespace ash

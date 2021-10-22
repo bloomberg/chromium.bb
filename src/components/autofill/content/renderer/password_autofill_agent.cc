@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_form_conversion_utils.h"
 #include "components/autofill/content/renderer/password_generation_agent.h"
 #include "components/autofill/content/renderer/prefilled_values_detector.h"
@@ -78,10 +79,12 @@ using blink::WebView;
 
 namespace autofill {
 
+using form_util::FindFormByUniqueRendererId;
 using form_util::FindFormControlElementByUniqueRendererId;
 using form_util::FindFormControlElementsByUniqueRendererId;
-using form_util::IsFormControlVisible;
-using form_util::IsFormVisible;
+using form_util::GetFieldRendererId;
+using form_util::GetFormRendererId;
+using form_util::IsWebElementVisible;
 
 using mojom::FocusedFieldType;
 using mojom::SubmissionIndicatorEvent;
@@ -293,9 +296,8 @@ void AnnotateFieldsWithSignatures(
                       base::NumberToString(field_signature.value()));
     SetAttributeAsync(control_element, kDebugAttributeForFormSignature,
                       form_signature);
-    SetAttributeAsync(
-        control_element, kDebugAttributeForVisibility,
-        form_util::IsWebElementVisible(control_element) ? "true" : "false");
+    SetAttributeAsync(control_element, kDebugAttributeForVisibility,
+                      IsWebElementVisible(control_element) ? "true" : "false");
   }
 }
 
@@ -360,7 +362,7 @@ WebInputElement FindUsernameElementPrecedingPasswordElement(
     --iter;
     const WebInputElement* input = ToWebInputElement(&*iter);
     if (input && input->IsTextField() && !input->IsPasswordFieldForAutofill() &&
-        IsElementEditable(*input) && form_util::IsWebElementVisible(*input)) {
+        IsElementEditable(*input) && IsWebElementVisible(*input)) {
       return *input;
     }
   }
@@ -688,8 +690,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
 void PasswordAutofillAgent::DidEndTextFieldEditing() {
   FieldRendererId field_id;
   if (!focused_input_element_.IsNull()) {
-    field_id =
-        FieldRendererId(focused_input_element_.UniqueRendererFormControlId());
+    field_id = GetFieldRendererId(focused_input_element_);
   }
   focus_state_notifier_.FocusedInputChanged(field_id,
                                             FocusedFieldType::kUnknown);
@@ -720,8 +721,8 @@ void PasswordAutofillAgent::UpdateStateForTextChange(
     GetPasswordManagerDriver().UserModifiedPasswordField();
   } else {
     GetPasswordManagerDriver().UserModifiedNonPasswordField(
-        FieldRendererId(element.UniqueRendererFormControlId()),
-        element.NameForAutofill().Utf16(), element_value);
+        GetFieldRendererId(element), element.NameForAutofill().Utf16(),
+        element_value);
   }
 }
 
@@ -1085,22 +1086,26 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
 
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
-  WebLocalFrame* frame = render_frame()->GetWebFrame();
   // TODO(crbug.com/720347): This method could be called often and checking form
   // visibility could be expensive. Add performance metrics for this.
   if (event != SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
-    bool is_last_updated_field_in_form =
-        !last_updated_form_renderer_id_.is_null();
-    // Check whether the form which is the candidate for submission disappeared.
-    // If yes this form is considered to be successfully submitted.
-    if (is_last_updated_field_in_form) {
-      // A form is inside <form> tag. Check the visibility of the whole form.
-      if (IsFormVisible(frame, last_updated_form_renderer_id_))
-        return;
-    } else {
-      // A form is without <form> tag. Check the visibility of the last updated
-      // field.
-      if (IsFormControlVisible(frame, last_updated_field_renderer_id_))
+    WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+    if (!doc.IsNull()) {
+      std::vector<WebFormControlElement> fields;
+      WebFormElement form;
+      WebFormControlElement field;
+      if (last_updated_form_renderer_id_ &&
+          !(form =
+                FindFormByUniqueRendererId(doc, last_updated_form_renderer_id_))
+               .IsNull()) {
+        fields = form.GetFormControlElements().ReleaseVector();
+      } else if (!(field = FindFormControlElementByUniqueRendererId(
+                       doc, last_updated_field_renderer_id_,
+                       /*form_to_be_searched =*/FormRendererId()))
+                      .IsNull()) {
+        fields = {field};
+      }
+      if (base::ranges::any_of(fields, IsWebElementVisible))
         return;
     }
   }
@@ -1181,7 +1186,8 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   std::vector<FormData> password_forms_data;
   for (const WebFormElement& form : forms) {
     if (only_visible) {
-      bool is_form_visible = form_util::AreFormContentsVisible(form);
+      bool is_form_visible = base::ranges::any_of(form.GetFormControlElements(),
+                                                  &IsWebElementVisible);
       LogHTMLForm(logger.get(), Logger::STRING_FORM_FOUND_ON_PAGE, form);
       LogBoolean(logger.get(), Logger::STRING_FORM_IS_VISIBLE, is_form_visible);
 
@@ -1225,7 +1231,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
         form_util::GetUnownedAutofillableFormFieldElements(frame->GetDocument(),
                                                            nullptr);
     add_unowned_inputs =
-        form_util::IsSomeControlElementVisible(control_elements);
+        base::ranges::any_of(control_elements, &IsWebElementVisible);
     LogBoolean(logger.get(), Logger::STRING_UNOWNED_INPUTS_VISIBLE,
                add_unowned_inputs);
   }
@@ -1255,7 +1261,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
     if (!sent_request_to_store_ && password_forms_data.empty() &&
         HasPasswordField(*frame)) {
       // Set everything that |FormDigest| needs.
-      password_forms_data.push_back(FormData());
+      password_forms_data.emplace_back();
     }
     if (!password_forms_data.empty()) {
       sent_request_to_store_ = true;
@@ -1591,6 +1597,8 @@ void PasswordAutofillAgent::ShowSuggestionPopup(
     const WebInputElement& user_input,
     ShowAll show_all,
     OnPasswordField show_on_password_field) {
+  constexpr char kAutocompleteAttribute[] = "autocomplete";
+  constexpr char kAutocompleteWebAuthn[] = "webauthn";
   username_query_prefix_ = typed_username;
   FormData form;
   FormFieldData field;
@@ -1602,6 +1610,8 @@ void PasswordAutofillAgent::ShowSuggestionPopup(
     options |= SHOW_ALL;
   if (show_on_password_field)
     options |= IS_PASSWORD_FIELD;
+  if (user_input.GetAttribute(kAutocompleteAttribute) == kAutocompleteWebAuthn)
+    options |= ACCEPTS_WEBAUTHN_CREDENTIALS;
 
   GetPasswordManagerDriver().ShowPasswordSuggestions(
       field.text_direction, typed_username, options,
@@ -1908,10 +1918,9 @@ PasswordAutofillAgent::FindUsernamePasswordElements(
   bool wrapped_in_form_tag = !form_data.form_renderer_id.is_null();
   std::vector<WebFormControlElement> elements =
       wrapped_in_form_tag
-          ? form_util::FindFormControlElementsByUniqueRendererId(
+          ? FindFormControlElementsByUniqueRendererId(
                 doc, form_data.form_renderer_id, element_ids)
-          : form_util::FindFormControlElementsByUniqueRendererId(doc,
-                                                                 element_ids);
+          : FindFormControlElementsByUniqueRendererId(doc, element_ids);
 
   // Set password element.
   WebInputElement password_field;
@@ -2065,12 +2074,9 @@ void PasswordAutofillAgent::AutofillField(const std::u16string& value,
 void PasswordAutofillAgent::SetLastUpdatedFormAndField(
     const WebFormElement& form,
     const WebFormControlElement& input) {
-  last_updated_form_renderer_id_ =
-      form.IsNull() ? FormRendererId()
-                    : FormRendererId(form.UniqueRendererFormId());
+  last_updated_form_renderer_id_ = GetFormRendererId(form);
   last_updated_field_renderer_id_ =
-      input.IsNull() ? FieldRendererId()
-                     : FieldRendererId(input.UniqueRendererFormControlId());
+      input.IsNull() ? FieldRendererId() : GetFieldRendererId(input);
 }
 
 bool PasswordAutofillAgent::CanShowPopupWithoutPasswords(

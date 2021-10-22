@@ -17,11 +17,12 @@ namespace blink {
 class ChunkToLayerMapperTest : public testing::Test {
  protected:
   static PaintChunk Chunk(const PropertyTreeState& state) {
-    DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
+    DEFINE_STATIC_LOCAL(Persistent<FakeDisplayItemClient>, fake_client,
+                        (MakeGarbageCollected<FakeDisplayItemClient>()));
     DEFINE_STATIC_LOCAL(
         absl::optional<PaintChunk::Id>, id,
-        (PaintChunk::Id(fake_client.Id(), DisplayItem::kDrawingFirst)));
-    PaintChunk chunk(0, 1, fake_client, *id, state);
+        (PaintChunk::Id(fake_client->Id(), DisplayItem::kDrawingFirst)));
+    PaintChunk chunk(0, 1, *fake_client, *id, state);
     return chunk;
   }
 
@@ -52,7 +53,7 @@ class ChunkToLayerMapperTest : public testing::Test {
 };
 
 TEST_F(ChunkToLayerMapperTest, OneChunkUsingLayerState) {
-  ChunkToLayerMapper mapper(LayerState(), FloatPoint(10, 20));
+  ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
   auto chunk = Chunk(LayerState());
   mapper.SwitchToChunk(chunk);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));
@@ -64,7 +65,7 @@ TEST_F(ChunkToLayerMapperTest, OneChunkUsingLayerState) {
 }
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkUsingLayerState) {
-  ChunkToLayerMapper mapper(LayerState(), FloatPoint(10, 20));
+  ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
   auto chunk1 = Chunk(LayerState());
   auto chunk2 = Chunk(LayerState());
 
@@ -86,7 +87,7 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkUsingLayerState) {
 }
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
-  ChunkToLayerMapper mapper(LayerState(), FloatPoint(10, 20));
+  ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
   auto transform = CreateTransform(LayerState().Transform(),
                                    TransformationMatrix().Scale(2));
   auto clip = CreateClip(LayerState().Clip(), LayerState().Transform(),
@@ -117,7 +118,7 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkSameState) {
 }
 
 TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
-  ChunkToLayerMapper mapper(LayerState(), FloatPoint(10, 20));
+  ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
   auto transform1 = CreateTransform(LayerState().Transform(),
                                     TransformationMatrix().Scale(2));
   auto clip1 = CreateClip(LayerState().Clip(), LayerState().Transform(),
@@ -153,7 +154,7 @@ TEST_F(ChunkToLayerMapperTest, TwoChunkDifferentState) {
 }
 
 TEST_F(ChunkToLayerMapperTest, SlowPath) {
-  ChunkToLayerMapper mapper(LayerState(), FloatPoint(10, 20));
+  ChunkToLayerMapper mapper(LayerState(), gfx::Vector2dF(10, 20));
   auto chunk1 = Chunk(LayerState());
 
   // Chunk2 has a blur filter. Should use the slow path.
@@ -221,7 +222,7 @@ TEST_F(ChunkToLayerMapperTest, SwitchToSiblingEffect) {
                                         LayerState().Clip(), *effect2));
 
   ChunkToLayerMapper mapper(chunk1.properties.GetPropertyTreeState().Unalias(),
-                            FloatPoint(10, 20));
+                            gfx::Vector2dF(10, 20));
   mapper.SwitchToChunk(chunk2);
   EXPECT_FALSE(HasFilterThatMovesPixels(mapper));
 }

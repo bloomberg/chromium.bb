@@ -13,7 +13,7 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
-import {AcceleratorConfig, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
+import {AcceleratorConfig, AcceleratorSource, LayoutInfoList, ShortcutProviderInterface} from './shortcut_types.js';
 import {AcceleratorInfo} from './shortcut_types.js';
 
 /**
@@ -48,6 +48,18 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
       },
 
       /** @private */
+      dialogAction_: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @private {!AcceleratorSource} */
+      dialogSource_: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @private */
       showEditDialog_: {
         type: Boolean,
         value: false,
@@ -76,6 +88,9 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
     window.addEventListener('show-edit-dialog',
         (e) => this.showDialog_(e.detail));
     window.addEventListener('edit-dialog-closed', () => this.onDialogClosed_());
+    window.addEventListener(
+        'request-update-accelerator',
+        (e) => this.onRequestUpdateAccelerators_(e.detail));
   }
 
   /** @override */
@@ -140,13 +155,16 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
   }
 
   /**
-   * @param {!{description: string, accelerators: !Array<!AcceleratorInfo>}} e
+   * @param {!{description: string, accelerators: !Array<!AcceleratorInfo>,
+   *           action: number, source: !AcceleratorSource}} e
    * @private
    */
   showDialog_(e) {
     this.dialogShortcutTitle_ = e.description;
     this.dialogAccelerators_ =
         /** @type {!Array<!AcceleratorInfo>}*/(e.accelerators);
+    this.dialogAction_ = e.action;
+    this.dialogSource_ = e.source;
     this.showEditDialog_ = true;
   }
 
@@ -155,6 +173,18 @@ export class ShortcutCustomizationAppElement extends PolymerElement {
     this.showEditDialog_ = false;
     this.dialogShortcutTitle_ = '';
     this.dialogAccelerators_ = [];
+  }
+
+  /**
+   * @param {!Object<number, number>} detail
+   * @private
+   */
+  onRequestUpdateAccelerators_(detail) {
+    this.$.navigationPanel.notifyEvent('updateSubsections');
+    const updatedAccels = this.acceleratorLookupManager_.getAccelerators(
+        detail.source, detail.action);
+    this.shadowRoot.querySelector('#editDialog')
+        .updateDialogAccelerators(updatedAccels);
   }
 }
 

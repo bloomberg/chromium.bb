@@ -415,9 +415,9 @@ namespace {
 
         // TODO(dawn:690): Uncomment these depth/stencil formats after we implement them in Dawn.
         wgpu::TextureFormat depthStencilFormats[] = {
-            wgpu::TextureFormat::Depth32Float, wgpu::TextureFormat::Depth24Plus,
-            wgpu::TextureFormat::Stencil8, wgpu::TextureFormat::Depth24PlusStencil8,
-            // wgpu::TextureFormat::Depth16Unorm,
+            wgpu::TextureFormat::Stencil8,     wgpu::TextureFormat::Depth16Unorm,
+            wgpu::TextureFormat::Depth24Plus,  wgpu::TextureFormat::Depth24PlusStencil8,
+            wgpu::TextureFormat::Depth32Float,
             // wgpu::TextureFormat::Depth24UnormStencil8,
             // wgpu::TextureFormat::Depth32FloatStencil8,
         };
@@ -533,9 +533,9 @@ namespace {
         ASSERT_DEVICE_ERROR(device.CreateTexture(&descriptor));
     }
 
-    // Test that the creation of a texture with BC format will fail when the extension
+    // Test that the creation of a texture with BC format will fail when the feature
     // textureCompressionBC is not enabled.
-    TEST_F(TextureValidationTest, UseBCFormatWithoutEnablingExtension) {
+    TEST_F(TextureValidationTest, UseBCFormatWithoutEnablingFeature) {
         for (wgpu::TextureFormat format : utils::kBCFormats) {
             wgpu::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
             descriptor.format = format;
@@ -543,9 +543,9 @@ namespace {
         }
     }
 
-    // Test that the creation of a texture with ETC2 format will fail when the extension
+    // Test that the creation of a texture with ETC2 format will fail when the feature
     // textureCompressionETC2 is not enabled.
-    TEST_F(TextureValidationTest, UseETC2FormatWithoutEnablingExtension) {
+    TEST_F(TextureValidationTest, UseETC2FormatWithoutEnablingFeature) {
         for (wgpu::TextureFormat format : utils::kETC2Formats) {
             wgpu::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
             descriptor.format = format;
@@ -553,9 +553,9 @@ namespace {
         }
     }
 
-    // Test that the creation of a texture with ASTC format will fail when the extension
+    // Test that the creation of a texture with ASTC format will fail when the feature
     // textureCompressionASTC is not enabled.
-    TEST_F(TextureValidationTest, UseASTCFormatWithoutEnablingExtension) {
+    TEST_F(TextureValidationTest, UseASTCFormatWithoutEnablingFeature) {
         for (wgpu::TextureFormat format : utils::kASTCFormats) {
             wgpu::TextureDescriptor descriptor = CreateDefaultTextureDescriptor();
             descriptor.format = format;
@@ -569,8 +569,8 @@ namespace {
       protected:
         WGPUDevice CreateTestDevice() override {
             dawn_native::DeviceDescriptor descriptor;
-            descriptor.requiredExtensions = {"texture_compression_bc", "texture-compression-etc2",
-                                             "texture-compression-astc"};
+            descriptor.requiredFeatures = {"texture_compression_bc", "texture-compression-etc2",
+                                           "texture-compression-astc"};
             return adapter.CreateDevice(&descriptor);
         }
 

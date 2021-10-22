@@ -107,8 +107,9 @@ class VisitRow {
   // Indicates the visit that opened this one.
   //
   // 0 indicates no opener visit. Only non-zero if this visit was directly
-  // initiated by open in a new tab or window. It is possible for this to be
-  // non-zero and the visit to not exist (i.e., if the visit expired).
+  // initiated by open in a new tab, window, or for same-document navigations.
+  // It is possible for this to be non-zero and the visit to not exist (i.e., if
+  // the visit expired).
   //
   // This differs from `referring_visit` since this links visits across tabs
   // whereas `referring_visit` is only populated if the Referrer is from the
@@ -145,6 +146,10 @@ class QueryResults {
   typedef std::vector<URLResult> URLResultVector;
 
   QueryResults();
+
+  QueryResults(const QueryResults&) = delete;
+  QueryResults& operator=(const QueryResults&) = delete;
+
   ~QueryResults();
 
   QueryResults(QueryResults&& other) noexcept;
@@ -218,8 +223,6 @@ class QueryResults {
 
   // Maps URLs to entries in results_.
   URLToResultIndices url_to_results_;
-
-  DISALLOW_COPY_AND_ASSIGN(QueryResults);
 };
 
 // QueryOptions ----------------------------------------------------------------
@@ -618,6 +621,9 @@ class DeletionInfo {
                std::set<GURL> favicon_urls,
                absl::optional<std::set<GURL>> restrict_urls);
 
+  DeletionInfo(const DeletionInfo&) = delete;
+  DeletionInfo& operator=(const DeletionInfo&) = delete;
+
   ~DeletionInfo();
   // Move-only because of potentially large containers.
   DeletionInfo(DeletionInfo&& other) noexcept;
@@ -668,8 +674,6 @@ class DeletionInfo {
   std::set<GURL> favicon_urls_;
   absl::optional<std::set<GURL>> restrict_urls_;
   OriginCountAndLastVisitMap deleted_urls_origin_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeletionInfo);
 };
 
 // Represents a visit to a domain.
@@ -726,7 +730,7 @@ struct VisitContextAnnotations {
   // respond. Any duration that exceeds 30 days will be recorded as 30 days, so
   // in practice, if this duration indicates 30 days, it can be anything from 30
   // to the maximum duration that local history is stored.
-  base::TimeDelta duration_since_last_visit = base::TimeDelta::FromSeconds(-1);
+  base::TimeDelta duration_since_last_visit = base::Seconds(-1);
 
   // ---------------------------------------------------------------------------
   // The below metrics are all already recorded by UKM for non-memories reasons.
@@ -737,6 +741,10 @@ struct VisitContextAnnotations {
   // Do not use this directly, as it's a raw integer for serialization, and not
   // a typesafe page_load_metrics::PageEndReason.
   int page_end_reason = 0;
+
+  // The total duration that this visit was in the foreground. Recorded as -1 if
+  // not recorded.
+  base::TimeDelta total_foreground_duration = base::Seconds(-1);
 };
 
 // A `VisitRow` along with its corresponding `URLRow`,
@@ -747,7 +755,9 @@ struct AnnotatedVisit {
                  VisitRow visit_row,
                  VisitContextAnnotations context_annotations,
                  VisitContentAnnotations content_annotations,
-                 VisitID referring_visit_of_redirect_chain_start);
+                 VisitID referring_visit_of_redirect_chain_start,
+                 VisitID opener_visit_of_redirect_chain_start,
+                 VisitSource visit);
   AnnotatedVisit(const AnnotatedVisit&);
   AnnotatedVisit& operator=(const AnnotatedVisit&);
   ~AnnotatedVisit();
@@ -763,6 +773,14 @@ struct AnnotatedVisit {
   // important because redirect visits are omitted from AnnotatedVisits, so
   // the uncollapsed referring visit could refer to an omitted visit.
   VisitID referring_visit_of_redirect_chain_start = 0;
+  // The `VisitRow::opener_visit` of the 1st visit in the redirect chain that
+  // includes this visit. If this visit is not part of a redirect chain or is
+  // the 1st visit in a redirect chain, then it will be
+  // `visit_row.opener_visit`. Using the collapsed opener visit is
+  // important because opener visits are omitted from AnnotatedVisits, so
+  // the uncollapsed opener visit could refer to an omitted visit.
+  VisitID opener_visit_of_redirect_chain_start = 0;
+  VisitSource source;
 };
 
 // A minimal representation of `AnnotationVisit` used when retrieving them from
@@ -799,22 +817,30 @@ struct ClusterVisit {
   // visit among all the duplicates will list the worse duplicate visit IDs in
   // its vector. The worse duplicates will have an empty vector here.
   std::vector<VisitID> duplicate_visit_ids;
+
+  // The normalized URL for the visit (i.e. a SRP URL normalized based on the
+  // user's default search provider).
+  GURL normalized_url;
 };
 
-// A cluster of `ScoredAnnotatedVisit`s with associated `keywords`.
+// A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and
+// `should_show_on_prominent_ui_surfaces`).
 struct Cluster {
   Cluster();
   Cluster(int64_t cluster_id,
           const std::vector<ClusterVisit>& visits,
-          const std::vector<std::u16string>& keywords);
+          const std::vector<std::u16string>& keywords,
+          bool should_show_on_prominent_ui_surfaces = true);
   Cluster(const Cluster&);
   Cluster& operator=(const Cluster&);
   ~Cluster();
 
-  int64_t cluster_id;
+  int64_t cluster_id = 0;
   std::vector<ClusterVisit> visits;
   // TODO(manukh): retrieve and persist `keywords`.
   std::vector<std::u16string> keywords;
+  // Whether the cluster should be shown prominently on UI surfaces.
+  bool should_show_on_prominent_ui_surfaces = true;
 };
 
 // A minimal representation of `Cluster` used when retrieving them from

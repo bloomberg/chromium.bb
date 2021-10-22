@@ -343,6 +343,8 @@ NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
       is_hidden_for_paint_(builder->is_hidden_for_paint_),
       is_opaque_(builder->is_opaque_),
       is_block_in_inline_(builder->is_block_in_inline_),
+      may_have_descendant_above_block_start_(
+          builder->may_have_descendant_above_block_start_),
       is_fieldset_container_(false),
       is_table_ng_part_(false),
       is_legacy_layout_root_(false),
@@ -823,8 +825,8 @@ void NGPhysicalFragment::AddOutlineRectsForCursor(
         break;
       }
       case NGFragmentItem::kSvgText: {
-        PhysicalRect rect =
-            PhysicalRect::EnclosingRect(item.ObjectBoundingBox());
+        auto rect = PhysicalRect::EnclosingRect(
+            cursor->Current().ObjectBoundingBox(*cursor));
         DCHECK(!text_combine);
         rect.Move(additional_offset);
         outline_rects->push_back(rect);

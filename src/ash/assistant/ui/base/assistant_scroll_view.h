@@ -44,17 +44,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantScrollView
   views::View* content_view() { return content_view_; }
   const views::View* content_view() const { return content_view_; }
 
-  views::ScrollBar* horizontal_scroll_bar() { return horizontal_scroll_bar_; }
-  views::ScrollBar* vertical_scroll_bar() { return vertical_scroll_bar_; }
-
  private:
   void InitLayout();
 
   base::ObserverList<Observer> observers_;
 
   views::View* content_view_;                // Owned by view hierarchy.
-  views::ScrollBar* horizontal_scroll_bar_;  // Owned by view hierarchy.
-  views::ScrollBar* vertical_scroll_bar_;    // Owned by view hierarchy.
 };
 
 }  // namespace ash

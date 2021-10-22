@@ -22,14 +22,16 @@ import '../settings_shared_css.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
 import {IronPagesElement} from 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefControlBehaviorInterface} from '../controls/pref_control_behavior.js';
+import {PrefControlMixinInterface} from '../controls/pref_control_mixin.js';
+import {SettingsCheckboxElement} from '../controls/settings_checkbox.js';
 import {DropdownMenuOptionList} from '../controls/settings_dropdown_menu.js';
+import {SettingsDropdownMenuElement} from '../controls/settings_dropdown_menu.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {StatusAction, SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../people_page/sync_browser_proxy.js';
 import {routes} from '../route.js';
@@ -84,14 +86,6 @@ type UpdateSyncStateEvent = {
   nonGoogleSearchHistoryString: string,
 };
 
-// TODO(crbug.com/1234307): Remove when settings_checkbox.js is migrated to
-// TypeScript.
-interface SettingsCheckboxElement extends HTMLElement {
-  checked: boolean;
-  pref: chrome.settingsPrivate.PrefObject;
-  sendPrefChange(): void;
-}
-
 interface SettingsClearBrowsingDataDialogElement {
   $: {
     clearBrowsingDataDialog: CrDialogElement,
@@ -101,11 +95,9 @@ interface SettingsClearBrowsingDataDialogElement {
 }
 
 const SettingsClearBrowsingDataDialogElementBase =
-    mixinBehaviors(
-        [I18nBehavior, WebUIListenerBehavior],
-        RouteObserverMixin(PolymerElement)) as {
-      new (): PolymerElement & WebUIListenerBehavior & I18nBehavior &
-      RouteObserverMixinInterface
+    RouteObserverMixin(WebUIListenerMixin(I18nMixin(PolymerElement))) as {
+      new (): PolymerElement & WebUIListenerMixinInterface &
+      I18nMixinInterface & RouteObserverMixinInterface
     };
 
 class SettingsClearBrowsingDataDialogElement extends
@@ -431,12 +423,11 @@ class SettingsClearBrowsingDataDialogElement extends
    * @return A list of selected data types.
    */
   private getSelectedDataTypes_(tab: HTMLElement): Array<string> {
-    const checkboxes = tab.querySelectorAll('settings-checkbox') as
-        NodeListOf<SettingsCheckboxElement>;
+    const checkboxes = tab.querySelectorAll('settings-checkbox');
     const dataTypes: Array<string> = [];
     checkboxes.forEach((checkbox) => {
       if (checkbox.checked && !checkbox.hidden) {
-        dataTypes.push(checkbox.pref.key);
+        dataTypes.push(checkbox.pref!.key);
       }
     });
     return dataTypes;
@@ -450,11 +441,8 @@ class SettingsClearBrowsingDataDialogElement extends
    */
   private async getInstalledApps_() {
     const tab = this.$.tabs.selectedItem as HTMLElement;
-    // TODO(crbug.com/1234307): Cast to SettingsDropdownMenuElement when
-    // settings_dropdown_menu.js is migrated to TypeScript.
-    const timePeriod = (tab.querySelector('.time-range-select') as unknown as
-                        PrefControlBehaviorInterface)
-                           .pref!.value;
+    const timePeriod = tab.querySelector<SettingsDropdownMenuElement>(
+                              '.time-range-select')!.pref!.value;
     this.installedApps_ = await this.browserProxy_.getInstalledApps(timePeriod);
   }
 
@@ -493,7 +481,7 @@ class SettingsClearBrowsingDataDialogElement extends
     const tab = this.$.tabs.selectedItem as HTMLElement;
     const dataTypes = this.getSelectedDataTypes_(tab);
     const timePeriod = (tab.querySelector('.time-range-select') as unknown as
-                        PrefControlBehaviorInterface)
+                        PrefControlMixinInterface)
                            .pref!.value;
 
     if (tab.id === 'basic-tab') {
@@ -502,8 +490,9 @@ class SettingsClearBrowsingDataDialogElement extends
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_AdvancedTab');
     }
 
-    (this.shadowRoot!.querySelectorAll('settings-checkbox[no-set-pref]') as
-     NodeListOf<SettingsCheckboxElement>)
+    this.shadowRoot!
+        .querySelectorAll<SettingsCheckboxElement>(
+            'settings-checkbox[no-set-pref]')
         .forEach(checkbox => checkbox.sendPrefChange());
 
     const {showHistoryNotice, showPasswordsNotice} =

@@ -76,6 +76,10 @@ class GuestOsRegistryService : public KeyedService {
     Registration(const std::string app_id, const base::Value pref);
     Registration(Registration&& registration) = default;
     Registration& operator=(Registration&& registration) = default;
+
+    Registration(const Registration&) = delete;
+    Registration& operator=(const Registration&) = delete;
+
     ~Registration();
 
     std::string app_id() const { return app_id_; }
@@ -108,8 +112,6 @@ class GuestOsRegistryService : public KeyedService {
 
     std::string app_id_;
     base::Value pref_;
-
-    DISALLOW_COPY_AND_ASSIGN(Registration);
   };
 
   class Observer {
@@ -129,6 +131,10 @@ class GuestOsRegistryService : public KeyedService {
   };
 
   explicit GuestOsRegistryService(Profile* profile);
+
+  GuestOsRegistryService(const GuestOsRegistryService&) = delete;
+  GuestOsRegistryService& operator=(const GuestOsRegistryService&) = delete;
+
   ~GuestOsRegistryService() override;
 
   base::WeakPtr<GuestOsRegistryService> GetWeakPtr();
@@ -275,8 +281,6 @@ class GuestOsRegistryService : public KeyedService {
   std::map<std::string, uint32_t> retry_icon_requests_;
 
   base::WeakPtrFactory<GuestOsRegistryService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GuestOsRegistryService);
 };
 
 }  // namespace guest_os

@@ -28,8 +28,13 @@ const char kCustomMergePrefName[] = "pref.custom";
 
 class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
  public:
-  TestPrefModelAssociatorClient() {}
-  ~TestPrefModelAssociatorClient() override {}
+  TestPrefModelAssociatorClient() = default;
+
+  TestPrefModelAssociatorClient(const TestPrefModelAssociatorClient&) = delete;
+  TestPrefModelAssociatorClient& operator=(
+      const TestPrefModelAssociatorClient&) = delete;
+
+  ~TestPrefModelAssociatorClient() override = default;
 
   // PrefModelAssociatorClient implementation.
   bool IsMergeableListPreference(const std::string& pref_name) const override {
@@ -50,9 +55,6 @@ class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
     }
     return nullptr;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPrefModelAssociatorClient);
 };
 
 class AbstractPreferenceMergeTest : public testing::Test {

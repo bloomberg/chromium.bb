@@ -26,10 +26,14 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_test_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -41,6 +45,7 @@
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -256,9 +261,11 @@ void TestingOmniboxView::ApplyStyle(gfx::TextStyle style,
 
 class TestingOmniboxEditController : public ChromeOmniboxEditController {
  public:
-  TestingOmniboxEditController(CommandUpdater* command_updater,
+  TestingOmniboxEditController(Browser* browser,
+                               Profile* profile,
+                               CommandUpdater* command_updater,
                                LocationBarModel* location_bar_model)
-      : ChromeOmniboxEditController(command_updater),
+      : ChromeOmniboxEditController(browser, profile, command_updater),
         location_bar_model_(location_bar_model) {}
   TestingOmniboxEditController(const TestingOmniboxEditController&) = delete;
   TestingOmniboxEditController& operator=(const TestingOmniboxEditController&) =
@@ -346,6 +353,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   }
 
  protected:
+  Browser* browser() { return browser_.get(); }
   Profile* profile() { return profile_.get(); }
   TestingOmniboxEditController* omnibox_edit_controller() {
     return &omnibox_edit_controller_;
@@ -369,7 +377,10 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   }
 
  private:
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<TestBrowserWindow> browser_window_;
+  std::unique_ptr<Browser> browser_;
   std::unique_ptr<TemplateURLServiceFactoryTestUtil> util_;
   CommandUpdaterImpl command_updater_;
   TestLocationBarModel location_bar_model_;
@@ -392,7 +403,10 @@ OmniboxViewViewsTest::OmniboxViewViewsTest(
                                disabled_features,
                                is_rtl_ui_test),
       command_updater_(nullptr),
-      omnibox_edit_controller_(&command_updater_, &location_bar_model_) {}
+      omnibox_edit_controller_(browser(),
+                               profile(),
+                               &command_updater_,
+                               &location_bar_model_) {}
 
 void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
                                                bool accept_input) {
@@ -410,7 +424,19 @@ void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
 void OmniboxViewViewsTest::SetUp() {
   ChromeViewsTestBase::SetUp();
 
-  profile_ = std::make_unique<TestingProfile>();
+  // We need the signin client initialized with a TestURLLoaderFactory.
+  TestingProfile::Builder profile_builder;
+  profile_builder.AddTestingFactory(
+      ChromeSigninClientFactory::GetInstance(),
+      base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
+                          &test_url_loader_factory_));
+  profile_ = profile_builder.Build();
+  browser_window_ = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), /*user_gesture*/ true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = browser_window_.get();
+  browser_.reset(Browser::Create(params));
+
   util_ = std::make_unique<TemplateURLServiceFactoryTestUtil>(profile_.get());
 
   // We need a widget so OmniboxView can be correctly focused and unfocused.
@@ -434,6 +460,10 @@ void OmniboxViewViewsTest::TearDown() {
   // Clean ourselves up as the text input client.
   if (omnibox_view_->GetInputMethod())
     omnibox_view_->GetInputMethod()->DetachTextInputClient(omnibox_view_);
+
+  browser_->tab_strip_model()->CloseAllTabs();
+  browser_ = nullptr;
+  browser_window_ = nullptr;
 
   widget_.reset();
   util_.reset();
@@ -1023,7 +1053,7 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     OmniboxViewViewsTest::SetUp();
 
     // Advance 5 seconds from epoch so the time is not considered null.
-    clock_.Advance(base::TimeDelta::FromSeconds(5));
+    clock_.Advance(base::Seconds(5));
     ui::SetEventTickClockForTesting(&clock_);
 
     location_bar_model()->set_url(kFullUrl);
@@ -1214,7 +1244,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
 
   // Advance the clock 5 seconds so the second click is not interpreted as a
   // double click.
-  clock()->Advance(base::TimeDelta::FromSeconds(5));
+  clock()->Advance(base::Seconds(5));
 
   // Second click should unelide only on mouse release.
   omnibox_textfield()->OnMousePressed(CreateMouseEvent(
@@ -1262,7 +1292,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseSingleThenDoubleClick) {
 
   // Advance the clock 5 seconds so the next click is not interpreted as a
   // double click.
-  clock()->Advance(base::TimeDelta::FromSeconds(5));
+  clock()->Advance(base::Seconds(5));
 
   // Double click
   SendMouseClickAtPoint(point, 1);
@@ -1290,7 +1320,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseSingleThenRightClick) {
 
   // Advance the clock 5 seconds so the next click is not interpreted as a
   // double click.
-  clock()->Advance(base::TimeDelta::FromSeconds(5));
+  clock()->Advance(base::Seconds(5));
 
   // Right click
   SendMouseClickAtPoint(point, 1, ui::EF_RIGHT_MOUSE_BUTTON);

@@ -36,6 +36,7 @@ import java.util.List;
 public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         implements BookmarkUIObserver, OnMenuItemClickListener, OnClickListener,
                    DragReorderableListAdapter.DragListener {
+
     private BookmarkItem mCurrentFolder;
     private BookmarkDelegate mDelegate;
 

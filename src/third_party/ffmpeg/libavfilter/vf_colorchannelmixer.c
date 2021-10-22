@@ -100,10 +100,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static float lerpf(float v0, float v1, float f)
@@ -756,7 +753,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     td.in = in;
     td.out = out;
-    ctx->internal->execute(ctx, s->filter_slice[pl], &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, s->filter_slice[pl], &td, NULL,
+                      FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
 
     if (in != out)
         av_frame_free(&in);
@@ -787,7 +785,6 @@ static const AVFilterPad colorchannelmixer_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad colorchannelmixer_outputs[] = {
@@ -796,7 +793,6 @@ static const AVFilterPad colorchannelmixer_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_colorchannelmixer = {
@@ -806,8 +802,8 @@ const AVFilter ff_vf_colorchannelmixer = {
     .priv_class    = &colorchannelmixer_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = colorchannelmixer_inputs,
-    .outputs       = colorchannelmixer_outputs,
+    FILTER_INPUTS(colorchannelmixer_inputs),
+    FILTER_OUTPUTS(colorchannelmixer_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

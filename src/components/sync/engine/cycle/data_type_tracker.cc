@@ -18,16 +18,14 @@ namespace syncer {
 namespace {
 
 // Possible nudge delays for local changes.
-constexpr base::TimeDelta kMinLocalChangeNudgeDelay =
-    base::TimeDelta::FromMilliseconds(50);
+constexpr base::TimeDelta kMinLocalChangeNudgeDelay = base::Milliseconds(50);
 constexpr base::TimeDelta kMediumLocalChangeNudgeDelay =
-    base::TimeDelta::FromMilliseconds(200);
-constexpr base::TimeDelta kBigLocalChangeNudgeDelay =
-    base::TimeDelta::FromMilliseconds(2000);
+    base::Milliseconds(200);
+constexpr base::TimeDelta kBigLocalChangeNudgeDelay = base::Milliseconds(2000);
 constexpr base::TimeDelta kVeryBigLocalChangeNudgeDelay = kDefaultPollInterval;
 
 constexpr base::TimeDelta kDefaultLocalChangeNudgeDelayForSessions =
-    base::TimeDelta::FromSeconds(11);
+    base::Seconds(11);
 
 const size_t kDefaultMaxPayloadsPerType = 10;
 
@@ -202,9 +200,9 @@ void DataTypeTracker::RecordSuccessfulSyncCycle() {
   // crash before writing all our state, we should wait until the results of
   // this sync cycle have been written to disk before updating the invalidations
   // state.  See crbug.com/324996.
-  for (auto it = pending_invalidations_.begin();
-       it != pending_invalidations_.end(); ++it) {
-    (*it)->Acknowledge();
+  for (const std::unique_ptr<InvalidationInterface>& pending_invalidation :
+       pending_invalidations_) {
+    pending_invalidation->Acknowledge();
   }
   pending_invalidations_.clear();
 
@@ -295,10 +293,10 @@ void DataTypeTracker::FillGetUpdatesTriggersMessage(
   // Fill the list of payloads, if applicable.  The payloads must be ordered
   // oldest to newest, so we insert them in the same order as we've been storing
   // them internally.
-  for (auto it = pending_invalidations_.begin();
-       it != pending_invalidations_.end(); ++it) {
-    if (!(*it)->IsUnknownVersion()) {
-      msg->add_notification_hint((*it)->GetPayload());
+  for (const std::unique_ptr<InvalidationInterface>& pending_invalidation :
+       pending_invalidations_) {
+    if (!pending_invalidation->IsUnknownVersion()) {
+      msg->add_notification_hint(pending_invalidation->GetPayload());
     }
   }
 
@@ -322,15 +320,14 @@ bool DataTypeTracker::IsBlocked() const {
 
 base::TimeDelta DataTypeTracker::GetTimeUntilUnblock() const {
   DCHECK(IsBlocked());
-  return std::max(base::TimeDelta::FromSeconds(0),
-                  unblock_time_ - base::TimeTicks::Now());
+  return std::max(base::Seconds(0), unblock_time_ - base::TimeTicks::Now());
 }
 
 base::TimeDelta DataTypeTracker::GetLastBackoffInterval() const {
   if (GetBlockingMode() !=
       WaitInterval::BlockingMode::kExponentialBackoffRetrying) {
     NOTREACHED();
-    return base::TimeDelta::FromSeconds(0);
+    return base::Seconds(0);
   }
   return wait_interval_->length;
 }

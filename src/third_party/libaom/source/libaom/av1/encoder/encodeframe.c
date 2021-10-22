@@ -239,6 +239,10 @@ static AOM_INLINE void setup_delta_q(AV1_COMP *const cpi, ThreadData *td,
         av1_get_q_for_deltaq_objective(cpi, sb_size, mi_row, mi_col);
   } else if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_PERCEPTUAL_AI) {
     current_qindex = av1_get_sbq_perceptual_ai(cpi, sb_size, mi_row, mi_col);
+  } else if (cpi->oxcf.q_cfg.deltaq_mode == DELTA_Q_USER_RATING_BASED) {
+    current_qindex = av1_get_sbq_user_rating_based(cpi, mi_row, mi_col);
+  } else if (cpi->oxcf.q_cfg.enable_hdr_deltaq) {
+    current_qindex = av1_get_q_for_hdr(cpi, x, sb_size, mi_row, mi_col);
   }
 
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -563,13 +567,8 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   }
 
 #if !CONFIG_REALTIME_ONLY
-  if (has_no_stats_stage(cpi) && cpi->oxcf.mode == REALTIME &&
-      cpi->oxcf.gf_cfg.lag_in_frames == 0) {
-    (void)tile_info;
-    (void)mi_row;
-    (void)mi_col;
-    (void)gather_tpl_data;
-  } else {
+  if (!(has_no_stats_stage(cpi) && cpi->oxcf.mode == REALTIME &&
+        cpi->oxcf.gf_cfg.lag_in_frames == 0)) {
     init_ref_frame_space(cpi, td, mi_row, mi_col);
     x->sb_energy_level = 0;
     x->part_search_info.cnn_output_valid = 0;
@@ -592,8 +591,7 @@ static INLINE void init_encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
   (void)gather_tpl_data;
 #endif
 
-  // Reset hash state for transform/mode rd hash information
-  reset_hash_records(&x->txfm_search_info, cpi->sf.tx_sf.use_inter_txb_hash);
+  reset_hash_records(&x->txfm_search_info);
   av1_zero(x->picked_ref_frames_mask);
   av1_invalid_rd_stats(rd_cost);
 }
@@ -630,6 +628,9 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
   // Encode the superblock
   if (sf->part_sf.partition_search_type == VAR_BASED_PARTITION) {
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    start_timing(cpi, rd_use_partition_time);
+#endif
     // partition search starting from a variance-based partition
     av1_set_offsets_without_segment_id(cpi, tile_info, x, mi_row, mi_col,
                                        sb_size);
@@ -638,6 +639,9 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
     av1_rd_use_partition(cpi, td, tile_data, mi, tp, mi_row, mi_col, sb_size,
                          &dummy_rate, &dummy_dist, 1, pc_root);
     av1_free_pc_tree_recursive(pc_root, num_planes, 0, 0);
+#if CONFIG_COLLECT_COMPONENT_TIMING
+    end_timing(cpi, rd_use_partition_time);
+#endif
   }
 #if !CONFIG_REALTIME_ONLY
   else if (sf->part_sf.partition_search_type == FIXED_PARTITION || seg_skip) {
@@ -675,10 +679,17 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 
     if (num_passes == 1) {
 #if CONFIG_PARTITION_SEARCH_ORDER
-      av1_reset_part_sf(&cpi->sf.part_sf);
-      RD_STATS this_rdc;
-      av1_rd_partition_search(cpi, td, tile_data, tp, sms_root, mi_row, mi_col,
-                              sb_size, &this_rdc);
+      if (cpi->ext_part_controller.ready && !frame_is_intra_only(cm)) {
+        av1_reset_part_sf(&cpi->sf.part_sf);
+        RD_STATS this_rdc;
+        av1_rd_partition_search(cpi, td, tile_data, tp, sms_root, mi_row,
+                                mi_col, sb_size, &this_rdc);
+      } else {
+        PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
+        av1_rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
+                              &dummy_rdc, dummy_rdc, pc_root, sms_root, NULL,
+                              SB_SINGLE_PASS, NULL);
+      }
 #else
       PC_TREE *const pc_root = av1_alloc_pc_tree_node(sb_size);
       av1_rd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col, sb_size,
@@ -724,8 +735,8 @@ static AOM_INLINE void encode_rd_sb(AV1_COMP *cpi, ThreadData *td,
 }
 
 static AOM_INLINE int is_rtc_mode(const CostUpdateFreq *cost_upd_freq,
-                                  int use_non_rd_mode) {
-  return (use_non_rd_mode && cost_upd_freq->coeff >= 2 &&
+                                  MODE mode) {
+  return ((mode == REALTIME) && cost_upd_freq->coeff >= 2 &&
           cost_upd_freq->mode >= 2 && cost_upd_freq->mv >= 2 &&
           cost_upd_freq->dv >= 2);
 }
@@ -756,8 +767,7 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   const int sb_row = (mi_row - tile_info->mi_row_start) >> mib_size_log2;
   const int use_nonrd_mode = cpi->sf.rt_sf.use_nonrd_pick_mode;
   const CostUpdateFreq *const cost_upd_freq = &cpi->oxcf.cost_upd_freq;
-  const int rtc_mode = is_rtc_mode(cost_upd_freq, use_nonrd_mode);
-  const int update_cdf = tile_data->allow_update_cdf && row_mt_enabled;
+  const int rtc_mode = is_rtc_mode(cost_upd_freq, cpi->oxcf.mode);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   start_timing(cpi, encode_sb_row_time);
@@ -780,12 +790,12 @@ static AOM_INLINE void encode_sb_row(AV1_COMP *cpi, ThreadData *td,
   // Code each SB in the row
   for (int mi_col = tile_info->mi_col_start, sb_col_in_tile = 0;
        mi_col < tile_info->mi_col_end; mi_col += mib_size, sb_col_in_tile++) {
-    // In non-rd mode and when frequency of cost updates is off/tile, wait for
+    // In realtime mode and when frequency of cost updates is off/tile, wait for
     // the top superblock to finish encoding. Otherwise, wait for the top-right
     // superblock to finish encoding.
     (*(enc_row_mt->sync_read_ptr))(row_mt_sync, sb_row,
                                    sb_col_in_tile - rtc_mode);
-
+    const int update_cdf = tile_data->allow_update_cdf && row_mt_enabled;
     if (update_cdf && (tile_info->mi_row_start != mi_row)) {
       if ((tile_info->mi_col_start == mi_col)) {
         // restore frame context at the 1st column sb
@@ -898,9 +908,8 @@ void av1_init_tile_data(AV1_COMP *cpi) {
   TokenList *tplist = token_info->tplist[0][0];
   unsigned int tile_tok = 0;
   int tplist_count = 0;
-  const int use_nonrd_mode = cpi->sf.rt_sf.use_nonrd_pick_mode;
   const CostUpdateFreq *const cost_upd_freq = &cpi->oxcf.cost_upd_freq;
-  const int rtc_mode = is_rtc_mode(cost_upd_freq, use_nonrd_mode);
+  const int rtc_mode = is_rtc_mode(cost_upd_freq, cpi->oxcf.mode);
 
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
     for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
@@ -1352,6 +1361,10 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
     else if (deltaq_mode == DELTA_Q_PERCEPTUAL_AI)
       cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
+    else if (deltaq_mode == DELTA_Q_USER_RATING_BASED)
+      cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
+    else if (deltaq_mode == DELTA_Q_HDR)
+      cm->delta_q_info.delta_q_res = DEFAULT_DELTA_Q_RES_PERCEPTUAL;
     // Set delta_q_present_flag before it is used for the first time
     cm->delta_q_info.delta_lf_res = DEFAULT_DELTA_LF_RES;
     cm->delta_q_info.delta_q_present_flag = deltaq_mode != NO_DELTA_Q;
@@ -1504,13 +1517,15 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
 #endif
 
   if (cpi->sf.tx_sf.tx_type_search.prune_tx_type_using_stats ||
-      (cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_search == 1)) {
+      ((cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_prob_thresh !=
+        INT_MAX) &&
+       (cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_prob_thresh != 0))) {
     const FRAME_UPDATE_TYPE update_type =
         get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
     for (i = 0; i < TX_SIZES_ALL; i++) {
       int sum = 0;
       int j;
-      int left = 1024;
+      int left = MAX_TX_TYPE_PROB;
 
       for (j = 0; j < TX_TYPES; j++)
         sum += cpi->td.rd_counts.tx_type_used[i][j];
@@ -1518,8 +1533,8 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
       for (j = TX_TYPES - 1; j >= 0; j--) {
         int update_txtype_frameprobs = 1;
         const int new_prob =
-            sum ? 1024 * cpi->td.rd_counts.tx_type_used[i][j] / sum
-                : (j ? 0 : 1024);
+            sum ? MAX_TX_TYPE_PROB * cpi->td.rd_counts.tx_type_used[i][j] / sum
+                : (j ? 0 : MAX_TX_TYPE_PROB);
 #if CONFIG_FRAME_PARALLEL_ENCODE
         // Track the frame probabilities of parallel encode frames to update
         // during postencode stage.

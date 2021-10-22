@@ -6,6 +6,7 @@
 
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "base/check.h"
 #include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/components/phonehub/screen_lock_manager.h"
 
@@ -17,11 +18,14 @@ LaunchAppHelper::NotificationInfo::NotificationInfo(
     absl::variant<NotificationType,
                   chromeos::eche_app::mojom::WebNotificationType> type)
     : category_(category), type_(type) {
-  DCHECK(category == Category::kNative || category == Category::kWebUI);
-  DCHECK(
-      nullptr !=
-          absl::get_if<chromeos::eche_app::mojom::WebNotificationType>(&type) ||
-      nullptr != absl::get_if<NotificationType>(&type));
+  DCHECK(nullptr != absl::get_if<NotificationType>(&type)
+             ? category == Category::kNative
+             : category == Category::kWebUI);
+  DCHECK(nullptr !=
+                 absl::get_if<chromeos::eche_app::mojom::WebNotificationType>(
+                     &type)
+             ? category == Category::kWebUI
+             : category == Category::kNative);
 }
 
 LaunchAppHelper::NotificationInfo::~NotificationInfo() = default;
@@ -60,8 +64,9 @@ void LaunchAppHelper::ShowNotification(
 }
 
 void LaunchAppHelper::LaunchEcheApp(absl::optional<int64_t> notification_id,
-                                    const std::string& package_name) const {
-  launch_eche_app_function_.Run(notification_id, package_name);
+                                    const std::string& package_name,
+                                    const std::u16string& visible_name) const {
+  launch_eche_app_function_.Run(notification_id, package_name, visible_name);
 }
 
 void LaunchAppHelper::CloseEcheApp() const {

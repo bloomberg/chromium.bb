@@ -134,6 +134,10 @@ static const AVOption options[] = {
     { "init_qpI",     "Initial QP value for I frame",       OFFSET(init_qp_i),    AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 51, VE },
     { "qp",           "Constant quantization parameter rate control method",
                                                             OFFSET(cqp),          AV_OPT_TYPE_INT,   { .i64 = -1 }, -1, 51, VE },
+    { "qp_cb_offset", "Quantization parameter offset for cb channel",
+                                                            OFFSET(qp_cb_offset), AV_OPT_TYPE_INT,   { .i64 = 0 }, -12, 12, VE },
+    { "qp_cr_offset", "Quantization parameter offset for cr channel",
+                                                            OFFSET(qp_cr_offset), AV_OPT_TYPE_INT,   { .i64 = 0 }, -12, 12, VE },
     { "weighted_pred","Set 1 to enable weighted prediction",
                                                             OFFSET(weighted_pred),AV_OPT_TYPE_INT,   { .i64 = 0 }, 0, 1, VE },
 #ifdef NVENC_HAVE_HEVC_BFRAME_REF_MODE
@@ -165,6 +169,12 @@ static const AVOption options[] = {
 #endif
     { "extra_sei",    "Pass on extra SEI data (e.g. a53 cc) to be included in the bitstream",
                                                             OFFSET(extra_sei),    AV_OPT_TYPE_BOOL,  { .i64 = 1 }, 0, 1, VE },
+    { "intra-refresh","Use Periodic Intra Refresh instead of IDR frames",
+                                                            OFFSET(intra_refresh),AV_OPT_TYPE_BOOL,  { .i64 = 0 }, 0, 1, VE },
+    { "single-slice-intra-refresh", "Use single slice intra refresh",
+                                                            OFFSET(single_slice_intra_refresh), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
+    { "constrained-encoding", "Enable constrainedFrame encoding where each slice in the constrained picture is independent of other slices",
+                                                            OFFSET(constrained_encoding), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     { NULL }
 };
 

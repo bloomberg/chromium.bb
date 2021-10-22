@@ -20,7 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromeos/system/statistics_provider.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
@@ -197,7 +197,7 @@ void InputDataProvider::GetKeyboardVisualLayout(
   } else {
     // External keyboards generally don't tell us what layout they have, so
     // assume the layout the user has currently selected.
-    layout_name = chromeos::input_method::InputMethodManager::Get()
+    layout_name = input_method::InputMethodManager::Get()
                       ->GetActiveIMEState()
                       ->GetCurrentInputMethod()
                       .keyboard_layout();

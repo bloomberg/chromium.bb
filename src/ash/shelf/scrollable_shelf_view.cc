@@ -28,8 +28,8 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/focus/focus_search.h"
@@ -46,28 +46,28 @@ int64_t GetDisplayIdForView(const views::View* view) {
 }
 
 void ReportSmoothness(bool tablet_mode, bool launcher_visible, int smoothness) {
-  base::UmaHistogramPercentageObsoleteDoNotUse(
+  base::UmaHistogramPercentage(
       scrollable_shelf_constants::kAnimationSmoothnessHistogram, smoothness);
   if (tablet_mode) {
     if (launcher_visible) {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessTabletLauncherVisibleHistogram,
           smoothness);
     } else {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessTabletLauncherHiddenHistogram,
           smoothness);
     }
   } else {
     if (launcher_visible) {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessClamshellLauncherVisibleHistogram,
           smoothness);
     } else {
-      base::UmaHistogramPercentageObsoleteDoNotUse(
+      base::UmaHistogramPercentage(
           scrollable_shelf_constants::
               kAnimationSmoothnessClamshellLauncherHiddenHistogram,
           smoothness);
@@ -180,6 +180,11 @@ class ScrollableShelfContainerView : public ShelfContainerView,
         scrollable_shelf_view_(scrollable_shelf_view) {
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   }
+
+  ScrollableShelfContainerView(const ScrollableShelfContainerView&) = delete;
+  ScrollableShelfContainerView& operator=(const ScrollableShelfContainerView&) =
+      delete;
+
   ~ScrollableShelfContainerView() override = default;
 
   // ShelfContainerView:
@@ -194,8 +199,6 @@ class ScrollableShelfContainerView : public ShelfContainerView,
                          const gfx::Rect& rect) const override;
 
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfContainerView);
 };
 
 void ScrollableShelfContainerView::TranslateShelfView(
@@ -245,6 +248,10 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
                     /*accessibility_mode=*/true),
         scrollable_shelf_view_(scrollable_shelf_view) {}
 
+  ScrollableShelfFocusSearch(const ScrollableShelfFocusSearch&) = delete;
+  ScrollableShelfFocusSearch& operator=(const ScrollableShelfFocusSearch&) =
+      delete;
+
   ~ScrollableShelfFocusSearch() override = default;
 
   // views::FocusSearch
@@ -290,8 +297,6 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
 
  private:
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfFocusSearch);
 };
 
 ////////////////////////////////////////////////////////////////////////////////

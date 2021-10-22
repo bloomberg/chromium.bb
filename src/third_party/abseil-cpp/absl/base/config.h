@@ -243,15 +243,17 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 //
 // Checks whether `std::is_trivially_copy_assignable<T>` is supported.
 
-// Notes: Clang with libc++ supports these features, as does gcc >= 5.1 with
-// either libc++ or libstdc++, and Visual Studio (but not NVCC).
+// Notes: Clang with libc++ supports these features, as does gcc >= 7.4 with
+// libstdc++, or gcc >= 8.2 with libc++, and Visual Studio (but not NVCC).
 #if defined(ABSL_HAVE_STD_IS_TRIVIALLY_CONSTRUCTIBLE)
 #error ABSL_HAVE_STD_IS_TRIVIALLY_CONSTRUCTIBLE cannot be directly set
 #elif defined(ABSL_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE)
 #error ABSL_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE cannot directly set
-#elif (defined(__clang__) && defined(_LIBCPP_VERSION)) ||                \
-    (!defined(__clang__) && ABSL_INTERNAL_HAVE_MIN_GNUC_VERSION(7, 4) && \
-     (defined(_LIBCPP_VERSION) || defined(__GLIBCXX__))) ||              \
+#elif (defined(__clang__) && defined(_LIBCPP_VERSION)) ||                    \
+    (!defined(__clang__) &&                                                  \
+     ((ABSL_INTERNAL_HAVE_MIN_GNUC_VERSION(7, 4) && defined(__GLIBCXX__)) || \
+      (ABSL_INTERNAL_HAVE_MIN_GNUC_VERSION(8, 2) &&                          \
+       defined(_LIBCPP_VERSION)))) ||                                        \
     (defined(_MSC_VER) && !defined(__NVCC__))
 #define ABSL_HAVE_STD_IS_TRIVIALLY_CONSTRUCTIBLE 1
 #define ABSL_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE 1
@@ -408,10 +410,10 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 // POSIX.1-2001.
 #ifdef ABSL_HAVE_MMAP
 #error ABSL_HAVE_MMAP cannot be directly set
-#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) ||   \
-    defined(__ros__) || defined(__native_client__) || defined(__asmjs__) || \
-    defined(__wasm__) || defined(__Fuchsia__) || defined(__sun) || \
-    defined(__ASYLO__) || defined(__myriad2__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || \
+    defined(_AIX) || defined(__ros__) || defined(__native_client__) ||    \
+    defined(__asmjs__) || defined(__wasm__) || defined(__Fuchsia__) ||    \
+    defined(__sun) || defined(__ASYLO__) || defined(__myriad2__)
 #define ABSL_HAVE_MMAP 1
 #endif
 
@@ -422,7 +424,7 @@ static_assert(ABSL_INTERNAL_INLINE_NAMESPACE_STR[0] != 'h' ||
 #ifdef ABSL_HAVE_PTHREAD_GETSCHEDPARAM
 #error ABSL_HAVE_PTHREAD_GETSCHEDPARAM cannot be directly set
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || \
-    defined(__ros__)
+    defined(_AIX) || defined(__ros__)
 #define ABSL_HAVE_PTHREAD_GETSCHEDPARAM 1
 #endif
 

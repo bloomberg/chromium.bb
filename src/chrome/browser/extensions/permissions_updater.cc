@@ -105,6 +105,11 @@ PermissionsUpdater::Delegate* GetDelegate() {
 class PermissionsUpdaterShutdownNotifierFactory
     : public BrowserContextKeyedServiceShutdownNotifierFactory {
  public:
+  PermissionsUpdaterShutdownNotifierFactory(
+      const PermissionsUpdaterShutdownNotifierFactory&) = delete;
+  PermissionsUpdaterShutdownNotifierFactory& operator=(
+      const PermissionsUpdaterShutdownNotifierFactory&) = delete;
+
   static PermissionsUpdaterShutdownNotifierFactory* GetInstance() {
     static base::NoDestructor<PermissionsUpdaterShutdownNotifierFactory>
         factory;
@@ -121,8 +126,6 @@ class PermissionsUpdaterShutdownNotifierFactory
     DependsOn(ExtensionSystemFactory::GetInstance());
   }
   ~PermissionsUpdaterShutdownNotifierFactory() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(PermissionsUpdaterShutdownNotifierFactory);
 };
 
 void SetCorsOriginAccessListForAllRelatedProfiles(
@@ -148,6 +151,11 @@ void SetCorsOriginAccessListForAllRelatedProfiles(
 // (whichever happens first).
 class PermissionsUpdater::NetworkPermissionsUpdateHelper {
  public:
+  NetworkPermissionsUpdateHelper(const NetworkPermissionsUpdateHelper&) =
+      delete;
+  NetworkPermissionsUpdateHelper& operator=(
+      const NetworkPermissionsUpdateHelper&) = delete;
+
   static void UpdatePermissions(content::BrowserContext* browser_context,
                                 EventType event_type,
                                 scoped_refptr<const Extension> extension,
@@ -171,8 +179,6 @@ class PermissionsUpdater::NetworkPermissionsUpdateHelper {
   base::OnceClosure dispatch_event_;
   base::CallbackListSubscription shutdown_subscription_;
   base::WeakPtrFactory<NetworkPermissionsUpdateHelper> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkPermissionsUpdateHelper);
 };
 
 // static
@@ -442,18 +448,16 @@ void PermissionsUpdater::SetPolicyHostRestrictions(
 
   // Update the BrowserContext origin lists, and send notification to the
   // currently running renderers of the runtime block hosts settings.
-  NetworkPermissionsUpdateHelper::UpdatePermissions(browser_context_, POLICY,
-                                                    extension, PermissionSet(),
-                                                    base::DoNothing::Once());
+  NetworkPermissionsUpdateHelper::UpdatePermissions(
+      browser_context_, POLICY, extension, PermissionSet(), base::DoNothing());
 }
 
 void PermissionsUpdater::SetUsesDefaultHostRestrictions(
     const Extension* extension) {
   extension->permissions_data()->SetUsesDefaultHostRestrictions(
       util::GetBrowserContextId(browser_context_));
-  NetworkPermissionsUpdateHelper::UpdatePermissions(browser_context_, POLICY,
-                                                    extension, PermissionSet(),
-                                                    base::DoNothing::Once());
+  NetworkPermissionsUpdateHelper::UpdatePermissions(
+      browser_context_, POLICY, extension, PermissionSet(), base::DoNothing());
 }
 
 void PermissionsUpdater::SetDefaultPolicyHostRestrictions(
@@ -492,7 +496,7 @@ void PermissionsUpdater::RemovePermissionsUnsafe(
   SetPermissions(extension, std::move(total), update_active_prefs);
   NetworkPermissionsUpdateHelper::UpdatePermissions(
       browser_context_, REMOVED, extension, *successfully_removed,
-      base::DoNothing::Once());
+      base::DoNothing());
 }
 
 std::unique_ptr<const PermissionSet>
@@ -564,7 +568,7 @@ void PermissionsUpdater::AddPermissionsForTesting(
     const Extension& extension,
     const PermissionSet& permissions) {
   AddPermissionsImpl(extension, permissions, kNone, permissions,
-                     base::DoNothing::Once());
+                     base::DoNothing());
 }
 
 void PermissionsUpdater::SetPermissions(

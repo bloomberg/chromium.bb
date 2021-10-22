@@ -54,17 +54,16 @@ class StreamingReceiverSessionClient
 
   // Max time for which streaming may wait for AV Settings receipt before being
   // treated as a failure.
-  static constexpr base::TimeDelta kMaxAVSettingsWaitTime =
-      base::TimeDelta::FromSeconds(5);
+  static constexpr base::TimeDelta kMaxAVSettingsWaitTime = base::Seconds(5);
 
   // Creates a new instance of this class. |handler| must persist for the
   // lifetime of this instance.
   StreamingReceiverSessionClient(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       cast_streaming::NetworkContextGetter network_context_getter,
-      cast_streaming::ReceiverSession::MessagePortProvider
-          message_port_provider,
+      std::unique_ptr<cast_api_bindings::MessagePort> message_port,
       Handler* handler);
+
   ~StreamingReceiverSessionClient() override;
 
   // Schedules starting the Streaming Receiver owned by this instance. May only
@@ -97,7 +96,7 @@ class StreamingReceiverSessionClient
 
   bool is_healthy() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return streaming_state_ != LaunchState::kError;
+    return !(streaming_state_ & LaunchState::kError);
   }
 
  private:

@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -76,9 +77,6 @@ void MockClipboardHost::IsFormatAvailable(blink::mojom::ClipboardFormat format,
     case blink::mojom::ClipboardFormat::kBookmark:
       result = false;
       break;
-    case blink::mojom::ClipboardFormat::kRtf:
-      result = false;
-      break;
   }
   std::move(callback).Run(result);
 }
@@ -106,13 +104,6 @@ void MockClipboardHost::ReadRtf(ui::ClipboardBuffer clipboard_buffer,
 void MockClipboardHost::ReadPng(ui::ClipboardBuffer clipboard_buffer,
                                 ReadPngCallback callback) {
   std::move(callback).Run(mojo_base::BigBuffer(png_));
-}
-
-void MockClipboardHost::ReadImage(ui::ClipboardBuffer clipboard_buffer,
-                                  ReadImageCallback callback) {
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(png_.data(), png_.size(), &bitmap);
-  std::move(callback).Run(std::move(bitmap));
 }
 
 void MockClipboardHost::ReadFiles(ui::ClipboardBuffer clipboard_buffer,

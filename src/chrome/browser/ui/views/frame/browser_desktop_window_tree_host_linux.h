@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_window_tree_host.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -37,6 +38,12 @@ class BrowserDesktopWindowTreeHostLinux
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
       BrowserView* browser_view,
       BrowserFrame* browser_frame);
+
+  BrowserDesktopWindowTreeHostLinux(const BrowserDesktopWindowTreeHostLinux&) =
+      delete;
+  BrowserDesktopWindowTreeHostLinux& operator=(
+      const BrowserDesktopWindowTreeHostLinux&) = delete;
+
   ~BrowserDesktopWindowTreeHostLinux() override;
 
   // Called when the tab drag status changes for this window.
@@ -110,8 +117,6 @@ class BrowserDesktopWindowTreeHostLinux
                           &views::LinuxUI::AddDeviceScaleFactorObserver,
                           &views::LinuxUI::RemoveDeviceScaleFactorObserver>
       scale_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserDesktopWindowTreeHostLinux);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_DESKTOP_WINDOW_TREE_HOST_LINUX_H_

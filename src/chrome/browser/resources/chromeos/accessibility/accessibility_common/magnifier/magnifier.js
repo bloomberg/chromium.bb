@@ -48,6 +48,16 @@ export class Magnifier {
         [], chrome.automation.EventType.CARET_BOUNDS_CHANGED,
         event => this.onCaretBoundsChanged(event));
 
+    /** @private {!ChromeEventHandler} */
+    this.onMagnifierBoundsChangedHandler_ = new ChromeEventHandler(
+        chrome.accessibilityPrivate.onMagnifierBoundsChanged,
+        bounds => this.onMagnifierBoundsChanged_(bounds));
+
+    /** @private {ChromeEventHandler} */
+    this.updateFromPrefsHandler_ = new ChromeEventHandler(
+        chrome.settingsPrivate.onPrefsChanged,
+        prefs => this.updateFromPrefs_(prefs));
+
     this.init_();
   }
 
@@ -56,9 +66,8 @@ export class Magnifier {
     this.focusHandler_.stop();
     this.activeDescendantHandler_.stop();
     this.onCaretBoundsChangedHandler.stop();
-
-    chrome.accessibilityPrivate.onMagnifierBoundsChanged.removeListener(
-        this.onMagnifierBoundsChanged_);
+    this.onMagnifierBoundsChangedHandler_.stop();
+    this.updateFromPrefsHandler_.stop();
   }
 
   /**
@@ -67,8 +76,7 @@ export class Magnifier {
    */
   init_() {
     chrome.settingsPrivate.getAllPrefs(prefs => this.updateFromPrefs_(prefs));
-    chrome.settingsPrivate.onPrefsChanged.addListener(
-        prefs => this.updateFromPrefs_(prefs));
+    this.updateFromPrefsHandler_.start();
 
     chrome.automation.getDesktop(desktop => {
       this.focusHandler_.setNodes(desktop);
@@ -79,8 +87,7 @@ export class Magnifier {
       this.onCaretBoundsChangedHandler.start();
     });
 
-    chrome.accessibilityPrivate.onMagnifierBoundsChanged.addListener(
-        bounds => this.onMagnifierBoundsChanged_(bounds));
+    this.onMagnifierBoundsChangedHandler_.start();
 
     this.isInitializing_ = true;
 
@@ -96,6 +103,10 @@ export class Magnifier {
         });
   }
 
+  /**
+   * @param {!chrome.accessibilityPrivate.ScreenRect} bounds
+   * @private
+   */
   onMagnifierBoundsChanged_(bounds) {
     if (this.magnifierDebugDrawRect_) {
       chrome.accessibilityPrivate.setFocusRings([{

@@ -57,17 +57,15 @@ namespace {
 namespace em = enterprise_management;
 
 using base::Time;
-using base::TimeDelta;
 
 // How much time in the past to store active periods for.
-constexpr TimeDelta kMaxStoredPastActivityInterval = TimeDelta::FromDays(30);
+constexpr base::TimeDelta kMaxStoredPastActivityInterval = base::Days(30);
 
 // How much time in the future to store active periods for.
-constexpr TimeDelta kMaxStoredFutureActivityInterval = TimeDelta::FromDays(2);
+constexpr base::TimeDelta kMaxStoredFutureActivityInterval = base::Days(2);
 
 // How often the child's usage time is stored.
-constexpr base::TimeDelta kUpdateChildActiveTimeInterval =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kUpdateChildActiveTimeInterval = base::Seconds(30);
 
 const char kReportSizeHistogramName[] =
     "ChromeOS.FamilyLink.ChildStatusReportRequest.Size";
@@ -125,7 +123,7 @@ ChildStatusCollector::ChildStatusCollector(
     Profile* profile,
     chromeos::system::StatisticsProvider* provider,
     const AndroidStatusFetcher& android_status_fetcher,
-    TimeDelta activity_day_start)
+    base::TimeDelta activity_day_start)
     : StatusCollector(provider, ash::CrosSettings::Get()),
       pref_service_(pref_service),
       profile_(profile),
@@ -179,9 +177,9 @@ ChildStatusCollector::~ChildStatusCollector() {
   ash::UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
 }
 
-TimeDelta ChildStatusCollector::GetActiveChildScreenTime() {
+base::TimeDelta ChildStatusCollector::GetActiveChildScreenTime() {
   UpdateChildUsageTime();
-  return TimeDelta::FromMilliseconds(
+  return base::Milliseconds(
       pref_service_->GetInteger(prefs::kChildScreenTimeMilliseconds));
 }
 
@@ -239,7 +237,7 @@ void ChildStatusCollector::UpdateChildUsageTime() {
   Time now = clock_->Now();
   Time reset_time = activity_storage_->GetBeginningOfDay(now);
   if (reset_time > now)
-    reset_time -= TimeDelta::FromDays(1);
+    reset_time -= base::Days(1);
   // Reset screen time if it has not been reset today.
   if (reset_time > pref_service_->GetTime(prefs::kLastChildScreenTimeReset)) {
     pref_service_->SetTime(prefs::kLastChildScreenTimeReset, now);
@@ -252,7 +250,7 @@ void ChildStatusCollector::UpdateChildUsageTime() {
     // negative (which can happen when the clock changes), assume a single
     // interval of activity. This is the same strategy used to enterprise users.
     base::TimeDelta active_seconds = now - last_active_check_;
-    if (active_seconds < base::TimeDelta::FromSeconds(0) ||
+    if (active_seconds < base::Seconds(0) ||
         active_seconds >= (2 * kUpdateChildActiveTimeInterval)) {
       activity_storage_->AddActivityPeriod(now - kUpdateChildActiveTimeInterval,
                                            now, now);
@@ -314,8 +312,7 @@ bool ChildStatusCollector::GetAppActivity(
     if (last_successful_report_time_int > 0) {
       base::Time last_successful_report_time =
           base::Time::FromDeltaSinceWindowsEpoch(
-              base::TimeDelta::FromMicroseconds(
-                  last_successful_report_time_int));
+              base::Microseconds(last_successful_report_time_int));
       DCHECK_LT(last_successful_report_time,
                 last_report_params_->generation_time);
       base::TimeDelta elapsed_time =
@@ -412,26 +409,26 @@ void ChildStatusCollector::OnSubmittedSuccessfully() {
   OnAppActivityReportSubmitted();
 }
 
-bool ChildStatusCollector::ShouldReportActivityTimes() const {
+bool ChildStatusCollector::IsReportingActivityTimes() const {
   return true;
 }
 
-bool ChildStatusCollector::ShouldReportNetworkInterfaces() const {
+bool ChildStatusCollector::IsReportingHardwareData() const {
   return false;
 }
 
-bool ChildStatusCollector::ShouldReportUsers() const {
+bool ChildStatusCollector::IsReportingNetworkData() const {
   return false;
 }
 
-bool ChildStatusCollector::ShouldReportHardwareStatus() const {
+bool ChildStatusCollector::IsReportingUsers() const {
   return false;
 }
 
-bool ChildStatusCollector::ShouldReportCrashReportInfo() const {
+bool ChildStatusCollector::IsReportingCrashReportInfo() const {
   return false;
 }
-bool ChildStatusCollector::ShouldReportAppInfoAndActivity() const {
+bool ChildStatusCollector::IsReportingAppInfoAndActivity() const {
   return false;
 }
 

@@ -79,6 +79,12 @@ void WebAppTestRegistryObserverAdapter::SetWebAppLastBadgingTimeChangedDelegate(
   app_last_badging_time_changed_delegate_ = delegate;
 }
 
+void WebAppTestRegistryObserverAdapter::
+    SetWebAppProtocolSettingsChangedDelegate(
+        WebAppProtocolSettingsChangedDelegate delegate) {
+  app_protocol_settings_changed_delegate_ = delegate;
+}
+
 void WebAppTestRegistryObserverAdapter::OnWebAppInstalled(const AppId& app_id) {
   if (app_installed_delegate_)
     app_installed_delegate_.Run(app_id);
@@ -128,6 +134,11 @@ void WebAppTestRegistryObserverAdapter::OnWebAppLastBadgingTimeChanged(
     app_last_badging_time_changed_delegate_.Run(app_id, time);
 }
 
+void WebAppTestRegistryObserverAdapter::OnWebAppProtocolSettingsChanged() {
+  if (app_protocol_settings_changed_delegate_)
+    app_protocol_settings_changed_delegate_.Run();
+}
+
 void WebAppTestRegistryObserverAdapter::SignalRunLoopAndStoreAppId(
     const AppId& app_id) {
   if (!is_listening_)
@@ -157,7 +168,6 @@ void WebAppTestInstallObserver::BeginListening(
 }
 
 AppId WebAppTestInstallObserver::Wait() {
-  DCHECK(is_listening_);
   wait_loop_.Run();
   return last_app_id_;
 }
@@ -188,7 +198,6 @@ void WebAppTestInstallWithOsHooksObserver::BeginListening(
 }
 
 AppId WebAppTestInstallWithOsHooksObserver::Wait() {
-  DCHECK(is_listening_);
   wait_loop_.Run();
   return last_app_id_;
 }
@@ -219,7 +228,6 @@ void WebAppTestManifestUpdatedObserver::BeginListening(
 }
 
 AppId WebAppTestManifestUpdatedObserver::Wait() {
-  DCHECK(is_listening_);
   wait_loop_.Run();
   return last_app_id_;
 }
@@ -249,7 +257,6 @@ void WebAppTestUninstallObserver::BeginListening(
 }
 
 AppId WebAppTestUninstallObserver::Wait() {
-  DCHECK(is_listening_);
   wait_loop_.Run();
   return last_app_id_;
 }

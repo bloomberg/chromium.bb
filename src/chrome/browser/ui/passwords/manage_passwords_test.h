@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/browser/signin/identity_browser_test_base.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
@@ -25,9 +25,13 @@ class ManagePasswordsUIController;
 
 // Test class for the various password management view bits and pieces. Provides
 // some helper methods to poke at the bubble, icon, and controller's state.
-class ManagePasswordsTest : public InProcessBrowserTest {
+class ManagePasswordsTest : public IdentityBrowserTestBase {
  public:
   ManagePasswordsTest();
+
+  ManagePasswordsTest(const ManagePasswordsTest&) = delete;
+  ManagePasswordsTest& operator=(const ManagePasswordsTest&) = delete;
+
   ~ManagePasswordsTest() override;
 
   // InProcessBrowserTest:
@@ -85,8 +89,6 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   password_manager::FakeFormFetcher fetcher_;
 
   base::CallbackListSubscription create_services_subscription_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsTest);
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_TEST_H_

@@ -23,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace views {
 class Widget;
@@ -66,6 +67,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   OverviewGrid(aura::Window* root_window,
                const std::vector<aura::Window*>& window_list,
                OverviewSession* overview_session);
+
+  OverviewGrid(const OverviewGrid&) = delete;
+  OverviewGrid& operator=(const OverviewGrid&) = delete;
+
   ~OverviewGrid() override;
 
   // Exits overview mode.
@@ -296,10 +301,17 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Updates the drag details for DesksBarView to end the drag and move the
   // window of |drag_item| to another desk if it was dropped on a mini_view of
-  // a desk that is different than that of the active desk.
-  // Returns true if the window was successfully moved to another desk.
-  bool MaybeDropItemOnDeskMiniView(const gfx::Point& screen_location,
-                                   OverviewItem* drag_item);
+  // a desk that is different than that of the active desk or if dropped on the
+  // new desk button. Returns true if the window was successfully moved to
+  // another desk.
+  bool MaybeDropItemOnDeskMiniViewOrNewDeskButton(
+      const gfx::Point& screen_location,
+      OverviewItem* drag_item);
+
+  // Updates |desks_bar_views| from zero state to expanded state. Called when a
+  // normal drag starts to enable user dragging a window and dropping it to the
+  // new desk.
+  void MaybeExpandDesksBarView();
 
   // Prepares the |scroll_offset_min_| as a limit for |scroll_offset| from
   // scrolling or positioning windows too far offscreen.
@@ -324,6 +336,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Commits any on-going desk name changes if any.
   void CommitDeskNameChanges();
+
+  // Shows the grid of the desks templates. Creates the widget if needed.
+  void ShowDesksTemplatesGrid();
+
+  // True if the grid of desks templates is shown.
+  bool IsShowingDesksTemplatesGrid() const;
 
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
@@ -366,7 +384,7 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
  private:
   class TargetWindowObserver;
-  friend class OverviewSessionTest;
+  friend class OverviewTestBase;
 
   // Struct which holds data required to perform nudges.
   struct NudgeData {
@@ -436,6 +454,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Updates frame throttling on overview item windows.
   void UpdateFrameThrottling();
+
+  // Shows the button that saves the active desk as a template.
+  void ShowCreateDesksTemplatesButtons();
+
+  // Called back when the button to save a desk template is pressed.
+  void OnCreateDesksTemplatesButtonPressed();
 
   // Root window the grid is in.
   aura::Window* root_window_;
@@ -510,7 +534,12 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // one.
   aura::Window* dragged_window_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(OverviewGrid);
+  // The widget that contains the view for all the existing templates.
+  views::UniqueWidgetPtr desks_templates_grid_;
+
+  // A widget that contains a button which creates a new desk template when
+  // pressed.
+  std::unique_ptr<views::Widget> create_desks_templates_widget_;
 };
 
 }  // namespace ash

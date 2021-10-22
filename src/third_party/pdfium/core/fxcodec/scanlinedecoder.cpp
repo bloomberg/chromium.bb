@@ -29,20 +29,20 @@ ScanlineDecoder::ScanlineDecoder(int nOrigWidth,
 
 ScanlineDecoder::~ScanlineDecoder() = default;
 
-const uint8_t* ScanlineDecoder::GetScanline(int line) {
+pdfium::span<const uint8_t> ScanlineDecoder::GetScanline(int line) {
   if (m_NextLine == line + 1)
     return m_pLastScanline;
 
   if (m_NextLine < 0 || m_NextLine > line) {
-    if (!v_Rewind())
-      return nullptr;
+    if (!Rewind())
+      return pdfium::span<const uint8_t>();
     m_NextLine = 0;
   }
   while (m_NextLine < line) {
-    ReadNextLine();
+    GetNextLine();
     m_NextLine++;
   }
-  m_pLastScanline = ReadNextLine();
+  m_pLastScanline = GetNextLine();
   m_NextLine++;
   return m_pLastScanline;
 }
@@ -52,22 +52,18 @@ bool ScanlineDecoder::SkipToScanline(int line, PauseIndicatorIface* pPause) {
     return false;
 
   if (m_NextLine < 0 || m_NextLine > line) {
-    v_Rewind();
+    Rewind();
     m_NextLine = 0;
   }
-  m_pLastScanline = nullptr;
+  m_pLastScanline = pdfium::span<uint8_t>();
   while (m_NextLine < line) {
-    m_pLastScanline = ReadNextLine();
+    m_pLastScanline = GetNextLine();
     m_NextLine++;
     if (pPause && pPause->NeedToPauseNow()) {
       return true;
     }
   }
   return false;
-}
-
-uint8_t* ScanlineDecoder::ReadNextLine() {
-  return v_GetNextLine();
 }
 
 }  // namespace fxcodec

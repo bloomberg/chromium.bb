@@ -104,8 +104,7 @@ public class PriceDropNotifier {
                         Profile.getLastUsedRegularProfile().getProfileKey());
         NotificationWrapperBuilder notificationBuilder =
                 NotificationWrapperBuilderFactory.createNotificationWrapperBuilder(
-                        true /* preferCompat */, ChannelId.PRICE_DROP,
-                        null /* remoteAppPackageName */,
+                        ChannelId.PRICE_DROP,
                         new NotificationMetadata(SystemNotificationType.PRICE_DROP_ALERTS,
                                 NOTIFICATION_TAG, NOTIFICATION_ID));
         return new PriceDropNotifier(context, imageFetcher, notificationBuilder,
@@ -145,7 +144,11 @@ public class PriceDropNotifier {
     }
 
     private void showWithIcon(NotificationData notificationData, @Nullable Bitmap icon) {
-        if (icon != null) mNotificationBuilder.setLargeIcon(icon);
+        if (icon != null) {
+            // Both the large icon and the expanded view use the bitmap fetched from icon URL.
+            mNotificationBuilder.setLargeIcon(icon);
+            mNotificationBuilder.setBigPictureStyle(icon, notificationData.text);
+        }
         mNotificationBuilder.setContentTitle(notificationData.title);
         mNotificationBuilder.setContentText(notificationData.text);
         mNotificationBuilder.setContentIntent(createContentIntent(notificationData.destinationUrl));

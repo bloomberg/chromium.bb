@@ -47,7 +47,7 @@ suite('SiteDataDetailsSubpage', function() {
   setup(function() {
     browserProxy = new TestLocalDataBrowserProxy();
     browserProxy.setCookieDetails([cookieDetails]);
-    LocalDataBrowserProxyImpl.instance_ = browserProxy;
+    LocalDataBrowserProxyImpl.setInstance(browserProxy);
     testMetricsBrowserProxy = new TestMetricsBrowserProxy();
     MetricsBrowserProxyImpl.setInstance(testMetricsBrowserProxy);
     PolymerTest.clearBody();
@@ -89,7 +89,7 @@ suite('SiteDataDetailsSubpage', function() {
   test('InteractionMetrics', async function() {
     // Confirm that various page interactions record the appropriate metric.
     await flushTasks();
-    page.$$('.icon-clear').click();
+    page.shadowRoot.querySelector('.icon-clear').click();
     let metric =
         await testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram');
     assertEquals(PrivacyElementInteractions.COOKIE_DETAILS_REMOVE_ITEM, metric);

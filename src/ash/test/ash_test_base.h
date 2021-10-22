@@ -71,6 +71,7 @@ class AmbientAshTestHelper;
 class AppListTestHelper;
 class AshTestHelper;
 class Shelf;
+class TestAppListClient;
 class TestShellDelegate;
 class TestSystemTrayClient;
 class UnifiedSystemTray;
@@ -90,6 +91,9 @@ class AshTestBase : public testing::Test {
   // Alternatively a subclass may pass a TaskEnvironment directly.
   explicit AshTestBase(
       std::unique_ptr<base::test::TaskEnvironment> task_environment);
+
+  AshTestBase(const AshTestBase&) = delete;
+  AshTestBase& operator=(const AshTestBase&) = delete;
 
   ~AshTestBase() override;
 
@@ -236,6 +240,8 @@ class AshTestBase : public testing::Test {
 
   AppListTestHelper* GetAppListTestHelper();
 
+  TestAppListClient* GetTestAppListClient();
+
   AmbientAshTestHelper* GetAmbientAshTestHelper();
 
   // Emulates an ash session that have |session_count| user sessions running.
@@ -321,8 +327,6 @@ class AshTestBase : public testing::Test {
   std::unique_ptr<AshTestHelper> ash_test_helper_;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };
 
 class NoSessionAshTestBase : public AshTestBase {
@@ -330,10 +334,11 @@ class NoSessionAshTestBase : public AshTestBase {
   NoSessionAshTestBase();
   explicit NoSessionAshTestBase(
       base::test::TaskEnvironment::TimeSource time_source);
-  ~NoSessionAshTestBase() override;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoSessionAshTestBase);
+  NoSessionAshTestBase(const NoSessionAshTestBase&) = delete;
+  NoSessionAshTestBase& operator=(const NoSessionAshTestBase&) = delete;
+
+  ~NoSessionAshTestBase() override;
 };
 
 }  // namespace ash

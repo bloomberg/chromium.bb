@@ -17,6 +17,7 @@
 #include "base/task_runner_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -54,8 +55,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/browser_process.h"
-#include "components/metrics/structured/neutrino_logging.h"
-#include "components/metrics/structured/neutrino_logging_util.h"
+#include "components/metrics/structured/neutrino_logging.h"       // nogncheck
+#include "components/metrics/structured/neutrino_logging_util.h"  // nogncheck
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
@@ -162,6 +163,9 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
     BrowserList::AddObserver(this);
   }
 
+  BrowserRemovalObserver(const BrowserRemovalObserver&) = delete;
+  BrowserRemovalObserver& operator=(const BrowserRemovalObserver&) = delete;
+
   ~BrowserRemovalObserver() override { BrowserList::RemoveObserver(this); }
 
   // Overridden from BrowserListObserver.
@@ -174,8 +178,6 @@ class SessionCrashedBubbleView::BrowserRemovalObserver
 
  private:
   Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserRemovalObserver);
 };
 
 // static

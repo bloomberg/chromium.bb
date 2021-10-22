@@ -38,8 +38,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -73,7 +71,6 @@
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/crx_file/id_util.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,7 +91,6 @@
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_map.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/browser/update_observer.h"
@@ -136,7 +132,7 @@ namespace {
 bool g_external_updates_disabled_for_test_ = false;
 
 // Wait this long after an extensions becomes idle before updating it.
-constexpr base::TimeDelta kUpdateIdleDelay = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kUpdateIdleDelay = base::Seconds(5);
 
 // IDs of component extensions that have been obsoleted and need to be
 // uninstalled.
@@ -394,10 +390,11 @@ ExtensionService::ExtensionService(Profile* profile,
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
+
+  host_registry_observation_.Observe(ExtensionHostRegistry::Get(profile));
+
   // The ProfileManager may be null in unit tests.
   if (g_browser_process->profile_manager())
     profile_manager_observation_.Observe(g_browser_process->profile_manager());
@@ -928,8 +925,8 @@ void ExtensionService::ClearGreylistedAcknowledgedStateAndMaybeReenable(
   }
   // Clear all acknowledged states so the extension will still get disabled if
   // it is added to the greylist again.
-  blocklist_prefs::ClearAcknowledgedBlocklistStates(extension_id,
-                                                    extension_prefs_);
+  blocklist_prefs::ClearAcknowledgedGreylistStates(extension_id,
+                                                   extension_prefs_);
   RemoveDisableReasonAndMaybeEnable(extension_id,
                                     disable_reason::DISABLE_GREYLIST);
 }
@@ -971,10 +968,9 @@ void ExtensionService::RemoveDisableReasonAndMaybeEnable(
   if ((disable_reason & reason_to_remove) == 0)
     return;
 
+  extension_prefs_->RemoveDisableReason(extension_id, reason_to_remove);
   if (disable_reason == reason_to_remove) {
     EnableExtension(extension_id);
-  } else {
-    extension_prefs_->RemoveDisableReason(extension_id, reason_to_remove);
   }
 }
 
@@ -1313,6 +1309,12 @@ void ExtensionService::CheckForExternalUpdates() {
   // providers.
   if (external_extension_providers_.empty())
     OnAllExternalProvidersReady();
+}
+
+void ExtensionService::ReinstallProviderExtensions() {
+  for (const auto& provider : external_extension_providers_) {
+    provider->TriggerOnExternalExtensionFound();
+  }
 }
 
 void ExtensionService::OnExternalProviderReady(
@@ -1858,25 +1860,6 @@ const Extension* ExtensionService::GetPendingExtensionUpdate(
   return delayed_installs_.GetByID(id);
 }
 
-void ExtensionService::RegisterContentSettings(
-    HostContentSettingsMap* host_content_settings_map,
-    Profile* profile) {
-  // Most extension services key off of the original profile.
-  Profile* original_profile = profile->GetOriginalProfile();
-
-  TRACE_EVENT0("browser,startup", "ExtensionService::RegisterContentSettings");
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  host_content_settings_map->RegisterProvider(
-      HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,
-      std::unique_ptr<content_settings::ObservableProvider>(
-          new content_settings::CustomExtensionProvider(
-              ContentSettingsService::Get(original_profile)
-                  ->content_settings_store(),
-              // TODO(mmenke):  CustomExtensionProvider expects this to be true
-              // for incognito profiles.
-              false)));
-}
-
 void ExtensionService::TerminateExtension(const std::string& extension_id) {
   extension_registrar_.TerminateExtension(extension_id);
 }
@@ -1977,6 +1960,22 @@ void ExtensionService::DidCreateMainFrameForBackgroundPage(
   extension_registrar_.DidCreateMainFrameForBackgroundPage(host);
 }
 
+void ExtensionService::OnExtensionHostRenderProcessGone(
+    content::BrowserContext* browser_context,
+    ExtensionHost* extension_host) {
+  DCHECK(
+      profile_->IsSameOrParent(Profile::FromBrowserContext(browser_context)));
+
+  // Mark the extension as terminated and deactivated. We want it to
+  // be in a consistent state: either fully working or not loaded
+  // at all, but never half-crashed.  We do it in a PostTask so
+  // that other handlers of this notification will still have
+  // access to the Extension and ExtensionHost.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&ExtensionService::TerminateExtension,
+                                AsWeakPtr(), extension_host->extension_id()));
+}
+
 void ExtensionService::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
@@ -1987,23 +1986,6 @@ void ExtensionService::Observe(int type,
       // happens too late in browser teardown.)
       browser_terminating_ = true;
       break;
-    case NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
-      if (profile_ !=
-          content::Source<Profile>(source).ptr()->GetOriginalProfile()) {
-        break;
-      }
-
-      // Mark the extension as terminated and deactivated. We want it to
-      // be in a consistent state: either fully working or not loaded
-      // at all, but never half-crashed.  We do it in a PostTask so
-      // that other handlers of this notification will still have
-      // access to the Extension and ExtensionHost.
-      ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(&ExtensionService::TerminateExtension,
-                                    AsWeakPtr(), host->extension_id()));
-      break;
-    }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
       content::RenderProcessHost* process =
           content::Source<content::RenderProcessHost>(source).ptr();
@@ -2349,7 +2331,6 @@ void ExtensionService::UnloadAllExtensionsInternal() {
   profile_->GetExtensionSpecialStoragePolicy()->RevokeRightsForAllExtensions();
 
   registry_->ClearAll();
-  system_->runtime_data()->ClearAll();
 
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has

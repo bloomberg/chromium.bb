@@ -140,10 +140,6 @@ const char kSuggestedContentEnabled[] = "settings.suggested_content_enabled";
 // the Chrome OS launcher.
 const char kLauncherResultEverLaunched[] = "launcher.result_ever_launched";
 
-// Whether the status of the platform app version of camera app is migrated to
-// SWA.
-const char kHasCameraAppMigratedToSWA[] = "camera.has_migrated_to_swa";
-
 // Dictioanry pref to store data on the distribution of provider relevance
 // scores for the launcher normalizer.
 const char kLauncherSearchNormalizerParameters[] =
@@ -614,6 +610,11 @@ const char kShelfAlignmentLocal[] = "shelf_alignment_local";
 // String value corresponding to ash::ShelfAutoHideBehavior (e.g. "Never").
 const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
 const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
+
+// Dictionary value that determines when the launcher navigation nudge should
+// show to the users.
+const char kShelfLauncherNudge[] = "ash.shelf.launcher_nudge";
+
 // Dictionary value that holds per-display preference of shelf alignment and
 // auto-hide behavior. Key of the dictionary is the id of the display, and
 // its value is a dictionary whose keys are kShelfAlignment and
@@ -835,6 +836,26 @@ const char kNextImeShortcutReminderDismissed[] =
 // notification about shortcuts changing.
 const char kImprovedShortcutsNotificationShownCount[] =
     "ash.improved_shortcuts_notification_shown_count";
+
+// If a user installs an extension which controls the proxy settings in the
+// primary profile of Chrome OS, this dictionary will contain information about
+// the extension controlling the proxy (name, id and if it can be disabled by
+// the user). Used to show the name and icon of the extension in the "Proxy"
+// section of the OS Settings>Network dialog.
+const char kLacrosProxyControllingExtension[] =
+    "ash.lacros_proxy_controlling_extension";
+
+// A boolean pref which is true if Fast Pair is enabled.
+const char kFastPairEnabled[] = "ash.fast_pair.enabled";
+
+// A boolean pref that controls whether the user is allowed to use the Desk
+// Templates feature - including creating Desks templates and using predefined
+// Desks templates.
+const char kDeskTemplatesEnabled[] = "ash.desk_templates_enabled";
+
+// A string pref which contains download URLs and hashes for files containing
+// predefined Desks templates configured by policy administrators.
+const char kPreconfiguredDeskTemplates[] = "ash.preconfigured_desk_templates";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

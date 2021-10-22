@@ -45,6 +45,9 @@ class ExtensionEventObserver : public ProfileManagerObserver,
  public:
   class TestApi {
    public:
+    TestApi(const TestApi&) = delete;
+    TestApi& operator=(const TestApi&) = delete;
+
     ~TestApi();
 
     // Runs |suspend_readiness_callback_| if it is non-null and then resets it.
@@ -61,11 +64,13 @@ class ExtensionEventObserver : public ProfileManagerObserver,
     explicit TestApi(base::WeakPtr<ExtensionEventObserver> parent);
 
     base::WeakPtr<ExtensionEventObserver> parent_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   ExtensionEventObserver();
+
+  ExtensionEventObserver(const ExtensionEventObserver&) = delete;
+  ExtensionEventObserver& operator=(const ExtensionEventObserver&) = delete;
+
   ~ExtensionEventObserver() override;
 
   std::unique_ptr<TestApi> CreateTestApi();
@@ -128,8 +133,6 @@ class ExtensionEventObserver : public ProfileManagerObserver,
   base::CancelableOnceClosure suspend_readiness_callback_;
 
   base::WeakPtrFactory<ExtensionEventObserver> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionEventObserver);
 };
 
 }  // namespace ash

@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
-namespace chromeos {
+namespace ash {
 
 // static
 PrintJobReportingService* PrintJobReportingServiceFactory::GetForBrowserContext(
@@ -40,8 +40,7 @@ KeyedService* PrintJobReportingServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  policy::DMToken dm_token =
-      policy::GetDMToken(profile, /*only_affiliated=*/false);
+  policy::DMToken dm_token = policy::GetDMToken(profile);
   // TODO(1229994, marcgrimme) remove the logs as part of refactoring.
   if (!dm_token.is_valid()) {
     LOG(ERROR) << "DMToken must be valid";
@@ -57,4 +56,4 @@ bool PrintJobReportingServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-}  // namespace chromeos
+}  // namespace ash

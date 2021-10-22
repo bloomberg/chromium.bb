@@ -82,6 +82,8 @@ COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kDeviceChannelDowngradeBehavior[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kEnableDeviceGranularReporting[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceVersionInfo[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceActivityTimes[];
@@ -110,6 +112,8 @@ extern const char kReportDeviceStorageStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kReportDeviceUsers[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceHardwareStatus[];
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kReportDeviceSecurityStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kReportDeviceSessionStatus[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
@@ -379,6 +383,7 @@ using ::chromeos::kDeviceWebBasedAttestationAllowedUrls;
 using ::chromeos::kDeviceWiFiAllowed;
 using ::chromeos::kDeviceWilcoDtcAllowed;
 using ::chromeos::kDisplayRotationDefault;
+using ::chromeos::kEnableDeviceGranularReporting;
 using ::chromeos::kExtensionCacheSize;
 using ::chromeos::kFeatureFlags;
 using ::chromeos::kHeartbeatEnabled;
@@ -411,6 +416,7 @@ using ::chromeos::kReportDeviceNetworkInterfaces;
 using ::chromeos::kReportDeviceNetworkStatus;
 using ::chromeos::kReportDevicePowerStatus;
 using ::chromeos::kReportDevicePrintJobs;
+using ::chromeos::kReportDeviceSecurityStatus;
 using ::chromeos::kReportDeviceSessionStatus;
 using ::chromeos::kReportDeviceStorageStatus;
 using ::chromeos::kReportDeviceSystemInfo;

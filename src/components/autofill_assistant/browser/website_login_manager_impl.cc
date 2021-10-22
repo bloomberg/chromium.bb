@@ -70,6 +70,9 @@ class WebsiteLoginManagerImpl::PendingRequest
         notify_finished_callback_(std::move(notify_finished_callback)),
         weak_ptr_factory_(this) {}
 
+  PendingRequest(const PendingRequest&) = delete;
+  PendingRequest& operator=(const PendingRequest&) = delete;
+
   ~PendingRequest() override = default;
   void Start() {
     // Note: Currently, |FormFetcherImpl| has the default state NOT_WAITING.
@@ -105,7 +108,6 @@ class WebsiteLoginManagerImpl::PendingRequest
 
   base::OnceCallback<void(const PendingRequest*)> notify_finished_callback_;
   base::WeakPtrFactory<PendingRequest> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(PendingRequest);
 };
 
 // A pending request to fetch all logins that match the specified |form_digest|.
@@ -189,7 +191,7 @@ class WebsiteLoginManagerImpl::PendingDeletePasswordRequest
                        std::move(notify_finished_callback)),
         login_(login),
         callback_(std::move(callback)),
-        store_(client->GetProfilePasswordStoreInterface()) {}
+        store_(client->GetProfilePasswordStore()) {}
 
  protected:
   // From PendingRequest:
@@ -229,7 +231,7 @@ class WebsiteLoginManagerImpl::PendingEditPasswordRequest
         new_password_(new_password),
         callback_(std::move(callback)),
         form_saver_(std::make_unique<password_manager::FormSaverImpl>(
-            client->GetProfilePasswordStoreInterface())) {}
+            client->GetProfilePasswordStore())) {}
 
  protected:
   // From PendingRequest:
@@ -270,8 +272,9 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
         form_data_(form_data),
         client_(client),
         presaving_completed_callback_(std::move(presaving_completed_callback)),
-        password_save_manager_(password_manager::PasswordSaveManagerImpl::
-                                   CreatePasswordSaveManagerImpl(client)),
+        password_save_manager_(
+            std::make_unique<password_manager::PasswordSaveManagerImpl>(
+                client)),
         metrics_recorder_(
             base::MakeRefCounted<password_manager::PasswordFormMetricsRecorder>(
                 client->IsCommittedMainFrameSecure(),

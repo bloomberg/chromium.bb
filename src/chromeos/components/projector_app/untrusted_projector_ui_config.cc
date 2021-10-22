@@ -13,6 +13,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "ui/resources/grit/webui_generated_resources.h"
+#include "ui/resources/grit/webui_generated_resources_map.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -29,15 +31,20 @@ content::WebUIDataSource* CreateProjectorHTMLSource() {
   source->AddResourcePaths(
       base::make_span(kChromeosProjectorAppBundleResources,
                       kChromeosProjectorAppBundleResourcesSize));
-  source->AddResourcePath("", IDR_PROJECTOR_APP_INDEX_HTML);
+  source->AddResourcePath("",
+                          IDR_CHROMEOS_PROJECTOR_APP_UNTRUSTED_APP_INDEX_HTML);
 
+  // Allows WebUI resources like Polymer and PostMessageAPI to be accessible
+  // inside the untrusted iframe.
+  source->AddResourcePaths(
+      base::make_span(kWebuiGeneratedResources, kWebuiGeneratedResourcesSize));
+
+  // Provide a list of specific script resources(javascript files and inlined
+  // scripts inside html) or their sha-256 hashes to allow to be executed.
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src 'self' "
-      // Mock index.html.
-      "'sha256-vunvdG/aGKMFmosUfnXnaOfAKJ1vqzY/TjBlJ8/SEqY=' "
-      // Prod index.html.
-      "'sha256-yTOCd/3yFekoT/PpJwcLz8Hkw89nnlVBtq7cgEag574=';");
+      // Allows loading javascript files from the current origin
+      "script-src 'self';");
 
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ConnectSrc,
@@ -51,7 +58,11 @@ content::WebUIDataSource* CreateProjectorHTMLSource() {
   // TODO(b/193579885): Override content security policy to support loading wasm
   // resources.
 
-  source->AddFrameAncestor(GURL(kChromeUITrustedProjectorAppUrl));
+  source->AddFrameAncestor(GURL(kChromeUITrustedProjectorUrl));
+
+  // TODO(b/201666699): Move this into a delegate, and populate with real data.
+  source->AddBoolean("isDevChannel", true);
+  source->UseStringsJs();
 
   return source;
 }

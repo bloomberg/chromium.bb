@@ -326,6 +326,9 @@
       <message desc="Label for expert mode option: enable expert mode." name="IDS_EXPERT_ENABLE_EXPERT_MODE">
         Enable expert mode
       </message>
+      <message desc="Label for expert mode option: Show GIF recording option." name="IDS_EXPERT_SHOW_GIF_RECORDING_OPTION">
+        Show GIF recording option
+      </message>
       <message desc="Label for snackbar message when a link is copied" name="IDS_SNACKBAR_LINK_COPIED">
         Link copied
       </message>
@@ -464,6 +467,18 @@
       <message desc="Label for spoken feedback to read out for scan QR code option." name="IDS_SCAN_QRCODE_OPTION">
         Scan QR Code
       </message>
+      <message desc="Label for recording normal type video option." name="IDS_LABEL_RECORD_NORMAL_VIDEO_OPTION">
+        Normal
+      </message>
+      <message desc="Label for spoken feedback to read out for recording normal type video." name="IDS_RECORD_NORMAL_VIDEO_OPTION">
+        Record normal video
+      </message>
+      <message desc="Label for recording GIF type video option." name="IDS_LABEL_RECORD_GIF_VIDEO_OPTION">
+        GIF
+      </message>
+      <message desc="Label for spoken feedback to read out for recording GIF type video." name="IDS_RECORD_GIF_VIDEO_OPTION">
+        Record GIF video
+      </message>
       <message desc="Label for the confirm button to confirm with the reviewed photo or video." name="IDS_CONFIRM_REVIEW_BUTTON">
         Confirm
       </message>
@@ -508,14 +523,32 @@ If your feedback is about image or video quality, please attach a sample photo o
       <message desc="Message indicating App is busy for processing image." name="IDS_MSG_PROCESSING_IMAGE">
         Processing image...
       </message>
-      <message desc="Label for button saving result document photo in PDF format" name="IDS_LABEL_SAVE_PDF_DOCUMENT">
+      <message desc="Label for button saving result document photo in PDF format." name="IDS_LABEL_SAVE_PDF_DOCUMENT">
         Save as PDF
       </message>
-      <message desc="Label for button saving result document photo in normal photo format" name="IDS_LABEL_SAVE_PHOTO_DOCUMENT">
+      <message desc="Label for button saving result document photo in normal photo format." name="IDS_LABEL_SAVE_PHOTO_DOCUMENT">
         Save as Photo
       </message>
-      <message desc="Label for button for dropping current photo result and to retake another photo" name="IDS_LABEL_RETAKE">
+      <message desc="Label for button for dropping current photo result and to retake another photo." name="IDS_LABEL_RETAKE">
         Retake
+      </message>
+      <message desc="Label for current record time and the maximal record time in seconds separated by '/' sign." name="IDS_LABEL_CURRENT_AND_MAXIMAL_RECORD_TIME">
+        <ph name="current">$1<ex>4.3</ex></ph> / <ph name="maximal">$2<ex>5.0</ex></ph>s
+      </message>
+      <message desc="Label for button for saving current photo result." name="IDS_LABEL_SAVE">
+        Save
+      </message>
+      <message desc="Label for button for sharing current photo result." name="IDS_LABEL_SHARE">
+        Share
+      </message>
+      <message desc="Label for spoken feedback to read out group of camera mode options." name="IDS_ARIA_CAMERA_MODE_GROUP">
+        Camera mode
+      </message>
+      <message desc="Label for spoken feedback to read out group of scan type options." name="IDS_ARIA_SCAN_TYPE_GROUP">
+        Scan type
+      </message>
+      <message desc="Label for spoken feedback to read out group of record type options." name="IDS_ARIA_RECORD_TYPE_GROUP">
+        Record type
       </message>
     </messages>
   </release>

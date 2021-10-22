@@ -26,8 +26,8 @@ namespace multidevice_setup {
 
 namespace {
 
-constexpr std::array<mojom::Feature, 3> kPhoneHubSubFeatures{
-    mojom::Feature::kPhoneHubNotifications,
+constexpr std::array<mojom::Feature, 4> kPhoneHubSubFeatures{
+    mojom::Feature::kPhoneHubNotifications, mojom::Feature::kPhoneHubCameraRoll,
     mojom::Feature::kPhoneHubTaskContinuation, mojom::Feature::kEche};
 
 base::flat_map<mojom::Feature, std::string>
@@ -39,6 +39,7 @@ GenerateFeatureToEnabledPrefNameMap() {
       {mojom::Feature::kMessages, kMessagesEnabledPrefName},
       {mojom::Feature::kSmartLock, kSmartLockEnabledPrefName},
       {mojom::Feature::kPhoneHub, kPhoneHubEnabledPrefName},
+      {mojom::Feature::kPhoneHubCameraRoll, kPhoneHubCameraRollEnabledPrefName},
       {mojom::Feature::kPhoneHubNotifications,
        kPhoneHubNotificationsEnabledPrefName},
       {mojom::Feature::kPhoneHubTaskContinuation,
@@ -53,6 +54,7 @@ GenerateFeatureToAllowedPrefNameMap() {
       {mojom::Feature::kMessages, kMessagesAllowedPrefName},
       {mojom::Feature::kSmartLock, kSmartLockAllowedPrefName},
       {mojom::Feature::kPhoneHub, kPhoneHubAllowedPrefName},
+      {mojom::Feature::kPhoneHubCameraRoll, kPhoneHubCameraRollAllowedPrefName},
       {mojom::Feature::kPhoneHubNotifications,
        kPhoneHubNotificationsAllowedPrefName},
       {mojom::Feature::kPhoneHubTaskContinuation,
@@ -75,6 +77,8 @@ GenerateInitialDefaultCachedStateMap() {
       {mojom::Feature::kSmartLock,
        mojom::FeatureState::kUnavailableNoVerifiedHost},
       {mojom::Feature::kPhoneHub,
+       mojom::FeatureState::kUnavailableNoVerifiedHost},
+      {mojom::Feature::kPhoneHubCameraRoll,
        mojom::FeatureState::kUnavailableNoVerifiedHost},
       {mojom::Feature::kPhoneHubNotifications,
        mojom::FeatureState::kUnavailableNoVerifiedHost},
@@ -227,6 +231,13 @@ void LogFeatureStates(
     UMA_HISTOGRAM_ENUMERATION(
         "PhoneHub.MultiDeviceFeatureState.TopLevelFeature",
         new_states.find(mojom::Feature::kPhoneHub)->second);
+  }
+
+  if (HasFeatureStateChanged(previous_states, new_states,
+                             mojom::Feature::kPhoneHubCameraRoll)) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PhoneHub.MultiDeviceFeatureState.CameraRoll",
+        new_states.find(mojom::Feature::kPhoneHubCameraRoll)->second);
   }
 
   if (HasFeatureStateChanged(previous_states, new_states,
@@ -409,9 +420,9 @@ void FeatureStateManagerImpl::UpdateFeatureStateCache(
 
   if (previous_cached_feature_state_map == cached_feature_state_map_)
     return;
-  PA_LOG(VERBOSE) << "Feature states map changed. Old map: "
-                  << previous_cached_feature_state_map
-                  << ", new map: " << cached_feature_state_map_;
+  PA_LOG(INFO) << "Feature states map changed. Old map: "
+               << previous_cached_feature_state_map
+               << ", new map: " << cached_feature_state_map_;
   LogFeatureStates(previous_cached_feature_state_map /* previous_states */,
                    cached_feature_state_map_ /* new_states */);
   NotifyFeatureStatesChange(cached_feature_state_map_);
@@ -465,6 +476,8 @@ bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
            multidevice::SoftwareFeature::kSmartLockClient},
           // Note: All Phone Hub-related features use the same SoftwareFeature.
           {mojom::Feature::kPhoneHub,
+           multidevice::SoftwareFeature::kPhoneHubClient},
+          {mojom::Feature::kPhoneHubCameraRoll,
            multidevice::SoftwareFeature::kPhoneHubClient},
           {mojom::Feature::kPhoneHubNotifications,
            multidevice::SoftwareFeature::kPhoneHubClient},
@@ -530,6 +543,8 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
           // Note: All Phone Hub-related features use the same SoftwareFeature.
           {mojom::Feature::kPhoneHub,
            multidevice::SoftwareFeature::kPhoneHubHost},
+          {mojom::Feature::kPhoneHubCameraRoll,
+           multidevice::SoftwareFeature::kPhoneHubHost},
           {mojom::Feature::kPhoneHubNotifications,
            multidevice::SoftwareFeature::kPhoneHubHost},
           {mojom::Feature::kPhoneHubTaskContinuation,
@@ -555,6 +570,15 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
 
     if (feature_state == multidevice::SoftwareFeatureState::kEnabled) {
       return true;
+    }
+
+    // Edge Case: Eche is considered activated on the host when Phone Hub is
+    // enabled and Eche's state is kSupported or kEnabled.
+    if (feature == mojom::Feature::kEche) {
+      return feature_state == multidevice::SoftwareFeatureState::kSupported &&
+             host_device.GetSoftwareFeatureState(
+                 multidevice::SoftwareFeature::kPhoneHubHost) ==
+                 multidevice::SoftwareFeatureState::kEnabled;
     }
 
     // Edge Case: Wifi Sync is considered activated on host when the state is

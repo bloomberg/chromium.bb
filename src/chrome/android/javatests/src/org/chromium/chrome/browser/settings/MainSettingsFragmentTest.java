@@ -58,16 +58,20 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.homepage.settings.HomepageSettings;
 import org.chromium.chrome.browser.language.settings.LanguageSettings;
+import org.chromium.chrome.browser.night_mode.NightModeMetrics.ThemeSettingsEntry;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.night_mode.settings.ThemeSettingsFragment;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.privacy.settings.PrivacySettings;
 import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.search_engines.settings.SearchEngineSettings;
 import org.chromium.chrome.browser.signin.SyncConsentActivityLauncherImpl;
+import org.chromium.chrome.browser.signin.ui.SigninPromoController;
 import org.chromium.chrome.browser.signin.ui.SyncConsentActivityLauncher;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.sync.SyncTestRule;
@@ -152,6 +156,10 @@ public class MainSettingsFragmentTest {
             // Reset the actual service if the mock is used.
             TemplateUrlServiceFactory.setInstanceForTesting(mActualTemplateUrlService);
         }
+        SharedPreferencesManager.getInstance().removeKey(
+                SigninPromoController.getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS));
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT);
     }
 
     @Test
@@ -213,7 +221,11 @@ public class MainSettingsFragmentTest {
                     mMainSettings.findPreference(MainSettings.PREF_NOTIFICATIONS));
         }
         assertSettingsExists(MainSettings.PREF_HOMEPAGE, HomepageSettings.class);
-        assertSettingsExists(MainSettings.PREF_UI_THEME, ThemeSettingsFragment.class);
+
+        Preference themePref =
+                assertSettingsExists(MainSettings.PREF_UI_THEME, ThemeSettingsFragment.class);
+        Assert.assertEquals("ThemeSettingsEntry is missing.", ThemeSettingsEntry.SETTINGS,
+                themePref.getExtras().getInt(ThemeSettingsFragment.KEY_THEME_SETTINGS_ENTRY));
 
         // Verification for summary for the search engine and the homepage
         Assert.assertEquals("Homepage summary is different than homepage state",
@@ -387,6 +399,26 @@ public class MainSettingsFragmentTest {
         // Launch settings activity again.
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testSyncPromoShownIsNotOverCounted() {
+        int promoShowCount = SharedPreferencesManager.getInstance().readInt(
+                SigninPromoController.getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS));
+        Assert.assertEquals(0, promoShowCount);
+        Assert.assertEquals(0,
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT));
+        launchSettingsActivity();
+        onViewWaiting(allOf(withId(R.id.signin_promo_view_container), isDisplayed()));
+
+        promoShowCount = SharedPreferencesManager.getInstance().readInt(
+                SigninPromoController.getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS));
+        Assert.assertEquals(1, promoShowCount);
+        Assert.assertEquals(1,
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT));
     }
 
     private void launchSettingsActivity() {

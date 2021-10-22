@@ -37,6 +37,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/DownloadStatus.java",
     "java/src/org/chromium/chrome/browser/download/MediaStoreHelper.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
+    "java/src/org/chromium/chrome/browser/download/MixedContentDownloadDialogBridge.java",
     "java/src/org/chromium/chrome/browser/download/StringUtils.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DangerousDownloadDialog.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadDateTimePickerDialog.java",
@@ -55,6 +56,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLocationDialogProperties.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadLocationDialogViewBinder.java",
     "java/src/org/chromium/chrome/browser/download/dialogs/DownloadTimePickerDialog.java",
+    "java/src/org/chromium/chrome/browser/download/dialogs/MixedContentDownloadDialog.java",
     "java/src/org/chromium/chrome/browser/download/home/DownloadManagerCoordinator.java",
     "java/src/org/chromium/chrome/browser/download/home/DownloadManagerUiConfig.java",
     "java/src/org/chromium/chrome/browser/download/home/DownloadManagerUiConfigHelper.java",
@@ -95,6 +97,7 @@ android_library("java") {
     "//net/android:net_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
     "//third_party/androidx:androidx_preference_preference_java",
@@ -132,6 +135,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadManagerBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadStartupUtils.java",
     "java/src/org/chromium/chrome/browser/download/MimeUtils.java",
+    "java/src/org/chromium/chrome/browser/download/MixedContentDownloadDialogBridge.java",
     "java/src/org/chromium/chrome/browser/download/StringUtils.java",
   ]
 }

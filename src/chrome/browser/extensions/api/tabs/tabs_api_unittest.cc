@@ -92,6 +92,10 @@ content::WebContents* CreateAndAppendWebContentsWithHistory(
 }  // namespace
 
 class TabsApiUnitTest : public ExtensionServiceTestBase {
+ public:
+  TabsApiUnitTest(const TabsApiUnitTest&) = delete;
+  TabsApiUnitTest& operator=(const TabsApiUnitTest&) = delete;
+
  protected:
   TabsApiUnitTest() {}
   ~TabsApiUnitTest() override {}
@@ -113,8 +117,6 @@ class TabsApiUnitTest : public ExtensionServiceTestBase {
   display::test::TestScreen test_screen_;
 
   std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabsApiUnitTest);
 };
 
 void TabsApiUnitTest::SetUp() {
@@ -1189,7 +1191,7 @@ TEST_F(TabsApiUnitTest, ScreenshotsRestricted) {
   policy::MockDlpContentManager mock_dlp_content_manager;
   policy::ScopedDlpContentManagerForTesting scoped_dlp_content_manager_(
       &mock_dlp_content_manager);
-  EXPECT_CALL(mock_dlp_content_manager, IsScreenshotRestricted(testing::_))
+  EXPECT_CALL(mock_dlp_content_manager, IsScreenshotApiRestricted(testing::_))
       .Times(1)
       .WillOnce(testing::Return(true));
 

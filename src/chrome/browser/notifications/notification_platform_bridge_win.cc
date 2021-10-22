@@ -299,9 +299,9 @@ class NotificationPlatformBridgeWinImpl
       std::vector<mswr::ComPtr<winui::Notifications::IToastNotification>>
           notifications = GetNotifications();
 
-      for (const auto& notification : notifications) {
+      for (const auto& n : notifications) {
         mswr::ComPtr<winui::Notifications::IToastNotification2> t2;
-        HRESULT hr = notification->QueryInterface(IID_PPV_ARGS(&t2));
+        hr = n->QueryInterface(IID_PPV_ARGS(&t2));
         if (FAILED(hr))
           continue;
 
@@ -860,8 +860,7 @@ class NotificationPlatformBridgeWinImpl
 
   static winui::Notifications::IToastNotifier* notifier_for_testing_;
 
-  const base::TimeDelta kSynchronizationInterval =
-      base::TimeDelta::FromMinutes(10);
+  const base::TimeDelta kSynchronizationInterval = base::Minutes(10);
 
   // Windows does not fire a close event when the notification closes. To work
   // around this, NotificationPlatformBridgeWinImpl simulates the close event by

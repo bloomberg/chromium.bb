@@ -24,6 +24,7 @@ import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
+import "third_party/blink/public/mojom/close_watcher/close_listener.mojom";
 import "third_party/blink/public/mojom/choosers/popup_menu.mojom";
 import "third_party/blink/public/mojom/context_menu/context_menu.mojom";
 import "third_party/blink/public/mojom/conversions/conversions.mojom";
@@ -52,9 +53,9 @@ import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom"
 import "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
-import "third_party/blink/public/mojom/modal_close_watcher/modal_close_listener.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_policy.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/widget/platform_widget.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
@@ -530,10 +531,10 @@ interface LocalFrameHost {
   CapturePaintPreviewOfSubframe(
       gfx.mojom.Rect clip_rect, mojo_base.mojom.UnguessableToken guid);
 
-  // Sent when a ModalCloseListener becomes active so the browser can notify if
-  // a modal close signal occurs.
-  SetModalCloseListener(
-      pending_remote<blink.mojom.ModalCloseListener> listener);
+  // Sent when a CloseListener becomes active so the browser can notify if
+  // a close signal occurs.
+  SetCloseListener(
+      pending_remote<blink.mojom.CloseListener> listener);
 
   // Notifies the browser that a child frame is detached from the DOM.
   Detach();
@@ -690,6 +691,10 @@ interface LocalFrame {
   // at the given point in the view coordinate space.
   MediaPlayerActionAt(gfx.mojom.Point location, blink.mojom.MediaPlayerAction action);
 
+  // Tells the renderer to perform the given action on the plugin location at
+  // the given point in the view coordinate space.
+  PluginActionAt(gfx.mojom.Point location, blink.mojom.PluginActionType action);
+
   // Request to continue running the sequential focus navigation algorithm in
   // this frame. |source_frame_token| identifies the frame that issued this
   // request. This message is sent when finding the next focusable element would
@@ -709,10 +714,6 @@ interface LocalFrame {
   // Notifies the frame that its parent has changed the frame's sandbox flags or
   // container policy.
   DidUpdateFramePolicy(blink.mojom.FramePolicy frame_policy);
-
-  // Called when the device's screen information changes.
-  // TODO(crbug.com/1205676): Remove deprecated window.screenschange plumbing.
-  OnScreensChange();
 
   // Posts a message from a frame in another process to the current renderer.
   // |source_frame_token| is the frame token of the RemoteFrame in the current

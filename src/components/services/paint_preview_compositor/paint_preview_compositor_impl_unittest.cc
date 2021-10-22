@@ -38,7 +38,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace paint_preview {
 
@@ -298,6 +298,9 @@ class PaintPreviewCompositorBeginCompositeTest
   base::ScopedTempDir temp_dir_;
 
   GURL url_{"https://www.chromium.org"};
+
+ protected:
+  base::test::TaskEnvironment task_environment_;
 
  private:
   PaintPreviewCompositorImpl compositor_{mojo::NullReceiver(), nullptr,

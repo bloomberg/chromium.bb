@@ -7,18 +7,18 @@ async function expectSessionEstablished(url) {
   try {
     await transport.ready;
   } catch (e) {
-    chrome.test.fail('Ready rejected: ${e}');
+    chrome.test.fail(`Ready rejected: ${e}`);
   }
 }
 
 async function expectSessionFailed(url) {
   const transport = new WebTransport(url);
+  let established = false;
   try {
     await transport.ready;
-    chrome.test.fail('Ready should be rejected.');
+    established = true;
   } catch (e) {
-    // TODO(crbug.com/1240935): Consider showing error.
-    // This is filtered by InterceptingHandshakeClient.
-    chrome.test.assertEq({}, e);
+    chrome.test.assertEq(e.name, 'WebTransportError');
   }
+  chrome.test.assertFalse(established);
 }

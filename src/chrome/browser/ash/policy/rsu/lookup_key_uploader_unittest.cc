@@ -37,6 +37,10 @@ const char kValidRsuDeviceIdEncoded[] =
     "MTIz";  // base::Base64Encode(kValidRsuDeviceId, kValidRsuDeviceencoded)
 }
 class LookupKeyUploaderTest : public ash::DeviceSettingsTestBase {
+ public:
+  LookupKeyUploaderTest(const LookupKeyUploaderTest&) = delete;
+  LookupKeyUploaderTest& operator=(const LookupKeyUploaderTest&) = delete;
+
  protected:
   LookupKeyUploaderTest() = default;
 
@@ -48,7 +52,7 @@ class LookupKeyUploaderTest : public ash::DeviceSettingsTestBase {
         nullptr, &pref_service_, &certificate_uploader_);
     lookup_key_uploader_->SetClock(&clock_);
     // We initialize clock to imitate real time.
-    clock_.Advance(base::TimeDelta::FromDays(50));
+    clock_.Advance(base::Days(50));
   }
 
   void TearDown() override { ash::DeviceSettingsTestBase::TearDown(); }
@@ -73,9 +77,6 @@ class LookupKeyUploaderTest : public ash::DeviceSettingsTestBase {
   MockEnrollmentCertificateUploader certificate_uploader_;
   std::unique_ptr<LookupKeyUploader> lookup_key_uploader_;
   MockCloudPolicyStore policy_store_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LookupKeyUploaderTest);
 };
 
 TEST_F(LookupKeyUploaderTest, Uploads) {

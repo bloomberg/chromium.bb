@@ -16,6 +16,7 @@
 <translation id="1066060668811609597">সিঙ্ক পরিচালনা করুন</translation>
 <translation id="1076421457278169141">কোড স্ক্যান করা হয়েছে</translation>
 <translation id="1084365883616172403">Facebook পোষ্ট সম্পূর্ণ হয়েছে৷</translation>
+<translation id="1086486568852410168">Google Lens ব্যবহার করে সার্চ করুন</translation>
 <translation id="1103523840287552314">সর্বদা অনুবাদ করুন <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">স্বীকার করুন ও চালিয়ে যান</translation>
 <translation id="110724200315609752">এই উইন্ডো থেকে পাল্টে খুলে রাখা উইন্ডোতে যান</translation>
@@ -57,6 +58,7 @@
 <translation id="1400642268715879018">গত ৪ সপ্তাহ</translation>
 <translation id="1407135791313364759">সব খুলুন</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
+<translation id="1434356225517321998">আপনার ব্রাউজার ম্যানেজ করা হয়। <ph name="BEGIN_LINK" />বিবরণ<ph name="END_LINK" /></translation>
 <translation id="1449835205994625556">পাসওয়ার্ড লুকান</translation>
 <translation id="145015347812617860"><ph name="COUNT" />টি আইটেম</translation>
 <translation id="149095475893949513">এই ওয়েবসাইটটি একটি কনফিগারেশন প্রোফাইল ডাউনলোড করার চেষ্টা করছে।</translation>
@@ -120,6 +122,7 @@
 <translation id="209018056901015185">ডেস্কটপ সাইট অনুরোধ করুন</translation>
 <translation id="2103075008456228677">history.google.com খুলুন</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
+<translation id="2122754583996902531">আপনার ব্রাউজার ম্যানেজ করা হয়। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">পড়ার তালিকায় যোগ করার জন্য জিজ্ঞাসা করুন</translation>
 <translation id="2139867232736819575">আপনার কপি করা টেক্সট সার্চ করুন</translation>
 <translation id="214201757571129614">সাইন-ইন করুন…</translation>
@@ -128,6 +131,7 @@
 <translation id="2218443599109088993">ছোট করে দেখুন</translation>
 <translation id="2230173723195178503">Webpage loaded</translation>
 <translation id="2239626343334228536">ব্রাউজিং ডেটা মোছা হচ্ছে…</translation>
+<translation id="2256933947031277845">আপনার সংস্থা আপনাকে শুধু কিছু নির্দিষ্ট অ্যাকাউন্ট ব্যবহার করে সাইন-ইন করার অনুমতি দিয়েছে।</translation>
 <translation id="225943865679747347">ত্রুটি কোড: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">অ্যাকাউন্ট যোগ করুন</translation>
 <translation id="2268044343513325586">রিফাইন করুন</translation>
@@ -257,6 +261,7 @@
 <translation id="345565170154308620">পাসওয়ার্ড পরিচালনা করুন…</translation>
 <translation id="3469166899695866866">ডাউনলোড বন্ধ করবেন?</translation>
 <translation id="3470502288861289375">অনুলিপি করা হচ্ছে...</translation>
+<translation id="3472993688462687965">সিঙ্ক চালু করলে, আপনার সংস্থা কিসের জন্য অনুমতি দিয়েছে সেটির উপর নির্ভর করে সীমিত ডেটা সিঙ্ক করা হতে পারে।</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> হিসাবে চালিয়ে যান</translation>
 <translation id="3478058380795961209">মেয়াদপূর্তির মাস</translation>
 <translation id="3482959374254649722">আপনার ট্যাবগুলি সিঙ্ক করা হচ্ছে ...</translation>
@@ -313,7 +318,6 @@
 <translation id="4038354071007134711">এই ডিভাইসের কোনো অ্যাপ্লিকেশান ফাইলটি খুলতে পারবে না।</translation>
 <translation id="4042870976416480368">পৃষ্ঠাতে খুঁজুন</translation>
 <translation id="4049507953662678203">আপনি একটি নেটওয়ার্ক সংযোগে আছেন কিনা তা নিশ্চিত করুন এবং আবার চেষ্টা করুন।</translation>
-<translation id="4079195788735381731">আপনার সংস্থা আপনাকে সাইন-আউট করে দিয়েছে</translation>
 <translation id="408404951701638773">সার্চ বারে কাজ করা এখন সহজ</translation>
 <translation id="411254640334432676">ডাউনলোড করা যায়নি।</translation>
 <translation id="4112644173421521737">Search</translation>
@@ -369,10 +373,12 @@
 
 আপনার সিঙ্ক পাসফ্রেজের মাধ্যমে আপনার ডেটা এনক্রিপটেড হয়েছে। সিঙ্ক শুরু করতে এটি লিখুন।</translation>
 <translation id="4689564913179979534">পেমেন্ট পদ্ধতিগুলি ম্যানেজ করুন...</translation>
+<translation id="469022783543509074">আপনাকে সাইন-আউট করে দেওয়া হয়েছে</translation>
 <translation id="470966556546083668">সিঙ্ক চালু করবেন না</translation>
 <translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4747097190499141774">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না। আপনার পাসফ্রেজ আছে এমন কেউই শুধু আপনার এনক্রিপ্ট করা ডেটা পড়তে পারবেন। পাসফ্রেজ Google-এ পাঠানো হয় না বা Google তা সংরক্ষণ করে না। আপনার পাসফ্রেজ ভুলে গেলে বা এই সেটিং পরিবর্তন করতে চাইলে, আপনাকে সিঙ্ক রিসেট করতে হবে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">নতুন ছদ্মবেশী ট্যাব খুলুন</translation>
+<translation id="4764612367328936189">আপনার সংস্থা আপনাকে শুধু কিছু নির্দিষ্ট অ্যাকাউন্ট ব্যবহার করে সাইন-ইন করার অনুমতি দিয়েছে। অনুমোদন করা হয়নি এমন অ্যাকাউন্ট লুকানো আছে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="4775879719735953715">ডিফল্ট ব্রাউজার</translation>
 <translation id="4778644898150334464">অন্য পাসওয়ার্ড ব্যবহার করুন</translation>
 <translation id="4802417911091824046">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।
@@ -527,6 +533,7 @@
 <translation id="6189413832092199491">অপঠিত</translation>
 <translation id="6196207969502475924">ভয়েস সার্চ</translation>
 <translation id="6202364442240589072">{COUNT,plural, =1{{COUNT}টি ট্যাব বন্ধ করুন}one{{COUNT}টি ট্যাব বন্ধ করুন}other{{COUNT}টি ট্যাব বন্ধ করুন}}</translation>
+<translation id="6207754106943147310"><ph name="BEGIN_LINK" />আপনি কী সিঙ্ক করতে পারবেন তা দেখুন<ph name="END_LINK" />।</translation>
 <translation id="6219688215832490856">কখনও অনুবাদ করবেন না</translation>
 <translation id="6223816392543092032">আপনার সবকটি ডিভাইসে বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস পান।</translation>
 <translation id="6232329973559504466">ছদ্মবেশী সার্চ</translation>
@@ -616,6 +623,7 @@
 <translation id="6831043979455480757">অনুবাদ</translation>
 <translation id="6842136130964845393">আপনার সেভ করা পাসওয়ার্ড সবসময় যাতে অ্যাক্সেস করতে পারেন তা নিশ্চিত করতে, নিজের পরিচয় যাচাই করুন</translation>
 <translation id="6851516051005285358">ডেস্কটপ সাইটের জন্য অনুরোধ করুন</translation>
+<translation id="6856384753476268833">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা হয়।</translation>
 <translation id="6858855187367714033">স্ক্যান করা হয়েছে</translation>
 <translation id="6859944681507688231">কোনও QR কোড বা ক্রেডিট কার্ড স্ক্যান করতে সেটিংস থেকে ক্যামেরা চালু করুন।</translation>
 <translation id="6869389390665537774">আপনি যেসব পৃষ্ঠাতে গেছেন, সেগুলি এখানে দেখতে পারেন বা আপনার দেখার ইতিহাস থেকে সেগুলি সরিয়ে দিতে পারেন</translation>
@@ -664,7 +672,6 @@
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনলোড হয়েছে</translation>
 <translation id="7340958967809483333">Discover-এর বিকল্প</translation>
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
-<translation id="7347393021726115275">শুধুমাত্র আপনার অ্যাডমিনিস্ট্রেটরের অনুমোদন করা অ্যাকাউন্টেই সাইন-ইন করতে পারবেন। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="734758817008927353">কার্ড সেভ করার বিকল্প দেখার বোতাম</translation>
 <translation id="7348502496356775519">বুকমার্ক</translation>
 <translation id="7353432112255316844">নিজের পরিচয় যাচাই করুন</translation>
@@ -725,6 +732,7 @@
 
 আপনার জন্য পছন্দমতো বিজ্ঞাপন বেছে নেওয়ার মতো বিভিন্ন ওয়েবসাইট জুড়ে আপনার ব্রাউজিং অ্যাক্টিভিটি দেখার জন্য সাইট কুকি ব্যবহার করতে পারবে।</translation>
 <translation id="7971521879845308059">পপ-আপগুলি অবরুদ্ধ করুন</translation>
+<translation id="797413074872316787">ডিভাইস জুড়ে সিঙ্ক করতে এবং নিজের মতো সাজিয়ে নিতে সিঙ্ক বিকল্পটি চালু করুন।</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
 <translation id="7993619969781047893">কিছু কিছু সাইটের ফিচারগুলি কাজ নাও করতে পারে</translation>
 <translation id="800361585186029508">Google Chrome-এ ইনপুট করা ইউআরএলগুলি খোলে।</translation>
@@ -749,7 +757,6 @@
 <translation id="8205564605687841303">বাতিল করুন</translation>
 <translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
 <translation id="8225985093977202398">ক্যাশ করা ছবি এবং ফাইল</translation>
-<translation id="8228176677386827255">আপনার ডিভাইস ম্যানেজ করা আছে। শুধুমাত্র আপনার সংস্থার অ্যাকাউন্ট ব্যবহার করে আপনি সাইন-ইন করতে পারবেন।</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8271720166617117963">অ্যাক্সেপ্ট করে সাইন-ইন করুন</translation>
 <translation id="8281781826761538115">ডিফল্ট - <ph name="DEFAULT_LOCALE" /></translation>
@@ -771,7 +778,6 @@
 <translation id="8487667956631253959">চালু করা আছে</translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8490978609246021741">পরিবর্তনগুলি সেভ করুন</translation>
-<translation id="8495097701594799854">আপনার সংস্থা বন্ধ করে দিয়েছে।</translation>
 <translation id="8503813439785031346">ইউজারনেম</translation>
 <translation id="850600235656508448">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="8517375800490286174">ওপেন সোর্স লাইসেন্স</translation>
@@ -830,6 +836,7 @@
 <translation id="9081058212938299310"><ph name="USERNAME" />-এর পাসওয়ার্ড আপডেট করবেন?</translation>
 <translation id="9083392325882095631">১টি আইটেম</translation>
 <translation id="9083838294503912307">সমগ্র ডিভাইস জুড়ে সিঙ্ক এবং নিজের মতো সাজিয়ে নিতে সিঙ্ক বিকল্পটি চালু করুন।</translation>
+<translation id="9084677839771512880">আপনি কী সিঙ্ক করতে পারবেন সেটির উপর আপনার সংস্থা সীমাবদ্ধতা আরোপ করেছে। <ph name="BEGIN_LINK" />বিবরণ<ph name="END_LINK" /></translation>
 <translation id="9087108903408689779">Chrome-এর সাজেস্ট করা পাসওয়ার্ড:</translation>
 <translation id="9094033019050270033">পাসওয়ার্ড আপডেট করুন</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
@@ -844,6 +851,7 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">ক্র্যাশ রিপোর্ট পাঠানো হয়েছে৷</translation>
 <translation id="952704832371081537">বাতিল করুন</translation>
+<translation id="981498610235328462">শুধুমাত্র নির্দিষ্ট অ্যাকাউন্টের মাধ্যমেই আপনার সংস্থা সাইন-ইন করার অনুমতি দেবে। অনুমোদন করা নেই এমন অ্যাকাউন্ট লুকানো আছে।</translation>
 <translation id="984509647832111802">সিঙ্ক কাজ করছে না।</translation>
 <translation id="988141524645182168">অন্যান্য ডিভাইস</translation>
 <translation id="989988560359834682">ঠিকানা সম্পাদনা করুন</translation>

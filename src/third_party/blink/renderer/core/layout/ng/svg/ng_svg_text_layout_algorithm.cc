@@ -37,7 +37,7 @@ void NGSvgTextLayoutAlgorithm::Layout(
   // "CSS_positions", and "resolved" is the number of addressable characters.
 
   // 1. Setup
-  if (!Setup(items.size()))
+  if (!Setup(ifc_text_content.length()))
     return;
 
   // 2. Set flags and assign initial positions
@@ -779,7 +779,14 @@ void NGSvgTextLayoutAlgorithm::WriteBackToFragmentItems(
     item.item.ConvertToSvgText(std::move(data),
                                PhysicalRect::EnclosingRect(unscaled_rect),
                                info.hidden);
-    unscaled_visual_rect.Unite(item.item.ObjectBoundingBox());
+
+    FloatRect transformd_rect = scaled_rect;
+    if (item.item.HasSvgTransformForBoundingBox()) {
+      transformd_rect =
+          item.item.BuildSvgTransformForBoundingBox().MapRect(transformd_rect);
+    }
+    transformd_rect.Scale(1 / scaling_factor);
+    unscaled_visual_rect.Unite(transformd_rect);
   }
   if (items[0]->Type() == NGFragmentItem::kLine) {
     items[0].item.SetSvgLineLocalRect(

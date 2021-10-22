@@ -58,6 +58,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer);
 
+  CorsURLLoader(const CorsURLLoader&) = delete;
+  CorsURLLoader& operator=(const CorsURLLoader&) = delete;
+
   ~CorsURLLoader() override;
 
   // Starts processing the request. This is expected to be called right after
@@ -89,20 +92,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
-  // Public for testing.
-  //
-  // Returns the response tainting value
-  // (https://fetch.spec.whatwg.org/#concept-request-response-tainting) for a
-  // request and the CORS flag, as specified in
-  // https://fetch.spec.whatwg.org/#main-fetch.
-  static network::mojom::FetchResponseType CalculateResponseTainting(
+  static network::mojom::FetchResponseType CalculateResponseTaintingForTesting(
       const GURL& url,
       mojom::RequestMode request_mode,
       const absl::optional<url::Origin>& origin,
       const absl::optional<url::Origin>& isolated_world_origin,
       bool cors_flag,
       bool tainted_origin,
-      const OriginAccessList* origin_access_list);
+      const OriginAccessList& origin_access_list);
+
+  static absl::optional<CorsErrorStatus> CheckRedirectLocationForTesting(
+      const GURL& url,
+      mojom::RequestMode request_mode,
+      const absl::optional<url::Origin>& origin,
+      bool cors_flag,
+      bool tainted);
 
  private:
   void StartRequest();
@@ -196,7 +200,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   net::IsolationInfo isolation_info_;
 
-  bool has_cors_been_affected_by_isolated_world_origin_ = false;
   bool has_authorization_covered_by_wildcard_ = false;
 
   mojo::Remote<mojom::DevToolsObserver> devtools_observer_;
@@ -205,8 +208,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CorsURLLoader);
 };
 
 }  // namespace cors

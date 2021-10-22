@@ -101,7 +101,7 @@ template<typename Scalar> struct GoogleSparseHashMapTraits
 #endif
 
 /** \class RandomSetter
-  *
+  * \ingroup SparseExtra_Module
   * \brief The RandomSetter is a wrapper object allowing to set/update a sparse matrix with random access
   *
   * \tparam SparseMatrixType the type of the sparse matrix we are updating

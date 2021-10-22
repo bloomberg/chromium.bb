@@ -67,8 +67,8 @@ class ZeroStateDriveProvider : public SearchProvider,
 
   base::TimeTicks query_start_time_;
 
-  // Whether suggested files feature is enabled. True if both the experiment is
-  // enabled, and the suggested content toggle is enabled.
+  // Whether the suggested files feature is enabled. True if both the experiment
+  // is enabled, and the suggested content toggle is enabled.
   const bool suggested_files_enabled_;
 
   // TODO(crbug.com/1247475): Score normalizers removed due to stability issues.

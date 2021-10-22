@@ -55,6 +55,9 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
             const apps::mojom::App* delta,
             const AccountId& account_id);
 
+  AppUpdate(const AppUpdate&) = delete;
+  AppUpdate& operator=(const AppUpdate&) = delete;
+
   // Returns whether this is the first update for the given AppId.
   // Equivalently, there are no previous deltas for the AppId.
   bool StateIsNull() const;
@@ -100,8 +103,16 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   std::vector<apps::mojom::PermissionPtr> Permissions() const;
   bool PermissionsChanged() const;
 
+  apps::mojom::InstallReason InstallReason() const;
+  bool InstallReasonChanged() const;
+
   apps::mojom::InstallSource InstallSource() const;
   bool InstallSourceChanged() const;
+
+  // An optional ID used for policy to identify the app.
+  // For web apps, it contains the install URL.
+  const std::string& PolicyId() const;
+  bool PolicyIdChanged() const;
 
   apps::mojom::OptionalBool InstalledInternally() const;
 
@@ -148,8 +159,6 @@ class COMPONENT_EXPORT(APP_UPDATE) AppUpdate {
   const apps::mojom::App* delta_;
 
   const ::AccountId& account_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppUpdate);
 };
 
 // For logging and debug purposes.

@@ -30,7 +30,8 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-statistics.h"
 
 namespace content {
 
@@ -120,7 +121,7 @@ class ResourceUsageReporterImpl : public content::mojom::ResourceUsageReporter {
           FROM_HERE,
           base::BindOnce(&ResourceUsageReporterImpl::SendResults,
                          weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kWaitForWorkersStatsTimeoutMS));
+          base::Milliseconds(kWaitForWorkersStatsTimeoutMS));
     } else {
       // No worker threads so just send out the main thread data right away.
       SendResults();

@@ -11,17 +11,20 @@
 #include "content/public/test/browser_test.h"
 
 class RelaunchRequiredDialogViewDialogTest : public DialogBrowserTest {
+ public:
+  RelaunchRequiredDialogViewDialogTest(
+      const RelaunchRequiredDialogViewDialogTest&) = delete;
+  RelaunchRequiredDialogViewDialogTest& operator=(
+      const RelaunchRequiredDialogViewDialogTest&) = delete;
+
  protected:
   RelaunchRequiredDialogViewDialogTest() = default;
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    base::Time deadline = base::Time::Now() + base::TimeDelta::FromDays(3);
+    base::Time deadline = base::Time::Now() + base::Days(3);
     RelaunchRequiredDialogView::Show(browser(), deadline, base::DoNothing());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RelaunchRequiredDialogViewDialogTest);
 };
 
 IN_PROC_BROWSER_TEST_F(RelaunchRequiredDialogViewDialogTest, InvokeUi_default) {

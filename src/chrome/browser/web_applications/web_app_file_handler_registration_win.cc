@@ -55,7 +55,7 @@ void RegisterFileHandlersWithOsTask(
 
   bool result = ShellUtil::AddFileAssociations(
       GetProgIdForApp(profile_path, app_id), app_specific_launcher_command,
-      user_visible_app_name, app_name, icon_path, icon_path, file_extensions);
+      user_visible_app_name, L"", icon_path, icon_path, file_extensions);
   if (!result)
     RecordRegistration(RegistrationResult::kFailToAddFileAssociation);
   else
@@ -87,7 +87,7 @@ void RegisterFileHandlersWithOs(const AppId& app_id,
                      base::UTF8ToWide(app_name), profile->GetPath(),
                      file_extensions_wide, app_name_extension),
       base::BindOnce(&CheckAndUpdateExternalInstallations, profile->GetPath(),
-                     app_id, base::DoNothing::Once<bool>()));
+                     app_id, base::DoNothing()));
 }
 
 void UnregisterFileHandlersWithOsTask(const AppId& app_id,

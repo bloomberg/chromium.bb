@@ -441,9 +441,8 @@ class TastTest(RemoteTest):
         primary_error_message = errors[0]['reason']
         for err in errors:
           error_log += err['stack'] + '\n'
-      error_log += (
-          "\nIf you're unsure why this test failed, consult the steps "
-          'outlined in\n%s\n' % TAST_DEBUG_DOC)
+      debug_link = ("If you're unsure why this test failed, consult the steps "
+                    'outlined <a href="%s">here</a>.' % TAST_DEBUG_DOC)
       base_result = base_test_result.BaseTestResult(
           test['name'], result, duration=duration_ms, log=error_log)
       suite_results.AddResult(base_result)
@@ -461,7 +460,8 @@ class TastTest(RemoteTest):
             error_log,
             None,
             artifacts=artifacts,
-            failure_reason=primary_error_message)
+            failure_reason=primary_error_message,
+            html_artifact=debug_link)
 
     if self._rdb_client and self._logs_dir:
       # Attach artifacts from the device that don't apply to a single test.
@@ -603,21 +603,21 @@ class GTestTest(RemoteTest):
 
     if self._vpython_dir:
       vpython_path = os.path.join(self._path_to_outdir, self._vpython_dir,
-                                  'vpython')
+                                  'vpython3')
       cpython_path = os.path.join(self._path_to_outdir, self._vpython_dir,
-                                  'bin', 'python')
+                                  'bin', 'python3')
       if not os.path.exists(vpython_path) or not os.path.exists(cpython_path):
         raise TestFormatError(
-            '--vpython-dir must point to a dir with both infra/python/cpython '
-            'and infra/tools/luci/vpython installed.')
+            '--vpython-dir must point to a dir with both '
+            'infra/3pp/tools/cpython3 and infra/tools/luci/vpython installed.')
       vpython_spec_path = os.path.relpath(
-          os.path.join(CHROMIUM_SRC_PATH, '.vpython'), self._path_to_outdir)
+          os.path.join(CHROMIUM_SRC_PATH, '.vpython3'), self._path_to_outdir)
       # Initialize the vpython cache. This can take 10-20s, and some tests
       # can't afford to wait that long on the first invocation.
       device_test_script_contents.extend([
           'export PATH=$PWD/%s:$PWD/%s/bin/:$PATH' %
           (self._vpython_dir, self._vpython_dir),
-          'vpython -vpython-spec %s -vpython-tool install' %
+          'vpython3 -vpython-spec %s -vpython-tool install' %
           (vpython_spec_path),
       ])
 

@@ -44,10 +44,11 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/ui/base/window_state_type.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/features.h"
-#include "components/full_restore/full_restore_utils.h"
-#include "components/full_restore/restore_data.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/features.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/restore_data.h"
+#include "components/app_restore/window_properties.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/test/browser_test.h"
@@ -56,10 +57,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
 using ::testing::_;
+using ::testing::ElementsAre;
 
 namespace {
 
@@ -73,7 +76,7 @@ constexpr char kYoutubeUrl[] = "https://www.youtube.com/";
 Browser* FindBrowser(int32_t window_id) {
   for (auto* browser : *BrowserList::GetInstance()) {
     aura::Window* window = browser->window()->GetNativeWindow();
-    if (window->GetProperty(full_restore::kRestoreWindowIdKey) == window_id)
+    if (window->GetProperty(app_restore::kRestoreWindowIdKey) == window_id)
       return browser;
   }
   return nullptr;
@@ -148,7 +151,7 @@ class MockDeskTemplateAppLaunchHandler : public DeskTemplateAppLaunchHandler {
               LaunchSystemWebAppOrChromeApp,
               (apps::mojom::AppType,
                const std::string&,
-               const ::full_restore::RestoreData::LaunchList&),
+               const app_restore::RestoreData::LaunchList&),
               (override));
 };
 
@@ -267,13 +270,13 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureBrowserUrlsTest) {
   aura::Window* window = browser->window()->GetNativeWindow();
 
   const int32_t browser_window_id =
-      window->GetProperty(::full_restore::kWindowIdKey);
+      window->GetProperty(app_restore::kWindowIdKey);
   // Get current tabs from browser.
   std::vector<GURL> urls = GetURLsForBrowserWindow(browser);
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
@@ -300,12 +303,12 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureIncognitoBrowserTest) {
   aura::Window* window = incognito_browser->window()->GetNativeWindow();
 
   const int32_t incognito_browser_window_id =
-      window->GetProperty(::full_restore::kWindowIdKey);
+      window->GetProperty(app_restore::kWindowIdKey);
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
   ASSERT_TRUE(desk_template);
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
@@ -329,9 +332,10 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
   aura::Window* window = browser()->window()->GetNativeWindow();
   window->SetBounds(browser_bounds);
   // Make window visible on all desks.
-  window->SetProperty(aura::client::kVisibleOnAllWorkspacesKey, true);
+  window->SetProperty(aura::client::kWindowWorkspaceKey,
+                      aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   const int32_t browser_window_id =
-      window->GetProperty(::full_restore::kWindowIdKey);
+      window->GetProperty(app_restore::kWindowIdKey);
 
   // Create the settings app, which is a system web app.
   web_app::AppId settings_app_id =
@@ -341,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
   const gfx::Rect settings_app_bounds = gfx::Rect(100, 100, 800, 300);
   aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
   const int32_t settings_window_id =
-      settings_window->GetProperty(full_restore::kWindowIdKey);
+      settings_window->GetProperty(app_restore::kWindowIdKey);
   ASSERT_TRUE(settings_window);
   settings_window->SetBounds(settings_app_bounds);
 
@@ -353,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
       desk_template->template_name(),
       desks_controller->GetDeskName(desks_controller->GetActiveDeskIndex()));
 
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 2u);
@@ -367,8 +371,8 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
   // Verify window info are correctly captured.
   EXPECT_EQ(browser_bounds, data->current_bounds.value());
   // `visible_on_all_workspaces` should have been reset even though
-  // the captured window has kVisibleOnAllWorkspacesKey key.
-  EXPECT_FALSE(data->visible_on_all_workspaces.has_value());
+  // the captured window is visible on all workspaces.
+  EXPECT_FALSE(data->desk_id.has_value());
   auto* screen = display::Screen::GetScreen();
   EXPECT_EQ(screen->GetDisplayNearestWindow(window).id(),
             data->display_id.value());
@@ -391,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, CaptureActiveDeskAsTemplateTest) {
             data2->disposition.value());
   // Verify window info are correctly captured.
   EXPECT_EQ(settings_app_bounds, data2->current_bounds.value());
-  EXPECT_FALSE(data2->visible_on_all_workspaces.has_value());
+  EXPECT_FALSE(data2->desk_id.has_value());
   EXPECT_EQ(screen->GetDisplayNearestWindow(window).id(),
             data->display_id.value());
   EXPECT_EQ(window->GetProperty(aura::client::kShowStateKey),
@@ -533,17 +537,21 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemAppExisting) {
   ASSERT_TRUE(settings_window);
   EXPECT_EQ(2u, BrowserList::GetInstance()->size());
 
-  base::RunLoop run_loop;
-  std::unique_ptr<ash::DeskTemplate> desk_template;
-  DesksClient::Get()->CaptureActiveDeskAndSaveTemplate(
-      base::BindLambdaForTesting(
-          [&](std::unique_ptr<ash::DeskTemplate> captured_desk_template,
-              std::string error_string) {
-            run_loop.Quit();
-            ASSERT_TRUE(captured_desk_template);
-            desk_template = std::move(captured_desk_template);
-          }));
-  run_loop.Run();
+  // Give the settings app a known position.
+  const gfx::Rect settings_bounds(100, 100, 600, 400);
+  settings_window->SetBounds(settings_bounds);
+  // Focus the browser so that the settings window is stacked at the bottom.
+  browser()->window()->GetNativeWindow()->Focus();
+  ASSERT_THAT(settings_window->parent()->children(),
+              ElementsAre(settings_window, _));
+
+  std::unique_ptr<ash::DeskTemplate> desk_template =
+      CaptureActiveDeskAndSaveTemplate();
+
+  // Move the settings window to a new place and stack it on top so that we can
+  // later verify that it has been placed and stacked correctly.
+  settings_window->SetBounds(gfx::Rect(150, 150, 650, 500));
+  settings_window->Focus();
 
   ash::DesksController* desks_controller = ash::DesksController::Get();
   ASSERT_EQ(0, desks_controller->GetActiveDeskIndex());
@@ -551,9 +559,13 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithSystemAppExisting) {
   // Set the template we created as the template we want to launch.
   SetAndLaunchTemplate(std::move(desk_template));
 
-  // We launch a new browser window, but not a new settings app.
+  // We launch a new browser window, but not a new settings app. Verify that the
+  // window has been moved to the right place and stacked at the bottom.
   EXPECT_EQ(3u, BrowserList::GetInstance()->size());
   EXPECT_TRUE(desks_controller->BelongsToActiveDesk(settings_window));
+  EXPECT_EQ(settings_bounds, settings_window->bounds());
+  ASSERT_THAT(settings_window->parent()->children(),
+              ElementsAre(settings_window, _));
 }
 
 // Tests that launching a template that contains a chrome app works as expected.
@@ -569,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithChromeApp) {
   const std::string extension_id = extension->id();
   ::full_restore::SaveAppLaunchInfo(
       profile()->GetPath(),
-      std::make_unique<::full_restore::AppLaunchInfo>(
+      std::make_unique<app_restore::AppLaunchInfo>(
           extension_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
           WindowOpenDisposition::NEW_WINDOW, display::kDefaultDisplayId,
           std::vector<base::FilePath>{}, nullptr));
@@ -627,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithBrowserWindow) {
 
   aura::Window* window = browser->window()->GetNativeWindow();
   const int32_t browser_window_id =
-      window->GetProperty(full_restore::kWindowIdKey);
+      window->GetProperty(app_restore::kWindowIdKey);
   // Get current tabs from browser.
   const std::vector<GURL> urls = GetURLsForBrowserWindow(browser);
 
@@ -679,7 +691,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, PreventBrowserSessionRestoreTest) {
   EXPECT_EQ(expected_tab_count, browser()->tab_strip_model()->count());
   const int32_t browser_window_id =
       browser()->window()->GetNativeWindow()->GetProperty(
-          ::full_restore::kWindowIdKey);
+          app_restore::kWindowIdKey);
 
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
@@ -719,7 +731,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest,
       CaptureActiveDeskAndSaveTemplate();
   ASSERT_TRUE(desk_template);
 
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 2u);
@@ -813,12 +825,12 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, BrowserWindowRestorationTest) {
   ASSERT_TRUE(browser_3->window()->IsMaximized());
 
   const int32_t browser_window_id_1 =
-      window_1->GetProperty(::full_restore::kWindowIdKey);
+      window_1->GetProperty(app_restore::kWindowIdKey);
   const int32_t browser_window_id_2 =
-      window_2->GetProperty(::full_restore::kWindowIdKey);
+      window_2->GetProperty(app_restore::kWindowIdKey);
   const int32_t browser_window_id_3 =
       browser_3->window()->GetNativeWindow()->GetProperty(
-          ::full_restore::kWindowIdKey);
+          app_restore::kWindowIdKey);
 
   // Capture the active desk, which contains the two browser windows.
   std::unique_ptr<ash::DeskTemplate> desk_template =
@@ -858,9 +870,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWA) {
   const gfx::Rect pwa_bounds(50, 50, 500, 500);
   pwa_window->SetBounds(pwa_bounds);
   const int32_t pwa_window_id =
-      pwa_window->GetProperty(::full_restore::kWindowIdKey);
+      pwa_window->GetProperty(app_restore::kWindowIdKey);
   const std::string* app_name =
-      pwa_window->GetProperty(full_restore::kBrowserAppNameKey);
+      pwa_window->GetProperty(app_restore::kBrowserAppNameKey);
   ASSERT_TRUE(app_name);
 
   // Capture the active desk, which contains the PWA.
@@ -868,7 +880,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWA) {
       CaptureActiveDeskAndSaveTemplate();
 
   // Find |pwa_browser| window's app restore data.
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
@@ -896,7 +908,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWA) {
   EXPECT_NE(new_browser_window, pwa_window);
   EXPECT_EQ(pwa_bounds, new_browser_window->bounds());
   const std::string* new_app_name =
-      new_browser_window->GetProperty(full_restore::kBrowserAppNameKey);
+      new_browser_window->GetProperty(app_restore::kBrowserAppNameKey);
   ASSERT_TRUE(new_app_name);
   EXPECT_EQ(*app_name, *new_app_name);
 }
@@ -910,14 +922,14 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWAInBrowser) {
       InstallAndLaunchPWA(GURL(kYoutubeUrl), /*launch_in_browser=*/true);
   aura::Window* pwa_window = pwa_browser->window()->GetNativeWindow();
   const int32_t pwa_window_id =
-      pwa_window->GetProperty(::full_restore::kWindowIdKey);
+      pwa_window->GetProperty(app_restore::kWindowIdKey);
 
   // Capture the active desk, which contains the PWA.
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
 
   // Test that |pwa_browser| restore data can be found.
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);
@@ -934,9 +946,9 @@ IN_PROC_BROWSER_TEST_F(DesksClientTest, LaunchTemplateWithPWAInBrowser) {
   EXPECT_FALSE(iter != app_id_to_launch_list.end());
 }
 
-class DesksClientMultiProfileTest : public chromeos::LoginManagerTest {
+class DesksClientMultiProfileTest : public ash::LoginManagerTest {
  public:
-  DesksClientMultiProfileTest() : chromeos::LoginManagerTest() {
+  DesksClientMultiProfileTest() : ash::LoginManagerTest() {
     login_mixin_.AppendRegularUsers(2);
     account_id1_ = login_mixin_.users()[0].account_id;
     account_id2_ = login_mixin_.users()[1].account_id;
@@ -948,7 +960,7 @@ class DesksClientMultiProfileTest : public chromeos::LoginManagerTest {
   ~DesksClientMultiProfileTest() override = default;
 
   void SetUpOnMainThread() override {
-    chromeos::LoginManagerTest::SetUpOnMainThread();
+    ash::LoginManagerTest::SetUpOnMainThread();
 
     LoginUser(account_id1_);
     ::full_restore::SetActiveProfilePath(
@@ -959,7 +971,7 @@ class DesksClientMultiProfileTest : public chromeos::LoginManagerTest {
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  LoginManagerMixin login_mixin_{&mixin_host_};
+  ash::LoginManagerMixin login_mixin_{&mixin_host_};
   AccountId account_id1_;
   AccountId account_id2_;
 };
@@ -970,7 +982,7 @@ IN_PROC_BROWSER_TEST_F(DesksClientMultiProfileTest, MultiProfileTest) {
   // Capture the active desk, which contains the browser windows.
   std::unique_ptr<ash::DeskTemplate> desk_template =
       CaptureActiveDeskAndSaveTemplate();
-  const full_restore::RestoreData* restore_data =
+  const app_restore::RestoreData* restore_data =
       desk_template->desk_restore_data();
   const auto& app_id_to_launch_list = restore_data->app_id_to_launch_list();
   EXPECT_EQ(app_id_to_launch_list.size(), 1u);

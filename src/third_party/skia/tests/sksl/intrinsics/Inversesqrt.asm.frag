@@ -6,7 +6,7 @@ OpExecutionMode %_entrypoint_v OriginUpperLeft
 OpName %sk_FragColor "sk_FragColor"
 OpName %sk_Clockwise "sk_Clockwise"
 OpName %_UniformBuffer "_UniformBuffer"
-OpMemberName %_UniformBuffer 0 "input"
+OpMemberName %_UniformBuffer 0 "inputVal"
 OpMemberName %_UniformBuffer 1 "expected"
 OpMemberName %_UniformBuffer 2 "colorGreen"
 OpMemberName %_UniformBuffer 3 "colorRed"
@@ -58,6 +58,7 @@ OpDecorate %107 RelaxedPrecision
 OpDecorate %108 RelaxedPrecision
 OpDecorate %115 RelaxedPrecision
 OpDecorate %117 RelaxedPrecision
+OpDecorate %123 RelaxedPrecision
 OpDecorate %125 RelaxedPrecision
 OpDecorate %126 RelaxedPrecision
 OpDecorate %131 RelaxedPrecision

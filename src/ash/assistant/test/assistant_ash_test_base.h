@@ -52,6 +52,10 @@ class AssistantAshTestBase : public AshTestBase {
 
   AssistantAshTestBase();
   explicit AssistantAshTestBase(base::test::TaskEnvironment::TimeSource time);
+
+  AssistantAshTestBase(const AssistantAshTestBase&) = delete;
+  AssistantAshTestBase& operator=(const AssistantAshTestBase&) = delete;
+
   ~AssistantAshTestBase() override;
 
   // AshTestBase:
@@ -102,14 +106,17 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the actual displayed Assistant main view.
   // Can only be used after |ShowAssistantUi| has been called.
+  // Only exists for fullscreen launcher.
   views::View* main_view();
 
   // This is the top-level Assistant specific view.
   // Can only be used after |ShowAssistantUi| has been called.
+  // Exists for both bubble launcher and fullscreen launcher.
   views::View* page_view();
 
   // Return the app list view hosting the Assistant page view.
   // Can only be used after |ShowAssistantUi| has been called.
+  // Only exists for fullscreen launcher.
   AppListView* app_list_view();
 
   // Return the root view hosting the Assistant page view.
@@ -219,8 +226,6 @@ class AssistantAshTestBase : public AshTestBase {
 
   std::unique_ptr<chromeos::assistant::ScopedAssistantBrowserDelegate>
       delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssistantAshTestBase);
 };
 
 }  // namespace ash

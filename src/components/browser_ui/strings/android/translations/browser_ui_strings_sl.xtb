@@ -51,6 +51,7 @@
 <translation id="2289270750774289114">Vprašaj, ko želi spletno mesto odkrivati naprave Bluetooth v bližini (priporočljivo)</translation>
 <translation id="2315043854645842844">Operacijski sistem ne podpira izbire potrdila pri odjemalcu.</translation>
 <translation id="2359808026110333948">Naprej</translation>
+<translation id="2379925928934107488">Uporaba temne teme (ko je to mogoče) na spletnih mestih, če Chrome uporablja temno temo.</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Dovoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}one{Dovoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}two{Dovoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}few{Dovoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}other{Dovoljeno: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}}</translation>
 <translation id="2434158240863470628">Prenos je končan <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -63,6 +64,7 @@
 <translation id="2570922361219980984">Dostop do lokacije je tudi izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Razširjeno – kliknite, če želite strniti.</translation>
 <translation id="2586657967955657006">Odložišče</translation>
+<translation id="2597457036804169544">Brez uporabe temne teme na spletnih mestih.</translation>
 <translation id="2621115761605608342">Dovoli JavaScript za določeno spletno mesto.</translation>
 <translation id="2653659639078652383">Pošlji</translation>
 <translation id="2677748264148917807">Zapusti</translation>
@@ -101,6 +103,7 @@
 <translation id="3600792891314830896">Izklop zvoka na spletnih mestih, ki predvajajo zvok</translation>
 <translation id="3744111561329211289">Sinhroniziranje v ozadju</translation>
 <translation id="3763247130972274048">Dvakrat se dotaknite videoposnetka levo ali desno, da preskočite 10 s</translation>
+<translation id="3797520601150691162">Brez uporabe temne teme za določeno spletno mesto</translation>
 <translation id="381841723434055211">Telefonske številke</translation>
 <translation id="3835233591525155343">Uporaba naprave</translation>
 <translation id="385051799172605136">Nazaj</translation>
@@ -113,6 +116,7 @@
 <translation id="4008040567710660924">Omogočanje piškotkov za določeno spletno mesto.</translation>
 <translation id="4046123991198612571">Naslednja skladba</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
+<translation id="4176463684765177261">Onemogočeno</translation>
 <translation id="4200726100658658164">Odpri nastavitve lokacije</translation>
 <translation id="4226663524361240545">Ob prejemanju obvestil naprava morda vibrira</translation>
 <translation id="4259722352634471385">Krmarjenje je blokirano: <ph name="URL" /></translation>
@@ -166,6 +170,7 @@
 <translation id="5505264765875738116">Spletna mesta vas ne smejo vprašati, ali želite, da vam pošiljajo obvestila</translation>
 <translation id="5516455585884385570">Odpiranje nastavitev obvestil</translation>
 <translation id="5527111080432883924">Prikaži poziv, preden se spletnim mestom dovoli branje besedila in slik v odložišču (priporočeno)</translation>
+<translation id="5553374991681107062">Najnovejše</translation>
 <translation id="5556459405103347317">Znova naloži</translation>
 <translation id="5596627076506792578">Več možnosti</translation>
 <translation id="5649053991847567735">Samodejni prenosi</translation>
@@ -180,6 +185,7 @@
 <translation id="5876056640971328065">Začasna zaustavitev videa</translation>
 <translation id="5887687176710214216">Nazadnje obiskano včeraj</translation>
 <translation id="5916664084637901428">Vklopljeno</translation>
+<translation id="59174027418879706">Omogočeno</translation>
 <translation id="5922853908706496913">Deljenje zaslona</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5975083100439434680">Pomanjšaj</translation>
@@ -196,6 +202,7 @@
 <translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="6216432067784365534">Možnosti za <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Želite odmestiti aplikacijo »<ph name="APP_NAME" />«?</translation>
+<translation id="6233545266937675277">Zahtevanje pogleda spletnih mest za namizne računalnike.</translation>
 <translation id="6262279340360821358">Blokirano: <ph name="PERMISSION_1" /> in <ph name="PERMISSION_2" /></translation>
 <translation id="6270391203985052864">Spletna mesta vas lahko vprašajo, ali želite, da vam pošiljajo obvestila</translation>
 <translation id="6295158916970320988">Vsa spletna mesta</translation>
@@ -209,6 +216,7 @@
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Blokirano: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}one{Blokirano: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}two{Blokirano: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}few{Blokirano: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}other{Blokirano: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> in še <ph name="NUM_MORE" />}}</translation>
 <translation id="6554732001434021288">Nazadnje obiskano pred toliko dnevi: <ph name="NUM_DAYS" /></translation>
 <translation id="6561560012278703671">Uporaba manj vsiljivih sporočil (preprečuje, da bi vas motili pozivi za pošiljanje obvestil)</translation>
+<translation id="6593061639179217415">Mesto za namizne račun.</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
 <translation id="662080504995468778">Ostani</translation>
@@ -240,6 +248,7 @@
 <translation id="7302486331832100261">Obvestila običajno blokirate. Če želite to omogočiti, se dotaknite Podrobnosti.</translation>
 <translation id="7423098979219808738">Najprej vprašaj</translation>
 <translation id="7423538860840206698">Blokirano branje vsebine odložišča</translation>
+<translation id="7425915948813553151">Temna tema za spletna mesta</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Spletno mesto uporablja mikrofon</translation>
 <translation id="7561196759112975576">Vedno</translation>
@@ -263,6 +272,7 @@
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
+<translation id="8042586301629853791">Razvrsti po:</translation>
 <translation id="8067883171444229417">Predvajanje videa</translation>
 <translation id="8068648041423924542">Izbira potrdila ni mogoča</translation>
 <translation id="8087000398470557479">Ta vsebina je iz domene <ph name="DOMAIN_NAME" /> in jo prikazuje Google.</translation>
@@ -276,6 +286,7 @@
 <translation id="8211406090763984747">Povezava je varna</translation>
 <translation id="8249310407154411074">Na vrh</translation>
 <translation id="8261506727792406068">Izbriši</translation>
+<translation id="8267092878336850213">Zahtevanje pogleda spletnih mest za mobilne naprave.</translation>
 <translation id="8300705686683892304">Upravlja aplikacija</translation>
 <translation id="8324158725704657629">Ne vprašaj me več</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>

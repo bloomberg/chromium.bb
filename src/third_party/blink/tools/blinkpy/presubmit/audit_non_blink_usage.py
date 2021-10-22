@@ -54,6 +54,7 @@ _CONFIG = [
             "base::i18n::ToUCharPtr",
             'base::Location',
             'base::MakeRefCounted',
+            'base::Milliseconds',
             'base::OptionalFromPtr',
             'base::OptionalOrNullptr',
             'base::PlatformThread',
@@ -290,6 +291,7 @@ _CONFIG = [
             'gfx::RRectF',
             'gfx::ScaleToCeiledSize',
             'gfx::ScaleToEnclosingRectSafe',
+            'gfx::ScaleToFlooredSize',
             'gfx::ScaleVector2d',
             'gfx::Size',
             'gfx::SizeF',
@@ -964,6 +966,7 @@ _CONFIG = [
     {
         'paths': [
             'third_party/blink/renderer/core/html/media/',
+            'third_party/blink/renderer/modules/canvas/',
             'third_party/blink/renderer/modules/vr/',
             'third_party/blink/renderer/modules/webgl/',
             'third_party/blink/renderer/modules/webgpu/',
@@ -1429,6 +1432,7 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/modules/manifest/'],
         'allowed': [
+            'net::IsValidTopLevelMimeType',
             'net::ParseMimeTypeWithoutParameter',
             'net::registry_controlled_domains::.+',
         ],
@@ -1500,6 +1504,22 @@ _CONFIG = [
             'third_party/blink/renderer/core/',
         ],
         'allowed': ['ui::k200Percent'],
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/loader/frame_client_hints_preferences_context.cc',
+        ],
+        'allowed': [
+            'base::NoDestructor',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/webdatabase/dom_window_web_database.cc',
+        ],
+        'allowed': [
+            'base::CommandLine',
+        ]
     },
 ]
 

@@ -138,15 +138,16 @@ class SyncConsentTest
     : public OobeBaseTest,
       public SyncConsentScreen::SyncConsentScreenExitTestDelegate {
  public:
-  SyncConsentTest()
-      : force_branded_build_(
-            WizardController::ForceBrandedBuildForTesting(true)) {
-    login_manager_mixin_.set_session_restore_enabled();
-  }
+  SyncConsentTest(const SyncConsentTest&) = delete;
+  SyncConsentTest& operator=(const SyncConsentTest&) = delete;
+
+  SyncConsentTest() { login_manager_mixin_.set_session_restore_enabled(); }
   ~SyncConsentTest() override = default;
 
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
     if (features::IsSyncConsentOptionalEnabled()) {
       expected_consent_ids_ = {
           IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE,
@@ -240,11 +241,14 @@ class SyncConsentTest
     OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
   }
 
+  // Attempts to log in to sync consent screen if it is not to be skipped
   void LoginToSyncConsentScreen() {
     LoginAndWaitForSyncConsentScreen();
     SetIsMinorUser(is_minor_user_);
     GetSyncConsentScreen()->SetProfileSyncEngineInitializedForTesting(true);
-    GetSyncConsentScreen()->OnStateChanged(nullptr);
+    if (!GetSyncConsentScreen()->IsProfileSyncDisabledByPolicyForTest() &&
+        LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build)
+      GetSyncConsentScreen()->OnStateChanged(nullptr);
   }
 
   void LoginToSyncConsentScreenWithUnknownCapability() {
@@ -311,11 +315,11 @@ class SyncConsentTest
   LoginManagerMixin login_manager_mixin_{&mixin_host_};
 
   std::unique_ptr<base::AutoReset<bool>> force_branded_build_;
-  DISALLOW_COPY_AND_ASSIGN(SyncConsentTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SyncConsentTest, SkippedNotBrandedBuild) {
-  auto autoreset = WizardController::ForceBrandedBuildForTesting(false);
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+      false;
   LoginToSyncConsentScreen();
 
   WaitForScreenExit();
@@ -327,7 +331,6 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTest, SkippedNotBrandedBuild) {
 
 IN_PROC_BROWSER_TEST_F(SyncConsentTest, SkippedSyncDisabledByPolicy) {
   // Set up screen and policy.
-  auto autoreset = WizardController::ForceBrandedBuildForTesting(true);
   SyncConsentScreen::SetProfileSyncDisabledByPolicyForTesting(true);
 
   LoginToSyncConsentScreen();
@@ -417,10 +420,12 @@ class SyncConsentTestWithParams
       public ::testing::WithParamInterface<std::string> {
  public:
   SyncConsentTestWithParams() = default;
-  ~SyncConsentTestWithParams() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyncConsentTestWithParams);
+  SyncConsentTestWithParams(const SyncConsentTestWithParams&) = delete;
+  SyncConsentTestWithParams& operator=(const SyncConsentTestWithParams&) =
+      delete;
+
+  ~SyncConsentTestWithParams() override = default;
 };
 
 IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams, SyncConsentTestWithLocale) {
@@ -463,6 +468,7 @@ class SyncConsentPolicyDisabledTest : public SyncConsentTest,
 IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
                        SyncConsentPolicyDisabled) {
   LoginToSyncConsentScreen();
+  WaitForScreenShown();
 
   SyncConsentScreen* screen = GetSyncConsentScreen();
 
@@ -674,7 +680,8 @@ IN_PROC_BROWSER_TEST_F(SyncConsentOptionalTest, LanguageVariant) {
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentOptionalTest, SkippedNotBrandedBuild) {
-  auto autoreset = WizardController::ForceBrandedBuildForTesting(false);
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+      false;
   LoginToSyncConsentScreen();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(), SyncConsentScreen::Result::NOT_APPLICABLE);

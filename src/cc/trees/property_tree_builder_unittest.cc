@@ -19,8 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/keyframe/keyframed_animation_curve.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/transform.h"
 
 namespace cc {
 namespace {
@@ -553,13 +553,13 @@ TEST_F(PropertyTreeBuilderTest, DelayedFilterAnimationCreatesRenderSurface) {
   end_filters.Append(FilterOperation::CreateBrightnessFilter(0.3f));
   curve->AddKeyframe(
       FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
-  curve->AddKeyframe(FilterKeyframe::Create(
-      base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
+  curve->AddKeyframe(
+      FilterKeyframe::Create(base::Milliseconds(100), end_filters, nullptr));
   std::unique_ptr<KeyframeModel> keyframe_model = KeyframeModel::Create(
       std::move(curve), 0, 1,
       KeyframeModel::TargetPropertyId(TargetProperty::FILTER));
   keyframe_model->set_fill_mode(KeyframeModel::FillMode::NONE);
-  keyframe_model->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  keyframe_model->set_time_offset(base::Milliseconds(-1000));
 
   AddKeyframeModelToElementWithAnimation(child->element_id(), timeline(),
                                          std::move(keyframe_model));

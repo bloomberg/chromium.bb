@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
@@ -323,7 +324,7 @@ ProfileAttributesStorage::ProfileAttributesStorage(
   }
 
   repeating_timer_ = std::make_unique<signin::PersistentRepeatingTimer>(
-      prefs_, kProfileCountLastUpdatePref, base::TimeDelta::FromHours(24),
+      prefs_, kProfileCountLastUpdatePref, base::Hours(24),
       base::BindRepeating(&ProfileMetrics::LogNumberOfProfiles, this));
   repeating_timer_->Start();
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -759,7 +760,7 @@ void ProfileAttributesStorage::NotifyProfileUserManagementAcceptanceChanged(
 
 std::string ProfileAttributesStorage::StorageKeyFromProfilePath(
     const base::FilePath& profile_path) const {
-  DCHECK(user_data_dir_ == profile_path.DirName());
+  DCHECK_EQ(user_data_dir_, profile_path.DirName());
   return profile_path.BaseName().AsUTF8Unsafe();
 }
 

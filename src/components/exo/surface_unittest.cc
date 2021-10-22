@@ -49,6 +49,9 @@ class SurfaceObserverForTest : public SurfaceObserver {
  public:
   SurfaceObserverForTest() = default;
 
+  SurfaceObserverForTest(const SurfaceObserverForTest&) = delete;
+  SurfaceObserverForTest& operator=(const SurfaceObserverForTest&) = delete;
+
   void OnSurfaceDestroying(Surface* surface) override {}
 
   void OnWindowOcclusionChanged(Surface* surface) override {
@@ -59,14 +62,16 @@ class SurfaceObserverForTest : public SurfaceObserver {
 
  private:
   int num_occlusion_changes_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SurfaceObserverForTest);
 };
 
 class SurfaceTest : public test::ExoTestBase,
                     public ::testing::WithParamInterface<float> {
  public:
   SurfaceTest() = default;
+
+  SurfaceTest(const SurfaceTest&) = delete;
+  SurfaceTest& operator=(const SurfaceTest&) = delete;
+
   ~SurfaceTest() override = default;
   void SetUp() override {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -116,9 +121,6 @@ class SurfaceTest : public test::ExoTestBase,
         GetSurfaceManager()->GetSurfaceForId(surface_id)->GetActiveFrame();
     return frame;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SurfaceTest);
 };
 
 void ReleaseBuffer(int* release_buffer_call_count) {

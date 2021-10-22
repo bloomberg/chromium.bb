@@ -10,14 +10,19 @@ import './onboarding_network_page.js';
 import './onboarding_select_components_page.js';
 import './onboarding_update_page.js';
 import './onboarding_wait_for_manual_wp_disable_page.js';
+import './onboarding_verify_rsu_page.js';
 import './onboarding_wp_disable_complete_page.js';
 import './reimaging_calibration_page.js';
+import './reimaging_calibration_run_page.js';
+import './reimaging_calibration_setup_page.js';
 import './reimaging_device_information_page.js';
 import './reimaging_firmware_update_page.js';
 import './reimaging_provisioning_page.js';
 import './shimless_rma_shared_css.js';
+import './wrapup_finalize_page.js';
 import './wrapup_repair_complete_page.js';
 import './wrapup_restock_page.js';
+import './wrapup_wait_for_manual_wp_enable_page.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -32,13 +37,14 @@ import {RmadErrorCode, RmaState, ShimlessRmaServiceInterface, StateResult} from 
  */
 export const ButtonState = {
   VISIBLE: 'visible',
-  DISABLED: 'disable',
+  DISABLED: 'disabled',
   HIDDEN: 'hidden'
 };
 
 /**
  * @typedef {{
  *  componentIs: string,
+ *  requiresReloadWhenShown: boolean,
  *  buttonNext: !ButtonState,
  *  buttonNextLabel: string,
  *  buttonCancel: !ButtonState,
@@ -53,102 +59,149 @@ let PageInfo;
 const StateComponentMapping = {
   [RmaState.kUnknown]: {
     componentIs: 'badcomponent',
+    requiresReloadWhenShown: false,
     buttonNext: ButtonState.HIDDEN,
-    buttonCancel: ButtonState.VISIBLE,
+    buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kWelcomeScreen]: {
     componentIs: 'onboarding-landing-page',
-    buttonNext: ButtonState.VISIBLE,
-    buttonCancel: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
     buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kConfigureNetwork]: {
     componentIs: 'onboarding-network-page',
-    buttonNext: ButtonState.VISIBLE,
-    buttonCancel: ButtonState.VISIBLE,
-    buttonBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kUpdateOs]: {
     componentIs: 'onboarding-update-page',
-    buttonNext: ButtonState.VISIBLE,
-    buttonCancel: ButtonState.VISIBLE,
-    buttonBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kSelectComponents]: {
     componentIs: 'onboarding-select-components-page',
-    buttonNext: ButtonState.VISIBLE,
-    buttonCancel: ButtonState.VISIBLE,
-    buttonBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kChooseDestination]: {
     componentIs: 'onboarding-choose-destination-page',
-    buttonNext: ButtonState.VISIBLE,
-    buttonCancel: ButtonState.VISIBLE,
-    buttonBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kChooseWriteProtectDisableMethod]: {
     componentIs: 'onboarding-choose-wp-disable-method-page',
-    buttonNext: ButtonState.VISIBLE,
-    buttonCancel: ButtonState.VISIBLE,
-    buttonBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kEnterRSUWPDisableCode]: {
     componentIs: 'onboarding-enter-rsu-wp-disable-code-page',
-    buttonNext: ButtonState.VISIBLE,
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.VISIBLE,
+    buttonBack: ButtonState.HIDDEN,
+  },
+  [RmaState.kVerifyRsu]: {
+    componentIs: 'onboarding-verify-rsu-page',
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kWaitForManualWPDisable]: {
     componentIs: 'onboarding-wait-for-manual-wp-disable-page',
-    buttonNext: ButtonState.VISIBLE,
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.VISIBLE,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kWPDisableComplete]: {
     componentIs: 'onboarding-wp-disable-complete-page',
-    buttonNext: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.VISIBLE,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kChooseFirmwareReimageMethod]: {
     componentIs: 'reimaging-firmware-update-page',
-    buttonNext: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.VISIBLE,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kUpdateDeviceInformation]: {
     componentIs: 'reimaging-device-information-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.HIDDEN,
-    btnBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kCheckCalibration]: {
     componentIs: 'reimaging-calibration-page',
-    buttonNext: ButtonState.VISIBLE,
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
     buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.VISIBLE,
+    buttonBack: ButtonState.HIDDEN,
   },
-  // TODO(gavindodd): kSetupCalibration
-  // TODO(gavindodd): kRunCalibration
+  [RmaState.kRunCalibration]: {
+    componentIs: 'reimaging-calibration-run-page',
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
+  },
+  [RmaState.kSetupCalibration]: {
+    componentIs: 'reimaging-calibration-setup-page',
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
+  },
   [RmaState.kProvisionDevice]: {
     componentIs: 'reimaging-provisioning-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.HIDDEN,
-    btnBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
-  // TODO(gavindodd): kWaitForManualWpEnable
+  [RmaState.kWaitForManualWPEnable]: {
+    componentIs: 'wrapup-wait-for-manual-wp-enable-page',
+    requiresReloadWhenShown: true,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
+  },
   [RmaState.kRestock]: {
     componentIs: 'wrapup-restock-page',
-    btnNext: ButtonState.VISIBLE,
-    btnCancel: ButtonState.HIDDEN,
-    btnBack: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.DISABLED,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
+  },
+  [RmaState.kFinalize]: {
+    componentIs: 'wrapup-finalize-page',
+    buttonNext: ButtonState.VISIBLE,
+    buttonCancel: ButtonState.HIDDEN,
+    buttonBack: ButtonState.HIDDEN,
   },
   [RmaState.kRepairComplete]: {
     componentIs: 'wrapup-repair-complete-page',
-    buttonNext: ButtonState.VISIBLE,
+    requiresReloadWhenShown: false,
+    buttonNext: ButtonState.HIDDEN,
     buttonCancel: ButtonState.HIDDEN,
-    buttonBack: ButtonState.VISIBLE,
+    buttonBack: ButtonState.HIDDEN,
   },
 };
 
@@ -213,6 +266,18 @@ export class ShimlessRmaElement extends PolymerElement {
     this.loadNextStateCallback_ = (e) => {
       this.processStateResult_(e.detail)
     };
+
+    /**
+     * The disableNextButton callback is used by page elements to control the
+     * disabled state of the 'Next' button.
+     * @private {?Function}
+     */
+    this.disableNextButtonCallback_ = (e) => {
+      this.currentPage_.buttonNext =
+          e.detail ? ButtonState.DISABLED : ButtonState.VISIBLE;
+      // Allow polymer to observe the changed state.
+      this.notifyPath('currentPage_.buttonNext');
+    };
   }
 
   /** @override */
@@ -220,6 +285,8 @@ export class ShimlessRmaElement extends PolymerElement {
     super.connectedCallback();
 
     window.addEventListener('load-next-state', this.loadNextStateCallback_);
+    window.addEventListener(
+        'disable-next-button', this.disableNextButtonCallback_);
   }
 
   /** @override */
@@ -227,6 +294,8 @@ export class ShimlessRmaElement extends PolymerElement {
     super.disconnectedCallback();
 
     window.removeEventListener('load-next-state', this.loadNextStateCallback_);
+    window.removeEventListener(
+        'disable-next-button', this.disableNextButtonCallback_);
   }
 
   /** @override */
@@ -262,7 +331,8 @@ export class ShimlessRmaElement extends PolymerElement {
    */
   processStateResult_(stateResult) {
     this.handleError_(stateResult.error);
-    this.loadState_(stateResult.state);
+    this.showState_(
+        stateResult.state, stateResult.canCancel, stateResult.canGoBack);
   }
 
   /**
@@ -277,23 +347,37 @@ export class ShimlessRmaElement extends PolymerElement {
   /**
    * @private
    * @param {!RmaState} state
+   * @param {boolean} canCancel
+   * @param {boolean} canGoBack
    */
-  loadState_(state) {
+  showState_(state, canCancel, canGoBack) {
     const pageInfo = StateComponentMapping[state];
     assert(pageInfo);
 
-    this.currentPage_ = pageInfo;
-    this.showComponent_(pageInfo.componentIs);
-  }
+    pageInfo.buttonCancel =
+        canCancel ? ButtonState.VISIBLE : ButtonState.HIDDEN;
+    pageInfo.buttonBack = canGoBack ? ButtonState.VISIBLE : ButtonState.HIDDEN;
 
-  /**
-   * @param {string} componentIs
-   * @private
-   */
-  showComponent_(componentIs) {
-    let component = this.shadowRoot.querySelector(`#${componentIs}`);
+    // TODO(gavindodd): Replace this with 'dom-if' in html.
+    if (!!this.currentPage_ && this.currentPage_.requiresReloadWhenShown) {
+      let component =
+          this.shadowRoot.querySelector(`#${this.currentPage_.componentIs}`);
+      if (component !== null) {
+        component.remove();
+        component = null;
+      }
+    } else if (pageInfo == this.currentPage_) {
+      // Make sure all button states are correct.
+      this.notifyPath('currentPage_.buttonNext');
+      this.notifyPath('currentPage_.buttonBack');
+      this.notifyPath('currentPage_.buttonCancel');
+      return;
+    }
+    this.currentPage_ = pageInfo;
+    let component =
+        this.shadowRoot.querySelector(`#${this.currentPage_.componentIs}`);
     if (component === null) {
-      component = this.loadComponent_(componentIs);
+      component = this.loadComponent_(this.currentPage_.componentIs);
     }
 
     this.hideAllComponents_();
@@ -330,12 +414,12 @@ export class ShimlessRmaElement extends PolymerElement {
 
   /** @protected */
   isButtonHidden_(button) {
-    return button === 'hidden';
+    return button === ButtonState.HIDDEN;
   }
 
   /** @protected */
   isButtonDisabled_(button) {
-    return button === 'disabled';
+    return button === ButtonState.DISABLED;
   }
 
   /**

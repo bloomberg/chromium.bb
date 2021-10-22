@@ -36,7 +36,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/apps/icon_standardizer.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -51,7 +50,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
-#include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -63,10 +61,12 @@
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
+#include "chrome/browser/ui/ash/shelf/browser_app_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/browser_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_item_factory.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 #include "chrome/browser/ui/ash/shelf/shelf_extension_app_updater.h"
 #include "chrome/browser/ui/ash/shelf/shelf_spinner_controller.h"
@@ -138,6 +138,12 @@ class ChromeShelfControllerUserSwitchObserver
     DCHECK(user_manager::UserManager::IsInitialized());
     user_manager::UserManager::Get()->AddSessionStateObserver(this);
   }
+
+  ChromeShelfControllerUserSwitchObserver(
+      const ChromeShelfControllerUserSwitchObserver&) = delete;
+  ChromeShelfControllerUserSwitchObserver& operator=(
+      const ChromeShelfControllerUserSwitchObserver&) = delete;
+
   ~ChromeShelfControllerUserSwitchObserver() override {
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   }
@@ -158,8 +164,6 @@ class ChromeShelfControllerUserSwitchObserver
   // Users which were just added to the system, but which profiles were not yet
   // (fully) loaded.
   std::set<std::string> added_user_ids_waiting_for_profiles_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeShelfControllerUserSwitchObserver);
 };
 
 void ChromeShelfControllerUserSwitchObserver::UserAddedToSession(
@@ -205,7 +209,9 @@ ChromeShelfController* ChromeShelfController::instance_ = nullptr;
 ChromeShelfController::ChromeShelfController(Profile* profile,
                                              ash::ShelfModel* model,
                                              ChromeShelfItemFactory* creator)
-    : model_(model), shelf_item_factory_(creator) {
+    : model_(model),
+      shelf_item_factory_(creator),
+      shelf_prefs_(std::make_unique<ChromeShelfPrefs>(profile)) {
   DCHECK(!instance_);
   instance_ = this;
 
@@ -249,10 +255,9 @@ ChromeShelfController::ChromeShelfController(Profile* profile,
   app_window_controllers_.emplace_back(std::move(app_service_controller));
   // Create the browser monitor which will inform the shelf of status changes.
   browser_status_monitor_ = std::make_unique<BrowserStatusMonitor>(this);
-  if (base::FeatureList::IsEnabled(apps::BrowserAppInstanceTracker::kEnabled)) {
-    browser_app_instance_tracker_ =
-        apps::AppServiceProxyFactory::GetForProfile(profile)
-            ->BrowserAppInstanceTracker();
+  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi)) {
+    browser_app_shelf_controller_ = std::make_unique<BrowserAppShelfController>(
+        profile, *model_, *shelf_item_factory_, *shelf_spinner_controller_);
   }
 }
 
@@ -372,6 +377,24 @@ void ChromeShelfController::SetItemStatusOrRemove(const ash::ShelfID& id,
     RemoveShelfItem(id);
   else
     SetItemStatus(id, status);
+}
+
+bool ChromeShelfController::ShouldSyncItemWithReentrancy(
+    const ash::ShelfItem& item) {
+  return should_sync_pin_changes_ && ShouldSyncItem(item);
+}
+
+bool ChromeShelfController::ShouldSyncItem(const ash::ShelfItem& item) {
+  // Syncing is only enabled for pinned items.
+  if (!ItemTypeIsPinned(item))
+    return false;
+
+  // Syncing is disabled for standalone-browser based chrome apps for now.
+  // See https://crbug.com/1250480.
+  apps::AppServiceProxyChromeOs* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+  auto app_type = proxy->AppRegistryCache().GetAppType(item.id.app_id);
+  return app_type != apps::mojom::AppType::kStandaloneBrowserExtension;
 }
 
 bool ChromeShelfController::IsPinned(const ash::ShelfID& id) {
@@ -543,12 +566,6 @@ void ChromeShelfController::ActiveUserChanged(const AccountId& account_id) {
   AttachProfile(ProfileManager::GetActiveUserProfile());
   // Update the V1 applications.
   browser_status_monitor_->ActiveUserChanged(account_id.GetUserEmail());
-  // Switch app tracker instance.
-  if (base::FeatureList::IsEnabled(apps::BrowserAppInstanceTracker::kEnabled)) {
-    browser_app_instance_tracker_ = apps::AppServiceProxyFactory::GetForProfile(
-                                        ProfileManager::GetActiveUserProfile())
-                                        ->BrowserAppInstanceTracker();
-  }
   // Save/restore spinners belonging to the old/new user. Must be called before
   // notifying the AppWindowControllers, as some of them assume spinners owned
   // by the new user have already been added to the shelf.
@@ -1094,22 +1111,23 @@ void ChromeShelfController::SyncPinPosition(const ash::ShelfID& shelf_id) {
   std::vector<ash::ShelfID> shelf_ids_after;
 
   for (int i = index - 1; i >= 0; --i) {
-    shelf_id_before = model_->items()[i].id;
-    if (IsPinned(shelf_id_before))
+    if (ShouldSyncItem(model_->items()[i])) {
+      shelf_id_before = model_->items()[i].id;
       break;
+    }
   }
 
   for (int i = index + 1; i < max_index; ++i) {
     const ash::ShelfID& shelf_id_after = model_->items()[i].id;
-    if (IsPinned(shelf_id_after))
+    if (ShouldSyncItem(model_->items()[i]))
       shelf_ids_after.push_back(shelf_id_after);
   }
 
-  SetPinPosition(profile(), shelf_id, shelf_id_before, shelf_ids_after);
+  shelf_prefs_->SetPinPosition(shelf_id, shelf_id_before, shelf_ids_after);
 }
 
 void ChromeShelfController::OnSyncModelUpdated() {
-  UpdatePinnedAppsFromSync();
+  ScheduleUpdatePinnedAppsFromSync();
 }
 
 void ChromeShelfController::OnIsSyncingChanged() {
@@ -1117,16 +1135,18 @@ void ChromeShelfController::OnIsSyncingChanged() {
 
   // Wait until the initial sync happens.
   auto* pref_service = PrefServiceSyncableFromProfile(profile());
-  bool is_syncing = chromeos::features::IsSplitSettingsSyncEnabled()
+  bool is_syncing = chromeos::features::IsSyncSettingsCategorizationEnabled()
                         ? pref_service->AreOsPrefsSyncing()
                         : pref_service->IsSyncing();
   if (!is_syncing)
     return;
   // Initialize the local prefs if this is the first time sync has occurred.
-  InitLocalPref(profile()->GetPrefs(), ash::prefs::kShelfAlignmentLocal,
-                ash::prefs::kShelfAlignment);
-  InitLocalPref(profile()->GetPrefs(), ash::prefs::kShelfAutoHideBehaviorLocal,
-                ash::prefs::kShelfAutoHideBehavior);
+  shelf_prefs_->InitLocalPref(profile()->GetPrefs(),
+                              ash::prefs::kShelfAlignmentLocal,
+                              ash::prefs::kShelfAlignment);
+  shelf_prefs_->InitLocalPref(profile()->GetPrefs(),
+                              ash::prefs::kShelfAutoHideBehaviorLocal,
+                              ash::prefs::kShelfAutoHideBehavior);
 }
 
 void ChromeShelfController::ScheduleUpdatePinnedAppsFromSync() {
@@ -1146,7 +1166,7 @@ void ChromeShelfController::UpdatePinnedAppsFromSync() {
       apps::AppServiceProxyFactory::GetForProfile(profile());
 
   const std::vector<ash::ShelfID> pinned_apps =
-      GetPinnedAppsFromSync(shelf_controller_helper_.get());
+      shelf_prefs_->GetPinnedAppsFromSync(shelf_controller_helper_.get());
 
   int index = 0;
 
@@ -1386,6 +1406,7 @@ void ChromeShelfController::AttachProfile(Profile* profile_to_attach) {
   profile_ = profile_to_attach;
   latest_active_profile_ = profile_to_attach;
 
+  shelf_prefs_->AttachProfile(profile_to_attach);
   AddAppUpdaterAndIconLoader(profile_to_attach);
 
   pref_change_registrar_.Init(profile()->GetPrefs());
@@ -1459,15 +1480,15 @@ void ChromeShelfController::ShelfItemAdded(int index) {
   }
 
   // Update the pin position preference as needed.
-  if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
+  if (ShouldSyncItemWithReentrancy(item))
     SyncPinPosition(item.id);
 }
 
 void ChromeShelfController::ShelfItemRemoved(int index,
                                              const ash::ShelfItem& old_item) {
   // Remove the pin position from preferences as needed.
-  if (ItemTypeIsPinned(old_item) && should_sync_pin_changes_)
-    RemovePinPosition(profile(), old_item.id);
+  if (ShouldSyncItemWithReentrancy(old_item))
+    shelf_prefs_->RemovePinPosition(profile(), old_item.id);
   if (auto* app_icon_loader = GetAppIconLoaderForApp(old_item.id.app_id))
     app_icon_loader->ClearImage(old_item.id.app_id);
 }
@@ -1475,19 +1496,16 @@ void ChromeShelfController::ShelfItemRemoved(int index,
 void ChromeShelfController::ShelfItemMoved(int start_index, int target_index) {
   // Update the pin position preference as needed.
   const ash::ShelfItem& item = model_->items()[target_index];
-  if (ItemTypeIsPinned(item) && should_sync_pin_changes_)
+  if (ShouldSyncItemWithReentrancy(item))
     SyncPinPosition(item.id);
 }
 
 void ChromeShelfController::ShelfItemChanged(int index,
                                              const ash::ShelfItem& old_item) {
-  if (!should_sync_pin_changes_)
-    return;
-
   // Add or remove the pin position from preferences as needed.
   const ash::ShelfItem& item = model_->items()[index];
-  if (!ItemTypeIsPinned(old_item) && ItemTypeIsPinned(item))
+  if (!ItemTypeIsPinned(old_item) && ShouldSyncItemWithReentrancy(item))
     SyncPinPosition(item.id);
-  else if (ItemTypeIsPinned(old_item) && !ItemTypeIsPinned(item))
-    RemovePinPosition(profile(), old_item.id);
+  else if (ShouldSyncItemWithReentrancy(old_item) && !ItemTypeIsPinned(item))
+    shelf_prefs_->RemovePinPosition(profile(), old_item.id);
 }

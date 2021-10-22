@@ -18,9 +18,9 @@ class Profile;
 
 namespace message_center {
 class Notification;
-}
+}  // namespace message_center
 
-namespace chromeos {
+namespace ash {
 
 // UsbPrinterNotification is used to update the notification of a print job
 // according to its state and respond to the user's action.
@@ -28,10 +28,13 @@ class UsbPrinterNotification : public message_center::NotificationObserver {
  public:
   enum class Type { kEphemeral, kSaved, kConfigurationRequired };
 
-  UsbPrinterNotification(const Printer& printer,
+  UsbPrinterNotification(const chromeos::Printer& printer,
                          const std::string& notification_id,
                          Type type,
                          Profile* profile);
+
+  UsbPrinterNotification(const UsbPrinterNotification&) = delete;
+  UsbPrinterNotification& operator=(const UsbPrinterNotification&) = delete;
 
   virtual ~UsbPrinterNotification();
 
@@ -48,7 +51,7 @@ class UsbPrinterNotification : public message_center::NotificationObserver {
 
   void ShowNotification();
 
-  const Printer printer_;
+  const chromeos::Printer printer_;
   std::string notification_id_;
   Type type_;
   Profile* profile_;  // Not owned.
@@ -56,10 +59,8 @@ class UsbPrinterNotification : public message_center::NotificationObserver {
   bool visible_;
 
   base::WeakPtrFactory<UsbPrinterNotification> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UsbPrinterNotification);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_USB_PRINTER_NOTIFICATION_H_

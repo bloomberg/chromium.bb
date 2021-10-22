@@ -263,10 +263,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUVA420P10,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_props(AVFilterLink *inlink)
@@ -505,7 +502,6 @@ static const AVFilterPad hue_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_props,
     },
-    { NULL }
 };
 
 static const AVFilterPad hue_outputs[] = {
@@ -513,7 +509,6 @@ static const AVFilterPad hue_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_hue = {
@@ -524,8 +519,8 @@ const AVFilter ff_vf_hue = {
     .uninit          = uninit,
     .query_formats   = query_formats,
     .process_command = process_command,
-    .inputs          = hue_inputs,
-    .outputs         = hue_outputs,
+    FILTER_INPUTS(hue_inputs),
+    FILTER_OUTPUTS(hue_outputs),
     .priv_class      = &hue_class,
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

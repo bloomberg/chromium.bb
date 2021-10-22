@@ -84,14 +84,14 @@ class NavigationThrottleCallbackRunner : public NavigationThrottle {
 
 int64_t g_unique_identifier = 0;
 
-FrameTreeNode* GetFrameTreeNodeForPendingEntry(WebContentsImpl* contents) {
-  NavigationEntryImpl* pending_entry =
-      contents->GetController().GetPendingEntry();
+FrameTreeNode* GetFrameTreeNodeForPendingEntry(
+    NavigationControllerImpl& controller) {
+  NavigationEntryImpl* pending_entry = controller.GetPendingEntry();
   int frame_tree_node_id = pending_entry->frame_tree_node_id();
-  FrameTree* frame_tree = contents->GetFrameTree();
+  FrameTree& frame_tree = controller.frame_tree();
   if (frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId)
-    return frame_tree->root();
-  return frame_tree->FindByID(frame_tree_node_id);
+    return frame_tree.root();
+  return frame_tree.FindByID(frame_tree_node_id);
 }
 
 }  // namespace
@@ -131,8 +131,8 @@ RenderFrameHost* NavigationSimulator::GoForward(WebContents* web_contents) {
 // static
 RenderFrameHost* NavigationSimulator::GoToOffset(WebContents* web_contents,
                                                  int offset) {
-  auto simulator =
-      NavigationSimulatorImpl::CreateHistoryNavigation(offset, web_contents);
+  auto simulator = NavigationSimulatorImpl::CreateHistoryNavigation(
+      offset, web_contents, false /* is_renderer_initiated */);
   simulator->Commit();
   return simulator->GetFinalRenderFrameHost();
 }
@@ -188,8 +188,8 @@ RenderFrameHost* NavigationSimulator::GoToOffsetAndFail(
     WebContents* web_contents,
     int offset,
     int net_error_code) {
-  auto simulator =
-      NavigationSimulator::CreateHistoryNavigation(offset, web_contents);
+  auto simulator = NavigationSimulator::CreateHistoryNavigation(
+      offset, web_contents, false /* is_renderer_initiated */);
   simulator->Fail(net_error_code);
   if (net_error_code == net::ERR_ABORTED)
     return nullptr;
@@ -231,16 +231,25 @@ NavigationSimulatorImpl::CreateBrowserInitiated(const GURL& original_url,
 // static
 std::unique_ptr<NavigationSimulator>
 NavigationSimulator::CreateHistoryNavigation(int offset,
-                                             WebContents* web_contents) {
-  return NavigationSimulatorImpl::CreateHistoryNavigation(offset, web_contents);
+                                             WebContents* web_contents,
+                                             bool is_renderer_initiated) {
+  return NavigationSimulatorImpl::CreateHistoryNavigation(
+      offset, web_contents, is_renderer_initiated);
 }
 
 // static
 std::unique_ptr<NavigationSimulatorImpl>
 NavigationSimulatorImpl::CreateHistoryNavigation(int offset,
-                                                 WebContents* web_contents) {
-  auto simulator =
-      NavigationSimulatorImpl::CreateBrowserInitiated(GURL(), web_contents);
+                                                 WebContents* web_contents,
+                                                 bool is_renderer_initiated) {
+  std::unique_ptr<NavigationSimulatorImpl> simulator = nullptr;
+  if (is_renderer_initiated) {
+    simulator = NavigationSimulatorImpl::CreateRendererInitiated(
+        GURL(), web_contents->GetMainFrame());
+  } else {
+    simulator =
+        NavigationSimulatorImpl::CreateBrowserInitiated(GURL(), web_contents);
+  }
   simulator->SetSessionHistoryOffset(offset);
   return simulator;
 }
@@ -272,17 +281,15 @@ NavigationSimulatorImpl::CreateRendererInitiated(
 
 // static
 std::unique_ptr<NavigationSimulator> NavigationSimulator::CreateFromPending(
-    WebContents* contents) {
-  return NavigationSimulatorImpl::CreateFromPending(contents);
+    NavigationController& controller) {
+  return NavigationSimulatorImpl::CreateFromPending(controller);
 }
 
 // static
 std::unique_ptr<NavigationSimulatorImpl>
-NavigationSimulatorImpl::CreateFromPending(WebContents* contents) {
-  WebContentsImpl* contents_impl = static_cast<WebContentsImpl*>(contents);
-
-  FrameTreeNode* frame_tree_node =
-      GetFrameTreeNodeForPendingEntry(contents_impl);
+NavigationSimulatorImpl::CreateFromPending(NavigationController& controller) {
+  FrameTreeNode* frame_tree_node = GetFrameTreeNodeForPendingEntry(
+      static_cast<NavigationControllerImpl&>(controller));
   return NavigationSimulatorImpl::CreateFromPendingInFrame(frame_tree_node);
 }
 
@@ -434,6 +441,8 @@ void NavigationSimulatorImpl::Start() {
   CHECK(request_);
   if (blink::IsRendererDebugURL(navigation_url_))
     return;
+  if (session_history_offset_)
+    return;
 
   if (!NeedsThrottleChecks())
     return;
@@ -491,6 +500,11 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   response->connection_info = http_connection_info_;
   response->ssl_info = ssl_info_;
 
+  if (redirect_headers_) {
+    response->headers = redirect_headers_;
+    redirect_headers_ = nullptr;
+  }
+
   url_loader->CallOnRequestRedirected(redirect_info, std::move(response));
 
   MaybeWaitForThrottleChecksComplete(base::BindOnce(
@@ -547,6 +561,9 @@ void NavigationSimulatorImpl::ReadyToCommit() {
     }
   }
 
+  CHECK_EQ(nullptr, redirect_headers_)
+      << "Redirect headers were set but never used in a Redirect call";
+
   if (!response_headers_) {
     response_headers_ =
         base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
@@ -571,7 +588,8 @@ void NavigationSimulatorImpl::ReadyToCommit() {
         ->PrepareForCommitDeprecatedForNavigationSimulator(
             remote_endpoint_, was_fetched_via_cache_,
             is_signed_exchange_inner_response_, http_connection_info_,
-            ssl_info_, response_headers_, response_dns_aliases_);
+            ssl_info_, response_headers_, std::move(response_body_),
+            response_dns_aliases_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -983,11 +1001,25 @@ void NavigationSimulatorImpl::SetContentsMimeType(
   contents_mime_type_ = contents_mime_type;
 }
 
+void NavigationSimulatorImpl::SetRedirectHeaders(
+    scoped_refptr<net::HttpResponseHeaders> redirect_headers) {
+  CHECK_LE(state_, STARTED) << "The redirect headers cannot be set after the "
+                               "navigation has committed or failed";
+  redirect_headers_ = redirect_headers;
+}
+
 void NavigationSimulatorImpl::SetResponseHeaders(
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
   CHECK_LE(state_, STARTED) << "The response headers cannot be set after the "
                                "navigation has committed or failed";
   response_headers_ = response_headers;
+}
+
+void NavigationSimulatorImpl::SetResponseBody(
+    mojo::ScopedDataPipeConsumerHandle response_body) {
+  CHECK_LE(state_, STARTED) << "The response body cannot be set after the "
+                               "navigation has committed or failed";
+  response_body_ = std::move(response_body);
 }
 
 void NavigationSimulatorImpl::SetLoadURLParams(
@@ -1066,14 +1098,15 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
     }
   }
 
-  frame_tree_node_ = GetFrameTreeNodeForPendingEntry(web_contents_);
+  auto& controller =
+      static_cast<NavigationControllerImpl&>(web_contents_->GetController());
+  frame_tree_node_ = GetFrameTreeNodeForPendingEntry(controller);
   CHECK(frame_tree_node_);
   render_frame_host_ =
       static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host());
 
   // The navigation url might have been rewritten by the NavigationController.
   // Update it.
-  NavigationController& controller = web_contents_->GetController();
   NavigationEntryImpl* pending_entry =
       static_cast<NavigationEntryImpl*>(controller.GetPendingEntry());
   FrameNavigationEntry* pending_frame_entry =
@@ -1224,6 +1257,13 @@ bool NavigationSimulatorImpl::SimulateBrowserInitiatedStart() {
 }
 
 bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
+  if (session_history_offset_) {
+    static_cast<NavigationControllerImpl&>(web_contents_->GetController())
+        .GoToOffsetFromRenderer(session_history_offset_);
+    request_ = render_frame_host_->frame_tree_node()->navigation_request();
+    return true;
+  }
+
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New(
           initiator_frame_host_
@@ -1253,11 +1293,6 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
   common_params->has_user_gesture = has_user_gesture_;
   common_params->should_check_main_world_csp = should_check_main_world_csp_;
   common_params->should_replace_current_entry = should_replace_current_entry_;
-
-  if (history_url_for_data_url_.has_value()) {
-    common_params->history_url_for_data_url = history_url_for_data_url_.value();
-  }
-
   common_params->href_translate = href_translate_;
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
@@ -1445,18 +1480,21 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
                                  : base::UnguessableToken::Create();
   params->post_id = post_id_;
 
-  params->intended_as_new_entry =
-      request_ ? request_->commit_params().intended_as_new_entry : false;
   params->method = request_ ? request_->common_params().method : "GET";
 
   if (failed_navigation) {
     // Note: Error pages must commit in a unique origin. So it is left unset.
     params->url_is_unreachable = true;
   } else {
-    params->should_update_history = true;
     if (same_document) {
       params->origin = current_rfh->GetLastCommittedOrigin();
+      params->should_update_history = true;
     } else {
+      // This mirrors the calculation in
+      // RenderFrameImpl::MakeDidCommitProvisionalLoadParams.
+      // TODO(https://crbug.com/1158101): Reconsider how we calculate
+      // should_update_history.
+      params->should_update_history = response_headers_->response_code() != 404;
       params->origin = origin_.value_or(request_->GetOriginToCommit());
     }
   }

@@ -10,12 +10,14 @@
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/enterprise/common/proto/extensions_workflow_events.pb.h"
@@ -45,6 +47,13 @@ std::unique_ptr<ExtensionsWorkflowEvent> GenerateReport(
           request_data->FindKey(extension_misc::kExtensionRequestTimestamp));
       if (timestamp)
         report->set_request_timestamp_millis(timestamp->ToJavaTime());
+      if (base::FeatureList::IsEnabled(
+              features::kExtensionWorkflowJustification)) {
+        const std::string* justification = request_data->FindStringKey(
+            extension_misc::kExtensionWorkflowJustification);
+        if (justification)
+          report->set_justification(*justification);
+      }
     }
     report->set_removed(false);
   } else {

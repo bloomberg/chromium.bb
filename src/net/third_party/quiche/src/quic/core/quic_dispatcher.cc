@@ -177,7 +177,6 @@ class StatelessConnectionTerminator {
     SerializeConnectionClosePacket(error_code, error_details);
 
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        server_connection_id_,
         QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
         TimeWaitConnectionInfo(ietf_quic, collector_.packets(),
                                std::move(active_connection_ids),
@@ -359,12 +358,10 @@ QuicDispatcher::QuicDispatcher(
       << "Trying to create dispatcher without any supported versions";
   QUIC_DLOG(INFO) << "Created QuicDispatcher with versions: "
                   << ParsedQuicVersionVectorToString(GetSupportedVersions());
-  QUIC_RESTART_FLAG_COUNT(quic_alarm_add_permanent_cancel);
 }
 
 QuicDispatcher::~QuicDispatcher() {
-  if (GetQuicRestartFlag(quic_alarm_add_permanent_cancel) &&
-      delete_sessions_alarm_ != nullptr) {
+  if (delete_sessions_alarm_ != nullptr) {
     delete_sessions_alarm_->PermanentCancel();
   }
   if (clear_stateless_reset_addresses_alarm_ != nullptr) {
@@ -502,12 +499,54 @@ QuicConnectionId QuicDispatcher::ReplaceLongServerConnectionId(
       server_connection_id, expected_server_connection_id_length);
 }
 
+namespace {
+inline bool IsSourceUdpPortBlocked(uint16_t port) {
+  // TODO(dschinazi) make this function constexpr when we remove flag
+  // protection.
+  if (!GetQuicReloadableFlag(quic_blocked_ports)) {
+    return port == 0;
+  }
+  QUIC_RELOADABLE_FLAG_COUNT(quic_blocked_ports);
+  // These UDP source ports have been observed in large scale denial of service
+  // attacks and are not expected to ever carry user traffic, they are therefore
+  // blocked as a safety measure. See draft-ietf-quic-applicability for details.
+  constexpr uint16_t blocked_ports[] = {
+      0,      // We cannot send to port 0 so drop that source port.
+      17,     // Quote of the Day, can loop with QUIC.
+      19,     // Chargen, can loop with QUIC.
+      53,     // DNS, vulnerable to reflection attacks.
+      111,    // Portmap.
+      123,    // NTP, vulnerable to reflection attacks.
+      137,    // NETBIOS Name Service,
+      128,    // NETBIOS Datagram Service
+      161,    // SNMP.
+      389,    // CLDAP.
+      500,    // IKE, can loop with QUIC.
+      1900,   // SSDP, vulnerable to reflection attacks.
+      5353,   // mDNS, vulnerable to reflection attacks.
+      11211,  // memcache, vulnerable to reflection attacks.
+              // This list MUST be sorted in increasing order.
+  };
+  constexpr size_t num_blocked_ports = ABSL_ARRAYSIZE(blocked_ports);
+  constexpr uint16_t highest_blocked_port =
+      blocked_ports[num_blocked_ports - 1];
+  if (QUICHE_PREDICT_TRUE(port > highest_blocked_port)) {
+    // Early-return to skip comparisons for the majority of traffic.
+    return false;
+  }
+  for (size_t i = 0; i < num_blocked_ports; i++) {
+    if (port == blocked_ports[i]) {
+      return true;
+    }
+  }
+  return false;
+}
+}  // namespace
+
 bool QuicDispatcher::MaybeDispatchPacket(
     const ReceivedPacketInfo& packet_info) {
-  // Port zero is only allowed for unidirectional UDP, so is disallowed by QUIC.
-  // Given that we can't even send a reply rejecting the packet, just drop the
-  // packet.
-  if (packet_info.peer_address.port() == 0) {
+  if (IsSourceUdpPortBlocked(packet_info.peer_address.port())) {
+    // Silently drop the received packet.
     return true;
   }
 
@@ -898,7 +937,7 @@ void QuicDispatcher::CleanUpSession(QuicConnectionId server_connection_id,
     QUIC_CODE_COUNT(quic_v44_add_to_time_wait_list_with_stateless_reset);
   }
   time_wait_list_manager_->AddConnectionIdToTimeWait(
-      server_connection_id, action,
+      action,
       TimeWaitConnectionInfo(
           connection->version().HasIetfInvariantHeader(),
           connection->termination_packets(),
@@ -1121,9 +1160,8 @@ void QuicDispatcher::StatelesslyTerminateConnection(
                   << ", error_code:" << error_code
                   << ", error_details:" << error_details;
     time_wait_list_manager_->AddConnectionIdToTimeWait(
-        server_connection_id, action,
-        TimeWaitConnectionInfo(format != GOOGLE_QUIC_PACKET, nullptr,
-                               {server_connection_id}));
+        action, TimeWaitConnectionInfo(format != GOOGLE_QUIC_PACKET, nullptr,
+                                       {server_connection_id}));
     return;
   }
 
@@ -1161,7 +1199,7 @@ void QuicDispatcher::StatelesslyTerminateConnection(
       /*ietf_quic=*/format != GOOGLE_QUIC_PACKET, use_length_prefix,
       /*versions=*/{}));
   time_wait_list_manager()->AddConnectionIdToTimeWait(
-      server_connection_id, QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
+      QuicTimeWaitListManager::SEND_TERMINATION_PACKETS,
       TimeWaitConnectionInfo(/*ietf_quic=*/format != GOOGLE_QUIC_PACKET,
                              &termination_packets, {server_connection_id}));
 }

@@ -150,7 +150,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -250,16 +250,16 @@ static int guided_##name(AVFilterContext *ctx, GuidedContext *s,                
     t.dstStride = w;                                                                    \
     t.src = I;                                                                          \
     t.dst = meanI;                                                                      \
-    ctx->internal->execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));          \
+    ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
     t.src = II;                                                                         \
     t.dst = meanII;                                                                     \
-    ctx->internal->execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));          \
+    ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
     t.src = P;                                                                          \
     t.dst = meanP;                                                                      \
-    ctx->internal->execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));          \
+    ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
     t.src = IP;                                                                         \
     t.dst = meanIP;                                                                     \
-    ctx->internal->execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));          \
+    ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
                                                                                         \
     for (int i = 0;i < h;i++) {                                                         \
       for (int j = 0;j < w;j++) {                                                       \
@@ -273,10 +273,10 @@ static int guided_##name(AVFilterContext *ctx, GuidedContext *s,                
                                                                                         \
     t.src = A;                                                                          \
     t.dst = meanA;                                                                      \
-    ctx->internal->execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));          \
+    ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
     t.src = B;                                                                          \
     t.dst = meanB;                                                                      \
-    ctx->internal->execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));          \
+    ff_filter_execute(ctx, s->box_slice, &t, NULL, FFMIN(h, nb_threads));               \
                                                                                         \
     for (int i = 0;i < height;i++) {                                                    \
       for (int j = 0;j < width;j++) {                                                   \
@@ -442,7 +442,7 @@ static av_cold int init(AVFilterContext *ctx)
     pad.name         = "source";
     pad.config_props = config_input;
 
-    if ((ret = ff_insert_inpad(ctx, 0, &pad)) < 0)
+    if ((ret = ff_append_inpad(ctx, &pad)) < 0)
         return ret;
 
     if (s->guidance == ON) {
@@ -450,7 +450,7 @@ static av_cold int init(AVFilterContext *ctx)
         pad.name         = "guidance";
         pad.config_props = NULL;
 
-        if ((ret = ff_insert_inpad(ctx, 1, &pad)) < 0)
+        if ((ret = ff_append_inpad(ctx, &pad)) < 0)
             return ret;
     }
 
@@ -486,7 +486,6 @@ static const AVFilterPad guided_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_guided = {
@@ -499,7 +498,8 @@ const AVFilter ff_vf_guided = {
     .priv_class      = &guided_class,
     .activate        = activate,
     .inputs          = NULL,
-    .outputs         = guided_outputs,
-    .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
+    FILTER_OUTPUTS(guided_outputs),
+    .flags           = AVFILTER_FLAG_DYNAMIC_INPUTS | AVFILTER_FLAG_SLICE_THREADS |
+                       AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
     .process_command = process_command,
 };

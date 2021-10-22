@@ -1351,12 +1351,29 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   rd->thresh_mult[THR_D45_PRED] = 2500;
 }
 
-void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
-                               int (*factor_buf)[MAX_MODES],
-                               int use_adaptive_rd_thresh, BLOCK_SIZE bsize,
-                               THR_MODES best_mode_index) {
+static INLINE void update_thr_fact(int (*factor_buf)[MAX_MODES],
+                                   THR_MODES best_mode_index,
+                                   THR_MODES mode_start, THR_MODES mode_end,
+                                   BLOCK_SIZE min_size, BLOCK_SIZE max_size,
+                                   int max_rd_thresh_factor) {
+  for (THR_MODES mode = mode_start; mode < mode_end; ++mode) {
+    for (BLOCK_SIZE bs = min_size; bs <= max_size; ++bs) {
+      int *const fact = &factor_buf[bs][mode];
+      if (mode == best_mode_index) {
+        *fact -= (*fact >> RD_THRESH_LOG_DEC_FACTOR);
+      } else {
+        *fact = AOMMIN(*fact + RD_THRESH_INC, max_rd_thresh_factor);
+      }
+    }
+  }
+}
+
+void av1_update_rd_thresh_fact(
+    const AV1_COMMON *const cm, int (*factor_buf)[MAX_MODES],
+    int use_adaptive_rd_thresh, BLOCK_SIZE bsize, THR_MODES best_mode_index,
+    THR_MODES inter_mode_start, THR_MODES inter_mode_end,
+    THR_MODES intra_mode_start, THR_MODES intra_mode_end) {
   assert(use_adaptive_rd_thresh > 0);
-  const THR_MODES top_mode = MAX_MODES;
   const int max_rd_thresh_factor = use_adaptive_rd_thresh * RD_THRESH_MAX_FACT;
 
   const int bsize_is_1_to_4 = bsize > cm->seq_params->sb_size;
@@ -1371,16 +1388,10 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
     max_size = AOMMIN(bsize + 2, (int)cm->seq_params->sb_size);
   }
 
-  for (THR_MODES mode = 0; mode < top_mode; ++mode) {
-    for (BLOCK_SIZE bs = min_size; bs <= max_size; ++bs) {
-      int *const fact = &factor_buf[bs][mode];
-      if (mode == best_mode_index) {
-        *fact -= (*fact >> RD_THRESH_LOG_DEC_FACTOR);
-      } else {
-        *fact = AOMMIN(*fact + RD_THRESH_INC, max_rd_thresh_factor);
-      }
-    }
-  }
+  update_thr_fact(factor_buf, best_mode_index, inter_mode_start, inter_mode_end,
+                  min_size, max_size, max_rd_thresh_factor);
+  update_thr_fact(factor_buf, best_mode_index, intra_mode_start, intra_mode_end,
+                  min_size, max_size, max_rd_thresh_factor);
 }
 
 int av1_get_intra_cost_penalty(int qindex, int qdelta,

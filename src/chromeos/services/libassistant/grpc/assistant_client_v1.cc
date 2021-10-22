@@ -8,10 +8,18 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
+#include "chromeos/assistant/internal/buildflags.h"
 #include "chromeos/assistant/internal/grpc_transport/request_utils.h"
+#include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/shared/proto/conversation.pb.h"
+#include "chromeos/assistant/internal/proto/shared/proto/settings_ui.pb.h"
+#include "chromeos/assistant/internal/proto/shared/proto/update_settings_ui.pb.h"
+#include "chromeos/assistant/internal/proto/shared/proto/v2/config_settings_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/delegate/event_handler_interface.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/device_state_event.pb.h"
 #include "chromeos/assistant/internal/proto/shared/proto/v2/display_interface.pb.h"
@@ -19,23 +27,39 @@
 #include "chromeos/assistant/internal/proto/shared/proto/v2/speaker_id_enrollment_interface.pb.h"
 #include "chromeos/services/libassistant/callback_utils.h"
 #include "chromeos/services/libassistant/grpc/utils/media_status_utils.h"
+#include "chromeos/services/libassistant/grpc/utils/settings_utils.h"
+#include "chromeos/services/libassistant/grpc/utils/timer_utils.h"
+#include "chromeos/services/libassistant/public/cpp/assistant_timer.h"
+#include "libassistant/shared/internal_api/alarm_timer_manager.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/internal_api/display_connection.h"
 #include "libassistant/shared/internal_api/fuchsia_api_helper.h"
 #include "libassistant/shared/internal_api/speaker_id_enrollment.h"
+#include "libassistant/shared/internal_api/voiceless_response.h"
 #include "libassistant/shared/public/device_state_listener.h"
 #include "libassistant/shared/public/media_manager.h"
+
+#if BUILDFLAG(BUILD_LIBASSISTANT_146S)
+#include "libassistant/shared/internal_api/alarm_timer_types.h"
+#endif  // BUILD_LIBASSISTANT_146S
+
+#if BUILDFLAG(BUILD_LIBASSISTANT_152S)
+#include "libassistant/shared/public/alarm_timer_types.h"
+#endif  // BUILD_LIBASSISTANT_152S
 
 namespace chromeos {
 namespace libassistant {
 
-using ::assistant::api::OnSpeakerIdEnrollmentEventRequest;
-using ::assistant::api::events::SpeakerIdEnrollmentEvent;
-using assistant_client::SpeakerIdEnrollmentUpdate;
-
-using ::assistant::api::OnDeviceStateEventRequest;
-
 namespace {
+
+using ::assistant::api::GetAssistantSettingsResponse;
+using ::assistant::api::OnAlarmTimerEventRequest;
+using ::assistant::api::OnDeviceStateEventRequest;
+using ::assistant::api::OnSpeakerIdEnrollmentEventRequest;
+using ::assistant::api::UpdateAssistantSettingsResponse;
+using ::assistant::api::events::SpeakerIdEnrollmentEvent;
+using ::assistant::ui::SettingsUiUpdate;
+using assistant_client::SpeakerIdEnrollmentUpdate;
 
 // A macro which ensures we are running on the calling sequence.
 #define ENSURE_CALLING_SEQUENCE(method, ...)                                \
@@ -87,6 +111,22 @@ OnSpeakerIdEnrollmentEventRequest ConvertToGrpcEventRequest(
   return request;
 }
 
+assistant_client::InternalOptions* WARN_UNUSED_RESULT CreateInternalOptions(
+    assistant_client::AssistantManagerInternal* assistant_manager_internal,
+    const std::string& locale,
+    bool spoken_feedback_enabled,
+    bool dark_mode_enabled) {
+  auto* options = assistant_manager_internal->CreateDefaultInternalOptions();
+  auto proto =
+      assistant::CreateInternalOptionsProto(locale, spoken_feedback_enabled);
+  PopulateInternalOptionsFromProto(proto, options);
+
+  assistant::SetDarkModeEnabledForV1(options, dark_mode_enabled);
+  assistant::SetTimezoneOverrideForV1(options);
+
+  return options;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,16 +148,7 @@ class AssistantClientV1::DeviceStateListener
   void OnStartFinished() override {
     ENSURE_CALLING_SEQUENCE(&DeviceStateListener::OnStartFinished);
 
-    OnDeviceStateEventRequest request;
-    request.mutable_event()
-        ->mutable_on_state_changed()
-        ->mutable_new_state()
-        ->mutable_startup_state()
-        ->set_finished(true);
-    assistant_client_->NofifyDeviceStateEvent(request);
-
-    // AssistantManager Start() has completed, add media manager listener.
-    assistant_client_->AddMediaManagerListener();
+    assistant_client_->NotifyAllServicesReady();
   }
 
  private:
@@ -211,7 +242,7 @@ class AssistantClientV1::MediaManagerListener
                        ->mutable_new_state()
                        ->mutable_media_status();
     ConvertMediaStatusToV2FromV1(media_status, status);
-    assistant_client_->NofifyDeviceStateEvent(request);
+    assistant_client_->NotifyDeviceStateEvent(request);
   }
 
  private:
@@ -234,9 +265,17 @@ AssistantClientV1::AssistantClientV1(
   assistant_manager()->AddDeviceStateListener(device_state_listener_.get());
 }
 
-AssistantClientV1::~AssistantClientV1() = default;
+AssistantClientV1::~AssistantClientV1() {
+  // Some listeners (e.g. MediaManagerListener) require that they outlive 
+  // `assistant_manager_`. Reset `assistant_manager_` in the parent class first
+  // before any listener in this class gets destructed.
+  ResetAssistantManager();
+}
 
-void AssistantClientV1::StartServices() {
+void AssistantClientV1::StartServices(
+    base::OnceClosure services_ready_callback) {
+  services_ready_callback_ = std::move(services_ready_callback);
+
   assistant_manager()->Start();
 }
 
@@ -303,12 +342,11 @@ void AssistantClientV1::CancelSpeakerIdEnrollment(
 void AssistantClientV1::GetSpeakerIdEnrollmentInfo(
     const ::assistant::api::GetSpeakerIdEnrollmentInfoRequest& request,
     base::OnceCallback<void(bool user_model_exists)> on_done) {
-  auto callback = base::BindOnce(
-      [](base::OnceCallback<void(bool user_model_exists)> cb,
-         const assistant_client::SpeakerIdEnrollmentStatus& status) {
-        std::move(cb).Run(status.user_model_exists);
-      },
-      std::move(on_done));
+  auto callback =
+      AdaptCallback<const assistant_client::SpeakerIdEnrollmentStatus&>(
+          /*once_callback=*/std::move(on_done),
+          /*transformer=*/[](const assistant_client::SpeakerIdEnrollmentStatus&
+                                 status) { return status.user_model_exists; });
 
   assistant_manager_internal()->GetSpeakerIdEnrollmentStatus(
       request.cloud_enrollment_status_request().user_id(),
@@ -351,16 +389,79 @@ void AssistantClientV1::AddDeviceStateEventObserver(
   device_state_event_observer_list_.AddObserver(observer);
 }
 
+void AssistantClientV1::RegisterActionModule(
+    assistant_client::ActionModule* action_module) {
+  assistant_manager_internal()->RegisterActionModule(action_module);
+}
+
+void AssistantClientV1::SetAuthenticationInfo(const AuthTokens& tokens) {
+  assistant_manager()->SetAuthTokens(tokens);
+}
+
+void AssistantClientV1::SetInternalOptions(const std::string& locale,
+                                           bool spoken_feedback_enabled) {
+  // All options must have value before we can convey them to libassistant.
+  DCHECK(dark_mode_enabled_.has_value());
+
+  assistant_manager_internal()->SetOptions(
+      *CreateInternalOptions(assistant_manager_internal(), locale,
+                             spoken_feedback_enabled,
+                             dark_mode_enabled_.value()),
+      [](bool success) { DVLOG(2) << "set options: " << success; });
+}
+
+void AssistantClientV1::UpdateAssistantSettings(
+    const SettingsUiUpdate& settings,
+    const std::string& user_id,
+    base::OnceCallback<void(const UpdateAssistantSettingsResponse&)> on_done) {
+  std::string update_settings_ui_request =
+      assistant::SerializeUpdateSettingsUiRequest(settings.SerializeAsString());
+
+  auto callback = AdaptCallback<const assistant_client::VoicelessResponse&>(
+      /*once_callback=*/std::move(on_done),
+      /*transformer=*/&ToUpdateSettingsResponseProto);
+
+  assistant_manager_internal()->SendUpdateSettingsUiRequest(
+      update_settings_ui_request, user_id,
+      ToStdFunction(BindToCurrentSequence(std::move(callback))));
+}
+
+void AssistantClientV1::GetAssistantSettings(
+    const ::assistant::ui::SettingsUiSelector& selector,
+    const std::string& user_id,
+    base::OnceCallback<void(const GetAssistantSettingsResponse&)> on_done) {
+  std::string get_settins_ui_request =
+      assistant::SerializeGetSettingsUiRequest(selector.SerializeAsString());
+
+  auto callback = AdaptCallback<const assistant_client::VoicelessResponse&>(
+      /*once_callback=*/std::move(on_done),
+      /*transformer=*/&ToGetSettingsResponseProto);
+
+  assistant_manager_internal()->SendGetSettingsUiRequest(
+      get_settins_ui_request, user_id,
+      ToStdFunction(BindToCurrentSequence(std::move(callback))));
+}
+
 void AssistantClientV1::AddMediaManagerListener() {
   assistant_manager()->GetMediaManager()->AddListener(
       media_manager_listener_.get());
 }
 
-void AssistantClientV1::NofifyDeviceStateEvent(
+void AssistantClientV1::NotifyDeviceStateEvent(
     const OnDeviceStateEventRequest& request) {
   for (auto& observer : device_state_event_observer_list_) {
     observer.OnGrpcMessage(request);
   }
+}
+
+void AssistantClientV1::NotifyAllServicesReady() {
+  DCHECK(services_ready_callback_);
+  // This callback will do nothing if V2 is enabled as in V2 we'll be relying on
+  // the heartbeat ready signal.
+  std::move(services_ready_callback_).Run();
+
+  // Now |AssistantManager| is fully started, add media manager listener.
+  AddMediaManagerListener();
 }
 
 void AssistantClientV1::OnSpeakerIdEnrollmentUpdate(
@@ -369,6 +470,90 @@ void AssistantClientV1::OnSpeakerIdEnrollmentUpdate(
   for (auto& observer : speaker_event_observer_list_) {
     observer.OnGrpcMessage(event_request);
   }
+}
+
+void AssistantClientV1::SetLocaleOverride(const std::string& locale) {
+  assistant_manager_internal()->SetLocaleOverride(locale);
+}
+
+void AssistantClientV1::SetDeviceAttributes(bool enable_dark_mode) {
+  // We don't actually do anything here besides caching the passed in value
+  // because dark mode is set through |SetOptions| for V1.
+  dark_mode_enabled_ = enable_dark_mode;
+}
+
+std::string AssistantClientV1::GetDeviceId() {
+  return assistant_manager()->GetDeviceId();
+}
+
+void AssistantClientV1::EnableListening(bool listening_enabled) {
+  assistant_manager()->EnableListening(listening_enabled);
+}
+
+void AssistantClientV1::AddTimeToTimer(const std::string& id,
+                                       const base::TimeDelta& duration) {
+  if (alarm_timer_manager())
+    alarm_timer_manager()->AddTimeToTimer(id, duration.InSeconds());
+}
+
+void AssistantClientV1::PauseTimer(const std::string& timer_id) {
+  if (alarm_timer_manager())
+    alarm_timer_manager()->PauseTimer(timer_id);
+}
+
+void AssistantClientV1::RemoveTimer(const std::string& timer_id) {
+  if (alarm_timer_manager())
+    alarm_timer_manager()->RemoveEvent(timer_id);
+}
+
+void AssistantClientV1::ResumeTimer(const std::string& timer_id) {
+  if (alarm_timer_manager())
+    alarm_timer_manager()->ResumeTimer(timer_id);
+}
+
+std::vector<assistant::AssistantTimer> AssistantClientV1::GetTimers() {
+  if (alarm_timer_manager())
+    return GetAllCurrentTimersFromEvents(alarm_timer_manager()->GetAllEvents());
+
+  return std::vector<assistant::AssistantTimer>();
+}
+
+void AssistantClientV1::RegisterAlarmTimerEventObserver(
+    base::WeakPtr<GrpcServicesObserver<OnAlarmTimerEventRequest>> observer) {
+  // We always want to know when a timer has started ringing.
+  alarm_timer_manager()->RegisterRingingStateListener(
+      ToStdFunctionRepeating(BindToCurrentSequenceRepeating(
+          [](const base::WeakPtr<
+                 GrpcServicesObserver<OnAlarmTimerEventRequest>>& observer,
+             const base::WeakPtr<AssistantClientV1>& self) {
+            if (self && observer) {
+              observer->OnGrpcMessage(
+                  CreateOnAlarmTimerEventRequestProtoForV1(self->GetTimers()));
+            }
+          },
+          observer, weak_factory_.GetWeakPtr())));
+
+  // In timers v2, we also want to know when timers are scheduled,
+  // updated, and/or removed so that we can represent those states
+  // in UI.
+  alarm_timer_manager()->RegisterTimerActionListener(
+      ToStdFunctionRepeating(BindToCurrentSequenceRepeating(
+          [](const base::WeakPtr<
+                 GrpcServicesObserver<OnAlarmTimerEventRequest>>& observer,
+             const base::WeakPtr<AssistantClientV1>& self,
+             const assistant_client::AlarmTimerManager::EventActionType&
+                 ignore) {
+            if (self && observer) {
+              observer->OnGrpcMessage(
+                  CreateOnAlarmTimerEventRequestProtoForV1(self->GetTimers()));
+            }
+          },
+          observer, weak_factory_.GetWeakPtr())));
+}
+
+assistant_client::AlarmTimerManager* AssistantClientV1::alarm_timer_manager() {
+  DCHECK(assistant_manager_internal());
+  return assistant_manager_internal()->GetAlarmTimerManager();
 }
 
 }  // namespace libassistant

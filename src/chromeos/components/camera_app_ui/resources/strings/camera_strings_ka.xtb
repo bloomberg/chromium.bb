@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
+<translation id="1113173431709655881">კამერის რეჟიმი</translation>
 <translation id="1175958423215084756">აღმოჩენილია ბმული. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">გალერეის სურათები</translation>
 <translation id="1300209025925956156">დაასკანირეთ თქვენი დოკუმენტი</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> გამოერთებულია.</translation>
 <translation id="1473110567575736769">3-წამიანი ტაიმერი</translation>
 <translation id="1545749641540134597">QR კოდის სკანირება</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">ნორმალური</translation>
 <translation id="1620510694547887537">კამერა</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ჩაწერილი არაფერია</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">სკანირება</translation>
 <translation id="2549985041256363841">ჩაწერის დაწყება</translation>
 <translation id="2599796128805996109">უკანა კამერა</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> წმ</translation>
+<translation id="2761536921376153655">სკანირების ტიპი</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> მიერთებულია.</translation>
 <translation id="2968794441791257519">კამერით გადაღებული ფოტოები და ვიდეოები გადატანილი იქნება „ჩამოტვირთვების“ საქაღალდეში. მათზე წვდომა შეგიძლიათ ფაილების აპიდან.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">გალერეაზე გადასვლა</translation>
 <translation id="520537883758714667">ამიერიდან ხელმისაწვდომია დოკუმენტების სკანირების ფუნქცია</translation>
 <translation id="5268823927180092501">დოკუმენტის რეჟიმის ჩართვა ყველა კამერაზე</translation>
+<translation id="5317780077021120954">შენახვა</translation>
 <translation id="5444515100983837161">მოათავსეთ დოკუმენტის ყველა კიდე ჩარჩოში. საუკეთესო შედეგების მისაღებად დოკუმენტისა და ფონის ფერები განსხვავებული უნდა იყოს.</translation>
 <translation id="5671277269877808209">კვადრატი</translation>
 <translation id="5746169159649715125">შენახვა PDF-ის სახით</translation>
@@ -86,6 +92,7 @@
 
 თუ თქვენი გამოხმაურება გამოსახულების ან ვიდეოს ხარისხს ეხება, მაგალითის სახით დაურთეთ ფოტო ან ვიდეო და აღწერეთ პრობლემა (მაგალითად, ფოტო ზედმეტად მუქია ან ობიექტი არ არის მოქცეული ფოკუსში).</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> — <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> მეგაპიქსელი</translation>
+<translation id="6527303717912515753">გაზიარება</translation>
 <translation id="667999046851023355">დოკუმენტი</translation>
 <translation id="6681668084120808868">ფოტოს გადაღება</translation>
 <translation id="6778482348691154169">ფოტოს გადაღება შეუძლებელია</translation>
@@ -94,15 +101,19 @@
 <translation id="698156982839284926">3 წამი</translation>
 <translation id="712848772518857951">ნამდვილად გსურთ, ამოშალოთ <ph name="COUNT" /> ერთეული?</translation>
 <translation id="7134221860976209830">10-წამიანი ტაიმერი</translation>
+<translation id="7191890674911603392">ჩაწერის ტიპი</translation>
 <translation id="7243947652761655814">ვიდეოს გარჩევადობა</translation>
 <translation id="7337660886763914220">ფაილების სისტემის შეცდომები.</translation>
 <translation id="7450541714075000668">ტექსტი დაკოპირდა</translation>
+<translation id="7476762461674917065">GIF-ის ჩაწერის ვარიანტის ჩვენება</translation>
+<translation id="7488619942230388918">GIF ვიდეოს ჩაწერა</translation>
 <translation id="7557677699350329807">მომდევნო კამერაზე გადართვა</translation>
 <translation id="7607002721634913082">დაპაუზებული</translation>
 <translation id="7608223098072244877">ოთხი ოთხზე</translation>
 <translation id="7649070708921625228">დახმარება</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
 <translation id="7670511624014457267">60 კადრი/წმ</translation>
+<translation id="7726641833034062494">ჩვეულებრივი ვიდეოს ჩაწერა</translation>
 <translation id="7983668134180549431">აღმოჩენილია ტექსტი.</translation>
 <translation id="8067883171444229417">ვიდეოს დაკვრა</translation>
 <translation id="8120146556401698679">პანირება/გადახრა/მასშტაბირება</translation>

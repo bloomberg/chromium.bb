@@ -21,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/color/color_id.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -110,6 +111,10 @@ ExampleVector GetExamplesToShow(ExampleVector examples) {
 class ComboboxModelExampleList : public ui::ComboboxModel {
  public:
   ComboboxModelExampleList() = default;
+
+  ComboboxModelExampleList(const ComboboxModelExampleList&) = delete;
+  ComboboxModelExampleList& operator=(const ComboboxModelExampleList&) = delete;
+
   ~ComboboxModelExampleList() override = default;
 
   void SetExamples(ExampleVector examples) {
@@ -128,8 +133,6 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 
  private:
   ExampleVector example_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComboboxModelExampleList);
 };
 
 class ExamplesWindowContents : public WidgetDelegateView {
@@ -147,8 +150,8 @@ class ExamplesWindowContents : public WidgetDelegateView {
     combobox->SetCallback(base::BindRepeating(
         &ExamplesWindowContents::ComboboxChanged, base::Unretained(this)));
 
-    SetBackground(CreateThemedSolidBackground(
-        this, ui::NativeTheme::kColorId_DialogBackground));
+    SetBackground(
+        CreateThemedSolidBackground(this, ui::kColorDialogBackground));
     GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>());
     ColumnSet* column_set = layout->AddColumnSet(0);
@@ -174,6 +177,9 @@ class ExamplesWindowContents : public WidgetDelegateView {
     status_label_ = layout->AddView(std::make_unique<Label>());
     layout->AddPaddingRow(0, 5);
   }
+
+  ExamplesWindowContents(const ExamplesWindowContents&) = delete;
+  ExamplesWindowContents& operator=(const ExamplesWindowContents&) = delete;
 
   ~ExamplesWindowContents() override = default;
 
@@ -220,8 +226,6 @@ class ExamplesWindowContents : public WidgetDelegateView {
   Combobox* combobox_ = nullptr;
   // Owned by |combobox_|.
   ComboboxModelExampleList* combobox_model_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ExamplesWindowContents);
 };
 
 // static

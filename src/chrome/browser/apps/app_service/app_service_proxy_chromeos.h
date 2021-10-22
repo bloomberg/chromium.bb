@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_base.h"
 #include "chrome/browser/apps/app_service/paused_apps.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/instance_registry.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -35,6 +36,7 @@ namespace apps {
 class AppPlatformMetrics;
 class AppPlatformMetricsService;
 class BorealisApps;
+class BrowserAppInstanceRegistry;
 class BrowserAppInstanceTracker;
 class BuiltInChromeOsApps;
 class CrostiniApps;
@@ -53,7 +55,8 @@ struct PauseData {
 // OS.
 //
 // See components/services/app_service/README.md.
-class AppServiceProxyChromeOs : public AppServiceProxyBase {
+class AppServiceProxyChromeOs : public AppServiceProxyBase,
+                                public apps::AppRegistryCache::Observer {
  public:
   using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
 
@@ -66,6 +69,7 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
   apps::AppPlatformMetrics* AppPlatformMetrics();
 
   apps::BrowserAppInstanceTracker* BrowserAppInstanceTracker();
+  apps::BrowserAppInstanceRegistry* BrowserAppInstanceRegistry();
 
   // apps::AppServiceProxyBase overrides:
   void Uninstall(const std::string& app_id,
@@ -167,6 +171,8 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
 
   void PerformPostLaunchTasks(apps::mojom::LaunchSource launch_source) override;
 
@@ -197,6 +203,8 @@ class AppServiceProxyChromeOs : public AppServiceProxyBase {
 
   std::unique_ptr<apps::BrowserAppInstanceTracker>
       browser_app_instance_tracker_;
+  std::unique_ptr<apps::BrowserAppInstanceRegistry>
+      browser_app_instance_registry_;
 
   // When PauseApps is called, the app is added to |pending_pause_requests|.
   // When the user clicks the OK from the pause app dialog, the pause status is

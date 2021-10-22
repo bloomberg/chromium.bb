@@ -32,7 +32,6 @@ class ScopedLayerAnimationSettings;
 
 namespace ash {
 
-class AppListConfig;
 class AppListPage;
 class AppListView;
 class ApplicationDragAndDropHost;
@@ -58,18 +57,30 @@ class ASH_EXPORT ContentsView : public views::View,
         : contents_view_(contents_view) {
       contents_view_->set_active_state_without_animation_ = true;
     }
+
+    ScopedSetActiveStateAnimationDisabler(
+        const ScopedSetActiveStateAnimationDisabler&) = delete;
+    ScopedSetActiveStateAnimationDisabler& operator=(
+        const ScopedSetActiveStateAnimationDisabler&) = delete;
+
     ~ScopedSetActiveStateAnimationDisabler() {
       contents_view_->set_active_state_without_animation_ = false;
     }
 
    private:
     ContentsView* const contents_view_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedSetActiveStateAnimationDisabler);
   };
 
   explicit ContentsView(AppListView* app_list_view);
+
+  ContentsView(const ContentsView&) = delete;
+  ContentsView& operator=(const ContentsView&) = delete;
+
   ~ContentsView() override;
+
+  // Returns the search box top margin when app list view is in peeking/half
+  // state, and showing the provided `page`.
+  static int GetPeekingSearchBoxTopMarginOnPage(AppListState page);
 
   // Initialize the pages of the launcher. Should be called after
   // set_contents_switcher_view().
@@ -197,9 +208,6 @@ class ASH_EXPORT ContentsView : public views::View,
   gfx::Size AdjustSearchBoxSizeToFitMargins(
       const gfx::Size& preferred_size) const;
 
-  // Gets the current app list configuration.
-  const AppListConfig& GetAppListConfig() const;
-
  private:
   // Sets the active launcher page.
   void SetActiveStateInternal(int page_index, bool animate);
@@ -300,8 +308,6 @@ class ASH_EXPORT ContentsView : public views::View,
   // to a new app list view state.
   absl::optional<AppListState> target_page_for_last_view_state_update_;
   absl::optional<AppListViewState> last_target_view_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };
 
 }  // namespace ash

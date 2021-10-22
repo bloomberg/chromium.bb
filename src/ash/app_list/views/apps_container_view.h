@@ -7,13 +7,19 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/views/app_list_folder_controller.h"
 #include "ash/app_list/views/app_list_page.h"
+#include "ash/app_list/views/paged_apps_grid_view.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/ash_export.h"
+#include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/views/controls/separator.h"
 
 namespace ash {
 
@@ -23,17 +29,24 @@ class AppListFolderView;
 class AppListModel;
 class ContentsView;
 class FolderBackgroundView;
-class PagedAppsGridView;
 class PageSwitcher;
 class SuggestionChipContainerView;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
 // active folder.
-class ASH_EXPORT AppsContainerView : public AppListPage,
-                                     public AppListFolderController {
+class ASH_EXPORT AppsContainerView
+    : public AppListPage,
+      public AppListFolderController,
+      public PaginationModelObserver,
+      public PagedAppsGridView::ContainerDelegate,
+      public RecentAppsView::Delegate {
  public:
   AppsContainerView(ContentsView* contents_view, AppListModel* model);
+
+  AppsContainerView(const AppsContainerView&) = delete;
+  AppsContainerView& operator=(const AppsContainerView&) = delete;
+
   ~AppsContainerView() override;
 
   // Resets the app list to a state where it shows the main grid view. This is
@@ -57,6 +70,24 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
+  // Minimal margin for apps grid within the apps container. Set to ensure there
+  // is enough space to fit page switcher next to the apps grid.
+  int GetMinHorizontalMarginForAppsGrid() const;
+
+  // The minimal top margin for the apps grids (measured from the top of the
+  // apps container). Set to accommodate min apps container margins, search box
+  // and suggestion chips.
+  // For productivity launcher UI, this will not include space for continue
+  // section and recent apps.
+  int GetMinTopMarginForAppsGrid(const gfx::Size& search_box_size) const;
+
+  // Returns the ideal margins for content within the apps container. The actual
+  // margins may differ depending on available screen real-estate. For example,
+  // margins may be smaller if the apps grid contents would not fit within the
+  // ideal margins.
+  int GetIdealHorizontalMargin() const;
+  int GetIdealVerticalMargin() const;
+
   // Calculates the apps container or apps grid margin depending on the
   // available content bounds, and search box size.
   // |available_bounds| - The bounds available to lay out either full apps
@@ -79,6 +110,8 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const char* GetClassName() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnThemeChanged() override;
+  void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
   // AppListPage overrides:
   void OnShown() override;
@@ -96,8 +129,6 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
       AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const override;
-  views::View* GetFirstFocusableView() override;
-  views::View* GetLastFocusableView() override;
   void AnimateOpacity(float current_progress,
                       AppListViewState target_view_state,
                       const OpacityAnimator& animator) override;
@@ -107,16 +138,32 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
 
   // AppListFolderController:
   void ShowFolderForItemView(AppListItemView* folder_item_view) override;
-  void ShowApps(AppListFolderItem* folder_item) override;
+  void ShowApps(AppListItemView* folder_item_view, bool select_folder) override;
   void ReparentFolderItemTransit(AppListFolderItem* folder_item) override;
   void ReparentDragEnded() override;
 
+  // PaginationModelObserver:
+  void SelectedPageChanged(int old_selected, int new_selected) override;
+  void TransitionChanged() override;
+
+  // PagedAppsGridView::ContainerDelegate:
+  bool IsPointWithinPageFlipBuffer(const gfx::Point& point) const override;
+  bool IsPointWithinBottomDragBuffer(const gfx::Point& point,
+                                     int page_flip_zone_size) const override;
+
+  // RecentAppsView::Delegate:
+  void MoveFocusUpFromRecents() override;
+  void MoveFocusDownFromRecents(int column) override;
+
+  RecentAppsView* recent_apps() { return recent_apps_; }
   PagedAppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
     return folder_background_view_;
   }
   AppListFolderView* app_list_folder_view() { return app_list_folder_view_; }
   PageSwitcher* page_switcher() { return page_switcher_; }
+
+  views::View* scrollable_container_for_test() { return scrollable_container_; }
 
   views::View* sort_button_container_for_test() {
     return sort_button_container_;
@@ -125,9 +172,8 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
     return suggestion_chip_container_view_;
   }
 
-  // Called by app list view when the app list config changes.
-  void OnAppListConfigUpdated();
-
+  // Updates recent apps from app list model.
+  void UpdateRecentApps();
   // Updates suggestion chips from app list model.
   void UpdateSuggestionChips();
 
@@ -142,10 +188,6 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
     SHOW_ACTIVE_FOLDER,
     SHOW_ITEM_REPARENT,
   };
-
-  // Returns the AppListConfig for the app list view this AppsContainerView
-  // belongs to.
-  const AppListConfig& GetAppListConfig() const;
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
 
@@ -180,16 +222,37 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
   // depending on the current display work area size.
   GridLayout CalculateGridLayout() const;
 
+  // Depending on the provided grid layout, updates the number of rows and
+  // columns in the top level apps grid.
+  void UpdateTopLevelGridDimensions(const GridLayout& grid_layout);
+
+  // Depending on the provided apps container contents bounds and grid layout,
+  // updates `app_list_config_` to be used within the apps container, and passes
+  // it on to child views that require it.
+  void UpdateAppListConfig(const gfx::Rect& contents_bounds,
+                           const GridLayout& grid_layout);
+
   // Callback returned by DisableBlur().
   void OnSuggestionChipsBlurDisablerReleased();
 
-  ContentsView* contents_view_;  // Not owned.
+  ContentsView* const contents_view_;
+
+  // The app list config used to configure sizing and layout of apps grid items
+  // within the apps container.
+  std::unique_ptr<AppListConfig> app_list_config_;
 
   // The number of active requests to disable blur.
   size_t suggestion_chips_blur_disabler_count_ = 0;
 
+  // Contains the |continue_section_| and the |apps_grid_view_|, which are views
+  // that are affected by paging. Owned by views hierarchy.
+  views::View* scrollable_container_ = nullptr;
+
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;
+  views::View* continue_container_ = nullptr;
+  RecentAppsView* recent_apps_ = nullptr;
+  views::Separator* separator_ = nullptr;
   PagedAppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;
   PageSwitcher* page_switcher_ = nullptr;
@@ -215,8 +278,6 @@ class ASH_EXPORT AppsContainerView : public AppListPage,
   CachedContainerMargins cached_container_margins_;
 
   base::WeakPtrFactory<AppsContainerView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppsContainerView);
 };
 
 }  // namespace ash

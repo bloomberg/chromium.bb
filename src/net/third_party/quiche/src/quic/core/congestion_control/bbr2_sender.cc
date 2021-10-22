@@ -120,6 +120,16 @@ void Bbr2Sender::SetFromConfig(const QuicConfig& config,
 
 void Bbr2Sender::ApplyConnectionOptions(
     const QuicTagVector& connection_options) {
+  if (GetQuicReloadableFlag(quic_bbr2_extra_acked_window) &&
+      ContainsQuicTag(connection_options, kBBR4)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_extra_acked_window, 1, 2);
+    model_.SetMaxAckHeightTrackerWindowLength(20);
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_extra_acked_window) &&
+      ContainsQuicTag(connection_options, kBBR5)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_extra_acked_window, 2, 2);
+    model_.SetMaxAckHeightTrackerWindowLength(40);
+  }
   if (ContainsQuicTag(connection_options, kBBQ2)) {
     params_.startup_cwnd_gain = 2.885;
     params_.drain_cwnd_gain = 2.885;
@@ -157,6 +167,54 @@ void Bbr2Sender::ApplyConnectionOptions(
   }
   if (ContainsQuicTag(connection_options, kBBQ9)) {
     params_.bw_lo_mode_ = Bbr2Params::QuicBandwidthLoMode::CWND_REDUCTION;
+  }
+  if (GetQuicReloadableFlag(
+          quic_bbr2_check_cwnd_limited_before_aggregation_epoch) &&
+      ContainsQuicTag(connection_options, kB201)) {
+    QUIC_RELOADABLE_FLAG_COUNT(
+        quic_bbr2_check_cwnd_limited_before_aggregation_epoch);
+    params_.probe_bw_check_cwnd_limited_before_aggregation_epoch = true;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_no_probe_up_exit_if_no_queue) &&
+      ContainsQuicTag(connection_options, kB202)) {
+    params_.probe_up_dont_exit_if_no_queue_ = true;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_ignore_inflight_hi_in_probe_up) &&
+      ContainsQuicTag(connection_options, kB203)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_ignore_inflight_hi_in_probe_up);
+    params_.probe_up_ignore_inflight_hi = true;
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_startup_extra_acked) &&
+      ContainsQuicTag(connection_options, kB204)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_startup_extra_acked, 1, 2);
+    model_.SetReduceExtraAckedOnBandwidthIncrease(true);
+  }
+  if (GetQuicReloadableFlag(quic_bbr2_startup_extra_acked) &&
+      ContainsQuicTag(connection_options, kB205)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr2_startup_extra_acked, 2, 2);
+    params_.startup_include_extra_acked = true;
+  }
+  if (GetQuicReloadableFlag(
+          quic_bbr_start_new_aggregation_epoch_after_a_full_round) &&
+      ContainsQuicTag(connection_options, kBBRA)) {
+    model_.SetStartNewAggregationEpochAfterFullRound(true);
+  }
+  if (GetQuicReloadableFlag(quic_bbr_use_send_rate_in_max_ack_height_tracker) &&
+      ContainsQuicTag(connection_options, kBBRB)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(
+        quic_bbr_use_send_rate_in_max_ack_height_tracker, 2, 2);
+    model_.SetLimitMaxAckHeightTrackerBySendRate(true);
+  }
+  if (GetQuicReloadableFlag(
+          quic_bbr2_add_bytes_acked_after_inflight_hi_limited) &&
+      ContainsQuicTag(connection_options, kBBQ0)) {
+    params_.probe_up_includes_acks_after_cwnd_limited = true;
+  }
+
+  if (GetQuicReloadableFlag(quic_bbr2_startup_probe_up_loss_events) &&
+      ContainsQuicTag(connection_options, kB206)) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_startup_probe_up_loss_events);
+    params_.startup_full_loss_count = params_.probe_bw_full_loss_count;
   }
 }
 
@@ -344,7 +402,7 @@ void Bbr2Sender::UpdateCongestionWindow(QuicByteCount bytes_acked) {
   QuicByteCount target_cwnd = GetTargetCongestionWindow(model_.cwnd_gain());
 
   const QuicByteCount prior_cwnd = cwnd_;
-  if (model_.full_bandwidth_reached()) {
+  if (model_.full_bandwidth_reached() || Params().startup_include_extra_acked) {
     target_cwnd += model_.MaxAckHeight();
     cwnd_ = std::min(prior_cwnd + bytes_acked, target_cwnd);
   } else if (prior_cwnd < target_cwnd || prior_cwnd < 2 * initial_cwnd_) {

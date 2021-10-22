@@ -518,6 +518,23 @@
       valid_type: "bool",
     },
 
+    // - is_highlight_colors
+    // The property participates in paired cascade, such that when encountered
+    // in highlight styles, we make all other highlight color properties default
+    // to initial, rather than the UA default.
+    // https://drafts.csswg.org/css-pseudo-4/#highlight-cascade
+    is_highlight_colors: {
+      default: false,
+      valid_type: "bool",
+    },
+
+    // - is_animation_property
+    // The property is a longhand of the 'animation' or 'transition' shorthands.
+    is_animation_property: {
+      default: false,
+      valid_type: "bool",
+    },
+
     // - tree_scoped_value: true
     // Whether the property takes a tree-scoped reference as its value.
     // https://drafts.csswg.org/css-scoping/#css-tree-scoped-reference
@@ -544,6 +561,7 @@
       typedom_types: ["Time"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "animation-direction",
@@ -557,6 +575,7 @@
       },
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "animation-duration",
@@ -569,6 +588,7 @@
       typedom_types: ["Time"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "animation-fill-mode",
@@ -581,6 +601,7 @@
       typedom_types: ["Keyword"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "animation-iteration-count",
@@ -595,6 +616,7 @@
       typedom_types: ["Keyword", "Number"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "animation-name",
@@ -608,6 +630,7 @@
       separator: ",",
       valid_for_marker: true,
       tree_scoped_value: true,
+      is_animation_property: true,
     },
     {
       name: "animation-play-state",
@@ -620,6 +643,7 @@
       typedom_types: ["Keyword"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "animation-timeline",
@@ -633,6 +657,7 @@
       separator: ",",
       valid_for_marker: true,
       runtime_flag: "CSSScrollTimeline",
+      is_animation_property: true,
     },
     {
       name: "animation-timing-function",
@@ -657,6 +682,7 @@
       typedom_types: ["Keyword"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "transition-delay",
@@ -668,6 +694,7 @@
       typedom_types: ["Time"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "transition-duration",
@@ -679,6 +706,7 @@
         attribute: "Duration",
       },
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "transition-property",
@@ -690,6 +718,7 @@
       keywords: ["none"],
       typedom_types: ["Keyword"],
       valid_for_marker: true,
+      is_animation_property: true,
     },
     {
       name: "transition-timing-function",
@@ -713,6 +742,7 @@
       typedom_types: ["Keyword"],
       separator: ",",
       valid_for_marker: true,
+      is_animation_property: true,
     },
 
     // High Priority and all other font properties.
@@ -738,6 +768,7 @@
       valid_for_cue: true,
       valid_for_marker: true,
       valid_for_highlight: true,
+      is_highlight_colors: true,
     },
     {
       name: "direction",
@@ -967,7 +998,10 @@
       type_name: "FontDescription::FontSynthesisWeight",
       priority: "High",
       keywords: ["auto", "none"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_first_line: true,
+      valid_for_marker: true,
     },
     {
       name: "font-synthesis-style",
@@ -979,7 +1013,25 @@
       type_name: "FontDescription::FontSynthesisStyle",
       priority: "High",
       keywords: ["auto", "none"],
-      typedom_types: ["Keyword"]
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_first_line: true,
+      valid_for_marker: true,
+    },
+    {
+      name: "font-synthesis-small-caps",
+      property_methods: ["CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      runtime_flag: "FontSynthesis",
+      font: true,
+      name_for_methods: "FontSynthesisSmallCaps",
+      type_name: "FontDescription::FontSynthesisSmallCaps",
+      priority: "High",
+      keywords: ["auto", "none"],
+      typedom_types: ["Keyword"],
+      valid_for_first_letter: true,
+      valid_for_first_line: true,
+      valid_for_marker: true,
     },
     {
       name: "font-feature-settings",
@@ -1294,6 +1346,7 @@
       valid_for_cue: true,
       valid_for_highlight: true,
       is_background: true,
+      is_highlight_colors: true,
     },
     {
       name: "background-image",
@@ -2032,22 +2085,24 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "box",
-      field_template: "<length>",
-      keywords: ["auto"],
-      default_value: "Length::Auto()",
-      type_name: "Length",
-      converter: "ConvertLengthSizing",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/style/style_intrinsic_length.h"],
+      keywords: ["auto", "none"],
+      default_value: "absl::nullopt",
+      type_name: "absl::optional<StyleIntrinsicLength>",
+      converter: "ConvertIntrinsicDimension",
     },
     {
       name: "contain-intrinsic-height",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       field_group: "box",
-      field_template: "<length>",
-      keywords: ["auto"],
-      default_value: "Length::Auto()",
-      type_name: "Length",
-      converter: "ConvertLengthSizing",
+      field_template: "external",
+      include_paths: ["third_party/blink/renderer/core/style/style_intrinsic_length.h"],
+      keywords: ["auto", "none"],
+      default_value: "absl::optional<StyleIntrinsicLength>()",
+      type_name: "absl::optional<StyleIntrinsicLength>",
+      converter: "ConvertIntrinsicDimension",
     },
     {
       name: "container-name",
@@ -5684,12 +5739,6 @@
       runtime_flag: "CSSScrollTimeline",
     },
     {
-      name: "time-range",
-      is_descriptor: true,
-      is_property: false,
-      runtime_flag: "CSSScrollTimeline",
-    },
-    {
       name: "ascent-override",
       is_descriptor: true,
       is_property: false,
@@ -6052,6 +6101,12 @@
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
       computable: true,
+    },
+    {
+      name: "font-synthesis",
+      longhands: ["font-synthesis-weight", "font-synthesis-style", "font-synthesis-small-caps"],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      runtime_flag: "FontSynthesis"
     },
     {
       name: "grid",

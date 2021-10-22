@@ -44,6 +44,7 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
  public:
   using TurboAssemblerBase::TurboAssemblerBase;
 
+  void CallBuiltin(Builtin builtin);
   void AtomicCmpExchangeHelper(Register addr, Register output,
                                Register old_value, Register new_value,
                                int start, int end, int shift_amount, int offset,
@@ -1020,6 +1021,17 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
     }
     lgfr(dst, dst);
   }
+  void SmiToInt32(Register smi) {
+    if (FLAG_enable_slow_asserts) {
+      AssertSmi(smi);
+    }
+    DCHECK(SmiValuesAre32Bits() || SmiValuesAre31Bits());
+    SmiUntag(smi);
+  }
+
+  // Abort execution if argument is a smi, enabled via --debug-code.
+  void AssertNotSmi(Register object);
+  void AssertSmi(Register object);
 
   // Activation support.
   void EnterFrame(StackFrame::Type type,
@@ -1353,6 +1365,8 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
 
   // Checks if value is in range [lower_limit, higher_limit] using a single
   // comparison.
+  void CompareRange(Register value, unsigned lower_limit,
+                    unsigned higher_limit);
   void JumpIfIsInRange(Register value, unsigned lower_limit,
                        unsigned higher_limit, Label* on_in_range);
 
@@ -1459,10 +1473,6 @@ class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
     TestIfSmi(value);
     bne(not_smi_label /*, cr0*/);
   }
-
-  // Abort execution if argument is a smi, enabled via --debug-code.
-  void AssertNotSmi(Register object);
-  void AssertSmi(Register object);
 
 #if !defined(V8_COMPRESS_POINTERS) && !defined(V8_31BIT_SMIS_ON_64BIT_ARCH)
   // Ensure it is permissible to read/write int value directly from

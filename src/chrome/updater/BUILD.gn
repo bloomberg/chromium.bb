@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/util/process_version.gni")
 import("//chrome/updater/branding.gni")
@@ -111,6 +112,7 @@ if (is_win || is_mac) {
       "splash_screen.h",
       "tag.cc",
       "tag.h",
+      "update_block_check.h",
       "update_service.cc",
       "update_service.h",
       "update_service_impl.cc",
@@ -138,6 +140,7 @@ if (is_win || is_mac) {
       ":version_header",
       "//base",
       "//base:i18n",
+      "//build:chromeos_buildflags",
       "//chrome/updater/protos:omaha_proto",
       "//components/crash/core/common:crash_key",
       "//components/crash/core/common:crash_key_lib",
@@ -180,6 +183,8 @@ if (is_win || is_mac) {
         "mac/net/network.h",
         "mac/net/network_fetcher.h",
         "mac/net/network_fetcher.mm",
+        "mac/setup/keystone.cc",
+        "mac/setup/keystone.h",
         "mac/setup/setup.h",
         "mac/setup/setup.mm",
         "mac/update_service_internal_proxy.h",
@@ -195,6 +200,7 @@ if (is_win || is_mac) {
         "prefs_mac.mm",
         "service_factory_mac.mm",
         "setup_mac.mm",
+        "update_block_check_mac.cc",
         "util_mac.mm",
       ]
 
@@ -236,25 +242,16 @@ if (is_win || is_mac) {
         "prefs_win.cc",
         "service_factory_win.cc",
         "setup_win.cc",
+        "update_block_check_win.cc",
         "util_win.cc",
         "win/action_handler.cc",
         "win/install_progress_observer.cc",
         "win/install_progress_observer.h",
         "win/installer_api.cc",
         "win/installer_api.h",
-        "win/net/net_util.cc",
-        "win/net/net_util.h",
         "win/net/network.h",
         "win/net/network_fetcher.cc",
         "win/net/network_fetcher.h",
-        "win/net/network_winhttp.cc",
-        "win/net/network_winhttp.h",
-        "win/net/proxy_configuration.cc",
-        "win/net/proxy_configuration.h",
-        "win/net/proxy_info.cc",
-        "win/net/proxy_info.h",
-        "win/net/scoped_hinternet.h",
-        "win/net/scoped_winttp_proxy_info.h",
         "win/scoped_handle.h",
         "win/scoped_impersonation.cc",
         "win/scoped_impersonation.h",
@@ -285,6 +282,7 @@ if (is_win || is_mac) {
         "//chrome/updater/app/server/win:updater_legacy_idl_idl",
         "//chrome/updater/win:app_install_controller",
         "//chrome/updater/win/ui",
+        "//components/winhttp",
       ]
 
       configs -= [ "//build/config/win:winver" ]
@@ -298,7 +296,6 @@ if (is_win || is_mac) {
       libs = [
         "secur32.lib",
         "taskschd.lib",
-        "winhttp.lib",
       ]
     }
   }
@@ -354,6 +351,8 @@ if (is_win || is_mac) {
       "-e",
       "PRODUCT_FULLNAME=\"$updater_product_full_name\"",
       "-e",
+      "KEYSTONE_NAME=\"$keystone_app_name\"",
+      "-e",
       "COPYRIGHT=\"updater_copyright\"",
       "-e",
       "MAC_BUNDLE_IDENTIFIER=\"$mac_updater_bundle_identifier\"",
@@ -394,17 +393,38 @@ if (is_win || is_mac) {
       "//chrome/updater/constants.cc",
       "//chrome/updater/constants.h",
       "//chrome/updater/enum_traits.h",
+      "//chrome/updater/lib_util.h",
       "//chrome/updater/registration_data.cc",
       "//chrome/updater/registration_data.h",
+      "//chrome/updater/tag.cc",
+      "//chrome/updater/tag.h",
       "//chrome/updater/update_service.cc",
       "//chrome/updater/update_service.h",
+      "//chrome/updater/updater_scope.cc",
+      "//chrome/updater/updater_scope.h",
+      "//chrome/updater/util.cc",
+      "//chrome/updater/util.h",
     ]
 
     deps = [
       ":branding_header",
+      ":version_header",
       "//base",
       "//components/update_client",
+      "//url",
     ]
+
+    if (is_win) {
+      sources += [
+        "//chrome/updater/lib_util_win.cc",
+        "//chrome/updater/win/user_info.cc",
+        "//chrome/updater/win/user_info.h",
+        "//chrome/updater/win/win_constants.cc",
+        "//chrome/updater/win/win_constants.h",
+        "//chrome/updater/win/win_util.cc",
+        "//chrome/updater/win/win_util.h",
+      ]
+    }
 
     if (is_mac) {
       sources += [
@@ -412,16 +432,21 @@ if (is_win || is_mac) {
         "//chrome/updater/app/server/mac/service_protocol.mm",
         "//chrome/updater/app/server/mac/update_service_wrappers.h",
         "//chrome/updater/app/server/mac/update_service_wrappers.mm",
+        "//chrome/updater/lib_util_mac.mm",
+        "//chrome/updater/mac/mac_util.h",
+        "//chrome/updater/mac/mac_util.mm",
         "//chrome/updater/mac/xpc_service_names.h",
         "//chrome/updater/mac/xpc_service_names.mm",
       ]
 
-      deps += [ ":version_header" ]
+      deps += [ "//chrome/common/mac:launchd" ]
     }
 
     visibility = [
       "//chrome/browser/ui:ui",
       "//chrome/browser/updater:*",
+      "//chrome/test:*",
+      "//chrome/test:unit_tests",
     ]
   }
 
@@ -488,8 +513,6 @@ if (is_win || is_mac) {
         "test/integration_tests_win.cc",
         "win/installer_api_unittest.cc",
         "win/net/network_unittest.cc",
-        "win/net/proxy_configuration_unittest.cc",
-        "win/net/proxy_info_unittest.cc",
         "win/setup/setup_util_unittest.cc",
         "win/tag_extractor_unittest.cc",
         "win/task_scheduler_unittest.cc",
@@ -523,9 +546,11 @@ if (is_win || is_mac) {
 
     if (is_mac) {
       sources += [
+        "mac/keystone/ksadmin_unittest.cc",
         "mac/net/network_unittest.cc",
         "mac/scoped_xpc_service_mock.h",
         "mac/scoped_xpc_service_mock.mm",
+        "mac/setup/keystone_unittest.cc",
         "mac/setup/setup_unittest.mm",
         "mac/update_service_proxy_test.mm",
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
@@ -549,7 +574,10 @@ if (is_win || is_mac) {
         "//chrome/test/data/updater/updater_qualification_app_dmg.crx",
       ]
 
-      data_deps = [ "//chrome/updater/mac:updater_bundle_test" ]
+      data_deps = [
+        "//chrome/updater/mac:ksadmin",
+        "//chrome/updater/mac:updater_bundle_test",
+      ]
     }
   }
 
@@ -560,7 +588,9 @@ if (is_win || is_mac) {
         "test/service/win/answer_uac.py",
         "test/service/win/impersonate.py",
         "test/service/win/proc_util.py",
+        "test/service/win/rpc_client.py",
         "test/service/win/rpc_handler.py",
+        "test/service/win/run_command_as_standard_user.py",
         "test/service/win/uac.py",
         "test/service/win/ui.py",
         "test/service/win/updater_test_service.py",
@@ -622,8 +652,17 @@ if (is_win || is_mac) {
     if (is_win) {
       data_deps += [ ":test_service_files" ]
     }
-    if (is_win) {
-      data_deps += [ ":test_service_files" ]
+  }
+
+  if (is_win) {
+    group("updater_tests_win_uac") {
+      testonly = true
+      data = [ "//testing/scripts/run_telemetry_as_googletest.py" ]
+      data_deps = [
+        ":test_service_files",
+        ":updater_tests",
+        "//testing:test_scripts_shared",
+      ]
     }
   }
 

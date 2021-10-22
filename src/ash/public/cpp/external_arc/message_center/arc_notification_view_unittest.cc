@@ -46,14 +46,15 @@ class TestTextInputClient : public ui::DummyTextInputClient {
  public:
   TestTextInputClient() : ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
 
+  TestTextInputClient(const TestTextInputClient&) = delete;
+  TestTextInputClient& operator=(const TestTextInputClient&) = delete;
+
   ui::TextInputType GetTextInputType() const override { return type_; }
 
   void set_text_input_type(ui::TextInputType type) { type_ = type; }
 
  private:
   ui::TextInputType type_ = ui::TEXT_INPUT_TYPE_NONE;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
 
 }  // namespace
@@ -61,6 +62,10 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 class ArcNotificationViewTest : public AshTestBase {
  public:
   ArcNotificationViewTest() = default;
+
+  ArcNotificationViewTest(const ArcNotificationViewTest&) = delete;
+  ArcNotificationViewTest& operator=(const ArcNotificationViewTest&) = delete;
+
   ~ArcNotificationViewTest() override = default;
 
   // views::ViewsTestBase
@@ -192,7 +197,8 @@ class ArcNotificationViewTest : public AshTestBase {
  private:
   std::unique_ptr<message_center::MessageView> CreateCustomMessageViewForTest(
       ArcNotificationItem* item,
-      const Notification& notification) {
+      const Notification& notification,
+      bool shown_in_popup) {
     auto message_view =
         std::make_unique<ArcNotificationView>(item, notification);
     message_view->content_view_->SetPreferredSize(gfx::Size(100, 100));
@@ -204,8 +210,6 @@ class ArcNotificationViewTest : public AshTestBase {
   ArcNotificationView* notification_view_ = nullptr;  // owned by its widget.
 
   std::unique_ptr<MockArcNotificationItem> item_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcNotificationViewTest);
 };
 
 TEST_F(ArcNotificationViewTest, Events) {

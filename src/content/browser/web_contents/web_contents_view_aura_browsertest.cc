@@ -67,8 +67,7 @@ namespace {
 void GiveItSomeTime() {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMillisecondsD(10));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(10));
   run_loop.Run();
 }
 
@@ -171,8 +170,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
-          base::TimeDelta::FromMilliseconds(kScrollDurationMs),
-          kScrollSteps);
+          base::Milliseconds(kScrollDurationMs), kScrollSteps);
       std::u16string actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = ExecuteScriptAndGetValue(main_frame, "get_current()");
@@ -189,8 +187,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
-          base::TimeDelta::FromMilliseconds(kScrollDurationMs),
-          kScrollSteps);
+          base::Milliseconds(kScrollDurationMs), kScrollSteps);
       std::u16string actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = ExecuteScriptAndGetValue(main_frame, "get_current()");
@@ -207,8 +204,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       generator.GestureScrollSequence(
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
-          base::TimeDelta::FromMilliseconds(kScrollDurationMs),
-          kScrollSteps);
+          base::Milliseconds(kScrollDurationMs), kScrollSteps);
       std::u16string actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = ExecuteScriptAndGetValue(main_frame, "get_current()");
@@ -343,6 +339,11 @@ class SpuriousMouseMoveEventObserver
     host_->AddInputEventObserver(this);
   }
 
+  SpuriousMouseMoveEventObserver(const SpuriousMouseMoveEventObserver&) =
+      delete;
+  SpuriousMouseMoveEventObserver& operator=(
+      const SpuriousMouseMoveEventObserver&) = delete;
+
   ~SpuriousMouseMoveEventObserver() override {
     host_->RemoveInputEventObserver(this);
   }
@@ -354,8 +355,6 @@ class SpuriousMouseMoveEventObserver
 
  private:
   RenderWidgetHost* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpuriousMouseMoveEventObserver);
 };
 }  // namespace
 
@@ -479,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_EQ(1, GetCurrentIndex());
 
-  timestamp += base::TimeDelta::FromMilliseconds(10);
+  timestamp += base::Milliseconds(10);
   ui::TouchEvent move1(
       ui::ET_TOUCH_MOVED, gfx::Point(bounds.right() - 10, bounds.y() + 5),
       timestamp, ui::PointerDetails(ui::EventPointerType::kTouch, 0));
@@ -491,7 +490,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   // edge.
 
   for (int x = bounds.right() - 10; x >= bounds.x() + 10; x-= 10) {
-    timestamp += base::TimeDelta::FromMilliseconds(10);
+    timestamp += base::Milliseconds(10);
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5),
                        timestamp,
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
@@ -501,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   }
 
   for (int x = bounds.x() + 10; x <= bounds.width() - 10; x+= 10) {
-    timestamp += base::TimeDelta::FromMilliseconds(10);
+    timestamp += base::Milliseconds(10);
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5),
                        timestamp,
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
@@ -511,7 +510,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   }
 
   for (int x = bounds.width() - 10; x >= bounds.x() + 10; x-= 10) {
-    timestamp += base::TimeDelta::FromMilliseconds(10);
+    timestamp += base::Milliseconds(10);
     ui::TouchEvent inc(ui::ET_TOUCH_MOVED, gfx::Point(x, bounds.y() + 5),
                        timestamp,
                        ui::PointerDetails(ui::EventPointerType::kTouch, 0));
@@ -548,8 +547,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   ui::test::EventGenerator generator(content->GetRootWindow(), content);
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
-      gfx::Point(bounds.right() - 10, bounds.y() + 10),
-      base::TimeDelta::FromMilliseconds(20),
+      gfx::Point(bounds.right() - 10, bounds.y() + 10), base::Milliseconds(20),
       1);
 
   window->AddChild(shell()->web_contents()->GetContentNativeView());
@@ -750,8 +748,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ContentWindowClose) {
   ui::test::EventGenerator generator(content->GetRootWindow(), content);
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
-      gfx::Point(bounds.right() - 10, bounds.y() + 10),
-      base::TimeDelta::FromMilliseconds(20),
+      gfx::Point(bounds.right() - 10, bounds.y() + 10), base::Milliseconds(20),
       1);
 
   delete web_contents->GetContentNativeView();
@@ -805,16 +802,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   generator.GestureScrollSequence(
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
-      gfx::Point(bounds.x() + 2, bounds.y() + 10),
-      base::TimeDelta::FromMilliseconds(2000),
+      gfx::Point(bounds.x() + 2, bounds.y() + 10), base::Milliseconds(2000),
       10);
   nav_watcher.WaitForNavigationFinished();
 
   generator.GestureScrollSequence(
       gfx::Point(bounds.x() + 2, bounds.y() + 10),
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
-      base::TimeDelta::FromMilliseconds(2000),
-      10);
+      base::Milliseconds(2000), 10);
   std::u16string actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
 

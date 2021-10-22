@@ -11,6 +11,18 @@
     ],
     "cwd": "[CACHE]",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "checkout the previous DEPS"
   },
   {
@@ -32,6 +44,18 @@
       ]
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "gclient recursively git diff all DEPS",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@raw_io.output_text@fatal: bad object abcdef1234567890@@@",
@@ -52,6 +76,18 @@
     ],
     "cwd": "[CACHE]",
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "checkout the original DEPS"
   },
   {
@@ -66,7 +102,7 @@
       "    affected_files = api.gclient.diff_deps(api.path['cache'])",
       "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/gclient/api.py\", line 413, in diff_deps",
       "    raise self.DepsDiffException(msg)",
-      "DepsDiffException: Couldn't checkout previous ref: fatal: bad object abcdef1234567890"
+      "DepsDiffException('Couldn't checkout previous ref: fatal: bad object abcdef1234567890')"
     ]
   },
   {

@@ -10,6 +10,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -21,8 +22,8 @@
 #include "components/optimization_guide/core/optimization_guide_util.h"
 #include "components/optimization_guide/core/optimization_target_model_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/tflite-support/src/tensorflow_lite_support/cc/task/core/base_task_api.h"
 #include "third_party/tflite/src/tensorflow/lite/c/common.h"
+#include "third_party/tflite_support/src/tensorflow_lite_support/cc/task/core/base_task_api.h"
 
 namespace optimization_guide {
 
@@ -117,9 +118,14 @@ class ModelExecutor {
 
     model_file_path_ = file_path;
 
-    if (!features::LoadModelFileForEachExecution()) {
-      LoadModelFile();
-    }
+    // crbug/1257189: Histogram enums can't use dynamically created histogram
+    // names, so factory create the local histogram (used in testing).
+    base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
+        "OptimizationGuide.ModelExecutor.ModelFileUpdated." +
+            optimization_guide::GetStringNameForOptimizationTarget(
+                optimization_target_),
+        base::Histogram::kNoFlags);
+    histogram->Add(true);
   }
 
   // Starts the execution of the model. When complete, |ui_callback_on_complete|
@@ -181,14 +187,20 @@ class ModelExecutor {
     reply_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(ui_callback_on_complete), output));
 
-    // If the model file should only be loaded for execution, then unload it
-    // from memory. This can be done in a PostTask since it may take a while
-    // for big models and isn't very important.
-    if (features::LoadModelFileForEachExecution()) {
-      background_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&ModelExecutor::ResetLoadedModel,
-                                    GetBackgroundWeakPtr()));
-    }
+    OnExecutionComplete();
+  }
+
+  // Clears the loaded model from memory.
+  void ResetLoadedModel() {
+    TRACE_EVENT1("browser", "OptGuideModelExecutor::ResetLoadedModel",
+                 "OptimizationTarget",
+                 optimization_guide::GetStringNameForOptimizationTarget(
+                     optimization_target_));
+    DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+    loaded_model_.reset();
+    model_fb_.reset();
   }
 
   // IMPORTANT: These WeakPointers must only be dereferenced on the background
@@ -212,19 +224,17 @@ class ModelExecutor {
   virtual std::unique_ptr<ModelExecutionTask> BuildModelExecutionTask(
       base::MemoryMappedFile* model_file) = 0;
 
- private:
-  void ResetLoadedModel() {
-    TRACE_EVENT1("browser", "OptGuideModelExecutor::ResetLoadedModel",
-                 "OptimizationTarget",
-                 optimization_guide::GetStringNameForOptimizationTarget(
-                     optimization_target_));
+  // This method is run as a PostTask after every execution. By default, it will
+  // unload the model from memory by calling |ResetLoadedModel|, but this can be
+  // overridden in derived classes for callers who wish to manage the unloading
+  // behavior themselves.
+  virtual void OnExecutionComplete() {
     DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-    loaded_model_.reset();
-    model_fb_.reset();
+    ResetLoadedModel();
   }
 
+ private:
   // A true return value indicates the model was loaded successfully, false
   // otherwise.
   bool LoadModelFile() {

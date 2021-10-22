@@ -153,6 +153,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/read_later_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
         "$root_gen_dir/chrome/signin_resources.pak",
+        "$root_gen_dir/chrome/support_tool_resources.pak",
         "$root_gen_dir/chrome/tab_search_resources.pak",
         "$root_gen_dir/chrome/webid_resources_100_percent.pak",
         "$root_gen_dir/chrome/whats_new_resources.pak",
@@ -179,6 +180,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/read_later:resources",
         "//chrome/browser/resources/settings:resources",
         "//chrome/browser/resources/signin:resources",
+        "//chrome/browser/resources/support_tool:resources",
         "//chrome/browser/resources/tab_search:resources",
         "//chrome/browser/resources/whats_new:resources",
         "//content/browser/devtools:devtools_resources",
@@ -208,6 +210,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/ash/ash_shortcut_customization_app_resources.pak",
         "$root_gen_dir/ash/public/cpp/resources/ash_public_unscaled_resources.pak",
         "$root_gen_dir/ash/webui/file_manager/resources/file_manager_swa_resources.pak",
+        "$root_gen_dir/ash/webui/file_manager/resources/file_manager_untrusted_resources.pak",
         "$root_gen_dir/chrome/audio_resources.pak",
         "$root_gen_dir/chrome/bluetooth_pairing_dialog_resources.pak",
         "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
@@ -244,6 +247,7 @@ template("chrome_extra_paks") {
       deps += [
         "//ash/public/cpp/resources:ash_public_unscaled_resources",
         "//ash/webui/file_manager/resources:file_manager_swa_resources",
+        "//ash/webui/file_manager/resources:file_manager_untrusted_resources",
         "//ash/webui/resources:diagnostics_app_resources",
         "//ash/webui/resources:help_app_bundle_resources",
         "//ash/webui/resources:help_app_kids_magazine_bundle_resources",
@@ -316,6 +320,11 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/signin/profile_picker:resources",
         "//chrome/browser/resources/welcome:resources",
       ]
+    }
+
+    if (is_win || is_mac || is_linux || is_chromeos_ash) {
+      sources += [ "$root_gen_dir/chrome/connectors_internals_resources.pak" ]
+      deps += [ "//chrome/browser/resources/connectors_internals:resources" ]
     }
 
     if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {

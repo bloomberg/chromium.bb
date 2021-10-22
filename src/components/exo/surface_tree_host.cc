@@ -46,6 +46,10 @@ class CustomWindowTargeter : public aura::WindowTargeter {
  public:
   explicit CustomWindowTargeter(SurfaceTreeHost* surface_tree_host)
       : surface_tree_host_(surface_tree_host) {}
+
+  CustomWindowTargeter(const CustomWindowTargeter&) = delete;
+  CustomWindowTargeter& operator=(const CustomWindowTargeter&) = delete;
+
   ~CustomWindowTargeter() override = default;
 
   // Overridden from aura::WindowTargeter:
@@ -78,8 +82,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
  private:
   SurfaceTreeHost* const surface_tree_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
 }  // namespace
@@ -239,8 +241,8 @@ void SurfaceTreeHost::UpdateDisplayOnTree() {
       display::Screen::GetScreen()->GetDisplayNearestWindow(host_window());
   if (display_id_ != display.id()) {
     if (root_surface_) {
-      root_surface_->UpdateDisplay(display_id_, display.id());
-      display_id_ = display.id();
+      if (root_surface_->UpdateDisplay(display_id_, display.id()))
+        display_id_ = display.id();
     }
   }
 }

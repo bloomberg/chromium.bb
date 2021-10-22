@@ -19,14 +19,16 @@ namespace content {
 class MockBackgroundSyncController;
 class MockResourceContext;
 class MockSSLHostStateDelegate;
-#if !defined(OS_ANDROID)
 class ZoomLevelDelegate;
-#endif  // !defined(OS_ANDROID)
 
 class TestBrowserContext : public BrowserContext {
  public:
   explicit TestBrowserContext(
       base::FilePath browser_context_dir_path = base::FilePath());
+
+  TestBrowserContext(const TestBrowserContext&) = delete;
+  TestBrowserContext& operator=(const TestBrowserContext&) = delete;
+
   ~TestBrowserContext() override;
 
   // Takes ownership of the temporary directory so that it's not deleted when
@@ -46,10 +48,8 @@ class TestBrowserContext : public BrowserContext {
 
   // BrowserContext implementation.
   base::FilePath GetPath() override;
-#if !defined(OS_ANDROID)
   std::unique_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
       const base::FilePath& partition_path) override;
-#endif  // !defined(OS_ANDROID)
   bool IsOffTheRecord() override;
   DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   ResourceContext* GetResourceContext() override;
@@ -75,8 +75,6 @@ class TestBrowserContext : public BrowserContext {
   std::unique_ptr<MockBackgroundSyncController> background_sync_controller_;
   std::unique_ptr<PlatformNotificationService> platform_notification_service_;
   bool is_off_the_record_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserContext);
 };
 
 }  // namespace content

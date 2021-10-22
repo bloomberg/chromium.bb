@@ -245,6 +245,10 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // computation function being emitted by this emitter.
   llvm::Value* GetProfileCountersArgument();
 
+  // Get the llvm::Value* that represents the "status" argument of the
+  // computation function being emitted by this emitter.
+  llvm::Value* GetStatusArgument();
+
   // Get the xla::ExecutableRunOptions that represents the "run_options"
   // argument of the computation function being emitted by this emitter.
   llvm::Value* GetExecutableRunOptionsArgument();
@@ -252,6 +256,13 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // Get the llvm::Value* that represents the "buffer_table" argument of the
   // computation function being emitted by this emitter.
   llvm::Value* GetBufferTableArgument();
+
+  // Get the llvm::BasicBlock that contains the return instruction.
+  llvm::BasicBlock* GetReturnBlock();
+
+  // Emits code to check the state of the status object being threaded through
+  // each computation and return early if it's in an error state.
+  void EmitEarlyReturnIfErrorStatus();
 
   // Helper for EmitBufferPointer.
   llvm::Value* EmitGlobalBufferPointer(const BufferAllocation::Slice& slice,
@@ -480,8 +491,9 @@ class IrEmitter : public DfsHloVisitorWithDefault,
 
   llvm_ir::AliasAnalysis alias_analysis_;
 
-  // The number of root instruction outer dimensions used in parallel loop
-  // emission (ParallelLoopEmitter).
+  // The number of outer dimensions of the root instruction's shape that
+  // will be partitioned when emitting parallel loops. (See
+  // ParallelLoopEmitter).
   int64_t num_dynamic_loop_bounds_ = 0;
 
   // Returns whether the given instruction should be emitted as a parallel loop.

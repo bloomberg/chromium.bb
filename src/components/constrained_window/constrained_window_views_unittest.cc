@@ -32,6 +32,11 @@ class TestConstrainedWindowViewsClient
  public:
   TestConstrainedWindowViewsClient() = default;
 
+  TestConstrainedWindowViewsClient(const TestConstrainedWindowViewsClient&) =
+      delete;
+  TestConstrainedWindowViewsClient& operator=(
+      const TestConstrainedWindowViewsClient&) = delete;
+
   // ConstrainedWindowViewsClient:
   web_modal::ModalDialogHost* GetModalDialogHost(
       gfx::NativeWindow parent) override {
@@ -40,9 +45,6 @@ class TestConstrainedWindowViewsClient
   gfx::NativeView GetDialogHostView(gfx::NativeWindow parent) override {
     return nullptr;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestConstrainedWindowViewsClient);
 };
 
 // ViewsDelegate to provide context to dialog creation functions such as
@@ -51,6 +53,10 @@ class TestConstrainedWindowViewsClient
 class TestViewsDelegateWithContext : public views::TestViewsDelegate {
  public:
   TestViewsDelegateWithContext() = default;
+
+  TestViewsDelegateWithContext(const TestViewsDelegateWithContext&) = delete;
+  TestViewsDelegateWithContext& operator=(const TestViewsDelegateWithContext&) =
+      delete;
 
   void set_context(gfx::NativeWindow context) { context_ = context; }
 
@@ -65,13 +71,16 @@ class TestViewsDelegateWithContext : public views::TestViewsDelegate {
 
  private:
   gfx::NativeWindow context_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TestViewsDelegateWithContext);
 };
 
 class ConstrainedWindowViewsTest : public views::ViewsTestBase {
  public:
   ConstrainedWindowViewsTest() = default;
+
+  ConstrainedWindowViewsTest(const ConstrainedWindowViewsTest&) = delete;
+  ConstrainedWindowViewsTest& operator=(const ConstrainedWindowViewsTest&) =
+      delete;
+
   ~ConstrainedWindowViewsTest() override = default;
 
   void SetUp() override {
@@ -124,8 +133,6 @@ class ConstrainedWindowViewsTest : public views::ViewsTestBase {
   views::View* contents_ = nullptr;
   std::unique_ptr<web_modal::TestWebContentsModalDialogHost> dialog_host_;
   Widget* dialog_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViewsTest);
 };
 
 }  // namespace

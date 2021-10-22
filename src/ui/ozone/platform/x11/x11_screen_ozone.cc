@@ -34,6 +34,7 @@ X11ScreenOzone::~X11ScreenOzone() {
 }
 
 void X11ScreenOzone::Init() {
+  initialized_ = true;
   if (x11_display_manager_->IsXrandrAvailable())
     x11::Connection::Get()->AddEventObserver(this);
   x11_display_manager_->Init();
@@ -124,7 +125,7 @@ bool X11ScreenOzone::IsScreenSaverActive() const {
 
 base::TimeDelta X11ScreenOzone::CalculateIdleTime() const {
   IdleQueryX11 idle_query;
-  return base::TimeDelta::FromSeconds(idle_query.IdleTime());
+  return base::Seconds(idle_query.IdleTime());
 }
 
 void X11ScreenOzone::AddObserver(display::DisplayObserver* observer) {
@@ -151,7 +152,10 @@ void X11ScreenOzone::SetDeviceScaleFactor(float scale) {
     return;
 
   device_scale_factor_ = scale;
-  x11_display_manager_->DispatchDelayedDisplayListUpdate();
+  // See DesktopScreenLinux, which sets the |device_scale_factor| before |this|
+  // is initialized.
+  if (initialized_)
+    x11_display_manager_->DispatchDelayedDisplayListUpdate();
 }
 
 void X11ScreenOzone::OnEvent(const x11::Event& xev) {

@@ -66,6 +66,8 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view_model.h"
@@ -76,6 +78,9 @@ namespace test {
 namespace {
 
 constexpr int kInitialItems = 34;
+
+constexpr int kMaxItemsPerFolderPage = AppListFolderView::kMaxFolderColumns *
+                                       AppListFolderView::kMaxPagedFolderRows;
 
 // Constants used for for testing app list layout in fullscreen state:
 
@@ -152,16 +157,22 @@ class TestStartPageSearchResult : public TestSearchResult {
     set_display_type(ash::SearchResultDisplayType::kChip);
     set_is_recommendation(true);
   }
-  ~TestStartPageSearchResult() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestStartPageSearchResult);
+  TestStartPageSearchResult(const TestStartPageSearchResult&) = delete;
+  TestStartPageSearchResult& operator=(const TestStartPageSearchResult&) =
+      delete;
+
+  ~TestStartPageSearchResult() override = default;
 };
 
 class AppListViewTest : public views::ViewsTestBase,
                         public testing::WithParamInterface<bool> {
  public:
   AppListViewTest() = default;
+
+  AppListViewTest(const AppListViewTest&) = delete;
+  AppListViewTest& operator=(const AppListViewTest&) = delete;
+
   ~AppListViewTest() override = default;
 
   void SetUp() override {
@@ -290,6 +301,12 @@ class AppListViewTest : public views::ViewsTestBase,
     return view_->app_list_main_view()->contents_view();
   }
 
+  views::View* scrollable_container() {
+    return contents_view()
+        ->apps_container_view()
+        ->scrollable_container_for_test();
+  }
+
   PagedAppsGridView* apps_grid_view() {
     return contents_view()->apps_container_view()->apps_grid_view();
   }
@@ -340,9 +357,11 @@ class AppListViewTest : public views::ViewsTestBase,
         container_size.height() - kExpectedGridTop -
         (expected_vertical_margin - kGridVerticalInset) - ShelfSize();
 
+    EXPECT_EQ(gfx::Rect(0, 0, kExpectedGridWidth, kExpectedGridHeight),
+              apps_grid_view()->bounds());
     EXPECT_EQ(gfx::Rect(expected_horizontal_margin, kExpectedGridTop,
                         kExpectedGridWidth, kExpectedGridHeight),
-              apps_grid_view()->bounds());
+              scrollable_container()->bounds());
     EXPECT_EQ(gfx::Rect(kExpectedGridWidth + expected_horizontal_margin +
                             kPageSwitcherSpacing,
                         kExpectedGridTop,
@@ -406,8 +425,6 @@ class AppListViewTest : public views::ViewsTestBase,
   keyboard::KeyboardUIController keyboard_ui_controller_;
 
   bool is_rtl_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(Rtl, AppListViewTest, ::testing::Bool());
@@ -440,6 +457,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
                              public testing::WithParamInterface<bool> {
  public:
   AppListViewFocusTest() = default;
+
+  AppListViewFocusTest(const AppListViewFocusTest&) = delete;
+  AppListViewFocusTest& operator=(const AppListViewFocusTest&) = delete;
+
   ~AppListViewFocusTest() override = default;
 
   // testing::Test
@@ -467,7 +488,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     // Add suggestion apps, a folder with apps and other app list items.
     const int kSuggestionAppNum = 3;
     const int kItemNumInFolder = 25;
-    const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
+    const int kAppListItemNum =
+        SharedAppListConfig::instance().GetMaxNumOfItemsPerPage() + 1;
     AppListTestModel* model = delegate_->GetTestModel();
     SearchModel* search_model = delegate_->GetSearchModel();
     for (size_t i = 0; i < kSuggestionAppNum; i++) {
@@ -503,10 +525,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   void Show(bool is_side_shelf = false) {
     view_->Show(AppListViewState::kPeeking, is_side_shelf);
-  }
-
-  const AppListConfig& GetAppListConfig() const {
-    return view_->GetAppListConfig();
   }
 
   SearchResultTileItemListView* GetSearchResultTileItemListView() {
@@ -823,8 +841,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   // Used by AppListFolderView::UpdatePreferredBounds.
   keyboard::KeyboardUIController keyboard_ui_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All, AppListViewFocusTest, testing::Bool());
@@ -1069,6 +1085,34 @@ TEST_P(AppListViewFocusTest, LinearFocusTraversalInFolder) {
                      ui::VKEY_LEFT, false);
 }
 
+TEST_F(AppListViewFocusTest, OpeningFolderRemovesOtherViewsFromAccessibility) {
+  Show();
+
+  // Transition to FULLSCREEN_ALL_APPS state and open the folder.
+  SetAppListState(ash::AppListViewState::kFullscreenAllApps);
+  folder_item_view()->RequestFocus();
+  SimulateKeyPress(ui::VKEY_RETURN, false);
+  auto* apps_container_view = contents_view()->apps_container_view();
+  ASSERT_TRUE(apps_container_view->IsInFolderView());
+
+  // Note: For fullscreen app list, the search box is part of the focus cycle
+  // when a folder is open.
+  auto* suggestion_chip_container =
+      apps_container_view->suggestion_chip_container_view_for_test();
+  EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
+  EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsIgnored());
+  EXPECT_TRUE(apps_grid_view()->GetViewAccessibility().IsLeaf());
+
+  // Close the folder.
+  SimulateKeyPress(ui::VKEY_ESCAPE, false);
+
+  EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(suggestion_chip_container->GetViewAccessibility().IsLeaf());
+  EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsIgnored());
+  EXPECT_FALSE(apps_grid_view()->GetViewAccessibility().IsLeaf());
+}
+
 // Tests the vertical focus traversal by in PEEKING state.
 TEST_P(AppListViewFocusTest, VerticalFocusTraversalInPeekingState) {
   Show();
@@ -1182,7 +1226,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   std::vector<views::View*> forward_view_list;
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model();
-  for (size_t i = 0; i < GetAppListConfig().max_folder_items_per_page();
+  for (int i = 0; i < view_model->view_size();
        i += app_list_folder_view()->items_grid_view()->cols()) {
     forward_view_list.push_back(view_model->view_at(i));
   }
@@ -1199,7 +1243,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   backward_view_list.push_back(search_box_view()->search_box());
   backward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
-  for (int i = GetAppListConfig().max_folder_items_per_page() - 1; i >= 0;
+  for (int i = view_model->view_size() - 1; i >= 0;
        i -= app_list_folder_view()->items_grid_view()->cols()) {
     backward_view_list.push_back(view_model->view_at(i));
   }
@@ -1221,7 +1265,7 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   EXPECT_TRUE(contents_view()->apps_container_view()->IsInFolderView());
 
   // Select the second page.
-  ASSERT_FALSE(features::IsAppListBubbleEnabled());
+  ASSERT_FALSE(features::IsProductivityLauncherEnabled());
   static_cast<PagedAppsGridView*>(app_list_folder_view()->items_grid_view())
       ->pagination_model()
       ->SelectPage(1, false /* animate */);
@@ -1229,28 +1273,24 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInSecondPageOfFolder) {
   std::vector<views::View*> forward_view_list;
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model();
-  for (int i = GetAppListConfig().max_folder_items_per_page();
-       i < view_model->view_size();
+  for (int i = kMaxItemsPerFolderPage; i < view_model->view_size();
        i += app_list_folder_view()->items_grid_view()->cols()) {
     forward_view_list.push_back(view_model->view_at(i));
   }
   forward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
   forward_view_list.push_back(search_box_view()->search_box());
-  forward_view_list.push_back(
-      view_model->view_at(GetAppListConfig().max_folder_items_per_page()));
+  forward_view_list.push_back(view_model->view_at(0));
 
   // Test traversal triggered by down.
   TestFocusTraversal(forward_view_list, ui::VKEY_DOWN, false);
 
   std::vector<views::View*> backward_view_list;
-  backward_view_list.push_back(
-      view_model->view_at(GetAppListConfig().max_folder_items_per_page()));
+  backward_view_list.push_back(view_model->view_at(0));
   backward_view_list.push_back(search_box_view()->search_box());
   backward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
-  for (size_t i = view_model->view_size() - 1;
-       i >= GetAppListConfig().max_folder_items_per_page();
+  for (int i = view_model->view_size() - 1; i >= 0;
        i -= app_list_folder_view()->items_grid_view()->cols()) {
     backward_view_list.push_back(view_model->view_at(i));
   }
@@ -1991,8 +2031,8 @@ TEST_P(AppListViewTest, OpenInPeekingCorrectHeight) {
   Initialize(false /*is_tablet_mode*/);
 
   Show();
-  view_->SetState(ash::AppListViewState::kPeeking);
-  ASSERT_EQ(view_->GetAppListConfig().peeking_app_list_height(),
+  view_->SetState(AppListViewState::kPeeking);
+  ASSERT_EQ(view_->GetHeightForState(AppListViewState::kPeeking),
             view_->GetCurrentAppListHeight());
 }
 
@@ -2154,7 +2194,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
       "Apps.StateTransition.Drag.PresentationTime.ClamshellMode", 0);
 
   // Drag down the launcher.
-  timestamp += base::TimeDelta::FromMilliseconds(25);
+  timestamp += base::Milliseconds(25);
   delta_y += 10;
   start.Offset(0, 1);
   ui::GestureEvent update_event = ui::GestureEvent(
@@ -2181,7 +2221,7 @@ TEST_F(AppListViewTest, SearchBoxCornerRadiusDuringDragging) {
 
   // Ends to drag the launcher.
   EXPECT_TRUE(SetAppListState(ash::AppListState::kStateApps));
-  timestamp += base::TimeDelta::FromMilliseconds(25);
+  timestamp += base::Milliseconds(25);
   start.Offset(0, 1);
   ui::GestureEvent end_event =
       ui::GestureEvent(start.x(), start.y() + delta_y, ui::EF_NONE, timestamp,
@@ -2450,7 +2490,8 @@ TEST_F(AppListViewTest, BackAction) {
   // Populate apps to fill up the first page and add a folder in the second
   // page.
   AppListTestModel* model = delegate_->GetTestModel();
-  const int kAppListItemNum = test_api_->TilesPerPage(0);
+  const int kAppListItemNum =
+      SharedAppListConfig::instance().GetMaxNumOfItemsPerPage();
   const int kItemNumInFolder = 5;
   model->PopulateApps(kAppListItemNum);
   model->CreateAndPopulateFolderWithApps(kItemNumInFolder);
@@ -2526,7 +2567,8 @@ TEST_F(AppListViewTest, InitialPageResetClamshellModeTest) {
   Initialize(false /*is_tablet_mode*/);
 
   AppListTestModel* model = delegate_->GetTestModel();
-  const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
+  const int kAppListItemNum =
+      SharedAppListConfig::instance().GetMaxNumOfItemsPerPage() + 1;
   model->PopulateApps(kAppListItemNum);
 
   Show();
@@ -2548,7 +2590,8 @@ TEST_F(AppListViewTest, PagePersistanceTabletModeTest) {
   Initialize(true /*is_tablet_mode*/);
 
   AppListTestModel* model = delegate_->GetTestModel();
-  const int kAppListItemNum = test_api_->TilesPerPage(0) + 1;
+  const int kAppListItemNum =
+      SharedAppListConfig::instance().GetMaxNumOfItemsPerPage() + 1;
   model->PopulateApps(kAppListItemNum);
 
   Show();
@@ -2979,7 +3022,7 @@ TEST_F(AppListViewScalableLayoutTest, VerticalAppsGridItemSpacingIsBounded) {
 // apps grid fadeout area.
 TEST_F(AppListViewScalableLayoutTest,
        VerticalAppsContainerMarginFitFadeoutArea) {
-  const gfx::Size window_size = gfx::Size(650, 500);
+  const gfx::Size window_size(650, 536);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));
 
@@ -3000,7 +3043,7 @@ TEST_F(AppListViewScalableLayoutTest,
 
 // Tests fullscreen apps grid sizing and layout gets updated to correct bounds
 // when app list config changes.
-TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutAfterConfigChage) {
+TEST_F(AppListViewScalableLayoutTest, AppListViewLayoutAfterConfigChange) {
   const gfx::Size window_size = gfx::Size(500, 800);
   gfx::NativeView parent = GetContext();
   parent->SetBounds(gfx::Rect(window_size));

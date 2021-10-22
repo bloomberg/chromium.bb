@@ -17,6 +17,14 @@ if(LIBGAV1_CMAKE_GAV1_TARGETS_CMAKE_)
 endif() # LIBGAV1_CMAKE_GAV1_TARGETS_CMAKE_
 set(LIBGAV1_CMAKE_GAV1_TARGETS_CMAKE_ 1)
 
+if(LIBGAV1_IDE_FOLDER)
+  set(LIBGAV1_EXAMPLES_IDE_FOLDER "${LIBGAV1_IDE_FOLDER}/examples")
+  set(LIBGAV1_TESTS_IDE_FOLDER "${LIBGAV1_IDE_FOLDER}/tests")
+else()
+  set(LIBGAV1_EXAMPLES_IDE_FOLDER "libgav1_examples")
+  set(LIBGAV1_TESTS_IDE_FOLDER "libgav1_tests")
+endif()
+
 # Resets list variables used to track libgav1 targets.
 macro(libgav1_reset_target_lists)
   unset(libgav1_targets)
@@ -100,6 +108,13 @@ macro(libgav1_add_executable)
   endif()
 
   add_executable(${exe_NAME} ${exe_SOURCES})
+  if(exe_TEST)
+    add_test(NAME ${exe_NAME} COMMAND ${exe_NAME})
+    set_property(TARGET ${exe_NAME} PROPERTY FOLDER ${LIBGAV1_TESTS_IDE_FOLDER})
+  else()
+    set_property(TARGET ${exe_NAME}
+                 PROPERTY FOLDER ${LIBGAV1_EXAMPLES_IDE_FOLDER})
+  endif()
 
   if(exe_OUTPUT_NAME)
     set_target_properties(${exe_NAME} PROPERTIES OUTPUT_NAME ${exe_OUTPUT_NAME})
@@ -364,6 +379,19 @@ macro(libgav1_add_library)
     else()
       # The Xcode generator ignores LINKER_LANGUAGE. Add a dummy cc file.
       libgav1_create_dummy_source_file(TARGET ${lib_NAME} BASENAME ${lib_NAME})
+    endif()
+  endif()
+
+  if(lib_TEST)
+    set_property(TARGET ${lib_NAME} PROPERTY FOLDER ${LIBGAV1_TESTS_IDE_FOLDER})
+  else()
+    set(sources_list ${lib_SOURCES})
+    list(FILTER sources_list INCLUDE REGEX examples)
+    if(sources_list)
+      set_property(TARGET ${lib_NAME}
+                   PROPERTY FOLDER ${LIBGAV1_EXAMPLES_IDE_FOLDER})
+    else()
+      set_property(TARGET ${lib_NAME} PROPERTY FOLDER ${LIBGAV1_IDE_FOLDER})
     endif()
   endif()
 endmacro()

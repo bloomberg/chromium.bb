@@ -135,6 +135,10 @@ GURL GetTestFileUrl(const std::string& relpath) {
 class BasicNetworkDelegate : public NetworkDelegateImpl {
  public:
   BasicNetworkDelegate() = default;
+
+  BasicNetworkDelegate(const BasicNetworkDelegate&) = delete;
+  BasicNetworkDelegate& operator=(const BasicNetworkDelegate&) = delete;
+
   ~BasicNetworkDelegate() override = default;
 
  private:
@@ -144,8 +148,6 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
     EXPECT_TRUE(request->load_flags() & LOAD_DISABLE_CERT_NETWORK_FETCHES);
     return OK;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
 class PacFileFetcherImplTest : public PlatformTest, public WithTaskEnvironment {
@@ -422,7 +424,7 @@ TEST_F(PacFileFetcherImplTest, Hang) {
 
   // Set the timeout period to 0.5 seconds.
   base::TimeDelta prev_timeout =
-      pac_fetcher->SetTimeoutConstraint(base::TimeDelta::FromMilliseconds(500));
+      pac_fetcher->SetTimeoutConstraint(base::Milliseconds(500));
 
   // Try fetching a URL which takes 1.2 seconds. We should abort the request
   // after 500 ms, and fail with a timeout error.

@@ -67,9 +67,13 @@ class OptimizationGuideService : public KeyedService {
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback);
 
+  // Called when browsing data is cleared for the user.
+  void OnBrowsingDataRemoved();
+
  private:
   friend class OptimizationGuideServiceTest;
   friend class OptimizationGuideTabHelper;
+  friend class OptimizationGuideTestAppInterfaceWrapper;
 
   // Notifies |hints_manager_| that the navigation associated with
   // |navigation_data| has started or redirected.

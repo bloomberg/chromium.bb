@@ -26,7 +26,7 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/safe_browsing/buildflags.h"
 #include "net/cert/cert_status_flags.h"
@@ -80,8 +80,8 @@ class PasswordManagerMetricsRecorder;
 class HttpAuthManager;
 class PasswordRequirementsService;
 class PasswordReuseManager;
-class PasswordStore;
 class PasswordStoreInterface;
+class WebAuthnCredentialsDelegate;
 struct PasswordForm;
 
 enum class SyncState {
@@ -101,6 +101,10 @@ class PasswordManagerClient {
   using ReauthSucceeded = base::StrongAlias<class ReauthSucceededTag, bool>;
 
   PasswordManagerClient() = default;
+
+  PasswordManagerClient(const PasswordManagerClient&) = delete;
+  PasswordManagerClient& operator=(const PasswordManagerClient&) = delete;
+
   virtual ~PasswordManagerClient() = default;
 
   // Is saving new data for password autofill and filling of saved data enabled
@@ -264,15 +268,10 @@ class PasswordManagerClient {
   virtual PrefService* GetPrefs() const = 0;
 
   // Returns the profile PasswordStore associated with this instance.
-  virtual PasswordStore* GetProfilePasswordStore() const = 0;
+  virtual PasswordStoreInterface* GetProfilePasswordStore() const = 0;
 
   // Returns the account PasswordStore associated with this instance.
-  virtual PasswordStore* GetAccountPasswordStore() const = 0;
-
-  // TODO(crbug.com/1218413): remove the follow two method once the two above
-  // methods are returning PasswordStoreInterface.
-  virtual PasswordStoreInterface* GetProfilePasswordStoreInterface() const;
-  virtual PasswordStoreInterface* GetAccountPasswordStoreInterface() const;
+  virtual PasswordStoreInterface* GetAccountPasswordStore() const = 0;
 
   // Returns the PasswordReuseManager associated with this instance.
   virtual PasswordReuseManager* GetPasswordReuseManager() const = 0;
@@ -373,7 +372,14 @@ class PasswordManagerClient {
   virtual void MaybeReportEnterpriseLoginEvent(
       const GURL& url,
       bool is_federated,
-      const url::Origin& federated_origin) const {}
+      const url::Origin& federated_origin,
+      const std::u16string& login_user_name) const {}
+
+  // If the feature is enabled send an event to the enterprise reporting
+  // connector server indicating that the user has some leaked credentials.
+  // |identities| contains the (url, username) pairs for each leaked identity.
+  virtual void MaybeReportEnterprisePasswordBreachEvent(
+      const std::vector<std::pair<GURL, std::u16string>>& identities) const {}
 
   // Gets a ukm::SourceId that is associated with the WebContents object
   // and its last committed main frame navigation.
@@ -423,14 +429,11 @@ class PasswordManagerClient {
   // Returns a FieldInfoManager associated with the current profile.
   virtual FieldInfoManager* GetFieldInfoManager() const = 0;
 
-  // Returns true if integration between WebAuthn and Autofill is enabled.
-  virtual bool IsWebAuthnAutofillEnabled() const;
-
   // Returns if the Autofill Assistant UI is shown.
   virtual bool IsAutofillAssistantUIVisible() const = 0;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordManagerClient);
+  // Returns the WebAuthnCredentialsDelegate, if available.
+  virtual WebAuthnCredentialsDelegate* GetWebAuthnCredentialsDelegate();
 };
 
 }  // namespace password_manager

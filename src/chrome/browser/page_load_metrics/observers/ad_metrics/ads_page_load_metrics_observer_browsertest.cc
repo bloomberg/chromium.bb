@@ -118,6 +118,12 @@ class AdsPageLoadMetricsObserverBrowserTest
  public:
   AdsPageLoadMetricsObserverBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {}
+
+  AdsPageLoadMetricsObserverBrowserTest(
+      const AdsPageLoadMetricsObserverBrowserTest&) = delete;
+  AdsPageLoadMetricsObserverBrowserTest& operator=(
+      const AdsPageLoadMetricsObserverBrowserTest&) = delete;
+
   ~AdsPageLoadMetricsObserverBrowserTest() override {}
 
   std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter>
@@ -149,8 +155,6 @@ class AdsPageLoadMetricsObserverBrowserTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserverBrowserTest);
 };
 
 // Test that an embedded ad is same origin.
@@ -2084,8 +2088,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   base::TimeTicks start_time = base::TimeTicks::Now();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/iframe_blank.html")));
-  waiter->AddMinimumAggregateCpuTimeExpectation(
-      base::TimeDelta::FromMilliseconds(300));
+  waiter->AddMinimumAggregateCpuTimeExpectation(base::Milliseconds(300));
 
   // Navigate the iframe to a page with a delayed rAF, waiting for it to
   // complete. Long enough to guarantee the frame client sees a cpu time
@@ -2165,8 +2168,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   // Navigate to the page and set up the waiter.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/iframe_blank.html")));
-  waiter->AddMinimumAggregateCpuTimeExpectation(
-      base::TimeDelta::FromMilliseconds(100));
+  waiter->AddMinimumAggregateCpuTimeExpectation(base::Milliseconds(100));
 
   // Navigate twice to a page delaying 50ms.  The first and second navigations
   // by themselves aren't enough to trigger a cpu update, but when combined an
@@ -2201,8 +2203,7 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/iframe_blank.html")));
 
-  waiter->AddMinimumAggregateCpuTimeExpectation(
-      base::TimeDelta::FromMilliseconds(300));
+  waiter->AddMinimumAggregateCpuTimeExpectation(base::Milliseconds(300));
 
   // Navigate twice to a page with enough cumulative time to measure
   // at least 1% peak windowed percent (300ms), either individually leads to 0
@@ -2302,6 +2303,12 @@ class AdsMemoryMeasurementBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
  public:
   AdsMemoryMeasurementBrowserTest() = default;
+
+  AdsMemoryMeasurementBrowserTest(const AdsMemoryMeasurementBrowserTest&) =
+      delete;
+  AdsMemoryMeasurementBrowserTest& operator=(
+      const AdsMemoryMeasurementBrowserTest&) = delete;
+
   ~AdsMemoryMeasurementBrowserTest() override = default;
 
   void SetUp() override {
@@ -2323,18 +2330,23 @@ class AdsMemoryMeasurementBrowserTest
         web_contents);
   }
 
-  std::unordered_set<int> GetFrameRoutingIds() {
+  std::unordered_set<content::GlobalRenderFrameHostId,
+                     content::GlobalRenderFrameHostIdHasher>
+  GetFrameRoutingIds() {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    std::unordered_set<int> frame_routing_ids = {
-        web_contents->GetMainFrame()->GetGlobalId().frame_routing_id};
+    std::unordered_set<content::GlobalRenderFrameHostId,
+                       content::GlobalRenderFrameHostIdHasher>
+        frame_routing_ids;
 
-    std::vector<content::RenderFrameHost*> children =
-        web_contents->GetMainFrame()->GetFramesInSubtree();
-
-    for (auto* child : children) {
-      frame_routing_ids.insert(child->GetGlobalId().frame_routing_id);
-    }
+    web_contents->GetMainFrame()->ForEachRenderFrameHost(base::BindRepeating(
+        [](std::unordered_set<content::GlobalRenderFrameHostId,
+                              content::GlobalRenderFrameHostIdHasher>*
+               frame_routing_ids,
+           content::RenderFrameHost* frame) {
+          frame_routing_ids->insert(frame->GetGlobalId());
+        },
+        &frame_routing_ids));
 
     return frame_routing_ids;
   }
@@ -2342,8 +2354,6 @@ class AdsMemoryMeasurementBrowserTest
  private:
   std::unique_ptr<page_load_metrics::PageLoadMetricsTestWaiter> waiter_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdsMemoryMeasurementBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
@@ -2355,7 +2365,7 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
   std::unique_ptr<performance_manager::v8_memory::V8DetailedMemoryRequestAnySeq>
       memory_request = std::make_unique<
           performance_manager::v8_memory::V8DetailedMemoryRequestAnySeq>(
-          base::TimeDelta::FromSeconds(1),
+          base::Seconds(1),
           performance_manager::v8_memory::V8DetailedMemoryRequest::
               MeasurementMode::kEagerForTesting);
   auto memory_observer = std::make_unique<DummyMemoryObserver>();
@@ -2373,20 +2383,18 @@ IN_PROC_BROWSER_TEST_F(AdsMemoryMeasurementBrowserTest,
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 
-  int main_frame_routing_id = browser()
-                                  ->tab_strip_model()
-                                  ->GetActiveWebContents()
-                                  ->GetMainFrame()
-                                  ->GetGlobalId()
-                                  .frame_routing_id;
-  waiter->AddMemoryUpdateExpectation(main_frame_routing_id);
+  waiter->AddMemoryUpdateExpectation(browser()
+                                         ->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame()
+                                         ->GetGlobalId());
 
   // Navigate to the main URL.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
 
   // Add any additional frame routing IDs and wait until we get positive
   // memory measurements for each frame.
-  for (int id : GetFrameRoutingIds())
+  for (content::GlobalRenderFrameHostId id : GetFrameRoutingIds())
     waiter->AddMemoryUpdateExpectation(id);
   waiter->Wait();
 

@@ -347,7 +347,8 @@ TestDriver::TestDriver()
                              base::PartitionOptions::ThreadCache::kDisabled,
                              base::PartitionOptions::Quarantine::kDisallowed,
                              base::PartitionOptions::Cookie::kAllowed,
-                             base::PartitionOptions::RefCount::kDisallowed});
+                             base::PartitionOptions::BackupRefPtr::kDisabled,
+                             base::PartitionOptions::UseConfigurablePool::kNo});
 }
 TestDriver::~TestDriver() {
   base::PartitionAllocGlobalUninitForTesting();
@@ -791,7 +792,7 @@ void TestDriver::WaitForProfilingToStartForAllRenderersUIThreadCallback(
 
   // Brief sleep to prevent spamming the task queue, since this code is called
   // in a tight loop.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(100));
+  base::PlatformThread::Sleep(base::Microseconds(100));
 
   WaitForProfilingToStartForAllRenderersUIThreadAndSignal();
 }

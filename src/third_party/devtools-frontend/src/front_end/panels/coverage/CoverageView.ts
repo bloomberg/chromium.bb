@@ -574,8 +574,9 @@ export class LineDecorator implements SourceFrame.SourceFrame.LineDecorator {
     return lineDecoratorInstance;
   }
 
-  private readonly listeners:
-      WeakMap<SourceFrame.SourcesTextEditor.SourcesTextEditor, (arg0: Common.EventTarget.EventTargetEvent) => void>;
+  private readonly listeners: WeakMap<
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      SourceFrame.SourcesTextEditor.SourcesTextEditor, (arg0: Common.EventTarget.EventTargetEvent<any>) => void>;
   constructor() {
     this.listeners = new WeakMap();
   }
@@ -614,10 +615,11 @@ export class LineDecorator implements SourceFrame.SourceFrame.LineDecorator {
     }
   }
 
-  makeGutterClickHandler(url: string): (arg0: Common.EventTarget.EventTargetEvent) => void {
-    function handleGutterClick(event: Common.EventTarget.EventTargetEvent): void {
-      const eventData = event.data as SourceFrame.SourcesTextEditor.GutterClickEventData;
-      if (eventData.gutterType !== LineDecorator.GUTTER_TYPE) {
+  makeGutterClickHandler(url: string):
+      (arg0: Common.EventTarget.EventTargetEvent<SourceFrame.SourcesTextEditor.GutterClickEventData>) => void {
+    function handleGutterClick(
+        event: Common.EventTarget.EventTargetEvent<SourceFrame.SourcesTextEditor.GutterClickEventData>): void {
+      if (event.data.gutterType !== LineDecorator.GUTTER_TYPE) {
         return;
       }
       const coverageViewId = 'coverage';

@@ -27,6 +27,7 @@
 
 #if SUPPORTS_DESKTOP_ICONS
 #include "components/omnibox/browser/vector_icons.h"  // nogncheck
+#include "components/vector_icons/vector_icons.h"     // nogncheck
 #endif
 
 // =============================================================================
@@ -1001,6 +1002,12 @@ class OmniboxPedalCloseIncognitoWindows : public OmniboxPedal {
                 IDS_ACC_OMNIBOX_PEDAL_CLOSE_INCOGNITO_WINDOWS),
             GURL()) {}
 
+#if SUPPORTS_DESKTOP_ICONS
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    return omnibox::kIncognitoIcon;
+  }
+#endif
+
   std::vector<SynonymGroupSpec> SpecifySynonymGroups() const override {
     return {
 #ifdef IDS_OMNIBOX_PEDAL_SYNONYMS_CLOSE_INCOGNITO_WINDOWS_ONE_REQUIRED_CLOSE
@@ -1045,6 +1052,12 @@ class OmniboxPedalPlayChromeDinoGame : public OmniboxPedal {
                 IDS_ACC_OMNIBOX_PEDAL_PLAY_CHROME_DINO_GAME),
             GURL("chrome://dino")) {}
 
+#if SUPPORTS_DESKTOP_ICONS
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    return omnibox::kDinoIcon;
+  }
+#endif
+
   std::vector<SynonymGroupSpec> SpecifySynonymGroups() const override {
     return {
 #ifdef IDS_OMNIBOX_PEDAL_SYNONYMS_PLAY_CHROME_DINO_GAME_ONE_OPTIONAL_PLAY
@@ -1084,16 +1097,21 @@ class OmniboxPedalPlayChromeDinoGame : public OmniboxPedal {
 
 // =============================================================================
 
-class OmniboxPedalFindMyPhone : public OmniboxPedal {
+class OmniboxPedalFindMyPhone : public OmniboxPedalAuthRequired {
  public:
   OmniboxPedalFindMyPhone()
-      : OmniboxPedal(
+      : OmniboxPedalAuthRequired(
             OmniboxPedalId::FIND_MY_PHONE,
             LabelStrings(IDS_OMNIBOX_PEDAL_FIND_MY_PHONE_HINT,
                          IDS_OMNIBOX_PEDAL_FIND_MY_PHONE_SUGGESTION_CONTENTS,
                          IDS_ACC_OMNIBOX_PEDAL_FIND_MY_PHONE_SUFFIX,
-                         IDS_ACC_OMNIBOX_PEDAL_FIND_MY_PHONE),
-            GURL()) {}
+                         IDS_ACC_OMNIBOX_PEDAL_FIND_MY_PHONE)) {}
+
+#if SUPPORTS_DESKTOP_ICONS
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    return omnibox::kGoogleSuperGIcon;
+  }
+#endif
 
  protected:
   ~OmniboxPedalFindMyPhone() override = default;
@@ -1101,38 +1119,25 @@ class OmniboxPedalFindMyPhone : public OmniboxPedal {
 
 // =============================================================================
 
-class OmniboxPedalManageGooglePrivacy : public OmniboxPedal {
+class OmniboxPedalManageGooglePrivacy : public OmniboxPedalAuthRequired {
  public:
   OmniboxPedalManageGooglePrivacy()
-      : OmniboxPedal(
+      : OmniboxPedalAuthRequired(
             OmniboxPedalId::MANAGE_GOOGLE_PRIVACY,
             LabelStrings(
                 IDS_OMNIBOX_PEDAL_MANAGE_GOOGLE_PRIVACY_HINT,
                 IDS_OMNIBOX_PEDAL_MANAGE_GOOGLE_PRIVACY_SUGGESTION_CONTENTS,
                 IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_PRIVACY_SUFFIX,
-                IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_PRIVACY),
-            GURL()) {}
+                IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_PRIVACY)) {}
+
+#if SUPPORTS_DESKTOP_ICONS
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    return omnibox::kGoogleSuperGIcon;
+  }
+#endif
 
  protected:
   ~OmniboxPedalManageGooglePrivacy() override = default;
-};
-
-// =============================================================================
-
-class OmniboxPedalManageGoogleAdSettings : public OmniboxPedal {
- public:
-  OmniboxPedalManageGoogleAdSettings()
-      : OmniboxPedal(
-            OmniboxPedalId::MANAGE_GOOGLE_AD_SETTINGS,
-            LabelStrings(
-                IDS_OMNIBOX_PEDAL_MANAGE_GOOGLE_AD_SETTINGS_HINT,
-                IDS_OMNIBOX_PEDAL_MANAGE_GOOGLE_AD_SETTINGS_SUGGESTION_CONTENTS,
-                IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_AD_SETTINGS_SUFFIX,
-                IDS_ACC_OMNIBOX_PEDAL_MANAGE_GOOGLE_AD_SETTINGS),
-            GURL()) {}
-
- protected:
-  ~OmniboxPedalManageGoogleAdSettings() override = default;
 };
 
 // =============================================================================
@@ -1201,6 +1206,28 @@ class OmniboxPedalShareThisPage : public OmniboxPedal {
                          IDS_ACC_OMNIBOX_PEDAL_SHARE_THIS_PAGE_SUFFIX,
                          IDS_ACC_OMNIBOX_PEDAL_SHARE_THIS_PAGE),
             GURL()) {}
+
+#if SUPPORTS_DESKTOP_ICONS
+  const gfx::VectorIcon& GetVectorIcon() const override {
+    // Prefer the idiomatic icon for each platform. This icon selection
+    // logic follows that of the sharing hub.
+    // See: chrome/browser/ui/views/sharing_hub/sharing_hub_icon_view.cc
+    // Note: When pedals are implemented on Android, we may want to
+    // consider using omnibox::kShareIcon (three dots with lines).
+    // TODO(orinj): Eliminate the code duplication here and get the
+    // same icon from SharingHubIconView::GetVectorIcon once pedals
+    // are moved to src-internal.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    return omnibox::kShareIcon;
+#elif defined(OS_MAC)
+    return omnibox::kShareMacIcon;
+#elif defined(OS_WIN)
+    return omnibox::kShareWinIcon;
+#else
+    return omnibox::kSendIcon;
+#endif
+  }
+#endif
 
   bool IsReadyToTrigger(
       const AutocompleteInput& input,
@@ -1351,7 +1378,6 @@ GetPedalImplementations(bool with_branding, bool incognito) {
     add(new OmniboxPedalPlayChromeDinoGame());
     add(new OmniboxPedalFindMyPhone());
     add(new OmniboxPedalManageGooglePrivacy());
-    add(new OmniboxPedalManageGoogleAdSettings());
     add(new OmniboxPedalManageChromeSettings());
     add(new OmniboxPedalManageChromeDownloads());
     add(new OmniboxPedalViewChromeHistory());

@@ -62,6 +62,10 @@ class BudgetDatabase {
 
   // The database_dir specifies the location of the budget information on disk.
   explicit BudgetDatabase(Profile* profile);
+
+  BudgetDatabase(const BudgetDatabase&) = delete;
+  BudgetDatabase& operator=(const BudgetDatabase&) = delete;
+
   ~BudgetDatabase();
 
   // Get the full budget expectation for the origin. This will return a
@@ -102,13 +106,16 @@ class BudgetDatabase {
   // which have been awarded.
   struct BudgetInfo {
     BudgetInfo();
+
+    BudgetInfo(const BudgetInfo&) = delete;
+    BudgetInfo& operator=(const BudgetInfo&) = delete;
+
     BudgetInfo(const BudgetInfo&& other);
+
     ~BudgetInfo();
 
     base::Time last_engagement_award;
     BudgetChunks chunks;
-
-    DISALLOW_COPY_AND_ASSIGN(BudgetInfo);
   };
 
   // Callback for writing budget values to the database.
@@ -170,8 +177,6 @@ class BudgetDatabase {
   std::unique_ptr<base::Clock> clock_;
 
   base::WeakPtrFactory<BudgetDatabase> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BudgetDatabase);
 };
 
 #endif  // CHROME_BROWSER_PUSH_MESSAGING_BUDGET_DATABASE_H_

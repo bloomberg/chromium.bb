@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
+#include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -53,20 +54,30 @@ class CORE_EXPORT DisplayLockUtilities {
         DocumentUpdateReason reason);
     friend VisibleSelection
     FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated() const;
+    friend FloatRect Range::BoundingRect() const;
+    friend DOMRectList* Range::getClientRects() const;
 
     friend class DisplayLockContext;
 
     // Test friends.
     friend class DisplayLockContextRenderingTest;
 
-    explicit ScopedForcedUpdate(const Node* node, bool include_self = false)
-        : impl_(MakeGarbageCollected<Impl>(node, include_self)) {}
+    explicit ScopedForcedUpdate(const Node* node,
+                                DisplayLockContext::ForcedPhase phase,
+                                bool include_self = false)
+        : impl_(MakeGarbageCollected<Impl>(node, phase, include_self)) {}
+    explicit ScopedForcedUpdate(const Range* range,
+                                DisplayLockContext::ForcedPhase phase)
+        : impl_(MakeGarbageCollected<Impl>(range, phase)) {}
 
     friend class DisplayLockDocumentState;
 
     class CORE_EXPORT Impl final : public GarbageCollected<Impl> {
      public:
-      explicit Impl(const Node* node, bool include_self = false);
+      Impl(const Node* node,
+           DisplayLockContext::ForcedPhase phase,
+           bool include_self = false);
+      Impl(const Range* range, DisplayLockContext::ForcedPhase phase);
 
       // Adds another display-lock scope to this chain. Added when a new lock is
       // created in the ancestor chain of this chain's node.
@@ -82,6 +93,7 @@ class CORE_EXPORT DisplayLockUtilities {
 
      private:
       Member<const Node> node_;
+      DisplayLockContext::ForcedPhase phase_;
       HeapHashSet<Member<DisplayLockContext>> forced_context_set_;
       Member<Impl> parent_frame_impl_;
     };
@@ -95,11 +107,6 @@ class CORE_EXPORT DisplayLockUtilities {
   static bool ActivateFindInPageMatchRangeIfNeeded(
       const EphemeralRangeInFlatTree& range);
 
-  // Activates all locked nodes in |range| that are activatable and doesn't
-  // have user-select:none. Returns true if we activated at least one node.
-  static bool ActivateSelectionRangeIfNeeded(
-      const EphemeralRangeInFlatTree& range);
-
   // Returns activatable-locked inclusive ancestors of |node|.
   // Note that this function will return an empty list if |node| is inside a
   // non-activatable locked subtree (e.g. at least one ancestor is not
@@ -108,47 +115,40 @@ class CORE_EXPORT DisplayLockUtilities {
       const Node& node,
       DisplayLockActivationReason reason);
 
-  // Returns the nearest inclusive ancestor of |node| that is display locked.
-  static const Element* NearestLockedInclusiveAncestor(const Node& node);
-  static Element* NearestLockedInclusiveAncestor(Node& node);
-
   // Returns the nearest inclusive ancestor of |element| that has
   // content-visibility: hidden-matchable.
+  // TODO(crbug.com/1249939): Remove this.
   static Element* NearestHiddenMatchableInclusiveAncestor(Element& element);
 
-  // Returns the nearest non-inclusive ancestor of |node| that is display
-  // locked.
-  static Element* NearestLockedExclusiveAncestor(const Node& node);
+  // Ancestor navigation functions.
+
+  // Helpers for ancestor navigation to find locks.
+  static const Element* LockedInclusiveAncestorPreventingLayout(
+      const Node& node);
+  static const Element* LockedInclusiveAncestorPreventingPaint(
+      const LayoutObject& object);
+  static const Element* LockedInclusiveAncestorPreventingPaint(
+      const Node& node);
+
+  // The following don't consider the passed argument as a valid lock (i.e. they
+  // are exclusive checks).
+  static Element* LockedAncestorPreventingLayout(const LayoutObject& object);
+  static Element* LockedAncestorPreventingLayout(const Node& node);
+  static Element* LockedAncestorPreventingPaint(const LayoutObject& object);
+  static Element* LockedAncestorPreventingPaint(const Node& node);
+  static Element* LockedAncestorPreventingPrePaint(const LayoutObject& object);
+  static Element* LockedAncestorPreventingStyle(const Node& element);
+
+  // Returns the nearest inclusive ancestor of |node| that is display locked
+  // and blocks style & layout tree building within the same TreeScope as
+  // |node|, meaning that no flat tree traversals are made.
+  static Element* LockedInclusiveAncestorPreventingStyleWithinTreeScope(
+      const Node& node);
 
   // Returns the highest exclusive ancestor of |node| that is display locked.
   // Note that this function crosses local frames.
   static Element* HighestLockedExclusiveAncestor(const Node& node);
   static Element* HighestLockedInclusiveAncestor(const Node& node);
-
-  // LayoutObject versions of the NearestLocked* ancestor functions.
-  static Element* NearestLockedInclusiveAncestor(const LayoutObject& object);
-  static Element* NearestLockedExclusiveAncestor(const LayoutObject& object);
-
-  // Returns the nearest inclusive ancestor of |node| that is display locked
-  // within the same TreeScope as |node|, meaning that no flat tree traversals
-  // are made.
-  static Element* NearestLockedInclusiveAncestorWithinTreeScope(
-      const Node& node);
-
-  // Returns the nearest ancestor element which has a lock that prevents
-  // prepaint. Note that this is different from a nearest locked ancestor since
-  // the prepaint update can be forced.
-  static Element* LockedAncestorPreventingPrePaint(const LayoutObject& object);
-
-  // Returns the nearest ancestor element which has a lock that prevents
-  // layout. Note that this is different from a nearest locked ancestor since
-  // the layout update can be forced.
-  static Element* LockedAncestorPreventingLayout(const LayoutObject& object);
-
-  // Returns the nearest ancestor element which has a lock that prevents
-  // style. Note that this is different from a nearest locked ancestor since
-  // the style update can be forced.
-  static Element* LockedAncestorPreventingStyle(const Node& element);
 
   // Returns true if |node| is not in a locked subtree, or if it's possible to
   // activate all of the locked ancestors for |activation_reason|.
@@ -186,10 +186,12 @@ class CORE_EXPORT DisplayLockUtilities {
 
   static bool IsAutoWithoutLayout(const LayoutObject& object);
 
- private:
-  static bool UpdateStyleAndLayoutForRangeIfNeeded(
-      const EphemeralRangeInFlatTree& range,
-      DisplayLockActivationReason reason);
+  // Walks up the ancestor chain and expands all elements with the
+  // hidden=until-found attribute found along by removing the hidden attribute.
+  // If any were expanded, returns true.
+  // This method may run script because of the mutation events fired when
+  // removing the hidden attribute.
+  static bool RevealHiddenUntilFoundAncestors(const Node&);
 };
 
 }  // namespace blink

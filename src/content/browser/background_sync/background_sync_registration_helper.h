@@ -35,6 +35,12 @@ class BackgroundSyncRegistrationHelper {
 
   explicit BackgroundSyncRegistrationHelper(
       BackgroundSyncContextImpl* background_sync_context);
+
+  BackgroundSyncRegistrationHelper(const BackgroundSyncRegistrationHelper&) =
+      delete;
+  BackgroundSyncRegistrationHelper& operator=(
+      const BackgroundSyncRegistrationHelper&) = delete;
+
   ~BackgroundSyncRegistrationHelper();
 
   bool ValidateSWRegistrationID(int64_t sw_registration_id,
@@ -62,8 +68,6 @@ class BackgroundSyncRegistrationHelper {
   BackgroundSyncContextImpl* const background_sync_context_;
   base::WeakPtrFactory<BackgroundSyncRegistrationHelper> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistrationHelper);
 };
 
 }  // namespace content

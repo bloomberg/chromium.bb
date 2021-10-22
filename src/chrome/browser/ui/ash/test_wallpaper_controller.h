@@ -18,6 +18,10 @@
 class TestWallpaperController : public ash::WallpaperController {
  public:
   TestWallpaperController();
+
+  TestWallpaperController(const TestWallpaperController&) = delete;
+  TestWallpaperController& operator=(const TestWallpaperController&) = delete;
+
   ~TestWallpaperController() override;
 
   // Simulates showing the wallpaper on screen by updating |current_wallpaper|
@@ -111,7 +115,7 @@ class TestWallpaperController : public ash::WallpaperController {
   std::string GetDailyRefreshCollectionId(
       const AccountId& account_id) const override;
   void UpdateDailyRefreshWallpaper(RefreshWallpaperCallback callback) override;
-  void OnGoogleDriveMounted(const AccountId& account_id) override;
+  void SyncLocalAndRemotePrefs(const AccountId& account_id) override;
 
  private:
   bool was_client_set_ = false;
@@ -127,8 +131,6 @@ class TestWallpaperController : public ash::WallpaperController {
   base::ObserverList<ash::WallpaperControllerObserver>::Unchecked observers_;
 
   gfx::ImageSkia current_wallpaper;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWallpaperController);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_

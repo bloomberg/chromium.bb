@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 import './cluster.js';
-import './shared_style.js';
+import './shared_vars.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
-import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
@@ -16,11 +16,13 @@ import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render
 import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {BrowserProxy} from './browser_proxy.js';
-import {Cluster, PageCallbackRouter, PageHandlerRemote, QueryParams, QueryResult, URLVisit} from './history_clusters.mojom-webui.js';
+import {BrowserProxyImpl} from './browser_proxy.js';
+import {PageCallbackRouter, PageHandlerRemote, QueryParams, QueryResult, URLVisit} from './history_clusters.mojom-webui.js';
+import {ClusterAction, MetricsProxyImpl} from './metrics_proxy.js';
 
 /**
  * @fileoverview This file provides a custom element that requests and shows
@@ -45,9 +47,9 @@ declare global {
 
 interface HistoryClustersElement {
   $: {
+    clusters: IronListElement,
     confirmationDialog: CrLazyRenderElement<CrDialogElement>,
     confirmationToast: CrLazyRenderElement<CrToastElement>,
-    container: Element,
     scrollThreshold: IronScrollThresholdElement,
   };
 }
@@ -69,6 +71,15 @@ class HistoryClustersElement extends PolymerElement {
       query: {
         type: String,
         observer: 'onQueryChanged_',
+        value: '',
+      },
+
+      /**
+       * The header text to show when the query is non-empty.
+       */
+      headerText_: {
+        type: String,
+        computed: `computeHeaderText_(result_)`,
       },
 
       /**
@@ -81,20 +92,12 @@ class HistoryClustersElement extends PolymerElement {
       result_: Object,
 
       /**
-       * The title to show when the query is non-empty.
-       */
-      title_: {
-        type: String,
-        computed: `computeTitle_(result_)`,
-      },
-
-      /**
        * The list of visits to be removed. A non-empty array indicates a pending
        * remove request to the browser.
        */
       visitsToBeRemoved_: {
         type: Object,
-        value: [],
+        value: () => [],
       },
     };
   }
@@ -103,14 +106,13 @@ class HistoryClustersElement extends PolymerElement {
   // Properties
   //============================================================================
 
-  query: string = '';
+  query: string;
   private callbackRouter_: PageCallbackRouter;
   private onClustersQueryResultListenerId_: number|null = null;
   private onVisitsRemovedListenerId_: number|null = null;
   private pageHandler_: PageHandlerRemote;
-  private result_: QueryResult = new QueryResult();
-  private title_: string = '';
-  private visitsToBeRemoved_: Array<URLVisit> = [];
+  private result_: QueryResult;
+  private visitsToBeRemoved_: Array<URLVisit>;
 
   //============================================================================
   // Overridden methods
@@ -118,12 +120,17 @@ class HistoryClustersElement extends PolymerElement {
 
   constructor() {
     super();
-    this.pageHandler_ = BrowserProxy.getInstance().handler;
-    this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
+    this.pageHandler_ = BrowserProxyImpl.getInstance().handler;
+    this.callbackRouter_ = BrowserProxyImpl.getInstance().callbackRouter;
   }
 
   connectedCallback() {
     super.connectedCallback();
+
+    this.$.clusters.notifyResize();
+    this.$.clusters.scrollTarget = this;
+    this.$.scrollThreshold.scrollTarget = this;
+
     this.onClustersQueryResultListenerId_ =
         this.callbackRouter_.onClustersQueryResult.addListener(
             this.onClustersQueryResult_.bind(this));
@@ -151,17 +158,6 @@ class HistoryClustersElement extends PolymerElement {
     this.$.confirmationDialog.get().close();
   }
 
-  private onClusterEmptied_(event: CustomEvent<Cluster>) {
-    // Find and remove the emptied cluster from the list. We don't pass an
-    // index, as then that's one more piece of state to keep consistent.
-    if (this.result_ && this.result_.clusters) {
-      const index = this.result_.clusters.indexOf(event.detail);
-      if (index !== -1) {
-        this.splice('result_.clusters', index, 1);
-      }
-    }
-  }
-
   private onConfirmationDialogCancel_() {
     this.visitsToBeRemoved_ = [];
   }
@@ -174,6 +170,17 @@ class HistoryClustersElement extends PolymerElement {
           }
         });
     this.$.confirmationDialog.get().close();
+  }
+
+  /**
+   * Called with `event` received from a cluster requesting to be removed from
+   * the list when all its visits have been removed. Contains the cluster index.
+   */
+  private onRemoveCluster_(event: CustomEvent<number>) {
+    const index = event.detail;
+    this.splice('result_.clusters', index, 1);
+    MetricsProxyImpl.getInstance().recordClusterAction(
+        ClusterAction.DELETED, index);
   }
 
   /**
@@ -224,9 +231,9 @@ class HistoryClustersElement extends PolymerElement {
   // Helper methods
   //============================================================================
 
-  private computeTitle_(): string {
+  private computeHeaderText_(): string {
     return this.result_ ?
-        loadTimeData.getStringF('headerTitle', this.result_.query || '') :
+        loadTimeData.getStringF('headerText', this.result_.query || '') :
         '';
   }
 
@@ -252,8 +259,8 @@ class HistoryClustersElement extends PolymerElement {
     }
 
     // Handle the "tall monitor" edge case: if the returned results are are
-    // shorter than the vertical viewport, the "container" div will not have a
-    // scrollbar, and the user will never be able to trigger the
+    // shorter than the vertical viewport, the <history-clusters> element will
+    // not have a scrollbar, and the user will never be able to trigger the
     // iron-scroll-threshold to request more results. Therefore, immediately
     // request more results if there is no scrollbar to fill the viewport.
     //
@@ -266,8 +273,7 @@ class HistoryClustersElement extends PolymerElement {
     // Do this on browser idle to avoid jank and to give the DOM a chance to be
     // updated with the results we just got.
     this.onBrowserIdle_().then(() => {
-      const container = this.$.container;
-      if (container.scrollHeight <= container.clientHeight) {
+      if (this.scrollHeight <= this.clientHeight) {
         this.onScrolledToBottom_();
       }
     });
@@ -282,7 +288,7 @@ class HistoryClustersElement extends PolymerElement {
         endTime: undefined,
       });
       // Scroll to the top when the results change due to query change.
-      this.$.container.scrollTop = 0;
+      this.scrollTop = 0;
     });
   }
 

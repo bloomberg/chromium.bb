@@ -18,8 +18,8 @@
 #include "chrome/browser/extensions/api/storage/setting_sync_data.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/value_store/value_store.h"
 #include "extensions/browser/api/storage/settings_observer.h"
-#include "extensions/browser/value_store/value_store.h"
 
 namespace syncer {
 class SyncError;
@@ -39,6 +39,9 @@ class SyncableSettingsStorage : public value_store::ValueStore {
                           value_store::ValueStore* delegate,
                           syncer::ModelType sync_type,
                           const syncer::SyncableService::StartSyncFlare& flare);
+
+  SyncableSettingsStorage(const SyncableSettingsStorage&) = delete;
+  SyncableSettingsStorage& operator=(const SyncableSettingsStorage&) = delete;
 
   ~SyncableSettingsStorage() override;
 
@@ -127,8 +130,6 @@ class SyncableSettingsStorage : public value_store::ValueStore {
 
   const syncer::ModelType sync_type_;
   const syncer::SyncableService::StartSyncFlare flare_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncableSettingsStorage);
 };
 
 }  // namespace extensions

@@ -92,6 +92,20 @@ InterpolationSampling ASTToInspectorInterpolationSampling(
 struct OverridableConstant {
   /// Name of the constant
   std::string name;
+
+  /// Type of the scalar
+  enum class Type {
+    kBool,
+    kFloat32,
+    kUint32,
+    kInt32,
+  };
+
+  /// Type of the scalar
+  Type type;
+
+  /// Does this pipeline overridable constant have an initializer?
+  bool is_initialized = false;
 };
 
 /// Reflection data for an entry point in the shader.
@@ -135,6 +149,8 @@ struct EntryPoint {
   bool front_facing_used = false;
   /// Does the entry point use the sample_index builtin
   bool sample_index_used = false;
+  /// Does the entry point use the num_workgroups builtin
+  bool num_workgroups_used = false;
 
   /// @returns the size of the workgroup in {x,y,z} format
   std::tuple<uint32_t, uint32_t, uint32_t> workgroup_size() {

@@ -29,9 +29,10 @@ import {
   isAndroidTarget,
   isChromeTarget,
   isCrOSTarget,
-  RecordingTarget
+  MAX_TIME,
+  RecordingTarget,
+  RecordMode
 } from '../common/state';
-import {MAX_TIME, RecordMode} from '../common/state';
 import {AdbOverWebUsb} from '../controller/adb';
 
 import {globals} from './globals';
@@ -43,6 +44,7 @@ import {
   DropdownAttrs,
   Probe,
   ProbeAttrs,
+  SelectAllNoneDropdown,
   Slider,
   SliderAttrs,
   Textarea,
@@ -721,35 +723,31 @@ function ChromeCategoriesSelection() {
     categories = getBuiltinChromeCategoryList();
   }
 
-  // Show "disabled-by-default" categories last.
-  const categoriesMap = new Map<string, string>();
+  const defaultCategories = new Map<string, string>();
+  const disabledByDefaultCategories = new Map<string, string>();
   const disabledPrefix = 'disabled-by-default-';
-  const overheadSuffix = '(high overhead)';
   categories.forEach(cat => {
     if (cat.startsWith(disabledPrefix)) {
-      categoriesMap.set(
-          cat, `${cat.replace(disabledPrefix, '')} ${overheadSuffix}`);
+      disabledByDefaultCategories.set(cat, cat.replace(disabledPrefix, ''));
     } else {
-      categoriesMap.set(cat, cat);
+      defaultCategories.set(cat, cat);
     }
   });
 
-  return m(Dropdown, {
-    title: 'Additional Chrome categories',
-    cssClass: '.multicolumn.two-columns',
-    options: categoriesMap,
-    set: (cfg, val) => cfg.chromeCategoriesSelected = val,
-    get: (cfg) => cfg.chromeCategoriesSelected,
-    sort: (a, b) => {
-      const aIsDisabled = a.includes(overheadSuffix);
-      const bIsDisabled = b.includes(overheadSuffix);
-      if (aIsDisabled === bIsDisabled) {
-        return a.localeCompare(b);
-      } else {
-        return Number(aIsDisabled) - Number(bIsDisabled);
-      }
-    },
-  } as DropdownAttrs);
+  return m(
+      '.chrome-categories',
+      SelectAllNoneDropdown({
+        categories: defaultCategories,
+        title: 'Additional Chrome categories',
+        get: (cfg) => cfg.chromeCategoriesSelected,
+        set: (cfg, val) => cfg.chromeCategoriesSelected = val,
+      }),
+      SelectAllNoneDropdown({
+        categories: disabledByDefaultCategories,
+        title: 'Additional high overhead Chrome categories',
+        get: (cfg) => cfg.chromeHighOverheadCategoriesSelected,
+        set: (cfg, val) => cfg.chromeHighOverheadCategoriesSelected = val,
+      }));
 }
 
 function AdvancedSettings(cssClass: string) {
@@ -765,6 +763,14 @@ function AdvancedSettings(cssClass: string) {
           setEnabled: (cfg, val) => cfg.ftrace = val,
           isEnabled: (cfg) => cfg.ftrace
         } as ProbeAttrs,
+        m(Toggle, {
+          title: 'Resolve kernel symbols',
+          cssClass: '.thin',
+          descr: `Enables lookup via /proc/kallsyms for workqueue, 
+              sched_blocked_reason and other events (userdebug/eng builds only).`,
+          setEnabled: (cfg, val) => cfg.symbolizeKsyms = val,
+          isEnabled: (cfg) => cfg.symbolizeKsyms
+        } as ToggleAttrs),
         m(Slider, {
           title: 'Buf size',
           cssClass: '.thin',
@@ -900,8 +906,10 @@ function displayRecordConfigs() {
       m('button',
         {
           class: 'config-button load',
+          disabled: globals.state.lastLoadedConfigTitle === item.title,
           onclick: () => {
-            globals.dispatch(Actions.setRecordConfig({config: item.config}));
+            globals.dispatch(Actions.setNamedRecordConfig(
+                {title: item.title, config: item.config}));
             globals.rafScheduler.scheduleFullRedraw();
           }
         },
@@ -940,6 +948,7 @@ export const ConfigTitleState = {
 };
 
 function Configurations(cssClass: string) {
+  const canSave = recordConfigStore.canSave(ConfigTitleState.getTitle());
   return m(
       `.record-section${cssClass}`,
       m('header', 'Save and load configurations'),
@@ -950,11 +959,14 @@ function Configurations(cssClass: string) {
             placeholder: 'Title for config',
             oninput() {
               ConfigTitleState.setTitle(this.value);
+              globals.rafScheduler.scheduleFullRedraw();
             }
           }),
           m('button',
             {
               class: 'config-button save',
+              disabled: !canSave,
+              title: canSave ? '' : 'Duplicate name, saving disabled',
               onclick: () => {
                 recordConfigStore.save(
                     globals.state.recordConfig, ConfigTitleState.getTitle());

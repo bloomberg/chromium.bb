@@ -130,6 +130,11 @@ class AutoEnrollmentClientImplTest
     : public testing::Test,
       public ::testing::WithParamInterface<
           std::tuple<AutoEnrollmentClientImplTestState, int>> {
+ public:
+  AutoEnrollmentClientImplTest(const AutoEnrollmentClientImplTest&) = delete;
+  AutoEnrollmentClientImplTest& operator=(const AutoEnrollmentClientImplTest&) =
+      delete;
+
  protected:
   AutoEnrollmentClientImplTest()
       : scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
@@ -428,7 +433,7 @@ class AutoEnrollmentClientImplTest
       EXPECT_TRUE(
           state_dict->GetString(kDeviceStateMode, &actual_restore_mode));
     } else {
-      EXPECT_FALSE(state_dict->HasKey(kDeviceStateMode));
+      EXPECT_EQ(state_dict->FindKey(kDeviceStateMode), nullptr);
     }
   }
 
@@ -609,7 +614,6 @@ class AutoEnrollmentClientImplTest
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::unique_ptr<AutoEnrollmentClient> client_;
-  DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClientImplTest);
 };
 
 TEST_P(AutoEnrollmentClientImplTest, NetworkFailure) {
@@ -944,7 +948,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollment) {
 TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollmentStateRetrivalfailure) {
   InSequence sequence;
 
-  const base::TimeDelta kOneSecondTimeDelta = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kOneSecondTimeDelta = base::Seconds(1);
 
   DeviceManagementService::JobForTesting hash_dance_job;
   DeviceManagementService::JobForTesting device_state_job;
@@ -986,7 +990,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollmentStateRetrivalfailure) {
   // Verify Hash dance protocol overall execution time and its success time
   // histograms were recorded correctly with the same value.
   ExpectHashDanceExecutionTimeHistogram(
-      /*expected_time_recorded=*/base::TimeDelta::FromSeconds(1),
+      /*expected_time_recorded=*/base::Seconds(1),
       /*success_time_recorded=*/true);
 
   // Verify device state job has been captured.
@@ -1911,7 +1915,7 @@ TEST_P(PsmHelperTest, MembershipRetrievedSuccessfully) {
   InSequence sequence;
 
   const bool kExpectedMembershipResult = GetExpectedMembershipResult();
-  const base::TimeDelta kOneSecondTimeDelta = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kOneSecondTimeDelta = base::Seconds(1);
   const base::Time kExpectedPsmDeterminationTimestamp =
       base::Time::NowFromSystemTime() + kOneSecondTimeDelta;
 
@@ -2096,7 +2100,7 @@ TEST_P(PsmHelperTest, RetryLogicAfterMembershipSuccessfullyRetrieved) {
   InSequence sequence;
 
   const bool kExpectedMembershipResult = GetExpectedMembershipResult();
-  const base::TimeDelta kOneSecondTimeDelta = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kOneSecondTimeDelta = base::Seconds(1);
   const base::Time kExpectedPsmDeterminationTimestamp =
       base::Time::NowFromSystemTime() + kOneSecondTimeDelta;
 
@@ -2240,7 +2244,7 @@ TEST_P(PsmHelperInitialEnrollmentTest, PsmSucceedAndStateRetrievalSucceed) {
   InSequence sequence;
 
   const bool kExpectedMembershipResult = GetExpectedMembershipResult();
-  const base::TimeDelta kOneSecondTimeDelta = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kOneSecondTimeDelta = base::Seconds(1);
   const base::Time kExpectedPsmDeterminationTimestamp =
       base::Time::NowFromSystemTime() + kOneSecondTimeDelta;
 
@@ -2298,7 +2302,7 @@ TEST_P(PsmHelperInitialEnrollmentTest, PsmSucceedAndStateRetrievalFailed) {
   InSequence sequence;
 
   const bool kExpectedMembershipResult = GetExpectedMembershipResult();
-  const base::TimeDelta kOneSecondTimeDelta = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kOneSecondTimeDelta = base::Seconds(1);
   const base::Time kExpectedPsmDeterminationTimestamp =
       base::Time::NowFromSystemTime() + kOneSecondTimeDelta;
 

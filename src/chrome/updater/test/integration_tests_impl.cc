@@ -129,7 +129,8 @@ void RunWake(UpdaterScope scope, int expected_exit_code) {
   base::CommandLine command_line(*installed_executable_path);
   command_line.AppendSwitch(kWakeSwitch);
   command_line.AppendSwitch(kEnableLoggingSwitch);
-  command_line.AppendSwitchASCII(kLoggingModuleSwitch, "*/updater/*=2");
+  command_line.AppendSwitchASCII(kLoggingModuleSwitch,
+                                 kLoggingModuleSwitchValue);
   int exit_code = -1;
   ASSERT_TRUE(Run(scope, command_line, &exit_code));
   EXPECT_EQ(exit_code, expected_exit_code);
@@ -229,15 +230,18 @@ void ExpectAppUnregisteredExistenceCheckerPath(const std::string& app_id) {
 void ExpectAppVersion(UpdaterScope scope,
                       const std::string& app_id,
                       const base::Version& version) {
-  EXPECT_EQ(version, base::MakeRefCounted<PersistedData>(
-                         CreateGlobalPrefs(scope)->GetPrefService())
-                         ->GetProductVersion(app_id));
+  const base::Version app_version =
+      base::MakeRefCounted<PersistedData>(
+          CreateGlobalPrefs(scope)->GetPrefService())
+          ->GetProductVersion(app_id);
+  EXPECT_TRUE(app_version.IsValid() && version == app_version);
 }
 
 bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
   base::ScopedAllowBaseSyncPrimitivesForTesting allow_wait_process;
   command_line.AppendSwitch(kEnableLoggingSwitch);
-  command_line.AppendSwitchASCII(kLoggingModuleSwitch, "*/updater/*=2");
+  command_line.AppendSwitchASCII(kLoggingModuleSwitch,
+                                 kLoggingModuleSwitchValue);
   if (scope == UpdaterScope::kSystem) {
     command_line.AppendSwitch(kSystemSwitch);
     command_line = MakeElevated(command_line);
@@ -248,8 +252,7 @@ bool Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
     return false;
 
   // TODO(crbug.com/1096654): Get the timeout from TestTimeouts.
-  return process.WaitForExitWithTimeout(base::TimeDelta::FromSeconds(45),
-                                        exit_code);
+  return process.WaitForExitWithTimeout(base::Seconds(45), exit_code);
 }
 
 void SleepFor(int seconds) {
@@ -259,7 +262,7 @@ void SleepFor(int seconds) {
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&sleep)),
-      base::TimeDelta::FromSeconds(seconds));
+      base::Seconds(seconds));
   sleep.Wait();
   VLOG(2) << "Sleep complete.";
 }
@@ -270,7 +273,7 @@ bool WaitFor(base::RepeatingCallback<bool()> predicate) {
   while (base::TimeTicks::Now() < deadline) {
     if (predicate.Run())
       return true;
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
+    base::PlatformThread::Sleep(base::Milliseconds(200));
   }
   return false;
 }

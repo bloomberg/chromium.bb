@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
+#include "stdint.h"
 
 #include <limits>
 #include <list>
@@ -187,6 +187,10 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
         net_error_(net_error),
         async_reads_(async_reads) {}
 
+  URLRequestMultipleWritesJob(const URLRequestMultipleWritesJob&) = delete;
+  URLRequestMultipleWritesJob& operator=(const URLRequestMultipleWritesJob&) =
+      delete;
+
   ~URLRequestMultipleWritesJob() override = default;
 
   // net::URLRequestJob implementation:
@@ -226,8 +230,6 @@ class URLRequestMultipleWritesJob : public net::URLRequestJob {
   bool async_reads_;
 
   base::WeakPtrFactory<URLRequestMultipleWritesJob> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestMultipleWritesJob);
 };
 
 class MultipleWritesInterceptor : public net::URLRequestInterceptor {
@@ -238,6 +240,11 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
       : packets_(std::move(packets)),
         net_error_(net_error),
         async_reads_(async_reads) {}
+
+  MultipleWritesInterceptor(const MultipleWritesInterceptor&) = delete;
+  MultipleWritesInterceptor& operator=(const MultipleWritesInterceptor&) =
+      delete;
+
   ~MultipleWritesInterceptor() override {}
 
   static GURL GetURL() { return GURL("http://foo"); }
@@ -253,8 +260,6 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
   std::list<std::string> packets_;
   net::Error net_error_;
   bool async_reads_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultipleWritesInterceptor);
 };
 
 // Every read completes synchronously.
@@ -265,6 +270,10 @@ class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
   URLRequestEternalSyncReadsJob(net::URLRequest* request,
                                 bool fill_entire_buffer)
       : URLRequestJob(request), fill_entire_buffer_(fill_entire_buffer) {}
+
+  URLRequestEternalSyncReadsJob(const URLRequestEternalSyncReadsJob&) = delete;
+  URLRequestEternalSyncReadsJob& operator=(
+      const URLRequestEternalSyncReadsJob&) = delete;
 
   ~URLRequestEternalSyncReadsJob() override = default;
 
@@ -292,13 +301,16 @@ class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
   const bool fill_entire_buffer_;
 
   base::WeakPtrFactory<URLRequestEternalSyncReadsJob> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestEternalSyncReadsJob);
 };
 
 class EternalSyncReadsInterceptor : public net::URLRequestInterceptor {
  public:
   EternalSyncReadsInterceptor() {}
+
+  EternalSyncReadsInterceptor(const EternalSyncReadsInterceptor&) = delete;
+  EternalSyncReadsInterceptor& operator=(const EternalSyncReadsInterceptor&) =
+      delete;
+
   ~EternalSyncReadsInterceptor() override {}
 
   static std::string GetHostName() { return "eternal"; }
@@ -319,9 +331,6 @@ class EternalSyncReadsInterceptor : public net::URLRequestInterceptor {
     }
     return nullptr;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EternalSyncReadsInterceptor);
 };
 
 // Simulates handing over things to the disk to write before returning to the
@@ -337,6 +346,10 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
       : URLRequestJob(request),
         simulated_cache_dest_(simulated_cache_dest),
         use_text_plain_(use_text_plain) {}
+
+  URLRequestSimulatedCacheJob(const URLRequestSimulatedCacheJob&) = delete;
+  URLRequestSimulatedCacheJob& operator=(const URLRequestSimulatedCacheJob&) =
+      delete;
 
   ~URLRequestSimulatedCacheJob() override = default;
 
@@ -375,8 +388,6 @@ class URLRequestSimulatedCacheJob : public net::URLRequestJob {
   scoped_refptr<net::IOBuffer>* simulated_cache_dest_;
   bool use_text_plain_;
   base::WeakPtrFactory<URLRequestSimulatedCacheJob> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestSimulatedCacheJob);
 };
 
 class SimulatedCacheInterceptor : public net::URLRequestInterceptor {
@@ -425,8 +436,7 @@ class URLRequestFakeTransportInfoJob : public net::URLRequestJob {
 
  private:
   void StartAsync() {
-    const int result =
-        NotifyConnected(transport_info_, base::DoNothing::Once<int>());
+    const int result = NotifyConnected(transport_info_, base::DoNothing());
 
     if (result != net::OK && result != net::ERR_IO_PENDING) {
       NotifyStartError(result);
@@ -476,6 +486,13 @@ mojom::ClientSecurityStatePtr NewSecurityState() {
       mojom::PrivateNetworkRequestPolicy::kBlock;
   result->ip_address_space = mojom::IPAddressSpace::kUnknown;
   return result;
+}
+
+CorsErrorStatus InsecurePrivateNetworkCorsErrorStatus(
+    mojom::IPAddressSpace resource_address_space) {
+  return CorsErrorStatus(mojom::CorsError::kInsecurePrivateNetwork,
+                         mojom::IPAddressSpace::kUnknown,
+                         resource_address_space);
 }
 
 // Returns whether monitoring was successfully set up.
@@ -633,6 +650,8 @@ class URLLoaderTest : public testing::Test {
         &request_client_security_state_);
 
     request.headers.MergeFrom(additional_headers_);
+
+    request.target_ip_address_space = target_ip_address_space_;
 
     return LoadRequest(request, body);
   }
@@ -875,6 +894,9 @@ class URLLoaderTest : public testing::Test {
   void set_additional_headers(const net::HttpRequestHeaders& headers) {
     additional_headers_ = headers;
   }
+  void set_target_ip_address_space(mojom::IPAddressSpace address_space) {
+    target_ip_address_space_ = address_space;
+  }
   void set_accept_ch_frame_observer_for_next_request(
       MockAcceptCHFrameObserver* observer) {
     accept_ch_frame_observer_ = observer;
@@ -1008,6 +1030,8 @@ class URLLoaderTest : public testing::Test {
   MockDevToolsObserver* devtools_observer_ = nullptr;
   scoped_refptr<ResourceRequestBody> request_body_;
   net::HttpRequestHeaders additional_headers_;
+  mojom::IPAddressSpace target_ip_address_space_ =
+      mojom::IPAddressSpace::kUnknown;
 
   bool corb_enabled_ = false;
 
@@ -1080,6 +1104,33 @@ TEST_F(URLLoaderTest, MissingClientSecurityStateIsOk) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+// This test verifies that when the request's `target_ip_address_space` matches
+// the resource's IP address space, then the request is allowed even if it
+// would otherwise be blocked by policy.
+TEST_F(URLLoaderTest, MatchingTargetIPAddressSpaceIsOk) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  set_target_ip_address_space(mojom::IPAddressSpace::kLocal);
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+// This test verifies that when the request's `target_ip_address_space` does not
+// match the resource's IP address space, then the request is blocked.
+TEST_F(URLLoaderTest, MismatchingTargetIPAddressSpaceIsBlocked) {
+  set_target_ip_address_space(mojom::IPAddressSpace::kPrivate);
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(mojom::CorsError::kInvalidPrivateNetworkAccess,
+                               mojom::IPAddressSpace::kPrivate,
+                               mojom::IPAddressSpace::kLocal)));
+}
+
 // These tests verify that requests from both secure and non-secure contexts to
 // an IP in the `kLocal` address space are only blocked when the policy is
 // `kBlock` and the initiator's address space is not `kLocal`.
@@ -1099,7 +1150,8 @@ TEST_F(URLLoaderTest, SecureUnknownToLocalBlock) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, SecureUnknownToLocalWarn) {
@@ -1124,6 +1176,40 @@ TEST_F(URLLoaderTest, SecureUnknownToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, SecureUnknownToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
+TEST_F(URLLoaderTest, SecureUnknownToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
 TEST_F(URLLoaderTest, NonSecureUnknownToLocalBlock) {
   auto client_security_state = NewSecurityState();
   client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
@@ -1132,7 +1218,8 @@ TEST_F(URLLoaderTest, NonSecureUnknownToLocalBlock) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, NonSecureUnknownToLocalWarn) {
@@ -1155,6 +1242,38 @@ TEST_F(URLLoaderTest, NonSecureUnknownToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, NonSecureUnknownToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
+TEST_F(URLLoaderTest, NonSecureUnknownToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kUnknown;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
 TEST_F(URLLoaderTest, SecurePublicToLocalBlock) {
   auto client_security_state = NewSecurityState();
   client_security_state->is_web_secure_context = true;
@@ -1164,7 +1283,8 @@ TEST_F(URLLoaderTest, SecurePublicToLocalBlock) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, SecurePublicToLocalWarn) {
@@ -1189,6 +1309,40 @@ TEST_F(URLLoaderTest, SecurePublicToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, SecurePublicToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
+TEST_F(URLLoaderTest, SecurePublicToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
 TEST_F(URLLoaderTest, NonSecurePublicToLocalBlock) {
   auto client_security_state = NewSecurityState();
   client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
@@ -1197,7 +1351,8 @@ TEST_F(URLLoaderTest, NonSecurePublicToLocalBlock) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, NonSecurePublicToLocalWarn) {
@@ -1220,6 +1375,38 @@ TEST_F(URLLoaderTest, NonSecurePublicToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, NonSecurePublicToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
+TEST_F(URLLoaderTest, NonSecurePublicToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPublic;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
 TEST_F(URLLoaderTest, SecurePrivateToLocalBlock) {
   auto client_security_state = NewSecurityState();
   client_security_state->is_web_secure_context = true;
@@ -1229,7 +1416,8 @@ TEST_F(URLLoaderTest, SecurePrivateToLocalBlock) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, SecurePrivateToLocalWarn) {
@@ -1254,6 +1442,40 @@ TEST_F(URLLoaderTest, SecurePrivateToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, SecurePrivateToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
+TEST_F(URLLoaderTest, SecurePrivateToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
 TEST_F(URLLoaderTest, NonSecurePrivateToLocalBlock) {
   auto client_security_state = NewSecurityState();
   client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
@@ -1262,7 +1484,8 @@ TEST_F(URLLoaderTest, NonSecurePrivateToLocalBlock) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, NonSecurePrivateToLocalWarn) {
@@ -1283,6 +1506,38 @@ TEST_F(URLLoaderTest, NonSecurePrivateToLocalAllow) {
   set_factory_client_security_state(std::move(client_security_state));
 
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+TEST_F(URLLoaderTest, NonSecurePrivateToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
+}
+
+TEST_F(URLLoaderTest, NonSecurePrivateToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kPrivate;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
+              IsError(net::ERR_FAILED));
+  EXPECT_THAT(
+      client()->completion_status().cors_error_status,
+      Optional(CorsErrorStatus(
+          mojom::CorsError::kUnexpectedPrivateNetworkAccess,
+          mojom::IPAddressSpace::kUnknown, mojom::IPAddressSpace::kLocal)));
 }
 
 TEST_F(URLLoaderTest, SecureLocalToLocalBlock) {
@@ -1316,6 +1571,28 @@ TEST_F(URLLoaderTest, SecureLocalToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, SecureLocalToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+TEST_F(URLLoaderTest, SecureLocalToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->is_web_secure_context = true;
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
 TEST_F(URLLoaderTest, NonSecureLocalToLocalBlock) {
   auto client_security_state = NewSecurityState();
   client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
@@ -1344,6 +1621,26 @@ TEST_F(URLLoaderTest, NonSecureLocalToLocalAllow) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
 }
 
+TEST_F(URLLoaderTest, NonSecureLocalToLocalPreflightBlock) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightBlock;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
+TEST_F(URLLoaderTest, NonSecureLocalToLocalPreflightWarn) {
+  auto client_security_state = NewSecurityState();
+  client_security_state->ip_address_space = mojom::IPAddressSpace::kLocal;
+  client_security_state->private_network_request_policy =
+      mojom::PrivateNetworkRequestPolicy::kPreflightWarn;
+  set_factory_client_security_state(std::move(client_security_state));
+
+  EXPECT_THAT(Load(test_server()->GetURL("/empty.html")), IsOk());
+}
+
 // This test verifies that if the request's TrustedParams field carries a client
 // security state indicating that the request initiator is not a secure context
 // and came from the public IP address space, requests to local IP addresses
@@ -1356,7 +1653,8 @@ TEST_F(URLLoaderTest, NonSecurePublicToLocalTrustedParams) {
   EXPECT_THAT(Load(test_server()->GetURL("/empty.html")),
               IsError(net::ERR_FAILED));
   EXPECT_THAT(client()->completion_status().cors_error_status,
-              Optional(CorsErrorStatus(mojom::IPAddressSpace::kLocal)));
+              Optional(InsecurePrivateNetworkCorsErrorStatus(
+                  mojom::IPAddressSpace::kLocal)));
 }
 
 // Bundles together the inputs to a parameterized private network request test.
@@ -1431,7 +1729,8 @@ TEST_P(URLLoaderFakeTransportInfoTest, PrivateNetworkRequestLoadsCorrectly) {
   EXPECT_THAT(Load(url), IsError(params.expected_result));
   if (params.expected_result != net::OK) {
     EXPECT_THAT(client()->completion_status().cors_error_status,
-                Optional(CorsErrorStatus(params.endpoint_address_space)));
+                Optional(InsecurePrivateNetworkCorsErrorStatus(
+                    params.endpoint_address_space)));
   }
 }
 
@@ -1733,14 +2032,13 @@ class NeverFinishedBodyHttpResponse : public net::test_server::HttpResponse {
 
  private:
   // net::test_server::HttpResponse implementation.
-  void SendResponse(const net::test_server::SendBytesCallback& send,
-                    net::test_server::SendCompleteCallback done) override {
-    send.Run(
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/plain\r\n\r\n"
+  void SendResponse(
+      base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) override {
+    delegate->SendResponseHeaders(net::HTTP_OK, "OK",
+                                  {{"Content-Type", "text/plain"}});
+    delegate->SendContents(
         "long long ago..." +
-            std::string(1024 * 1024, 'a'),
-        base::DoNothing());
+        std::string(static_cast<uint64_t>(1024 * 1024), 'a'));
 
     // Never call |done|, so the other side will never see the completion of the
     // response body.
@@ -1850,8 +2148,7 @@ TEST_F(URLLoaderTest, CloseResponseBodyConsumerBeforeProducer) {
   // point that it is not writable anymore.)
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(100));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
   run_loop.Run();
 
   auto response_body = client()->response_body_release();
@@ -1927,8 +2224,7 @@ TEST_F(URLLoaderTest, PauseReadingBodyFromNetBeforeResponseHeaders) {
   // response body from the underlying URLRequest, it is easier to find out.
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(100));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
   run_loop.Run();
 
   std::string available_data = ReadAvailableBody();
@@ -3224,6 +3520,9 @@ class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
                                response_data,
                                auto_advance) {}
 
+  MockHTTPSURLRequestJob(const MockHTTPSURLRequestJob&) = delete;
+  MockHTTPSURLRequestJob& operator=(const MockHTTPSURLRequestJob&) = delete;
+
   ~MockHTTPSURLRequestJob() override = default;
 
   // net::URLRequestTestJob:
@@ -3234,9 +3533,6 @@ class MockHTTPSURLRequestJob : public net::URLRequestTestJob {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     info->ssl_info.cert_status = net::CERT_STATUS_DATE_INVALID;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockHTTPSURLRequestJob);
 };
 
 class MockHTTPSJobURLRequestInterceptor : public net::URLRequestInterceptor {
@@ -3391,6 +3687,10 @@ class FakeSSLPrivateKeyImpl : public network::mojom::SSLPrivateKey {
   explicit FakeSSLPrivateKeyImpl(
       scoped_refptr<net::SSLPrivateKey> ssl_private_key)
       : ssl_private_key_(std::move(ssl_private_key)) {}
+
+  FakeSSLPrivateKeyImpl(const FakeSSLPrivateKeyImpl&) = delete;
+  FakeSSLPrivateKeyImpl& operator=(const FakeSSLPrivateKeyImpl&) = delete;
+
   ~FakeSSLPrivateKeyImpl() override {}
 
   // network::mojom::SSLPrivateKey:
@@ -3412,8 +3712,6 @@ class FakeSSLPrivateKeyImpl : public network::mojom::SSLPrivateKey {
   }
 
   scoped_refptr<net::SSLPrivateKey> ssl_private_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSSLPrivateKeyImpl);
 };
 
 using CookieAccessType = mojom::CookieAccessDetails::Type;

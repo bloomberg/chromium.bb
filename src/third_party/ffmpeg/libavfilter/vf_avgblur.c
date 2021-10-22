@@ -216,10 +216,12 @@ static void averageiir2d(AVFilterContext *ctx, AVFrame *in, AVFrame *out, int pl
     td.height = height;
     td.ptr = in->data[plane];
     td.linesize = in->linesize[plane];
-    ctx->internal->execute(ctx, s->filter_horizontally, &td, NULL, FFMIN(height, nb_threads));
+    ff_filter_execute(ctx, s->filter_horizontally, &td,
+                      NULL, FFMIN(height, nb_threads));
     td.ptr = out->data[plane];
     td.linesize = out->linesize[plane];
-    ctx->internal->execute(ctx, s->filter_vertically, &td, NULL, FFMIN(width, nb_threads));
+    ff_filter_execute(ctx, s->filter_vertically, &td,
+                      NULL, FFMIN(width, nb_threads));
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -246,7 +248,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
@@ -302,7 +304,6 @@ static const AVFilterPad avgblur_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad avgblur_outputs[] = {
@@ -310,7 +311,6 @@ static const AVFilterPad avgblur_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_avgblur = {
@@ -320,8 +320,8 @@ const AVFilter ff_vf_avgblur = {
     .priv_class    = &avgblur_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = avgblur_inputs,
-    .outputs       = avgblur_outputs,
+    FILTER_INPUTS(avgblur_inputs),
+    FILTER_OUTPUTS(avgblur_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

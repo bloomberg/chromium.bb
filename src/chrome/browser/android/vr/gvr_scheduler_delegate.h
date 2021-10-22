@@ -23,7 +23,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace gfx {
 class GpuFence;
@@ -63,6 +63,10 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
                        bool start_in_webxr_mode,
                        bool cardboard_gamepad,
                        size_t sliding_time_size);
+
+  GvrSchedulerDelegate(const GvrSchedulerDelegate&) = delete;
+  GvrSchedulerDelegate& operator=(const GvrSchedulerDelegate&) = delete;
+
   ~GvrSchedulerDelegate() override;
 
   device::WebXrPresentationState* webxr() { return &webxr_; }
@@ -255,8 +259,6 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   device::SlidingTimeDeltaAverage webvr_js_wait_time_;
 
   base::WeakPtrFactory<GvrSchedulerDelegate> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GvrSchedulerDelegate);
 };
 
 }  // namespace vr

@@ -10,6 +10,7 @@
 #include "base/containers/extend.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -40,8 +42,11 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/browser_app_instance_tracker.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,9 +56,9 @@
 #include "chrome/browser/ash/arc/arc_web_contents_data.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/full_restore_save_handler.h"
-#include "components/full_restore/full_restore_utils.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_save_handler.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/sessions/core/session_id.h"
 #endif
 
@@ -71,7 +76,46 @@ const ContentSettingsType kSupportedPermissionTypes[] = {
     ContentSettingsType::NOTIFICATIONS,
 };
 
-apps::mojom::InstallSource GetHighestPriorityInstallSource(
+bool GetContentSettingsType(apps::mojom::PermissionType permission_type,
+                            ContentSettingsType& content_setting_type) {
+  switch (permission_type) {
+    case apps::mojom::PermissionType::kCamera:
+      content_setting_type = ContentSettingsType::MEDIASTREAM_CAMERA;
+      return true;
+    case apps::mojom::PermissionType::kLocation:
+      content_setting_type = ContentSettingsType::GEOLOCATION;
+      return true;
+    case apps::mojom::PermissionType::kMicrophone:
+      content_setting_type = ContentSettingsType::MEDIASTREAM_MIC;
+      return true;
+    case apps::mojom::PermissionType::kNotifications:
+      content_setting_type = ContentSettingsType::NOTIFICATIONS;
+      return true;
+    case apps::mojom::PermissionType::kUnknown:
+    case apps::mojom::PermissionType::kContacts:
+    case apps::mojom::PermissionType::kStorage:
+    case apps::mojom::PermissionType::kPrinting:
+      return false;
+  }
+}
+
+apps::mojom::PermissionType GetPermissionType(
+    ContentSettingsType content_setting_type) {
+  switch (content_setting_type) {
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
+      return apps::mojom::PermissionType::kCamera;
+    case ContentSettingsType::GEOLOCATION:
+      return apps::mojom::PermissionType::kLocation;
+    case ContentSettingsType::MEDIASTREAM_MIC:
+      return apps::mojom::PermissionType::kMicrophone;
+    case ContentSettingsType::NOTIFICATIONS:
+      return apps::mojom::PermissionType::kNotifications;
+    default:
+      return apps::mojom::PermissionType::kUnknown;
+  }
+}
+
+apps::mojom::InstallReason GetHighestPriorityInstallReason(
     const WebApp* web_app) {
   // TODO(crbug.com/1189949): Introduce kOem as a new Source::Type value
   // immediately below web_app::Source::kSystem, so that this custom behavior
@@ -80,21 +124,59 @@ apps::mojom::InstallSource GetHighestPriorityInstallSource(
     auto& chromeos_data = web_app->chromeos_data().value();
     if (chromeos_data.oem_installed) {
       DCHECK(!web_app->IsSystemApp());
-      return apps::mojom::InstallSource::kOem;
+      return apps::mojom::InstallReason::kOem;
     }
   }
 
   switch (web_app->GetHighestPrioritySource()) {
     case Source::kSystem:
-      return apps::mojom::InstallSource::kSystem;
+      return apps::mojom::InstallReason::kSystem;
     case Source::kPolicy:
-      return apps::mojom::InstallSource::kPolicy;
+      return apps::mojom::InstallReason::kPolicy;
+    case Source::kSubApp:
+      return apps::mojom::InstallReason::kSubApp;
     case Source::kWebAppStore:
-      return apps::mojom::InstallSource::kUser;
+      return apps::mojom::InstallReason::kUser;
     case Source::kSync:
-      return apps::mojom::InstallSource::kSync;
+      return apps::mojom::InstallReason::kSync;
     case Source::kDefault:
-      return apps::mojom::InstallSource::kDefault;
+      return apps::mojom::InstallReason::kDefault;
+  }
+}
+
+apps::mojom::InstallSource GetInstallSource(PrefService* prefs,
+                                            const AppId& app_id) {
+  auto install_source = web_app::GetWebAppInstallSource(prefs, app_id);
+  if (!install_source.has_value()) {
+    return apps::mojom::InstallSource::kUnknown;
+  }
+
+  switch (static_cast<webapps::WebappInstallSource>(install_source.value())) {
+    case webapps::WebappInstallSource::MENU_BROWSER_TAB:
+    case webapps::WebappInstallSource::MENU_CUSTOM_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_BROWSER_TAB:
+    case webapps::WebappInstallSource::AUTOMATIC_PROMPT_CUSTOM_TAB:
+    case webapps::WebappInstallSource::API_BROWSER_TAB:
+    case webapps::WebappInstallSource::API_CUSTOM_TAB:
+    case webapps::WebappInstallSource::DEVTOOLS:
+    case webapps::WebappInstallSource::MANAGEMENT_API:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_BROWSER_TAB:
+    case webapps::WebappInstallSource::AMBIENT_BADGE_CUSTOM_TAB:
+    case webapps::WebappInstallSource::EXTERNAL_POLICY:
+    case webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON:
+    case webapps::WebappInstallSource::MENU_CREATE_SHORTCUT:
+    case webapps::WebappInstallSource::SUB_APP:
+      return apps::mojom::InstallSource::kBrowser;
+    case webapps::WebappInstallSource::ARC:
+      return apps::mojom::InstallSource::kPlayStore;
+    case webapps::WebappInstallSource::INTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::EXTERNAL_DEFAULT:
+    case webapps::WebappInstallSource::SYSTEM_DEFAULT:
+      return apps::mojom::InstallSource::kSystem;
+    case webapps::WebappInstallSource::SYNC:
+      return apps::mojom::InstallSource::kSync;
+    case webapps::WebappInstallSource::COUNT:
+      return apps::mojom::InstallSource::kUnknown;
   }
 }
 
@@ -104,7 +186,7 @@ WebAppPublisherHelper::Delegate::Delegate() = default;
 
 WebAppPublisherHelper::Delegate::~Delegate() = default;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 WebAppPublisherHelper::BadgeManagerDelegate::BadgeManagerDelegate(
     const base::WeakPtr<WebAppPublisherHelper>& publisher_helper)
     : badging::BadgeManagerDelegate(publisher_helper->profile(),
@@ -237,7 +319,7 @@ void WebAppPublisherHelper::PopulateWebAppPermissions(
     host_content_settings_map->GetWebsiteSetting(url, url, type, &setting_info);
 
     auto permission = apps::mojom::Permission::New();
-    permission->permission_id = static_cast<uint32_t>(type);
+    permission->permission_type = GetPermissionType(type);
     permission->value_type = apps::mojom::PermissionValueType::kTriState;
     permission->value = static_cast<uint32_t>(setting_val);
     permission->is_managed =
@@ -249,22 +331,39 @@ void WebAppPublisherHelper::PopulateWebAppPermissions(
 
 apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
     const WebApp* web_app) {
-  bool is_disabled = false;
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  apps::mojom::Readiness readiness =
+      web_app->is_locally_installed() ? apps::mojom::Readiness::kReady
+                                      : apps::mojom::Readiness::kDisabledByUser;
+#if defined(OS_CHROMEOS)
   DCHECK(web_app->chromeos_data().has_value());
-  is_disabled = web_app->chromeos_data()->is_disabled;
+  if (web_app->chromeos_data()->is_disabled)
+    readiness = apps::mojom::Readiness::kDisabledByPolicy;
 #endif
-  const apps::mojom::Readiness readiness =
-      is_disabled ? apps::mojom::Readiness::kDisabledByPolicy
-                  : apps::mojom::Readiness::kReady;
 
-  apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
-      app_type(), web_app->app_id(), readiness, web_app->name(),
-      GetHighestPriorityInstallSource(web_app));
+  auto install_reason = GetHighestPriorityInstallReason(web_app);
+  apps::mojom::AppPtr app =
+      apps::PublisherBase::MakeApp(app_type(), web_app->app_id(), readiness,
+                                   web_app->name(), install_reason);
+
+  app->install_source =
+      GetInstallSource(profile()->GetPrefs(), web_app->app_id());
+
+  GURL install_url;
+  if (registrar().HasExternalAppWithInstallSource(
+          web_app->app_id(), ExternalInstallSource::kExternalPolicy)) {
+    std::map<AppId, GURL> installed_apps =
+        registrar().GetExternallyInstalledApps(
+            ExternalInstallSource::kExternalPolicy);
+    auto it = installed_apps.find(web_app->app_id());
+    if (it != installed_apps.end()) {
+      install_url = it->second;
+    }
+  }
+  app->policy_id = install_url.spec();
 
   // For system web apps (only), the install source is |kSystem|.
   DCHECK_EQ(web_app->IsSystemApp(),
-            app->install_source == apps::mojom::InstallSource::kSystem);
+            app->install_reason == apps::mojom::InstallReason::kSystem);
 
   app->description = web_app->description();
   app->additional_search_terms = web_app->additional_search_terms();
@@ -284,7 +383,8 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
 
   // Add the intent filters for PWAs.
   base::Extend(app->intent_filters,
-               apps_util::CreateWebAppIntentFilters(*web_app));
+               apps_util::CreateWebAppIntentFilters(
+                   *web_app, registrar().GetAppScope(web_app->app_id())));
 
   app->icon_key = MakeIconKey(web_app);
 
@@ -292,8 +392,8 @@ apps::mojom::AppPtr WebAppPublisherHelper::ConvertWebApp(
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (is_disabled) {
+#if defined(OS_CHROMEOS)
+  if (readiness != apps::mojom::Readiness::kReady) {
     UpdateAppDisabledMode(app);
   }
 
@@ -506,7 +606,7 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithFiles(
   DisplayMode display_mode = registrar().GetAppEffectiveDisplayMode(app_id);
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id, event_flags, apps::GetAppLaunchSource(launch_source),
-      display::kDefaultDisplayId,
+      display::kInvalidDisplayId,
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
   if (file_paths) {
@@ -565,8 +665,8 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithParams(
     const WebApp* web_app = GetWebApp(params_for_restore.app_id);
     const bool is_system_web_app = web_app && web_app->IsSystemApp();
     if (is_system_web_app) {
-      std::unique_ptr<full_restore::AppLaunchInfo> launch_info =
-          std::make_unique<full_restore::AppLaunchInfo>(
+      std::unique_ptr<app_restore::AppLaunchInfo> launch_info =
+          std::make_unique<app_restore::AppLaunchInfo>(
               params_for_restore.app_id, session_id,
               params_for_restore.container, params_for_restore.disposition,
               params_for_restore.display_id,
@@ -599,10 +699,9 @@ void WebAppPublisherHelper::SetPermission(
 
   const GURL url = web_app->start_url();
 
-  ContentSettingsType permission_type =
-      static_cast<ContentSettingsType>(permission->permission_id);
-  if (!WebAppPublisherHelper::IsSupportedWebAppPermissionType(
-          permission_type)) {
+  ContentSettingsType permission_type;
+
+  if (!GetContentSettingsType(permission->permission_type, permission_type)) {
     return;
   }
 
@@ -626,6 +725,21 @@ void WebAppPublisherHelper::SetPermission(
   host_content_settings_map->SetContentSettingDefaultScope(
       url, url, permission_type, permission_value);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+void WebAppPublisherHelper::StopApp(const std::string& app_id) {
+  if (!features::IsBrowserAppInstanceTrackingEnabled()) {
+    return;
+  }
+
+  apps::BrowserAppInstanceTracker* instance_tracker =
+      apps::AppServiceProxyFactory::GetInstance()
+          ->GetForProfile(profile_)
+          ->BrowserAppInstanceTracker();
+
+  instance_tracker->StopInstancesOfApp(app_id);
+}
+#endif
 
 void WebAppPublisherHelper::OpenNativeSettings(const std::string& app_id) {
   if (!profile_) {
@@ -738,6 +852,13 @@ void WebAppPublisherHelper::OnWebAppInstalled(const AppId& app_id) {
   }
 }
 
+void WebAppPublisherHelper::OnWebAppInstalledWithOsHooks(const AppId& app_id) {
+  const WebApp* web_app = GetWebApp(app_id);
+  if (web_app && Accepts(app_id)) {
+    delegate_->PublishWebApp(ConvertWebApp(web_app));
+  }
+}
+
 void WebAppPublisherHelper::OnWebAppManifestUpdated(
     const AppId& app_id,
     base::StringPiece old_name) {
@@ -755,7 +876,7 @@ void WebAppPublisherHelper::OnWebAppWillBeUninstalled(const AppId& app_id) {
 
   paused_apps_.MaybeRemoveApp(app_id);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   app_notifications_.RemoveNotificationsForApp(app_id);
 
   auto result = media_requests_.RemoveRequests(app_id);
@@ -778,11 +899,7 @@ void WebAppPublisherHelper::OnWebAppLocallyInstalledStateChanged(
     return;
   }
 
-  auto app = apps::mojom::App::New();
-  app->app_type = app_type();
-  app->app_id = app_id;
-  app->icon_key = MakeIconKey(web_app);
-  delegate_->PublishWebApp(std::move(app));
+  delegate_->PublishWebApp(ConvertWebApp(web_app));
 }
 
 void WebAppPublisherHelper::OnWebAppLastLaunchTimeChanged(
@@ -802,7 +919,7 @@ void WebAppPublisherHelper::OnWebAppUserDisplayModeChanged(
   PublishWindowModeUpdate(app_id, user_display_mode);
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 // If is_disabled is set, the app backed by |app_id| is published with readiness
 // kDisabledByPolicy, otherwise it's published with readiness kReady.
 void WebAppPublisherHelper::OnWebAppDisabledStateChanged(const AppId& app_id,
@@ -849,7 +966,7 @@ void WebAppPublisherHelper::OnWebAppsDisabledModeChanged() {
 }
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 void WebAppPublisherHelper::OnNotificationDisplayed(
     const message_center::Notification& notification,
     const NotificationCommon::Metadata* const metadata) {
@@ -974,7 +1091,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
   content_settings_observation_.Observe(
       HostContentSettingsMapFactory::GetForProfile(profile_));
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   notification_display_service_.Observe(
       NotificationDisplayServiceFactory::GetForProfile(profile()));
 
@@ -989,7 +1106,7 @@ void WebAppPublisherHelper::Init(bool observe_media_requests) {
 
   web_app_launch_manager_ = std::make_unique<WebAppLaunchManager>(profile_);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   if (observe_media_requests) {
     media_dispatcher_.Observe(MediaCaptureDevicesDispatcher::GetInstance());
   }
@@ -1002,7 +1119,7 @@ IconEffects WebAppPublisherHelper::GetIconEffects(const WebApp* web_app) {
     icon_effects |= IconEffects::kBlocked;
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
   icon_effects |= web_app->is_generated_icon() ? IconEffects::kCrOsStandardMask
                                                : IconEffects::kCrOsStandardIcon;
 #endif
@@ -1026,6 +1143,22 @@ const WebApp* WebAppPublisherHelper::GetWebApp(const AppId& app_id) const {
   return registrar().GetAppById(app_id);
 }
 
+content::WebContents* WebAppPublisherHelper::MaybeNavigateExistingWindow(
+    const std::string& app_id,
+    absl::optional<GURL> url) {
+  content::WebContents* web_contents = nullptr;
+  const WebApp* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    return web_contents;
+  }
+  if (web_app->capture_links() ==
+      blink::mojom::CaptureLinks::kExistingClientNavigate) {
+    web_contents = provider_->ui_manager().NavigateExistingWindow(
+        app_id, url ? url.value() : registrar().GetAppLaunchUrl(app_id));
+  }
+  return web_contents;
+}
+
 content::WebContents* WebAppPublisherHelper::LaunchAppWithIntentImpl(
     const std::string& app_id,
     int32_t event_flags,
@@ -1036,20 +1169,10 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithIntentImpl(
     return nullptr;
   }
 
-  const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    return nullptr;
-  }
-
-  if (web_app->capture_links() ==
-      blink::mojom::CaptureLinks::kExistingClientNavigate) {
-    content::WebContents* web_contents =
-        provider_->ui_manager().NavigateExistingWindow(
-            app_id, intent->url ? intent->url.value()
-                                : registrar().GetAppLaunchUrl(app_id));
-    if (web_contents) {
-      return web_contents;
-    }
+  content::WebContents* web_contents =
+      MaybeNavigateExistingWindow(app_id, intent->url);
+  if (web_contents) {
+    return web_contents;
   }
 
   auto params = apps::CreateAppLaunchParamsForIntent(
@@ -1060,7 +1183,7 @@ content::WebContents* WebAppPublisherHelper::LaunchAppWithIntentImpl(
   return LaunchAppWithParams(std::move(params));
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if defined(OS_CHROMEOS)
 void WebAppPublisherHelper::UpdateAppDisabledMode(apps::mojom::AppPtr& app) {
   if (provider_->policy_manager().IsDisabledAppsModeHidden()) {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
@@ -1145,38 +1268,15 @@ void WebAppPublisherHelper::MaybeAddWebPageNotifications(
 apps::mojom::OptionalBool WebAppPublisherHelper::ShouldShowBadge(
     const std::string& app_id,
     apps::mojom::OptionalBool has_notification) {
-  bool enabled =
-      base::FeatureList::IsEnabled(features::kDesktopPWAsAttentionBadgingCrOS);
-  std::string flag =
-      enabled ? features::kDesktopPWAsAttentionBadgingCrOSParam.Get() : "";
-  if (flag == switches::kDesktopPWAsAttentionBadgingCrOSApiOnly) {
-    // Show a badge based only on the Web Badging API.
-    return badge_manager_ && badge_manager_->GetBadgeValue(app_id).has_value()
-               ? apps::mojom::OptionalBool::kTrue
-               : apps::mojom::OptionalBool::kFalse;
-  } else if (flag ==
-             switches::kDesktopPWAsAttentionBadgingCrOSApiAndNotifications) {
-    // When the flag is set to "api-and-notifications" we show a badge if either
-    // a notification is showing or the Web Badging API has a badge set.
-    return badge_manager_ && badge_manager_->GetBadgeValue(app_id).has_value()
-               ? apps::mojom::OptionalBool::kTrue
-               : has_notification;
-  } else if (flag ==
-             switches::
-                 kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications) {
-    // When the flag is set to "api-overrides-notifications" we show a badge if
-    // either the Web Badging API recently has a badge set, or the Badging API
-    // has not been recently used by the app and a notification is showing.
-    if (!badge_manager_ || !badge_manager_->HasRecentApiUsage(app_id))
-      return has_notification;
-
-    return badge_manager_->GetBadgeValue(app_id).has_value()
-               ? apps::mojom::OptionalBool::kTrue
-               : apps::mojom::OptionalBool::kFalse;
-  } else {
-    // Show a badge only if a notification is showing.
+  // We show a badge if either the Web Badging API recently has a badge set, or
+  // the Badging API has not been recently used by the app and a notification is
+  // showing.
+  if (!badge_manager_ || !badge_manager_->HasRecentApiUsage(app_id))
     return has_notification;
-  }
+
+  return badge_manager_->GetBadgeValue(app_id).has_value()
+             ? apps::mojom::OptionalBool::kTrue
+             : apps::mojom::OptionalBool::kFalse;
 }
 #endif
 

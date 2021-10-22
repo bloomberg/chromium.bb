@@ -6,10 +6,10 @@ import("//build/config/apple/symbols.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/ios/ios_sdk.gni")
 
-# Xcode 12.2 or higher is required to build Chromium on iOS. This file should
+# Xcode 13.0 or higher is required to build Chromium on iOS. This file should
 # only be included when building Chromium, not other related projects (cronet,
 # webrtc, ...).
-assert(xcode_version_int >= 1220, "Xcode 12.2 or higher is required.")
+assert(xcode_version_int >= 1300, "Xcode 13.0 or higher is required.")
 
 declare_args() {
   # Enable widget extensions.
@@ -98,7 +98,7 @@ if (breakpad_enabled) {
   is_official_release = false
 }
 
-chromium_bundle_id = "chrome.ios.dev"
+chromium_bundle_id = "$ios_app_bundle_id_prefix.chrome.ios.dev"
 chromium_handoff_id = "$ios_app_bundle_id_prefix.chrome.handoff"
 ios_move_tab_activity_type = "$ios_app_bundle_id_prefix.chrome.move-tab"
 

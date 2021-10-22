@@ -36,6 +36,8 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
+#include "components/autofill/core/browser/payments/card_unmask_challenge_option.h"
+#include "components/autofill/core/browser/payments/test/test_credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -119,11 +121,15 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
       DCHECK(card);
       number_ = card->number();
       cvc_ = cvc;
+      expiry_month_ = card->Expiration2DigitMonthAsString();
+      expiry_year_ = card->Expiration4DigitYearAsString();
     }
   }
 
   std::u16string number() { return number_; }
   std::u16string cvc() { return cvc_; }
+  std::u16string expiry_month() { return expiry_month_; }
+  std::u16string expiry_year() { return expiry_year_; }
   CreditCardFetchResult result() { return result_; }
 
  private:
@@ -133,6 +139,10 @@ class TestAccessor : public CreditCardAccessManager::Accessor {
   std::u16string number_;
   // The returned CVC, if any.
   std::u16string cvc_;
+  // The two-digit expiration month in string.
+  std::u16string expiry_month_;
+  // The four-digit expiration year in string.
+  std::u16string expiry_year_;
   base::WeakPtrFactory<TestAccessor> weak_ptr_factory_{this};
 };
 
@@ -193,10 +203,17 @@ class CreditCardAccessManagerTest : public testing::Test {
     autofill_driver_->SetBrowserAutofillManager(
         std::move(browser_autofill_manager_));
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
+    auto fido_authenticator = std::make_unique<TestCreditCardFIDOAuthenticator>(
+        autofill_driver_.get(), &autofill_client_);
+    fido_authenticator_ = fido_authenticator.get();
     credit_card_access_manager_->set_fido_authenticator_for_testing(
-        std::make_unique<TestCreditCardFIDOAuthenticator>(
-            autofill_driver_.get(), &autofill_client_));
+        std::move(fido_authenticator));
 #endif
+    auto otp_authenticator =
+        std::make_unique<TestCreditCardOtpAuthenticator>(&autofill_client_);
+    otp_authenticator_ = otp_authenticator.get();
+    credit_card_access_manager_->set_otp_authenticator_for_testing(
+        std::move(otp_authenticator));
   }
 
   void TearDown() override {
@@ -291,8 +308,9 @@ class CreditCardAccessManagerTest : public testing::Test {
       response.fido_request_options = GetTestRequestOptions();
     }
 #endif
-    response.card_type = is_virtual_card ? AutofillClient::VIRTUAL_CARD
-                                         : AutofillClient::SERVER_CARD;
+    response.card_type = is_virtual_card
+                             ? AutofillClient::PaymentsRpcCardType::kVirtualCard
+                             : AutofillClient::PaymentsRpcCardType::kServerCard;
     full_card_request->OnDidGetRealPan(result,
                                        response.with_real_pan(real_pan));
     return true;
@@ -352,8 +370,9 @@ class CreditCardAccessManagerTest : public testing::Test {
       return false;
 
     payments::PaymentsClient::UnmaskResponseDetails response;
-    response.card_type = is_virtual_card ? AutofillClient::VIRTUAL_CARD
-                                         : AutofillClient::SERVER_CARD;
+    response.card_type = is_virtual_card
+                             ? AutofillClient::PaymentsRpcCardType::kVirtualCard
+                             : AutofillClient::PaymentsRpcCardType::kServerCard;
     full_card_request->OnDidGetRealPan(
         result, response.with_real_pan(real_pan).with_dcvv(dcvv));
     return true;
@@ -390,7 +409,7 @@ class CreditCardAccessManagerTest : public testing::Test {
 
   void InvokeDelayedGetUnmaskDetailsResponse() {
     credit_card_access_manager_->OnDidGetUnmaskDetails(
-        AutofillClient::PaymentsRpcResult::SUCCESS,
+        AutofillClient::PaymentsRpcResult::kSuccess,
         *payments_client_->unmask_details());
   }
 
@@ -425,9 +444,15 @@ class CreditCardAccessManagerTest : public testing::Test {
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   scoped_refptr<AutofillWebDataService> database_;
   TestPersonalDataManager personal_data_manager_;
+  // TODO(crbug.com/1249665): Remove this member variable and use test-local
+  // feature lists.
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<BrowserAutofillManager> browser_autofill_manager_;
   CreditCardAccessManager* credit_card_access_manager_;
+  TestCreditCardOtpAuthenticator* otp_authenticator_;
+#if !defined(OS_IOS)
+  TestCreditCardFIDOAuthenticator* fido_authenticator_;
+#endif
 };
 
 // Ensures GetCreditCard() successfully retrieves Card.
@@ -541,7 +566,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCSuccess) {
       flow_events_histogram_name,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptShown, 1);
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
@@ -562,8 +588,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCNetworkError) {
 
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
-  EXPECT_TRUE(
-      GetRealPanForCVCAuth(AutofillClient::NETWORK_ERROR, std::string()));
+  EXPECT_TRUE(GetRealPanForCVCAuth(
+      AutofillClient::PaymentsRpcResult::kNetworkError, std::string()));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 }
 
@@ -578,8 +604,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCPermanentFailure) {
 
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
-  EXPECT_TRUE(
-      GetRealPanForCVCAuth(AutofillClient::PERMANENT_FAILURE, std::string()));
+  EXPECT_TRUE(GetRealPanForCVCAuth(
+      AutofillClient::PaymentsRpcResult::kPermanentFailure, std::string()));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 }
 
@@ -590,11 +616,12 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
 
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
 
-  EXPECT_TRUE(
-      GetRealPanForCVCAuth(AutofillClient::TRY_AGAIN_FAILURE, std::string()));
+  EXPECT_TRUE(GetRealPanForCVCAuth(
+      AutofillClient::PaymentsRpcResult::kTryAgainFailure, std::string()));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
@@ -716,7 +743,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
             GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
-  EXPECT_TRUE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForFIDOAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                    kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   EXPECT_EQ(kCredentialId,
@@ -768,8 +796,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccessWithDcvv) {
                                                 /*did_succeed=*/true);
 
   // Mock Payments response that includes DCVV along with Full PAN.
-  EXPECT_TRUE(
-      GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber, kTestCvc));
+  EXPECT_TRUE(GetRealPanForFIDOAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                    kTestNumber, kTestCvc));
 
   // Expect accessor to successfully retrieve the DCVV.
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
@@ -814,13 +842,15 @@ TEST_F(CreditCardAccessManagerTest,
       flow_events_cvc_fallback_histogram_name,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptShown, 1);
 
-  EXPECT_FALSE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_FALSE(GetRealPanForFIDOAuth(
+      AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   // Followed by a fallback to CVC.
   EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
@@ -862,14 +892,15 @@ TEST_F(CreditCardAccessManagerTest,
             GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
-  EXPECT_TRUE(
-      GetRealPanForFIDOAuth(AutofillClient::PERMANENT_FAILURE, kTestNumber));
+  EXPECT_TRUE(GetRealPanForFIDOAuth(
+      AutofillClient::PaymentsRpcResult::kPermanentFailure, kTestNumber));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   // Followed by a fallback to CVC.
   EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
@@ -901,11 +932,13 @@ TEST_F(CreditCardAccessManagerTest,
   WaitForCallbacks();
 
   // FIDO Failure.
-  EXPECT_FALSE(GetRealPanForFIDOAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_FALSE(GetRealPanForFIDOAuth(
+      AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   // Followed by a fallback to CVC.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
@@ -923,7 +956,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   InvokeUnmaskDetailsTimeout();
   WaitForCallbacks();
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
@@ -932,12 +966,15 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
 // Ensures that CVC prompt is not invoked after payments returns an error from
 // GetRealPan via FIDO for a virtual card.
 TEST_F(CreditCardAccessManagerTest, FetchVirtualCardFIDOFailureNoCVCFallback) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillCreditCardAuthentication},
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication});
   base::HistogramTester histogram_tester;
-
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
-  SetUserOptedIn(true);
+  SetCreditCardFIDOAuthEnabled(true);
   payments_client_->AddFidoEligibleCard(card->server_id(), kCredentialId,
                                         kGooglePaymentsRpid);
 
@@ -954,8 +991,8 @@ TEST_F(CreditCardAccessManagerTest, FetchVirtualCardFIDOFailureNoCVCFallback) {
   TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   EXPECT_TRUE(GetRealPanForFIDOAuth(
-      AutofillClient::VCN_RETRIEVAL_PERMANENT_FAILURE, kTestNumber,
-      std::string(), /*is_virtual_card=*/true));
+      AutofillClient::PaymentsRpcResult::kVcnRetrievalPermanentFailure,
+      kTestNumber, std::string(), /*is_virtual_card=*/true));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kPermanentError);
   EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
@@ -999,7 +1036,7 @@ TEST_F(CreditCardAccessManagerTest,
 
       ResetFetchCreditCard();
       credit_card_access_manager_->PrepareToFetchCreditCard();
-      task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
+      task_environment_.FastForwardBy(base::Seconds(4));
       WaitForCallbacks();
 
       credit_card_access_manager_->FetchCreditCard(local_card,
@@ -1020,7 +1057,7 @@ TEST_F(CreditCardAccessManagerTest,
       credit_card_access_manager_->PrepareToFetchCreditCard();
       credit_card_access_manager_->FetchCreditCard(server_card,
                                                    accessor_->GetWeakPtr());
-      task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
+      task_environment_.FastForwardBy(base::Seconds(4));
       WaitForCallbacks();
 
       histogram_tester.ExpectUniqueSample(
@@ -1095,7 +1132,7 @@ TEST_F(CreditCardAccessManagerTest, Metrics_LoggingTimedOutCvcFallback) {
     // Mock a delayed response.
     InvokeDelayedGetUnmaskDetailsResponse();
 
-    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
+    task_environment_.FastForwardBy(base::Seconds(4));
     WaitForCallbacks();
 
     histogram_tester.ExpectUniqueSample(
@@ -1117,7 +1154,7 @@ TEST_F(CreditCardAccessManagerTest, Metrics_LoggingTimedOutCvcFallback) {
     credit_card_access_manager_->PrepareToFetchCreditCard();
     credit_card_access_manager_->FetchCreditCard(server_card,
                                                  accessor_->GetWeakPtr());
-    task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(4));
+    task_environment_.FastForwardBy(base::Seconds(4));
     WaitForCallbacks();
 
     histogram_tester.ExpectUniqueSample(
@@ -1166,7 +1203,8 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
 
   // Do not return any RequestOptions or CreationOptions in GetRealPan.
   // RequestOptions should have been returned in unmask details response.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/false));
   // Ensure that form is not filled yet (OnCreditCardFetched is not called).
@@ -1184,7 +1222,7 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
 
   // Mock OptChange payments call.
-  OptChange(AutofillClient::SUCCESS, true);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess, true);
 
   histogram_tester.ExpectUniqueSample(
       unmask_decision_histogram_name,
@@ -1216,7 +1254,8 @@ TEST_F(CreditCardAccessManagerTest, FetchExpiredServerCardInvokesCvcPrompt) {
   WaitForCallbacks();
 
   // Expect CVC prompt to be invoked.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
 }
@@ -1239,7 +1278,8 @@ TEST_F(CreditCardAccessManagerTest,
       flow_events_histogram_name,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptShown, 1);
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   histogram_tester.ExpectBucketCount(
@@ -1272,9 +1312,10 @@ TEST_F(CreditCardAccessManagerTest,
       flow_events_histogram_name,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptShown, 1);
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(
-      AutofillClient::SUCCESS, kTestNumber, /*fido_opt_in=*/false,
-      /*follow_with_fido_auth=*/false, /*is_virtual_card=*/true));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber, /*fido_opt_in=*/false,
+                                   /*follow_with_fido_auth=*/false,
+                                   /*is_virtual_card=*/true));
   EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   histogram_tester.ExpectBucketCount(
@@ -1301,7 +1342,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInSuccess_Android) {
 
   // For Android, set |follow_with_fido_auth| to true to mock user checking the
   // opt-in checkbox and ensuring GetRealPan returns RequestOptions.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/true));
   WaitForCallbacks();
@@ -1323,7 +1365,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInSuccess_Android) {
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
 
   // Mock OptChange payments call.
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/true);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/true);
 
   EXPECT_EQ(kGooglePaymentsRpid, GetFIDOAuthenticator()->GetRelyingPartyId());
   EXPECT_EQ(kTestChallenge,
@@ -1351,7 +1394,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInUserVerificationFailure) {
 
   // For Android, set |follow_with_fido_auth| to true to mock user checking the
   // opt-in checkbox and ensuring GetRealPan returns RequestOptions.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/true));
   // Check current flow to ensure CreditCardFIDOAuthenticator::Authorize is
@@ -1391,7 +1435,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInServerFailure) {
 
   // For Android, set |follow_with_fido_auth| to true to mock user checking the
   // opt-in checkbox and ensuring GetRealPan returns RequestOptions.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/true));
   // Check current flow to ensure CreditCardFIDOAuthenticator::Authorize is
@@ -1409,7 +1454,7 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInServerFailure) {
   // called).
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
-  OptChange(AutofillClient::PERMANENT_FAILURE, false);
+  OptChange(AutofillClient::PaymentsRpcResult::kPermanentFailure, false);
 
   EXPECT_FALSE(GetFIDOAuthenticator()->IsUserOptedIn());
 }
@@ -1428,7 +1473,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptIn_CheckboxDeclined) {
 
   // For Android, set |follow_with_fido_auth| to false to mock user unchecking
   // the opt-in checkbox and ensuring GetRealPan won't return RequestOptions.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/false));
   // Ensure that form is filled (OnCreditCardFetched is called).
@@ -1497,11 +1543,13 @@ TEST_F(CreditCardAccessManagerTest,
   WaitForCallbacks();
 
   // Mock user and payments response.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   AcceptWebauthnOfferDialog(/*did_accept=*/true);
 
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/false,
             /*include_creation_options=*/true);
 
   // Mock user response and OptChange payments call.
@@ -1509,7 +1557,8 @@ TEST_F(CreditCardAccessManagerTest,
             GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
                                                   /*did_succeed=*/true);
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/true);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/true);
 
   EXPECT_EQ(kGooglePaymentsRpid, GetFIDOAuthenticator()->GetRelyingPartyId());
   EXPECT_EQ(kTestChallenge,
@@ -1553,7 +1602,8 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollment_OfferDeclined_Desktop) {
   WaitForCallbacks();
 
   // Mock user and payments response.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   AcceptWebauthnOfferDialog(/*did_accept=*/false);
   EXPECT_EQ(
@@ -1589,7 +1639,8 @@ TEST_F(CreditCardAccessManagerTest,
   WaitForCallbacks();
 
   // Mock user and payments response.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   AcceptWebauthnOfferDialog(/*did_accept=*/true);
   AcceptWebauthnOfferDialog(/*did_accept=*/false);
@@ -1627,12 +1678,14 @@ TEST_F(CreditCardAccessManagerTest,
   WaitForCallbacks();
 
   // Mock user and payments response.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
   AcceptWebauthnOfferDialog(/*did_accept=*/true);
 
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/false,
             /*include_creation_options=*/true);
 
   // Mock user response.
@@ -1671,12 +1724,14 @@ TEST_F(CreditCardAccessManagerTest,
   WaitForCallbacks();
 
   // Mock user and payments response.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
   AcceptWebauthnOfferDialog(/*did_accept=*/true);
 
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/false,
             /*include_creation_options=*/false,
             /*include_request_options=*/true);
 
@@ -1685,7 +1740,8 @@ TEST_F(CreditCardAccessManagerTest,
             GetFIDOAuthenticator()->current_flow());
   TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/true);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/true);
 
   EXPECT_EQ(kGooglePaymentsRpid, GetFIDOAuthenticator()->GetRelyingPartyId());
   EXPECT_EQ(kTestChallenge,
@@ -1724,7 +1780,8 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
 
     // Mock user and payments response.
     AcceptWebauthnOfferDialog(/*did_accept=*/true);
-    OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+    OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+              /*user_is_opted_in=*/false,
               /*include_creation_options=*/true);
     // Mock user response and payments response.
     TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
@@ -1762,7 +1819,8 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_OptOut) {
   EXPECT_TRUE(IsCreditCardFIDOAuthEnabled());
   credit_card_access_manager_->OnSettingsPageFIDOAuthToggled(false);
   EXPECT_TRUE(GetFIDOAuthenticator()->IsOptOutCalled());
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/false);
 
   EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
   histogram_tester.ExpectTotalCount(histogram_name, 1);
@@ -1809,7 +1867,8 @@ TEST_F(CreditCardAccessManagerTest,
       "TimedOutCvcFallback",
       0);
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   // Since no unmask detail returned, we can't discover the pref mismatch, we
   // won't call opt out and local pref is unchanged.
@@ -1840,14 +1899,16 @@ TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutAfterUnmaskSucceeds) {
   EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
 
   // Mock cvc auth success.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
 
   // Ensure calling opt out after a successful cvc auth.
   EXPECT_TRUE(GetFIDOAuthenticator()->IsOptOutCalled());
   // Mock opt out success response. Local pref is consistent with payments.
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/false);
   EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
 }
 
@@ -1874,14 +1935,15 @@ TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutAfterUnmaskFails) {
   EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
 
   // Mock cvc auth failure.
-  EXPECT_TRUE(
-      GetRealPanForCVCAuth(AutofillClient::PERMANENT_FAILURE, std::string()));
+  EXPECT_TRUE(GetRealPanForCVCAuth(
+      AutofillClient::PaymentsRpcResult::kPermanentFailure, std::string()));
   WaitForCallbacks();
 
   // Ensure calling opt out after cvc auth failure.
   EXPECT_TRUE(GetFIDOAuthenticator()->IsOptOutCalled());
   // Mock opt out success. Local pref is consistent with payments.
-  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false);
+  OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
+            /*user_is_opted_in=*/false);
   EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
 }
 
@@ -1908,12 +1970,13 @@ TEST_F(CreditCardAccessManagerTest, IntentToOptOut_OptOutFailure) {
   EXPECT_EQ(getUnmaskAuthFlowType(), UnmaskAuthFlowType::kCvc);
 
   // Mock cvc auth success.
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber,
                                    /*fido_opt_in=*/false));
   WaitForCallbacks();
 
   // Mock payments opt out failure. Local pref should be unchanged.
-  OptChange(AutofillClient::PERMANENT_FAILURE, false);
+  OptChange(AutofillClient::PaymentsRpcResult::kPermanentFailure, false);
   EXPECT_FALSE(IsCreditCardFIDOAuthEnabled());
 }
 
@@ -1968,7 +2031,8 @@ TEST_F(CreditCardAccessManagerTest, AuthenticationInProgress) {
   credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
   EXPECT_TRUE(IsAuthenticationInProgress());
 
-  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber));
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
+                                   kTestNumber));
   EXPECT_FALSE(IsAuthenticationInProgress());
 }
 
@@ -2055,6 +2119,408 @@ TEST_F(CreditCardAccessManagerTest, IsVirtualCardPresentInUnmaskedCache) {
   // Verify that the virtual card is present in the cache.
   EXPECT_TRUE(credit_card_access_manager_->IsCardPresentInUnmaskedCache(
       *unmasked_card));
+}
+
+TEST_F(CreditCardAccessManagerTest, RiskBasedVirtualCardUnmasking_Success) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableVirtualCardsRiskBasedAuthentication);
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with valid card information.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.real_pan = "4111111111111111";
+  response.dcvv = "321";
+  response.expiration_month = test::NextMonth();
+  response.expiration_year = test::NextYear();
+  response.card_type = AutofillClient::PaymentsRpcCardType::kVirtualCard;
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+
+  // Expect the accessor receives the correct response.
+  EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
+  EXPECT_EQ(accessor_->number(), u"4111111111111111");
+  EXPECT_EQ(accessor_->cvc(), u"321");
+  EXPECT_EQ(accessor_->expiry_month(), base::UTF8ToUTF16(test::NextMonth()));
+  EXPECT_EQ(accessor_->expiry_year(), base::UTF8ToUTF16(test::NextYear()));
+}
+
+// Ensures the virtual card risk-based unmasking response is handled correctly
+// and authentication is delegated to the OTP authenticator, when only the OTP
+// challenge option is returned.
+TEST_F(CreditCardAccessManagerTest,
+       RiskBasedVirtualCardUnmasking_AuthenticationRequired_OtpOnly) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kAutofillEnableVirtualCardsRiskBasedAuthentication);
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with information regarding OTP auth.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  CardUnmaskChallengeOption challenge_option{
+      .id = "123",
+      .type = CardUnmaskChallengeOptionType::kSmsOtp,
+      .challenge_info = u"fake challenge info"};
+  response.card_unmask_challenge_options.emplace_back(challenge_option);
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+  credit_card_access_manager_->OnUserAcceptedAuthenticationSelectionDialog(
+      challenge_option);
+
+  // Expect the CreditCardAccessManager to invoke the OTP authenticator.
+  DCHECK(otp_authenticator_);
+  ASSERT_TRUE(otp_authenticator_->on_challenge_option_selected_invoked());
+  EXPECT_EQ(otp_authenticator_->card().number(),
+            base::UTF8ToUTF16(std::string(kTestNumber)));
+  EXPECT_EQ(otp_authenticator_->card().record_type(), CreditCard::VIRTUAL_CARD);
+  EXPECT_EQ(otp_authenticator_->context_token(), "fake_context_token");
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().id, "123");
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().type,
+            CardUnmaskChallengeOptionType::kSmsOtp);
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().challenge_info,
+            u"fake challenge info");
+}
+
+#if !defined(OS_IOS)
+// Ensures that the virtual card risk-based unmasking response is handled
+// correctly and authentication is delegated to the FIDO authenticator, when
+// only the FIDO challenge options is returned.
+TEST_F(CreditCardAccessManagerTest,
+       RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoOnly) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication,
+       features::kAutofillCreditCardAuthentication},
+      {});
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  // TODO(crbug.com/1249665): Switch to SetUserVerifiable after moving all
+  // is_user_veriable_ related logic from CreditCardAccessManager to
+  // CreditCardFidoAuthenticator.
+  credit_card_access_manager_->is_user_verifiable_ = true;
+  fido_authenticator_->set_is_user_opted_in(true);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with information regarding FIDO auth.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  response.fido_request_options = GetTestRequestOptions();
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+
+  // Expect the CreditCardAccessManager invokes the FIDO authenticator.
+  ASSERT_TRUE(fido_authenticator_->authenticate_invoked());
+  EXPECT_EQ(fido_authenticator_->card().number(),
+            base::UTF8ToUTF16(std::string(kTestNumber)));
+  EXPECT_EQ(fido_authenticator_->card().record_type(),
+            CreditCard::VIRTUAL_CARD);
+}
+
+// Ensures that the virtual card risk-based unmasking response is handled
+// correctly and authentication is delegated to the FIDO authenticator, when
+// both FIDO and OTP challenge options are returned.
+TEST_F(
+    CreditCardAccessManagerTest,
+    RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoAndOtp_PrefersFido) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication,
+       features::kAutofillCreditCardAuthentication},
+      {});
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  // TODO(crbug.com/1249665): Switch to SetUserVerifiable after moving all
+  // is_user_veriable_ related logic from CreditCardAccessManager to
+  // CreditCardFidoAuthenticator.
+  credit_card_access_manager_->is_user_verifiable_ = true;
+  fido_authenticator_->set_is_user_opted_in(true);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with information regarding both FIDO and OTP auth.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  CardUnmaskChallengeOption challenge_option{
+      .id = "123",
+      .type = CardUnmaskChallengeOptionType::kSmsOtp,
+      .challenge_info = u"fake challenge info"};
+  response.card_unmask_challenge_options.emplace_back(challenge_option);
+  response.fido_request_options = GetTestRequestOptions();
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+
+  // Expect the CreditCardAccessManager invokes the FIDO authenticator.
+  DCHECK(fido_authenticator_);
+  ASSERT_TRUE(fido_authenticator_->authenticate_invoked());
+  EXPECT_EQ(fido_authenticator_->card().number(),
+            base::UTF8ToUTF16(std::string(kTestNumber)));
+  EXPECT_EQ(fido_authenticator_->card().record_type(),
+            CreditCard::VIRTUAL_CARD);
+}
+
+// Ensures that the virtual card risk-based unmasking response is handled
+// correctly and authentication is delegated to the OTP authenticator, when both
+// FIDO and OTP challenge options are returned but FIDO local preference is not
+// opted in.
+TEST_F(
+    CreditCardAccessManagerTest,
+    RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoAndOtp_FidoNotOptedIn) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication,
+       features::kAutofillCreditCardAuthentication},
+      {});
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  // TODO(crbug.com/1249665): Switch to SetUserVerifiable after moving all
+  // is_user_veriable_ related logic from CreditCardAccessManager to
+  // CreditCardFidoAuthenticator.
+  credit_card_access_manager_->is_user_verifiable_ = true;
+  fido_authenticator_->set_is_user_opted_in(false);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with information regarding both FIDO and OTP auth.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  CardUnmaskChallengeOption challenge_option{
+      .id = "123",
+      .type = CardUnmaskChallengeOptionType::kSmsOtp,
+      .challenge_info = u"fake challenge info"};
+  response.card_unmask_challenge_options.emplace_back(challenge_option);
+  response.fido_request_options = GetTestRequestOptions();
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+  credit_card_access_manager_->OnUserAcceptedAuthenticationSelectionDialog(
+      challenge_option);
+
+  // Expect the CreditCardAccessManager invokes the OTP authenticator.
+  DCHECK(otp_authenticator_);
+  ASSERT_TRUE(otp_authenticator_->on_challenge_option_selected_invoked());
+  EXPECT_EQ(otp_authenticator_->card().number(),
+            base::UTF8ToUTF16(std::string(kTestNumber)));
+  EXPECT_EQ(otp_authenticator_->card().record_type(), CreditCard::VIRTUAL_CARD);
+  EXPECT_EQ(otp_authenticator_->context_token(), "fake_context_token");
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().id, "123");
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().type,
+            CardUnmaskChallengeOptionType::kSmsOtp);
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().challenge_info,
+            u"fake challenge info");
+}
+
+// Ensures that the virtual card risk-based unmasking response is handled
+// correctly and authentication is delegated first to the FIDO authenticator,
+// when both FIDO and OTP challenge options are returned, but fall back to OTP
+// authentication if FIDO failed.
+TEST_F(
+    CreditCardAccessManagerTest,
+    RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoAndOtp_FidoFailedFallBackToOtp) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication,
+       features::kAutofillCreditCardAuthentication},
+      {});
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  // TODO(crbug.com/1249665): Switch to SetUserVerifiable after moving all
+  // is_user_veriable_ related logic from CreditCardAccessManager to
+  // CreditCardFidoAuthenticator.
+  credit_card_access_manager_->is_user_verifiable_ = true;
+  fido_authenticator_->set_is_user_opted_in(true);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with information regarding both FIDO and OTP auth.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  CardUnmaskChallengeOption challenge_option{
+      .id = "123",
+      .type = CardUnmaskChallengeOptionType::kSmsOtp,
+      .challenge_info = u"fake challenge info"};
+  response.card_unmask_challenge_options.emplace_back(challenge_option);
+  response.fido_request_options = GetTestRequestOptions();
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+  credit_card_access_manager_->OnUserAcceptedAuthenticationSelectionDialog(
+      challenge_option);
+
+  // Expect the CreditCardAccessManager invokes the FIDO authenticator first.
+  DCHECK(fido_authenticator_);
+  ASSERT_TRUE(fido_authenticator_->authenticate_invoked());
+  EXPECT_EQ(fido_authenticator_->card().number(),
+            base::UTF8ToUTF16(std::string(kTestNumber)));
+  EXPECT_EQ(fido_authenticator_->card().record_type(),
+            CreditCard::VIRTUAL_CARD);
+
+  CreditCardFIDOAuthenticator::FidoAuthenticationResponse fido_response{
+      .did_succeed = false};
+  credit_card_access_manager_->OnFIDOAuthenticationComplete(fido_response);
+  credit_card_access_manager_->OnUserAcceptedAuthenticationSelectionDialog(
+      challenge_option);
+
+  // Expect the CreditCardAccessManager invokes the OTP authenticator as a
+  // fallback.
+  DCHECK(otp_authenticator_);
+  ASSERT_TRUE(otp_authenticator_->on_challenge_option_selected_invoked());
+  EXPECT_EQ(otp_authenticator_->card().number(),
+            base::UTF8ToUTF16(std::string(kTestNumber)));
+  EXPECT_EQ(otp_authenticator_->card().record_type(), CreditCard::VIRTUAL_CARD);
+  EXPECT_EQ(otp_authenticator_->context_token(), "fake_context_token");
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().id, "123");
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().type,
+            CardUnmaskChallengeOptionType::kSmsOtp);
+  EXPECT_EQ(otp_authenticator_->selected_challenge_option().challenge_info,
+            u"fake challenge info");
+}
+
+// Ensures that the virtual card risk-based unmasking response is handled
+// correctly if there is only FIDO option returned by the server but the user
+// is not opted in.
+TEST_F(
+    CreditCardAccessManagerTest,
+    RiskBasedVirtualCardUnmasking_AuthenticationRequired_FidoOnly_FidoNotOptedIn) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication,
+       features::kAutofillCreditCardAuthentication},
+      {});
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  // TODO(crbug.com/1249665): Switch to SetUserVerifiable after moving all
+  // is_user_veriable_ related logic from CreditCardAccessManager to
+  // CreditCardFidoAuthenticator.
+  credit_card_access_manager_->is_user_verifiable_ = true;
+  fido_authenticator_->set_is_user_opted_in(false);
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with information regarding FIDO auth.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  response.fido_request_options = GetTestRequestOptions();
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kSuccess, response);
+
+  // Expect the CreditCardAccessManager to end the session.
+  EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kTransientError);
+  EXPECT_FALSE(otp_authenticator_->on_challenge_option_selected_invoked());
+  EXPECT_FALSE(fido_authenticator_->authenticate_invoked());
+}
+
+#endif  // !defined(OS_IOS)
+
+// Ensures that the virtual card risk-based unmasking response is handled
+// correctly if there is no challenge option returned by the server.
+TEST_F(CreditCardAccessManagerTest, RiskBasedVirtualCardUnmasking_Failure) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillEnableVirtualCardsRiskBasedAuthentication,
+       features::kAutofillCreditCardAuthentication},
+      {});
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card =
+      credit_card_access_manager_->GetCreditCard(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  // TODO(crbug.com/1249665): Switch to SetUserVerifiable after moving all
+  // is_user_veriable_ related logic from CreditCardAccessManager to
+  // CreditCardFidoAuthenticator.
+  credit_card_access_manager_->is_user_verifiable_ = true;
+#if !defined(OS_IOS)
+  fido_authenticator_->set_is_user_opted_in(true);
+#endif
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_url_origin.has_value());
+
+  // Mock server response with no challenge options.
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  response.context_token = "fake_context_token";
+  credit_card_access_manager_->OnVirtualCardUnmaskResponseReceived(
+      AutofillClient::PaymentsRpcResult::kPermanentFailure, response);
+
+  // Expect the CreditCardAccessManager to end the session.
+  EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kTransientError);
+  EXPECT_FALSE(otp_authenticator_->on_challenge_option_selected_invoked());
+#if !defined(OS_IOS)
+  EXPECT_FALSE(fido_authenticator_->authenticate_invoked());
+#endif
 }
 
 }  // namespace autofill

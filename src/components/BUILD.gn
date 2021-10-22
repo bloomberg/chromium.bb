@@ -41,7 +41,7 @@ if (is_ios) {
   }
 }
 
-# To add a unit test to this target, make a "unit_test" source_set in your
+# To add a unit test to this target, make a "unit_tests" source_set in your
 # component(it's important to use a source_set instead of a static library or
 # no tests will run) and add a reference here.You can add more than one unit
 # test target if convenient.
@@ -150,6 +150,7 @@ test("components_unittests") {
     "//components/reporting/storage:unit_tests",
     "//components/reporting/util:unit_tests",
     "//components/reputation/core:unit_tests",
+    "//components/safe_browsing/core/browser:safe_browsing_metrics_collector_unittest",
     "//components/safe_search_api:unit_tests",
     "//components/scheduling_metrics:unit_tests",
     "//components/search:unit_tests",
@@ -205,6 +206,7 @@ test("components_unittests") {
   if (toolkit_views) {
     deps += [
       "//components/fullscreen_control:unit_tests",
+      "//components/global_media_controls:unit_tests",
       "//components/media_message_center:unit_tests",
       "//components/ui_devtools:unit_tests",
     ]
@@ -337,6 +339,7 @@ test("components_unittests") {
       "//components/translate/content/browser:unit_tests",
       "//components/translate/content/renderer:unit_tests",
       "//components/ukm/content:unit_tests",
+      "//components/value_store:unit_tests",
       "//components/visitedlink/test:unit_tests",
       "//components/web_cache/browser:unit_tests",
       "//components/web_package:unit_tests",
@@ -488,7 +491,10 @@ test("components_unittests") {
   }
 
   if (is_win) {
-    deps += [ "//components/browser_watcher:unit_tests" ]
+    deps += [
+      "//components/browser_watcher:unit_tests",
+      "//components/winhttp:unit_tests",
+    ]
   }
 
   if (enable_basic_printing) {

@@ -233,6 +233,11 @@ class FaviconForPageUrlAvailableChecker : public StatusChangeChecker {
 class SingleClientSessionsSyncTest : public SyncTest {
  public:
   SingleClientSessionsSyncTest() : SyncTest(SINGLE_CLIENT) {}
+
+  SingleClientSessionsSyncTest(const SingleClientSessionsSyncTest&) = delete;
+  SingleClientSessionsSyncTest& operator=(const SingleClientSessionsSyncTest&) =
+      delete;
+
   ~SingleClientSessionsSyncTest() override {}
 
   void ExpectNavigationChain(const std::vector<GURL>& urls) {
@@ -284,9 +289,6 @@ class SingleClientSessionsSyncTest : public SyncTest {
         accounts, run_loop.QuitClosure());
     run_loop.Run();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
@@ -649,8 +651,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   const SessionID kWindowId = SessionID::FromSerializedValue(5);
   const SessionID kTabId1 = SessionID::FromSerializedValue(1);
   const SessionID kTabId2 = SessionID::FromSerializedValue(2);
-  const base::Time kLastModifiedTime =
-      base::Time::Now() - base::TimeDelta::FromDays(100);
+  const base::Time kLastModifiedTime = base::Time::Now() - base::Days(100);
 
   SessionSyncTestHelper helper;
 
@@ -703,8 +704,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   const SessionID kWindowId = SessionID::FromSerializedValue(5);
   const SessionID kTabId1 = SessionID::FromSerializedValue(1);
   const SessionID kTabId2 = SessionID::FromSerializedValue(2);
-  const base::Time kLastModifiedTime =
-      base::Time::Now() - base::TimeDelta::FromDays(100);
+  const base::Time kLastModifiedTime = base::Time::Now() - base::Days(100);
 
   SessionSyncTestHelper helper;
 
@@ -887,6 +887,12 @@ class SingleClientSessionsSyncTestWithFaviconTestServer
  public:
   SingleClientSessionsSyncTestWithFaviconTestServer()
       : SingleClientSessionsSyncTest() {}
+
+  SingleClientSessionsSyncTestWithFaviconTestServer(
+      const SingleClientSessionsSyncTestWithFaviconTestServer&) = delete;
+  SingleClientSessionsSyncTestWithFaviconTestServer& operator=(
+      const SingleClientSessionsSyncTestWithFaviconTestServer&) = delete;
+
   ~SingleClientSessionsSyncTestWithFaviconTestServer() override = default;
 
  protected:
@@ -897,9 +903,6 @@ class SingleClientSessionsSyncTestWithFaviconTestServer
     ASSERT_TRUE(embedded_test_server()->Start());
     SingleClientSessionsSyncTest::SetUpOnMainThread();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientSessionsSyncTestWithFaviconTestServer);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTestWithFaviconTestServer,

@@ -12,8 +12,10 @@
 #ifndef AOM_AV1_ENCODER_ENCODER_ALLOC_H_
 #define AOM_AV1_ENCODER_ENCODER_ALLOC_H_
 
+#include "av1/encoder/block.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encodetxb.h"
+#include "av1/encoder/ethread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -85,7 +87,8 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
   CHECK_MEM_ERROR(cm, cpi->td.mb.dv_costs,
                   (IntraBCMVCosts *)aom_malloc(sizeof(*cpi->td.mb.dv_costs)));
 
-  av1_setup_shared_coeff_buffer(cm->error, &cpi->td.shared_coeff_buf);
+  av1_setup_shared_coeff_buffer(cm->seq_params, &cpi->td.shared_coeff_buf,
+                                cm->error);
   av1_setup_sms_tree(cpi, &cpi->td);
   cpi->td.firstpass_ctx =
       av1_alloc_pmc(cpi, BLOCK_16X16, &cpi->td.shared_coeff_buf);
@@ -218,9 +221,6 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
     cpi->td.mb.dv_costs = NULL;
   }
 
-  aom_free(cpi->td.mb.inter_modes_info);
-  cpi->td.mb.inter_modes_info = NULL;
-
   for (int i = 0; i < 2; i++)
     for (int j = 0; j < 2; j++) {
       aom_free(cpi->td.mb.intrabc_hash_info.hash_value_buffer[i][j]);
@@ -229,6 +229,11 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
 
   aom_free(cm->tpl_mvs);
   cm->tpl_mvs = NULL;
+
+  if (cpi->td.pixel_gradient_info) {
+    aom_free(cpi->td.pixel_gradient_info);
+    cpi->td.pixel_gradient_info = NULL;
+  }
 
   if (cpi->td.vt64x64) {
     aom_free(cpi->td.vt64x64);
@@ -246,10 +251,12 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
   av1_free_restoration_buffers(cm);
 #endif
 
-  if (!is_stat_generation_stage(cpi))
-    av1_free_cdef_buffers(cm, &cpi->mt_info.cdef_worker,
-                          &cpi->mt_info.cdef_sync,
-                          cpi->mt_info.num_mod_workers[MOD_CDEF]);
+  if (!is_stat_generation_stage(cpi)) {
+    int num_cdef_workers =
+        av1_get_num_mod_workers_for_alloc(&cpi->ppi->p_mt_info, MOD_CDEF);
+    av1_free_cdef_buffers(cm, &cpi->ppi->p_mt_info.cdef_worker,
+                          &cpi->mt_info.cdef_sync, num_cdef_workers);
+  }
 
   aom_free_frame_buffer(&cpi->trial_frame_rst);
   aom_free_frame_buffer(&cpi->scaled_source);
@@ -266,7 +273,6 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
   for (int j = 0; j < 2; ++j) {
     aom_free(cpi->td.mb.tmp_pred_bufs[j]);
   }
-  aom_free(cpi->td.mb.pixel_gradient_info);
 
 #if CONFIG_DENOISE
   if (cpi->denoise_and_model) {
@@ -288,6 +294,23 @@ static AOM_INLINE void dealloc_compressor_data(AV1_COMP *cpi) {
 
   aom_free(cpi->mb_weber_stats);
   cpi->mb_weber_stats = NULL;
+
+  aom_free(cpi->mb_delta_q);
+  cpi->mb_delta_q = NULL;
+}
+
+static AOM_INLINE void allocate_gradient_info_for_hog(
+    PixelLevelGradientInfo **pixel_gradient_info, AV1_COMP *cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  if (!*pixel_gradient_info) {
+    const int plane_types = PLANE_TYPES >> cm->seq_params->monochrome;
+    CHECK_MEM_ERROR(cm, *pixel_gradient_info,
+                    aom_malloc(sizeof(**pixel_gradient_info) * plane_types *
+                               MAX_SB_SQUARE));
+  }
+
+  cpi->td.mb.pixel_gradient_info = *pixel_gradient_info;
 }
 
 static AOM_INLINE void variance_partition_alloc(AV1_COMP *cpi) {

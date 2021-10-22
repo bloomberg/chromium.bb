@@ -124,11 +124,12 @@ class BlockedHttpResponse : public net::test_server::BasicHttpResponse {
       base::OnceCallback<void(base::OnceClosure)> callback)
       : callback_(std::move(callback)) {}
 
-  void SendResponse(const net::test_server::SendBytesCallback& send,
-                    net::test_server::SendCompleteCallback done) override {
+  void SendResponse(
+      base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) override {
     // Called on the IO thread to unblock the response.
     base::OnceClosure unblock_io_thread =
-        base::BindOnce(send, ToResponseString(), std::move(done));
+        base::BindOnce(&BlockedHttpResponse::SendResponseInternal,
+                       weak_factory_.GetWeakPtr(), delegate);
     // Unblock the response from any thread by posting a task to the IO thread.
     base::OnceClosure unblock_any_thread =
         base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
@@ -141,7 +142,14 @@ class BlockedHttpResponse : public net::test_server::BasicHttpResponse {
   }
 
  private:
+  void SendResponseInternal(
+      base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) {
+    if (delegate)
+      BasicHttpResponse::SendResponse(delegate);
+  }
   base::OnceCallback<void(base::OnceClosure)> callback_;
+
+  base::WeakPtrFactory<BlockedHttpResponse> weak_factory_{this};
 };
 
 }  // namespace
@@ -331,6 +339,10 @@ std::unique_ptr<HttpResponse> HandleChromeSigninEmbeddedURL(
 class DiceBrowserTest : public InProcessBrowserTest,
                         public AccountReconcilor::Observer,
                         public signin::IdentityManager::Observer {
+ public:
+  DiceBrowserTest(const DiceBrowserTest&) = delete;
+  DiceBrowserTest& operator=(const DiceBrowserTest&) = delete;
+
  protected:
   ~DiceBrowserTest() override {}
 
@@ -656,8 +668,6 @@ class DiceBrowserTest : public InProcessBrowserTest,
   base::OnceClosure tokens_loaded_quit_closure_;
   base::OnceClosure on_primary_account_set_quit_closure_;
   base::OnceClosure signin_requested_quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(DiceBrowserTest);
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
@@ -710,10 +720,10 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SupportOAuthOutageInDice) {
   EXPECT_EQ(1, reconcilor_blocked_count_);
   EXPECT_EQ(0, reconcilor_unblocked_count_);
   task_runner->FastForwardBy(
-      base::TimeDelta::FromHours(kLockAccountReconcilorTimeoutHours / 2));
+      base::Hours(kLockAccountReconcilorTimeoutHours / 2));
   EXPECT_EQ(0, reconcilor_unblocked_count_);
   task_runner->FastForwardBy(
-      base::TimeDelta::FromHours((kLockAccountReconcilorTimeoutHours + 1) / 2));
+      base::Hours((kLockAccountReconcilorTimeoutHours + 1) / 2));
   // Wait until reconcilor is unblocked.
   WaitForReconcilorUnblockedCount(1);
 }

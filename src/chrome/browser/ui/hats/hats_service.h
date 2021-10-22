@@ -50,6 +50,9 @@ extern const char kHatsSurveyTriggerTrustSafetyPrivacySettings[];
 extern const char kHatsSurveyTriggerTrustSafetyTrustedSurface[];
 extern const char kHatsSurveyTriggerTrustSafetyTransactions[];
 extern const char kHatsSurveyTriggerAccuracyTips[];
+extern const char kHatsSurveyTriggerAutofillAddress[];
+extern const char kHatsSurveyTriggerAutofillCard[];
+extern const char kHatsSurveyTriggerAutofillPassword[];
 
 // The Trigger ID for a test HaTS Next survey which is available for testing
 // and demo purposes when the migration feature flag is enabled.
@@ -133,7 +136,8 @@ class HatsService : public KeyedService {
                       const std::string& trigger,
                       content::WebContents* web_contents,
                       const SurveyBitsData& product_specific_bits_data,
-                      const SurveyStringData& product_specific_string_data);
+                      const SurveyStringData& product_specific_string_data,
+                      bool require_same_origin);
 
     // Not copyable or movable
     DelayedSurveyTask(const DelayedSurveyTask&) = delete;
@@ -146,6 +150,8 @@ class HatsService : public KeyedService {
     void Launch();
 
     // content::WebContentsObserver
+    void DidFinishNavigation(
+        content::NavigationHandle* navigation_handle) override;
     void WebContentsDestroyed() override;
 
     // Returns a weak pointer to this object.
@@ -161,6 +167,7 @@ class HatsService : public KeyedService {
     std::string trigger_;
     SurveyBitsData product_specific_bits_data_;
     SurveyStringData product_specific_string_data_;
+    bool require_same_origin_;
     base::WeakPtrFactory<DelayedSurveyTask> weak_ptr_factory_{this};
   };
 
@@ -187,9 +194,12 @@ class HatsService : public KeyedService {
     kMaxValue = kNoRejectedByHatsService,
   };
 
-  ~HatsService() override;
-
   explicit HatsService(Profile* profile);
+
+  HatsService(const HatsService&) = delete;
+  HatsService& operator=(const HatsService&) = delete;
+
+  ~HatsService() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -223,13 +233,15 @@ class HatsService : public KeyedService {
   // is also cancelled if |web_contents| not visible at the time of launch.
   // Rejects (and returns false) if there is already an identical delayed-task
   // (same |trigger| and same |web_contents|) waiting to be fulfilled. Also
-  // rejects if the underlying task posting fails.
+  // rejects if the underlying task posting fails. If |require_same_origin| is
+  // set, additionally requires that |web_contents| remain on the same origin.
   virtual bool LaunchDelayedSurveyForWebContents(
       const std::string& trigger,
       content::WebContents* web_contents,
       int timeout_ms,
       const SurveyBitsData& product_specific_bits_data = {},
-      const SurveyStringData& product_specific_string_data = {});
+      const SurveyStringData& product_specific_string_data = {},
+      bool require_same_origin = false);
 
   // Updates the user preferences to record that the survey associated with
   // |survey_id| was shown to the user. |trigger_id| is the HaTS next Trigger
@@ -311,8 +323,6 @@ class HatsService : public KeyedService {
   bool hats_next_dialog_exists_ = false;
 
   base::WeakPtrFactory<HatsService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HatsService);
 };
 
 #endif  // CHROME_BROWSER_UI_HATS_HATS_SERVICE_H_

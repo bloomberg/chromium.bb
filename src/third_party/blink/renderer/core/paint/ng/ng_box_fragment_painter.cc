@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_text_combine_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -574,9 +575,16 @@ void NGBoxFragmentPainter::PaintObject(
   }
 
   if (paint_phase == PaintPhase::kForeground) {
+    // NGBoxFragmentPainter::PaintLineBoxChildren() calls
+    // AddURLRectsForInlineChildrenRecursively(). So we don't need to call
+    // AddURLRectIfNeeded() for LayoutInline.
     if (paint_info.ShouldAddUrlMetadata()) {
-      NGFragmentPainter(fragment, GetDisplayItemClient())
-          .AddURLRectIfNeeded(paint_info, paint_offset);
+      const auto* layout_object = fragment.GetLayoutObject();
+      if (!layout_object->IsLayoutInline() ||
+          To<LayoutBoxModelObject>(layout_object)->HasSelfPaintingLayer()) {
+        NGFragmentPainter(fragment, GetDisplayItemClient())
+            .AddURLRectIfNeeded(paint_info, paint_offset);
+      }
     }
     if (is_visible && fragment.HasExtraMathMLPainting())
       NGMathMLPainter(fragment).Paint(paint_info, paint_offset);
@@ -810,6 +818,7 @@ void NGBoxFragmentPainter::PaintBlockChild(
 }
 
 void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info,
+                                              const PaintInfo& float_paint_info,
                                               NGInlineCursor* cursor) {
   while (*cursor) {
     const NGFragmentItem* item = cursor->Current().Item();
@@ -825,14 +834,14 @@ void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info,
     }
     if (child_fragment->IsFloating()) {
       if (child_fragment->CanTraverse()) {
-        NGBoxFragmentPainter(*child_fragment).Paint(paint_info);
+        NGBoxFragmentPainter(*child_fragment).Paint(float_paint_info);
       } else {
         ObjectPainter(*child_fragment->GetLayoutObject())
-            .PaintAllPhasesAtomically(paint_info);
+            .PaintAllPhasesAtomically(float_paint_info);
       }
     } else if (child_fragment->IsBlockInInline() &&
                child_fragment->HasFloatingDescendantsForPaint()) {
-      PaintFloatingChildren(*child_fragment, paint_info);
+      NGBoxFragmentPainter(*child_fragment).Paint(paint_info);
     }
     DCHECK(child_fragment->IsInlineBox() || !cursor->Current().HasChildren());
     cursor->MoveToNext();
@@ -940,13 +949,13 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
           DynamicTo<NGPhysicalBoxFragment>(&container)) {
     if (const NGFragmentItems* items = box->Items()) {
       NGInlineCursor cursor(*box, *items);
-      PaintFloatingItems(float_paint_info, &cursor);
+      PaintFloatingItems(paint_info, float_paint_info, &cursor);
       return;
     }
     if (inline_box_cursor_) {
       DCHECK(box->IsInlineBox());
       NGInlineCursor descendants = inline_box_cursor_->CursorForDescendants();
-      PaintFloatingItems(float_paint_info, &descendants);
+      PaintFloatingItems(paint_info, float_paint_info, &descendants);
       return;
     }
     DCHECK(!box->IsInlineBox());
@@ -1276,6 +1285,8 @@ void NGBoxFragmentPainter::PaintColumnRules(
   LayoutUnit rule_thickness(style.ColumnRuleWidth());
   PhysicalRect previous_column;
   bool past_first_column_in_row = false;
+  AutoDarkMode auto_dark_mode(
+      PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground));
   for (const NGLink& child : box_fragment_.Children()) {
     if (!child->IsColumnBox()) {
       // Column spanner. Continue in the next row, if there are 2 columns or
@@ -1344,7 +1355,7 @@ void NGBoxFragmentPainter::PaintColumnRules(
     rule.Move(paint_offset);
     IntRect snapped_rule = PixelSnappedIntRect(rule);
     BoxBorderPainter::DrawBoxSide(paint_info.context, snapped_rule, box_side,
-                                  rule_color, rule_style);
+                                  rule_color, rule_style, auto_dark_mode);
     recorder.UniteVisualRect(snapped_rule);
 
     previous_column = current_column;
@@ -1617,8 +1628,11 @@ void NGBoxFragmentPainter::PaintBackplate(NGInlineCursor* line_boxes,
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
                            DisplayItem::kForcedColorsModeBackplate,
                            EnclosingIntRect(UnionRect(backplates)));
-  for (const auto backplate : backplates)
-    paint_info.context.FillRect(FloatRect(backplate), backplate_color);
+  for (const auto backplate : backplates) {
+    paint_info.context.FillRect(
+        FloatRect(backplate), backplate_color,
+        PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kBackground));
+  }
 }
 
 void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
@@ -2140,6 +2154,14 @@ bool NGBoxFragmentPainter::HitTestLineBoxFragment(
       return false;
   }
 
+  // |physical_offset| is inside line, but
+  //  * Outside of children
+  //  * In child without no foreground descendant, e.g. block with size.
+  if (cursor.Current()->LineBoxFragment()->IsBlockInInline()) {
+    // "fast/events/ondragenter.html" reaches here.
+    return false;
+  }
+
   return hit_test.AddNodeToResultWithContentOffset(
       fragment.NodeForHitTest(), box_fragment_, bounds_rect,
       physical_offset - cursor.Current().OffsetInContainerFragment());
@@ -2177,9 +2199,23 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
     }
 
     if (fragment.IsBlockInInline()) {
-      // "label-contains-other-interactive-content.html" reaches here.
-      return NGBoxFragmentPainter(fragment).NodeAtPoint(hit_test,
-                                                        physical_offset);
+      if (NGBoxFragmentPainter(fragment).NodeAtPoint(hit_test,
+                                                     physical_offset)) {
+        return true;
+      }
+      if (!box_fragment_.IsInlineBox()) {
+        // fast/events/pointerevents/mouse-pointer-transition-events.html
+        // requires this.
+        return false;
+      }
+      // [1] and [2] reach here for hit test on empty <div> with size.
+      // [1] label-contains-other-interactive-content.html
+      // [2] svg/custom/use-event-retargeting.html
+      if (hit_test.action != kHitTestForeground)
+        return false;
+      return NGBoxFragmentPainter(fragment).NodeAtPoint(
+          *hit_test.result, hit_test.location, physical_offset,
+          kHitTestChildBlockBackgrounds);
     }
 
     // When traversing into a different inline formatting context,
@@ -2382,8 +2418,8 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
 
     cursor.MoveToPreviousSibling();
 
-    if (item->Type() != NGFragmentItem::kLine &&
-        hit_test.action == kHitTestForeground) {
+    if (hit_test.action == kHitTestForeground &&
+        item->Type() != NGFragmentItem::kLine && !item->IsBlockInInline()) {
       // Hit test culled inline boxes between |fragment| and its parent
       // fragment.
       const PhysicalOffset child_offset =

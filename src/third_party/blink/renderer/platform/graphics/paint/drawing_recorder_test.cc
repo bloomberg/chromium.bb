@@ -17,10 +17,11 @@ using DrawingRecorderTest = PaintControllerTestBase;
 
 namespace {
 
-const IntRect kBounds(1, 2, 3, 4);
+const gfx::Rect kBounds(1, 2, 3, 4);
 
 TEST_F(DrawingRecorderTest, Nothing) {
-  FakeDisplayItemClient client;
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
   GraphicsContext context(GetPaintController());
   {
     PaintController::CycleScope cycle_scope(GetPaintController());
@@ -36,7 +37,8 @@ TEST_F(DrawingRecorderTest, Nothing) {
 }
 
 TEST_F(DrawingRecorderTest, Rect) {
-  FakeDisplayItemClient client;
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
   GraphicsContext context(GetPaintController());
   {
     PaintController::CycleScope cycle_scope(GetPaintController());
@@ -49,7 +51,8 @@ TEST_F(DrawingRecorderTest, Rect) {
 }
 
 TEST_F(DrawingRecorderTest, Cached) {
-  FakeDisplayItemClient client;
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
   GraphicsContext context(GetPaintController());
   {
     PaintController::CycleScope cycle_scope(GetPaintController());

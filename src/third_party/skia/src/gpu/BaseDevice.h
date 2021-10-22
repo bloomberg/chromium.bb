@@ -17,11 +17,22 @@ class GrSurfaceProxyView;
 
 namespace skgpu {
 
+class SurfaceContext;
 class SurfaceFillContext;
 #if SK_GPU_V1
 namespace v1 { class SurfaceDrawContext; }
 #endif // SK_GPU_V1
 
+/*
+ * The most important thing to remember about this class hierarchy is there is no skgpu::SDC
+ * base class so the v1 and v2 Devices privately hold their own version of the SDC. The best
+ * the BaseDevice can do is to return the SDC-variant as a generic SFC.
+ *
+ *                             skgpu::BaseDevice
+ *                           /                   \
+ *                     v1::Device           v2::Device
+ *                       - v1::SDC              - v2::SDC
+ */
 class BaseDevice : public SkBaseDevice {
 public:
     enum class InitContents {
@@ -31,7 +42,7 @@ public:
 
     BaseDevice(sk_sp<GrRecordingContext>, const SkImageInfo&, const SkSurfaceProps&);
 
-    virtual GrSurfaceProxyView readSurfaceView() = 0;
+    GrSurfaceProxyView readSurfaceView();
 
     BaseDevice* asGpuDevice() override { return this; }
 
@@ -87,6 +98,7 @@ protected:
     GR_DECL_BITFIELD_CLASS_OPS_FRIENDS(DeviceFlags);
 
     static bool CheckAlphaTypeAndGetFlags(SkAlphaType, InitContents, DeviceFlags*);
+    static SkImageInfo MakeInfo(SurfaceContext*,  DeviceFlags);
 
     sk_sp<GrRecordingContext> fContext;
 

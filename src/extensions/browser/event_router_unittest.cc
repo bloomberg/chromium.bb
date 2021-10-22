@@ -36,6 +36,10 @@ class MockEventRouterObserver : public EventRouter::Observer {
   MockEventRouterObserver()
       : listener_added_count_(0),
         listener_removed_count_(0) {}
+
+  MockEventRouterObserver(const MockEventRouterObserver&) = delete;
+  MockEventRouterObserver& operator=(const MockEventRouterObserver&) = delete;
+
   ~MockEventRouterObserver() override {}
 
   int listener_added_count() const { return listener_added_count_; }
@@ -63,8 +67,6 @@ class MockEventRouterObserver : public EventRouter::Observer {
   int listener_added_count_;
   int listener_removed_count_;
   std::string last_event_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockEventRouterObserver);
 };
 
 using EventListenerConstructor =
@@ -154,6 +156,9 @@ class EventRouterTest : public ExtensionsTest {
  public:
   EventRouterTest() = default;
 
+  EventRouterTest(const EventRouterTest&) = delete;
+  EventRouterTest& operator=(const EventRouterTest&) = delete;
+
  protected:
   // Tests adding and removing observers from EventRouter.
   void RunEventRouterObserverTest(const EventListenerConstructor& constructor);
@@ -188,14 +193,15 @@ class EventRouterTest : public ExtensionsTest {
 
  private:
   base::HistogramTester histogram_tester_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventRouterTest);
 };
 
 class EventRouterFilterTest : public ExtensionsTest,
                               public testing::WithParamInterface<bool> {
  public:
   EventRouterFilterTest() {}
+
+  EventRouterFilterTest(const EventRouterFilterTest&) = delete;
+  EventRouterFilterTest& operator=(const EventRouterFilterTest&) = delete;
 
   void SetUp() override {
     ExtensionsTest::SetUp();
@@ -260,8 +266,6 @@ class EventRouterFilterTest : public ExtensionsTest,
   }
 
   std::unique_ptr<content::RenderProcessHost> render_process_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventRouterFilterTest);
 };
 
 TEST_F(EventRouterTest, GetBaseEventName) {

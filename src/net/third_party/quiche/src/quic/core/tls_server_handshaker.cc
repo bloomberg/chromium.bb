@@ -214,9 +214,7 @@ TlsServerHandshaker::TlsServerHandshaker(
     QUIC_RELOADABLE_FLAG_COUNT(quic_tls_disable_resumption_refactor);
   }
 
-  if (GetQuicReloadableFlag(quic_trace_ssl_events) &&
-      session->connection()->context()->tracer) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_trace_ssl_events);
+  if (session->connection()->context()->tracer) {
     tls_connection_.EnableInfoCallback();
   }
 }
@@ -363,6 +361,13 @@ bool TlsServerHandshaker::DidCertMatchSni() const { return cert_matched_sni_; }
 
 const ProofSource::Details* TlsServerHandshaker::ProofSourceDetails() const {
   return proof_source_details_.get();
+}
+
+bool TlsServerHandshaker::ExportKeyingMaterial(absl::string_view label,
+                                               absl::string_view context,
+                                               size_t result_len,
+                                               std::string* result) {
+  return ExportKeyingMaterialForLabel(label, context, result_len, result);
 }
 
 void TlsServerHandshaker::OnConnectionClosed(QuicErrorCode error,
@@ -1001,7 +1006,9 @@ void TlsServerHandshaker::OnSelectCertificateDone(
     } else {
       QUIC_LOG(ERROR) << "No certs provided for host '"
                       << crypto_negotiated_params_->sni << "', server_address:"
-                      << session()->connection()->self_address();
+                      << session()->connection()->self_address()
+                      << ", client_address:"
+                      << session()->connection()->peer_address();
     }
   }
 
@@ -1127,5 +1134,7 @@ TlsServerHandshaker::SetApplicationSettings(absl::string_view alpn) {
   }
   return result;
 }
+
+SSL* TlsServerHandshaker::GetSsl() const { return ssl(); }
 
 }  // namespace quic

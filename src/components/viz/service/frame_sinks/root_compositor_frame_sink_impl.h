@@ -18,6 +18,7 @@
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/frame_rate_decider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
+#include "components/viz/service/viz_service_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -41,9 +42,10 @@ class VSyncParameterListener;
 
 // The viz portion of a root CompositorFrameSink. Holds the Binding/InterfacePtr
 // for the mojom::CompositorFrameSink interface and owns the Display.
-class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
-                                    public mojom::DisplayPrivate,
-                                    public DisplayClient {
+class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
+    : public mojom::CompositorFrameSink,
+      public mojom::DisplayPrivate,
+      public DisplayClient {
  public:
   // Creates a new RootCompositorFrameSinkImpl.
   static std::unique_ptr<RootCompositorFrameSinkImpl> Create(
@@ -55,7 +57,15 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       const DebugRendererSettings* debug_settings,
       gfx::RenderingPipeline* gpu_pipeline);
 
+  RootCompositorFrameSinkImpl(const RootCompositorFrameSinkImpl&) = delete;
+  RootCompositorFrameSinkImpl& operator=(const RootCompositorFrameSinkImpl&) =
+      delete;
+
   ~RootCompositorFrameSinkImpl() override;
+
+  void DidEvictSurface(const SurfaceId& surface_id);
+
+  const SurfaceId& CurrentSurfaceId() const;
 
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
@@ -180,8 +190,6 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 #if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   gfx::Size last_swap_pixel_size_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(RootCompositorFrameSinkImpl);
 };
 
 }  // namespace viz

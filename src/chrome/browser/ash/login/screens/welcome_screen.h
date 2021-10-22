@@ -25,7 +25,7 @@
 #include "chrome/browser/ash/login/wizard_context.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 namespace ash {
 
@@ -66,11 +66,15 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  enum class Result { NEXT, SETUP_DEMO, ENABLE_DEBUGGING, START_OS_INSTALL };
+  enum class Result { NEXT, NEXT_OS_INSTALL, SETUP_DEMO, ENABLE_DEBUGGING };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
 
   WelcomeScreen(WelcomeView* view, const ScreenExitCallback& exit_callback);
+
+  WelcomeScreen(const WelcomeScreen&) = delete;
+  WelcomeScreen& operator=(const WelcomeScreen&) = delete;
+
   ~WelcomeScreen() override;
 
   static std::string GetResultString(Result result);
@@ -138,8 +142,6 @@ class WelcomeScreen : public BaseScreen,
   void OnSetupDemoMode();
   // Proceed with Enable debugging features flow.
   void OnEnableDebugging();
-  // Proceed with OS installation flow.
-  void OnStartOsInstall();
 
   // Async callback after ReloadResourceBundle(locale) completed.
   void OnLanguageChangedCallback(
@@ -186,8 +188,6 @@ class WelcomeScreen : public BaseScreen,
   base::ObserverList<Observer>::Unchecked observers_;
 
   base::WeakPtrFactory<WelcomeScreen> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WelcomeScreen);
 };
 
 }  // namespace ash

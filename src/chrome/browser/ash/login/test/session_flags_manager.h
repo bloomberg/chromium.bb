@@ -18,7 +18,7 @@ class CommandLine;
 class Value;
 }  // namespace base
 
-namespace chromeos {
+namespace ash {
 namespace test {
 
 // Test helper that sets up command line for login tests. By default, it
@@ -36,6 +36,10 @@ class SessionFlagsManager {
   using Switch = std::pair<std::string, std::string>;
 
   SessionFlagsManager();
+
+  SessionFlagsManager(const SessionFlagsManager&) = delete;
+  SessionFlagsManager& operator=(const SessionFlagsManager&) = delete;
+
   ~SessionFlagsManager();
 
   // Sets the manager up for session restore.It should be called early in
@@ -107,11 +111,9 @@ class SessionFlagsManager {
   // If `session_restore_enabled_` is set, the path to the file where session
   // state is saved.
   base::FilePath backing_file_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionFlagsManager);
 };
 
 }  // namespace test
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_SESSION_FLAGS_MANAGER_H_

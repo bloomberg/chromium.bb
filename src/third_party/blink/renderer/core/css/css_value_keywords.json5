@@ -109,6 +109,12 @@
     "bolder",
     "lighter",
 
+    // font-synthesis
+    // none
+    // style
+    // small-caps
+    "weight",
+
     //
     // font-stretch
     //
@@ -710,6 +716,12 @@
     //
     "clip",
     "ellipsis",
+
+    //
+    // text-decoration-line
+    //
+    "spelling-error",
+    "grammar-error",
 
     //
     // text-decoration-skip-ink
@@ -1392,11 +1404,6 @@
     // @supports selector(...)
     // https://drafts.csswg.org/css-conditional-4/#typedef-supports-selector-fn
     "selector",
-
-    // (screen-spanning) media feature
-    // none
-    "single-fold-vertical",
-    "single-fold-horizontal",
 
     // (device-posture) media feature
     "continuous",

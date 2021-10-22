@@ -41,6 +41,12 @@ struct ConversionBuffer
     vk::DynamicBuffer data;
 };
 
+enum BufferUpdateType
+{
+    StorageRedefined,
+    ContentsUpdate,
+};
+
 class BufferVk : public BufferImpl
 {
   public:
@@ -121,6 +127,7 @@ class BufferVk : public BufferImpl
                                GLbitfield access,
                                void **mapPtr);
     angle::Result unmapImpl(ContextVk *contextVk);
+    angle::Result ghostMappedBuffer(ContextVk *contextVk, VkDeviceSize offset, void **mapPtr);
 
     ConversionBuffer *getVertexConversionBuffer(RendererVk *renderer,
                                                 angle::FormatID formatID,
@@ -160,7 +167,8 @@ class BufferVk : public BufferImpl
     angle::Result acquireAndUpdate(ContextVk *contextVk,
                                    const uint8_t *data,
                                    size_t updateSize,
-                                   size_t offset);
+                                   size_t offset,
+                                   BufferUpdateType updateType);
     angle::Result setDataWithMemoryType(const gl::Context *context,
                                         gl::BufferBinding target,
                                         const void *data,
@@ -178,11 +186,14 @@ class BufferVk : public BufferImpl
     angle::Result setDataImpl(ContextVk *contextVk,
                               const uint8_t *data,
                               size_t size,
-                              size_t offset);
+                              size_t offset,
+                              BufferUpdateType updateType);
     void release(ContextVk *context);
     void markConversionBuffersDirty();
 
-    angle::Result acquireBufferHelper(ContextVk *contextVk, size_t sizeInBytes);
+    angle::Result acquireBufferHelper(ContextVk *contextVk,
+                                      size_t sizeInBytes,
+                                      BufferUpdateType updateType);
 
     struct VertexConversionBuffer : public ConversionBuffer
     {

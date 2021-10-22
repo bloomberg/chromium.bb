@@ -36,6 +36,10 @@ class TestSigninClient : public SigninClient {
   TestSigninClient(
       PrefService* pref_service,
       network::TestURLLoaderFactory* test_url_loader_factory = nullptr);
+
+  TestSigninClient(const TestSigninClient&) = delete;
+  TestSigninClient& operator=(const TestSigninClient&) = delete;
+
   ~TestSigninClient() override;
 
   // SigninClient implementation that is specialized for unit tests.
@@ -75,8 +79,6 @@ class TestSigninClient : public SigninClient {
 
   void set_is_signout_allowed(bool value) { is_signout_allowed_ = value; }
 
-  bool is_dice_migration_completed() { return is_dice_migration_completed_; }
-
   // When |value| is true, network calls posted through DelayNetworkCall() are
   // delayed indefinitely.
   // When |value| is false, all pending calls are unblocked, and new calls are
@@ -94,7 +96,6 @@ class TestSigninClient : public SigninClient {
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) override;
-  void SetDiceMigrationCompleted() override;
   bool IsNonEnterpriseUser(const std::string& email) override;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   absl::optional<account_manager::Account> GetInitialPrimaryAccount() override;
@@ -115,15 +116,12 @@ class TestSigninClient : public SigninClient {
   bool are_signin_cookies_allowed_;
   bool network_calls_delayed_;
   bool is_signout_allowed_;
-  bool is_dice_migration_completed_;
 
   std::vector<base::OnceClosure> delayed_network_calls_;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   absl::optional<account_manager::Account> initial_primary_account_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(TestSigninClient);
 };
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_TEST_SIGNIN_CLIENT_H_

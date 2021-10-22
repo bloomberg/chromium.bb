@@ -15,7 +15,6 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
-#include "components/password_manager/core/browser/password_store.h"
 
 namespace password_manager {
 
@@ -29,11 +28,10 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
           client,
           std::move(saved_form),
           std::move(form_fetcher),
-          form_saver
-              ? std::make_unique<PasswordSaveManagerImpl>(
-                    /*profile_form_saver=*/std::move(form_saver),
-                    /*account_form_saver=*/nullptr)
-              : PasswordSaveManagerImpl::CreatePasswordSaveManagerImpl(client)),
+          form_saver ? std::make_unique<PasswordSaveManagerImpl>(
+                           /*profile_form_saver=*/std::move(form_saver),
+                           /*account_form_saver=*/nullptr)
+                     : std::make_unique<PasswordSaveManagerImpl>(client)),
       delegate_(delegate) {}
 
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() =

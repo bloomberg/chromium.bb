@@ -20,13 +20,16 @@ using MountFailure = DriveFsSession::MountObserver::MountFailure;
 constexpr char kDataDirOption[] = "datadir=";
 constexpr char kMyFilesOption[] = "myfiles=";
 constexpr char kMountScheme[] = "drivefs://";
-constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kMountTimeout = base::Seconds(20);
 
 class DiskMounterImpl : public DiskMounter {
  public:
   explicit DiskMounterImpl(
       chromeos::disks::DiskMountManager* disk_mount_manager)
       : disk_mount_manager_(disk_mount_manager) {}
+
+  DiskMounterImpl(const DiskMounterImpl&) = delete;
+  DiskMounterImpl& operator=(const DiskMounterImpl&) = delete;
 
   ~DiskMounterImpl() override = default;
 
@@ -76,8 +79,6 @@ class DiskMounterImpl : public DiskMounter {
   std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
 
   base::WeakPtrFactory<DiskMounterImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DiskMounterImpl);
 };
 
 }  // namespace

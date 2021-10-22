@@ -156,20 +156,22 @@ void WaitForInterstitial(content::WebContents* tab) {
   ASSERT_TRUE(WaitForRenderFrameReady(tab->GetMainFrame()));
 }
 
-// Inject a script into every frame in the page. Used by tests that check for
-// visible password fields to wait for notifications about these
-// fields. Notifications about visible password fields are queued at the end of
-// the event loop, so waiting for a dummy script to run ensures that these
+// Inject a script into every frame in the active page. Used by tests that check
+// for visible password fields to wait for notifications about these fields.
+// Notifications about visible password fields are queued at the end of the
+// event loop, so waiting for a dummy script to run ensures that these
 // notifications have been sent.
 void InjectScript(content::WebContents* contents) {
-  // Any frame in the page might have a password field, so inject scripts into
-  // all of them to ensure that notifications from all of them have been sent.
-  for (auto* frame : contents->GetAllFrames()) {
-    bool js_result = false;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        frame, "window.domAutomationController.send(true);", &js_result));
-    EXPECT_TRUE(js_result);
-  }
+  // Any frame in the active page might have a password field, so inject scripts
+  // into all of them to ensure that notifications from all of them have been
+  // sent.
+  contents->GetMainFrame()->ForEachRenderFrameHost(
+      base::BindRepeating([](content::RenderFrameHost* frame) {
+        bool js_result = false;
+        EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+            frame, "window.domAutomationController.send(true);", &js_result));
+        EXPECT_TRUE(js_result);
+      }));
 }
 
 // A WebContentsObserver useful for testing the DidChangeVisibleSecurityState()
@@ -180,6 +182,11 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
   explicit SecurityStyleTestObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
         latest_security_style_(blink::SecurityStyle::kUnknown) {}
+
+  SecurityStyleTestObserver(const SecurityStyleTestObserver&) = delete;
+  SecurityStyleTestObserver& operator=(const SecurityStyleTestObserver&) =
+      delete;
+
   ~SecurityStyleTestObserver() override {}
 
   void DidChangeVisibleSecurityState() override {
@@ -209,7 +216,6 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
   blink::SecurityStyle latest_security_style_;
   content::SecurityStyleExplanations latest_explanations_;
   base::RunLoop run_loop_;
-  DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
 
 // Check that |observer|'s latest event was for an expired certificate
@@ -408,6 +414,10 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
         true);
   }
 
+  SecurityStateTabHelperTest(const SecurityStateTabHelperTest&) = delete;
+  SecurityStateTabHelperTest& operator=(const SecurityStateTabHelperTest&) =
+      delete;
+
   ~SecurityStateTabHelperTest() override {
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
         absl::nullopt);
@@ -479,15 +489,17 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
   }
 
   net::EmbeddedTestServer https_server_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperTest);
 };
 
 // Same as SecurityStateTabHelperTest, but with Incognito enabled.
 class SecurityStateTabHelperIncognitoTest : public SecurityStateTabHelperTest {
  public:
   SecurityStateTabHelperIncognitoTest() : SecurityStateTabHelperTest() {}
+
+  SecurityStateTabHelperIncognitoTest(
+      const SecurityStateTabHelperIncognitoTest&) = delete;
+  SecurityStateTabHelperIncognitoTest& operator=(
+      const SecurityStateTabHelperIncognitoTest&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     SecurityStateTabHelperTest::SetUpCommandLine(command_line);
@@ -499,7 +511,6 @@ class SecurityStateTabHelperIncognitoTest : public SecurityStateTabHelperTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelperIncognitoTest);
 };
 
 class DidChangeVisibleSecurityStateTest
@@ -510,6 +521,11 @@ class DidChangeVisibleSecurityStateTest
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     https_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
   }
+
+  DidChangeVisibleSecurityStateTest(const DidChangeVisibleSecurityStateTest&) =
+      delete;
+  DidChangeVisibleSecurityStateTest& operator=(
+      const DidChangeVisibleSecurityStateTest&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Browser will both run and display insecure content.
@@ -522,9 +538,6 @@ class DidChangeVisibleSecurityStateTest
 
  protected:
   net::EmbeddedTestServer https_server_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DidChangeVisibleSecurityStateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpPage) {
@@ -1283,15 +1296,16 @@ IN_PROC_BROWSER_TEST_F(PKPModelClientTest, PKPEnforced) {
 class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
  public:
   SecurityStateLoadingTest() : SecurityStateTabHelperTest() {}
+
+  SecurityStateLoadingTest(const SecurityStateLoadingTest&) = delete;
+  SecurityStateLoadingTest& operator=(const SecurityStateLoadingTest&) = delete;
+
   ~SecurityStateLoadingTest() override {}
 
  protected:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SecurityStateLoadingTest);
 };
 
 // Tests that navigation state changes cause the security state to be
@@ -1611,6 +1625,11 @@ class BrowserTestNonsecureURLRequestWithLegacyTLSWarnings
  public:
   BrowserTestNonsecureURLRequestWithLegacyTLSWarnings() {}
 
+  BrowserTestNonsecureURLRequestWithLegacyTLSWarnings(
+      const BrowserTestNonsecureURLRequestWithLegacyTLSWarnings&) = delete;
+  BrowserTestNonsecureURLRequestWithLegacyTLSWarnings& operator=(
+      const BrowserTestNonsecureURLRequestWithLegacyTLSWarnings&) = delete;
+
   void SetUpOnMainThread() override {
     net::SSLServerConfig config;
     config.version_max = net::SSL_PROTOCOL_VERSION_TLS1_1;
@@ -1625,8 +1644,6 @@ class BrowserTestNonsecureURLRequestWithLegacyTLSWarnings
  private:
   net::EmbeddedTestServer https_server_{
       net::test_server::EmbeddedTestServer::TYPE_HTTPS};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserTestNonsecureURLRequestWithLegacyTLSWarnings);
 };
 
 // Tests that a connection with obsolete TLS settings does not get a
@@ -1907,7 +1924,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithMixedFormsWarningsDisabled,
 class SignedExchangeSecurityStateTest
     : public CertVerifierBrowserTest,
       public testing::WithParamInterface<
-          bool /* sxg_prefetch_cache_for_navigations_enabled */> {
+          bool /* sxg_subresource_prefetch_enabled */> {
  public:
   SignedExchangeSecurityStateTest() = default;
   ~SignedExchangeSecurityStateTest() override = default;
@@ -1926,15 +1943,13 @@ class SignedExchangeSecurityStateTest
 
  private:
   void SetUp() override {
-    const bool sxg_prefetch_cache_for_navigations_enabled = GetParam();
+    const bool sxg_subresource_prefetch_enabled = GetParam();
     std::vector<base::Feature> enabled_features;
     std::vector<base::Feature> disabled_features;
-    if (sxg_prefetch_cache_for_navigations_enabled) {
-      enabled_features.push_back(
-          features::kSignedExchangePrefetchCacheForNavigations);
+    if (sxg_subresource_prefetch_enabled) {
+      enabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     } else {
-      disabled_features.push_back(
-          features::kSignedExchangePrefetchCacheForNavigations);
+      disabled_features.push_back(features::kSignedExchangeSubresourcePrefetch);
     }
     feature_list_.InitWithFeatures(enabled_features, disabled_features);
 

@@ -44,6 +44,7 @@
 #include "components/autofill/content/browser/autofill_log_router_factory.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
@@ -308,19 +309,19 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
   // For VCN related errors, on Android we show a new error dialog instead of
   // updating the CVC unmask prompt with the error message.
   switch (result) {
-    case AutofillClient::VCN_RETRIEVAL_PERMANENT_FAILURE:
+    case AutofillClient::PaymentsRpcResult::kVcnRetrievalPermanentFailure:
       ShowVirtualCardErrorDialog(/*is_permanent_error=*/true);
       break;
-    case AutofillClient::VCN_RETRIEVAL_TRY_AGAIN_FAILURE:
+    case AutofillClient::PaymentsRpcResult::kVcnRetrievalTryAgainFailure:
       ShowVirtualCardErrorDialog(/*is_permanent_error=*/false);
       break;
-    case AutofillClient::SUCCESS:
-    case AutofillClient::TRY_AGAIN_FAILURE:
-    case AutofillClient::PERMANENT_FAILURE:
-    case AutofillClient::NETWORK_ERROR:
+    case AutofillClient::PaymentsRpcResult::kSuccess:
+    case AutofillClient::PaymentsRpcResult::kTryAgainFailure:
+    case AutofillClient::PaymentsRpcResult::kPermanentFailure:
+    case AutofillClient::PaymentsRpcResult::kNetworkError:
       // Do nothing
       break;
-    case AutofillClient::NONE:
+    case AutofillClient::PaymentsRpcResult::kNone:
       NOTREACHED();
       return;
   }
@@ -712,9 +713,14 @@ void ChromeAutofillClient::ShowOfferNotificationIfApplicable(
   if (offer->IsCardLinkedOffer() && !card)
     return;
 
-  // TODO(crbug.com/1203811): Promo code offers should eventually show offer
-  //                          details in their own format as well.
-  if (!offer->IsCardLinkedOffer())
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableOfferNotificationForPromoCodes) &&
+      offer->IsPromoCodeOffer()) {
+    return;
+  }
+
+  // Malformed offers should not be displayed.
+  if (offer->GetOfferType() == AutofillOfferData::OfferType::UNKNOWN)
     return;
 
 #if defined(OS_ANDROID)
@@ -730,6 +736,7 @@ void ChromeAutofillClient::ShowOfferNotificationIfApplicable(
 }
 
 void ChromeAutofillClient::OnVirtualCardDataAvailable(
+    const std::u16string& masked_card_identifier_string,
     const CreditCard* credit_card,
     const std::u16string& cvc,
     const gfx::Image& card_image) {
@@ -750,7 +757,8 @@ void ChromeAutofillClient::OnVirtualCardDataAvailable(
   VirtualCardManualFallbackBubbleControllerImpl* controller =
       VirtualCardManualFallbackBubbleControllerImpl::FromWebContents(
           web_contents());
-  controller->ShowBubble(credit_card, cvc, card_image);
+  controller->ShowBubble(masked_card_identifier_string, credit_card, cvc,
+                         card_image);
 #endif
 }
 
@@ -760,6 +768,19 @@ void ChromeAutofillClient::ShowVirtualCardErrorDialog(bool is_permanent_error) {
           ? AutofillErrorDialogType::VIRTUAL_CARD_PERMANENT_ERROR
           : AutofillErrorDialogType::VIRTUAL_CARD_TEMPORARY_ERROR;
   autofill_error_dialog_controller_.Show(error_dialog_type);
+}
+
+void ChromeAutofillClient::ShowAutofillProgressDialog(
+    base::OnceClosure cancel_callback) {
+  DCHECK(autofill_progress_dialog_controller_);
+  autofill_progress_dialog_controller_->ShowDialog(std::move(cancel_callback));
+}
+
+void ChromeAutofillClient::CloseAutofillProgressDialog(
+    bool show_confirmation_before_closing) {
+  DCHECK(autofill_progress_dialog_controller_);
+  autofill_progress_dialog_controller_->DismissDialog(
+      show_confirmation_before_closing);
 }
 
 bool ChromeAutofillClient::IsAutofillAssistantShowing() {
@@ -891,7 +912,10 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
           GetPersonalDataManager()->app_locale())),
       unmask_controller_(
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())),
-      autofill_error_dialog_controller_(web_contents) {
+      autofill_error_dialog_controller_(web_contents),
+      autofill_progress_dialog_controller_(
+          std::make_unique<AutofillProgressDialogControllerImpl>(
+              web_contents)) {
   // TODO(crbug.com/928595): Replace the closure with a callback to the
   // renderer that indicates if log messages should be sent from the
   // renderer.
@@ -942,6 +966,6 @@ std::u16string ChromeAutofillClient::GetAccountHolderName() {
   return base::UTF8ToUTF16(primary_account_info.full_name);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeAutofillClient)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ChromeAutofillClient);
 
 }  // namespace autofill

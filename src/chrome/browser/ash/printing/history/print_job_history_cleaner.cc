@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
-namespace chromeos {
+namespace ash {
 
 namespace {
 
@@ -72,7 +72,7 @@ void PrintJobHistoryCleaner::OnPrefServiceInitialized(
   if (!success || !print_job_database_->IsInitialized() ||
       expiration_period == kPrintJobHistoryIndefinite ||
       !IsCompletionTimeExpired(oldest_print_job_completion_time_, clock_->Now(),
-                               base::TimeDelta::FromDays(expiration_period))) {
+                               base::Days(expiration_period))) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                      std::move(callback));
     return;
@@ -85,16 +85,15 @@ void PrintJobHistoryCleaner::OnPrefServiceInitialized(
 void PrintJobHistoryCleaner::OnPrintJobsRetrieved(
     base::OnceClosure callback,
     bool success,
-    std::vector<printing::proto::PrintJobInfo> print_job_infos) {
+    std::vector<chromeos::printing::proto::PrintJobInfo> print_job_infos) {
   if (!success) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                      std::move(callback));
     return;
   }
   std::vector<std::string> print_job_ids_to_remove;
-  base::TimeDelta print_job_history_expiration_period =
-      base::TimeDelta::FromDays(
-          pref_service_->GetInteger(prefs::kPrintJobHistoryExpirationPeriod));
+  base::TimeDelta print_job_history_expiration_period = base::Days(
+      pref_service_->GetInteger(prefs::kPrintJobHistoryExpirationPeriod));
 
   base::Time now = clock_->Now();
   oldest_print_job_completion_time_ = now;
@@ -120,4 +119,4 @@ void PrintJobHistoryCleaner::OnPrintJobsDeleted(base::OnceClosure callback,
                                                    std::move(callback));
 }
 
-}  // namespace chromeos
+}  // namespace ash

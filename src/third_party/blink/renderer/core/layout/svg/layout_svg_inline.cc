@@ -86,12 +86,12 @@ void LayoutSVGInline::ObjectBoundingBoxForCursor(NGInlineCursor& cursor,
   for (; cursor; cursor.MoveToNextForSameLayoutObject()) {
     const NGFragmentItem& item = *cursor.CurrentItem();
     if (item.Type() == NGFragmentItem::kSvgText) {
-      bounds.Unite(item.ObjectBoundingBox());
+      bounds.Unite(cursor.Current().ObjectBoundingBox(cursor));
     } else if (NGInlineCursor descendants = cursor.CursorForDescendants()) {
       for (; descendants; descendants.MoveToNext()) {
         const NGFragmentItem& descendant_item = *descendants.CurrentItem();
         if (descendant_item.Type() == NGFragmentItem::kSvgText)
-          bounds.Unite(descendant_item.ObjectBoundingBox());
+          bounds.Unite(descendants.Current().ObjectBoundingBox(cursor));
       }
     }
   }
@@ -147,10 +147,10 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
          cursor.MoveToNextForSameLayoutObject()) {
       const NGFragmentItem& item = *cursor.CurrentItem();
       if (item.Type() == NGFragmentItem::kSvgText) {
-        quads.push_back(
-            LocalToAbsoluteQuad(SVGLayoutSupport::ExtendTextBBoxWithStroke(
-                                    *this, item.ObjectBoundingBox()),
-                                mode));
+        quads.push_back(LocalToAbsoluteQuad(
+            SVGLayoutSupport::ExtendTextBBoxWithStroke(
+                *this, cursor.Current().ObjectBoundingBox(cursor)),
+            mode));
       }
     }
     return;
@@ -160,6 +160,18 @@ void LayoutSVGInline::AbsoluteQuads(Vector<FloatQuad>& quads,
     quads.push_back(LocalToAbsoluteQuad(
         SVGLayoutSupport::ExtendTextBBoxWithStroke(*this, box_rect), mode));
   }
+}
+
+void LayoutSVGInline::AddOutlineRects(Vector<PhysicalRect>& rect_list,
+                                      const PhysicalOffset& additional_offset,
+                                      NGOutlineType outline_type) const {
+  if (!IsInLayoutNGInlineFormattingContext()) {
+    LayoutInline::AddOutlineRects(rect_list, additional_offset, outline_type);
+    return;
+  }
+  auto rect = PhysicalRect::EnclosingRect(ObjectBoundingBox());
+  rect.Move(additional_offset);
+  rect_list.push_back(rect);
 }
 
 void LayoutSVGInline::WillBeDestroyed() {

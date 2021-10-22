@@ -483,9 +483,12 @@ class ProcessSingleton::LinuxWatcher
           fd, base::BindRepeating(&SocketReader::OnSocketCanReadWithoutBlocking,
                                   base::Unretained(this)));
       // If we haven't completed in a reasonable amount of time, give up.
-      timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutInSeconds),
-                   this, &SocketReader::CleanupAndDeleteSelf);
+      timer_.Start(FROM_HERE, base::Seconds(kTimeoutInSeconds), this,
+                   &SocketReader::CleanupAndDeleteSelf);
     }
+
+    SocketReader(const SocketReader&) = delete;
+    SocketReader& operator=(const SocketReader&) = delete;
 
     ~SocketReader() { CloseSocket(fd_); }
 
@@ -524,13 +527,14 @@ class ProcessSingleton::LinuxWatcher
     size_t bytes_read_;
 
     base::OneShotTimer timer_;
-
-    DISALLOW_COPY_AND_ASSIGN(SocketReader);
   };
 
   // We expect to only be constructed on the UI thread.
   explicit LinuxWatcher(ProcessSingleton* parent)
       : ui_task_runner_(base::ThreadTaskRunnerHandle::Get()), parent_(parent) {}
+
+  LinuxWatcher(const LinuxWatcher&) = delete;
+  LinuxWatcher& operator=(const LinuxWatcher&) = delete;
 
   // Start listening for connections on the socket.  This method should be
   // called from the IO thread.
@@ -566,8 +570,6 @@ class ProcessSingleton::LinuxWatcher
   ProcessSingleton* const parent_;
 
   std::set<std::unique_ptr<SocketReader>, base::UniquePtrComparator> readers_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinuxWatcher);
 };
 
 void ProcessSingleton::LinuxWatcher::OnSocketCanReadWithoutBlocking(
@@ -730,9 +732,9 @@ ProcessSingleton::~ProcessSingleton() {
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcess() {
-  return NotifyOtherProcessWithTimeout(
-      *base::CommandLine::ForCurrentProcess(), kRetryAttempts,
-      base::TimeDelta::FromSeconds(kTimeoutInSeconds), true);
+  return NotifyOtherProcessWithTimeout(*base::CommandLine::ForCurrentProcess(),
+                                       kRetryAttempts,
+                                       base::Seconds(kTimeoutInSeconds), true);
 }
 
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
@@ -892,7 +894,7 @@ ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessWithTimeout(
 ProcessSingleton::NotifyResult ProcessSingleton::NotifyOtherProcessOrCreate() {
   return NotifyOtherProcessWithTimeoutOrCreate(
       *base::CommandLine::ForCurrentProcess(), kRetryAttempts,
-      base::TimeDelta::FromSeconds(kTimeoutInSeconds));
+      base::Seconds(kTimeoutInSeconds));
 }
 
 ProcessSingleton::NotifyResult

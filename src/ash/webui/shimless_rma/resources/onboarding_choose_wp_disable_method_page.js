@@ -29,13 +29,7 @@ export class OnboardingChooseWpDisableMethodPageElement extends PolymerElement {
 
   static get properties() {
     return {
-      /** @private {ShimlessRmaServiceInterface} */
-      shimlessRmaService_: {
-        type: Object,
-        value: {},
-      },
-
-      /** @private {string} */
+      /** @private */
       hwwpMethod_: {
         type: String,
         value: '',
@@ -43,9 +37,9 @@ export class OnboardingChooseWpDisableMethodPageElement extends PolymerElement {
     };
   }
 
-  /** @override */
-  ready() {
-    super.ready();
+  constructor() {
+    super();
+    /** @private {ShimlessRmaServiceInterface} */
     this.shimlessRmaService_ = getShimlessRmaService();
   }
 
@@ -55,6 +49,11 @@ export class OnboardingChooseWpDisableMethodPageElement extends PolymerElement {
    */
   onHwwpDisableMethodSelectionChanged_(event) {
     this.hwwpMethod_ = event.detail.value;
+    let disabled = !this.hwwpMethod_;
+    this.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: disabled},
+        ));
   }
 
   /** @return {!Promise<!StateResult>} */

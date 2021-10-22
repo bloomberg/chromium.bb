@@ -16,6 +16,7 @@
 #define DAWNNATIVE_RENDERPASSENCODER_H_
 
 #include "dawn_native/Error.h"
+#include "dawn_native/Forward.h"
 #include "dawn_native/RenderEncoderBase.h"
 
 namespace dawn_native {
@@ -37,11 +38,12 @@ namespace dawn_native {
                                             CommandEncoder* commandEncoder,
                                             EncodingContext* encodingContext);
 
+        ObjectType GetType() const override;
+
         void APIEndPass();
 
         void APISetStencilReference(uint32_t reference);
         void APISetBlendConstant(const Color* color);
-        void APISetBlendColor(const Color* color);  // Deprecated
         void APISetViewport(float x,
                             float y,
                             float width,
@@ -77,6 +79,9 @@ namespace dawn_native {
         uint32_t mCurrentOcclusionQueryIndex = 0;
         bool mOcclusionQueryActive = false;
     };
+
+    // For the benefit of template generation.
+    using RenderPassEncoderBase = RenderPassEncoder;
 
 }  // namespace dawn_native
 

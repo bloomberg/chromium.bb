@@ -33,7 +33,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import * as Common from '../../core/common/common.js';
+import type * as Common from '../../core/common/common.js';
 import * as DOMExtension from '../../core/dom_extension/dom_extension.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -219,7 +219,7 @@ class DragHandler {
     DragHandler.rootForMouseOut = event.target instanceof Node && event.target.getRootNode() || null;
     this.dragEventsTargetDocument = targetDocument;
     try {
-      if (targetDocument.defaultView) {
+      if (targetDocument.defaultView && targetDocument.defaultView.top) {
         this.dragEventsTargetDocumentTop = targetDocument.defaultView.top.document;
       }
     } catch (e) {
@@ -344,7 +344,9 @@ export function isEditing(): boolean {
   if (!focused) {
     return false;
   }
-  return focused.classList.contains('text-prompt') || focused.nodeName === 'INPUT' || focused.nodeName === 'TEXTAREA';
+  return focused.classList.contains('text-prompt') || focused.nodeName === 'INPUT' || focused.nodeName === 'TEXTAREA' ||
+      ((focused as HTMLElement).contentEditable === 'true' ||
+       (focused as HTMLElement).contentEditable === 'plaintext-only');
 }
 
 export function markBeingEdited(element: Element, value: boolean): boolean {
@@ -602,13 +604,21 @@ export function anotherProfilerActiveLabel(): string {
   return i18nString(UIStrings.anotherProfilerIsAlreadyActive);
 }
 
-export function asyncStackTraceLabel(description: string|undefined): string {
+export function asyncStackTraceLabel(
+    description: string|undefined, previousCallFrames: {functionName: string}[]): string {
   if (description) {
     if (description === 'Promise.resolve') {
       return i18nString(UIStrings.promiseResolvedAsync);
     }
     if (description === 'Promise.reject') {
       return i18nString(UIStrings.promiseRejectedAsync);
+    }
+    // TODO(crbug.com/1254259): Remove the check for 'async function'
+    // once the relevant V8 inspector CL rolls into Node LTS.
+    if ((description === 'await' || description === 'async function') && previousCallFrames.length !== 0) {
+      const lastPreviousFrame = previousCallFrames[previousCallFrames.length - 1];
+      const lastPreviousFrameName = beautifyFunctionName(lastPreviousFrame.functionName);
+      description = `await in ${lastPreviousFrameName}`;
     }
     return i18nString(UIStrings.sAsync, {PH1: description});
   }
@@ -949,7 +959,7 @@ export function animateFunction(
   return (): void => window.cancelAnimationFrame(raf);
 }
 
-export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
+export class LongClickController {
   private readonly element: Element;
   private readonly callback: (arg0: Event) => void;
   private readonly editKey: (arg0: Event) => boolean;
@@ -963,7 +973,6 @@ export class LongClickController extends Common.ObjectWrapper.ObjectWrapper {
   constructor(
       element: Element, callback: (arg0: Event) => void,
       isEditKeyFunc: (arg0: Event) => boolean = (event): boolean => isEnterOrSpaceKey(event)) {
-    super();
     this.element = element;
     this.callback = callback;
     this.editKey = isEditKeyFunc;
@@ -1516,7 +1525,7 @@ export function addReferrerToURL(url: string): string {
  * 'web.dev' or 'developers.google.com'.
  */
 export function addReferrerToURLIfNecessary(url: string): string {
-  if (/(\/\/developers.google.com\/|\/\/web.dev\/)/.test(url)) {
+  if (/(\/\/developers.google.com\/|\/\/web.dev\/|\/\/developer.chrome.com\/)/.test(url)) {
     return addReferrerToURL(url);
   }
   return url;

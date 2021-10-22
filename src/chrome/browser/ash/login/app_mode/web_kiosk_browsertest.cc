@@ -53,8 +53,8 @@ class WebKioskTest : public OobeBaseTest {
     needs_background_networking_ = true;
     skip_splash_wait_override_ =
         KioskLaunchController::SkipSplashScreenWaitForTesting();
-    network_wait_override_ = KioskLaunchController::SetNetworkWaitForTesting(
-        base::TimeDelta::FromSeconds(0));
+    network_wait_override_ =
+        KioskLaunchController::SetNetworkWaitForTesting(base::Seconds(0));
   }
 
   WebKioskTest(const WebKioskTest&) = delete;
@@ -152,8 +152,7 @@ class WebKioskTest : public OobeBaseTest {
  private:
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
   DeviceStateMixin device_state_mixin_{
-      &mixin_host_,
-      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   const AccountId account_id_;
   std::unique_ptr<ScopedDeviceSettings> settings_;
 
@@ -274,8 +273,8 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest, HiddenShelf) {
       display_bounds.bottom() - ShelfConfig::Get()->shelf_size() / 2);
   gfx::Point end_point(start_point.x(), start_point.y() - 80);
   ui::test::EventGenerator event_generator(window);
-  event_generator.GestureScrollSequence(
-      start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+  event_generator.GestureScrollSequence(start_point, end_point,
+                                        base::Milliseconds(500), 4);
 
   // The shelf should be still hidden after the gesture.
   EXPECT_FALSE(ShelfTestApi().IsVisible());

@@ -84,8 +84,8 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     return propertiesWidgetInstance;
   }
 
-  private setNode(event: Common.EventTarget.EventTargetEvent): void {
-    this.node = (event.data as SDK.DOMModel.DOMNode | null);
+  private setNode(event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode|null>): void {
+    this.node = event.data;
     this.update();
   }
 
@@ -107,8 +107,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
 
     await ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populate(
-        this.treeOutline.rootElement(), object, true, true, undefined, undefined,
-        ObjectUI.ObjectPropertiesSection.ObjectPropertiesMode.All);
+        this.treeOutline.rootElement(), object, true, true, undefined, undefined);
   }
 
   private onNodeChange(event: Common.EventTarget

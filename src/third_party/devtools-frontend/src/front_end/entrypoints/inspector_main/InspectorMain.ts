@@ -37,7 +37,7 @@ const str_ = i18n.i18n.registerUIStrings('entrypoints/inspector_main/InspectorMa
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let inspectorMainImplInstance: InspectorMainImpl;
 
-export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper implements Common.Runnable.Runnable {
+export class InspectorMainImpl implements Common.Runnable.Runnable {
   static instance(opts: {
     forceNew: boolean|null,
   } = {forceNew: null}): InspectorMainImpl {
@@ -84,8 +84,7 @@ export class InspectorMainImpl extends Common.ObjectWrapper.ObjectWrapper implem
     new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();
 
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
-        Host.InspectorFrontendHostAPI.Events.ReloadInspectedPage, event => {
-          const hard = (event.data as boolean);
+        Host.InspectorFrontendHostAPI.Events.ReloadInspectedPage, ({data: hard}) => {
           SDK.ResourceTreeModel.ResourceTreeModel.reloadAllPages(hard);
         });
   }

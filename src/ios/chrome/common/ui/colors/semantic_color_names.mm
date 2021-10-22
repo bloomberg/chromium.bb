@@ -30,6 +30,7 @@ NSString* const kTertiaryBackgroundColor = @"tertiary_background_color";
 NSString* const kTextPrimaryColor = @"text_primary_color";
 NSString* const kTextSecondaryColor = @"text_secondary_color";
 NSString* const kTextTertiaryColor = @"text_tertiary_color";
+NSString* const kTextQuaternaryColor = @"text_quaternary_color";
 NSString* const kTextfieldBackgroundColor = @"textfield_background_color";
 NSString* const kTextfieldPlaceholderColor = @"textfield_placeholder_color";
 NSString* const kToolbarButtonColor = @"toolbar_button_color";
@@ -39,6 +40,8 @@ NSString* const kToolbarShadowColor = @"toolbar_shadow_color";
 NSString* const kBlueColor = @"blue_color";
 NSString* const kBlueHaloColor = @"blue_halo_color";
 NSString* const kGreenColor = @"green_color";
+NSString* const kGreen50Color = @"green_50_color";
+NSString* const kGreen700Color = @"green_700_color";
 NSString* const kRedColor = @"red_color";
 
 #pragma mark - Grey Palette

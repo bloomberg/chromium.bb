@@ -43,6 +43,7 @@
 #include "crypto/sha2.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/features.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
@@ -954,14 +955,16 @@ void NetworkContext::ClearNetworkErrorLogging(
 void NetworkContext::SetDocumentReportingEndpoints(
     const base::UnguessableToken& reporting_source,
     const url::Origin& origin,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     const base::flat_map<std::string, std::string>& endpoints) {
   DCHECK(!reporting_source.is_empty());
+  DCHECK_EQ(net::IsolationInfo::RequestType::kOther,
+            isolation_info.request_type());
   net::ReportingService* reporting_service =
       url_request_context()->reporting_service();
   if (reporting_service) {
-    reporting_service->SetDocumentReportingEndpoints(
-        reporting_source, origin, network_isolation_key, endpoints);
+    reporting_service->SetDocumentReportingEndpoints(reporting_source, origin,
+                                                     isolation_info, endpoints);
   }
 }
 
@@ -1111,7 +1114,7 @@ void NetworkContext::ClearNetworkErrorLogging(
 void NetworkContext::SetDocumentReportingEndpoints(
     const base::UnguessableToken& reporting_source,
     const url::Origin& origin,
-    const net::NetworkIsolationKey& network_isolation_key,
+    const net::IsolationInfo& isolation_info,
     const base::flat_map<std::string, std::string>& endpoints) {
   NOTREACHED();
 }
@@ -2193,8 +2196,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   builder.set_http_user_agent_settings(std::move(user_agent_settings));
 
   builder.set_enable_brotli(params_->enable_brotli);
-  if (params_->context_name)
-    builder.set_name(*params_->context_name);
 
   if (params_->proxy_resolver_factory) {
     builder.SetMojoProxyResolverFactory(

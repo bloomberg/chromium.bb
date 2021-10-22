@@ -50,6 +50,9 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
     vp8_encoder_.Initialize();
   }
 
+  VideoDecoderTest(const VideoDecoderTest&) = delete;
+  VideoDecoderTest& operator=(const VideoDecoderTest&) = delete;
+
   virtual ~VideoDecoderTest() {
     // Make sure all threads have stopped before the environment goes away.
     cast_environment_->Shutdown();
@@ -83,7 +86,7 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
         next_frame_size_, next_frame_timestamp_);
     const base::TimeTicks reference_time =
         base::TimeTicks::UnixEpoch() + next_frame_timestamp_;
-    next_frame_timestamp_ += base::TimeDelta::FromSeconds(1) / kFrameRate;
+    next_frame_timestamp_ += base::Seconds(1) / kFrameRate;
     PopulateVideoFrame(video_frame.get(), 0);
 
     // Encode |frame| into |encoded_frame->data|.
@@ -166,8 +169,6 @@ class VideoDecoderTest : public ::testing::TestWithParam<Codec> {
   base::Lock lock_;
   base::ConditionVariable cond_;
   int total_video_frames_decoded_;  // Protected by |lock_|.
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderTest);
 };
 
 TEST_P(VideoDecoderTest, DecodesFrames) {

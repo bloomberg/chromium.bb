@@ -92,6 +92,11 @@ const char kReleaseLtsTag[] = "cros.system.releaseLtsTag";
 const char kDeviceChannelDowngradeBehavior[] =
     "cros.system.channelDowngradeBehavior";
 
+// A boolean pref that indicates whether granular reporting controls should
+// be used or not.
+const char kEnableDeviceGranularReporting[] =
+    "cros.device_status.enable_granular_reporting";
+
 // A boolean pref that indicates whether OS & firmware version info should be
 // reported along with device policy requests.
 const char kReportDeviceVersionInfo[] =
@@ -164,6 +169,11 @@ const char kReportDevicePowerStatus[] =
 // included in status reports to the device management server.
 const char kReportDeviceStorageStatus[] =
     "cros.device_status.report_storage_status";
+
+// A boolean pref that determines whether the security status should be
+// included in status reports to the device management server.
+const char kReportDeviceSecurityStatus[] =
+    "cros.device_status.report_security_status";
 
 // Determines whether the device reports recently logged in users in device
 // status reports to the device management server.

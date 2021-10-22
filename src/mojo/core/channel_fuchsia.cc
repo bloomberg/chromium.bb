@@ -46,25 +46,22 @@ bool UnwrapFdioHandle(PlatformHandleInTransit handle,
     return true;
   }
 
-  // Try to transfer the FD, and if that fails (for example if the file has
-  // already been dup()d into another FD) then fall back to cloning it.
+  // TODO(crbug.com/1254755) The FD should be transferred and only clone if this
+  // is impossible. Unfortunately, as fdio_fd_transfer currently takes ownership
+  // of the fd even when it fails, this is currently not possible.
+
+  // Try to clone the FD, and if that fails (because |fd| has insufficient
+  // rights to clone the underlying object), fall back to transferring it.
   zx::handle result;
-  zx_status_t status = fdio_fd_transfer(handle.handle().GetFD().get(),
-                                        result.reset_and_get_address());
-  if (status == ZX_OK) {
-    // On success, the fd in |handle| has been transferred and is no longer
-    // valid. Release from the PlatformHandle to avoid close()ing an invalid
-    // an invalid handle.
-    handle.CompleteTransit();
-  } else if (status == ZX_ERR_UNAVAILABLE) {
-    // No luck, try cloning instead.
-    status = fdio_fd_clone(handle.handle().GetFD().get(),
-                           result.reset_and_get_address());
+  zx_status_t status = fdio_fd_clone(handle.handle().GetFD().get(),
+                                     result.reset_and_get_address());
+  if (status == ZX_ERR_ACCESS_DENIED) {
+    status = fdio_fd_transfer(handle.TakeHandle().ReleaseFD(),
+                              result.reset_and_get_address());
   }
 
   if (status != ZX_OK) {
-    ZX_DLOG(ERROR, status) << "fdio_fd_clone/transfer("
-                           << handle.handle().GetFD().get() << ")";
+    ZX_DLOG(ERROR, status) << "fdio_fd_clone/transfer";
     return false;
   }
 
@@ -103,6 +100,9 @@ class MessageView {
   MessageView(MessageView&& other) = default;
 
   MessageView& operator=(MessageView&& other) = default;
+
+  MessageView(const MessageView&) = delete;
+  MessageView& operator=(const MessageView&) = delete;
 
   ~MessageView() = default;
 
@@ -144,8 +144,6 @@ class MessageView {
   Channel::MessagePtr message_;
   size_t offset_;
   std::vector<PlatformHandleInTransit> handles_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
 
 class ChannelFuchsia : public Channel,
@@ -163,6 +161,9 @@ class ChannelFuchsia : public Channel,
         io_task_runner_(io_task_runner) {
     CHECK(handle_.is_valid());
   }
+
+  ChannelFuchsia(const ChannelFuchsia&) = delete;
+  ChannelFuchsia& operator=(const ChannelFuchsia&) = delete;
 
   void Start() override {
     if (io_task_runner_->RunsTasksInCurrentSequence()) {
@@ -403,8 +404,6 @@ class ChannelFuchsia : public Channel,
 
   base::Lock write_lock_;
   bool reject_writes_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ChannelFuchsia);
 };
 
 }  // namespace

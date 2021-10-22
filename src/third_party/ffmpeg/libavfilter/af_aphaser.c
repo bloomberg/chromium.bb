@@ -85,8 +85,6 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_DBL, AV_SAMPLE_FMT_DBLP,
         AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_FLTP,
@@ -94,26 +92,15 @@ static int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16P,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 #define MOD(a, b) (((a) >= (b)) ? (a) - (b) : (a))
@@ -278,7 +265,6 @@ static const AVFilterPad aphaser_inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad aphaser_outputs[] = {
@@ -287,7 +273,6 @@ static const AVFilterPad aphaser_outputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_aphaser = {
@@ -297,7 +282,7 @@ const AVFilter ff_af_aphaser = {
     .priv_size     = sizeof(AudioPhaserContext),
     .init          = init,
     .uninit        = uninit,
-    .inputs        = aphaser_inputs,
-    .outputs       = aphaser_outputs,
+    FILTER_INPUTS(aphaser_inputs),
+    FILTER_OUTPUTS(aphaser_outputs),
     .priv_class    = &aphaser_class,
 };

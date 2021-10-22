@@ -14,6 +14,7 @@
 #include <sstream>
 #include <vector>
 
+#include "core/fxcrt/bytestring.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_stream.h"
@@ -110,6 +111,16 @@ class CFX_PSRenderer {
                 float font_size,
                 uint32_t color);
 
+  static Optional<ByteString> GenerateType42SfntDataForTesting(
+      const ByteString& psname,
+      pdfium::span<const uint8_t> font_data);
+
+  static ByteString GenerateType42FontDictionaryForTesting(
+      const ByteString& psname,
+      const FX_RECT& bbox,
+      size_t num_glyphs,
+      size_t glyphs_per_descendant_font);
+
  private:
   struct Glyph;
 
@@ -141,6 +152,7 @@ class CFX_PSRenderer {
                       uint8_t** output_buf,
                       uint32_t* output_size,
                       const char** filter) const;
+  void WritePreambleString(ByteStringView str);
   void WritePSBinary(pdfium::span<const uint8_t> data);
   void WriteStream(std::ostringstream& stream);
   void WriteString(ByteStringView str);
@@ -156,6 +168,8 @@ class CFX_PSRenderer {
   UnownedPtr<const EncoderIface> const m_pEncoderIface;
   RetainPtr<IFX_RetainableWriteStream> m_pStream;
   std::vector<std::unique_ptr<Glyph>> m_PSFontList;
+  std::ostringstream m_PreambleOutput;
+  std::ostringstream m_Output;
   std::vector<FX_RECT> m_ClipBoxStack;
 };
 

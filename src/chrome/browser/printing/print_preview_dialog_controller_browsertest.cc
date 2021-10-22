@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/with_feature_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -41,6 +42,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ipc/ipc_message_macros.h"
+#include "pdf/pdf_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "url/gurl.h"
@@ -64,7 +66,7 @@ bool GetPdfPluginInfo(content::WebPluginInfo* info) {
       pdf_plugin_path, info);
 }
 
-const char kDummyPrintUrl[] = "chrome://print/dummy.pdf";
+const char kDummyPrintUrl[] = "chrome-untrusted://print/dummy.pdf";
 
 void CountFrames(int* frame_count,
                  content::RenderFrameHost* frame) {
@@ -158,6 +160,14 @@ class PrintPreviewDialogControllerBrowserTest : public InProcessBrowserTest {
       cloned_tab_observer_;
   printing::TestPrintViewManagerForRequestPreview* test_print_view_manager_;
   WebContents* initiator_ = nullptr;
+};
+
+class PrintPreviewDialogControllerBrowserTestWithUnseasonedOverride
+    : public base::test::WithFeatureOverride,
+      public PrintPreviewDialogControllerBrowserTest {
+ public:
+  PrintPreviewDialogControllerBrowserTestWithUnseasonedOverride()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
 };
 
 // Test to verify that when a initiator navigates, we can create a new preview
@@ -273,17 +283,17 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   do {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
+        FROM_HERE, run_loop.QuitClosure(), base::Seconds(1));
     run_loop.Run();
 
     frame_count = 0;
-    preview_dialog->ForEachFrame(
+    preview_dialog->GetMainFrame()->ForEachRenderFrameHost(
         base::BindRepeating(&CountFrames, base::Unretained(&frame_count)));
   } while (frame_count < kExpectedFrameCount);
   ASSERT_EQ(kExpectedFrameCount, frame_count);
 
   // Make sure all the frames in the dialog has access to the PDF plugin.
-  preview_dialog->ForEachFrame(
+  preview_dialog->GetMainFrame()->ForEachRenderFrameHost(
       base::BindRepeating(&CheckPdfPluginForRenderFrame));
 
   PrintPreviewDone();
@@ -347,8 +357,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   PrintPreviewDone();
 }
 
-IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
-                       PrintPreviewPdfAccessibility) {
+IN_PROC_BROWSER_TEST_P(
+    PrintPreviewDialogControllerBrowserTestWithUnseasonedOverride,
+    PrintPreviewPdfAccessibility) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
                                            GURL("data:text/html,HelloWorld")));
@@ -358,3 +369,6 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
 
   PrintPreviewDone();
 }
+
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(
+    PrintPreviewDialogControllerBrowserTestWithUnseasonedOverride);

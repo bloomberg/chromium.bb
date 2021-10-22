@@ -29,13 +29,19 @@ class WaylandConnection;
 // |wl_buffer|s backed by dmabuf prime file descriptors.
 class WaylandDrm : public wl::GlobalObjectRegistrar<WaylandDrm> {
  public:
-  static void Register(WaylandConnection* connection);
+  static constexpr char kInterfaceName[] = "wl_drm";
+
   static void Instantiate(WaylandConnection* connection,
                           wl_registry* registry,
                           uint32_t name,
+                          const std::string& interface,
                           uint32_t version);
 
   WaylandDrm(wl_drm* drm, WaylandConnection* connection);
+
+  WaylandDrm(const WaylandDrm&) = delete;
+  WaylandDrm& operator=(const WaylandDrm&) = delete;
+
   ~WaylandDrm();
 
   // Says if can create dmabuf based wl_buffers.
@@ -45,7 +51,7 @@ class WaylandDrm : public wl::GlobalObjectRegistrar<WaylandDrm> {
   // The result is sent back via the |callback|. If buffer creation failed,
   // nullptr is sent back via the callback. Otherwise, a pointer to the
   // |wl_buffer| is sent.
-  void CreateBuffer(base::ScopedFD fd,
+  void CreateBuffer(const base::ScopedFD& fd,
                     const gfx::Size& size,
                     const std::vector<uint32_t>& strides,
                     const std::vector<uint32_t>& offsets,
@@ -97,8 +103,6 @@ class WaylandDrm : public wl::GlobalObjectRegistrar<WaylandDrm> {
   // Says if the drm device passed by the Wayland compositor authenticates this
   // client.
   bool authenticated_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandDrm);
 };
 
 }  // namespace ui

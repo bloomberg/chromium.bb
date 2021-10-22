@@ -31,6 +31,7 @@ extern const base::Feature kIPHReadingListDiscoveryFeature;
 extern const base::Feature kIPHReadingListEntryPointFeature;
 extern const base::Feature kIPHReadingListInSidePanelFeature;
 extern const base::Feature kIPHReopenTabFeature;
+extern const base::Feature kIPHSideSearchFeature;
 extern const base::Feature kIPHTabSearchFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
 extern const base::Feature kIPHDesktopSnoozeFeature;
@@ -52,6 +53,8 @@ extern const base::Feature
     kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature;
 extern const base::Feature kIPHAddToHomescreenMessageFeature;
 extern const base::Feature kIPHAddToHomescreenTextBubbleFeature;
+extern const base::Feature kIPHAutoDarkOptOutFeature;
+extern const base::Feature kIPHAutoDarkUserEducationMessageFeature;
 extern const base::Feature kIPHDataSaverDetailFeature;
 extern const base::Feature kIPHDataSaverMilestonePromoFeature;
 extern const base::Feature kIPHDataSaverPreviewFeature;
@@ -77,6 +80,7 @@ extern const base::Feature kIPHHomePageButtonFeature;
 extern const base::Feature kIPHHomepageTileFeature;
 extern const base::Feature kIPHHomepagePromoCardFeature;
 extern const base::Feature kIPHIdentityDiscFeature;
+extern const base::Feature kIPHInstanceSwitcherFeature;
 extern const base::Feature kIPHKeyboardAccessoryAddressFillingFeature;
 extern const base::Feature kIPHKeyboardAccessoryBarSwipingFeature;
 extern const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature;
@@ -86,6 +90,7 @@ extern const base::Feature kIPHKeyboardAccessoryPaymentVirtualCardFeature;
 extern const base::Feature kIPHMicToolbarFeature;
 extern const base::Feature kIPHNewTabPageHomeButtonFeature;
 extern const base::Feature kIPHPageInfoFeature;
+extern const base::Feature kIPHPageInfoStoreInfoFeature;
 extern const base::Feature kIPHPreviewsOmniboxUIFeature;
 extern const base::Feature kIPHQuietNotificationPromptsFeature;
 extern const base::Feature kIPHReadLaterContextMenuFeature;
@@ -103,6 +108,7 @@ extern const base::Feature kIPHVideoTutorialNTPDownloadFeature;
 extern const base::Feature kIPHVideoTutorialNTPSearchFeature;
 extern const base::Feature kIPHVideoTutorialNTPVoiceSearchFeature;
 extern const base::Feature kIPHVideoTutorialNTPSummaryFeature;
+extern const base::Feature kIPHVideoTutorialTryNowFeature;
 extern const base::Feature kIPHExploreSitesTileFeature;
 extern const base::Feature kIPHFeedHeaderMenuFeature;
 extern const base::Feature kIPHFeedSwipeRefresh;
@@ -117,6 +123,7 @@ extern const base::Feature kIPHWebFeedPostFollowDialogFeature;
 extern const base::Feature kIPHSharedHighlightingBuilder;
 extern const base::Feature kIPHSharedHighlightingReceiverFeature;
 extern const base::Feature kIPHStartSurfaceTabSwitcherHomeButton;
+extern const base::Feature kIPHSharingHubWebnotesStylizeFeature;
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_IOS)

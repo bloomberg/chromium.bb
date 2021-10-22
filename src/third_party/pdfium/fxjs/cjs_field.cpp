@@ -30,6 +30,7 @@
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/optional.h"
+#include "v8/include/v8-container.h"
 
 namespace {
 
@@ -2508,7 +2509,7 @@ CJS_Result CJS_Field::setFocus(
 
   if (pWidget) {
     ObservedPtr<CPDFSDK_Annot> pObserved(pWidget);
-    m_pFormFillEnv->SetFocusAnnot(&pObserved);
+    m_pFormFillEnv->SetFocusAnnot(pObserved);
   }
 
   return CJS_Result::Success();

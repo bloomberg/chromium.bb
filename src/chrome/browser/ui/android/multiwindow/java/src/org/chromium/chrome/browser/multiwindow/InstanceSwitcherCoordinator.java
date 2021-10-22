@@ -12,13 +12,17 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.browser_ui.widget.listmenu.BasicListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
@@ -93,7 +97,7 @@ public class InstanceSwitcherCoordinator {
             boolean newWindowEnabled, List<InstanceInfo> instanceInfo) {
         new InstanceSwitcherCoordinator(context, modalDialogManager, iconBridge, openCallback,
                 closeCallback, newWindowAction)
-                .showDialog(instanceInfo, newWindowEnabled);
+                .show(instanceInfo, newWindowEnabled);
     }
 
     private InstanceSwitcherCoordinator(Context context, ModalDialogManager modalDialogManager,
@@ -122,7 +126,7 @@ public class InstanceSwitcherCoordinator {
         listView.setAdapter(adapter);
     }
 
-    private void showDialog(List<InstanceInfo> items, boolean newWindowEnabled) {
+    private void show(List<InstanceInfo> items, boolean newWindowEnabled) {
         UiUtils.closeOpenDialogs();
         sPrevInstance = this;
         for (int i = 0; i < items.size(); ++i) {
@@ -151,11 +155,18 @@ public class InstanceSwitcherCoordinator {
                     case ModalDialogProperties.ButtonType.POSITIVE:
                         assert mIsShowingConfirmationMessage;
                         assert mItemToDelete != null;
+                        CheckBox skipConfirm =
+                                (CheckBox) mDialogView.findViewById(R.id.no_more_check);
+                        if (skipConfirm.isChecked()) setSkipCloseConfirmation();
                         hideConfirmationMessage();
                         removeInstance(mItemToDelete);
                         break;
                     case ModalDialogProperties.ButtonType.NEGATIVE:
                         dismissDialog(DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                        break;
+                    case ModalDialogProperties.ButtonType.TITLE_ICON:
+                        assert mIsShowingConfirmationMessage;
+                        hideConfirmationMessage();
                         break;
                 }
             }
@@ -167,7 +178,8 @@ public class InstanceSwitcherCoordinator {
                 .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
                 .with(ModalDialogProperties.CUSTOM_VIEW, dialogView)
                 .with(ModalDialogProperties.TITLE, title)
-                .with(ModalDialogProperties.PRIMARY_BUTTON_FILLED, true)
+                .with(ModalDialogProperties.BUTTON_STYLES,
+                        ModalDialogProperties.ButtonStyles.PRIMARY_FILLED_NEGATIVE_OUTLINE)
                 .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, null)
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources, R.string.cancel)
                 .build();
@@ -212,7 +224,7 @@ public class InstanceSwitcherCoordinator {
         ListMenu.Delegate moreMenuDelegate = (model) -> {
             int textId = model.get(ListMenuItemProperties.TITLE_ID);
             if (textId == R.string.instance_switcher_close_window) {
-                if (UiUtils.totalTabCount(item) == 0 && item.type == InstanceInfo.Type.OTHER) {
+                if (canSkipConfirm(item)) {
                     removeInstance(item);
                 } else {
                     showConfirmationMessage(item);
@@ -255,6 +267,19 @@ public class InstanceSwitcherCoordinator {
         RecordUserAction.record("Android.WindowManager.CloseWindow");
         // Removing an instance enables the new window item.
         enableNewWindowCommand(true);
+    }
+
+    private static boolean canSkipConfirm(InstanceInfo item) {
+        // Unrestorable, invisible instance can be deleted without confirmation.
+        if (UiUtils.totalTabCount(item) == 0 && item.type == InstanceInfo.Type.OTHER) return true;
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.MULTI_INSTANCE_CLOSE_WINDOW_SKIP_CONFIRM, false);
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static void setSkipCloseConfirmation() {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.MULTI_INSTANCE_CLOSE_WINDOW_SKIP_CONFIRM, true);
     }
 
     private void showConfirmationMessage(InstanceInfo item) {

@@ -38,6 +38,10 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   SelectionOwner(x11::Connection* connection,
                  x11::Window xwindow,
                  x11::Atom selection_name);
+
+  SelectionOwner(const SelectionOwner&) = delete;
+  SelectionOwner& operator=(const SelectionOwner&) = delete;
+
   ~SelectionOwner();
 
   // Returns the current selection data. Useful for fast paths.
@@ -75,6 +79,10 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
         const scoped_refptr<base::RefCountedMemory>& data,
         int offset,
         base::TimeTicks timeout);
+
+    IncrementalTransfer(const IncrementalTransfer&) = delete;
+    IncrementalTransfer& operator=(const IncrementalTransfer&) = delete;
+
     ~IncrementalTransfer();
 
     // Move-only class.
@@ -100,9 +108,6 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
     // Time when the transfer should be aborted because the selection requestor
     // is taking too long to notify us that we can send the next chunk.
     base::TimeTicks timeout;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(IncrementalTransfer);
   };
 
   // Attempts to convert the selection to |target|. If the conversion is
@@ -143,8 +148,6 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
 
   // Used to abort stale incremental data transfers.
   base::RepeatingTimer incremental_transfer_abort_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectionOwner);
 };
 
 }  // namespace ui

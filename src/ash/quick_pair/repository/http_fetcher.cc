@@ -11,5 +11,16 @@ HttpFetcher::HttpFetcher() = default;
 
 HttpFetcher::~HttpFetcher() = default;
 
+void HttpFetcher::ExecutePostRequest(const GURL& url,
+                                     const std::string& body,
+                                     FetchCompleteCallback callback) {
+  NOTREACHED();
+}
+
+void HttpFetcher::ExecuteDeleteRequest(const GURL& url,
+                                       FetchCompleteCallback callback) {
+  NOTREACHED();
+}
+
 }  // namespace quick_pair
 }  // namespace ash

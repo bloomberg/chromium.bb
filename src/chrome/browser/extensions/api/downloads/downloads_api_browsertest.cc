@@ -67,6 +67,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
@@ -120,6 +121,9 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
   explicit DownloadsEventsListener(Profile* profile)
       : waiting_(false), profile_(profile) {}
 
+  DownloadsEventsListener(const DownloadsEventsListener&) = delete;
+  DownloadsEventsListener& operator=(const DownloadsEventsListener&) = delete;
+
   ~DownloadsEventsListener() override = default;
 
   void ClearEvents() { events_.clear(); }
@@ -134,6 +138,9 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
           event_name_(event_name),
           args_(args.Clone()),
           caught_(caught) {}
+
+    Event(const Event&) = delete;
+    Event& operator=(const Event&) = delete;
 
     const base::Time& caught() { return caught_; }
 
@@ -186,8 +193,6 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
     std::string json_args_;
     base::Value args_;
     base::Time caught_;
-
-    DISALLOW_COPY_AND_ASSIGN(Event);
   };
 
   // extensions::EventRouter::TestObserver:
@@ -252,8 +257,6 @@ class DownloadsEventsListener : public EventRouter::TestObserver {
   std::unique_ptr<Event> waiting_for_;
   base::circular_deque<std::unique_ptr<Event>> events_;
   Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadsEventsListener);
 };
 
 // Object waiting for a download open event.
@@ -262,6 +265,9 @@ class DownloadOpenObserver : public download::DownloadItem::Observer {
   explicit DownloadOpenObserver(download::DownloadItem* item) : item_(item) {
     open_observation_.Observe(item);
   }
+
+  DownloadOpenObserver(const DownloadOpenObserver&) = delete;
+  DownloadOpenObserver& operator=(const DownloadOpenObserver&) = delete;
 
   ~DownloadOpenObserver() override = default;
 
@@ -291,8 +297,6 @@ class DownloadOpenObserver : public download::DownloadItem::Observer {
       open_observation_{this};
   download::DownloadItem* item_;
   base::OnceClosure completion_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadOpenObserver);
 };
 
 }  // namespace
@@ -303,6 +307,9 @@ class DownloadExtensionTest : public ExtensionApiTest {
       : extension_(nullptr),
         incognito_browser_(nullptr),
         current_browser_(nullptr) {}
+
+  DownloadExtensionTest(const DownloadExtensionTest&) = delete;
+  DownloadExtensionTest& operator=(const DownloadExtensionTest&) = delete;
 
  protected:
   // Used with CreateHistoryDownloads
@@ -689,8 +696,6 @@ class DownloadExtensionTest : public ExtensionApiTest {
 
   std::unique_ptr<net::test_server::ControllableHttpResponse> first_download_;
   std::unique_ptr<net::test_server::ControllableHttpResponse> second_download_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadExtensionTest);
 };
 
 namespace {
@@ -747,6 +752,10 @@ bool ItemNotInProgress(DownloadItem* item) {
 class ScopedCancellingItem {
  public:
   explicit ScopedCancellingItem(DownloadItem* item) : item_(item) {}
+
+  ScopedCancellingItem(const ScopedCancellingItem&) = delete;
+  ScopedCancellingItem& operator=(const ScopedCancellingItem&) = delete;
+
   ~ScopedCancellingItem() {
     item_->Cancel(true);
     content::DownloadUpdatedObserver observer(
@@ -756,7 +765,6 @@ class ScopedCancellingItem {
   DownloadItem* get() { return item_; }
  private:
   DownloadItem* item_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedCancellingItem);
 };
 
 // Cancels all the underlying DownloadItems when the ScopedItemVectorCanceller
@@ -767,6 +775,11 @@ class ScopedItemVectorCanceller {
   explicit ScopedItemVectorCanceller(DownloadManager::DownloadVector* items)
     : items_(items) {
   }
+
+  ScopedItemVectorCanceller(const ScopedItemVectorCanceller&) = delete;
+  ScopedItemVectorCanceller& operator=(const ScopedItemVectorCanceller&) =
+      delete;
+
   ~ScopedItemVectorCanceller() {
     for (DownloadManager::DownloadVector::const_iterator item = items_->begin();
          item != items_->end(); ++item) {
@@ -780,7 +793,6 @@ class ScopedItemVectorCanceller {
 
  private:
   DownloadManager::DownloadVector* items_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedItemVectorCanceller);
 };
 
 // Writes an HTML5 file so that it can be downloaded.
@@ -844,14 +856,17 @@ class JustInProgressDownloadObserver
       : content::DownloadTestObserverInProgress(download_manager, wait_count) {
   }
 
+  JustInProgressDownloadObserver(const JustInProgressDownloadObserver&) =
+      delete;
+  JustInProgressDownloadObserver& operator=(
+      const JustInProgressDownloadObserver&) = delete;
+
   ~JustInProgressDownloadObserver() override {}
 
  private:
   bool IsDownloadInFinalState(DownloadItem* item) override {
     return item->GetState() == DownloadItem::IN_PROGRESS;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(JustInProgressDownloadObserver);
 };
 
 bool ItemIsInterrupted(DownloadItem* item) {
@@ -1773,38 +1788,43 @@ namespace {
 
 class CustomResponse : public net::test_server::HttpResponse {
  public:
-  CustomResponse(net::test_server::SendCompleteCallback* callback,
+  CustomResponse(base::OnceClosure* callback,
                  base::TaskRunner** task_runner,
                  bool first_request)
       : callback_(callback),
         task_runner_(task_runner),
         first_request_(first_request) {}
+
+  CustomResponse(const CustomResponse&) = delete;
+  CustomResponse& operator=(const CustomResponse&) = delete;
+
   ~CustomResponse() override {}
 
-  void SendResponse(const net::test_server::SendBytesCallback& send,
-                    net::test_server::SendCompleteCallback done) override {
-    std::string response(
-        "HTTP/1.1 200 OK\r\n"
-        "Content-type: application/octet-stream\r\n"
-        "Cache-Control: max-age=0\r\n"
-        "\r\n");
-    response += std::string(kDownloadSize, '*');
+  void SendResponse(
+      base::WeakPtr<net::test_server::HttpResponseDelegate> delegate) override {
+    base::StringPairs headers = {
+        //"HTTP/1.1 200 OK\r\n"
+        {"Content-type", "application/octet-stream"},
+        {"Cache-Control", "max-age=0"},
+    };
+    std::string contents = std::string(kDownloadSize, '*');
 
     if (first_request_) {
-      *callback_ = std::move(done);
+      *callback_ = base::BindOnce(
+          &net::test_server::HttpResponseDelegate::FinishResponse, delegate);
       *task_runner_ = base::ThreadTaskRunnerHandle::Get().get();
-      send.Run(response, base::DoNothing());
+      delegate->SendResponseHeaders(net::HTTP_OK, "OK", headers);
+      delegate->SendContents(contents);
     } else {
-      send.Run(response, std::move(done));
+      delegate->SendHeadersContentAndFinish(net::HTTP_OK, "OK", headers,
+                                            contents);
     }
   }
 
  private:
-  net::test_server::SendCompleteCallback* callback_;
+  base::OnceClosure* callback_;
   base::TaskRunner** task_runner_;
   bool first_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomResponse);
 };
 
 }  // namespace
@@ -1815,7 +1835,7 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 
   DownloadItem* item = nullptr;
 
-  net::test_server::SendCompleteCallback complete_callback;
+  base::OnceClosure complete_callback;
   base::TaskRunner* embedded_test_server_io_runner = nullptr;
   const char kThirdDownloadUrl[] = "/download3";
   bool first_request = true;
@@ -2425,8 +2445,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // chrome fails to propagate them back to the server.  This tests both that
 // testserver.py does not succeed when it should fail as well as how the
 // downloads extension api exposes the failure to extensions.
+// TODO(https://crbug.com/1249757): DownloadExtensionTest's are flaky
+#if defined(OS_WIN)
+#define MAYBE_DownloadExtensionTest_Download_Headers_Fail \
+  DISABLED_DownloadExtensionTest_Download_Headers_Fail
+#else
+#define MAYBE_DownloadExtensionTest_Download_Headers_Fail \
+  DownloadExtensionTest_Download_Headers_Fail
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_Headers_Fail) {
+                       MAYBE_DownloadExtensionTest_Download_Headers_Fail) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   std::string download_url =
@@ -2574,8 +2602,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // server. This tests both that testserver.py does not succeed when it should
 // fail, and this tests how the downloads extension api exposes the failure to
 // extensions.
+// TODO(https://crbug.com/1249757): DownloadExtensionTest's are flaky
+#if defined(OS_WIN)
+#define MAYBE_DownloadExtensionTest_Download_Post_Get \
+  DISABLED_DownloadExtensionTest_Download_Post_Get
+#else
+#define MAYBE_DownloadExtensionTest_Download_Post_Get \
+  DownloadExtensionTest_Download_Post_Get
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_Post_Get) {
+                       MAYBE_DownloadExtensionTest_Download_Post_Get) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   std::string download_url = embedded_test_server()
@@ -2615,8 +2651,16 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 // server. This tests both that testserver.py does not succeed when it should
 // fail, and this tests how the downloads extension api exposes the failure to
 // extensions.
+// TODO(https://crbug.com/1249757): DownloadExtensionTest's are flaky
+#if defined(OS_WIN)
+#define MAYBE_DownloadExtensionTest_Download_Post_NoBody \
+  DISABLED_DownloadExtensionTest_Download_Post_NoBody
+#else
+#define MAYBE_DownloadExtensionTest_Download_Post_NoBody \
+  DownloadExtensionTest_Download_Post_NoBody
+#endif
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
-                       DownloadExtensionTest_Download_Post_NoBody) {
+                       MAYBE_DownloadExtensionTest_Download_Post_NoBody) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   std::string download_url = embedded_test_server()
@@ -4603,10 +4647,11 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
 class DownloadsApiTest : public ExtensionApiTest {
  public:
   DownloadsApiTest() {}
-  ~DownloadsApiTest() override {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DownloadsApiTest);
+  DownloadsApiTest(const DownloadsApiTest&) = delete;
+  DownloadsApiTest& operator=(const DownloadsApiTest&) = delete;
+
+  ~DownloadsApiTest() override {}
 };
 
 
@@ -4658,15 +4703,9 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   warnings.clear();
   ExtensionDownloadsEventRouter::DetermineFilenameInternal(
       base::FilePath(FILE_PATH_LITERAL("b")),
-      downloads::FILENAME_CONFLICT_ACTION_PROMPT,
-      "suggester",
-      base::Time::Now() - base::TimeDelta::FromDays(1),
-      "incumbent",
-      base::Time::Now(),
-      &winner_id,
-      &filename,
-      &conflict_action,
-      &warnings);
+      downloads::FILENAME_CONFLICT_ACTION_PROMPT, "suggester",
+      base::Time::Now() - base::Days(1), "incumbent", base::Time::Now(),
+      &winner_id, &filename, &conflict_action, &warnings);
   EXPECT_EQ("incumbent", winner_id);
   EXPECT_EQ(FILE_PATH_LITERAL("a"), filename.value());
   EXPECT_EQ(downloads::FILENAME_CONFLICT_ACTION_OVERWRITE, conflict_action);
@@ -4679,15 +4718,9 @@ TEST(ExtensionDetermineDownloadFilenameInternal,
   warnings.clear();
   ExtensionDownloadsEventRouter::DetermineFilenameInternal(
       base::FilePath(FILE_PATH_LITERAL("b")),
-      downloads::FILENAME_CONFLICT_ACTION_PROMPT,
-      "suggester",
-      base::Time::Now(),
-      "incumbent",
-      base::Time::Now() - base::TimeDelta::FromDays(1),
-      &winner_id,
-      &filename,
-      &conflict_action,
-      &warnings);
+      downloads::FILENAME_CONFLICT_ACTION_PROMPT, "suggester",
+      base::Time::Now(), "incumbent", base::Time::Now() - base::Days(1),
+      &winner_id, &filename, &conflict_action, &warnings);
   EXPECT_EQ("suggester", winner_id);
   EXPECT_EQ(FILE_PATH_LITERAL("b"), filename.value());
   EXPECT_EQ(downloads::FILENAME_CONFLICT_ACTION_PROMPT, conflict_action);

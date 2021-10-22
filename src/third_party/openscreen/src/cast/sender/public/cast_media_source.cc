@@ -5,8 +5,10 @@
 #include "cast/sender/public/cast_media_source.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace cast {
@@ -32,7 +34,7 @@ CastMediaSource& CastMediaSource::operator=(const CastMediaSource& other) =
 CastMediaSource& CastMediaSource::operator=(CastMediaSource&& other) = default;
 
 bool CastMediaSource::ContainsAppId(const std::string& app_id) const {
-  return std::find(app_ids_.begin(), app_ids_.end(), app_id) != app_ids_.end();
+  return Contains(app_ids_, app_id);
 }
 
 bool CastMediaSource::ContainsAnyAppIdFrom(

@@ -4,12 +4,15 @@
 
 #include "content/browser/speculation_rules/speculation_host_impl.h"
 
+#include "content/browser/prerender/prerender_attributes.h"
 #include "content/browser/prerender/prerender_host_registry.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/referrer.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
@@ -50,14 +53,15 @@ void SpeculationHostImpl::Bind(
     return;
   }
 
-  // DocumentServiceBase will destroy this on pipe closure or frame destruction.
+  // DocumentService will destroy this on pipe closure or frame destruction.
   new SpeculationHostImpl(frame_host, std::move(receiver));
 }
 
 SpeculationHostImpl::SpeculationHostImpl(
     RenderFrameHost* frame_host,
     mojo::PendingReceiver<blink::mojom::SpeculationHost> receiver)
-    : DocumentServiceBase(frame_host, std::move(receiver)) {
+    : DocumentService(frame_host, std::move(receiver)),
+      WebContentsObserver(WebContents::FromRenderFrameHost(frame_host)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_ = GetContentClient()->browser()->CreateSpeculationHostDelegate(
@@ -126,14 +130,10 @@ void SpeculationHostImpl::ProcessCandidatesForPrerender(
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfhi, blink::mojom::WebFeature::kSpeculationRulesPrerender);
 
-    // TODO(https://crbug.com/1217903): Set up `attributes->size`.
-    auto attributes = blink::mojom::PrerenderAttributes::New();
-    attributes->url = it->url;
-    attributes->referrer = std::move(it->referrer);
-    attributes->trigger_type =
-        blink::mojom::PrerenderTriggerType::kSpeculationRule;
-    int prerender_host_id =
-        registry_->CreateAndStartHost(std::move(attributes), *rfhi);
+    PrerenderAttributes attributes{it->url,
+                                   PrerenderTriggerType::kSpeculationRule,
+                                   Referrer(*(it->referrer))};
+    int prerender_host_id = registry_->CreateAndStartHost(attributes, *rfhi);
     if (prerender_host_id != RenderFrameHost::kNoFrameTreeNodeId)
       started_prerender_host_ids_.insert(prerender_host_id);
   }

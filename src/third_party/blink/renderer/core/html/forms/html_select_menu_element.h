@@ -20,7 +20,7 @@ class Document;
 // --enable-blink-features=HTMLSelectMenuElement. See
 // https://groups.google.com/u/1/a/chromium.org/g/blink-dev/c/9TcfjaOs5zg/m/WAiv6WpUAAAJ
 // for more details.
-class HTMLSelectMenuElement final : public HTMLElement {
+class CORE_EXPORT HTMLSelectMenuElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -31,6 +31,17 @@ class HTMLSelectMenuElement final : public HTMLElement {
   bool open() const;
 
   void Trace(Visitor*) const override;
+
+  enum class PartType { kNone, kButton, kListBox, kOption };
+
+  // If node is a flat tree descendant of an HTMLSelectMenuElement
+  // and is registered as a part of that HTMLSelectMenuElement,
+  // returns that HTMLSelectMenuElement. Else returns null.
+  static HTMLSelectMenuElement* OwnerSelectMenu(Node* node);
+
+  PartType AssignedPartType(Node* node) const;
+
+  Element* ButtonPart() const { return button_part_; }
 
  private:
   class SelectMutationCallback;
@@ -44,8 +55,6 @@ class HTMLSelectMenuElement final : public HTMLElement {
   Element* FirstValidButtonPart() const;
   Element* FirstValidListboxPart() const;
   Element* FirstValidSelectedValuePart() const;
-  HTMLSlotElement* ButtonSlot() const;
-  HTMLSlotElement* ListboxSlot() const;
   void EnsureSelectedOptionIsValid();
   Element* SelectedOption();
   void SetSelectedOption(Element* selected_option);
@@ -64,6 +73,7 @@ class HTMLSelectMenuElement final : public HTMLElement {
   void UpdateListboxPart();
   void OptionPartInserted(Element*);
   void OptionPartRemoved(Element*);
+  void ResetOptionParts();
 
   bool IsValidButtonPart(const Node* node, bool show_warning) const;
   bool IsValidListboxPart(const Node* node, bool show_warning) const;
@@ -102,21 +112,6 @@ class HTMLSelectMenuElement final : public HTMLElement {
     Member<HTMLSelectMenuElement> select_menu_element_;
   };
 
-  class SlotChangeEventListener : public NativeEventListener {
-   public:
-    explicit SlotChangeEventListener(HTMLSelectMenuElement* select_menu_element)
-        : select_menu_element_(select_menu_element) {}
-    void Invoke(ExecutionContext*, Event*) override;
-
-    void Trace(Visitor* visitor) const override {
-      visitor->Trace(select_menu_element_);
-      NativeEventListener::Trace(visitor);
-    }
-
-   private:
-    Member<HTMLSelectMenuElement> select_menu_element_;
-  };
-
   static constexpr char kButtonPartName[] = "button";
   static constexpr char kSelectedValuePartName[] = "selected-value";
   static constexpr char kListboxPartName[] = "listbox";
@@ -124,7 +119,6 @@ class HTMLSelectMenuElement final : public HTMLElement {
 
   Member<ButtonPartEventListener> button_part_listener_;
   Member<OptionPartEventListener> option_part_listener_;
-  Member<SlotChangeEventListener> slotchange_listener_;
 
   Member<SelectMutationCallback> select_mutation_callback_;
 

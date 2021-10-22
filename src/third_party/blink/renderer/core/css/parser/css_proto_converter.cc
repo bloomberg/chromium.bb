@@ -63,6 +63,7 @@ const std::string Converter::kPseudoLookupTable[] = {
     "-webkit-scrollbar-track-piece",
     "active",
     "after",
+    "autofill",
     "backdrop",
     "before",
     "checked",
@@ -969,6 +970,8 @@ const std::string Converter::kValueLookupTable[] = {
     "jis-b4",
     "standard",
     "high",
+    "spelling-error",
+    "grammar-error",
     "INVALID_VALUE",
 };
 

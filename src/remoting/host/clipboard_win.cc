@@ -46,8 +46,7 @@ class ScopedClipboard {
 
   bool Init(HWND owner) {
     const int kMaxAttemptsToOpenClipboard = 5;
-    const base::TimeDelta kSleepTimeBetweenAttempts =
-        base::TimeDelta::FromMilliseconds(5);
+    const base::TimeDelta kSleepTimeBetweenAttempts = base::Milliseconds(5);
 
     if (opened_) {
       NOTREACHED();
@@ -106,6 +105,10 @@ namespace remoting {
 class ClipboardWin : public Clipboard {
  public:
   ClipboardWin();
+
+  ClipboardWin(const ClipboardWin&) = delete;
+  ClipboardWin& operator=(const ClipboardWin&) = delete;
+
   ~ClipboardWin() override;
 
   void Start(
@@ -125,8 +128,6 @@ class ClipboardWin : public Clipboard {
   std::unique_ptr<protocol::ClipboardStub> client_clipboard_;
   // Used to subscribe to WM_CLIPBOARDUPDATE messages.
   std::unique_ptr<base::win::MessageWindow> window_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClipboardWin);
 };
 
 ClipboardWin::ClipboardWin() {}

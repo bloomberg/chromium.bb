@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <fuchsia/mem/cpp/fidl.h>
+
 #include "base/callback_helpers.h"
+#include "base/fuchsia/mem_buffer_util.h"
+#include "base/test/test_future.h"
 #include "base/threading/platform_thread.h"
 #include "components/cast/message_port/fuchsia/message_port_fuchsia.h"
 #include "components/cast/message_port/platform_message_port.h"
 #include "components/cast_streaming/browser/test/cast_streaming_test_sender.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/test/fit_adapter.h"
 #include "fuchsia/base/test/frame_test_util.h"
-#include "fuchsia/base/test/result_receiver.h"
 #include "fuchsia/base/test/test_navigation_listener.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/frame_impl.h"
@@ -113,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, LoadSuccess) {
   const GURL page_url(
       embedded_test_server()->GetURL(kCastStreamingReceiverPath));
   fuchsia::mem::Buffer ignored_message_string =
-      cr_fuchsia::MemBufferFromString("hi", "test");
+      base::MemBufferFromString("hi", "test");
 
   std::unique_ptr<cast_api_bindings::MessagePort> sender_message_port;
   std::unique_ptr<cast_api_bindings::MessagePort> receiver_message_port;
@@ -134,14 +136,12 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, LoadSuccess) {
   // Create a Frame and set the Receiver MessagePort on it.
   auto frame = cr_fuchsia::FrameForTest::Create(
       context(), fuchsia::web::CreateFrameParams());
-  cr_fuchsia::ResultReceiver<fuchsia::web::Frame_PostMessage_Result>
-      post_result(base::DoNothing::Repeatedly());
+  base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
   frame->PostMessage(
       "cast-streaming:receiver",
       cr_fuchsia::CreateWebMessageWithMessagePortRequest(
           std::move(message_port_request), std::move(ignored_message_string)),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
-
+      cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
       page_url.spec()));
@@ -149,6 +149,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, LoadSuccess) {
   sender.RunUntilStarted();
   frame.navigation_listener().RunUntilTitleEquals("canplay");
 
+  EXPECT_TRUE(post_result.Wait());
   EXPECT_NE(sender.audio_decoder_config(), absl::nullopt);
   EXPECT_NE(sender.video_decoder_config(), absl::nullopt);
 }
@@ -159,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, VideoOnlyReceiver) {
   const GURL kPageUrl(
       embedded_test_server()->GetURL(kCastStreamingReceiverPath));
   fuchsia::mem::Buffer ignored_message_string =
-      cr_fuchsia::MemBufferFromString("hi", "test");
+      base::MemBufferFromString("hi", "test");
 
   std::unique_ptr<cast_api_bindings::MessagePort> sender_message_port;
   std::unique_ptr<cast_api_bindings::MessagePort> receiver_message_port;
@@ -180,13 +181,12 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, VideoOnlyReceiver) {
   // Create a Frame and set the Receiver MessagePort on it.
   auto frame = cr_fuchsia::FrameForTest::Create(
       context(), fuchsia::web::CreateFrameParams());
-  cr_fuchsia::ResultReceiver<fuchsia::web::Frame_PostMessage_Result>
-      post_result(base::DoNothing::Repeatedly());
+  base::test::TestFuture<fuchsia::web::Frame_PostMessage_Result> post_result;
   frame->PostMessage(
       "cast-streaming:video-only-receiver",
       cr_fuchsia::CreateWebMessageWithMessagePortRequest(
           std::move(message_port_request), std::move(ignored_message_string)),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
+      cr_fuchsia::CallbackToFitFunction(post_result.GetCallback()));
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       frame.GetNavigationController(), fuchsia::web::LoadUrlParams(),
@@ -195,6 +195,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingTest, VideoOnlyReceiver) {
   sender.RunUntilStarted();
   frame.navigation_listener().RunUntilTitleEquals("canplay");
 
+  EXPECT_TRUE(post_result.Wait());
   EXPECT_EQ(sender.audio_decoder_config(), absl::nullopt);
   EXPECT_NE(sender.video_decoder_config(), absl::nullopt);
 }

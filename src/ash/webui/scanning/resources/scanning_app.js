@@ -318,9 +318,19 @@ Polymer({
     },
 
     /** {boolean} */
-    multiPageScanChecked: {
+    multiPageScanChecked: Boolean,
+
+    /**
+     * Only true when the multi-page checkbox is checked and the supported scan
+     * settings are chosen. Multi-page scanning only supports creating PDFs from
+     * the Flatbed source.
+     * @private {boolean}
+     */
+    isMultiPageScan_: {
       type: Boolean,
-      observer: 'onMultiPageScanCheckedChange_',
+      computed: 'computeIsMultiPageScan_(multiPageScanChecked, ' +
+          'selectedFileType, selectedSource)',
+      observer: 'onIsMultiPageScanChange_',
     },
 
     /** @private {boolean} */
@@ -415,7 +425,7 @@ Polymer({
 
     // The Scan app increments |this.pageNumber_| itself during a multi-page
     // scan.
-    if (!this.multiPageScanChecked) {
+    if (!this.isMultiPageScan_) {
       this.pageNumber_ = pageNumber;
     }
     this.progressPercent_ = progressPercent;
@@ -446,7 +456,7 @@ Polymer({
     // the preview area shows 'Scanning length+1'.
     this.pageNumber_ = this.objectUrls_.length;
 
-    if (this.multiPageScanChecked) {
+    if (this.isMultiPageScan_) {
       this.setAppState_(AppState.MULTI_PAGE_NEXT_ACTION);
     }
   },
@@ -599,7 +609,7 @@ Polymer({
     }
 
     const settings = this.getScanSettings_();
-    if (this.multiPageScanChecked) {
+    if (this.isMultiPageScan_) {
       this.scanService_
           .startMultiPageScan(
               this.getSelectedScannerToken_(), settings,
@@ -908,9 +918,7 @@ Polymer({
         this.$$('#scannerSelect').$$('#scannerSelect').focus();
       } else if (this.appState_ === AppState.SCANNING) {
         this.$$('#cancelButton').focus();
-      } else if (
-          this.appState_ === AppState.DONE ||
-          this.appState_ === AppState.MULTI_PAGE_NEXT_ACTION) {
+      } else if (this.appState_ === AppState.DONE) {
         this.$$('#scanPreview').$$('#previewDiv').focus();
       }
     });
@@ -1242,9 +1250,16 @@ Polymer({
   },
 
   /** @private */
-  onMultiPageScanCheckedChange_() {
-    assert(!this.multiPageScanChecked || this.scanAppMultiPageScanEnabled_);
-    const nextPageNum = this.multiPageScanChecked ? 1 : 0;
+  computeIsMultiPageScan_() {
+    return this.multiPageScanChecked && this.isPDFSelected_() &&
+        this.isFlatbedSelected_();
+  },
+
+  /** @private */
+  onIsMultiPageScanChange_() {
+    assert(!this.isMultiPageScan_ || this.scanAppMultiPageScanEnabled_);
+
+    const nextPageNum = this.isMultiPageScan_ ? 1 : 0;
     this.browserProxy_.getPluralString('scanButtonText', nextPageNum)
         .then(
             /* @type {string} */ (pluralString) => {

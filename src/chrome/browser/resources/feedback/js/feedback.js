@@ -85,9 +85,9 @@ const wifiRegEx =
  * @type {RegExp}
  */
 const cellularRegEx = buildWordMatcher([
-  '2G',     '3G',      '4G',  '5G',   'LTE',  'UMTS',    'SIM',     'eSIM',
-  'mmWave', 'mobile',  'APN', 'IMEI', 'IMSI', 'eUICC',   'carrier', 'T.Mobile',
-  'TMO',    'Verizon', 'VZW', 'AT&T', 'MVNO', 'pin.lock'
+  '2G',     '3G',      '4G',  '5G',   'LTE',  'UMTS',     'SIM',     'eSIM',
+  'mmWave', 'mobile',  'APN', 'IMEI', 'IMSI', 'eUICC',    'carrier', 'T.Mobile',
+  'TMO',    'Verizon', 'VZW', 'AT&T', 'MVNO', 'pin.lock', 'cellular'
 ]);
 
 /**
@@ -256,6 +256,7 @@ function checkForShowQuestionnaire(inputEvent) {
   const savedCursor = $('description-text').selectionStart;
   if (Object.keys(appendedQuestions).length === 0) {
     $('description-text').value += '\n\n' + questionnaireBegin + '\n';
+    $('questionnaire-notification').textContent = questionnaireNotification;
   }
 
   for (const question of toAppend) {
@@ -263,7 +264,7 @@ function checkForShowQuestionnaire(inputEvent) {
       continue;
     }
 
-    $('description-text').value += '* ' + question + '\n';
+    $('description-text').value += '* ' + question + ' \n';
     appendedQuestions[question] = true;
   }
 

@@ -24,16 +24,22 @@ import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserve
 import org.chromium.chrome.browser.bookmarks.BookmarkListEntry.ViewType;
 import org.chromium.chrome.browser.bookmarks.BookmarkRow.Location;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkMeta;
+import org.chromium.chrome.browser.power_bookmarks.PowerBookmarkType;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.ui.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.browser_ui.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightParams;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightShape;
 import org.chromium.components.feature_engagement.EventConstants;
+import org.chromium.components.image_fetcher.ImageFetcher;
+import org.chromium.components.image_fetcher.ImageFetcherConfig;
+import org.chromium.components.image_fetcher.ImageFetcherFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +52,7 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
     private static final int MAXIMUM_NUMBER_OF_SEARCH_RESULTS = 500;
     private static final String EMPTY_QUERY = null;
 
+    private final ImageFetcher mImageFetcher;
     private final List<BookmarkId> mTopLevelFolders = new ArrayList<>();
 
     // There can only be one promo header at a time. This takes on one of the values:
@@ -111,6 +118,11 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         super(context);
         mSyncService = SyncService.get();
         mSyncService.addSyncStateChangedListener(this);
+
+        mImageFetcher =
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
+                        Profile.getLastUsedRegularProfile().getProfileKey(),
+                        GlobalDiscardableReferencePool.getReferencePool());
     }
 
     /**
@@ -131,6 +143,14 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
     private void setBookmarks(List<BookmarkId> bookmarks) {
         clearHighlight();
         mElements.clear();
+
+        // Show the tag chiplist only for the shopping folder.
+        // TODO(crbug.com/1247825): Clarify how the tag list should interact with promo headers.
+        PowerBookmarkMeta meta = mDelegate.getModel().getPowerBookmarkMeta(mCurrentFolder);
+        if (meta != null && meta.getType() == PowerBookmarkType.SHOPPING) {
+            mElements.add(BookmarkListEntry.createChipList());
+        }
+
         // Restore the header, if it exists, then update it.
         if (hasPromoHeader()) {
             mElements.add(BookmarkListEntry.createSyncPromoHeader(mPromoHeaderType));
@@ -177,6 +197,14 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
         return holder;
     }
 
+    private ViewHolder createTagChipListViewHolder(ViewGroup parent) {
+        ViewGroup row = (ViewGroup) LayoutInflater.from(parent.getContext())
+                                .inflate(R.layout.power_bookmark_tag_chip_list, parent, false);
+        ViewHolder vh = new ViewHolder(row) {};
+        ((PowerBookmarkTagChipList) row).init(mDelegate.getModel());
+        return vh;
+    }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, @ViewType int viewType) {
         assert mDelegate != null;
@@ -194,10 +222,17 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
                 return createViewHolderHelper(parent, R.layout.bookmark_folder_row);
             case ViewType.BOOKMARK:
                 return createViewHolderHelper(parent, R.layout.bookmark_item_row);
+            case ViewType.SHOPPING_POWER_BOOKMARK:
+                ViewHolder vh =
+                        createViewHolderHelper(parent, R.layout.power_bookmark_shopping_item_row);
+                ((PowerBookmarkShoppingItemRow) vh.itemView).init(mImageFetcher);
+                return vh;
             case ViewType.DIVIDER:
                 return new ViewHolder(
                         LayoutInflater.from(parent.getContext())
                                 .inflate(R.layout.horizontal_divider, parent, false)) {};
+            case ViewType.TAG_CHIP_LIST:
+                return createTagChipListViewHolder(parent);
             default:
                 assert false;
                 return null;
@@ -235,6 +270,9 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkListEntry>
                 // We need this in case we are change state during a pulse.
                 ViewHighlighter.turnOffHighlight(holder.itemView);
             }
+        } else if (holder.getItemViewType() == ViewType.TAG_CHIP_LIST) {
+            PowerBookmarkTagChipList tagChipList = ((PowerBookmarkTagChipList) holder.itemView);
+            tagChipList.setBookmarkFolder(mCurrentFolder);
         }
     }
 

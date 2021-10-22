@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/cdm/cdm_capability.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
@@ -266,6 +267,11 @@ void AddHardwareSecureWidevine(std::vector<content::CdmInfo>* cdms) {
 #endif
 #if BUILDFLAG(USE_CHROMEOS_PROTECTED_AV1)
   capability.video_codecs.emplace(media::VideoCodec::kAV1, kAllProfiles);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLacrosUseChromeosProtectedAv1)) {
+    capability.video_codecs.emplace(media::VideoCodec::kAV1, kAllProfiles);
+  }
 #endif
 
   // Both encryption schemes are supported on ChromeOS.

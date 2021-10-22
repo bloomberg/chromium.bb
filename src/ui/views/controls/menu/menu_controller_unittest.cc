@@ -59,7 +59,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/buildflags.h"
 #include "ui/ozone/public/ozone_platform.h"
 #if BUILDFLAG(OZONE_PLATFORM_X11)
@@ -67,7 +66,7 @@
 #endif
 #endif
 
-#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+#if defined(USE_OZONE_PLATFORM_X11)
 #include "ui/events/test/events_test_utils_x11.h"
 #endif
 
@@ -79,15 +78,14 @@ using ::ui::mojom::DragOperation;
 
 bool ShouldIgnoreScreenBoundsForMenus() {
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    // Wayland requires placing menus is screen coordinates. See comment in
-    // ozone_platform_wayland.cc.
-    return ui::OzonePlatform::GetInstance()
-        ->GetPlatformProperties()
-        .ignore_screen_bounds_for_menus;
-  }
-#endif
+  // Wayland requires placing menus is screen coordinates. See comment in
+  // ozone_platform_wayland.cc.
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .ignore_screen_bounds_for_menus;
+#else
   return false;
+#endif
 }
 
 // Test implementation of MenuControllerDelegate that only reports the values
@@ -95,6 +93,11 @@ bool ShouldIgnoreScreenBoundsForMenus() {
 class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
  public:
   TestMenuControllerDelegate();
+
+  TestMenuControllerDelegate(const TestMenuControllerDelegate&) = delete;
+  TestMenuControllerDelegate& operator=(const TestMenuControllerDelegate&) =
+      delete;
+
   ~TestMenuControllerDelegate() override = default;
 
   int on_menu_closed_called() { return on_menu_closed_called_; }
@@ -131,8 +134,6 @@ class TestMenuControllerDelegate : public internal::MenuControllerDelegate {
 
   // Optional callback triggered during OnMenuClosed
   base::RepeatingClosure on_menu_closed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMenuControllerDelegate);
 };
 
 TestMenuControllerDelegate::TestMenuControllerDelegate() = default;
@@ -153,16 +154,20 @@ void TestMenuControllerDelegate::SiblingMenuCreated(MenuItemView* menu) {}
 class SubmenuViewShown : public SubmenuView {
  public:
   using SubmenuView::SubmenuView;
+
+  SubmenuViewShown(const SubmenuViewShown&) = delete;
+  SubmenuViewShown& operator=(const SubmenuViewShown&) = delete;
+
   ~SubmenuViewShown() override = default;
   bool IsShowing() const override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SubmenuViewShown);
 };
 
 class TestEventHandler : public ui::EventHandler {
  public:
   TestEventHandler() = default;
+
+  TestEventHandler(const TestEventHandler&) = delete;
+  TestEventHandler& operator=(const TestEventHandler&) = delete;
 
   void OnTouchEvent(ui::TouchEvent* event) override {
     switch (event->type()) {
@@ -182,7 +187,6 @@ class TestEventHandler : public ui::EventHandler {
 
  private:
   int outstanding_touches_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(TestEventHandler);
 };
 
 // A test widget that counts gesture events.
@@ -190,13 +194,15 @@ class GestureTestWidget : public Widget {
  public:
   GestureTestWidget() = default;
 
+  GestureTestWidget(const GestureTestWidget&) = delete;
+  GestureTestWidget& operator=(const GestureTestWidget&) = delete;
+
   void OnGestureEvent(ui::GestureEvent* event) override { ++gesture_count_; }
 
   int gesture_count() const { return gesture_count_; }
 
  private:
   int gesture_count_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(GestureTestWidget);
 };
 
 #if defined(USE_AURA)
@@ -207,6 +213,10 @@ class TestDragDropClient : public aura::client::DragDropClient {
   explicit TestDragDropClient(base::RepeatingClosure callback)
       : start_drag_and_drop_callback_(std::move(callback)),
         drag_in_progress_(false) {}
+
+  TestDragDropClient(const TestDragDropClient&) = delete;
+  TestDragDropClient& operator=(const TestDragDropClient&) = delete;
+
   ~TestDragDropClient() override = default;
 
   // aura::client::DragDropClient:
@@ -226,8 +236,6 @@ class TestDragDropClient : public aura::client::DragDropClient {
  private:
   base::RepeatingClosure start_drag_and_drop_callback_;
   bool drag_in_progress_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
 };
 
 DragOperation TestDragDropClient::StartDragAndDrop(
@@ -280,6 +288,10 @@ class TestMenuItemViewShown : public MenuItemView {
       : MenuItemView(delegate) {
     submenu_ = new SubmenuViewShown(this);
   }
+
+  TestMenuItemViewShown(const TestMenuItemViewShown&) = delete;
+  TestMenuItemViewShown& operator=(const TestMenuItemViewShown&) = delete;
+
   ~TestMenuItemViewShown() override = default;
 
   void SetController(MenuController* controller) { set_controller(controller); }
@@ -292,9 +304,6 @@ class TestMenuItemViewShown : public MenuItemView {
   MenuItemView::MenuPosition ActualMenuPosition() {
     return actual_menu_position();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewShown);
 };
 
 class TestMenuItemViewNotShown : public MenuItemView {
@@ -303,12 +312,13 @@ class TestMenuItemViewNotShown : public MenuItemView {
       : MenuItemView(delegate) {
     submenu_ = new SubmenuView(this);
   }
+
+  TestMenuItemViewNotShown(const TestMenuItemViewNotShown&) = delete;
+  TestMenuItemViewNotShown& operator=(const TestMenuItemViewNotShown&) = delete;
+
   ~TestMenuItemViewNotShown() override = default;
 
   void SetController(MenuController* controller) { set_controller(controller); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestMenuItemViewNotShown);
 };
 
 struct MenuBoundsOptions {
@@ -325,6 +335,9 @@ class MenuControllerTest : public ViewsTestBase,
                            public testing::WithParamInterface<bool> {
  public:
   MenuControllerTest() = default;
+
+  MenuControllerTest(const MenuControllerTest&) = delete;
+  MenuControllerTest& operator=(const MenuControllerTest&) = delete;
 
   ~MenuControllerTest() override = default;
 
@@ -907,8 +920,6 @@ class MenuControllerTest : public ViewsTestBase,
   std::unique_ptr<TestMenuControllerDelegate> menu_controller_delegate_;
   std::unique_ptr<TestMenuDelegate> menu_delegate_;
   MenuController* menu_controller_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(All, MenuControllerTest, testing::Bool());
@@ -932,15 +943,13 @@ TEST_F(MenuControllerTest, EventTargeter) {
 }
 #endif  // defined(USE_AURA)
 
-#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+#if defined(USE_OZONE_PLATFORM_X11)
 // Tests that touch event ids are released correctly. See crbug.com/439051 for
 // details. When the ids aren't managed correctly, we get stuck down touches.
 TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
-  // Run this test only for X11 (either Ozone or non-Ozone).
-  if (features::IsUsingOzonePlatform() &&
-      ui::OzonePlatform::GetPlatformNameForTest() != "x11") {
+  // Run this test only for X11.
+  if (ui::OzonePlatform::GetPlatformNameForTest() != "x11")
     GTEST_SKIP();
-  }
 
   TestEventHandler test_event_handler;
   GetRootWindow(owner())->AddPreTargetHandler(&test_event_handler);
@@ -964,7 +973,7 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
 
   GetRootWindow(owner())->RemovePreTargetHandler(&test_event_handler);
 }
-#endif  // defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+#endif  // defined(USE_OZONE_PLATFORM_X11)
 
 // Tests that initial selected menu items are correct when items are enabled or
 // disabled.

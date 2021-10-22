@@ -51,10 +51,11 @@ class SessionServiceBase : public sessions::CommandStorageManagerDelegate,
                            public sessions::SessionTabHelperDelegate,
                            public KeyedService,
                            public BrowserListObserver {
-  friend class SessionServiceBaseTestHelper;
-
  public:
   enum class SessionServiceType { kAppRestore, kSessionRestore };
+
+  SessionServiceBase(const SessionServiceBase&) = delete;
+  SessionServiceBase& operator=(const SessionServiceBase&) = delete;
 
   ~SessionServiceBase() override;
 
@@ -62,6 +63,8 @@ class SessionServiceBase : public sessions::CommandStorageManagerDelegate,
       content::WebContents* web_contents);
 
   Profile* profile() const { return profile_; }
+
+  bool is_saving_enabled() const { return is_saving_enabled_; }
 
   // Sets whether the window is visible on all workspaces or not.
   void SetWindowVisibleOnAllWorkspaces(const SessionID& window_id,
@@ -266,6 +269,14 @@ class SessionServiceBase : public sessions::CommandStorageManagerDelegate,
                                 std::pair<int, int>* range);
 
  private:
+  friend class SessionServiceBaseTestHelper;
+  friend class SessionServiceTestHelper;
+
+  // Sets whether commands are saved. If false, SessionCommands are effectively
+  // dropped (deleted). This is intended for use after a crash to ensure no
+  // commands are written before the user acknowledges/restores the crash.
+  void SetSavingEnabled(bool enabled);
+
   // This is always non-null.
   Profile* profile_;
 
@@ -293,9 +304,11 @@ class SessionServiceBase : public sessions::CommandStorageManagerDelegate,
   // return true from |ShouldRestoreWindowOfType|.
   WindowsTracking windows_tracking_;
 
-  base::WeakPtrFactory<SessionServiceBase> weak_factory_{this};
+  bool is_saving_enabled_ = true;
 
-  DISALLOW_COPY_AND_ASSIGN(SessionServiceBase);
+  bool did_save_commands_at_least_once_ = false;
+
+  base::WeakPtrFactory<SessionServiceBase> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_SERVICE_BASE_H_

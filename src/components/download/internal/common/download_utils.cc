@@ -55,7 +55,11 @@ const int kDefaultDownloadExpiredTimeInDays = 90;
 const int kDefaultOverwrittenDownloadExpiredTimeInDays = 90;
 
 // Default buffer size in bytes to write to the download file.
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+const int kDefaultDownloadFileBufferSize = 524288;  // Desktop uses 512 KB.
+#else
 const int kDefaultDownloadFileBufferSize = 4096;
+#endif
 
 #if defined(OS_ANDROID)
 // Default maximum length of a downloaded file name on Android.
@@ -650,7 +654,7 @@ base::TimeDelta GetExpiredDownloadDeleteTime() {
   int expired_days = base::GetFieldTrialParamByFeatureAsInt(
       features::kDeleteExpiredDownloads, kExpiredDownloadDeleteTimeFinchKey,
       kDefaultDownloadExpiredTimeInDays);
-  return base::TimeDelta::FromDays(expired_days);
+  return base::Days(expired_days);
 }
 
 base::TimeDelta GetOverwrittenDownloadDeleteTime() {
@@ -658,7 +662,7 @@ base::TimeDelta GetOverwrittenDownloadDeleteTime() {
       features::kDeleteOverwrittenDownloads,
       kOverwrittenDownloadDeleteTimeFinchKey,
       kDefaultOverwrittenDownloadExpiredTimeInDays);
-  return base::TimeDelta::FromDays(expired_days);
+  return base::Days(expired_days);
 }
 
 int GetDownloadFileBufferSize() {

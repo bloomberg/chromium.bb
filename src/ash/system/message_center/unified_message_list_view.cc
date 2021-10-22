@@ -7,6 +7,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
+#include "ash/system/message_center/message_center_constants.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/message_center_utils.h"
 #include "ash/system/message_center/message_view_factory.h"
@@ -39,12 +40,11 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kClosingAnimationDuration =
-    base::TimeDelta::FromMilliseconds(320);
+constexpr base::TimeDelta kClosingAnimationDuration = base::Milliseconds(320);
 constexpr base::TimeDelta kClearAllStackedAnimationDuration =
-    base::TimeDelta::FromMilliseconds(40);
+    base::Milliseconds(40);
 constexpr base::TimeDelta kClearAllVisibleAnimationDuration =
-    base::TimeDelta::FromMilliseconds(160);
+    base::Milliseconds(160);
 
 constexpr char kMessageViewContainerClassName[] = "MessageViewContainer";
 constexpr char kMoveDownAnimationSmoothnessHistogramName[] =
@@ -95,6 +95,9 @@ class UnifiedMessageListView::MessageViewContainer
     AddChildView(control_view_);
     AddChildView(message_view_);
   }
+
+  MessageViewContainer(const MessageViewContainer&) = delete;
+  MessageViewContainer& operator=(const MessageViewContainer&) = delete;
 
   ~MessageViewContainer() override { message_view_->RemoveObserver(this); }
 
@@ -251,8 +254,6 @@ class UnifiedMessageListView::MessageViewContainer
   MessageView* const message_view_;
   UnifiedMessageListView* const list_view_;
   NotificationSwipeControlView* const control_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageViewContainer);
 };
 
 UnifiedMessageListView::UnifiedMessageListView(
@@ -261,12 +262,19 @@ UnifiedMessageListView::UnifiedMessageListView(
     : views::AnimationDelegateViews(this),
       message_center_view_(message_center_view),
       model_(model),
-      animation_(std::make_unique<gfx::LinearAnimation>(this)) {
+      animation_(std::make_unique<gfx::LinearAnimation>(this)),
+      is_notifications_refresh_enabled_(
+          features::IsNotificationsRefreshEnabled()),
+      message_view_width_(is_notifications_refresh_enabled_
+                              ? kTrayMenuWidth - (2 * kMessageCenterSidePadding)
+                              : kTrayMenuWidth) {
   message_center_observation_.Observe(MessageCenter::Get());
   animation_->SetCurrentValue(1.0);
-  if (!features::IsNotificationsRefreshEnabled())
+
+  if (!is_notifications_refresh_enabled_) {
     SetBackground(views::CreateSolidBackground(
         message_center_style::kSwipeControlBackgroundColor));
+  }
 }
 
 UnifiedMessageListView::~UnifiedMessageListView() {
@@ -396,7 +404,7 @@ gfx::Rect UnifiedMessageListView::GetNotificationBoundsBelowY(
 }
 
 gfx::Size UnifiedMessageListView::CalculatePreferredSize() const {
-  return gfx::Size(kTrayMenuWidth,
+  return gfx::Size(message_view_width_,
                    gfx::Tween::IntValueBetween(GetCurrentValue(), start_height_,
                                                ideal_height_));
 }
@@ -637,9 +645,18 @@ void UnifiedMessageListView::CollapseAllNotifications() {
 }
 
 void UnifiedMessageListView::UpdateBorders(bool force_update) {
+  // We do not need individual notifications to have rounded corners
+  // on the borders with the new UI. This is because the entire
+  // scroll view has rounded corners now.
+  if (is_notifications_refresh_enabled_)
+    return;
+
   // The top notification is drawn with rounded corners when the stacking bar is
   // not shown.
-  bool is_top = children().size() == 1 && state_ != State::MOVE_DOWN;
+  bool is_top = state_ != State::MOVE_DOWN;
+  if (!is_notifications_refresh_enabled_)
+    is_top = is_top && children().size() == 1;
+
   for (auto* child : children()) {
     AsMVC(child)->UpdateBorder(is_top, child == children().back(),
                                force_update);
@@ -651,13 +668,17 @@ void UnifiedMessageListView::UpdateBounds() {
   int y = 0;
   for (auto* child : children()) {
     auto* view = AsMVC(child);
-    const int height = view->GetHeightForWidth(kTrayMenuWidth);
+    const int height = view->GetHeightForWidth(message_view_width_);
     const int direction = view->GetSlideDirection();
+
+    if (y > 0 && is_notifications_refresh_enabled_)
+      y += kMessageListNotificationSpacing;
+
     view->set_start_bounds(view->ideal_bounds());
-    view->set_ideal_bounds(
-        view->is_removed()
-            ? gfx::Rect(kTrayMenuWidth * direction, y, kTrayMenuWidth, height)
-            : gfx::Rect(0, y, kTrayMenuWidth, height));
+    view->set_ideal_bounds(view->is_removed()
+                               ? gfx::Rect(message_view_width_ * direction, y,
+                                           message_view_width_, height)
+                               : gfx::Rect(0, y, message_view_width_, height));
     y += height;
   }
 

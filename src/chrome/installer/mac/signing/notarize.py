@@ -49,6 +49,8 @@ def submit(path, config):
         return commands.run_command_output(command)
 
     # Known bad codes:
+    # 1 - Xcode 12 altool does not always exit with distinct error codes, so
+    #     this is general failure.
     # 13 - A server with the specified hostname could not be found.
     # 176 - Unable to find requested file(s): metadata.xml (1057)
     # 236 - Exception occurred when creating MZContentProviderUpload for
@@ -56,7 +58,7 @@ def submit(path, config):
     # 240 - SIGSEGV in the Java Runtime Environment
     # 250 - Unable to process upload done request at this time due to a general
     #       error (1018)
-    output = _notary_service_retry(submit_comand, (13, 176, 236, 240, 250),
+    output = _notary_service_retry(submit_comand, (1, 13, 176, 236, 240, 250),
                                    'submission')
 
     try:
@@ -105,8 +107,7 @@ def wait_for_results(uuids, config):
                 if config.notary_asc_provider is not None:
                     command.extend(
                         ['--asc-provider', config.notary_asc_provider])
-                output = commands.run_command_output(
-                    command, stderr=subprocess.STDOUT)
+                output = commands.run_command_output(command)
             except subprocess.CalledProcessError as e:
                 # A notarization request might report as "not found" immediately
                 # after submission, which causes altool to exit non-zero. Check

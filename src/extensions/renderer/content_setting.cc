@@ -22,6 +22,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "v8/include/v8-object.h"
 
 namespace extensions {
 
@@ -210,10 +211,13 @@ void ContentSetting::HandleFunction(const std::string& method_name,
 
   parse_result.arguments_list->Insert(
       parse_result.arguments_list->GetList().begin(), base::Value(pref_name_));
-  request_handler_->StartRequest(context, "contentSettings." + method_name,
-                                 std::move(parse_result.arguments_list),
-                                 parse_result.callback,
-                                 v8::Local<v8::Function>());
+
+  v8::Local<v8::Promise> promise = request_handler_->StartRequest(
+      context, "contentSettings." + method_name,
+      std::move(parse_result.arguments_list), parse_result.async_type,
+      parse_result.callback, v8::Local<v8::Function>());
+  if (!promise.IsEmpty())
+    arguments->Return(promise);
 }
 
 }  // namespace extensions

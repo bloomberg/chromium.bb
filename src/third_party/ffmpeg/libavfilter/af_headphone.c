@@ -341,9 +341,9 @@ static int headphone_frame(HeadphoneContext *s, AVFrame *in, AVFilterLink *outli
     td.temp_afft = s->temp_afft;
 
     if (s->type == TIME_DOMAIN) {
-        ctx->internal->execute(ctx, headphone_convolute, &td, NULL, 2);
+        ff_filter_execute(ctx, headphone_convolute, &td, NULL, 2);
     } else {
-        ctx->internal->execute(ctx, headphone_fast_convolute, &td, NULL, 2);
+        ff_filter_execute(ctx, headphone_fast_convolute, &td, NULL, 2);
     }
     emms_c();
 
@@ -624,10 +624,7 @@ static int query_formats(AVFilterContext *ctx)
         }
     }
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -655,7 +652,7 @@ static av_cold int init(AVFilterContext *ctx)
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     };
-    if ((ret = ff_insert_inpad(ctx, 0, &pad)) < 0)
+    if ((ret = ff_append_inpad(ctx, &pad)) < 0)
         return ret;
 
     if (!s->map) {
@@ -673,10 +670,8 @@ static av_cold int init(AVFilterContext *ctx)
         };
         if (!name)
             return AVERROR(ENOMEM);
-        if ((ret = ff_insert_inpad(ctx, i + 1, &pad)) < 0) {
-            av_freep(&pad.name);
+        if ((ret = ff_append_inpad_free_name(ctx, &pad)) < 0)
             return ret;
-        }
     }
 
     if (s->type == TIME_DOMAIN) {
@@ -732,9 +727,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->temp_afft[1]);
     av_freep(&s->data_hrtf[0]);
     av_freep(&s->data_hrtf[1]);
-
-    for (unsigned i = 1; i < ctx->nb_inputs; i++)
-        av_freep(&ctx->input_pads[i].name);
 }
 
 #define OFFSET(x) offsetof(HeadphoneContext, x)
@@ -762,7 +754,6 @@ static const AVFilterPad outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_headphone = {
@@ -775,6 +766,6 @@ const AVFilter ff_af_headphone = {
     .query_formats = query_formats,
     .activate      = activate,
     .inputs        = NULL,
-    .outputs       = outputs,
+    FILTER_OUTPUTS(outputs),
     .flags         = AVFILTER_FLAG_SLICE_THREADS | AVFILTER_FLAG_DYNAMIC_INPUTS,
 };

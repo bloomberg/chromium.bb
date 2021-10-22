@@ -2262,7 +2262,7 @@ void DiskCacheEntryTest::DoomSparseEntry() {
       // Most likely we are waiting for the result of reading the sparse info
       // (it's always async on Posix so it is easy to miss). Unfortunately we
       // don't have any signal to watch for so we can only wait.
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(500));
+      base::PlatformThread::Sleep(base::Milliseconds(500));
       base::RunLoop().RunUntilIdle();
     }
     EXPECT_EQ(0, cache_->GetEntryCount());
@@ -2291,6 +2291,10 @@ class SparseTestCompletionCallback: public net::TestCompletionCallback {
       std::unique_ptr<disk_cache::Backend> cache)
       : cache_(std::move(cache)) {}
 
+  SparseTestCompletionCallback(const SparseTestCompletionCallback&) = delete;
+  SparseTestCompletionCallback& operator=(const SparseTestCompletionCallback&) =
+      delete;
+
  private:
   void SetResult(int result) override {
     cache_.reset();
@@ -2298,7 +2302,6 @@ class SparseTestCompletionCallback: public net::TestCompletionCallback {
   }
 
   std::unique_ptr<disk_cache::Backend> cache_;
-  DISALLOW_COPY_AND_ASSIGN(SparseTestCompletionCallback);
 };
 
 // Tests that we don't crash when the backend is deleted while we are working
@@ -5291,8 +5294,7 @@ void DiskCacheEntryTest::LastUsedTimePersists() {
   disk_cache::Entry* entry1 = nullptr;
   ASSERT_THAT(CreateEntry(kKey, &entry1), IsOk());
   ASSERT_TRUE(nullptr != entry1);
-  base::Time modified_last_used =
-      entry1->GetLastUsed() - base::TimeDelta::FromMinutes(5);
+  base::Time modified_last_used = entry1->GetLastUsed() - base::Minutes(5);
   entry1->SetLastUsedTimeForTest(modified_last_used);
   entry1->Close();
 
@@ -5301,8 +5303,8 @@ void DiskCacheEntryTest::LastUsedTimePersists() {
   ASSERT_TRUE(nullptr != entry2);
 
   base::TimeDelta diff = modified_last_used - entry2->GetLastUsed();
-  EXPECT_LT(diff, base::TimeDelta::FromSeconds(2));
-  EXPECT_GT(diff, -base::TimeDelta::FromSeconds(2));
+  EXPECT_LT(diff, base::Seconds(2));
+  EXPECT_GT(diff, -base::Seconds(2));
   entry2->Close();
 }
 

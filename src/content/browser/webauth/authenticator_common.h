@@ -67,6 +67,10 @@ class CONTENT_EXPORT AuthenticatorCommon {
   // Creates a new AuthenticatorCommon. Callers must ensure that this instance
   // outlives the RenderFrameHost.
   explicit AuthenticatorCommon(RenderFrameHost* render_frame_host);
+
+  AuthenticatorCommon(const AuthenticatorCommon&) = delete;
+  AuthenticatorCommon& operator=(const AuthenticatorCommon&) = delete;
+
   virtual ~AuthenticatorCommon();
 
   // This is not-quite an implementation of blink::mojom::Authenticator. The
@@ -120,6 +124,12 @@ class CONTENT_EXPORT AuthenticatorCommon {
   enum class Focus {
     kDoCheck,
     kDontCheck,
+  };
+
+  enum class AttestationErasureOption {
+    kIncludeAttestation,
+    kEraseAttestationButIncludeAaguid,
+    kEraseAttestationAndAaguid,
   };
 
   // Replaces the current |request_| with a |MakeCredentialRequestHandler|,
@@ -182,11 +192,21 @@ class CONTENT_EXPORT AuthenticatorCommon {
       AuthenticatorRequestClientDelegate::InterestingFailureReason reason,
       blink::mojom::AuthenticatorStatus status);
 
+  // Creates a make credential response
+  blink::mojom::MakeCredentialAuthenticatorResponsePtr
+  CreateMakeCredentialResponse(
+      device::AuthenticatorMakeCredentialResponse response_data,
+      AttestationErasureOption attestation_erasure);
+
   // Runs |make_credential_response_callback_| and then Cleanup().
   void CompleteMakeCredentialRequest(
       blink::mojom::AuthenticatorStatus status,
       blink::mojom::MakeCredentialAuthenticatorResponsePtr response = nullptr,
       Focus focus_check = Focus::kDontCheck);
+
+  // Creates a get assertion response.
+  blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
+      device::AuthenticatorGetAssertionResponse response_data);
 
   // Runs |get_assertion_callback_| and then Cleanup().
   void CompleteGetAssertionRequest(
@@ -213,6 +233,9 @@ class CONTENT_EXPORT AuthenticatorCommon {
   blink::mojom::Authenticator::GetAssertionCallback
       get_assertion_response_callback_;
   std::string client_data_json_;
+  // Transport used during authentication. May be empty if unknown, e.g. on old
+  // Windows.
+  absl::optional<device::FidoTransportProtocol> transport_;
   // empty_allow_list_ is true iff a GetAssertion is currently pending and the
   // request did not list any credential IDs in the allow list.
   bool empty_allow_list_ = false;
@@ -238,8 +261,6 @@ class CONTENT_EXPORT AuthenticatorCommon {
   base::flat_set<RequestExtension> requested_extensions_;
 
   base::WeakPtrFactory<AuthenticatorCommon> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorCommon);
 };
 
 }  // namespace content

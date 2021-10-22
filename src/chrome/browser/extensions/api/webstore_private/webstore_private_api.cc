@@ -44,8 +44,8 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/safe_browsing/content/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
@@ -97,6 +97,10 @@ namespace {
 class PendingApprovals {
  public:
   PendingApprovals();
+
+  PendingApprovals(const PendingApprovals&) = delete;
+  PendingApprovals& operator=(const PendingApprovals&) = delete;
+
   ~PendingApprovals();
 
   void PushApproval(std::unique_ptr<WebstoreInstaller::Approval> approval);
@@ -110,8 +114,6 @@ class PendingApprovals {
       std::vector<std::unique_ptr<WebstoreInstaller::Approval>>;
 
   ApprovalList approvals_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingApprovals);
 };
 
 PendingApprovals::PendingApprovals() {}

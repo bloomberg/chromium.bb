@@ -14,6 +14,7 @@
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace discovery {
@@ -201,11 +202,9 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsANotPresent) {
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV6AddressHextets),
                  FakeDnsRecordFactory::kPortNum});
   std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
-  auto it = std::find_if(records.begin(), records.end(),
-                         [](const MdnsRecord& record) {
-                           return record.dns_type() == DnsType::kA;
-                         });
-  EXPECT_EQ(it, records.end());
+  EXPECT_FALSE(ContainsIf(records, [](const MdnsRecord& record) {
+    return record.dns_type() == DnsType::kA;
+  }));
 }
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAAPresent) {
@@ -247,11 +246,9 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsAAAANotPresent) {
       IPEndpoint{IPAddress(FakeDnsRecordFactory::kV4AddressOctets),
                  FakeDnsRecordFactory::kPortNum});
   std::vector<MdnsRecord> records = GetDnsRecords(instance_endpoint);
-  auto it = std::find_if(records.begin(), records.end(),
-                         [](const MdnsRecord& record) {
-                           return record.dns_type() == DnsType::kAAAA;
-                         });
-  EXPECT_EQ(it, records.end());
+  EXPECT_FALSE(ContainsIf(records, [](const MdnsRecord& record) {
+    return record.dns_type() == DnsType::kAAAA;
+  }));
 }
 
 TEST(DnsSdConversionLayerTest, GetDnsRecordsTxt) {
@@ -285,13 +282,8 @@ TEST(DnsSdConversionLayerTest, GetDnsRecordsTxt) {
 
   const auto& rdata = absl::get<TxtRecordRdata>(it->rdata());
   EXPECT_EQ(rdata.texts().size(), size_t{2});
-
-  auto it2 =
-      std::find(rdata.texts().begin(), rdata.texts().end(), "name=value");
-  EXPECT_NE(it2, rdata.texts().end());
-
-  it2 = std::find(rdata.texts().begin(), rdata.texts().end(), "boolean");
-  EXPECT_NE(it2, rdata.texts().end());
+  EXPECT_TRUE(Contains(rdata.texts(), "name=value"));
+  EXPECT_TRUE(Contains(rdata.texts(), "boolean"));
 }
 
 }  // namespace discovery

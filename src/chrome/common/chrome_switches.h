@@ -67,10 +67,6 @@ extern const char kCreateBrowserOnStartupForTests[];
 extern const char kCustomDevtoolsFrontend[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[];
-extern const char kDesktopPWAsAttentionBadgingCrOSApiOnly[];
-extern const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[];
 extern const char kDevToolsFlags[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
@@ -193,6 +189,7 @@ extern const char kForceDeviceOwnership[];
 extern const char kForceEnableNightMode[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
+extern const char kForceEnableSigninFRE[];
 extern const char kForceUpdateMenuType[];
 extern const char kMarketUrlForTesting[];
 #endif  // defined(OS_ANDROID)

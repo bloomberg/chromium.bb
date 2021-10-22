@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/element_style.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/bind.h"
 #include "base/strings/string_util.h"
@@ -110,6 +111,9 @@ class ToastOverlay::ToastDisplayObserver : public display::DisplayObserver {
  public:
   ToastDisplayObserver(ToastOverlay* overlay) : overlay_(overlay) {}
 
+  ToastDisplayObserver(const ToastDisplayObserver&) = delete;
+  ToastDisplayObserver& operator=(const ToastDisplayObserver&) = delete;
+
   ~ToastDisplayObserver() override {}
 
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -121,8 +125,6 @@ class ToastOverlay::ToastDisplayObserver : public display::DisplayObserver {
   ToastOverlay* const overlay_;
 
   display::ScopedDisplayObserver display_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ToastDisplayObserver);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,11 +164,9 @@ class ToastOverlayButton : public views::LabelButton {
   // views::LabelButton:
   void OnThemeChanged() override {
     views::LabelButton::OnThemeChanged();
-    const auto* color_provider = AshColorProvider::Get();
     views::InkDrop::Get(this)->SetBaseColor(
-        color_provider->GetRippleAttributes().base_color);
-    SetEnabledTextColors(color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonLabelColorBlue));
+        AshColorProvider::Get()->GetRippleAttributes().base_color);
+    element_style::DecorateIconlessFloatingPillButton(this);
   }
 };
 
@@ -175,7 +175,7 @@ class ToastOverlayButton : public views::LabelButton {
 class ToastOverlayView : public views::View {
  public:
   // This object is not owned by the views hierarchy or by the widget.
-  ToastOverlayView(ToastOverlay* overlay,
+  ToastOverlayView(base::RepeatingClosure dismiss_callback,
                    const std::u16string& text,
                    const absl::optional<std::u16string>& dismiss_text,
                    const bool is_managed) {
@@ -205,8 +205,7 @@ class ToastOverlayView : public views::View {
       return;
 
     button_ = AddChildView(std::make_unique<ToastOverlayButton>(
-        base::BindRepeating(&ToastOverlay::Show, base::Unretained(overlay),
-                            false),
+        std::move(dismiss_callback),
         dismiss_text.value().empty()
             ? l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON)
             : dismiss_text.value()));
@@ -262,13 +261,20 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
                            const std::u16string& text,
                            absl::optional<std::u16string> dismiss_text,
                            bool show_on_lock_screen,
-                           bool is_managed)
+                           bool is_managed,
+                           base::RepeatingClosure dismiss_callback)
     : delegate_(delegate),
       text_(text),
       dismiss_text_(dismiss_text),
       overlay_widget_(new views::Widget),
-      overlay_view_(new ToastOverlayView(this, text, dismiss_text, is_managed)),
+      overlay_view_(new ToastOverlayView(
+          base::BindRepeating(&ToastOverlay::OnButtonClicked,
+                              base::Unretained(this)),
+          text,
+          dismiss_text,
+          is_managed)),
       display_observer_(std::make_unique<ToastDisplayObserver>(this)),
+      dismiss_callback_(std::move(dismiss_callback)),
       widget_size_(overlay_view_->GetPreferredSize()) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -291,8 +297,7 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   ::wm::SetWindowVisibilityAnimationType(
       overlay_window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
   ::wm::SetWindowVisibilityAnimationDuration(
-      overlay_window,
-      base::TimeDelta::FromMilliseconds(kSlideAnimationDurationMs));
+      overlay_window, base::Milliseconds(kSlideAnimationDurationMs));
 
   keyboard::KeyboardUIController::Get()->AddObserver(this);
 }
@@ -351,6 +356,13 @@ gfx::Rect ToastOverlay::CalculateOverlayBounds() {
   bounds.ClampToCenteredSize(widget_size_);
   bounds.set_y(target_y);
   return bounds;
+}
+
+void ToastOverlay::OnButtonClicked() {
+  if (dismiss_callback_) {
+    dismiss_callback_.Run();
+  }
+  Show(/*visible=*/false);
 }
 
 void ToastOverlay::OnImplicitAnimationsScheduled() {}

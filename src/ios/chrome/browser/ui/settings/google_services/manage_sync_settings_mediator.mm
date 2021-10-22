@@ -14,7 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_service.h"
-#import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
@@ -30,12 +29,14 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #include "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -189,7 +190,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 
   BOOL shouldSyncEverythingBeEditable = !self.disabledBecauseOfSyncError;
   BOOL shouldSyncEverythingItemBeOn =
-      self.syncSetupService->CanSyncFeatureStart() &&
+      self.syncSetupService->IsSyncRequested() &&
       self.syncSetupService->IsSyncingAllDataTypes();
   SyncSwitchItem* syncEverythingItem =
       base::mac::ObjCCastStrict<SyncSwitchItem>(self.syncEverythingItem);
@@ -350,6 +351,19 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   }
   [model addItem:self.signOutAndTurnOffSyncItem
       toSectionWithIdentifier:SignOutSectionIdentifier];
+
+  if (self.forcedSigninEnabled) {
+    // Add information about the forced sign-in policy below the sign-out
+    // button when forced sign-in is enabled.
+    TableViewLinkHeaderFooterItem* footerItem =
+        [[TableViewLinkHeaderFooterItem alloc]
+            initWithType:SignOutItemFooterType];
+    footerItem.text = l10n_util::GetNSString(
+        IDS_IOS_ENTERPRISE_FORCED_SIGNIN_SYNC_SETTINGS_SIGNOUT_FOOTER);
+    footerItem.urls = std::vector<GURL>{GURL("chrome://management/")};
+    [model setFooter:footerItem
+        forSectionWithIdentifier:SignOutSectionIdentifier];
+  }
 }
 
 - (void)updateSignOutSection {
@@ -456,12 +470,10 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
          !self.disabledBecauseOfSyncError;
 }
 
-// Only requires Sync-the-feature to not have any disable reasons and for the
-// user to be signed-in. Sync-the-transport may still be initializing.
+// Only requires Sync-the-feature to not be disabled because of a sync error and
+// to not need a trusted vault key.
 - (BOOL)shouldEncryptionItemBeEnabled {
-  return self.syncSetupService->CanSyncFeatureStart() &&
-         !self.disabledBecauseOfSyncError &&
-         self.syncSetupService->IsFirstSetupComplete() &&
+  return !self.disabledBecauseOfSyncError &&
          self.syncSetupService->GetSyncServiceState() !=
              SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
 }
@@ -584,6 +596,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
       case SyncNeedsTrustedVaultKeyErrorItemType:
       case SyncTrustedVaultRecoverabilityDegradedErrorItemType:
       case SyncDisabledByAdministratorErrorItemType:
+      case SignOutItemFooterType:
         NOTREACHED();
         break;
     }
@@ -637,6 +650,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
     case SettingsDataTypeItemType:
     case AutocompleteWalletItemType:
     case SyncDisabledByAdministratorErrorItemType:
+    case SignOutItemFooterType:
       // Nothing to do.
       break;
   }

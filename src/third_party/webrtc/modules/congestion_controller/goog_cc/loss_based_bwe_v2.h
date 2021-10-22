@@ -59,6 +59,8 @@ class LossBasedBweV2 {
 
   struct Config {
     double bandwidth_rampup_upper_bound_factor = 0.0;
+    double rampup_acceleration_max_factor = 0.0;
+    TimeDelta rampup_acceleration_maxout_time = TimeDelta::Zero();
     std::vector<double> candidate_factors;
     double higher_bandwidth_bias_factor = 0.0;
     double higher_log_bandwidth_bias_factor = 0.0;
@@ -74,10 +76,9 @@ class LossBasedBweV2 {
     TimeDelta observation_duration_lower_bound = TimeDelta::Zero();
     int observation_window_size = 0;
     double sending_rate_smoothing_factor = 0.0;
-    double tcp_fairness_temporal_weight_factor = 0.0;
-    DataRate tcp_fairness_upper_bound_bandwidth_balance =
-        DataRate::MinusInfinity();
-    double tcp_fairness_upper_bound_loss_offset = 0.0;
+    double instant_upper_bound_temporal_weight_factor = 0.0;
+    DataRate instant_upper_bound_bandwidth_balance = DataRate::MinusInfinity();
+    double instant_upper_bound_loss_offset = 0.0;
     double temporal_weight_factor = 0.0;
   };
 
@@ -110,6 +111,7 @@ class LossBasedBweV2 {
   double GetAverageReportedLossRatio() const;
   std::vector<ChannelParameters> GetCandidates(
       DataRate delay_based_estimate) const;
+  DataRate GetCandidateBandwidthUpperBound() const;
   Derivatives GetDerivatives(const ChannelParameters& channel_parameters) const;
   double GetFeasibleInherentLoss(
       const ChannelParameters& channel_parameters) const;
@@ -117,8 +119,8 @@ class LossBasedBweV2 {
   double GetHighBandwidthBias(DataRate bandwidth) const;
   double GetObjective(const ChannelParameters& channel_parameters) const;
   DataRate GetSendingRate(DataRate instantaneous_sending_rate) const;
-  DataRate GetTcpFairnessBandwidthUpperBound() const;
-  void CalculateTcpFairnessBandwidthUpperBound();
+  DataRate GetInstantUpperBound() const;
+  void CalculateInstantUpperBound();
 
   void CalculateTemporalWeights();
   void NewtonsMethodUpdate(ChannelParameters& channel_parameters) const;
@@ -133,8 +135,9 @@ class LossBasedBweV2 {
   std::vector<Observation> observations_;
   PartialObservation partial_observation_;
   Timestamp last_send_time_most_recent_observation_ = Timestamp::PlusInfinity();
-  absl::optional<DataRate> cached_tcp_fairness_limit_;
-  std::vector<double> tcp_fairness_temporal_weights_;
+  Timestamp last_time_estimate_reduced_ = Timestamp::MinusInfinity();
+  absl::optional<DataRate> cached_instant_upper_bound_;
+  std::vector<double> instant_upper_bound_temporal_weights_;
   std::vector<double> temporal_weights_;
 };
 

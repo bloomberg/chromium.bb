@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "ash/accessibility/magnifier/docked_magnifier_controller.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/capture_mode/recording_overlay_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/shell.h"
@@ -45,14 +47,13 @@ namespace {
 // events that are too frequent will be throttled. We use the frame duration as
 // the minimum delay between any two successive such events that we use to
 // update the cursor overlay.
-constexpr base::TimeDelta kCursorEventsThrottleDelay =
-    base::TimeDelta::FromHz(30);
+constexpr base::TimeDelta kCursorEventsThrottleDelay = base::Hertz(30);
 
 // Window resizes can be done on many intermediate steps. This delay is used to
 // throttle these resize events so that we send the final size of the window to
 // the recording service when it stabilizes.
 constexpr base::TimeDelta kWindowSizeChangeThrottleDelay =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 // Returns true if |window_1| and |window_2| are both windows that belong to
 // the same Desk. Note that it will return false for windows that don't belong
@@ -222,8 +223,12 @@ VideoRecordingWatcher::VideoRecordingWatcher(
   window_being_recorded_->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kAccessibility);
 
-  if (is_in_projector_mode_)
+  if (is_in_projector_mode_) {
+    recording_overlay_controller_ =
+        std::make_unique<RecordingOverlayController>(window_being_recorded_,
+                                                     GetOverlayWidgetBounds());
     ProjectorControllerImpl::Get()->OnRecordingStarted();
+  }
 }
 
 VideoRecordingWatcher::~VideoRecordingWatcher() {
@@ -245,6 +250,12 @@ VideoRecordingWatcher::~VideoRecordingWatcher() {
   window_being_recorded_->RemoveObserver(this);
 }
 
+void VideoRecordingWatcher::ToggleRecordingOverlayEnabled() {
+  DCHECK(is_in_projector_mode_);
+
+  recording_overlay_controller_->Toggle();
+}
+
 void VideoRecordingWatcher::OnWindowParentChanged(aura::Window* window,
                                                   aura::Window* parent) {
   DCHECK_EQ(window, window_being_recorded_);
@@ -264,6 +275,8 @@ void VideoRecordingWatcher::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
+  if (is_in_projector_mode_)
+    recording_overlay_controller_->SetBounds(GetOverlayWidgetBounds());
 
   if (recording_source_ != CaptureModeSource::kWindow)
     return;
@@ -373,6 +386,11 @@ void VideoRecordingWatcher::OnWindowActivated(ActivationReason reason,
 void VideoRecordingWatcher::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
+  // A change in the work area, could mean that the docked magnifier state has
+  // changed, therefore we must update the overlay widget's bounds if any.
+  if (is_in_projector_mode_ && (metrics & DISPLAY_METRIC_WORK_AREA))
+    recording_overlay_controller_->SetBounds(GetOverlayWidgetBounds());
+
   if (!(metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
                    DISPLAY_METRIC_DEVICE_SCALE_FACTOR))) {
     return;
@@ -701,6 +719,17 @@ void VideoRecordingWatcher::OnWindowSizeChangeThrottleTimerFiring() {
 
   controller_->OnRecordedWindowSizeChanged(
       window_being_recorded_->bounds().size());
+}
+
+gfx::Rect VideoRecordingWatcher::GetOverlayWidgetBounds() const {
+  gfx::Rect bounds = recording_source_ == CaptureModeSource::kRegion
+                         ? partial_region_bounds_
+                         : gfx::Rect(window_being_recorded_->bounds().size());
+  bounds.Subtract(Shell::Get()
+                      ->docked_magnifier_controller()
+                      ->GetTotalMagnifierBoundsForRoot(
+                          window_being_recorded_->GetRootWindow()));
+  return bounds;
 }
 
 }  // namespace ash

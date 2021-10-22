@@ -69,8 +69,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     ExposureContext *s = ctx->priv;
 
     s->scale = 1.f / (exp2f(-s->exposure) - s->black);
-    ctx->internal->execute(ctx, s->do_slice, frame, NULL,
-                           FFMIN(frame->height, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, s->do_slice, frame, NULL,
+                      FFMIN(frame->height, ff_filter_get_nb_threads(ctx)));
 
     return ff_filter_frame(ctx->outputs[0], frame);
 }
@@ -82,13 +82,7 @@ static av_cold int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *formats = NULL;
-
-    formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 static av_cold int config_input(AVFilterLink *inlink)
@@ -105,11 +99,10 @@ static const AVFilterPad exposure_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
-        .needs_writable = 1,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame   = filter_frame,
         .config_props   = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad exposure_outputs[] = {
@@ -117,7 +110,6 @@ static const AVFilterPad exposure_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(ExposureContext, x)
@@ -137,8 +129,8 @@ const AVFilter ff_vf_exposure = {
     .priv_size     = sizeof(ExposureContext),
     .priv_class    = &exposure_class,
     .query_formats = query_formats,
-    .inputs        = exposure_inputs,
-    .outputs       = exposure_outputs,
+    FILTER_INPUTS(exposure_inputs),
+    FILTER_OUTPUTS(exposure_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

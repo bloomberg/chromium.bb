@@ -24,7 +24,11 @@
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-persistent-handle.h"
+
+namespace v8 {
+class UnboundScript;
+}  // namespace v8
 
 namespace auction_worklet {
 
@@ -78,6 +82,9 @@ class BidderWorklet : public mojom::BidderWorklet {
                  double browser_signal_bid,
                  ReportWinCallback callback) override;
 
+  void ConnectDevToolsAgent(
+      mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) override;
+
  private:
   // Portion of BidderWorklet that deals with V8 execution, and therefore lives
   // on the v8 thread --- everything except the constructor must be run there.
@@ -105,6 +112,9 @@ class BidderWorklet : public mojom::BidderWorklet {
                    ReportWinCallback callback);
 
     void GenerateBid();
+
+    void ConnectDevToolsAgent(
+        mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent);
 
    private:
     friend class base::DeleteHelper<V8State>;

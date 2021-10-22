@@ -346,6 +346,25 @@ export let NetworkStateObserverReceiver =
 export let NetworkGuidInfo;
 
 /**
+ * Type alias for NetworkTypeProperties.
+ * @typedef {ash.diagnostics.mojom.NetworkTypeProperties}
+ */
+export let NetworkTypeProperties = ash.diagnostics.mojom.NetworkTypeProperties;
+
+/**
+ * Type alias for AuthenticationType.
+ * @typedef {ash.diagnostics.mojom.AuthenticationType}
+ */
+export let AuthenticationType = ash.diagnostics.mojom.AuthenticationType;
+
+/**
+ * Type alias for EthernetStateProperties.
+ * @typedef {ash.diagnostics.mojom.EthernetStateProperties}
+ */
+export let EthernetStateProperties =
+    ash.diagnostics.mojom.EthernetStateProperties;
+
+/**
  * Type alias for WiFiStateProperties.
  * @typedef {ash.diagnostics.mojom.WiFiStateProperties}
  */
@@ -389,6 +408,23 @@ export const ChannelBand = {
  * }}
  */
 export let ChannelProperties;
+
+/**
+ * @typedef {{
+ *   routine: !RoutineType,
+ *   blocking: boolean,
+ * }}
+ */
+export let RoutineProperties;
+
+/**
+ * @typedef {{
+ *   header: string,
+ *   linkText: string,
+ *   url: string,
+ * }}
+ */
+export let TroubleshootingInfo;
 
 /**
  * Type alias for ConnectionType.

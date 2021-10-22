@@ -9,14 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_DSP_MATHUTILS_H_
-#define AOM_DSP_MATHUTILS_H_
+#ifndef AOM_AOM_DSP_MATHUTILS_H_
+#define AOM_AOM_DSP_MATHUTILS_H_
 
-#include <memory.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <math.h>
+#include <string.h>
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
@@ -88,7 +86,7 @@ static INLINE int least_squares(int n, double *A, int rows, int stride,
     for (k = 0; k < rows; ++k) Atb[i] += A[k * stride + i] * b[k];
   }
   int ret = linsolve(n, AtA, n, Atb, x);
-  if (scratch_) aom_free(scratch_);
+  aom_free(scratch_);
   return ret;
 }
 
@@ -359,4 +357,4 @@ static INLINE int SVD(double *U, double *W, double *V, double *matx, int M,
   return 0;
 }
 
-#endif  // AOM_DSP_MATHUTILS_H_
+#endif  // AOM_AOM_DSP_MATHUTILS_H_

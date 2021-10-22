@@ -24,16 +24,17 @@ namespace ash {
 
 namespace {
 
-constexpr base::TimeDelta kClearPasswordAfterDelay =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kClearPasswordAfterDelay = base::Seconds(30);
 
-constexpr base::TimeDelta kHidePasswordAfterDelay =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kHidePasswordAfterDelay = base::Seconds(5);
 
-constexpr base::TimeDelta kLeftIconDisplayTime =
-    base::TimeDelta::FromSeconds(4);
+constexpr base::TimeDelta kLeftIconDisplayTime = base::Seconds(4);
 
 class LoginPasswordViewTest : public LoginTestBase {
+ public:
+  LoginPasswordViewTest(const LoginPasswordViewTest&) = delete;
+  LoginPasswordViewTest& operator=(const LoginPasswordViewTest&) = delete;
+
  protected:
   LoginPasswordViewTest() = default;
   ~LoginPasswordViewTest() override = default;
@@ -70,9 +71,6 @@ class LoginPasswordViewTest : public LoginTestBase {
   bool is_password_field_empty_ = true;
   bool easy_unlock_icon_hovered_called_ = false;
   bool easy_unlock_icon_tapped_called_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginPasswordViewTest);
 };
 
 // For tests with the Smart Lock UI revamp feature enabled. Enables the flag

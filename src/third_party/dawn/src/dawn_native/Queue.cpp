@@ -24,6 +24,7 @@
 #include "dawn_native/Device.h"
 #include "dawn_native/DynamicUploader.h"
 #include "dawn_native/ExternalTexture.h"
+#include "dawn_native/ObjectType_autogen.h"
 #include "dawn_native/QuerySet.h"
 #include "dawn_native/RenderPassEncoder.h"
 #include "dawn_native/RenderPipeline.h"
@@ -161,10 +162,11 @@ namespace dawn_native {
     QueueBase::TaskInFlight::~TaskInFlight() {
     }
 
-    QueueBase::QueueBase(DeviceBase* device) : ObjectBase(device, kLabelNotImplemented) {
+    QueueBase::QueueBase(DeviceBase* device) : ApiObjectBase(device, kLabelNotImplemented) {
     }
 
-    QueueBase::QueueBase(DeviceBase* device, ObjectBase::ErrorTag tag) : ObjectBase(device, tag) {
+    QueueBase::QueueBase(DeviceBase* device, ObjectBase::ErrorTag tag)
+        : ApiObjectBase(device, tag) {
     }
 
     QueueBase::~QueueBase() {
@@ -174,6 +176,10 @@ namespace dawn_native {
     // static
     QueueBase* QueueBase::MakeError(DeviceBase* device) {
         return new ErrorQueue(device);
+    }
+
+    ObjectType QueueBase::GetType() const {
+        return ObjectType::Queue;
     }
 
     void QueueBase::APISubmit(uint32_t commandCount, CommandBufferBase* const* commands) {
@@ -244,7 +250,10 @@ namespace dawn_native {
                                       uint64_t bufferOffset,
                                       const void* data,
                                       size_t size) {
-        DAWN_TRY(ValidateWriteBuffer(buffer, bufferOffset, size));
+        DAWN_TRY(GetDevice()->ValidateIsAlive());
+        DAWN_TRY(GetDevice()->ValidateObject(this));
+        DAWN_TRY(ValidateWriteBuffer(GetDevice(), buffer, bufferOffset, size));
+        DAWN_TRY(buffer->ValidateCanUseOnQueueNow());
         return WriteBufferImpl(buffer, bufferOffset, data, size);
     }
 
@@ -357,8 +366,10 @@ namespace dawn_native {
         const Extent3D* copySize,
         const CopyTextureForBrowserOptions* options) {
         if (GetDevice()->IsValidationEnabled()) {
-            DAWN_TRY(
-                ValidateCopyTextureForBrowser(GetDevice(), source, destination, copySize, options));
+            DAWN_TRY_CONTEXT(
+                ValidateCopyTextureForBrowser(GetDevice(), source, destination, copySize, options),
+                "validating CopyTextureForBrowser from %s to %s", source->texture,
+                destination->texture);
         }
 
         return DoCopyTextureForBrowser(GetDevice(), source, destination, copySize, options);
@@ -426,34 +437,6 @@ namespace dawn_native {
         if (signalValue != 0) {
             return DAWN_VALIDATION_ERROR("SignalValue must currently be 0.");
         }
-
-        return {};
-    }
-
-    MaybeError QueueBase::ValidateWriteBuffer(const BufferBase* buffer,
-                                              uint64_t bufferOffset,
-                                              size_t size) const {
-        DAWN_TRY(GetDevice()->ValidateIsAlive());
-        DAWN_TRY(GetDevice()->ValidateObject(this));
-        DAWN_TRY(GetDevice()->ValidateObject(buffer));
-
-        if (bufferOffset % 4 != 0) {
-            return DAWN_VALIDATION_ERROR("Queue::WriteBuffer bufferOffset must be a multiple of 4");
-        }
-        if (size % 4 != 0) {
-            return DAWN_VALIDATION_ERROR("Queue::WriteBuffer size must be a multiple of 4");
-        }
-
-        uint64_t bufferSize = buffer->GetSize();
-        if (bufferOffset > bufferSize || size > (bufferSize - bufferOffset)) {
-            return DAWN_VALIDATION_ERROR("Queue::WriteBuffer out of range");
-        }
-
-        if (!(buffer->GetUsage() & wgpu::BufferUsage::CopyDst)) {
-            return DAWN_VALIDATION_ERROR("Buffer needs the CopyDst usage bit");
-        }
-
-        DAWN_TRY(buffer->ValidateCanUseOnQueueNow());
 
         return {};
     }

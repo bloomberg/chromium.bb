@@ -145,7 +145,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   {
     // Get some statistics on the size of the impulse response.
     UMA_HISTOGRAM_LONG_TIMES("WebAudio.ConvolverNode.ImpulseResponseLength",
-                             base::TimeDelta::FromSecondsD(buffer->duration()));
+                             base::Seconds(buffer->duration()));
   }
 
   // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not
@@ -239,7 +239,7 @@ unsigned ConvolverHandler::ComputeNumberOfOutputChannels(
   // The number of output channels for a Convolver must be one or two.
   // And can only be one if there's a mono source and a mono response
   // buffer.
-  return clampTo(std::max(input_channels, response_channels), 1, 2);
+  return ClampTo(std::max(input_channels, response_channels), 1, 2);
 }
 
 void ConvolverHandler::SetChannelCount(unsigned channel_count,

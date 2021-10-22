@@ -91,9 +91,8 @@ class EduCoexistenceLoginHandlerBrowserTest
 
     handler->OnOAuthAccessTokensFetched(
         GoogleServiceAuthError(state),
-        signin::AccessTokenInfo(
-            "access_token", base::Time::Now() + base::TimeDelta::FromMinutes(1),
-            ""));
+        signin::AccessTokenInfo("access_token",
+                                base::Time::Now() + base::Minutes(1), ""));
   }
 
   void ExpectEduCoexistenceState(
@@ -117,9 +116,9 @@ class EduCoexistenceLoginHandlerBrowserTest
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  chromeos::LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
-      embedded_test_server(), this};
+  LoggedInUserMixin logged_in_user_mixin_{&mixin_host_,
+                                          LoggedInUserMixin::LogInType::kChild,
+                                          embedded_test_server(), this};
 
   base::HistogramTester histograms_;
 

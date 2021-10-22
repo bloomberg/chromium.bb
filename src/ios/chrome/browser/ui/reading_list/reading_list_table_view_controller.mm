@@ -119,8 +119,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     BOOL editingWithToolbarButtons;
 // Whether the table view is being edited by the swipe-to-delete button.
 @property(nonatomic, readonly, getter=isEditingWithSwipe) BOOL editingWithSwipe;
-// Whether to remove empty sections after editing is reset to NO.
-@property(nonatomic, assign) BOOL needsSectionCleanupAfterEditing;
 // Handler for URL drag interactions.
 @property(nonatomic, strong) TableViewURLDragDropHandler* dragDropHandler;
 // The toggle setting of showing the Reading List Messages prompt.
@@ -131,9 +129,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 @dynamic tableViewModel;
 
 - (instancetype)init {
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? ChromeTableViewStyle()
-                               : UITableViewStylePlain;
+  UITableViewStyle style = ChromeTableViewStyle();
   self = [super initWithStyle:style];
   if (self) {
     _toolbarManager = [[ReadingListToolbarButtonManager alloc] init];
@@ -170,10 +166,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   if (!editing) {
     self.markConfirmationSheet = nil;
     self.editingWithToolbarButtons = NO;
-    if (self.needsSectionCleanupAfterEditing) {
-      [self removeEmptySections];
-      self.needsSectionCleanupAfterEditing = NO;
-    }
+    [self removeEmptySections];
   }
   [self updateToolbarItems];
 }
@@ -314,11 +307,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   DCHECK_EQ(editingStyle, UITableViewCellEditingStyleDelete);
   base::RecordAction(base::UserMetricsAction("MobileReadingListDeleteEntry"));
 
-  // On IOS 12, the UIKit animation for the swipe-to-delete gesture throws an
-  // exception if the section of the deleted item is removed before the
-  // animation is finished. This is still needed on IOS 13 to prevent displaying
-  // Cancel and Mark all buttons, see crbug.com/1022763.
-  self.needsSectionCleanupAfterEditing = YES;
   [self deleteItemsAtIndexPaths:@[ indexPath ]
                      endEditing:NO
             removeEmptySections:NO];

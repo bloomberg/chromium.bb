@@ -60,9 +60,9 @@
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/drag/drag.mojom.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom.h"
-#include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/display/display_util.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -110,12 +110,13 @@ class RenderWidgetHostProcess : public MockRenderProcessHost {
   explicit RenderWidgetHostProcess(BrowserContext* browser_context)
       : MockRenderProcessHost(browser_context) {
   }
+
+  RenderWidgetHostProcess(const RenderWidgetHostProcess&) = delete;
+  RenderWidgetHostProcess& operator=(const RenderWidgetHostProcess&) = delete;
+
   ~RenderWidgetHostProcess() override {}
 
   bool IsInitializedAndNotDead() override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostProcess);
 };
 
 // TestView --------------------------------------------------------------------
@@ -153,6 +154,9 @@ class TestView : public TestRenderWidgetHostView {
 
   void GetScreenInfo(display::ScreenInfo* screen_info) override {
     *screen_info = screen_info_;
+  }
+  display::ScreenInfos GetScreenInfos() override {
+    return display::ScreenInfos(screen_info_);
   }
 
   const WebTouchEvent& acked_event() const { return acked_event_; }
@@ -249,6 +253,12 @@ class TestView : public TestRenderWidgetHostView {
 class MockRenderViewHostDelegateView : public RenderViewHostDelegateView {
  public:
   MockRenderViewHostDelegateView() = default;
+
+  MockRenderViewHostDelegateView(const MockRenderViewHostDelegateView&) =
+      delete;
+  MockRenderViewHostDelegateView& operator=(
+      const MockRenderViewHostDelegateView&) = delete;
+
   ~MockRenderViewHostDelegateView() override = default;
 
   int start_dragging_count() const { return start_dragging_count_; }
@@ -265,8 +275,6 @@ class MockRenderViewHostDelegateView : public RenderViewHostDelegateView {
 
  private:
   int start_dragging_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MockRenderViewHostDelegateView);
 };
 
 // FakeRenderFrameMetadataObserver -----------------------------------------
@@ -283,6 +291,12 @@ class FakeRenderFrameMetadataObserver
       mojo::PendingReceiver<cc::mojom::RenderFrameMetadataObserver> receiver,
       mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserverClient>
           client_remote);
+
+  FakeRenderFrameMetadataObserver(const FakeRenderFrameMetadataObserver&) =
+      delete;
+  FakeRenderFrameMetadataObserver& operator=(
+      const FakeRenderFrameMetadataObserver&) = delete;
+
   ~FakeRenderFrameMetadataObserver() override {}
 
 #if defined(OS_ANDROID)
@@ -294,7 +308,6 @@ class FakeRenderFrameMetadataObserver
   mojo::PendingReceiver<cc::mojom::RenderFrameMetadataObserver> receiver_;
   mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserverClient>
       client_remote_;
-  DISALLOW_COPY_AND_ASSIGN(FakeRenderFrameMetadataObserver);
 };
 
 FakeRenderFrameMetadataObserver::FakeRenderFrameMetadataObserver(
@@ -496,6 +509,10 @@ class MockRenderWidgetHostOwnerDelegate
 class RenderWidgetHostTest : public testing::Test {
  public:
   RenderWidgetHostTest() : last_simulated_event_time_(ui::EventTimeForNow()) {}
+
+  RenderWidgetHostTest(const RenderWidgetHostTest&) = delete;
+  RenderWidgetHostTest& operator=(const RenderWidgetHostTest&) = delete;
+
   ~RenderWidgetHostTest() override = default;
 
   bool KeyPressEventCallback(const NativeWebKeyboardEvent& /* event */) {
@@ -797,8 +814,6 @@ class RenderWidgetHostTest : public testing::Test {
 
  private:
   blink::SyntheticWebTouchEvent touch_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostTest);
 };
 
 // RenderWidgetHostWithSourceTest ----------------------------------------------
@@ -1661,8 +1676,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartInputEventAckTimeout) {
   host_->StartInputEventAckTimeout();
 
   // Wait long enough for first timeout and see if it fired.
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1676,21 +1690,18 @@ TEST_F(RenderWidgetHostTest, InputEventAckTimeoutDisabledForInputWhenHidden) {
 
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::Type::kMouseMove, 10, 10, 0, false);
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
 
   // Showing the widget should restore the timeout, as the events have
   // not yet been ack'ed.
   host_->WasShown({} /* record_tab_switch_time_request */);
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 
@@ -1713,8 +1724,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
       blink::mojom::InputEventResultState::kConsumed);
 
   // Wait long enough for second timeout and see if it fired.
-  task_environment_.FastForwardBy(kHungRendererDelay +
-                                  base::TimeDelta::FromMilliseconds(10));
+  task_environment_.FastForwardBy(kHungRendererDelay + base::Milliseconds(10));
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
 }
 

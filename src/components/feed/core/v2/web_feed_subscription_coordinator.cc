@@ -170,8 +170,8 @@ class WebFeedSubscriptionModel {
   void UpdateSubscribedFeeds(
       std::vector<feedstore::WebFeedInfo> subscribed_web_feeds) {
     feedstore::SubscribedWebFeeds store_index;
-    store_index.set_update_time_millis(
-        feedstore::ToTimestampMillis(base::Time::Now()));
+    update_time_millis_ = feedstore::ToTimestampMillis(base::Time::Now());
+    store_index.set_update_time_millis(update_time_millis_);
     for (const feedstore::WebFeedInfo& info : subscribed_web_feeds) {
       *store_index.add_feeds() = info;
     }
@@ -637,7 +637,7 @@ void WebFeedSubscriptionCoordinator::FetchRecommendedWebFeedsIfStale() {
   base::TimeDelta staleness =
       base::Time::Now() - index_.GetRecommendedFeedsUpdateTime();
   if (staleness > GetFeedConfig().recommended_feeds_staleness_threshold ||
-      staleness < -base::TimeDelta::FromHours(1)) {
+      staleness < -base::Hours(1)) {
     RefreshRecommendedFeeds();
   }
 }
@@ -682,7 +682,7 @@ void WebFeedSubscriptionCoordinator::FetchSubscribedWebFeedsIfStale(
   base::TimeDelta staleness =
       base::Time::Now() - index_.GetSubscribedFeedsUpdateTime();
   if (staleness > GetFeedConfig().subscribed_feeds_staleness_threshold ||
-      staleness < -base::TimeDelta::FromHours(1)) {
+      staleness < -base::Hours(1)) {
     fetching_subscribed_web_feeds_because_stale_ = true;
     auto callback_adaptor = [](base::OnceClosure callback, RefreshResult) {
       std::move(callback).Run();

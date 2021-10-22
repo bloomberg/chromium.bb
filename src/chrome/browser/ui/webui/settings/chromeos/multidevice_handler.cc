@@ -8,13 +8,15 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/values.h"
+#include "chrome/browser/ash/android_sms/android_sms_pairing_state_tracker_impl.h"
+#include "chrome/browser/ash/android_sms/android_sms_urls.h"
 #include "chrome/browser/ash/login/quick_unlock/auth_token.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_pairing_state_tracker_impl.h"
-#include "chrome/browser/chromeos/android_sms/android_sms_urls.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/nearby_share_feature_status.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
@@ -39,6 +41,8 @@ const char kPageContentDataBetterTogetherStateKey[] = "betterTogetherState";
 const char kPageContentDataInstantTetheringStateKey[] = "instantTetheringState";
 const char kPageContentDataMessagesStateKey[] = "messagesState";
 const char kPageContentDataPhoneHubStateKey[] = "phoneHubState";
+const char kPageContentDataPhoneHubCameraRollStateKey[] =
+    "phoneHubCameraRollState";
 const char kPageContentDataPhoneHubNotificationsStateKey[] =
     "phoneHubNotificationsState";
 const char kPageContentDataPhoneHubTaskContinuationStateKey[] =
@@ -50,6 +54,7 @@ const char kNotificationAccessStatus[] = "notificationAccessStatus";
 const char kIsAndroidSmsPairingComplete[] = "isAndroidSmsPairingComplete";
 const char kIsNearbyShareDisallowedByPolicy[] =
     "isNearbyShareDisallowedByPolicy";
+const char kIsPhoneHubAppsAccessGranted[] = "isPhoneHubAppsAccessGranted";
 
 constexpr char kAndroidSmsInfoOriginKey[] = "origin";
 constexpr char kAndroidSmsInfoEnabledKey[] = "enabled";
@@ -60,6 +65,19 @@ void OnRetrySetHostNowResult(bool success) {
 
   PA_LOG(WARNING) << "OnRetrySetHostNowResult(): Attempt to retry setting the "
                   << "host device failed.";
+}
+
+void RecordDoesMultideviceSetupClientExist(
+    PrefService* prefs,
+    multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client) {
+  // Only log if MultiDeviceFeatures are allowed because if the MultiDevice
+  // suite is prohibited, we expect the client to be null. We expect this metric
+  // to always emit true.
+  if (multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(prefs)) {
+    base::UmaHistogramBoolean(
+        "MultiDevice.BetterTogetherSuite.DoesMultiDeviceSetupClientExist",
+        multidevice_setup_client != nullptr);
+  }
 }
 
 }  // namespace
@@ -77,6 +95,7 @@ MultideviceHandler::MultideviceHandler(
       android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       android_sms_app_manager_(android_sms_app_manager) {
   pref_change_registrar_.Init(prefs_);
+  RecordDoesMultideviceSetupClientExist(prefs_, multidevice_setup_client_);
 }
 
 MultideviceHandler::~MultideviceHandler() {}
@@ -209,6 +228,9 @@ void MultideviceHandler::OnHostStatusChanged(
 void MultideviceHandler::OnFeatureStatesChanged(
     const multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
         feature_states_map) {
+  PA_LOG(INFO) << "Feature states have changed: "
+               << multidevice_setup::FeatureStatesMapToString(
+                      feature_states_map);
   UpdatePageContent();
   NotifyAndroidSmsInfoChange();
 }
@@ -235,8 +257,8 @@ void MultideviceHandler::UpdatePageContent() {
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
   DCHECK(page_content_dictionary);
-  PA_LOG(VERBOSE) << "Updating MultiDevice settings page content with: "
-                  << *page_content_dictionary << ".";
+  PA_LOG(INFO) << "Updating MultiDevice settings page content with: "
+               << *page_content_dictionary << ".";
   FireWebUIListener("settings.updateMultidevicePageContentData",
                     *page_content_dictionary);
 }
@@ -264,8 +286,8 @@ void MultideviceHandler::HandleGetPageContent(const base::ListValue* args) {
   std::unique_ptr<base::DictionaryValue> page_content_dictionary =
       GeneratePageContentDataDictionary();
   DCHECK(page_content_dictionary);
-  PA_LOG(VERBOSE) << "Responding to getPageContentData() request with: "
-                  << *page_content_dictionary << ".";
+  PA_LOG(INFO) << "Responding to getPageContentData() request with: "
+               << *page_content_dictionary << ".";
 
   ResolveJavascriptCallback(base::Value(callback_id), *page_content_dictionary);
 }
@@ -468,6 +490,11 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
       static_cast<int32_t>(
           feature_states[multidevice_setup::mojom::Feature::kPhoneHub]));
   page_content_dictionary->SetInteger(
+      kPageContentDataPhoneHubCameraRollStateKey,
+      static_cast<int32_t>(
+          feature_states
+              [multidevice_setup::mojom::Feature::kPhoneHubCameraRoll]));
+  page_content_dictionary->SetInteger(
       kPageContentDataPhoneHubNotificationsStateKey,
       static_cast<int32_t>(
           feature_states
@@ -504,20 +531,15 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
     access_status = notification_access_manager_->GetAccessStatus();
   page_content_dictionary->SetInteger(kNotificationAccessStatus,
                                       static_cast<int32_t>(access_status));
+  // TODO: Temporary solution, set to true means no need to process apps setup
+  // flow.
+  page_content_dictionary->SetBoolean(kIsPhoneHubAppsAccessGranted, true);
 
-  // A managed pref is set by an admin policy, and because managed prefs
-  // have the highest priority, this also indicates whether the pref is
-  // actually being controlled by the policy setting. We only care when
-  // Nearby Share is disallowed by policy because the feature needs to be
-  // off and unchangeable by the user. If the Nearby Share is allowed by
-  // policy, the user can choose whether to enable or disable.
   bool is_nearby_share_disallowed_by_policy =
       NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
-          Profile::FromWebUI(web_ui()))
-          ? !prefs_->GetBoolean(::prefs::kNearbySharingEnabledPrefName) &&
-                prefs_->IsManagedPreference(
-                    ::prefs::kNearbySharingEnabledPrefName)
-          : false;
+          Profile::FromWebUI(web_ui())) &&
+      (GetNearbyShareEnabledState(prefs_) ==
+       NearbyShareEnabledState::kDisallowedByPolicy);
   page_content_dictionary->SetBoolean(kIsNearbyShareDisallowedByPolicy,
                                       is_nearby_share_disallowed_by_policy);
 
@@ -560,6 +582,9 @@ MultideviceHandler::GetFeatureStatesMap() {
   if (multidevice_setup_client_)
     return multidevice_setup_client_->GetFeatureStates();
 
+  PA_LOG(WARNING)
+      << "MultiDevice setup client missing. Responding to "
+         "GetFeatureStatesMap() request by generating default feature map.";
   return multidevice_setup::MultiDeviceSetupClient::
       GenerateDefaultFeatureStatesMap();
 }

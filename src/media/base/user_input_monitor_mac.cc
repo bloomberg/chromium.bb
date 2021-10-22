@@ -18,11 +18,15 @@ namespace {
 // Update key press count in shared memory twice as frequent as
 // AudioInputController::AudioCallback::OnData() callback for WebRTC.
 constexpr base::TimeDelta kUpdateKeyPressCountIntervalMs =
-    base::TimeDelta::FromMilliseconds(5);
+    base::Milliseconds(5);
 
 class UserInputMonitorMac : public UserInputMonitorBase {
  public:
   UserInputMonitorMac();
+
+  UserInputMonitorMac(const UserInputMonitorMac&) = delete;
+  UserInputMonitorMac& operator=(const UserInputMonitorMac&) = delete;
+
   ~UserInputMonitorMac() override;
 
   uint32_t GetKeyPressCount() const override;
@@ -40,8 +44,6 @@ class UserInputMonitorMac : public UserInputMonitorBase {
 
   // Timer for updating key press count in |key_press_count_mapping_|.
   base::RepeatingTimer key_press_count_timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserInputMonitorMac);
 };
 
 UserInputMonitorMac::UserInputMonitorMac() {}

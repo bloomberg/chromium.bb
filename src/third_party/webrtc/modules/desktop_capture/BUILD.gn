@@ -77,9 +77,6 @@ if (rtc_include_tests) {
         "window_finder_unittest.cc",
       ]
       public_configs = [ ":x11_config" ]
-      if (is_win) {
-        deps += [ "../../rtc_base:win32" ]
-      }
     }
   }
 
@@ -225,6 +222,23 @@ if (is_linux || is_chromeos) {
       }
     }
 
+    pkg_config("gbm") {
+      packages = [ "gbm" ]
+    }
+    pkg_config("egl") {
+      packages = [ "egl" ]
+    }
+    pkg_config("epoxy") {
+      packages = [ "epoxy" ]
+      ignore_libs = true
+    }
+    pkg_config("libdrm") {
+      packages = [ "libdrm" ]
+      if (!rtc_link_pipewire) {
+        ignore_libs = true
+      }
+    }
+
     if (!rtc_link_pipewire) {
       # When libpipewire is not directly linked, use stubs to allow for dlopening of
       # the binary.
@@ -232,6 +246,7 @@ if (is_linux || is_chromeos) {
         configs = [
           "../../:common_config",
           ":pipewire",
+          ":libdrm",
         ]
         deps = [ "../../rtc_base" ]
         extra_header = "linux/pipewire_stub_header.fragment"
@@ -239,7 +254,10 @@ if (is_linux || is_chromeos) {
         logging_include = "rtc_base/logging.h"
         output_name = "linux/pipewire_stubs"
         path_from_source = "modules/desktop_capture/linux"
-        sigs = [ "linux/pipewire03.sigs" ]
+        sigs = [
+          "linux/pipewire.sigs",
+          "linux/drm.sigs",
+        ]
       }
     }
 
@@ -515,7 +533,10 @@ rtc_library("desktop_capture_generic") {
       "d3d11.lib",
       "dxgi.lib",
     ]
-    deps += [ "../../rtc_base:win32" ]
+    deps += [
+      "../../rtc_base:rtc_base_approved",
+      "../../rtc_base:win32",
+    ]
   }
 
   absl_deps = [
@@ -542,17 +563,25 @@ rtc_library("desktop_capture_generic") {
     sources += [
       "linux/base_capturer_pipewire.cc",
       "linux/base_capturer_pipewire.h",
+      "linux/egl_dmabuf.cc",
+      "linux/egl_dmabuf.h",
     ]
 
     configs += [
       ":pipewire_config",
       ":gio",
       ":pipewire",
+      ":gbm",
+      ":egl",
+      ":epoxy",
+      ":libdrm",
     ]
 
     if (!rtc_link_pipewire) {
       deps += [ ":pipewire_stubs" ]
     }
+
+    deps += [ "../../rtc_base:sanitizer" ]
   }
 
   if (rtc_enable_win_wgc) {

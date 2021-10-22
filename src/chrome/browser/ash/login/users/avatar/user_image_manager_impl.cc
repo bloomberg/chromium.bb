@@ -142,6 +142,10 @@ class UserImageManagerImpl::Job {
  public:
   // The `Job` will update the user object corresponding to `parent`.
   explicit Job(UserImageManagerImpl* parent);
+
+  Job(const Job&) = delete;
+  Job& operator=(const Job&) = delete;
+
   ~Job();
 
   // Loads the image at `image_path` or one of the default images,
@@ -225,8 +229,6 @@ class UserImageManagerImpl::Job {
   base::FilePath image_path_;
 
   base::WeakPtrFactory<Job> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 UserImageManagerImpl::Job::Job(UserImageManagerImpl* parent)
@@ -590,12 +592,12 @@ void UserImageManagerImpl::UserProfileCreated() {
         FROM_HERE,
         g_ignore_profile_data_download_delay_
             ? base::TimeDelta()
-            : base::TimeDelta::FromSeconds(kProfileDataDownloadDelaySec),
+            : base::Seconds(kProfileDataDownloadDelaySec),
         base::BindOnce(&UserImageManagerImpl::DownloadProfileData,
                        base::Unretained(this)));
     // Schedule periodic refreshes of the profile data.
     profile_download_periodic_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
+        FROM_HERE, base::Seconds(kProfileRefreshIntervalSec),
         base::BindRepeating(&UserImageManagerImpl::DownloadProfileData,
                             base::Unretained(this)));
   } else {
@@ -797,8 +799,7 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
   if (reason == ProfileDownloaderDelegate::NETWORK_ERROR) {
     // Retry download after a delay if a network error occurred.
     profile_download_one_shot_timer_.Start(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kProfileDataDownloadRetryIntervalSec),
+        FROM_HERE, base::Seconds(kProfileDataDownloadRetryIntervalSec),
         base::BindOnce(&UserImageManagerImpl::DownloadProfileData,
                        base::Unretained(this)));
   }

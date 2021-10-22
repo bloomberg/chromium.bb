@@ -64,6 +64,10 @@ class ASH_EXPORT UnifiedMessageCenterView
   UnifiedMessageCenterView(UnifiedSystemTrayView* parent,
                            UnifiedSystemTrayModel* model,
                            UnifiedMessageCenterBubble* bubble);
+
+  UnifiedMessageCenterView(const UnifiedMessageCenterView&) = delete;
+  UnifiedMessageCenterView& operator=(const UnifiedMessageCenterView&) = delete;
+
   ~UnifiedMessageCenterView() override;
 
   // Initializes the `UnifiedMessageListView` with existing notifications.
@@ -177,6 +181,8 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Position from the bottom of scroll contents in dip.
   int last_scroll_position_from_bottom_;
 
+  const bool is_notifications_refresh_enabled_;
+
   // The height available to the message center view. This is the remaining
   // height of the system tray excluding the system menu (which can be expanded
   // or collapsed).
@@ -193,8 +199,6 @@ class ASH_EXPORT UnifiedMessageCenterView
   const std::unique_ptr<views::FocusSearch> focus_search_;
 
   views::FocusManager* focus_manager_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterView);
 };
 
 }  // namespace ash

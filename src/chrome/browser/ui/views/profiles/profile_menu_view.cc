@@ -62,9 +62,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
@@ -191,18 +192,17 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
   }
 
   absl::optional<AvatarSyncErrorType> error = GetAvatarSyncErrorType(profile);
+  const auto* color_provider = GetColorProvider();
   if (!error) {
-      return ColoredImageForMenu(
-          kSyncCircleIcon, GetNativeTheme()->GetSystemColor(
-                               ui::NativeTheme::kColorId_AlertSeverityLow));
+    return ColoredImageForMenu(
+        kSyncCircleIcon, color_provider->GetColor(ui::kColorAlertLowSeverity));
   }
 
-  ui::NativeTheme::ColorId color_id =
-      error == AvatarSyncErrorType::kAuthError
-          ? ui::NativeTheme::kColorId_ProminentButtonColor
-          : ui::NativeTheme::kColorId_AlertSeverityHigh;
+  ui::ColorId color_id = error == AvatarSyncErrorType::kAuthError
+                             ? ui::kColorButtonBackgroundProminent
+                             : ui::kColorAlertHighSeverity;
   return ColoredImageForMenu(kSyncPausedCircleIcon,
-                             GetNativeTheme()->GetSystemColor(color_id));
+                             color_provider->GetColor(color_id));
 }
 
 std::u16string ProfileMenuView::GetAccessibleWindowTitle() const {
@@ -471,8 +471,8 @@ void ProfileMenuView::BuildGuestIdentity() {
         IDS_GUEST_WINDOW_COUNT_MESSAGE, guest_window_count);
   }
 
-  ui::ThemedVectorIcon header_art_icon(
-      &kGuestMenuArtIcon, ui::NativeTheme::kColorId_AvatarHeaderArt);
+  ui::ThemedVectorIcon header_art_icon(&kGuestMenuArtIcon,
+                                       ui::kColorAvatarHeaderArt);
   SetProfileIdentityInfo(
       /*profile_name=*/std::u16string(),
       /*background_color=*/SK_ColorTRANSPARENT,
@@ -517,8 +517,8 @@ void ProfileMenuView::BuildSyncInfo() {
         GetAvatarSyncErrorDescription(*error, is_sync_feature_enabled),
         GetSyncErrorButtonText(*error),
         error == AvatarSyncErrorType::kAuthError
-            ? ui::NativeTheme::kColorId_SyncInfoContainerPaused
-            : ui::NativeTheme::kColorId_SyncInfoContainerError,
+            ? ui::kColorSyncInfoBackgroundPaused
+            : ui::kColorSyncInfoBackgroundError,
         base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
                             base::Unretained(this), *error),
         /*show_sync_badge=*/is_sync_feature_enabled);
@@ -544,7 +544,7 @@ void ProfileMenuView::BuildSyncInfo() {
     BuildSyncInfoWithCallToAction(
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_NOT_SYNCING_TITLE),
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
-        ui::NativeTheme::kColorId_SyncInfoContainerNoPrimaryAccount,
+        ui::kColorSyncInfoBackground,
         base::BindRepeating(&ProfileMenuView::OnSigninAccountButtonClicked,
                             base::Unretained(this), account_info),
         /*show_sync_badge=*/true);
@@ -556,7 +556,7 @@ void ProfileMenuView::BuildSyncInfo() {
     BuildSyncInfoWithCallToAction(
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PROMO),
         l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SIGNIN_BUTTON),
-        ui::NativeTheme::kColorId_SyncInfoContainerNoPrimaryAccount,
+        ui::kColorSyncInfoBackground,
         base::BindRepeating(&ProfileMenuView::OnSigninButtonClicked,
                             base::Unretained(this)),
         /*show_sync_badge=*/false);

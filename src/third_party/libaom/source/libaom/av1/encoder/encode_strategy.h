@@ -62,10 +62,11 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
 // Set individual buffer update flags based on frame reference type.
 // force_refresh_all is used when we have a KEY_FRAME or S_FRAME.  It forces all
 // refresh_*_frame flags to be set, because we refresh all buffers in this case.
-void av1_configure_buffer_updates(
-    AV1_COMP *const cpi, RefreshFrameFlagsInfo *const refresh_frame_flags,
-    const FRAME_UPDATE_TYPE type, const REFBUF_STATE refbuf_state,
-    int force_refresh_all);
+void av1_configure_buffer_updates(AV1_COMP *const cpi,
+                                  RefreshFrameInfo *const refresh_frame,
+                                  const FRAME_UPDATE_TYPE type,
+                                  const REFBUF_STATE refbuf_state,
+                                  int force_refresh_all);
 
 int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
                                 const EncodeFrameParams *const frame_params,
@@ -79,7 +80,7 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
 
 int av1_get_refresh_ref_frame_map(int refresh_frame_flags);
 
-void av1_update_ref_frame_map(AV1_COMP *cpi,
+void av1_update_ref_frame_map(const AV1_COMP *cpi,
                               FRAME_UPDATE_TYPE frame_update_type,
                               REFBUF_STATE refbuf_state, int ref_map_index,
                               RefBufferStack *ref_buffer_stack);
@@ -98,11 +99,11 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
  */
 void av1_get_ref_frames(const RefBufferStack *ref_buffer_stack,
 #if CONFIG_FRAME_PARALLEL_ENCODE
-                        AV1_COMP *cpi,
                         RefFrameMapPair ref_frame_map_pairs[REF_FRAMES],
                         int cur_frame_disp,
 #if CONFIG_FRAME_PARALLEL_ENCODE_2
-                        int gf_index, int is_parallel_encode,
+                        const AV1_COMP *cpi, int gf_index,
+                        int is_parallel_encode,
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE_2
 #endif  // CONFIG_FRAME_PARALLEL_ENCODE
                         int remapped_ref_idx[REF_FRAMES]);
@@ -130,10 +131,10 @@ static AOM_INLINE int is_frame_droppable(
 
 static AOM_INLINE int get_current_frame_ref_type(const AV1_COMP *const cpi) {
   // We choose the reference "type" of this frame from the flags which indicate
-  // which reference frames will be refreshed by it.  More than one  of these
+  // which reference frames will be refreshed by it. More than one of these
   // flags may be set, so the order here implies an order of precedence. This is
   // just used to choose the primary_ref_frame (as the most recent reference
-  // buffer of the same reference-type as the current frame)
+  // buffer of the same reference-type as the current frame).
 
   switch (cpi->ppi->gf_group.layer_depth[cpi->gf_frame_index]) {
     case 0: return 0;

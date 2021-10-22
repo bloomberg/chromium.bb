@@ -48,6 +48,10 @@ class CallbackLogger {
         : result_(result),
           entry_list_(std::move(entry_list)),
           has_more_(has_more) {}
+
+    Event(const Event&) = delete;
+    Event& operator=(const Event&) = delete;
+
     virtual ~Event() {}
 
     base::File::Error result() { return result_; }
@@ -60,11 +64,13 @@ class CallbackLogger {
     base::File::Error result_;
     storage::AsyncFileUtil::EntryList entry_list_;
     bool has_more_;
-
-    DISALLOW_COPY_AND_ASSIGN(Event);
   };
 
   CallbackLogger() {}
+
+  CallbackLogger(const CallbackLogger&) = delete;
+  CallbackLogger& operator=(const CallbackLogger&) = delete;
+
   virtual ~CallbackLogger() {}
 
   void OnReadDirectory(base::File::Error result,
@@ -78,8 +84,6 @@ class CallbackLogger {
 
  private:
   std::vector<std::unique_ptr<Event>> events_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
 
 // Returns the request value as |result| in case of successful parse.

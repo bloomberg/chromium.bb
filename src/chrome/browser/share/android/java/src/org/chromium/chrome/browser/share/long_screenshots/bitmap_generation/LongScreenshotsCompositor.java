@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.share.long_screenshots.bitmap_generation;
 
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -27,7 +29,7 @@ public class LongScreenshotsCompositor {
     private PlayerCompositorDelegate mDelegate;
     private Callback<Integer> mCompositorCallback;
     private Size mContentSize;
-    private Size mScrollOffset;
+    private Point mScrollOffset;
 
     private static PlayerCompositorDelegate.Factory sCompositorDelegateFactory =
             new CompositorDelegateFactory();
@@ -54,7 +56,8 @@ public class LongScreenshotsCompositor {
     /**
      * Called when the compositor cannot be successfully initialized.
      */
-    private void onCompositorError(@CompositorStatus int status) {
+    @VisibleForTesting
+    protected void onCompositorError(@CompositorStatus int status) {
         mCompositorCallback.onResult(status);
     }
 
@@ -68,7 +71,8 @@ public class LongScreenshotsCompositor {
             int[] frameContentSize, int[] scrollOffsets, int[] subFramesCount,
             UnguessableToken[] subFrameGuids, int[] subFrameClipRects, long nativeAxTree) {
         mContentSize = getMainFrameValues(frameContentSize);
-        mScrollOffset = getMainFrameValues(scrollOffsets);
+        Size offsetSize = getMainFrameValues(scrollOffsets);
+        mScrollOffset = new Point(offsetSize.getWidth(), offsetSize.getHeight());
         mCompositorCallback.onResult(CompositorStatus.OK);
     }
 
@@ -125,11 +129,13 @@ public class LongScreenshotsCompositor {
         return sCompositorDelegateFactory;
     }
 
+    @Nullable
     public Size getContentSize() {
         return mContentSize;
     }
 
-    public Size getScrollOffset() {
+    @Nullable
+    public Point getScrollOffset() {
         return mScrollOffset;
     }
 

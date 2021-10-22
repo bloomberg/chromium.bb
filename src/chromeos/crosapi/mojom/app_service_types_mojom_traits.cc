@@ -62,8 +62,12 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr>::Read(
   if (!data.ReadInstallTime(&install_time))
     return false;
 
-  apps::mojom::InstallSource install_source;
-  if (!data.ReadInstallSource(&install_source))
+  apps::mojom::InstallReason install_reason;
+  if (!data.ReadInstallReason(&install_reason))
+    return false;
+
+  absl::optional<std::string> policy_id;
+  if (!data.ReadPolicyId(&policy_id))
     return false;
 
   apps::mojom::OptionalBool recommendable;
@@ -119,7 +123,8 @@ bool StructTraits<crosapi::mojom::AppDataView, apps::mojom::AppPtr>::Read(
   app->icon_key = std::move(icon_key);
   app->last_launch_time = last_launch_time;
   app->install_time = install_time;
-  app->install_source = install_source;
+  app->install_reason = install_reason;
+  app->policy_id = policy_id;
   app->recommendable = recommendable;
   app->searchable = searchable;
   app->show_in_launcher = show_in_launcher;
@@ -259,53 +264,58 @@ bool StructTraits<crosapi::mojom::IconKeyDataView, apps::mojom::IconKeyPtr>::
   return true;
 }
 
-crosapi::mojom::InstallSource
-EnumTraits<crosapi::mojom::InstallSource, apps::mojom::InstallSource>::ToMojom(
-    apps::mojom::InstallSource input) {
+crosapi::mojom::InstallReason
+EnumTraits<crosapi::mojom::InstallReason, apps::mojom::InstallReason>::ToMojom(
+    apps::mojom::InstallReason input) {
   switch (input) {
-    case apps::mojom::InstallSource::kUnknown:
-      return crosapi::mojom::InstallSource::kUnknown;
-    case apps::mojom::InstallSource::kSystem:
-      return crosapi::mojom::InstallSource::kSystem;
-    case apps::mojom::InstallSource::kPolicy:
-      return crosapi::mojom::InstallSource::kPolicy;
-    case apps::mojom::InstallSource::kOem:
-      return crosapi::mojom::InstallSource::kOem;
-    case apps::mojom::InstallSource::kDefault:
-      return crosapi::mojom::InstallSource::kDefault;
-    case apps::mojom::InstallSource::kSync:
-      return crosapi::mojom::InstallSource::kSync;
-    case apps::mojom::InstallSource::kUser:
-      return crosapi::mojom::InstallSource::kUser;
+    case apps::mojom::InstallReason::kUnknown:
+      return crosapi::mojom::InstallReason::kUnknown;
+    case apps::mojom::InstallReason::kSystem:
+      return crosapi::mojom::InstallReason::kSystem;
+    case apps::mojom::InstallReason::kPolicy:
+      return crosapi::mojom::InstallReason::kPolicy;
+    case apps::mojom::InstallReason::kSubApp:
+      return crosapi::mojom::InstallReason::kSubApp;
+    case apps::mojom::InstallReason::kOem:
+      return crosapi::mojom::InstallReason::kOem;
+    case apps::mojom::InstallReason::kDefault:
+      return crosapi::mojom::InstallReason::kDefault;
+    case apps::mojom::InstallReason::kSync:
+      return crosapi::mojom::InstallReason::kSync;
+    case apps::mojom::InstallReason::kUser:
+      return crosapi::mojom::InstallReason::kUser;
   }
 
   NOTREACHED();
 }
 
-bool EnumTraits<crosapi::mojom::InstallSource, apps::mojom::InstallSource>::
-    FromMojom(crosapi::mojom::InstallSource input,
-              apps::mojom::InstallSource* output) {
+bool EnumTraits<crosapi::mojom::InstallReason, apps::mojom::InstallReason>::
+    FromMojom(crosapi::mojom::InstallReason input,
+              apps::mojom::InstallReason* output) {
   switch (input) {
-    case crosapi::mojom::InstallSource::kUnknown:
-      *output = apps::mojom::InstallSource::kUnknown;
+    case crosapi::mojom::InstallReason::kUnknown:
+      *output = apps::mojom::InstallReason::kUnknown;
       return true;
-    case crosapi::mojom::InstallSource::kSystem:
-      *output = apps::mojom::InstallSource::kSystem;
+    case crosapi::mojom::InstallReason::kSystem:
+      *output = apps::mojom::InstallReason::kSystem;
       return true;
-    case crosapi::mojom::InstallSource::kPolicy:
-      *output = apps::mojom::InstallSource::kPolicy;
+    case crosapi::mojom::InstallReason::kPolicy:
+      *output = apps::mojom::InstallReason::kPolicy;
       return true;
-    case crosapi::mojom::InstallSource::kOem:
-      *output = apps::mojom::InstallSource::kOem;
+    case crosapi::mojom::InstallReason::kOem:
+      *output = apps::mojom::InstallReason::kOem;
       return true;
-    case crosapi::mojom::InstallSource::kDefault:
-      *output = apps::mojom::InstallSource::kDefault;
+    case crosapi::mojom::InstallReason::kDefault:
+      *output = apps::mojom::InstallReason::kDefault;
       return true;
-    case crosapi::mojom::InstallSource::kSync:
-      *output = apps::mojom::InstallSource::kSync;
+    case crosapi::mojom::InstallReason::kSync:
+      *output = apps::mojom::InstallReason::kSync;
       return true;
-    case crosapi::mojom::InstallSource::kUser:
-      *output = apps::mojom::InstallSource::kUser;
+    case crosapi::mojom::InstallReason::kUser:
+      *output = apps::mojom::InstallReason::kUser;
+      return true;
+    case crosapi::mojom::InstallReason::kSubApp:
+      *output = apps::mojom::InstallReason::kSubApp;
       return true;
   }
 
@@ -403,8 +413,8 @@ EnumTraits<crosapi::mojom::ConditionType, apps::mojom::ConditionType>::ToMojom(
       return crosapi::mojom::ConditionType::kAction;
     case apps::mojom::ConditionType::kMimeType:
       return crosapi::mojom::ConditionType::kMimeType;
-    case apps::mojom::ConditionType::kFileExtension:
-      return crosapi::mojom::ConditionType::kFileExtension;
+    case apps::mojom::ConditionType::kFile:
+      return crosapi::mojom::ConditionType::kFile;
   }
 
   NOTREACHED();
@@ -449,7 +459,8 @@ bool EnumTraits<crosapi::mojom::ConditionType, apps::mojom::ConditionType>::
       *output = apps::mojom::ConditionType::kMimeType;
       return true;
     case crosapi::mojom::ConditionType::kFileExtension:
-      *output = apps::mojom::ConditionType::kFileExtension;
+    case crosapi::mojom::ConditionType::kFile:
+      *output = apps::mojom::ConditionType::kFile;
       return true;
   }
 
@@ -473,6 +484,8 @@ EnumTraits<crosapi::mojom::PatternMatchType, apps::mojom::PatternMatchType>::
       return crosapi::mojom::PatternMatchType::kMimeType;
     case apps::mojom::PatternMatchType::kFileExtension:
       return crosapi::mojom::PatternMatchType::kFileExtension;
+    case apps::mojom::PatternMatchType::kIsDirectory:
+      return crosapi::mojom::PatternMatchType::kIsDirectory;
   }
 
   NOTREACHED();
@@ -500,6 +513,9 @@ bool EnumTraits<crosapi::mojom::PatternMatchType,
       return true;
     case crosapi::mojom::PatternMatchType::kFileExtension:
       *output = apps::mojom::PatternMatchType::kFileExtension;
+      return true;
+    case crosapi::mojom::PatternMatchType::kIsDirectory:
+      *output = apps::mojom::PatternMatchType::kIsDirectory;
       return true;
   }
 
@@ -676,39 +692,6 @@ bool EnumTraits<crosapi::mojom::WindowMode, apps::mojom::WindowMode>::FromMojom(
 
   NOTREACHED();
   return false;
-}
-
-bool StructTraits<crosapi::mojom::IntentDataView, apps::mojom::IntentPtr>::Read(
-    crosapi::mojom::IntentDataView data,
-    apps::mojom::IntentPtr* out) {
-  std::string action;
-  if (!data.ReadAction(&action))
-    return false;
-
-  absl::optional<GURL> url;
-  if (!data.ReadUrl(&url))
-    return false;
-
-  absl::optional<std::string> mime_type;
-  if (!data.ReadMimeType(&mime_type))
-    return false;
-
-  absl::optional<std::string> share_text;
-  if (!data.ReadShareText(&share_text))
-    return false;
-
-  absl::optional<std::string> share_title;
-  if (!data.ReadShareTitle(&share_title))
-    return false;
-
-  auto intent = apps::mojom::Intent::New();
-  intent->action = action;
-  intent->url = url;
-  intent->mime_type = mime_type;
-  intent->share_text = share_text;
-  intent->share_title = share_title;
-  *out = std::move(intent);
-  return true;
 }
 
 crosapi::mojom::LaunchSource

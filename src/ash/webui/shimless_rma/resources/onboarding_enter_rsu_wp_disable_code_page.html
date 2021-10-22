@@ -6,8 +6,18 @@
     <!-- TODO(gavindodd): Update text for i18n -->
     <h1>Enter RSU Hardware Write Protection Disable Code</h1>
 
-    <p>Challenge: <span id="rsuChallenge">[[rsuChallenge_]]</span></p>
+    <p>Challenge:</p>
+    <div id="rsuChallenge">
+      <template id="rsuChallengeParts" is="dom-repeat" items="{{rsuChallenge_}}" as="row">
+        <template id="rsuChallengePart" is="dom-repeat" items="[[row]]" as="segment">
+          <span>[[segment]]&nbsp;</span>
+        </template>
+        <br/>
+      </template>
+    </div>
+    <p>HWID: <span id="rsuHwid">[[rsuHwid_]]</span></p>
     <cr-input
+        on-change="onRsuCodeChanged_"
         label="RSU Code:"
         placeholder="Enter RSU Code"
         id="rsuCode"

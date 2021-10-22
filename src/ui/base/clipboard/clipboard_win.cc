@@ -332,29 +332,6 @@ void ClipboardWin::ReadAvailableTypes(
 
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
-std::vector<std::u16string>
-ClipboardWin::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer,
-    const DataTransferEndpoint* data_dst) const {
-  int count = ::CountClipboardFormats();
-  if (!count)
-    return {};
-
-  std::vector<std::u16string> types;
-  types.reserve(count);
-
-  // Check if we have any custom formats in the clipboard.
-  std::map<std::string, std::string> custom_format_names =
-      ExtractCustomPlatformNames(buffer, data_dst);
-  for (const auto& item : custom_format_names)
-    types.push_back(base::ASCIIToUTF16(item.first));
-  for (const auto& item : GetStandardFormats(buffer, data_dst))
-    types.push_back(item);
-  return types;
-}
-
-// |data_dst| is not used. It's only passed to be consistent with other
-// platforms.
 void ClipboardWin::ReadText(ClipboardBuffer buffer,
                             const DataTransferEndpoint* data_dst,
                             std::u16string* result) const {
@@ -509,20 +486,11 @@ void ClipboardWin::ReadPng(ClipboardBuffer buffer,
   // On Windows, PNG and bitmap are separate formats. Read PNG if possible,
   // otherwise fall back to reading as a bitmap.
   if (data.empty()) {
-    SkBitmap bitmap = ReadImageInternal(buffer);
+    SkBitmap bitmap = ReadBitmapInternal(buffer);
     gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, /*discard_transparency=*/false,
                                       &data);
   }
   std::move(callback).Run(data);
-}
-
-// |data_dst| is not used. It's only passed to be consistent with other
-// platforms.
-void ClipboardWin::ReadImage(ClipboardBuffer buffer,
-                             const DataTransferEndpoint* data_dst,
-                             ReadImageCallback callback) const {
-  RecordRead(ClipboardFormatMetric::kImage);
-  std::move(callback).Run(ReadImageInternal(buffer));
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -809,7 +777,7 @@ std::vector<uint8_t> ClipboardWin::ReadPngInternal(
   return std::vector<uint8_t>(result.begin(), result.end());
 }
 
-SkBitmap ClipboardWin::ReadImageInternal(ClipboardBuffer buffer) const {
+SkBitmap ClipboardWin::ReadBitmapInternal(ClipboardBuffer buffer) const {
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
 
   // Acquire the clipboard.

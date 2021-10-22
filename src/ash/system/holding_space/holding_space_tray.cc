@@ -39,6 +39,7 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -54,8 +55,7 @@ namespace {
 using ::ui::mojom::DragOperation;
 
 // Animation.
-constexpr base::TimeDelta kAnimationDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kAnimationDuration = base::Milliseconds(167);
 
 // Helpers ---------------------------------------------------------------------
 
@@ -517,14 +517,14 @@ HoldingSpaceTray::CreateContextMenuModel() {
         static_cast<int>(HoldingSpaceCommandId::kHidePreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_HIDE_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon, /*color_id=*/-1,
+        ui::ImageModel::FromVectorIcon(kVisibilityOffIcon, ui::kColorMenuIcon,
                                        kHoldingSpaceIconSize));
   } else {
     context_menu_model->AddItemWithIcon(
         static_cast<int>(HoldingSpaceCommandId::kShowPreviews),
         l10n_util::GetStringUTF16(
             IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_SHOW_PREVIEWS),
-        ui::ImageModel::FromVectorIcon(kVisibilityIcon, /*color_id=*/-1,
+        ui::ImageModel::FromVectorIcon(kVisibilityIcon, ui::kColorMenuIcon,
                                        kHoldingSpaceIconSize));
   }
 
@@ -680,7 +680,7 @@ void HoldingSpaceTray::SchedulePreviewsIconUpdate() {
   // previews so items added in quick succession are handled together.
   base::TimeDelta delay = use_zero_previews_update_delay_
                               ? base::TimeDelta()
-                              : base::TimeDelta::FromMilliseconds(50);
+                              : base::Milliseconds(50);
   previews_update_.Start(FROM_HERE, delay,
                          base::BindOnce(&HoldingSpaceTray::UpdatePreviewsIcon,
                                         base::Unretained(this)));

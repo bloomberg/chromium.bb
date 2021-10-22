@@ -7,15 +7,28 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/bluetooth/bluetooth_device_list_item_view.h"
 #include "ash/system/bluetooth/bluetooth_disabled_detailed_view.h"
+#include "ash/system/model/system_tray_model.h"
+#include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
+#include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tray_toggle_button.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/unified/top_shortcut_button.h"
 #include "base/check.h"
+#include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
@@ -32,9 +45,8 @@ BluetoothDetailedViewImpl::BluetoothDetailedViewImpl(
   CreateTitleRow(IDS_ASH_STATUS_TRAY_BLUETOOTH);
   CreateTitleRowButtons();
   CreateScrollableList();
-  AddScrollListSubHeader(kSystemMenuBluetoothPlusIcon,
-                         IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIR_NEW_DEVICE);
   CreateDisabledView();
+  CreatePairNewDeviceView();
   UpdateBluetoothEnabledState(/*enabled=*/false);
 }
 
@@ -46,6 +58,7 @@ views::View* BluetoothDetailedViewImpl::GetAsView() {
 
 void BluetoothDetailedViewImpl::UpdateBluetoothEnabledState(bool enabled) {
   disabled_view_->SetVisible(!enabled);
+  pair_new_device_view_->SetVisible(enabled);
   scroller()->SetVisible(enabled);
 
   const std::u16string toggle_tooltip =
@@ -53,13 +66,13 @@ void BluetoothDetailedViewImpl::UpdateBluetoothEnabledState(bool enabled) {
                     IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_TOOLTIP)
               : l10n_util::GetStringUTF16(
                     IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_TOOLTIP);
-  toggle_->SetTooltipText(l10n_util::GetStringFUTF16(
+  toggle_button_->SetTooltipText(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_BLUETOOTH_TOGGLE_TOOLTIP, toggle_tooltip));
 
   // The toggle should already have animated to |enabled| unless it has become
   // out of sync with the Bluetooth state, so just set it to the correct state.
-  if (toggle_->GetIsOn() != enabled)
-    toggle_->SetIsOn(enabled);
+  if (toggle_button_->GetIsOn() != enabled)
+    toggle_button_->SetIsOn(enabled);
 
   Layout();
 }
@@ -84,36 +97,21 @@ views::View* BluetoothDetailedViewImpl::device_list() {
   return scroll_content();
 }
 
-const char* BluetoothDetailedViewImpl::GetClassName() const {
-  return "BluetoothDetailedViewImpl";
+void BluetoothDetailedViewImpl::HandleViewClicked(views::View* view) {
+  delegate()->OnDeviceListItemSelected(
+      static_cast<BluetoothDeviceListItemView*>(view)->device_properties());
 }
 
-void BluetoothDetailedViewImpl::CreateTitleRowButtons() {
-  // TODO(crbug.com/1010321): Once we are able to determine whether we are
-  // authorized to turn Bluetooth on or off using the API we should update this
-  // to return early if not.
-
-  DCHECK(!toggle_);
-
-  tri_view()->SetContainerVisible(TriView::Container::END, /*visible=*/true);
-
-  std::unique_ptr<TrayToggleButton> toggle = std::make_unique<TrayToggleButton>(
-      base::BindRepeating(&BluetoothDetailedViewImpl::OnToggleClicked,
-                          weak_factory_.GetWeakPtr()),
-      IDS_ASH_STATUS_TRAY_BLUETOOTH);
-  toggle->SetID(static_cast<int>(BluetoothDetailedViewChildId::kToggleButton));
-
-  toggle_ = toggle.get();
-
-  tri_view()->AddView(TriView::Container::END, toggle.release());
+const char* BluetoothDetailedViewImpl::GetClassName() const {
+  return "BluetoothDetailedViewImpl";
 }
 
 void BluetoothDetailedViewImpl::CreateDisabledView() {
   DCHECK(!disabled_view_);
 
-  // Check that the views::ScrollView has already been created and insert the
-  // disabled view before it to avoid the unnecessary bottom border spacing of
-  // views::ScrollView when it is not the last child.
+  // Check that the views::ScrollView has already been created so that we can
+  // insert the disabled view before it to avoid the unnecessary bottom border
+  // spacing of views::ScrollView when it is not the last child.
   DCHECK(scroller());
 
   disabled_view_ =
@@ -126,8 +124,95 @@ void BluetoothDetailedViewImpl::CreateDisabledView() {
   box_layout()->SetFlexForView(disabled_view_, 1);
 }
 
+void BluetoothDetailedViewImpl::CreatePairNewDeviceView() {
+  DCHECK(!pair_new_device_view_);
+
+  // Check that the views::ScrollView has already been created so that we can
+  // insert the "pair new device" before it.
+  DCHECK(scroller());
+
+  pair_new_device_view_ =
+      AddChildViewAt(new views::View(), GetIndexOf(scroller()));
+  pair_new_device_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+  pair_new_device_view_->SetID(
+      static_cast<int>(BluetoothDetailedViewChildId::kPairNewDeviceView));
+
+  std::unique_ptr<ash::TriView> row_view =
+      base::WrapUnique(TrayPopupUtils::CreateDefaultRowView());
+
+  std::unique_ptr<ash::TopShortcutButton> button =
+      std::make_unique<ash::TopShortcutButton>(
+          base::BindRepeating(
+              &BluetoothDetailedViewImpl::OnPairNewDeviceRequested,
+              weak_factory_.GetWeakPtr()),
+          kSystemMenuBluetoothPlusIcon,
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIR_NEW_DEVICE);
+  button->SetID(
+      static_cast<int>(BluetoothDetailedViewChildId::kPairNewDeviceButton));
+  row_view->AddView(TriView::Container::START, button.release());
+
+  std::unique_ptr<views::Label> label =
+      base::WrapUnique(TrayPopupUtils::CreateDefaultLabel());
+  label->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BLUETOOTH_PAIR_NEW_DEVICE));
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextColorPrimary));
+  TrayPopupUtils::SetLabelFontList(label.get(),
+                                   TrayPopupUtils::FontStyle::kSubHeader);
+  row_view->AddView(TriView::Container::CENTER, label.release());
+
+  const gfx::Insets padding =
+      pair_new_device_view_
+          ->AddChildView(TrayPopupUtils::CreateListSubHeaderSeparator())
+          ->GetInsets();
+
+  // The "pair new device" button does not have top padding by default, so add
+  // top padding equal to the top padding of the following separator so that the
+  // button becomes centered between the preceding and following separators.
+  row_view->SetInsets(gfx::Insets(padding.top(), 0, 0, 0));
+
+  pair_new_device_view_->AddChildViewAt(row_view.release(), 0);
+}
+
+void BluetoothDetailedViewImpl::CreateTitleRowButtons() {
+  DCHECK(!settings_button_);
+  DCHECK(!toggle_button_);
+
+  tri_view()->SetContainerVisible(TriView::Container::END, /*visible=*/true);
+
+  std::unique_ptr<TrayToggleButton> toggle = std::make_unique<TrayToggleButton>(
+      base::BindRepeating(&BluetoothDetailedViewImpl::OnToggleClicked,
+                          weak_factory_.GetWeakPtr()),
+      IDS_ASH_STATUS_TRAY_BLUETOOTH);
+  toggle->SetID(static_cast<int>(BluetoothDetailedViewChildId::kToggleButton));
+  toggle_button_ = toggle.get();
+  tri_view()->AddView(TriView::Container::END, toggle.release());
+
+  std::unique_ptr<views::Button> settings =
+      base::WrapUnique(CreateSettingsButton(
+          base::BindRepeating(&BluetoothDetailedViewImpl::OnSettingsClicked,
+                              weak_factory_.GetWeakPtr()),
+          IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS));
+  settings->SetID(
+      static_cast<int>(BluetoothDetailedViewChildId::kSettingsButton));
+  settings_button_ = settings.get();
+  tri_view()->AddView(TriView::Container::END, settings.release());
+}
+
+void BluetoothDetailedViewImpl::OnPairNewDeviceRequested() {
+  delegate()->OnPairNewDeviceRequested();
+}
+
+void BluetoothDetailedViewImpl::OnSettingsClicked() {
+  if (!TrayPopupUtils::CanOpenWebUISettings())
+    return;
+  CloseBubble();  // Deletes |this|.
+  Shell::Get()->system_tray_model()->client()->ShowBluetoothSettings();
+}
+
 void BluetoothDetailedViewImpl::OnToggleClicked() {
-  const bool toggle_state = toggle_->GetIsOn();
+  const bool toggle_state = toggle_button_->GetIsOn();
   delegate()->OnToggleClicked(toggle_state);
 
   // Avoid the situation where there is a delay between the toggle becoming

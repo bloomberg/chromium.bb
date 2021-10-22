@@ -112,9 +112,9 @@ class LoopingFileCastAgent final
   void OnReady() override;
   void OnPlaybackRateChange(double rate) override;
 
-  // Returns the Cast application ID for either A/V mirroring or audio-only
-  // mirroring, as configured by the ConnectionSettings.
-  const char* GetMirroringAppId() const;
+  // Returns the Cast application ID for either audio+video Cast Streaming or
+  // audio-only streaming, as configured by the ConnectionSettings.
+  const char* GetStreamingAppId() const;
 
   // Called by OnMessage() to determine whether the Cast Receiver has launched
   // or unlaunched the Mirroring App. If the former, a VirtualConnection is

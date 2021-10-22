@@ -35,8 +35,7 @@ namespace {
 
 // Delay before pending profile refresh callback is called. This ensures that
 // eSIM profiles are updated before callback returns.
-constexpr base::TimeDelta kPendingProfileRefreshDelay =
-    base::TimeDelta::FromMilliseconds(150);
+constexpr base::TimeDelta kPendingProfileRefreshDelay = base::Milliseconds(150);
 
 // Prefix for EID when encoded in QR Code.
 const char kEidQrCodePrefix[] = "EID:";
@@ -121,6 +120,7 @@ void Euicc::InstallProfileFromActivationCode(
 
   esim_manager_->cellular_esim_installer()->InstallProfileFromActivationCode(
       activation_code, confirmation_code, path_,
+      /*new_shill_properties=*/base::DictionaryValue(),
       base::BindOnce(&Euicc::OnESimInstallProfileResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

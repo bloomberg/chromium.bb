@@ -172,6 +172,10 @@ class PageSpecificContentSettings
   class SiteDataObserver {
    public:
     explicit SiteDataObserver(content::WebContents* web_contents);
+
+    SiteDataObserver(const SiteDataObserver&) = delete;
+    SiteDataObserver& operator=(const SiteDataObserver&) = delete;
+
     virtual ~SiteDataObserver();
 
     // Called whenever site data is accessed.
@@ -185,9 +189,11 @@ class PageSpecificContentSettings
 
    private:
     content::WebContents* web_contents_;
-
-    DISALLOW_COPY_AND_ASSIGN(SiteDataObserver);
   };
+
+  PageSpecificContentSettings(const PageSpecificContentSettings&) = delete;
+  PageSpecificContentSettings& operator=(const PageSpecificContentSettings&) =
+      delete;
 
   ~PageSpecificContentSettings() override;
 
@@ -534,7 +540,6 @@ class PageSpecificContentSettings
   void MaybeUpdateLocationBar();
 
   WebContentsHandler& handler_;
-  content::RenderFrameHost* main_frame_;
 
   Delegate* delegate_;
 
@@ -590,8 +595,6 @@ class PageSpecificContentSettings
   RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 
   base::WeakPtrFactory<PageSpecificContentSettings> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PageSpecificContentSettings);
 };
 
 }  // namespace content_settings

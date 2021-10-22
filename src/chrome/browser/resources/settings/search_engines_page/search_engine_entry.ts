@@ -38,7 +38,11 @@ class SettingsSearchEngineEntryElement extends
     return {
       engine: Object,
 
-      showActiveSearchEngines: Boolean,
+      showShortcut: {type: Boolean, value: false, reflectToAttribute: true},
+
+      showQueryUrl: {type: Boolean, value: false, reflectToAttribute: true},
+
+      isActiveSearchEnginesFlagEnabled: Boolean,
 
       isDefault: {
         reflectToAttribute: true,
@@ -46,11 +50,21 @@ class SettingsSearchEngineEntryElement extends
         computed: 'computeIsDefault_(engine)'
       },
 
+      showMenuButton: {
+        reflectToAttribute: true,
+        type: Boolean,
+        computed: 'computeShowMenuButton_(engine)'
+      },
+
     };
   }
 
   engine: SearchEngine;
+  showShortcut: boolean;
+  showQueryUrl: boolean;
+  isActiveSearchEnginesFlagEnabled: boolean;
   isDefault: boolean;
+  showMenuButton: boolean;
   private browserProxy_: SearchEnginesBrowserProxy =
       SearchEnginesBrowserProxyImpl.getInstance();
 
@@ -62,6 +76,10 @@ class SettingsSearchEngineEntryElement extends
     return this.engine.default;
   }
 
+  private computeShowMenuButton_(): boolean {
+    return !this.isActiveSearchEnginesFlagEnabled || !this.engine.default;
+  }
+
   private onDeleteTap_() {
     this.browserProxy_.removeSearchEngine(this.engine.modelIndex);
     this.closePopupMenu_();
@@ -69,7 +87,9 @@ class SettingsSearchEngineEntryElement extends
 
   private onDotsTap_() {
     this.shadowRoot!.querySelector('cr-action-menu')!.showAt(
-        assert(this.shadowRoot!.querySelector('cr-icon-button')!), {
+        assert(this.shadowRoot!.querySelector('cr-icon-button.icon-more-vert')!
+               ),
+        {
           anchorAlignmentY: AnchorAlignment.AFTER_END,
         });
   }

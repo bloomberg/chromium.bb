@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
@@ -78,6 +79,7 @@ class InterfaceProvider;
 namespace ui {
 struct AXPropertyFilter;
 struct AXTreeUpdate;
+class ColorProviderSource;
 }
 
 namespace content {
@@ -121,10 +123,14 @@ class WebContents : public PageNavigator,
                     public base::SupportsUserData {
  public:
   struct CONTENT_EXPORT CreateParams {
-    explicit CreateParams(BrowserContext* context);
+    explicit CreateParams(
+        BrowserContext* context,
+        base::Location creator_location = base::Location::Current());
     CreateParams(const CreateParams& other);
     ~CreateParams();
-    CreateParams(BrowserContext* context, scoped_refptr<SiteInstance> site);
+    CreateParams(BrowserContext* context,
+                 scoped_refptr<SiteInstance> site,
+                 base::Location creator_location = base::Location::Current());
 
     BrowserContext* browser_context;
 
@@ -239,6 +245,11 @@ class WebContents : public PageNavigator,
     // Setting this to true will invoke the WebContents delayed initialization
     // that doesn't require visibility.
     bool is_never_visible;
+
+    // Code location responsible for creating the CreateParams.  This is used
+    // mostly for debugging (e.g. to help attribute specific scenarios or
+    // invariant violations to a particular flavor of WebContents).
+    base::Location creator_location;
   };
 
   // Creates a new WebContents.
@@ -483,6 +494,12 @@ class WebContents : public PageNavigator,
   // understand.
   virtual void SetPageBaseBackgroundColor(absl::optional<SkColor> color) = 0;
 
+  // Sets the ColorProviderSource for the WebContents. The WebContents will
+  // maintain an observation of `source` until a new source is set or the
+  // current source is destroyed. WebContents will receive updates when the
+  // source's ColorProvider changes.
+  virtual void SetColorProviderSource(ui::ColorProviderSource* source) = 0;
+
   // Returns the committed WebUI if one exists.
   virtual WebUI* GetWebUI() = 0;
 
@@ -639,10 +656,14 @@ class WebContents : public PageNavigator,
   // are user-visible while being captured.
   //
   // |stay_awake| will cause a WakeLock to be held which prevents system sleep.
+  //
+  // |is_activity| means the capture will cause the last active time to be
+  // updated.
   virtual base::ScopedClosureRunner IncrementCapturerCount(
       const gfx::Size& capture_size,
       bool stay_hidden,
-      bool stay_awake) WARN_UNUSED_RESULT = 0;
+      bool stay_awake,
+      bool is_activity = true) WARN_UNUSED_RESULT = 0;
 
   // Getter for the capture handle, which allows a captured application to
   // opt-in to exposing information to its capturer(s).
@@ -1074,15 +1095,15 @@ class WebContents : public PageNavigator,
   // is the only result. A |max_bitmap_size| of 0 means unlimited.
   // For vector images, |preferred_size| will serve as a viewport into which
   // the image will be rendered. This would usually be the dimensions of the
-  // square where the bitmap will be rendered. If |preferred_size| is 0, any
-  // existing intrinsic dimensions of the image will be used. If
+  // rectangle where the bitmap will be rendered. If |preferred_size| is empty,
+  // any existing intrinsic dimensions of the image will be used. If
   // |max_bitmap_size| is non-zero it will also impose an upper bound on the
-  // preferred size.
+  // longest edge of |preferred_size| (|preferred_size| will be scaled down).
   // If |bypass_cache| is true, |url| is requested from the server even if it
   // is present in the browser cache.
   virtual int DownloadImage(const GURL& url,
                             bool is_favicon,
-                            uint32_t preferred_size,
+                            const gfx::Size& preferred_size,
                             uint32_t max_bitmap_size,
                             bool bypass_cache,
                             ImageDownloadCallback callback) = 0;
@@ -1093,7 +1114,7 @@ class WebContents : public PageNavigator,
       const GlobalRenderFrameHostId& initiator_frame_routing_id,
       const GURL& url,
       bool is_favicon,
-      uint32_t preferred_size,
+      const gfx::Size& preferred_size,
       uint32_t max_bitmap_size,
       bool bypass_cache,
       ImageDownloadCallback callback) = 0;
@@ -1292,6 +1313,9 @@ class WebContents : public PageNavigator,
   // workaround to avoid breaking features that must be taught to deal with
   // activation navigations.
   virtual void DisallowActivationNavigationsForBug1234857() = 0;
+
+  // Returns the value from CreateParams::creator_location.
+  virtual const base::Location& GetCreatorLocation() = 0;
 
  private:
   // This interface should only be implemented inside content.

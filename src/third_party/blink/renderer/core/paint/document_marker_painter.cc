@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/paint/highlight_painting_utils.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/text_paint_style.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -116,7 +117,7 @@ void DrawDocumentMarker(GraphicsContext& context,
   // cached tile for all markers at a given zoom level.
   GraphicsContextStateSaver saver(context);
   context.Translate(origin_x, origin_y);
-  context.DrawRect(rect, flags);
+  context.DrawRect(rect, flags, AutoDarkMode::Disabled());
 }
 
 }  // namespace
@@ -137,6 +138,7 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     const PhysicalOffset& box_origin,
     const StyleableMarker& marker,
     const ComputedStyle& style,
+    const Document& document,
     const FloatRect& marker_rect,
     LayoutUnit logical_height,
     bool in_dark_mode) {
@@ -198,7 +200,7 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
         FloatPoint(box_origin.left + start,
                    (box_origin.top + logical_height.ToInt() - line_thickness)
                        .ToFloat()),
-        width);
+        width, PaintAutoDarkMode(style, DarkModeFilter::ElementRole::kText));
   } else {
     // For wavy underline format we use this logic that is very similar to
     // spelling/grammar squiggles format. Only applicable for composition
@@ -220,7 +222,8 @@ void DocumentMarkerPainter::PaintDocumentMarker(
     const PhysicalOffset& box_origin,
     const ComputedStyle& style,
     DocumentMarker::MarkerType marker_type,
-    const PhysicalRect& local_rect) {
+    const PhysicalRect& local_rect,
+    absl::optional<Color> custom_marker_color) {
   // IMPORTANT: The misspelling underline is not considered when calculating the
   // text bounds, so we have to make sure to fit within those bounds.  This
   // means the top pixel(s) of the underline will overlap the bottom pixel(s) of
@@ -247,6 +250,7 @@ void DocumentMarkerPainter::PaintDocumentMarker(
     // prevent a big gap.
     underline_offset = baseline + 2 * zoom;
   }
+
   DEFINE_STATIC_LOCAL(
       PaintRecord*, spelling_marker,
       (RecordMarker(
@@ -258,9 +262,16 @@ void DocumentMarkerPainter::PaintDocumentMarker(
            LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor())
            .release()));
 
-  auto* const marker = marker_type == DocumentMarker::kSpelling
-                           ? spelling_marker
-                           : grammar_marker;
+  sk_sp<PaintRecord> custom_paint_record;
+  if (custom_marker_color)
+    custom_paint_record = RecordMarker(*custom_marker_color);
+
+  auto* const marker = custom_marker_color
+                           ? custom_paint_record.get()
+                           : marker_type == DocumentMarker::kSpelling
+                                 ? spelling_marker
+                                 : grammar_marker;
+
   DrawDocumentMarker(paint_info.context,
                      FloatPoint((box_origin.left + local_rect.X()).ToFloat(),
                                 (box_origin.top + underline_offset).ToFloat()),

@@ -31,17 +31,17 @@ static AOM_INLINE void check_reset_rc_flag(AV1_COMP *cpi) {
           rc->avg_frame_bandwidth < (rc->prev_avg_frame_bandwidth >> 1)) {
         rc->rc_1_frame = 0;
         rc->rc_2_frame = 0;
-        rc->bits_off_target = p_rc->optimal_buffer_level;
-        rc->buffer_level = p_rc->optimal_buffer_level;
+        p_rc->bits_off_target = p_rc->optimal_buffer_level;
+        p_rc->buffer_level = p_rc->optimal_buffer_level;
       }
     }
   }
 }
 
-static AOM_INLINE void set_rc_buffer_sizes(AV1_COMP *cpi) {
-  RATE_CONTROL *rc = &cpi->rc;
-  PRIMARY_RATE_CONTROL *const p_rc = &cpi->ppi->p_rc;
-  const RateControlCfg *const rc_cfg = &cpi->oxcf.rc_cfg;
+static AOM_INLINE void set_primary_rc_buffer_sizes(const AV1EncoderConfig *oxcf,
+                                                   AV1_PRIMARY *ppi) {
+  PRIMARY_RATE_CONTROL *p_rc = &ppi->p_rc;
+  const RateControlCfg *const rc_cfg = &oxcf->rc_cfg;
 
   const int64_t bandwidth = rc_cfg->target_bandwidth;
   const int64_t starting = rc_cfg->starting_buffer_level_ms;
@@ -56,8 +56,9 @@ static AOM_INLINE void set_rc_buffer_sizes(AV1_COMP *cpi) {
 
   // Under a configuration change, where maximum_buffer_size may change,
   // keep buffer level clipped to the maximum allowed buffer size.
-  rc->bits_off_target = AOMMIN(rc->bits_off_target, p_rc->maximum_buffer_size);
-  rc->buffer_level = AOMMIN(rc->buffer_level, p_rc->maximum_buffer_size);
+  p_rc->bits_off_target =
+      AOMMIN(p_rc->bits_off_target, p_rc->maximum_buffer_size);
+  p_rc->buffer_level = AOMMIN(p_rc->buffer_level, p_rc->maximum_buffer_size);
 }
 
 static AOM_INLINE void config_target_level(AV1_COMP *const cpi,

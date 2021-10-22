@@ -25,7 +25,7 @@ namespace ash {
 namespace quick_pair {
 
 struct Device;
-struct DeviceMetadata;
+class DeviceMetadata;
 
 using DeviceCallback = base::RepeatingCallback<void(scoped_refptr<Device>)>;
 
@@ -57,7 +57,7 @@ class FastPairDiscoverableScanner final : public FastPairScanner::Observer {
   void OnDeviceMetadataRetrieved(device::BluetoothDevice* device,
                                  const std::string model_id,
                                  DeviceMetadata* device_metadata);
-  void OnProcessStopped(
+  void OnUtilityProcessStopped(
       device::BluetoothDevice* device,
       QuickPairProcessManager::ShutdownReason shutdown_reason);
 
@@ -75,4 +75,4 @@ class FastPairDiscoverableScanner final : public FastPairScanner::Observer {
 }  // namespace quick_pair
 }  // namespace ash
 
-#endif
+#endif  // ASH_QUICK_PAIR_SCANNING_FAST_PAIR_FAST_PAIR_DISCOVERABLE_SCANNER_H_

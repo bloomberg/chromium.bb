@@ -71,6 +71,10 @@ namespace {
 class VariationHeaderSetter : public ChromeBrowserMainExtraParts {
  public:
   VariationHeaderSetter() = default;
+
+  VariationHeaderSetter(const VariationHeaderSetter&) = delete;
+  VariationHeaderSetter& operator=(const VariationHeaderSetter&) = delete;
+
   ~VariationHeaderSetter() override = default;
 
   // ChromeBrowserMainExtraParts:
@@ -80,15 +84,18 @@ class VariationHeaderSetter : public ChromeBrowserMainExtraParts {
         variations::VariationsIdsProvider::GetInstance();
     variations_provider->ForceVariationIds({"12", "456", "t789"}, "");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VariationHeaderSetter);
 };
 
 class VariationsHttpHeadersBrowserTest : public IdentityBrowserTestBase {
  public:
   VariationsHttpHeadersBrowserTest()
       : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  VariationsHttpHeadersBrowserTest(const VariationsHttpHeadersBrowserTest&) =
+      delete;
+  VariationsHttpHeadersBrowserTest& operator=(
+      const VariationsHttpHeadersBrowserTest&) = delete;
+
   ~VariationsHttpHeadersBrowserTest() override = default;
 
   void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
@@ -311,8 +318,6 @@ class VariationsHttpHeadersBrowserTest : public IdentityBrowserTestBase {
 
   // For waiting for requests.
   std::map<GURL, base::OnceClosure> done_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsHttpHeadersBrowserTest);
 };
 
 // Used for testing the kRestrictGoogleWebVisibility feature.
@@ -330,11 +335,13 @@ class VariationsHttpHeadersBrowserTestWithRestrictedVisibility
     }
   }
 
+  VariationsHttpHeadersBrowserTestWithRestrictedVisibility(
+      const VariationsHttpHeadersBrowserTestWithRestrictedVisibility&) = delete;
+  VariationsHttpHeadersBrowserTestWithRestrictedVisibility& operator=(
+      const VariationsHttpHeadersBrowserTestWithRestrictedVisibility&) = delete;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      VariationsHttpHeadersBrowserTestWithRestrictedVisibility);
 };
 
 std::unique_ptr<net::test_server::HttpResponse>
@@ -607,7 +614,7 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        CheckLowEntropySourceValue) {
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
       low_entropy_provider = g_browser_process->GetMetricsServicesManager()
-                                 ->CreateEntropyProvider();
+                                 ->CreateEntropyProviderForTesting();
 
   // Create a trial with 100 groups and variation ids to validate that the group
   // reported in the variations header is actually based on the low entropy

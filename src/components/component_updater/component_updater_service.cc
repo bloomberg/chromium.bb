@@ -98,8 +98,8 @@ void CrxUpdateService::Start() {
           << config_->NextCheckDelay() << " seconds. ";
 
   scheduler_->Schedule(
-      base::TimeDelta::FromSecondsD(config_->InitialDelay()),
-      base::TimeDelta::FromSeconds(config_->NextCheckDelay()),
+      base::Seconds(config_->InitialDelay()),
+      base::Seconds(config_->NextCheckDelay()),
       base::BindRepeating(
           base::IgnoreResult(&CrxUpdateService::CheckForUpdates),
           base::Unretained(this)),
@@ -268,7 +268,7 @@ bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
   if (component_state && !component_state->last_check.is_null()) {
     base::TimeDelta delta =
         base::TimeTicks::Now() - component_state->last_check;
-    if (delta < base::TimeDelta::FromSeconds(config_->OnDemandDelay()))
+    if (delta < base::Seconds(config_->OnDemandDelay()))
       return false;
   }
 
@@ -428,16 +428,16 @@ void CrxUpdateService::OnEvent(Events event, const std::string& id) {
     return;
 
   // Update the state of the item.
-  const auto it = component_states_.find(id);
-  if (it != component_states_.end())
-    it->second = update_item;
+  const auto state_it = component_states_.find(id);
+  if (state_it != component_states_.end())
+    state_it->second = update_item;
 
   // Update the component registration with the new version.
   if (event == Observer::Events::COMPONENT_UPDATED) {
-    const auto it = components_.find(id);
-    if (it != components_.end()) {
-      it->second.version = update_item.next_version;
-      it->second.fingerprint = update_item.next_fp;
+    const auto component_it = components_.find(id);
+    if (component_it != components_.end()) {
+      component_it->second.version = update_item.next_version;
+      component_it->second.fingerprint = update_item.next_fp;
     }
   }
 }

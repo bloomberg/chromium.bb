@@ -31,9 +31,12 @@ TESTS = \
 	tests/layout.khmer.tests \
 	tests/layout.notonastaliqurdu.tests \
 	tests/layout.tests \
+	tests/layout.tinos.tests \
+	tests/layout.duplicate_features.tests \
 	tests/sbix.tests \
 	tests/variable.tests \
 	tests/glyph_names.tests \
+	tests/math.tests \
 	$(NULL)
 
 # TODO: re-enable once colrv1 subsetting is stabilized.

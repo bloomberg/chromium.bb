@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/hash/sha1.h"
 #include "base/i18n/timezone.h"
@@ -36,10 +37,13 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/devicetype_utils.h"
+#include "ui/gfx/native_widget_types.h"
 
 using sync_pb::UserConsentTypes;
 
@@ -238,6 +242,16 @@ void ArcSupportHost::SetErrorDelegate(ErrorDelegate* delegate) {
   error_delegate_ = delegate;
 }
 
+gfx::NativeWindow ArcSupportHost::GetNativeWindow() const {
+  extensions::AppWindowRegistry* registry =
+      extensions::AppWindowRegistry::Get(profile_);
+  if (!registry) return gfx::kNullNativeWindow;
+
+  extensions::AppWindow* window =
+      registry->GetCurrentAppWindowForApp(arc::kPlayStoreAppId);
+  return window ? window->GetNativeWindow() : gfx::kNullNativeWindow;
+}
+
 bool ArcSupportHost::GetShouldShowRunNetworkTests() {
   return should_show_run_network_tests_;
 }
@@ -401,8 +415,10 @@ void ArcSupportHost::ShowError(ErrorInfo error_info,
 
   message_args.SetString(kErrorMessage, message);
   message_args.SetBoolean(kShouldShowSendFeedback, should_show_send_feedback);
-  message_args.SetBoolean(kShouldShowNetworkTests,
-                          should_show_run_network_tests);
+  message_args.SetBoolean(
+      kShouldShowNetworkTests,
+      should_show_run_network_tests &&
+          ash::features::IsArcNetworkDiagnosticsButtonEnabled());
   message_host_->SendMessage(message_args);
 }
 

@@ -72,6 +72,11 @@ namespace {
 class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
  public:
   AccessibilityWinBrowserTest();
+
+  AccessibilityWinBrowserTest(const AccessibilityWinBrowserTest&) = delete;
+  AccessibilityWinBrowserTest& operator=(const AccessibilityWinBrowserTest&) =
+      delete;
+
   ~AccessibilityWinBrowserTest() override;
 
  protected:
@@ -139,7 +144,6 @@ class AccessibilityWinBrowserTest : public AccessibilityBrowserTest {
   BrowserAccessibility* FindNodeInSubtree(BrowserAccessibility& node,
                                           ax::mojom::Role role,
                                           const std::string& name_or_value);
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityWinBrowserTest);
 };
 
 AccessibilityWinBrowserTest::AccessibilityWinBrowserTest() = default;
@@ -5184,7 +5188,12 @@ class AccessibilityWinUIASelectivelyEnabledBrowserTest
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
                        RequestingTopLevelElementEnablesWebAccessibility) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+  std::string html = R"HTML(<!DOCTYPE html>
+        <html>
+        <div>some text</div>
+        </html>)HTML";
+  GURL html_data_url("data:text/html," + html);
+  EXPECT_TRUE(NavigateToURL(shell(), html_data_url));
 
   // Ensure accessibility is not enabled before we begin the test.
   EXPECT_TRUE(content::BrowserAccessibilityStateImpl::GetInstance()
@@ -5214,33 +5223,76 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIASelectivelyEnabledBrowserTest,
   Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
   tree_walker->GetFirstChildElement(root.Get(), &first_child);
   ASSERT_NE(nullptr, first_child.Get());
+  base::win::ScopedVariant control_type;
+  // Query Property value on non web content.
+  ASSERT_HRESULT_SUCCEEDED(first_child->GetCurrentPropertyValue(
+      UIA_ControlTypePropertyId, control_type.Receive()));
+  // As this is not on web content, this should not cause any enablement.
+  EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
+                               ->GetAccessibilityMode());
+  // While no additional enablement is done, the result should still be correct.
+  EXPECT_EQ(UIA_PaneControlTypeId, control_type.ptr()->intVal);
 
-  base::win::ScopedBstr name;
-  ASSERT_HRESULT_SUCCEEDED(first_child->get_CurrentName(name.Receive()));
+  // Now try to get the text content.
+  Microsoft::WRL::ComPtr<IUIAutomationCondition> condition;
+  base::win::ScopedVariant control_type_variant(UIA_TextControlTypeId);
+  ASSERT_HRESULT_SUCCEEDED(uia->CreatePropertyCondition(
+      UIA_ControlTypePropertyId, control_type_variant, &condition));
+  EXPECT_NE(nullptr, condition.Get());
+  Microsoft::WRL::ComPtr<IUIAutomationElement> text_element;
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::AXMode::kNativeAPIs,
+                                         ax::mojom::Event::kLoadComplete);
+  ASSERT_HRESULT_SUCCEEDED(
+      root->FindFirst(TreeScope_Subtree, condition.Get(), &text_element));
+  // This call failed as web contents was not previously enabled.
+  EXPECT_EQ(nullptr, text_element.Get());
 
   // Web content accessibility support should now be enabled.
   expected_mode |= ui::AXMode::kWebContents;
   EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
                                ->GetAccessibilityMode());
+  waiter.WaitForNotification();
+
+  // This call should succeed as web contents have been enabled.
+  ASSERT_HRESULT_SUCCEEDED(
+      root->FindFirst(TreeScope_Subtree, condition.Get(), &text_element));
+  ASSERT_NE(nullptr, text_element.Get());
 
   Microsoft::WRL::ComPtr<IUnknown> text_pattern_unknown;
-  ASSERT_HRESULT_SUCCEEDED(
-      first_child->GetCurrentPattern(UIA_TextPatternId, &text_pattern_unknown));
-  EXPECT_EQ(nullptr, text_pattern_unknown.Get());
+  ASSERT_HRESULT_SUCCEEDED(text_element->GetCurrentPattern(
+      UIA_TextPatternId, &text_pattern_unknown));
+  EXPECT_NE(nullptr, text_pattern_unknown.Get());
 
   // Now check that inline text box support is enabled as well.
   expected_mode |= ui::AXMode::kInlineTextBoxes;
   EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
                                ->GetAccessibilityMode());
 
-  base::win::ScopedVariant variant;
-  ASSERT_HRESULT_SUCCEEDED(first_child->GetCurrentPropertyValue(
-      UIA_LabeledByPropertyId, variant.Receive()));
-
+  {
+    base::win::ScopedVariant variant;
+    ASSERT_HRESULT_SUCCEEDED(text_element->GetCurrentPropertyValue(
+        UIA_LabeledByPropertyId, variant.Receive()));
+  }
   // Now check that we have complete accessibility support enabled.
   expected_mode |= ui::AXMode::kScreenReader;
   EXPECT_EQ(expected_mode, content::BrowserAccessibilityStateImpl::GetInstance()
                                ->GetAccessibilityMode());
+
+  {
+    base::win::ScopedVariant variant;
+    ASSERT_HRESULT_SUCCEEDED(text_element->GetCurrentPropertyValue(
+        UIA_AutomationIdPropertyId, variant.Receive()));
+  }
+  // TODO(janewman) UIA_AutomationIdPropertyId currently requires the author
+  // supplied ID property, this requires HTML mode enabled to be available,
+  // crbug 703277 is tracking separating this out so that kHTML can be removed
+  // altogether.
+  expected_mode |= ui::AXMode::kHTML;
+  EXPECT_EQ(
+      expected_mode,
+      BrowserAccessibilityStateImpl::GetInstance()->GetAccessibilityMode());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,

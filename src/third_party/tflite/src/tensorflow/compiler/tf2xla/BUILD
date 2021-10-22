@@ -248,10 +248,10 @@ cc_library(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/synchronization",
         "//third_party/eigen3",
+        "//tensorflow/compiler/xla/service:custom_call_status_internal",
         "//tensorflow/core/framework:numeric_types",
         "//tensorflow/core/platform:bfloat16",
         "//tensorflow/core/platform:stringpiece",
-    ] + [
         # Extra dependencies required for multithreaded runtime objects.
         "//tensorflow/core/platform:blocking_counter",
         "//tensorflow/core/platform:logging",
@@ -266,6 +266,7 @@ cc_library(
     hdrs = ["xla_compiled_cpu_function.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//tensorflow/compiler/xla/service:custom_call_status_internal",
         # Keep dependencies to a minimum here; this library is used in every AOT
         # binary produced by tfcompile.
         "//tensorflow/compiler/xla:cpu_function_runtime",
@@ -1155,6 +1156,7 @@ cc_library(
         "//tensorflow/compiler/jit:xla_compilation_cache",
         "//tensorflow/compiler/mlir:array_container_utils",
         "//tensorflow/compiler/mlir/tensorflow:compile_mlir_util_no_tf_dialect_passes",
+        "@llvm-project//mlir:IR",
     ],
 )
 

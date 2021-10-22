@@ -32,6 +32,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"
@@ -103,6 +104,9 @@ class FullCardRequester : public FullCardRequest::ResultDelegate,
  public:
   FullCardRequester() {}
 
+  FullCardRequester(const FullCardRequester&) = delete;
+  FullCardRequester& operator=(const FullCardRequester&) = delete;
+
   // Takes ownership of |card|.
   void GetFullCard(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jweb_contents,
@@ -139,7 +143,7 @@ class FullCardRequester : public FullCardRequest::ResultDelegate,
 
     driver->browser_autofill_manager()
         ->GetOrCreateFullCardRequest()
-        ->GetFullCard(*card_, AutofillClient::UNMASK_FOR_PAYMENT_REQUEST,
+        ->GetFullCard(*card_, AutofillClient::UnmaskCardReason::kPaymentRequest,
                       AsWeakPtr(),
                       driver->browser_autofill_manager()
                           ->GetAsFullCardRequestUIDelegate());
@@ -171,8 +175,6 @@ class FullCardRequester : public FullCardRequest::ResultDelegate,
 
   std::unique_ptr<CreditCard> card_;
   ScopedJavaGlobalRef<jobject> jdelegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
 };
 
 void OnSubKeysReceived(ScopedJavaGlobalRef<jobject> jdelegate,
@@ -852,9 +854,8 @@ jboolean PersonalDataManagerAndroid::IsFidoAuthenticationAvailable(
           autofill::AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled) {
     return false;
   }
-  // Show the toggle switch only if the authentication flag is enabled.
-  return base::FeatureList::IsEnabled(
-      autofill::features::kAutofillCreditCardAuthentication);
+  // Show the toggle switch only if FIDO authentication is available.
+  return ::autofill::IsCreditCardFidoAuthenticationEnabled();
 }
 
 void PersonalDataManagerAndroid::StartRegionSubKeysRequest(

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/system/sys_info.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
 #include "components/enterprise/browser/reporting/report_request_definition.h"
 #include "components/enterprise/browser/reporting/report_request_queue_generator.h"
@@ -42,6 +43,10 @@ class ReportGenerator {
   };
 
   explicit ReportGenerator(ReportingDelegateFactory* delegate_factory);
+
+  ReportGenerator(const ReportGenerator&) = delete;
+  ReportGenerator& operator=(const ReportGenerator&) = delete;
+
   virtual ~ReportGenerator();
 
   // Asynchronously generates a queue of report requests, providing them to
@@ -73,10 +78,19 @@ class ReportGenerator {
   virtual std::string GetSerialNumber();
 
  private:
+  void GenerateReport(ReportType report_type,
+                      ReportCallback callback,
+                      std::unique_ptr<ReportRequest> basic_request);
+
+  void SetHardwareInfo(
+      std::unique_ptr<ReportRequest> basic_request,
+      base::OnceCallback<void(std::unique_ptr<ReportRequest>)> callback,
+      base::SysInfo::HardwareInfo hardware_info);
+
   void OnBrowserReportReady(
+      std::unique_ptr<ReportRequest> basic_request,
       ReportType report_type,
       ReportCallback callback,
-      std::unique_ptr<ReportRequest> basic_request,
       std::unique_ptr<enterprise_management::BrowserReport> browser_report);
 
   std::unique_ptr<Delegate> delegate_;
@@ -85,8 +99,6 @@ class ReportGenerator {
   BrowserReportGenerator browser_report_generator_;
 
   base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ReportGenerator);
 };
 
 }  // namespace enterprise_reporting

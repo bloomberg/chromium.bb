@@ -4,6 +4,7 @@
 
 #include "cast/sender/cast_app_availability_tracker.h"
 
+#include "cast/common/public/cast_streaming_app_ids.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
@@ -56,11 +57,11 @@ TEST_F(CastAppAvailabilityTrackerTest, RegisterSource) {
 }
 
 TEST_F(CastAppAvailabilityTrackerTest, RegisterSourceReturnsMultipleAppIds) {
+  // Cast Streaming app ids.
   CastMediaSource source1("urn:x-org.chromium.media:source:tab:1",
-                          {"0F5096E8", "85CDB22F"});
+                          GetCastStreamingAppIds());
 
-  // Mirorring app ids.
-  std::vector<std::string> expected_app_ids = {"0F5096E8", "85CDB22F"};
+  std::vector<std::string> expected_app_ids = GetCastStreamingAppIds();
   EXPECT_THAT(tracker_.RegisterSource(source1),
               UnorderedElementsAreArray(expected_app_ids));
   EXPECT_THAT(tracker_.GetRegisteredApps(),
@@ -68,19 +69,21 @@ TEST_F(CastAppAvailabilityTrackerTest, RegisterSourceReturnsMultipleAppIds) {
 }
 
 TEST_F(CastAppAvailabilityTrackerTest, MultipleAppIdsAlreadyTrackingOne) {
-  // One of the mirroring app IDs.
-  CastMediaSource source1("cast:0F5096E8?clientId=123", {"0F5096E8"});
+  // Cast Streaming audio+video app ID.
+  CastMediaSource source1("cast:0F5096E8?clientId=123",
+                          {GetCastStreamingAudioVideoAppId()});
 
-  std::vector<std::string> new_app_ids = {"0F5096E8"};
-  std::vector<std::string> registered_app_ids = {"0F5096E8"};
+  std::vector<std::string> new_app_ids = {GetCastStreamingAudioVideoAppId()};
+  std::vector<std::string> registered_app_ids = {
+      GetCastStreamingAudioVideoAppId()};
   EXPECT_EQ(new_app_ids, tracker_.RegisterSource(source1));
   EXPECT_EQ(registered_app_ids, tracker_.GetRegisteredApps());
 
   CastMediaSource source2("urn:x-org.chromium.media:source:tab:1",
-                          {"0F5096E8", "85CDB22F"});
+                          GetCastStreamingAppIds());
 
-  new_app_ids = {"85CDB22F"};
-  registered_app_ids = {"0F5096E8", "85CDB22F"};
+  new_app_ids = {GetCastStreamingAudioOnlyAppId()};
+  registered_app_ids = GetCastStreamingAppIds();
 
   EXPECT_EQ(new_app_ids, tracker_.RegisterSource(source2));
   EXPECT_THAT(tracker_.GetRegisteredApps(),

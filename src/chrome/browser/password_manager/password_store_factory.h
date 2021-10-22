@@ -14,23 +14,19 @@
 
 class Profile;
 
-namespace password_manager {
-class PasswordStore;
-}
-
 // Singleton that owns all PasswordStores and associates them with
 // Profiles.
 class PasswordStoreFactory
     : public RefcountedBrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<password_manager::PasswordStore> GetForProfile(
+  static scoped_refptr<password_manager::PasswordStoreInterface> GetForProfile(
       Profile* profile,
       ServiceAccessType set);
 
-  static scoped_refptr<password_manager::PasswordStoreInterface>
-  GetInterfaceForProfile(Profile* profile, ServiceAccessType set);
-
   static PasswordStoreFactory* GetInstance();
+
+  PasswordStoreFactory(const PasswordStoreFactory&) = delete;
+  PasswordStoreFactory& operator=(const PasswordStoreFactory&) = delete;
 
  private:
   friend struct base::DefaultSingletonTraits<PasswordStoreFactory>;
@@ -44,8 +40,6 @@ class PasswordStoreFactory
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreFactory);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_FACTORY_H_

@@ -39,14 +39,16 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/base/locale_util.h"
+#include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/first_run/first_run.h"
-#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/ash/hats/hats_config.h"
+#include "chrome/browser/ash/logging.h"
 #include "chrome/browser/ash/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/ash/login/chrome_restart_request.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -82,17 +84,15 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/about_flags.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/sync/ash_turn_sync_on_helper.h"
 #include "chrome/browser/ash/sync/os_sync_util.h"
-#include "chrome/browser/ash/sync/turn_sync_on_helper.h"
+#include "chrome/browser/ash/tether/tether_service.h"
+#include "chrome/browser/ash/tpm_firmware_update_notification.h"
+#include "chrome/browser/ash/u2f_notification.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/logging.h"
-#include "chrome/browser/chromeos/tether/tether_service.h"
-#include "chrome/browser/chromeos/tpm_firmware_update_notification.h"
-#include "chrome/browser/chromeos/u2f_notification.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
@@ -137,7 +137,7 @@
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -167,9 +167,9 @@
 #include "extensions/common/mojom/feature_session_type.mojom.h"
 #include "rlz/buildflags/buildflags.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -179,12 +179,10 @@ using ::signin::ConsentLevel;
 
 // Time to wait for child policy refresh. If that time is exceeded session
 // should start with cached policy.
-constexpr base::TimeDelta kWaitForChildPolicyTimeout =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kWaitForChildPolicyTimeout = base::Seconds(10);
 
 // Timeout to fetch flags from the child account service.
-constexpr base::TimeDelta kFlagsFetchingLoginTimeout =
-    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kFlagsFetchingLoginTimeout = base::Milliseconds(1000);
 
 // Trace event category of the trace events.
 constexpr char kEventCategoryChromeOS[] = "chromeos";
@@ -216,8 +214,7 @@ constexpr char kEventHandleProfileLoad[] = "HandleProfileLoad";
 // is not included.
 constexpr char kEventInitUserDesktop[] = "InitUserDesktop";
 
-constexpr base::TimeDelta kActivityTimeBeforeOnboardingSurvey =
-    base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kActivityTimeBeforeOnboardingSurvey = base::Hours(1);
 
 // A special version used to backfill the OnboardingCompletedVersion for
 // existing users to indicate that they are already completed the onboarding
@@ -241,7 +238,7 @@ base::TimeDelta GetActivityTimeBeforeOnboardingSurvey() {
   if (seconds <= 0)
     return kActivityTimeBeforeOnboardingSurvey;
 
-  return base::TimeDelta::FromSeconds(seconds);
+  return base::Seconds(seconds);
 }
 
 void InitLocaleAndInputMethodsForNewUser(
@@ -534,9 +531,9 @@ class UserSessionManager::DeviceAccountGaiaTokenObserver
 
   // account_manager::AccountManager::Observer overrides:
   void OnTokenUpserted(const account_manager::Account& account) override {
-    if (account.key.account_type != account_manager::AccountType::kGaia)
+    if (account.key.account_type() != account_manager::AccountType::kGaia)
       return;
-    if (account.key.id != account_id_.GetGaiaId())
+    if (account.key.id() != account_id_.GetGaiaId())
       return;
 
     callback_.Run(account_id_);
@@ -1675,7 +1672,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
       // SecureDnsManager is only needed if DNS-over-HTTPS is enabled for the
       // dns-proxy service.
       if (base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH)) {
-        secure_dns_manager_ = std::make_unique<net::SecureDnsManager>(
+        secure_dns_manager_ = std::make_unique<SecureDnsManager>(
             g_browser_process->local_state());
       }
     }
@@ -1732,7 +1729,7 @@ void UserSessionManager::InitializeBrowser(Profile* profile) {
 
   if (features::ShouldUseBrowserSyncConsent() &&
       SyncServiceFactory::IsSyncAllowed(profile)) {
-    turn_sync_on_helper_ = std::make_unique<TurnSyncOnHelper>(profile);
+    ash_turn_sync_on_helper_ = std::make_unique<AshTurnSyncOnHelper>(profile);
   }
 
   // Schedule a flush if profile is not ephemeral.
@@ -1850,7 +1847,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
     }
     if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
       LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
-          chromeos::OobeScreenId(pending_screen));
+          OobeScreenId(pending_screen));
       return false;
     }
     if (!user_manager->IsCurrentUserNew() &&
@@ -1941,7 +1938,7 @@ void UserSessionManager::NotifyUserProfileLoaded(
 }
 
 void UserSessionManager::StartTetherServiceIfPossible(Profile* profile) {
-  TetherService* tether_service = TetherService::Get(profile);
+  auto* tether_service = tether::TetherService::Get(profile);
   if (tether_service)
     tether_service->StartTetherIfPossible();
 }
@@ -2358,7 +2355,7 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
-  turn_sync_on_helper_.reset();
+  ash_turn_sync_on_helper_.reset();
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
   token_observers_.clear();

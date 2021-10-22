@@ -49,8 +49,14 @@ class AppUpdateTest : public testing::Test {
   std::vector<apps::mojom::PermissionPtr> expect_permissions_;
   bool expect_permissions_changed_;
 
+  apps::mojom::InstallReason expect_install_reason_;
+  bool expect_install_reason_changed_;
+
   apps::mojom::InstallSource expect_install_source_;
   bool expect_install_source_changed_;
+
+  std::string expect_policy_id_;
+  bool expect_policy_id_changed_;
 
   apps::mojom::OptionalBool expect_is_platform_app_;
   bool expect_is_platform_app_changed_;
@@ -90,13 +96,11 @@ class AppUpdateTest : public testing::Test {
 
   AccountId account_id_ = AccountId::FromUserEmail("test@gmail.com");
 
-  static constexpr uint32_t kPermissionTypeLocation = 100;
-  static constexpr uint32_t kPermissionTypeNotification = 200;
-
-  apps::mojom::PermissionPtr MakePermission(uint32_t permission_id,
-                                            apps::mojom::TriState value) {
+  apps::mojom::PermissionPtr MakePermission(
+      apps::mojom::PermissionType permission_type,
+      apps::mojom::TriState value) {
     apps::mojom::PermissionPtr permission = apps::mojom::Permission::New();
-    permission->permission_id = permission_id;
+    permission->permission_type = permission_type;
     permission->value_type = apps::mojom::PermissionValueType::kTriState;
     permission->value = static_cast<uint32_t>(value);
     return permission;
@@ -114,7 +118,9 @@ class AppUpdateTest : public testing::Test {
     expect_last_launch_time_changed_ = false;
     expect_install_time_changed_ = false;
     expect_permissions_changed_ = false;
+    expect_install_reason_changed_ = false;
     expect_install_source_changed_ = false;
+    expect_policy_id_changed_ = false;
     expect_is_platform_app_changed_ = false;
     expect_recommendable_changed_ = false;
     expect_searchable_changed_ = false;
@@ -165,8 +171,14 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_permissions_, u.Permissions());
     EXPECT_EQ(expect_permissions_changed_, u.PermissionsChanged());
 
+    EXPECT_EQ(expect_install_reason_, u.InstallReason());
+    EXPECT_EQ(expect_install_reason_changed_, u.InstallReasonChanged());
+
     EXPECT_EQ(expect_install_source_, u.InstallSource());
     EXPECT_EQ(expect_install_source_changed_, u.InstallSourceChanged());
+
+    EXPECT_EQ(expect_policy_id_, u.PolicyId());
+    EXPECT_EQ(expect_policy_id_changed_, u.PolicyIdChanged());
 
     EXPECT_EQ(expect_is_platform_app_, u.IsPlatformApp());
     EXPECT_EQ(expect_is_platform_app_changed_, u.IsPlatformAppChanged());
@@ -226,7 +238,9 @@ class AppUpdateTest : public testing::Test {
     expect_last_launch_time_ = base::Time();
     expect_install_time_ = base::Time();
     expect_permissions_.clear();
+    expect_install_reason_ = apps::mojom::InstallReason::kUnknown;
     expect_install_source_ = apps::mojom::InstallSource::kUnknown;
+    expect_policy_id_ = "";
     expect_is_platform_app_ = apps::mojom::OptionalBool::kUnknown;
     expect_recommendable_ = apps::mojom::OptionalBool::kUnknown;
     expect_searchable_ = apps::mojom::OptionalBool::kUnknown;
@@ -469,17 +483,53 @@ class AppUpdateTest : public testing::Test {
       CheckExpects(u);
     }
 
+    // InstallReason tests.
+    if (state) {
+      state->install_reason = apps::mojom::InstallReason::kUser;
+      expect_install_reason_ = apps::mojom::InstallReason::kUser;
+      expect_install_reason_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->install_reason = apps::mojom::InstallReason::kPolicy;
+      expect_install_reason_ = apps::mojom::InstallReason::kPolicy;
+      expect_install_reason_changed_ = true;
+      CheckExpects(u);
+    }
+
+    // PolicyId tests.
+    if (state) {
+      state->policy_id = "https://app.site/alpha";
+      expect_policy_id_ = "https://app.site/alpha";
+      expect_policy_id_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->policy_id = "https://app.site/delta";
+      expect_policy_id_ = "https://app.site/delta";
+      expect_policy_id_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
     // InstallSource tests.
     if (state) {
-      state->install_source = apps::mojom::InstallSource::kUser;
-      expect_install_source_ = apps::mojom::InstallSource::kUser;
+      state->install_source = apps::mojom::InstallSource::kPlayStore;
+      expect_install_source_ = apps::mojom::InstallSource::kPlayStore;
       expect_install_source_changed_ = false;
       CheckExpects(u);
     }
 
     if (delta) {
-      delta->install_source = apps::mojom::InstallSource::kPolicy;
-      expect_install_source_ = apps::mojom::InstallSource::kPolicy;
+      delta->install_source = apps::mojom::InstallSource::kSync;
+      expect_install_source_ = apps::mojom::InstallSource::kSync;
       expect_install_source_changed_ = true;
       CheckExpects(u);
     }
@@ -691,9 +741,9 @@ class AppUpdateTest : public testing::Test {
     // Permission tests.
 
     if (state) {
-      auto p0 = MakePermission(kPermissionTypeLocation,
+      auto p0 = MakePermission(apps::mojom::PermissionType::kLocation,
                                apps::mojom::TriState::kAllow);
-      auto p1 = MakePermission(kPermissionTypeNotification,
+      auto p1 = MakePermission(apps::mojom::PermissionType::kNotifications,
                                apps::mojom::TriState::kAllow);
       state->permissions.push_back(p0.Clone());
       state->permissions.push_back(p1.Clone());
@@ -705,9 +755,9 @@ class AppUpdateTest : public testing::Test {
 
     if (delta) {
       expect_permissions_.clear();
-      auto p0 = MakePermission(kPermissionTypeNotification,
+      auto p0 = MakePermission(apps::mojom::PermissionType::kNotifications,
                                apps::mojom::TriState::kAllow);
-      auto p1 = MakePermission(kPermissionTypeLocation,
+      auto p1 = MakePermission(apps::mojom::PermissionType::kLocation,
                                apps::mojom::TriState::kBlock);
 
       delta->permissions.push_back(p0.Clone());

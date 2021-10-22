@@ -153,7 +153,6 @@ MouseEvent::MouseEvent(const AtomicString& event_type,
       buttons_(initializer->buttons()),
       related_target_(initializer->relatedTarget()),
       synthetic_event_type_(synthetic_event_type),
-      region_(initializer->region()),
       menu_source_type_(menu_source_type) {
   InitCoordinates(initializer->clientX(), initializer->clientY());
   modifiers_ |= ButtonsToWebInputEventModifiers(buttons_);
@@ -494,14 +493,14 @@ int MouseEvent::layerX() {
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
 
-  return clampTo<int, double>(std::floor(layer_location_.X()));
+  return ClampTo<int, double>(std::floor(layer_location_.X()));
 }
 
 int MouseEvent::layerY() {
   if (!has_cached_relative_position_)
     ComputeRelativePosition();
 
-  return clampTo<int, double>(std::floor(layer_location_.Y()));
+  return ClampTo<int, double>(std::floor(layer_location_.Y()));
 }
 
 double MouseEvent::offsetX() const {

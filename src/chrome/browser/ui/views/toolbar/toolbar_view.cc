@@ -22,6 +22,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/share/share_features.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -85,12 +86,13 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/cascading_property.h"
 #include "ui/views/layout/fill_layout.h"
@@ -108,9 +110,7 @@
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
-#else
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
@@ -123,6 +123,10 @@
 #if defined(USE_AURA)
 #include "ui/aura/window_occlusion_tracker.h"
 #endif
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -260,7 +264,8 @@ void ToolbarView::Init() {
 
   std::unique_ptr<send_tab_to_self::SendTabToSelfToolbarIconView>
       send_tab_to_self_button;
-  if (base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) &&
+  if ((base::FeatureList::IsEnabled(send_tab_to_self::kSendTabToSelfV2) ||
+       share::AreUpcomingSharingFeaturesEnabled()) &&
       !browser_->profile()->IsOffTheRecord()) {
     send_tab_to_self_button =
         std::make_unique<send_tab_to_self::SendTabToSelfToolbarIconView>(
@@ -271,11 +276,9 @@ void ToolbarView::Init() {
       toolbar_account_icon_container;
   bool show_avatar_toolbar_button = true;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (!base::FeatureList::IsEnabled(chromeos::features::kAvatarToolbarButton)) {
-    // ChromeOS only badges Incognito and Guest icons in the browser window.
-    show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
-                                 browser_->profile()->IsGuestSession();
-  }
+  // ChromeOS only badges Incognito and Guest icons in the browser window.
+  show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
+                               browser_->profile()->IsGuestSession();
 #endif
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableToolbarStatusChip)) {
@@ -302,6 +305,16 @@ void ToolbarView::Init() {
   forward_ = AddChildView(std::move(forward));
   reload_ = AddChildView(std::move(reload));
   home_ = AddChildView(std::move(home));
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  // The side search button (if enabled) should sit between the location bar and
+  // the other navigation buttons.
+  if (browser_view_->side_search_controller()) {
+    left_side_panel_button_ = AddChildView(
+        browser_view_->side_search_controller()->CreateToolbarButton());
+  }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+
   location_bar_ = AddChildView(std::move(location_bar));
 
   if (extensions_container)
@@ -775,22 +788,22 @@ void ToolbarView::UpdateTypeAndSeverity(
 
 SkColor ToolbarView::GetDefaultColorForSeverity(
     AppMenuIconController::Severity severity) const {
-  ui::NativeTheme::ColorId color_id;
+  ui::ColorId color_id;
   switch (severity) {
     case AppMenuIconController::Severity::NONE:
       return GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
     case AppMenuIconController::Severity::LOW:
-      color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
+      color_id = ui::kColorAlertLowSeverity;
       break;
     case AppMenuIconController::Severity::MEDIUM:
-      color_id = ui::NativeTheme::kColorId_AlertSeverityMedium;
+      color_id = ui::kColorAlertMediumSeverity;
       break;
     case AppMenuIconController::Severity::HIGH:
-      color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      color_id = ui::kColorAlertHighSeverity;
       break;
   }
-  return GetNativeTheme()->GetSystemColor(color_id);
+  return GetColorProvider()->GetColor(color_id);
 }
 
 ExtensionsToolbarContainer* ToolbarView::GetExtensionsToolbarContainer() {

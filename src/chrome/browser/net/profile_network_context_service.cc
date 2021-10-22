@@ -22,6 +22,7 @@
 #include "base/task/thread_pool.h"
 #include "build/chromeos_buildflags.h"
 #include "cef/libcef/features/runtime.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -68,10 +69,10 @@
 #include "chrome/browser/ash/certificate_provider/certificate_provider.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
+#include "chrome/browser/ash/net/client_cert_store_ash.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service.h"
 #include "chrome/browser/ash/policy/networking/policy_cert_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -433,8 +434,7 @@ void ProfileNetworkContextService::UpdateCTPolicy() {
 }
 
 void ProfileNetworkContextService::ScheduleUpdateCTPolicy() {
-  ct_policy_update_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0),
-                                this,
+  ct_policy_update_timer_.Start(FROM_HERE, base::Seconds(0), this,
                                 &ProfileNetworkContextService::UpdateCTPolicy);
 }
 
@@ -528,11 +528,12 @@ ProfileNetworkContextService::CreateClientCertStore() {
   bool use_system_key_slot = false;
   // Enable client certificates for the Chrome OS sign-in frame, if this feature
   // is not disabled by a flag.
-  // Note that while this applies to the whole sign-in profile, client
-  // certificates will only be selected for the StoragePartition currently used
-  // in the sign-in frame (see SigninPartitionManager).
+  // Note that while this applies to the whole sign-in profile / lock screen
+  // profile, client certificates will only be selected for the StoragePartition
+  // currently used in the sign-in frame (see SigninPartitionManager).
   if (chromeos::switches::IsSigninFrameClientCertsEnabled() &&
-      chromeos::ProfileHelper::IsSigninProfile(profile_)) {
+      (chromeos::ProfileHelper::IsSigninProfile(profile_) ||
+       chromeos::ProfileHelper::IsLockScreenProfile(profile_))) {
     use_system_key_slot = true;
   }
 
@@ -557,12 +558,12 @@ ProfileNetworkContextService::CreateClientCertStore() {
     certificate_provider = cert_provider_service->CreateCertificateProvider();
   }
 
-  // ClientCertStoreChromeOS internally depends on NSS initialization that
-  // happens when the ResourceContext is created. Call GetResourceContext() so
-  // the dependency is explicit. See https://crbug.com/1018972.
+  // `ClientCertStoreAsh` internally depends on NSS initialization that happens
+  // when the `ResourceContext` is created. Call `GetResourceContext()` so the
+  // dependency is explicit. See https://crbug.com/1018972.
   profile_->GetResourceContext();
 
-  return std::make_unique<chromeos::ClientCertStoreChromeOS>(
+  return std::make_unique<chromeos::ClientCertStoreAsh>(
       std::move(certificate_provider), use_system_key_slot, username_hash,
       base::BindRepeating(&CreateCryptoModuleBlockingPasswordDelegate,
                           kCryptoModulePasswordClientAuth));
@@ -647,15 +648,13 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
       ->ConfigureDefaultNetworkContextParams(network_context_params,
                                              cert_verifier_creation_params);
 
-  network_context_params->context_name = std::string("main");
-
   network_context_params->accept_language = ComputeAcceptLanguage();
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(embedder_support::kShortReportingDelay)) {
     network_context_params->reporting_delivery_interval =
-        base::TimeDelta::FromMilliseconds(100);
+        base::Milliseconds(100);
   }
 
   // Always enable the HTTP cache.
@@ -710,7 +709,11 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     network_context_params->file_paths =
         ::network::mojom::NetworkContextFilePaths::New();
 
-    network_context_params->file_paths->data_path = path;
+    network_context_params->file_paths->data_path =
+        path.Append(chrome::kNetworkDataDirname);
+    network_context_params->file_paths->unsandboxed_data_path = path;
+    network_context_params->file_paths->trigger_migration =
+        features::ShouldTriggerNetworkDataMigration();
     // Currently this just contains HttpServerProperties, but that will likely
     // change.
     network_context_params->file_paths->http_server_properties_file_name =

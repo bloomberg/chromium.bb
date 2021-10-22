@@ -5,7 +5,9 @@
 #include "ash/system/time/unified_calendar_view_controller.h"
 
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/time/calendar_view.h"
 #include "ash/system/tray/detailed_view_delegate.h"
+#include "base/i18n/time_formatting.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -13,18 +15,24 @@ namespace ash {
 UnifiedCalendarViewController::UnifiedCalendarViewController(
     UnifiedSystemTrayController* tray_controller)
     : detailed_view_delegate_(
-          std::make_unique<DetailedViewDelegate>(tray_controller)) {}
+          std::make_unique<DetailedViewDelegate>(tray_controller)),
+      calendar_view_controller_(std::make_unique<CalendarViewController>()),
+      tray_controller_(tray_controller) {}
 
 UnifiedCalendarViewController::~UnifiedCalendarViewController() {}
 
-// TODO(jiaminc@): return calendar view once it's implemented.
 views::View* UnifiedCalendarViewController::CreateView() {
-  return nullptr;
+  DCHECK(!view_);
+  view_ = new CalendarView(detailed_view_delegate_.get(), tray_controller_,
+                           calendar_view_controller_.get());
+  return view_;
 }
 
 std::u16string UnifiedCalendarViewController::GetAccessibleName() const {
-  return l10n_util::GetStringUTF16(
-      IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION);
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION,
+      base::TimeFormatWithPattern(calendar_view_controller_->current_date(),
+                                  "MMMM yyyy"));
 }
 
 }  // namespace ash

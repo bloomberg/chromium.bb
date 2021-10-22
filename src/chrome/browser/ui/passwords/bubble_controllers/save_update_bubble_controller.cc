@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
+#include "components/password_manager/core/browser/smart_bubble_stats_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -64,8 +65,8 @@ password_manager::metrics_util::UIDisplayDisposition ComputeDisplayDisposition(
 void CleanStatisticsForSite(Profile* profile, const url::Origin& origin) {
   DCHECK(profile);
   password_manager::PasswordStoreInterface* password_store =
-      PasswordStoreFactory::GetInterfaceForProfile(
-          profile, ServiceAccessType::IMPLICIT_ACCESS)
+      PasswordStoreFactory::GetForProfile(profile,
+                                          ServiceAccessType::IMPLICIT_ACCESS)
           .get();
   password_manager::SmartBubbleStatsStore* stats_store =
       password_store->GetSmartBubbleStatsStore();
@@ -336,7 +337,7 @@ void SaveUpdateBubbleController::ReportInteractions() {
           interaction_stats_.dismissal_count++;
         interaction_stats_.update_time = clock_->Now();
         password_manager::PasswordStoreInterface* password_store =
-            PasswordStoreFactory::GetInterfaceForProfile(
+            PasswordStoreFactory::GetForProfile(
                 profile, ServiceAccessType::IMPLICIT_ACCESS)
                 .get();
         password_manager::SmartBubbleStatsStore* stats_store =

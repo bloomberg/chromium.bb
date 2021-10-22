@@ -78,6 +78,9 @@ class DefaultRuleIterator : public RuleIterator {
       is_done_ = true;
   }
 
+  DefaultRuleIterator(const DefaultRuleIterator&) = delete;
+  DefaultRuleIterator& operator=(const DefaultRuleIterator&) = delete;
+
   bool HasNext() const override { return !is_done_; }
 
   Rule Next() override {
@@ -91,8 +94,6 @@ class DefaultRuleIterator : public RuleIterator {
  private:
   bool is_done_ = false;
   base::Value value_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultRuleIterator);
 };
 
 }  // namespace
@@ -210,6 +211,19 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool off_the_record)
                                 ContentSettingsType::IDLE_DETECTION))),
                             CONTENT_SETTING_NUM_SETTINGS);
 #endif
+
+#if defined(OS_ANDROID)
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.DefaultAutoDarkWebContentSetting",
+                            IntToContentSetting(prefs_->GetInteger(GetPrefName(
+                                ContentSettingsType::AUTO_DARK_WEB_CONTENT))),
+                            CONTENT_SETTING_NUM_SETTINGS);
+
+  UMA_HISTOGRAM_ENUMERATION("ContentSettings.DefaultRequestDesktopSiteSetting",
+                            IntToContentSetting(prefs_->GetInteger(GetPrefName(
+                                ContentSettingsType::REQUEST_DESKTOP_SITE))),
+                            CONTENT_SETTING_NUM_SETTINGS);
+#endif
+
   pref_change_registrar_.Init(prefs_);
   PrefChangeRegistrar::NamedChangeCallback callback = base::BindRepeating(
       &DefaultProvider::OnPreferenceChanged, base::Unretained(this));

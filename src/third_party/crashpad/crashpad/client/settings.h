@@ -20,7 +20,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/scoped_generic.h"
 #include "build/build_config.h"
 #include "util/file/file_io.h"
@@ -46,6 +45,10 @@ struct ScopedLockedFileHandleTraits {
 class Settings {
  public:
   Settings();
+
+  Settings(const Settings&) = delete;
+  Settings& operator=(const Settings&) = delete;
+
   ~Settings();
 
   //! \brief Initializes the settings data store.
@@ -135,6 +138,10 @@ class Settings {
                            const base::FilePath& lockfile_path);
     ScopedLockedFileHandle(ScopedLockedFileHandle&& other);
     ScopedLockedFileHandle& operator=(ScopedLockedFileHandle&& other);
+
+    ScopedLockedFileHandle(const ScopedLockedFileHandle&) = delete;
+    ScopedLockedFileHandle& operator=(const ScopedLockedFileHandle&) = delete;
+
     ~ScopedLockedFileHandle();
 
     // These mirror the non-Fuchsia ScopedLockedFileHandle via ScopedGeneric so
@@ -152,8 +159,6 @@ class Settings {
 
     FileHandle handle_;
     base::FilePath lockfile_path_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedLockedFileHandle);
   };
 #else  // OS_FUCHSIA
   using ScopedLockedFileHandle =
@@ -226,8 +231,6 @@ class Settings {
   base::FilePath file_path_;
 
   InitializationState initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(Settings);
 };
 
 }  // namespace crashpad

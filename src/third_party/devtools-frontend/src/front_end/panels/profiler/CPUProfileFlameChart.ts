@@ -145,7 +145,9 @@ export class ProfileFlameChartDataProvider implements PerfUI.FlameChart.FlameCha
   }
 }
 
-export class CPUProfileFlameChart extends UI.Widget.VBox implements UI.SearchableView.Searchable {
+export class CPUProfileFlameChart extends
+    Common.ObjectWrapper.eventMixin<PerfUI.FlameChart.EventTypes, typeof UI.Widget.VBox>(UI.Widget.VBox)
+        implements UI.SearchableView.Searchable {
   readonly searchableView: UI.SearchableView.SearchableView;
   readonly overviewPane: OverviewPane;
   readonly mainPane: PerfUI.FlameChart.FlameChart;
@@ -171,7 +173,7 @@ export class CPUProfileFlameChart extends UI.Widget.VBox implements UI.Searchabl
     this.mainPane.addEventListener(PerfUI.FlameChart.Events.EntryInvoked, this.onEntryInvoked, this);
     this.entrySelected = false;
     this.mainPane.addEventListener(PerfUI.FlameChart.Events.CanvasFocused, this.onEntrySelected, this);
-    this.overviewPane.addEventListener(PerfUI.OverviewGrid.Events.WindowChanged, this.onWindowChanged, this);
+    this.overviewPane.addEventListener(OverviewPaneEvents.WindowChanged, this.onWindowChanged, this);
     this.dataProvider = dataProvider;
     this.searchResults = [];
   }
@@ -180,9 +182,8 @@ export class CPUProfileFlameChart extends UI.Widget.VBox implements UI.Searchabl
     this.mainPane.focus();
   }
 
-  onWindowChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const windowLeft = event.data.windowTimeLeft;
-    const windowRight = event.data.windowTimeRight;
+  onWindowChanged(event: Common.EventTarget.EventTargetEvent<OverviewPaneWindowChangedEvent>): void {
+    const {windowTimeLeft: windowLeft, windowTimeRight: windowRight} = event.data;
     this.mainPane.setWindowTimes(windowLeft, windowRight, /* animate */ true);
   }
 
@@ -190,9 +191,9 @@ export class CPUProfileFlameChart extends UI.Widget.VBox implements UI.Searchabl
     this.overviewPane.selectRange(timeLeft, timeRight);
   }
 
-  onEntrySelected(event: Common.EventTarget.EventTargetEvent): void {
+  onEntrySelected(event: Common.EventTarget.EventTargetEvent<void|number>): void {
     if (event.data) {
-      const eventIndex = Number(event.data);
+      const eventIndex = event.data;
       this.mainPane.setSelectedEntry(eventIndex);
       if (eventIndex === -1) {
         this.entrySelected = false;
@@ -205,7 +206,7 @@ export class CPUProfileFlameChart extends UI.Widget.VBox implements UI.Searchabl
     }
   }
 
-  onEntryInvoked(event: Common.EventTarget.EventTargetEvent): void {
+  onEntryInvoked(event: Common.EventTarget.EventTargetEvent<number>): void {
     this.onEntrySelected(event);
     this.dispatchEventToListeners(PerfUI.FlameChart.Events.EntryInvoked, event.data);
   }
@@ -308,7 +309,8 @@ export class OverviewCalculator implements PerfUI.TimelineGrid.Calculator {
   }
 }
 
-export class OverviewPane extends UI.Widget.VBox implements PerfUI.FlameChart.FlameChartDelegate {
+export class OverviewPane extends Common.ObjectWrapper.eventMixin<OverviewPaneEventTypes, typeof UI.Widget.VBox>(
+    UI.Widget.VBox) implements PerfUI.FlameChart.FlameChartDelegate {
   overviewContainer: HTMLElement;
   readonly overviewCalculator: OverviewCalculator;
   readonly overviewGrid: PerfUI.OverviewGrid.OverviewGrid;
@@ -329,7 +331,8 @@ export class OverviewPane extends UI.Widget.VBox implements PerfUI.FlameChart.Fl
         (this.overviewContainer.createChild('canvas', 'cpu-profile-flame-chart-overview-canvas') as HTMLCanvasElement);
     this.overviewContainer.appendChild(this.overviewGrid.element);
     this.dataProvider = dataProvider;
-    this.overviewGrid.addEventListener(PerfUI.OverviewGrid.Events.WindowChanged, this.onWindowChanged, this);
+    this.overviewGrid.addEventListener(
+        PerfUI.OverviewGrid.Events.WindowChangedWithPosition, this.onWindowChanged, this);
   }
 
   windowChanged(windowStartTime: number, windowEndTime: number): void {
@@ -348,12 +351,13 @@ export class OverviewPane extends UI.Widget.VBox implements PerfUI.FlameChart.Fl
     this.overviewGrid.setWindow((timeLeft - startTime) / totalTime, (timeRight - startTime) / totalTime);
   }
 
-  onWindowChanged(event: Common.EventTarget.EventTargetEvent): void {
+  onWindowChanged(event: Common.EventTarget.EventTargetEvent<PerfUI.OverviewGrid.WindowChangedWithPositionEvent>):
+      void {
     const windowPosition = {windowTimeLeft: event.data.rawStartValue, windowTimeRight: event.data.rawEndValue};
     this.windowTimeLeft = windowPosition.windowTimeLeft;
     this.windowTimeRight = windowPosition.windowTimeRight;
 
-    this.dispatchEventToListeners(PerfUI.OverviewGrid.Events.WindowChanged, windowPosition);
+    this.dispatchEventToListeners(OverviewPaneEvents.WindowChanged, windowPosition);
   }
 
   timelineData(): PerfUI.FlameChart.TimelineData|null {
@@ -445,3 +449,16 @@ export class OverviewPane extends UI.Widget.VBox implements PerfUI.FlameChart.Fl
     this.overviewCanvas.style.height = height + 'px';
   }
 }
+
+export const enum OverviewPaneEvents {
+  WindowChanged = 'WindowChanged',
+}
+
+export interface OverviewPaneWindowChangedEvent {
+  windowTimeLeft: number;
+  windowTimeRight: number;
+}
+
+export type OverviewPaneEventTypes = {
+  [OverviewPaneEvents.WindowChanged]: OverviewPaneWindowChangedEvent,
+};

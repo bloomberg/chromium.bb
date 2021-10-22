@@ -9,7 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
-#include "ash/wm/desks/expanded_state_new_desk_button.h"
+#include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
@@ -18,7 +18,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform_util.h"
 
 namespace ash {
 
@@ -26,17 +26,15 @@ namespace {
 
 constexpr gfx::Transform kEndTransform;
 
-constexpr base::TimeDelta kBarBackgroundDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kBarBackgroundDuration = base::Milliseconds(200);
 
 constexpr base::TimeDelta kExistingMiniViewsAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 constexpr base::TimeDelta kRemovedMiniViewsFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(200);
+    base::Milliseconds(200);
 
-constexpr base::TimeDelta kZeroStateAnimationDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kZeroStateAnimationDuration = base::Milliseconds(200);
 
 // Scale for entering/exiting zero state.
 constexpr float kEnterOrExitZeroStateScale = 0.6f;
@@ -220,7 +218,7 @@ void PerformRemoveDeskMiniViewAnimation(
     DeskMiniView* removed_mini_view,
     std::vector<DeskMiniView*> mini_views_left,
     std::vector<DeskMiniView*> mini_views_right,
-    ExpandedStateNewDeskButton* expanded_state_new_desk_button,
+    ExpandedDesksBarButton* expanded_state_new_desk_button,
     int shift_x) {
   gfx::Transform mini_views_left_begin_transform;
   mini_views_left_begin_transform.Translate(shift_x, 0);

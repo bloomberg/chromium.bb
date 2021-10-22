@@ -89,8 +89,10 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
-  self.topToolbar = [self createTopToolbar];
-  [self.view addSubview:self.topToolbar];
+  if (self.hasTopToolbar) {
+    self.topToolbar = [self createTopToolbar];
+    [self.view addSubview:self.topToolbar];
+  }
 
   self.imageView = [self createImageView];
   UILabel* title = [self createTitleLabel];
@@ -98,6 +100,12 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
   NSArray* stackSubviews = @[ self.imageView, title, subtitle ];
   self.stackView = [self createStackViewWithArrangedSubviews:stackSubviews];
+  if (self.tighterLayout) {
+    [title setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                             forAxis:UILayoutConstraintAxisVertical];
+    [subtitle setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                forAxis:UILayoutConstraintAxisVertical];
+  }
 
   UIScrollView* scrollView = [self createScrollView];
   [scrollView addSubview:self.stackView];
@@ -106,10 +114,12 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   self.view.preservesSuperviewLayoutMargins = YES;
   UILayoutGuide* margins = self.view.layoutMarginsGuide;
 
-  // Toolbar constraints to the top.
-  AddSameConstraintsToSides(
-      self.topToolbar, self.view.safeAreaLayoutGuide,
-      LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading);
+  if (self.hasTopToolbar) {
+    // Toolbar constraints to the top.
+    AddSameConstraintsToSides(
+        self.topToolbar, self.view.safeAreaLayoutGuide,
+        LayoutSides::kTrailing | LayoutSides::kTop | LayoutSides::kLeading);
+  }
 
   // Scroll View constraints to the height of its content. Can be overridden.
   NSLayoutConstraint* heightConstraint = [scrollView.heightAnchor
@@ -211,10 +221,25 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
                                                   .bottomAnchor];
   }
 
-  [NSLayoutConstraint activateConstraints:@[
-    [scrollView.topAnchor
-        constraintGreaterThanOrEqualToAnchor:self.topToolbar.bottomAnchor],
-  ]];
+  if (self.hasTopToolbar) {
+    if (self.tighterLayout) {
+      [NSLayoutConstraint activateConstraints:@[
+        [scrollView.topAnchor
+            constraintEqualToAnchor:self.topToolbar.bottomAnchor],
+      ]];
+    } else {
+      [NSLayoutConstraint activateConstraints:@[
+        [scrollView.topAnchor
+            constraintGreaterThanOrEqualToAnchor:self.topToolbar.bottomAnchor],
+      ]];
+    }
+  } else {
+    [NSLayoutConstraint activateConstraints:@[
+      [scrollView.topAnchor
+          constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor
+                         constant:self.customSpacingBeforeImageIfNoToolbar],
+    ]];
+  }
 
   if (!self.imageHasFixedSize) {
     // Constrain the image to the scroll view size and its aspect ratio.
@@ -233,6 +258,11 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
           constraintEqualToAnchor:self.imageView.heightAnchor
                        multiplier:imageAspectRatio],
     ]];
+  } else if (self.tighterLayout) {
+    [self.imageView setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                      forAxis:UILayoutConstraintAxisHorizontal];
+    [self.imageView setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                      forAxis:UILayoutConstraintAxisVertical];
   }
 }
 
@@ -348,12 +378,18 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 // Handle taps on the dismiss button.
 - (void)didTapDismissBarButton {
   DCHECK(self.showDismissBarButton);
-  [self.actionHandler confirmationAlertDismissAction];
+  if ([self.actionHandler
+          respondsToSelector:@selector(confirmationAlertDismissAction)]) {
+    [self.actionHandler confirmationAlertDismissAction];
+  }
 }
 
 // Handle taps on the help button.
 - (void)didTapHelpButton {
-  [self.actionHandler confirmationAlertLearnMoreAction];
+  if ([self.actionHandler
+          respondsToSelector:@selector(confirmationAlertLearnMoreAction)]) {
+    [self.actionHandler confirmationAlertLearnMoreAction];
+  }
 }
 
 // Handle taps on the primary action button.
@@ -364,16 +400,18 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 // Handle taps on the secondary action button
 - (void)didTapSecondaryActionButton {
   DCHECK(self.secondaryActionAvailable);
-  [self.actionHandler confirmationAlertSecondaryAction];
+  if ([self.actionHandler
+          respondsToSelector:@selector(confirmationAlertSecondaryAction)]) {
+    [self.actionHandler confirmationAlertSecondaryAction];
+  }
 }
 
 - (void)didTapTertiaryActionButton {
   DCHECK(self.tertiaryActionAvailable);
-  if (![self.actionHandler
+  if ([self.actionHandler
           respondsToSelector:@selector(confirmationAlertTertiaryAction)]) {
-    return;
+    [self.actionHandler confirmationAlertTertiaryAction];
   }
-  [self.actionHandler confirmationAlertTertiaryAction];
 }
 
 // Helper to create the top toolbar.
@@ -388,11 +426,11 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   NSMutableArray* regularHeightItems = [[NSMutableArray alloc] init];
   NSMutableArray* compactHeightItems = [[NSMutableArray alloc] init];
   if (self.helpButtonAvailable) {
-    UIBarButtonItem* helpButton = [[UIBarButtonItem alloc]
-        initWithImage:[UIImage imageNamed:@"confirmation_alert_ic_help"]
-                style:UIBarButtonItemStylePlain
-               target:self
-               action:@selector(didTapHelpButton)];
+    UIBarButtonItem* helpButton =
+        [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"help_icon"]
+                                         style:UIBarButtonItemStylePlain
+                                        target:self
+                                        action:@selector(didTapHelpButton)];
     [regularHeightItems addObject:helpButton];
     [compactHeightItems addObject:helpButton];
 
@@ -507,6 +545,10 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   return subtitle;
 }
 
+- (BOOL)hasTopToolbar {
+  return self.helpButtonAvailable || self.showDismissBarButton;
+}
+
 // Helper to create the scroll view.
 - (UIScrollView*)createScrollView {
   UIScrollView* scrollView = [[UIScrollView alloc] init];
@@ -539,9 +581,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 // Helper to create the primary action button.
 - (UIButton*)createPrimaryActionButton {
   BOOL pointerInteractionEnabled = NO;
-  if (@available(iOS 13.4, *)) {
-    pointerInteractionEnabled = self.pointerInteractionEnabled;
-  }
+  pointerInteractionEnabled = self.pointerInteractionEnabled;
   UIButton* primaryActionButton =
       PrimaryActionButton(pointerInteractionEnabled);
   [primaryActionButton addTarget:self
@@ -580,12 +620,10 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
       kConfirmationAlertSecondaryActionAccessibilityIdentifier;
   secondaryActionButton.titleLabel.adjustsFontSizeToFitWidth = YES;
 
-  if (@available(iOS 13.4, *)) {
-    if (self.pointerInteractionEnabled) {
-      secondaryActionButton.pointerInteractionEnabled = YES;
-      secondaryActionButton.pointerStyleProvider =
-          CreateOpaqueButtonPointerStyleProvider();
-    }
+  if (self.pointerInteractionEnabled) {
+    secondaryActionButton.pointerInteractionEnabled = YES;
+    secondaryActionButton.pointerStyleProvider =
+        CreateOpaqueButtonPointerStyleProvider();
   }
 
   return secondaryActionButton;
@@ -611,12 +649,10 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   tertiaryActionButton.accessibilityIdentifier =
       kConfirmationAlertTertiaryActionAccessibilityIdentifier;
 
-  if (@available(iOS 13.4, *)) {
-    if (self.pointerInteractionEnabled) {
-      tertiaryActionButton.pointerInteractionEnabled = YES;
-      tertiaryActionButton.pointerStyleProvider =
-          CreateOpaqueButtonPointerStyleProvider();
-    }
+  if (self.pointerInteractionEnabled) {
+    tertiaryActionButton.pointerInteractionEnabled = YES;
+    tertiaryActionButton.pointerStyleProvider =
+        CreateOpaqueButtonPointerStyleProvider();
   }
 
   return tertiaryActionButton;

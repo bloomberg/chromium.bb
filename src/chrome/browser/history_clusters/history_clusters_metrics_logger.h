@@ -14,15 +14,18 @@ namespace history_clusters {
 // The initial state that describes how an interaction with the HistoryClusters
 // UI was started.
 //
-// Keep in sync with HistoryClustersInitialState in enums.xml.
+// Keep in sync with HistoryClustersInitialState in
+// tools/metrics/histograms/enums.xml.
 enum class HistoryClustersInitialState {
   kUnknown = 0,
   // The HistoryClusters UI was opened via direct URL, i.e., not opened via any
   // other surface/path such as an omnibox action or other UI surface.
   kDirectNavigation = 1,
-
+  // The HistoryClusters UI was opened indirectly; e.g., using the link the
+  // chrome://history sidebar.
+  kIndirectNavigation = 2,
   // Add new values above this line.
-  kMax = kDirectNavigation,
+  kMaxValue = kIndirectNavigation,
 };
 
 // The final state, or outcome, of an interaction on the HistoryClusters UI.
@@ -33,10 +36,12 @@ enum class HistoryClustersFinalState {
   // The interaction with the HistoryClusters UI ended with a click on a link.
   kLinkClick = 1,
   // The UI interaction ended without opening anything on the page.
+  // TODO(manukh): Currently, clicking on the side bar links (e.g. the link to
+  //  tabs from other devices) will record the final state as `kCloseTab`. We
+  //  should differentiate this case.
   kCloseTab = 2,
-
   // Add new values above this line.
-  kMax = kCloseTab,
+  kMaxValue = kCloseTab,
 };
 
 // HistoryClustersMetricsLogger contains all the metrics/events associated with
@@ -66,6 +71,8 @@ class HistoryClustersMetricsLogger
     navigation_id_ = navigation_id;
   }
 
+  void IncrementLinksOpenedCount() { links_opened_count_++; }
+
  private:
   // The navigation ID of the navigation handle that this data is associated
   // with, used for recording the metrics to UKM.
@@ -85,6 +92,12 @@ class HistoryClustersMetricsLogger
   // The number of times in this interaction with HistoryClusters included the
   // user toggled to the basic History UI from the HistoryClusters UI.
   int num_toggles_to_basic_history_ = 0;
+
+  // The number of links opened from the HistoryClusters UI. Includes both
+  // same-tab and new-tab/window navigations. Includes both visit and related
+  // search links. Does not include sidebar navigations (e.g. 'Clear browsing
+  // data').
+  int links_opened_count_ = 0;
 };
 
 }  // namespace history_clusters

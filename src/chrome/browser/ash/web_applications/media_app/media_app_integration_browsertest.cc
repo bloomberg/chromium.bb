@@ -55,9 +55,6 @@ constexpr char kRaw378x272[] = "raw.orf";
 // A 1-second long 648x486 VP9-encoded video with stereo Opus-encoded audio.
 constexpr char kFileVideoVP9[] = "world.webm";
 
-// A 5-second long 96kb/s Ogg-Vorbis 44.1kHz mono audio file.
-constexpr char kFileAudioOgg[] = "music.ogg";
-
 constexpr char kUnhandledRejectionScript[] =
     "window.dispatchEvent("
     "new CustomEvent('simulate-unhandled-rejection-for-test'));";
@@ -71,15 +68,7 @@ constexpr char kDomExceptionScript[] =
     "new "
     "CustomEvent('simulate-unhandled-rejection-with-dom-exception-for-test'));";
 
-class MediaAppIntegrationTest : public SystemWebAppIntegrationTest {
- public:
-  MediaAppIntegrationTest() {
-    feature_list_.InitAndEnableFeature(ash::features::kMediaAppHandlesAudio);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
+using MediaAppIntegrationTest = SystemWebAppIntegrationTest;
 
 class MediaAppIntegrationWithFilesAppTest : public MediaAppIntegrationTest {
   void SetUpOnMainThread() override {
@@ -366,8 +355,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   const auto kTestFile = folder.files()[0];
   // Stamp the file with a time far in the past, so it can be "updated".
   // Note: Add a bit to the epoch to workaround https://crbug.com/1080434.
-  TouchFileSync(kTestFile,
-                base::Time::UnixEpoch() + base::TimeDelta::FromDays(1));
+  TouchFileSync(kTestFile, base::Time::UnixEpoch() + base::Days(1));
 
   folder.Open(kTestFile);
   content::WebContents* app = PrepareActiveBrowserForTest();
@@ -683,56 +671,6 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppAllProfilesTest,
   histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromFileManager", 1);
 }
 
-// Ensures both the "audio" and "gallery" flavours of the MediaApp can be
-// launched at the same time when launched via the files app.
-IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppAllProfilesTest,
-                       FileOpenCanLaunchBothAudioAndImages) {
-  base::HistogramTester histograms;
-
-  WaitForTestSystemAppInstall();
-
-  file_manager::test::FolderInMyFiles folder(profile());
-  folder.Add({TestFile(kFileJpeg640x480), TestFile(kFileAudioOgg)});
-
-  // Launch with the audio file.
-  EXPECT_EQ(folder.Open(TestFile(kFileAudioOgg)),
-            platform_util::OPEN_SUCCEEDED);
-  Browser* audio_app_browser = chrome::FindBrowserWithActiveWindow();
-  std::string audio_app_name =
-      web_app::GetAppIdFromApplicationName(audio_app_browser->app_name());
-
-  // Launch with the image file.
-  EXPECT_EQ(folder.Open(TestFile(kFileJpeg640x480)),
-            platform_util::OPEN_SUCCEEDED);
-  Browser* image_app_browser = chrome::FindBrowserWithActiveWindow();
-  content::WebContents* image_web_ui =
-      image_app_browser->tab_strip_model()->GetActiveWebContents();
-  PrepareAppForTest(image_web_ui);
-  std::string image_app_name =
-      web_app::GetAppIdFromApplicationName(image_app_browser->app_name());
-
-  EXPECT_NE(image_app_browser, audio_app_browser);
-  EXPECT_NE(image_app_name, audio_app_name);
-
-  EXPECT_TRUE(web_app::IsBrowserForSystemWebApp(image_app_browser,
-                                                SystemAppType::MEDIA));
-  EXPECT_TRUE(web_app::IsBrowserForSystemWebApp(audio_app_browser,
-                                                SystemAppType::MEDIA_AUDIO));
-
-  EXPECT_EQ(image_app_name,
-            *GetManager().GetAppIdForSystemApp(SystemAppType::MEDIA));
-  EXPECT_EQ(audio_app_name,
-            *GetManager().GetAppIdForSystemApp(SystemAppType::MEDIA_AUDIO));
-
-  // Verify that launch params were correctly proceed by the "second" app to
-  // launch.
-  // TODO(b/197184322): Inspect the audio app UI once it is no longer in flux.
-  EXPECT_EQ("640x480", WaitForImageAlt(image_web_ui, kFileJpeg640x480));
-
-  // Check the metrics are recorded.
-  histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromFileManager", 2);
-}
-
 // Test that the MediaApp can navigate other files in the directory of a file
 // that was opened, even if those files have changed since launch.
 IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppAllProfilesTest,
@@ -753,8 +691,7 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppAllProfilesTest,
 
   // Stamp the file with a time far in the past, so it can be "updated".
   // Note: Add a bit to the epoch to workaround https://crbug.com/1080434.
-  TouchFileSync(copied_jpeg_640x480,
-                base::Time::UnixEpoch() + base::TimeDelta::FromDays(1));
+  TouchFileSync(copied_jpeg_640x480, base::Time::UnixEpoch() + base::Days(1));
 
   // Sent an open request using only the 640x480 JPEG file.
   folder.Open(copied_jpeg_640x480);

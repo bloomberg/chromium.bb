@@ -35,11 +35,14 @@ class DisplayLockHandle {
  public:
   typedef base::OnceClosure ReleaseCallback;
   explicit DisplayLockHandle(ReleaseCallback callback);
+
+  DisplayLockHandle(const DisplayLockHandle&) = delete;
+  DisplayLockHandle& operator=(const DisplayLockHandle&) = delete;
+
   ~DisplayLockHandle();
 
  private:
   ReleaseCallback release_callback_;
-  DISALLOW_COPY_AND_ASSIGN(DisplayLockHandle);
 };
 
 // The Tracker provides a backend for displaying feature
@@ -61,6 +64,36 @@ class Tracker : public KeyedService, public base::SupportsUserData {
     NOT_READY = 2
   };
 
+  // Represents the action taken by the user on the snooze UI.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.feature_engagement
+  enum class SnoozeAction : int {
+    // User chose to snooze the IPH.
+    SNOOZED = 1,
+    // User chose to dismiss the IPH.
+    DISMISSED = 2,
+    // Constant used by the histogram macros.
+    kMaxValue = DISMISSED
+  };
+
+  // Result of the backend query for whether or not to trigger any help UI.
+  // A similar class will also be added to the java layer.
+  struct TriggerDetails {
+   public:
+    TriggerDetails(bool should_trigger_iph, bool should_show_snooze);
+    TriggerDetails(const TriggerDetails& trigger_details);
+    ~TriggerDetails();
+
+    // Whether or not to show the help UI.
+    bool ShouldShowIph() const;
+
+    // Whether to show a snooze option in the help UI.
+    bool ShouldShowSnooze() const;
+
+   private:
+    bool should_trigger_iph_;
+    bool should_show_snooze_;
+  };
+
 #if defined(OS_ANDROID)
   // Returns a Java object of the type Tracker for the given Tracker.
   static base::android::ScopedJavaLocalRef<jobject> GetJavaObject(
@@ -79,6 +112,9 @@ class Tracker : public KeyedService, public base::SupportsUserData {
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
       leveldb_proto::ProtoDatabaseProvider* db_provider);
 
+  Tracker(const Tracker&) = delete;
+  Tracker& operator=(const Tracker&) = delete;
+
   // Must be called whenever an event happens.
   virtual void NotifyEvent(const std::string& event) = 0;
 
@@ -89,6 +125,11 @@ class Tracker : public KeyedService, public base::SupportsUserData {
   // of feature enlightenment ends.
   virtual bool ShouldTriggerHelpUI(const base::Feature& feature)
       WARN_UNUSED_RESULT = 0;
+
+  // For callers interested in showing a snooze button. For other callers, use
+  // the ShouldTriggerHelpUI(..) method.
+  virtual TriggerDetails ShouldTriggerHelpUIWithSnooze(
+      const base::Feature& feature) = 0;
 
   // Invoking this is basically the same as being allowed to invoke
   // ShouldTriggerHelpUI(...) without requiring to show the in-product help.
@@ -132,6 +173,12 @@ class Tracker : public KeyedService, public base::SupportsUserData {
   // particular |feature|.
   virtual void Dismissed(const base::Feature& feature) = 0;
 
+  // For callers interested in showing a snooze button. For other callers, use
+  // the Dismissed(..) method.
+  virtual void DismissedWithSnooze(
+      const base::Feature& feature,
+      absl::optional<SnoozeAction> snooze_action) = 0;
+
   // Acquiring a display lock means that no in-product help can be displayed
   // while it is held. To release the lock, delete the handle.
   // If in-product help is already displayed while the display lock is
@@ -160,9 +207,6 @@ class Tracker : public KeyedService, public base::SupportsUserData {
 
  protected:
   Tracker() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Tracker);
 };
 
 }  // namespace feature_engagement

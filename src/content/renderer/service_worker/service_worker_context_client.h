@@ -41,7 +41,7 @@
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -113,6 +113,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
       int32_t service_worker_route_id,
       const std::vector<std::string>& cors_exempt_header_list);
+
+  ServiceWorkerContextClient(const ServiceWorkerContextClient&) = delete;
+  ServiceWorkerContextClient& operator=(const ServiceWorkerContextClient&) =
+      delete;
+
   // Called on the initiator thread.
   ~ServiceWorkerContextClient() override;
 
@@ -285,8 +290,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   int32_t service_worker_route_id_;
 
   std::vector<std::string> cors_exempt_header_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };
 
 }  // namespace content

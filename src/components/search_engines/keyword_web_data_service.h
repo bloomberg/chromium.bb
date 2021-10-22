@@ -54,17 +54,22 @@ class KeywordWebDataService : public WebDataServiceBase {
   class BatchModeScoper {
    public:
     explicit BatchModeScoper(KeywordWebDataService* service);
+
+    BatchModeScoper(const BatchModeScoper&) = delete;
+    BatchModeScoper& operator=(const BatchModeScoper&) = delete;
+
     ~BatchModeScoper();
 
    private:
     KeywordWebDataService* service_;
-
-    DISALLOW_COPY_AND_ASSIGN(BatchModeScoper);
   };
 
   KeywordWebDataService(
       scoped_refptr<WebDatabaseService> wdbs,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+
+  KeywordWebDataService(const KeywordWebDataService&) = delete;
+  KeywordWebDataService& operator=(const KeywordWebDataService&) = delete;
 
   // As the database processes requests at a later date, all deletion is done on
   // the background sequence.
@@ -104,8 +109,6 @@ class KeywordWebDataService : public WebDataServiceBase {
   KeywordTable::Operations queued_keyword_operations_;
   base::RetainingOneShotTimer timer_;  // Used to commit updates no more often
                                        // than every five seconds.
-
-  DISALLOW_COPY_AND_ASSIGN(KeywordWebDataService);
 };
 
 #endif  // COMPONENTS_SEARCH_ENGINES_KEYWORD_WEB_DATA_SERVICE_H__

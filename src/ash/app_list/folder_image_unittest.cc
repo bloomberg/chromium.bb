@@ -39,6 +39,9 @@ class TestFolderImageObserver : public FolderImageObserver {
  public:
   TestFolderImageObserver() : updated_flag_(false) {}
 
+  TestFolderImageObserver(const TestFolderImageObserver&) = delete;
+  TestFolderImageObserver& operator=(const TestFolderImageObserver&) = delete;
+
   bool updated() const { return updated_flag_; }
 
   void Reset() { updated_flag_ = false; }
@@ -50,8 +53,6 @@ class TestFolderImageObserver : public FolderImageObserver {
 
  private:
   bool updated_flag_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestFolderImageObserver);
 };
 
 }  // namespace
@@ -61,6 +62,9 @@ class FolderImageTest
       public ::testing::WithParamInterface<AppListConfigType> {
  public:
   FolderImageTest() = default;
+
+  FolderImageTest(const FolderImageTest&) = delete;
+  FolderImageTest& operator=(const FolderImageTest&) = delete;
 
   ~FolderImageTest() override = default;
 
@@ -98,9 +102,6 @@ class FolderImageTest
   std::unique_ptr<FolderImage> folder_image_;
 
   TestFolderImageObserver observer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FolderImageTest);
 };
 INSTANTIATE_TEST_SUITE_P(All,
                          FolderImageTest,

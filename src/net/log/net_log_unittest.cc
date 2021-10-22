@@ -43,18 +43,18 @@ TEST(NetLogTest, BasicGlobalEvents) {
   auto entries = net_log.GetEntries();
   EXPECT_EQ(0u, entries.size());
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(1234));
+  task_environment.FastForwardBy(base::Seconds(1234));
   base::TimeTicks ticks0 = base::TimeTicks::Now();
 
   net_log.AddGlobalEntry(NetLogEventType::CANCELLED);
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(5678));
+  task_environment.FastForwardBy(base::Seconds(5678));
   base::TimeTicks ticks1 = base::TimeTicks::Now();
   EXPECT_LE(ticks0, ticks1);
 
   net_log.AddGlobalEntry(NetLogEventType::FAILED);
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(91011));
+  task_environment.FastForwardBy(base::Seconds(91011));
   EXPECT_LE(ticks1, base::TimeTicks::Now());
 
   entries = net_log.GetEntries();
@@ -85,32 +85,32 @@ TEST(NetLogTest, BasicEventsWithSource) {
   auto entries = net_log.GetEntries();
   EXPECT_EQ(0u, entries.size());
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(9876));
+  task_environment.FastForwardBy(base::Seconds(9876));
   base::TimeTicks source0_start_ticks = base::TimeTicks::Now();
 
   NetLogWithSource source0 =
       NetLogWithSource::Make(&net_log, NetLogSourceType::URL_REQUEST);
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment.FastForwardBy(base::Seconds(1));
   base::TimeTicks source0_event0_ticks = base::TimeTicks::Now();
   source0.BeginEvent(NetLogEventType::REQUEST_ALIVE);
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(5432));
+  task_environment.FastForwardBy(base::Seconds(5432));
   base::TimeTicks source1_start_ticks = base::TimeTicks::Now();
 
   NetLogWithSource source1 =
       NetLogWithSource::Make(&net_log, NetLogSourceType::SOCKET);
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment.FastForwardBy(base::Seconds(1));
   base::TimeTicks source1_event0_ticks = base::TimeTicks::Now();
   source1.BeginEvent(NetLogEventType::SOCKET_ALIVE);
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(10));
+  task_environment.FastForwardBy(base::Seconds(10));
   base::TimeTicks source1_event1_ticks = base::TimeTicks::Now();
   source1.EndEvent(NetLogEventType::SOCKET_ALIVE);
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment.FastForwardBy(base::Seconds(1));
   base::TimeTicks source0_event1_ticks = base::TimeTicks::Now();
   source0.EndEvent(NetLogEventType::REQUEST_ALIVE);
 
-  task_environment.FastForwardBy(base::TimeDelta::FromSeconds(123));
+  task_environment.FastForwardBy(base::Seconds(123));
 
   entries = net_log.GetEntries();
   ASSERT_EQ(4u, entries.size());
@@ -241,6 +241,9 @@ class NetLogTestThread : public base::SimpleThread {
         net_log_(nullptr),
         start_event_(nullptr) {}
 
+  NetLogTestThread(const NetLogTestThread&) = delete;
+  NetLogTestThread& operator=(const NetLogTestThread&) = delete;
+
   // We'll wait for |start_event| to be triggered before calling a subclass's
   // subclass's RunTestThread() function.
   void Init(NetLog* net_log, base::WaitableEvent* start_event) {
@@ -264,14 +267,16 @@ class NetLogTestThread : public base::SimpleThread {
   // Only triggered once all threads have been created, to make it less likely
   // each thread completes before the next one starts.
   base::WaitableEvent* start_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetLogTestThread);
 };
 
 // A thread that adds a bunch of events to the NetLog.
 class AddEventsTestThread : public NetLogTestThread {
  public:
   AddEventsTestThread() = default;
+
+  AddEventsTestThread(const AddEventsTestThread&) = delete;
+  AddEventsTestThread& operator=(const AddEventsTestThread&) = delete;
+
   ~AddEventsTestThread() override = default;
 
  private:
@@ -279,14 +284,16 @@ class AddEventsTestThread : public NetLogTestThread {
     for (int i = 0; i < kEvents; ++i)
       AddEvent(net_log_);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(AddEventsTestThread);
 };
 
 // A thread that adds and removes an observer from the NetLog repeatedly.
 class AddRemoveObserverTestThread : public NetLogTestThread {
  public:
   AddRemoveObserverTestThread() = default;
+
+  AddRemoveObserverTestThread(const AddRemoveObserverTestThread&) = delete;
+  AddRemoveObserverTestThread& operator=(const AddRemoveObserverTestThread&) =
+      delete;
 
   ~AddRemoveObserverTestThread() override { EXPECT_TRUE(!observer_.net_log()); }
 
@@ -305,8 +312,6 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
   }
 
   CountingObserver observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddRemoveObserverTestThread);
 };
 
 // Creates |kThreads| threads of type |ThreadType| and then runs them all

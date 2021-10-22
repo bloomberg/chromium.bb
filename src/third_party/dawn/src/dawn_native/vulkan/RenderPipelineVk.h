@@ -26,11 +26,15 @@ namespace dawn_native { namespace vulkan {
 
     class RenderPipeline final : public RenderPipelineBase {
       public:
-        static ResultOrError<Ref<RenderPipeline>> Create(
-            Device* device,
-            const RenderPipelineDescriptor* descriptor);
+        static Ref<RenderPipeline> CreateUninitialized(Device* device,
+                                                       const RenderPipelineDescriptor* descriptor);
+        static void InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
+                                    WGPUCreateRenderPipelineAsyncCallback callback,
+                                    void* userdata);
 
         VkPipeline GetHandle() const;
+
+        MaybeError Initialize() override;
 
         // Dawn API
         void SetLabelImpl() override;
@@ -38,7 +42,6 @@ namespace dawn_native { namespace vulkan {
       private:
         ~RenderPipeline() override;
         using RenderPipelineBase::RenderPipelineBase;
-        MaybeError Initialize(const RenderPipelineDescriptor* descriptor);
 
         struct PipelineVertexInputStateCreateInfoTemporaryAllocations {
             std::array<VkVertexInputBindingDescription, kMaxVertexBuffers> bindings;

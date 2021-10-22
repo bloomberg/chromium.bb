@@ -78,9 +78,10 @@ class AppListSyncUpdateWaiter
     service_->AddObserverAndStart(this);
   }
 
-  ~AppListSyncUpdateWaiter() override {
-    service_->RemoveObserver(this);
-  }
+  AppListSyncUpdateWaiter(const AppListSyncUpdateWaiter&) = delete;
+  AppListSyncUpdateWaiter& operator=(const AppListSyncUpdateWaiter&) = delete;
+
+  ~AppListSyncUpdateWaiter() override { service_->RemoveObserver(this); }
 
   // StatusChangeChecker:
   bool IsExitConditionSatisfied(std::ostream* os) override {
@@ -97,8 +98,6 @@ class AppListSyncUpdateWaiter
  private:
   app_list::AppListSyncableService* const service_;
   bool service_updated_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListSyncUpdateWaiter);
 };
 
 }  // namespace

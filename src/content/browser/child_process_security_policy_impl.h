@@ -259,6 +259,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
     // AddFutureIsolatedOrigins and AddIsolatedOriginForBrowsingInstance).
     bool CanAccessDataForOrigin(const url::Origin& origin);
 
+    // Returns the original `child_id` used to create the handle.
+    int child_id() { return child_id_; }
+
    private:
     friend class ChildProcessSecurityPolicyImpl;
     // |child_id| - The ID of the process that this Handle is being created
@@ -547,6 +550,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void IncludeIsolationContext(int child_id,
                                const IsolationContext& isolation_context);
 
+  // Stores the number of RenderFrameHosts currently active on the
+  // RenderProcessHost corresponding to |child_id| so that it's accessible on
+  // the IO thread.
+  // Diagnostic for debugging https://crbug.com/1148542.
+  void SetRenderFrameHostCount(int child_id, int count);
+
   // Sets the process identified by |child_id| as only permitted to access data
   // for the origin specified by |site_info|'s process_lock_url(). Most callers
   // should use RenderProcessHostImpl::SetProcessLock instead of calling this
@@ -655,8 +664,7 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Allows tests to modify the delay in cleaning up BrowsingInstanceIds. If the
   // delay is set to zero, cleanup happens immediately.
   void SetBrowsingInstanceCleanupDelayForTesting(int64_t delay_in_seconds) {
-    browsing_instance_cleanup_delay_ =
-        base::TimeDelta::FromSeconds(delay_in_seconds);
+    browsing_instance_cleanup_delay_ = base::Seconds(delay_in_seconds);
   }
 
  private:

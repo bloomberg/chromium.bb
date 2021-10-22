@@ -20,6 +20,17 @@
       "use_goma": true
     }
   },
+  "Cast Linux ARM64": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_chromecast": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "use_goma": true
+    }
+  },
   "Cast Linux Debug": {
     "gn_args": {
       "is_chromecast": true,
@@ -94,6 +105,20 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
+      "use_goma": true
+    }
+  },
+  "Linux Builder (Wayland)": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "ozone_auto_platforms": false,
+      "ozone_platform": "wayland",
+      "ozone_platform_wayland": true,
+      "proprietary_codecs": true,
+      "use_bundled_weston": true,
       "use_goma": true
     }
   },

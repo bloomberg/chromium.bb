@@ -38,7 +38,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -52,6 +52,9 @@ namespace {
 class DemoWindowDelegate : public aura::WindowDelegate {
  public:
   explicit DemoWindowDelegate(SkColor color) : color_(color) {}
+
+  DemoWindowDelegate(const DemoWindowDelegate&) = delete;
+  DemoWindowDelegate& operator=(const DemoWindowDelegate&) = delete;
 
   // Overridden from WindowDelegate:
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
@@ -98,8 +101,6 @@ class DemoWindowDelegate : public aura::WindowDelegate {
  private:
   SkColor color_;
   gfx::Rect window_bounds_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemoWindowDelegate);
 };
 
 class DemoWindowParentingClient : public aura::client::WindowParentingClient {
@@ -107,6 +108,10 @@ class DemoWindowParentingClient : public aura::client::WindowParentingClient {
   explicit DemoWindowParentingClient(aura::Window* window) : window_(window) {
     aura::client::SetWindowParentingClient(window_, this);
   }
+
+  DemoWindowParentingClient(const DemoWindowParentingClient&) = delete;
+  DemoWindowParentingClient& operator=(const DemoWindowParentingClient&) =
+      delete;
 
   ~DemoWindowParentingClient() override {
     aura::client::SetWindowParentingClient(window_, nullptr);
@@ -126,8 +131,6 @@ class DemoWindowParentingClient : public aura::client::WindowParentingClient {
   aura::Window* window_;
 
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemoWindowParentingClient);
 };
 
 // Runs a base::RunLoop until receiving OnHostCloseRequested from |host|.
@@ -137,13 +140,15 @@ void RunRunLoopUntilOnHostCloseRequested(aura::WindowTreeHost* host) {
     explicit Observer(base::OnceClosure quit_closure)
         : quit_closure_(std::move(quit_closure)) {}
 
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     void OnHostCloseRequested(aura::WindowTreeHost* host) override {
       std::move(quit_closure_).Run();
     }
 
    private:
     base::OnceClosure quit_closure_;
-    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   base::RunLoop run_loop;

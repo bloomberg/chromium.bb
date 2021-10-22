@@ -36,17 +36,14 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_element.h"
-#include "ui/compositor/layer_animation_sequence.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/transform.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -69,15 +66,14 @@ const int kAnimationDurationForBubblePopupMs = 200;
 
 // Duration of opacity animation for visibility changes.
 constexpr base::TimeDelta kAnimationDurationForVisibilityMs =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 // Duration of opacity animation for hide animation.
-constexpr base::TimeDelta kAnimationDurationForHideMs =
-    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kAnimationDurationForHideMs = base::Milliseconds(100);
 
 // Bounce animation constants
 const base::TimeDelta kAnimationDurationForBounceElement =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 const int kAnimationBounceUpDistance = 16;
 const int kAnimationBounceDownDistance = 8;
 const float kAnimationBounceScaleFactor = 0.5;
@@ -85,8 +81,7 @@ const float kAnimationBounceScaleFactor = 0.5;
 // When becoming visible delay the animation so that StatusAreaWidgetDelegate
 // can animate sibling views out of the position to be occupied by the
 // TrayBackgroundView.
-const base::TimeDelta kShowAnimationDelayMs =
-    base::TimeDelta::FromMilliseconds(100);
+const base::TimeDelta kShowAnimationDelayMs = base::Milliseconds(100);
 
 // Switches left and right insets if RTL mode is active.
 void MirrorInsetsIfNecessary(gfx::Insets* insets) {
@@ -148,6 +143,9 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
  public:
   explicit TrayWidgetObserver(TrayBackgroundView* host) : host_(host) {}
 
+  TrayWidgetObserver(const TrayWidgetObserver&) = delete;
+  TrayWidgetObserver& operator=(const TrayWidgetObserver&) = delete;
+
   void OnWidgetBoundsChanged(views::Widget* widget,
                              const gfx::Rect& new_bounds) override {
     host_->AnchorUpdated();
@@ -163,8 +161,6 @@ class TrayBackgroundView::TrayWidgetObserver : public views::WidgetObserver {
   TrayBackgroundView* host_;
   base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
       observations_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TrayWidgetObserver);
 };
 
 // Handles `TrayBackgroundView`'s animation on session changed.
@@ -306,8 +302,7 @@ void TrayBackgroundView::InitializeBubbleAnimations(
       window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   ::wm::SetWindowVisibilityAnimationTransition(window, ::wm::ANIMATE_HIDE);
   ::wm::SetWindowVisibilityAnimationDuration(
-      window,
-      base::TimeDelta::FromMilliseconds(kAnimationDurationForBubblePopupMs));
+      window, base::Milliseconds(kAnimationDurationForBubblePopupMs));
 }
 
 void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
@@ -521,20 +516,6 @@ void TrayBackgroundView::UpdateBackground() {
   layer()->SetClipRect(GetBackgroundBounds());
 }
 
-// TODO(crbug.com/1236069): Remove the need to subclass LayerAnimationObserver
-// after converting animations to use builder.
-void TrayBackgroundView::OnLayerAnimationEnded(
-    ui::LayerAnimationSequence* sequence) {
-  OnAnimationEnded();
-}
-
-// TODO(crbug.com/1236069): Remove the need to subclass LayerAnimationObserver
-// after converting animations to use builder.
-void TrayBackgroundView::OnLayerAnimationAborted(
-    ui::LayerAnimationSequence* sequence) {
-  OnAnimationAborted();
-}
-
 void TrayBackgroundView::OnAnimationAborted() {
   OnVisibilityAnimationFinished(/*should_log_visible_pod_count=*/true,
                                 /*aborted=*/true);
@@ -545,39 +526,37 @@ void TrayBackgroundView::OnAnimationEnded() {
 }
 
 void TrayBackgroundView::FadeInAnimation() {
-  std::unique_ptr<ui::LayerAnimationSequence> fade_sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-  fade_sequence->AddObserver(this);
-  std::unique_ptr<ui::LayerAnimationElement> fade_in =
-      ui::LayerAnimationElement::CreateOpacityElement(
-          1.0f, kAnimationDurationForVisibilityMs);
-  fade_sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
-      ui::LayerAnimationElement::OPACITY, kShowAnimationDelayMs));
-  fade_sequence->AddElement(
-      ui::LayerAnimationElement::CreateOpacityElement(0.0f, base::TimeDelta()));
-  fade_sequence->AddElement(std::move(fade_in));
-
   gfx::Transform transform;
   if (shelf_->IsHorizontalAlignment())
     transform.Translate(width(), 0.0f);
   else
     transform.Translate(0.0f, height());
 
-  std::unique_ptr<ui::LayerAnimationSequence> translate_sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-  translate_sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
-      ui::LayerAnimationElement::TRANSFORM, kShowAnimationDelayMs));
-  translate_sequence->AddElement(
-      ui::LayerAnimationElement::CreateTransformElement(transform,
-                                                        base::TimeDelta()));
-  translate_sequence->AddElement(
-      ui::LayerAnimationElement::CreateTransformElement(
-          gfx::Transform(), kAnimationDurationForVisibilityMs));
-
-  layer()->GetAnimator()->set_preemption_strategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  layer()->GetAnimator()->StartTogether(
-      {fade_sequence.release(), translate_sequence.release()});
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<TrayBackgroundView> view) {
+            if (view)
+              view->OnAnimationAborted();
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<TrayBackgroundView> view) {
+            if (view)
+              view->OnAnimationEnded();
+          },
+          weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(kShowAnimationDelayMs)
+      .Then()
+      .SetDuration(base::TimeDelta())
+      .SetOpacity(this, 0.0f)
+      .SetTransform(this, transform)
+      .Then()
+      .SetDuration(kAnimationDurationForVisibilityMs)
+      .SetOpacity(this, 1.0f)
+      .SetTransform(this, gfx::Transform());
 }
 
 void TrayBackgroundView::BounceInAnimation() {
@@ -617,6 +596,18 @@ void TrayBackgroundView::BounceInAnimation() {
   views::AnimationBuilder()
       .SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<TrayBackgroundView> view) {
+            if (view)
+              view->OnAnimationAborted();
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<TrayBackgroundView> view) {
+            if (view)
+              view->OnAnimationEnded();
+          },
+          weak_factory_.GetWeakPtr()))
       .Once()
       .SetDuration(base::TimeDelta())
       .SetOpacity(this, 1.0)
@@ -630,52 +621,39 @@ void TrayBackgroundView::BounceInAnimation() {
       .SetTransform(this, std::move(move_down), gfx::Tween::EASE_OUT_4)
       .Then()
       .SetDuration(kAnimationDurationForBounceElement)
-      .SetTransform(this, gfx::Transform(), gfx::Tween::FAST_OUT_SLOW_IN_3)
-      .OnAborted(base::BindOnce(&TrayBackgroundView::OnAnimationAborted,
-                                base::Unretained(this)))
-      .OnEnded(base::BindOnce(&TrayBackgroundView::OnAnimationEnded,
-                              base::Unretained(this)));
+      .SetTransform(this, gfx::Transform(), gfx::Tween::FAST_OUT_SLOW_IN_3);
 }
 
 // Any visibility updates should be called after the hide animation is
 // finished, otherwise the view will disappear immediately without animation
 // once the view's visibility is set to false.
 void TrayBackgroundView::HideAnimation() {
-  std::unique_ptr<ui::LayerAnimationSequence> visible_sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-  // Sets animator's target visibility to false.
-  std::unique_ptr<ui::LayerAnimationElement> visible_element =
-      ui::LayerAnimationElement::CreateVisibilityElement(
-          false, kAnimationDurationForHideMs);
-  visible_sequence->AddElement(std::move(visible_element));
+  gfx::Transform scale;
+  scale.Scale3d(kAnimationBounceScaleFactor, kAnimationBounceScaleFactor, 1);
 
-  std::unique_ptr<ui::InterpolatedTransform> scale =
-      std::make_unique<ui::InterpolatedScale>(
-          gfx::Point3F(1, 1, 1), gfx::Point3F(kAnimationBounceScaleFactor,
-                                              kAnimationBounceScaleFactor, 1));
-  std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
-      std::make_unique<ui::InterpolatedTransformAboutPivot>(
-          GetLocalBounds().CenterPoint(), std::move(scale));
-  std::unique_ptr<ui::LayerAnimationElement> scale_down =
-      ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          std::move(scale_about_pivot), kAnimationDurationForHideMs);
-  std::unique_ptr<ui::LayerAnimationSequence> scale_sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-  scale_sequence->AddElement(std::move(scale_down));
+  gfx::Transform scale_about_pivot =
+      gfx::TransformAboutPivot(GetLocalBounds().CenterPoint(), scale);
 
-  std::unique_ptr<ui::LayerAnimationSequence> fade_sequence =
-      std::make_unique<ui::LayerAnimationSequence>();
-  std::unique_ptr<ui::LayerAnimationElement> fade_out =
-      ui::LayerAnimationElement::CreateOpacityElement(
-          0.0f, kAnimationDurationForHideMs);
-  fade_sequence->AddElement(std::move(fade_out));
-  fade_sequence->AddObserver(this);
-
-  layer()->GetAnimator()->set_preemption_strategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  layer()->GetAnimator()->StartTogether({visible_sequence.release(),
-                                         fade_sequence.release(),
-                                         scale_sequence.release()});
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnAborted(base::BindOnce(
+          [](base::WeakPtr<TrayBackgroundView> view) {
+            if (view)
+              view->OnAnimationAborted();
+          },
+          weak_factory_.GetWeakPtr()))
+      .OnEnded(base::BindOnce(
+          [](base::WeakPtr<TrayBackgroundView> view) {
+            if (view)
+              view->OnAnimationEnded();
+          },
+          weak_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(kAnimationDurationForHideMs)
+      .SetVisibility(this, false)
+      .SetTransform(this, std::move(scale_about_pivot))
+      .SetOpacity(this, 0.0f);
 }
 
 void TrayBackgroundView::SetIsActive(bool is_active) {

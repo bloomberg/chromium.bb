@@ -207,6 +207,10 @@ PasswordForm MakeBlocklistedForm(const std::string& signon_realm) {
 class FakeDatabase {
  public:
   FakeDatabase() = default;
+
+  FakeDatabase(const FakeDatabase&) = delete;
+  FakeDatabase& operator=(const FakeDatabase&) = delete;
+
   ~FakeDatabase() = default;
 
   FormRetrievalResult ReadAllLogins(PrimaryKeyToFormMap* map) {
@@ -282,8 +286,6 @@ class FakeDatabase {
   int primary_key_ = 1;
   PrimaryKeyToFormMap data_;
   AddLoginError error_ = AddLoginError::kNone;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDatabase);
 };
 
 class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
@@ -702,7 +704,7 @@ TEST_F(PasswordSyncBridgeTest, ShouldMergeSyncRemoteAndLocalPasswords) {
       CreateSpecificsWithSignonRealm(kSignonRealm3);
 
   base::Time now = base::Time::Now();
-  base::Time yesterday = now - base::TimeDelta::FromDays(1);
+  base::Time yesterday = now - base::Days(1);
 
   form2.date_created = yesterday;
   specifics2.mutable_client_only_encrypted_data()->set_date_created(
@@ -776,7 +778,7 @@ TEST_F(PasswordSyncBridgeTest,
   // than the local one. We will assign primary keys for Form 1 and Form 2 in
   // the local DB.
   base::Time now = base::Time::Now();
-  base::Time yesterday = now - base::TimeDelta::FromDays(1);
+  base::Time yesterday = now - base::Days(1);
   const int kPrimaryKey1 = 1000;
   const int kPrimaryKey2 = 1001;
   const std::string kPrimaryKeyStr1 = "1000";

@@ -7,6 +7,7 @@
 
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
+#include "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/consent_auditor_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
@@ -24,8 +26,10 @@
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
@@ -75,6 +79,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 @property(nonatomic, assign) IdentitySigninState signinStateOnStart;
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
+// YES if the user tapped on the managed, learn more link.
+@property(nonatomic, assign) BOOL managedLearnMoreLinkWasTapped;
 
 @end
 
@@ -141,6 +147,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                                         GetForBrowserState(
                                             self.browser->GetBrowserState())
                    syncSetupService:SyncSetupServiceFactory::GetForBrowserState(
+                                        self.browser->GetBrowserState())
+                        syncService:SyncServiceFactory::GetForBrowserState(
                                         self.browser->GetBrowserState())];
   self.mediator.delegate = self;
 
@@ -183,7 +191,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                advancedSettingsShown:self.advancedSettingsSigninCoordinator !=
                                      nil];
   }
-
   SigninCompletionInfo* completionInfo =
       [SigninCompletionInfo signinCompletionInfoWithIdentity:nil];
   __weak UserSigninCoordinator* weakSelf = self;
@@ -268,6 +275,14 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   return self.unifiedConsentCoordinator.selectedIdentity != nil;
 }
 
+- (BOOL)unifiedConsentCoordinatorHasManagedSyncDataType {
+  return self.unifiedConsentCoordinator.hasManagedSyncDataType;
+}
+
+- (BOOL)unifiedConsentCoordinatorhasAccountRestrictions {
+  return self.unifiedConsentCoordinator.hasAccountRestrictions;
+}
+
 - (void)userSigninViewControllerDidTapOnAddAccount {
   DCHECK(!self.addAccountSigninCoordinator);
   [self notifyUserSigninAttempted];
@@ -300,6 +315,12 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self startSigninFlow];
 }
 
+- (void)userSigninViewControllerDidTapOnLearnMoreURL {
+  DCHECK(!self.managedLearnMoreLinkWasTapped);
+  self.managedLearnMoreLinkWasTapped = YES;
+  [self cancelSignin];
+}
+
 #pragma mark - UserSigninMediatorDelegate
 
 - (BOOL)userSigninMediatorGetSettingsLinkWasTapped {
@@ -329,19 +350,17 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
       (signinResult == SigninCoordinatorResultSuccess)
           ? self.unifiedConsentCoordinator.selectedIdentity
           : nil;
-  SigninCompletionAction completionAction =
-      self.unifiedConsentCoordinator.settingsLinkWasTapped
-          ? SigninCompletionActionShowAdvancedSettingsSignin
-          : SigninCompletionActionNone;
-  SigninCompletionInfo* completionInfo =
-      [[SigninCompletionInfo alloc] initWithIdentity:identity
-                              signinCompletionAction:completionAction];
-  // Sign-in is finished but the advanced settings link was tapped.
-  if (completionInfo.signinCompletionAction ==
-      SigninCompletionActionShowAdvancedSettingsSignin) {
+  SigninCompletionAction completionAction = SigninCompletionActionNone;
+  if (self.managedLearnMoreLinkWasTapped) {
+    completionAction = SigninCompletionActionShowManagedLearnMore;
+  } else if (self.unifiedConsentCoordinator.settingsLinkWasTapped) {
+    // Sign-in is finished but the advanced settings link was tapped.
     [self displayAdvancedSettings];
     return;
   }
+  SigninCompletionInfo* completionInfo =
+      [[SigninCompletionInfo alloc] initWithIdentity:identity
+                              signinCompletionAction:completionAction];
   __weak UserSigninCoordinator* weakSelf = self;
   ProceduralBlock completion = ^void() {
     [weakSelf viewControllerDismissedWithResult:signinResult
@@ -379,6 +398,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
 
 - (void)userSigninMediatorSigninFailed {
   [self.unifiedConsentCoordinator resetSettingLinkTapped];
+  self.managedLearnMoreLinkWasTapped = NO;
   self.unifiedConsentCoordinator.uiDisabled = NO;
   [self.viewController signinDidStop];
   [self.viewController updatePrimaryActionButtonStyle];
@@ -399,9 +419,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
                     object:self];
 }
 
-// Called when |self.viewController| is dismissed. If |completionInfo|'s
-// signinCompletionAction is SigninCompletionActionShowAdvancedSettingsSignin,
-// the advanced settings sign-in is presented. Otherwise, the sign-in is
+// Called when |self.viewController| is dismissed. The sign-in is
 // finished and |runCompletionCallbackWithSigninResult:completionInfo:| is
 // called.
 - (void)viewControllerDismissedWithResult:(SigninCoordinatorResult)signinResult
@@ -412,8 +430,6 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   DCHECK(self.unifiedConsentCoordinator);
   DCHECK(self.mediator);
   DCHECK(self.viewController);
-  DCHECK_NE(SigninCompletionActionShowAdvancedSettingsSignin,
-            completionInfo.signinCompletionAction);
 
   [self.unifiedConsentCoordinator stop];
   self.unifiedConsentCoordinator = nil;
@@ -451,9 +467,8 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   // Always set the -UIViewController.modalPresentationStyle before accessing
   // -UIViewController.presentationController.
   self.viewController.modalPresentationStyle = UIModalPresentationFormSheet;
-  if (@available(iOS 13, *)) {
-    self.viewController.presentationController.delegate = self;
-  }
+  self.viewController.presentationController.delegate = self;
+
   switch (self.signinIntent) {
     case UserSigninIntentFirstRun: {
       // Displays the sign-in screen with transitions specific to first-run.
@@ -632,6 +647,7 @@ const CGFloat kFadeOutAnimationDuration = 0.16f;
   [self.advancedSettingsSigninCoordinator stop];
   self.advancedSettingsSigninCoordinator = nil;
   [self.unifiedConsentCoordinator resetSettingLinkTapped];
+  self.managedLearnMoreLinkWasTapped = NO;
   self.unifiedConsentCoordinator.uiDisabled = NO;
 }
 

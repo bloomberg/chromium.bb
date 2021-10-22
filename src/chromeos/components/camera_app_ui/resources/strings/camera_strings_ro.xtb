@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1113173431709655881">Modul cameră</translation>
 <translation id="1175958423215084756">A fost detectat un link. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Imagini din galerie</translation>
 <translation id="1300209025925956156">Scanează documentul</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> este deconectată.</translation>
 <translation id="1473110567575736769">Cronometru de 3 secunde</translation>
 <translation id="1545749641540134597">Scanează codul QR</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1620510694547887537">Cameră</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Nu s-a înregistrat nimic</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">Scanează</translation>
 <translation id="2549985041256363841">Pornește înregistrarea</translation>
 <translation id="2599796128805996109">Camera foto posterioară</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> sec.</translation>
+<translation id="2761536921376153655">Tip de scanare</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> este conectată.</translation>
 <translation id="2968794441791257519">Fotografiile și videoclipurile făcute cu camera foto vor fi mutate în dosarul Descărcări. Le poți accesa în Fișiere.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">Accesează galeria</translation>
 <translation id="520537883758714667">Scanarea documentelor este acum disponibilă</translation>
 <translation id="5268823927180092501">Activează modul documentare pentru toate camerele</translation>
+<translation id="5317780077021120954">Salvează</translation>
 <translation id="5444515100983837161">Încadrează toate marginile documentului în cadru. Scanarea funcționează optim dacă documentul și fundalul sunt de culori diferite.</translation>
 <translation id="5671277269877808209">Pătrat</translation>
 <translation id="5746169159649715125">Salvați ca PDF</translation>
@@ -86,6 +92,7 @@
 
 Dacă feedbackul tău se referă la calitatea video sau a imaginii, atașează un exemplu de fotografie sau de videoclip și descrie problema. (De exemplu, fotografia este prea întunecată sau focalizarea nu este realizată pe subiect.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapixeli</translation>
+<translation id="6527303717912515753">Trimite</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6681668084120808868">Fotografiază</translation>
 <translation id="6778482348691154169">Nu se poate fotografia</translation>
@@ -94,15 +101,19 @@ Dacă feedbackul tău se referă la calitatea video sau a imaginii, atașează u
 <translation id="698156982839284926">3 secunde</translation>
 <translation id="712848772518857951">Sigur dorești să elimini <ph name="COUNT" /> elemente?</translation>
 <translation id="7134221860976209830">Cronometru de 10 secunde</translation>
+<translation id="7191890674911603392">Tip de înregistrare</translation>
 <translation id="7243947652761655814">Rezoluție video</translation>
 <translation id="7337660886763914220">Erori în sistemul de fișiere.</translation>
 <translation id="7450541714075000668">Text copiat</translation>
+<translation id="7476762461674917065">Afișează opțiunea de înregistrare GIF</translation>
+<translation id="7488619942230388918">Înregistrează un videoclip GIF</translation>
 <translation id="7557677699350329807">Comută la următoarea cameră foto</translation>
 <translation id="7607002721634913082">Întreruptă</translation>
 <translation id="7608223098072244877">4 pe 4</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7670511624014457267">60 CPS</translation>
+<translation id="7726641833034062494">Înregistrează un videoclip obișnuit</translation>
 <translation id="7983668134180549431">A fost detectat text.</translation>
 <translation id="8067883171444229417">Redă videoclipul</translation>
 <translation id="8120146556401698679">Deplasează Înclină Mărește / micșorează</translation>

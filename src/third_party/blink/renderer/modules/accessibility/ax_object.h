@@ -109,9 +109,10 @@ class NameSourceRelatedObject final
   NameSourceRelatedObject(AXObject* object, String text)
       : object(object), text(text) {}
 
-  void Trace(Visitor* visitor) const { visitor->Trace(object); }
+  NameSourceRelatedObject(const NameSourceRelatedObject&) = delete;
+  NameSourceRelatedObject& operator=(const NameSourceRelatedObject&) = delete;
 
-  DISALLOW_COPY_AND_ASSIGN(NameSourceRelatedObject);
+  void Trace(Visitor* visitor) const { visitor->Trace(object); }
 };
 
 typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
@@ -262,6 +263,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 #endif
 
  public:
+  AXObject(const AXObject&) = delete;
+  AXObject& operator=(const AXObject&) = delete;
+
   virtual ~AXObject();
   virtual void Trace(Visitor*) const;
 
@@ -1367,6 +1371,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   const AXObject* TableParent() const;
 
   // Helpers for serialization.
+  void SerializeActionAttributes(ui::AXNodeData* node_data);
   void SerializeColorAttributes(ui::AXNodeData* node_data);
   void SerializeStyleAttributes(ui::AXNodeData* node_data);
   void SerializeSparseAttributes(ui::AXNodeData* node_data);
@@ -1403,7 +1408,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   Member<AXObjectCacheImpl> ax_object_cache_;
 
-  void UpdateDistributionForFlatTreeTraversal() const;
   bool IsARIAControlledByTextboxWithActiveDescendant() const;
   bool AncestorExposesActiveDescendant() const;
   bool IsCheckable() const;
@@ -1437,8 +1441,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
       uint32_t max_len = kMaxStringAttributeLength) const;
 
   static unsigned number_of_live_ax_objects_;
-
-  DISALLOW_COPY_AND_ASSIGN(AXObject);
 };
 
 MODULES_EXPORT bool operator==(const AXObject& first, const AXObject& second);

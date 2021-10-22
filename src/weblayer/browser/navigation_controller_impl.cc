@@ -488,9 +488,9 @@ void NavigationControllerImpl::DidFinishNavigation(
   DCHECK(navigation_map_.find(navigation_handle) != navigation_map_.end());
   auto* navigation = navigation_map_[navigation_handle].get();
 
-  if (navigation_handle->HasCommitted()) {
-    navigation->set_safe_to_get_page();
+  navigation->set_finished();
 
+  if (navigation_handle->HasCommitted()) {
     // Set state on NavigationEntry user data if a per-navigation user agent was
     // specified. This can't be done earlier because a NavigationEntry might not
     // have existed at the time that SetUserAgentString was called.
@@ -504,11 +504,15 @@ void NavigationControllerImpl::DidFinishNavigation(
     }
 
     auto* rfh = navigation_handle->GetRenderFrameHost();
-    if (rfh)
-      PageImpl::GetOrCreateForPage(rfh->GetPage());
+    PageImpl::GetOrCreateForPage(rfh->GetPage());
+    navigation->set_safe_to_get_page();
   }
 
-  if (navigation_handle->GetNetErrorCode() == net::OK &&
+  // In some corner cases (e.g., a tab closing with an ongoing navigation)
+  // navigations finish without committing but without any other error state.
+  // Such navigations are regarded as failed by WebLayer.
+  if (navigation_handle->HasCommitted() &&
+      navigation_handle->GetNetErrorCode() == net::OK &&
       !navigation_handle->IsErrorPage()) {
 #if defined(OS_ANDROID)
     if (java_controller_) {

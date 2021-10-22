@@ -39,30 +39,29 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
       RATE_CONTROL *const lrc = &lc->rc;
       PRIMARY_RATE_CONTROL *const lp_rc = &lc->p_rc;
       lrc->ni_av_qi = oxcf->rc_cfg.worst_allowed_q;
-      lrc->total_actual_bits = 0;
+      lp_rc->total_actual_bits = 0;
       lrc->ni_tot_qi = 0;
       lp_rc->tot_q = 0.0;
-      lrc->avg_q = 0.0;
+      lp_rc->avg_q = 0.0;
       lp_rc->ni_frames = 0;
       lrc->decimation_count = 0;
       lrc->decimation_factor = 0;
       lrc->worst_quality = av1_quantizer_to_qindex(lc->max_q);
       lrc->best_quality = av1_quantizer_to_qindex(lc->min_q);
       for (int i = 0; i < RATE_FACTOR_LEVELS; ++i) {
-        lrc->rate_correction_factors[i] = 1.0;
+        lp_rc->rate_correction_factors[i] = 1.0;
       }
       lc->target_bandwidth = lc->layer_target_bitrate;
-      lrc->last_q[INTER_FRAME] = lrc->worst_quality;
+      lp_rc->last_q[INTER_FRAME] = lrc->worst_quality;
       lp_rc->avg_frame_qindex[INTER_FRAME] = lrc->worst_quality;
       lp_rc->avg_frame_qindex[KEY_FRAME] = lrc->worst_quality;
-      lrc->buffer_level =
+      lp_rc->buffer_level =
           oxcf->rc_cfg.starting_buffer_level_ms * lc->target_bandwidth / 1000;
-      lrc->bits_off_target = lrc->buffer_level;
+      lp_rc->bits_off_target = lp_rc->buffer_level;
       // Initialize the cyclic refresh parameters. If spatial layers are used
       // (i.e., ss_number_layers > 1), these need to be updated per spatial
       // layer. Cyclic refresh is only applied on base temporal layer.
       if (svc->number_spatial_layers > 1 && tl == 0) {
-        size_t last_coded_q_map_size;
         lc->sb_index = 0;
         lc->actual_num_seg1_blocks = 0;
         lc->actual_num_seg2_blocks = 0;
@@ -71,13 +70,6 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
         CHECK_MEM_ERROR(cm, lc->map,
                         aom_malloc(mi_rows * mi_cols * sizeof(*lc->map)));
         memset(lc->map, 0, mi_rows * mi_cols);
-        last_coded_q_map_size =
-            mi_rows * mi_cols * sizeof(*lc->last_coded_q_map);
-        if (lc->last_coded_q_map) aom_free(lc->last_coded_q_map);
-        CHECK_MEM_ERROR(cm, lc->last_coded_q_map,
-                        aom_malloc(last_coded_q_map_size));
-        assert(MAXQ <= 255);
-        memset(lc->last_coded_q_map, MAXQ, last_coded_q_map_size);
       }
     }
     svc->downsample_filter_type[sl] = BILINEAR;
@@ -86,6 +78,9 @@ void av1_init_layer_context(AV1_COMP *const cpi) {
   if (svc->number_spatial_layers == 3) {
     svc->downsample_filter_type[0] = EIGHTTAP_SMOOTH;
   }
+  svc->ref_frame_comp[0] = 0;
+  svc->ref_frame_comp[1] = 0;
+  svc->ref_frame_comp[2] = 0;
 }
 
 // Update the layer context from a change_config() call.
@@ -118,9 +113,10 @@ void av1_update_layer_context_change_config(AV1_COMP *const cpi,
           (int64_t)(p_rc->optimal_buffer_level * bitrate_alloc);
       lp_rc->maximum_buffer_size =
           (int64_t)(p_rc->maximum_buffer_size * bitrate_alloc);
-      lrc->bits_off_target =
-          AOMMIN(lrc->bits_off_target, lp_rc->maximum_buffer_size);
-      lrc->buffer_level = AOMMIN(lrc->buffer_level, lp_rc->maximum_buffer_size);
+      lp_rc->bits_off_target =
+          AOMMIN(lp_rc->bits_off_target, lp_rc->maximum_buffer_size);
+      lp_rc->buffer_level =
+          AOMMIN(lp_rc->buffer_level, lp_rc->maximum_buffer_size);
       lc->framerate = cpi->framerate / lc->framerate_factor;
       lrc->avg_frame_bandwidth = (int)(lc->target_bandwidth / lc->framerate);
       lrc->max_frame_bandwidth = rc->max_frame_bandwidth;
@@ -191,7 +187,6 @@ void av1_restore_layer_context(AV1_COMP *const cpi) {
       svc->number_spatial_layers > 1 && svc->temporal_layer_id == 0) {
     CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
     swap_ptr(&cr->map, &lc->map);
-    swap_ptr(&cr->last_coded_q_map, &lc->last_coded_q_map);
     cr->sb_index = lc->sb_index;
     cr->actual_num_seg1_blocks = lc->actual_num_seg1_blocks;
     cr->actual_num_seg2_blocks = lc->actual_num_seg2_blocks;
@@ -230,11 +225,8 @@ void av1_save_layer_context(AV1_COMP *const cpi) {
       cpi->svc.number_spatial_layers > 1 && svc->temporal_layer_id == 0) {
     CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
     signed char *temp = lc->map;
-    uint8_t *temp2 = lc->last_coded_q_map;
     lc->map = cr->map;
     cr->map = temp;
-    lc->last_coded_q_map = cr->last_coded_q_map;
-    cr->last_coded_q_map = temp2;
     lc->sb_index = cr->sb_index;
     lc->actual_num_seg1_blocks = cr->actual_num_seg1_blocks;
     lc->actual_num_seg2_blocks = cr->actual_num_seg2_blocks;
@@ -297,7 +289,6 @@ void av1_free_svc_cyclic_refresh(AV1_COMP *const cpi) {
       int layer = LAYER_IDS_TO_IDX(sl, tl, svc->number_temporal_layers);
       LAYER_CONTEXT *const lc = &svc->layer_context[layer];
       if (lc->map) aom_free(lc->map);
-      if (lc->last_coded_q_map) aom_free(lc->last_coded_q_map);
     }
   }
 }
@@ -505,11 +496,12 @@ void av1_svc_check_reset_layer_rc_flag(AV1_COMP *const cpi) {
         int layer2 = LAYER_IDS_TO_IDX(sl, tl, svc->number_temporal_layers);
         LAYER_CONTEXT *lc2 = &svc->layer_context[layer2];
         RATE_CONTROL *lrc2 = &lc2->rc;
+        PRIMARY_RATE_CONTROL *lp_rc2 = &lc2->p_rc;
         PRIMARY_RATE_CONTROL *const lp_rc = &lc2->p_rc;
         lrc2->rc_1_frame = 0;
         lrc2->rc_2_frame = 0;
-        lrc2->bits_off_target = lp_rc->optimal_buffer_level;
-        lrc2->buffer_level = lp_rc->optimal_buffer_level;
+        lp_rc2->bits_off_target = lp_rc->optimal_buffer_level;
+        lp_rc2->buffer_level = lp_rc->optimal_buffer_level;
       }
     }
   }

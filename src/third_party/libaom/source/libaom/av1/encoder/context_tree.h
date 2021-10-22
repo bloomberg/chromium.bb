@@ -102,8 +102,9 @@ typedef struct SIMPLE_MOTION_DATA_TREE {
   int sms_rect_valid;
 } SIMPLE_MOTION_DATA_TREE;
 
-void av1_setup_shared_coeff_buffer(struct aom_internal_error_info *error,
-                                   PC_TREE_SHARED_BUFFERS *shared_bufs);
+void av1_setup_shared_coeff_buffer(const SequenceHeader *const seq_params,
+                                   PC_TREE_SHARED_BUFFERS *shared_bufs,
+                                   struct aom_internal_error_info *error);
 void av1_free_shared_coeff_buffer(PC_TREE_SHARED_BUFFERS *shared_bufs);
 
 PC_TREE *av1_alloc_pc_tree_node(BLOCK_SIZE bsize);

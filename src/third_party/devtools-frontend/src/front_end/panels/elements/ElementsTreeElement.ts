@@ -39,13 +39,16 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
-import * as TextEditor from '../../ui/legacy/components/text_editor/text_editor.js';
+import type * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as TextEditorLegacy from '../../ui/legacy/components/text_editor/text_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Emulation from '../emulation/emulation.js';
+
 import * as ElementsComponents from './components/components.js';
 import {canGetJSPath, cssPath, jsPath, xPath} from './DOMPath.js';
 import {ElementsPanel} from './ElementsPanel.js';
+
 import type {ElementsTreeOutline, UpdateRecord} from './ElementsTreeOutline.js';
 import {MappedCharToEntity} from './ElementsTreeOutline.js';
 import {ImagePreviewPopover} from './ImagePreviewPopover.js';
@@ -82,6 +85,14 @@ const UIStrings = {
   *@description Text to scroll the displayed content into view
   */
   scrollIntoView: 'Scroll into view',
+  /**
+  *@description Text to enter Isolation Mode, a mode with focus on a single element and interactive resizing
+  */
+  enterIsolationMode: 'Enter Isolation Mode',
+  /**
+  *@description Text to exit Isolation Mode, a mode with focus on a single element and interactive resizing
+  */
+  exitIsolationMode: 'Exit Isolation Mode',
   /**
   *@description A context menu item in the Elements Tree Element of the Elements panel
   */
@@ -636,6 +647,17 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     contextMenu.viewSection().appendItem(i18nString(UIStrings.focus), async () => {
       await this.nodeInternal.focus();
     });
+
+    const overlayModel = this.nodeInternal.domModel().overlayModel();
+    if (overlayModel.isHighlightedIsolatedElementInPersistentOverlay(this.nodeInternal.id)) {
+      contextMenu.viewSection().appendItem(i18nString(UIStrings.exitIsolationMode), () => {
+        overlayModel.hideIsolatedElementInPersistentOverlay(this.nodeInternal.id);
+      });
+    } else {
+      contextMenu.viewSection().appendItem(i18nString(UIStrings.enterIsolationMode), () => {
+        overlayModel.highlightIsolatedElementInPersistentOverlay(this.nodeInternal.id);
+      });
+    }
   }
 
   populateScrollIntoView(contextMenu: UI.ContextMenu.ContextMenu): void {
@@ -654,9 +676,13 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
   populateNodeContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void {
     // Add free-form node-related actions.
     const isEditable = this.hasEditableNode();
+    // clang-format off
     if (isEditable && !this.editing) {
+      // Eagerly load CodeMirror to avoid a delay when opening the "Edit as HTML" editor when the user actually clicks on it
+      import('../../ui/components/text_editor/text_editor.js');
       contextMenu.editSection().appendItem(i18nString(UIStrings.editAsHtml), this.editAsHTML.bind(this));
     }
+    // clang-format on
     const isShadowRoot = this.nodeInternal.isShadowRoot();
 
     const createShortcut = UI.KeyboardShortcut.KeyboardShortcut.shortcutToString.bind(null);
@@ -967,9 +993,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
   }
 
-  private startEditingAsHTML(
+  private async startEditingAsHTML(
       commitCallback: (arg0: string, arg1: string) => void, disposeCallback: () => void,
-      maybeInitialValue: string|null): void {
+      maybeInitialValue: string|null): Promise<void> {
     if (maybeInitialValue === null) {
       return;
     }
@@ -993,57 +1019,68 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
     // Append editor.
     this.listItemElement.appendChild(this.htmlEditElement);
-
-    const factory = TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditorFactory.instance();
-    const editor = factory.createEditor({
-      lineNumbers: false,
-      lineWrapping: Common.Settings.Settings.instance().moduleSetting('domWordWrap').get(),
-      mimeType: 'text/html',
-      autoHeight: false,
-      padBottom: false,
-      bracketMatchingSetting: undefined,
-      devtoolsAccessibleName: undefined,
-      maxHighlightLength: undefined,
-      placeholder: undefined,
-      lineWiseCopyCut: undefined,
-      inputStyle: undefined,
+    this.htmlEditElement.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        event.consume(true);
+      }
     });
+
+    const TextEditor = await import('../../ui/components/text_editor/text_editor.js');
+    const CodeMirror = await import('../../third_party/codemirror.next/codemirror.next.js');
+    const {html} = await CodeMirror.html();
+    const editor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({
+      doc: initialValue,
+      extensions: [
+        CodeMirror.keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: (): boolean => {
+              this.editing?.commit();
+              return true;
+            },
+          },
+          {
+            key: 'Escape',
+            run: (): boolean => {
+              this.editing?.cancel();
+              return true;
+            },
+          },
+        ]),
+        TextEditor.Config.baseConfiguration(initialValue),
+        html(),
+        TextEditor.Config.domWordWrap,
+        CodeMirror.EditorView.theme({
+          '.cm-editor': {maxHeight: '300px'},
+          '.cm-scroller': {overflowY: 'auto'},
+        }),
+        CodeMirror.EditorView.domEventHandlers({
+          focusout: event => {
+            // The relatedTarget is null when no element gains focus, e.g. switching windows.
+            const relatedTarget = (event.relatedTarget as Node | null);
+            if (relatedTarget && !relatedTarget.isSelfOrDescendant(editor)) {
+              this.editing && this.editing.commit();
+            }
+          },
+        }),
+      ],
+    }));
     this.editing = {commit: commit.bind(this), cancel: dispose.bind(this), editor, resize: resize.bind(this)};
     resize.call(this);
-    editor.widget().show((this.htmlEditElement as HTMLElement));
-    editor.setText(initialValue);
-    editor.widget().focus();
-    editor.widget().element.addEventListener('focusout', event => {
-      // The relatedTarget is null when no element gains focus, e.g. switching windows.
-      const relatedTarget = (event.relatedTarget as Node | null);
-      if (relatedTarget && !relatedTarget.isSelfOrDescendant(editor.widget().element)) {
-        this.editing && this.editing.commit();
-      }
-    }, false);
-    editor.widget().element.addEventListener('keydown', keydown.bind(this), true);
+    this.htmlEditElement.appendChild(editor);
+    editor.editor.focus();
 
-    this.treeOutline && this.treeOutline.setMultilineEditing((this.editing as {
-      commit: () => void,
-      cancel: () => void,
-      editor: UI.TextEditor.TextEditor,
-      // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      resize: () => any,
-    }));
+    this.treeOutline && this.treeOutline.setMultilineEditing(this.editing);
 
     function resize(this: ElementsTreeElement): void {
       if (this.treeOutline && this.htmlEditElement) {
         this.htmlEditElement.style.width = this.treeOutline.visibleWidth() - this.computeLeftIndent() - 30 + 'px';
       }
-
-      if (this.editing && this.editing.editor) {
-        (this.editing.editor as TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor).onResize();
-      }
     }
 
     function commit(this: ElementsTreeElement): void {
       if (this.editing && this.editing.editor) {
-        commitCallback(initialValue, this.editing.editor.text());
+        commitCallback(initialValue, this.editing.editor.state.doc.toString());
       }
       dispose.call(this);
     }
@@ -1052,8 +1089,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
       if (!this.editing || !this.editing.editor) {
         return;
       }
-      this.editing.editor.widget().element.removeEventListener('blur', this.editing.commit, true);
-      this.editing.editor.widget().detach();
       this.editing = null;
 
       // Remove editor.
@@ -1078,21 +1113,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
       }
 
       disposeCallback();
-    }
-
-    function keydown(this: ElementsTreeElement, event: Event): void {
-      const keyboardEvent = (event as KeyboardEvent);
-      const isMetaOrCtrl = UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) &&
-          !keyboardEvent.altKey && !keyboardEvent.shiftKey;
-      if (keyboardEvent.key === 'Enter' && (isMetaOrCtrl || keyboardEvent.isMetaOrCtrlForTest)) {
-        keyboardEvent.consume(true);
-        this.editing && this.editing.commit();
-      } else if (
-          keyboardEvent.keyCode === UI.KeyboardShortcut.Keys.Esc.code ||
-          keyboardEvent.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
-        keyboardEvent.consume(true);
-        this.editing && this.editing.cancel();
-      }
     }
   }
 
@@ -1713,14 +1733,14 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
           newNode.textContent = text.startsWith('\n') ? text.substring(1) : text;
 
           const javascriptSyntaxHighlighter =
-              new TextEditor.SyntaxHighlighter.SyntaxHighlighter('text/javascript', true);
+              new TextEditorLegacy.SyntaxHighlighter.SyntaxHighlighter('text/javascript', true);
           javascriptSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight);
         } else if (node.parentNode && node.parentNode.nodeName().toLowerCase() === 'style') {
           const newNode = titleDOM.createChild('span', 'webkit-html-text-node webkit-html-css-node');
           const text = node.nodeValue();
           newNode.textContent = text.startsWith('\n') ? text.substring(1) : text;
 
-          const cssSyntaxHighlighter = new TextEditor.SyntaxHighlighter.SyntaxHighlighter('text/css', true);
+          const cssSyntaxHighlighter = new TextEditorLegacy.SyntaxHighlighter.SyntaxHighlighter('text/css', true);
           cssSyntaxHighlighter.syntaxHighlightNode(newNode).then(updateSearchHighlight);
         } else {
           UI.UIUtils.createTextChild(titleDOM, '"');
@@ -2205,7 +2225,7 @@ export function adornerComparator(adornerA: Adorners.Adorner.Adorner, adornerB: 
 export interface EditorHandles {
   commit: () => void;
   cancel: () => void;
-  editor?: UI.TextEditor.TextEditor|TextEditor.CodeMirrorTextEditor.CodeMirrorTextEditor;
+  editor?: TextEditor.TextEditor.TextEditor;
   // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resize: () => any;

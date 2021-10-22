@@ -193,10 +193,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA444P,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -387,11 +384,10 @@ static const AVFilterPad drawbox_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .config_props   = config_input,
         .filter_frame   = filter_frame,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad drawbox_outputs[] = {
@@ -399,7 +395,6 @@ static const AVFilterPad drawbox_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_drawbox = {
@@ -409,8 +404,8 @@ const AVFilter ff_vf_drawbox = {
     .priv_class    = &drawbox_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = drawbox_inputs,
-    .outputs       = drawbox_outputs,
+    FILTER_INPUTS(drawbox_inputs),
+    FILTER_OUTPUTS(drawbox_outputs),
     .process_command = process_command,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
@@ -471,11 +466,10 @@ static const AVFilterPad drawgrid_inputs[] = {
     {
         .name           = "default",
         .type           = AVMEDIA_TYPE_VIDEO,
+        .flags          = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .config_props   = config_input,
         .filter_frame   = drawgrid_filter_frame,
-        .needs_writable = 1,
     },
-    { NULL }
 };
 
 static const AVFilterPad drawgrid_outputs[] = {
@@ -483,7 +477,6 @@ static const AVFilterPad drawgrid_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_drawgrid = {
@@ -493,8 +486,8 @@ const AVFilter ff_vf_drawgrid = {
     .priv_class    = &drawgrid_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = drawgrid_inputs,
-    .outputs       = drawgrid_outputs,
+    FILTER_INPUTS(drawgrid_inputs),
+    FILTER_OUTPUTS(drawgrid_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
     .process_command = process_command,
 };

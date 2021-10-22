@@ -36,7 +36,7 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 
-import type {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, ExtensionDescriptor, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult} from './InspectorFrontendHostAPI.js';
+import type {CanShowSurveyResult, ContextMenuDescriptor, EnumeratedHistogram, EventTypes, ExtensionDescriptor, InspectorFrontendHostAPI, LoadNetworkResourceResult, ShowSurveyResult} from './InspectorFrontendHostAPI.js';
 import {EventDescriptors, Events} from './InspectorFrontendHostAPI.js';
 import {streamWrite as resourceLoaderStreamWrite} from './ResourceLoader.js';
 
@@ -53,10 +53,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const MAX_RECORDED_HISTOGRAMS_SIZE = 100;
 
 export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
-  private readonly urlsBeingSaved: Map<string, string[]>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  events!: Common.EventTarget.EventTarget<any>;
-  private windowVisible?: boolean;
+  readonly #urlsBeingSaved: Map<string, string[]>;
+  events!: Common.EventTarget.EventTarget<EventTypes>;
+  #windowVisible?: boolean;
 
   recordedEnumeratedHistograms: {actionName: EnumeratedHistogram, actionCode: number}[] = [];
   recordedPerformanceHistograms: {histogramName: string, duration: number}[] = [];
@@ -72,7 +71,7 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     document.addEventListener('keydown', event => {
       stopEventPropagation.call(this, (event as KeyboardEvent));
     }, true);
-    this.urlsBeingSaved = new Map();
+    this.#urlsBeingSaved = new Map();
   }
 
   platform(): string {
@@ -90,11 +89,11 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   bringToFront(): void {
-    this.windowVisible = true;
+    this.#windowVisible = true;
   }
 
   closeWindow(): void {
-    this.windowVisible = false;
+    this.#windowVisible = false;
   }
 
   setIsDocked(isDocked: boolean, callback: () => void): void {
@@ -147,17 +146,17 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   save(url: string, content: string, forceSaveAs: boolean): void {
-    let buffer = this.urlsBeingSaved.get(url);
+    let buffer = this.#urlsBeingSaved.get(url);
     if (!buffer) {
       buffer = [];
-      this.urlsBeingSaved.set(url, buffer);
+      this.#urlsBeingSaved.set(url, buffer);
     }
     buffer.push(content);
     this.events.dispatchEventToListeners(Events.SavedURL, {url, fileSystemPath: url});
   }
 
   append(url: string, content: string): void {
-    const buffer = this.urlsBeingSaved.get(url);
+    const buffer = this.#urlsBeingSaved.get(url);
     if (buffer) {
       buffer.push(content);
       this.events.dispatchEventToListeners(Events.AppendedToURL, url);
@@ -165,8 +164,8 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
   }
 
   close(url: string): void {
-    const buffer = this.urlsBeingSaved.get(url) || [];
-    this.urlsBeingSaved.delete(url);
+    const buffer = this.#urlsBeingSaved.get(url) || [];
+    this.#urlsBeingSaved.delete(url);
     let fileName = '';
 
     if (url) {
@@ -246,6 +245,9 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
             urlValid: undefined,
           });
         });
+  }
+
+  registerPreference(name: string, options: {synced?: boolean}): void {
   }
 
   getPreferences(callback: (arg0: {
@@ -355,10 +357,10 @@ export class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
 export let InspectorFrontendHostInstance: InspectorFrontendHostStub = window.InspectorFrontendHost;
 
 class InspectorFrontendAPIImpl {
-  private readonly debugFrontend: boolean;
+  readonly #debugFrontend: boolean;
 
   constructor() {
-    this.debugFrontend = (Boolean(Root.Runtime.Runtime.queryParam('debugFrontend'))) ||
+    this.#debugFrontend = (Boolean(Root.Runtime.Runtime.queryParam('debugFrontend'))) ||
         // @ts-ignore Compatibility hacks
         (window['InspectorTest'] && window['InspectorTest']['debugTest']);
 
@@ -369,7 +371,7 @@ class InspectorFrontendAPIImpl {
   }
 
   private dispatch(name: symbol, signature: string[], runOnceLoaded: boolean, ...params: string[]): void {
-    if (this.debugFrontend) {
+    if (this.#debugFrontend) {
       setTimeout(() => innerDispatch(), 0);
     } else {
       innerDispatch();
@@ -379,7 +381,8 @@ class InspectorFrontendAPIImpl {
       // Single argument methods get dispatched with the param.
       if (signature.length < 2) {
         try {
-          InspectorFrontendHostInstance.events.dispatchEventToListeners(name, params[0]);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, params[0]);
         } catch (error) {
           console.error(error + ' ' + error.stack);
         }
@@ -392,7 +395,8 @@ class InspectorFrontendAPIImpl {
         data[signature[i]] = params[i];
       }
       try {
-        InspectorFrontendHostInstance.events.dispatchEventToListeners(name, data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        InspectorFrontendHostInstance.events.dispatchEventToListeners<any>(name, data);
       } catch (error) {
         console.error(error + ' ' + error.stack);
       }

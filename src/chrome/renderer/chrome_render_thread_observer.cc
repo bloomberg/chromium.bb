@@ -80,6 +80,9 @@ class RendererResourceDelegate
  public:
   RendererResourceDelegate() = default;
 
+  RendererResourceDelegate(const RendererResourceDelegate&) = delete;
+  RendererResourceDelegate& operator=(const RendererResourceDelegate&) = delete;
+
   void OnRequestComplete() override {
     // Update the browser about our cache.
 
@@ -95,7 +98,7 @@ class RendererResourceDelegate
           FROM_HERE,
           base::BindOnce(&RendererResourceDelegate::InformHostOfCacheStats,
                          weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kCacheStatsDelayMS));
+          base::Milliseconds(kCacheStatsDelayMS));
     }
   }
 
@@ -128,8 +131,6 @@ class RendererResourceDelegate
       cache_stats_recorder_;
 
   base::WeakPtrFactory<RendererResourceDelegate> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

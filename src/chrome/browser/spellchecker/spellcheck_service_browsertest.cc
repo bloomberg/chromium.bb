@@ -25,6 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spell_check_host_chrome_impl.h"
@@ -66,6 +67,10 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
                                      public spellcheck::mojom::SpellChecker {
  public:
   SpellcheckServiceBrowserTest() = default;
+
+  SpellcheckServiceBrowserTest(const SpellcheckServiceBrowserTest&) = delete;
+  SpellcheckServiceBrowserTest& operator=(const SpellcheckServiceBrowserTest&) =
+      delete;
 
 #if defined(OS_WIN)
   void SetUp() override {
@@ -275,13 +280,16 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
   bool custom_dictionary_changed_called_;
   bool initialize_spellcheck_called_;
   bool spellcheck_enabled_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceBrowserTest);
 };
 
 class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
  public:
   SpellcheckServiceHostBrowserTest() = default;
+
+  SpellcheckServiceHostBrowserTest(const SpellcheckServiceHostBrowserTest&) =
+      delete;
+  SpellcheckServiceHostBrowserTest& operator=(
+      const SpellcheckServiceHostBrowserTest&) = delete;
 
   void RequestDictionary() {
     mojo::Remote<spellcheck::mojom::SpellCheckHost> interface;
@@ -333,8 +341,6 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
 
   bool spelling_service_done_called_ = false;
   std::u16string word_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceHostBrowserTest);
 };
 
 // Disable spell check should disable spelling service

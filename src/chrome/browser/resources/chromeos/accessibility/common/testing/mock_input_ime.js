@@ -89,10 +89,21 @@ var MockInputIme = {
     MockInputIme.lastCompositionParameters_ = composition;
   },
 
+  /** Clears composition text. */
+  clearComposition() {
+    MockInputIme.lastCompositionParameters_ = null;
+  },
+
   /** @param {!MockImeCommitParameters} commitParameters */
   commitText(commitParameters) {
     MockInputIme.lastCommittedParameters_ = commitParameters;
   },
+
+  /** @param {Object} unused */
+  setCandidateWindowProperties(unused) {},
+
+  /** @param {Object} unused */
+  setCandidates(unused) {},
 
   // Methods for testing. //
 

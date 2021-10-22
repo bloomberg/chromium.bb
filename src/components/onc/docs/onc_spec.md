@@ -188,7 +188,7 @@ warns admins of the implications of mis-using this policy for Chrome OS.
       enabled and a network scan shows a new policy managed network, the device
       will automatically switch to the managed network.
 
-* **BlacklistedHexSSIDs**
+* **BlacklistedHexSSIDs** <!--- nocheck -->
     * DEPRECATED, use **BlockedHexSSIDs** instead.<br/>
     * (optional) - **array of string**
     * List of strings containing blocked hex SSIDs. Networks included in
@@ -210,7 +210,9 @@ warns admins of the implications of mis-using this policy for Chrome OS.
         * *Tether*
         * *VPN*
     * List of strings containing disabled network interfaces.
-    * Adding *VPN* to the list will only disable Chrome OS built-in VPN.
+    * Adding *VPN* to the list will disable all VPN types. Android VPN
+      connections may still be established successfully but will be
+      closed shortly after that by the Chrome OS connection manager.
 
 ## Network Configuration
 

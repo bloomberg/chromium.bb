@@ -8,16 +8,7 @@ TODO: add tests to check that textureLoad operations stay in-bounds.
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { assert } from '../../../common/util/util.js';
 import { GPUTest } from '../../gpu_test.js';
-import { align } from '../../util/math.js';
-import {
-  ScalarType,
-  kScalarTypeInfo,
-  kVectorContainerTypes,
-  kVectorContainerTypeInfo,
-  kMatrixContainerTypes,
-  kMatrixContainerTypeInfo,
-  kScalarTypes,
-} from '../types.js';
+import { generateTypes, supportedScalarTypes, supportsAtomics } from '../types.js';
 
 export const g = makeTestGroup(GPUTest);
 
@@ -110,110 +101,9 @@ function testFillArrayBuffer(
   new constructor(array, zeroByteStart, zeroByteCount / constructor.BYTES_PER_ELEMENT).fill(0);
 }
 
-const kArrayLength = 3;
-
 /**
  * Generate a bunch of indexable types (vec, mat, sized/unsized array) for testing.
  */
-function* generateIndexableTypes({
-  storageClass,
-  baseType,
-  atomic = false,
-}: {
-  /** Unsized array will only be generated for storageClass "storage". */
-  storageClass: string;
-  /** Base scalar type (i32/u32/f32/bool). */
-  baseType: ScalarType;
-  /** Whether to wrap the baseType in `atomic<>`. */
-  atomic?: boolean;
-}) {
-  const scalarInfo = kScalarTypeInfo[baseType];
-  if (atomic) assert(scalarInfo.supportsAtomics, 'type does not support atomics');
-  const scalarType = atomic ? `atomic<${baseType}>` : baseType;
-
-  // Don't generate vec2<atomic<i32>> etc.
-  if (!atomic) {
-    // Vector types
-    for (const vectorType of kVectorContainerTypes) {
-      yield {
-        type: `${vectorType}<${scalarType}>`,
-        _typeInfo: { elementBaseType: baseType, ...kVectorContainerTypeInfo[vectorType] },
-      };
-    }
-
-    // Matrices can only be f32.
-    if (baseType === 'f32') {
-      for (const matrixType of kMatrixContainerTypes) {
-        const matrixInfo = kMatrixContainerTypeInfo[matrixType];
-        yield {
-          type: `${matrixType}<${scalarType}>`,
-          _typeInfo: {
-            elementBaseType: `vec${matrixInfo.innerLength}<${scalarType}>`,
-            ...matrixInfo,
-          },
-        };
-      }
-    }
-  }
-
-  const arrayTypeInfo = {
-    elementBaseType: baseType,
-    arrayLength: kArrayLength,
-    layout: scalarInfo.layout
-      ? {
-          alignment: scalarInfo.layout.alignment,
-          size:
-            storageClass === 'uniform'
-              ? // Uniform storage class must have array elements aligned to 16.
-                kArrayLength *
-                arrayStride({
-                  ...scalarInfo.layout,
-                  alignment: 16,
-                })
-              : kArrayLength * arrayStride(scalarInfo.layout),
-        }
-      : undefined,
-  };
-
-  // Sized array
-  if (storageClass === 'uniform') {
-    yield { type: `[[stride(16)]] array<${scalarType},${kArrayLength}>`, _typeInfo: arrayTypeInfo };
-  } else {
-    yield { type: `array<${scalarType},${kArrayLength}>`, _typeInfo: arrayTypeInfo };
-  }
-  // Unsized array
-  if (storageClass === 'storage') {
-    yield { type: `array<${scalarType}>`, _typeInfo: arrayTypeInfo };
-  }
-}
-
-function arrayStride(elementLayout: { size: number; alignment: number }) {
-  return align(elementLayout.size, elementLayout.alignment);
-}
-
-/** Generates scalarTypes (i32/u32/f32/bool) that support the specified usage. */
-function* supportedScalarTypes(p: { atomic: boolean; storageClass: string }) {
-  for (const scalarType of kScalarTypes) {
-    const info = kScalarTypeInfo[scalarType];
-
-    // Test atomics only on supported scalar types.
-    if (p.atomic && !info.supportsAtomics) continue;
-
-    // Storage and uniform require host-sharable types.
-    const isHostShared = p.storageClass === 'storage' || p.storageClass === 'uniform';
-    if (isHostShared && info.layout === undefined) continue;
-
-    yield scalarType;
-  }
-}
-
-/** Atomic access requires atomic type and storage/workgroup memory. */
-function supportsAtomics(p: { storageClass: string; storageMode: string | undefined }) {
-  return (
-    (p.storageClass === 'storage' && p.storageMode === 'read_write') ||
-    p.storageClass === 'workgroup'
-  );
-}
 
 g.test('linear_memory')
   .desc(
@@ -245,13 +135,21 @@ g.test('linear_memory')
         { storageClass: 'workgroup', access: 'read' },
         { storageClass: 'workgroup', access: 'write' },
       ] as const)
-      .expand('atomic', p => (supportsAtomics(p) ? [false, true] : [false]))
-      .expand('baseType', supportedScalarTypes)
+      .combineWithParams([
+        { containerType: 'array' },
+        { containerType: 'matrix' },
+        { containerType: 'vector' },
+      ] as const)
+      .expand('isAtomic', p => (supportsAtomics(p) ? [false, true] : [false]))
       .beginSubcases()
-      .expandWithParams(generateIndexableTypes)
+      .expand('baseType', supportedScalarTypes)
+      .expandWithParams(generateTypes)
   )
   .fn(async t => {
-    const { storageClass, storageMode, access, atomic, baseType, type, _typeInfo } = t.params;
+    const { storageClass, storageMode, access, isAtomic, baseType, type, _kTypeInfo } = t.params;
+
+    assert(_kTypeInfo !== undefined, 'not an indexable type');
+    assert('arrayLength' in _kTypeInfo);
 
     let usesCanary = false;
     let globalSource = '';
@@ -274,8 +172,8 @@ g.test('linear_memory')
       case 'uniform':
       case 'storage':
         {
-          assert(_typeInfo.layout !== undefined);
-          const layout = _typeInfo.layout;
+          assert(_kTypeInfo.layout !== undefined);
+          const layout = _kTypeInfo.layout;
           bufferBindingSize = layout.size;
           const qualifiers = storageClass === 'storage' ? `storage, ${storageMode}` : storageClass;
           globalSource += `
@@ -326,10 +224,10 @@ g.test('linear_memory')
         ? [
             // Exactly in bounds (should be OK)
             '0',
-            `${_typeInfo.arrayLength} - 1`,
+            `${_kTypeInfo.arrayLength} - 1`,
             // Exactly out of bounds
             '-1',
-            `${_typeInfo.arrayLength}`,
+            `${_kTypeInfo.arrayLength}`,
             // Far out of bounds
             '-1000000',
             '1000000',
@@ -339,9 +237,9 @@ g.test('linear_memory')
         : [
             // Exactly in bounds (should be OK)
             '0u',
-            `${_typeInfo.arrayLength}u - 1u`,
+            `${_kTypeInfo.arrayLength}u - 1u`,
             // Exactly out of bounds
-            `${_typeInfo.arrayLength}u`,
+            `${_kTypeInfo.arrayLength}u`,
             // Far out of bounds
             '1000000u',
             `${kMaxU32}u`,
@@ -358,22 +256,22 @@ g.test('linear_memory')
         // Produce the accesses to the variable.
         for (const indexToTest of indicesToTest) {
           const exprIndex = `(${indexToTest})${exprIndexAddon}`;
-          const exprZeroElement = `${_typeInfo.elementBaseType}()`;
+          const exprZeroElement = `${_kTypeInfo.elementBaseType}()`;
           const exprElement = `s.data[${exprIndex}]`;
 
           switch (access) {
             case 'read':
               {
-                const exprLoadElement = atomic ? `atomicLoad(&${exprElement})` : exprElement;
+                const exprLoadElement = isAtomic ? `atomicLoad(&${exprElement})` : exprElement;
                 let condition = `${exprLoadElement} != ${exprZeroElement}`;
-                if ('innerLength' in _typeInfo) condition = `any(${condition})`;
+                if ('innerLength' in _kTypeInfo) condition = `any(${condition})`;
                 testFunctionSource += `
                   if (${condition}) { return ${nextErrorReturnValue()}; }`;
               }
               break;
 
             case 'write':
-              if (atomic) {
+              if (isAtomic) {
                 testFunctionSource += `
                   atomicStore(&s.data[${exprIndex}], ${exprZeroElement});`;
               } else {
@@ -412,9 +310,7 @@ g.test('linear_memory')
       }`;
 
     // Run it.
-    if (bufferBindingSize !== undefined) {
-      assert(baseType !== 'bool', 'case should have been filtered out');
-
+    if (bufferBindingSize !== undefined && baseType !== 'bool') {
       const expectedData = new ArrayBuffer(testBufferSize);
       const bufferBindingEnd = bufferBindingOffset + bufferBindingSize;
       testFillArrayBuffer(expectedData, baseType, {

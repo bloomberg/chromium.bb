@@ -25,6 +25,7 @@
 #include "chromeos/crosapi/mojom/account_manager.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
 #include "chromeos/crosapi/mojom/device_attributes.mojom.h"
+#include "chromeos/crosapi/mojom/structured_metrics_service.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
 #include "chromeos/lacros/lacros_service_never_blocking_state.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
@@ -42,12 +43,6 @@ class SystemIdleCache;
 // Forward declaration for class defined in .cc file that holds most of the
 // business logic of this class.
 class LacrosServiceNeverBlockingState;
-
-// Prefer to use LacrosService instead of LacrosService. There is an
-// ongoing, low priority refactor to rename LacrosService to
-// LacrosService. https://crbug.com/1195401.
-class LacrosService;
-using LacrosService = LacrosService;
 
 // This class is responsible for receiving and routing mojo messages from
 // ash-chrome via the mojo::Receiver |sequenced_state_.receiver_|. This class is

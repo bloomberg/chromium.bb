@@ -19,8 +19,6 @@
 
 #include <array>
 #include <cstdint>
-#include <memory>
-#include <vector>
 
 #include "src/dsp/common.h"
 #include "src/symbol_decoder_context.h"

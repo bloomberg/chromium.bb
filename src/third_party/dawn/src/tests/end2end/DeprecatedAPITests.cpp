@@ -34,107 +34,41 @@ class DeprecationTests : public DawnTest {
     }
 };
 
-// Test that setting attachment rather than view for render pass color and depth/stencil attachments
-// is deprecated.
-TEST_P(DeprecationTests, SetAttachmentDescriptorAttachment) {
+// Test that using size=0 to indicate default size in setVertexBuffer and setIndexBuffer is
+// deprecated.
+TEST_P(DeprecationTests, SetBufferWithZeroSizeAsDefault) {
+    wgpu::BufferDescriptor bufferDesc;
+    bufferDesc.size = 128;
+    bufferDesc.usage = wgpu::BufferUsage::Index | wgpu::BufferUsage::Vertex;
+    wgpu::Buffer buffer = device.CreateBuffer(&bufferDesc);
+
     utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::RenderPassEncoder pass;
 
-    // Check that using .attachment with color attachments gives the warning.
-    wgpu::RenderPassColorAttachmentDescriptor* colorAttachment =
-        &renderPass.renderPassInfo.cColorAttachments[0];
-    colorAttachment->attachment = colorAttachment->view;
-    colorAttachment->view = nullptr;
+    {
+        // Control case, use wgpu::kWholeSize to indicate default size.
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, wgpu::kWholeSize);
+        pass.SetVertexBuffer(0, buffer, 0, wgpu::kWholeSize);
+        pass.EndPass();
+    }
 
-    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
-    pass.EndPass();
+    {
+        // Control case, omitting size parameter to indicate default size.
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0);
+        pass.SetVertexBuffer(0, buffer, 0);
+        pass.EndPass();
+    }
 
-    colorAttachment->view = colorAttachment->attachment;
-    colorAttachment->attachment = nullptr;
-
-    // Check that using .attachment with depth/stencil attachments gives the warning.
-    wgpu::TextureDescriptor descriptor;
-    descriptor.dimension = wgpu::TextureDimension::e2D;
-    descriptor.size = {1, 1, 1};
-    descriptor.sampleCount = 1;
-    descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::RenderAttachment;
-    wgpu::Texture depthStencil = device.CreateTexture(&descriptor);
-
-    wgpu::RenderPassDepthStencilAttachmentDescriptor* depthAttachment =
-        &renderPass.renderPassInfo.cDepthStencilAttachmentInfo;
-    renderPass.renderPassInfo.depthStencilAttachment = depthAttachment;
-    depthAttachment->attachment = depthStencil.CreateView();
-
-    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
-    pass.EndPass();
-}
-
-// Test that setting computeStage in a ComputePipelineDescriptor is deprecated.
-TEST_P(DeprecationTests, ComputeStage) {
-    wgpu::ComputePipelineDescriptor csDesc;
-    csDesc.computeStage.module = utils::CreateShaderModule(device, R"(
-        [[stage(compute), workgroup_size(1)]] fn main() {
-        })");
-    csDesc.computeStage.entryPoint = "main";
-
-    wgpu::ComputePipeline pipeline;
-    EXPECT_DEPRECATION_WARNING(pipeline = device.CreateComputePipeline(&csDesc));
-}
-
-// Test that StoreOp::Clear is deprecated.
-TEST_P(DeprecationTests, StoreOpClear) {
-    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    wgpu::RenderPassEncoder pass;
-
-    // Check that a storeOp of Clear for color attachments raises a validation warning.
-    renderPass.renderPassInfo.cColorAttachments[0].storeOp = wgpu::StoreOp::Clear;
-
-    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
-    pass.EndPass();
-
-    // Check that a storeOp of Clear for depth/stencil attachments raises a validation warning.
-    wgpu::TextureDescriptor descriptor;
-    descriptor.dimension = wgpu::TextureDimension::e2D;
-    descriptor.size = {1, 1, 1};
-    descriptor.sampleCount = 1;
-    descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    descriptor.mipLevelCount = 1;
-    descriptor.usage = wgpu::TextureUsage::RenderAttachment;
-    wgpu::Texture depthStencil = device.CreateTexture(&descriptor);
-
-    wgpu::RenderPassDepthStencilAttachmentDescriptor* depthAttachment =
-        &renderPass.renderPassInfo.cDepthStencilAttachmentInfo;
-    renderPass.renderPassInfo.depthStencilAttachment = depthAttachment;
-    depthAttachment->view = depthStencil.CreateView();
-
-    renderPass.renderPassInfo.cColorAttachments[0].storeOp = wgpu::StoreOp::Discard;
-    depthAttachment->depthStoreOp = wgpu::StoreOp::Clear;
-
-    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
-    pass.EndPass();
-
-    depthAttachment->depthStoreOp = wgpu::StoreOp::Discard;
-    depthAttachment->stencilStoreOp = wgpu::StoreOp::Clear;
-
-    EXPECT_DEPRECATION_WARNING(pass = encoder.BeginRenderPass(&renderPass.renderPassInfo));
-    pass.EndPass();
-}
-
-// Test that readonly storage textures are deprecated
-TEST_P(DeprecationTests, ReadOnlyStorageTextures) {
-    // Control case: WriteOnly storage textures are allowed.
-    utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::WriteOnly,
-                  wgpu::TextureFormat::R32Float}});
-
-    // Error case: ReadOnly storage textures are not allowed.
-    EXPECT_DEPRECATION_WARNING(utils::MakeBindGroupLayout(
-        device, {{0, wgpu::ShaderStage::Fragment, wgpu::StorageTextureAccess::ReadOnly,
-                  wgpu::TextureFormat::R32Float}}));
+    {
+        // Error case, use 0 to indicate default size will cause deprecated warning.
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        EXPECT_DEPRECATION_WARNING(pass.SetIndexBuffer(buffer, wgpu::IndexFormat::Uint32, 0, 0));
+        EXPECT_DEPRECATION_WARNING(pass.SetVertexBuffer(0, buffer, 0, 0));
+        pass.EndPass();
+    }
 }
 
 DAWN_INSTANTIATE_TEST(DeprecationTests,

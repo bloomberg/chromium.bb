@@ -50,7 +50,7 @@ extern const base::Feature kClientSideDetectionModelHighMemoryTag{
     "ClientSideDetectionHighMemoryTag", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionReferrerChain{
-    "ClientSideDetectionReferrerChain", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ClientSideDetectionReferrerChain", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFileAnalysisMimeTypeSniff{
     "FileAnalysisMimeTypeSniff", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -112,28 +112,23 @@ const base::Feature kRealTimeUrlLookupReferrerChainForEnterprise{
     "SafeBrowsingRealTimeUrlLookupReferrerChainForEnterprise",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSafeBrowsingPageLoadToken{
+    "SafeBrowsingPageLoadToken", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature
     kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid{
         "SafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid",
         base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSafeBrowsingSeparateNetworkContexts {
-  "SafeBrowsingSeparateNetworkContexts",
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kSafeBrowsingSeparateNetworkContexts{
+    "SafeBrowsingSeparateNetworkContexts", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSafeBrowsingRemoveCookies {
-  "SafeBrowsingRemoveCookies",
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kSafeBrowsingRemoveCookies{
+    "SafeBrowsingRemoveCookies", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kSafeBrowsingRemoveCookiesInAuthRequests{
+    "SafeBrowsingRemoveCookiesInAuthRequests",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
@@ -181,7 +176,9 @@ constexpr struct {
     {&kPasswordProtectionWithToken, true},
     {&kRealTimeUrlLookupReferrerChain, true},
     {&kRealTimeUrlLookupReferrerChainForEnterprise, true},
+    {&kSafeBrowsingPageLoadToken, true},
     {&kSafeBrowsingPasswordCheckIntegrationForSavedPasswordsAndroid, true},
+    {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},

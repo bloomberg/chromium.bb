@@ -16,6 +16,7 @@
 #include "osp/public/protocol_connection_client.h"
 #include "osp/public/request_response_handler.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace osp {
@@ -481,9 +482,7 @@ Controller::ConnectRequest Controller::ReconnectPresentation(
     delegate->OnError(Error::Code::kNoPresentationFound);
     return ConnectRequest();
   }
-  auto matching_url_it =
-      std::find(urls.begin(), urls.end(), presentation_entry->second.url);
-  if (matching_url_it == urls.end()) {
+  if (!Contains(urls, presentation_entry->second.url)) {
     delegate->OnError(Error::Code::kNoPresentationFound);
     return ConnectRequest();
   }

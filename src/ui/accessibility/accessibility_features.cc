@@ -117,17 +117,9 @@ bool IsMagnifierContinuousMouseFollowingModeSettingEnabled() {
       ::features::kMagnifierContinuousMouseFollowingModeSetting);
 }
 
-const base::Feature kEnableSwitchAccessPointScanning{
-    "EnableSwitchAccessPointScanning", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsSwitchAccessPointScanningEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kEnableSwitchAccessPointScanning);
-}
-
 const base::Feature kExperimentalAccessibilityDictationOffline{
     "ExperimentalAccessibilityDictationOffline",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsExperimentalAccessibilityDictationOfflineEnabled() {
   return base::FeatureList::IsEnabled(
@@ -147,6 +139,15 @@ const base::Feature kExperimentalAccessibilityDictationCommands{
 bool IsExperimentalAccessibilityDictationCommandsEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kExperimentalAccessibilityDictationCommands);
+}
+
+const base::Feature kExperimentalAccessibilitySwitchAccessSetupGuide{
+    "ExperimentalAccessibilitySwitchAccessSetupGuide",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilitySwitchAccessSetupGuideEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilitySwitchAccessSetupGuide);
 }
 
 const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",

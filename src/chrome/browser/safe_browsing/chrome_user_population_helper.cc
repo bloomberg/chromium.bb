@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/chrome_user_population_helper.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -16,6 +18,56 @@
 #include "components/sync/driver/sync_service.h"
 
 namespace safe_browsing {
+
+namespace {
+
+absl::optional<ChromeUserPopulation>& GetCachedUserPopulation(
+    Profile* profile) {
+  static base::NoDestructor<
+      std::map<Profile*, absl::optional<ChromeUserPopulation>>>
+      instance;
+  return (*instance)[profile];
+}
+
+NoCachedPopulationReason& GetNoCachedPopulationReason(Profile* profile) {
+  static base::NoDestructor<std::map<Profile*, NoCachedPopulationReason>>
+      instance;
+  auto it = instance->find(profile);
+  if (it == instance->end()) {
+    (*instance)[profile] = NoCachedPopulationReason::kStartup;
+  }
+
+  return (*instance)[profile];
+}
+
+void ComparePopulationWithCache(Profile* profile,
+                                const ChromeUserPopulation& population) {
+  const absl::optional<ChromeUserPopulation>& cached_population =
+      GetCachedUserPopulation(profile);
+  if (!cached_population) {
+    base::UmaHistogramEnumeration("SafeBrowsing.NoCachedPopulationReason",
+                                  GetNoCachedPopulationReason(profile));
+    return;
+  }
+
+  base::UmaHistogramBoolean(
+      "SafeBrowsing.PopulationMatchesCachedValue.Population",
+      cached_population->user_population() == population.user_population());
+  base::UmaHistogramBoolean(
+      "SafeBrowsing.PopulationMatchesCachedValue.UserAgent",
+      cached_population->user_agent() == population.user_agent());
+  base::UmaHistogramBoolean(
+      "SafeBrowsing.PopulationMatchesCachedValue.Mbb",
+      cached_population->is_mbb_enabled() == population.is_mbb_enabled());
+}
+
+}  // namespace
+
+void ClearCachedUserPopulation(Profile* profile,
+                               NoCachedPopulationReason reason) {
+  GetCachedUserPopulation(profile) = absl::nullopt;
+  GetNoCachedPopulationReason(profile) = reason;
+}
 
 ChromeUserPopulation GetUserPopulationForProfile(Profile* profile) {
   // |profile| may be null in tests.
@@ -55,11 +107,16 @@ ChromeUserPopulation GetUserPopulationForProfile(Profile* profile) {
 #endif
   }
 
-  return GetUserPopulation(
+  ChromeUserPopulation population = GetUserPopulation(
       profile->GetPrefs(), profile->IsOffTheRecord(), is_history_sync_enabled,
       is_under_advanced_protection,
       g_browser_process->browser_policy_connector(), std::move(num_profiles),
       std::move(num_loaded_profiles), std::move(num_open_profiles));
+
+  ComparePopulationWithCache(profile, population);
+  GetCachedUserPopulation(profile) = population;
+
+  return population;
 }
 
 }  // namespace safe_browsing

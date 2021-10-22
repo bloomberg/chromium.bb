@@ -41,7 +41,6 @@
 <translation id="2560420686485554789">Chromium cần quyền truy cập vào bộ nhớ để tải tệp xuống</translation>
 <translation id="2572494885440352020">Trình trợ giúp của Chromium</translation>
 <translation id="2577788541081224677">Để truy cập vào nội dung của bạn trên Chromium bằng mọi thiết bị, hãy đăng nhập rồi bật tính năng đồng bộ hóa.</translation>
-<translation id="2580426763510374355">Cài đặt Chromium OS</translation>
 <translation id="2583187216237139145">Quản trị viên hồ sơ công việc có thể xóa mọi dữ liệu trên Chromium được tạo trong quá trình sử dụng hồ sơ này (chẳng hạn như hoạt động tạo dấu trang, các trang web đã truy cập, mật khẩu và các tùy chọn cài đặt khác). <ph name="LEARN_MORE" /></translation>
 <translation id="2587578672395088481">Chromium OS cần được khởi động lại để áp dụng bản cập nhật.</translation>
 <translation id="2648074677641340862">Đã xảy ra lỗi hệ điều hành khi cài đặt. Hãy tải xuống Chromium lại lần nữa.</translation>
@@ -54,8 +53,6 @@
 <translation id="2847479871509788944">Xóa khỏi Chromium...</translation>
 <translation id="2885378588091291677">Trình quản lý tác vụ</translation>
 <translation id="2910007522516064972">Giới thiệu về &amp;Chromium</translation>
-<translation id="2944515913673001130"><ph name="BEGIN_PARAGRAPH1" />Lời nhắc cuối cùng: quá trình cài đặt <ph name="BEGIN_BOLD" />sẽ xoá toàn bộ ổ cứng của bạn<ph name="END_BOLD" />. Hãy chắc chắn rằng bạn đã sao lưu mọi dữ liệu quan trọng.<ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Quá trình cài đặt không thể hủy được một khi đã bắt đầu.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="2977470724722393594">Chromium đã được cập nhật</translation>
 <translation id="2983934633046890458">Chromium đang cố gắng chỉnh sửa mật khẩu.</translation>
 <translation id="3032706164202344641">Chromium không thể kiểm tra mật khẩu của bạn. Hãy thử lại sau.</translation>
@@ -79,7 +76,6 @@
 <translation id="3350761136195634146">Đã có một hồ sơ trên Chromium sử dụng tài khoản này</translation>
 <translation id="3406848076815591792">Chuyển sang hồ sơ hiện có trên Chromium?</translation>
 <translation id="3430503420100763906">Với các hồ sơ trên Chromium, bạn có thể tách biệt mọi nội dung của mình khi dùng trình duyệt này. Tạo hồ sơ cho bạn bè và gia đình hoặc phân tách nội dung công việc với nội dung giải trí.</translation>
-<translation id="3433271666494956603">Đang cài đặt Chromium OS</translation>
 <translation id="347328004046849135">Chromium sẽ thông báo cho bạn khi bạn đăng nhập bằng mật khẩu bị lộ</translation>
 <translation id="3474745554856756813">Thao tác này sẽ xóa <ph name="ITEMS_COUNT" /> mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chromium dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="3497319089134299931">Phím tắt <ph name="SHORTCUT" /> có thể giúp chuyển đổi giữa các hồ sơ trên Chromium</translation>
@@ -107,7 +103,6 @@
 <translation id="4264410486868823224"><ph name="MANAGER" /> yêu cầu bạn phải đọc và chấp nhận Điều khoản dịch vụ sau đây trước khi sử dụng thiết bị này. Những điều khoản này không mở rộng, sửa đổi hoặc giới hạn Điều khoản của Chromium OS.</translation>
 <translation id="4271805377592243930">Nhận trợ giúp về Chromium</translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
-<translation id="429583012151745428">Đang trong quá trình cài đặt. Đừng tắt thiết bị. Quá trình cài đặt thường mất không quá 20 phút. Máy sẽ tự động tắt sau khi cài đặt.</translation>
 <translation id="4407044323746248786">Bạn vẫn muốn thoát khỏi Chromium?</translation>
 <translation id="4415566066719264597">Cho phép Chromium chạy trong nền</translation>
 <translation id="4423735387467980091">Tùy chỉnh và điều khiển Chromium</translation>
@@ -201,7 +196,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6734291798041940871">Chromium đã được cài đặt cho tất cả người dùng trên máy tính của bạn.</translation>
 <translation id="673636774878526923">Để truy cập vào nội dung của bạn trên Chromium bằng mọi thiết bị, hãy đăng nhập rồi bật tính năng đồng bộ hóa.</translation>
 <translation id="6774082503108938489">Cha mẹ bạn đã tắt tùy chọn "Quyền của các trang web, ứng dụng và tiện ích" đối với Chromium. Bạn không được phép bật <ph name="EXTENSION_TYPE_PARAMETER" /> này.</translation>
-<translation id="6827182711503025204">Quá trình cài đặt Chromium OS sẽ ghi đè mọi dữ liệu trên thiết bị của bạn.</translation>
 <translation id="6847869444787758381">Chromium cho bạn biết mật khẩu của bạn có bị đánh cắp hay không</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
@@ -238,10 +232,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
       cài đặt của Chromium OS<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium đang sử dụng máy ảnh và micrô của bạn.</translation>
 <translation id="7617377681829253106">Chromium được cải tiến hơn</translation>
-<translation id="7627575518938382525"><ph name="BEGIN_PARAGRAPH1" />Trước khi bắt đầu, hãy nhớ sao lưu dữ liệu mới nhất. Quá trình cài đặt Chromium OS sẽ ghi đè mọi dữ liệu trên ổ cứng của bạn.<ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Google không chịu trách nhiệm về mọi dữ liệu mất mát và không đảm bảo rằng Chromium OS sẽ hoạt động trên các mẫu thiết bị chưa được chứng nhận. Vui lòng truy cập [TBD] để tìm hiểu thêm về các mẫu thiết bị được chứng nhận.<ph name="END_PARAGRAPH2" />
-          <ph name="BEGIN_PARAGRAPH3" />Tìm hiểu thêm về việc cài đặt Chromium OS và xóa dữ liệu: [URL TBD]<ph name="END_PARAGRAPH3" />
-          <ph name="BEGIN_PARAGRAPH4" />Nếu bạn đã sẵn sàng tiếp tục, hãy nhấp vào “Cài đặt Chromium OS” và chúng tôi sẽ hướng dẫn bạn cài đặt qua một vài bước đơn giản. Bạn sẽ được yêu cầu xác nhận một lần nữa trước khi chúng tôi thực hiện thay đổi trên máy tính của bạn.<ph name="END_PARAGRAPH4" /></translation>
 <translation id="7686590090926151193">Chromium không phải là trình duyệt mặc định của bạn</translation>
 <translation id="7689606757190482937">Đồng bộ hóa và cá nhân hóa Chromium trên các thiết bị của bạn</translation>
 <translation id="7729447699958282447">Chromium không thể đồng bộ hóa dữ liệu của bạn vì Đồng bộ hóa không khả dụng cho miền của bạn.</translation>

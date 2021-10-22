@@ -102,7 +102,6 @@
 #endif
 
 using base::Time;
-using base::TimeDelta;
 using content::BrowserThread;
 using extensions::mojom::ManifestLocation;
 using testing::_;
@@ -298,6 +297,9 @@ class MockService : public TestExtensionService {
         downloader_delegate_override_(nullptr),
         test_shared_url_loader_factory_(url_loader_factory) {}
 
+  MockService(const MockService&) = delete;
+  MockService& operator=(const MockService&) = delete;
+
   ~MockService() override = default;
 
   PendingExtensionManager* pending_extension_manager() override {
@@ -394,8 +396,6 @@ class MockService : public TestExtensionService {
 
   scoped_refptr<network::SharedURLLoaderFactory>
       test_shared_url_loader_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockService);
 };
 
 bool ShouldInstallExtensionsOnly(const Extension* extension,
@@ -1733,7 +1733,7 @@ class ExtensionUpdaterTest : public testing::Test {
         tmp_path.Append(LocalExtensionCache::ExtensionFileName(
             kTestExtensionId, version, "" /* hash */));
     // Create a small file of zeroes, e.g. 100 bytes size.
-    CreateFile(filename, 100, now - base::TimeDelta::FromSeconds(3));
+    CreateFile(filename, 100, now - base::Seconds(3));
 
     // Add crx file entry in the cache.
     base::RunLoop put_extension_run_loop;
@@ -1852,11 +1852,12 @@ class ExtensionUpdaterTest : public testing::Test {
     base::Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
-    std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch =
+    std::unique_ptr<ExtensionDownloader::ExtensionFetch> extension_fetch =
         std::make_unique<ExtensionDownloader::ExtensionFetch>(
             id, test_url, hash, version.GetString(), requests,
             ManifestFetchData::FetchPriority::BACKGROUND);
-    updater.downloader_->FetchUpdatedExtension(std::move(fetch), absl::nullopt);
+    updater.downloader_->FetchUpdatedExtension(std::move(extension_fetch),
+                                               absl::nullopt);
 
     EXPECT_EQ(
         kExpectedLoadFlags,
@@ -2219,21 +2220,19 @@ class ExtensionUpdaterTest : public testing::Test {
     const std::string& id = tmp[0]->id();
     Time now = Time::Now();
     if (rollcall_ping_days == 0) {
-      prefs->SetLastPingDay(id, now - TimeDelta::FromSeconds(15));
+      prefs->SetLastPingDay(id, now - base::Seconds(15));
     } else if (rollcall_ping_days > 0) {
-      Time last_ping_day = now -
-                           TimeDelta::FromDays(rollcall_ping_days) -
-                           TimeDelta::FromSeconds(15);
+      Time last_ping_day =
+          now - base::Days(rollcall_ping_days) - base::Seconds(15);
       prefs->SetLastPingDay(id, last_ping_day);
     }
 
     // Store a value for the last day we sent an active ping.
     if (active_ping_days == 0) {
-      prefs->SetLastActivePingDay(id, now - TimeDelta::FromSeconds(15));
+      prefs->SetLastActivePingDay(id, now - base::Seconds(15));
     } else if (active_ping_days > 0) {
-      Time last_active_ping_day = now -
-                                  TimeDelta::FromDays(active_ping_days) -
-                                  TimeDelta::FromSeconds(15);
+      Time last_active_ping_day =
+          now - base::Days(active_ping_days) - base::Seconds(15);
       prefs->SetLastActivePingDay(id, last_active_ping_day);
     }
     if (active_bit)

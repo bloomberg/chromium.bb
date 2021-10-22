@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/web_app_protocol_handler_manager.h"
 
+#include "base/containers/contains.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -65,7 +66,15 @@ WebAppProtocolHandlerManager::GetAppProtocolHandlerInfos(
   if (!web_app)
     return {};
 
-  return web_app->protocol_handlers();
+  std::vector<apps::ProtocolHandlerInfo> protocol_handlers_infos;
+  for (const auto& handler_info : web_app->protocol_handlers()) {
+    if (!base::Contains(web_app->disallowed_launch_protocols(),
+                        handler_info.protocol)) {
+      protocol_handlers_infos.push_back(handler_info);
+    }
+  }
+
+  return protocol_handlers_infos;
 }
 
 std::vector<ProtocolHandler>
@@ -84,26 +93,70 @@ WebAppProtocolHandlerManager::GetAppProtocolHandlers(
   return protocol_handlers;
 }
 
-void WebAppProtocolHandlerManager::RegisterOsProtocolHandlers(
-    const AppId& app_id,
-    base::OnceCallback<void(bool)> callback) {
-  const std::vector<apps::ProtocolHandlerInfo> handlers =
-      GetAppProtocolHandlerInfos(app_id);
-  RegisterOsProtocolHandlers(app_id, handlers, std::move(callback));
+std::vector<ProtocolHandler>
+WebAppProtocolHandlerManager::GetAllowedHandlersForProtocol(
+    const std::string& protocol) const {
+  std::vector<ProtocolHandler> protocol_handlers;
+
+  for (const WebApp& web_app : app_registrar_->GetApps()) {
+    web_app::AppId app_id = web_app.app_id();
+
+    if (!app_registrar_->IsAllowedLaunchProtocol(app_id, protocol))
+      continue;
+
+    for (const auto& info : web_app.protocol_handlers()) {
+      if (info.protocol != protocol)
+        continue;
+
+      ProtocolHandler handler = ProtocolHandler::CreateWebAppProtocolHandler(
+          info.protocol, GURL(info.url), app_id);
+      protocol_handlers.push_back(handler);
+    }
+  }
+
+  return protocol_handlers;
+}
+
+std::vector<ProtocolHandler>
+WebAppProtocolHandlerManager::GetDisallowedHandlersForProtocol(
+    const std::string& protocol) const {
+  std::vector<ProtocolHandler> protocol_handlers;
+
+  for (const WebApp& web_app : app_registrar_->GetApps()) {
+    web_app::AppId app_id = web_app.app_id();
+
+    if (!app_registrar_->IsDisallowedLaunchProtocol(app_id, protocol))
+      continue;
+
+    for (const auto& info : web_app.protocol_handlers()) {
+      if (info.protocol != protocol)
+        continue;
+
+      ProtocolHandler handler = ProtocolHandler::CreateWebAppProtocolHandler(
+          info.protocol, GURL(info.url), app_id);
+      protocol_handlers.push_back(handler);
+    }
+  }
+
+  return protocol_handlers;
 }
 
 void WebAppProtocolHandlerManager::RegisterOsProtocolHandlers(
     const AppId& app_id,
-    const std::vector<apps::ProtocolHandlerInfo>& protocol_handlers,
     base::OnceCallback<void(bool)> callback) {
-  if (!app_registrar_->IsLocallyInstalled(app_id))
+  if (!app_registrar_->IsLocallyInstalled(app_id)) {
+    std::move(callback).Run(true);
     return;
-
-  if (!protocol_handlers.empty()) {
-    RegisterProtocolHandlersWithOs(
-        app_id, app_registrar_->GetAppShortName(app_id), profile_,
-        protocol_handlers, std::move(callback));
   }
+  const std::vector<apps::ProtocolHandlerInfo> handlers =
+      GetAppProtocolHandlerInfos(app_id);
+  if (handlers.empty()) {
+    std::move(callback).Run(true);
+    return;
+  }
+  RegisterProtocolHandlersWithOs(app_id,
+                                 app_registrar_->GetAppShortName(app_id),
+                                 profile_, handlers, std::move(callback));
 }
 
 void WebAppProtocolHandlerManager::UnregisterOsProtocolHandlers(

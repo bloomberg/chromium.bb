@@ -18,6 +18,7 @@
 #include "chrome/browser/devtools/devtools_file_helper.h"
 #include "chrome/browser/devtools/devtools_file_system_indexer.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
+#include "chrome/browser/devtools/devtools_settings.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -74,6 +75,10 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   static bool IsValidRemoteFrontendURL(const GURL& url);
 
   explicit DevToolsUIBindings(content::WebContents* web_contents);
+
+  DevToolsUIBindings(const DevToolsUIBindings&) = delete;
+  DevToolsUIBindings& operator=(const DevToolsUIBindings&) = delete;
+
   ~DevToolsUIBindings() override;
 
   content::WebContents* web_contents() { return web_contents_; }
@@ -166,6 +171,8 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void SendJsonRequest(DispatchCallback callback,
                        const std::string& browser_id,
                        const std::string& url) override;
+  void RegisterPreference(const std::string& name,
+                          const RegisterOptions& options) override;
   void GetPreferences(DispatchCallback callback) override;
   void SetPreference(const std::string& name,
                      const std::string& value) override;
@@ -193,7 +200,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   // Forwards discovered devices to frontend.
   virtual void DevicesUpdated(const std::string& source,
-                              const base::ListValue& targets);
+                              const base::Value& targets);
 
   void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle);
   void DocumentOnLoadCompletedInMainFrame();
@@ -271,9 +278,9 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   ExtensionsAPIs extensions_api_;
   std::string initial_target_id_;
 
-  base::WeakPtrFactory<DevToolsUIBindings> weak_factory_{this};
+  DevToolsSettings settings_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsUIBindings);
+  base::WeakPtrFactory<DevToolsUIBindings> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_UI_BINDINGS_H_

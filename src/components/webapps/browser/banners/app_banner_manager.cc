@@ -142,8 +142,7 @@ AppBannerManager* AppBannerManager::FromWebContents(
 
 // static
 base::Time AppBannerManager::GetCurrentTime() {
-  return base::Time::Now() +
-         base::TimeDelta::FromDays(gTimeDeltaInDaysForTesting);
+  return base::Time::Now() + base::Days(gTimeDeltaInDaysForTesting);
 }
 
 // static
@@ -612,9 +611,6 @@ void AppBannerManager::UpdateState(State state) {
 }
 
 void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!handle->IsInPrimaryMainFrame() || !handle->HasCommitted() ||
       handle->IsSameDocument()) {
     return;

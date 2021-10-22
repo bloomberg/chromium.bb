@@ -13,8 +13,6 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
 #include "chrome/browser/ui/views/global_media_controls/media_dialog_view.h"
@@ -22,6 +20,8 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_footer_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/global_media_controls/public/media_item_manager.h"
+#include "components/global_media_controls/public/media_item_ui_observer.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_view_modern_impl.h"
 #include "components/media_router/browser/media_router.h"
@@ -58,7 +58,6 @@ constexpr int kDismissButtonIconSize = 20;
 constexpr int kDismissButtonBackgroundRadius = 15;
 constexpr SkColor kDefaultForegroundColor = SK_ColorBLACK;
 constexpr SkColor kDefaultBackgroundColor = SK_ColorTRANSPARENT;
-constexpr float kDragImageOpacity = 0.7f;
 constexpr gfx::Insets kStopCastButtonStripInsets{6, 15};
 constexpr gfx::Size kStopCastButtonStripSize{400, 30};
 constexpr gfx::Insets kStopCastButtonBorderInsets{4, 8};
@@ -70,10 +69,6 @@ constexpr int kModernDismissButtonIconSize = 10;
 // The minimum number of enabled and visible user actions such that we should
 // force the MediaNotificationView to be expanded.
 constexpr int kMinVisibleActionsForExpanding = 4;
-
-// Once the container is dragged this distance, we will not treat the mouse
-// press as a click.
-constexpr int kMinMovementSquaredToBeDragging = 10;
 
 }  // anonymous namespace
 
@@ -107,12 +102,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
     Profile* profile,
     absl::optional<media_message_center::NotificationTheme> theme)
     : views::Button(base::BindRepeating(
-          [](MediaNotificationContainerImplView* view) {
-            // If |is_dragging_| is set, this click should be treated as a drag
-            // and not fire ContainerClicked().
-            if (!view->is_dragging_)
-              view->ContainerClicked();
-          },
+          &MediaNotificationContainerImplView::ContainerClicked,
           base::Unretained(this))),
       id_(id),
       foreground_color_(kDefaultForegroundColor),
@@ -230,9 +220,8 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
 }
 
 MediaNotificationContainerImplView::~MediaNotificationContainerImplView() {
-  drag_image_widget_.reset();
   for (auto& observer : observers_)
-    observer.OnContainerDestroyed(id_);
+    observer.OnMediaItemUIDestroyed(id_);
 }
 
 void MediaNotificationContainerImplView::AddedToWidget() {
@@ -243,105 +232,6 @@ void MediaNotificationContainerImplView::AddedToWidget() {
 void MediaNotificationContainerImplView::RemovedFromWidget() {
   if (GetFocusManager())
     GetFocusManager()->RemoveFocusChangeListener(this);
-}
-
-void MediaNotificationContainerImplView::CreateDragImageWidget() {
-  views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_DRAG;
-  params.name = "DragImage";
-  params.accept_events = false;
-  params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
-  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
-  params.context = GetWidget()->GetNativeWindow();
-
-  drag_image_widget_ = views::UniqueWidgetPtr(
-      std::make_unique<views::Widget>(std::move(params)));
-  drag_image_widget_->SetOpacity(kDragImageOpacity);
-
-  views::ImageView* image_view =
-      drag_image_widget_->SetContentsView(std::make_unique<views::ImageView>());
-
-  SkBitmap bitmap;
-  view_->Paint(views::PaintInfo::CreateRootPaintInfo(
-      ui::CanvasPainter(&bitmap, GetPreferredSize(), 1.f, SK_ColorTRANSPARENT,
-                        true /* is_pixel_canvas */)
-          .context(),
-      GetPreferredSize()));
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFromBitmap(bitmap, 1.f);
-  image_view->SetImage(image);
-
-  drag_image_widget_->Show();
-}
-
-bool MediaNotificationContainerImplView::OnMousePressed(
-    const ui::MouseEvent& event) {
-  // Reset the |is_dragging_| flag to track whether this is a drag or a click.
-  is_dragging_ = false;
-
-  bool button_result = views::Button::OnMousePressed(event);
-  if (!ShouldHandleMouseEvent(event, /*is_press=*/true))
-    return button_result;
-
-  // Set the |is_mouse_pressed_| flag to mark that we're tracking a potential
-  // drag.
-  is_mouse_pressed_ = true;
-
-  // Keep track of the initial location to calculate movement.
-  initial_drag_location_ = event.location();
-
-  // We want to keep receiving events.
-  return true;
-}
-
-bool MediaNotificationContainerImplView::OnMouseDragged(
-    const ui::MouseEvent& event) {
-  bool button_result = views::Button::OnMouseDragged(event);
-  if (!ShouldHandleMouseEvent(event, /*is_press=*/false))
-    return button_result;
-
-  gfx::Vector2d movement = event.location() - initial_drag_location_;
-
-  // If we ever move enough to be dragging, set the |is_dragging_| flag to
-  // prevent this mouse press from firing an |OnContainerClicked| event.
-  if (movement.LengthSquared() >= kMinMovementSquaredToBeDragging)
-    is_dragging_ = true;
-
-  // If we are in an overlay notification, we want to drag the overlay
-  // instead.
-  if (dragged_out_) {
-    overlay_->SetBoundsConstrained(overlay_->GetWindowBoundsInScreen() +
-                                   movement);
-    return true;
-  }
-
-  if (!drag_image_widget_)
-    CreateDragImageWidget();
-  drag_image_widget_->SetBounds(GetBoundsInScreen() + movement);
-
-  return true;
-}
-
-void MediaNotificationContainerImplView::OnMouseReleased(
-    const ui::MouseEvent& event) {
-  views::Button::OnMouseReleased(event);
-  if (!ShouldHandleMouseEvent(event, /*is_press=*/false))
-    return;
-
-  if (dragged_out_)
-    return;
-
-  gfx::Vector2d movement = event.location() - initial_drag_location_;
-
-  gfx::Rect bounds_in_screen = GetBoundsInScreen();
-  gfx::Rect dragged_bounds = bounds_in_screen + movement;
-  swipeable_container_->layer()->SetTransform(gfx::Transform());
-
-  if (!dragged_bounds.Intersects(bounds_in_screen)) {
-    for (auto& observer : observers_)
-      observer.OnContainerDraggedOut(id_, dragged_bounds);
-  }
-
-  drag_image_widget_.reset();
 }
 
 void MediaNotificationContainerImplView::OnMouseEntered(
@@ -384,11 +274,9 @@ void MediaNotificationContainerImplView::OnMediaSessionInfoChanged(
 void MediaNotificationContainerImplView::OnMediaSessionMetadataChanged(
     const media_session::MediaMetadata& metadata) {
   title_ = metadata.title;
-  if (overlay_)
-    overlay_->UpdateTitle(title_);
 
   for (auto& observer : observers_)
-    observer.OnContainerMetadataChanged();
+    observer.OnMediaItemUIMetadataChanged();
 }
 
 void MediaNotificationContainerImplView::OnVisibleActionsChanged(
@@ -404,7 +292,7 @@ void MediaNotificationContainerImplView::OnVisibleActionsChanged(
   ForceExpandedState();
 
   for (auto& observer : observers_)
-    observer.OnContainerActionsChanged();
+    observer.OnMediaItemUIActionsChanged();
 }
 
 void MediaNotificationContainerImplView::OnMediaArtworkChanged(
@@ -477,28 +365,13 @@ void MediaNotificationContainerImplView::OnSlideOut() {
 }
 
 void MediaNotificationContainerImplView::AddObserver(
-    MediaNotificationContainerObserver* observer) {
+    global_media_controls::MediaItemUIObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void MediaNotificationContainerImplView::RemoveObserver(
-    MediaNotificationContainerObserver* observer) {
+    global_media_controls::MediaItemUIObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void MediaNotificationContainerImplView::PopOut() {
-  // Ensure that we don't keep separator lines around.
-  SetBorder(nullptr);
-
-  dragged_out_ = true;
-  SetPosition(gfx::Point(0, 0));
-}
-
-void MediaNotificationContainerImplView::OnOverlayNotificationShown(
-    OverlayMediaNotificationView* overlay) {
-  // We can hold |overlay_| indefinitely since |overlay_| owns us.
-  DCHECK(!overlay_);
-  overlay_ = overlay;
 }
 
 const std::u16string& MediaNotificationContainerImplView::GetTitle() const {
@@ -581,7 +454,7 @@ void MediaNotificationContainerImplView::StopCasting(
 
   // |service_| is nullptr in MediaNotificationContainerImplViewTest.
   if (service_)
-    service_->FocusOnDialog();
+    service_->media_item_manager()->FocusDialog();
 
   feature_engagement::TrackerFactory::GetForBrowserContext(profile_)
       ->NotifyEvent("media_route_stopped_from_gmc");
@@ -655,7 +528,7 @@ void MediaNotificationContainerImplView::UpdateDismissButtonVisibility() {
 
 void MediaNotificationContainerImplView::DismissNotification() {
   for (auto& observer : observers_)
-    observer.OnContainerDismissed(id_);
+    observer.OnMediaItemUIDismissed(id_);
 }
 
 void MediaNotificationContainerImplView::ForceExpandedState() {
@@ -667,24 +540,7 @@ void MediaNotificationContainerImplView::ForceExpandedState() {
 
 void MediaNotificationContainerImplView::ContainerClicked() {
   for (auto& observer : observers_)
-    observer.OnContainerClicked(id_);
-}
-
-bool MediaNotificationContainerImplView::ShouldHandleMouseEvent(
-    const ui::MouseEvent& event,
-    bool is_press) {
-  // We only manually handle mouse events for dragging out of the dialog, so if
-  // the feature is disabled there's no need to handle the event.
-  if (!base::FeatureList::IsEnabled(media::kGlobalMediaControlsOverlayControls))
-    return false;
-
-  // We only handle non-press events if we've handled the associated press
-  // event.
-  if (!is_press && !is_mouse_pressed_)
-    return false;
-
-  // We only drag via the left button.
-  return event.IsLeftMouseButton();
+    observer.OnMediaItemUIClicked(id_);
 }
 
 void MediaNotificationContainerImplView::OnSizeChanged() {
@@ -706,14 +562,11 @@ void MediaNotificationContainerImplView::OnSizeChanged() {
         device_selector_view_->GetVisible());
   }
 
-  if (overlay_)
-    overlay_->SetSize(new_size);
-
   SetPreferredSize(new_size);
   PreferredSizeChanged();
 
   for (auto& observer : observers_)
-    observer.OnContainerSizeChanged();
+    observer.OnMediaItemUISizeChanged();
 }
 
 BEGIN_METADATA(MediaNotificationContainerImplView, views::Button)

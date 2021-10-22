@@ -156,13 +156,9 @@ class F extends ValidationTest {
         this.shouldReject('OperationError', this.device.createRenderPipelineAsync(descriptor));
       }
     } else {
-      if (_success) {
+      this.expectValidationError(() => {
         this.device.createRenderPipeline(descriptor);
-      } else {
-        this.expectValidationError(() => {
-          this.device.createRenderPipeline(descriptor);
-        });
-      }
+      }, !_success);
     }
   }
 }
@@ -377,11 +373,80 @@ g.test('pipeline_layout,device_mismatch')
     'Tests createRenderPipeline(Async) cannot be called with a pipeline layout created from another device'
   )
   .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
-  .unimplemented();
+  .fn(async t => {
+    const { isAsync, mismatched } = t.params;
+
+    if (mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const layoutDescriptor = { bindGroupLayouts: [] };
+    const layout = mismatched
+      ? t.mismatchedDevice.createPipelineLayout(layoutDescriptor)
+      : t.device.createPipelineLayout(layoutDescriptor);
+
+    const descriptor = {
+      layout,
+      vertex: {
+        module: t.device.createShaderModule({
+          code: `
+        [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+          return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+        }
+      `,
+        }),
+        entryPoint: 'main',
+      },
+      fragment: {
+        module: t.device.createShaderModule({ code: t.getFragmentShaderCode('float', 4) }),
+        entryPoint: 'main',
+        targets: [{ format: 'rgba8unorm' }] as const,
+      },
+    };
+
+    t.doCreateRenderPipelineTest(isAsync, !mismatched, descriptor);
+  });
 
 g.test('shader_module,device_mismatch')
   .desc(
     'Tests createRenderPipeline(Async) cannot be called with a shader module created from another device'
   )
-  .paramsSubcasesOnly(u => u.combine('isAsync', [true, false]).combine('mismatched', [true, false]))
-  .unimplemented();
+  .paramsSubcasesOnly(u =>
+    u.combine('isAsync', [true, false]).combineWithParams([
+      { vertex_mismatched: false, fragment_mismatched: false, _success: true },
+      { vertex_mismatched: true, fragment_mismatched: false, _success: false },
+      { vertex_mismatched: false, fragment_mismatched: true, _success: false },
+    ])
+  )
+  .fn(async t => {
+    const { isAsync, vertex_mismatched, fragment_mismatched, _success } = t.params;
+
+    if (vertex_mismatched || fragment_mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const code = `
+      [[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+        return vec4<f32>(0.0, 0.0, 0.0, 1.0);
+      }
+    `;
+
+    const descriptor = {
+      vertex: {
+        module: vertex_mismatched
+          ? t.mismatchedDevice.createShaderModule({ code })
+          : t.device.createShaderModule({ code }),
+        entryPoint: 'main',
+      },
+      fragment: {
+        module: fragment_mismatched
+          ? t.mismatchedDevice.createShaderModule({ code: t.getFragmentShaderCode('float', 4) })
+          : t.device.createShaderModule({ code: t.getFragmentShaderCode('float', 4) }),
+        entryPoint: 'main',
+        targets: [{ format: 'rgba8unorm' }] as const,
+      },
+      layout: t.getPipelineLayout(),
+    };
+
+    t.doCreateRenderPipelineTest(isAsync, _success, descriptor);
+  });

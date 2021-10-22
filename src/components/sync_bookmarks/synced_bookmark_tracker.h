@@ -49,6 +49,10 @@ class SyncedBookmarkTracker {
     // |bookmark_node| can be null for tombstones. |metadata| must not be null.
     Entity(const bookmarks::BookmarkNode* bookmark_node,
            std::unique_ptr<sync_pb::EntityMetadata> metadata);
+
+    Entity(const Entity&) = delete;
+    Entity& operator=(const Entity&) = delete;
+
     ~Entity();
 
     // Returns true if this data is out of sync with the server.
@@ -81,13 +85,9 @@ class SyncedBookmarkTracker {
       bookmark_node_ = bookmark_node;
     }
 
-    const sync_pb::EntityMetadata* metadata() const {
-      return metadata_.get();
-    }
+    const sync_pb::EntityMetadata* metadata() const { return metadata_.get(); }
 
-    sync_pb::EntityMetadata* metadata() {
-      return metadata_.get();
-    }
+    sync_pb::EntityMetadata* metadata() { return metadata_.get(); }
 
     bool commit_may_have_started() const { return commit_may_have_started_; }
     void set_commit_may_have_started(bool value) {
@@ -115,8 +115,6 @@ class SyncedBookmarkTracker {
     // server. The tracker sets it to true in the constructor because this code
     // path is only executed in production when loading from disk.
     bool commit_may_have_started_ = false;
-
-    DISALLOW_COPY_AND_ASSIGN(Entity);
   };
 
   // Returns a client tag hash given a bookmark GUID.
@@ -134,6 +132,9 @@ class SyncedBookmarkTracker {
   CreateFromBookmarkModelAndMetadata(
       const bookmarks::BookmarkModel* model,
       sync_pb::BookmarkModelMetadata model_metadata);
+
+  SyncedBookmarkTracker(const SyncedBookmarkTracker&) = delete;
+  SyncedBookmarkTracker& operator=(const SyncedBookmarkTracker&) = delete;
 
   ~SyncedBookmarkTracker();
 
@@ -369,8 +370,6 @@ class SyncedBookmarkTracker {
   // TODO(crbug.com/1032052): Remove this code once all local sync metadata is
   // required to populate the client tag (and be considered invalid otherwise).
   base::Time last_sync_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncedBookmarkTracker);
 };
 
 }  // namespace sync_bookmarks

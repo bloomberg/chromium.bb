@@ -176,6 +176,15 @@ enum EventType {
 
   // Set device name
   SET_DEVICE_NAME = 45;
+
+  // users dropped off opt-in page.
+  DECLINE_AGREEMENTS = 46;
+
+  // Request setting permissions (Wifi/BT/location/airplane mode).
+  REQUEST_SETTING_PERMISSIONS = 47;
+
+  // Set up a connection with the remote device.
+  ESTABLISH_CONNECTION = 48;
 }
 
 // Event category to differentiate whether this comes from sender or receiver,
@@ -212,6 +221,15 @@ enum DataUsage {
   OFFLINE = 3;
 }
 
+// The status of establishing a connection. Used by ESTABLISH_CONNECTION.
+enum EstablishConnectionStatus {
+  CONNECTION_STATUS_UNKNOWN = 0;
+
+  CONNECTION_STATUS_SUCCESS = 1;
+  CONNECTION_STATUS_FAILURE = 2;
+  CONNECTION_STATUS_CANCELLATION = 3;
+}
+
 // The status of sending and receiving attachments. Used by SEND_ATTACHMENTS.
 enum AttachmentTransmissionStatus {
   UNKNOWN_ATTACHMENT_TRANSMISSION_STATUS = 0;
@@ -233,6 +251,9 @@ enum AttachmentTransmissionStatus {
   FAILED_NULL_CONNECTION = 14;
   FAILED_NO_PAYLOAD = 15;
   FAILED_WRITE_INTRODUCTION = 16;
+
+  // The remote response is either missing or has an unknown type.
+  FAILED_UNKNOWN_REMOTE_RESPONSE = 17;
 }
 
 // The status of processing attachments after receiver received payloads
@@ -367,12 +388,27 @@ enum ActivityName {
   SETUP_ACTIVITY = 4;
   DEVICE_VISIBILITY_ACTIVITY = 5;
   CONSENTS_ACTIVITY = 6;
+  SET_DEVICE_NAME_DIALOG = 7;
+  SET_DATA_USAGE_DIALOG = 8;
 }
 
+// The type of consent page user launches.
 enum ConsentType {
   CONSENT_TYPE_UNKNOWN = 0;
 
+  // launch Constellation consent page.
   CONSENT_TYPE_C11N = 1;
+  // launch device contact consent page.
+  CONSENT_TYPE_DEVICE_CONTACT = 2;
+}
+
+enum ConsentAcceptanceStatus {
+  CONSENT_UNKNOWN_ACCEPT_STATUS = 0;
+
+  CONSENT_ACCEPTED = 1;
+  CONSENT_DECLINED = 2;
+  // unable to enable consent.
+  CONSENT_UNABLE_TO_ENABLE = 3;
 }
 
 enum ApkSource {
@@ -404,4 +440,21 @@ enum ShowNotificationStatus {
 
   SHOW = 1;
   NOT_SHOW = 2;
+}
+
+enum PermissionRequestResult {
+  PERMISSION_UNKNOWN_REQUEST_RESULT = 0;
+
+  PERMISSION_GRANTED = 1;
+  PERMISSION_REJECTED = 2;
+  PERMISSION_UNABLE_TO_GRANT = 3;
+}
+
+enum PermissionRequestType {
+  PERMISSION_UNKNOWN_TYPE = 0;
+
+  PERMISSION_AIRPLANE_MODE_OFF = 1;
+  PERMISSION_WIFI = 2;
+  PERMISSION_BLUETOOTH = 3;
+  PERMISSION_LOCATION = 4;
 }

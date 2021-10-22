@@ -191,9 +191,8 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
     reset_timer.reset();
   };
 
-  reset_timer->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kMaximumCancelledWebStateDelay),
-      base::BindOnce(reset_block));
+  reset_timer->Start(FROM_HERE, base::Seconds(kMaximumCancelledWebStateDelay),
+                     base::BindOnce(reset_block));
 
   block_web_state->GetNavigationManager()->AddRestoreCompletionCallback(
       base::BindOnce(^{
@@ -567,8 +566,7 @@ void DestroyPrerenderingWebState(std::unique_ptr<web::WebState> web_state) {
 #pragma mark - CRWWebStatePolicyDecider
 
 - (void)shouldAllowRequest:(NSURLRequest*)request
-               requestInfo:
-                   (const WebStatePolicyDecider::RequestInfo&)requestInfo
+               requestInfo:(WebStatePolicyDecider::RequestInfo)requestInfo
            decisionHandler:(PolicyDecisionHandler)decisionHandler {
   GURL requestURL = net::GURLWithNSURL(request.URL);
   // Don't allow preloading for requests that are handled by opening another

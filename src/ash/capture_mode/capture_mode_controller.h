@@ -15,6 +15,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -26,6 +27,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image.h"
+
+class PrefRegistrySimple;
 
 namespace base {
 class FilePath;
@@ -44,6 +47,16 @@ class ASH_EXPORT CaptureModeController
       public SessionObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
+  // Contains info about the folder used for saving the captured images and
+  // videos.
+  struct CaptureFolder {
+    // The absolute path of the folder used for saving the captures.
+    base::FilePath path;
+
+    // True if the above |path| is the default "Downloads" folder on the device.
+    bool is_default_downloads_folder = false;
+  };
+
   explicit CaptureModeController(std::unique_ptr<CaptureModeDelegate> delegate);
   CaptureModeController(const CaptureModeController&) = delete;
   CaptureModeController& operator=(const CaptureModeController&) = delete;
@@ -52,6 +65,8 @@ class ASH_EXPORT CaptureModeController
   // Convenience function to get the controller instance, which is created and
   // owned by Shell.
   static CaptureModeController* Get();
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   CaptureModeType type() const { return type_; }
   CaptureModeSource source() const { return source_; }
@@ -88,6 +103,17 @@ class ASH_EXPORT CaptureModeController
   // update |last_capture_region_update_time_|.
   void SetUserCaptureRegion(const gfx::Rect& region, bool by_user);
 
+  // Sets the given |path| as the custom save location of captured images and
+  // videos for the currently logged in user (i.e. can only be called when user
+  // is logged in). Setting an empty |path| clears any custom selected folder
+  // resulting in using the default downloads folder.
+  void SetCustomCaptureFolder(const base::FilePath& path);
+
+  // Returns the folder in which all taken screenshots and videos will be saved.
+  // It can be the temp directory if the user is not logged in, the default
+  // "Downloads" folder, or a user-selected custom location.
+  CaptureFolder GetCurrentCaptureFolder() const;
+
   // Full screen capture for each available display if no restricted
   // content exists on that display, each capture is saved as an individual
   // file. Note: this won't start a capture mode session.
@@ -113,6 +139,17 @@ class ASH_EXPORT CaptureModeController
   // If a video recording is in progress, it will end if so required by content
   // protection.
   void RefreshContentProtection();
+
+  // Toggles the recording overlay on or off. When on, the recording overlay
+  // widget's window will be shown and can consume all the events targeting the
+  // window being recorded. Otherwise, it's hidden and cannot accept any events.
+  // This can only be called while recording is in progress for a Projector
+  // session.
+  void ToggleRecordingOverlayEnabled();
+
+  // Returns a new instance of the concrete view that will be used as the
+  // content view of the recording overlay widget.
+  std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView();
 
   // recording::mojom::RecordingServiceClient:
   void OnRecordingEnded(recording::mojom::RecordingStatus status,
@@ -278,6 +315,23 @@ class ASH_EXPORT CaptureModeController
 
   // Called when the video record 3-seconds count down finishes.
   void OnVideoRecordCountDownFinished();
+
+  // Called when the Projector controller creates the DriveFS folder that will
+  // host the video file along with the associated metadata file created by the
+  // Projector session. Note that |file_path_no_extension| is the full path of
+  // the video file minus its (.webm) extension.
+  void OnProjectorContainerFolderCreated(
+      const CaptureParams& capture_params,
+      const base::FilePath& file_path_no_extension);
+
+  // Ends the capture session and starts the video recording for the given
+  // |capture_params|. The video will be saved to a file to the given
+  // |video_file_path|. |for_projector| will be true if this recording was
+  // initiated for a Projector session.
+  // This can only be called while the session is still active.
+  void BeginVideoRecording(const CaptureParams& capture_params,
+                           bool for_projector,
+                           const base::FilePath& video_file_path);
 
   // Called to interrupt the ongoing video recording because it's not anymore
   // allowed to be captured.

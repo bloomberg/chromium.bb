@@ -532,7 +532,7 @@ TEST_F(CrosHealthdServiceConnectionTest, RunDiskReadRoutine) {
   auto response = MakeRunRoutineResponse();
   FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
   base::RunLoop run_loop;
-  base::TimeDelta exec_duration = base::TimeDelta().FromSeconds(10);
+  base::TimeDelta exec_duration = base::Seconds(10);
   ServiceConnection::GetInstance()->RunDiskReadRoutine(
       mojom::DiskReadRoutineTypeEnum::kLinearRead,
       /*exec_duration=*/exec_duration, /*file_size_mb=*/1024,
@@ -563,7 +563,7 @@ TEST_F(CrosHealthdServiceConnectionTest, RunBatteryDischargeRoutine) {
   FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
   base::RunLoop run_loop;
   ServiceConnection::GetInstance()->RunBatteryDischargeRoutine(
-      /*exec_duration=*/base::TimeDelta::FromSeconds(12),
+      /*exec_duration=*/base::Seconds(12),
       /*maximum_discharge_percent_allowed=*/99,
       base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
@@ -578,7 +578,7 @@ TEST_F(CrosHealthdServiceConnectionTest, RunBatteryChargeRoutine) {
   FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
   base::RunLoop run_loop;
   ServiceConnection::GetInstance()->RunBatteryChargeRoutine(
-      /*exec_duration=*/base::TimeDelta::FromSeconds(30),
+      /*exec_duration=*/base::Seconds(30),
       /*minimum_charge_percent_required=*/10,
       base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
@@ -776,6 +776,19 @@ TEST_F(CrosHealthdServiceConnectionTest, RunArcPingRoutine) {
   FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
   base::RunLoop run_loop;
   ServiceConnection::GetInstance()->RunArcPingRoutine(
+      base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
+        EXPECT_EQ(response, MakeRunRoutineResponse());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+// Test that we can run the ARC DNS resolution routine.
+TEST_F(CrosHealthdServiceConnectionTest, RunArcDnsResolutionRoutine) {
+  auto response = MakeRunRoutineResponse();
+  FakeCrosHealthdClient::Get()->SetRunRoutineResponseForTesting(response);
+  base::RunLoop run_loop;
+  ServiceConnection::GetInstance()->RunArcDnsResolutionRoutine(
       base::BindLambdaForTesting([&](mojom::RunRoutineResponsePtr response) {
         EXPECT_EQ(response, MakeRunRoutineResponse());
         run_loop.Quit();

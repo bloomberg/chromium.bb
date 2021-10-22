@@ -18,6 +18,10 @@ class EventSource;
 class EventTestApi {
  public:
   explicit EventTestApi(Event* event);
+
+  EventTestApi(const EventTestApi&) = delete;
+  EventTestApi& operator=(const EventTestApi&) = delete;
+
   virtual ~EventTestApi();
 
   void set_time_stamp(base::TimeTicks time_stamp) {
@@ -32,13 +36,15 @@ class EventTestApi {
   EventTestApi();
 
   Event* event_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventTestApi);
 };
 
 class LocatedEventTestApi : public EventTestApi {
  public:
   explicit LocatedEventTestApi(LocatedEvent* located_event);
+
+  LocatedEventTestApi(const LocatedEventTestApi&) = delete;
+  LocatedEventTestApi& operator=(const LocatedEventTestApi&) = delete;
+
   ~LocatedEventTestApi() override;
 
   void set_location(const gfx::Point& location) {
@@ -52,13 +58,15 @@ class LocatedEventTestApi : public EventTestApi {
   LocatedEventTestApi();
 
   LocatedEvent* located_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocatedEventTestApi);
 };
 
 class KeyEventTestApi : public EventTestApi {
  public:
   explicit KeyEventTestApi(KeyEvent* key_event);
+
+  KeyEventTestApi(const KeyEventTestApi&) = delete;
+  KeyEventTestApi& operator=(const KeyEventTestApi&) = delete;
+
   ~KeyEventTestApi() override;
 
   void set_is_char(bool is_char) {
@@ -71,13 +79,14 @@ class KeyEventTestApi : public EventTestApi {
   KeyEventTestApi();
 
   KeyEvent* key_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyEventTestApi);
 };
 
 class EventTargetTestApi {
  public:
   explicit EventTargetTestApi(EventTarget* target);
+
+  EventTargetTestApi(const EventTargetTestApi&) = delete;
+  EventTargetTestApi& operator=(const EventTargetTestApi&) = delete;
 
   ui::EventHandlerList GetPreTargetHandlers() {
     ui::EventHandlerList list;
@@ -89,13 +98,14 @@ class EventTargetTestApi {
   EventTargetTestApi();
 
   EventTarget* target_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventTargetTestApi);
 };
 
 class EventSourceTestApi {
  public:
   explicit EventSourceTestApi(EventSource* event_source);
+
+  EventSourceTestApi(const EventSourceTestApi&) = delete;
+  EventSourceTestApi& operator=(const EventSourceTestApi&) = delete;
 
   EventDispatchDetails SendEventToSink(Event* event) WARN_UNUSED_RESULT;
 
@@ -103,8 +113,6 @@ class EventSourceTestApi {
   EventSourceTestApi();
 
   EventSource* event_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventSourceTestApi);
 };
 
 }  // namespace ui

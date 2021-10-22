@@ -14,6 +14,7 @@ preprocessed_mojo_manifest = "preprocessed_mojo_manifest.json"
 
 polymer_element_files = [
   "base_page.js",
+  "calibration_component_chip.js",
   "icons.js",
   "onboarding_choose_destination_page.js",
   "onboarding_choose_wp_disable_method_page.js",
@@ -23,21 +24,27 @@ polymer_element_files = [
   "onboarding_select_components_page.js",
   "onboarding_update_page.js",
   "onboarding_wait_for_manual_wp_disable_page.js",
+  "onboarding_verify_rsu_page.js",
   "onboarding_wp_disable_complete_page.js",
   "reimaging_calibration_page.js",
+  "reimaging_calibration_run_page.js",
+  "reimaging_calibration_setup_page.js",
   "reimaging_device_information_page.js",
   "reimaging_firmware_update_page.js",
   "reimaging_provisioning_page.js",
   "repair_component_chip.js",
   "shimless_rma.js",
   "shimless_rma_shared_css.js",
+  "wrapup_finalize_page.js",
   "wrapup_repair_complete_page.js",
   "wrapup_restock_page.js",
+  "wrapup_wait_for_manual_wp_enable_page.js",
 ]
 
 generate_grd("build_grd") {
   input_files = [
     "app_icon_192.png",
+    "data.js",
     "fake_data.js",
     "fake_shimless_rma_service.js",
     "index.html",
@@ -63,6 +70,7 @@ js_type_check("closure_compile_module") {
   closure_flags = default_closure_args
   deps = [
     ":base_page",
+    ":calibration_component_chip",
     ":fake_shimless_rma_service",
     ":mojo_interface_provider",
     ":onboarding_choose_destination_page",
@@ -72,17 +80,22 @@ js_type_check("closure_compile_module") {
     ":onboarding_network_page",
     ":onboarding_select_components_page",
     ":onboarding_update_page",
+    ":onboarding_verify_rsu_page",
     ":onboarding_wait_for_manual_wp_disable_page",
     ":onboarding_wp_disable_complete_page",
     ":reimaging_calibration_page",
+    ":reimaging_calibration_run_page",
+    ":reimaging_calibration_setup_page",
     ":reimaging_device_information_page",
     ":reimaging_firmware_update_page",
     ":reimaging_provisioning_page",
     ":repair_component_chip",
     ":shimless_rma",
     ":shimless_rma_types",
+    ":wrapup_finalize_page",
     ":wrapup_repair_complete_page",
     ":wrapup_restock_page",
+    ":wrapup_wait_for_manual_wp_enable_page",
   ]
 }
 
@@ -100,13 +113,20 @@ js_library("shimless_rma") {
     ":onboarding_network_page",
     ":onboarding_select_components_page",
     ":onboarding_update_page",
+    ":onboarding_verify_rsu_page",
     ":onboarding_wait_for_manual_wp_disable_page",
     ":onboarding_wp_disable_complete_page",
+    ":reimaging_calibration_page",
+    ":reimaging_calibration_run_page",
+    ":reimaging_calibration_setup_page",
     ":reimaging_device_information_page",
     ":reimaging_firmware_update_page",
     ":reimaging_provisioning_page",
     ":shimless_rma_types",
+    ":wrapup_finalize_page",
+    ":wrapup_repair_complete_page",
     ":wrapup_restock_page",
+    ":wrapup_wait_for_manual_wp_enable_page",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
   ]
@@ -115,6 +135,13 @@ js_library("shimless_rma") {
 js_library("base_page") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
+js_library("data") {
+  deps = [
+    ":shimless_rma_types",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo.m",
   ]
 }
 
@@ -187,6 +214,7 @@ js_library("onboarding_landing_page") {
 js_library("onboarding_select_components_page") {
   deps = [
     ":base_page",
+    ":data",
     ":mojo_interface_provider",
     ":repair_component_chip",
     ":shimless_rma_types",
@@ -232,6 +260,15 @@ js_library("onboarding_wait_for_manual_wp_disable_page") {
   ]
 }
 
+js_library("onboarding_verify_rsu_page") {
+  deps = [
+    ":base_page",
+    ":mojo_interface_provider",
+    ":shimless_rma_types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("onboarding_wp_disable_complete_page") {
   deps = [
     ":base_page",
@@ -242,6 +279,30 @@ js_library("onboarding_wp_disable_complete_page") {
 }
 
 js_library("reimaging_calibration_page") {
+  deps = [
+    ":base_page",
+    ":calibration_component_chip",
+    ":data",
+    ":icons",
+    ":mojo_interface_provider",
+    ":shimless_rma_types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
+}
+
+js_library("reimaging_calibration_setup_page") {
+  deps = [
+    ":base_page",
+    ":icons",
+    ":mojo_interface_provider",
+    ":shimless_rma_types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+  ]
+}
+
+js_library("reimaging_calibration_run_page") {
   deps = [
     ":base_page",
     ":icons",
@@ -281,6 +342,12 @@ js_library("reimaging_provisioning_page") {
   ]
 }
 
+js_library("calibration_component_chip") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("repair_component_chip") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -300,6 +367,30 @@ js_library("wrapup_repair_complete_page") {
 
 js_library("wrapup_restock_page") {
   deps = [
+    ":base_page",
+    ":mojo_interface_provider",
+    ":shimless_rma_types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+}
+
+js_library("wrapup_finalize_page") {
+  deps = [
+    ":base_page",
+    ":mojo_interface_provider",
+    ":shimless_rma_types",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
+    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+}
+
+js_library("wrapup_wait_for_manual_wp_enable_page") {
+  deps = [
+    ":base_page",
+    ":mojo_interface_provider",
+    ":shimless_rma_types",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
   ]

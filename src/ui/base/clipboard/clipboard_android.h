@@ -65,6 +65,9 @@ class ClipboardAndroid : public Clipboard {
   DataTransferEndpoint* GetSource(ClipboardBuffer buffer) const override;
   const ClipboardSequenceNumberToken& GetSequenceNumber(
       ClipboardBuffer buffer) const override;
+  std::vector<std::u16string> GetStandardFormats(
+      ClipboardBuffer buffer,
+      const DataTransferEndpoint* data_dst) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer,
                          const DataTransferEndpoint* data_dst) const override;
@@ -72,9 +75,6 @@ class ClipboardAndroid : public Clipboard {
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           const DataTransferEndpoint* data_dst,
                           std::vector<std::u16string>* types) const override;
-  std::vector<std::u16string> ReadAvailablePlatformSpecificFormatNames(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const override;
   void ReadText(ClipboardBuffer buffer,
                 const DataTransferEndpoint* data_dst,
                 std::u16string* result) const override;
@@ -96,9 +96,6 @@ class ClipboardAndroid : public Clipboard {
   void ReadPng(ClipboardBuffer buffer,
                const DataTransferEndpoint* data_dst,
                ReadPngCallback callback) const override;
-  void ReadImage(ClipboardBuffer buffer,
-                 const DataTransferEndpoint* data_dst,
-                 ReadImageCallback callback) const override;
   void ReadCustomData(ClipboardBuffer buffer,
                       const std::u16string& type,
                       const DataTransferEndpoint* data_dst,
@@ -136,14 +133,6 @@ class ClipboardAndroid : public Clipboard {
   void WriteData(const ClipboardFormatType& format,
                  const char* data_data,
                  size_t data_len) override;
-
-  // Returns all the standard MIME types if it's present in the clipboard.
-  // The standard MIME types are the formats that are well defined by the OS.
-  // Currently we support text/html, text/plain, text/rtf, image/png &
-  // text/uri-list.
-  std::vector<std::u16string> GetStandardFormats(
-      ClipboardBuffer buffer,
-      const DataTransferEndpoint* data_dst) const;
 };
 
 }  // namespace ui

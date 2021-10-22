@@ -1488,7 +1488,8 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
         PaintLayerPainter::PaintedOutputInvisible(*old_style)) {
-      // This layer is removed because opacity becomes 1. Do the same as
+      // PaintedOutputInvisible() was true because opacity was near zero, and
+      // this layer is to be removed because opacity becomes 1. Do the same as
       // StyleDidChange() on change of PaintedOutputInvisible().
       GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
     }
@@ -2095,13 +2096,6 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
   const LayoutObject& layout_object = GetLayoutObject();
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
-
-  if (UNLIKELY(layout_object.NeedsLayout() &&
-               !layout_object.ChildLayoutBlockedByDisplayLock())) {
-    // Skip if we need layout. This should never happen. See crbug.com/1244130
-    NOTREACHED();
-    return nullptr;
-  }
 
   if (!IsSelfPaintingLayer() && !HasSelfPaintingLayerDescendant())
     return nullptr;
@@ -3956,7 +3950,7 @@ void PaintLayer::AncestorDependentCompositingInputs::Trace(
 }  // namespace blink
 
 #if DCHECK_IS_ON()
-void showLayerTree(const blink::PaintLayer* layer) {
+void ShowLayerTree(const blink::PaintLayer* layer) {
   if (!layer) {
     LOG(ERROR) << "Cannot showLayerTree. Root is (nil)";
     return;
@@ -3982,11 +3976,11 @@ void showLayerTree(const blink::PaintLayer* layer) {
   }
 }
 
-void showLayerTree(const blink::LayoutObject* layoutObject) {
+void ShowLayerTree(const blink::LayoutObject* layoutObject) {
   if (!layoutObject) {
     LOG(ERROR) << "Cannot showLayerTree. Root is (nil)";
     return;
   }
-  showLayerTree(layoutObject->EnclosingLayer());
+  ShowLayerTree(layoutObject->EnclosingLayer());
 }
 #endif

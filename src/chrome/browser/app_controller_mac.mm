@@ -22,6 +22,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -429,28 +431,30 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
     // kDestroyProfileOnBrowserClose or kUpdateHistoryEntryPointsInIncognito
     // are enabled.
     if (ObserveRegularProfiles() || ObserveOTRProfiles()) {
-      profile_manager_->AddObserver(this);
+      profile_manager_observer_.Observe(profile_manager_);
       for (Profile* profile : profile_manager_->GetLoadedProfiles()) {
-        profile->AddObserver(this);
+        profile_observers_.AddObservation(profile);
         Profile* otr_profile =
             profile->GetPrimaryOTRProfile(/*create_if_needed=*/false);
         if (otr_profile && ObserveOTRProfiles())
-          otr_profile->AddObserver(this);
+          profile_observers_.AddObservation(otr_profile);
       }
     }
-    profile_manager_->GetProfileAttributesStorage().AddObserver(this);
+    storage_observer_.Observe(&profile_manager_->GetProfileAttributesStorage());
   }
 
-  ~AppControllerProfileObserver() override {
-    DCHECK(profile_manager_);
-    if (ObserveRegularProfiles() || ObserveOTRProfiles()) {
-      profile_manager_->RemoveObserver(this);
-    }
-    profile_manager_->GetProfileAttributesStorage().RemoveObserver(this);
-  }
+  AppControllerProfileObserver(const AppControllerProfileObserver&) = delete;
+  AppControllerProfileObserver& operator=(const AppControllerProfileObserver&) =
+      delete;
+
+  ~AppControllerProfileObserver() override = default;
 
  private:
   // ProfileAttributesStorage::Observer implementation:
+
+  // `ProfileAttributesStorage::Observer::OnProfileAdded()` must be explicitly
+  // defined even if it's empty, because of the competing overload
+  // `ProfileManager::Observer::OnProfileAdded()`.
   void OnProfileAdded(const base::FilePath& profile_path) override {}
 
   void OnProfileWasRemoved(const base::FilePath& profile_path,
@@ -460,30 +464,23 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
     [app_controller_ profileWasRemoved:profile_path forIncognito:false];
   }
 
-  void OnProfileWillBeRemoved(const base::FilePath& profile_path) override {}
-
-  void OnProfileNameChanged(const base::FilePath& profile_path,
-                            const std::u16string& old_profile_name) override {}
-
-  void OnProfileAvatarChanged(const base::FilePath& profile_path) override {}
-
   // ProfileManager::Observer implementation:
   void OnProfileAdded(Profile* profile) override {
     if (!ObserveRegularProfiles() && !ObserveOTRProfiles())
       return;
-    profile->AddObserver(this);
+    profile_observers_.AddObservation(profile);
   }
 
   // ProfileObserver implementation:
   void OnProfileWillBeDestroyed(Profile* profile) override {
-    profile->RemoveObserver(this);
+    profile_observers_.RemoveObservation(profile);
 
-    bool did_profile_observed = profile->IsOffTheRecord()
-                                  ? ObserveOTRProfiles()
-                                  : ObserveRegularProfiles();
+    bool is_profile_observed = profile->IsOffTheRecord()
+                                   ? ObserveOTRProfiles()
+                                   : ObserveRegularProfiles();
 
     // If the profile is not observed, then no need to call rest.
-    if (!did_profile_observed)
+    if (!is_profile_observed)
       return;
 
     [app_controller_ profileWasRemoved:profile->GetPath()
@@ -495,7 +492,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
     if (!ObserveOTRProfiles()) {
       return;
     }
-    off_the_record->AddObserver(this);
+    profile_observers_.AddObservation(off_the_record);
   }
 
   static bool ObserveRegularProfiles() {
@@ -508,11 +505,16 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
         features::kUpdateHistoryEntryPointsInIncognito);
   }
 
-  ProfileManager* profile_manager_;
+  base::ScopedMultiSourceObservation<Profile, ProfileObserver>
+      profile_observers_{this};
+  base::ScopedObservation<ProfileAttributesStorage,
+                          ProfileAttributesStorage::Observer>
+      storage_observer_{this};
+  base::ScopedObservation<ProfileManager, ProfileManagerObserver>
+      profile_manager_observer_{this};
 
-  AppController* app_controller_;  // Weak; owns us.
-
-  DISALLOW_COPY_AND_ASSIGN(AppControllerProfileObserver);
+  ProfileManager* const profile_manager_;
+  AppController* const app_controller_;  // Weak; owns us.
 };
 
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
@@ -737,6 +739,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // It's safe to delete |_lastProfile| now.
   [self setLastProfile:nullptr];
 
+  _profileAttributesStorageObserver.reset();
   [self unregisterEventHandlers];
   _appShimMenuController.reset();
   _profileBookmarkMenuBridgeMap.clear();
@@ -1727,7 +1730,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
     return dockMenu;
 
   if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
-      IncognitoModePrefs::DISABLED) {
+      IncognitoModePrefs::Availability::kDisabled) {
     titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
     item.reset(
         [[NSMenuItem alloc] initWithTitle:titleStr

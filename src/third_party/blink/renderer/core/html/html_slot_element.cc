@@ -169,16 +169,14 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
-void HTMLSlotElement::assign(HeapVector<Member<V8UnionElementOrText>> nodes,
-                             ExceptionState& exception_state) {
+void HTMLSlotElement::assign(HeapVector<Member<V8UnionElementOrText>>& js_nodes,
+                             ExceptionState&) {
   UseCounter::Count(GetDocument(), WebFeature::kSlotAssignNode);
-  if (nodes.IsEmpty() && manually_assigned_nodes_.IsEmpty())
+  if (js_nodes.IsEmpty() && manually_assigned_nodes_.IsEmpty())
     return;
-  HeapLinkedHashSet<WeakMember<Node>> old_manually_assigned_nodes(
-      manually_assigned_nodes_);
-  HeapLinkedHashSet<WeakMember<Node>> nodes_set;
-  bool updated = false;
-  for (V8UnionElementOrText* union_node : nodes) {
+
+  HeapVector<Member<Node>> nodes;
+  for (V8UnionElementOrText* union_node : js_nodes) {
     Node* node = nullptr;
     switch (union_node->GetContentType()) {
       case V8UnionElementOrText::ContentType::kText:
@@ -188,8 +186,19 @@ void HTMLSlotElement::assign(HeapVector<Member<V8UnionElementOrText>> nodes,
         node = union_node->GetAsElement();
         break;
     }
-    nodes_set.insert(node);
-    old_manually_assigned_nodes.erase(node);
+    nodes.push_back(*node);
+  }
+  Assign(nodes);
+}
+
+void HTMLSlotElement::Assign(const HeapVector<Member<Node>>& nodes) {
+  if (nodes.IsEmpty() && manually_assigned_nodes_.IsEmpty())
+    return;
+
+  bool updated = false;
+  HeapLinkedHashSet<WeakMember<Node>> added_nodes;
+  for (Node* node : nodes) {
+    added_nodes.insert(node);
     if (auto* previous_slot = node->ManuallyAssignedSlot()) {
       if (previous_slot == this)
         continue;
@@ -201,22 +210,28 @@ void HTMLSlotElement::assign(HeapVector<Member<V8UnionElementOrText>> nodes,
     node->SetManuallyAssignedSlot(this);
   }
 
-  updated |= nodes_set.size() != manually_assigned_nodes_.size();
+  HeapLinkedHashSet<WeakMember<Node>> removed_nodes;
+  for (Node* node : manually_assigned_nodes_) {
+    if (added_nodes.find(node) == added_nodes.end())
+      removed_nodes.insert(node);
+  }
+
+  updated |= added_nodes.size() != manually_assigned_nodes_.size();
   if (!updated) {
-    for (auto it1 = nodes_set.begin(), it2 = manually_assigned_nodes_.begin();
-         it1 != nodes_set.end(); ++it1, ++it2) {
+    for (auto it1 = added_nodes.begin(), it2 = manually_assigned_nodes_.begin();
+         it1 != added_nodes.end(); ++it1, ++it2) {
       if (!(*it1 == *it2)) {
         updated = true;
         break;
       }
     }
   }
-  DCHECK(updated || old_manually_assigned_nodes.IsEmpty());
+  DCHECK(updated || removed_nodes.IsEmpty());
 
   if (updated) {
-    for (auto old_node : old_manually_assigned_nodes)
-      old_node->SetManuallyAssignedSlot(nullptr);
-    manually_assigned_nodes_.Swap(nodes_set);
+    for (auto removed_node : removed_nodes)
+      removed_node->SetManuallyAssignedSlot(nullptr);
+    manually_assigned_nodes_.Swap(added_nodes);
     // The slot might not be located in a shadow root yet.
     if (ContainingShadowRoot()) {
       SetShadowRootNeedsAssignmentRecalc();

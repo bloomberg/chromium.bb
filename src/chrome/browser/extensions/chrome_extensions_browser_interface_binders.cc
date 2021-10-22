@@ -27,6 +27,8 @@
 #include "chromeos/components/camera_app_ui/camera_app_ui.h"
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
+#include "chromeos/language/language_packs/language_packs_impl.h"
+#include "chromeos/language/public/mojom/language_packs.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -38,8 +40,8 @@
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"  // nogncheck
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #endif
 
 #if BUILDFLAG(PLATFORM_CFM)
@@ -60,7 +62,14 @@ namespace {
 void BindInputEngineManager(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
-  chromeos::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
+  ash::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
+      std::move(receiver));
+}
+
+void BindLanguagePacks(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<chromeos::language::mojom::LanguagePacks> receiver) {
+  chromeos::language_packs::LanguagePacksImpl::GetInstance().BindReceiver(
       std::move(receiver));
 }
 
@@ -119,9 +128,11 @@ void PopulateChromeFrameBindersForExtension(
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Registry InputEngineManager for official Google XKB Input only.
-  if (extension->id() == chromeos::extension_ime_util::kXkbExtensionId) {
+  if (extension->id() == ash::extension_ime_util::kXkbExtensionId) {
     binder_map->Add<chromeos::ime::mojom::InputEngineManager>(
         base::BindRepeating(&BindInputEngineManager));
+    binder_map->Add<chromeos::language::mojom::LanguagePacks>(
+        base::BindRepeating(&BindLanguagePacks));
     binder_map->Add<chromeos::machine_learning::mojom::MachineLearningService>(
         base::BindRepeating(&BindMachineLearningService));
   }

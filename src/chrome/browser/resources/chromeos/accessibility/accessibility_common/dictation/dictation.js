@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Command, CommandParser} from './commands.js';
+import {InputController} from './input_controller.js';
+
 /**
  * Main class for the Chrome OS dictation feature.
  * Please note: this is being developed behind the flag
@@ -11,21 +14,14 @@
 // functionality.
 export class Dictation {
   constructor() {
-    /** @private {number} */
-    this.activeImeContextId_ = Dictation.NO_ACTIVE_IME_CONTEXT_ID_;
+    /** @private {InputController} */
+    this.inputController_ = null;
 
-    /**
-     * The engine ID of the previously active IME input method. Used to
-     * restore the previous IME after Dictation is deactivated.
-     * @private {string}
-     */
-    this.previousImeEngineId_ = '';
+    /** @private {CommandParser} */
+    this.commandParser_ = null;
 
-    /**
-     * The current composition text, if any.
-     * @private {string}
-     */
-    this.currentComposition_ = '';
+    /** @private {boolean} */
+    this.commandsFeatureEnabled_ = false;
 
     /**
      * The state of Dictation.
@@ -49,6 +45,15 @@ export class Dictation {
     /** @private {?number} */
     this.timeoutId_ = null;
 
+    /** @private {?number} */
+    this.clearUITextTimeoutId_ = null;
+
+    /** @private {string} */
+    this.interimText_ = '';
+
+    /** @private {boolean} */
+    this.chromeVoxEnabled_ = false;
+
     this.initialize_();
   }
 
@@ -57,6 +62,9 @@ export class Dictation {
    * @private
    */
   initialize_() {
+    this.inputController_ = new InputController(() => this.stopDictation_());
+    this.commandParser_ = new CommandParser();
+
     this.speechRecognizer_.interimResults = true;
     this.speechRecognizer_.continuous = true;
     this.speechRecognizer_.onresult = event => this.onResult_(event);
@@ -69,15 +77,19 @@ export class Dictation {
     chrome.settingsPrivate.onPrefsChanged.addListener(
         prefs => this.updateFromPrefs_(prefs));
 
-    // Listen for IME focus changes.
-    chrome.input.ime.onFocus.addListener(context => this.onImeFocus_(context));
-    chrome.input.ime.onBlur.addListener(
-        contextId => this.onImeBlur_(contextId));
-
     // Listen for Dictation toggles (activated / deactivated) from the Ash
     // Browser process.
     chrome.accessibilityPrivate.onToggleDictation.addListener(
         activated => this.onToggleDictation_(activated));
+
+    chrome.accessibilityPrivate.isFeatureEnabled(
+        chrome.accessibilityPrivate.AccessibilityFeature.DICTATION_COMMANDS,
+        (result) => {
+          this.commandsFeatureEnabled_ = result;
+          if (this.commandsFeatureEnabled_) {
+            this.commandParser_.setCommandsEnabled();
+          }
+        });
   }
 
   /**
@@ -89,30 +101,23 @@ export class Dictation {
     if (activated && this.state_ === Dictation.DictationState.OFF) {
       this.state_ = Dictation.DictationState.STARTING;
       this.startTone_.play();
-      chrome.inputMethodPrivate.getCurrentInputMethod(
-          method => this.maybeSaveCurrentInputMethodAndStart_(method));
+      this.setStopTimeout_(Dictation.Timeouts.NO_FOCUSED_IME_MS);
+      this.inputController_.connect(() => this.maybeStartSpeechRecognition_());
     } else {
       this.onDictationStopped_();
     }
   }
 
   /**
-   * Called when Dictation has received the current input method. We save the
-   * current method to reset when Dictation toggles up, then continue with
-   * starting up Dictation. Because this is async, checks that startup state
-   * is still correct before proceeding to the next step.
-   * @param {string} method
+   * Sets the timeout to stop Dictation.
+   * @param {number} durationMs
    * @private
    */
-  maybeSaveCurrentInputMethodAndStart_(method) {
-    if (this.state_ !== Dictation.DictationState.STARTING) {
-      return;
+  setStopTimeout_(durationMs) {
+    if (this.timeoutId_ !== null) {
+      clearTimeout(this.timeoutId_);
     }
-    this.previousImeEngineId_ = method;
-    // Add AccessibilityCommon as an input method and active it.
-    chrome.languageSettingsPrivate.addInputMethod(Dictation.IME_ENGINE_ID);
-    chrome.inputMethodPrivate.setCurrentInputMethod(
-        Dictation.IME_ENGINE_ID, () => this.maybeStartSpeechRecognition_());
+    this.timeoutId_ = setTimeout(() => this.stopDictation_(), durationMs);
   }
 
   /**
@@ -124,13 +129,12 @@ export class Dictation {
   maybeStartSpeechRecognition_() {
     if (this.state_ === Dictation.DictationState.STARTING) {
       this.speechRecognizer_.start();
-      this.timeoutId_ = setTimeout(
-          () => this.stopDictation_(), Dictation.SpeechTimeouts.NO_SPEECH_MS);
+      this.setStopTimeout_(Dictation.Timeouts.NO_SPEECH_MS);
     } else {
       // We are no longer starting up - perhaps a stop came
       // through during the async callbacks. Ensure cleanup
-      // by calling onDictationStopped_.
-      this.onDictationStopped_();
+      // by calling stopDictation_().
+      this.stopDictation_();
     }
   }
 
@@ -160,10 +164,7 @@ export class Dictation {
       return;
     }
     this.state_ = Dictation.DictationState.OFF;
-    // Commit composition text, if any.
-    if (this.currentComposition_.length > 0) {
-      this.processSpeechRecognitionResult_(
-          this.currentComposition_, /*isFinal=*/ true);
+    if (this.inputController_.hasCompositionText() || this.interimText_) {
       this.endTone_.play();
     } else {
       this.cancelTone_.play();
@@ -177,34 +178,12 @@ export class Dictation {
       this.timeoutId_ = null;
     }
 
-    // Clean up IME state and reset to the previous IME method.
-    this.activeImeContextId_ = Dictation.NO_ACTIVE_IME_CONTEXT_ID_;
-    chrome.inputMethodPrivate.setCurrentInputMethod(this.previousImeEngineId_);
-    this.previousImeEngineId_ = '';
-    Dictation.removeAsInputMethod();
-  }
-
-  /**
-   * chrome.input.ime.onFocus callback. Save the active context ID.
-   * @param {chrome.input.ime.InputContext} context Input field context.
-   * @private
-   */
-  onImeFocus_(context) {
-    this.activeImeContextId_ = context.contextID;
-  }
-
-  /**
-   * chrome.input.ime.onFocus callback. Stops Dictation if the active
-   * context ID lost focus.
-   * @param {number} contextId
-   * @private
-   */
-  onImeBlur_(contextId) {
-    if (contextId === this.activeImeContextId_) {
-      // Clean up context ID immediately. We can no longer use this context.
-      this.activeImeContextId_ = Dictation.NO_ACTIVE_IME_CONTEXT_ID_;
-      this.stopDictation_();
+    if (this.commandsFeatureEnabled_) {
+      this.inputController_.commitText(this.interimText_);
+      this.hideCommandsUI_();
     }
+    this.inputController_.disconnect();
+    Dictation.removeAsInputMethod();
   }
 
   /**
@@ -221,11 +200,9 @@ export class Dictation {
       return;
     }
     this.processSpeechRecognitionResult_(result[0].transcript, result.isFinal);
-    clearTimeout(this.timeoutId_);
-    this.timeoutId_ = setTimeout(
-        () => this.stopDictation_(),
-        result.isFinal ? Dictation.SpeechTimeouts.NO_SPEECH_MS :
-                         Dictation.SpeechTimeouts.NO_NEW_SPEECH_MS);
+    this.setStopTimeout_(
+        result.isFinal ? Dictation.Timeouts.NO_SPEECH_MS :
+                         Dictation.Timeouts.NO_NEW_SPEECH_MS);
   }
 
   /**
@@ -236,24 +213,26 @@ export class Dictation {
    * @private
    */
   processSpeechRecognitionResult_(transcript, isFinal) {
-    if (this.activeImeContextId_ === Dictation.NO_ACTIVE_IME_CONTEXT_ID_) {
-      return;
-    }
     if (isFinal) {
-      chrome.input.ime.commitText(
-          {contextID: this.activeImeContextId_, text: transcript});
-      this.currentComposition_ = '';
-    } else if (this.speechRecognizer_.interimResults) {
-      // Set the composition text for interim results.
-      // Later we will do this in a bubble so that if the
-      // result will become a command it will not appear and
-      // disappear from the composition text.
-      chrome.input.ime.setComposition({
-        contextID: this.activeImeContextId_,
-        cursor: transcript.length,
-        text: transcript
-      });
-      this.currentComposition_ = transcript;
+      const command = this.commandParser_.parse(transcript);
+      if (this.commandsFeatureEnabled_) {
+        if (command.execute()) {
+          this.showCommandExecuted_(command);
+        } else {
+          this.showCommandExecutionFailed_();
+        }
+      }
+      if (command.isTextInput()) {
+        this.inputController_.commitText(command.getText());
+      }
+    } else {
+      if (this.commandsFeatureEnabled_) {
+        this.setInterimText_(transcript);
+      } else if (!this.chromeVoxEnabled_) {
+        // When ChromeVox is enabled, we shouldn't populate interim
+        // composition results because it will increase the verbosity too much.
+        this.inputController_.setCompositionText(transcript);
+      }
     }
   }
 
@@ -267,6 +246,8 @@ export class Dictation {
       return;
     }
     this.state_ = Dictation.DictationState.LISTENING;
+    // Display the "....".
+    this.clearInterimText_();
   }
 
   /**
@@ -303,12 +284,10 @@ export class Dictation {
           }
           break;
         case Dictation.SPOKEN_FEEDBACK_PREF:
-          // When Spoken Feedback is enabled, we shouldn't populate interim
-          // results because it will increase the verbosity too much.
           if (pref.value) {
-            this.speechRecognizer_.interimResults = false;
+            this.chromeVoxEnabled_ = true;
           } else {
-            this.speechRecognizer_.interimResults = true;
+            this.chromeVoxEnabled_ = false;
           }
           break;
         default:
@@ -318,11 +297,112 @@ export class Dictation {
   }
 
   /**
+   * Shows the interim result in the UI.
+   * TODO(crbug.com/1252037): Implement with final design instead of input.ime.
+   * @param {string} text
+   * @private
+   */
+  setInterimText_(text) {
+    // TODO(crbug.com/1252037): Need to find a way to show interim text that is
+    // only whitespace. Google Cloud Speech can return a newline character
+    // although SODA does not seem to do that. The newline character looks wrong
+    // here.
+    this.interimText_ = text;
+    if (this.chromeVoxEnabled_) {
+      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+      return;
+    }
+    this.inputController_.showAnnotation(this.interimText_);
+    if (this.clearUITextTimeoutId_) {
+      clearTimeout(this.clearUITextTimeoutId_);
+      this.clearUITextTimeoutId_ = null;
+    }
+  }
+
+  /**
+   * Clears the interim result in the UI, replacing it with '....'.
+   * TODO(crbug.com/1252037): Implement with final design instead of input.ime.
+   * @private
+   */
+  clearInterimText_() {
+    if (this.chromeVoxEnabled_) {
+      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+      return;
+    }
+    this.interimText_ = '';
+    this.inputController_.showAnnotation('....');
+    if (this.clearUITextTimeoutId_) {
+      clearTimeout(this.clearUITextTimeoutId_);
+      this.clearUITextTimeoutId_ = null;
+    }
+  }
+
+  /**
+   * Shows that a command was executed in the UI.
+   * TODO(crbug.com/1252037): Implement with final design instead of input.ime.
+   * @param {Command} command
+   * @private
+   */
+  showCommandExecuted_(command) {
+    if (this.chromeVoxEnabled_) {
+      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+      return;
+    }
+    if (command.isTextInput()) {
+      // Return to the '....' UI.
+      this.clearInterimText_();
+      return;
+    }
+    this.interimText_ = '';
+    this.inputController_.showAnnotation(
+        '☑' + this.commandParser_.getCommandString(command));
+    this.clearUITextTimeoutId_ = setTimeout(
+        () => this.clearInterimText_(),
+        Dictation.Timeouts.SHOW_COMMAND_MESSAGE_MS);
+  }
+
+  /**
+   * Shows a message in the UI that a command failed to execute.
+   * TODO(crbug.com/1252037): Implement with final design instead of input.ime.
+   * @private
+   */
+  showCommandExecutionFailed_() {
+    if (this.chromeVoxEnabled_) {
+      // Using chrome.input.ime for UI causes too much verbosity with ChromeVox.
+      return;
+    }
+    this.interimText_ = '';
+    // TODO(crbug.com/1252037): Finalize string and internationalization.
+    this.inputController_.showAnnotation(`ⓘ We didn't recognize that`);
+    this.clearUITextTimeoutId_ = setTimeout(
+        () => this.clearInterimText_(),
+        Dictation.Timeouts.SHOW_COMMAND_MESSAGE_MS);
+  }
+
+  /**
+   * Hides the commands UI bubble.
+   * TODO(crbug.com/1252037): Implement with final design instead of input.ime.
+   * @private
+   */
+  hideCommandsUI_() {
+    if (this.chromeVoxEnabled_) {
+      return;
+    }
+    this.inputController_.hideAnnotation();
+    this.interimText_ = '';
+    if (this.clearUITextTimeoutId_) {
+      clearTimeout(this.clearUITextTimeoutId_);
+      this.clearUITextTimeoutId_ = null;
+    }
+  }
+
+  /**
    * Removes AccessibilityCommon as an input method so it doesn't show up in
    * the shelf input method picker UI.
    */
   static removeAsInputMethod() {
-    chrome.languageSettingsPrivate.removeInputMethod(Dictation.IME_ENGINE_ID);
+    chrome.languageSettingsPrivate.removeInputMethod(
+        InputController.IME_ENGINE_ID);
   }
 }
 
@@ -336,19 +416,6 @@ Dictation.DictationState = {
   LISTENING: 3,
   STOPPING: 4,
 };
-
-/**
- * The IME engine ID for AccessibilityCommon.
- * @private {string}
- * @const
- */
-Dictation.IME_ENGINE_ID = '_ext_ime_egfdjlfmgnehecnclamagfafdccgfndpdictation';
-
-/**
- * @private {number}
- * @const
- */
-Dictation.NO_ACTIVE_IME_CONTEXT_ID_ = -1;
 
 /**
  * Dictation locale pref.
@@ -368,7 +435,9 @@ Dictation.SPOKEN_FEEDBACK_PREF = 'settings.accessibility';
  * Timeout durations.
  * @type {!Object<string, number>}
  */
-Dictation.SpeechTimeouts = {
+Dictation.Timeouts = {
   NO_SPEECH_MS: 10 * 1000,
   NO_NEW_SPEECH_MS: 5 * 1000,
+  NO_FOCUSED_IME_MS: 500,
+  SHOW_COMMAND_MESSAGE_MS: 2000,
 };

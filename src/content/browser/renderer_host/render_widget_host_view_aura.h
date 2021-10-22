@@ -120,6 +120,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool ShouldVirtualKeyboardOverlayContent() override;
   void NotifyVirtualKeyboardOverlayRect(
       const gfx::Rect& keyboard_rect) override;
+  bool IsHTMLFormPopup() const override;
 
   // Overridden from RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -235,7 +236,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
@@ -252,13 +253,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const std::vector<ui::GrammarFragment>& fragments) override;
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   // Returns the control and selection bounds of the EditContext or control
   // bounds of the active editable element. This is used to report the layout
   // bounds of the text input control to TSF on Windows.
   void GetActiveTextInputControlLayoutBounds(
       absl::optional<gfx::Rect>* control_bounds,
       absl::optional<gfx::Rect>* selection_bounds) override;
+#endif
+
+#if defined(OS_WIN)
   // API to notify accessibility whether there is an active composition
   // from TSF or not.
   // It notifies the composition range, composition text and whether the
@@ -494,6 +498,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            ScrollOOPIFEditableElement);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, OcclusionHidesTooltip);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           UpdateInsetsWithVirtualKeyboardEnabled);
 
   class WindowObserver;
   friend class WindowObserver;
@@ -526,6 +532,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // has already adjusted the origin of |rect| to conform to whatever coordinate
   // space is required by the aura::Window.
   void InternalSetBounds(const gfx::Rect& rect);
+
+  // Update the insets for bounds change when the virtual keyboard is shown.
+  void UpdateInsetsWithVirtualKeyboardEnabled();
 
 #if defined(OS_WIN)
   // Creates and/or updates the legacy dummy window which corresponds to
@@ -693,7 +702,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::SelectionBound selection_start_;
   gfx::SelectionBound selection_end_;
 
+  // The insets for the window bounds (not for screen) when the window is
+  // partially occluded.
   gfx::Insets insets_;
+
+  // Cache the occluded bounds in screen coordinate of the virtual keyboard.
+  gfx::Rect keyboard_occluded_bounds_;
 
   std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 

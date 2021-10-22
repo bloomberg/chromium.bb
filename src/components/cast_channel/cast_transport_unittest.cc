@@ -50,10 +50,11 @@ const int kChannelId = 0;
 class CompleteHandler {
  public:
   CompleteHandler() {}
-  MOCK_METHOD1(Complete, void(int result));
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
+  CompleteHandler(const CompleteHandler&) = delete;
+  CompleteHandler& operator=(const CompleteHandler&) = delete;
+
+  MOCK_METHOD1(Complete, void(int result));
 };
 
 // Creates a CastMessage proto with the bare minimum required fields set.
@@ -74,6 +75,10 @@ CastMessage CreateCastMessage() {
 class CompletionQueue {
  public:
   CompletionQueue() {}
+
+  CompletionQueue(const CompletionQueue&) = delete;
+  CompletionQueue& operator=(const CompletionQueue&) = delete;
+
   ~CompletionQueue() { CHECK_EQ(0u, cb_queue_.size()); }
 
   // Enqueues a pending completion callback.
@@ -87,7 +92,6 @@ class CompletionQueue {
 
  private:
   base::queue<net::CompletionOnceCallback> cb_queue_;
-  DISALLOW_COPY_AND_ASSIGN(CompletionQueue);
 };
 
 // GMock action that reads data from an IOBuffer and writes it to a string

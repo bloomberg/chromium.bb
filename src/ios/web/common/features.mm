@@ -52,20 +52,24 @@ const base::Feature kWebViewNativeContextMenu{"WebViewNativeContextMenu",
 const base::Feature kWebViewNativeContextMenuPhase2{
     "WebViewNativeContextMenuPhase2", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kWebViewNativeContextMenuPhase3{
-    "WebViewNativeContextMenuPhase3", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kDefaultWebViewContextMenu{
     "DefaultWebViewContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDisableNonHTMLScreenshotOnIOS15{
     "DisableNonHTMLScreenshotOnIOS15", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kIOSSharedHighlightingColorChange{
+    "IOSSharedHighlightingColorChange", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCreatePendingItemForPostFormSubmission{
+    "CreatePendingItemForPostFormSubmission",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableNewDownloadAPI{"EnableNewDownloadAPI",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool UseWebClientDefaultUserAgent() {
-  if (@available(iOS 13, *)) {
-    return base::FeatureList::IsEnabled(kUseDefaultUserAgentInWebClient);
-  }
-  return false;
+  return base::FeatureList::IsEnabled(kUseDefaultUserAgentInWebClient);
 }
 
 bool UseWebViewNativeContextMenuWeb() {
@@ -74,8 +78,7 @@ bool UseWebViewNativeContextMenuWeb() {
 
 bool UseWebViewNativeContextMenuSystem() {
   return base::FeatureList::IsEnabled(kWebViewNativeContextMenu) ||
-         base::FeatureList::IsEnabled(kWebViewNativeContextMenuPhase2) ||
-         base::FeatureList::IsEnabled(kWebViewNativeContextMenuPhase3);
+         base::FeatureList::IsEnabled(kWebViewNativeContextMenuPhase2);
 }
 
 bool ShouldTakeScreenshotOnNonHTMLContent() {
@@ -85,12 +88,12 @@ bool ShouldTakeScreenshotOnNonHTMLContent() {
   return true;
 }
 
-const base::Feature kIOSSharedHighlightingColorChange{
-    "IOSSharedHighlightingColorChange", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kCreatePendingItemForPostFormSubmission{
-    "CreatePendingItemForPostFormSubmission",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+bool IsNewDownloadAPIEnabled() {
+  if (@available(iOS 15, *)) {
+    return base::FeatureList::IsEnabled(kEnableNewDownloadAPI);
+  }
+  return false;
+}
 
 }  // namespace features
 }  // namespace web

@@ -113,6 +113,10 @@ const char kTestData[] =
 class MockWriterBase : public mojom::MhtmlFileWriter {
  public:
   MockWriterBase() = default;
+
+  MockWriterBase(const MockWriterBase&) = delete;
+  MockWriterBase& operator=(const MockWriterBase&) = delete;
+
   ~MockWriterBase() override = default;
 
   void BindReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
@@ -123,7 +127,7 @@ class MockWriterBase : public mojom::MhtmlFileWriter {
  protected:
   void SendResponse(SerializeAsMHTMLCallback callback) {
     std::vector<std::string> dummy_digests;
-    base::TimeDelta dummy_time_delta = base::TimeDelta::FromMilliseconds(100);
+    base::TimeDelta dummy_time_delta = base::Milliseconds(100);
     std::move(callback).Run(mojom::MhtmlSaveStatus::kSuccess, dummy_digests,
                             dummy_time_delta);
   }
@@ -143,9 +147,6 @@ class MockWriterBase : public mojom::MhtmlFileWriter {
   }
 
   mojo::AssociatedReceiver<mojom::MhtmlFileWriter> receiver_{this};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockWriterBase);
 };
 
 // This Mock injects our overwritten interface, running the callback
@@ -409,7 +410,8 @@ class MHTMLGenerationTest : public ContentBrowserTest,
       const std::vector<std::string>& expected_substrings,
       const std::vector<std::string>& forbidden_substrings) {
     int actual_number_of_frames =
-        shell()->web_contents()->GetAllFrames().size();
+        CollectAllRenderFrameHosts(shell()->web_contents()->GetPrimaryPage())
+            .size();
     EXPECT_EQ(expected_number_of_frames, actual_number_of_frames);
 
     for (const auto& expected_substring : expected_substrings) {

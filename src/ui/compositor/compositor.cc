@@ -488,6 +488,16 @@ void Compositor::SetBackgroundColor(SkColor color) {
   ScheduleDraw();
 }
 
+void Compositor::EvictRootSurface(const viz::LocalSurfaceId& surface_id) {
+  DCHECK_NE(surface_id, host_->local_surface_id_from_parent());
+  DCHECK(host_->local_surface_id_from_parent().is_valid());
+  const viz::SurfaceId old_surface_id(frame_sink_id_,
+                                      host_->local_surface_id_from_parent());
+  host_->SetViewportRectAndScale(gfx::Rect(size_), device_scale_factor_,
+                                 surface_id);
+  context_factory_->GetHostFrameSinkManager()->EvictSurfaces({old_surface_id});
+}
+
 void Compositor::SetVisible(bool visible) {
   host_->SetVisible(visible);
   // Visibility is reset when the output surface is lost, so this must also be
@@ -504,13 +514,13 @@ bool Compositor::IsVisible() {
 // scroll_input_handler_ so that we don't have to keep a pointer to the
 // cc::InputHandler in this class.
 bool Compositor::ScrollLayerTo(cc::ElementId element_id,
-                               const gfx::ScrollOffset& offset) {
+                               const gfx::Vector2dF& offset) {
   return input_handler_weak_ &&
          input_handler_weak_->ScrollLayerTo(element_id, offset);
 }
 
 bool Compositor::GetScrollOffsetForLayer(cc::ElementId element_id,
-                                         gfx::ScrollOffset* offset) const {
+                                         gfx::Vector2dF* offset) const {
   return input_handler_weak_ &&
          input_handler_weak_->GetScrollOffsetForLayer(element_id, offset);
 }
@@ -689,7 +699,7 @@ void Compositor::DidFailToInitializeLayerTreeFrameSink() {
                      context_creation_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void Compositor::DidCommit(base::TimeTicks) {
+void Compositor::DidCommit(base::TimeTicks, base::TimeTicks) {
   DCHECK(!IsLocked());
   for (auto& observer : observer_list_)
     observer.OnCompositingDidCommit(this);

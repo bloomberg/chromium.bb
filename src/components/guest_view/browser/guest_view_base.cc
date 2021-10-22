@@ -62,6 +62,9 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
         destroyed_(false),
         guest_(guest) {}
 
+  OwnerContentsObserver(const OwnerContentsObserver&) = delete;
+  OwnerContentsObserver& operator=(const OwnerContentsObserver&) = delete;
+
   ~OwnerContentsObserver() override = default;
 
   // WebContentsObserver implementation.
@@ -140,8 +143,6 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
     bool also_delete = !guest_->web_contents()->GetOuterWebContents();
     guest_->Destroy(also_delete);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(OwnerContentsObserver);
 };
 
 // This observer ensures that the GuestViewBase destroys itself if its opener
@@ -151,6 +152,9 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
   explicit OpenerLifetimeObserver(GuestViewBase* guest)
       : WebContentsObserver(guest->GetOpener()->web_contents()),
         guest_(guest) {}
+
+  OpenerLifetimeObserver(const OpenerLifetimeObserver&) = delete;
+  OpenerLifetimeObserver& operator=(const OpenerLifetimeObserver&) = delete;
 
   ~OpenerLifetimeObserver() override = default;
 
@@ -165,8 +169,6 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
 
  private:
   GuestViewBase* guest_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpenerLifetimeObserver);
 };
 
 GuestViewBase::GuestViewBase(WebContents* owner_web_contents)
@@ -820,10 +822,8 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   params.GetInteger(kAttributeMinHeight, &min_height);
   params.GetInteger(kAttributeMinWidth, &min_width);
 
-  double element_height = 0.0;
-  double element_width = 0.0;
-  params.GetDouble(kElementHeight, &element_height);
-  params.GetDouble(kElementWidth, &element_width);
+  double element_height = params.FindDoublePath(kElementHeight).value_or(0.0);
+  double element_width = params.FindDoublePath(kElementWidth).value_or(0.0);
 
   // Set the normal size to the element size so that the guestview will fit
   // the element initially if autosize is disabled.

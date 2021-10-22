@@ -34,7 +34,7 @@ class PublisherBase : public apps::mojom::Publisher {
                                      std::string app_id,
                                      apps::mojom::Readiness readiness,
                                      const std::string& name,
-                                     apps::mojom::InstallSource install_source);
+                                     apps::mojom::InstallReason install_reason);
 
   void FlushMojoCallsForTesting();
 
@@ -91,6 +91,8 @@ class PublisherBase : public apps::mojom::Publisher {
       apps::mojom::IntentFilterPtr intent_filter,
       apps::mojom::IntentPtr intent,
       apps::mojom::ReplacedAppPreferencesPtr replaced_app_preferences) override;
+  void OnSupportedLinksPreferenceChanged(const std::string& app_id,
+                                         bool open_in_app) override;
   void SetResizeLocked(const std::string& app_id,
                        apps::mojom::OptionalBool locked) override;
   void SetWindowMode(const std::string& app_id,

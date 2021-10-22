@@ -37,11 +37,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateMixedTypesRanker;
 // zero-state.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppReinstallZeroState;
 
-// Enables local file suggestions in the suggestion chips.
+// Enables Drive file suggestions in the suggestion chips.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedFiles;
 
-// Enables Drive file suggestions in the suggestion chips.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedDriveFiles;
+// Enables local file suggestions in the suggestion chips.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableSuggestedLocalFiles;
 
 // Enables the Assistant search redirection in the app list.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAssistantSearch;
@@ -70,9 +70,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlSearchRanking;
 // apps grid pages are scaled down and shown a background card.
 ASH_PUBLIC_EXPORT extern const base::Feature kNewDragSpecInLauncher;
 
-// Enables rich entity formatting for Omnibox results in the launcher.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableOmniboxRichEntities;
-
 // Enables normalization of search results in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableLauncherSearchNormalization;
 
@@ -82,21 +79,26 @@ ASH_PUBLIC_EXPORT extern const base::Feature kCategoricalSearch;
 // Enables search query highlighting in the launcher.
 ASH_PUBLIC_EXPORT extern const base::Feature kLauncherQueryHighlighting;
 
+// Forces the launcher to show the continue section even if there are no file
+// suggestions.
+ASH_PUBLIC_EXPORT extern const base::Feature kForceShowContinueSection;
+
 bool ASH_PUBLIC_EXPORT IsAppRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsAppReinstallZeroStateEnabled();
 bool ASH_PUBLIC_EXPORT IsSuggestedFilesEnabled();
+bool ASH_PUBLIC_EXPORT IsSuggestedLocalFilesEnabled();
 bool ASH_PUBLIC_EXPORT IsAssistantSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 bool ASH_PUBLIC_EXPORT IsFuzzyAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsExactMatchForNonLatinLocaleEnabled();
+bool ASH_PUBLIC_EXPORT IsForceShowContinueSectionEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherSettingsSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAggregatedMlSearchRankingEnabled();
 bool ASH_PUBLIC_EXPORT IsNewDragSpecInLauncherEnabled();
-bool ASH_PUBLIC_EXPORT IsOmniboxRichEntitiesEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherSearchNormalizationEnabled();
 bool ASH_PUBLIC_EXPORT IsCategoricalSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsLauncherQueryHighlightingEnabled();

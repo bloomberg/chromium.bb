@@ -359,7 +359,6 @@ static int config_input(AVFilterLink *inlink)
 
     s->yule_hist_i   = 20;
     s->butter_hist_i = 4;
-    inlink->partial_buf_size =
     inlink->min_samples =
     inlink->max_samples = inlink->sample_rate / 20;
 
@@ -593,7 +592,6 @@ static const AVFilterPad replaygain_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad replaygain_outputs[] = {
@@ -601,7 +599,6 @@ static const AVFilterPad replaygain_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_replaygain = {
@@ -610,6 +607,6 @@ const AVFilter ff_af_replaygain = {
     .query_formats = query_formats,
     .uninit        = uninit,
     .priv_size     = sizeof(ReplayGainContext),
-    .inputs        = replaygain_inputs,
-    .outputs       = replaygain_outputs,
+    FILTER_INPUTS(replaygain_inputs),
+    FILTER_OUTPUTS(replaygain_outputs),
 };

@@ -15,10 +15,10 @@
 #include "chrome/browser/ash/input_method/assistive_window_properties.h"
 #include "chrome/browser/ash/input_method/input_method_engine_base.h"
 #include "chrome/browser/ash/input_method/suggestion_handler_interface.h"
+#include "ui/base/ime/ash/ime_engine_handler_interface.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/candidate_window.h"
-#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "url/gurl.h"
 
 namespace ui {
@@ -85,6 +85,9 @@ class InputMethodEngine : public InputMethodEngineBase,
   };
 
   InputMethodEngine();
+
+  InputMethodEngine(const InputMethodEngine&) = delete;
+  InputMethodEngine& operator=(const InputMethodEngine&) = delete;
 
   ~InputMethodEngine() override;
 
@@ -188,7 +191,7 @@ class InputMethodEngine : public InputMethodEngineBase,
 
 
   gfx::Rect GetAutocorrectCharacterBounds() override;
-
+  gfx::Rect GetTextFieldBounds() override;
 
   bool SetSelectionRange(uint32_t start, uint32_t end) override;
 
@@ -224,8 +227,6 @@ class InputMethodEngine : public InputMethodEngineBase,
 
   // Whether the desktop is being casted.
   bool is_casting_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(InputMethodEngine);
 };
 
 }  // namespace input_method

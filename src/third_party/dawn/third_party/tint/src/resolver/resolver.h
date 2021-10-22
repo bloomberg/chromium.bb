@@ -116,6 +116,7 @@ class Resolver {
     sem::BindingPoint binding_point;
     VariableKind kind;
     uint32_t index = 0;  // Parameter index, if kind == kParameter
+    uint16_t constant_id = 0;
   };
 
   struct IntrinsicCallInfo {
@@ -268,7 +269,7 @@ class Resolver {
   ///        root node, and ending with leaf nodes
   /// @return true on success, false on error
   bool TraverseExpressions(ast::Expression* root,
-                          std::vector<ast::Expression*>& out);
+                           std::vector<ast::Expression*>& out);
 
   // AST and Type validation methods
   // Each return true on success, false on failure.
@@ -282,8 +283,7 @@ class Resolver {
   bool ValidateAssignment(const ast::AssignmentStatement* a);
   bool ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
                                  const sem::Type* storage_type,
-                                 const bool is_input,
-                                 const bool is_struct_member);
+                                 const bool is_input);
   bool ValidateCall(ast::CallExpression* call);
   bool ValidateCallStatement(ast::CallStatement* stmt);
   bool ValidateEntryPoint(const ast::Function* func, const FunctionInfo* info);
@@ -390,6 +390,9 @@ class Resolver {
   /// @param storage_class the storage class
   /// @returns the default access control for the given storage class
   ast::Access DefaultAccessForStorageClass(ast::StorageClass storage_class);
+
+  /// Allocate constant IDs for pipeline-overridable constants.
+  void AllocateOverridableConstantIds();
 
   /// @returns the resolved type of the ast::Expression `expr`
   /// @param expr the expression

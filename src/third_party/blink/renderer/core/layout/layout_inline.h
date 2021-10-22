@@ -200,7 +200,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void AddOutlineRects(Vector<PhysicalRect>&,
                        const PhysicalOffset& additional_offset,
-                       NGOutlineType) const final;
+                       NGOutlineType) const override;
   // The following methods are called from the container if it has already added
   // outline rects for line boxes and/or children of this LayoutInline.
   void AddOutlineRectsForChildrenAndContinuations(
@@ -386,14 +386,8 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   LayoutUnit OffsetLeft(const Element*) const final;
   LayoutUnit OffsetTop(const Element*) const final;
-  LayoutUnit OffsetWidth() const final {
-    NOT_DESTROYED();
-    return PhysicalLinesBoundingBox().Width();
-  }
-  LayoutUnit OffsetHeight() const final {
-    NOT_DESTROYED();
-    return PhysicalLinesBoundingBox().Height();
-  }
+  LayoutUnit OffsetWidth() const final;
+  LayoutUnit OffsetHeight() const final;
 
   // This method differs from VisualOverflowRect() in that
   // 1. it doesn't include the rects for culled inline boxes, which aren't

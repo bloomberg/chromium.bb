@@ -741,55 +741,55 @@ class TensorBase<Derived, ReadOnlyAccessors>
     }
 
    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorTupleReducerOp<
-      internal::ArgMaxTupleReducer<Tuple<Index, CoeffReturnType> >,
+    const TensorPairReducerOp<
+      internal::ArgMaxPairReducer<Pair<Index, CoeffReturnType> >,
       const array<Index, NumDimensions>, const Derived>
     argmax() const {
       array<Index, NumDimensions> in_dims;
       for (Index d = 0; d < NumDimensions; ++d) in_dims[d] = d;
-      return TensorTupleReducerOp<
-        internal::ArgMaxTupleReducer<Tuple<Index, CoeffReturnType> >,
+      return TensorPairReducerOp<
+        internal::ArgMaxPairReducer<Pair<Index, CoeffReturnType> >,
         const array<Index, NumDimensions>,
-        const Derived>(derived(), internal::ArgMaxTupleReducer<Tuple<Index, CoeffReturnType> >(), -1, in_dims);
+        const Derived>(derived(), internal::ArgMaxPairReducer<Pair<Index, CoeffReturnType> >(), -1, in_dims);
     }
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorTupleReducerOp<
-      internal::ArgMinTupleReducer<Tuple<Index, CoeffReturnType> >,
+    const TensorPairReducerOp<
+      internal::ArgMinPairReducer<Pair<Index, CoeffReturnType> >,
       const array<Index, NumDimensions>, const Derived>
     argmin() const {
       array<Index, NumDimensions> in_dims;
       for (Index d = 0; d < NumDimensions; ++d) in_dims[d] = d;
-      return TensorTupleReducerOp<
-        internal::ArgMinTupleReducer<Tuple<Index, CoeffReturnType> >,
+      return TensorPairReducerOp<
+        internal::ArgMinPairReducer<Pair<Index, CoeffReturnType> >,
         const array<Index, NumDimensions>,
-        const Derived>(derived(), internal::ArgMinTupleReducer<Tuple<Index, CoeffReturnType> >(), -1, in_dims);
+        const Derived>(derived(), internal::ArgMinPairReducer<Pair<Index, CoeffReturnType> >(), -1, in_dims);
     }
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorTupleReducerOp<
-      internal::ArgMaxTupleReducer<Tuple<Index, CoeffReturnType> >,
+    const TensorPairReducerOp<
+      internal::ArgMaxPairReducer<Pair<Index, CoeffReturnType> >,
       const array<Index, 1>, const Derived>
     argmax(const Index return_dim) const {
       array<Index, 1> in_dims;
       in_dims[0] = return_dim;
-      return TensorTupleReducerOp<
-        internal::ArgMaxTupleReducer<Tuple<Index, CoeffReturnType> >,
+      return TensorPairReducerOp<
+        internal::ArgMaxPairReducer<Pair<Index, CoeffReturnType> >,
         const array<Index, 1>,
-        const Derived>(derived(), internal::ArgMaxTupleReducer<Tuple<Index, CoeffReturnType> >(), return_dim, in_dims);
+        const Derived>(derived(), internal::ArgMaxPairReducer<Pair<Index, CoeffReturnType> >(), return_dim, in_dims);
     }
 
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorTupleReducerOp<
-      internal::ArgMinTupleReducer<Tuple<Index, CoeffReturnType> >,
+    const TensorPairReducerOp<
+      internal::ArgMinPairReducer<Pair<Index, CoeffReturnType> >,
       const array<Index, 1>, const Derived>
     argmin(const Index return_dim) const {
       array<Index, 1> in_dims;
       in_dims[0] = return_dim;
-      return TensorTupleReducerOp<
-        internal::ArgMinTupleReducer<Tuple<Index, CoeffReturnType> >,
+      return TensorPairReducerOp<
+        internal::ArgMinPairReducer<Pair<Index, CoeffReturnType> >,
         const array<Index, 1>,
-        const Derived>(derived(), internal::ArgMinTupleReducer<Tuple<Index, CoeffReturnType> >(), return_dim, in_dims);
+        const Derived>(derived(), internal::ArgMinPairReducer<Pair<Index, CoeffReturnType> >(), return_dim, in_dims);
     }
 
     template <typename Reducer, typename Dims> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
@@ -935,11 +935,11 @@ class TensorBase<Derived, ReadOnlyAccessors>
       return TensorInflationOp<const Strides, const Derived>(derived(), strides);
     }
 
-    // Returns a tensor containing index/value tuples
+    // Returns a tensor containing index/value pairs
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
-    const TensorIndexTupleOp<const Derived>
-    index_tuples() const {
-      return TensorIndexTupleOp<const Derived>(derived());
+    const TensorIndexPairOp<const Derived>
+    index_pairs() const {
+      return TensorIndexPairOp<const Derived>(derived());
     }
 
     // Support for custom unary and binary operations

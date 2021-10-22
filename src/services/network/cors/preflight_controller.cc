@@ -15,6 +15,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
+#include "net/log/net_log_with_source.h"
 #include "services/network/cors/cors_util.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/constants.h"
@@ -37,6 +38,8 @@ namespace network {
 namespace cors {
 
 namespace {
+
+const char kLowerCaseTrue[] = "true";
 
 int RetrieveCacheFlags(int load_flags) {
   return load_flags & (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE |
@@ -223,6 +226,21 @@ absl::optional<CorsErrorStatus> CheckPreflightAccess(
   return error_status;
 }
 
+// Checks errors for the currently experimental "Access-Control-Allow-External"
+// header. Shares error conditions with standard preflight checking.
+// TODO(https://crbug.com/590714): Access-Control-Allow-External header is
+// stale. Following implementation need to be updated to follow the latest spec,
+// https://wicg.github.io/private-network-access/.
+absl::optional<CorsErrorStatus> CheckExternalPreflight(
+    const absl::optional<std::string>& allow_external) {
+  if (!allow_external)
+    return CorsErrorStatus(mojom::CorsError::kPreflightMissingAllowExternal);
+  if (*allow_external == kLowerCaseTrue)
+    return absl::nullopt;
+  return CorsErrorStatus(mojom::CorsError::kPreflightInvalidAllowExternal,
+                         *allow_external);
+}
+
 std::unique_ptr<PreflightResult> CreatePreflightResult(
     const GURL& final_url,
     const mojom::URLResponseHead& head,
@@ -290,7 +308,8 @@ class PreflightController::PreflightLoader final {
       bool tainted,
       const net::NetworkTrafficAnnotationTag& annotation_tag,
       const net::NetworkIsolationKey& network_isolation_key,
-      mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer)
+      mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
+      const net::NetLogWithSource net_log)
       : controller_(controller),
         completion_callback_(std::move(completion_callback)),
         original_request_(request),
@@ -298,7 +317,8 @@ class PreflightController::PreflightLoader final {
             with_non_wildcard_request_headers_support),
         tainted_(tainted),
         network_isolation_key_(network_isolation_key),
-        devtools_observer_(std::move(devtools_observer)) {
+        devtools_observer_(std::move(devtools_observer)),
+        net_log_(net_log) {
     if (devtools_observer_)
       devtools_request_id_ = base::UnguessableToken::Create();
     auto preflight_request =
@@ -348,9 +368,6 @@ class PreflightController::PreflightLoader final {
           network::URLLoaderCompletionStatus(net::ERR_INVALID_REDIRECT));
     }
 
-    // Preflight should not allow any redirect.
-    FinalizeLoader();
-
     std::move(completion_callback_)
         .Run(net::ERR_FAILED,
              CorsErrorStatus(mojom::CorsError::kPreflightDisallowedRedirect),
@@ -372,14 +389,16 @@ class PreflightController::PreflightLoader final {
           *devtools_request_id_, network::URLLoaderCompletionStatus(net::OK));
     }
 
-    FinalizeLoader();
-
     absl::optional<CorsErrorStatus> detected_error_status;
     bool has_authorization_covered_by_wildcard = false;
     std::unique_ptr<PreflightResult> result = CreatePreflightResult(
         final_url, head, original_request_, tainted_, &detected_error_status);
 
     if (result) {
+      // Only log if there is a result to log.
+      net_log_.AddEvent(net::NetLogEventType::CORS_PREFLIGHT_RESULT,
+                        [&result] { return result->NetLogParams(); });
+
       // Preflight succeeded. Check |original_request_| with |result|.
       DCHECK(!detected_error_status);
       detected_error_status =
@@ -399,32 +418,24 @@ class PreflightController::PreflightLoader final {
     std::move(completion_callback_)
         .Run(detected_error_status ? net::ERR_FAILED : net::OK,
              detected_error_status, has_authorization_covered_by_wildcard);
-
-    RemoveFromController();
-    // |this| is deleted here.
   }
 
   void HandleResponseBody(std::unique_ptr<std::string> response_body) {
-    // Reached only when the request fails without receiving headers, e.g.
-    // unknown hosts, unreachable remote, reset by peer, and so on.
-    // See https://crbug.com/826868 for related discussion.
-    DCHECK(!response_body);
     const int error = loader_->NetError();
-    DCHECK_NE(error, net::OK);
-    if (devtools_observer_) {
-      DCHECK(devtools_request_id_);
-      devtools_observer_->OnCorsPreflightRequestCompleted(
-          *devtools_request_id_, network::URLLoaderCompletionStatus(error));
+    if (!completion_callback_.is_null()) {
+      // As HandleResponseHeader() isn't called due to a request failure, such
+      // as unknown hosts. unreachable remote, reset by peer, and so on, we
+      // still hold `completion_callback_` to invoke.
+      if (devtools_observer_) {
+        DCHECK(devtools_request_id_);
+        devtools_observer_->OnCorsPreflightRequestCompleted(
+            *devtools_request_id_, network::URLLoaderCompletionStatus(error));
+      }
+      std::move(completion_callback_).Run(error, absl::nullopt, false);
     }
-    FinalizeLoader();
-    std::move(completion_callback_).Run(error, absl::nullopt, false);
+
     RemoveFromController();
     // |this| is deleted here.
-  }
-
-  void FinalizeLoader() {
-    DCHECK(loader_);
-    loader_.reset();
   }
 
   // Removes |this| instance from |controller_|. Once the method returns, |this|
@@ -447,6 +458,7 @@ class PreflightController::PreflightLoader final {
   absl::optional<base::UnguessableToken> devtools_request_id_;
   const net::NetworkIsolationKey network_isolation_key_;
   mojo::Remote<mojom::DevToolsObserver> devtools_observer_;
+  const net::NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightLoader);
 };
@@ -485,6 +497,13 @@ PreflightController::CheckPreflightAccessForTesting(
                               actual_credentials_mode, origin);
 }
 
+// static
+absl::optional<CorsErrorStatus>
+PreflightController::CheckExternalPreflightForTesting(
+    const absl::optional<std::string>& allow_external) {
+  return CheckExternalPreflight(allow_external);
+}
+
 PreflightController::PreflightController(NetworkService* network_service)
     : network_service_(network_service) {}
 
@@ -500,7 +519,8 @@ void PreflightController::PerformPreflightCheck(
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     mojom::URLLoaderFactory* loader_factory,
     const net::IsolationInfo& isolation_info,
-    mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer) {
+    mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
+    const net::NetLogWithSource& net_log) {
   DCHECK(request.request_initiator);
 
   const net::NetworkIsolationKey& network_isolation_key =
@@ -513,7 +533,7 @@ void PreflightController::PerformPreflightCheck(
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator.value(), request.url, network_isolation_key,
           request.credentials_mode, request.method, request.headers,
-          request.is_revalidating)) {
+          request.is_revalidating, net_log)) {
     std::move(callback).Run(net::OK, absl::nullopt, false);
     return;
   }
@@ -521,7 +541,7 @@ void PreflightController::PerformPreflightCheck(
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
       this, std::move(callback), request, with_trusted_header_client,
       with_non_wildcard_request_headers_support, tainted, annotation_tag,
-      network_isolation_key, std::move(devtools_observer)));
+      network_isolation_key, std::move(devtools_observer), net_log));
   (*emplaced_pair.first)->Request(loader_factory);
 }
 

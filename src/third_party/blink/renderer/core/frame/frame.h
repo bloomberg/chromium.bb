@@ -213,6 +213,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
     return user_activation_state_.HasBeenActive();
   }
 
+  // Returns if the last user activation for this frame was restricted in
+  // nature.
+  bool LastActivationWasRestricted() const {
+    return user_activation_state_.LastActivationWasRestricted();
+  }
+
   // Resets the user activation state of this frame.
   void ClearUserActivation() { user_activation_state_.Clear(); }
 
@@ -338,10 +344,12 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   Frame* Opener() const { return opener_; }
 
   // Returns the parent frame or null if this is the top-most frame.
-  Frame* Parent() const { return parent_; }
+  Frame* Parent(FrameTreeBoundary frame_tree_boundary =
+                    FrameTreeBoundary::kIgnoreFence) const;
 
   // Returns the top-most frame in the hierarchy containing this frame.
-  Frame* Top();
+  Frame* Top(
+      FrameTreeBoundary frame_tree_boundary = FrameTreeBoundary::kIgnoreFence);
 
   // Returns the first child frame.
   Frame* FirstChild() const { return first_child_; }

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/callback.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -388,8 +387,8 @@ bool Dav1dVideoDecoder::DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
 
     // When we use bind mode, our image data is dependent on the Dav1dPicture,
     // so we must ensure it stays alive along enough.
-    frame->AddDestructionObserver(base::BindOnce(
-        base::DoNothing::Once<ScopedPtrDav1dPicture>(), std::move(p)));
+    frame->AddDestructionObserver(
+        base::BindOnce([](ScopedPtrDav1dPicture) {}, std::move(p)));
     output_cb_.Run(std::move(frame));
   }
 
@@ -445,15 +444,14 @@ scoped_refptr<VideoFrame> Dav1dVideoDecoder::BindImageToVideoFrame(
       config_.aspect_ratio().GetNaturalSize(gfx::Rect(visible_size)),
       pic->stride[0], uv_plane_stride, uv_plane_stride,
       static_cast<uint8_t*>(pic->data[0]), u_plane, v_plane,
-      base::TimeDelta::FromMicroseconds(pic->m.timestamp));
+      base::Microseconds(pic->m.timestamp));
   if (!frame)
     return nullptr;
 
   // Each frame needs a ref on the fake UV data to keep it alive until done.
   if (needs_fake_uv_planes) {
     frame->AddDestructionObserver(base::BindOnce(
-        base::DoNothing::Once<scoped_refptr<base::RefCountedBytes>>(),
-        fake_uv_data_));
+        [](scoped_refptr<base::RefCountedBytes>) {}, fake_uv_data_));
   }
 
   return frame;

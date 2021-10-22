@@ -27,7 +27,10 @@
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-template.h"
 
 namespace auction_worklet {
 
@@ -185,6 +188,15 @@ void SellerWorklet::ReportResult(
           browser_signal_render_url, browser_signal_ad_render_fingerprint,
           browser_signal_bid, browser_signal_desirability,
           std::move(callback)));
+}
+
+void SellerWorklet::ConnectDevToolsAgent(
+    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(user_sequence_checker_);
+  v8_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&V8State::ConnectDevToolsAgent,
+                     base::Unretained(v8_state_.get()), std::move(agent)));
 }
 
 SellerWorklet::V8State::V8State(scoped_refptr<AuctionV8Helper> v8_helper,
@@ -366,6 +378,13 @@ void SellerWorklet::V8State::ReportResult(
   PostReportResultCallbackToUserThread(
       std::move(callback), std::move(signals_for_winner),
       report_bindings.report_url(), std::move(errors_out));
+}
+
+void SellerWorklet::V8State::ConnectDevToolsAgent(
+    mojo::PendingReceiver<blink::mojom::DevToolsAgent> agent) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
+  v8_helper_->ConnectDevToolsAgent(std::move(agent), user_thread_,
+                                   context_group_id_);
 }
 
 SellerWorklet::V8State::~V8State() {

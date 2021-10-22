@@ -53,7 +53,7 @@ class TestPasswordManagerClient
   TestPasswordManagerClient();
   ~TestPasswordManagerClient() override;
 
-  password_manager::PasswordStoreInterface* GetProfilePasswordStoreInterface()
+  password_manager::PasswordStoreInterface* GetProfilePasswordStore()
       const override;
 
  private:
@@ -67,7 +67,7 @@ TestPasswordManagerClient::TestPasswordManagerClient() {
 TestPasswordManagerClient::~TestPasswordManagerClient() = default;
 
 password_manager::PasswordStoreInterface*
-TestPasswordManagerClient::GetProfilePasswordStoreInterface() const {
+TestPasswordManagerClient::GetProfilePasswordStore() const {
   return mock_password_store_.get();
 }
 
@@ -76,20 +76,25 @@ class MockPasswordManagerDriver
  public:
   MockPasswordManagerDriver() = default;
 
+  MockPasswordManagerDriver(const MockPasswordManagerDriver&) = delete;
+  MockPasswordManagerDriver& operator=(const MockPasswordManagerDriver&) =
+      delete;
+
   MOCK_METHOD1(GeneratedPasswordAccepted, void(const std::u16string&));
   MOCK_METHOD0(GetPasswordGenerationHelper,
                password_manager::PasswordGenerationFrameHelper*());
   MOCK_METHOD0(GetPasswordManager, password_manager::PasswordManager*());
   MOCK_METHOD0(GetPasswordAutofillManager,
                password_manager::PasswordAutofillManager*());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerDriver);
 };
 
 class MockPasswordGenerationHelper
     : public password_manager::PasswordGenerationFrameHelper {
  public:
+  MockPasswordGenerationHelper(const MockPasswordGenerationHelper&) = delete;
+  MockPasswordGenerationHelper& operator=(const MockPasswordGenerationHelper&) =
+      delete;
+
   MockPasswordGenerationHelper(password_manager::PasswordManagerClient* client,
                                password_manager::PasswordManagerDriver* driver)
       : password_manager::PasswordGenerationFrameHelper(client, driver) {}
@@ -99,9 +104,6 @@ class MockPasswordGenerationHelper
                               autofill::FormSignature,
                               autofill::FieldSignature,
                               uint32_t));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationHelper);
 };
 
 // Mock modal dialog view used to bypass the need of a valid top level window.
@@ -116,10 +118,12 @@ class MockPasswordGenerationDialogView
                     PasswordGenerationType));
   MOCK_METHOD0(Destroy, void());
 
-  virtual ~MockPasswordGenerationDialogView() { Destroy(); }
+  MockPasswordGenerationDialogView(const MockPasswordGenerationDialogView&) =
+      delete;
+  MockPasswordGenerationDialogView& operator=(
+      const MockPasswordGenerationDialogView&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationDialogView);
+  virtual ~MockPasswordGenerationDialogView() { Destroy(); }
 };
 
 PasswordGenerationUIData GetTestGenerationUIData1() {

@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
+#include "chrome/browser/ui/webui/support_tool_ui.h"
 #include "chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
 #include "chrome/browser/ui/webui/translate_internals/translate_internals_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
@@ -172,24 +173,24 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/arc/arc_util.h"
+#include "chrome/browser/ash/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service_factory.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
+#include "chrome/browser/ash/net/network_health/network_health_service.h"
 #include "chrome/browser/ash/printing/print_management/printing_manager.h"
 #include "chrome/browser/ash/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/ash/scanning/chrome_scanning_app_delegate.h"
 #include "chrome/browser/ash/scanning/scan_service.h"
 #include "chrome/browser/ash/scanning/scan_service_factory.h"
+#include "chrome/browser/ash/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/ash/web_applications/chrome_camera_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/chrome_file_manager_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/personalization_app/chrome_personalization_app_ui_delegate.h"
-#include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/eche_app/eche_app_manager_factory.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
-#include "chrome/browser/chromeos/net/network_health/network_health_service.h"
-#include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
@@ -222,6 +223,7 @@
 #include "chrome/browser/ui/webui/chromeos/multidevice_internals/multidevice_internals_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
+#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/chromeos/power_ui.h"
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
@@ -299,6 +301,11 @@
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/sandbox/sandbox_internals_ui.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/webui/connectors_internals/connectors_internals_ui.h"
 #endif
 
 #if defined(USE_NSS_CERTS) && defined(USE_AURA)
@@ -391,21 +398,20 @@ WebUIController* NewWebUI<chromeos::TrustedProjectorUI>(WebUI* web_ui,
 void BindPrintManagement(
     Profile* profile,
     mojo::PendingReceiver<
-        chromeos::printing::printing_manager::mojom::PrintingMetadataProvider>
+        ash::printing::printing_manager::mojom::PrintingMetadataProvider>
         receiver) {
-  chromeos::printing::print_management::PrintingManager* handler =
-      chromeos::printing::print_management::PrintingManagerFactory::
-          GetForProfile(profile);
+  ash::printing::print_management::PrintingManager* handler =
+      ash::printing::print_management::PrintingManagerFactory::GetForProfile(
+          profile);
   if (handler)
     handler->BindInterface(std::move(receiver));
 }
 
 template <>
-WebUIController*
-NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>(
+WebUIController* NewWebUI<ash::printing::printing_manager::PrintManagementUI>(
     WebUI* web_ui,
     const GURL& url) {
-  return new chromeos::printing::printing_manager::PrintManagementUI(
+  return new ash::printing::printing_manager::PrintManagementUI(
       web_ui,
       base::BindRepeating(&BindPrintManagement, Profile::FromWebUI(web_ui)));
 }
@@ -510,7 +516,7 @@ WebUIController* NewWebUI<chromeos::multidevice::ProximityAuthUI>(
       web_ui->GetWebContents()->GetBrowserContext();
   return new chromeos::multidevice::ProximityAuthUI(
       web_ui,
-      chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
+      ash::device_sync::DeviceSyncClientFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context)),
       chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
           ->GetClient(),
@@ -659,6 +665,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SignInInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISupervisedUserPassphrasePageHost)
     return &NewWebUI<ConstrainedWebDialogUI>;
+  if (base::FeatureList::IsEnabled(features::kSupportTool) &&
+      url.host_piece() == chrome::kChromeUISupportToolHost)
+    return &NewWebUI<SupportToolUI>;
   if (url.host_piece() == chrome::kChromeUISyncInternalsHost)
     return &NewWebUI<SyncInternalsUI>;
   if (url.host_piece() == chrome::kChromeUITranslateInternalsHost)
@@ -747,14 +756,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIPasswordChangeHost) {
     if (!profile->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSamlInSessionPasswordChangeEnabled)) {
+            ash::prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::PasswordChangeUI>;
   }
   if (url.host_piece() == chrome::kChromeUIConfirmPasswordChangeHost) {
     if (!profile->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSamlInSessionPasswordChangeEnabled)) {
+            ash::prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::ConfirmPasswordChangeUI>;
@@ -762,7 +771,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() ==
       chrome::kChromeUIUrgentPasswordExpiryNotificationHost) {
     if (!profile->GetPrefs()->GetBoolean(
-            chromeos::prefs::kSamlInSessionPasswordChangeEnabled)) {
+            ash::prefs::kSamlInSessionPasswordChangeEnabled)) {
       return nullptr;
     }
     return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
@@ -794,6 +803,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::AccountMigrationWelcomeUI>;
   if (url.host_piece() == chrome::kChromeUIAddSupervisionHost)
     return &NewWebUI<chromeos::AddSupervisionUI>;
+  if (url.host_piece() == chrome::kChromeUIParentAccessHost)
+    return &NewWebUI<chromeos::ParentAccessUI>;
   if (url.host_piece() == chrome::kChromeUIAudioHost &&
       base::FeatureList::IsEnabled(chromeos::features::kAudioUrl)) {
     return &NewWebUI<chromeos::AudioUI>;
@@ -841,8 +852,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host_piece() == ash::kChromeUIDiagnosticsAppHost) {
     return &NewWebUI<ash::DiagnosticsDialogUI>;
   }
-  if (url.host_piece() == chromeos::kChromeUIPrintManagementHost)
-    return &NewWebUI<chromeos::printing::printing_manager::PrintManagementUI>;
+  if (url.host_piece() == ash::kChromeUIPrintManagementHost)
+    return &NewWebUI<ash::printing::printing_manager::PrintManagementUI>;
   if (url.host_piece() == ash::kChromeUIScanningAppHost)
     return &NewWebUI<ash::ScanningUI>;
   if (ash::features::IsShimlessRMAFlowEnabled() &&
@@ -1072,6 +1083,11 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISandboxHost) {
     return &NewWebUI<SandboxInternalsUI>;
   }
+#endif
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_ASH)
+  if (url.host_piece() == chrome::kChromeUIConnectorsInternalsHost)
+    return &NewWebUI<enterprise_connectors::ConnectorsInternalsUI>;
 #endif
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

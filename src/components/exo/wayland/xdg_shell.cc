@@ -152,12 +152,13 @@ struct WaylandXdgSurface {
       : shell_surface(std::move(shell_surface)),
         serial_tracker(serial_tracker) {}
 
+  WaylandXdgSurface(const WaylandXdgSurface&) = delete;
+  WaylandXdgSurface& operator=(const WaylandXdgSurface&) = delete;
+
   std::unique_ptr<XdgShellSurface> shell_surface;
 
   // Owned by Server, which always outlives this surface.
   SerialTracker* const serial_tracker;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandXdgSurface);
 };
 
 // Wrapper around shell surface that allows us to handle the case where the
@@ -178,6 +179,9 @@ class WaylandToplevel : public aura::WindowObserver {
             base::BindRepeating(&WaylandToplevel::OnConfigure,
                                 weak_ptr_factory_.GetWeakPtr())));
   }
+
+  WaylandToplevel(const WaylandToplevel&) = delete;
+  WaylandToplevel& operator=(const WaylandToplevel&) = delete;
 
   ~WaylandToplevel() override {
     if (shell_surface_data_)
@@ -294,8 +298,12 @@ class WaylandToplevel : public aura::WindowObserver {
     wl_array_init(&states);
     if (state_type == chromeos::WindowStateType::kMaximized)
       AddState(&states, XDG_TOPLEVEL_STATE_MAXIMIZED);
-    if (state_type == chromeos::WindowStateType::kFullscreen)
+    // TODO(crbug/1250129): Pinned states need to be handled properly.
+    if (state_type == chromeos::WindowStateType::kFullscreen ||
+        state_type == chromeos::WindowStateType::kPinned ||
+        state_type == chromeos::WindowStateType::kTrustedPinned) {
       AddState(&states, XDG_TOPLEVEL_STATE_FULLSCREEN);
+    }
     if (resizing)
       AddState(&states, XDG_TOPLEVEL_STATE_RESIZING);
     if (activated)
@@ -308,8 +316,6 @@ class WaylandToplevel : public aura::WindowObserver {
   wl_resource* const resource_;
   WaylandXdgSurface* shell_surface_data_;
   base::WeakPtrFactory<WaylandToplevel> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandToplevel);
 };
 
 void xdg_toplevel_destroy(wl_client* client, wl_resource* resource) {
@@ -470,6 +476,10 @@ class WaylandPopup : aura::WindowObserver {
             base::BindRepeating(&WaylandPopup::OnConfigure,
                                 weak_ptr_factory_.GetWeakPtr())));
   }
+
+  WaylandPopup(const WaylandPopup&) = delete;
+  WaylandPopup& operator=(const WaylandPopup&) = delete;
+
   ~WaylandPopup() override {
     if (shell_surface_data_)
       shell_surface_data_->shell_surface->host_window()->RemoveObserver(this);
@@ -510,8 +520,6 @@ class WaylandPopup : aura::WindowObserver {
   wl_resource* const resource_;
   WaylandXdgSurface* shell_surface_data_;
   base::WeakPtrFactory<WaylandPopup> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandPopup);
 };
 
 void xdg_popup_destroy(wl_client* client, wl_resource* resource) {
@@ -597,13 +605,7 @@ void xdg_surface_get_popup(wl_client* client,
   // Try layout using parent's flip state.
   WaylandPositioner* positioner =
       GetUserDataAs<WaylandPositioner>(positioner_resource);
-  WaylandPositioner::Result position = positioner->CalculateBounds(
-      work_area, parent_data->shell_surface->x_flipped(),
-      parent_data->shell_surface->y_flipped());
-
-  // Remember the new flip state for its child popups.
-  shell_surface_data->shell_surface->set_x_flipped(position.x_flipped);
-  shell_surface_data->shell_surface->set_y_flipped(position.y_flipped);
+  WaylandPositioner::Result position = positioner->CalculateBounds(work_area);
 
   // |position| is relative to the parent's contents view origin, and |origin|
   // is in screen coordinates.

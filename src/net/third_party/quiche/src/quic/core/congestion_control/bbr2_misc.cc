@@ -102,6 +102,11 @@ void Bbr2NetworkModel::OnCongestionEventStart(
                                            lost_packets, MaxBandwidth(),
                                            bandwidth_lo(), RoundTripCount());
 
+  if (sample.extra_acked == 0) {
+    cwnd_limited_before_aggregation_epoch_ =
+        congestion_event->prior_bytes_in_flight >= congestion_event->prior_cwnd;
+  }
+
   if (sample.last_packet_send_state.is_valid) {
     congestion_event->last_packet_send_state = sample.last_packet_send_state;
     congestion_event->last_sample_is_app_limited =
@@ -159,6 +164,10 @@ void Bbr2NetworkModel::OnCongestionEventStart(
         congestion_event->last_packet_send_state.total_bytes_acked;
     max_bytes_delivered_in_round_ =
         std::max(max_bytes_delivered_in_round_, bytes_delivered);
+    if (min_bytes_in_flight_in_round_ == 0 ||
+        congestion_event->bytes_in_flight < min_bytes_in_flight_in_round_) {
+      min_bytes_in_flight_in_round_ = congestion_event->bytes_in_flight;
+    }
   }
 
   // |bandwidth_latest_| and |inflight_latest_| only increased within a round.
@@ -325,14 +334,6 @@ bool Bbr2NetworkModel::MaybeExpireMinRtt(
   return true;
 }
 
-bool Bbr2NetworkModel::IsCongestionWindowLimited(
-    const Bbr2CongestionEvent& congestion_event) const {
-  QuicByteCount prior_bytes_in_flight = congestion_event.bytes_in_flight +
-                                        congestion_event.bytes_acked +
-                                        congestion_event.bytes_lost;
-  return prior_bytes_in_flight >= congestion_event.prior_cwnd;
-}
-
 bool Bbr2NetworkModel::IsInflightTooHigh(
     const Bbr2CongestionEvent& congestion_event,
     int64_t max_loss_events) const {
@@ -379,6 +380,7 @@ void Bbr2NetworkModel::OnNewRound() {
   bytes_lost_in_round_ = 0;
   loss_events_in_round_ = 0;
   max_bytes_delivered_in_round_ = 0;
+  min_bytes_in_flight_in_round_ = 0;
 }
 
 void Bbr2NetworkModel::cap_inflight_lo(QuicByteCount cap) {

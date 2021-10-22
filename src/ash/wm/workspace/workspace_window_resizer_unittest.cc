@@ -4,7 +4,6 @@
 
 #include "ash/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -21,6 +20,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -569,57 +569,6 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     EXPECT_EQ(expected_bounds_in_parent, window_->bounds());
     ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ(gfx::Rect(20, 30, 400, 60),
-              window_state->GetRestoreBoundsInScreen());
-  }
-
-  // Restore the window to clear snapped state.
-  window_state->Restore();
-
-  // Test dragging to another display and snapping there.
-  UpdateDisplay("800x600,500x600");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  {
-    EXPECT_EQ("20,30 400x60", window_->GetBoundsInScreen().ToString());
-
-    std::unique_ptr<WindowResizer> resizer =
-        CreateResizerForTest(window_.get());
-    ASSERT_TRUE(resizer.get());
-    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
-    // without having to call |CursorManager::SetDisplay|.
-    Shell::Get()->cursor_manager()->SetDisplay(
-        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
-    resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
-    int bottom =
-        screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
-    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-    resizer->CompleteDrag();
-    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
-    EXPECT_EQ(gfx::Rect(250, bottom), window_->bounds());
-    EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
-              window_state->GetRestoreBoundsInScreen());
-  }
-
-  // Restore the window to clear snapped state.
-  window_state->Restore();
-
-  // Test dragging from a secondary display and snapping on the same display.
-  {
-    EXPECT_EQ("820,30 400x60", window_->GetBoundsInScreen().ToString());
-
-    std::unique_ptr<WindowResizer> resizer =
-        CreateResizerForTest(window_.get());
-    ASSERT_TRUE(resizer.get());
-    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
-    // without having to call |CursorManager::SetDisplay|.
-    Shell::Get()->cursor_manager()->SetDisplay(
-        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
-    resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
-    int bottom =
-        screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
-    resizer->CompleteDrag();
-    // TODO(varkha): Insets are updated because of http://crbug.com/292238
-    EXPECT_EQ(gfx::Rect(250, 0, 250, bottom), window_->bounds());
-    EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
               window_state->GetRestoreBoundsInScreen());
   }
 }
@@ -1261,6 +1210,22 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOP) {
   EXPECT_EQ("100,199 20x31", window_->bounds().ToString());
 }
 
+// Resize window to the top edge of display should not trigger maximize nor
+// the maximize dwell timer (crbug.com/1251859)
+TEST_F(WorkspaceWindowResizerTest, ResizeTopShouldNotTriggerMaximize) {
+  window_->SetBounds(gfx::Rect(100, 200, 20, 30));
+  AllowSnap(window_.get());
+  std::unique_ptr<WindowResizer> resizer =
+      CreateResizerForTest(window_.get(), gfx::Point(), HTTOP);
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 50, -195), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 50, -200), 0);
+  ASSERT_TRUE(WindowState::Get(window_.get())->IsNormalStateType());
+  EXPECT_EQ("100,0 20x230", window_->bounds().ToString());
+  EXPECT_FALSE(snap_phantom_window_controller());
+  EXPECT_FALSE(IsDwellCountdownTimerRunning());
+}
+
 TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_TOPLEFT) {
   window_->SetBounds(gfx::Rect(100, 200, 20, 30));
   window2_->SetBounds(gfx::Rect(99, 179, 10, 20));
@@ -1702,19 +1667,19 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_RIGHT) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(715, kRootHeight / 2),
                                   gfx::Point(725, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 625, kRootHeight - 200),
             touch_resize_window_->bounds());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(725, kRootHeight / 2),
                                   gfx::Point(760, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 660, kRootHeight - 200),
             touch_resize_window_->bounds());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(760, kRootHeight / 2),
                                   gfx::Point(775, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 700, kRootHeight - 200),
             touch_resize_window_->bounds());
 }
@@ -1733,19 +1698,19 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_LEFT) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(85, kRootHeight / 2),
                                   gfx::Point(75, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(75, 100, 625, kRootHeight - 200),
             touch_resize_window_->bounds());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(75, kRootHeight / 2),
                                   gfx::Point(40, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(40, 100, 660, kRootHeight - 200),
             touch_resize_window_->bounds());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(40, kRootHeight / 2),
                                   gfx::Point(25, kRootHeight / 2),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(0, 100, 700, kRootHeight - 200),
             touch_resize_window_->bounds());
 }
@@ -1763,17 +1728,17 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_TOP) {
   // Drag out of the top border a bit and check if the border is aligned with
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(400, 85), gfx::Point(400, 75),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 75, 600, kRootHeight - 175),
             touch_resize_window_->bounds());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(400, 75), gfx::Point(400, 40),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 40, 600, kRootHeight - 140),
             touch_resize_window_->bounds());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(400, 40), gfx::Point(400, 25),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 0, 600, kRootHeight - 100),
             touch_resize_window_->bounds());
 }
@@ -1792,19 +1757,19 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
   // the touch point.
   generator.GestureScrollSequence(gfx::Point(400, kRootHeight - 85),
                                   gfx::Point(400, kRootHeight - 75),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 175),
             touch_resize_window_->bounds());
   // Drag more, but stop before being snapped to the edge.
   generator.GestureScrollSequence(gfx::Point(400, kRootHeight - 75),
                                   gfx::Point(400, kRootHeight - 40),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 140),
             touch_resize_window_->bounds());
   // Drag even more to snap to the edge.
   generator.GestureScrollSequence(gfx::Point(400, kRootHeight - 40),
                                   gfx::Point(400, kRootHeight - 25),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+                                  base::Milliseconds(10), 5);
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 100),
             touch_resize_window_->bounds());
 }
@@ -1828,8 +1793,8 @@ TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
 
   // Flush pending draws until there is no frame presented for 100ms (6 frames
   // worth time) and check that histogram is not updated.
-  while (ui::WaitForNextFrameToBePresented(
-      window_->GetHost()->compositor(), base::TimeDelta::FromMilliseconds(100)))
+  while (ui::WaitForNextFrameToBePresented(window_->GetHost()->compositor(),
+                                           base::Milliseconds(100)))
     ;
   histograms.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 1);
 }
@@ -2032,7 +1997,7 @@ TEST_F(WorkspaceWindowResizerTest, FlingRestoreSize) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      touch_resize_window_.get());
   generator.GestureScrollSequence(gfx::Point(400, 10), gfx::Point(400, 210),
-                                  base::TimeDelta::FromMilliseconds(10), 10);
+                                  base::Milliseconds(10), 10);
   ASSERT_TRUE(window_state->IsMinimized());
 
   // After unminimzing, the window bounds are the size they were before
@@ -2047,7 +2012,7 @@ TEST_F(WorkspaceWindowResizerTest, FlingRestoreSize) {
   ASSERT_TRUE(window_state->IsSnapped());
 
   generator.GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 210),
-                                  base::TimeDelta::FromMilliseconds(10), 10);
+                                  base::Milliseconds(10), 10);
   ASSERT_TRUE(window_state->IsMinimized());
 
   // After unminimzing, the window bounds are the size they were before
@@ -2090,7 +2055,7 @@ TEST_F(WorkspaceWindowResizerTest,
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      touch_resize_window_.get());
   generator.GestureScrollSequence(gfx::Point(250, 110), gfx::Point(250, 10),
-                                  base::TimeDelta::FromMilliseconds(10), 10);
+                                  base::Milliseconds(10), 10);
   ASSERT_TRUE(window_state->IsMaximized());
 
   // No crash, no DCHECK, and the window stays in the primary display.
@@ -2103,7 +2068,7 @@ using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
 // Makes sure that window drag magnetism still works when a window is dragged
 // between different displays.
 TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
-  UpdateDisplay("800x600,500x500");
+  UpdateDisplay("800x600,600x500");
   auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
 
@@ -2255,7 +2220,6 @@ TEST_F(WorkspaceWindowResizerTest, HorizontalMoveNotTriggerSnap) {
   resizer = CreateResizerForTest(window_.get());
   resizer->Drag(gfx::PointF(1.f, 1.f), 0);
   resizer->Drag(gfx::PointF(100.f, 1.f), 0);
-  DwellCountdownTimerFireNow();
   resizer->CompleteDrag();
   window_state = WindowState::Get(window_.get());
   EXPECT_FALSE(window_state->IsMaximized());
@@ -2272,8 +2236,13 @@ class PortraitWorkspaceWindowResizerTest : public WorkspaceWindowResizerTest {
 
   // WorkspaceWindowResizerTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVerticalSnapState);
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::wm::features::kVerticalSnap);
     WorkspaceWindowResizerTest::SetUp();
+    UpdateDisplay("600x800");
+
+    // Make the window snappable.
+    AllowSnap(window_.get());
   }
 
  private:
@@ -2290,12 +2259,11 @@ TEST_F(PortraitWorkspaceWindowResizerTest, MultiDisplaySnapPhantom) {
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                              display::Screen::GetScreen()->GetPrimaryDisplay());
 
-  // Make the window snappable.
-  AllowSnap(window_.get());
   gfx::Rect work_area(
       screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()));
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
+
   std::unique_ptr<WindowResizer> resizer = CreateResizerForTest(window_.get());
   ASSERT_TRUE(resizer.get());
   EXPECT_FALSE(snap_phantom_window_controller());
@@ -2318,22 +2286,199 @@ TEST_F(PortraitWorkspaceWindowResizerTest, MultiDisplaySnapPhantom) {
   Shell::Get()->cursor_manager()->SetDisplay(display);
   work_area = display.work_area();
 
-  // TODO(crbug/1236166): Update the test to dragging to top/bottom area
-  // instead of left/right to trigger snap in portrait mode.
-  // Move the window to the portrait display. Now the snap left should show
-  // top phantom window.
-  resizer->Drag(CalculateDragPoint(*resizer, 810, 0), 0);
+  // Move the window to the portrait display to snap top with vertical movement
+  // more than |kSnapTriggerVerticalMoveThreshold| to show top phantom window.
+  resizer->Drag(CalculateDragPoint(*resizer, 1100, 67), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 1100, 2), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 1100, 1), 0);
   EXPECT_TRUE(snap_phantom_window_controller());
   EXPECT_EQ(gfx::Rect(800, 0, work_area.width(), work_area.height() / 2),
             snap_phantom_window_controller()->GetTargetBoundsForTesting());
 
-  // Move the window to the portrait display. Now the snap right should show
+  // Move the window to the portrait display. Now the snap bottom should show
   // bottom phantom window.
-  resizer->Drag(CalculateDragPoint(*resizer, 1399, 0), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 1100, 780), 0);
+  resizer->Drag(CalculateDragPoint(*resizer, 1100, 781), 0);
   EXPECT_TRUE(snap_phantom_window_controller());
   EXPECT_EQ(gfx::Rect(800, work_area.height() / 2, work_area.width(),
                       work_area.height() / 2),
             snap_phantom_window_controller()->GetTargetBoundsForTesting());
 }
+
+// Tests that dragging window to top triggers top snap.
+TEST_F(PortraitWorkspaceWindowResizerTest, SnapTop) {
+  const gfx::Rect restore_bounds(50, 50, 100, 100);
+  window_->SetBounds(restore_bounds);
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get());
+  const float work_area_center_x = work_area.CenterPoint().x();
+
+  constexpr int kScreenEdgeInsetForSnappingTop = 8;
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window_.get(), gfx::Point(0, 100), HTCAPTION));
+  // Drag to a top-snap region should snap top.
+  resizer->Drag(
+      gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop + 1), 0);
+  resizer->Drag(gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop),
+                0);
+  EXPECT_FALSE(snap_phantom_window_controller());
+  resizer->Drag(
+      gfx::PointF(work_area_center_x, kScreenEdgeInsetForSnappingTop - 1), 0);
+  auto* phantom_controller = snap_phantom_window_controller();
+  ASSERT_TRUE(phantom_controller);
+
+  const gfx::Rect expected_snapped_bounds(work_area.width(),
+                                          work_area.height() / 2);
+  EXPECT_EQ(expected_snapped_bounds,
+            phantom_controller->GetTargetBoundsForTesting());
+  resizer->CompleteDrag();
+  EXPECT_TRUE(WindowState::Get(window_.get())->IsSnapped());
+  EXPECT_EQ(expected_snapped_bounds, window_->bounds());
+}
+
+// Tests that dragging window to bottom area trigger bottom snap.
+TEST_F(PortraitWorkspaceWindowResizerTest, SnapBottom) {
+  const gfx::Rect restore_bounds(50, 50, 100, 100);
+  window_->SetBounds(restore_bounds);
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_.get());
+  const float work_area_center_x = work_area.CenterPoint().x();
+
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
+  constexpr int kScreenEdgeInsetForSnappingSides = 32;
+  EXPECT_FALSE(snap_phantom_window_controller());
+  // Drag to a bottom-snap region should snap bottom. Bottom area should
+  // be with
+  resizer->Drag(
+      gfx::PointF(work_area_center_x,
+                  work_area.bottom() - kScreenEdgeInsetForSnappingSides - 2),
+      0);
+  EXPECT_FALSE(snap_phantom_window_controller());
+  resizer->Drag(
+      gfx::PointF(work_area_center_x,
+                  work_area.bottom() - kScreenEdgeInsetForSnappingSides - 1),
+      0);
+  ASSERT_TRUE(snap_phantom_window_controller());
+
+  const gfx::Rect expected_snapped_bounds(
+      0, work_area.bottom() / 2, work_area.width(), work_area.height() / 2);
+
+  resizer->CompleteDrag();
+  EXPECT_TRUE(WindowState::Get(window_.get())->IsSnapped());
+  EXPECT_EQ(expected_snapped_bounds, window_->bounds());
+}
+
+// Test WorkspaceWindowResizer functionalities for two displays with different
+// orientation: landscape and portrait. This test is parameterized to enable
+// vertical or horizontal snap layout in the portrait display.
+class MultiOrientationDisplayWorkspaceWindowResizerTest
+    : public WorkspaceWindowResizerTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  MultiOrientationDisplayWorkspaceWindowResizerTest() = default;
+  MultiOrientationDisplayWorkspaceWindowResizerTest(
+      const MultiOrientationDisplayWorkspaceWindowResizerTest&) = delete;
+  MultiOrientationDisplayWorkspaceWindowResizerTest& operator=(
+      const MultiOrientationDisplayWorkspaceWindowResizerTest&) = delete;
+  ~MultiOrientationDisplayWorkspaceWindowResizerTest() override = default;
+
+  bool IsVerticalSnapEnabled() const { return GetParam(); }
+
+  // WorkspaceWindowResizerTest:
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          chromeos::wm::features::kVerticalSnap);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          chromeos::wm::features::kVerticalSnap);
+    }
+    WorkspaceWindowResizerTest::SetUp();
+    UpdateDisplay("800x600,500x600");
+
+    // Make the window snappable.
+    AllowSnap(window_.get());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Assertions around dragging near the four edges of the display.
+TEST_P(MultiOrientationDisplayWorkspaceWindowResizerTest, Edge) {
+  window_->SetBounds(gfx::Rect(20, 30, 400, 60));
+  WindowState* window_state = WindowState::Get(window_.get());
+  // Test dragging to another display and snapping there.
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  const gfx::Rect display2_work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(root_windows[1])
+          .work_area();
+  {
+    EXPECT_EQ(gfx::Rect(20, 30, 400, 60), window_->GetBoundsInScreen());
+
+    std::unique_ptr<WindowResizer> resizer =
+        CreateResizerForTest(window_.get());
+    ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    // Move to the second display.
+    // Drag to bottom right area of the second display to trigger the bottom
+    // snap if vertical snap is enabled or the right snap otherwise.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+    resizer->Drag(CalculateDragPoint(*resizer, display2_work_area.right(),
+                                     display2_work_area.bottom()),
+                  0);
+    EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+    resizer->CompleteDrag();
+    EXPECT_EQ(root_windows[1], window_->GetRootWindow());
+
+    const gfx::Rect secondary_snap_bounds =
+        IsVerticalSnapEnabled() ? gfx::Rect(0, display2_work_area.height() / 2,
+                                            display2_work_area.width(),
+                                            display2_work_area.height() / 2)
+                                : gfx::Rect(display2_work_area.width() / 2, 0,
+                                            display2_work_area.width() / 2,
+                                            display2_work_area.height());
+    EXPECT_EQ(secondary_snap_bounds, window_->bounds());
+    EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
+              window_state->GetRestoreBoundsInScreen());
+  }
+
+  // Restore the window to clear snapped state.
+  window_state->Restore();
+
+  {
+    // Test dragging from a secondary display and snapping on the same display.
+    EXPECT_EQ(gfx::Rect(820, 30, 400, 60), window_->GetBoundsInScreen());
+
+    std::unique_ptr<WindowResizer> resizer =
+        CreateResizerForTest(window_.get(), gfx::Point(0, 100));
+    ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    // Drag to top left area of the second display to trigger the top snap
+    // if vertical snap is enabled or the bottom snap otherwise.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -95), 0);
+    resizer->Drag(CalculateDragPoint(*resizer, 0, -100), 0);
+    resizer->CompleteDrag();
+    const gfx::Rect primary_snap_bounds =
+        IsVerticalSnapEnabled() ? gfx::Rect(display2_work_area.width(),
+                                            display2_work_area.height() / 2)
+                                : gfx::Rect(display2_work_area.width() / 2,
+                                            display2_work_area.height());
+    EXPECT_EQ(primary_snap_bounds, window_->bounds());
+    EXPECT_EQ(gfx::Rect(820, 30, 400, 60),
+              window_state->GetRestoreBoundsInScreen());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         MultiOrientationDisplayWorkspaceWindowResizerTest,
+                         ::testing::Bool());
 
 }  // namespace ash

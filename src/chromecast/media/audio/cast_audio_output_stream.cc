@@ -55,11 +55,10 @@
 
 namespace {
 // Below are settings for MixerService and the DirectAudio it uses.
-constexpr base::TimeDelta kFadeTime = base::TimeDelta::FromMilliseconds(5);
+constexpr base::TimeDelta kFadeTime = base::Milliseconds(5);
 constexpr base::TimeDelta kCommunicationsMaxBufferedFrames =
-    base::TimeDelta::FromMilliseconds(50);
-constexpr base::TimeDelta kMediaMaxBufferedFrames =
-    base::TimeDelta::FromMilliseconds(70);
+    base::Milliseconds(50);
+constexpr base::TimeDelta kMediaMaxBufferedFrames = base::Milliseconds(70);
 }  // namespace
 
 namespace chromecast {
@@ -92,6 +91,10 @@ class CastAudioOutputStream::MixerServiceWrapper
  public:
   MixerServiceWrapper(const ::media::AudioParameters& audio_params,
                       const std::string& device_id);
+
+  MixerServiceWrapper(const MixerServiceWrapper&) = delete;
+  MixerServiceWrapper& operator=(const MixerServiceWrapper&) = delete;
+
   ~MixerServiceWrapper() override = default;
 
   void SetRunning(bool running);
@@ -130,8 +133,6 @@ class CastAudioOutputStream::MixerServiceWrapper
   // Task runner on |io_thread_|.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   THREAD_CHECKER(io_thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(MixerServiceWrapper);
 };
 
 CastAudioOutputStream::MixerServiceWrapper::MixerServiceWrapper(
@@ -287,7 +288,7 @@ void CastAudioOutputStream::MixerServiceWrapper::FillNextBuffer(
   base::TimeDelta reported_delay = ::media::AudioTimestampHelper::FramesToTime(
       max_buffered_frames_, audio_params_.sample_rate());
   base::TimeTicks reported_delay_timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(playout_timestamp);
+      base::TimeTicks() + base::Microseconds(playout_timestamp);
 
   int frames_filled = source_callback_->OnMoreData(
       reported_delay, reported_delay_timestamp, 0, audio_bus_.get());

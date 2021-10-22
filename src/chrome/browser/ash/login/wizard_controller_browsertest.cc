@@ -58,6 +58,7 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
+#include "chrome/browser/ash/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/ash/net/rollback_network_config/fake_rollback_network_config.h"
 #include "chrome/browser/ash/net/rollback_network_config/rollback_network_config_service.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
@@ -66,7 +67,6 @@
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -183,6 +183,11 @@ class ScopedFakeAutoEnrollmentClientFactory {
         &fake_auto_enrollment_client_factory_);
   }
 
+  ScopedFakeAutoEnrollmentClientFactory(
+      const ScopedFakeAutoEnrollmentClientFactory&) = delete;
+  ScopedFakeAutoEnrollmentClientFactory& operator=(
+      const ScopedFakeAutoEnrollmentClientFactory&) = delete;
+
   ~ScopedFakeAutoEnrollmentClientFactory() {
     controller_->SetAutoEnrollmentClientFactoryForTesting(nullptr);
   }
@@ -229,8 +234,6 @@ class ScopedFakeAutoEnrollmentClientFactory {
 
   policy::FakeAutoEnrollmentClient* created_auto_enrollment_client_ = nullptr;
   base::OnceClosure run_on_auto_enrollment_client_created_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFakeAutoEnrollmentClientFactory);
 };
 
 struct SwitchLanguageTestData {
@@ -294,8 +297,7 @@ void QuitLoopOnAutoEnrollmentProgress(
 // negative, the return value represents `days_offset` days in the past.
 std::string GenerateEmbargoEndDate(int days_offset) {
   base::Time::Exploded exploded;
-  base::Time target_time =
-      base::Time::Now() + base::TimeDelta::FromDays(days_offset);
+  base::Time target_time = base::Time::Now() + base::Days(days_offset);
   target_time.UTCExplode(&exploded);
 
   std::string embargo_end_date_string = base::StringPrintf(
@@ -352,6 +354,10 @@ Mock* MockScreenExpectLifecycle(std::unique_ptr<Mock> mock) {
 }  // namespace
 
 class WizardControllerTest : public OobeBaseTest {
+ public:
+  WizardControllerTest(const WizardControllerTest&) = delete;
+  WizardControllerTest& operator=(const WizardControllerTest&) = delete;
+
  protected:
   WizardControllerTest() = default;
   ~WizardControllerTest() override = default;
@@ -402,9 +408,6 @@ class WizardControllerTest : public OobeBaseTest {
         WizardController::default_controller()->GetScreen(
             WrongHWIDScreenView::kScreenId));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
@@ -468,6 +471,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
 }
 
 class WizardControllerFlowTest : public WizardControllerTest {
+ public:
+  WizardControllerFlowTest(const WizardControllerFlowTest&) = delete;
+  WizardControllerFlowTest& operator=(const WizardControllerFlowTest&) = delete;
+
  protected:
   WizardControllerFlowTest() {}
   // WizardControllerTest:
@@ -475,8 +482,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ =
-        WizardController::ForceBrandedBuildForTesting(true);
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -687,7 +694,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
     CheckCurrentScreen(NetworkScreenView::kScreenId);
     EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
     CheckCurrentScreen(EulaView::kScreenId);
     // Login shelf should still be visible.
@@ -774,8 +781,6 @@ class WizardControllerFlowTest : public WizardControllerTest {
   NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
@@ -796,7 +801,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -834,7 +839,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -865,7 +870,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowSkipUpdateEnroll) {
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -904,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowEulaDeclined) {
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(0);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_network_screen_, ShowImpl()).Times(1);
@@ -969,6 +974,12 @@ class WizardControllerUpdateAfterCompletedOobeTest
     : public WizardControllerFlowTest,
       public testing::WithParamInterface<UpdateScreen::Result>,
       public LocalStateMixin::Delegate {
+ public:
+  WizardControllerUpdateAfterCompletedOobeTest(
+      const WizardControllerUpdateAfterCompletedOobeTest&) = delete;
+  WizardControllerUpdateAfterCompletedOobeTest& operator=(
+      const WizardControllerUpdateAfterCompletedOobeTest&) = delete;
+
  protected:
   WizardControllerUpdateAfterCompletedOobeTest() = default;
 
@@ -979,7 +990,6 @@ class WizardControllerUpdateAfterCompletedOobeTest
 
  private:
   LocalStateMixin local_state_mixin_{&mixin_host_, this};
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerUpdateAfterCompletedOobeTest);
 };
 
 // This test verifies that if WizardController reports any result after the
@@ -1005,7 +1015,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerUpdateAfterCompletedOobeTest,
 
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
 
@@ -1043,6 +1053,12 @@ INSTANTIATE_TEST_SUITE_P(
                     UpdateScreen::Result::UPDATE_ERROR));
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
+ public:
+  WizardControllerDeviceStateTest(const WizardControllerDeviceStateTest&) =
+      delete;
+  WizardControllerDeviceStateTest& operator=(
+      const WizardControllerDeviceStateTest&) = delete;
+
  protected:
   WizardControllerDeviceStateTest() {
     fake_statistics_provider_.SetMachineStatistic(
@@ -1103,8 +1119,6 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
                                  DeviceStateMixin::State::BEFORE_OOBE};
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
-
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerDeviceStateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
@@ -1121,7 +1135,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1165,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1224,6 +1238,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 class WizardControllerDeviceStateExplicitRequirementTest
     : public WizardControllerDeviceStateTest,
       public testing::WithParamInterface<bool /* fre_explicitly_required */> {
+ public:
+  WizardControllerDeviceStateExplicitRequirementTest(
+      const WizardControllerDeviceStateExplicitRequirementTest&) = delete;
+  WizardControllerDeviceStateExplicitRequirementTest& operator=(
+      const WizardControllerDeviceStateExplicitRequirementTest&) = delete;
+
  protected:
   WizardControllerDeviceStateExplicitRequirementTest() {
     if (IsFREExplicitlyRequired()) {
@@ -1235,9 +1255,6 @@ class WizardControllerDeviceStateExplicitRequirementTest
   // Returns true if forced re-enrollment was explicitly required (which
   // corresponds to the check_enrollment VPD value being set to "1").
   bool IsFREExplicitlyRequired() { return GetParam(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerDeviceStateExplicitRequirementTest);
 };
 
 // Test the control flow for Forced Re-Enrollment. First, a connection error
@@ -1256,7 +1273,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1342,7 +1359,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1437,6 +1454,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 class WizardControllerDeviceStateWithInitialEnrollmentTest
     : public WizardControllerDeviceStateTest {
+ public:
+  WizardControllerDeviceStateWithInitialEnrollmentTest(
+      const WizardControllerDeviceStateWithInitialEnrollmentTest&) = delete;
+  WizardControllerDeviceStateWithInitialEnrollmentTest& operator=(
+      const WizardControllerDeviceStateWithInitialEnrollmentTest&) = delete;
+
  protected:
   WizardControllerDeviceStateWithInitialEnrollmentTest() {
     fake_statistics_provider_.SetMachineStatistic(
@@ -1472,7 +1495,7 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
     CheckCurrentScreen(NetworkScreenView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
     EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+    mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
     CheckCurrentScreen(EulaView::kScreenId);
     EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1523,10 +1546,6 @@ class WizardControllerDeviceStateWithInitialEnrollmentTest
   SystemClockClient::TestInterface* system_clock_client() {
     return SystemClockClient::Get()->GetTestInterface();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(
-      WizardControllerDeviceStateWithInitialEnrollmentTest);
 };
 
 // Tests that a device that is brand new properly does initial enrollment.
@@ -1568,7 +1587,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1653,7 +1672,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1692,7 +1711,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1710,7 +1729,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   CheckCurrentScreen(AutoEnrollmentCheckScreenView::kScreenId);
   mock_auto_enrollment_check_screen_->RealShow();
-  EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
+  EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::
+                kUnknownDueToMissingSystemClockSync,
             auto_enrollment_controller()->auto_enrollment_check_type());
 
   system_clock_client()->SetNetworkSynchronized(true);
@@ -1743,7 +1763,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1761,12 +1781,13 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   CheckCurrentScreen(AutoEnrollmentCheckScreenView::kScreenId);
   mock_auto_enrollment_check_screen_->RealShow();
-  EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
+  EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::
+                kUnknownDueToMissingSystemClockSync,
             auto_enrollment_controller()->auto_enrollment_check_type());
 
   // The timeout is 45 seconds, see `auto_enrollment_controller.cc`.
   // Fast-forward by a bit more than that.
-  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(45 + 1));
+  task_runner->FastForwardBy(base::Seconds(45 + 1));
 
   EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
             auto_enrollment_controller()->auto_enrollment_check_type());
@@ -1794,7 +1815,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -1812,7 +1833,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   CheckCurrentScreen(AutoEnrollmentCheckScreenView::kScreenId);
   mock_auto_enrollment_check_screen_->RealShow();
-  EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
+  EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::
+                kUnknownDueToMissingSystemClockSync,
             auto_enrollment_controller()->auto_enrollment_check_type());
 
   // Simulate that the clock moved forward, passing the embargo period, by
@@ -1866,8 +1888,9 @@ class WizardControllerScreenPriorityOOBETest : public OobeBaseTest {
 IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityOOBETest,
                        DefaultPriorityTest) {
   ASSERT_TRUE(WizardController::default_controller() != nullptr);
-  CheckCurrentScreen(WelcomeView::kScreenId);
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
 
+  CheckCurrentScreen(WelcomeView::kScreenId);
   // Showing network screen should pass it has default priority which is same as
   // welcome screen.
   WizardController::default_controller()->AdvanceToScreen(
@@ -1944,6 +1967,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerScreenPriorityTest, CanNavigateToTest) {
 }
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
+ public:
+  WizardControllerBrokenLocalStateTest(
+      const WizardControllerBrokenLocalStateTest&) = delete;
+  WizardControllerBrokenLocalStateTest& operator=(
+      const WizardControllerBrokenLocalStateTest&) = delete;
+
  protected:
   WizardControllerBrokenLocalStateTest() = default;
   ~WizardControllerBrokenLocalStateTest() override = default;
@@ -1959,8 +1988,6 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
 
  private:
   std::unique_ptr<PrefService> local_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerBrokenLocalStateTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
@@ -1987,6 +2014,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
 }
 
 class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
+ public:
+  WizardControllerProxyAuthOnSigninTest(
+      const WizardControllerProxyAuthOnSigninTest&) = delete;
+  WizardControllerProxyAuthOnSigninTest& operator=(
+      const WizardControllerProxyAuthOnSigninTest&) = delete;
+
  protected:
   WizardControllerProxyAuthOnSigninTest()
       : proxy_server_(net::SpawnedTestServer::TYPE_BASIC_AUTH_PROXY,
@@ -2015,8 +2048,6 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
 
  private:
   net::SpawnedTestServer proxy_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerProxyAuthOnSigninTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
@@ -2032,6 +2063,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
 }
 
 class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
+ public:
+  WizardControllerKioskFlowTest(const WizardControllerKioskFlowTest&) = delete;
+  WizardControllerKioskFlowTest& operator=(
+      const WizardControllerKioskFlowTest&) = delete;
+
  protected:
   WizardControllerKioskFlowTest() {}
 
@@ -2045,9 +2081,6 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
         switches::kAppOemManifestFile,
         test_data_dir.AppendASCII("kiosk_manifest.json"));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerKioskFlowTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
@@ -2065,7 +2098,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -2111,7 +2144,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   CheckCurrentScreen(NetworkScreenView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_REGULAR);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_CALL(*mock_eula_screen_, HideImpl()).Times(1);
@@ -2146,6 +2179,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
 class WizardControllerEnableAdbSideloadingTest
     : public WizardControllerFlowTest {
+ public:
+  WizardControllerEnableAdbSideloadingTest(
+      const WizardControllerEnableAdbSideloadingTest&) = delete;
+  WizardControllerEnableAdbSideloadingTest& operator=(
+      const WizardControllerEnableAdbSideloadingTest&) = delete;
+
  protected:
   WizardControllerEnableAdbSideloadingTest() = default;
 
@@ -2155,9 +2194,6 @@ class WizardControllerEnableAdbSideloadingTest
     auto* const wizard_controller = WizardController::default_controller();
     wizard_controller->AdvanceToScreen(screen);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerEnableAdbSideloadingTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
@@ -2213,6 +2249,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableAdbSideloadingTest,
 }
 
 class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
+ public:
+  WizardControllerEnableDebuggingTest(
+      const WizardControllerEnableDebuggingTest&) = delete;
+  WizardControllerEnableDebuggingTest& operator=(
+      const WizardControllerEnableDebuggingTest&) = delete;
+
  protected:
   WizardControllerEnableDebuggingTest() {}
 
@@ -2221,9 +2263,6 @@ class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerEnableDebuggingTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
@@ -2250,6 +2289,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
 }
 
 class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
+ public:
+  WizardControllerDemoSetupTest(const WizardControllerDemoSetupTest&) = delete;
+  WizardControllerDemoSetupTest& operator=(
+      const WizardControllerDemoSetupTest&) = delete;
+
  protected:
   WizardControllerDemoSetupTest() = default;
   ~WizardControllerDemoSetupTest() override = default;
@@ -2267,9 +2311,6 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
     wizard_controller->SimulateDemoModeSetupForTesting();
     wizard_controller->AdvanceToScreen(screen);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
@@ -2297,7 +2338,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_DEMO);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2315,7 +2356,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
 
   mock_arc_terms_of_service_screen_->ExitScreen(
-      ArcTermsOfServiceScreen::Result::ACCEPTED);
+      ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_ONLINE);
 
   base::RunLoop().RunUntilIdle();
 
@@ -2388,7 +2429,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest,
   EXPECT_CALL(*mock_demo_setup_screen_, ShowImpl()).Times(1);
 
   mock_arc_terms_of_service_screen_->ExitScreen(
-      ArcTermsOfServiceScreen::Result::ACCEPTED);
+      ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_OFFLINE);
 
   base::RunLoop().RunUntilIdle();
 
@@ -2426,7 +2467,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_DEMO);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2444,7 +2485,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, DemoSetupCanceled) {
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
 
   mock_arc_terms_of_service_screen_->ExitScreen(
-      ArcTermsOfServiceScreen::Result::ACCEPTED);
+      ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_ONLINE);
 
   base::RunLoop().RunUntilIdle();
 
@@ -2507,7 +2548,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, NetworkBackPressed) {
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_demo_preferences_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::BACK);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::BACK_DEMO);
 
   CheckCurrentScreen(DemoPreferencesScreenView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2554,6 +2595,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupTest, ArcTosBackPressed) {
 
 class WizardControllerDemoSetupDeviceDisabledTest
     : public WizardControllerDeviceStateTest {
+ public:
+  WizardControllerDemoSetupDeviceDisabledTest(
+      const WizardControllerDemoSetupDeviceDisabledTest&) = delete;
+  WizardControllerDemoSetupDeviceDisabledTest& operator=(
+      const WizardControllerDemoSetupDeviceDisabledTest&) = delete;
+
  protected:
   WizardControllerDemoSetupDeviceDisabledTest() = default;
   ~WizardControllerDemoSetupDeviceDisabledTest() override = default;
@@ -2563,9 +2610,6 @@ class WizardControllerDemoSetupDeviceDisabledTest
     WizardControllerDeviceStateTest::SetUpOnMainThread();
     testing::Mock::VerifyAndClearExpectations(mock_welcome_screen_);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupDeviceDisabledTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
@@ -2593,7 +2637,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   EXPECT_CALL(*mock_network_screen_, HideImpl()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, ShowImpl()).Times(1);
 
-  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED);
+  mock_network_screen_->ExitScreen(NetworkScreen::Result::CONNECTED_DEMO);
 
   CheckCurrentScreen(EulaView::kScreenId);
   EXPECT_TRUE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
@@ -2611,7 +2655,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   EXPECT_CALL(*mock_update_screen_, ShowImpl()).Times(1);
 
   mock_arc_terms_of_service_screen_->ExitScreen(
-      ArcTermsOfServiceScreen::Result::ACCEPTED);
+      ArcTermsOfServiceScreen::Result::ACCEPTED_DEMO_ONLINE);
 
   base::RunLoop().RunUntilIdle();
 
@@ -2657,6 +2701,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
 }
 
 class WizardControllerOobeResumeTest : public WizardControllerTest {
+ public:
+  WizardControllerOobeResumeTest(const WizardControllerOobeResumeTest&) =
+      delete;
+  WizardControllerOobeResumeTest& operator=(
+      const WizardControllerOobeResumeTest&) = delete;
+
  protected:
   WizardControllerOobeResumeTest() {}
   // WizardControllerTest:
@@ -2664,8 +2714,8 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ =
-        WizardController::ForceBrandedBuildForTesting(true);
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -2698,9 +2748,6 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
   MockEnrollmentScreen* mock_enrollment_screen_;
 
   std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeResumeTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
@@ -2732,7 +2779,7 @@ class WizardControllerOnboardingResumeTest : public WizardControllerTest {
  protected:
   DeviceStateMixin device_state_{
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
-  FakeGaiaMixin gaia_mixin_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin gaia_mixin_{&mixin_host_};
   LoginManagerMixin login_mixin_{&mixin_host_, LoginManagerMixin::UserList(),
                                  &gaia_mixin_};
   AccountId user_{
@@ -2757,6 +2804,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOnboardingResumeTest,
 }
 
 class WizardControllerCellularFirstTest : public WizardControllerFlowTest {
+ public:
+  WizardControllerCellularFirstTest(const WizardControllerCellularFirstTest&) =
+      delete;
+  WizardControllerCellularFirstTest& operator=(
+      const WizardControllerCellularFirstTest&) = delete;
+
  protected:
   WizardControllerCellularFirstTest() {}
 
@@ -2765,9 +2818,6 @@ class WizardControllerCellularFirstTest : public WizardControllerFlowTest {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kCellularFirst);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerCellularFirstTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
@@ -2775,6 +2825,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerCellularFirstTest, CellularFirstFlow) {
 }
 
 class WizardControllerOobeConfigurationTest : public WizardControllerTest {
+ public:
+  WizardControllerOobeConfigurationTest(
+      const WizardControllerOobeConfigurationTest&) = delete;
+  WizardControllerOobeConfigurationTest& operator=(
+      const WizardControllerOobeConfigurationTest&) = delete;
+
  protected:
   WizardControllerOobeConfigurationTest() {}
 
@@ -2786,7 +2842,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
         "oobe_configuration", "non_empty_configuration.json",
         &configuration_file));
-    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
+    command_line->AppendSwitchPath(switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
 
@@ -2796,9 +2852,6 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeConfigurationTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
@@ -2812,6 +2865,12 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 }
 
 class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
+ public:
+  WizardControllerRollbackFlowTest(const WizardControllerRollbackFlowTest&) =
+      delete;
+  WizardControllerRollbackFlowTest& operator=(
+      const WizardControllerRollbackFlowTest&) = delete;
+
  protected:
   WizardControllerRollbackFlowTest() {}
 
@@ -2838,17 +2897,14 @@ class WizardControllerRollbackFlowTest : public WizardControllerFlowTest {
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
         "oobe_configuration", "TestEnterpriseRollbackRecover.json",
         &configuration_file));
-    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
+    command_line->AppendSwitchPath(switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
 
   content::MockNotificationObserver observer_;
   content::NotificationRegistrar registrar_;
 
-  ash::FakeRollbackNetworkConfig* network_config_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WizardControllerRollbackFlowTest);
+  FakeRollbackNetworkConfig* network_config_;
 };
 
 IN_PROC_BROWSER_TEST_F(WizardControllerRollbackFlowTest,

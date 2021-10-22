@@ -5149,9 +5149,13 @@ sctp_pull_off_control_to_new_inp(struct sctp_inpcb *old_inp,
 	new_so = new_inp->sctp_socket;
 	TAILQ_INIT(&tmp_queue);
 #if (defined(__FreeBSD__) || defined(__APPLE__)) && !defined(__Userspace__)
+#if defined(__FreeBSD__)
+	error = SOCK_IO_RECV_LOCK(old_so, waitflags);
+#else
 	error = sblock(&old_so->so_rcv, waitflags);
+#endif
 	if (error) {
-		/* Gak, can't get sblock, we have a problem.
+		/* Gak, can't get I/O lock, we have a problem.
 		 * data will be left stranded.. and we
 		 * don't dare look at it since the
 		 * other thread may be reading something.
@@ -5186,13 +5190,12 @@ sctp_pull_off_control_to_new_inp(struct sctp_inpcb *old_inp,
 		}
 	}
 	SCTP_INP_READ_UNLOCK(old_inp);
-	/* Remove the sb-lock on the old socket */
+	/* Remove the recv-lock on the old socket */
 #if defined(__APPLE__) && !defined(__Userspace__)
 	sbunlock(&old_so->so_rcv, 1);
 #endif
-
 #if defined(__FreeBSD__) && !defined(__Userspace__)
-	sbunlock(&old_so->so_rcv);
+	SOCK_IO_RECV_UNLOCK(old_so);
 #endif
 	/* Now we move them over to the new socket buffer */
 	SCTP_INP_READ_LOCK(new_inp);
@@ -6190,7 +6193,7 @@ sctp_sorecvmsg(struct socket *so,
 	error = sblock(&so->so_rcv, SBLOCKWAIT(in_flags));
 #endif
 #if defined(__FreeBSD__) && !defined(__Userspace__)
-	error = sblock(&so->so_rcv, (block_allowed ? SBL_WAIT : 0));
+	error = SOCK_IO_RECV_LOCK(so, SBLOCKWAIT(in_flags));
 #endif
 	if (error) {
 		goto release_unlocked;
@@ -6874,10 +6877,11 @@ sctp_sorecvmsg(struct socket *so,
 			goto release;
 		}
 		/*
-		 * We need to wait for more data a few things: - We don't
-		 * sbunlock() so we don't get someone else reading. - We
-		 * must be sure to account for the case where what is added
-		 * is NOT to our control when we wakeup.
+		 * We need to wait for more data a few things:
+		 * - We don't release the I/O lock so we don't get someone else
+		 *   reading.
+		 * - We must be sure to account for the case where what is added
+		 *   is NOT to our control when we wakeup.
 		 */
 
 		/* Do we need to tell the transport a rwnd update might be
@@ -7054,7 +7058,7 @@ sctp_sorecvmsg(struct socket *so,
 #endif
 
 #if defined(__FreeBSD__) && !defined(__Userspace__)
-	sbunlock(&so->so_rcv);
+	SOCK_IO_RECV_UNLOCK(so);
 	sockbuf_lock = 0;
 #endif
 
@@ -7090,7 +7094,7 @@ sctp_sorecvmsg(struct socket *so,
 	}
 #if defined(__FreeBSD__) && !defined(__Userspace__)
 	if (sockbuf_lock) {
-		sbunlock(&so->so_rcv);
+		SOCK_IO_RECV_UNLOCK(so);
 	}
 #endif
 

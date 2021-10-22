@@ -21,15 +21,17 @@
 class HungRendererNavigationTest : public InProcessBrowserTest {
  public:
   HungRendererNavigationTest() {}
+
+  HungRendererNavigationTest(const HungRendererNavigationTest&) = delete;
+  HungRendererNavigationTest& operator=(const HungRendererNavigationTest&) =
+      delete;
+
   ~HungRendererNavigationTest() override {}
 
  protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HungRendererNavigationTest);
 };
 
 // Verify that a cross-process navigation will dismiss the hung renderer
@@ -47,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(HungRendererNavigationTest,
   TabDialogs::FromWebContents(active_web_contents)
       ->ShowHungRendererDialog(
           active_web_contents->GetMainFrame()->GetRenderViewHost()->GetWidget(),
-          base::DoNothing::Repeatedly());
+          base::DoNothing());
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("b.com", "/title2.html")));
   // Expect that the dialog has been dismissed.

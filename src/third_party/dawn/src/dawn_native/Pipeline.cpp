@@ -16,31 +16,61 @@
 
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectBase.h"
 #include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/ShaderModule.h"
 
 namespace dawn_native {
+    absl::FormatConvertResult<absl::FormatConversionCharSet::kString> AbslFormatConvert(
+        SingleShaderStage value,
+        const absl::FormatConversionSpec& spec,
+        absl::FormatSink* s) {
+        switch (value) {
+            case SingleShaderStage::Compute:
+                s->Append("Compute");
+                break;
+            case SingleShaderStage::Vertex:
+                s->Append("Vertex");
+                break;
+            case SingleShaderStage::Fragment:
+                s->Append("Fragment");
+                break;
+            default:
+                UNREACHABLE();
+        }
+        return {true};
+    }
 
     MaybeError ValidateProgrammableStage(DeviceBase* device,
                                          const ShaderModuleBase* module,
                                          const std::string& entryPoint,
+                                         uint32_t constantCount,
+                                         const ConstantEntry* constants,
                                          const PipelineLayoutBase* layout,
                                          SingleShaderStage stage) {
         DAWN_TRY(device->ValidateObject(module));
 
-        if (!module->HasEntryPoint(entryPoint)) {
-            return DAWN_VALIDATION_ERROR("Entry point doesn't exist in the module");
-        }
+        DAWN_INVALID_IF(!module->HasEntryPoint(entryPoint),
+                        "Entry point \"%s\" doesn't exist in the shader module %s.", entryPoint,
+                        module);
 
         const EntryPointMetadata& metadata = module->GetEntryPoint(entryPoint);
 
-        if (metadata.stage != stage) {
-            return DAWN_VALIDATION_ERROR("Entry point isn't for the correct stage");
-        }
+        DAWN_INVALID_IF(metadata.stage != stage,
+                        "The stage (%s) of the entry point \"%s\" isn't the expected one (%s).",
+                        metadata.stage, entryPoint, stage);
 
         if (layout != nullptr) {
             DAWN_TRY(ValidateCompatibilityWithPipelineLayout(device, metadata, layout));
+        }
+
+        // Validate if overridable constants exist in shader module
+        // pipelineBase is not yet constructed at this moment so iterate constants from descriptor
+        for (uint32_t i = 0; i < constantCount; i++) {
+            DAWN_INVALID_IF(metadata.overridableConstants.count(constants[i].key) == 0,
+                            "Pipeline overridable constant \"%s\" not found in shader module %s.",
+                            constants[i].key, module);
         }
 
         return {};
@@ -52,7 +82,7 @@ namespace dawn_native {
                                PipelineLayoutBase* layout,
                                const char* label,
                                std::vector<StageAndDescriptor> stages)
-        : CachedObject(device, label), mLayout(layout) {
+        : ApiObjectBase(device, label), mLayout(layout) {
         ASSERT(!stages.empty());
 
         for (const StageAndDescriptor& stage : stages) {
@@ -67,7 +97,12 @@ namespace dawn_native {
             // Record them internally.
             bool isFirstStage = mStageMask == wgpu::ShaderStage::None;
             mStageMask |= StageBit(shaderStage);
-            mStages[shaderStage] = {module, entryPointName, &metadata};
+            mStages[shaderStage] = {module, entryPointName, &metadata,
+                                    std::vector<PipelineConstantEntry>()};
+            auto& constants = mStages[shaderStage].constants;
+            for (uint32_t i = 0; i < stage.constantCount; i++) {
+                constants.emplace_back(stage.constants[i].key, stage.constants[i].value);
+            }
 
             // Compute the max() of all minBufferSizes across all stages.
             RequiredBufferSizes stageMinBufferSizes =
@@ -89,7 +124,7 @@ namespace dawn_native {
     }
 
     PipelineBase::PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-        : CachedObject(device, tag) {
+        : ApiObjectBase(device, tag) {
     }
 
     PipelineLayoutBase* PipelineBase::GetLayout() {
@@ -116,13 +151,18 @@ namespace dawn_native {
         return mStages;
     }
 
+    wgpu::ShaderStage PipelineBase::GetStageMask() const {
+        return mStageMask;
+    }
+
     MaybeError PipelineBase::ValidateGetBindGroupLayout(uint32_t groupIndex) {
         DAWN_TRY(GetDevice()->ValidateIsAlive());
         DAWN_TRY(GetDevice()->ValidateObject(this));
         DAWN_TRY(GetDevice()->ValidateObject(mLayout.Get()));
-        if (groupIndex >= kMaxBindGroups) {
-            return DAWN_VALIDATION_ERROR("Bind group layout index out of bounds");
-        }
+        DAWN_INVALID_IF(
+            groupIndex >= kMaxBindGroups,
+            "Bind group layout index (%u) exceeds the maximum number of bind groups (%u).",
+            groupIndex, kMaxBindGroups);
         return {};
     }
 
@@ -140,7 +180,9 @@ namespace dawn_native {
 
     BindGroupLayoutBase* PipelineBase::APIGetBindGroupLayout(uint32_t groupIndexIn) {
         Ref<BindGroupLayoutBase> result;
-        if (GetDevice()->ConsumedError(GetBindGroupLayout(groupIndexIn), &result)) {
+        if (GetDevice()->ConsumedError(GetBindGroupLayout(groupIndexIn), &result,
+                                       "Validating GetBindGroupLayout (%u) on %s", groupIndexIn,
+                                       this)) {
             return BindGroupLayoutBase::MakeError(GetDevice());
         }
         return result.Detach();

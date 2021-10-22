@@ -47,7 +47,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebCore.Document.execCommand" enum="MappedEditingCommands"
-    expires_after="2021-12-31">
+    expires_after="2022-04-10">
   <owner>yosin@chromium.org</owner>
   <owner>kojii@chromium.org</owner>
   <summary>
@@ -63,6 +63,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Counts the number of times each Editor::Command::execute is called. This
     doesn't count commands not supported by Blink.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.FindInPage.DurationBetweenKeystrokes" units="ms"
+    expires_after="2022-02-01">
+  <owner>jarhar@chromium.org</owner>
+  <owner>vmpstr@chromium.org</owner>
+  <summary>
+    Records the amount of time between keystrokes the user made while typing a
+    search query into the find-in-page browser dialog. Reported on each Find
+    request that extends the text of the previous request. This will be used in
+    order to determine how long we should make the find-in-page scroll delay:
+    http://crbug.com/1250158
   </summary>
 </histogram>
 
@@ -105,7 +118,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebCore.FindInPage.TaskDuration" units="ms"
-    expires_after="2021-12-19">
+    expires_after="2022-04-24">
   <owner>rakina@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>

@@ -393,9 +393,8 @@ enum {
 #define TOP_INTRA_MODEL_COUNT 4
 // Total number of luma intra prediction modes (include both directional and
 // non-directional modes)
-// 61 = PAETH_PRED - DC_PRED + 1 + 6 * 8
 // Because there are 8 directional modes, each has additional 6 delta angles.
-#define LUMA_MODE_COUNT 61
+#define LUMA_MODE_COUNT (PAETH_PRED - DC_PRED + 1 + 6 * 8)
 
 enum {
   SIMPLE_TRANSLATION,

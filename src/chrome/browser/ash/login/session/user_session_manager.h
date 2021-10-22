@@ -34,9 +34,10 @@
 #include "chrome/browser/ash/net/secure_dns_manager.h"
 #include "chrome/browser/ash/release_notes/release_notes_notification.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/eol_notification.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chrome/browser/ash/u2f_notification.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
-#include "chrome/browser/chromeos/eol_notification.h"
-#include "chrome/browser/chromeos/u2f_notification.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -50,14 +51,14 @@
 #include "components/user_manager/user_manager.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 class AccountId;
+class AshTurnSyncOnHelper;
 class GURL;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
-class TurnSyncOnHelper;
 
 namespace user_manager {
 class User;
@@ -162,6 +163,9 @@ class UserSessionManager
 
   // Returns UserSessionManager instance.
   static UserSessionManager* GetInstance();
+
+  UserSessionManager(const UserSessionManager&) = delete;
+  UserSessionManager& operator=(const UserSessionManager&) = delete;
 
   // Called when user is logged in to override base::DIR_HOME path.
   static void OverrideHomedir();
@@ -663,7 +667,7 @@ class UserSessionManager
 
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 
-  std::unique_ptr<net::SecureDnsManager> secure_dns_manager_;
+  std::unique_ptr<SecureDnsManager> secure_dns_manager_;
 
   std::unique_ptr<ChildPolicyObserver> child_policy_observer_;
 
@@ -672,7 +676,7 @@ class UserSessionManager
   std::unique_ptr<HelpAppNotificationController>
       help_app_notification_controller_;
 
-  std::unique_ptr<TurnSyncOnHelper> turn_sync_on_helper_;
+  std::unique_ptr<AshTurnSyncOnHelper> ash_turn_sync_on_helper_;
 
   bool token_handle_backfill_tried_for_testing_ = false;
 
@@ -680,8 +684,6 @@ class UserSessionManager
       onboarding_user_activity_counter_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UserSessionManager);
 };
 
 }  // namespace ash

@@ -61,7 +61,6 @@ enum HWAccelID {
     HWACCEL_AUTO,
     HWACCEL_GENERIC,
     HWACCEL_VIDEOTOOLBOX,
-    HWACCEL_QSV,
 };
 
 typedef struct HWAccel {
@@ -361,8 +360,6 @@ typedef struct InputStream {
         unsigned int initialize; ///< marks if sub2video_update should force an initialization
     } sub2video;
 
-    int dr1;
-
     /* decoded data from this stream goes into all those filters
      * currently video and audio only */
     InputFilter **filters;
@@ -414,7 +411,6 @@ typedef struct InputFile {
     int64_t ts_offset;
     int64_t last_ts;
     int64_t start_time;   /* user-specified start time in AV_TIME_BASE or AV_NOPTS_VALUE */
-    int seek_timestamp;
     int64_t recording_time;
     int nb_streams;       /* number of stream that ffmpeg is aware of; may be different
                              from ctx.nb_streams if new streams appear during av_read_frame() */
@@ -524,7 +520,6 @@ typedef struct OutputStream {
     AVDictionary *encoder_opts;
     AVDictionary *sws_dict;
     AVDictionary *swr_opts;
-    AVDictionary *resample_opts;
     char *apad;
     OSTFinished finished;        /* no more packets should be written for this stream */
     int unavailable;                     /* true if the steram is unavailable (possibly temporarily) */
@@ -634,7 +629,7 @@ extern AVIOContext *progress_avio;
 extern float max_error_rate;
 extern char *videotoolbox_pixfmt;
 
-extern int filter_nbthreads;
+extern char *filter_nbthreads;
 extern int filter_complex_nbthreads;
 extern int vstats_version;
 extern int auto_conversion_filters;

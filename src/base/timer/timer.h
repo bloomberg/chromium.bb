@@ -22,7 +22,7 @@
 //   class MyClass {
 //    public:
 //     void StartDoingStuff() {
-//       timer_.Start(FROM_HERE, TimeDelta::FromSeconds(1),
+//       timer_.Start(FROM_HERE, Seconds(1),
 //                    this, &MyClass::DoStuff);
 //     }
 //     void StopDoingStuff() {
@@ -99,6 +99,9 @@ class BASE_EXPORT TimerBase {
   TimerBase(const Location& posted_from,
             TimeDelta delay,
             const TickClock* tick_clock);
+
+  TimerBase(const TimerBase&) = delete;
+  TimerBase& operator=(const TimerBase&) = delete;
 
   virtual ~TimerBase();
 
@@ -209,8 +212,6 @@ class BASE_EXPORT TimerBase {
 
   WeakPtrFactory<TimerBase> weak_ptr_factory_
       GUARDED_BY_CONTEXT(sequence_checker_){this};
-
-  DISALLOW_COPY_AND_ASSIGN(TimerBase);
 };
 
 }  // namespace internal
@@ -221,6 +222,10 @@ class BASE_EXPORT OneShotTimer : public internal::TimerBase {
  public:
   OneShotTimer();
   explicit OneShotTimer(const TickClock* tick_clock);
+
+  OneShotTimer(const OneShotTimer&) = delete;
+  OneShotTimer& operator=(const OneShotTimer&) = delete;
+
   ~OneShotTimer() override;
 
   // Start the timer to run at the given |delay| from now. If the timer is
@@ -249,8 +254,6 @@ class BASE_EXPORT OneShotTimer : public internal::TimerBase {
   void RunUserTask() final;
 
   OnceClosure user_task_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneShotTimer);
 };
 
 //-----------------------------------------------------------------------------
@@ -259,6 +262,10 @@ class BASE_EXPORT RepeatingTimer : public internal::TimerBase {
  public:
   RepeatingTimer();
   explicit RepeatingTimer(const TickClock* tick_clock);
+
+  RepeatingTimer(const RepeatingTimer&) = delete;
+  RepeatingTimer& operator=(const RepeatingTimer&) = delete;
+
   ~RepeatingTimer() override;
 
   RepeatingTimer(const Location& posted_from,
@@ -295,8 +302,6 @@ class BASE_EXPORT RepeatingTimer : public internal::TimerBase {
   void RunUserTask() override;
 
   RepeatingClosure user_task_;
-
-  DISALLOW_COPY_AND_ASSIGN(RepeatingTimer);
 };
 
 //-----------------------------------------------------------------------------
@@ -306,6 +311,10 @@ class BASE_EXPORT RetainingOneShotTimer : public internal::TimerBase {
  public:
   RetainingOneShotTimer();
   explicit RetainingOneShotTimer(const TickClock* tick_clock);
+
+  RetainingOneShotTimer(const RetainingOneShotTimer&) = delete;
+  RetainingOneShotTimer& operator=(const RetainingOneShotTimer&) = delete;
+
   ~RetainingOneShotTimer() override;
 
   RetainingOneShotTimer(const Location& posted_from,
@@ -342,8 +351,6 @@ class BASE_EXPORT RetainingOneShotTimer : public internal::TimerBase {
   void RunUserTask() override;
 
   RepeatingClosure user_task_;
-
-  DISALLOW_COPY_AND_ASSIGN(RetainingOneShotTimer);
 };
 
 //-----------------------------------------------------------------------------
@@ -377,12 +384,13 @@ class DelayTimer {
                BindRepeating(method, Unretained(receiver)),
                tick_clock) {}
 
+  DelayTimer(const DelayTimer&) = delete;
+  DelayTimer& operator=(const DelayTimer&) = delete;
+
   void Reset() { timer_.Reset(); }
 
  private:
   RetainingOneShotTimer timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayTimer);
 };
 
 }  // namespace base

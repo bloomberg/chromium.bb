@@ -314,6 +314,10 @@ class MimeWriter {
   static const size_t kMaxCrashChunkSize = 64;
 
   MimeWriter(int fd, const char* const mime_boundary);
+
+  MimeWriter(const MimeWriter&) = delete;
+  MimeWriter& operator=(const MimeWriter&) = delete;
+
   ~MimeWriter();
 
   // Append boundary.
@@ -370,9 +374,6 @@ class MimeWriter {
   int fd_;
 
   const char* const mime_boundary_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MimeWriter);
 };
 
 MimeWriter::MimeWriter(int fd, const char* const mime_boundary)
@@ -482,6 +483,9 @@ class CrashReporterWriter : public MimeWriter {
  public:
   explicit CrashReporterWriter(int fd);
 
+  CrashReporterWriter(const CrashReporterWriter&) = delete;
+  CrashReporterWriter& operator=(const CrashReporterWriter&) = delete;
+
   void AddBoundary() override;
 
   void AddEnd() override;
@@ -501,9 +505,6 @@ class CrashReporterWriter : public MimeWriter {
   void AddFileContents(const char* filename_msg,
                        uint8_t* file_data,
                        size_t file_size) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrashReporterWriter);
 };
 
 
@@ -1029,6 +1030,9 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
       : server_fd_(
             base::GlobalDescriptors::GetInstance()->Get(kCrashDumpSignal)) {}
 
+  NonBrowserCrashHandler(const NonBrowserCrashHandler&) = delete;
+  NonBrowserCrashHandler& operator=(const NonBrowserCrashHandler&) = delete;
+
   ~NonBrowserCrashHandler() override {}
 
   bool RequestDump(const void* crash_context,
@@ -1116,8 +1120,6 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
  private:
   // The pipe FD to the browser process, which will handle the crash dumping.
   const int server_fd_;
-
-  DISALLOW_COPY_AND_ASSIGN(NonBrowserCrashHandler);
 };
 
 void EnableNonBrowserCrashDumping() {

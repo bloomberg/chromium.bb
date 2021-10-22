@@ -16,6 +16,7 @@ export const PAUSE_INDICATOR_SELECTOR = '.paused-status';
 export const CODE_LINE_SELECTOR = '.CodeMirror-code .CodeMirror-linenumber';
 export const SCOPE_LOCAL_VALUES_SELECTOR = 'li[aria-label="Local"] + ol';
 export const SELECTED_THREAD_SELECTOR = 'div.thread-item.selected > div.thread-item-title';
+export const STEP_OVER_BUTTON = '[aria-label="Step over next function call"]';
 export const TURNED_OFF_PAUSE_BUTTON_SELECTOR = 'button.toolbar-state-off';
 export const TURNED_ON_PAUSE_BUTTON_SELECTOR = 'button.toolbar-state-on';
 export const DEBUGGER_PAUSED_EVENT = 'DevTools.DebuggerPaused';
@@ -149,6 +150,23 @@ export async function waitForHighlightedLineWhichIncludesText(expectedTextConten
     const text = await selectedLine.evaluate(node => node.textContent);
     return (text && text.includes(expectedTextContent)) ? text : undefined;
   });
+}
+
+export async function waitForHighlightedLine(lineNumber: number) {
+  await waitForFunction(async () => {
+    const selectedLineNumber = await waitFor('.CodeMirror-activeline-gutter > .CodeMirror-linenumber');
+    const text = await selectedLineNumber.evaluate(node => node.textContent);
+    return Number(text) === lineNumber;
+  });
+}
+
+export async function getToolbarText() {
+  const toolbar = await waitFor('.sources-toolbar');
+  if (!toolbar) {
+    return [];
+  }
+  const textNodes = await $$('.toolbar-text', toolbar);
+  return Promise.all(textNodes.map(node => node.evaluate(node => node.textContent, node)));
 }
 
 export async function addBreakpointForLine(frontend: puppeteer.Page, index: number|string) {

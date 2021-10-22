@@ -37,6 +37,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/disable_reason.h"
+#include "extensions/browser/extension_host_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -55,7 +56,6 @@
 #endif
 
 class BlocklistedExtensionSyncServiceTest;
-class HostContentSettingsMap;
 class Profile;
 
 namespace base {
@@ -150,6 +150,12 @@ class ExtensionServiceInterface
   // Whether a user is able to disable a given extension.
   virtual bool UserCanDisableInstalledExtension(
       const std::string& extension_id) = 0;
+
+  // Ask each external extension provider to call
+  // OnExternalExtension(File|UpdateUrl)Found() with their known extensions.
+  // This will trigger an update/reinstall of the extensions saved in the
+  // provider's prefs.
+  virtual void ReinstallProviderExtensions() = 0;
 };
 
 // Manages installed and running Chromium extensions. An instance is shared
@@ -161,6 +167,7 @@ class ExtensionService : public ExtensionServiceInterface,
                          public ExtensionManagement::Observer,
                          public UpgradeObserver,
                          public ExtensionRegistrar::Delegate,
+                         public ExtensionHostRegistry::Observer,
                          public ProfileManagerObserver {
  public:
   // Constructor stores pointers to |profile| and |extension_prefs| but
@@ -173,6 +180,9 @@ class ExtensionService : public ExtensionServiceInterface,
                    bool autoupdate_enabled,
                    bool extensions_enabled,
                    base::OneShotEvent* ready);
+
+  ExtensionService(const ExtensionService&) = delete;
+  ExtensionService& operator=(const ExtensionService&) = delete;
 
   ~ExtensionService() override;
 
@@ -194,6 +204,7 @@ class ExtensionService : public ExtensionServiceInterface,
                                         bool install_immediately) override;
   void CheckManagementPolicy() override;
   void CheckForUpdatesSoon() override;
+  void ReinstallProviderExtensions() override;
 
   // ExternalProvider::VisitorInterface implementation.
   // Exposed for testing.
@@ -363,11 +374,6 @@ class ExtensionService : public ExtensionServiceInterface,
   // notification is desired the calling code is responsible for doing that.
   void TerminateExtension(const std::string& extension_id);
 
-  // Register self and content settings API with the specified map.
-  static void RegisterContentSettings(
-      HostContentSettingsMap* host_content_settings_map,
-      Profile* profile);
-
   // Adds/Removes update observers.
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
@@ -467,6 +473,11 @@ class ExtensionService : public ExtensionServiceInterface,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void LoadSigninProfileTestExtension(const std::string& path);
 #endif
+
+  // ExtensionHostRegistry::Observer:
+  void OnExtensionHostRenderProcessGone(
+      content::BrowserContext* browser_context,
+      ExtensionHost* extension_host) override;
 
   // content::NotificationObserver implementation:
   void Observe(int type,
@@ -721,6 +732,10 @@ class ExtensionService : public ExtensionServiceInterface,
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observation_{this};
 
+  base::ScopedObservation<ExtensionHostRegistry,
+                          ExtensionHostRegistry::Observer>
+      host_registry_observation_{this};
+
   using InstallGateRegistry =
       std::map<ExtensionPrefs::DelayReason, InstallGate*>;
   InstallGateRegistry install_delayer_registry_;
@@ -771,8 +786,6 @@ class ExtensionService : public ExtensionServiceInterface,
   friend class ::BlocklistedExtensionSyncServiceTest;
   friend class SafeBrowsingVerdictHandlerUnitTest;
   friend class BlocklistStatesInteractionUnitTest;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionService);
 };
 
 }  // namespace extensions

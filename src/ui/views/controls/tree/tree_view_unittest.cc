@@ -65,10 +65,11 @@ std::string AccessibilityViewAsString(const AXVirtualView& view) {
 class TestNode : public TreeNode<TestNode> {
  public:
   TestNode() = default;
-  ~TestNode() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestNode);
+  TestNode(const TestNode&) = delete;
+  TestNode& operator=(const TestNode&) = delete;
+
+  ~TestNode() override = default;
 };
 
 // Creates the following structure:
@@ -85,6 +86,9 @@ class TreeViewTest : public ViewsTestBase {
     Add(Add(model_.GetRoot(), 1, "b"), 0, "b1");
     Add(model_.GetRoot(), 2, "c");
   }
+
+  TreeViewTest(const TreeViewTest&) = delete;
+  TreeViewTest& operator=(const TreeViewTest&) = delete;
 
   // ViewsTestBase
   void SetUp() override;
@@ -156,8 +160,6 @@ class TreeViewTest : public ViewsTestBase {
   // Keeps a record of all accessibility events that have been fired on the tree
   // view.
   AccessibilityEventsVector accessibility_events_;
-
-  DISALLOW_COPY_AND_ASSIGN(TreeViewTest);
 };
 
 void TreeViewTest::SetUp() {

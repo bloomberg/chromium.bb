@@ -433,8 +433,6 @@ crbug.com/angleproject/3883 [ win nvidia angle-vulkan passthrough ] conformance/
 crbug.com/963223 [ win nvidia angle-vulkan passthrough ] conformance/rendering/out-of-bounds-array-buffers.html [ Failure ]
 crbug.com/angleproject/2930 [ win nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
 crbug.com/1082826 [ win nvidia angle-vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
-crbug.com/1148120 [ win7 nvidia angle-vulkan passthrough ] conformance/canvas/viewport-unchanged-upon-resize.html [ Failure ]
-crbug.com/1197905 [ win7 nvidia angle-vulkan passthrough ] conformance/textures/misc/texture-size.html [ Failure ]
 crbug.com/1209189 [ win nvidia angle-vulkan passthrough ] conformance/glsl/constructors/glsl-construct-vec-mat-index.html [ Failure ]
 crbug.com/angleproject/6281 [ win nvidia angle-vulkan passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
 crbug.com/1242454 [ win nvidia angle-vulkan passthrough ] conformance/glsl/bugs/pow-with-constant-exponent-should-not-crash.html [ Failure ]
@@ -445,28 +443,6 @@ crbug.com/1017162 [ win nvidia angle-vulkan passthrough ] conformance/ogles/GL/*
 crbug.com/1017162 [ win nvidia angle-vulkan passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
 crbug.com/1017162 [ win nvidia angle-vulkan passthrough ] conformance/extensions/oes-fbo-render-mipmap.html [ Failure ]
 
-# Vulkan / Win / AMD / Passthrough command decoder
-crbug.com/angleproject/1506 [ win amd angle-vulkan passthrough ] conformance/rendering/clipping-wide-points.html [ Failure ]
-crbug.com/1004581 [ win amd angle-vulkan passthrough ] conformance/rendering/multisample-corruption.html [ Failure ]
-crbug.com/1010942 [ win amd angle-vulkan passthrough ] conformance/glsl/samplers/glsl-function-texture2dproj.html [ Failure ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/glsl/bugs/sequence-operator-evaluation-order.html [ Failure ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/glsl/misc/global-variable-init.html [ Failure ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/glsl/misc/struct-assign.html [ Failure ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/glsl/misc/ternary-operators-in-global-initializers.html [ Failure ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_009_to_016.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_025_to_032.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_041_to_048.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_057_to_064.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_065_to_072.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_073_to_080.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_081_to_088.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_089_to_096.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_097_to_104.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_105_to_112.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] conformance/ogles/GL/functions/functions_113_to_120.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] deqp/data/gles2/shaders/functions.html [ Skip ]
-crbug.com/1224996 [ win amd-0x6613 angle-vulkan passthrough ] deqp/data/gles2/shaders/scoping.html [ Failure ]
-
 ####################
 # Mac failures     #
 ####################
@@ -475,14 +451,14 @@ crbug.com/844311 [ mac no-swiftshader-gl ] conformance/glsl/misc/fragcolor-fragd
 
 # Mac AMD failures
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
-crbug.com/929009 [ mac amd release-x64 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
+crbug.com/929009 [ mac amd release-x64 angle-opengl ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 crbug.com/1203167 [ mac amd angle-disabled ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1203167 [ mac amd angle-opengl ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1203167 [ mac amd angle-metal ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
 crbug.com/1230781 [ mac amd-0x6821 ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1230781 [ mac amd-0x679e ] conformance/canvas/to-data-url-test.html [ Failure ]
 crbug.com/1236072 [ mac amd-0x679e angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
-crbug.com/1227774 [ mac amd debug-x64 ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
+crbug.com/1227774 [ mac amd debug-x64 angle-opengl ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # TODO(kbr): uncomment the following expectation after test has
 # been made more robust.
@@ -523,6 +499,9 @@ crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL
 crbug.com/angleproject/5505 [ mac angle-metal passthrough ] conformance/ogles/GL/asin/asin_001_to_006.html [ Failure ]
 crbug.com/1227129 [ mac angle-metal passthrough ] conformance/glsl/misc/ternary-operators-in-initializers.html [ Failure ]
 crbug.com/1227767 [ bigsur angle-metal passthrough ] conformance/ogles/GL/discard/discard_001_to_002.html [ Failure ]
+crbug.com/angleproject/6489 [ mac angle-metal passthrough ] conformance/ogles/GL/build/build_009_to_016.html [ Failure ]
+crbug.com/angleproject/6489 [ mac angle-metal passthrough ] conformance/ogles/GL/build/build_017_to_024.html [ Failure ]
+crbug.com/angleproject/6486 [ mac angle-metal passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Failure ]
 
 # Mac / Passthrough command decoder / Metal / Intel
 crbug.com/1144258 [ mac angle-metal passthrough intel-0x3e9b ] conformance/glsl/functions/glsl-function-atan-xy.html [ Failure ]
@@ -587,6 +566,9 @@ crbug.com/998498 [ linux amd passthrough ] conformance/textures/misc/tex-input-v
 crbug.com/965594 [ linux amd angle-opengl passthrough ] conformance/more/conformance/quickCheckAPI-S_V.html [ RetryOnFailure ]
 crbug.com/angleproject/5213 [ linux amd-0x6613 angle-opengl passthrough ] conformance/context/deleted-object-behavior.html [ Failure ]
 crbug.com/angleproject/5213 [ linux amd-0x6613 angle-opengl passthrough ] conformance/renderbuffers/renderbuffer-initialization.html [ Failure ]
+
+# Linux Intel
+crbug.com/1255288 [ linux intel ] conformance/textures/misc/texture-size-limit.html [ Skip ]
 
 ####################
 # Android failures #
@@ -762,6 +744,8 @@ crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conf
 crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
 crbug.com/1209254 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ RetryOnFailure ]
 
+crbug.com/1253962 [ android android-nexus-5x android-chromium passthrough ] conformance/textures/canvas/* [ RetryOnFailure ]
+
 ############
 # ChromeOS #
 ############
@@ -868,12 +852,6 @@ crbug.com/1240324 [ mac google-0xffff swiftshader-gl no-passthrough ] conformanc
 crbug.com/1240324 [ mac google-0xffff swiftshader-gl no-passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
 
 # Mac. Vulkan backend.
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/canvas/canvas-test.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/context/premultiplyalpha-test.html [ Failure ]
-crbug.com/1099978 [ mac angle-swiftshader passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
-crbug.com/1099978 [ mac angle-swiftshader passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Failure ]
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
@@ -881,23 +859,17 @@ crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/ima
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/misc/gl-pixelstorei.html [ Failure ]
-crbug.com/swiftshader/154 [ mac angle-swiftshader passthrough ] conformance/textures/misc/tex-image-canvas-corruption.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
-crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/1099979 [ mac angle-swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 
-crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
-crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
-crbug.com/1134756 [ mac angle-swiftshader passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/1190853 [ mac angle-swiftshader passthrough ] conformance/textures/misc/video-rotation.html [ Failure ]
-
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

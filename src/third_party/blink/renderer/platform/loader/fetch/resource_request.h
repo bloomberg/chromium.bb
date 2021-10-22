@@ -216,8 +216,14 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool AllowStoredCredentials() const;
   void SetAllowStoredCredentials(bool allow_credentials);
 
-  // TODO(yhirano): Describe what Priority and IntraPriorityValue are.
+  // The initial priority for the request.
+  ResourceLoadPriority InitialPriority() const;
+
+  // The current priority for the request (in case it was changed).
   ResourceLoadPriority Priority() const;
+
+  // Sub-priority for ordering requests at the same priority level.
+  // Used for visible images to load larger images before small.
   int IntraPriorityValue() const;
   bool PriorityHasBeenSet() const;
   void SetPriority(ResourceLoadPriority, int intra_priority_value = 0);
@@ -259,12 +265,6 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool GetSkipServiceWorker() const { return skip_service_worker_; }
   void SetSkipServiceWorker(bool skip_service_worker) {
     skip_service_worker_ = skip_service_worker;
-  }
-
-  // True if corresponding AppCache group should be resetted.
-  bool ShouldResetAppCache() const { return should_reset_app_cache_; }
-  void SetShouldResetAppCache(bool should_reset_app_cache) {
-    should_reset_app_cache_ = should_reset_app_cache;
   }
 
   // Extra data associated with this request.
@@ -554,12 +554,12 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool download_to_blob_ : 1;
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;
-  bool should_reset_app_cache_ : 1;
   bool allow_stale_response_ : 1;
   mojom::FetchCacheMode cache_mode_;
   bool skip_service_worker_ : 1;
   bool download_to_cache_only_ : 1;
   bool site_for_cookies_set_ : 1;
+  ResourceLoadPriority initial_priority_;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   PreviewsState previews_state_;

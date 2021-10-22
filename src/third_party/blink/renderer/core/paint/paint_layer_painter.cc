@@ -78,15 +78,7 @@ PaintResult PaintLayerPainter::Paint(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& painting_info,
     PaintLayerFlags paint_flags) {
-  const LayoutObject& layout_object = paint_layer_.GetLayoutObject();
-  if (UNLIKELY(layout_object.NeedsLayout() &&
-               !layout_object.ChildLayoutBlockedByDisplayLock())) {
-    // Skip if we need layout. This should never happen. See crbug.com/1244130
-    NOTREACHED();
-    return kFullyPainted;
-  }
-
-  if (layout_object.GetFrameView()->ShouldThrottleRendering())
+  if (paint_layer_.GetLayoutObject().GetFrameView()->ShouldThrottleRendering())
     return kFullyPainted;
 
   // Non self-painting layers without self-painting descendants don't need to be
@@ -102,7 +94,7 @@ PaintResult PaintLayerPainter::Paint(
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       paint_layer_.PaintsWithTransparency(
           painting_info.GetGlobalPaintFlags()) &&
-      PaintedOutputInvisible(layout_object.StyleRef())) {
+      PaintedOutputInvisible(paint_layer_.GetLayoutObject().StyleRef())) {
     return kFullyPainted;
   }
 
@@ -111,7 +103,8 @@ PaintResult PaintLayerPainter::Paint(
   // animation can be setup to run on the compositor.
   bool paint_non_invertible_transforms = false;
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    const auto* properties = layout_object.FirstFragment().PaintProperties();
+    const auto* properties =
+        paint_layer_.GetLayoutObject().FirstFragment().PaintProperties();
     if (properties && properties->Transform() &&
         properties->Transform()->HasActiveTransformAnimation()) {
       paint_non_invertible_transforms = true;
@@ -459,7 +452,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
       result = kMayBeClippedByCullRect;
     } else {
       IntRect visual_rect = FirstFragmentVisualRect(object);
-      IntRect cull_rect = object.FirstFragment().GetCullRect().Rect();
+      IntRect cull_rect(object.FirstFragment().GetCullRect().Rect());
       bool cull_rect_intersects_self = cull_rect.Intersects(visual_rect);
       if (!cull_rect.Contains(visual_rect))
         result = kMayBeClippedByCullRect;

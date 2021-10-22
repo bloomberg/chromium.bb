@@ -177,7 +177,7 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   auto params = mojom::CreateGMBSharedImageParams::New();
   params->mailbox = mailbox;
   params->buffer_handle = gpu_memory_buffer->CloneHandle();
-  params->size = gpu_memory_buffer->GetSizeOfPlane(plane);
+  params->size = gpu_memory_buffer->GetSize();
   params->format = gpu_memory_buffer->GetFormat();
   params->plane = plane;
   params->color_space = color_space;
@@ -186,8 +186,8 @@ Mailbox SharedImageInterfaceProxy::CreateSharedImage(
   params->alpha_type = alpha_type;
 
   // TODO(piman): DCHECK GMB format support.
-  DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(
-      params->size, params->format, params->plane));
+  DCHECK(gpu::IsImageSizeValidForGpuMemoryBufferFormat(params->size,
+                                                       params->format));
 
   bool requires_sync_token =
 #if defined(OS_FUCHSIA)
@@ -260,7 +260,23 @@ std::vector<Mailbox> SharedImageInterfaceProxy::CreateSharedImageVideoPlanes(
   }
   return mailboxes;
 }
-#endif
+
+void SharedImageInterfaceProxy::CopyToGpuMemoryBuffer(
+    const SyncToken& sync_token,
+    const Mailbox& mailbox) {
+  std::vector<SyncToken> dependencies =
+      GenerateDependenciesFromSyncToken(std::move(sync_token), host_);
+  {
+    base::AutoLock lock(lock_);
+    last_flush_id_ = host_->EnqueueDeferredMessage(
+        mojom::DeferredRequestParams::NewSharedImageRequest(
+            mojom::DeferredSharedImageRequest::NewCopyToGpuMemoryBuffer(
+                mojom::CopyToGpuMemoryBufferParams::New(mailbox,
+                                                        ++next_release_id_))),
+        std::move(dependencies));
+  }
+}
+#endif  // OS_WIN
 
 #if defined(OS_ANDROID)
 Mailbox SharedImageInterfaceProxy::CreateSharedImageWithAHB(

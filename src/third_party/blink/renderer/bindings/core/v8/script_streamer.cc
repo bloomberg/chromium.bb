@@ -45,6 +45,10 @@ namespace blink {
 class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
  public:
   SourceStream() = default;
+
+  SourceStream(const SourceStream&) = delete;
+  SourceStream& operator=(const SourceStream&) = delete;
+
   ~SourceStream() override = default;
 
   // Called by V8 on a background thread. Should block until we can return
@@ -265,11 +269,7 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   CrossThreadWeakPersistent<ResponseBodyLoaderClient>
       response_body_loader_client_;
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SourceStream);
 };
-
-size_t ScriptStreamer::small_script_threshold_ = 30 * 1024;
 
 std::tuple<ScriptStreamer*, ScriptStreamer::NotStreamingReason>
 ScriptStreamer::TakeFrom(ScriptResource* script_resource,
@@ -517,7 +517,7 @@ bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
     return resource_buffer_size >= kMaximumLengthOfBOM;
   } else {
     // Only stream larger scripts.
-    return resource_buffer_size >= small_script_threshold_;
+    return resource_buffer_size >= kSmallScriptThreshold;
   }
 }
 

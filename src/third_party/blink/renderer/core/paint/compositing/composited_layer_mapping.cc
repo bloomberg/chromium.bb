@@ -1515,10 +1515,6 @@ void CompositedLayerMapping::DoPaintTask(
   float device_scale_factor = blink::DeviceScaleFactorDeprecated(
       paint_info.paint_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
-  Settings* settings = GetLayoutObject().GetFrame()->GetSettings();
-  context.SetDarkModeEnabled(
-      settings->GetForceDarkModeEnabled() &&
-      !GetLayoutObject().View()->StyleRef().DarkColorScheme());
 
   // As a composited layer may be painted directly, we need to traverse the
   // effect tree starting from the current node all the way up through the
@@ -1750,8 +1746,8 @@ IntRect CompositedLayerMapping::PaintableRegion(
   IntRect layer_rect(IntPoint(), IntSize(graphics_layer->Size()));
   if (cull_rect.IsInfinite())
     return layer_rect;
-  cull_rect.MoveBy(-graphics_layer->GetOffsetFromTransformNode());
-  return Intersection(cull_rect.Rect(), layer_rect);
+  cull_rect.Move(gfx::Vector2d(-graphics_layer->GetOffsetFromTransformNode()));
+  return Intersection(IntRect(cull_rect.Rect()), layer_rect);
 }
 
 LayoutSize CompositedLayerMapping::SubpixelAccumulation() const {
@@ -1836,8 +1832,12 @@ void CompositedLayerMapping::PaintContents(
 
   DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
       "devtools.timeline,rail", "Paint", inspector_paint_event::Data,
-      &owning_layer_->GetLayoutObject(), PhysicalRect(interest_rect),
-      graphics_layer);
+      owning_layer_->GetLayoutObject().GetFrame(),
+      &owning_layer_->GetLayoutObject(),
+      owning_layer_->GetLayoutObject().LocalToAbsoluteQuad(
+          FloatQuad(interest_rect),
+          kTraverseDocumentBoundaries | kUseGeometryMapperMode),
+      graphics_layer->CcLayer().id());
 
   PaintLayerFlags paint_layer_flags =
       PaintLayerFlagsFromGraphicsLayerPaintingPhase(
@@ -1905,7 +1905,7 @@ void CompositedLayerMapping::PaintScrollableArea(
   // cull_rect is in the space of the containing scrollable area in which
   // Scrollbar::Paint() will paint the scrollbar.
   CullRect cull_rect(interest_rect);
-  cull_rect.Move(graphics_layer->OffsetFromLayoutObject());
+  cull_rect.Move(gfx::Vector2d(graphics_layer->OffsetFromLayoutObject()));
   PaintLayerScrollableArea* scrollable_area =
       owning_layer_->GetScrollableArea();
   ScrollableAreaPainter painter(*scrollable_area);
@@ -1948,8 +1948,7 @@ bool CompositedLayerMapping::IsScrollableAreaLayerWhichNeedsRepaint(
 bool CompositedLayerMapping::ShouldSkipPaintingSubtree() const {
   return GetLayoutObject().GetFrame()->ShouldThrottleRendering() ||
          owning_layer_->IsUnderSVGHiddenContainer() ||
-         DisplayLockUtilities::NearestLockedExclusiveAncestor(
-             GetLayoutObject());
+         DisplayLockUtilities::LockedAncestorPreventingPaint(GetLayoutObject());
 }
 
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {

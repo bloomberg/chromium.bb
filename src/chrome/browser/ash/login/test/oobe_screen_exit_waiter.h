@@ -15,9 +15,7 @@ namespace base {
 class RunLoop;
 }
 
-namespace chromeos {
-
-class OobeUI;
+namespace ash {
 
 // A waiter that blocks until the the current OOBE screen is different than the
 // target screen, or the OOBE UI is destroyed.
@@ -25,6 +23,10 @@ class OobeScreenExitWaiter : public OobeUI::Observer,
                              public test::TestConditionWaiter {
  public:
   explicit OobeScreenExitWaiter(OobeScreenId target_screen);
+
+  OobeScreenExitWaiter(const OobeScreenExitWaiter&) = delete;
+  OobeScreenExitWaiter& operator=(const OobeScreenExitWaiter&) = delete;
+
   ~OobeScreenExitWaiter() override;
 
   // OobeUI::Observer implementation:
@@ -48,16 +50,14 @@ class OobeScreenExitWaiter : public OobeUI::Observer,
   base::ScopedObservation<OobeUI, OobeUI::Observer> oobe_ui_observation_{this};
 
   std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(OobeScreenExitWaiter);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 // TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
 // source migration is finished.
-namespace ash {
-using ::chromeos::OobeScreenExitWaiter;
+namespace chromeos {
+using ::ash::OobeScreenExitWaiter;
 }
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_OOBE_SCREEN_EXIT_WAITER_H_

@@ -23,6 +23,7 @@
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "av1/common/reconinter.h"
+#include "av1/encoder/reconinter_enc.h"
 #include "test/acm_random.h"
 #include "test/register_state_check.h"
 #include "test/util.h"

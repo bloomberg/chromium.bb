@@ -36,6 +36,10 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
                                public SigninUI {
  public:
   LoginDisplayHostCommon();
+
+  LoginDisplayHostCommon(const LoginDisplayHostCommon&) = delete;
+  LoginDisplayHostCommon& operator=(const LoginDisplayHostCommon&) = delete;
+
   ~LoginDisplayHostCommon() override;
 
   // LoginDisplayHost:
@@ -86,6 +90,8 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  WizardContext* GetWizardContext() override;
+
  protected:
   virtual void OnStartSignInScreen() = 0;
   virtual void OnStartAppLaunch() = 0;
@@ -106,8 +112,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
   // Common code for ShowGaiaDialog() call above.
   void ShowGaiaDialogCommon(const AccountId& prefilled_account);
-
-  WizardContext* wizard_context() { return wizard_context_.get(); }
 
   // Triggers |on_wizard_controller_created_for_tests_| callback.
   void NotifyWizardCreated();
@@ -149,8 +153,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   base::RepeatingClosure on_wizard_controller_created_for_tests_;
 
   base::WeakPtrFactory<LoginDisplayHostCommon> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostCommon);
 };
 
 }  // namespace ash

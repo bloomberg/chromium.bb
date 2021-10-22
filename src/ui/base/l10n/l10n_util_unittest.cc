@@ -42,12 +42,14 @@ namespace {
 class StringWrapper {
  public:
   explicit StringWrapper(const std::u16string& string) : string_(string) {}
+
+  StringWrapper(const StringWrapper&) = delete;
+  StringWrapper& operator=(const StringWrapper&) = delete;
+
   const std::u16string& string() const { return string_; }
 
  private:
   std::u16string string_;
-
-  DISALLOW_COPY_AND_ASSIGN(StringWrapper);
 };
 
 }  // namespace
@@ -582,7 +584,7 @@ TEST_F(L10nUtilTest, TimeDurationFormatAllLocales) {
 
   // Verify that base::TimeDurationFormat() works for all available locales:
   // http://crbug.com/707515
-  base::TimeDelta kDelta = base::TimeDelta::FromMinutes(15 * 60 + 42);
+  base::TimeDelta kDelta = base::Minutes(15 * 60 + 42);
   for (const std::string& locale : l10n_util::GetAvailableICULocales()) {
     base::i18n::SetICUDefaultLocale(locale);
     std::u16string str;

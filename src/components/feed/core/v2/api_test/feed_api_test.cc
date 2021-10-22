@@ -247,10 +247,10 @@ std::string TestSurfaceBase::CurrentState() {
 }
 
 bool TestSurfaceBase::IsInitialLoadSpinnerUpdate(
-    const feedui::StreamUpdate& update) {
-  return update.updated_slices().size() == 1 &&
-         update.updated_slices()[0].has_slice() &&
-         update.updated_slices()[0].slice().has_loading_spinner_slice();
+    const feedui::StreamUpdate& stream_update) {
+  return stream_update.updated_slices().size() == 1 &&
+         stream_update.updated_slices()[0].has_slice() &&
+         stream_update.updated_slices()[0].slice().has_loading_spinner_slice();
 }
 
 TestForYouSurface::TestForYouSurface(FeedStream* stream)
@@ -387,7 +387,7 @@ void TestFeedNetwork::SendQueryRequest(
     result.response_info.status_code = http_status_code;
 
   result.response_info.response_body_bytes = 100;
-  result.response_info.fetch_duration = base::TimeDelta::FromMilliseconds(42);
+  result.response_info.fetch_duration = base::Milliseconds(42);
   result.response_info.was_signed_in = true;
   if (injected_response_) {
     result.response_body = std::make_unique<feedwire::Response>(
@@ -691,6 +691,7 @@ void TestMetricsReporter::OnLoadStream(
     bool loaded_new_content_from_network,
     base::TimeDelta stored_content_age,
     const ContentStats& content_stats,
+    const RequestMetadata& request_metadata,
     std::unique_ptr<LoadLatencyTimes> latencies) {
   load_stream_from_store_status = load_from_store_status;
   load_stream_status = final_status;
@@ -699,7 +700,7 @@ void TestMetricsReporter::OnLoadStream(
   MetricsReporter::OnLoadStream(
       stream_type, load_from_store_status, final_status, is_initial_load,
       loaded_new_content_from_network, stored_content_age, content_stats,
-      std::move(latencies));
+      request_metadata, std::move(latencies));
 }
 void TestMetricsReporter::OnLoadMoreBegin(const StreamType& stream_type,
                                           SurfaceId surface_id) {
@@ -729,9 +730,9 @@ TestMetricsReporter::StreamMetrics& TestMetricsReporter::Stream(
   return for_you;
 }
 
-void TestMetricsReporter::OnClearAll(base::TimeDelta time_since_last_clear) {
-  this->time_since_last_clear = time_since_last_clear;
-  MetricsReporter::OnClearAll(time_since_last_clear);
+void TestMetricsReporter::OnClearAll(base::TimeDelta since_last_clear) {
+  time_since_last_clear = since_last_clear;
+  MetricsReporter::OnClearAll(time_since_last_clear.value());
 }
 void TestMetricsReporter::OnUploadActions(UploadActionsStatus status) {
   upload_action_status = status;

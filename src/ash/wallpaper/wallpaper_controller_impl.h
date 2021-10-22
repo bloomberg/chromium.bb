@@ -101,6 +101,10 @@ class ASH_EXPORT WallpaperControllerImpl
   static const char kNewWallpaperTypeNodeName[];
 
   explicit WallpaperControllerImpl(PrefService* local_state);
+
+  WallpaperControllerImpl(const WallpaperControllerImpl&) = delete;
+  WallpaperControllerImpl& operator=(const WallpaperControllerImpl&) = delete;
+
   ~WallpaperControllerImpl() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -298,7 +302,7 @@ class ASH_EXPORT WallpaperControllerImpl
       const AccountId& account_id) const override;
   void UpdateDailyRefreshWallpaper(
       RefreshWallpaperCallback callback = base::DoNothing()) override;
-  void OnGoogleDriveMounted(const AccountId& account_id) override;
+  void SyncLocalAndRemotePrefs(const AccountId& account_id) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -343,7 +347,7 @@ class ASH_EXPORT WallpaperControllerImpl
   void CreateEmptyWallpaperForTesting();
 
   void set_wallpaper_reload_no_delay_for_test() {
-    wallpaper_reload_delay_ = base::TimeDelta::FromMilliseconds(0);
+    wallpaper_reload_delay_ = base::Milliseconds(0);
   }
 
   // Proxy to private ReloadWallpaper().
@@ -362,7 +366,7 @@ class ASH_EXPORT WallpaperControllerImpl
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest, BasicReparenting);
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
                            WallpaperMovementDuringUnlock);
-  friend class WallpaperControllerTest;
+  friend class WallpaperControllerTestBase;
   friend class WallpaperControllerTestApi;
 
   enum WallpaperMode { WALLPAPER_NONE, WALLPAPER_IMAGE };
@@ -423,20 +427,22 @@ class ASH_EXPORT WallpaperControllerImpl
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const base::FilePath& file_path);
 
-  // Initializes wallpaper info for the user to default and saves it to local
-  // state the user is not ephemeral. Returns false if initialization fails.
-  bool InitializeUserWallpaperInfo(const AccountId& account_id);
+  // Sets wallpaper info for the user to default and saves it to local
+  // state the user is not ephemeral. Returns false if this fails.
+  bool SetDefaultWallpaperInfo(const AccountId& account_id,
+                               const base::Time& date);
 
-  // Used as the callback of checking ONLINE wallpaper existence in
-  // |SetOnlineWallpaperIfExists|. Initiates reading and decoding the wallpaper
-  // if |file_path| is not empty.
+  // Used as the callback of checking `WallpaperType::kOnline` wallpaper
+  // existence in `SetOnlineWallpaperIfExists`. Initiates reading and decoding
+  // the wallpaper if `file_path` is not empty.
   void SetOnlineWallpaperFromPath(SetOnlineWallpaperCallback callback,
                                   const OnlineWallpaperParams& params,
                                   const base::FilePath& file_path);
 
-  // Used as the callback of decoding wallpapers of type ONLINE. Saves the image
-  // to local file if |save_file| is true, and shows the wallpaper immediately
-  // if |params.account_id| is the active user.
+  // Used as the callback of decoding wallpapers of type
+  // `WallpaperType::kOnline`. Saves the image to local file if `save_file` is
+  // true, and shows the wallpaper immediately if `params.account_id` is the
+  // active user.
   void OnOnlineWallpaperDecoded(const OnlineWallpaperParams& params,
                                 bool save_file,
                                 SetOnlineWallpaperCallback callback,
@@ -500,10 +506,12 @@ class ASH_EXPORT WallpaperControllerImpl
                                 SetCustomWallpaperCallback callback,
                                 const gfx::ImageSkia& image);
 
-  // Used as the callback of wallpaper decoding. (Wallpapers of type ONLINE,
-  // DEFAULT, CUSTOM, and DEVICE should use their corresponding |*Decoded|,
-  // and all other types should use this.) Shows the wallpaper immediately if
-  // |show_wallpaper| is true. Otherwise, only updates the cache.
+  // Used as the callback of wallpaper decoding. (Wallpapers of type
+  // `WallpaperType::kOnline`, `WallpaperType::kDefault`,
+  // `WallpaperType::kCustom`, and `Wallpapertype::kDevice` should use their
+  // corresponding `*Decoded`, and all other types should use this.) Shows the
+  // wallpaper immediately if `show_wallpaper` is true. Otherwise, only updates
+  // the cache.
   void OnWallpaperDecoded(const AccountId& account_id,
                           const base::FilePath& path,
                           const WallpaperInfo& info,
@@ -553,7 +561,8 @@ class ASH_EXPORT WallpaperControllerImpl
   // Returns whether the current wallpaper is set by device policy.
   bool IsDevicePolicyWallpaper() const;
 
-  // Returns whether the current wallpaper has type of ONE_SHOT.
+  // Returns whether the current wallpaper has type of
+  // `Wallpapertype::kOneShot`.
   bool IsOneShotWallpaper() const;
 
   // Returns true if device wallpaper policy is in effect and we are at the
@@ -584,7 +593,6 @@ class ASH_EXPORT WallpaperControllerImpl
                               const WallpaperInfo& info);
   bool GetSyncedWallpaperInfo(const AccountId& account_id,
                               WallpaperInfo* info) const;
-  void SyncLocalAndRemotePrefs(const AccountId& account_id);
   void HandleWallpaperInfoSyncedIn(const AccountId& account_id,
                                    WallpaperInfo info);
   void OnAttemptSetOnlineWallpaper(const OnlineWallpaperParams& params,
@@ -752,8 +760,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // Used for setting different types of wallpaper.
   base::WeakPtrFactory<WallpaperControllerImpl> set_wallpaper_weak_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerImpl);
 };
 
 }  // namespace ash

@@ -60,13 +60,26 @@ class PerfTestTimeDomain : public MockTimeDomain {
   PerfTestTimeDomain& operator=(const PerfTestTimeDomain&) = delete;
   ~PerfTestTimeDomain() override = default;
 
-  absl::optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override {
-    absl::optional<TimeTicks> run_time = NextScheduledRunTime();
-    if (!run_time)
-      return absl::nullopt;
-    SetNowTicks(*run_time);
-    // Makes SequenceManager to continue immediately.
-    return TimeDelta();
+  base::TimeTicks GetNextDelayedTaskTime(LazyNow* lazy_now) const override {
+    absl::optional<DelayedWakeUp> wake_up = GetNextDelayedWakeUp();
+    if (!wake_up)
+      return base::TimeTicks::Max();
+    // Check if we have a task that should be running now.
+    if (wake_up->time <= Now())
+      return base::TimeTicks();
+
+    // Rely on MaybeFastForwardToNextTask to be called to advance
+    // time.
+    return base::TimeTicks::Max();
+  }
+
+  bool MaybeFastForwardToNextTask(bool quit_when_idle_requested) override {
+    absl::optional<DelayedWakeUp> wake_up = GetNextDelayedWakeUp();
+    if (wake_up) {
+      SetNowTicks(wake_up->time);
+      return true;
+    }
+    return false;
   }
 
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override {
@@ -434,7 +447,7 @@ class SingleThreadDelayedTestCase : public TestCase {
       unsigned int delay =
           num_tasks_to_post_ % 2 ? 1 : (10 + num_tasks_to_post_ % 10);
       task_runners_[queue]->PostDelayedTask(FROM_HERE, task_closure_,
-                                            TimeDelta::FromMilliseconds(delay));
+                                            Milliseconds(delay));
     }
 
     void SignalDone() override { delegate_->SignalDone(); }

@@ -26,7 +26,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 // TODO(https://crbug.com/1164001): move to forward declaration when fixed.
-#include "chrome/browser/chromeos/session_length_limiter.h"
+#include "chrome/browser/ash/session_length_limiter.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
@@ -62,6 +62,9 @@ class ChromeUserManagerImpl
       public ProfileManagerObserver,
       public MultiProfileUserControllerDelegate {
  public:
+  ChromeUserManagerImpl(const ChromeUserManagerImpl&) = delete;
+  ChromeUserManagerImpl& operator=(const ChromeUserManagerImpl&) = delete;
+
   ~ChromeUserManagerImpl() override;
 
   // Creates ChromeUserManagerImpl instance.
@@ -144,6 +147,11 @@ class ChromeUserManagerImpl
       const user_manager::User& active_user) const override;
   bool IsFullManagementDisclosureNeeded(
       policy::DeviceLocalAccountPolicyBroker* broker) const override;
+  void CacheRemovedUser(const std::string& user_email,
+                        user_manager::UserRemovalReason) override;
+  std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
+  GetRemovedUserCache() const override;
+  void MarkReporterInitialized() override;
 
  protected:
   const std::string& GetApplicationLocale() const override;
@@ -272,9 +280,12 @@ class ChromeUserManagerImpl
   std::vector<std::unique_ptr<policy::CloudExternalDataPolicyHandler>>
       cloud_external_data_policy_handlers_;
 
-  base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
+  std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
+      removed_user_cache_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeUserManagerImpl);
+  bool user_added_removed_reporter_intialized_ = false;
+
+  base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 };
 
 }  // namespace ash

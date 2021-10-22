@@ -25,18 +25,17 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -84,6 +83,9 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
     virtual ~Observer() = default;
   };
 
+  ShelfAppButtonAnimation(const ShelfAppButtonAnimation&) = delete;
+  ShelfAppButtonAnimation& operator=(const ShelfAppButtonAnimation&) = delete;
+
   static ShelfAppButtonAnimation* GetInstance() {
     static ShelfAppButtonAnimation* s_instance = new ShelfAppButtonAnimation();
     return s_instance;
@@ -110,7 +112,7 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
 
  private:
   ShelfAppButtonAnimation() : animation_(this) {
-    animation_.SetThrobDuration(base::TimeDelta::FromMilliseconds(800));
+    animation_.SetThrobDuration(base::Milliseconds(800));
     animation_.SetTweenType(gfx::Tween::SMOOTH_IN_OUT);
   }
 
@@ -136,8 +138,6 @@ class ShelfAppButtonAnimation : public gfx::AnimationDelegate {
 
   gfx::ThrobAnimation animation_;
   base::ObserverList<Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfAppButtonAnimation);
 };
 
 }  // namespace
@@ -155,6 +155,9 @@ class ShelfAppButton::AppStatusIndicatorView
     // Make sure the events reach the parent view for handling.
     SetCanProcessEventsWithinSubtree(false);
   }
+
+  AppStatusIndicatorView(const AppStatusIndicatorView&) = delete;
+  AppStatusIndicatorView& operator=(const AppStatusIndicatorView&) = delete;
 
   ~AppStatusIndicatorView() override {
     ShelfAppButtonAnimation::GetInstance()->RemoveObserver(this);
@@ -213,8 +216,7 @@ class ShelfAppButton::AppStatusIndicatorView
 
     show_attention_ = show;
     if (show_attention_) {
-      animation_end_time_ =
-          base::TimeTicks::Now() + base::TimeDelta::FromSeconds(10);
+      animation_end_time_ = base::TimeTicks::Now() + base::Seconds(10);
       ShelfAppButtonAnimation::GetInstance()->AddObserver(this);
     } else {
       ShelfAppButtonAnimation::GetInstance()->RemoveObserver(this);
@@ -245,8 +247,6 @@ class ShelfAppButton::AppStatusIndicatorView
   bool active_ = false;
   bool horizontal_shelf_ = true;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
-
-  DISALLOW_COPY_AND_ASSIGN(AppStatusIndicatorView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -278,9 +278,7 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
       shelf_view_(shelf_view),
       indicator_(new AppStatusIndicatorView()),
       notification_indicator_(nullptr),
-      state_(STATE_NORMAL),
-      is_notification_indicator_enabled_(
-          features::IsNotificationIndicatorEnabled()) {
+      state_(STATE_NORMAL) {
   const gfx::ShadowValue kShadows[] = {
       gfx::ShadowValue(gfx::Vector2d(0, 2), 0, SkColorSetARGB(0x1A, 0, 0, 0)),
       gfx::ShadowValue(gfx::Vector2d(0, 3), 1, SkColorSetARGB(0x1A, 0, 0, 0)),
@@ -324,10 +322,9 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
 
   AddChildView(indicator_);
   AddChildView(icon_view_);
-  if (is_notification_indicator_enabled_) {
-    notification_indicator_ = views::DotIndicator::Install(this);
-    SetNotificationBadgeColor(kDefaultIndicatorColor);
-  }
+  notification_indicator_ = views::DotIndicator::Install(this);
+  SetNotificationBadgeColor(kDefaultIndicatorColor);
+
   views::InkDrop::Get(this)->GetInkDrop()->AddObserver(this);
 
   // Do not set a clip, allow the ink drop to burst out.
@@ -340,7 +337,7 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   // the parent view won't clip it.
   views::FocusRing::Get(this)->SetPathGenerator(
       std::make_unique<views::RoundRectHighlightPathGenerator>(
-          gfx::Insets(views::FocusRing::kHaloThickness / 2, 0), 0));
+          gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2, 0), 0));
 }
 
 ShelfAppButton::~ShelfAppButton() {
@@ -398,7 +395,7 @@ void ShelfAppButton::AddState(State state) {
     if (state & STATE_ACTIVE)
       indicator_->ShowActiveStatus(true);
 
-    if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
+    if (state & STATE_NOTIFICATION)
       notification_indicator_->Show();
 
     if (state & STATE_DRAGGING)
@@ -415,7 +412,7 @@ void ShelfAppButton::ClearState(State state) {
     if (state & STATE_ACTIVE)
       indicator_->ShowActiveStatus(false);
 
-    if (is_notification_indicator_enabled_ && (state & STATE_NOTIFICATION))
+    if (state & STATE_NOTIFICATION)
       notification_indicator_->Hide();
 
     if (state & STATE_DRAGGING)
@@ -504,12 +501,10 @@ bool ShelfAppButton::ShouldEnterPushedState(const ui::Event& event) {
 }
 
 void ShelfAppButton::ReflectItemStatus(const ShelfItem& item) {
-  if (features::IsNotificationIndicatorEnabled()) {
-    if (item.has_notification)
-      AddState(ShelfAppButton::STATE_NOTIFICATION);
-    else
-      ClearState(ShelfAppButton::STATE_NOTIFICATION);
-  }
+  if (item.has_notification)
+    AddState(ShelfAppButton::STATE_NOTIFICATION);
+  else
+    ClearState(ShelfAppButton::STATE_NOTIFICATION);
 
   app_status_ = item.app_status;
 
@@ -611,8 +606,7 @@ bool ShelfAppButton::OnMousePressed(const ui::MouseEvent& event) {
   shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
 
   if (shelf_view_->IsDraggedView(this)) {
-    drag_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
+    drag_timer_.Start(FROM_HERE, base::Milliseconds(kDragTimeThresholdMs),
                       base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
                                      base::Unretained(this)));
   }
@@ -703,10 +697,8 @@ void ShelfAppButton::Layout() {
 
   icon_view_->SetBoundsRect(icon_view_bounds);
 
-  if (is_notification_indicator_enabled_) {
-    notification_indicator_->SetBoundsRect(
-        GetNotificationIndicatorBounds(icon_scale_));
-  }
+  notification_indicator_->SetBoundsRect(
+      GetNotificationIndicatorBounds(icon_scale_));
 
   // The indicators should be aligned with the icon, not the icon + shadow.
   // Use 1.0 as icon scale for |indicator_midpoint|, otherwise integer rounding
@@ -748,13 +740,11 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP_DOWN:
       if (shelf_view_->shelf()->IsVisible()) {
         AddState(STATE_HOVERED);
-        drag_timer_.Start(
-            FROM_HERE, base::TimeDelta::FromMilliseconds(kDragTimeThresholdMs),
-            base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
-                           base::Unretained(this)));
+        drag_timer_.Start(FROM_HERE, base::Milliseconds(kDragTimeThresholdMs),
+                          base::BindOnce(&ShelfAppButton::OnTouchDragTimer,
+                                         base::Unretained(this)));
         ripple_activation_timer_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(kInkDropRippleActivationTimeMs),
+            FROM_HERE, base::Milliseconds(kInkDropRippleActivationTimeMs),
             base::BindOnce(&ShelfAppButton::OnRippleTimer,
                            base::Unretained(this)));
         views::InkDrop::Get(this)->GetInkDrop()->AnimateToState(
@@ -914,7 +904,7 @@ void ShelfAppButton::ScaleAppIcon(bool scale_up) {
   }
   ui::ScopedLayerAnimationSettings settings(icon_view_->layer()->GetAnimator());
   settings.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kDragDropAppIconScaleTransitionMs));
+      base::Milliseconds(kDragDropAppIconScaleTransitionMs));
   if (scale_up) {
     icon_view_->layer()->SetTransform(gfx::Transform());
   } else {
@@ -937,7 +927,7 @@ void ShelfAppButton::ScaleAppIcon(bool scale_up) {
     ui::ScopedLayerAnimationSettings notification_settings(
         notification_indicator_->layer()->GetAnimator());
     notification_settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kDragDropAppIconScaleTransitionMs));
+        base::Milliseconds(kDragDropAppIconScaleTransitionMs));
     notification_indicator_->layer()->SetTransform(scale_up ? gfx::Transform()
                                                             : scale_transform);
   }

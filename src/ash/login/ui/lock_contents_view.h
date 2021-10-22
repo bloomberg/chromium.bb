@@ -136,6 +136,10 @@ class ASH_EXPORT LockContentsView
       LockScreen::ScreenType screen_type,
       LoginDataDispatcher* data_dispatcher,
       std::unique_ptr<LoginDetachableBaseModel> detachable_base_model);
+
+  LockContentsView(const LockContentsView&) = delete;
+  LockContentsView& operator=(const LockContentsView&) = delete;
+
   ~LockContentsView() override;
 
   void FocusNextUser();
@@ -249,6 +253,10 @@ class ASH_EXPORT LockContentsView
    public:
     explicit UserState(const LoginUserInfo& user_info);
     UserState(UserState&&);
+
+    UserState(const UserState&) = delete;
+    UserState& operator=(const UserState&) = delete;
+
     ~UserState();
 
     AccountId account_id;
@@ -263,9 +271,6 @@ class ASH_EXPORT LockContentsView
     FingerprintState fingerprint_state;
     // When present, indicates that the TPM is locked.
     absl::optional<base::TimeDelta> time_until_tpm_unlock = absl::nullopt;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(UserState);
   };
 
  private:
@@ -536,8 +541,6 @@ class ASH_EXPORT LockContentsView
       BottomIndicatorState::kNone;
 
   base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };
 
 }  // namespace ash

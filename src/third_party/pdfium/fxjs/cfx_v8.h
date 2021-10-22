@@ -11,7 +11,7 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
 
 class CFX_V8 {
  public:
@@ -64,16 +64,9 @@ class CFX_V8 {
   UnownedPtr<v8::Isolate> m_pIsolate;
 };
 
-class CFX_V8ArrayBufferAllocator final : public v8::ArrayBuffer::Allocator {
-  static const size_t kMaxAllowedBytes = 0x10000000;
-  void* Allocate(size_t length) override;
-  void* AllocateUninitialized(size_t length) override;
-  void Free(void* data, size_t length) override;
-};
-
 // Use with std::unique_ptr<v8::Isolate> to dispose of isolates correctly.
 struct CFX_V8IsolateDeleter {
-  inline void operator()(v8::Isolate* ptr) { ptr->Dispose(); }
+  void operator()(v8::Isolate* ptr);
 };
 
 #endif  // FXJS_CFX_V8_H_

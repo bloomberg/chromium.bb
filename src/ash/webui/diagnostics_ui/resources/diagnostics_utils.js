@@ -4,7 +4,9 @@
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {LockType, NetworkState, NetworkType, RoutineType} from './diagnostics_types.js';
+
+import {LockType, Network, NetworkState, NetworkType, RoutineProperties, RoutineResult, RoutineType, StandardRoutineResult} from './diagnostics_types.js';
+import {RoutineGroup} from './routine_group.js';
 
 /**
  * Converts a KiB storage value to GiB and returns a fixed-point string
@@ -105,33 +107,72 @@ export function getLockType(lockType) {
 }
 
 /**
- * @param {!NetworkType} type
- * @return {!Array<!RoutineType>}
+ * @param {!RoutineType} routine
+ * @param {boolean} blocking If a routine is blocking, the remaining routines
+ * will be skipped. For non-blocking routines, we'll continue running them
+ * and display a 'WARNING' badge to signal that a non-blocking routine failed.
+ * @return {!RoutineProperties}
  */
-export function getRoutinesByNetworkType(type) {
-  // TODO(ashleydp): Update function to support routine groups.
-  /** @type {!Array<!RoutineType>} */
-  let networkRoutines = [
-    RoutineType.kCaptivePortal,
-    RoutineType.kDnsLatency,
-    RoutineType.kDnsResolution,
-    RoutineType.kDnsResolverPresent,
-    RoutineType.kGatewayCanBePinged,
-    RoutineType.kHttpFirewall,
-    RoutineType.kHttpsFirewall,
-    RoutineType.kHttpsLatency,
-    RoutineType.kLanConnectivity,
-    RoutineType.kArcHttp,
-    RoutineType.kArcPing
-  ];
+export function createRoutine(routine, blocking) {
+  return {routine, blocking};
+}
 
-  // Add wifi-only routines to common networking routine array.
-  if (type === NetworkType.kWiFi) {
-    networkRoutines.push(RoutineType.kHasSecureWiFiConnection);
-    networkRoutines.push(RoutineType.kSignalStrength);
+/**
+ * @param {!NetworkType} type
+ * @param {boolean} isArcEnabled
+ * @return {!Array<!RoutineGroup>}
+ */
+export function getRoutineGroups(type, isArcEnabled) {
+  let localNetworkGroup = new RoutineGroup(
+      [
+        createRoutine(RoutineType.kGatewayCanBePinged, true),
+        createRoutine(RoutineType.kLanConnectivity, true),
+      ],
+      'localNetworkGroupLabel');
+
+  let nameResolutionGroup = new RoutineGroup(
+      [
+        createRoutine(RoutineType.kDnsResolverPresent, true),
+        createRoutine(RoutineType.kDnsResolution, true),
+        createRoutine(RoutineType.kDnsLatency, true),
+      ],
+      'nameResolutionGroupLabel');
+
+  let wifiGroup = new RoutineGroup(
+      [
+        createRoutine(RoutineType.kSignalStrength, false),
+        createRoutine(RoutineType.kCaptivePortal, false),
+        createRoutine(RoutineType.kHasSecureWiFiConnection, false),
+      ],
+      'wifiGroupLabel');
+  let internetConnectivityGroup = new RoutineGroup(
+      [
+        createRoutine(RoutineType.kHttpsFirewall, true),
+        createRoutine(RoutineType.kHttpFirewall, true),
+        createRoutine(RoutineType.kHttpsLatency, true),
+      ],
+      'internetConnectivityGroupLabel');
+
+  if (isArcEnabled) {
+    // Add ARC routines to their corresponding groups.
+    nameResolutionGroup.addRoutine(
+        (createRoutine(RoutineType.kArcDnsResolution, false)));
+    internetConnectivityGroup.addRoutine(
+        (createRoutine(RoutineType.kArcPing, false)));
+    internetConnectivityGroup.addRoutine(
+        (createRoutine(RoutineType.kArcHttp, false)));
   }
 
-  return networkRoutines;
+  let groupsToAdd = type === NetworkType.kWiFi ?
+      [wifiGroup, internetConnectivityGroup] :
+      [internetConnectivityGroup];
+
+  let networkRoutineGroups = [
+    localNetworkGroup,
+    nameResolutionGroup,
+  ];
+
+  return networkRoutineGroups.concat(groupsToAdd);
 }
 
 /**
@@ -139,7 +180,13 @@ export function getRoutinesByNetworkType(type) {
  * @return {string}
  */
 export function getSubnetMaskFromRoutingPrefix(prefix) {
-  assert(prefix > 0 && prefix <= 32);
+  assert(prefix >= 0 && prefix <= 32);
+
+  // A routing prefix can not be 0. Zero indicates an unset value.
+  if (prefix === 0) {
+    return '';
+  }
+
   let zeroes = 32 - prefix;
   // Note: 0xffffffff is 32 bits, all set to 1.
   // Use << to knock off |zeroes| number of bits and then use that same number
@@ -158,4 +205,138 @@ export function getSubnetMaskFromRoutingPrefix(prefix) {
   }
 
   return pieces.join('.');
+}
+
+/** @return {boolean} */
+export function isNavEnabled() {
+  return loadTimeData.getBoolean('isNetworkingEnabled');
+}
+
+
+/**
+ * @param {string} macAddress
+ * @return {string}
+ */
+export function formatMacAddress(macAddress) {
+  return `${loadTimeData.getString('macAddressLabel')}: ${macAddress}`;
+}
+
+/**
+ * Resolves a networking routine type to its corresponding localized failure
+ * message.
+ * @param {!RoutineType} routineType
+ * @return {string}
+ */
+export function getRoutineFailureMessage(routineType) {
+  switch (routineType) {
+    case RoutineType.kCaptivePortal:
+      return loadTimeData.getString('captivePortalFailedText');
+    case RoutineType.kDnsLatency:
+      return loadTimeData.getString('dnsLatencyFailedText');
+    case RoutineType.kDnsResolution:
+      return loadTimeData.getString('dnsResolutionFailedText');
+    case RoutineType.kDnsResolverPresent:
+      return loadTimeData.getString('dnsResolverPresentFailedText');
+    case RoutineType.kGatewayCanBePinged:
+      return loadTimeData.getString('gatewayCanBePingedFailedText');
+    case RoutineType.kHasSecureWiFiConnection:
+      return loadTimeData.getString('hasSecureWiFiConnectionFailedText');
+    case RoutineType.kHttpFirewall:
+      return loadTimeData.getString('httpFirewallFailedText');
+    case RoutineType.kHttpsFirewall:
+      return loadTimeData.getString('httpsFirewallFailedText');
+    case RoutineType.kHttpsLatency:
+      return loadTimeData.getString('httpsLatencyFailedText');
+    case RoutineType.kLanConnectivity:
+      return loadTimeData.getString('lanConnectivityFailedText');
+    case RoutineType.kSignalStrength:
+      return loadTimeData.getString('signalStrengthFailedText');
+    case RoutineType.kArcHttp:
+      return loadTimeData.getString('arcHttpFailedText');
+    case RoutineType.kArcPing:
+      return loadTimeData.getString('arcPingFailedText');
+    case RoutineType.kArcDnsResolution:
+      return loadTimeData.getString('arcDnsResolutionFailedText');
+    case RoutineType.kBatteryCharge:
+    case RoutineType.kBatteryDischarge:
+    case RoutineType.kCpuCache:
+    case RoutineType.kCpuStress:
+    case RoutineType.kCpuFloatingPoint:
+    case RoutineType.kCpuPrime:
+    case RoutineType.kMemory:
+      assertNotReached();
+      return '';
+    default:
+      // Values should always be found in the enum.
+      assertNotReached();
+      return '';
+  }
+}
+
+/**
+ * @param {!NetworkState} state
+ * @return {boolean}
+ */
+export function isConnectedOrOnline(state) {
+  switch (state) {
+    case NetworkState.kOnline:
+    case NetworkState.kConnected:
+    case NetworkState.kConnecting:
+      return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * @param {!Network} network
+ * @return {boolean}
+ */
+export function isNetworkMissingNameServers(network) {
+  return !network.ipConfig || !network.ipConfig.nameServers ||
+      network.ipConfig.nameServers.length === 0;
+}
+
+/**
+ * Removes '0.0.0.0' from list of name servers.
+ * @param {!Network} network
+ */
+export function filterNameServers(network) {
+  if (network && network.ipConfig && network.ipConfig.nameServers) {
+    network.ipConfig.nameServers =
+        network.ipConfig.nameServers.filter(n => n !== '0.0.0.0');
+  }
+}
+
+/*
+ * If true network state text is appended to network and connectivity card
+ * title.
+ * @type {boolean}
+ */
+let displayStateInTitle = false;
+
+/**
+ * Test helper function to allow change if state text is appended to the card
+ * title.
+ * @param {boolean} state
+ */
+export function setDisplayStateInTitleForTesting(state) {
+  displayStateInTitle = state;
+}
+
+/**
+ * Build common string for network title for network and connectivity card.
+ * Current network state is included for debugging when `displayStateInTitle`
+ * is true.
+ * @param {string} networkType
+ * @param {string} networkState
+ * @returns
+ */
+export function getNetworkCardTitle(networkType, networkState) {
+  let titleForCard = `${networkType}`;
+  if (displayStateInTitle) {
+    titleForCard = `${titleForCard} (${networkState})`;
+  }
+
+  return `${titleForCard}`;
 }

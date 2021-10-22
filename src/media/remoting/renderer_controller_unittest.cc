@@ -52,8 +52,7 @@ mojom::RemotingSinkMetadata GetDefaultSinkMetadata(bool enable) {
   return metadata;
 }
 
-constexpr base::TimeDelta kDelayedStartDuration =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kDelayedStartDuration = base::Seconds(5);
 
 }  // namespace
 
@@ -62,6 +61,9 @@ class RendererControllerTest : public ::testing::Test,
  public:
   RendererControllerTest()
       : controller_(FakeRemoterFactory::CreateController(false)) {}
+
+  RendererControllerTest(const RendererControllerTest&) = delete;
+  RendererControllerTest& operator=(const RendererControllerTest&) = delete;
 
   ~RendererControllerTest() override = default;
 
@@ -97,7 +99,7 @@ class RendererControllerTest : public ::testing::Test,
     EXPECT_FALSE(is_rendering_remotely_);
     EXPECT_TRUE(sink_name_.empty());
     controller_->clock_ = &clock_;
-    clock_.Advance(base::TimeDelta::FromSeconds(1));
+    clock_.Advance(base::Seconds(1));
     controller_->SetClient(this);
     RunUntilIdle();
     EXPECT_FALSE(is_rendering_remotely_);
@@ -167,9 +169,6 @@ class RendererControllerTest : public ::testing::Test,
   std::string sink_name_;
   std::unique_ptr<RendererController> controller_;
   double duration_in_sec_ = 120;  // 2m duration.
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RendererControllerTest);
 };
 
 TEST_F(RendererControllerTest, ToggleRendererOnDominantChange) {

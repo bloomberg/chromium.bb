@@ -47,11 +47,11 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
-#include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
 using extensions::Extension;
@@ -381,6 +381,10 @@ class ThemeImageSource: public gfx::ImageSkiaSource {
  public:
   explicit ThemeImageSource(const gfx::ImageSkia& source) : source_(source) {
   }
+
+  ThemeImageSource(const ThemeImageSource&) = delete;
+  ThemeImageSource& operator=(const ThemeImageSource&) = delete;
+
   ~ThemeImageSource() override {}
 
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
@@ -395,8 +399,6 @@ class ThemeImageSource: public gfx::ImageSkiaSource {
 
  private:
   const gfx::ImageSkia source_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThemeImageSource);
 };
 
 // An ImageSkiaSource that delays decoding PNG data into bitmaps until
@@ -409,6 +411,9 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
       PngMap;
 
   explicit ThemeImagePngSource(const PngMap& png_map) : png_map_(png_map) {}
+
+  ThemeImagePngSource(const ThemeImagePngSource&) = delete;
+  ThemeImagePngSource& operator=(const ThemeImagePngSource&) = delete;
 
   ~ThemeImagePngSource() override {}
 
@@ -483,8 +488,6 @@ class ThemeImagePngSource : public gfx::ImageSkiaSource {
 
   typedef std::map<ui::ResourceScaleFactor, SkBitmap> BitmapMap;
   BitmapMap bitmap_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThemeImagePngSource);
 };
 
 class TabBackgroundImageSource: public gfx::CanvasImageSource {
@@ -501,6 +504,9 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
         overlay_(overlay),
         hsl_shift_(hsl_shift),
         vertical_offset_(vertical_offset) {}
+
+  TabBackgroundImageSource(const TabBackgroundImageSource&) = delete;
+  TabBackgroundImageSource& operator=(const TabBackgroundImageSource&) = delete;
 
   ~TabBackgroundImageSource() override {}
 
@@ -537,8 +543,6 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
   const gfx::ImageSkia overlay_;
   const color_utils::HSL hsl_shift_;
   const int vertical_offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabBackgroundImageSource);
 };
 
 class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
@@ -552,6 +556,11 @@ class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
     DCHECK(!bg_image.isNull());
   }
 
+  ControlButtonBackgroundImageSource(
+      const ControlButtonBackgroundImageSource&) = delete;
+  ControlButtonBackgroundImageSource& operator=(
+      const ControlButtonBackgroundImageSource&) = delete;
+
   ~ControlButtonBackgroundImageSource() override = default;
 
   void Draw(gfx::Canvas* canvas) override {
@@ -564,8 +573,6 @@ class ControlButtonBackgroundImageSource : public gfx::CanvasImageSource {
  private:
   const SkColor background_color_;
   const gfx::ImageSkia bg_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ControlButtonBackgroundImageSource);
 };
 
 // Returns whether the color is grayscale.
@@ -1033,8 +1040,9 @@ bool BrowserThemePack::HasCustomImage(int idr_id) const {
   return false;
 }
 
-void BrowserThemePack::AddCustomThemeColorMixers(
-    ui::ColorProvider* provider) const {
+void BrowserThemePack::AddColorMixers(
+    ui::ColorProvider* provider,
+    const ui::ColorProviderManager::Key& key) const {
   // A map from theme property IDs to color IDs for use in color mixers.
   constexpr struct {
     int property_id;

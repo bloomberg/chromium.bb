@@ -84,6 +84,10 @@ struct ComplexMessage : public Channel::Message {
                  size_t max_handles,
                  size_t payload_size,
                  MessageType message_type);
+
+  ComplexMessage(const ComplexMessage&) = delete;
+  ComplexMessage& operator=(const ComplexMessage&) = delete;
+
   ~ComplexMessage() override = default;
 
   // Message impl:
@@ -120,10 +124,12 @@ struct ComplexMessage : public Channel::Message {
   // On OSX, handles are serialised into the extra header section.
   MachPortsExtraHeader* mach_ports_header_ = nullptr;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(ComplexMessage);
 };
 
 struct TrivialMessage : public Channel::Message {
+  TrivialMessage(const TrivialMessage&) = delete;
+  TrivialMessage& operator=(const TrivialMessage&) = delete;
+
   ~TrivialMessage() override = default;
 
   // TryConstruct should be used to build a TrivialMessage.
@@ -153,7 +159,6 @@ struct TrivialMessage : public Channel::Message {
   alignas(sizeof(void*)) uint8_t data_[256 - sizeof(Channel::Message)];
 
   static constexpr size_t kInternalCapacity = sizeof(data_);
-  DISALLOW_COPY_AND_ASSIGN(TrivialMessage);
 };
 
 static_assert(sizeof(TrivialMessage) == 256,
@@ -699,6 +704,9 @@ class Channel::ReadBuffer {
     data_ = MakeAlignedBuffer(size_);
   }
 
+  ReadBuffer(const ReadBuffer&) = delete;
+  ReadBuffer& operator=(const ReadBuffer&) = delete;
+
   ~ReadBuffer() { DCHECK(data_); }
 
   const char* occupied_bytes() const {
@@ -782,8 +790,6 @@ class Channel::ReadBuffer {
 
   // The total number of occupied bytes, including discarded bytes.
   size_t num_occupied_bytes_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
 };
 
 Channel::Channel(Delegate* delegate,

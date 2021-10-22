@@ -7,12 +7,15 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/network/cellular_policy_handler.h"
+#include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -54,6 +57,51 @@ std::string GetGUIDFromONCPart(const base::Value& onc_part) {
   return guid_value->GetString();
 }
 
+const std::string* GetSMDPAddressFromONC(
+    const base::DictionaryValue& onc_config) {
+  const std::string* type =
+      onc_config.FindStringKey(::onc::network_config::kType);
+  const base::Value* cellular_dict =
+      onc_config.FindKey(::onc::network_config::kCellular);
+  const std::string* smdp_address = nullptr;
+
+  if (type && *type == ::onc::network_type::kCellular && cellular_dict &&
+      cellular_dict->is_dict())
+    smdp_address = cellular_dict->FindStringKey(::onc::cellular::kSMDPAddress);
+
+  return smdp_address;
+}
+
+void CopyStringKey(const base::DictionaryValue* old_shill_properties,
+                   base::Value* new_shill_properties,
+                   const std::string& property_key_name) {
+  const std::string* value_in_old_entry =
+      old_shill_properties->FindStringKey(property_key_name);
+  const std::string* value_in_new_entry =
+      new_shill_properties->FindStringKey(property_key_name);
+  if (value_in_old_entry &&
+      (!value_in_new_entry || value_in_new_entry->empty())) {
+    NET_LOG(EVENT) << "Copying " << property_key_name
+                   << " over to the new Shill entry, value: "
+                   << *value_in_old_entry;
+    new_shill_properties->SetStringKey(property_key_name, *value_in_old_entry);
+  }
+}
+
+void CopyRequiredCellularProperies(
+    const base::DictionaryValue* old_shill_properties,
+    base::Value* new_shill_properties) {
+  const std::string* type =
+      old_shill_properties->FindStringKey(shill::kTypeProperty);
+  if (!type || *type != shill::kTypeCellular)
+    return;
+
+  CopyStringKey(old_shill_properties, new_shill_properties,
+                shill::kIccidProperty);
+  CopyStringKey(old_shill_properties, new_shill_properties,
+                shill::kEidProperty);
+}
+
 // Special service name in shill remembering settings across ethernet services.
 // Chrome should not attempt to configure / delete this.
 const char kEthernetAnyService[] = "ethernet_any";
@@ -65,8 +113,11 @@ PolicyApplicator::PolicyApplicator(
     const GuidToPolicyMap& all_policies,
     const base::DictionaryValue& global_network_config,
     ConfigurationHandler* handler,
+    CellularPolicyHandler* cellular_policy_handler,
     std::set<std::string>* modified_policy_guids)
-    : handler_(handler), profile_(profile) {
+    : cellular_policy_handler_(cellular_policy_handler),
+      handler_(handler),
+      profile_(profile) {
   global_network_config_.MergeDictionary(&global_network_config);
   remaining_policy_guids_.swap(*modified_policy_guids);
   for (const auto& policy_pair : all_policies) {
@@ -251,6 +302,15 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry,
   base::Value new_shill_properties = policy_util::CreateShillConfiguration(
       profile_, new_guid, &global_network_config_, new_policy_as_dict,
       user_settings);
+
+  if (features::IsESimPolicyEnabled()) {
+    // Copy over the value of ICCID and EID property from old entry to new shill
+    // properties since Shill requires ICCID and EID to create or update the
+    // existing service.
+    CopyRequiredCellularProperies(entry_properties_as_dict,
+                                  &new_shill_properties);
+  }
+
   // A new policy has to be applied to this profile entry. In order to keep
   // implicit state of Shill like "connected successfully before", keep the
   // entry if a policy is reapplied (e.g. after reboot) or is updated.
@@ -374,12 +434,33 @@ void PolicyApplicator::ApplyRemainingPolicies() {
   // contains all modified policies that didn't match any entry. For these
   // remaining policies, new configurations have to be created.
   for (std::set<std::string>::iterator it = remaining_policy_guids_.begin();
-       it != remaining_policy_guids_.end(); ++it) {
+       it != remaining_policy_guids_.end();) {
     const base::DictionaryValue* network_policy = GetByGUID(all_policies_, *it);
     DCHECK(network_policy);
 
     VLOG(1) << "Creating new configuration managed by policy " << *it
             << " in profile " << profile_.ToDebugString() << ".";
+
+    if (features::IsESimPolicyEnabled()) {
+      const std::string* smdp_address = GetSMDPAddressFromONC(*network_policy);
+      if (smdp_address) {
+        NET_LOG(EVENT)
+            << "Found ONC configuration with SMDP: " << *smdp_address
+            << ". Start installing policy eSim profile with ONC config: "
+            << *network_policy;
+        if (cellular_policy_handler_)
+          cellular_policy_handler_->InstallESim(*smdp_address, *network_policy);
+        else
+          NET_LOG(ERROR) << "Unable to install eSIM. CellularPolicyHandler not "
+                            "initialized.";
+
+        it = remaining_policy_guids_.erase(it);
+        if (remaining_policy_guids_.empty()) {
+          NotifyConfigurationHandlerAndFinish();
+        }
+        continue;
+      }
+    }
 
     base::Value shill_dictionary = policy_util::CreateShillConfiguration(
         profile_, *it, &global_network_config_, network_policy,
@@ -389,6 +470,7 @@ void PolicyApplicator::ApplyRemainingPolicies() {
         shill_dictionary,
         base::BindOnce(&PolicyApplicator::RemainingPolicyApplied,
                        weak_ptr_factory_.GetWeakPtr(), *it /* entry */));
+    it++;
   }
 }
 

@@ -35,6 +35,7 @@ source_set("lib") {
       "//components/pwg_encoder",
       "//pdf",
       "//printing",
+      "//printing/backend",
       "//printing/mojom",
       "//ui/gfx",
     ]
@@ -72,7 +73,7 @@ source_set("lib") {
     deps += [ "//skia" ]
   }
 
-  if (is_win || is_mac || is_linux || is_chromeos) {
+  if (enable_oop_printing) {
     sources += [
       "print_backend_service_impl.cc",
       "print_backend_service_impl.h",

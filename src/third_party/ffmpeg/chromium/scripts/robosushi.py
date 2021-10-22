@@ -118,6 +118,10 @@ steps = {
         "skip_fn": robo_branch.IsUploadedForReview,
         "do_fn": robo_branch.UploadForReview },
 
+  "merge_back_to_origin":
+      { "desc": "Once sushi has landed after review, merge/push to origin",
+        "do_fn": robo_branch.MergeBackToOriginMaster },
+
 # This is a WIP, present in case you're feeling particularly brave.  :)
   "start_fake_deps_roll":
       { "desc": "Try a test deps roll against the sushi (not master) branch",
@@ -141,6 +145,7 @@ steps = {
   # to do is to upload the gn config / patches for review and land it.
                                               "run_tests",
                                               "upload_for_review",
+                                              "merge_back_to_origin",
                                             ]) },
 }
 

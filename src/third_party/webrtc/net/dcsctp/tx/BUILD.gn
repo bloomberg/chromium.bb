@@ -79,6 +79,7 @@ rtc_library("retransmission_queue") {
     "../common:str_join",
     "../packet:chunk",
     "../packet:data",
+    "../public:socket",
     "../public:types",
     "../timer",
   ]
@@ -120,6 +121,7 @@ if (rtc_include_tests) {
       "../../../rtc_base:gunit_helpers",
       "../../../rtc_base:rtc_base_approved",
       "../../../test:test_support",
+      "../common:handover_testing",
       "../packet:chunk",
       "../packet:data",
       "../public:socket",

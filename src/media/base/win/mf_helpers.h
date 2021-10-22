@@ -15,6 +15,7 @@
 
 struct ID3D11DeviceChild;
 struct ID3D11Device;
+struct IDXGIObject;
 
 namespace media {
 
@@ -61,6 +62,10 @@ CreateEmptySampleWithBuffer(uint32_t buffer_length, int align);
 class MF_INITIALIZER_EXPORT MediaBufferScopedPointer {
  public:
   explicit MediaBufferScopedPointer(IMFMediaBuffer* media_buffer);
+
+  MediaBufferScopedPointer(const MediaBufferScopedPointer&) = delete;
+  MediaBufferScopedPointer& operator=(const MediaBufferScopedPointer&) = delete;
+
   ~MediaBufferScopedPointer();
 
   uint8_t* get() { return buffer_; }
@@ -72,8 +77,6 @@ class MF_INITIALIZER_EXPORT MediaBufferScopedPointer {
   uint8_t* buffer_;
   DWORD max_length_;
   DWORD current_length_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaBufferScopedPointer);
 };
 
 // Copies |in_string| to |out_string| that is allocated with CoTaskMemAlloc().
@@ -85,6 +88,8 @@ MF_INITIALIZER_EXPORT HRESULT CopyCoTaskMemWideString(LPCWSTR in_string,
 MF_INITIALIZER_EXPORT HRESULT
 SetDebugName(ID3D11DeviceChild* d3d11_device_child, const char* debug_string);
 MF_INITIALIZER_EXPORT HRESULT SetDebugName(ID3D11Device* d3d11_device,
+                                           const char* debug_string);
+MF_INITIALIZER_EXPORT HRESULT SetDebugName(IDXGIObject* dxgi_object,
                                            const char* debug_string);
 
 }  // namespace media

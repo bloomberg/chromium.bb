@@ -9,7 +9,8 @@ import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
-import {AcceleratorInfo, AcceleratorKeys, AcceleratorState, AcceleratorType, Modifier} from './shortcut_types.js';
+import {getShortcutProvider} from './mojo_interface_provider.js';
+import {AcceleratorConfigResult, AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType, Modifier, ShortcutProviderInterface} from './shortcut_types.js';
 
 const ModifierRawKeys = [
   /*Shift=*/16,
@@ -92,6 +93,12 @@ export class AcceleratorViewElement extends PolymerElement {
         value: () => {},
       },
 
+      /** @private */
+      acceleratorOnHold_: {
+        type: String,
+        value: '',
+      },
+
       viewState: {
         type: Number,
         value: ViewState.VIEW,
@@ -124,13 +131,27 @@ export class AcceleratorViewElement extends PolymerElement {
         type: Boolean,
         value: false,
         notify: true,
-      }
+      },
+
+      action: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @type {!AcceleratorSource} */
+      source: {
+        type: Number,
+        value: 0,
+      },
     }
   }
 
   /** @override */
   constructor() {
     super();
+
+    /** @private {!ShortcutProviderInterface} */
+    this.shortcutProvider_ = getShortcutProvider();
 
     /** @private {!AcceleratorLookupManager} */
     this.lookupManager_ = AcceleratorLookupManager.getInstance();
@@ -240,36 +261,69 @@ export class AcceleratorViewElement extends PolymerElement {
     this.set('pendingAcceleratorInfo_.accelerator',
         this.keystrokeToAccelerator_(e));
 
-    this.processPendingAccelerator_();
+    const pendingKeys = this.pendingAcceleratorInfo_.accelerator;
+    // New shortcut matches the current shortcut, end capture.
+    if (JSON.stringify(pendingKeys) ===
+        JSON.stringify(this.acceleratorInfo.accelerator)) {
+      this.endCapture_();
+      return;
+    }
+
+    // Only process valid accelerators.
+    if (this.isValidDefaultAccelerator_(pendingKeys)) {
+      this.processPendingAccelerator_(pendingKeys);
+    }
   }
 
   /**
    * Checks that |pendingAccelerator_| is not a pre-existing shortcut. Sets the
    * error message if there is a conflict.
+   * @param {!AcceleratorKeys} pendingKeys
    * @private
    */
-  processPendingAccelerator_() {
-    // Reset status state when process the new accelerator.
+  processPendingAccelerator_(pendingKeys) {
+    // Reset status state when processing the new accelerator.
     this.statusMessage = '';
     this.hasError = false;
 
-    const pendingKeys = this.pendingAcceleratorInfo_.accelerator;
+    // If |acceleratorOnHold_| is not empty then the user has attempted to
+    // replace a pre-existing accelerator. Check that the new accelerator
+    // matches the |acceleratorOnHold_|, otherwise reset its value.
+    if (this.acceleratorOnHold_ !== '') {
+      if (this.acceleratorOnHold_ === JSON.stringify(pendingKeys)) {
+        // User re-pressed the shortcut, send a request to replace the
+        // accelerator.
+        this.requestUpdateAccelerator_(pendingKeys);
+        return;
+      }
+      this.acceleratorOnHold_ = '';
+    }
+
     const foundId = this.lookupManager_.getAcceleratorFromKeys(
         JSON.stringify(pendingKeys));
 
     // Pre-existing shortcut, update the error message.
-    if (foundId != undefined) {
+    if (foundId !== undefined) {
       // TODO(jimmyxgong): Fetch name of accelerator with real implementation.
       const uuidParams = foundId.split('-');
       const conflictAccelName = this.lookupManager_.getAcceleratorName(
           /**source=*/ parseInt(uuidParams[0], 10),
           /**action=*/ parseInt(uuidParams[1], 10));
       // TODO(jimmyxgong): i18n this string.
+      // TODO(jimmyxgong): Handle attempting to override a locked action.
       this.statusMessage = 'Shortcut is used by ' + conflictAccelName +
           '. Press a new shortcut or press the same one again to use it for ' +
           'this action instead.';
       this.hasError = true;
+
+      // Store the pending accelerator.
+      this.acceleratorOnHold_ =
+          JSON.stringify(this.pendingAcceleratorInfo_.accelerator);
+      return;
     }
+
+    // No conflicts, request replacement.
+    this.requestUpdateAccelerator_(pendingKeys);
   }
 
   /**
@@ -394,11 +448,69 @@ export class AcceleratorViewElement extends PolymerElement {
   }
 
   /**
+   * @param {AcceleratorKeys} keys
+   * @return {boolean}
+   * @private
+   */
+  isValidDefaultAccelerator_(keys) {
+    // A valid default accelerator is on that has modifier(s) and a key.
+    return keys.modifiers > 0 && keys.key_display !== '';
+  }
+
+  /**
    * @return {boolean}
    * @private
    */
   showEditView_() {
     return this.viewState !== ViewState.VIEW;
+  }
+
+  /**
+   * @param {!AcceleratorKeys} newKeys
+   * @private
+   */
+  requestUpdateAccelerator_(newKeys) {
+    if (this.viewState === ViewState.EDIT) {
+      this.shortcutProvider_
+          .replaceAccelerator(
+              this.source, this.action, this.acceleratorInfo.accelerator,
+              newKeys)
+          .then((result) => {
+            // TODO(jimmyxgong): Handle other error cases.
+            if (result === AcceleratorConfigResult.kSuccess) {
+              this.lookupManager_.replaceAccelerator(
+                  this.source, this.action, this.acceleratorInfo.accelerator,
+                  newKeys);
+              this.fireUpdateEvent_();
+            }
+          });
+      ;
+    }
+
+    if (this.viewState === ViewState.ADD) {
+      this.shortcutProvider_
+          .addUserAccelerator(this.source, this.action, newKeys)
+          .then((result) => {
+            // TODO(jimmyxgong): Handle other error cases.
+            if (result === AcceleratorConfigResult.kSuccess) {
+              this.lookupManager_.addAccelerator(
+                  this.source, this.action, newKeys);
+              this.fireUpdateEvent_();
+            }
+          });
+    }
+  }
+
+  /** @private */
+  fireUpdateEvent_() {
+    this.dispatchEvent(new CustomEvent('request-update-accelerator', {
+      bubbles: true,
+      composed: true,
+      detail: {source: this.source, action: this.action}
+    }));
+
+    // Always end input capturing if an update event was fired.
+    this.endCapture_();
   }
 }
 

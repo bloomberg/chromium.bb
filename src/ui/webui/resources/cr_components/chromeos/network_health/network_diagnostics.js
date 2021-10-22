@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/js/load_time_data.m.js';
+// clang-format on
+
 /**
  * @fileoverview Polymer element for interacting with Network Diagnostics.
  */
@@ -38,6 +42,14 @@ Polymer({
   ],
 
   properties: {
+    /** @private */
+    areArcNetworkingRoutinesEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('enableArcNetworkDiagnostics');
+      }
+    },
+
     /**
      * List of Diagnostics Routines
      * @private {!Array<!Routine>}
@@ -52,7 +64,7 @@ Polymer({
               {
                 name: 'NetworkDiagnosticsLanConnectivity',
                 type: diagnosticsMojom.RoutineType.kLanConnectivity,
-                func: () => this.networkDiagnostics_.runLanConnectivity(),
+                func: () => getNetworkDiagnosticsService().runLanConnectivity(),
               },
             ]
           },
@@ -62,13 +74,13 @@ Polymer({
               {
                 name: 'NetworkDiagnosticsSignalStrength',
                 type: diagnosticsMojom.RoutineType.kSignalStrength,
-                func: () => this.networkDiagnostics_.runSignalStrength(),
+                func: () => getNetworkDiagnosticsService().runSignalStrength(),
               },
               {
                 name: 'NetworkDiagnosticsHasSecureWiFiConnection',
                 type: diagnosticsMojom.RoutineType.kHasSecureWiFiConnection,
                 func: () =>
-                    this.networkDiagnostics_.runHasSecureWiFiConnection(),
+                    getNetworkDiagnosticsService().runHasSecureWiFiConnection(),
               },
             ]
           },
@@ -78,7 +90,7 @@ Polymer({
               {
                 name: 'NetworkDiagnosticsCaptivePortal',
                 type: diagnosticsMojom.RoutineType.kCaptivePortal,
-                func: () => this.networkDiagnostics_.runCaptivePortal(),
+                func: () => getNetworkDiagnosticsService().runCaptivePortal(),
               },
             ]
           },
@@ -88,7 +100,8 @@ Polymer({
               {
                 name: 'NetworkDiagnosticsGatewayCanBePinged',
                 type: diagnosticsMojom.RoutineType.kGatewayCanBePinged,
-                func: () => this.networkDiagnostics_.runGatewayCanBePinged(),
+                func: () =>
+                    getNetworkDiagnosticsService().runGatewayCanBePinged(),
               },
             ]
           },
@@ -98,18 +111,18 @@ Polymer({
               {
                 name: 'NetworkDiagnosticsHttpFirewall',
                 type: diagnosticsMojom.RoutineType.kHttpFirewall,
-                func: () => this.networkDiagnostics_.runHttpFirewall(),
+                func: () => getNetworkDiagnosticsService().runHttpFirewall(),
               },
               {
                 name: 'NetworkDiagnosticsHttpsFirewall',
                 type: diagnosticsMojom.RoutineType.kHttpsFirewall,
-                func: () => this.networkDiagnostics_.runHttpsFirewall(),
+                func: () => getNetworkDiagnosticsService().runHttpsFirewall(),
 
               },
               {
                 name: 'NetworkDiagnosticsHttpsLatency',
                 type: diagnosticsMojom.RoutineType.kHttpsLatency,
-                func: () => this.networkDiagnostics_.runHttpsLatency(),
+                func: () => getNetworkDiagnosticsService().runHttpsLatency(),
               },
             ]
           },
@@ -119,17 +132,18 @@ Polymer({
               {
                 name: 'NetworkDiagnosticsDnsResolverPresent',
                 type: diagnosticsMojom.RoutineType.kDnsResolverPresent,
-                func: () => this.networkDiagnostics_.runDnsResolverPresent(),
+                func: () =>
+                    getNetworkDiagnosticsService().runDnsResolverPresent(),
               },
               {
                 name: 'NetworkDiagnosticsDnsLatency',
                 type: diagnosticsMojom.RoutineType.kDnsLatency,
-                func: () => this.networkDiagnostics_.runDnsLatency(),
+                func: () => getNetworkDiagnosticsService().runDnsLatency(),
               },
               {
                 name: 'NetworkDiagnosticsDnsResolution',
                 type: diagnosticsMojom.RoutineType.kDnsResolution,
-                func: () => this.networkDiagnostics_.runDnsResolution(),
+                func: () => getNetworkDiagnosticsService().runDnsResolution(),
               },
             ]
           },
@@ -141,32 +155,35 @@ Polymer({
                 type: diagnosticsMojom.RoutineType.kVideoConferencing,
                 // A null stun_server_hostname will use the routine
                 // default.
-                func: () => this.networkDiagnostics_.runVideoConferencing(
+                func: () => getNetworkDiagnosticsService().runVideoConferencing(
                     /*stun_server_hostname=*/ null),
               },
             ]
-          },
-          {
+          }
+        ];
+        if (this.areArcNetworkingRoutinesEnabled_) {
+          routineGroups.push({
             group: RoutineGroup.ARC,
             routines: [
               {
                 name: 'ArcNetworkDiagnosticsPing',
                 type: diagnosticsMojom.RoutineType.kArcPing,
-                func: () => this.networkDiagnostics_.runArcPing(),
+                func: () => getNetworkDiagnosticsService().runArcPing(),
               },
               {
                 name: 'ArcNetworkDiagnosticsHttp',
                 type: diagnosticsMojom.RoutineType.kArcHttp,
-                func: () => this.networkDiagnostics_.runArcHttp(),
+                func: () => getNetworkDiagnosticsService().runArcHttp(),
               },
               {
                 name: 'ArcNetworkDiagnosticsDnsResolution',
                 type: diagnosticsMojom.RoutineType.kArcDnsResolution,
-                func: () => this.networkDiagnostics_.runArcDnsResolution(),
+                func: () =>
+                    getNetworkDiagnosticsService().runArcDnsResolution(),
               },
             ]
-          },
-        ];
+          });
+        }
         const routines = [];
 
         for (const group of routineGroups) {
@@ -188,19 +205,6 @@ Polymer({
       type: Object,
       value: RoutineGroup,
     }
-  },
-
-  /**
-   * Network Diagnostics mojo remote.
-   * @private {
-   *     ?chromeos.networkDiagnostics.mojom.NetworkDiagnosticsRoutinesRemote}
-   */
-  networkDiagnostics_: null,
-
-  /** @override */
-  created() {
-    this.networkDiagnostics_ =
-        diagnosticsMojom.NetworkDiagnosticsRoutines.getRemote();
   },
 
   /**
@@ -391,10 +395,6 @@ Polymer({
                 .kMalformedNameServers:
               problemStrings.push(
                   getString('DnsResolverProblem_MalformedNameServers'));
-              break;
-            case diagnosticsMojom.DnsResolverPresentProblem.kEmptyNameServers:
-              problemStrings.push(
-                  getString('DnsResolverProblem_EmptyNameServers'));
               break;
           }
         }

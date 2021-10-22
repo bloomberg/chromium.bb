@@ -64,6 +64,7 @@
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
@@ -83,6 +84,8 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/battery_savings.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
@@ -194,13 +197,20 @@ void ForEachRemoteFrameChildrenControlledByWidget(
     }
   }
 
-  // Iterate on any portals owned by a local frame.
   if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
     if (Document* document = local_frame->GetDocument()) {
+      // Iterate on any portals owned by a local frame.
       for (PortalContents* portal :
            DocumentPortals::From(*document).GetPortals()) {
         if (RemoteFrame* remote_frame = portal->GetFrame())
           callback.Run(remote_frame);
+      }
+      // Iterate on any fenced frames owned by a local frame.
+      if (features::IsFencedFramesMPArchBased()) {
+        for (HTMLFencedFrameElement* fenced_frame :
+             DocumentFencedFrames::From(*document).GetFencedFrames()) {
+          callback.Run(To<RemoteFrame>(fenced_frame->ContentFrame()));
+        }
       }
     }
   }
@@ -1884,13 +1894,51 @@ WebLocalFrameImpl* WebFrameWidgetImpl::FocusedWebLocalFrameInWidget() const {
 
 bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
   Element* element = FocusedElement();
-  if (!element || !WebElement(element).IsEditable())
+  if (!element)
+    return false;
+
+  EditContext* edit_context = element->GetDocument()
+                                  .GetFrame()
+                                  ->GetInputMethodController()
+                                  .GetActiveEditContext();
+
+  if (!WebElement(element).IsEditable() && !edit_context)
     return false;
 
   element->GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
 
   if (!element->GetLayoutObject())
     return false;
+
+  if (edit_context) {
+    // Scroll the |EditContext| into view.
+    // EditContext's coordinates are in Device Independent Pixels.
+    gfx::Rect control_bounds_in_dip;
+    gfx::Rect selection_bounds_in_dip;
+    edit_context->GetLayoutBounds(&control_bounds_in_dip,
+                                  &selection_bounds_in_dip);
+
+    IntRect control_bounds_in_physical_pixel = IntRect(control_bounds_in_dip);
+    IntRect selection_bounds_in_physical_pixel =
+        IntRect(selection_bounds_in_dip);
+    control_bounds_in_physical_pixel.Scale(
+        View()->ZoomFactorForDeviceScaleFactor());
+    selection_bounds_in_physical_pixel.Scale(
+        View()->ZoomFactorForDeviceScaleFactor());
+
+    LocalFrameView* main_frame_view = LocalRootImpl()->GetFrame()->View();
+
+    View()->ZoomAndScrollToFocusedEditableElementRect(
+        main_frame_view->RootFrameToDocument(
+            element->GetDocument().View()->ConvertToRootFrame(
+                control_bounds_in_physical_pixel)),
+        main_frame_view->RootFrameToDocument(
+            element->GetDocument().View()->ConvertToRootFrame(
+                selection_bounds_in_physical_pixel)),
+        View()->ShouldZoomToLegibleScale(*element));
+
+    return true;
+  }
 
   PhysicalRect rect_to_scroll;
   auto params =
@@ -2033,7 +2081,8 @@ void WebFrameWidgetImpl::BeginCommitCompositorFrame() {
 }
 
 void WebFrameWidgetImpl::EndCommitCompositorFrame(
-    base::TimeTicks commit_start_time) {
+    base::TimeTicks commit_start_time,
+    base::TimeTicks commit_finish_time) {
   DCHECK(commit_compositor_frame_start_time_.has_value());
   if (ForTopMostMainFrame()) {
     Document* doc = local_root_->GetFrame()->GetDocument();
@@ -2061,7 +2110,7 @@ void WebFrameWidgetImpl::EndCommitCompositorFrame(
       ->View()
       ->EnsureUkmAggregator()
       .RecordImplCompositorSample(commit_compositor_frame_start_time_.value(),
-                                  commit_start_time, base::TimeTicks::Now());
+                                  commit_start_time, commit_finish_time);
   commit_compositor_frame_start_time_.reset();
 }
 
@@ -3839,7 +3888,7 @@ void WebFrameWidgetImpl::OrientationChanged() {
 }
 
 void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
-    const display::ScreenInfo& previous_original_screen_info) {
+    const display::ScreenInfos& previous_original_screen_infos) {
   display::ScreenInfo screen_info = widget_base_->GetScreenInfo();
   if (Platform::Current()->IsUseZoomForDSFEnabled()) {
     View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
@@ -3861,9 +3910,9 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
   // When the device scale changes, the size and position of the popup would
   // need to be adjusted, which we can't do. Just close the popup, which is
   // also consistent with page zoom and resize behavior.
-  display::ScreenInfo original_screen_info = GetOriginalScreenInfo();
-  if (previous_original_screen_info.device_scale_factor !=
-      original_screen_info.device_scale_factor) {
+  display::ScreenInfos original_screen_infos = GetOriginalScreenInfos();
+  if (previous_original_screen_infos.current().device_scale_factor !=
+      original_screen_infos.current().device_scale_factor) {
     View()->CancelPagePopup();
   }
 
@@ -3872,25 +3921,33 @@ void WebFrameWidgetImpl::DidUpdateSurfaceAndScreen(
   // information when a change event is fired.  It is not required but it
   // is convenient to have all ScreenAdvanced objects be up to date when any
   // window.screen events are fired as well.
-  LocalFrame* frame = LocalRootImpl()->GetFrame();
-  CoreInitializer::GetInstance().DidUpdateScreens(*frame,
-                                                  widget_base_->screen_infos());
-  // TODO(crbug.com/1182855): Propagate info and events to remote frames.
+  ForEachLocalFrameControlledByWidget(
+      LocalRootImpl()->GetFrame(),
+      WTF::BindRepeating(
+          [](const display::ScreenInfos& original_screen_infos,
+             WebLocalFrameImpl* local_frame) {
+            CoreInitializer::GetInstance().DidUpdateScreens(
+                *local_frame->GetFrame(), original_screen_infos);
+          },
+          original_screen_infos));
 
-  if (previous_original_screen_info != original_screen_info) {
+  if (previous_original_screen_infos != original_screen_infos) {
     // TODO(enne): http://crbug.com/1202981 only send this event when properties
     // on Screen (vs anything in ScreenInfo) change.
-    local_root_->GetFrame()->DomWindow()->screen()->DispatchEvent(
-        *Event::Create(event_type_names::kChange));
+    if (previous_original_screen_infos.current() !=
+        original_screen_infos.current()) {
+      local_root_->GetFrame()->DomWindow()->screen()->DispatchEvent(
+          *Event::Create(event_type_names::kChange));
+    }
 
     // Propagate changes down to child local root RenderWidgets and
     // BrowserPlugins in other frame trees/processes.
     ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
-        [](const display::ScreenInfo& original_screen_info,
+        [](const display::ScreenInfos& original_screen_infos,
            RemoteFrame* remote_frame) {
-          remote_frame->DidChangeScreenInfo(original_screen_info);
+          remote_frame->DidChangeScreenInfos(original_screen_infos);
         },
-        original_screen_info));
+        original_screen_infos));
   }
 }
 

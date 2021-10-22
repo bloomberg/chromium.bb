@@ -19,6 +19,7 @@ class ScrollView;
 namespace ash {
 
 class AppListViewDelegate;
+class AppsGridViewFocusDelegate;
 
 // An apps grid that shows all the apps in a long scrolling list. Used for
 // the clamshell mode bubble launcher. Implemented as a single "page" of apps.
@@ -33,16 +34,20 @@ class ASH_EXPORT ScrollableAppsGridView : public AppsGridView {
                          AppListViewDelegate* view_delegate,
                          AppsGridViewFolderDelegate* folder_delegate,
                          views::ScrollView* scroll_view,
-                         AppListFolderController* folder_controller);
+                         AppListFolderController* folder_controller,
+                         AppsGridViewFocusDelegate* focus_delegate);
   ScrollableAppsGridView(const ScrollableAppsGridView&) = delete;
   ScrollableAppsGridView& operator=(const ScrollableAppsGridView&) = delete;
   ~ScrollableAppsGridView() override;
+
+  // Sets the max number of columns the grid can have.
+  // See `AppsGridView::SetMaxColumnsInternal()` for details.
+  void SetMaxColumns(int max_cols);
 
   // views::View:
   void Layout() override;
 
   // AppsGridView:
-  void Init() override;
   gfx::Size GetTileViewSize() const override;
   gfx::Insets GetTilePadding() const override;
   gfx::Size GetTileGridSize() const override;
@@ -50,14 +55,15 @@ class ASH_EXPORT ScrollableAppsGridView : public AppsGridView {
   int GetTotalPages() const override;
   int GetSelectedPage() const override;
   bool IsScrollAxisVertical() const override;
-  void CalculateIdealBounds() override;
+  void CalculateIdealBoundsForNonFolder() override;
   bool MaybeAutoScroll() override;
   void StopAutoScroll() override;
   void HandleScrollFromAppListView(const gfx::Vector2d& offset,
                                    ui::EventType type) override;
   void SetFocusAfterEndDrag() override;
   void RecordAppMovingTypeMetrics(AppListAppMovingType type) override;
-  int TilesPerPage(int page) const override;
+  int GetMaxRowsInPage(int page) const override;
+  gfx::Vector2d GetGridCenteringOffset(int page) const override;
   const gfx::Vector2d CalculateTransitionOffset(
       int page_of_view) const override;
   void EnsureViewVisible(const GridIndex& index) override;

@@ -29,7 +29,7 @@ class FakeAssistantClient : public AssistantClient {
         AssistantClient::assistant_manager_internal());
   }
 
-  void StartServices() override;
+  void StartServices(base::OnceClosure services_ready_callback) override;
   void SetChromeOSApiDelegate(
       assistant_client::ChromeOSApiDelegate* delegate) override;
   bool StartGrpcServices() override;
@@ -61,6 +61,39 @@ class FakeAssistantClient : public AssistantClient {
   void SetExternalPlaybackState(const MediaStatus& status_proto) override;
   void AddDeviceStateEventObserver(
       GrpcServicesObserver<OnDeviceStateEventRequest>* observer) override;
+  void RegisterActionModule(
+      assistant_client::ActionModule* action_module) override;
+  void SetInternalOptions(const std::string& locale,
+                          bool spoken_feedback_enabled) override;
+  void SetAuthenticationInfo(const AuthTokens& tokens) override;
+  void UpdateAssistantSettings(
+      const ::assistant::ui::SettingsUiUpdate& settings,
+      const std::string& user_id,
+      base::OnceCallback<void(
+          const ::assistant::api::UpdateAssistantSettingsResponse&)> on_done)
+      override;
+  void GetAssistantSettings(
+      const ::assistant::ui::SettingsUiSelector& selector,
+      const std::string& user_id,
+      base::OnceCallback<
+          void(const ::assistant::api::GetAssistantSettingsResponse&)> on_done)
+      override;
+  void SetLocaleOverride(const std::string& locale) override;
+  void SetDeviceAttributes(bool enable_dark_mode) override;
+  std::string GetDeviceId() override;
+  void EnableListening(bool listening_enabled) override;
+  void AddTimeToTimer(const std::string& id,
+                      const base::TimeDelta& duration) override;
+  void PauseTimer(const std::string& timer_id) override;
+  void RemoveTimer(const std::string& timer_id) override;
+  void ResumeTimer(const std::string& timer_id) override;
+  std::vector<assistant::AssistantTimer> GetTimers() override;
+  void RegisterAlarmTimerEventObserver(
+      base::WeakPtr<
+          GrpcServicesObserver<::assistant::api::OnAlarmTimerEventRequest>>
+          observer) override;
+
+  assistant::FakeAlarmTimerManager* fake_alarm_timer_manager();
 };
 
 }  // namespace libassistant

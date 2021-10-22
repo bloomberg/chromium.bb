@@ -12,10 +12,10 @@
 #include "chrome/browser/ash/input_method/suggestion_enums.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_input_context_handler_interface.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_input_context_handler_interface.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
@@ -51,6 +51,7 @@ void RecordAssistiveSuccess(AssistiveType type) {
 }
 
 constexpr int kKeysUntilAutocorrectWindowHides = 4;
+constexpr int kDistanceUntilAutocorrectWindowHides = 3;
 
 }  // namespace
 
@@ -157,6 +158,11 @@ void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   const gfx::Range range = input_context->GetAutocorrectRange();
+  if (!range.is_empty() &&
+      (cursor_pos + kDistanceUntilAutocorrectWindowHides < range.start() ||
+       cursor_pos - kDistanceUntilAutocorrectWindowHides > range.end())) {
+    ClearUnderline();
+  }
   // Explaination of checks:
   // 1) Check there is an autocorrect range
   // 2) Check cursor is in range

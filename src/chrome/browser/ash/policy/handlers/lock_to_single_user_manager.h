@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/vm_starting_observer.h"
+#include "chrome/browser/ash/vm_starting_observer.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/cryptohome/UserDataAuth.pb.h"
 #include "components/user_manager/user_manager.h"
@@ -29,6 +29,10 @@ class LockToSingleUserManager final
   static LockToSingleUserManager* GetLockToSingleUserManagerInstance();
 
   LockToSingleUserManager();
+
+  LockToSingleUserManager(const LockToSingleUserManager&) = delete;
+  LockToSingleUserManager& operator=(const LockToSingleUserManager&) = delete;
+
   ~LockToSingleUserManager() override;
 
   // Notify that a VM is being started from outside of Chrome
@@ -76,8 +80,6 @@ class LockToSingleUserManager final
   base::WeakPtrFactory<LockToSingleUserManager> weak_factory_{this};
 
   friend class LockToSingleUserManagerTest;
-
-  DISALLOW_COPY_AND_ASSIGN(LockToSingleUserManager);
 };
 
 }  // namespace policy

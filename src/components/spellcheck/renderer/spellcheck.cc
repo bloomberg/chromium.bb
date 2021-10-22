@@ -49,11 +49,14 @@ const int kNoTag = 0;
 class UpdateSpellcheckEnabled : public content::RenderFrameVisitor {
  public:
   explicit UpdateSpellcheckEnabled(bool enabled) : enabled_(enabled) {}
+
+  UpdateSpellcheckEnabled(const UpdateSpellcheckEnabled&) = delete;
+  UpdateSpellcheckEnabled& operator=(const UpdateSpellcheckEnabled&) = delete;
+
   bool Visit(content::RenderFrame* render_frame) override;
 
  private:
   bool enabled_;  // New spellcheck-enabled state.
-  DISALLOW_COPY_AND_ASSIGN(UpdateSpellcheckEnabled);
 };
 
 bool UpdateSpellcheckEnabled::Visit(content::RenderFrame* render_frame) {
@@ -126,6 +129,10 @@ class SpellCheck::SpellcheckRequest {
         start_ticks_(base::TimeTicks::Now()) {
     DCHECK(completion_);
   }
+
+  SpellcheckRequest(const SpellcheckRequest&) = delete;
+  SpellcheckRequest& operator=(const SpellcheckRequest&) = delete;
+
   ~SpellcheckRequest() {}
 
   std::u16string text() { return text_; }
@@ -140,8 +147,6 @@ class SpellCheck::SpellcheckRequest {
 
   // The time ticks at which this request was created
   base::TimeTicks start_ticks_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
 
 

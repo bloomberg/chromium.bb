@@ -25,6 +25,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -69,8 +70,7 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
-constexpr base::TimeDelta kUnusedIdleSocketTimeout =
-    base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kUnusedIdleSocketTimeout = base::Seconds(10);
 const RequestPriority kDefaultPriority = LOW;
 
 class SOCKS5MockData {
@@ -100,6 +100,11 @@ class SOCKS5MockData {
 
 class TransportClientSocketPoolTest : public ::testing::Test,
                                       public WithTaskEnvironment {
+ public:
+  TransportClientSocketPoolTest(const TransportClientSocketPoolTest&) = delete;
+  TransportClientSocketPoolTest& operator=(
+      const TransportClientSocketPoolTest&) = delete;
+
  protected:
   // Constructor that allows mocking of the time.
   explicit TransportClientSocketPoolTest(
@@ -217,9 +222,6 @@ class TransportClientSocketPoolTest : public ::testing::Test,
   std::unique_ptr<TransportClientSocketPool> pool_for_real_sockets_;
 
   ClientSocketPoolTest test_base_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolTest);
 };
 
 TEST_F(TransportClientSocketPoolTest, Basic) {
@@ -864,6 +866,9 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
         pool_(pool),
         within_callback_(false) {}
 
+  RequestSocketCallback(const RequestSocketCallback&) = delete;
+  RequestSocketCallback& operator=(const RequestSocketCallback&) = delete;
+
   ~RequestSocketCallback() override = default;
 
   CompletionOnceCallback callback() {
@@ -897,8 +902,6 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
   ClientSocketHandle* const handle_;
   TransportClientSocketPool* const pool_;
   bool within_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestSocketCallback);
 };
 
 TEST_F(TransportClientSocketPoolTest, RequestTwice) {
@@ -1139,8 +1142,8 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketConnect) {
     base::RunLoop().RunUntilIdle();
 
     // Wait for the backup socket timer to fire.
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-        ClientSocketPool::kMaxConnectRetryIntervalMs + 50));
+    base::PlatformThread::Sleep(
+        base::Milliseconds(ClientSocketPool::kMaxConnectRetryIntervalMs + 50));
 
     // Let the appropriate socket connect.
     base::RunLoop().RunUntilIdle();
@@ -1185,8 +1188,8 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketCancel) {
 
     if (index == CANCEL_AFTER_WAIT) {
       // Wait for the backup socket timer to fire.
-      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-          ClientSocketPool::kMaxConnectRetryIntervalMs));
+      base::PlatformThread::Sleep(
+          base::Milliseconds(ClientSocketPool::kMaxConnectRetryIntervalMs));
     }
 
     // Let the appropriate socket connect.
@@ -1233,8 +1236,8 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterStall) {
   base::RunLoop().RunUntilIdle();
 
   // Wait for the backup socket timer to fire.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      ClientSocketPool::kMaxConnectRetryIntervalMs));
+  base::PlatformThread::Sleep(
+      base::Milliseconds(ClientSocketPool::kMaxConnectRetryIntervalMs));
 
   // Let the second connect be synchronous. Otherwise, the emulated
   // host resolution takes an extra trip through the message loop.
@@ -1265,7 +1268,7 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
   };
 
   client_socket_factory_.set_client_socket_types(case_types, 2);
-  client_socket_factory_.set_delay(base::TimeDelta::FromSeconds(5));
+  client_socket_factory_.set_delay(base::Seconds(5));
 
   EXPECT_EQ(0, pool_->IdleSocketCount());
 
@@ -1284,8 +1287,8 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
   base::RunLoop().RunUntilIdle();
 
   // Wait for the backup socket timer to fire.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(
-      ClientSocketPool::kMaxConnectRetryIntervalMs));
+  base::PlatformThread::Sleep(
+      base::Milliseconds(ClientSocketPool::kMaxConnectRetryIntervalMs));
 
   // Let the second connect be synchronous. Otherwise, the emulated
   // host resolution takes an extra trip through the message loop.
@@ -1309,8 +1312,8 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
 
   TransportClientSocketPool proxy_pool(
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("socks5://foopy",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      ProxyUriToProxyServer("socks5://foopy",
+                            ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
@@ -1353,8 +1356,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   // Create a socket pool which only allows a single connection at a time.
   TransportClientSocketPool pool(
       1, 1, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("https://unresolvable.proxy.name",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      ProxyUriToProxyServer("https://unresolvable.proxy.name",
+                            ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   // First connection attempt will get an error after creating the SpdyStream.
@@ -1445,8 +1448,8 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   // Create a socket pool which only allows a single connection at a time.
   TransportClientSocketPool pool(
       1, 1, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("https://unresolvable.proxy.name",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      ProxyUriToProxyServer("https://unresolvable.proxy.name",
+                            ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   SpdyTestUtil spdy_util;
@@ -1565,7 +1568,7 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
 
       TransportClientSocketPool proxy_pool(
           kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-          ProxyServer::FromURI(
+          ProxyUriToProxyServer(
               use_https_proxy ? "https://proxy.test" : "http://proxy.test",
               ProxyServer::SCHEME_HTTP /* default_scheme */),
           false /* is_for_websockets */,
@@ -1696,7 +1699,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpProxy) {
   const SchemefulSite kSite2(GURL("https://bar.test/"));
   const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   const char kHost[] = "bar.test";
-  const ProxyServer kProxyServer = ProxyServer::FromURI(
+  const ProxyServer kProxyServer = ProxyUriToProxyServer(
       "http://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1767,7 +1770,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeyHttpsProxy) {
   const SchemefulSite kSite2(GURL("https://bar.test/"));
   const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   const char kHost[] = "bar.test";
-  const ProxyServer kProxyServer = ProxyServer::FromURI(
+  const ProxyServer kProxyServer = ProxyUriToProxyServer(
       "https://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1839,7 +1842,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySocks4Proxy) {
   const SchemefulSite kSite2(GURL("https://bar.test/"));
   const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   const char kHost[] = "bar.test";
-  const ProxyServer kProxyServer = ProxyServer::FromURI(
+  const ProxyServer kProxyServer = ProxyUriToProxyServer(
       "socks4://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -1933,7 +1936,7 @@ TEST_F(TransportClientSocketPoolTest, NetworkIsolationKeySocks5Proxy) {
   const SchemefulSite kSite2(GURL("https://bar.test/"));
   const NetworkIsolationKey kNetworkIsolationKey2(kSite2, kSite2);
   const char kHost[] = "bar.test";
-  const ProxyServer kProxyServer = ProxyServer::FromURI(
+  const ProxyServer kProxyServer = ProxyUriToProxyServer(
       "socks5://proxy.test", ProxyServer::SCHEME_HTTP /* default_scheme */);
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -2137,8 +2140,8 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
 
   TransportClientSocketPool proxy_pool(
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("socks5://proxy",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      ProxyUriToProxyServer("socks5://proxy",
+                            ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
@@ -2442,8 +2445,8 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
 
   TransportClientSocketPool proxy_pool(
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("http://proxy",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      ProxyUriToProxyServer("http://proxy",
+                            ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -2502,8 +2505,8 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
 
   TransportClientSocketPool proxy_pool(
       kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
-      ProxyServer::FromURI("http://proxy",
-                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      ProxyUriToProxyServer("http://proxy",
+                            ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get());
 
   session_deps_.host_resolver->set_synchronous_mode(true);
@@ -2572,13 +2575,16 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
 // Class that enables tests to set mock time.
 class TransportClientSocketPoolMockNowSourceTest
     : public TransportClientSocketPoolTest {
+ public:
+  TransportClientSocketPoolMockNowSourceTest(
+      const TransportClientSocketPoolMockNowSourceTest&) = delete;
+  TransportClientSocketPoolMockNowSourceTest& operator=(
+      const TransportClientSocketPoolMockNowSourceTest&) = delete;
+
  protected:
   TransportClientSocketPoolMockNowSourceTest()
       : TransportClientSocketPoolTest(
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolMockNowSourceTest);
 };
 
 // Tests that changing the idle unused socket timeout using the experiment
@@ -2680,7 +2686,7 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
                      ->IdleSocketCount());
 
     // Moving the clock forward may cause the idle socket to be timedout.
-    FastForwardBy(base::TimeDelta::FromSeconds(test.fast_forward_seconds));
+    FastForwardBy(base::Seconds(test.fast_forward_seconds));
 
     {
       // Request a new socket to trigger cleanup of idle timedout sockets.

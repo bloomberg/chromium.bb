@@ -578,21 +578,18 @@ int CPWL_EditImpl::UndoInsertText::Undo() {
   return 0;
 }
 
-// static
 void CPWL_EditImpl::DrawEdit(CFX_RenderDevice* pDevice,
                              const CFX_Matrix& mtUser2Device,
-                             CPWL_EditImpl* pEdit,
                              FX_COLORREF crTextFill,
                              const CFX_FloatRect& rcClip,
                              const CFX_PointF& ptOffset,
                              const CPVT_WordRange* pRange,
                              IPWL_SystemHandler* pSystemHandler,
-                             CFFL_FormField* pFFLData) {
-  const bool bContinuous =
-      pEdit->GetCharArray() == 0 && pEdit->GetCharSpace() <= 0.0f;
-  uint16_t SubWord = pEdit->GetPasswordChar();
-  float fFontSize = pEdit->GetFontSize();
-  CPVT_WordRange wrSelect = pEdit->GetSelectWordRange();
+                             IPWL_SystemHandler::PerWindowData* pSystemData) {
+  const bool bContinuous = GetCharArray() == 0;
+  uint16_t SubWord = GetPasswordChar();
+  float fFontSize = GetFontSize();
+  CPVT_WordRange wrSelect = GetSelectWordRange();
   FX_COLORREF crCurFill = crTextFill;
   FX_COLORREF crOldFill = crCurFill;
   bool bSelect = false;
@@ -606,8 +603,8 @@ void CPWL_EditImpl::DrawEdit(CFX_RenderDevice* pDevice,
   if (!rcClip.IsEmpty())
     pDevice->SetClip_Rect(mtUser2Device.TransformRect(rcClip).ToFxRect());
 
-  Iterator* pIterator = pEdit->GetIterator();
-  IPVT_FontMap* pFontMap = pEdit->GetFontMap();
+  Iterator* pIterator = GetIterator();
+  IPVT_FontMap* pFontMap = GetFontMap();
   if (!pFontMap)
     return;
 
@@ -641,7 +638,7 @@ void CPWL_EditImpl::DrawEdit(CFX_RenderDevice* pDevice,
                            word.ptWord.x + word.fWidth,
                            line.ptLine.y + line.fLineAscent);
           rc.Intersect(rcClip);
-          pSystemHandler->OutputSelectedRect(pFFLData, rc);
+          pSystemHandler->OutputSelectedRect(pSystemData, rc);
         } else {
           CFX_Path pathSelBK;
           pathSelBK.AppendRect(word.ptWord.x, line.ptLine.y + line.fLineDescent,
@@ -669,16 +666,14 @@ void CPWL_EditImpl::DrawEdit(CFX_RenderDevice* pDevice,
           crOldFill = crCurFill;
         }
 
-        sTextBuf << pEdit->GetPDFWordString(word.nFontIndex, word.Word,
-                                            SubWord);
+        sTextBuf << GetPDFWordString(word.nFontIndex, word.Word, SubWord);
       } else {
         DrawTextString(
             pDevice,
             CFX_PointF(word.ptWord.x + ptOffset.x, word.ptWord.y + ptOffset.y),
             pFontMap->GetPDFFont(word.nFontIndex).Get(), fFontSize,
             mtUser2Device,
-            pEdit->GetPDFWordString(word.nFontIndex, word.Word, SubWord),
-            crCurFill);
+            GetPDFWordString(word.nFontIndex, word.Word, SubWord), crCurFill);
       }
       oldplace = place;
     }
@@ -744,10 +739,6 @@ void CPWL_EditImpl::SetLimitChar(int32_t nLimitChar) {
 
 void CPWL_EditImpl::SetCharArray(int32_t nCharArray) {
   m_pVT->SetCharArray(nCharArray);
-}
-
-void CPWL_EditImpl::SetCharSpace(float fCharSpace) {
-  m_pVT->SetCharSpace(fCharSpace);
 }
 
 void CPWL_EditImpl::SetMultiLine(bool bMultiLine) {
@@ -942,10 +933,6 @@ int32_t CPWL_EditImpl::GetCharArray() const {
 
 CFX_FloatRect CPWL_EditImpl::GetContentRect() const {
   return VTToEdit(m_pVT->GetContentRect());
-}
-
-float CPWL_EditImpl::GetCharSpace() const {
-  return m_pVT->GetCharSpace();
 }
 
 CPVT_WordRange CPWL_EditImpl::GetWholeWordRange() const {

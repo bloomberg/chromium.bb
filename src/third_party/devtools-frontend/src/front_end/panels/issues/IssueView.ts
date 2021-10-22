@@ -29,6 +29,7 @@ import {AffectedSharedArrayBufferIssueDetailsView} from './AffectedSharedArrayBu
 import {AffectedSourcesView} from './AffectedSourcesView.js';
 import {AffectedTrustedWebActivityIssueDetailsView} from './AffectedTrustedWebActivityIssueDetailsView.js';
 import {CorsIssueDetailsView} from './CorsIssueDetailsView.js';
+import {GenericIssueDetailsView} from './GenericIssueDetailsView.js';
 import {WasmCrossOriginModuleSharingAffectedResourcesView} from './WasmCrossOriginModuleSharingAffectedResourcesView.js';
 import {AttributionReportingIssueDetailsView} from './AttributionReportingIssueDetailsView.js';
 
@@ -71,9 +72,17 @@ const UIStrings = {
   */
   learnMoreS: 'Learn more: {PH1}',
   /**
- *@description The kind of resolution for a mixed content issue
- */
+  *@description The kind of resolution for a mixed content issue
+  */
   automaticallyUpgraded: 'automatically upgraded',
+  /**
+  *@description Menu entry for hiding a particular issue, in the Hide Issues context menu.
+  */
+  hideIssuesLikeThis: 'Hide issues like this',
+  /**
+  *@description Menu entry for unhiding a particular issue, in the Hide Issues context menu.
+  */
+  unhideIssuesLikeThis: 'Unhide issues like this',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssueView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -241,6 +250,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
       new AffectedElementsWithLowContrastView(this, this.issue),
       new AffectedTrustedWebActivityIssueDetailsView(this, this.issue),
       new CorsIssueDetailsView(this, this.issue),
+      new GenericIssueDetailsView(this, this.issue),
       new AffectedDocumentsInQuirksModeView(this, this.issue),
       new AttributionReportingIssueDetailsView(this, this.issue),
       new WasmCrossOriginModuleSharingAffectedResourcesView(this, this.issue),
@@ -369,8 +379,15 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     }
     this.listItemElement.classList.toggle('hidden-issue', this.issue.isHidden());
     const data: HiddenIssuesMenuData = {
-      issueCode: this.issue.code(),
-      forHiddenIssue: this.issue.isHidden(),
+      menuItemLabel: this.issue.isHidden() ? i18nString(UIStrings.unhideIssuesLikeThis) :
+                                             i18nString(UIStrings.hideIssuesLikeThis),
+      menuItemAction: () => {
+        const setting = IssuesManager.IssuesManager.getHideIssueByCodeSetting();
+        const values = setting.get();
+        values[this.issue.code()] = this.issue.isHidden() ? IssuesManager.IssuesManager.IssueStatus.Unhidden :
+                                                            IssuesManager.IssuesManager.IssueStatus.Hidden;
+        setting.set(values);
+      },
     };
     this.hiddenIssuesMenu.data = data;
   }
@@ -440,6 +457,10 @@ export class IssueView extends UI.TreeOutline.TreeElement {
 
   update(): void {
     this.throttle.schedule(async () => this.doUpdate());
+  }
+
+  getIssueKind(): IssuesManager.Issue.IssueKind {
+    return this.issue.getKind();
   }
 
   isForHiddenIssue(): boolean {

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/values.h"
+#include "chrome/browser/enterprise/connectors/device_trust/attestation/common/signals_type.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -19,13 +20,14 @@ class PrefService;
 namespace enterprise_connectors {
 
 class AttestationService;
-class DeviceTrustSignalReporter;
 class SignalsService;
 
+// Main service used to drive device trust connector scenarios. It is currently
+// used to generate a response for a crypto challenge received from Verified
+// Access during an attestation flow.
 class DeviceTrustService : public KeyedService {
  public:
   using AttestationCallback = base::OnceCallback<void(const std::string&)>;
-  using SignalReportCallback = base::OnceCallback<void(bool)>;
 
   using TrustedUrlPatternsChangedCallbackList =
       base::RepeatingCallbackList<void(const base::ListValue&)>;
@@ -37,13 +39,7 @@ class DeviceTrustService : public KeyedService {
 
   DeviceTrustService(PrefService* profile_prefs,
                      std::unique_ptr<AttestationService> attestation_service,
-                     std::unique_ptr<DeviceTrustSignalReporter> signal_reporter,
                      std::unique_ptr<SignalsService> signals_service);
-  DeviceTrustService(PrefService* profile_prefs,
-                     std::unique_ptr<AttestationService> attestation_service,
-                     std::unique_ptr<DeviceTrustSignalReporter> signal_reporter,
-                     std::unique_ptr<SignalsService> signals_service,
-                     SignalReportCallback signal_report_callback);
 
   DeviceTrustService(const DeviceTrustService&) = delete;
   DeviceTrustService& operator=(const DeviceTrustService&) = delete;
@@ -57,6 +53,10 @@ class DeviceTrustService : public KeyedService {
   // Starts flow that actually builds a response.
   virtual void BuildChallengeResponse(const std::string& challenge,
                                       AttestationCallback callback);
+
+  // Collects device trust signals and returns them via `callback`.
+  void GetSignals(
+      base::OnceCallback<void(std::unique_ptr<SignalsType>)> callback);
 
   // Register a `callback` that listens for changes in the trust URL patterns.
   // The callback may be run synchronously for initialization purposes.
@@ -73,25 +73,16 @@ class DeviceTrustService : public KeyedService {
 
  private:
   void OnPolicyUpdated();
-  void OnReporterInitialized(bool success);
-  void OnSignalReported(bool success);
 
-  base::RepeatingCallback<bool()> MakePolicyCheck();
-
-  // Caches whether the device trust service is enabled or not.  This is used
-  // to implement IsEnabled() so the method does not need to access the prefs.
-  // This is important because |reporter_| will indirectly call IsEnabled()
-  // from a sequence that cannot call prefs methods.
-  bool is_enabled_ = false;
+  void OnSignalsCollected(const std::string& challenge,
+                          AttestationCallback callback,
+                          std::unique_ptr<SignalsType> signals);
 
   PrefChangeRegistrar pref_observer_;
-  bool first_report_sent_ = false;
 
   PrefService* const profile_prefs_;
   std::unique_ptr<AttestationService> attestation_service_;
-  std::unique_ptr<DeviceTrustSignalReporter> signal_reporter_;
   std::unique_ptr<SignalsService> signals_service_;
-  SignalReportCallback signal_report_callback_;
   TrustedUrlPatternsChangedCallbackList callbacks_;
 
   base::WeakPtrFactory<DeviceTrustService> weak_factory_{this};

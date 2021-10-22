@@ -94,13 +94,6 @@ AX_BASE_EXPORT extern const base::Feature
 // following mode in Magnifier settings is enabled.
 AX_BASE_EXPORT bool IsMagnifierContinuousMouseFollowingModeSettingEnabled();
 
-// Enables ability to choose point scanning mode in switch access.
-AX_BASE_EXPORT extern const base::Feature kEnableSwitchAccessPointScanning;
-
-// Returns true if the feature to allow point scanning in switch access is
-// enabled.
-AX_BASE_EXPORT bool IsSwitchAccessPointScanningEnabled();
-
 // Enables dictation to use on-device speech recognition when available.
 AX_BASE_EXPORT extern const base::Feature
     kExperimentalAccessibilityDictationOffline;
@@ -117,6 +110,14 @@ AX_BASE_EXPORT extern const base::Feature
 // Returns true if the expeirmental accessibility feature to enable dictation
 // text editing commands is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationCommandsEnabled();
+
+// Enable a setup guide to walk through the steps of initially configuring
+// Switch Access.
+AX_BASE_EXPORT extern const base::Feature
+    kExperimentalAccessibilitySwitchAccessSetupGuide;
+
+// Returns true if setup guide for Switch Access is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilitySwitchAccessSetupGuideEnabled();
 
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;

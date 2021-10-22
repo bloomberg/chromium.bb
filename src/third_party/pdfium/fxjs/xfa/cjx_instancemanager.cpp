@@ -13,6 +13,8 @@
 #include "fxjs/js_resources.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "third_party/base/notreached.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 #include "xfa/fxfa/cxfa_ffdoc.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
@@ -41,13 +43,13 @@ int32_t CJX_InstanceManager::SetInstances(int32_t iDesired) {
   CXFA_Occur* occur = GetXFANode()->GetOccurIfExists();
   int32_t iMin = occur ? occur->GetMin() : CXFA_Occur::kDefaultMin;
   if (iDesired < iMin) {
-    ThrowTooManyOccurancesException(L"min");
+    ThrowTooManyOccurrencesException(L"min");
     return 1;
   }
 
   int32_t iMax = occur ? occur->GetMax() : CXFA_Occur::kDefaultMax;
   if (iMax >= 0 && iDesired > iMax) {
-    ThrowTooManyOccurancesException(L"max");
+    ThrowTooManyOccurrencesException(L"max");
     return 2;
   }
 
@@ -179,7 +181,7 @@ CJS_Result CJX_InstanceManager::removeInstance(
   CXFA_Occur* occur = GetXFANode()->GetOccurIfExists();
   int32_t iMin = occur ? occur->GetMin() : CXFA_Occur::kDefaultMin;
   if (iCount - 1 < iMin)
-    return CJS_Result::Failure(JSMessage::kTooManyOccurances);
+    return CJS_Result::Failure(JSMessage::kTooManyOccurrences);
 
   CXFA_Node* pRemoveInstance = GetXFANode()->GetItemIfExists(iIndex);
   if (!pRemoveInstance)
@@ -234,7 +236,7 @@ CJS_Result CJX_InstanceManager::addInstance(
   CXFA_Occur* occur = GetXFANode()->GetOccurIfExists();
   int32_t iMax = occur ? occur->GetMax() : CXFA_Occur::kDefaultMax;
   if (iMax >= 0 && iCount >= iMax)
-    return CJS_Result::Failure(JSMessage::kTooManyOccurances);
+    return CJS_Result::Failure(JSMessage::kTooManyOccurrences);
 
   CXFA_Node* pNewInstance = GetXFANode()->CreateInstanceIfPossible(fFlags);
   if (!pNewInstance)

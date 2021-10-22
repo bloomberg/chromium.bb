@@ -10,7 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/guid.h"
 #include "base/time/time.h"
-#include "components/full_restore/restore_data.h"
+#include "components/app_restore/restore_data.h"
 
 namespace ash {
 
@@ -42,12 +42,12 @@ class ASH_PUBLIC_EXPORT DeskTemplate {
     template_name_ = template_name;
   }
 
-  const full_restore::RestoreData* desk_restore_data() const {
+  const app_restore::RestoreData* desk_restore_data() const {
     return desk_restore_data_.get();
   }
 
   void set_desk_restore_data(
-      std::unique_ptr<full_restore::RestoreData> restore_data) {
+      std::unique_ptr<app_restore::RestoreData> restore_data) {
     desk_restore_data_ = std::move(restore_data);
   }
 
@@ -62,7 +62,7 @@ class ASH_PUBLIC_EXPORT DeskTemplate {
   // Contains the app launching and window information that can be used to
   // create a new desk instance with the same set of apps/windows specified in
   // it.
-  std::unique_ptr<full_restore::RestoreData> desk_restore_data_;
+  std::unique_ptr<app_restore::RestoreData> desk_restore_data_;
 };
 
 }  // namespace ash

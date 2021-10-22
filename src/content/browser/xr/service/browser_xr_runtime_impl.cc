@@ -23,8 +23,8 @@
 #include "content/public/common/content_features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/public/cpp/session_mode.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_types.h"
@@ -290,9 +290,9 @@ void BrowserXRRuntimeImpl::OnServiceRemoved(VRServiceImpl* service) {
     // may still need to be notified to terminate its session. ExitPresent may
     // be called when the service *is* still valid and would need to be notified
     // of this shutdown.
-    runtime_->ShutdownSession(base::BindOnce(
-        &BrowserXRRuntimeImpl::StopImmersiveSession,
-        weak_ptr_factory_.GetWeakPtr(), base::DoNothing::Once()));
+    runtime_->ShutdownSession(
+        base::BindOnce(&BrowserXRRuntimeImpl::StopImmersiveSession,
+                       weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
   }
 }
 

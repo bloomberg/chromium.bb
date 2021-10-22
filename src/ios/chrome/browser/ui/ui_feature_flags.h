@@ -11,9 +11,6 @@
 // Feature to open tab switcher after sliding down the toolbar.
 extern const base::Feature kExpandedTabStrip;
 
-// Feature to apply UI Refresh theme to the settings.
-extern const base::Feature kSettingsRefresh;
-
 // Test-only: Feature flag used to verify that EG2 can trigger flags. Must be
 // always disabled by default, because it is used to verify that enabling
 // features in tests works.
@@ -26,6 +23,9 @@ extern const base::Feature kSharedHighlightingIOS;
 // users to update the default browser in the Settings.app.
 extern const base::Feature kEnableFREDefaultBrowserScreen;
 
+// Feature flag for testing 'kEnableFREDefaultBrowserScreen' experiment.
+extern const base::Feature kEnableFREDefaultBrowserScreenTesting;
+
 // Feature flag that enables using the FRE UI module to show first run screens.
 extern const base::Feature kEnableFREUIModuleIOS;
 
@@ -33,15 +33,9 @@ extern const base::Feature kEnableFREUIModuleIOS;
 // the current FRE.
 extern const base::Feature kOldSyncStringFRE;
 
-// Feature flag that enables taking fullpage screenshots of a webpage.
-extern const base::Feature kEnableFullPageScreenshot;
-
 // TODO(crbug.com/1128242): Remove this flag after the refactoring work is
 // finished. Flag to modernize the tabstrip without disturbing the existing one.
 extern const base::Feature kModernTabStrip;
-
-// Adds a setting to enable biometric authentication for incognito tabs.
-extern const base::Feature kIncognitoAuthentication;
 
 // Enables the usage of dark mode color while in Incognito mode.
 extern const base::Feature kIncognitoBrandConsistencyForIOS;
@@ -54,12 +48,6 @@ extern const base::Feature kLocationPermissionsPrompt;
 
 // Feature flag that experiments with the default browser fullscreen promo UI.
 extern const base::Feature kDefaultBrowserFullscreenPromoExperiment;
-
-// Feature flag that enables non-modal default browser promos.
-extern const base::Feature kDefaultPromoNonModal;
-
-// Feature flag that enables tailored fullscreen browser promos.
-extern const base::Feature kDefaultPromoTailored;
 
 // Feature flag that swaps the omnibox textfield implementation.
 extern const base::Feature kIOSNewOmniboxImplementation;
@@ -80,6 +68,13 @@ extern const base::Feature kUpdateHistoryEntryPointsInIncognito;
 
 // Feature to update context menu actions.
 extern const base::Feature kContextMenuActionsRefresh;
+
+// Feature flag to enable using Lens to search for images.
+extern const base::Feature kUseLensToSearchForImage;
+
+// Feature flag to enable promotional view for Passwords In Other Apps in
+// Settings.
+extern const base::Feature kCredentialProviderExtensionPromo;
 
 // Whether the ContextMenuActionsRefresh flag is enabled.
 bool IsContextMenuActionsRefreshEnabled();

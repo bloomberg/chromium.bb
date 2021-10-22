@@ -108,6 +108,9 @@ class ThumbnailFetch {
     GURL favicon;
   };
 
+  ThumbnailFetch(const ThumbnailFetch&) = delete;
+  ThumbnailFetch& operator=(const ThumbnailFetch&) = delete;
+
   // Gets visuals for a list of visuals. Calls |complete_callback| with
   // a list of VisualsDataUris structs containing data URIs for thumbnails and
   // favicons for |content_ids|, in the same order. If no thumbnail or favicon
@@ -199,8 +202,6 @@ class ThumbnailFetch {
   std::vector<VisualsDataUris> visuals_;
   base::OnceCallback<void(std::vector<VisualsDataUris>)> complete_callback_;
   size_t callback_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(ThumbnailFetch);
 };
 
 chrome::mojom::AvailableOfflineContentPtr CreateAvailableOfflineContent(
@@ -224,8 +225,10 @@ AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
 void AvailableOfflineContentProvider::List(ListCallback callback) {
   Profile* profile = GetProfile();
-  if (!profile)
+  if (!profile) {
+    CloseSelfOwnedReceiverIfNeeded();
     return;
+  }
   offline_items_collection::OfflineContentAggregator* aggregator =
       OfflineContentAggregatorFactory::GetForKey(profile->GetProfileKey());
   aggregator->GetAllItems(
@@ -270,10 +273,14 @@ void AvailableOfflineContentProvider::Create(
     int render_process_host_id,
     mojo::PendingReceiver<chrome::mojom::AvailableOfflineContentProvider>
         receiver) {
-  // Self owned receiveres remain as long as the pipe is error free.
-  mojo::MakeSelfOwnedReceiver(
+  // Self owned receivers remain as long as the pipe is error free.
+  auto provider_self_owned_receiver = mojo::MakeSelfOwnedReceiver(
       std::make_unique<AvailableOfflineContentProvider>(render_process_host_id),
       std::move(receiver));
+  // TODO(curranmax): Rework this code so the static_cast is not needed.
+  auto* provider = static_cast<AvailableOfflineContentProvider*>(
+      provider_self_owned_receiver->impl());
+  provider->SetSelfOwnedReceiver(provider_self_owned_receiver);
 }
 
 // Picks the best available offline content items, and passes them to callback.
@@ -282,8 +289,10 @@ void AvailableOfflineContentProvider::ListFinalize(
     offline_items_collection::OfflineContentAggregator* aggregator,
     const std::vector<OfflineItem>& all_items) {
   Profile* profile = GetProfile();
-  if (!profile)
+  if (!profile) {
+    CloseSelfOwnedReceiverIfNeeded();
     return;
+  }
 
   std::vector<OfflineItem> selected(kMinInterestingItemCount);
   const auto end = std::partial_sort_copy(all_items.begin(), all_items.end(),
@@ -333,6 +342,20 @@ Profile* AvailableOfflineContentProvider::GetProfile() {
   if (!render_process_host)
     return nullptr;
   return Profile::FromBrowserContext(render_process_host->GetBrowserContext());
+}
+
+void AvailableOfflineContentProvider::SetSelfOwnedReceiver(
+    const mojo::SelfOwnedReceiverRef<
+        chrome::mojom::AvailableOfflineContentProvider>&
+        provider_self_owned_receiver) {
+  provider_self_owned_receiver_ = provider_self_owned_receiver;
+}
+
+void AvailableOfflineContentProvider::CloseSelfOwnedReceiverIfNeeded() {
+  // Closing the mojo pipe invalidates any pending callbacks, and they should
+  // not be used after the receiver is closed.
+  if (provider_self_owned_receiver_)
+    provider_self_owned_receiver_->Close();
 }
 
 }  // namespace android

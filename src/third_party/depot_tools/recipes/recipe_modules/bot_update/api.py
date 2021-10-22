@@ -70,7 +70,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
       raise self.m.step.InfraFailure(
           'invalid (host, project) pair in '
           'buildbucket.build.input.gitiles_commit: '
-          '(%r, %r) does not match any of configured gclient solutions '
+          '(%s, %s) does not match any of configured gclient solutions '
           'and not present in gclient_config.repo_path_map' % (
               commit.host, commit.project))
 

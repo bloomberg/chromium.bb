@@ -45,6 +45,10 @@ class CallbackLogger {
    public:
     Event(int chunk_length, bool has_more, base::File::Error result)
         : chunk_length_(chunk_length), has_more_(has_more), result_(result) {}
+
+    Event(const Event&) = delete;
+    Event& operator=(const Event&) = delete;
+
     virtual ~Event() {}
 
     int chunk_length() const { return chunk_length_; }
@@ -55,11 +59,13 @@ class CallbackLogger {
     int chunk_length_;
     bool has_more_;
     base::File::Error result_;
-
-    DISALLOW_COPY_AND_ASSIGN(Event);
   };
 
   CallbackLogger() {}
+
+  CallbackLogger(const CallbackLogger&) = delete;
+  CallbackLogger& operator=(const CallbackLogger&) = delete;
+
   virtual ~CallbackLogger() {}
 
   void OnReadFile(int chunk_length, bool has_more, base::File::Error result) {
@@ -70,8 +76,6 @@ class CallbackLogger {
 
  private:
   std::vector<std::unique_ptr<Event>> events_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
 };
 
 }  // namespace

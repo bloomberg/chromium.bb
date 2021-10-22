@@ -35,12 +35,14 @@ namespace dawn_native {
 
     AttachmentStateBlueprint::AttachmentStateBlueprint(const RenderPipelineDescriptor* descriptor)
         : mSampleCount(descriptor->multisample.count) {
-        ASSERT(descriptor->fragment->targetCount <= kMaxColorAttachments);
-        for (ColorAttachmentIndex i(uint8_t(0));
-             i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->fragment->targetCount));
-             ++i) {
-            mColorAttachmentsSet.set(i);
-            mColorFormats[i] = descriptor->fragment->targets[static_cast<uint8_t>(i)].format;
+        if (descriptor->fragment != nullptr) {
+            ASSERT(descriptor->fragment->targetCount <= kMaxColorAttachments);
+            for (ColorAttachmentIndex i(uint8_t(0));
+                 i < ColorAttachmentIndex(static_cast<uint8_t>(descriptor->fragment->targetCount));
+                 ++i) {
+                mColorAttachmentsSet.set(i);
+                mColorFormats[i] = descriptor->fragment->targets[static_cast<uint8_t>(i)].format;
+            }
         }
         if (descriptor->depthStencil != nullptr) {
             mDepthStencilFormat = descriptor->depthStencil->format;
@@ -53,9 +55,6 @@ namespace dawn_native {
              ++i) {
             TextureViewBase* attachment =
                 descriptor->colorAttachments[static_cast<uint8_t>(i)].view;
-            if (attachment == nullptr) {
-                attachment = descriptor->colorAttachments[static_cast<uint8_t>(i)].attachment;
-            }
             mColorAttachmentsSet.set(i);
             mColorFormats[i] = attachment->GetFormat().format;
             if (mSampleCount == 0) {
@@ -66,9 +65,6 @@ namespace dawn_native {
         }
         if (descriptor->depthStencilAttachment != nullptr) {
             TextureViewBase* attachment = descriptor->depthStencilAttachment->view;
-            if (attachment == nullptr) {
-                attachment = descriptor->depthStencilAttachment->attachment;
-            }
             mDepthStencilFormat = attachment->GetFormat().format;
             if (mSampleCount == 0) {
                 mSampleCount = attachment->GetTexture()->GetSampleCount();
@@ -130,7 +126,7 @@ namespace dawn_native {
     }
 
     AttachmentState::AttachmentState(DeviceBase* device, const AttachmentStateBlueprint& blueprint)
-        : AttachmentStateBlueprint(blueprint), CachedObject(device, kLabelNotImplemented) {
+        : AttachmentStateBlueprint(blueprint), ObjectBase(device) {
     }
 
     AttachmentState::~AttachmentState() {

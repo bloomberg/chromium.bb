@@ -74,6 +74,7 @@ import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import jp.tomorrowkey.android.gifplayer.BaseGifImage;
@@ -349,6 +350,36 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
+    /**
+     * Runs the main loop for at least the specified amount of time. Useful in cases where you need
+     * to ensure a negative, e.g., a certain view is never displayed. Intended usage:
+     * onView(isRoot()).waitAtLeast(...);
+     */
+    static ViewAction waitAtLeast(long millis) {
+        return new ViewAction() {
+            @Override
+            public Matcher<View> getConstraints() {
+                return ViewMatchers.isRoot();
+            }
+
+            @Override
+            public String getDescription() {
+                return "Waits/idles for a specified amount of time";
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                uiController.loopMainThreadUntilIdle();
+
+                long endTime = System.currentTimeMillis() + millis;
+                while (System.currentTimeMillis() < endTime) {
+                    uiController.loopMainThreadForAtLeast(
+                            Math.max(endTime - System.currentTimeMillis(), 50));
+                }
+            }
+        };
+    }
+
     static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override
@@ -535,6 +566,23 @@ class AutofillAssistantUiTestUtil {
                                                         : activity.getInitialIntent()
                                                                   .getDataString())
                                         .build()));
+    }
+
+    /**
+     * Starts Autofill Assistant on the given {@code activity}. Will add the provided {@code url}
+     * and {@code scriptParameters} to the trigger context.
+     */
+    public static void startAutofillAssistantWithParams(
+            ChromeActivity activity, String url, Map<String, Object> scriptParameters) {
+        TriggerContext.Builder argsBuilder =
+                TriggerContext.newBuilder().fromBundle(null).withInitialUrl(url);
+        for (Map.Entry<String, Object> param : scriptParameters.entrySet()) {
+            argsBuilder.addParameter(param.getKey(), param.getValue());
+        }
+        argsBuilder.addParameter("ENABLED", true);
+        argsBuilder.addParameter("ORIGINAL_DEEPLINK", url);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> AutofillAssistantFacade.start(activity, argsBuilder.build()));
     }
 
     /** Performs a single tap on the center of the specified element. */

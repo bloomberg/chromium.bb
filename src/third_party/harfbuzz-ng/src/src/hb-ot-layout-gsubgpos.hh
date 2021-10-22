@@ -1618,7 +1618,14 @@ struct Rule
     const UnsizedArrayOf<LookupRecord> &lookupRecord = StructAfter<UnsizedArrayOf<LookupRecord>>
 						       (inputZ.as_array ((inputCount ? inputCount - 1 : 0)));
     for (unsigned i = 0; i < (unsigned) lookupCount; i++)
+    {
+      if (!lookup_map->has (lookupRecord[i].lookupListIndex))
+      {
+        out->lookupCount--;
+        continue;
+      }
       c->copy (lookupRecord[i], lookup_map);
+    }
 
     return_trace (true);
   }
@@ -1745,10 +1752,10 @@ struct RuleSet
     for (const Offset16To<Rule>& _ : rule)
     {
       if (!_) continue;
+      auto o_snap = c->serializer->snapshot ();
       auto *o = out->rule.serialize_append (c->serializer);
       if (unlikely (!o)) continue;
 
-      auto o_snap = c->serializer->snapshot ();
       if (!o->serialize_subset (c, _, this, lookup_map, klass_map))
       {
 	out->rule.pop ();
@@ -2234,7 +2241,14 @@ struct ContextFormat3
     const LookupRecord *lookupRecord = &StructAfter<LookupRecord> (coverageZ.as_array (glyphCount));
     const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
     for (unsigned i = 0; i < (unsigned) lookupCount; i++)
+    {
+      if (!lookup_map->has (lookupRecord[i].lookupListIndex))
+      {
+        out->lookupCount--;
+        continue;
+      }
       c->serializer->copy (lookupRecord[i], lookup_map);
+    }
 
     return_trace (true);
   }
@@ -2710,10 +2724,10 @@ struct ChainRuleSet
     for (const Offset16To<ChainRule>& _ : rule)
     {
       if (!_) continue;
+      auto o_snap = c->serializer->snapshot ();
       auto *o = out->rule.serialize_append (c->serializer);
       if (unlikely (!o)) continue;
 
-      auto o_snap = c->serializer->snapshot ();
       if (!o->serialize_subset (c, _, this,
 				lookup_map,
 				backtrack_klass_map,
@@ -3303,13 +3317,21 @@ struct ChainContextFormat3
       return_trace (false);
 
     const Array16Of<LookupRecord> &lookupRecord = StructAfter<Array16Of<LookupRecord>> (lookahead);
+    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
+    hb_set_t lookup_indices;
+    for (unsigned i = 0; i < (unsigned) lookupRecord.len; i++)
+      if (lookup_map->has (lookupRecord[i].lookupListIndex))
+        lookup_indices.add (i);
+
     HBUINT16 lookupCount;
-    lookupCount = lookupRecord.len;
+    lookupCount = lookup_indices.get_population ();
     if (!c->serializer->copy (lookupCount)) return_trace (false);
 
-    const hb_map_t *lookup_map = c->table_tag == HB_OT_TAG_GSUB ? c->plan->gsub_lookups : c->plan->gpos_lookups;
-    for (unsigned i = 0; i < (unsigned) lookupCount; i++)
-      if (!c->serializer->copy (lookupRecord[i], lookup_map)) return_trace (false);
+    for (unsigned i : lookup_indices.iter ())
+    {
+      if (!c->serializer->copy (lookupRecord[i], lookup_map))
+        return_trace (false);
+    }
 
     return_trace (true);
   }
@@ -3656,55 +3678,57 @@ struct GSUBGPOS
                                 const hb_set_t *feature_indices,
                                 hb_map_t *duplicate_feature_map /* OUT */) const
   {
+    hb_set_t unique_features;
+    hb_tag_t prev_t = get_feature_tag (feature_indices->get_min ());
     //find out duplicate features after subset
-    unsigned prev = 0xFFFFu;
     for (unsigned i : feature_indices->iter ())
     {
-      if (prev == 0xFFFFu)
-      {
-        duplicate_feature_map->set (i, i);
-        prev = i;
-        continue;
-      }
-
       hb_tag_t t = get_feature_tag (i);
-      hb_tag_t prev_t = get_feature_tag (prev);
       if (t != prev_t)
       {
+        prev_t = t;
+        unique_features.clear ();
+        unique_features.add (i);
         duplicate_feature_map->set (i, i);
-        prev = i;
         continue;
       }
 
-      const Feature& f = get_feature (i);
-      const Feature& prev_f = get_feature (prev);
+      bool found = false;
 
-      auto f_iter =
-      + hb_iter (f.lookupIndex)
-      | hb_filter (lookup_indices)
-      ;
-
-      auto prev_iter =
-      + hb_iter (prev_f.lookupIndex)
-      | hb_filter (lookup_indices)
-      ;
-
-      if (f_iter.len () != prev_iter.len ())
+      for (unsigned other_f_index : unique_features.iter ())
       {
-        duplicate_feature_map->set (i, i);
-        prev = i;
-        continue;
+        const Feature& f = get_feature (i);
+        const Feature& other_f = get_feature (other_f_index);
+
+        auto f_iter =
+        + hb_iter (f.lookupIndex)
+        | hb_filter (lookup_indices)
+        ;
+  
+        auto other_f_iter =
+        + hb_iter (other_f.lookupIndex)
+        | hb_filter (lookup_indices)
+        ;
+  
+        bool is_equal = true;
+        for (; f_iter && other_f_iter; f_iter++, other_f_iter++)
+        {
+          unsigned a = *f_iter;
+          unsigned b = *other_f_iter;
+          if (a != b) { is_equal = false; break; }
+        }
+
+        if (is_equal == false || f_iter || other_f_iter) continue;
+        
+        found = true;
+        duplicate_feature_map->set (i, other_f_index);
+        break;
       }
-
-      bool is_equal = true;
-      for (auto _ : + hb_zip (f_iter, prev_iter))
-        if (_.first != _.second) { is_equal = false; break; }
-
-      if (is_equal == true) duplicate_feature_map->set (i, prev);
-      else
+      
+      if (found == false)
       {
+        unique_features.add (i);
         duplicate_feature_map->set (i, i);
-        prev = i;
       }
     }
   }

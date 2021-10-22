@@ -105,7 +105,7 @@ bool AppIsDefault(Profile* profile, const std::string& id) {
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
       .ForOneApp(id, [&result](const apps::AppUpdate& update) {
-        result = update.InstallSource() == apps::mojom::InstallSource::kDefault;
+        result = update.InstallReason() == apps::mojom::InstallReason::kDefault;
       });
   return result;
 }
@@ -114,7 +114,7 @@ void SetAppIsDefaultForTest(Profile* profile, const std::string& id) {
   apps::mojom::AppPtr delta = apps::mojom::App::New();
   delta->app_type = apps::mojom::AppType::kExtension;
   delta->app_id = id;
-  delta->install_source = apps::mojom::InstallSource::kDefault;
+  delta->install_reason = apps::mojom::InstallReason::kDefault;
 
   std::vector<apps::mojom::AppPtr> deltas;
   deltas.push_back(std::move(delta));
@@ -276,7 +276,8 @@ class AppListSyncableService::ModelUpdaterObserver
     // Sync OEM name if it was created on demand on ash side.
     if (item->id() == ash::kOemFolderId &&
         item->name() != owner_->oem_folder_name_) {
-      item->SetName(owner_->oem_folder_name_);
+      owner_->GetModelUpdater()->SetItemName(item->id(),
+                                             owner_->oem_folder_name_);
     }
   }
 
@@ -344,6 +345,8 @@ void AppListSyncableService::SetAppIsDefaultForTest(Profile* profile,
                                                     const std::string& id) {
   app_list::SetAppIsDefaultForTest(profile, id);
 }
+
+AppListSyncableService::AppListSyncableService() = default;
 
 AppListSyncableService::AppListSyncableService(Profile* profile)
     : profile_(profile),
@@ -550,12 +553,10 @@ void AppListSyncableService::ApplyAppAttributes(
 
 void AppListSyncableService::SetOemFolderName(const std::string& name) {
   oem_folder_name_ = name;
+
   // Update OEM folder item if it was already created. If it is not created yet
   // then on creation it will take right name.
-  ChromeAppListItem* oem_folder_item =
-      model_updater_->FindItem(ash::kOemFolderId);
-  if (oem_folder_item)
-    oem_folder_item->SetName(oem_folder_name_);
+  model_updater_->SetItemName(ash::kOemFolderId, oem_folder_name_);
 }
 
 AppListModelUpdater* AppListSyncableService::GetModelUpdater() {
@@ -901,9 +902,9 @@ void AppListSyncableService::UpdateItem(const ChromeAppListItem* app_item) {
   // Check to see if the item needs to be moved to/from the OEM folder.
   bool is_oem = AppIsOem(app_item->id());
   if (!is_oem && app_item->folder_id() == ash::kOemFolderId)
-    model_updater_->MoveItemToFolder(app_item->id(), "");
+    model_updater_->SetItemFolderId(app_item->id(), "");
   else if (is_oem && app_item->folder_id() != ash::kOemFolderId)
-    model_updater_->MoveItemToFolder(app_item->id(), ash::kOemFolderId);
+    model_updater_->SetItemFolderId(app_item->id(), ash::kOemFolderId);
 }
 
 void AppListSyncableService::RemoveSyncItem(const std::string& id) {
@@ -1000,6 +1001,11 @@ void AppListSyncableService::PopulateSyncItemsForTest(
             .second;
     DCHECK(success);
   }
+}
+
+const AppListSyncableService::SyncItemMap& AppListSyncableService::sync_items()
+    const {
+  return sync_items_;
 }
 
 void AppListSyncableService::WaitUntilReadyToSync(base::OnceClosure done) {
@@ -1390,15 +1396,15 @@ syncer::StringOrdinal AppListSyncableService::GetPreferredOemFolderPos() {
 }
 
 bool AppListSyncableService::AppIsOem(const std::string& id) {
-  // For Arc and web apps, it is sufficient to check the install source.
-  apps::mojom::InstallSource install_source =
-      apps::mojom::InstallSource::kUnknown;
+  // For Arc and web apps, it is sufficient to check the install reason.
+  apps::mojom::InstallReason install_reason =
+      apps::mojom::InstallReason::kUnknown;
   apps::AppServiceProxyFactory::GetForProfile(profile_)
       ->AppRegistryCache()
-      .ForOneApp(id, [&install_source](const apps::AppUpdate& update) {
-        install_source = update.InstallSource();
+      .ForOneApp(id, [&install_reason](const apps::AppUpdate& update) {
+        install_reason = update.InstallReason();
       });
-  if (install_source == apps::mojom::InstallSource::kOem)
+  if (install_reason == apps::mojom::InstallReason::kOem)
     return true;
 
   if (!extension_system_->extension_service())
@@ -1498,7 +1504,6 @@ void AppListSyncableService::InstallDefaultPageBreaks() {
 
     auto page_break_item = std::make_unique<PageBreakAppItem>(
         profile(), model_updater_.get(), nullptr /* sync_item */, id);
-    page_break_item->SetName("__default_page_break__");
     AddItem(std::move(page_break_item));
   }
 }

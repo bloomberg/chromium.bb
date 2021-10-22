@@ -50,6 +50,11 @@ extern const char kHistogramFromGWSCumulativeLayoutShiftMainFrame[];
 class FromGWSPageLoadMetricsLogger {
  public:
   FromGWSPageLoadMetricsLogger();
+
+  FromGWSPageLoadMetricsLogger(const FromGWSPageLoadMetricsLogger&) = delete;
+  FromGWSPageLoadMetricsLogger& operator=(const FromGWSPageLoadMetricsLogger&) =
+      delete;
+
   ~FromGWSPageLoadMetricsLogger();
 
   void SetPreviouslyCommittedUrl(const GURL& url);
@@ -132,14 +137,17 @@ class FromGWSPageLoadMetricsLogger {
 
   // The time of first user interaction after paint from navigation start.
   absl::optional<base::TimeDelta> first_user_interaction_after_paint_;
-
-  DISALLOW_COPY_AND_ASSIGN(FromGWSPageLoadMetricsLogger);
 };
 
 class FromGWSPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   FromGWSPageLoadMetricsObserver();
+
+  FromGWSPageLoadMetricsObserver(const FromGWSPageLoadMetricsObserver&) =
+      delete;
+  FromGWSPageLoadMetricsObserver& operator=(
+      const FromGWSPageLoadMetricsObserver&) = delete;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
   ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
@@ -180,8 +188,6 @@ class FromGWSPageLoadMetricsObserver
 
  private:
   FromGWSPageLoadMetricsLogger logger_;
-
-  DISALLOW_COPY_AND_ASSIGN(FromGWSPageLoadMetricsObserver);
 };
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_FROM_GWS_PAGE_LOAD_METRICS_OBSERVER_H_

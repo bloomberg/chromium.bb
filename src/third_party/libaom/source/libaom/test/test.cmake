@@ -277,6 +277,7 @@ if(NOT BUILD_SHARED_LIBS)
               "${AOM_ROOT}/test/obmc_variance_test.cc"
               "${AOM_ROOT}/test/pickrst_test.cc"
               "${AOM_ROOT}/test/quantize_func_test.cc"
+              "${AOM_ROOT}/test/quantize_lp_func_test.cc"
               "${AOM_ROOT}/test/sad_test.cc"
               "${AOM_ROOT}/test/subtract_test.cc"
               "${AOM_ROOT}/test/reconinter_test.cc"
@@ -323,7 +324,8 @@ if(NOT BUILD_SHARED_LIBS)
 
   if(NOT (HAVE_SSE2 OR HAVE_NEON))
     list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
-                     "${AOM_ROOT}/test/quantize_func_test.cc")
+                     "${AOM_ROOT}/test/quantize_func_test.cc"
+                     "${AOM_ROOT}/test/quantize_lp_func_test.cc")
   endif()
 
   if(HAVE_SSE4_1)

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {PDFPlugin, PluginProxy} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {TestBrowserProxy} from '../test_browser_proxy.js';
 
@@ -23,18 +22,8 @@ export class TestPluginProxy extends TestBrowserProxy {
     /** @type {?Function} The callback to call when the viewport changes. */
     this.viewportChangedCallback_ = null;
 
-    /** @type {boolean} Whether the plugin is compatible. */
-    this.compatible_ = true;
-
     /** @type {?HTMLDivElement} */
     this.fakePlugin_ = null;
-  }
-
-  /**
-   * @param {boolean} compatible Whether the PDF plugin should be compatible.
-   */
-  setPluginCompatible(compatible) {
-    this.compatible_ = compatible;
   }
 
   /** @override */
@@ -54,11 +43,6 @@ export class TestPluginProxy extends TestBrowserProxy {
   /** @override */
   setViewportChangedCallback(viewportChangedCallback) {
     this.viewportChangedCallback_ = viewportChangedCallback;
-  }
-
-  /** @override */
-  checkPluginCompatibility(oopCompatObj) {
-    return this.compatible_;
   }
 
   /** @override */

@@ -147,12 +147,12 @@ static void blend_normal_8bit(const uint8_t *top, ptrdiff_t top_linesize,
                               ptrdiff_t width, ptrdiff_t height,
                               FilterParams *param, double *values, int starty)
 {
-    const double opacity = param->opacity;
+    const float opacity = param->opacity;
     int i, j;
 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            dst[j] = top[j] * opacity + bottom[j] * (1. - opacity);
+            dst[j] = top[j] * opacity + bottom[j] * (1.f - opacity);
         }
         dst    += dst_linesize;
         top    += top_linesize;
@@ -169,7 +169,7 @@ static void blend_normal_16bit(const uint8_t *_top, ptrdiff_t top_linesize,
     const uint16_t *top = (uint16_t*)_top;
     const uint16_t *bottom = (uint16_t*)_bottom;
     uint16_t *dst = (uint16_t*)_dst;
-    const double opacity = param->opacity;
+    const float opacity = param->opacity;
     int i, j;
     dst_linesize /= 2;
     top_linesize /= 2;
@@ -177,7 +177,7 @@ static void blend_normal_16bit(const uint8_t *_top, ptrdiff_t top_linesize,
 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            dst[j] = top[j] * opacity + bottom[j] * (1. - opacity);
+            dst[j] = top[j] * opacity + bottom[j] * (1.f - opacity);
         }
         dst    += dst_linesize;
         top    += top_linesize;
@@ -194,7 +194,7 @@ static void blend_normal_32bit(const uint8_t *_top, ptrdiff_t top_linesize,
     const float *top = (float*)_top;
     const float *bottom = (float*)_bottom;
     float *dst = (float*)_dst;
-    const double opacity = param->opacity;
+    const float opacity = param->opacity;
     int i, j;
     dst_linesize /= 4;
     top_linesize /= 4;
@@ -202,7 +202,7 @@ static void blend_normal_32bit(const uint8_t *_top, ptrdiff_t top_linesize,
 
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            dst[j] = top[j] * opacity + bottom[j] * (1. - opacity);
+            dst[j] = top[j] * opacity + bottom[j] * (1.f - opacity);
         }
         dst    += dst_linesize;
         top    += top_linesize;
@@ -217,7 +217,7 @@ static void blend_## name##_8bit(const uint8_t *top, ptrdiff_t top_linesize,    
                                  ptrdiff_t width, ptrdiff_t height,                \
                                  FilterParams *param, double *values, int starty) \
 {                                                                              \
-    double opacity = param->opacity;                                           \
+    const float opacity = param->opacity;                                      \
     int i, j;                                                                  \
                                                                                \
     for (i = 0; i < height; i++) {                                             \
@@ -240,7 +240,7 @@ static void blend_## name##_##depth##bit(const uint8_t *_top, ptrdiff_t top_line
     const uint16_t *top = (const uint16_t*)_top;                               \
     const uint16_t *bottom = (const uint16_t*)_bottom;                         \
     uint16_t *dst = (uint16_t*)_dst;                                           \
-    double opacity = param->opacity;                                           \
+    const float opacity = param->opacity;                                      \
     int i, j;                                                                  \
     dst_linesize /= 2;                                                         \
     top_linesize /= 2;                                                         \
@@ -266,7 +266,7 @@ static void blend_## name##_##depth##bit(const uint8_t *_top, ptrdiff_t top_line
     const float *top = (const float*)_top;                                     \
     const float *bottom = (const float*)_bottom;                               \
     float *dst = (float*)_dst;                                                 \
-    double opacity = param->opacity;                                           \
+    const float opacity = param->opacity;                                      \
     int i, j;                                                                  \
     dst_linesize /= 4;                                                         \
     top_linesize /= 4;                                                         \
@@ -624,7 +624,8 @@ static AVFrame *blend_frame(AVFilterContext *ctx, AVFrame *top_buf,
                           .w = outw, .h = outh, .param = param, .plane = plane,
                           .inlink = inlink };
 
-        ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(outh, ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, filter_slice, &td, NULL,
+                          FFMIN(outh, ff_filter_get_nb_threads(ctx)));
     }
 
     if (!s->tblend)
@@ -680,10 +681,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -894,7 +892,6 @@ static const AVFilterPad blend_inputs[] = {
         .name          = "bottom",
         .type          = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad blend_outputs[] = {
@@ -903,7 +900,6 @@ static const AVFilterPad blend_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_blend = {
@@ -915,8 +911,8 @@ const AVFilter ff_vf_blend = {
     .priv_size     = sizeof(BlendContext),
     .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = blend_inputs,
-    .outputs       = blend_outputs,
+    FILTER_INPUTS(blend_inputs),
+    FILTER_OUTPUTS(blend_outputs),
     .priv_class    = &blend_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
@@ -956,7 +952,6 @@ static const AVFilterPad tblend_inputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .filter_frame  = tblend_filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad tblend_outputs[] = {
@@ -965,7 +960,6 @@ static const AVFilterPad tblend_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_tblend = {
@@ -976,8 +970,8 @@ const AVFilter ff_vf_tblend = {
     .query_formats = query_formats,
     .init          = init,
     .uninit        = uninit,
-    .inputs        = tblend_inputs,
-    .outputs       = tblend_outputs,
+    FILTER_INPUTS(tblend_inputs),
+    FILTER_OUTPUTS(tblend_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };

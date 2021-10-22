@@ -199,6 +199,10 @@ bool IsLoginTab(WebContents* web_contents) {
 class MultiNavigationObserver : public content::NotificationObserver {
  public:
   MultiNavigationObserver();
+
+  MultiNavigationObserver(const MultiNavigationObserver&) = delete;
+  MultiNavigationObserver& operator=(const MultiNavigationObserver&) = delete;
+
   ~MultiNavigationObserver() override;
 
   // Waits for exactly |num_navigations_to_wait_for| LOAD_STOP
@@ -236,8 +240,6 @@ class MultiNavigationObserver : public content::NotificationObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(MultiNavigationObserver);
 };
 
 MultiNavigationObserver::MultiNavigationObserver()
@@ -302,6 +304,11 @@ void MultiNavigationObserver::Observe(
 class FailLoadsAfterLoginObserver : public content::NotificationObserver {
  public:
   FailLoadsAfterLoginObserver();
+
+  FailLoadsAfterLoginObserver(const FailLoadsAfterLoginObserver&) = delete;
+  FailLoadsAfterLoginObserver& operator=(const FailLoadsAfterLoginObserver&) =
+      delete;
+
   ~FailLoadsAfterLoginObserver() override;
 
   void WaitForNavigations();
@@ -328,8 +335,6 @@ class FailLoadsAfterLoginObserver : public content::NotificationObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   content::NotificationRegistrar registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(FailLoadsAfterLoginObserver);
 };
 
 FailLoadsAfterLoginObserver::FailLoadsAfterLoginObserver()
@@ -392,6 +397,9 @@ class CaptivePortalObserver {
  public:
   explicit CaptivePortalObserver(Profile* profile);
 
+  CaptivePortalObserver(const CaptivePortalObserver&) = delete;
+  CaptivePortalObserver& operator=(const CaptivePortalObserver&) = delete;
+
   // Runs the message loop until exactly |update_count| captive portal
   // results have been received, since the creation of |this|.  Expects no
   // additional captive portal results.
@@ -423,8 +431,6 @@ class CaptivePortalObserver {
 
   // Last result received.
   CaptivePortalResult captive_portal_result_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalObserver);
 };
 
 CaptivePortalObserver::CaptivePortalObserver(Profile* profile)
@@ -473,6 +479,11 @@ void CaptivePortalObserver::Observe(
 class SSLInterstitialTimerObserver {
  public:
   explicit SSLInterstitialTimerObserver(content::WebContents* web_contents);
+
+  SSLInterstitialTimerObserver(const SSLInterstitialTimerObserver&) = delete;
+  SSLInterstitialTimerObserver& operator=(const SSLInterstitialTimerObserver&) =
+      delete;
+
   ~SSLInterstitialTimerObserver();
 
   // Waits until the interstitial delay timer in SSLErrorHandler is started.
@@ -485,8 +496,6 @@ class SSLInterstitialTimerObserver {
   SSLErrorHandler::TimerStartedCallback callback_;
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLInterstitialTimerObserver);
 };
 
 SSLInterstitialTimerObserver::SSLInterstitialTimerObserver(
@@ -523,6 +532,9 @@ class TabActivationWaiter : public TabStripModelObserver {
     tab_strip_model->AddObserver(this);
   }
 
+  TabActivationWaiter(const TabActivationWaiter&) = delete;
+  TabActivationWaiter& operator=(const TabActivationWaiter&) = delete;
+
   void WaitForActiveTabChange() {
     if (number_of_unconsumed_active_tab_changes_ == 0) {
       // Wait until TabStripModelObserver::ActiveTabChanged will get called.
@@ -552,8 +564,6 @@ class TabActivationWaiter : public TabStripModelObserver {
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   int number_of_unconsumed_active_tab_changes_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabActivationWaiter);
 };
 
 }  // namespace
@@ -561,6 +571,10 @@ class TabActivationWaiter : public TabStripModelObserver {
 class CaptivePortalBrowserTest : public InProcessBrowserTest {
  public:
   CaptivePortalBrowserTest();
+
+  CaptivePortalBrowserTest(const CaptivePortalBrowserTest&) = delete;
+  CaptivePortalBrowserTest& operator=(const CaptivePortalBrowserTest&) = delete;
+
   ~CaptivePortalBrowserTest() override;
 
   // InProcessBrowserTest:
@@ -936,9 +950,6 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
 #endif
   const BrowserList* browser_list_;
   bool intercept_bad_cert_ = true;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CaptivePortalBrowserTest);
 };
 
 CaptivePortalBrowserTest::CaptivePortalBrowserTest()
@@ -976,8 +987,7 @@ void CaptivePortalBrowserTest::SetUpOnMainThread() {
   // Set SSL interstitial delay long enough so that a captive portal result
   // is guaranteed to arrive during this window, and a captive portal
   // error page is displayed instead of an SSL interstitial.
-  SSLErrorHandler::SetInterstitialDelayForTesting(
-      base::TimeDelta::FromHours(1));
+  SSLErrorHandler::SetInterstitialDelayForTesting(base::Hours(1));
 }
 
 bool CaptivePortalBrowserTest::OnIntercept(
@@ -1037,9 +1047,9 @@ bool CaptivePortalBrowserTest::OnIntercept(
 
     if (behind_captive_portal_) {
       if (url_string == kMockHttpsQuickTimeoutUrl) {
-        network::URLLoaderCompletionStatus status;
-        status.error_code = net::ERR_CONNECTION_TIMED_OUT;
-        params->client->OnComplete(status);
+        network::URLLoaderCompletionStatus completion_status;
+        completion_status.error_code = net::ERR_CONNECTION_TIMED_OUT;
+        params->client->OnComplete(completion_status);
       } else {
         ongoing_mock_requests_.emplace_back(std::move(*params));
         if (num_jobs_to_wait_for_ ==
@@ -1250,7 +1260,7 @@ void CaptivePortalBrowserTest::SlowLoadNoCaptivePortal(
   EXPECT_EQ(0, NumLoadingTabs());
 
   // Set a slow SSL load time to prevent the timer from triggering.
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Days(1));
 }
 
 void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
@@ -1263,7 +1273,7 @@ void CaptivePortalBrowserTest::FastTimeoutNoCaptivePortal(
   captive_portal::CaptivePortalTabReloader* tab_reloader =
       GetTabReloader(browser->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(tab_reloader);
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromHours(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Hours(1));
 
   MultiNavigationObserver navigation_observer;
   CaptivePortalObserver portal_observer(browser->profile());
@@ -1409,7 +1419,7 @@ void CaptivePortalBrowserTest::SlowLoadBehindCaptivePortal(
             GetStateOfTabReloaderAt(browser, initial_active_index));
 
   // Reset the load time to be large, so the timer won't trigger on a reload.
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromHours(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Hours(1));
 
   if (out_login_browser)
     *out_login_browser = login_browser;
@@ -1443,7 +1453,7 @@ void CaptivePortalBrowserTest::FastErrorBehindCaptivePortal(
   captive_portal::CaptivePortalTabReloader* tab_reloader =
       GetTabReloader(tab_strip_model->GetActiveWebContents());
   ASSERT_TRUE(tab_reloader);
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromHours(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Hours(1));
 
   // Number of tabs expected to be open after the captive portal checks
   // have completed.
@@ -1791,7 +1801,7 @@ void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
   // A non-zero delay makes it more likely that
   // captive_portal::CaptivePortalTabHelper will be confused by events relating
   // to canceling the old navigation.
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromSeconds(2));
+  SetSlowSSLLoadTime(tab_reloader, base::Seconds(2));
   CaptivePortalObserver portal_observer(browser->profile());
 
   // Navigate the error tab to another slow loading page.  Can't have
@@ -1820,7 +1830,7 @@ void CaptivePortalBrowserTest::RunNavigateLoadingTabToTimeoutTest(
 
   // Simulate logging in.
   tab_strip_model->ActivateTabAt(1, {TabStripModel::GestureType::kOther});
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Days(1));
   Login(browser, 1 /* num_loading_tabs */, 0 /* num_timed_out_tabs */,
         1 /* expected_portal_checks */);
 
@@ -2623,7 +2633,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, GoBackToTimeout) {
                    tab_strip_model->GetWebContentsAt(1)));
   EXPECT_EQ(1, NumLoadingTabs());
 
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Days(1));
   Login(browser(), 1 /* num_loading_tabs */, 0 /* num_timed_out_tabs */,
         1 /* expected_portal_checks */);
   FailLoadsAfterLogin(browser(), 1);
@@ -2678,7 +2688,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, ReloadTimeout) {
                    tab_strip_model->GetWebContentsAt(1)));
   EXPECT_EQ(1, NumLoadingTabs());
 
-  SetSlowSSLLoadTime(tab_reloader, base::TimeDelta::FromDays(1));
+  SetSlowSSLLoadTime(tab_reloader, base::Days(1));
   Login(browser(), 1 /* num_loading_tabs */, 0 /* num_timed_out_tabs */,
         1 /* expected_portal_checks */);
   FailLoadsAfterLogin(browser(), 1);

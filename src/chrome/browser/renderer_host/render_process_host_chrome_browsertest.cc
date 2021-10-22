@@ -93,6 +93,10 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
  public:
   ChromeRenderProcessHostTest() {}
 
+  ChromeRenderProcessHostTest(const ChromeRenderProcessHostTest&) = delete;
+  ChromeRenderProcessHostTest& operator=(const ChromeRenderProcessHostTest&) =
+      delete;
+
   // Show a tab, activating the current one if there is one, and wait for
   // the renderer process to be created or foregrounded, returning the
   // WebContents associated with the tab.
@@ -244,15 +248,18 @@ class ChromeRenderProcessHostTest : public extensions::ExtensionBrowserTest {
     EXPECT_NE(rph1, rph3);
     EXPECT_NE(rph2, rph3);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostTest);
 };
 
 class ChromeRenderProcessHostTestWithCommandLine
     : public ChromeRenderProcessHostTest {
  public:
   ChromeRenderProcessHostTestWithCommandLine() = default;
+
+  ChromeRenderProcessHostTestWithCommandLine(
+      const ChromeRenderProcessHostTestWithCommandLine&) = delete;
+  ChromeRenderProcessHostTestWithCommandLine& operator=(
+      const ChromeRenderProcessHostTestWithCommandLine&) = delete;
+
   ~ChromeRenderProcessHostTestWithCommandLine() override = default;
 
  protected:
@@ -260,9 +267,6 @@ class ChromeRenderProcessHostTestWithCommandLine
     ChromeRenderProcessHostTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRendererProcessLimit, "1");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostTestWithCommandLine);
 };
 
 // TODO(crbug.com/1241506): Enable this test on macOS after the issue is fixed.
@@ -344,6 +348,12 @@ class ChromeRenderProcessHostBackgroundingTest
     : public ChromeRenderProcessHostTest {
  public:
   ChromeRenderProcessHostBackgroundingTest() = default;
+
+  ChromeRenderProcessHostBackgroundingTest(
+      const ChromeRenderProcessHostBackgroundingTest&) = delete;
+  ChromeRenderProcessHostBackgroundingTest& operator=(
+      const ChromeRenderProcessHostBackgroundingTest&) = delete;
+
   ~ChromeRenderProcessHostBackgroundingTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -387,8 +397,6 @@ class ChromeRenderProcessHostBackgroundingTest
 #endif
     }
   }
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostBackgroundingTest);
 };
 
 #define EXPECT_PROCESS_IS_BACKGROUNDED(process_or_tab)                       \
@@ -575,6 +583,9 @@ class WindowDestroyer : public content::WebContentsObserver {
   WindowDestroyer(content::WebContents* web_contents, TabStripModel* model)
       : content::WebContentsObserver(web_contents), tab_strip_model_(model) {}
 
+  WindowDestroyer(const WindowDestroyer&) = delete;
+  WindowDestroyer& operator=(const WindowDestroyer&) = delete;
+
   // Wait for the browser window to be destroyed.
   void Wait() { ui_test_utils::WaitForBrowserToClose(); }
 
@@ -584,22 +595,14 @@ class WindowDestroyer : public content::WebContentsObserver {
 
  private:
   TabStripModel* tab_strip_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowDestroyer);
 };
 
 // Test to ensure that while iterating through all listeners in
 // RenderProcessHost and invalidating them, we remove them properly and don't
 // access already freed objects. See http://crbug.com/255524.
-// Crashes on Win/Linux only.  http://crbug.com/606485.
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-#define MAYBE_CloseAllTabsDuringProcessDied \
-  DISABLED_CloseAllTabsDuringProcessDied
-#else
-#define MAYBE_CloseAllTabsDuringProcessDied CloseAllTabsDuringProcessDied
-#endif
+// Disabled due to flakiness, see  http://crbug.com/606485.
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostTest,
-                       MAYBE_CloseAllTabsDuringProcessDied) {
+                       DISABLED_CloseAllTabsDuringProcessDied) {
   GURL url(chrome::kChromeUIOmniboxURL);
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -639,6 +642,11 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
     : public ChromeRenderProcessHostTest {
  public:
   ChromeRenderProcessHostBackgroundingTestWithAudio() {}
+
+  ChromeRenderProcessHostBackgroundingTestWithAudio(
+      const ChromeRenderProcessHostBackgroundingTestWithAudio&) = delete;
+  ChromeRenderProcessHostBackgroundingTestWithAudio& operator=(
+      const ChromeRenderProcessHostBackgroundingTestWithAudio&) = delete;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ChromeRenderProcessHostTest::SetUpCommandLine(command_line);
@@ -717,8 +725,6 @@ class ChromeRenderProcessHostBackgroundingTestWithAudio
 #if defined(OS_MAC)
   base::PortProvider* port_provider_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessHostBackgroundingTestWithAudio);
 };
 
 // Test to make sure that a process is backgrounded when the audio stops playing

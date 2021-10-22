@@ -65,13 +65,14 @@ class ScopedFunctionOverride {
     std::swap(*target_, replacement_);
   }
 
+  ScopedFunctionOverride(const ScopedFunctionOverride&) = delete;
+  ScopedFunctionOverride& operator=(const ScopedFunctionOverride&) = delete;
+
   ~ScopedFunctionOverride() { std::swap(*target_, replacement_); }
 
  private:
   Fun* target_;
   Fun replacement_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFunctionOverride);
 };
 
 template <typename Fun>
@@ -99,6 +100,10 @@ class MockRulesetPublisherImpl : public RulesetPublisher {
       scoped_refptr<base::TestSimpleTaskRunner> best_effort_task_runner)
       : blocking_task_runner_(std::move(blocking_task_runner)),
         best_effort_task_runner_(std::move(best_effort_task_runner)) {}
+
+  MockRulesetPublisherImpl(const MockRulesetPublisherImpl&) = delete;
+  MockRulesetPublisherImpl& operator=(const MockRulesetPublisherImpl&) = delete;
+
   ~MockRulesetPublisherImpl() override = default;
 
   void TryOpenAndSetRulesetFile(
@@ -148,8 +153,6 @@ class MockRulesetPublisherImpl : public RulesetPublisher {
   std::vector<RulesetFilePtr> published_rulesets_;
   scoped_refptr<base::TestSimpleTaskRunner> blocking_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> best_effort_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockRulesetPublisherImpl);
 };
 
 bool MockFailingReplaceFile(const base::FilePath&,
@@ -190,6 +193,11 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
             base::MakeRefCounted<base::TestSimpleTaskRunner>()),
         best_effort_task_runner_(
             base::MakeRefCounted<base::TestSimpleTaskRunner>()) {}
+
+  SubresourceFilteringRulesetServiceTest(
+      const SubresourceFilteringRulesetServiceTest&) = delete;
+  SubresourceFilteringRulesetServiceTest& operator=(
+      const SubresourceFilteringRulesetServiceTest&) = delete;
 
  protected:
   void SetUp() override {
@@ -441,8 +449,6 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
   TestRulesetPair test_ruleset_3_;
 
   std::unique_ptr<RulesetService> service_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilteringRulesetServiceTest);
 };
 
 // Specialized test fixture for death tests. It exposes the temporary directory
@@ -455,6 +461,11 @@ class SubresourceFilteringRulesetServiceDeathTest
  public:
   SubresourceFilteringRulesetServiceDeathTest()
       : environment_(base::Environment::Create()) {}
+
+  SubresourceFilteringRulesetServiceDeathTest(
+      const SubresourceFilteringRulesetServiceDeathTest&) = delete;
+  SubresourceFilteringRulesetServiceDeathTest& operator=(
+      const SubresourceFilteringRulesetServiceDeathTest&) = delete;
 
  protected:
   void SetUpTempDir() override {
@@ -486,8 +497,6 @@ class SubresourceFilteringRulesetServiceDeathTest
 
   std::unique_ptr<base::Environment> environment_;
   base::FilePath inherited_temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(SubresourceFilteringRulesetServiceDeathTest);
 };
 
 // static

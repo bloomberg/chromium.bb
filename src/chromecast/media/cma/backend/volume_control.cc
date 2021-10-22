@@ -101,6 +101,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     initialize_complete_event_.Wait();
   }
 
+  VolumeControlInternal(const VolumeControlInternal&) = delete;
+  VolumeControlInternal& operator=(const VolumeControlInternal&) = delete;
+
   ~VolumeControlInternal() override = default;
 
   void AddVolumeObserver(VolumeObserver* observer) {
@@ -196,7 +199,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     mixer_->Connect();
 
     saved_volumes_writer_ = std::make_unique<base::ImportantFileWriter>(
-        storage_path_, thread_.task_runner(), base::TimeDelta::FromSeconds(1));
+        storage_path_, thread_.task_runner(), base::Seconds(1));
 
     double dbfs;
     for (auto type : {AudioContentType::kMedia, AudioContentType::kAlarm,
@@ -372,8 +375,6 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   std::unique_ptr<SystemVolumeControl> system_volume_control_;
   std::unique_ptr<mixer_service::ControlConnection> mixer_;
   std::unique_ptr<base::ImportantFileWriter> saved_volumes_writer_;
-
-  DISALLOW_COPY_AND_ASSIGN(VolumeControlInternal);
 };
 
 VolumeControlInternal& GetVolumeControl() {

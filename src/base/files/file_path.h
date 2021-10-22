@@ -142,6 +142,7 @@
 
 namespace base {
 
+class SafeBaseName;
 class Pickle;
 class PickleIterator;
 
@@ -341,6 +342,7 @@ class BASE_EXPORT FilePath {
   // it is an error to pass an absolute path.
   FilePath Append(StringPieceType component) const WARN_UNUSED_RESULT;
   FilePath Append(const FilePath& component) const WARN_UNUSED_RESULT;
+  FilePath Append(const SafeBaseName& component) const WARN_UNUSED_RESULT;
 
   // Although Windows StringType is std::wstring, since the encoding it uses for
   // paths is well defined, it can handle ASCII path components as well.
@@ -403,6 +405,9 @@ class BASE_EXPORT FilePath {
 
   // Similar to AsUTF8Unsafe, but returns UTF-16 instead.
   std::u16string AsUTF16Unsafe() const;
+
+  // Returns a FilePath object from a path name in ASCII.
+  static FilePath FromASCII(StringPiece ascii);
 
   // Returns a FilePath object from a path name in UTF-8. This function
   // should only be used for cases where you are sure that the input

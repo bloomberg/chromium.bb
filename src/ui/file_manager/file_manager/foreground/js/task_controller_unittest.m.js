@@ -78,8 +78,6 @@ export function setUp() {
   document.body.innerHTML = [
     '<command id="default-task">',
     '<command id="open-with">',
-    '<command id="more-actions">',
-    '<command id="show-submenu">',
   ].join('');
 
   // Initialize Command with the <command>s.
@@ -109,13 +107,9 @@ function createTaskController(fileSelectionHandler) {
       }),
       /** @type {!FileManagerUI} */ ({
         taskMenuButton: document.createElement('button'),
-        shareMenuButton: {
-          menu: document.createElement('div'),
-        },
         fileContextMenu: {
           defaultActionMenuItem: document.createElement('div'),
         },
-        shareSubMenu: document.createElement('div'),
         speakA11yMessage: text => {},
       }),
       new MockMetadataModel({}),

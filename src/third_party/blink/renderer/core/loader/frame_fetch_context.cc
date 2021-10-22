@@ -78,7 +78,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 #include "third_party/blink/renderer/core/loader/back_forward_cache_loader_helper_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -373,8 +372,9 @@ void FrameFetchContext::PrepareRequest(
 
   const bool ua_reduced =
       request.HttpHeaderField(
-          network::kClientHintsNameMapping[static_cast<size_t>(
-              network::mojom::blink::WebClientHintsType::kUAReduced)]) == "?1";
+          network::GetClientHintToNameMap()
+              .at(network::mojom::blink::WebClientHintsType::kUAReduced)
+              .c_str()) == "?1";
   String user_agent = ua_reduced ? GetReducedUserAgent() : GetUserAgent();
   base::UmaHistogramBoolean("Blink.Fetch.ReducedUserAgent", ua_reduced);
   request.SetHTTPUserAgent(AtomicString(user_agent));
@@ -470,7 +470,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   absl::optional<UserAgentMetadata> ua = GetUserAgentMetadata();
 
   absl::optional<ClientHintImageInfo> image_info;
-  absl::optional<WTF::AtomicString> lang;
   absl::optional<WTF::AtomicString> prefers_color_scheme;
 
   if (document_) {  // Only get frame info if the frame is not detached
@@ -482,23 +481,11 @@ void FrameFetchContext::AddClientHintsIfNecessary(
       image_info->viewport_height = GetFrame()->View()->ViewportHeight();
     }
 
-    lang = GetFrame()
-               ->DomWindow()
-               ->navigator()
-               ->SerializeLanguagesForClientHintHeader();
-
     MediaValues* media_values =
         MediaValues::CreateDynamicIfFrameExists(GetFrame());
     bool is_dark_mode = media_values->GetPreferredColorScheme() ==
                         mojom::blink::PreferredColorScheme::kDark;
     prefers_color_scheme = is_dark_mode ? "dark" : "light";
-
-    // TODO(crbug.com/1151050): |SerializeLanguagesForClientHintHeader| getter
-    // affects later calls if there is a DevTools override. The following blink
-    // test fails unless set to "dirty" to manually reset languages:
-    //
-    // http/tests/inspector-protocol/emulation/emulation-user-agent-override.js
-    GetFrame()->DomWindow()->navigator()->SetLanguagesDirty();
   }
 
   // |hints_preferences| is used only in case of the preload scanner;
@@ -510,7 +497,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   prefs.CombineWith(GetClientHintsPreferences());
 
   BaseFetchContext::AddClientHintsIfNecessary(
-      prefs, resource_origin, is_1p_origin, ua, policy, image_info, lang,
+      prefs, resource_origin, is_1p_origin, ua, policy, image_info,
       prefers_color_scheme, request);
 }
 
@@ -954,6 +941,19 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
         is_valid_integer ? mojom::blink::DedupKey::New(dedup_key) : nullptr;
   }
 
+  if (document_->IsPrerendering()) {
+    document_->AddPostPrerenderingActivationStep(
+        WTF::Bind(&FrameFetchContext::RegisterConversion,
+                  WrapWeakPersistent(this), std::move(conversion)));
+  } else {
+    RegisterConversion(std::move(conversion));
+  }
+
+  return true;
+}
+
+void FrameFetchContext::RegisterConversion(
+    mojom::blink::ConversionPtr conversion) const {
   mojo::AssociatedRemote<mojom::blink::ConversionHost> conversion_host;
   GetFrame()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
       &conversion_host);
@@ -964,8 +964,6 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
                     mojom::blink::WebFeature::kConversionAPIAll);
   UseCounter::Count(document_->domWindow(),
                     mojom::blink::WebFeature::kConversionRegistration);
-
-  return true;
 }
 
 mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>

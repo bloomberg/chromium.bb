@@ -57,16 +57,13 @@ enum UpdateBadgeType {
 // The maximum value of badge contents before saturation occurs.
 constexpr uint64_t kMaxBadgeContent = 99u;
 
-// With kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications,
-// we don't show a badge in response to notifications if the
+// We don't show a badge in response to notifications if the
 // Badging API has been used recently.
-constexpr base::TimeDelta kBadgingOverrideLifetime =
-    base::TimeDelta::FromDays(14);
+constexpr base::TimeDelta kBadgingOverrideLifetime = base::Days(14);
 
 // We record when the Badging API was last used, but rate limit
 // our updates to minimize load on the Web App database,
-constexpr base::TimeDelta kBadgingMinimumUpdateInterval =
-    base::TimeDelta::FromHours(2);
+constexpr base::TimeDelta kBadgingMinimumUpdateInterval = base::Hours(2);
 
 // Maintains a record of badge contents and dispatches badge changes to a
 // delegate.
@@ -78,6 +75,10 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   using BadgeValue = absl::optional<uint64_t>;
 
   explicit BadgeManager(Profile* profile);
+
+  BadgeManager(const BadgeManager&) = delete;
+  BadgeManager& operator=(const BadgeManager&) = delete;
+
   ~BadgeManager() override;
 
   // Sets the delegate used for setting/clearing badges.
@@ -191,8 +192,6 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
 
   // Maps app_id to badge contents.
   std::map<web_app::AppId, BadgeValue> badged_apps_;
-
-  DISALLOW_COPY_AND_ASSIGN(BadgeManager);
 };
 
 // Determines the text to put on the badge based on some badge_content.

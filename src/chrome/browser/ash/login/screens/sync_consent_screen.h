@@ -56,6 +56,11 @@ class SyncConsentScreen : public BaseScreen,
    public:
     SyncConsentScreenTestDelegate() = default;
 
+    SyncConsentScreenTestDelegate(const SyncConsentScreenTestDelegate&) =
+        delete;
+    SyncConsentScreenTestDelegate& operator=(
+        const SyncConsentScreenTestDelegate&) = delete;
+
     // This is called from SyncConsentScreen when user consent is passed to
     // consent auditor with resource ids recorder as consent.
     virtual void OnConsentRecordedIds(
@@ -68,9 +73,6 @@ class SyncConsentScreen : public BaseScreen,
     virtual void OnConsentRecordedStrings(
         const ::login::StringList& consent_description,
         const std::string& consent_confirmation) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SyncConsentScreenTestDelegate);
   };
 
   class SyncConsentScreenExitTestDelegate {
@@ -88,10 +90,14 @@ class SyncConsentScreen : public BaseScreen,
 
   SyncConsentScreen(SyncConsentScreenView* view,
                     const ScreenExitCallback& exit_callback);
+
+  SyncConsentScreen(const SyncConsentScreen&) = delete;
+  SyncConsentScreen& operator=(const SyncConsentScreen&) = delete;
+
   ~SyncConsentScreen() override;
 
   // Inits `user_`, its `profile_` and `behavior_` before using the screen.
-  void Init();
+  void Init(const WizardContext* context);
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;
@@ -131,6 +137,10 @@ class SyncConsentScreen : public BaseScreen,
   static void SetSyncConsentScreenExitTestDelegate(
       SyncConsentScreenExitTestDelegate* test_delegate);
 
+  // Test API
+  // Returns true if profile sync is disabled by policy for test.
+  bool IsProfileSyncDisabledByPolicyForTest() const;
+
  private:
   // Marks the dialog complete and runs `exit_callback_`.
   void Finish(Result result);
@@ -141,10 +151,10 @@ class SyncConsentScreen : public BaseScreen,
   void HideImpl() override;
 
   // Returns new SyncScreenBehavior value.
-  SyncScreenBehavior GetSyncScreenBehavior() const;
+  SyncScreenBehavior GetSyncScreenBehavior(const WizardContext& context) const;
 
   // Calculates updated `behavior_` and performs required update actions.
-  void UpdateScreen();
+  void UpdateScreen(const WizardContext& context);
 
   // Records user Sync consent.
   void RecordConsent(ConsentGiven consent_given,
@@ -193,8 +203,6 @@ class SyncConsentScreen : public BaseScreen,
   SyncConsentScreenTestDelegate* test_delegate_ = nullptr;
 
   base::WeakPtrFactory<SyncConsentScreen> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SyncConsentScreen);
 };
 
 }  // namespace ash

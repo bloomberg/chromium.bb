@@ -48,7 +48,7 @@
     "infra_step": true,
     "name": "read revision",
     "~followup_annotations": [
-      "@@@STEP_TEXT@<br/>checked out u'deadbeef'<br/>@@@"
+      "@@@STEP_TEXT@<br/>checked out 'deadbeef'<br/>@@@"
     ]
   },
   {
@@ -182,11 +182,11 @@
       "The recipe has crashed at point 'Uncaught exception'!",
       "",
       "Traceback (most recent call last):",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/examples/full.py\", line 85, in RunSteps",
-      "    upstream_current=True)",
-      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/api.py\", line 419, in new_branch",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/examples/full.py\", line 83, in RunSteps",
+      "    api.git.new_branch('failed_new_branch', upstream='will_fail', upstream_current=True) #pylint: disable = line-too-long",
+      "  File \"RECIPE_REPO[depot_tools]/recipes/recipe_modules/git/api.py\", line 420, in new_branch",
       "    raise ValueError('Can not define both upstream and upstream_current')",
-      "ValueError: Can not define both upstream and upstream_current"
+      "ValueError('Can not define both upstream and upstream_current')"
     ]
   },
   {

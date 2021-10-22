@@ -10,9 +10,11 @@
 #include "include/sksl/DSLModifiers.h"
 #include "include/sksl/DSLType.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLVariable.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
@@ -43,30 +45,25 @@ DSLVarBase::DSLVarBase(const DSLModifiers& modifiers, DSLType type, skstd::strin
     , fPosition(pos) {
     if (fModifiers.fModifiers.fFlags & Modifiers::kUniform_Flag) {
 #if SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
-        if (DSLWriter::InFragmentProcessor()) {
+        if (ThreadContext::InFragmentProcessor()) {
             const SkSL::Type& skslType = type.skslType();
             GrSLType grslType;
             int count;
             if (skslType.isArray()) {
-                SkAssertResult(SkSL::type_to_grsltype(DSLWriter::Context(),
-                                                      skslType.componentType(),
-                                                      &grslType));
+                SkAssertResult(SkSL::type_to_grsltype(ThreadContext::Context(),
+                        skslType.componentType(), &grslType));
                 count = skslType.columns();
                 SkASSERT(count > 0);
             } else {
-                SkAssertResult(SkSL::type_to_grsltype(DSLWriter::Context(), skslType,
-                                                      &grslType));
+                SkAssertResult(SkSL::type_to_grsltype(ThreadContext::Context(), skslType,
+                        &grslType));
                 count = 0;
             }
             const char* uniformName;
-            SkASSERT(DSLWriter::CurrentEmitArgs());
-            fUniformHandle = DSLWriter::CurrentEmitArgs()->fUniformHandler->addUniformArray(
-                                                                 &DSLWriter::CurrentEmitArgs()->fFp,
-                                                                 kFragment_GrShaderFlag,
-                                                                 grslType,
-                                                                 String(this->name()).c_str(),
-                                                                 count,
-                                                                 &uniformName).toIndex();
+            SkASSERT(ThreadContext::CurrentEmitArgs());
+            fUniformHandle = ThreadContext::CurrentEmitArgs()->fUniformHandler->addUniformArray(
+                    &ThreadContext::CurrentEmitArgs()->fFp, kFragment_GrShaderFlag, grslType,
+                    String(this->name()).c_str(), count, &uniformName).toIndex();
             fName = uniformName;
         }
 #endif // SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
@@ -75,10 +72,10 @@ DSLVarBase::DSLVarBase(const DSLModifiers& modifiers, DSLType type, skstd::strin
 
 DSLVarBase::~DSLVarBase() {
     if (fDeclaration && !fDeclared) {
-        DSLWriter::ReportError(String::printf("variable '%.*s' was destroyed without being "
-                                              "declared",
-                                              (int)fRawName.length(),
-                                              fRawName.data()).c_str());
+        ThreadContext::ReportError(String::printf("variable '%.*s' was destroyed without being "
+                                                  "declared",
+                                                  (int)fRawName.length(),
+                                                  fRawName.data()).c_str());
     }
 }
 
@@ -111,30 +108,30 @@ DSLGlobalVar::DSLGlobalVar(const char* name)
     DSLWriter::MarkDeclared(*this);
 #if SK_SUPPORT_GPU && !defined(SKSL_STANDALONE)
     if (!strcmp(name, "sk_SampleCoord")) {
-        fName = DSLWriter::CurrentEmitArgs()->fSampleCoord;
+        fName = ThreadContext::CurrentEmitArgs()->fSampleCoord;
         // The actual sk_SampleCoord variable hasn't been created by GrGLSLFPFragmentBuilder yet, so
         // if we attempt to look it up in the symbol table we'll get null. As we are currently
         // converting all DSL code into strings rather than nodes, all we really need is a
         // correctly-named variable with the right type, so we just create a placeholder for it.
         // TODO(skia/11330): we'll need to fix this when switching over to nodes.
-        const SkSL::Modifiers* modifiers = DSLWriter::Context().fModifiersPool->add(
+        const SkSL::Modifiers* modifiers = ThreadContext::Context().fModifiersPool->add(
                 SkSL::Modifiers(SkSL::Layout(/*flags=*/0, /*location=*/-1, /*offset=*/-1,
                                              /*binding=*/-1, /*index=*/-1, /*set=*/-1,
                                              SK_MAIN_COORDS_BUILTIN, /*inputAttachmentIndex=*/-1),
                                 SkSL::Modifiers::kNo_Flag));
 
-        fVar = DSLWriter::SymbolTable()->takeOwnershipOfIRNode(std::make_unique<SkSL::Variable>(
-                /*offset=*/-1,
+        fVar = ThreadContext::SymbolTable()->takeOwnershipOfIRNode(std::make_unique<SkSL::Variable>(
+                /*line=*/-1,
                 modifiers,
                 fName,
-                DSLWriter::Context().fTypes.fFloat2.get(),
+                ThreadContext::Context().fTypes.fFloat2.get(),
                 /*builtin=*/true,
                 SkSL::VariableStorage::kGlobal));
         fInitialized = true;
         return;
     }
 #endif
-    const SkSL::Symbol* result = (*DSLWriter::SymbolTable())[fName];
+    const SkSL::Symbol* result = (*ThreadContext::SymbolTable())[fName];
     SkASSERTF(result, "could not find '%.*s' in symbol table", (int)fName.length(), fName.data());
     fVar = &result->as<SkSL::Variable>();
     fInitialized = true;
@@ -158,12 +155,13 @@ VariableStorage DSLParameter::storage() const {
 
 
 DSLPossibleExpression DSLVarBase::operator[](DSLExpression&& index) {
-    return DSLExpression(*this)[std::move(index)];
+    return DSLExpression(*this, PositionInfo())[std::move(index)];
 }
 
 DSLPossibleExpression DSLVarBase::assign(DSLExpression expr) {
-    return DSLWriter::ConvertBinary(DSLExpression(*this).release(), SkSL::Token::Kind::TK_EQ,
-                                    expr.release());
+    return BinaryExpression::Convert(ThreadContext::Context(),
+            DSLExpression(*this, PositionInfo()).release(), SkSL::Token::Kind::TK_EQ,
+            expr.release());
 }
 
 DSLPossibleExpression DSLVar::operator=(DSLExpression expr) {
@@ -176,6 +174,38 @@ DSLPossibleExpression DSLGlobalVar::operator=(DSLExpression expr) {
 
 DSLPossibleExpression DSLParameter::operator=(DSLExpression expr) {
     return this->assign(std::move(expr));
+}
+
+std::unique_ptr<SkSL::Expression> DSLGlobalVar::methodCall(skstd::string_view methodName,
+                                                           PositionInfo pos) {
+    if (!this->fType.isEffectChild()) {
+        ThreadContext::ReportError("type does not support method calls", pos);
+        return nullptr;
+    }
+    return FieldAccess::Convert(ThreadContext::Context(), *ThreadContext::SymbolTable(),
+            DSLExpression(*this, PositionInfo()).release(), methodName);
+}
+
+DSLExpression DSLGlobalVar::eval(ExpressionArray args, PositionInfo pos) {
+    auto method = this->methodCall("eval", pos);
+    return DSLExpression(
+            method ? SkSL::FunctionCall::Convert(ThreadContext::Context(), pos.line(),
+                                                 std::move(method), std::move(args))
+                   : nullptr,
+            pos);
+}
+
+DSLExpression DSLGlobalVar::eval(DSLExpression x, PositionInfo pos) {
+    ExpressionArray converted;
+    converted.push_back(x.release());
+    return this->eval(std::move(converted), pos);
+}
+
+DSLExpression DSLGlobalVar::eval(DSLExpression x, DSLExpression y, PositionInfo pos) {
+    ExpressionArray converted;
+    converted.push_back(x.release());
+    converted.push_back(y.release());
+    return this->eval(std::move(converted), pos);
 }
 
 } // namespace dsl

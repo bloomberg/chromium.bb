@@ -29,6 +29,11 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
                                     public ::testing::WithParamInterface<bool> {
  public:
   ManagePasswordsIconViewTest() {}
+
+  ManagePasswordsIconViewTest(const ManagePasswordsIconViewTest&) = delete;
+  ManagePasswordsIconViewTest& operator=(const ManagePasswordsIconViewTest&) =
+      delete;
+
   ~ManagePasswordsIconViewTest() override {}
 
   password_manager::ui::State ViewState() { return GetView()->state_; }
@@ -83,14 +88,11 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
   void ReduceAnimationTime() {
     auto* const animating_layout = GetAnimatingLayoutManager();
     if (animating_layout) {
-      animating_layout->SetAnimationDuration(
-          base::TimeDelta::FromMilliseconds(1));
+      animating_layout->SetAnimationDuration(base::Milliseconds(1));
     }
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViewTest);
 };
 
 IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, DefaultStateIsInactive) {

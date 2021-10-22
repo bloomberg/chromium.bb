@@ -48,12 +48,32 @@ OfferNotificationBubbleControllerImpl::OfferNotificationBubbleControllerImpl(
     : AutofillBubbleControllerBase(web_contents) {}
 
 std::u16string OfferNotificationBubbleControllerImpl::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_REMINDER_TITLE);
+  switch (offer_->GetOfferType()) {
+    case AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_LINKED_OFFER_REMINDER_TITLE);
+    case AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER:
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_PROMO_CODE_OFFERS_REMINDER_TITLE);
+    case AutofillOfferData::OfferType::UNKNOWN:
+      NOTREACHED();
+      return std::u16string();
+  }
 }
 
 std::u16string OfferNotificationBubbleControllerImpl::GetOkButtonLabel() const {
+  DCHECK_EQ(offer_->GetOfferType(),
+            AutofillOfferData::OfferType::GPAY_CARD_LINKED_OFFER);
   return l10n_util::GetStringUTF16(
       IDS_AUTOFILL_OFFERS_REMINDER_POSITIVE_BUTTON_LABEL);
+}
+
+std::u16string
+OfferNotificationBubbleControllerImpl::GetPromoCodeButtonTooltip() const {
+  return l10n_util::GetStringUTF16(
+      promo_code_button_clicked_
+          ? IDS_AUTOFILL_PROMO_CODE_OFFER_BUTTON_TOOLTIP_CLICKED
+          : IDS_AUTOFILL_PROMO_CODE_OFFER_BUTTON_TOOLTIP_NORMAL);
 }
 
 AutofillBubbleBase*
@@ -68,6 +88,11 @@ const CreditCard* OfferNotificationBubbleControllerImpl::GetLinkedCard() const {
   return nullptr;
 }
 
+const AutofillOfferData* OfferNotificationBubbleControllerImpl::GetOffer()
+    const {
+  return offer_;
+}
+
 bool OfferNotificationBubbleControllerImpl::IsIconVisible() const {
   return !origins_to_display_bubble_.empty();
 }
@@ -75,6 +100,7 @@ bool OfferNotificationBubbleControllerImpl::IsIconVisible() const {
 void OfferNotificationBubbleControllerImpl::OnBubbleClosed(
     PaymentsBubbleClosedReason closed_reason) {
   set_bubble_view(nullptr);
+  promo_code_button_clicked_ = false;
   UpdatePageActionIcon();
 
   // Log bubble result according to the closed reason.
@@ -100,21 +126,29 @@ void OfferNotificationBubbleControllerImpl::OnBubbleClosed(
       NOTREACHED();
       return;
   }
-  AutofillMetrics::LogOfferNotificationBubbleResultMetric(metric,
-                                                          is_user_gesture_);
+  AutofillMetrics::LogOfferNotificationBubbleResultMetric(
+      offer_->GetOfferType(), metric, is_user_gesture_);
+}
+
+void OfferNotificationBubbleControllerImpl::OnPromoCodeButtonClicked() {
+  promo_code_button_clicked_ = true;
+
+  AutofillMetrics::LogOfferNotificationBubblePromoCodeButtonClicked(
+      offer_->GetOfferType());
 }
 
 void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
     const AutofillOfferData* offer,
     const CreditCard* card) {
   DCHECK(offer);
+  offer_ = offer;
   // If icon/bubble is already visible, that means we have already shown a
   // notification for this page.
   if (IsIconVisible() || bubble_view())
     return;
 
   origins_to_display_bubble_.clear();
-  for (auto merchant_origin : offer->merchant_origins)
+  for (auto merchant_origin : offer_->merchant_origins)
     origins_to_display_bubble_.emplace_back(merchant_origin);
 
   if (card)
@@ -181,7 +215,8 @@ void OfferNotificationBubbleControllerImpl::DoShowBubble() {
   if (observer_for_testing_)
     observer_for_testing_->OnBubbleShown();
 
-  AutofillMetrics::LogOfferNotificationBubbleOfferMetric(is_user_gesture_);
+  AutofillMetrics::LogOfferNotificationBubbleOfferMetric(offer_->GetOfferType(),
+                                                         is_user_gesture_);
 }
 
 bool OfferNotificationBubbleControllerImpl::IsWebContentsActive() {
@@ -193,6 +228,6 @@ bool OfferNotificationBubbleControllerImpl::IsWebContentsActive() {
          web_contents();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(OfferNotificationBubbleControllerImpl)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(OfferNotificationBubbleControllerImpl);
 
 }  // namespace autofill

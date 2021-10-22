@@ -74,7 +74,7 @@ namespace {
 
 password_manager::PasswordStoreInterface* GetProfilePasswordStore(
     content::WebContents* web_contents) {
-  return PasswordStoreFactory::GetInterfaceForProfile(
+  return PasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -82,7 +82,7 @@ password_manager::PasswordStoreInterface* GetProfilePasswordStore(
 
 password_manager::PasswordStoreInterface* GetAccountPasswordStore(
     content::WebContents* web_contents) {
-  return AccountPasswordStoreFactory::GetInterfaceForProfile(
+  return AccountPasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS)
       .get();
@@ -534,8 +534,8 @@ void ManagePasswordsUIController::SavePassword(const std::u16string& username,
       std::make_unique<password_manager::PostSaveCompromisedHelper>(
           passwords_data_.form_manager()->GetInsecureCredentials(), username);
   post_save_compromised_helper_->AnalyzeLeakedCredentials(
-      passwords_data_.client()->GetProfilePasswordStoreInterface(),
-      passwords_data_.client()->GetAccountPasswordStoreInterface(),
+      passwords_data_.client()->GetProfilePasswordStore(),
+      passwords_data_.client()->GetAccountPasswordStore(),
       Profile::FromBrowserContext(web_contents()->GetBrowserContext())
           ->GetPrefs(),
       base::BindOnce(
@@ -554,7 +554,7 @@ void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore(
     const std::vector<password_manager::PasswordForm>& selected_credentials) {
   auto profile_store_form_saver =
       std::make_unique<password_manager::FormSaverImpl>(
-          passwords_data_.client()->GetProfilePasswordStoreInterface());
+          passwords_data_.client()->GetProfilePasswordStore());
   for (const password_manager::PasswordForm& form : selected_credentials) {
     // Only newly-saved or newly-updated credentials can be unsynced. Since
     // conflicts are solved in that process, any entry in the profile store
@@ -786,7 +786,7 @@ void ManagePasswordsUIController::OnVisibilityChanged(
 
 // static
 base::TimeDelta ManagePasswordsUIController::GetTimeoutForSaveFallback() {
-  return base::TimeDelta::FromSeconds(
+  return base::Seconds(
       ManagePasswordsUIController::save_fallback_timeout_in_seconds_);
 }
 
@@ -963,4 +963,4 @@ void ManagePasswordsUIController::
   move_to_account_store_helpers_.erase(done_helper_it);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ManagePasswordsUIController)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ManagePasswordsUIController);

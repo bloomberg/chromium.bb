@@ -215,6 +215,7 @@ IGNORED_INCLUDES = {
     b'libANGLE/renderer/vulkan/win32/DisplayVkWin32.h',
     b'libANGLE/renderer/vulkan/xcb/DisplayVkXcb.h',
     b'loader_cmake_config.h',
+    b'loader_windows.h',
     b'optick.h',
     b'spirv-tools/libspirv.h',
     b'third_party/volk/volk.h',
@@ -241,6 +242,8 @@ IGNORED_INCLUDES = {
     # Validation layers support building with robin hood hashing, but we are not enabling that
     # See http://anglebug.com/5791
     b'robin_hood.h',
+    # From the Vulkan-Loader
+    b'winres.h',
 }
 
 IGNORED_INCLUDE_PREFIXES = {

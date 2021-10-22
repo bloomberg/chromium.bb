@@ -69,6 +69,8 @@ class MetricsReporter {
 
   // Network metrics.
 
+  void NetworkRefreshRequestStarted(const StreamType& stream_type,
+                                    ContentOrder content_order);
   static void NetworkRequestComplete(NetworkRequestType type,
                                      const NetworkResponseInfo& response_info);
 
@@ -81,6 +83,7 @@ class MetricsReporter {
                             bool loaded_new_content_from_network,
                             base::TimeDelta stored_content_age,
                             const ContentStats& content_stats,
+                            const RequestMetadata& request_metadata,
                             std::unique_ptr<LoadLatencyTimes> load_latencies);
   virtual void OnBackgroundRefresh(const StreamType& stream_type,
                                    LoadStreamStatus final_status);
@@ -95,7 +98,7 @@ class MetricsReporter {
   // Called when Chrome is entering the background.
   void OnEnterBackground();
 
-  static void OnImageFetched(int net_error_or_http_status);
+  static void OnImageFetched(const GURL& url, int net_error_or_http_status);
 
   // Actions upload.
   static void OnUploadActionsBatch(UploadActionsBatchStatus status);

@@ -39,32 +39,14 @@ bool IsFeatureEnabled(RenderFrameHost* rfh,
   return rfh->IsFeatureEnabled(feature);
 }
 
-void SetAndCheckAncestorFlag(MediaStreamRequest* request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* rfh =
-      RenderFrameHostImpl::FromID(request->render_process_id,
-                                  request->render_frame_id);
-
-  if (rfh == nullptr) {
-    // RenderFrame destroyed before the request is handled?
-    return;
-  }
-
-  while (rfh->GetParent()) {
-    if (!rfh->GetLastCommittedOrigin().IsSameOriginWith(
-            rfh->GetParent()->GetLastCommittedOrigin())) {
-      request->all_ancestors_have_same_origin =  false;
-      return;
-    }
-    rfh = rfh->GetParent();
-  }
-  request->all_ancestors_have_same_origin = true;
-}
-
 class MediaStreamUIProxy::Core {
  public:
   explicit Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
                 RenderFrameHostDelegate* test_render_delegate);
+
+  Core(const Core&) = delete;
+  Core& operator=(const Core&) = delete;
+
   ~Core();
 
   void RequestAccess(std::unique_ptr<MediaStreamRequest> request);
@@ -121,8 +103,6 @@ class MediaStreamUIProxy::Core {
   // Used for calls supplied to `ui_`. Invalidated every time a new UI is
   // created.
   base::WeakPtrFactory<Core> weak_factory_for_ui_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
 MediaStreamUIProxy::Core::Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
@@ -154,7 +134,6 @@ void MediaStreamUIProxy::Core::RequestAccess(
         std::unique_ptr<MediaStreamUI>());
     return;
   }
-  SetAndCheckAncestorFlag(request.get());
 
   render_delegate->RequestMediaAccessPermission(
       *request,

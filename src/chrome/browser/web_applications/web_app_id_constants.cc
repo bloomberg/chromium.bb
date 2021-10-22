@@ -13,6 +13,10 @@ namespace web_app {
 // Please maintain the alphabetical order when adding new app IDs.
 
 // Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
+//     "https://calculator.apps.chrome/"))
+const char kCalculatorAppId[] = "oabkinaljpjeilageghcdlnekhphhphl";
+
+// Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
 //     "chrome://camera-app/views/main.html"))
 const char kCameraAppId[] = "njfbnohfdkmbmnjapinfcopialeghnmh";
 
@@ -81,10 +85,6 @@ const char kHelpAppId[] = "nbljnnecbjbmifnoehiemkgefbnpoeak";
 const char kMediaAppId[] = "jhdjimmaggjajfjphpljagpgkidjilnj";
 
 // Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
-//     "chrome://media-app/audio/"))
-const char kMediaAppAudioId[] = "ehpdnehdmjhimljbjinkfmgechlofodn";
-
-// Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
 //     "https://messages.google.com/web/"))
 const char kMessagesAppId[] = "hpfldicfbfomlpcikngkocigghgafkph";
 
@@ -145,7 +145,7 @@ const char kYoutubeMusicAppId[] = "cinhimbnkkaeohfgghhklpknlkffjgod";
 const char kYoutubeTVAppId[] = "kiemjbkkegajmpbobdfngbmjccjhnofh";
 
 bool IsSystemAppIdWithFileHandlers(base::StringPiece id) {
-  return id == kMediaAppId || id == kMediaAppAudioId;
+  return id == kMediaAppId;
 }
 
 }  // namespace web_app

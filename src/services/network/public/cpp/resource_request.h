@@ -27,6 +27,7 @@
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/devtools_observer.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
 #include "services/network/public/mojom/url_loader_network_service_observer.mojom.h"
@@ -98,6 +99,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
     base::UnguessableToken token;
     mojo::PendingRemote<mojom::WebBundleHandle> handle;
     int32_t render_process_id = -1;
+  };
+
+  // Typemapped to network.mojom.NetLogParams, see comments there for
+  // details of each field.
+  struct COMPONENT_EXPORT(NETWORK_CPP_BASE) NetLogParams {
+    NetLogParams();
+    explicit NetLogParams(uint32_t id);
+    ~NetLogParams();
+
+    uint32_t source_id;
   };
 
   ResourceRequest();
@@ -175,6 +186,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // decoding any non-listed stream types.
   absl::optional<std::vector<net::SourceStream::SourceType>>
       devtools_accepted_stream_types;
+  absl::optional<NetLogParams> net_log_params;
+  mojom::IPAddressSpace target_ip_address_space =
+      mojom::IPAddressSpace::kUnknown;
 };
 
 // This does not accept |kDefault| referrer policy.

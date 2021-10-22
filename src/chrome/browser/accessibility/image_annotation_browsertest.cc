@@ -53,10 +53,10 @@ void DescribeNodesWithAnnotations(const ui::AXNode& node,
   std::string annotation =
       node.GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation);
   if (!annotation.empty()) {
-    std::string role_str = ui::ToString(node.data().role);
+    std::string role_str = ui::ToString(node.GetRole());
     std::string name =
         node.GetStringAttribute(ax::mojom::StringAttribute::kName);
-    if (!name.empty() && node.data().role != ax::mojom::Role::kRootWebArea)
+    if (!name.empty() && node.GetRole() != ax::mojom::Role::kRootWebArea)
       descriptions->push_back(role_str + " " + name + " " + annotation);
     else
       descriptions->push_back(role_str + " " + annotation);
@@ -108,6 +108,10 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   }
 
   FakeAnnotator() = default;
+
+  FakeAnnotator(const FakeAnnotator&) = delete;
+  FakeAnnotator& operator=(const FakeAnnotator&) = delete;
+
   ~FakeAnnotator() override = default;
 
   void BindReceiver(
@@ -169,8 +173,6 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   static std::map<std::string, std::string> custom_label_result_mapping_;
   static absl::optional<image_annotation::mojom::AnnotateImageError>
       return_error_code_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeAnnotator);
 };
 
 // static
@@ -189,6 +191,11 @@ class FakeImageAnnotationService
     : public image_annotation::mojom::ImageAnnotationService {
  public:
   FakeImageAnnotationService() = default;
+
+  FakeImageAnnotationService(const FakeImageAnnotationService&) = delete;
+  FakeImageAnnotationService& operator=(const FakeImageAnnotationService&) =
+      delete;
+
   ~FakeImageAnnotationService() override = default;
 
  private:
@@ -199,8 +206,6 @@ class FakeImageAnnotationService
   }
 
   FakeAnnotator annotator_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeImageAnnotationService);
 };
 
 void BindImageAnnotatorService(
@@ -219,12 +224,15 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
   }
 
+  ImageAnnotationBrowserTest(const ImageAnnotationBrowserTest&) = delete;
+  ImageAnnotationBrowserTest& operator=(const ImageAnnotationBrowserTest&) =
+      delete;
+
  protected:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         std::vector<base::Feature>{
             features::kEnableAccessibilityExposeHTMLElement,
-            features::kExperimentalAccessibilityLabels,
             features::kAugmentExistingImageLabels},
         std::vector<base::Feature>{});
     InProcessBrowserTest::SetUp();
@@ -272,8 +280,6 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageAnnotationBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,

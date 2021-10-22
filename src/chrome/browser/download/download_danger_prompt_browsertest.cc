@@ -52,6 +52,9 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
         test_safe_browsing_factory_(
             std::make_unique<TestSafeBrowsingServiceFactory>()) {}
 
+  DownloadDangerPromptTest(const DownloadDangerPromptTest&) = delete;
+  DownloadDangerPromptTest& operator=(const DownloadDangerPromptTest&) = delete;
+
   ~DownloadDangerPromptTest() override {}
 
   void SetUp() override {
@@ -174,8 +177,6 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   bool did_receive_callback_;
   std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
   std::string expected_serialized_report_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptTest);
 };
 
 // Disabled for flaky timeouts on Windows. crbug.com/446696
@@ -295,6 +296,11 @@ class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
   enum InvocationType { USER_INITIATED, FROM_DOWNLOAD_API };
   DownloadDangerPromptBrowserTest() : download_url_(kTestDownloadUrl) {}
 
+  DownloadDangerPromptBrowserTest(const DownloadDangerPromptBrowserTest&) =
+      delete;
+  DownloadDangerPromptBrowserTest& operator=(
+      const DownloadDangerPromptBrowserTest&) = delete;
+
   void RunTest(download::DownloadDangerType danger_type,
                InvocationType invocation_type) {
     danger_type_ = danger_type;
@@ -329,8 +335,6 @@ class DownloadDangerPromptBrowserTest : public DialogBrowserTest {
   download::DownloadDangerType danger_type_;
   InvocationType invocation_type_;
   download::MockDownloadItem download_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DownloadDangerPromptBrowserTest,

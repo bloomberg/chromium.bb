@@ -75,6 +75,10 @@ class MessageDispatcherTest : public mojom::CastMessageChannel,
         base::BindRepeating(&MessageDispatcherTest::OnRpcMessage,
                             base::Unretained(this)));
   }
+
+  MessageDispatcherTest(const MessageDispatcherTest&) = delete;
+  MessageDispatcherTest& operator=(const MessageDispatcherTest&) = delete;
+
   ~MessageDispatcherTest() override { task_environment_.RunUntilIdle(); }
 
   void OnParsingError(const std::string& error_message) {
@@ -111,7 +115,6 @@ class MessageDispatcherTest : public mojom::CastMessageChannel,
  private:
   mojo::Receiver<mojom::CastMessageChannel> receiver_{this};
   mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
-  DISALLOW_COPY_AND_ASSIGN(MessageDispatcherTest);
 };
 
 TEST_F(MessageDispatcherTest, SendsOutboundMessage) {
@@ -249,7 +252,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
       CastMessage{mojom::kWebRtcNamespace, kFakeOffer};
   message_dispatcher_->RequestReply(
       offer_message.Clone(), ResponseType::ANSWER, 45623,
-      base::TimeDelta::FromMilliseconds(100),
+      base::Milliseconds(100),
       base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
                           base::Unretained(this)));
   task_environment_.RunUntilIdle();
@@ -301,7 +304,7 @@ TEST_F(MessageDispatcherTest, RequestReply) {
       mojom::kWebRtcNamespace, "{\"type\":\"OFFER\",\"seqNum\":12345}"};
   message_dispatcher_->RequestReply(
       fake_message.Clone(), ResponseType::ANSWER, 12345,
-      base::TimeDelta::FromMilliseconds(100),
+      base::Milliseconds(100),
       base::BindRepeating(&MessageDispatcherTest::OnAnswerResponse,
                           base::Unretained(this)));
   task_environment_.RunUntilIdle();

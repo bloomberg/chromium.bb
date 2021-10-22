@@ -396,6 +396,9 @@ class GitWrapper(SCMWrapper):
       self.Print('Trying the corresponding remote ref for %r: %r\n' % (
           target_rev, remote_ref))
       if scm.GIT.IsValidRevision(self.checkout_path, remote_ref):
+        # refs/remotes may need to be updated to cleanly cherry-pick changes.
+        # See https://crbug.com/1255178.
+        self._Capture(['fetch', '--no-tags', self.remote, target_rev])
         target_rev = remote_ref
     elif not scm.GIT.IsValidRevision(self.checkout_path, target_rev):
       # Fetch |target_rev| if it's not already available.

@@ -26,6 +26,10 @@ class WEB_MODAL_EXPORT WebContentsModalDialogManager
       public content::WebContentsObserver,
       public content::WebContentsUserData<WebContentsModalDialogManager> {
  public:
+  WebContentsModalDialogManager(const WebContentsModalDialogManager&) = delete;
+  WebContentsModalDialogManager& operator=(
+      const WebContentsModalDialogManager&) = delete;
+
   ~WebContentsModalDialogManager() override;
 
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
@@ -54,6 +58,9 @@ class WEB_MODAL_EXPORT WebContentsModalDialogManager
     explicit TestApi(WebContentsModalDialogManager* manager)
         : manager_(manager) {}
 
+    TestApi(const TestApi&) = delete;
+    TestApi& operator=(const TestApi&) = delete;
+
     void CloseAllDialogs() { manager_->CloseAllDialogs(); }
     void WebContentsVisibilityChanged(content::Visibility visibility) {
       manager_->OnVisibilityChanged(visibility);
@@ -61,8 +68,6 @@ class WEB_MODAL_EXPORT WebContentsModalDialogManager
 
    private:
     WebContentsModalDialogManager* manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   // Closes all WebContentsModalDialogs.
@@ -107,8 +112,6 @@ class WEB_MODAL_EXPORT WebContentsModalDialogManager
   bool closing_all_dialogs_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsModalDialogManager);
 };
 
 }  // namespace web_modal

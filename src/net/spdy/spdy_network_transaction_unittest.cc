@@ -28,6 +28,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/schemeful_site.h"
 #include "net/base/test_proxy_delegate.h"
@@ -3782,7 +3783,7 @@ TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
 
   // A new SPDY session should have been created.
   SpdySessionKey key1(HostPortPair("www.example.org", 443),
-                      ProxyServer::FromPacString(kPacString),
+                      PacResultElementToProxyServer(kPacString),
                       PRIVACY_MODE_DISABLED,
                       SpdySessionKey::IsProxySession::kFalse, SocketTag(),
                       NetworkIsolationKey(), SecureDnsPolicy::kAllow);
@@ -3843,10 +3844,11 @@ TEST_F(SpdyNetworkTransactionTest, NoConnectionPoolingOverTunnel) {
   EXPECT_EQ("hello!", response_data);
 
   // Inspect the new session.
-  SpdySessionKey key2(
-      HostPortPair("example.test", 443), ProxyServer::FromPacString(kPacString),
-      PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
-      SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
+  SpdySessionKey key2(HostPortPair("example.test", 443),
+                      PacResultElementToProxyServer(kPacString),
+                      PRIVACY_MODE_DISABLED,
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag(),
+                      NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   base::WeakPtr<SpdySession> session2 =
       helper.session()->spdy_session_pool()->FindAvailableSession(
           key2, true /* enable_ip_based_pooling */, false /* is_websocket */,
@@ -5986,7 +5988,7 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   EXPECT_TRUE(HasSpdySession(spdy_session_pool, session_pool_key_direct));
   SpdySessionKey session_pool_key_proxy(
       host_port_pair_,
-      ProxyServer::FromURI("www.foo.com", ProxyServer::SCHEME_HTTP),
+      ProxyUriToProxyServer("www.foo.com", ProxyServer::SCHEME_HTTP),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
       SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool, session_pool_key_proxy));
@@ -6621,9 +6623,8 @@ class SpdyNetworkTransactionPushUrlTest
       ssl_provider->ssl_info.is_issued_by_known_root = true;
 
       session_deps->transport_security_state->AddExpectCT(
-          "mail.example.org",
-          base::Time::Now() + base::TimeDelta::FromDays(1) /* expiry */, true,
-          GURL(), request_.network_isolation_key);
+          "mail.example.org", base::Time::Now() + base::Days(1) /* expiry */,
+          true, GURL(), request_.network_isolation_key);
     }
 
     NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
@@ -9167,7 +9168,7 @@ TEST_F(SpdyNetworkTransactionTest,
 
   SpdySessionKey key(
       HostPortPair::FromURL(request_.url),
-      ProxyServer::FromURI("https://proxy:70", ProxyServer::SCHEME_HTTPS),
+      ProxyUriToProxyServer("https://proxy:70", ProxyServer::SCHEME_HTTPS),
       PRIVACY_MODE_DISABLED, SpdySessionKey::IsProxySession::kFalse,
       SocketTag(), NetworkIsolationKey(), SecureDnsPolicy::kAllow);
 
@@ -9861,7 +9862,7 @@ TEST_F(SpdyNetworkTransactionTest,
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTDoesntConfirm) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   MockWrite writes[] = {CreateMockWrite(req, 0)};
@@ -10232,7 +10233,7 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTNoConfirmConfirmStreams) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -10307,7 +10308,7 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
   spdy::SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));

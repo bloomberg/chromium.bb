@@ -91,13 +91,16 @@ const envChromeFeatures = getTestRunnerConfigSetting<string>('chrome-features', 
 function launchChrome() {
   // Use port 0 to request any free port.
   const launchArgs = [
-    '--remote-debugging-port=0', '--enable-experimental-web-platform-features',
+    '--remote-debugging-port=0',
+    '--enable-experimental-web-platform-features',
     // This fingerprint may be generated from the certificate using
     // openssl x509 -noout -pubkey -in scripts/hosted_mode/cert.pem | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | base64
     '--ignore-certificate-errors-spki-list=KLy6vv6synForXwI6lDIl+D3ZrMV6Y1EMTY6YpOcAos=',
     '--site-per-process',  // Default on Desktop anyway, but ensure that we always use out-of-process frames when we intend to.
-    '--host-resolver-rules=MAP *.test 127.0.0.1', '--disable-gpu',
+    '--host-resolver-rules=MAP *.test 127.0.0.1',
+    '--disable-gpu',
     '--enable-blink-features=CSSContainerQueries',  // TODO(crbug.com/1218390) Remove globally enabled flag and conditionally enable it
+    '--enable-features=Portals,PortalsCrossOrigin',
   ];
   const opts: puppeteer.LaunchOptions&puppeteer.BrowserLaunchArgumentOptions&puppeteer.BrowserConnectOptions = {
     headless,
@@ -275,8 +278,10 @@ export async function resetPages() {
   // Reload the target page.
   await loadEmptyPageAndWaitForContent(target);
 
+  // Under stress conditions throttle the CPU down.
+  await throttleCPUIfRequired();
+
   if (TEST_SERVER_TYPE === 'hosted-mode') {
-    const {frontend} = getBrowserAndPages();
     // Clear any local storage settings.
     await frontend.evaluate(() => localStorage.clear());
 
@@ -292,6 +297,17 @@ type ReloadDevToolsOptions = {
   canDock?: boolean,
   queryParams?: {panel?: string},
 };
+
+async function throttleCPUIfRequired(): Promise<void> {
+  const {frontend} = getBrowserAndPages();
+  // Under stress conditions throttle the CPU down.
+  if (envThrottleRate !== 1) {
+    console.log(`Throttling CPU: ${envThrottleRate}x slowdown`);
+
+    const client = await frontend.target().createCDPSession();
+    await client.send('Emulation.setCPUThrottlingRate', {rate: envThrottleRate});
+  }
+}
 
 export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
   const {frontend} = getBrowserAndPages();
@@ -319,14 +335,6 @@ export async function reloadDevTools(options: ReloadDevToolsOptions = {}) {
 
   if (!queryParams.panel && selectedPanel.selector) {
     await frontend.waitForSelector(selectedPanel.selector);
-  }
-
-  // Under stress conditions throttle the CPU down.
-  if (envThrottleRate !== 1) {
-    console.log(`Throttling CPU: ${envThrottleRate}x slowdown`);
-
-    const client = await frontend.target().createCDPSession();
-    await client.send('Emulation.setCPUThrottlingRate', {rate: envThrottleRate});
   }
 }
 

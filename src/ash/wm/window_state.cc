@@ -20,12 +20,12 @@
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 #include "ash/wm/default_state.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
-#include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
@@ -36,8 +36,8 @@
 #include "chromeos/ui/base/window_pin_type.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
-#include "components/full_restore/features.h"
-#include "components/full_restore/full_restore_utils.h"
+#include "components/app_restore/features.h"
+#include "components/app_restore/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -82,12 +82,12 @@ bool IsToplevelContainer(aura::Window* window) {
 // with a task. We still want a WindowState created for these windows and their
 // transient children as they will be moved to a top level container soon.
 bool IsTemporarilyHiddenForFullrestore(aura::Window* window) {
-  if (window->GetProperty(full_restore::kParentToHiddenContainerKey))
+  if (window->GetProperty(app_restore::kParentToHiddenContainerKey))
     return true;
 
-  auto* transient_parent = ::wm::GetTransientParent(window);
+  auto* transient_parent = wm::GetTransientParent(window);
   return transient_parent && transient_parent->GetProperty(
-                                 full_restore::kParentToHiddenContainerKey);
+                                 app_restore::kParentToHiddenContainerKey);
 }
 
 // A tentative class to set the bounds on the window.
@@ -96,6 +96,10 @@ bool IsTemporarilyHiddenForFullrestore(aura::Window* window) {
 class BoundsSetter : public aura::LayoutManager {
  public:
   BoundsSetter() = default;
+
+  BoundsSetter(const BoundsSetter&) = delete;
+  BoundsSetter& operator=(const BoundsSetter&) = delete;
+
   ~BoundsSetter() override = default;
 
   // aura::LayoutManager overrides:
@@ -111,9 +115,6 @@ class BoundsSetter : public aura::LayoutManager {
   void SetBounds(aura::Window* window, const gfx::Rect& bounds) {
     SetChildBoundsDirect(window, bounds);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BoundsSetter);
 };
 
 WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
@@ -194,16 +195,15 @@ void ReportAshPipEvents(AshPipEvents event) {
 
 void ReportAshPipAndroidPipUseTime(base::TimeDelta duration) {
   UMA_HISTOGRAM_CUSTOM_TIMES(kAshPipAndroidPipUseTimeHistogramName, duration,
-                             base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromHours(10), 50);
+                             base::Seconds(1), base::Hours(10), 50);
 }
 
-// Notifies the full restore controller to write to file.
-void SaveWindowForFullRestore(WindowState* window_state) {
+// Notifies the window restore controller to write to file.
+void SaveWindowForWindowRestore(WindowState* window_state) {
   if (!full_restore::features::IsFullRestoreEnabled())
     return;
 
-  auto* controller = FullRestoreController::Get();
+  auto* controller = WindowRestoreController::Get();
   if (controller)
     controller->SaveWindow(window_state);
 }
@@ -539,13 +539,18 @@ void WindowState::SetPreAddedToWorkspaceWindowBounds(const gfx::Rect& bounds) {
   pre_added_to_workspace_window_bounds_ = absl::make_optional(bounds);
 }
 
-void WindowState::SetPersistentWindowInfo(
-    const PersistentWindowInfo& persistent_window_info) {
-  persistent_window_info_ = absl::make_optional(persistent_window_info);
+void WindowState::SetPersistentWindowInfoOfDisplayRemoval(
+    const PersistentWindowInfo& info) {
+  persistent_window_info_of_display_removal_ = absl::make_optional(info);
 }
 
-void WindowState::ResetPersistentWindowInfo() {
-  persistent_window_info_.reset();
+void WindowState::ResetPersistentWindowInfoOfDisplayRemoval() {
+  persistent_window_info_of_display_removal_.reset();
+}
+
+void WindowState::SetPersistentWindowInfoOfScreenRotation(
+    const PersistentWindowInfo& info) {
+  persistent_window_info_of_screen_rotation_ = absl::make_optional(info);
 }
 
 void WindowState::AddObserver(WindowStateObserver* observer) {
@@ -590,7 +595,8 @@ void WindowState::set_bounds_changed_by_user(bool bounds_changed_by_user) {
   if (bounds_changed_by_user) {
     pre_auto_manage_window_bounds_.reset();
     pre_added_to_workspace_window_bounds_.reset();
-    persistent_window_info_.reset();
+    persistent_window_info_of_display_removal_.reset();
+    persistent_window_info_of_screen_rotation_.reset();
   }
 }
 
@@ -604,7 +610,7 @@ void WindowState::OnCompleteDrag(const gfx::PointF& location) {
   DCHECK(drag_details_);
   if (delegate_)
     delegate_->OnDragFinished(/*canceled=*/false, location);
-  SaveWindowForFullRestore(this);
+  SaveWindowForWindowRestore(this);
 }
 
 void WindowState::OnRevertDrag(const gfx::PointF& location) {
@@ -773,7 +779,7 @@ void WindowState::NotifyPostStateTypeChange(
   for (auto& observer : observer_list_)
     observer.OnPostWindowStateTypeChange(this, old_window_state_type);
   OnPostPipStateChange(old_window_state_type);
-  SaveWindowForFullRestore(this);
+  SaveWindowForWindowRestore(this);
 }
 
 void WindowState::OnPostPipStateChange(WindowStateType old_window_state_type) {
@@ -963,8 +969,8 @@ WindowState* WindowState::Get(aura::Window* window) {
   DCHECK(window->parent());
 
   // WindowState is only for windows in top level container, unless they are
-  // temporarily hidden when launched by full restore. The will be reparented to
-  // a top level container soon, and need a WindowState.
+  // temporarily hidden when launched by window restore. The will be reparented
+  // to a top level container soon, and need a WindowState.
   if (!IsToplevelContainer(window->parent()) &&
       !IsTemporarilyHiddenForFullrestore(window)) {
     return nullptr;
@@ -1021,15 +1027,14 @@ void WindowState::OnWindowPropertyChanged(aura::Window* window,
     }
     return;
   }
-  if (key == aura::client::kWindowWorkspaceKey ||
-      key == aura::client::kVisibleOnAllWorkspacesKey) {
-    // Save the window for full restore purposes unless
+  if (key == aura::client::kWindowWorkspaceKey) {
+    // Save the window for window restore purposes unless
     // |ignore_property_change_| is true. Note that moving windows across
     // displays will also trigger a kWindowWorkspaceKey change, even if the
     // value stays the same, so we do not need to save the window when it
     // changes root windows (OnWindowAddedToRootWindow).
     if (!ignore_property_change_)
-      SaveWindowForFullRestore(this);
+      SaveWindowForWindowRestore(this);
     return;
   }
 
@@ -1087,7 +1092,7 @@ void WindowState::OnWindowBoundsChanged(aura::Window* window,
   }
 
   if (reason != ui::PropertyChangeReason::FROM_ANIMATION && !is_dragged())
-    SaveWindowForFullRestore(this);
+    SaveWindowForWindowRestore(this);
 }
 
 }  // namespace ash

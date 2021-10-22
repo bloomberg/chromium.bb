@@ -1,11 +1,18 @@
 <style include="cr-shared-style">
   #container {
-    height: 210px;
+    height: 200px;
     margin-top: 12px;
   }
+
+  #deviceListTitle {
+    margin-top: 24px;
+  }
 </style>
-<bluetooth-base-page>
+<bluetooth-base-page  button-bar-state="[[buttonBarState_]]">
   <div slot="page-body" id="pageBody">
+    <localized-link
+        localized-string="[[i18nAdvanced('bluetoothPairingLearnMoreLabel')]]">
+    </localized-link>
     <div id="deviceListTitle">[[getDeviceListTitle_(devices.*)]]</div>
     <!-- TODO(crbug.com/1010321): Fix item focus. -->
     <template  is="dom-if" if="[[shouldShowDeviceList_(devices.*)]]">

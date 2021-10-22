@@ -134,11 +134,6 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
     label_parent_ = AddChildView(std::make_unique<views::View>());
     label_parent_->SetPaintToLayer();
     label_parent_->layer()->SetFillsBoundsOpaquely(false);
-    label_parent_->SetBackground(views::CreateRoundedRectBackground(
-        DeprecatedGetBaseLayerColor(
-            AshColorProvider::BaseLayerType::kTransparent80,
-            kSplitviewLabelBackgroundColor),
-        kSplitviewLabelRoundRectRadiusDp));
     label_parent_->SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
         gfx::Insets(kSplitviewLabelVerticalInsetDp,
@@ -146,13 +141,10 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
 
     label_ = label_parent_->AddChildView(std::make_unique<views::Label>(
         std::u16string(), views::style::CONTEXT_LABEL));
-    label_->SetEnabledColor(DeprecatedGetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary,
-        kSplitviewLabelEnabledColor));
-    label_->SetBackgroundColor(DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent80,
-        kSplitviewLabelBackgroundColor));
   }
+
+  RotatedImageLabelView(const RotatedImageLabelView&) = delete;
+  RotatedImageLabelView& operator=(const RotatedImageLabelView&) = delete;
 
   ~RotatedImageLabelView() override = default;
 
@@ -215,6 +207,22 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
     }
   }
 
+  // views:View:
+  void OnThemeChanged() override {
+    views::View::OnThemeChanged();
+    label_parent_->SetBackground(views::CreateRoundedRectBackground(
+        DeprecatedGetBaseLayerColor(
+            AshColorProvider::BaseLayerType::kTransparent80,
+            kSplitviewLabelBackgroundColor),
+        kSplitviewLabelRoundRectRadiusDp));
+    label_->SetEnabledColor(DeprecatedGetContentLayerColor(
+        AshColorProvider::ContentLayerType::kTextColorPrimary,
+        kSplitviewLabelEnabledColor));
+    label_->SetBackgroundColor(DeprecatedGetBaseLayerColor(
+        AshColorProvider::BaseLayerType::kTransparent80,
+        kSplitviewLabelBackgroundColor));
+  }
+
  protected:
   gfx::Size CalculatePreferredSize() const override {
     return label_parent_->GetPreferredSize();
@@ -227,8 +235,6 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
 
   views::View* label_parent_ = nullptr;
   views::Label* label_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(RotatedImageLabelView);
 };
 
 // View which contains two highlights on each side indicator where a user should
@@ -259,6 +265,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     left_rotated_view_->layer()->SetOpacity(0.f);
     right_rotated_view_->layer()->SetOpacity(0.f);
   }
+
+  SplitViewDragIndicatorsView(const SplitViewDragIndicatorsView&) = delete;
+  SplitViewDragIndicatorsView& operator=(const SplitViewDragIndicatorsView&) =
+      delete;
 
   ~SplitViewDragIndicatorsView() override {
     if (dragged_window_)
@@ -620,8 +630,6 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
       WindowDraggingState::kNoDrag;
 
   aura::Window* dragged_window_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(SplitViewDragIndicatorsView);
 };
 
 SplitViewDragIndicators::SplitViewDragIndicators(aura::Window* root_window) {

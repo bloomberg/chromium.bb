@@ -31,16 +31,20 @@ using libaom_test::ACMRandom;
 namespace {
 const int kNumIterations = 1000;
 
-typedef int64_t (*ErrorBlockFunc)(const tran_low_t *coeff,
-                                  const tran_low_t *dqcoeff,
-                                  intptr_t block_size, int64_t *ssz, int bps);
+using ErrorBlockFunc = int64_t (*)(const tran_low_t *coeff,
+                                   const tran_low_t *dqcoeff,
+                                   intptr_t block_size, int64_t *ssz, int bps);
 
-typedef int64_t (*ErrorBlockFunc8Bits)(const tran_low_t *coeff,
-                                       const tran_low_t *dqcoeff,
-                                       intptr_t block_size, int64_t *ssz);
+using ErrorBlockFunc8Bits = int64_t (*)(const tran_low_t *coeff,
+                                        const tran_low_t *dqcoeff,
+                                        intptr_t block_size, int64_t *ssz);
 
-typedef std::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>
-    ErrorBlockParam;
+using ErrorBlockLpFunc = int64_t (*)(const int16_t *coeff,
+                                     const int16_t *dqcoeff,
+                                     intptr_t block_size);
+
+using ErrorBlockParam =
+    std::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>;
 
 template <ErrorBlockFunc8Bits fn>
 int64_t BlockError8BitWrapper(const tran_low_t *coeff,
@@ -48,6 +52,15 @@ int64_t BlockError8BitWrapper(const tran_low_t *coeff,
                               int64_t *ssz, int bps) {
   EXPECT_EQ(bps, 8);
   return fn(coeff, dqcoeff, block_size, ssz);
+}
+
+template <ErrorBlockLpFunc fn>
+int64_t BlockErrorLpWrapper(const tran_low_t *coeff, const tran_low_t *dqcoeff,
+                            intptr_t block_size, int64_t *ssz, int bps) {
+  EXPECT_EQ(bps, 8);
+  *ssz = -1;
+  return fn(reinterpret_cast<const int16_t *>(coeff),
+            reinterpret_cast<const int16_t *>(dqcoeff), block_size);
 }
 
 class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
@@ -246,7 +259,9 @@ const ErrorBlockParam kErrorBlockTestParamsSse2[] = {
              AOM_BITS_8),
 #endif
   make_tuple(&BlockError8BitWrapper<av1_block_error_sse2>,
-             &BlockError8BitWrapper<av1_block_error_c>, AOM_BITS_8)
+             &BlockError8BitWrapper<av1_block_error_c>, AOM_BITS_8),
+  make_tuple(&BlockErrorLpWrapper<av1_block_error_lp_sse2>,
+             &BlockErrorLpWrapper<av1_block_error_lp_c>, AOM_BITS_8)
 };
 
 INSTANTIATE_TEST_SUITE_P(SSE2, ErrorBlockTest,
@@ -264,7 +279,9 @@ const ErrorBlockParam kErrorBlockTestParamsAvx2[] = {
              AOM_BITS_8),
 #endif
   make_tuple(&BlockError8BitWrapper<av1_block_error_avx2>,
-             &BlockError8BitWrapper<av1_block_error_c>, AOM_BITS_8)
+             &BlockError8BitWrapper<av1_block_error_c>, AOM_BITS_8),
+  make_tuple(&BlockErrorLpWrapper<av1_block_error_lp_avx2>,
+             &BlockErrorLpWrapper<av1_block_error_lp_c>, AOM_BITS_8)
 };
 
 INSTANTIATE_TEST_SUITE_P(AVX2, ErrorBlockTest,
@@ -280,10 +297,14 @@ INSTANTIATE_TEST_SUITE_P(
 #endif  // HAVE_MSA
 
 #if (HAVE_NEON)
-INSTANTIATE_TEST_SUITE_P(
-    NEON, ErrorBlockTest,
-    ::testing::Values(make_tuple(&BlockError8BitWrapper<av1_block_error_neon>,
-                                 &BlockError8BitWrapper<av1_block_error_c>,
-                                 AOM_BITS_8)));
+const ErrorBlockParam kErrorBlockTestParamsNeon[] = {
+  make_tuple(&BlockError8BitWrapper<av1_block_error_neon>,
+             &BlockError8BitWrapper<av1_block_error_c>, AOM_BITS_8),
+  make_tuple(&BlockErrorLpWrapper<av1_block_error_lp_neon>,
+             &BlockErrorLpWrapper<av1_block_error_lp_c>, AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_SUITE_P(NEON, ErrorBlockTest,
+                         ::testing::ValuesIn(kErrorBlockTestParamsNeon));
 #endif  // HAVE_NEON
 }  // namespace

@@ -59,16 +59,17 @@ angle::Result WarnOnVertexFormatConversion(ContextVk *contextVk,
         return angle::Result::Continue;
     }
 
-    std::ostringstream stream;
-    stream << "The Vulkan driver does not support the 0x" << std::hex
-           << vertexFormat.getIntendedFormat().glInternalFormat
-           << " vertex attribute format; emulating with 0x"
-           << vertexFormat.getActualBufferFormat(compressed).glInternalFormat;
-    ANGLE_PERF_WARNING(contextVk->getDebug(), GL_DEBUG_SEVERITY_LOW, stream.str().c_str());
+    char stringBuffer[100];
+    snprintf(
+        stringBuffer, sizeof(stringBuffer),
+        "The Vulkan driver does not support vertex attribute format 0x%04X, emulating with 0x%04X",
+        vertexFormat.getIntendedFormat().glInternalFormat,
+        vertexFormat.getActualBufferFormat(compressed).glInternalFormat);
+    ANGLE_PERF_WARNING(contextVk->getDebug(), GL_DEBUG_SEVERITY_LOW, stringBuffer);
 
     if (insertEventMarker)
     {
-        ANGLE_TRY(contextVk->insertEventMarker(0, stream.str().c_str()));
+        ANGLE_TRY(contextVk->insertEventMarker(0, stringBuffer));
     }
 
     return angle::Result::Continue;
@@ -470,6 +471,7 @@ angle::Result VertexArrayVk::syncState(const gl::Context *context,
     ASSERT(dirtyBits.any());
 
     ContextVk *contextVk = vk::GetImpl(context);
+    contextVk->getPerfCounters().vertexArraySyncStateCalls++;
 
     const std::vector<gl::VertexAttribute> &attribs = mState.getVertexAttributes();
     const std::vector<gl::VertexBinding> &bindings  = mState.getVertexBindings();
@@ -604,6 +606,11 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
         mStreamingVertexAttribsMask.set(attribIndex, isStreamingVertexAttrib);
         bool compressed = false;
 
+        if (bufferGL)
+        {
+            mContentsObservers->disableForBuffer(bufferGL, static_cast<uint32_t>(attribIndex));
+        }
+
         if (!isStreamingVertexAttrib)
         {
             BufferVk *bufferVk                  = vk::GetImpl(bufferGL);
@@ -618,8 +625,13 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
                 compressed = true;
             }
 
-            if (vertexFormat.getVertexLoadRequiresConversion(compressed) || !bindingIsAligned)
+            bool needsConversion =
+                vertexFormat.getVertexLoadRequiresConversion(compressed) || !bindingIsAligned;
+
+            if (needsConversion)
             {
+                mContentsObservers->enableForBuffer(bufferGL, static_cast<uint32_t>(attribIndex));
+
                 ANGLE_TRY(WarnOnVertexFormatConversion(contextVk, vertexFormat, compressed, true));
 
                 ConversionBuffer *conversion = bufferVk->getVertexConversionBuffer(
@@ -656,7 +668,7 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
                     // If conversion happens, the destination buffer stride may be changed,
                     // therefore an attribute change needs to be called. Note that it may trigger
                     // unnecessary vulkan PSO update when the destination buffer stride does not
-                    // change, but for simplity just make it conservative
+                    // change, but for simplicity just make it conservative
                     bufferOnly = false;
                 }
 

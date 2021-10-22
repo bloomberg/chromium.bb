@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/base/ime/chromeos/input_method_delegate.h"
+#include "ui/base/ime/ash/input_method_delegate.h"
 
 namespace ash {
 namespace input_method {
@@ -19,6 +19,10 @@ namespace input_method {
 class InputMethodDelegateImpl : public InputMethodDelegate {
  public:
   InputMethodDelegateImpl();
+
+  InputMethodDelegateImpl(const InputMethodDelegateImpl&) = delete;
+  InputMethodDelegateImpl& operator=(const InputMethodDelegateImpl&) = delete;
+
   ~InputMethodDelegateImpl() override;
 
   // InputMethodDelegate implementation.
@@ -27,9 +31,6 @@ class InputMethodDelegateImpl : public InputMethodDelegate {
   std::u16string GetDisplayLanguageName(
       const std::string& language_code) const override;
   void SetHardwareKeyboardLayoutForTesting(const std::string& layout) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InputMethodDelegateImpl);
 };
 
 }  // namespace input_method

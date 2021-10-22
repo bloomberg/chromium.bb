@@ -191,32 +191,32 @@ AHardwareBufferExternalMemory::AllocateInfo::AllocateInfo(const vk::DeviceMemory
 	}
 }
 
-AHardwareBufferExternalMemory::AHardwareBufferExternalMemory(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo)
-    : allocateInfo(extendedAllocationInfo)
+AHardwareBufferExternalMemory::AHardwareBufferExternalMemory(const VkMemoryAllocateInfo *pCreateInfo, void *mem, const DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo, vk::Device *pDevice)
+    : vk::DeviceMemory(pCreateInfo, pDevice)
+    , allocateInfo(extendedAllocationInfo)
 {
 }
 
 AHardwareBufferExternalMemory::~AHardwareBufferExternalMemory()
 {
-	// correct deallocation of AHB does not require a pointer or size
-	deallocate(nullptr, 0);
+	freeBuffer();
 }
 
-// VkAllocateMemory
-VkResult AHardwareBufferExternalMemory::allocate(size_t size, void **pBuffer)
+// vkAllocateMemory
+VkResult AHardwareBufferExternalMemory::allocateBuffer()
 {
 	if(allocateInfo.importAhb)
 	{
-		return importAndroidHardwareBuffer(allocateInfo.ahb, pBuffer);
+		return importAndroidHardwareBuffer(allocateInfo.ahb, &buffer);
 	}
 	else
 	{
 		ASSERT(allocateInfo.exportAhb);
-		return allocateAndroidHardwareBuffer(size, pBuffer);
+		return allocateAndroidHardwareBuffer(allocationSize, &buffer);
 	}
 }
 
-void AHardwareBufferExternalMemory::deallocate(void *buffer, size_t size)
+void AHardwareBufferExternalMemory::freeBuffer()
 {
 	if(ahb != nullptr)
 	{
@@ -332,6 +332,11 @@ VkResult AHardwareBufferExternalMemory::unlockAndroidHardwareBuffer()
 
 VkResult AHardwareBufferExternalMemory::exportAndroidHardwareBuffer(AHardwareBuffer **pAhb) const
 {
+	if(getFlagBit() != VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID)
+	{
+		return VK_ERROR_OUT_OF_HOST_MEMORY;
+	}
+
 	// Each call to vkGetMemoryAndroidHardwareBufferANDROID *must* return an Android hardware buffer with a new reference
 	// acquired in addition to the reference held by the VkDeviceMemory. To avoid leaking resources, the application *must*
 	// release the reference by calling AHardwareBuffer_release when it is no longer needed.
@@ -446,14 +451,14 @@ VkResult AHardwareBufferExternalMemory::GetAndroidHardwareBufferProperties(VkDev
 
 		VkImage Image;
 
-		result = vk::Image::Create(vk::DEVICE_MEMORY, &info, &Image, vk::Cast(device));
+		result = vk::Image::Create(vk::NULL_ALLOCATION_CALLBACKS, &info, &Image, vk::Cast(device));
 		if(result != VK_SUCCESS)
 		{
 			return result;
 		}
 
 		pProperties->allocationSize = vk::Cast(Image)->getMemoryRequirements().size;
-		vk::destroy(Image, vk::DEVICE_MEMORY);
+		vk::destroy(Image, vk::NULL_ALLOCATION_CALLBACKS);
 	}
 
 	return result;

@@ -221,12 +221,12 @@ ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
   if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("color-gamut");
     if (value.IsValid()) {
-      if (value.id == CSSValueID::kSRGB)
+      if (value.Id() == CSSValueID::kSRGB)
         return ColorSpaceGamut::SRGB;
-      if (value.id == CSSValueID::kP3)
+      if (value.Id() == CSSValueID::kP3)
         return ColorSpaceGamut::P3;
       // Rec. 2020 is also known as ITU-R-Empfehlung BT.2020.
-      if (value.id == CSSValueID::kRec2020)
+      if (value.Id() == CSSValueID::kRec2020)
         return ColorSpaceGamut::BT2020;
       NOTREACHED();
     }
@@ -244,7 +244,7 @@ mojom::blink::PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
   if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");
     if (value.IsValid())
-      return CSSValueIDToPreferredColorScheme(value.id);
+      return CSSValueIDToPreferredColorScheme(value.Id());
   }
   return frame->GetDocument()->GetStyleEngine().GetPreferredColorScheme();
 }
@@ -257,7 +257,7 @@ mojom::blink::PreferredContrast MediaValues::CalculatePreferredContrast(
   if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-contrast");
     if (value.IsValid())
-      return CSSValueIDToPreferredContrast(value.id);
+      return CSSValueIDToPreferredContrast(value.Id());
   }
   return frame->GetSettings()->GetPreferredContrast();
 }
@@ -268,7 +268,7 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
   if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-reduced-motion");
     if (value.IsValid())
-      return value.id == CSSValueID::kReduce;
+      return value.Id() == CSSValueID::kReduce;
   }
   return frame->GetSettings()->GetPrefersReducedMotion();
 }
@@ -279,7 +279,7 @@ bool MediaValues::CalculatePrefersReducedData(LocalFrame* frame) {
   if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-reduced-data");
     if (value.IsValid())
-      return value.id == CSSValueID::kReduce;
+      return value.Id() == CSSValueID::kReduce;
   }
   return (GetNetworkStateNotifier().SaveDataEnabled() &&
           !frame->GetSettings()->GetDataSaverHoldbackWebApi());
@@ -291,7 +291,7 @@ ForcedColors MediaValues::CalculateForcedColors(LocalFrame* frame) {
   if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("forced-colors");
     if (value.IsValid())
-      return CSSValueIDToForcedColors(value.id);
+      return CSSValueIDToForcedColors(value.Id());
   }
   if (Platform::Current() && Platform::Current()->ThemeEngine())
     return Platform::Current()->ThemeEngine()->GetForcedColors();
@@ -305,27 +305,34 @@ NavigationControls MediaValues::CalculateNavigationControls(LocalFrame* frame) {
   return frame->GetSettings()->GetNavigationControls();
 }
 
-ScreenSpanning MediaValues::CalculateScreenSpanning(LocalFrame* frame) {
+int MediaValues::CalculateHorizontalViewportSegments(LocalFrame* frame) {
   if (!frame->GetWidgetForLocalRoot())
-    return ScreenSpanning::kNone;
+    return 1;
 
   WebVector<gfx::Rect> window_segments =
       frame->GetWidgetForLocalRoot()->WindowSegments();
-
-  if (window_segments.size() == 2) {
-    // If there are two segments and the y value of the segments is the same,
-    // we have side-by-side segments which are represented as a single vertical
-    // fold.
-    if (window_segments[0].y() == window_segments[1].y())
-      return ScreenSpanning::kSingleFoldVertical;
-
-    // If the x value of the segments is the same, we have stacked segments
-    // which are represented as a single horizontal fold.
-    if (window_segments[0].x() == window_segments[1].x())
-      return ScreenSpanning::kSingleFoldHorizontal;
+  WTF::HashSet<int> unique_x;
+  for (const auto& segment : window_segments) {
+    // HashSet can't have 0 as a key, so add 1 to all the values we see.
+    unique_x.insert(segment.x() + 1);
   }
 
-  return ScreenSpanning::kNone;
+  return static_cast<int>(unique_x.size());
+}
+
+int MediaValues::CalculateVerticalViewportSegments(LocalFrame* frame) {
+  if (!frame->GetWidgetForLocalRoot())
+    return 1;
+
+  WebVector<gfx::Rect> window_segments =
+      frame->GetWidgetForLocalRoot()->WindowSegments();
+  WTF::HashSet<int> unique_y;
+  for (const auto& segment : window_segments) {
+    // HashSet can't have 0 as a key, so add 1 to all the values we see.
+    unique_y.insert(segment.y() + 1);
+  }
+
+  return static_cast<int>(unique_y.size());
 }
 
 device::mojom::blink::DevicePostureType MediaValues::CalculateDevicePosture(

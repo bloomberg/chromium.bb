@@ -31,11 +31,14 @@
 #include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
+#include "chrome/browser/web_applications/test/web_app_sync_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
+#include "chrome/browser/web_applications/web_app_file_handler_registration.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -43,6 +46,7 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -58,6 +62,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/manifest/capture_links.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_utils.h"
 
 #if defined(OS_WIN) || defined(OS_MAC) || \
     (defined(OS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -198,7 +203,7 @@ class UpdateCheckResultAwaiter {
 
 class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
  public:
-  ManifestUpdateManagerBrowserTest() {}
+  ManifestUpdateManagerBrowserTest() = default;
   ManifestUpdateManagerBrowserTest(const ManifestUpdateManagerBrowserTest&) =
       delete;
   ManifestUpdateManagerBrowserTest& operator=(
@@ -342,6 +347,53 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     return GetProvider().registrar().LookupExternalAppId(app_url).value();
   }
 
+  AppId InstallWebAppFromSync(const GURL& start_url) {
+    const AppId app_id =
+        GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
+
+    std::vector<std::unique_ptr<WebApp>> add_synced_apps_data;
+    {
+      auto synced_specifics_data = std::make_unique<WebApp>(app_id);
+      synced_specifics_data->SetStartUrl(start_url);
+
+      synced_specifics_data->AddSource(Source::kSync);
+      synced_specifics_data->SetUserDisplayMode(DisplayMode::kBrowser);
+      synced_specifics_data->SetName("Name From Sync");
+
+      WebApp::SyncFallbackData sync_fallback_data;
+      sync_fallback_data.name = "Name From Sync";
+      sync_fallback_data.theme_color = SK_ColorMAGENTA;
+      sync_fallback_data.scope = GURL("https://example.com/sync_scope");
+
+      apps::IconInfo apps_icon_info = CreateIconInfo(
+          /*icon_base_url=*/start_url, IconPurpose::MONOCHROME, 64);
+      sync_fallback_data.icon_infos.push_back(std::move(apps_icon_info));
+
+      synced_specifics_data->SetSyncFallbackData(std::move(sync_fallback_data));
+
+      add_synced_apps_data.push_back(std::move(synced_specifics_data));
+    }
+
+    WebAppTestInstallObserver observer(browser()->profile());
+
+    GetProvider().sync_bridge().set_disable_checks_for_testing(true);
+
+    sync_bridge_test_utils::AddApps(GetProvider().sync_bridge(),
+                                    add_synced_apps_data);
+
+    return observer.BeginListeningAndWait({app_id});
+  }
+
+  // Simulates what AppLauncherHandler::HandleInstallAppLocally() does.
+  void InstallAppLocally(const WebApp* web_app) {
+    // Doesn't call GetProvider().os_integration_manager().InstallOsHooks() to
+    // suppress OS hooks.
+    GetProvider().sync_bridge().SetAppIsLocallyInstalled(web_app->app_id(),
+                                                         true);
+    GetProvider().sync_bridge().SetAppInstallTime(web_app->app_id(),
+                                                  base::Time::Now());
+  }
+
   void SetTimeOverride(base::Time time_override) {
     GetManifestUpdateManager(browser()).set_time_override_for_testing(
         time_override);
@@ -393,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest, CheckIsThrottled) {
-  constexpr base::TimeDelta kDelayBetweenChecks = base::TimeDelta::FromDays(1);
+  constexpr base::TimeDelta kDelayBetweenChecks = base::Days(1);
   base::Time time_override = base::Time::UnixEpoch();
   SetTimeOverride(time_override);
 
@@ -1406,6 +1458,131 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                                       ManifestUpdateResult::kAppUpdated, 0);
 }
 
+enum class UpdateDialogParam {
+  kDisabled = 0,
+  kEnabled = 1,
+};
+
+class ManifestUpdateManagerBrowserTest_UpdateDialog
+    : public ManifestUpdateManagerBrowserTest,
+      public testing::WithParamInterface<UpdateDialogParam> {
+ public:
+  ManifestUpdateManagerBrowserTest_UpdateDialog() {
+    if (IsUpdateDialogEnabled()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kPwaUpdateDialogForNameAndIcon);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kPwaUpdateDialogForNameAndIcon);
+    }
+  }
+
+  bool IsUpdateDialogEnabled() const {
+    return GetParam() == UpdateDialogParam::kEnabled;
+  }
+
+  static std::string ParamToString(
+      testing::TestParamInfo<UpdateDialogParam> param) {
+    switch (param.param) {
+      case UpdateDialogParam::kDisabled:
+        return "UpdateDialogDisabled";
+      case UpdateDialogParam::kEnabled:
+        return "UpdateDialogEnabled";
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_UpdateDialog,
+                       CheckDoesNotUpdateGeneratedIcons_SyncFailure) {
+  // The first "name" character is used to generate icons. Make it like a space
+  // to probe the background color at the center. Spaces are trimmed by the
+  // parser.
+  constexpr char kManifest[] = R"(
+    {
+      "name": "_Test App Name",
+      "start_url": "manifest_test_page.html",
+      "scope": "/",
+      "display": "standalone",
+      "icons": [
+        {
+          "src": "/web_apps/blue-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  )";
+  OverrideManifest(kManifest, {});
+
+  AppId app_id;
+
+  // Make blue-192.png fail to download for the first sync install..
+  {
+    std::unique_ptr<content::URLLoaderInterceptor> url_interceptor =
+        content::URLLoaderInterceptor::SetupRequestFailForURL(
+            http_server_.GetURL("/web_apps/blue-192.png"),
+            net::Error::ERR_FILE_NOT_FOUND);
+
+    app_id = InstallWebAppFromSync(GetAppURL());
+  }
+
+  const WebApp* web_app = GetProvider().registrar().GetAppById(app_id);
+  ASSERT_TRUE(web_app);
+  EXPECT_TRUE(web_app->is_generated_icon());
+
+  // ManifestUpdateManager updates only locally installed apps. Installs web app
+  // locally on Win/Mac/Linux.
+  if (!web_app->is_locally_installed())
+    InstallAppLocally(web_app);
+
+  // Autogenerated icons in `ResizeIconsAndGenerateMissing()` use hardcoded dark
+  // gray color as background.
+  EXPECT_EQ(6u, web_app->downloaded_icon_sizes(IconPurpose::ANY).size());
+  for (SquareSizePx size_px :
+       web_app->downloaded_icon_sizes(IconPurpose::ANY)) {
+    SCOPED_TRACE(size_px);
+    EXPECT_EQ(color_utils::SkColorToRgbaString(ReadAppIconPixel(
+                  app_id, size_px, /*x=*/size_px / 2, /*y=*/size_px / 2)),
+              color_utils::SkColorToRgbaString(SK_ColorDKGRAY));
+  }
+
+  if (IsUpdateDialogEnabled())
+    chrome::SetAutoAcceptAppIdentityUpdateForTesting(true);
+
+  OverrideManifest(kManifest, {});
+
+  ManifestUpdateResult update_result = GetResultAfterPageLoad(GetAppURL());
+
+  EXPECT_EQ(update_result, ManifestUpdateResult::kAppUpToDate);
+
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 0);
+
+  ASSERT_EQ(web_app, GetProvider().registrar().GetAppById(app_id));
+  // Still autogenerated icons, no change.
+  EXPECT_TRUE(web_app->is_generated_icon());
+  // Not 7u, no non-generated icon added.
+  EXPECT_EQ(6u, web_app->downloaded_icon_sizes(IconPurpose::ANY).size());
+  // Not SK_ColorBLUE for blue-192.png.
+  for (SquareSizePx size_px :
+       web_app->downloaded_icon_sizes(IconPurpose::ANY)) {
+    SCOPED_TRACE(size_px);
+    EXPECT_EQ(color_utils::SkColorToRgbaString(ReadAppIconPixel(
+                  app_id, size_px, /*x=*/size_px / 2, /*y=*/size_px / 2)),
+              color_utils::SkColorToRgbaString(SK_ColorDKGRAY));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ManifestUpdateManagerBrowserTest_UpdateDialog,
+    ::testing::Values(UpdateDialogParam::kEnabled,
+                      UpdateDialogParam::kDisabled),
+    ManifestUpdateManagerBrowserTest_UpdateDialog::ParamToString);
+
 class ManifestUpdateManagerCaptureLinksBrowserTest
     : public ManifestUpdateManagerBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_{
@@ -1828,7 +2005,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
 
   // Update manifest, but keep same file handlers. Permission should be left on
   // ALLOW.
-  time_override += base::TimeDelta::FromDays(10);
+  time_override += base::Days(10);
   SetTimeOverride(time_override);
   OverrideManifest(kFileHandlerManifestTemplate, {".md\", \".txt", "blue"});
   EXPECT_EQ(ManifestUpdateResult::kAppUpdated, GetResultAfterPageLoad(url));
@@ -1841,7 +2018,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
 
   // Update manifest, asking for /fewer/ file types. Permission should be left
   // on ALLOW.
-  time_override += base::TimeDelta::FromDays(10);
+  time_override += base::Days(10);
   SetTimeOverride(time_override);
   OverrideManifest(kFileHandlerManifestTemplate, {".txt", "blue"});
   EXPECT_EQ(ManifestUpdateResult::kAppUpdated, GetResultAfterPageLoad(url));
@@ -1852,12 +2029,22 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
             map->GetContentSetting(origin, origin,
                                    ContentSettingsType::FILE_HANDLING));
 
+#if defined(OS_LINUX)
+  // Make sure that blocking the permission also unregisters the MIME type on
+  // Linux.
+  SetUpdateMimeInfoDatabaseOnLinuxCallbackForTesting(base::BindLambdaForTesting(
+      [](base::FilePath filename, std::string file_contents) {
+        EXPECT_TRUE(file_contents.empty());
+        return true;
+      }));
+#endif
+
   // Block the permission, update manifest, permission should still be block.
   map->SetContentSettingDefaultScope(origin, origin,
                                      ContentSettingsType::FILE_HANDLING,
                                      CONTENT_SETTING_BLOCK);
   OverrideManifest(kFileHandlerManifestTemplate, {".txt", "red"});
-  time_override += base::TimeDelta::FromDays(10);
+  time_override += base::Days(10);
   SetTimeOverride(time_override);
   EXPECT_EQ(ManifestUpdateResult::kAppUpdated, GetResultAfterPageLoad(url));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
@@ -2055,7 +2242,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
           "action": "/?longtype",
           "name": "Long Custom type",
           "accept": {
-            "long/type": [".longtype"]
+            "application/long-type": [".longtype"]
           }
         }
       ],
@@ -2070,7 +2257,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTestWithFileHandling,
       GetFileTypeAssociationsHandledByWebAppsForDisplay(browser()->profile(),
                                                         GetAppURL());
 #if defined(OS_LINUX)
-  EXPECT_EQ(u"long/type, text/plain", associations_list);
+  EXPECT_EQ(u"application/long-type, text/plain", associations_list);
 #else
   EXPECT_EQ(u"LONGTYPE, TXT", associations_list);
 #endif  // defined(OS_LINUX)

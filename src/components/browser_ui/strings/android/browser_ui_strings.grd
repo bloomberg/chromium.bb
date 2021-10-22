@@ -309,6 +309,12 @@
       <message name="IDS_ALWAYS" desc="Generic label for a user to select an always option">
         Always
       </message>
+      <message name="IDS_LATEST" desc="Generic label for a user to select a Latest option, eg. sort by latest">
+        Latest
+      </message>
+      <message name="IDS_SORT_BY" desc="Generic label for a prompt to sort something.">
+        Sort by:
+      </message>
 
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_MENU" desc="Content description for the settings menu button.">
         More options
@@ -577,6 +583,21 @@
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_VIEW_SITE_INFO" desc="Spoken by screen readers to explain that clicking on the status icon will show more site information when clicked. The string is read in the context of the 'Double tap to...' Android screen reader accessibility prompt e.g. 'Double tap to view site information'.">
         View site information
+      </message>
+      <message name="IDS_PAGE_ZOOM_TITLE" desc="Title of the preference that allows the user to update the accessibility page zoom feature that applies to the web contents." translateable="false">
+        Zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_SUMMARY" desc="Summary of the preference that allows the user to update the accessibility page zoom feature that applies to the web contents." translateable="false">
+        Use this setting to increase/decrease the zoom for the page.
+      </message>
+      <message name="IDS_PAGE_ZOOM_DECREASE_ZOOM_BUTTON_TEXT" desc="Accessibility label for button to allow user to decrease page zoom" translateable="false">
+        Decrease zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_INCREASE_ZOOM_BUTTON_TEXT" desc="Accessibility label for button to allow user to increase page zoom" translateable="false">
+        Increase zoom
+      </message>
+      <message name="IDS_PAGE_ZOOM_FACTOR" desc="Text description of the current page zoom factor set by the user" translateable="false">
+        <ph name="ZOOM_FACTOR">%1$d<ex>100</ex></ph> %%
       </message>
 
       <!-- Media Capture and Streams -->

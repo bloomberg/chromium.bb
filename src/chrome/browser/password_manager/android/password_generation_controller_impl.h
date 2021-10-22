@@ -33,6 +33,12 @@ class PasswordGenerationControllerImpl
  public:
   using CreateDialogFactory = base::RepeatingCallback<std::unique_ptr<
       PasswordGenerationDialogViewInterface>(PasswordGenerationController*)>;
+
+  PasswordGenerationControllerImpl(const PasswordGenerationControllerImpl&) =
+      delete;
+  PasswordGenerationControllerImpl& operator=(
+      const PasswordGenerationControllerImpl&) = delete;
+
   ~PasswordGenerationControllerImpl() override;
 
   // PasswordGenerationController:
@@ -132,8 +138,6 @@ class PasswordGenerationControllerImpl
   bool manual_generation_requested_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationControllerImpl);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_GENERATION_CONTROLLER_IMPL_H_

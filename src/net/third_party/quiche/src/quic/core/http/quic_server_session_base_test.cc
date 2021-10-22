@@ -17,6 +17,7 @@
 #include "quic/core/quic_connection.h"
 #include "quic/core/quic_crypto_server_stream.h"
 #include "quic/core/quic_crypto_server_stream_base.h"
+#include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
 #include "quic/core/tls_server_handshaker.h"
 #include "quic/platform/api/quic_expect_bug.h"
@@ -93,8 +94,8 @@ class TestServerSession : public QuicServerSessionBase {
   }
 
   QuicSpdyStream* CreateIncomingStream(PendingStream* pending) override {
-    QuicSpdyStream* stream = new QuicSimpleServerStream(
-        pending, this, BIDIRECTIONAL, quic_simple_server_backend_);
+    QuicSpdyStream* stream =
+        new QuicSimpleServerStream(pending, this, quic_simple_server_backend_);
     ActivateStream(absl::WrapUnique(stream));
     return stream;
   }

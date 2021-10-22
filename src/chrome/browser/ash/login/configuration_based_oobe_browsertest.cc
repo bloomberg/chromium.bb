@@ -42,16 +42,13 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/mock_notification_observer.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
-
-using testing::_;
-using testing::Invoke;
+#include "ui/base/ime/ash/input_method_util.h"
 
 // Disabled due to flakiness: https://crbug.com/997685.
 #define MAYBE_TestDemoModeOfflineNetwork DISABLED_TestDemoModeOfflineNetwork
 #define MAYBE_TestDemoModeAcceptEula DISABLED_TestDemoModeAcceptEula
 
-namespace chromeos {
+namespace ash {
 
 // This test case will use
 // src/chromeos/test/data/oobe_configuration/<TestName>.json file as
@@ -61,6 +58,9 @@ namespace chromeos {
 class OobeConfigurationTest : public OobeBaseTest {
  public:
   OobeConfigurationTest() = default;
+
+  OobeConfigurationTest(const OobeConfigurationTest&) = delete;
+  OobeConfigurationTest& operator=(const OobeConfigurationTest&) = delete;
 
   bool ShouldWaitForOobeUI() override { return false; }
 
@@ -109,7 +109,8 @@ class OobeConfigurationTest : public OobeBaseTest {
     const ::testing::TestInfo* const test_info =
         ::testing::UnitTest::GetInstance()->current_test_info();
     const std::string filename = std::string(test_info->name()) + suffix;
-    return test_utils::GetTestDataPath("oobe_configuration", filename, file);
+    return chromeos::test_utils::GetTestDataPath("oobe_configuration", filename,
+                                                 file);
   }
 
   // Overridden from InProcessBrowserTest:
@@ -126,34 +127,33 @@ class OobeConfigurationTest : public OobeBaseTest {
     LoadConfiguration();
 
     // Make sure that OOBE is run as an "official" build.
-    branded_build_override_ =
-        WizardController::ForceBrandedBuildForTesting(true);
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
   }
 
  protected:
-  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
   base::ScopedTempDir fake_policy_dir_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OobeConfigurationTest);
 };
 
 class OobeConfigurationEnrollmentTest : public OobeConfigurationTest {
  public:
   OobeConfigurationEnrollmentTest() = default;
+
+  OobeConfigurationEnrollmentTest(const OobeConfigurationEnrollmentTest&) =
+      delete;
+  OobeConfigurationEnrollmentTest& operator=(
+      const OobeConfigurationEnrollmentTest&) = delete;
+
   ~OobeConfigurationEnrollmentTest() override = default;
 
  protected:
   LocalPolicyTestServerMixin policy_server_{&mixin_host_};
   // We need fake gaia to fetch device local account tokens.
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
   test::EnrollmentUIMixin enrollment_ui_{&mixin_host_};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OobeConfigurationEnrollmentTest);
 };
 
 // Check that configuration lets correctly pass Welcome screen.
@@ -167,8 +167,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestSwitchLanguageIME) {
   LoadConfiguration();
   OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
 
-  chromeos::input_method::InputMethodManager* imm =
-      chromeos::input_method::InputMethodManager::Get();
+  auto* imm = input_method::InputMethodManager::Get();
 
   // Configuration specified in TestSwitchLanguageIME.json sets non-default
   // input method fo German (xkb:de:neo:ger) to ensure that input method value
@@ -277,4 +276,4 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestSkipUpdate) {
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSignin);
 }
 
-}  // namespace chromeos
+}  // namespace ash

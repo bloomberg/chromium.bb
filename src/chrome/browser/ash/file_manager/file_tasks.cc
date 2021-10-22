@@ -150,10 +150,6 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   if (media_app_task == tasks->end())
     return;
 
-  // Video Player app was replaced by media app in m91, deprecated in m93 and
-  // will be deleted m94.
-  DCHECK(task_for_app(kVideoPlayerAppId) == tasks->end());
-
   // TOOD(crbug/1071289): For a while is_file_extension_match would always be
   // false for System Web App manifests, even when specifying extension matches.
   // So this line can be removed once the media app manifest is updated with a
@@ -668,17 +664,10 @@ bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
 bool IsGoodMatchAppsFileHandler(
     const apps::FileHandler& file_handler,
     const std::vector<extensions::EntryInfo>& entries) {
-  // TODO(crbug.com/938103): Duplicates functionality from
-  // FileHandlerManager::GetMimeTypesFromFileHandlers and
-  // ::GetFileExtensionsFromFileHandlers.
-  std::set<std::string> mime_types;
-  std::set<std::string> file_extensions;
-  for (const auto& accept_entry : file_handler.accept) {
-    mime_types.insert(accept_entry.mime_type);
-    file_extensions.insert(accept_entry.file_extensions.begin(),
-                           accept_entry.file_extensions.end());
-  }
-
+  std::set<std::string> mime_types =
+      apps::GetMimeTypesFromFileHandler(file_handler);
+  std::set<std::string> file_extensions =
+      apps::GetFileExtensionsFromFileHandler(file_handler);
   if (mime_types.count("*") || mime_types.count("*/*") ||
       file_extensions.count("*"))
     return false;
@@ -720,10 +709,6 @@ void FindFileHandlerTasks(Profile* profile,
     if (profile->IsOffTheRecord() &&
         !extensions::util::IsIncognitoEnabled(extension->id(), profile))
       continue;
-
-    // Video player should no longer install itself or its file handlers
-    // starting in m93.
-    DCHECK_NE(kVideoPlayerAppId, extension->id());
 
     typedef std::vector<extensions::FileHandlerMatch> FileHandlerMatchList;
     FileHandlerMatchList file_handlers =
@@ -833,18 +818,15 @@ void FindExtensionAndAppTasks(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list) {
   std::vector<FullTaskDescriptor>* result_list_ptr = result_list.get();
 
-  // 2. Continues from FindAllTypesOfTasks. Find and append file handler tasks.
-  FindFileHandlerTasks(profile, entries, result_list_ptr);
-
-  // 3. Find and append file browser handler tasks. We know there aren't
+  // 2. Find and append file browser handler tasks. We know there aren't
   // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
   // be used in the same manifest.json.
   FindFileBrowserHandlerTasks(profile, file_urls, result_list_ptr);
 
-  // 4. Web tasks file_handlers (View/Open With).
+  // 3. Web tasks file_handlers (View/Open With), and Chrome app file_handlers.
   FindAppServiceTasks(profile, entries, file_urls, result_list_ptr);
 
-  // 5. Find and append Guest OS tasks.
+  // 4. Find and append Guest OS tasks.
   FindGuestOsTasks(profile, entries, file_urls, result_list_ptr,
                    // Done. Apply post-filtering and callback.
                    base::BindOnce(PostProcessFoundTasks, profile, entries,

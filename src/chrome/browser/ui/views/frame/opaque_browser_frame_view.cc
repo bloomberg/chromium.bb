@@ -82,6 +82,11 @@ class CaptionButtonBackgroundImageSource : public gfx::CanvasImageSource {
         dest_height_(dest_height),
         draw_mirrored_(draw_mirrored) {}
 
+  CaptionButtonBackgroundImageSource(
+      const CaptionButtonBackgroundImageSource&) = delete;
+  CaptionButtonBackgroundImageSource& operator=(
+      const CaptionButtonBackgroundImageSource&) = delete;
+
   ~CaptionButtonBackgroundImageSource() override = default;
 
   void Draw(gfx::Canvas* canvas) override {
@@ -104,8 +109,6 @@ class CaptionButtonBackgroundImageSource : public gfx::CanvasImageSource {
   int source_x_, source_y_;
   int dest_width_, dest_height_;
   bool draw_mirrored_;
-
-  DISALLOW_COPY_AND_ASSIGN(CaptionButtonBackgroundImageSource);
 };
 
 }  // namespace
@@ -391,7 +394,8 @@ void OpaqueBrowserFrameView::SizeConstraintsChanged() {}
 // OpaqueBrowserFrameView, views::View overrides:
 
 void OpaqueBrowserFrameView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTitleBar;
+  // Expose this view as a generic container as it contains/paints many things.
+  node_data->role = ax::mojom::Role::kPane;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

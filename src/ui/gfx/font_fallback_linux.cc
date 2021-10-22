@@ -116,6 +116,9 @@ class FallbackFontKey {
       : locale_(locale), font_(font) {}
 
   FallbackFontKey(const FallbackFontKey&) = default;
+
+  FallbackFontKey& operator=(const FallbackFontKey&) = delete;
+
   ~FallbackFontKey() = default;
 
   bool operator<(const FallbackFontKey& other) const {
@@ -131,8 +134,6 @@ class FallbackFontKey {
  private:
   std::string locale_;
   Font font_;
-
-  DISALLOW_ASSIGN(FallbackFontKey);
 };
 
 class FallbackFontEntry {
@@ -151,6 +152,8 @@ class FallbackFontEntry {
         ttc_index_(other.ttc_index_),
         font_params_(other.font_params_),
         charset_(FcCharSetCopy(other.charset_)) {}
+
+  FallbackFontEntry& operator=(const FallbackFontEntry&) = delete;
 
   ~FallbackFontEntry() { FcCharSetDestroy(charset_); }
 
@@ -173,8 +176,6 @@ class FallbackFontEntry {
 
   // Font code points coverage.
   FcCharSet* charset_;
-
-  DISALLOW_ASSIGN(FallbackFontEntry);
 };
 
 using FallbackFontEntries = std::vector<FallbackFontEntry>;
@@ -425,6 +426,9 @@ class CachedFontSet {
     return base::WrapUnique(new CachedFontSet(font_set));
   }
 
+  CachedFontSet(const CachedFontSet&) = delete;
+  CachedFontSet& operator=(const CachedFontSet&) = delete;
+
   ~CachedFontSet() {
     fallback_list_.clear();
     FcFontSetDestroy(font_set_);
@@ -502,8 +506,6 @@ class CachedFontSet {
   // If the FcFontSet is ever destroyed, the fallback list
   // must be cleared first.
   std::vector<CachedFont> fallback_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(CachedFontSet);
 };
 
 typedef std::map<std::string, std::unique_ptr<CachedFontSet>> FontSetCache;

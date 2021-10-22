@@ -22,6 +22,7 @@
 #include "libavutil/avstring.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
@@ -100,7 +101,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 typedef struct ThreadData {
@@ -155,6 +156,26 @@ static void filter16_sobel(uint8_t *dstp, int width,
         float sumb = AV_RN16A(&c[0][2 * x]) * -1 + AV_RN16A(&c[2][2 * x]) *  1 + AV_RN16A(&c[3][2 * x]) * -2 +
                      AV_RN16A(&c[5][2 * x]) *  2 + AV_RN16A(&c[6][2 * x]) * -1 + AV_RN16A(&c[8][2 * x]) *  1;
 
+        dst[x] = av_clip(sqrtf(suma*suma + sumb*sumb) * scale + delta, 0, peak);
+    }
+}
+
+static void filter16_scharr(uint8_t *dstp, int width,
+                            float scale, float delta, const int *const matrix,
+                            const uint8_t *c[], int peak, int radius,
+                            int dstride, int stride, int size)
+{
+    uint16_t *dst = (uint16_t *)dstp;
+    int x;
+
+    for (x = 0; x < width; x++) {
+        float suma = AV_RN16A(&c[0][2 * x]) * -47 + AV_RN16A(&c[1][2 * x]) * -162 + AV_RN16A(&c[2][2 * x]) *  -47 +
+                     AV_RN16A(&c[6][2 * x]) *  47 + AV_RN16A(&c[7][2 * x]) *  162 + AV_RN16A(&c[8][2 * x]) *   47;
+        float sumb = AV_RN16A(&c[0][2 * x]) * -47 + AV_RN16A(&c[2][2 * x]) *   47 + AV_RN16A(&c[3][2 * x]) * -162 +
+                     AV_RN16A(&c[5][2 * x]) * 162 + AV_RN16A(&c[6][2 * x]) *  -47 + AV_RN16A(&c[8][2 * x]) *   47;
+
+        suma /= 256.f;
+        sumb /= 256.f;
         dst[x] = av_clip(sqrtf(suma*suma + sumb*sumb) * scale + delta, 0, peak);
     }
 }
@@ -259,6 +280,28 @@ static void filter_sobel(uint8_t *dst, int width,
         float sumb = c0[x] * -1 + c2[x] *  1 + c3[x] * -2 +
                      c5[x] *  2 + c6[x] * -1 + c8[x] *  1;
 
+        dst[x] = av_clip_uint8(sqrtf(suma*suma + sumb*sumb) * scale + delta);
+    }
+}
+
+static void filter_scharr(uint8_t *dst, int width,
+                          float scale, float delta, const int *const matrix,
+                          const uint8_t *c[], int peak, int radius,
+                          int dstride, int stride, int size)
+{
+    const uint8_t *c0 = c[0], *c1 = c[1], *c2 = c[2];
+    const uint8_t *c3 = c[3], *c5 = c[5];
+    const uint8_t *c6 = c[6], *c7 = c[7], *c8 = c[8];
+    int x;
+
+    for (x = 0; x < width; x++) {
+        float suma = c0[x] * -47 + c1[x] * -162 + c2[x] *  -47 +
+                     c6[x] *  47 + c7[x] *  162 + c8[x] *   47;
+        float sumb = c0[x] * -47 + c2[x] *   47 + c3[x] * -162 +
+                     c5[x] * 162 + c6[x] *  -47 + c8[x] *   47;
+
+        suma /= 256.f;
+        sumb /= 256.f;
         dst[x] = av_clip_uint8(sqrtf(suma*suma + sumb*sumb) * scale + delta);
     }
 }
@@ -714,6 +757,10 @@ static int config_input(AVFilterLink *inlink)
         if (s->depth > 8)
             for (p = 0; p < s->nb_planes; p++)
                 s->filter[p] = filter16_kirsch;
+    } else if (!strcmp(ctx->filter->name, "scharr")) {
+        if (s->depth > 8)
+            for (p = 0; p < s->nb_planes; p++)
+                s->filter[p] = filter16_scharr;
     }
 
     return 0;
@@ -736,7 +783,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 
     td.in = in;
     td.out = out;
-    ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN3(s->planeheight[1], s->planewidth[1], s->nb_threads));
+    ff_filter_execute(ctx, filter_slice, &td, NULL,
+                      FFMIN3(s->planeheight[1], s->planewidth[1], s->nb_threads));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -865,6 +913,17 @@ static av_cold int init(AVFilterContext *ctx)
             s->rdiv[i] = s->scale;
             s->bias[i] = s->delta;
         }
+    } else if (!strcmp(ctx->filter->name, "scharr")) {
+        for (i = 0; i < 4; i++) {
+            if ((1 << i) & s->planes)
+                s->filter[i] = filter_scharr;
+            else
+                s->copy[i] = 1;
+            s->size[i] = 3;
+            s->setup[i] = setup_3x3;
+            s->rdiv[i] = s->scale;
+            s->bias[i] = s->delta;
+        }
     }
 
     return 0;
@@ -889,7 +948,6 @@ static const AVFilterPad convolution_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad convolution_outputs[] = {
@@ -897,7 +955,6 @@ static const AVFilterPad convolution_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #if CONFIG_CONVOLUTION_FILTER
@@ -909,8 +966,8 @@ const AVFilter ff_vf_convolution = {
     .priv_class    = &convolution_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = convolution_inputs,
-    .outputs       = convolution_outputs,
+    FILTER_INPUTS(convolution_inputs),
+    FILTER_OUTPUTS(convolution_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
@@ -938,8 +995,8 @@ const AVFilter ff_vf_prewitt = {
     .priv_class    = &prewitt_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = convolution_inputs,
-    .outputs       = convolution_outputs,
+    FILTER_INPUTS(convolution_inputs),
+    FILTER_OUTPUTS(convolution_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
@@ -958,8 +1015,8 @@ const AVFilter ff_vf_sobel = {
     .priv_class    = &sobel_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = convolution_inputs,
-    .outputs       = convolution_outputs,
+    FILTER_INPUTS(convolution_inputs),
+    FILTER_OUTPUTS(convolution_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
@@ -978,8 +1035,8 @@ const AVFilter ff_vf_roberts = {
     .priv_class    = &roberts_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = convolution_inputs,
-    .outputs       = convolution_outputs,
+    FILTER_INPUTS(convolution_inputs),
+    FILTER_OUTPUTS(convolution_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
@@ -998,12 +1055,32 @@ const AVFilter ff_vf_kirsch = {
     .priv_class    = &kirsch_class,
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = convolution_inputs,
-    .outputs       = convolution_outputs,
+    FILTER_INPUTS(convolution_inputs),
+    FILTER_OUTPUTS(convolution_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = process_command,
 };
 
 #endif /* CONFIG_KIRSCH_FILTER */
 
-#endif /* CONFIG_PREWITT_FILTER || CONFIG_ROBERTS_FILTER || CONFIG_SOBEL_FILTER */
+#if CONFIG_SCHARR_FILTER
+
+#define scharr_options prewitt_roberts_sobel_options
+AVFILTER_DEFINE_CLASS(scharr);
+
+const AVFilter ff_vf_scharr = {
+    .name          = "scharr",
+    .description   = NULL_IF_CONFIG_SMALL("Apply scharr operator."),
+    .priv_size     = sizeof(ConvolutionContext),
+    .priv_class    = &scharr_class,
+    .init          = init,
+    .query_formats = query_formats,
+    FILTER_INPUTS(convolution_inputs),
+    FILTER_OUTPUTS(convolution_outputs),
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
+    .process_command = process_command,
+};
+
+#endif /* CONFIG_SCHARR_FILTER */
+
+#endif /* CONFIG_PREWITT_FILTER || CONFIG_ROBERTS_FILTER || CONFIG_SOBEL_FILTER || CONFIG_SCHARR_FILTER */

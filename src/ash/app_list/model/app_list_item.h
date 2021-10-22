@@ -35,6 +35,10 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   using AppListItemMetadata = ash::AppListItemMetadata;
 
   explicit AppListItem(const std::string& id);
+
+  AppListItem(const AppListItem&) = delete;
+  AppListItem& operator=(const AppListItem&) = delete;
+
   virtual ~AppListItem();
 
   void SetIcon(AppListConfigType config_type, const gfx::ImageSkia& icon);
@@ -91,6 +95,9 @@ class APP_LIST_MODEL_EXPORT AppListItem {
 
   // Returns the number of child items if it has any (e.g. is a folder) or 0.
   virtual size_t ChildItemCount() const;
+
+  // Returns whether the item is a folder with max allowed children.
+  bool IsFolderFull() const;
 
   std::string ToDebugString() const;
 
@@ -167,8 +174,6 @@ class APP_LIST_MODEL_EXPORT AppListItem {
   bool has_notification_badge_ = false;
 
   base::ObserverList<AppListItemObserver> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppListItem);
 };
 
 }  // namespace ash

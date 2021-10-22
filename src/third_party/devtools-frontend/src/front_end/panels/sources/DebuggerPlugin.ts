@@ -175,9 +175,11 @@ export class DebuggerPlugin extends Plugin {
   private readonly boundMouseDown: (arg0: Event) => void;
   private readonly boundBlur: (arg0: Event) => void;
   private readonly boundWheel: (arg0: Event) => void;
-  private readonly boundGutterClick: (arg0: Common.EventTarget.EventTargetEvent) => void;
+  private readonly boundGutterClick:
+      (arg0: Common.EventTarget.EventTargetEvent<SourceFrame.SourcesTextEditor.GutterClickEventData>) => void;
   private readonly breakpointDecorations: Set<BreakpointDecoration>;
-  private readonly decorationByBreakpoint: Map<Bindings.BreakpointManager.Breakpoint, BreakpointDecoration>;
+  private readonly decorationByBreakpoint:
+      Map<Bindings.BreakpointManager.Breakpoint, Map<string, BreakpointDecoration>>;
   private readonly possibleBreakpointsRequested: Set<number>;
   private scriptFileForDebuggerModel:
       Map<SDK.DebuggerModel.DebuggerModel, Bindings.ResourceScriptMapping.ResourceScriptFile>;
@@ -270,9 +272,10 @@ export class DebuggerPlugin extends Plugin {
     this.textEditor.element.addEventListener('focusout', this.boundBlur, false);
     this.boundWheel = (this.onWheel.bind(this) as (arg0: Event) => void);
     this.textEditor.element.addEventListener('wheel', this.boundWheel, true);
-    this.boundGutterClick = (((e: Common.EventTarget.EventTargetEvent): void => {
-                               this.handleGutterClick(e);
-                             }) as (arg0: Common.EventTarget.EventTargetEvent) => void);
+    this.boundGutterClick =
+        (e: Common.EventTarget.EventTargetEvent<SourceFrame.SourcesTextEditor.GutterClickEventData>): void => {
+          this.handleGutterClick(e);
+        };
 
     this.textEditor.addEventListener(SourceFrame.SourcesTextEditor.Events.GutterClick, this.boundGutterClick, this);
 
@@ -1583,7 +1586,14 @@ export class DebuggerPlugin extends Plugin {
       decoration.element.addEventListener('contextmenu', this.inlineBreakpointContextMenu.bind(this, decoration), true);
       this.breakpointDecorations.add(decoration);
     }
-    this.decorationByBreakpoint.set(breakpoint, decoration);
+
+    let uiLocationsForBreakpoint = this.decorationByBreakpoint.get(breakpoint);
+    if (!uiLocationsForBreakpoint) {
+      uiLocationsForBreakpoint = new Map();
+      this.decorationByBreakpoint.set(breakpoint, uiLocationsForBreakpoint);
+    }
+    uiLocationsForBreakpoint.set(uiLocation.id(), decoration);
+
     this.updateBreakpointDecoration(decoration);
     if (breakpoint.enabled() && !lineDecorations.length) {
       this.possibleBreakpointsRequested.add(editorLocation.lineNumber);
@@ -1643,11 +1653,22 @@ export class DebuggerPlugin extends Plugin {
       return;
     }
     const {breakpoint, uiLocation} = event.data;
-    const decoration = this.decorationByBreakpoint.get(breakpoint);
+
+    const uiLocationsForBreakpoint = this.decorationByBreakpoint.get(breakpoint);
+    if (!uiLocationsForBreakpoint) {
+      return;
+    }
+
+    const decoration = uiLocationsForBreakpoint.get(uiLocation.id());
+    uiLocationsForBreakpoint.delete(uiLocation.id());
+
+    if (uiLocationsForBreakpoint.size === 0) {
+      this.decorationByBreakpoint.delete(breakpoint);
+    }
+
     if (!decoration) {
       return;
     }
-    this.decorationByBreakpoint.delete(breakpoint);
 
     const editorLocation = this.transformer.uiLocationToEditorLocation(uiLocation.lineNumber, uiLocation.columnNumber);
     decoration.breakpoint = null;
@@ -1812,17 +1833,16 @@ export class DebuggerPlugin extends Plugin {
     this.textEditor.attachInfobar(this.prettyPrintInfobar);
   }
 
-  private async handleGutterClick(event: Common.EventTarget.EventTargetEvent): Promise<void> {
+  private async handleGutterClick(
+      event: Common.EventTarget.EventTargetEvent<SourceFrame.SourcesTextEditor.GutterClickEventData>): Promise<void> {
     if (this.muted) {
       return;
     }
 
-    const eventData = (event.data as SourceFrame.SourcesTextEditor.GutterClickEventData);
-    if (eventData.gutterType !== SourceFrame.SourcesTextEditor.lineNumbersGutterType) {
+    const {gutterType, lineNumber: editorLineNumber, event: eventObject} = event.data;
+    if (gutterType !== SourceFrame.SourcesTextEditor.lineNumbersGutterType) {
       return;
     }
-    const editorLineNumber = eventData.lineNumber;
-    const eventObject = eventData.event;
 
     if (eventObject.button !== 0 || eventObject.altKey || eventObject.ctrlKey || eventObject.metaKey) {
       return;

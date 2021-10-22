@@ -53,6 +53,17 @@ if (dawn_enable_vulkan) {
       dawn_enable_vulkan_loader && dawn_vulkan_loader_dir != ""
 }
 
+group("dawn_abseil") {
+  # When build_with_chromium=true we need to include "//third_party/abseil-cpp:absl" while
+  # it's beneficial to be more specific with standalone Dawn, especially when it comes to
+  # including it as a dependency in other projects (such as Skia).
+  if (build_with_chromium) {
+    public_deps = [ "$dawn_abseil_dir:absl" ]
+  } else {
+    public_deps = [ "${dawn_root}/third_party/gn/abseil-cpp:str_format" ]
+  }
+}
+
 config("dawn_native_internal") {
   configs = [ "${dawn_root}/src/common:dawn_internal" ]
 
@@ -98,6 +109,10 @@ dawn_json_generator("dawn_native_utils_gen") {
     "src/dawn_native/wgpu_structs_autogen.cpp",
     "src/dawn_native/ValidationUtils_autogen.h",
     "src/dawn_native/ValidationUtils_autogen.cpp",
+    "src/dawn_native/webgpu_absl_format_autogen.h",
+    "src/dawn_native/webgpu_absl_format_autogen.cpp",
+    "src/dawn_native/ObjectType_autogen.h",
+    "src/dawn_native/ObjectType_autogen.cpp",
   ]
 }
 
@@ -161,7 +176,10 @@ source_set("dawn_native_sources") {
   # Dependencies that are needed to compile dawn_native entry points in
   # FooBackend.cpp need to be public deps so they are propagated to the
   # dawn_native target
-  public_deps = [ "${dawn_root}/src/dawn_platform" ]
+  public_deps = [
+    ":dawn_abseil",
+    "${dawn_root}/src/dawn_platform",
+  ]
 
   sources = get_target_outputs(":dawn_native_utils_gen")
   sources += [
@@ -186,6 +204,8 @@ source_set("dawn_native_sources") {
     "BuddyMemoryAllocator.h",
     "Buffer.cpp",
     "Buffer.h",
+    "BufferLocation.cpp",
+    "BufferLocation.h",
     "CachedObject.cpp",
     "CachedObject.h",
     "CallbackTaskManager.cpp",
@@ -228,17 +248,24 @@ source_set("dawn_native_sources") {
     "ErrorInjector.h",
     "ErrorScope.cpp",
     "ErrorScope.h",
-    "Extensions.cpp",
-    "Extensions.h",
     "ExternalTexture.cpp",
     "ExternalTexture.h",
+    "Features.cpp",
+    "Features.h",
     "Format.cpp",
     "Format.h",
     "Forward.h",
+    "IndirectDrawMetadata.cpp",
+    "IndirectDrawMetadata.h",
+    "IndirectDrawValidationEncoder.cpp",
+    "IndirectDrawValidationEncoder.h",
     "Instance.cpp",
     "Instance.h",
     "IntegerTypes.h",
+    "InternalPipelineStore.cpp",
     "InternalPipelineStore.h",
+    "Limits.cpp",
+    "Limits.h",
     "ObjectBase.cpp",
     "ObjectBase.h",
     "ObjectContentHasher.cpp",
@@ -282,6 +309,8 @@ source_set("dawn_native_sources") {
     "RingBufferAllocator.h",
     "Sampler.cpp",
     "Sampler.h",
+    "ScratchBuffer.cpp",
+    "ScratchBuffer.h",
     "ShaderModule.cpp",
     "ShaderModule.h",
     "StagingBuffer.cpp",

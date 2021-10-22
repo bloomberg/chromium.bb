@@ -24,7 +24,8 @@ struct FFL_ComboBoxState {
 class CFFL_ComboBox final : public CFFL_TextObject,
                             public CPWL_Wnd::FocusHandlerIface {
  public:
-  CFFL_ComboBox(CPDFSDK_FormFillEnvironment* pApp, CPDFSDK_Widget* pWidget);
+  CFFL_ComboBox(CFFL_InteractiveFormFiller* pFormFiller,
+                CPDFSDK_Widget* pWidget);
   ~CFFL_ComboBox() override;
 
   // CFFL_TextObject:
@@ -33,17 +34,17 @@ class CFFL_ComboBox final : public CFFL_TextObject,
       const CPWL_Wnd::CreateParams& cp,
       std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
       override;
-  bool OnChar(CPDFSDK_Annot* pAnnot,
+  bool OnChar(CPDFSDK_Widget* pWidget,
               uint32_t nChar,
               Mask<FWL_EVENTFLAG> nFlags) override;
   bool IsDataChanged(const CPDFSDK_PageView* pPageView) override;
   void SaveData(const CPDFSDK_PageView* pPageView) override;
   void GetActionData(const CPDFSDK_PageView* pPageView,
                      CPDF_AAction::AActionType type,
-                     CPDFSDK_FieldAction& fa) override;
+                     CFFL_FieldAction& fa) override;
   void SetActionData(const CPDFSDK_PageView* pPageView,
                      CPDF_AAction::AActionType type,
-                     const CPDFSDK_FieldAction& fa) override;
+                     const CFFL_FieldAction& fa) override;
   void SavePWLWindowState(const CPDFSDK_PageView* pPageView) override;
   void RecreatePWLWindowFromSavedState(
       const CPDFSDK_PageView* pPageView) override;
@@ -58,8 +59,8 @@ class CFFL_ComboBox final : public CFFL_TextObject,
 
  private:
   WideString GetSelectExportText();
-  CPWL_ComboBox* GetComboBox(const CPDFSDK_PageView* pPageView) const;
-  CPWL_ComboBox* CreateOrUpdateComboBox(const CPDFSDK_PageView* pPageView);
+  CPWL_ComboBox* GetPWLComboBox(const CPDFSDK_PageView* pPageView) const;
+  CPWL_ComboBox* CreateOrUpdatePWLComboBox(const CPDFSDK_PageView* pPageView);
 
   FFL_ComboBoxState m_State;
 };

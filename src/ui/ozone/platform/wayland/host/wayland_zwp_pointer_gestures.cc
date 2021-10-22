@@ -23,16 +23,16 @@ constexpr uint32_t kMinZwpPointerGesturesVersion = 1;
 }
 
 // static
-void WaylandZwpPointerGestures::Register(WaylandConnection* connection) {
-  connection->RegisterGlobalObjectFactory(
-      "zwp_pointer_gestures_v1", &WaylandZwpPointerGestures::Instantiate);
-}
+constexpr char WaylandZwpPointerGestures::kInterfaceName[];
 
 // static
 void WaylandZwpPointerGestures::Instantiate(WaylandConnection* connection,
                                             wl_registry* registry,
                                             uint32_t name,
+                                            const std::string& interface,
                                             uint32_t version) {
+  DCHECK_EQ(interface, kInterfaceName);
+
   if (connection->wayland_zwp_pointer_gestures_ ||
       version < kMinZwpPointerGesturesVersion)
     return;
@@ -87,8 +87,7 @@ void WaylandZwpPointerGestures::OnPinchBegin(
     uint32_t fingers) {
   auto* thiz = static_cast<WaylandZwpPointerGestures*>(data);
 
-  base::TimeTicks timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
+  base::TimeTicks timestamp = base::TimeTicks() + base::Milliseconds(time);
 
   thiz->delegate_->OnPinchEvent(ET_GESTURE_PINCH_BEGIN,
                                 gfx::Vector2dF() /*delta*/, timestamp,
@@ -106,8 +105,7 @@ void WaylandZwpPointerGestures::OnPinchUpdate(
     wl_fixed_t rotation) {
   auto* thiz = static_cast<WaylandZwpPointerGestures*>(data);
 
-  base::TimeTicks timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
+  base::TimeTicks timestamp = base::TimeTicks() + base::Milliseconds(time);
 
   gfx::Vector2dF delta = {static_cast<float>(wl_fixed_to_double(dx)),
                           static_cast<float>(wl_fixed_to_double(dy))};
@@ -123,8 +121,7 @@ void WaylandZwpPointerGestures::OnPinchEnd(
     int32_t cancelled) {
   auto* thiz = static_cast<WaylandZwpPointerGestures*>(data);
 
-  base::TimeTicks timestamp =
-      base::TimeTicks() + base::TimeDelta::FromMilliseconds(time);
+  base::TimeTicks timestamp = base::TimeTicks() + base::Milliseconds(time);
 
   thiz->delegate_->OnPinchEvent(ET_GESTURE_PINCH_END,
                                 gfx::Vector2dF() /*delta*/, timestamp,

@@ -3984,15 +3984,7 @@ class AXPosition {
   base::stack<AXNode*> GetAncestorAnchors() const {
     if (!GetAnchor())
       return base::stack<AXNode*>();
-
-    base::stack<AXNode*> anchors;
-    AXNode* current_anchor = GetAnchor();
-    while (current_anchor) {
-      anchors.push(current_anchor);
-      current_anchor = current_anchor->GetParentCrossingTreeBoundary();
-    }
-
-    return anchors;
+    return GetAnchor()->GetAncestorsCrossingTreeBoundary();
   }
 
   AXNode* GetLowestUnignoredAncestor() const {
@@ -4086,14 +4078,14 @@ class AXPosition {
   AXTextAttributes GetTextAttributes() const {
     // Check either the current anchor or its parent for text attributes.
     AXTextAttributes current_anchor_text_attributes =
-        !IsNullPosition() ? GetAnchor()->data().GetTextAttributes()
+        !IsNullPosition() ? GetAnchor()->GetTextAttributes()
                           : AXTextAttributes();
     if (current_anchor_text_attributes.IsUnset()) {
       AXPositionInstance parent_position =
           AsTreePosition()->CreateParentPosition(
               ax::mojom::MoveDirection::kBackward);
       if (!parent_position->IsNullPosition())
-        return parent_position->GetAnchor()->data().GetTextAttributes();
+        return parent_position->GetAnchor()->GetTextAttributes();
     }
     return current_anchor_text_attributes;
   }

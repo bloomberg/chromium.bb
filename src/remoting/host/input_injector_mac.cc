@@ -112,6 +112,10 @@ class InputInjectorMac : public InputInjector {
   explicit InputInjectorMac(
       scoped_refptr<base::SingleThreadTaskRunner> input_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
+
+  InputInjectorMac(const InputInjectorMac&) = delete;
+  InputInjectorMac& operator=(const InputInjectorMac&) = delete;
+
   ~InputInjectorMac() override;
 
   // ClipboardStub interface.
@@ -134,6 +138,9 @@ class InputInjectorMac : public InputInjector {
     explicit Core(
         scoped_refptr<base::SingleThreadTaskRunner> input_thread_task_runner,
         scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
+
+    Core(const Core&) = delete;
+    Core& operator=(const Core&) = delete;
 
     // Mirrors the ClipboardStub interface.
     void InjectClipboardEvent(const ClipboardEvent& event);
@@ -162,13 +169,9 @@ class InputInjectorMac : public InputInjector {
     uint64_t left_modifiers_;
     uint64_t right_modifiers_;
     base::TimeTicks last_time_display_woken_;
-
-    DISALLOW_COPY_AND_ASSIGN(Core);
   };
 
   scoped_refptr<Core> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputInjectorMac);
 };
 
 InputInjectorMac::InputInjectorMac(
@@ -400,7 +403,7 @@ void InputInjectorMac::Core::Stop() {
 void InputInjectorMac::Core::WakeUpDisplay() {
   base::TimeTicks now = base::TimeTicks::Now();
   if (now - last_time_display_woken_ <
-      base::TimeDelta::FromMilliseconds(kWakeUpDisplayIntervalMs)) {
+      base::Milliseconds(kWakeUpDisplayIntervalMs)) {
     return;
   }
 

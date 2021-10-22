@@ -17,10 +17,8 @@ import glob
 import itertools
 import json
 import os
-import re
 import string
 import sys
-import traceback
 
 import buildbot_json_magic_substitutions as magic_substitutions
 
@@ -1544,7 +1542,6 @@ class BBJSONGenerator(object):
         'mac11.0-blink-rel-dummy',
         'mac11.0.arm64-blink-rel-dummy',
         'win7-blink-rel-dummy',
-        'win10-blink-rel-dummy',
         'win10.20h2-blink-rel-dummy',
         'WebKit Linux composite_after_paint Dummy Builder',
         'WebKit Linux layout_ng_disabled Builder',

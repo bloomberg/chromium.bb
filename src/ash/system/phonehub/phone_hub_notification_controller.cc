@@ -32,7 +32,9 @@
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/notification_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -52,8 +54,7 @@ const int kNotificationAppNameMaxWidth = 140;
 // reply. This is used to make sure that all the replies are received by the
 // phone in a correct order (a reply sent right after another could cause it to
 // be received before the former one).
-constexpr base::TimeDelta kInlineReplyDisableTime =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kInlineReplyDisableTime = base::Seconds(1);
 
 class PhoneHubNotificationView : public message_center::NotificationView {
  public:
@@ -83,7 +84,7 @@ class PhoneHubNotificationView : public message_center::NotificationView {
     action_buttons_row_ =
         GetViewByID(message_center::NotificationView::kActionButtonsRow);
     if (!action_buttons_row_->children().empty())
-      reply_button_ = static_cast<message_center::NotificationTextButton*>(
+      reply_button_ = static_cast<views::View*>(
           action_buttons_row_->children()[kReplyButtonIndex]);
 
     inline_reply_ = static_cast<message_center::NotificationInputContainer*>(
@@ -124,7 +125,7 @@ class PhoneHubNotificationView : public message_center::NotificationView {
  private:
   // Owned by view hierarchy.
   views::View* action_buttons_row_ = nullptr;
-  message_center::NotificationTextButton* reply_button_ = nullptr;
+  views::View* reply_button_ = nullptr;
   message_center::NotificationInputContainer* inline_reply_ = nullptr;
 
   // Timer that fires to enable reply button after a brief period of time.
@@ -513,7 +514,8 @@ int PhoneHubNotificationController::GetSystemPriorityForNotification(
 std::unique_ptr<message_center::MessageView>
 PhoneHubNotificationController::CreateCustomNotificationView(
     base::WeakPtr<PhoneHubNotificationController> notification_controller,
-    const message_center::Notification& notification) {
+    const message_center::Notification& notification,
+    bool shown_in_popup) {
   DCHECK_EQ(kNotificationCustomViewType, notification.custom_view_type());
 
   std::u16string phone_name = std::u16string();

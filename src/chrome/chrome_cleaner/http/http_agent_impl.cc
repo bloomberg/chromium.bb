@@ -70,14 +70,16 @@ void CALLBACK WinHttpStatusCallback(HINTERNET internet,
 class WinHttpHandleTraits {
  public:
   typedef HINTERNET Handle;
+
+  WinHttpHandleTraits() = delete;
+  WinHttpHandleTraits(const WinHttpHandleTraits&) = delete;
+  WinHttpHandleTraits& operator=(const WinHttpHandleTraits&) = delete;
+
   static bool CloseHandle(HINTERNET handle) {
     return ::WinHttpCloseHandle(handle) == TRUE;
   }
   static bool IsHandleValid(HINTERNET handle) { return handle != nullptr; }
   static HINTERNET NullHandle() { return nullptr; }
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WinHttpHandleTraits);
 };
 
 typedef base::win::GenericScopedHandle<WinHttpHandleTraits,
@@ -88,6 +90,10 @@ typedef base::win::GenericScopedHandle<WinHttpHandleTraits,
 class AutoWinHttpProxyConfig {
  public:
   AutoWinHttpProxyConfig() : proxy_config_() {}
+
+  AutoWinHttpProxyConfig(const AutoWinHttpProxyConfig&) = delete;
+  AutoWinHttpProxyConfig& operator=(const AutoWinHttpProxyConfig&) = delete;
+
   ~AutoWinHttpProxyConfig() {
     if (proxy_config_.lpszAutoConfigUrl)
       ::GlobalFree(proxy_config_.lpszAutoConfigUrl);
@@ -141,8 +147,6 @@ class AutoWinHttpProxyConfig {
 
  private:
   WINHTTP_CURRENT_USER_IE_PROXY_CONFIG proxy_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoWinHttpProxyConfig);
 };
 
 // A helper class that retrieves and frees URL-specific proxy settings.
@@ -155,6 +159,10 @@ class AutoWinHttpUrlProxyConfig {
         auto_config_url_(proxy_config.auto_config_url()),
         is_valid_(false),
         url_proxy_config_() {}
+
+  AutoWinHttpUrlProxyConfig(const AutoWinHttpUrlProxyConfig&) = delete;
+  AutoWinHttpUrlProxyConfig& operator=(const AutoWinHttpUrlProxyConfig&) =
+      delete;
 
   ~AutoWinHttpUrlProxyConfig() {
     if (url_proxy_config_.lpszProxy)
@@ -229,13 +237,14 @@ class AutoWinHttpUrlProxyConfig {
   std::wstring auto_config_url_;
   bool is_valid_;
   WINHTTP_PROXY_INFO url_proxy_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutoWinHttpUrlProxyConfig);
 };
 
 // Implements HttpResponse using the WinHTTP API.
 class HttpResponseImpl : public HttpResponse {
  public:
+  HttpResponseImpl(const HttpResponseImpl&) = delete;
+  HttpResponseImpl& operator=(const HttpResponseImpl&) = delete;
+
   ~HttpResponseImpl() override;
 
   // Issues the request defined by its parameters and, if successful, returns an
@@ -275,8 +284,6 @@ class HttpResponseImpl : public HttpResponse {
   ScopedWinHttpHandle session_;
   ScopedWinHttpHandle connection_;
   ScopedWinHttpHandle request_;
-
-  DISALLOW_COPY_AND_ASSIGN(HttpResponseImpl);
 };
 
 HttpResponseImpl::~HttpResponseImpl() {}

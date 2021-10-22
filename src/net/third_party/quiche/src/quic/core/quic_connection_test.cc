@@ -1320,12 +1320,15 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   void set_perspective(Perspective perspective) {
     connection_.set_perspective(perspective);
     if (perspective == Perspective::IS_SERVER) {
-      QuicConfig config;
-      QuicTagVector connection_options;
-      connection_options.push_back(kRVCM);
-      config.SetInitialReceivedConnectionOptions(connection_options);
-      EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-      connection_.SetFromConfig(config);
+      if (!GetQuicReloadableFlag(
+              quic_remove_connection_migration_connection_option)) {
+        QuicConfig config;
+        QuicTagVector connection_options;
+        connection_options.push_back(kRVCM);
+        config.SetInitialReceivedConnectionOptions(connection_options);
+        EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+        connection_.SetFromConfig(config);
+      }
 
       connection_.set_can_truncate_connection_ids(true);
       QuicConnectionPeer::SetNegotiatedVersion(&connection_);
@@ -2068,9 +2071,7 @@ TEST_P(QuicConnectionTest, EffectivePeerAddressChangeAtServer) {
 TEST_P(QuicConnectionTest,
        ReversePathValidationResponseReceivedFromUnexpectedPeerAddress) {
   set_perspective(Perspective::IS_SERVER);
-  if (!GetQuicReloadableFlag(
-          quic_flush_pending_frame_before_updating_default_path) ||
-      !connection_.connection_migration_use_new_cid()) {
+  if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
   QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
@@ -2795,7 +2796,7 @@ TEST_P(QuicConnectionTest, PeerAddressChangeAtClient) {
 
 TEST_P(QuicConnectionTest, MaxPacketSize) {
   EXPECT_EQ(Perspective::IS_CLIENT, connection_.perspective());
-  EXPECT_EQ(1350u, connection_.max_packet_length());
+  EXPECT_EQ(1250u, connection_.max_packet_length());
 }
 
 TEST_P(QuicConnectionTest, PeerLowersMaxPacketSize) {
@@ -3774,7 +3775,7 @@ TEST_P(QuicConnectionTest, LargeSendWithPendingAck) {
   EXPECT_TRUE(connection_.HasPendingAcks());
 
   // Send data and ensure the ack is bundled.
-  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(8);
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(9);
   size_t len = 10000;
   std::unique_ptr<char[]> data_array(new char[len]);
   memset(data_array.get(), '?', len);
@@ -6553,7 +6554,6 @@ TEST_P(QuicConnectionTest, SendDelayedAckDecimationUnlimitedAggregation) {
   EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
   QuicConfig config;
   QuicTagVector connection_options;
-  connection_options.push_back(kACKD);
   // No limit on the number of packets received before sending an ack.
   connection_options.push_back(kAKDU);
   config.SetConnectionOptionsToSend(connection_options);
@@ -8884,7 +8884,7 @@ TEST_P(QuicConnectionTest, GetCurrentLargestMessagePayload) {
   // that the encryption overhead is constant across versions.
   connection_.SetEncrypter(ENCRYPTION_INITIAL,
                            std::make_unique<TaggingEncrypter>(0x00));
-  QuicPacketLength expected_largest_payload = 1319;
+  QuicPacketLength expected_largest_payload = 1219;
   if (connection_.version().SendsVariableLengthPacketNumberInLongHeader()) {
     expected_largest_payload += 3;
   }
@@ -8919,7 +8919,7 @@ TEST_P(QuicConnectionTest, GetGuaranteedLargestMessagePayload) {
   // that the encryption overhead is constant across versions.
   connection_.SetEncrypter(ENCRYPTION_INITIAL,
                            std::make_unique<TaggingEncrypter>(0x00));
-  QuicPacketLength expected_largest_payload = 1319;
+  QuicPacketLength expected_largest_payload = 1219;
   if (connection_.version().HasLongHeaderLengths()) {
     expected_largest_payload -= 2;
   }
@@ -12186,13 +12186,9 @@ TEST_P(QuicConnectionTest, SendPathChallengeUsingBlockedNewSocket) {
   new_writer.SetWritable();
   // Write event on the default socket shouldn't make any difference.
   connection_.OnCanWrite();
-  if (GetQuicReloadableFlag(quic_ack_cid_frames)) {
-    // A NEW_CONNECTION_ID frame is received in PathProbeTestInit and OnCanWrite
-    // will write a acking packet.
-    EXPECT_EQ(1u, writer_->packets_write_attempts());
-  } else {
-    EXPECT_EQ(0u, writer_->packets_write_attempts());
-  }
+  // A NEW_CONNECTION_ID frame is received in PathProbeTestInit and OnCanWrite
+  // will write a acking packet.
+  EXPECT_EQ(1u, writer_->packets_write_attempts());
   EXPECT_EQ(1u, new_writer.packets_write_attempts());
 }
 
@@ -12773,7 +12769,7 @@ TEST_P(QuicConnectionTest, CoalescerHandlesInitialKeyDiscard) {
     connection_.SetEncrypter(ENCRYPTION_HANDSHAKE,
                              std::make_unique<TaggingEncrypter>(0x02));
     connection_.SetDefaultEncryptionLevel(ENCRYPTION_HANDSHAKE);
-    connection_.SendCryptoDataWithString(std::string(1300, 'a'), 0);
+    connection_.SendCryptoDataWithString(std::string(1200, 'a'), 0);
     // Verify this packet is on hold.
     EXPECT_EQ(0u, writer_->packets_write_attempts());
   }
@@ -14373,10 +14369,13 @@ TEST_P(QuicConnectionTest,
 
 TEST_P(QuicConnectionTest,
        PathValidationFailedOnClientDueToLackOfServerConnectionId) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+    config.SetConnectionOptionsToSend({kRVCM});
+  }
   if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
@@ -14398,10 +14397,13 @@ TEST_P(QuicConnectionTest,
 
 TEST_P(QuicConnectionTest,
        PathValidationFailedOnClientDueToLackOfClientConnectionIdTheSecondTime) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    config.SetConnectionOptionsToSend({kRVCM});
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+  }
   if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
@@ -14487,10 +14489,13 @@ TEST_P(QuicConnectionTest,
 }
 
 TEST_P(QuicConnectionTest, ServerConnectionIdRetiredUponPathValidationFailure) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    config.SetConnectionOptionsToSend({kRVCM});
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+  }
   if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
@@ -14534,10 +14539,13 @@ TEST_P(QuicConnectionTest, ServerConnectionIdRetiredUponPathValidationFailure) {
 
 TEST_P(QuicConnectionTest,
        MigratePathDirectlyFailedDueToLackOfServerConnectionId) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    config.SetConnectionOptionsToSend({kRVCM});
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+  }
   if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
@@ -14554,10 +14562,13 @@ TEST_P(QuicConnectionTest,
 
 TEST_P(QuicConnectionTest,
        MigratePathDirectlyFailedDueToLackOfClientConnectionIdTheSecondTime) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    config.SetConnectionOptionsToSend({kRVCM});
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+  }
   if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
@@ -14879,10 +14890,13 @@ TEST_P(QuicConnectionTest,
 }
 
 TEST_P(QuicConnectionTest, ServerRetireSelfIssuedConnectionId) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    config.SetConnectionOptionsToSend({kRVCM});
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+  }
   if (!connection_.connection_migration_use_new_cid()) {
     return;
   }
@@ -14949,25 +14963,17 @@ TEST_P(QuicConnectionTest, ServerRetireSelfIssuedConnectionId) {
   // connection ID.
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *packet1);
   EXPECT_EQ(connection_.connection_id(), cid0);
-  if (connection_.use_active_cid_for_session_lookup()) {
-    EXPECT_TRUE(connection_.GetOneActiveServerConnectionId() == cid0 ||
-                connection_.GetOneActiveServerConnectionId() == cid1 ||
-                connection_.GetOneActiveServerConnectionId() == cid2);
-  } else {
-    EXPECT_EQ(connection_.GetOneActiveServerConnectionId(), cid0);
-  }
+  EXPECT_TRUE(connection_.GetOneActiveServerConnectionId() == cid0 ||
+              connection_.GetOneActiveServerConnectionId() == cid1 ||
+              connection_.GetOneActiveServerConnectionId() == cid2);
 
   // cid0 is retired when the retire CID alarm fires.
   EXPECT_CALL(visitor_, OnServerConnectionIdRetired(cid0));
   retire_self_issued_cid_alarm->Fire();
   EXPECT_THAT(connection_.GetActiveServerConnectionIds(),
               ElementsAre(cid1, cid2));
-  if (connection_.use_active_cid_for_session_lookup()) {
-    EXPECT_TRUE(connection_.GetOneActiveServerConnectionId() == cid1 ||
-                connection_.GetOneActiveServerConnectionId() == cid2);
-  } else {
-    EXPECT_EQ(connection_.GetOneActiveServerConnectionId(), cid0);
-  }
+  EXPECT_TRUE(connection_.GetOneActiveServerConnectionId() == cid1 ||
+              connection_.GetOneActiveServerConnectionId() == cid2);
 
   // Packet3 updates the connection ID on the default path.
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *packet3);
@@ -15344,13 +15350,15 @@ TEST_P(QuicConnectionTest, PingNotSentAt0RTTLevelWhenInitialAvailable) {
 }
 
 TEST_P(QuicConnectionTest, AckElicitingFrames) {
-  QuicConfig config;
-  config.SetConnectionOptionsToSend({kRVCM});
-  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-  connection_.SetFromConfig(config);
+  if (!GetQuicReloadableFlag(
+          quic_remove_connection_migration_connection_option)) {
+    QuicConfig config;
+    config.SetConnectionOptionsToSend({kRVCM});
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+    connection_.SetFromConfig(config);
+  }
   if (!version().HasIetfQuicFrames() ||
       !connection_.connection_migration_use_new_cid() ||
-      !GetQuicReloadableFlag(quic_ack_cid_frames) ||
       !GetQuicReloadableFlag(quic_add_missing_update_ack_timeout)) {
     return;
   }

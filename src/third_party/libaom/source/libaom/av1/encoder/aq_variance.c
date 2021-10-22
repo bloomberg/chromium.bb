@@ -43,7 +43,7 @@ static const int segment_id[ENERGY_SPAN] = { 0, 1, 1, 2, 3, 4 };
 
 void av1_vaq_frame_setup(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
-  const RefreshFrameFlagsInfo *const refresh_frame_flags = &cpi->refresh_frame;
+  const RefreshFrameInfo *const refresh_frame = &cpi->refresh_frame;
   const int base_qindex = cm->quant_params.base_qindex;
   struct segmentation *seg = &cm->seg;
   int i;
@@ -64,8 +64,8 @@ void av1_vaq_frame_setup(AV1_COMP *cpi) {
     return;
   }
   if (frame_is_intra_only(cm) || cm->features.error_resilient_mode ||
-      refresh_frame_flags->alt_ref_frame ||
-      (refresh_frame_flags->golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
+      refresh_frame->alt_ref_frame ||
+      (refresh_frame->golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
     cpi->vaq_refresh = 1;
 
     av1_enable_segmentation(seg);
@@ -139,6 +139,34 @@ int av1_log_block_var(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
   if (var > 7) var = 7;
 
   return (int)(var);
+}
+
+int av1_log_block_avg(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
+                      int mi_row, int mi_col) {
+  // This functions returns the block average of luma block
+  unsigned int sum, avg, num_pix;
+  int r, c;
+  const int pic_w = cpi->common.width;
+  const int pic_h = cpi->common.height;
+  const int bw = MI_SIZE * mi_size_wide[bs];
+  const int bh = MI_SIZE * mi_size_high[bs];
+  const uint16_t *x16 = CONVERT_TO_SHORTPTR(x->plane[0].src.buf);
+
+  sum = 0;
+  num_pix = 0;
+  avg = 0;
+  int row = mi_row << MI_SIZE_LOG2;
+  int col = mi_col << MI_SIZE_LOG2;
+  for (r = row; (r < (row + bh)) && (r < pic_h); r++) {
+    for (c = col; (c < (col + bw)) && (c < pic_w); c++) {
+      sum += *(x16 + r * x->plane[0].src.stride + c);
+      num_pix++;
+    }
+  }
+  if (num_pix != 0) {
+    avg = sum / num_pix;
+  }
+  return avg;
 }
 
 #define DEFAULT_E_MIDPOINT 10.0

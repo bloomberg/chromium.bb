@@ -783,9 +783,7 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 			// For Android, the device type is a better dimension
 			// than CPU or GPU.
 			deviceInfo, ok := map[string][]string{
-				"AndroidOne": {"sprout", "MOB30Q"},
-				// S6 dimensions are more general than we would like. See skbug.com/11337 for context.
-				"GalaxyS6":        {"universal7420", "NRD90M"},
+				"AndroidOne":      {"sprout", "MOB30Q"},
 				"GalaxyS7_G930FD": {"herolte", "R16NW_G930FXXS2ERH6"}, // This is Oreo.
 				"GalaxyS9":        {"starlte", "QP1A.190711.020"},     // This is Android10.
 				"GalaxyS20":       {"exynos990", "QP1A.190711.020"},
@@ -923,15 +921,9 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				}
 			} else if b.os("ChromeOS") {
 				version, ok := map[string]string{
-					"MaliT604":            "10575.22.0",
-					"MaliT764":            "10575.22.0",
-					"MaliT860":            "10575.22.0",
-					"PowerVRGX6250":       "10575.22.0",
-					"TegraK1":             "10575.22.0",
-					"IntelHDGraphics615":  "10575.22.0",
-					"IntelUHDGraphics605": "13729.56.0",
-					"RadeonVega3":         "13729.56.0",
-					"Adreno618":           "13929.0.0",
+					"IntelUHDGraphics605": "14233.0.0",
+					"RadeonVega3":         "14233.0.0",
+					"Adreno618":           "14150.39.0",
 				}[b.parts["cpu_or_gpu_value"]]
 				if !ok {
 					log.Fatalf("Entry %q not found in ChromeOS GPU mapping.", b.parts["cpu_or_gpu_value"])

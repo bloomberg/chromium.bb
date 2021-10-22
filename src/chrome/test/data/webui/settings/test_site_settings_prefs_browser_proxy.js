@@ -5,7 +5,7 @@
 // clang-format off
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
-import {ContentSetting, ContentSettingsTypes, HandlerEntry, ProtocolEntry, RawChooserException, RawSiteException, RecentSitePermissions, SiteSettingSource, SiteSettingsPrefsBrowserProxy, ZoomLevelEntry} from 'chrome://settings/lazy_load.js';
+import {ContentSetting, ContentSettingsTypes, SiteSettingSource} from 'chrome://settings/lazy_load.js';
 
 import {TestBrowserProxy} from '../test_browser_proxy.js';
 
@@ -34,8 +34,11 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'getOriginPermissions',
       'isOriginValid',
       'isPatternValidForType',
+      'observeAppProtocolHandlers',
       'observeProtocolHandlers',
       'observeProtocolHandlersEnabledState',
+      'removeAppAllowedHandler',
+      'removeAppDisallowedHandler',
       'removeIgnoredHandler',
       'removeProtocolHandler',
       'removeZoomLevel',
@@ -94,6 +97,12 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
 
     /** @private {!Array<ZoomLevelEntry>} */
     this.zoomList_ = [];
+
+    /** @private {!Array<!AppProtocolEntry>} */
+    this.appAllowedProtocolHandlers_ = [];
+
+    /** @private {!Array<!AppProtocolEntry>} */
+    this.appDisallowedProtocolHandlers_ = [];
 
     /** @private {!Array<!ProtocolEntry>} */
     this.protocolHandlers_ = [];
@@ -199,6 +208,26 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   setProtocolHandlers(list) {
     // Shallow copy of the passed-in array so mutation won't impact the source
     this.protocolHandlers_ = list.slice();
+  }
+
+  /**
+   * Sets the prefs to use when testing.
+   * @param {!Array<AppProtocolEntry>} list The web app protocol handlers
+   *    list to set.
+   */
+  setAppAllowedProtocolHandlers(list) {
+    // Shallow copy of the passed-in array so mutation won't impact the source
+    this.appAllowedProtocolHandlers_ = list.slice();
+  }
+
+  /**
+   * Sets the prefs to use when testing.
+   * @param {!Array<AppProtocolEntry>} list The web app protocol handlers
+   *    list to set.
+   */
+  setAppDisallowedProtocolHandlers(list) {
+    // Shallow copy of the passed-in array so mutation won't impact the source
+    this.appDisallowedProtocolHandlers_ = list.slice();
   }
 
   /**
@@ -487,6 +516,16 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
+  observeAppProtocolHandlers() {
+    webUIListenerCallback(
+        'setAppAllowedProtocolHandlers', this.appAllowedProtocolHandlers_);
+    webUIListenerCallback(
+        'setAppDisallowedProtocolHandlers',
+        this.appDisallowedProtocolHandlers_);
+    this.methodCalled('observeAppProtocolHandlers');
+  }
+
+  /** @override */
   observeProtocolHandlersEnabledState() {
     webUIListenerCallback('setHandlersEnabled', true);
     this.methodCalled('observeProtocolHandlersEnabledState');
@@ -500,6 +539,16 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   removeProtocolHandler() {
     this.methodCalled('removeProtocolHandler', arguments);
+  }
+
+  /** @override */
+  removeAppAllowedHandler() {
+    this.methodCalled('removeAppAllowedHandler', arguments);
+  }
+
+  /** @override */
+  removeAppDisallowedHandler() {
+    this.methodCalled('removeAppDisallowedHandler', arguments);
   }
 
   /** @override */
@@ -518,8 +567,8 @@ export class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  clearOriginDataAndCookies() {
-    this.methodCalled('clearOriginDataAndCookies');
+  clearOriginDataAndCookies(origin) {
+    this.methodCalled('clearOriginDataAndCookies', origin);
   }
 
   /** @override */

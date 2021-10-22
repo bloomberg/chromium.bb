@@ -1,9 +1,14 @@
 <style include="shortcut-customization-shared">
+  :host(:not([is-add-view_])) #container {
+    border-bottom: var(--cr-separator-line);
+  }
+
   #container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     padding-bottom: 10px;
+    padding-top: 8px;
   }
 
   #acceleratorInfoText {
@@ -41,7 +46,8 @@
     <div id="acceleratorView">
       <accelerator-view id="acceleratorItem"
           accelerator-info=[[acceleratorInfo]] view-state={{viewState}}
-          status-message={{statusMessage}} has-error={{hasError}}>
+          status-message={{statusMessage}} has-error={{hasError}}
+          action=[[action]] source=[[source]]>
       </accelerator-view>
     </div>
   </div>

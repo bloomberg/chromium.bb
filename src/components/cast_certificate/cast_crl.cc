@@ -72,6 +72,9 @@ class CastCRLTrustStore {
                                                   CastCRLTrustStore>>::get();
   }
 
+  CastCRLTrustStore(const CastCRLTrustStore&) = delete;
+  CastCRLTrustStore& operator=(const CastCRLTrustStore&) = delete;
+
   static net::TrustStore& Get() { return GetInstance()->store_; }
 
  private:
@@ -89,7 +92,6 @@ class CastCRLTrustStore {
   }
 
   net::TrustStoreInMemory store_;
-  DISALLOW_COPY_AND_ASSIGN(CastCRLTrustStore);
 };
 
 // Converts a uint64_t unix timestamp to net::der::GeneralizedTime.
@@ -97,7 +99,7 @@ bool ConvertTimeSeconds(uint64_t seconds,
                         net::der::GeneralizedTime* generalized_time) {
   base::Time unix_timestamp =
       base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(base::saturated_cast<int64_t>(seconds));
+      base::Seconds(base::saturated_cast<int64_t>(seconds));
   return net::der::EncodeTimeAsGeneralizedTime(unix_timestamp,
                                                generalized_time);
 }
@@ -227,6 +229,10 @@ class CastCRLImpl : public CastCRL {
  public:
   CastCRLImpl(const TbsCrl& tbs_crl,
               const net::der::GeneralizedTime& overall_not_after);
+
+  CastCRLImpl(const CastCRLImpl&) = delete;
+  CastCRLImpl& operator=(const CastCRLImpl&) = delete;
+
   ~CastCRLImpl() override;
 
   bool CheckRevocation(const net::ParsedCertificateList& trusted_chain,
@@ -250,7 +256,6 @@ class CastCRLImpl : public CastCRL {
   // The value is a list of revoked serial number ranges.
   std::unordered_map<std::string, std::vector<SerialNumberRange>>
       revoked_serial_numbers_;
-  DISALLOW_COPY_AND_ASSIGN(CastCRLImpl);
 };
 
 CastCRLImpl::CastCRLImpl(const TbsCrl& tbs_crl,

@@ -78,7 +78,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static void displace_planar(DisplaceContext *s, const AVFrame *in,
@@ -388,7 +388,6 @@ static const AVFilterPad displace_inputs[] = {
         .name         = "ymap",
         .type         = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad displace_outputs[] = {
@@ -397,7 +396,6 @@ static const AVFilterPad displace_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_displace = {
@@ -407,8 +405,8 @@ const AVFilter ff_vf_displace = {
     .uninit        = uninit,
     .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = displace_inputs,
-    .outputs       = displace_outputs,
+    FILTER_INPUTS(displace_inputs),
+    FILTER_OUTPUTS(displace_outputs),
     .priv_class    = &displace_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

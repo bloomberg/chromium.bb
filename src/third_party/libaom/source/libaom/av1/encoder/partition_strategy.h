@@ -128,6 +128,7 @@ void av1_prune_ab_partitions(AV1_COMP *cpi, const MACROBLOCK *x,
                              int *ab_partitions_allowed);
 
 void av1_collect_motion_search_features_sb(AV1_COMP *const cpi, ThreadData *td,
+                                           TileDataEnc *tile_data,
                                            const int mi_row, const int mi_col,
                                            const BLOCK_SIZE bsize,
                                            aom_partition_features_t *features);

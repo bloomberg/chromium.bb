@@ -399,7 +399,11 @@ bool IsEndOfEditableOrNonEditableContent(
 // the text node. It seems weird to return false in this case.
 bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
-  if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
+  // If we're not painting the element then we conceptually don't have children
+  // with height. We should treat this as if we didn't have layout objects (i.e.
+  // we were display: none).
+  if (DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(
+          *layout_object))
     return false;
   if (auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object)) {
     // Returns false for empty content editable, e.g.
@@ -639,8 +643,15 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
   // iterate backward from there, looking for a qualified position
   Node* const boundary = EnclosingVisualBoundary<Strategy>(start_node);
   // FIXME: PositionIterator should respect Before and After positions.
-  PositionIteratorAlgorithm<Strategy> last_visible(
-      AdjustPositionForBackwardIteration<Strategy>(position));
+  const PositionTemplate<Strategy>& adjusted_position =
+      AdjustPositionForBackwardIteration<Strategy>(position);
+#if DCHECK_IS_ON()
+  // Debug what causes bug 1248744
+  if (adjusted_position.IsNull())
+    position.ShowTreeForThis();
+  DCHECK(adjusted_position.IsNotNull()) << position;
+#endif
+  PositionIteratorAlgorithm<Strategy> last_visible(adjusted_position);
   const bool start_editable = HasEditableStyle(*start_node);
   Node* last_node = start_node;
   bool boundary_crossed = false;
@@ -680,7 +691,7 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
+    if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object))
       continue;
 
     if (!writing_mode.has_value()) {
@@ -767,7 +778,7 @@ bool HasInvisibleFirstLetter(const Node* node) {
   if (!first_letter || first_letter == remaining_text)
     return false;
   return first_letter->StyleRef().Visibility() != EVisibility::kVisible ||
-         DisplayLockUtilities::NearestLockedExclusiveAncestor(*first_letter);
+         DisplayLockUtilities::LockedAncestorPreventingPaint(*first_letter);
 }
 }  // namespace
 
@@ -839,7 +850,7 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
         layout_object->Style()->Visibility() != EVisibility::kVisible)
       continue;
 
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
+    if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object))
       continue;
 
     if (!writing_mode.has_value()) {
@@ -943,7 +954,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (layout_object->Style()->Visibility() != EVisibility::kVisible)
     return false;
 
-  if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*layout_object))
+  if (DisplayLockUtilities::LockedAncestorPreventingPaint(*layout_object))
     return false;
 
   if (layout_object->IsBR()) {

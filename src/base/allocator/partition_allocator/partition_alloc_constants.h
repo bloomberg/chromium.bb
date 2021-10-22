@@ -198,16 +198,19 @@ constexpr size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 
 // GigaCage is split into two pools, one which supports BackupRefPtr (BRP) and
 // one that doesn't.
-constexpr size_t kNumPools = 2;
 #if defined(PA_HAS_64_BITS_POINTERS)
+// The Configurable Pool is only available in 64-bit mode
+constexpr size_t kNumPools = 3;
 constexpr size_t kPoolMaxSize = 8 * kGiB;
 #else
+constexpr size_t kNumPools = 2;
 constexpr size_t kPoolMaxSize = 4 * kGiB;
 #endif
 constexpr size_t kMaxSuperPages = kPoolMaxSize / kSuperPageSize;
 
 static constexpr internal::pool_handle kNonBRPPoolHandle = 1;
 static constexpr internal::pool_handle kBRPPoolHandle = 2;
+static constexpr internal::pool_handle kConfigurablePoolHandle = 3;
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR ALWAYS_INLINE size_t
 NumPartitionPagesPerSuperPage() {
@@ -305,6 +308,10 @@ constexpr size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 
 // Constant for the memory reclaim logic.
 constexpr size_t kMaxFreeableSpans = 16;
+// Constant for the memory reclaim logic.
+constexpr int kEmptyCacheIndexBits = 8;
+// Has to fit into SlotSpanMetadata::empty_cache_index.
+static_assert(kMaxFreeableSpans < (1 << (kEmptyCacheIndexBits - 1)), "");
 
 // If the total size in bytes of allocated but not committed pages exceeds this
 // value (probably it is a "out of virtual address space" crash), a special

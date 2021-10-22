@@ -86,6 +86,10 @@ class RendererClientImpl final : public RendererClient {
         .WillByDefault(
             Invoke(this, &RendererClientImpl::DelegateOnVideoOpacityChange));
   }
+
+  RendererClientImpl(const RendererClientImpl&) = delete;
+  RendererClientImpl& operator=(const RendererClientImpl&) = delete;
+
   ~RendererClientImpl() = default;
 
   // RendererClient implementation.
@@ -145,8 +149,6 @@ class RendererClientImpl final : public RendererClient {
   PipelineStatistics stats_;
   VideoDecoderConfig video_decoder_config_;
   AudioDecoderConfig audio_decoder_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererClientImpl);
 };
 
 }  // namespace
@@ -154,6 +156,10 @@ class RendererClientImpl final : public RendererClient {
 class CourierRendererTest : public testing::Test {
  public:
   CourierRendererTest() = default;
+
+  CourierRendererTest(const CourierRendererTest&) = delete;
+  CourierRendererTest& operator=(const CourierRendererTest&) = delete;
+
   ~CourierRendererTest() override = default;
 
   // Use this function to mimic receiver to handle RPC message for renderer
@@ -359,7 +365,7 @@ class CourierRendererTest : public testing::Test {
         std::make_unique<CourierRenderer>(base::ThreadTaskRunnerHandle::Get(),
                                           controller_->GetWeakPtr(), nullptr);
     renderer_->clock_ = &clock_;
-    clock_.Advance(base::TimeDelta::FromSeconds(1));
+    clock_.Advance(base::Seconds(1));
 
     RunPendingTasks();
   }
@@ -406,9 +412,8 @@ class CourierRendererTest : public testing::Test {
                                   int end_serial_number) {
     for (int i = start_serial_number; i < end_serial_number; ++i) {
       ASSERT_FALSE(DidEncounterFatalError());
-      IssueTimeUpdateRpc(base::TimeDelta::FromMilliseconds(100 + i * 800),
-                         base::TimeDelta::FromSeconds(100));
-      clock_.Advance(base::TimeDelta::FromSeconds(1));
+      IssueTimeUpdateRpc(base::Milliseconds(100 + i * 800), base::Seconds(100));
+      clock_.Advance(base::Seconds(1));
       RunPendingTasks();
     }
   }
@@ -491,9 +496,6 @@ class CourierRendererTest : public testing::Test {
 
   // Stores RPC messages that have been sent to the remote sink.
   std::vector<openscreen::cast::RpcMessage> received_rpc_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CourierRendererTest);
 };
 
 TEST_F(CourierRendererTest, Initialize) {
@@ -530,7 +532,7 @@ TEST_F(CourierRendererTest, InitializeFailed) {
   RunPendingTasks();
   ASSERT_EQ(0, ReceivedRpcMessageCount());
 
-  base::TimeDelta seek = base::TimeDelta::FromMicroseconds(100);
+  base::TimeDelta seek = base::Microseconds(100);
   renderer_->StartPlayingFrom(seek);
   RunPendingTasks();
   ASSERT_EQ(0, ReceivedRpcMessageCount());
@@ -572,7 +574,7 @@ TEST_F(CourierRendererTest, StartPlayingFrom) {
   ASSERT_EQ(render_client_->status(), PIPELINE_OK);
 
   // StartPlaying from
-  base::TimeDelta seek = base::TimeDelta::FromMicroseconds(100);
+  base::TimeDelta seek = base::Microseconds(100);
   renderer_->StartPlayingFrom(seek);
   RunPendingTasks();
 
@@ -622,14 +624,14 @@ TEST_F(CourierRendererTest, SetPlaybackRate) {
 }
 
 TEST_F(CourierRendererTest, OnTimeUpdate) {
-  base::TimeDelta media_time = base::TimeDelta::FromMicroseconds(100);
-  base::TimeDelta max_media_time = base::TimeDelta::FromMicroseconds(500);
+  base::TimeDelta media_time = base::Microseconds(100);
+  base::TimeDelta max_media_time = base::Microseconds(500);
   IssueTimeUpdateRpc(media_time, max_media_time);
   ValidateCurrentTime(media_time, max_media_time);
 
   // Issues RPC_RC_ONTIMEUPDATE RPC message with invalid time
-  base::TimeDelta media_time2 = base::TimeDelta::FromMicroseconds(-100);
-  base::TimeDelta max_media_time2 = base::TimeDelta::FromMicroseconds(500);
+  base::TimeDelta media_time2 = base::Microseconds(-100);
+  base::TimeDelta max_media_time2 = base::Microseconds(500);
   IssueTimeUpdateRpc(media_time2, max_media_time2);
   // Because of invalid value, the time will not be updated and remain the same.
   ValidateCurrentTime(media_time, max_media_time);
@@ -764,7 +766,7 @@ TEST_F(CourierRendererTest, OnPacingTooSlowly) {
   EXPECT_CALL(*render_client_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH, _))
       .Times(1);
   IssuesBufferingStateRpc(BufferingState::BUFFERING_HAVE_ENOUGH);
-  clock_.Advance(base::TimeDelta::FromSeconds(3));
+  clock_.Advance(base::Seconds(3));
   VerifyAndReportTimeUpdates(0, 15);
   ASSERT_FALSE(DidEncounterFatalError());
 
@@ -772,7 +774,7 @@ TEST_F(CourierRendererTest, OnPacingTooSlowly) {
   // playback was continuously delayed for 10 times.
   renderer_->SetPlaybackRate(1);
   RunPendingTasks();
-  clock_.Advance(base::TimeDelta::FromSeconds(3));
+  clock_.Advance(base::Seconds(3));
   VerifyAndReportTimeUpdates(15, 30);
   ASSERT_TRUE(DidEncounterFatalError());
 }
@@ -783,7 +785,7 @@ TEST_F(CourierRendererTest, OnFrameDropRateHigh) {
   for (int i = 0; i < 7; ++i) {
     ASSERT_FALSE(DidEncounterFatalError());  // Not enough measurements.
     IssueStatisticsUpdateRpc();
-    clock_.Advance(base::TimeDelta::FromSeconds(1));
+    clock_.Advance(base::Seconds(1));
     RunPendingTasks();
   }
   ASSERT_TRUE(DidEncounterFatalError());

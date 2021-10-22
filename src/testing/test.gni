@@ -445,6 +445,11 @@ template("test") {
     }
 
     _test_target = target_name
+    _output_name = target_name
+    if (defined(invoker.output_name)) {
+      _output_name = invoker.output_name
+    }
+
     _wrapper_output_name = "run_${target_name}"
     ios_test_runner_wrapper(_wrapper_output_name) {
       forward_variables_from(invoker,
@@ -452,6 +457,7 @@ template("test") {
                                "data",
                                "deps",
                                "executable_args",
+                               "output_name",
                                "retries",
                                "shards",
                              ])
@@ -508,14 +514,12 @@ template("test") {
         info_plist = "//testing/gtest_ios/unittest-Info.plist"
       }
 
-      _gtest_bundle_id_suffix = "${target_name}"
-      xcode_product_bundle_id = "gtest.$_gtest_bundle_id_suffix"
-
-      if (!defined(extra_substitutions)) {
-        extra_substitutions = []
+      if (ios_use_shared_bundle_id_for_test_apps) {
+        bundle_identifier = "$ios_app_bundle_id_prefix.gtest.unittests"
+      } else {
+        bundle_identifier = "$ios_app_bundle_id_prefix.gtest." +
+                            string_replace(_output_name, "_", "-")
       }
-      extra_substitutions +=
-          [ "GTEST_BUNDLE_ID_SUFFIX=$_gtest_bundle_id_suffix" ]
 
       if (!defined(bundle_deps)) {
         bundle_deps = []
@@ -640,7 +644,11 @@ template("test") {
       ]
 
       if (_use_ash_chrome) {
-        executable_args += [ "--ash-chrome-path=ash_clang_x64/test_ash_chrome" ]
+        executable_args += [ "--ash-chrome-path" ]
+
+        # Can't use --ash-chrome-path=path because WrappedPath
+        # won't be expanded for that usage.
+        executable_args += [ "@WrappedPath(./ash_clang_x64/test_ash_chrome)" ]
       }
 
       if (is_asan) {

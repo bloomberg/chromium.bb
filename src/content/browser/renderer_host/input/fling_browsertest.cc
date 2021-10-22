@@ -57,6 +57,11 @@ namespace content {
 class BrowserSideFlingBrowserTest : public ContentBrowserTest {
  public:
   BrowserSideFlingBrowserTest() {}
+
+  BrowserSideFlingBrowserTest(const BrowserSideFlingBrowserTest&) = delete;
+  BrowserSideFlingBrowserTest& operator=(const BrowserSideFlingBrowserTest&) =
+      delete;
+
   ~BrowserSideFlingBrowserTest() override {}
 
   void OnSyntheticGestureCompleted(SyntheticGesture::Result result) {
@@ -259,8 +264,7 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
   void GiveItSomeTime(int64_t time_delta_ms = 10) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(time_delta_ms));
+        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(time_delta_ms));
     run_loop.Run();
   }
 
@@ -297,9 +301,6 @@ class BrowserSideFlingBrowserTest : public ContentBrowserTest {
   std::unique_ptr<base::RunLoop> run_loop_;
   RenderWidgetHostViewBase* child_view_ = nullptr;
   RenderWidgetHostViewBase* root_view_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserSideFlingBrowserTest);
 };
 
 // On Mac we don't have any touchscreen/touchpad fling events (GFS/GFC).
@@ -546,6 +547,12 @@ IN_PROC_BROWSER_TEST_F(BrowserSideFlingBrowserTest,
 class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {
  public:
   PhysicsBasedFlingCurveBrowserTest() {}
+
+  PhysicsBasedFlingCurveBrowserTest(const PhysicsBasedFlingCurveBrowserTest&) =
+      delete;
+  PhysicsBasedFlingCurveBrowserTest& operator=(
+      const PhysicsBasedFlingCurveBrowserTest&) = delete;
+
   ~PhysicsBasedFlingCurveBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -556,7 +563,6 @@ class PhysicsBasedFlingCurveBrowserTest : public BrowserSideFlingBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(PhysicsBasedFlingCurveBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PhysicsBasedFlingCurveBrowserTest,

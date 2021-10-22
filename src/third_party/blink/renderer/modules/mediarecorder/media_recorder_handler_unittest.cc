@@ -46,8 +46,13 @@ using ::testing::ValuesIn;
 
 namespace blink {
 
-static const std::string kTestVideoTrackId = "video_track_id";
-static const std::string kTestAudioTrackId = "audio_track_id";
+static String TestVideoTrackId() {
+  return "video_track_id";
+}
+
+static String TestAudioTrackId() {
+  return "audio_track_id";
+}
 static const int kTestAudioChannels = 2;
 static const int kTestAudioSampleRate = 48000;
 static const int kTestAudioBufferDurationMs = 10;
@@ -123,6 +128,10 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
     registry_.Init();
   }
 
+  MediaRecorderHandlerFixture(const MediaRecorderHandlerFixture&) = delete;
+  MediaRecorderHandlerFixture& operator=(const MediaRecorderHandlerFixture&) =
+      delete;
+
   ~MediaRecorderHandlerFixture() {
     registry_.reset();
     ThreadState::Current()->CollectAllGarbageForTesting();
@@ -159,7 +168,7 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
   }
 
   void AddVideoTrack() {
-    video_source_ = registry_.AddVideoTrack(kTestVideoTrackId);
+    video_source_ = registry_.AddVideoTrack(TestVideoTrackId());
   }
 
   void AddTracks() {
@@ -167,7 +176,7 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
     if (has_video_)
       AddVideoTrack();
     if (has_audio_)
-      registry_.AddAudioTrack(kTestAudioTrackId);
+      registry_.AddAudioTrack(TestAudioTrackId());
   }
 
   void ForceOneErrorInWebmMuxer() {
@@ -198,9 +207,6 @@ class MediaRecorderHandlerFixture : public ScopedMockOverlayScrollbars {
   media::SineWaveAudioSource audio_source_;
 
   MockMediaStreamVideoSource* video_source_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerFixture);
 };
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
@@ -210,8 +216,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
       : MediaRecorderHandlerFixture(GetParam().has_video,
                                     GetParam().has_audio) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerTest);
+  MediaRecorderHandlerTest(const MediaRecorderHandlerTest&) = delete;
+  MediaRecorderHandlerTest& operator=(const MediaRecorderHandlerTest&) = delete;
 };
 
 // Checks that canSupportMimeType() works as expected, by sending supported
@@ -636,8 +642,10 @@ class MediaRecorderHandlerH264ProfileTest
   MediaRecorderHandlerH264ProfileTest()
       : MediaRecorderHandlerFixture(true, GetParam().has_audio) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerH264ProfileTest);
+  MediaRecorderHandlerH264ProfileTest(
+      const MediaRecorderHandlerH264ProfileTest&) = delete;
+  MediaRecorderHandlerH264ProfileTest& operator=(
+      const MediaRecorderHandlerH264ProfileTest&) = delete;
 };
 
 TEST_P(MediaRecorderHandlerH264ProfileTest, ActualMimeType) {
@@ -686,12 +694,17 @@ class MediaRecorderHandlerPassthroughTest
  public:
   MediaRecorderHandlerPassthroughTest() {
     registry_.Init();
-    video_source_ = registry_.AddVideoTrack(kTestVideoTrackId);
+    video_source_ = registry_.AddVideoTrack(TestVideoTrackId());
     ON_CALL(*video_source_, SupportsEncodedOutput).WillByDefault(Return(true));
     media_recorder_handler_ = MakeGarbageCollected<MediaRecorderHandler>(
         scheduler::GetSingleThreadTaskRunnerForTesting());
     EXPECT_FALSE(media_recorder_handler_->recording_);
   }
+
+  MediaRecorderHandlerPassthroughTest(
+      const MediaRecorderHandlerPassthroughTest&) = delete;
+  MediaRecorderHandlerPassthroughTest& operator=(
+      const MediaRecorderHandlerPassthroughTest&) = delete;
 
   ~MediaRecorderHandlerPassthroughTest() {
     registry_.reset();
@@ -708,9 +721,6 @@ class MediaRecorderHandlerPassthroughTest
   MockMediaStreamRegistry registry_;
   MockMediaStreamVideoSource* video_source_ = nullptr;
   Persistent<MediaRecorderHandler> media_recorder_handler_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerPassthroughTest);
 };
 
 TEST_P(MediaRecorderHandlerPassthroughTest, PassesThrough) {

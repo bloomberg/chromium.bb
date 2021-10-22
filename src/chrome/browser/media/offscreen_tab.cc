@@ -34,8 +34,8 @@ namespace {
 
 // Time intervals used by the logic that detects when the capture of an
 // offscreen tab has stopped, to automatically tear it down and free resources.
-constexpr base::TimeDelta kMaxWaitForCapture = base::TimeDelta::FromMinutes(1);
-constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kMaxWaitForCapture = base::Minutes(1);
+constexpr base::TimeDelta kPollInterval = base::Seconds(1);
 
 }  // namespace
 
@@ -57,6 +57,9 @@ class OffscreenTab::WindowAdoptionAgent final : protected aura::WindowObserver {
       ScheduleFindNewParentIfDetached(content_window_->GetRootWindow());
     }
   }
+
+  WindowAdoptionAgent(const WindowAdoptionAgent&) = delete;
+  WindowAdoptionAgent& operator=(const WindowAdoptionAgent&) = delete;
 
   ~WindowAdoptionAgent() final {
     if (content_window_)
@@ -116,8 +119,6 @@ class OffscreenTab::WindowAdoptionAgent final : protected aura::WindowObserver {
 
   aura::Window* content_window_;
   base::WeakPtrFactory<WindowAdoptionAgent> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WindowAdoptionAgent);
 };
 #endif  // defined(USE_AURA)
 

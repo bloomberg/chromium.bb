@@ -47,6 +47,10 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
                                       public WindowTreeHostManager::Observer {
  public:
   DragDropController();
+
+  DragDropController(const DragDropController&) = delete;
+  DragDropController& operator=(const DragDropController&) = delete;
+
   ~DragDropController() override;
 
   void set_should_block_during_drag_drop(bool should_block_during_drag_drop) {
@@ -121,6 +125,16 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   // Helper method to reset everything.
   void Cleanup();
 
+  // Helper method to perform the drop if allowed by
+  // DataTransferPolicyController. If it's run, `drag_cancel` will be replaced.
+  // Otherwise `drag_cancel` will run to cancel the drag.
+  void PerformDrop(const gfx::Point drop_location_in_screen,
+                   ui::DropTargetEvent event,
+                   std::unique_ptr<ui::OSExchangeData> drag_data,
+                   aura::client::DragDropDelegate::DropCallback drop_cb,
+                   std::unique_ptr<TabDragDropDelegate> tab_drag_drop_delegate,
+                   base::ScopedClosureRunner drag_cancel);
+
   bool enabled_ = false;
   views::UniqueWidgetPtr drag_image_widget_;
   gfx::Vector2d drag_image_offset_;
@@ -130,7 +144,7 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
   aura::client::DragUpdateInfo current_drag_info_;
 
   // Used when processing a Chrome tab drag from a WebUI tab strip.
-  absl::optional<TabDragDropDelegate> tab_drag_drop_delegate_;
+  std::unique_ptr<TabDragDropDelegate> tab_drag_drop_delegate_;
 
   // Window that is currently under the drag cursor.
   aura::Window* drag_window_ = nullptr;
@@ -170,9 +184,10 @@ class ASH_EXPORT DragDropController : public aura::client::DragDropClient,
 
   ToplevelWindowDragDelegate* toplevel_window_drag_delegate_ = nullptr;
 
-  base::WeakPtrFactory<DragDropController> weak_factory_{this};
+  // Weak ptr for async drop callbacks to be invalidated if a new drag starts.
+  base::WeakPtrFactory<DragDropController> drop_weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(DragDropController);
+  base::WeakPtrFactory<DragDropController> weak_factory_{this};
 };
 
 }  // namespace ash

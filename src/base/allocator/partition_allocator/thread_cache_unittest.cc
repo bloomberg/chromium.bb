@@ -12,9 +12,9 @@
 #include "base/allocator/partition_allocator/extended_api.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_lock.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
@@ -69,16 +69,17 @@ class DeltaCounter {
 
 // Forbid extras, since they make finding out which bucket is used harder.
 ThreadSafePartitionRoot* CreatePartitionRoot() {
-  ThreadSafePartitionRoot* root = new ThreadSafePartitionRoot(
-      PartitionOptions{PartitionOptions::AlignedAlloc::kAllowed,
+  ThreadSafePartitionRoot* root = new ThreadSafePartitionRoot(PartitionOptions {
+    PartitionOptions::AlignedAlloc::kAllowed,
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-                       PartitionOptions::ThreadCache::kEnabled,
+        PartitionOptions::ThreadCache::kEnabled,
 #else
-                       PartitionOptions::ThreadCache::kDisabled,
+        PartitionOptions::ThreadCache::kDisabled,
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-                       PartitionOptions::Quarantine::kAllowed,
-                       PartitionOptions::Cookie::kDisallowed,
-                       PartitionOptions::RefCount::kDisallowed
+        PartitionOptions::Quarantine::kAllowed,
+        PartitionOptions::Cookie::kDisallowed,
+        PartitionOptions::BackupRefPtr::kDisabled,
+        PartitionOptions::UseConfigurablePool::kNo
   });
 
   // We do this here instead of in SetUp()/TearDown() because we need this to
@@ -256,7 +257,8 @@ TEST_F(PartitionAllocThreadCacheTest, NoCrossPartitionCache) {
                                 PartitionOptions::ThreadCache::kDisabled,
                                 PartitionOptions::Quarantine::kAllowed,
                                 PartitionOptions::Cookie::kDisallowed,
-                                PartitionOptions::RefCount::kDisallowed}};
+                                PartitionOptions::BackupRefPtr::kDisabled,
+                                PartitionOptions::UseConfigurablePool::kNo}};
 
   size_t bucket_index = FillThreadCacheAndReturnIndex(kSmallSize);
   void* ptr = root.Alloc(kSmallSize, "");

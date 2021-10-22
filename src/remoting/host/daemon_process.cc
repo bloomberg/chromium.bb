@@ -138,6 +138,15 @@ void DaemonProcess::OnWorkerProcessStopped() {
   stats_sender_.reset();
 }
 
+void DaemonProcess::OnAssociatedInterfaceRequest(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  // TODO(b/178114059): Implement this after migrating IPC macros to Mojo.
+  LOG(ERROR) << "Received unexpected associated interface request: "
+             << interface_name;
+  CrashNetworkProcess(FROM_HERE);
+}
+
 void DaemonProcess::CloseDesktopSession(int terminal_id) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
@@ -359,7 +368,7 @@ void DaemonProcess::DeleteAllDesktopSessions() {
 
 void DaemonProcess::StartProcessStatsReport(base::TimeDelta interval) {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
-  if (interval <= base::TimeDelta::FromSeconds(0)) {
+  if (interval <= base::Seconds(0)) {
     interval = kDefaultProcessStatsInterval;
   }
 

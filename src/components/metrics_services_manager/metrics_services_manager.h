@@ -40,17 +40,19 @@ class MetricsServicesManager {
   // Creates the MetricsServicesManager with the given client.
   explicit MetricsServicesManager(
       std::unique_ptr<MetricsServicesManagerClient> client);
+
+  MetricsServicesManager(const MetricsServicesManager&) = delete;
+  MetricsServicesManager& operator=(const MetricsServicesManager&) = delete;
+
   virtual ~MetricsServicesManager();
 
-  // Returns the preferred entropy provider used to seed persistent activities
-  // based on whether or not metrics reporting is permitted on this client.
+  // Instantiates the FieldTrialList using Chrome's default entropy provider.
+  // Uses |enable_gpu_benchmarking_switch| to set up the FieldTrialList for
+  // benchmarking runs.
   //
-  // If there's consent to report metrics, this method returns an entropy
-  // provider that has a high source of entropy, partially based on the client
-  // ID. Otherwise, it returns an entropy provider that is based on a low
-  // entropy source.
-  std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider();
+  // Side effect: Initializes the CleanExitBeacon.
+  void InstantiateFieldTrialList(
+      const char* enable_gpu_benchmarking_switch = nullptr) const;
 
   // Returns the MetricsService, creating it if it hasn't been created yet (and
   // additionally creating the MetricsServiceClient in that case).
@@ -76,6 +78,10 @@ class MetricsServicesManager {
 
   // Gets the current state of metrics consent.
   bool IsMetricsConsentGiven() const;
+
+  // Returns the default entropy provider.
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateEntropyProviderForTesting();
 
  private:
   // Returns the MetricsServiceClient, creating it if it hasn't been
@@ -114,8 +120,6 @@ class MetricsServicesManager {
 
   // The VariationsService, for server-side experiments infrastructure.
   std::unique_ptr<variations::VariationsService> variations_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(MetricsServicesManager);
 };
 
 }  // namespace metrics_services_manager

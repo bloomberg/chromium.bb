@@ -135,6 +135,8 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
+import org.chromium.chrome.browser.sync.ui.SyncErrorMessage;
+import org.chromium.chrome.browser.sync.ui.SyncErrorPromptUtils;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -1675,6 +1677,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 assert mStartSurfaceSupplier.get() != null;
                 assert getToolbarManager().getTabGroupUi() != null;
                 // Return true if dialog from either tab switcher or tab strip is visible.
+
                 ToolbarManager toolbarManager = getToolbarManager();
                 TabGroupUi tabGroupUi = toolbarManager.getTabGroupUi();
                 boolean isDialogVisible = tabGroupUi.isTabGridDialogVisible();
@@ -1802,13 +1805,19 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (navigation.hasCommitted() && navigation.isInPrimaryMainFrame()) {
-                    DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(ChromeTabbedActivity.this,
-                            tab.getWebContents(), navigation.getUrl(), tab.isShowingErrorPage(),
-                            navigation.isFragmentNavigation(), navigation.httpStatusCode());
-                    SyncErrorInfoBar.maybeLaunchSyncErrorInfoBar(tab.getWebContents());
-                    SendTabToSelfAndroidBridge.updateActiveWebContents(tab.getWebContents());
+                if (!navigation.hasCommitted() || !navigation.isInPrimaryMainFrame()) {
+                    return;
                 }
+                DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(ChromeTabbedActivity.this,
+                        tab.getWebContents(), navigation.getUrl(), tab.isShowingErrorPage(),
+                        navigation.isFragmentNavigation(), navigation.httpStatusCode());
+                if (SyncErrorPromptUtils.isMessageUiEnabled()) {
+                    SyncErrorMessage.maybeShowMessageUi(
+                            getWindowAndroid(), ChromeTabbedActivity.this);
+                } else {
+                    SyncErrorInfoBar.maybeLaunchSyncErrorInfoBar(tab.getWebContents());
+                }
+                SendTabToSelfAndroidBridge.updateActiveWebContents(tab.getWebContents());
             }
         };
         mAppIndexingUtil = new AppIndexingUtil(mTabModelSelector);
@@ -1826,6 +1835,9 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return new TabbedAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), this, mOverviewModeBehaviorSupplier,
+                ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()
+                        ? mStartSurfaceSupplier
+                        : null,
                 mBookmarkBridgeSupplier,
                 ()
                         -> getTabCreator(/*incognito=*/false)
@@ -2127,7 +2139,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         final WebContents webContents = currentTab.getWebContents();
         if (webContents != null) {
             RenderFrameHost focusedFrame = webContents.getFocusedFrame();
-            if (focusedFrame != null && focusedFrame.signalModalCloseWatcherIfActive()) return true;
+            if (focusedFrame != null && focusedFrame.signalCloseWatcherIfActive()) return true;
         }
 
         if (getToolbarManager().back()) return true;
@@ -2150,9 +2162,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             if (StartSurfaceUserData.getKeepTab(currentTab)
                     || StartSurfaceUserData.isOpenedFromStart(currentTab)) {
                 // If the current tab is created from the start surface with the keepTab property,
-                // shows the Start surface Homepage to prevent a loop between the current tab and
-                // previous overview mode. Once in the Start surface, it will close Chrome if back
-                // button is tapped again.
+                // shows the Start surface non-incognito homepage to prevent a loop between the
+                // current tab and previous overview mode. Once in the Start surface, it will close
+                // Chrome if back button is tapped again.
+                if (currentTab.isIncognito()) {
+                    if (!currentTab.isClosing()) {
+                        getCurrentTabModel().closeTab(currentTab);
+                    }
+                    mTabModelSelector.selectModel(/*incognito=*/false);
+                }
                 showOverview(StartSurfaceState.SHOWING_HOMEPAGE);
             } else {
                 // Otherwise, clicking the back button should close the tab and go back to the

@@ -39,6 +39,10 @@ class SelectFileDialogExtensionTest
     }
   }
 
+  SelectFileDialogExtensionTest(const SelectFileDialogExtensionTest&) = delete;
+  SelectFileDialogExtensionTest& operator=(
+      const SelectFileDialogExtensionTest&) = delete;
+
   static SelectFileDialogExtension* CreateDialog(
       ui::SelectFileDialog::Listener* listener) {
     SelectFileDialogExtension* dialog = new SelectFileDialogExtension(listener,
@@ -52,14 +56,16 @@ class SelectFileDialogExtensionTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtensionTest);
 };
 
 // Test listener for a SelectFileDialog.
 class TestListener : public ui::SelectFileDialog::Listener {
  public:
   TestListener() : selected_(false), file_index_(-1) {}
+
+  TestListener(const TestListener&) = delete;
+  TestListener& operator=(const TestListener&) = delete;
+
   ~TestListener() override {}
 
   bool selected() const { return selected_; }
@@ -76,8 +82,6 @@ class TestListener : public ui::SelectFileDialog::Listener {
  private:
   bool selected_;
   int file_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestListener);
 };
 
 // Client of a SelectFileDialog that deletes itself whenever the dialog

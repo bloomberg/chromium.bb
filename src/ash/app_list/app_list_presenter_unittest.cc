@@ -136,7 +136,7 @@ void FlingUpOrDown(ui::test::EventGenerator* generator,
   target_point.Offset(0, offset);
 
   generator->GestureScrollSequence(start_point, target_point,
-                                   base::TimeDelta::FromMilliseconds(10), 2);
+                                   base::Milliseconds(10), 2);
 }
 
 std::unique_ptr<TestSearchResult> CreateOmniboxSuggestionResult(
@@ -234,6 +234,10 @@ class AppListPresenterTest
         ->apps_grid_view();
   }
 
+  int GetPeekingHeight() {
+    return GetAppListView()->GetHeightForState(AppListViewState::kPeeking);
+  }
+
   void ShowZeroStateSearchInHalfState() {
     GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
     GetEventGenerator()->GestureTapAt(GetPointInsideSearchbox());
@@ -321,8 +325,8 @@ class AppListBubbleAndTabletTest
 
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatureState(features::kAppListBubble,
-                                              app_list_bubble_param());
+    scoped_feature_list_.InitWithFeatureState(features::kProductivityLauncher,
+                                              productivity_launcher_param());
     AppListView::SetShortAnimationForTesting(true);
     AshTestBase::SetUp();
 
@@ -341,19 +345,22 @@ class AppListBubbleAndTabletTest
     AppListView::SetShortAnimationForTesting(false);
   }
 
-  // Whether we should use the AppListBubble flag.
-  bool app_list_bubble_param() { return std::get<0>(GetParam()); }
+  // Whether we should use the ProductivityLauncher flag.
+  bool productivity_launcher_param() { return std::get<0>(GetParam()); }
 
   // Whether we should run the test in tablet mode.
   bool tablet_mode_param() { return std::get<1>(GetParam()); }
 
-  // Bubble launcher is visible in clamshell mode with kAppListBubble enabled.
+  // Bubble launcher is visible in clamshell mode with kProductivityLauncher
+  // enabled.
   bool should_show_bubble_launcher() {
-    return app_list_bubble_param() && !tablet_mode_param();
+    return productivity_launcher_param() && !tablet_mode_param();
   }
   // Zero state be shown in clamshell mode and in tablet mode when bubble
   // launcher is not enabled.
-  bool should_show_zero_state_search() { return !app_list_bubble_param(); }
+  bool should_show_zero_state_search() {
+    return !productivity_launcher_param();
+  }
 
   void MaybeRefreshAppListSearchResultPage() {
     // Bubble launcher has an AppListBubbleSearchPage which does not need to be
@@ -439,8 +446,10 @@ class PopulatedAppListTest : public AshTestBase,
     // Make the display big enough to hold the app list.
     UpdateDisplay("1024x768");
 
-    app_list_test_delegate_ = std::make_unique<test::AppListTestViewDelegate>();
-    app_list_test_model_ = app_list_test_delegate_->GetTestModel();
+    auto app_list_test_model = std::make_unique<test::AppListTestModel>();
+    app_list_test_model_ = app_list_test_model.get();
+    Shell::Get()->app_list_controller()->SetAppListModelForTest(
+        std::move(app_list_test_model));
   }
 
   void TearDown() override {
@@ -449,17 +458,18 @@ class PopulatedAppListTest : public AshTestBase,
   }
 
  protected:
-  void CreateAndOpenAppList() {
-    app_list_view_ = new AppListView(app_list_test_delegate_.get());
-    app_list_view_->InitView(Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kShellWindowId_AppListContainer));
-    app_list_view_->Show(AppListViewState::kFullscreenAllApps,
-                         false /*is_side_shelf*/);
+  void OpenAppListInFullscreen() {
+    AppListPresenterImpl* presenter =
+        Shell::Get()->app_list_controller()->presenter();
+    presenter->Show(AppListViewState::kFullscreenAllApps,
+                    GetPrimaryDisplay().id(), base::TimeTicks::Now(),
+                    /*show_source=*/absl::nullopt);
+    app_list_view_ = presenter->GetView();
   }
 
   void InitializeAppsGrid() {
     if (!app_list_view_)
-      CreateAndOpenAppList();
+      OpenAppListInFullscreen();
     apps_grid_view_ = app_list_view_->app_list_main_view()
                           ->contents_view()
                           ->apps_container_view()
@@ -546,8 +556,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          testing::Bool());
 
 // Instantiate the values in the parameterized tests. First boolean is used to
-// determine whether we should use the kAppListBubble feature flag. The second
-// boolean is to determine whether we should run the test in tablet mode.
+// determine whether to use the kProductivityLauncher feature flag. The second
+// boolean is to determine whether to run the test in tablet mode.
 INSTANTIATE_TEST_SUITE_P(All,
                          AppListBubbleAndTabletTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
@@ -1489,7 +1499,6 @@ TEST_P(PopulatedAppListTest, ScreenRotationDuringFolderItemDrag) {
   EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
   EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
   EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(2)->item()->id());
-  EXPECT_EQ(dragged_view, folder_view()->items_grid_view()->GetItemViewAt(0));
   EXPECT_EQ("Item 5", apps_grid_view_->GetItemViewAt(3)->item()->id());
 }
 
@@ -1514,6 +1523,7 @@ TEST_P(PopulatedAppListTest, ScreenRotationDuringAppsGridItemReparentDrag) {
   // Start dragging the first item in the active folder.
   AppListItemView* dragged_view =
       folder_view()->items_grid_view()->GetItemViewAt(0);
+  AppListItem* dragged_item = dragged_view->item();
   event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
   event_generator->PressTouch();
   ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
@@ -1547,7 +1557,7 @@ TEST_P(PopulatedAppListTest, ScreenRotationDuringAppsGridItemReparentDrag) {
   // Verify the new item location within the apps grid.
   EXPECT_EQ("Item 0", apps_grid_view_->GetItemViewAt(0)->item()->id());
   EXPECT_EQ("Item 1", apps_grid_view_->GetItemViewAt(1)->item()->id());
-  EXPECT_EQ(dragged_view->item()->id(),
+  EXPECT_EQ(dragged_item->id(),
             apps_grid_view_->GetItemViewAt(2)->item()->id());
   EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(3)->item()->id());
 }
@@ -1574,6 +1584,7 @@ TEST_P(AppListBubbleAndTabletTest, AppsGridItemReparentToFolderDrag) {
   AppListItemView* dragged_view =
       folder_view()->items_grid_view()->GetItemViewAt(0);
   ASSERT_TRUE(dragged_view);
+  AppListItem* dragged_item = dragged_view->item();
   event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
   event_generator->PressTouch();
   ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
@@ -1599,7 +1610,7 @@ TEST_P(AppListBubbleAndTabletTest, AppsGridItemReparentToFolderDrag) {
   EXPECT_EQ(folder->id(), apps_grid_view_->GetItemViewAt(2)->item()->id());
 
   EXPECT_TRUE(apps_grid_view_->GetItemViewAt(3)->item()->is_folder());
-  EXPECT_EQ(dragged_view->item()->folder_id(),
+  EXPECT_EQ(dragged_item->folder_id(),
             apps_grid_view_->GetItemViewAt(3)->item()->id());
 }
 
@@ -1715,7 +1726,8 @@ TEST_P(PopulatedAppListWithVKEnabledTest,
 // the apps grid crashes (See http://crbug.com/1100011).
 TEST_P(PopulatedAppListTest, FolderItemDroppedRemovesBlankPage) {
   InitializeAppsGrid();
-  app_list_test_model_->CreateAndPopulateFolderWithApps(3);
+  AppListFolderItem* folder_item =
+      app_list_test_model_->CreateAndPopulateFolderWithApps(3);
   app_list_test_model_->PopulateApps(2);
   ASSERT_EQ(1, apps_grid_view_->pagination_model()->total_pages());
 
@@ -1728,6 +1740,7 @@ TEST_P(PopulatedAppListTest, FolderItemDroppedRemovesBlankPage) {
   // Start dragging the first item in the active folder.
   AppListItemView* dragged_view =
       folder_view()->items_grid_view()->GetItemViewAt(0);
+  AppListItem* dragged_item = dragged_view->item();
   event_generator->MoveTouch(dragged_view->GetBoundsInScreen().CenterPoint());
   event_generator->PressTouch();
   ASSERT_TRUE(dragged_view->FireTouchDragTimerForTest());
@@ -1757,7 +1770,7 @@ TEST_P(PopulatedAppListTest, FolderItemDroppedRemovesBlankPage) {
                              gfx::Vector2d(-100, 0));
   event_generator->ReleaseTouch();
   EXPECT_EQ(1, apps_grid_view_->pagination_model()->total_pages());
-  EXPECT_EQ(dragged_view, folder_view()->items_grid_view()->GetItemViewAt(0));
+  EXPECT_EQ(folder_item->id(), dragged_item->folder_id());
 }
 
 // Tests that app list hides when focus moves to a normal window.
@@ -1833,11 +1846,7 @@ TEST_P(AppListPresenterTest, AppListWindowBounds) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect primary_display_rect(
-      gfx::Point(
-          0,
-          display_size.height() -
-              GetAppListView()->GetAppListConfig().peeking_app_list_height()),
-      display_size);
+      gfx::Point(0, display_size.height() - GetPeekingHeight()), display_size);
   EXPECT_EQ(
       primary_display_rect,
       GetAppListView()->GetWidget()->GetNativeView()->GetBoundsInScreen());
@@ -1850,10 +1859,8 @@ TEST_P(AppListPresenterTest, AppListWindowBounds) {
   GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
   GetAppListTestHelper()->CheckVisibility(true);
   const gfx::Rect secondary_display_rect(
-      gfx::Point(
-          display_size.width(),
-          display_size.height() -
-              GetAppListView()->GetAppListConfig().peeking_app_list_height()),
+      gfx::Point(display_size.width(),
+                 display_size.height() - GetPeekingHeight()),
       display_size);
   EXPECT_EQ(
       secondary_display_rect,
@@ -1994,8 +2001,8 @@ TEST_P(AppListPresenterTest, SideShelfAlignmentDragDisabled) {
   // result in no state change.
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(GetPointOutsideSearchbox(),
-                                   gfx::Point(10, 900),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
+                                   gfx::Point(10, 900), base::Milliseconds(100),
+                                   10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
@@ -2129,13 +2136,13 @@ TEST_P(AppListPresenterTest, AppListViewDragHandler) {
       GetAppListView()->GetWidget()->GetWindowBoundsInScreen().y();
   generator->GestureScrollSequence(gfx::Point(0, top_of_app_list + 20),
                                    gfx::Point(0, top_of_app_list - 20),
-                                   base::TimeDelta::FromMilliseconds(500), 50);
+                                   base::Milliseconds(500), 50);
   GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 
   // Execute a long upwards drag, this should transition the app list.
   generator->GestureScrollSequence(gfx::Point(10, top_of_app_list + 20),
-                                   gfx::Point(10, 10),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
+                                   gfx::Point(10, 10), base::Milliseconds(100),
+                                   10);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Execute a short downward drag, this should fail to transition the app list.
@@ -2158,8 +2165,8 @@ TEST_P(AppListPresenterTest, AppListViewDragHandler) {
 
   // Transition to fullscreen.
   generator->GestureScrollSequence(gfx::Point(10, top_of_app_list + 20),
-                                   gfx::Point(10, 10),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
+                                   gfx::Point(10, 10), base::Milliseconds(100),
+                                   10);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   // Enter text to transition to |FULLSCREEN_SEARCH|.
@@ -2177,7 +2184,7 @@ TEST_P(AppListPresenterTest, AppListViewDragHandler) {
 
   // Execute a long downward drag, this should close the app list.
   generator->GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 900),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
+                                   base::Milliseconds(100), 10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
   GetAppListTestHelper()->CheckVisibility(false);
@@ -2493,8 +2500,8 @@ TEST_P(AppListPresenterTest,
   const int top_of_app_list =
       app_list_view->GetWidget()->GetWindowBoundsInScreen().y();
   generator->GestureScrollSequence(gfx::Point(10, top_of_app_list + 20),
-                                   gfx::Point(10, 10),
-                                   base::TimeDelta::FromMilliseconds(100), 10);
+                                   gfx::Point(10, 10), base::Milliseconds(100),
+                                   10);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
@@ -2839,8 +2846,8 @@ TEST_P(AppListPresenterTest, DragToBezelClosesAppListFromFullscreenAndPeeking) {
                           .bottom();
   generator->GestureScrollSequence(
       gfx::Point(0, bezel_y - (kAppListBezelMargin + 100)),
-      gfx::Point(0, bezel_y - (kAppListBezelMargin)),
-      base::TimeDelta::FromMilliseconds(1500), 100);
+      gfx::Point(0, bezel_y - (kAppListBezelMargin)), base::Milliseconds(1500),
+      100);
 
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
@@ -2879,7 +2886,7 @@ TEST_P(AppListPresenterTest,
   GetEventGenerator()->GestureScrollSequence(
       gfx::Point(drag_x, bezel_y - (kAppListBezelMargin + 100)),
       gfx::Point(drag_x, bezel_y - (kAppListBezelMargin)),
-      base::TimeDelta::FromMilliseconds(1500), 100);
+      base::Milliseconds(1500), 100);
 
   GetAppListTestHelper()->WaitUntilIdle();
   SCOPED_TRACE("Closed");
@@ -3437,9 +3444,7 @@ TEST_P(AppListPresenterTest, DragAppListViewFromPeeking) {
   GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 
   // Calculate |threshold| in the same way with AppListView::EndDrag.
-  const int threshold =
-      GetAppListView()->GetAppListConfig().peeking_app_list_height() /
-      kAppListThresholdDenominator;
+  const int threshold = GetPeekingHeight() / kAppListThresholdDenominator;
 
   // Drag AppListView downward by |threshold| then release the gesture.
   // Check the final state should be Peeking.
@@ -3712,22 +3717,18 @@ class AppListPresenterLayoutTest : public AppListPresenterTest {
   // NOTE: This assumes that the display size is such that the preferred apps
   // grid size is within min and max apps grid height (in which case the margin
   // when scalable app list is not enabled is 1 / 16 of the available height).
-  int ExpectedAppsGridTop(const AppListConfig& config,
-                          int display_height,
+  int ExpectedAppsGridTop(int display_height,
                           const gfx::Rect& search_box_bounds) {
     return ExpectedSuggestionChipContainerTop(search_box_bounds) +
            32 /*suggestion chip container height*/ +
-           config.grid_fadeout_zone_height() -
-           config.grid_fadeout_mask_height();
+           24 /*grid fadeout zone height*/ - 16 /*grid fadeout mask height*/;
   }
 
   // Calculates expected apps grid position on the search results page based on
   // the display height and the search box in-screen bounds.
-  int ExpectedAppsGridTopForSearchResults(const AppListConfig& config,
-                                          int display_height,
+  int ExpectedAppsGridTopForSearchResults(int display_height,
                                           const gfx::Rect& search_box_bounds) {
-    const int top =
-        ExpectedAppsGridTop(config, display_height, search_box_bounds);
+    const int top = ExpectedAppsGridTop(display_height, search_box_bounds);
     // In the search results page, the apps grid is shown 24 dip below where
     // they'd be shown in the apps page. The |top| was calculated relative to
     // search box bounds in the search results page, so it has to be further
@@ -3760,7 +3761,6 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Tests that the app list contents top margin is gradually updated during drag
 // between peeking and fullscreen view state while showing apps page.
 TEST_P(AppListPresenterLayoutTest, AppsPagePositionDuringDrag) {
-  const AppListConfig& config = GetAppListView()->GetAppListConfig();
   const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int fullscreen_y = 0;
   const int closed_y = 900 - shelf_height;
@@ -3790,11 +3790,13 @@ TEST_P(AppListPresenterLayoutTest, AppsPagePositionDuringDrag) {
 
   EXPECT_EQ((peeking_top.y() + fullscreen_y) / 2 +
                 gfx::Tween::IntValueBetween(
-                    progress - 1, config.search_box_peeking_top_padding(),
+                    progress - 1,
+                    ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                        AppListState::kStateApps),
                     fullscreen_search_box_padding),
             search_box_bounds.y());
 
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   // In apps state, search results page should be hidden behind the search
@@ -3813,7 +3815,7 @@ TEST_P(AppListPresenterLayoutTest, AppsPagePositionDuringDrag) {
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
   EXPECT_EQ(fullscreen_search_box_padding, search_box_bounds.y());
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
@@ -3833,10 +3835,12 @@ TEST_P(AppListPresenterLayoutTest, AppsPagePositionDuringDrag) {
 
   EXPECT_EQ((peeking_top.y() + closed_y) / 2 +
                 gfx::Tween::IntValueBetween(
-                    progress, config.search_box_peeking_top_padding(),
-                    config.search_box_closed_top_padding()),
+                    progress,
+                    ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                        AppListState::kStateApps),
+                    0),
             search_box_bounds.y());
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
@@ -3851,9 +3855,8 @@ TEST_P(AppListPresenterLayoutTest, AppsPagePositionDuringDrag) {
   search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
-  EXPECT_EQ(closed_y + config.search_box_closed_top_padding(),
-            search_box_bounds.y());
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(closed_y, search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
@@ -3868,7 +3871,6 @@ TEST_P(AppListPresenterLayoutTest, SearchResultsPagePositionDuringDrag) {
   PressAndReleaseKey(ui::KeyboardCode::VKEY_0);
   GetAppListTestHelper()->CheckState(AppListViewState::kHalf);
 
-  const AppListConfig& config = GetAppListView()->GetAppListConfig();
   const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int search_results_height = 440;
   const int fullscreen_y = 0;
@@ -3898,14 +3900,16 @@ TEST_P(AppListPresenterLayoutTest, SearchResultsPagePositionDuringDrag) {
 
   EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
                 gfx::Tween::IntValueBetween(
-                    progress - 1, config.search_box_fullscreen_top_padding(),
+                    progress - 1,
+                    ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                        AppListState::kStateSearchResults),
                     fullscreen_search_box_padding),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
 
@@ -3924,7 +3928,7 @@ TEST_P(AppListPresenterLayoutTest, SearchResultsPagePositionDuringDrag) {
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
 
@@ -3942,14 +3946,16 @@ TEST_P(AppListPresenterLayoutTest, SearchResultsPagePositionDuringDrag) {
 
   EXPECT_EQ((half_top.y() + closed_y) / 2 +
                 gfx::Tween::IntValueBetween(
-                    progress, config.search_box_fullscreen_top_padding(),
-                    config.search_box_closed_top_padding()),
+                    progress,
+                    ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                        AppListState::kStateSearchResults),
+                    0),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
 
@@ -3963,13 +3969,12 @@ TEST_P(AppListPresenterLayoutTest, SearchResultsPagePositionDuringDrag) {
   search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
-  EXPECT_EQ(closed_y + config.search_box_closed_top_padding(),
-            search_box_bounds.y());
+  EXPECT_EQ(closed_y, search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
 }
@@ -3987,7 +3992,6 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageDuringDrag) {
   const gfx::Point half_top =
       GetAppListView()->GetBoundsInScreen().top_center();
 
-  const AppListConfig& config = GetAppListView()->GetAppListConfig();
   const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int search_results_height = 440;
   const int fullscreen_y = 0;
@@ -4012,14 +4016,16 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageDuringDrag) {
   EXPECT_LE(std::abs(progress - 1.5f), 0.01f);
   EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
                 gfx::Tween::IntValueBetween(
-                    progress - 1, config.search_box_fullscreen_top_padding(),
+                    progress - 1,
+                    ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                        AppListState::kStateSearchResults),
                     fullscreen_search_box_padding),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
 
@@ -4040,13 +4046,14 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageDuringDrag) {
   int expected_search_box_top =
       new_progress * peeking_top.y() +
       (1 - new_progress) * fullscreen_search_box_padding +
-      new_progress * config.search_box_peeking_top_padding();
+      new_progress * ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                         AppListState::kStateApps);
 
   search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
   search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
 
   EXPECT_EQ(expected_search_box_top, search_box_bounds.y());
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(apps_grid_bounds_in_results_page.y() - 24,
@@ -4067,14 +4074,16 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageDuringDrag) {
   EXPECT_LE(std::abs(progress - 1.5f), 0.01f);
   EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
                 gfx::Tween::IntValueBetween(
-                    progress - 1, config.search_box_fullscreen_top_padding(),
+                    progress - 1,
+                    ContentsView::GetPeekingSearchBoxTopMarginOnPage(
+                        AppListState::kStateSearchResults),
                     fullscreen_search_box_padding),
             search_box_bounds.y());
   EXPECT_EQ(search_box_bounds.y(),
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
 }
@@ -4085,7 +4094,6 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageInFullscreen) {
   FlingUpOrDown(GetEventGenerator(), GetAppListView(), true);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
-  const AppListConfig& config = GetAppListView()->GetAppListConfig();
   const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int search_results_height = 440;
   const int fullscreen_y = 0;
@@ -4097,7 +4105,7 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageInFullscreen) {
 
   EXPECT_EQ(fullscreen_y + fullscreen_search_box_padding,
             search_box_bounds.y());
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
@@ -4118,7 +4126,7 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageInFullscreen) {
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTopForSearchResults(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   const gfx::Rect apps_grid_bounds_in_results_page =
@@ -4134,7 +4142,7 @@ TEST_P(AppListPresenterLayoutTest, SwitchPageInFullscreen) {
   EXPECT_EQ(app_list_bounds, GetAppListView()->GetBoundsInScreen());
   EXPECT_EQ(fullscreen_y + fullscreen_search_box_padding,
             search_box_bounds.y());
-  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+  EXPECT_EQ(ExpectedAppsGridTop(900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
   EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(apps_grid_bounds_in_results_page.y() - 24,
@@ -4989,7 +4997,7 @@ TEST_P(AppListPresenterHomeLauncherTest,
   ui::test::EventGenerator* generator = GetEventGenerator();
   const int x = 540;
   const int peeking_height =
-      900 - GetAppListView()->GetAppListConfig().peeking_app_list_height();
+      900 - GetAppListView()->GetHeightForState(AppListViewState::kPeeking);
   const int closed_y = 890;
   generator->MoveTouch(gfx::Point(x, peeking_height));
   generator->PressTouch();

@@ -200,9 +200,9 @@ class ClearUtils final : angle::NonCopyable
   private:
     void ensureRenderPipelineStateCacheInitialized(ContextMtl *ctx, uint32_t numColorAttachments);
 
-    void setupClearWithDraw(const gl::Context *context,
-                            RenderCommandEncoder *cmdEncoder,
-                            const ClearRectParams &params);
+    angle::Result setupClearWithDraw(const gl::Context *context,
+                                     RenderCommandEncoder *cmdEncoder,
+                                     const ClearRectParams &params);
     id<MTLDepthStencilState> getClearDepthStencilState(const gl::Context *context,
                                                        const ClearRectParams &params);
     id<MTLRenderPipelineState> getClearRenderPipelineState(const gl::Context *context,
@@ -236,9 +236,9 @@ class ColorBlitUtils final : angle::NonCopyable
                                                    int sourceTextureType,
                                                    RenderPipelineCache *cacheOut);
 
-    void setupColorBlitWithDraw(const gl::Context *context,
-                                RenderCommandEncoder *cmdEncoder,
-                                const ColorBlitParams &params);
+    angle::Result setupColorBlitWithDraw(const gl::Context *context,
+                                         RenderCommandEncoder *cmdEncoder,
+                                         const ColorBlitParams &params);
 
     id<MTLRenderPipelineState> getColorBlitRenderPipelineState(const gl::Context *context,
                                                                RenderCommandEncoder *cmdEncoder,
@@ -280,9 +280,9 @@ class DepthStencilBlitUtils final : angle::NonCopyable
                                                    int sourceStencilTextureType,
                                                    RenderPipelineCache *cacheOut);
 
-    void setupDepthStencilBlitWithDraw(const gl::Context *context,
-                                       RenderCommandEncoder *cmdEncoder,
-                                       const DepthStencilBlitParams &params);
+    angle::Result setupDepthStencilBlitWithDraw(const gl::Context *context,
+                                                RenderCommandEncoder *cmdEncoder,
+                                                const DepthStencilBlitParams &params);
 
     id<MTLRenderPipelineState> getDepthStencilBlitRenderPipelineState(
         const gl::Context *context,
@@ -575,10 +575,6 @@ class TransformFeedbackUtils
         ContextMtl *contextMtl,
         RenderCommandEncoder *cmdEncoder,
         mtl::RenderPipelineDesc &pipelineDesc);
-
-  private:
-    AutoObjCPtr<id<MTLLibrary>> createMslXfbLibrary(ContextMtl *contextMtl,
-                                                    const std::string &translatedMsl);
 };
 
 // RenderUtils: container class of various util classes above
@@ -678,9 +674,6 @@ class RenderUtils : public Context, angle::NonCopyable
                                                  RenderCommandEncoder *renderEncoder,
                                                  const angle::Format &srcAngleFormat,
                                                  const VertexFormatConvertParams &params);
-    angle::Result createTransformFeedbackPSO(const gl::Context *context,
-                                             RenderCommandEncoder *renderEncoder,
-                                             mtl::RenderPipelineDesc &pipelineDesc);
 
     angle::Result generatePrimitiveRestartPointsBuffer(ContextMtl *contextMtl,
                                                        const IndexGenerationParams &params,
@@ -714,7 +707,6 @@ class RenderUtils : public Context, angle::NonCopyable
     MipmapUtils mMipmapUtils;
     std::array<CopyPixelsUtils, angle::EnumSize<PixelType>()> mCopyPixelsUtils;
     VertexFormatConversionUtils mVertexFormatUtils;
-    TransformFeedbackUtils mTransformFeedbackUtils;
 };
 
 }  // namespace mtl

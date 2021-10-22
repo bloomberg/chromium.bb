@@ -193,7 +193,7 @@ protected:
 																						VkImage image, VkImage resolvedImage, VkFramebuffer frameBuffer, const deUint32 renderSize, VkBuffer resultBuffer, const Allocation& resultBufferMemory);
 	virtual float									getLineWidth					(void) const;
 	virtual float									getPointSize					(void) const;
-	virtual bool									getLineStippleDynamic			(void) const { return false; };
+	virtual bool									getLineStippleDynamic			(void) const { return false; }
 
 	virtual
 	const VkPipelineRasterizationStateCreateInfo*	getRasterizationStateCreateInfo	(void) const;
@@ -1061,7 +1061,7 @@ public:
 	virtual tcu::TestStatus		iterate					(void);
 	virtual float				getLineWidth			(void) const;
 	bool						getLineStippleEnable	(void) const { return m_stipple != LINESTIPPLE_DISABLED; }
-	virtual bool				getLineStippleDynamic	(void) const { return m_stipple == LINESTIPPLE_DYNAMIC; };
+	virtual bool				getLineStippleDynamic	(void) const { return m_stipple == LINESTIPPLE_DYNAMIC; }
 
 	virtual
 	VkPipelineRasterizationLineStateCreateInfoEXT	initLineRasterizationStateCreateInfo	(void) const;
@@ -1425,6 +1425,8 @@ bool BaseLineTestInstance::compareAndVerify (std::vector<LineSceneSpec::SceneLin
 	scene.stipplePattern = getLineStippleEnable() ? lineStipplePattern : 0xFFFF;
 	scene.isStrip = m_primitiveTopology == VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 	scene.isSmooth = m_lineRasterizationMode == VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT;
+	scene.isRectangular = m_lineRasterizationMode == VK_LINE_RASTERIZATION_MODE_RECTANGULAR_SMOOTH_EXT ||
+	                      m_lineRasterizationMode == VK_LINE_RASTERIZATION_MODE_RECTANGULAR_EXT;
 
 	// Choose verification mode. Smooth lines assume mostly over-rasterization (bloated lines with a falloff).
 	// Stippled lines lose some precision across segments in a strip, so need a weaker threshold than normal
@@ -2848,8 +2850,6 @@ bool ConservativeTraingleTestInstance::compareAndVerify (std::vector<TriangleSce
 				return compareAndVerifyOverestimatedDegenerate(triangles, resultImage);
 			else
 				return compareAndVerifyOverestimatedNormal(triangles, resultImage);
-
-			break;
 		}
 
 		case VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT:
@@ -2858,8 +2858,6 @@ bool ConservativeTraingleTestInstance::compareAndVerify (std::vector<TriangleSce
 				return compareAndVerifyUnderestimatedDegenerate(triangles, resultImage);
 			else
 				return compareAndVerifyUnderestimatedNormal(triangles, resultImage);
-
-			break;
 		}
 
 		default:
@@ -3629,8 +3627,6 @@ bool ConservativeLineTestInstance::compareAndVerify (std::vector<LineSceneSpec::
 				return compareAndVerifyOverestimatedDegenerate(lines, resultImage);
 			else
 				return compareAndVerifyOverestimatedNormal(lines, resultImage);
-
-			break;
 		}
 		case VK_CONSERVATIVE_RASTERIZATION_MODE_UNDERESTIMATE_EXT:
 		{
@@ -3638,8 +3634,6 @@ bool ConservativeLineTestInstance::compareAndVerify (std::vector<LineSceneSpec::
 				return compareAndVerifyUnderestimatedDegenerate(lines, resultImage);
 			else
 				return compareAndVerifyUnderestimatedNormal(lines, resultImage);
-
-			break;
 		}
 
 		default:
@@ -4549,7 +4543,7 @@ public:
 								}
 
 	bool					getLineStippleEnable	(void) const { return m_stipple != LINESTIPPLE_DISABLED; }
-	virtual bool			getLineStippleDynamic	(void) const { return m_stipple == LINESTIPPLE_DYNAMIC; };
+	virtual bool			getLineStippleDynamic	(void) const { return m_stipple == LINESTIPPLE_DYNAMIC; }
 
 protected:
 	const PrimitiveWideness				m_wideness;

@@ -62,8 +62,8 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_pref_names.h"  // nogncheck
 #include "ash/public/cpp/ambient/ambient_prefs.h"
+#include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
-#include "chrome/browser/ash/full_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
@@ -339,6 +339,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[chromeos::prefs::kEmojiSuggestionEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kLacrosProxyControllingExtension] =
+      settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_allowlist)[::prefs::kLanguageInputMethodSpecificSettings] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
   (*s_allowlist)[ash::prefs::kLastUsedImeShortcutReminderDismissed] =
@@ -352,8 +354,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
   (*s_allowlist)[::prefs::kNearbySharingEnabledPrefName] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)
-      [::prefs::kNearbySharingFastInitiationNotificationEnabledPrefName] =
-          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+      [::prefs::kNearbySharingFastInitiationNotificationStatePrefName] =
+          settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[::prefs::kNearbySharingOnboardingCompletePrefName] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kNearbySharingActiveProfilePrefName] =

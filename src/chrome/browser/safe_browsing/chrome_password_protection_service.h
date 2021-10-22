@@ -100,6 +100,12 @@ class ChromePasswordProtectionService : public PasswordProtectionService,
 
   ChromePasswordProtectionService(SafeBrowsingService* sb_service,
                                   Profile* profile);
+
+  ChromePasswordProtectionService(const ChromePasswordProtectionService&) =
+      delete;
+  ChromePasswordProtectionService& operator=(
+      const ChromePasswordProtectionService&) = delete;
+
   ~ChromePasswordProtectionService() override;
 
   static ChromePasswordProtectionService* GetPasswordProtectionService(
@@ -167,17 +173,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService,
   GURL GetDefaultChangePasswordURL() const;
 
   // Gets the detailed warning text that should show in the modal warning dialog
-  // and page info bubble. |placeholder_offsets| are the start points/indices of
-  // the placeholders that are passed into the resource string. It is only set
-  // for saved passwords.
+  // and page info bubble.
   std::u16string GetWarningDetailText(
-      ReusedPasswordAccountType password_type,
-      std::vector<size_t>* placeholder_offsets) const;
-
-  // Get placeholders for the warning detail text for saved password reuse
-  // warnings.
-  std::vector<std::u16string> GetPlaceholdersForSavedPasswordWarningText()
-      const;
+      ReusedPasswordAccountType password_type) const;
 
   // If password protection trigger is configured via enterprise policy, gets
   // the name of the organization that owns the enterprise policy. Otherwise,
@@ -319,7 +317,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService,
                         ReusedPasswordAccountType password_type) override;
 
   // Populates the ChromeUserPopulation in |request_proto|.
-  void FillUserPopulation(LoginReputationClientRequest* request_proto) override;
+  void FillUserPopulation(const GURL& main_frame_url,
+                          LoginReputationClientRequest* request_proto) override;
 
   // If primary account is syncing.
   bool IsPrimaryAccountSyncing() const override;
@@ -437,6 +436,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService,
                            VerifyPersistPhishedSavedPasswordCredential);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyGetPingNotSentReason);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPageLoadToken);
   // Browser tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
@@ -498,19 +499,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService,
   // If enterprise admin turns off password protection, removes all captured
   // enterprise password hashes.
   void OnWarningTriggerChanged();
-
-  // Gets the warning text for saved password reuse warnings.
-  // |placeholder_offsets| are the start points/indices of the placeholders that
-  // are passed into the resource string.
-  std::u16string GetWarningDetailTextForSavedPasswords(
-      std::vector<size_t>* placeholder_offsets) const;
-
-  // Gets the warning text of the saved password reuse warnings that tells the
-  // user to check their saved passwords. |placeholder_offsets| are the start
-  // points/indices of the placeholders that are passed into the resource
-  // string.
-  std::u16string GetWarningDetailTextToCheckSavedPasswords(
-      std::vector<size_t>* placeholder_offsets) const;
 
   // Informs PasswordReuseDetector that enterprise password URLs (login URL or
   // change password URL) have been changed.
@@ -598,8 +586,6 @@ class ChromePasswordProtectionService : public PasswordProtectionService,
   // member callback rather than a virtual function because it's needed in the
   // constructor.
   StringProvider sync_password_hash_provider_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionService);
 };
 
 }  // namespace safe_browsing

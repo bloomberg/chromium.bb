@@ -14,6 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
@@ -44,6 +45,9 @@ class WaylandWindow : public PlatformWindow,
                       public PlatformEventDispatcher,
                       public WmDragHandler {
  public:
+  WaylandWindow(const WaylandWindow&) = delete;
+  WaylandWindow& operator=(const WaylandWindow&) = delete;
+
   ~WaylandWindow() override;
 
   // A factory method that can create any of the derived types of WaylandWindow
@@ -51,7 +55,9 @@ class WaylandWindow : public PlatformWindow,
   static std::unique_ptr<WaylandWindow> Create(
       PlatformWindowDelegate* delegate,
       WaylandConnection* connection,
-      PlatformWindowInitProperties properties);
+      PlatformWindowInitProperties properties,
+      bool update_visual_size_immediately = false,
+      bool apply_pending_state_on_update_visual_size = false);
 
   void OnWindowLostCapture();
 
@@ -129,9 +135,12 @@ class WaylandWindow : public PlatformWindow,
   }
   void set_frame_insets_px(gfx::Insets insets) { frame_insets_px_ = insets; }
 
-  // This is never intended to be used except in unit tests.
+  // These are never intended to be used except in unit tests.
   void set_update_visual_size_immediately(bool update_immediately) {
     update_visual_size_immediately_ = update_immediately;
+  }
+  void set_apply_pending_state_on_update_visual_size(bool apply_immediately) {
+    apply_pending_state_on_update_visual_size_ = apply_immediately;
   }
 
   // Remove WaylandOutput associated with WaylandSurface of this window.
@@ -217,6 +226,9 @@ class WaylandWindow : public PlatformWindow,
   // Sets the window geometry.
   virtual void SetWindowGeometry(gfx::Rect bounds);
 
+  // Updates the window decorations, if possible at the moment.
+  virtual void UpdateDecorations();
+
   // Returns a root parent window within the same hierarchy.
   WaylandWindow* GetRootParentWindow();
 
@@ -251,6 +263,10 @@ class WaylandWindow : public PlatformWindow,
   // Returns bounds in DIP.
   gfx::Rect GetBoundsInDIP() const;
 
+  base::WeakPtr<WaylandWindow> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  protected:
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
@@ -268,6 +284,7 @@ class WaylandWindow : public PlatformWindow,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandScreenTest, SetWindowScale);
+  FRIEND_TEST_ALL_PREFIXES(WaylandBufferManagerTest, CanSubmitOverlayPriority);
 
   // Initializes the WaylandWindow with supplied properties.
   bool Initialize(PlatformWindowInitProperties properties);
@@ -367,6 +384,12 @@ class WaylandWindow : public PlatformWindow,
   // SetBounds() in unit tests.
   bool update_visual_size_immediately_ = false;
 
+  // In a non-test environment, root_surface_->ApplyPendingBounds() is called to
+  // send Wayland protocol requests, but in some unit tests there will never be
+  // any frame updates. This flag causes root_surface_->ApplyPendingBounds() to
+  // be invoked during UpdateVisualSize() in unit tests.
+  bool apply_pending_state_on_update_visual_size_ = false;
+
   // AcceleratedWidget for this window. This will be unique even over time.
   gfx::AcceleratedWidget accelerated_widget_;
 
@@ -377,8 +400,6 @@ class WaylandWindow : public PlatformWindow,
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   base::WeakPtrFactory<WaylandWindow> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandWindow);
 };
 
 }  // namespace ui

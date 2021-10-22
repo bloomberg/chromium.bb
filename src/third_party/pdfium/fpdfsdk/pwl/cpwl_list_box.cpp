@@ -64,24 +64,21 @@ void CPWL_ListBox::DrawThisAppearance(CFX_RenderDevice* pDevice,
     IPWL_SystemHandler* pSysHandler = GetSystemHandler();
     if (m_pListCtrl->IsItemSelected(i)) {
       if (pSysHandler->IsSelectionImplemented()) {
-        CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device,
-                                m_pListCtrl->GetItemEdit(i),
-                                GetTextColor().ToFXColor(255), rcList, ptOffset,
-                                nullptr, pSysHandler, m_pFormFiller.Get());
-        pSysHandler->OutputSelectedRect(m_pFormFiller.Get(), rcItem);
+        m_pListCtrl->GetItemEdit(i)->DrawEdit(
+            pDevice, mtUser2Device, GetTextColor().ToFXColor(255), rcList,
+            ptOffset, nullptr, pSysHandler, GetAttachedData());
+        pSysHandler->OutputSelectedRect(GetAttachedData(), rcItem);
       } else {
         pDevice->DrawFillRect(&mtUser2Device, rcItem,
                               ArgbEncode(255, 0, 51, 113));
-        CPWL_EditImpl::DrawEdit(
-            pDevice, mtUser2Device, m_pListCtrl->GetItemEdit(i),
-            ArgbEncode(255, 255, 255, 255), rcList, ptOffset, nullptr,
-            pSysHandler, m_pFormFiller.Get());
+        m_pListCtrl->GetItemEdit(i)->DrawEdit(
+            pDevice, mtUser2Device, ArgbEncode(255, 255, 255, 255), rcList,
+            ptOffset, nullptr, pSysHandler, GetAttachedData());
       }
     } else {
-      CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device,
-                              m_pListCtrl->GetItemEdit(i),
-                              GetTextColor().ToFXColor(255), rcList, ptOffset,
-                              nullptr, pSysHandler, nullptr);
+      m_pListCtrl->GetItemEdit(i)->DrawEdit(
+          pDevice, mtUser2Device, GetTextColor().ToFXColor(255), rcList,
+          ptOffset, nullptr, pSysHandler, nullptr);
     }
   }
 }
@@ -315,14 +312,6 @@ void CPWL_ListBox::ScrollToListItem(int32_t nItemIndex) {
   m_pListCtrl->ScrollToListItem(nItemIndex);
 }
 
-void CPWL_ListBox::ResetContent() {
-  m_pListCtrl->Clear();
-}
-
-void CPWL_ListBox::Reset() {
-  m_pListCtrl->Cancel();
-}
-
 bool CPWL_ListBox::IsMultipleSel() const {
   return m_pListCtrl->IsMultipleSel();
 }
@@ -346,10 +335,6 @@ int32_t CPWL_ListBox::GetTopVisibleIndex() const {
 
 int32_t CPWL_ListBox::GetCount() const {
   return m_pListCtrl->GetCount();
-}
-
-int32_t CPWL_ListBox::FindNext(int32_t nIndex, wchar_t nChar) const {
-  return m_pListCtrl->FindNext(nIndex, nChar);
 }
 
 CFX_FloatRect CPWL_ListBox::GetContentRect() const {

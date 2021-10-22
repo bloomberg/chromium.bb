@@ -27,7 +27,6 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_save_manager.h"
-#include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
@@ -63,6 +62,9 @@ class PasswordFormManager : public PasswordFormManagerForUI,
       PasswordFormDigest observed_http_auth_digest,
       FormFetcher* form_fetcher,
       std::unique_ptr<PasswordSaveManager> password_save_manager);
+
+  PasswordFormManager(const PasswordFormManager&) = delete;
+  PasswordFormManager& operator=(const PasswordFormManager&) = delete;
 
   ~PasswordFormManager() override;
 
@@ -393,8 +395,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   FormDataParser parser_;
 
   base::WeakPtrFactory<PasswordFormManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };
 
 }  // namespace password_manager

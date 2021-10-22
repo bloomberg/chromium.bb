@@ -19,8 +19,8 @@
 #include "base/values.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
-#include "chrome/browser/chromeos/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_test_base.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/policy/extension_force_install_mixin.h"
@@ -208,6 +208,10 @@ class EnterprisePlatformKeysTest
                              GetParam().enrollment_status_,
                              GetParam().user_status_) {}
 
+  EnterprisePlatformKeysTest(const EnterprisePlatformKeysTest&) = delete;
+  EnterprisePlatformKeysTest& operator=(const EnterprisePlatformKeysTest&) =
+      delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PlatformKeysTestBase::SetUpCommandLine(command_line);
 
@@ -251,8 +255,6 @@ class EnterprisePlatformKeysTest
                                 base::size(privateKeyPkcs8System),
                                 system_slot->slot());
   }
-
-  DISALLOW_COPY_AND_ASSIGN(EnterprisePlatformKeysTest);
 };
 
 }  // namespace
@@ -363,9 +365,9 @@ class EnterprisePlatformKeysLoginScreenTest
                                     kExtensionId);
   }
 
-  chromeos::DeviceStateMixin device_state_mixin_{
+  ash::DeviceStateMixin device_state_mixin_{
       &mixin_host_,
-      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+      ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   chromeos::ScopedTestSystemNSSKeySlotMixin system_nss_key_slot_mixin_{
       &mixin_host_};
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};

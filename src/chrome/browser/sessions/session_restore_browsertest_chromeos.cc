@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -209,7 +210,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
     int workspace = browser->window()->GetNativeWindow()->GetProperty(
         aura::client::kWindowWorkspaceKey);
     ASSERT_EQ(desk_index,
-              workspace == aura::client::kUnassignedWorkspace ? 0 : workspace);
+              workspace == aura::client::kWindowWorkspaceUnassignedWorkspace
+                  ? 0
+                  : workspace);
   }
 
   RemoveInactiveDesks();
@@ -234,7 +237,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
   auto* visible_on_all_desks_window =
       visible_on_all_desks_browser->window()->GetNativeWindow();
   ASSERT_TRUE(visible_on_all_desks_window->GetProperty(
-      aura::client::kVisibleOnAllWorkspacesKey));
+                  aura::client::kWindowWorkspaceKey) ==
+              aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)
                   ->BelongsToActiveDesk(visible_on_all_desks_window));
 
@@ -259,7 +263,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS,
   auto* visible_on_all_desks_window =
       visible_on_all_desks_browser->window()->GetNativeWindow();
   ASSERT_TRUE(visible_on_all_desks_window->GetProperty(
-      aura::client::kVisibleOnAllWorkspacesKey));
+                  aura::client::kWindowWorkspaceKey) ==
+              aura::client::kWindowWorkspaceVisibleOnAllWorkspaces);
   // Visible on all desks windows should always reside on the active desk,
   // even if there is a desk switch.
   ASSERT_TRUE(chromeos::DesksHelper::Get(visible_on_all_desks_window)

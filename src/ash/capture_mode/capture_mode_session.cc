@@ -7,6 +7,7 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/magnifier_glass.h"
 #include "ash/capture_mode/capture_label_view.h"
+#include "ash/capture_mode/capture_mode_advanced_settings_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
@@ -15,6 +16,7 @@
 #include "ash/capture_mode/capture_mode_toggle_button.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/capture_window_observer.h"
+#include "ash/constants/ash_features.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -32,6 +34,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/cursor_util.h"
@@ -49,11 +52,11 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -128,15 +131,14 @@ constexpr int kCaptureRegionMinimumPaddingDp = 16;
 // The animation duration that the label fades out and scales down before count
 // down starts.
 constexpr base::TimeDelta kCaptureLabelCountdownStartDuration =
-    base::TimeDelta::FromMilliseconds(267);
+    base::Milliseconds(267);
 // The animation duration that the capture bar fades out before count down
 // starts.
-constexpr base::TimeDelta kCaptureBarFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kCaptureBarFadeOutDuration = base::Milliseconds(167);
 // The animation duration that the fullscreen shield fades out before count down
 // starts.
 constexpr base::TimeDelta kCaptureShieldFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(333);
+    base::Milliseconds(333);
 // If there is no text message was showing when count down starts, the label
 // widget will shrink down from 120% -> 100% and fade in.
 constexpr float kLabelScaleUpOnCountdown = 1.2;
@@ -144,10 +146,10 @@ constexpr float kLabelScaleUpOnCountdown = 1.2;
 // The animation duration that the label fades out and scales up when going from
 // the selection phase to the fine tune phase.
 constexpr base::TimeDelta kCaptureLabelRegionPhaseChangeDuration =
-    base::TimeDelta::FromMilliseconds(167);
+    base::Milliseconds(167);
 // The delay before the label fades out and scales up.
 constexpr base::TimeDelta kCaptureLabelRegionPhaseChangeDelay =
-    base::TimeDelta::FromMilliseconds(67);
+    base::Milliseconds(67);
 // When going from the select region phase to the fine tune phase, the label
 // widget will scale up from 80% -> 100%.
 constexpr float kLabelScaleDownOnPhaseChange = 0.8;
@@ -155,10 +157,10 @@ constexpr float kLabelScaleDownOnPhaseChange = 0.8;
 // Animation parameters for capture bar overlapping the user capture region.
 // The default animation duration for opacity changes to the capture bar.
 constexpr base::TimeDelta kCaptureBarOpacityChangeDuration =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 // The animation duration for showing the capture bar on mouse/touch release.
 constexpr base::TimeDelta kCaptureBarOnReleaseOpacityChangeDuration =
-    base::TimeDelta::FromMilliseconds(167);
+    base::Milliseconds(167);
 // When the capture bar and user capture region overlap and the mouse is not
 // hovering over the capture bar, drop the opacity to this value to make the
 // region easier to see.
@@ -372,7 +374,7 @@ class CaptureModeSession::CursorSetter {
     // For custom cursors, update the cursor if we need to change between image
     // capture and video capture, if the device scale factor changes, or if the
     // screen orientation changes.
-    const OrientationLockType orientation = GetCurrentScreenOrientation();
+    const chromeos::OrientationType orientation = GetCurrentScreenOrientation();
     const bool is_cursor_changed =
         current_cursor_type != new_cursor_type ||
         (current_cursor_type == ui::mojom::CursorType::kCustom &&
@@ -462,7 +464,7 @@ class CaptureModeSession::CursorSetter {
 
   // Records the current screen orientation. If screen orientation changes, we
   // will need to update the cursor if we're using custom cursor.
-  OrientationLockType current_orientation_;
+  chromeos::OrientationType current_orientation_;
 
   // True if the cursor has reset back to its original cursor. It's to prevent
   // Reset() from setting the cursor to |original_cursor_| more than once.
@@ -676,21 +678,44 @@ void CaptureModeSession::SetSettingsMenuShown(bool shown) {
 
   if (!shown) {
     capture_mode_settings_widget_.reset();
+    capture_mode_advanced_settings_view_ = nullptr;
     capture_mode_settings_view_ = nullptr;
+    // After closing CaptureMode settings view, show CaptureLabel view if it has
+    // been hidden.
+    if (capture_label_widget_ && !capture_label_widget_->IsVisible())
+      capture_label_widget_->Show();
     return;
   }
 
   if (!capture_mode_settings_widget_) {
     auto* parent = GetParentContainer(current_root_);
     capture_mode_settings_widget_ = std::make_unique<views::Widget>();
-    capture_mode_settings_widget_->Init(CreateWidgetParams(
-        parent, CaptureModeSettingsView::GetBounds(capture_mode_bar_view_),
-        "CaptureModeSettingsWidget"));
-    capture_mode_settings_view_ =
-        capture_mode_settings_widget_->SetContentsView(
-            std::make_unique<CaptureModeSettingsView>(is_in_projector_mode_));
+    if (features::AreImprovedScreenCaptureSettingsEnabled()) {
+      capture_mode_settings_widget_->Init(CreateWidgetParams(
+          parent,
+          CaptureModeAdvancedSettingsView::GetBounds(capture_mode_bar_view_),
+          "CaptureModeSettingsWidget"));
+      capture_mode_advanced_settings_view_ =
+          capture_mode_settings_widget_->SetContentsView(
+              std::make_unique<CaptureModeAdvancedSettingsView>());
+    } else {
+      capture_mode_settings_widget_->Init(CreateWidgetParams(
+          parent, CaptureModeSettingsView::GetBounds(capture_mode_bar_view_),
+          "CaptureModeSettingsWidget"));
+      capture_mode_settings_view_ =
+          capture_mode_settings_widget_->SetContentsView(
+              std::make_unique<CaptureModeSettingsView>(is_in_projector_mode_));
+    }
     parent->layer()->StackAtTop(capture_mode_settings_widget_->GetLayer());
     focus_cycler_->OnSettingsMenuWidgetCreated();
+
+    if (capture_label_widget_ && capture_label_widget_->IsVisible()) {
+      // Hide CaptureLabel view if it overlaps with CaptureMode settings view.
+      if (capture_mode_settings_widget_->GetWindowBoundsInScreen().Intersects(
+              capture_label_widget_->GetWindowBoundsInScreen())) {
+        capture_label_widget_->Hide();
+      }
+    }
     capture_mode_settings_widget_->Show();
   }
 }
@@ -778,7 +803,7 @@ void CaptureModeSession::OnKeyEvent(ui::KeyEvent* event) {
         SetSettingsMenuShown(false);
       else if (focus_cycler_->HasFocus())
         focus_cycler_->ClearFocus();
-      else
+      else if (can_exit_on_escape_)
         controller_->Stop();  // |this| is destroyed here.
 
       return;
@@ -1245,6 +1270,11 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
       !(capture_mode_settings_widget_ &&
         capture_mode_settings_widget_->GetWindowBoundsInScreen().Contains(
             screen_location))) {
+    if (capture_mode_settings_widget_ &&
+        located_press_event_on_settings_menu_) {
+      capture_mode_settings_widget_->GetNativeWindow()->delegate()->OnEvent(
+          event);
+    }
     event->SetHandled();
     event->StopPropagation();
   }
@@ -1265,6 +1295,8 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
     case ui::ET_TOUCH_PRESSED:
+      if (is_event_on_settings_menu)
+        located_press_event_on_settings_menu_ = true;
       old_mouse_warp_status_ = SetMouseWarpEnabled(false);
       OnLocatedEventPressed(location_in_root, is_touch,
                             is_event_on_capture_bar_or_menu);
@@ -1281,6 +1313,7 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
       old_mouse_warp_status_.reset();
       OnLocatedEventReleased(is_event_on_capture_bar_or_menu,
                              region_intersects_capture_bar);
+      located_press_event_on_settings_menu_ = false;
       break;
     case ui::ET_MOUSE_MOVED:
       if (region_intersects_capture_bar) {

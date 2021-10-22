@@ -506,7 +506,8 @@ void ff_sdp_write_media(char *buff, int size, AVStream *st, int idx,
  *
  * @param dst the muxer to write the packet to
  * @param dst_stream the stream index within dst to write the packet to
- * @param pkt the packet to be written
+ * @param pkt the packet to be written. It will be returned blank when
+ *            av_interleaved_write_frame() is used, unchanged otherwise.
  * @param src the muxer the packet originally was intended for
  * @param interleave 0->use av_write_frame, 1->av_interleaved_write_frame
  * @return the value av_write_frame returned
@@ -714,12 +715,6 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
                                  AVPacket *pkt, int flush);
 
 void ff_free_stream(AVFormatContext *s, AVStream *st);
-
-/**
- * Return the frame duration in seconds. Return 0 if not available.
- */
-void ff_compute_frame_duration(AVFormatContext *s, int *pnum, int *pden, AVStream *st,
-                               AVCodecParserContext *pc, AVPacket *pkt);
 
 unsigned int ff_codec_get_tag(const AVCodecTag *tags, enum AVCodecID id);
 

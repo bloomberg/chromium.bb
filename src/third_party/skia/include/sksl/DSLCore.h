@@ -20,8 +20,6 @@
 #include "include/sksl/DSLWrapper.h"
 #include "include/sksl/SkSLErrorReporter.h"
 
-#define SKSL_DSL_PARSER 0
-
 namespace SkSL {
 
 class Compiler;
@@ -165,8 +163,11 @@ DSLStatement StaticIf(DSLExpression test, DSLStatement ifTrue,
                       DSLStatement ifFalse = DSLStatement(),
                       PositionInfo pos = PositionInfo::Capture());
 
-DSLPossibleStatement StaticSwitch(DSLExpression value, SkTArray<DSLCase> cases,
-                                  PositionInfo info = PositionInfo::Capture());
+// Internal use only
+DSLPossibleStatement PossibleStaticSwitch(DSLExpression value, SkTArray<DSLCase> cases);
+
+DSLStatement StaticSwitch(DSLExpression value, SkTArray<DSLCase> cases,
+                          PositionInfo info = PositionInfo::Capture());
 
 /**
  * @switch (value) { cases }
@@ -176,11 +177,14 @@ DSLPossibleStatement StaticSwitch(DSLExpression value, Cases... cases) {
     SkTArray<DSLCase> caseArray;
     caseArray.reserve_back(sizeof...(cases));
     (caseArray.push_back(std::move(cases)), ...);
-    return StaticSwitch(std::move(value), std::move(caseArray));
+    return PossibleStaticSwitch(std::move(value), std::move(caseArray));
 }
 
-DSLPossibleStatement Switch(DSLExpression value, SkTArray<DSLCase> cases,
-                            PositionInfo info = PositionInfo::Capture());
+// Internal use only
+DSLPossibleStatement PossibleSwitch(DSLExpression value, SkTArray<DSLCase> cases);
+
+DSLStatement Switch(DSLExpression value, SkTArray<DSLCase> cases,
+                    PositionInfo info = PositionInfo::Capture());
 
 /**
  * switch (value) { cases }
@@ -190,7 +194,7 @@ DSLPossibleStatement Switch(DSLExpression value, Cases... cases) {
     SkTArray<DSLCase> caseArray;
     caseArray.reserve_back(sizeof...(cases));
     (caseArray.push_back(std::move(cases)), ...);
-    return Switch(std::move(value), std::move(caseArray));
+    return PossibleSwitch(std::move(value), std::move(caseArray));
 }
 
 /**
@@ -428,24 +432,9 @@ DSLExpression Refract(DSLExpression i, DSLExpression n, DSLExpression eta,
                       PositionInfo pos = PositionInfo::Capture());
 
 /**
- * Samples the child processor at the current coordinates.
+ * Returns x, rounded to the nearest integer. If x is a vector, operates componentwise.
  */
-DSLExpression Sample(DSLExpression fp, PositionInfo pos = PositionInfo::Capture());
-
-/**
- * Implements the following functions:
- *     half4 sample(fragmentProcessor fp, float2 coords);
- *     half4 sample(fragmentProcessor fp, half4 input);
- */
-DSLExpression Sample(DSLExpression target, DSLExpression x,
-                     PositionInfo pos = PositionInfo::Capture());
-
-/**
- * Implements the following functions:
- *     half4 sample(fragmentProcessor fp, float2 coords, half4 input);
- */
-DSLExpression Sample(DSLExpression childProcessor, DSLExpression x, DSLExpression y,
-                     PositionInfo pos = PositionInfo::Capture());
+DSLExpression Round(DSLExpression x, PositionInfo pos = PositionInfo::Capture());
 
 /**
  * Returns x clamped to the range [0, 1]. If x is a vector, operates componentwise.

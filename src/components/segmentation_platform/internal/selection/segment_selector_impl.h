@@ -24,7 +24,6 @@ class SignalStorageConfig;
 
 namespace proto {
 class SegmentInfo;
-class SegmentationModelMetadata;
 }  // namespace proto
 
 class SegmentSelectorImpl : public SegmentSelector {
@@ -32,17 +31,13 @@ class SegmentSelectorImpl : public SegmentSelector {
   SegmentSelectorImpl(SegmentInfoDatabase* segment_database,
                       SignalStorageConfig* signal_storage_config,
                       SegmentationResultPrefs* result_prefs,
-                      Config* config,
+                      const Config* config,
                       base::Clock* clock);
 
   ~SegmentSelectorImpl() override;
 
   // SegmentSelector overrides.
-  void Initialize(base::OnceClosure callback) override;
   void GetSelectedSegment(SegmentSelectionCallback callback) override;
-  void GetSegmentScore(OptimizationTarget segment_id,
-                       SingleSegmentResultCallback callback) override;
-  void OnSegmentUsed(OptimizationTarget segment_id) override;
 
   // ModelExecutionScheduler::Observer overrides.
 
@@ -77,19 +72,6 @@ class SegmentSelectorImpl : public SegmentSelector {
   // the selection if the new result is unknown.
   void UpdateSelectedSegment(OptimizationTarget new_selection);
 
-  // Callback method used during initialization to read the model results into
-  // memory.
-  void ReadScoresFromLastSession(
-      base::OnceClosure callback,
-      std::vector<std::pair<OptimizationTarget, proto::SegmentInfo>>
-          all_segments);
-
-  // Helper method to convert continuous to discrete score.
-  int ConvertToDiscreteScore(OptimizationTarget segment_id,
-                             const std::string& mapping_key,
-                             float input_score,
-                             const proto::SegmentationModelMetadata& metadata);
-
   // The database storing metadata and results.
   SegmentInfoDatabase* segment_database_;
 
@@ -100,18 +82,14 @@ class SegmentSelectorImpl : public SegmentSelector {
   SegmentationResultPrefs* result_prefs_;
 
   // The config for providing configuration params.
-  Config* config_;
+  const Config* config_;
 
   // The time provider.
   base::Clock* clock_;
 
-  // These values are read from prefs or db on init and used for serving the
-  // clients in the current session.
+  // Segment selection result is read from prefs on init and used for serving
+  // the clients in the current session.
   SegmentSelectionResult selected_segment_last_session_;
-  std::map<OptimizationTarget, float> segment_score_last_session_;
-
-  // Whether the initialization is complete through an Initialize call.
-  bool initialized_;
 
   base::WeakPtrFactory<SegmentSelectorImpl> weak_ptr_factory_{this};
 };

@@ -21,6 +21,7 @@
 #include "fuzzers/tint_regex_fuzzer/cli.h"
 #include "fuzzers/tint_regex_fuzzer/override_cli_params.h"
 #include "fuzzers/tint_regex_fuzzer/wgsl_mutator.h"
+#include "fuzzers/transform_builder.h"
 #include "src/reader/wgsl/parser.h"
 #include "src/writer/wgsl/generator.h"
 
@@ -37,6 +38,7 @@ enum class MutationKind {
   kDuplicateInterval,
   kReplaceIdentifier,
   kReplaceLiteral,
+  kInsertReturnStatement,
   kNumMutationKinds
 };
 
@@ -59,10 +61,10 @@ extern "C" size_t LLVMFuzzerCustomMutator(uint8_t* data,
   RandomGenerator generator(seed);
 
   std::string delimiter =
-      delimiters[generator.GetUInt64(delimiters.size() - 1u)];
+      delimiters[generator.GetUInt32(static_cast<uint32_t>(delimiters.size()))];
 
-  MutationKind mutation_kind = static_cast<MutationKind>(generator.GetUInt64(
-      static_cast<size_t>(MutationKind::kNumMutationKinds) - 1u));
+  MutationKind mutation_kind = static_cast<MutationKind>(generator.GetUInt32(
+      static_cast<uint32_t>(MutationKind::kNumMutationKinds)));
 
   switch (mutation_kind) {
     case MutationKind::kSwapIntervals:
@@ -91,6 +93,12 @@ extern "C" size_t LLVMFuzzerCustomMutator(uint8_t* data,
 
     case MutationKind::kReplaceLiteral:
       if (!ReplaceRandomIntLiteral(wgsl_code, generator)) {
+        return 0;
+      }
+      break;
+
+    case MutationKind::kInsertReturnStatement:
+      if (!InsertReturnStatement(wgsl_code, generator)) {
         return 0;
       }
       break;
@@ -130,13 +138,12 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       continue;
     }
 
-    transform::Manager transform_manager;
-    transform::DataMap transform_inputs;
-    transform_manager.Add<transform::Robustness>();
+    TransformBuilder tb(data, size);
+    tb.AddTransform<tint::transform::Robustness>();
 
     CommonFuzzer fuzzer(InputFormat::kWGSL, target.output_format);
     fuzzer.EnableInspector();
-    fuzzer.SetTransformManager(&transform_manager, std::move(transform_inputs));
+    fuzzer.SetTransformManager(tb.manager(), tb.data_map());
 
     fuzzer.Run(data, size);
   }

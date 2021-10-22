@@ -221,6 +221,10 @@ class CreatedObserver : public content::DownloadManager::Observer {
         waiting_(false) {
     manager->AddObserver(this);
   }
+
+  CreatedObserver(const CreatedObserver&) = delete;
+  CreatedObserver& operator=(const CreatedObserver&) = delete;
+
   ~CreatedObserver() override {
     if (manager_)
       manager_->RemoveObserver(this);
@@ -246,13 +250,15 @@ class CreatedObserver : public content::DownloadManager::Observer {
 
   content::DownloadManager* manager_;
   bool waiting_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreatedObserver);
 };
 
 class OnCanDownloadDecidedObserver {
  public:
   OnCanDownloadDecidedObserver() = default;
+
+  OnCanDownloadDecidedObserver(const OnCanDownloadDecidedObserver&) = delete;
+  OnCanDownloadDecidedObserver& operator=(const OnCanDownloadDecidedObserver&) =
+      delete;
 
   void WaitForNumberOfDecisions(size_t expected_num_of_decisions) {
     if (expected_num_of_decisions <= decisions_.size())
@@ -284,8 +290,6 @@ class OnCanDownloadDecidedObserver {
   std::vector<bool> decisions_;
   size_t expected_num_of_decisions_ = 0;
   base::OnceClosure completion_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(OnCanDownloadDecidedObserver);
 };
 
 class PercentWaiter : public download::DownloadItem::Observer {
@@ -293,6 +297,10 @@ class PercentWaiter : public download::DownloadItem::Observer {
   explicit PercentWaiter(DownloadItem* item) : item_(item) {
     item_->AddObserver(this);
   }
+
+  PercentWaiter(const PercentWaiter&) = delete;
+  PercentWaiter& operator=(const PercentWaiter&) = delete;
+
   ~PercentWaiter() override {
     if (item_)
       item_->RemoveObserver(this);
@@ -333,8 +341,6 @@ class PercentWaiter : public download::DownloadItem::Observer {
   bool waiting_ = false;
   bool error_ = false;
   int prev_percent_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(PercentWaiter);
 };
 
 // DownloadTestObserver subclass that observes one download until it transitions
@@ -352,6 +358,11 @@ class DownloadTestObserverResumable : public content::DownloadTestObserver {
         transitions_left_(transition_count) {
     Init();
   }
+
+  DownloadTestObserverResumable(const DownloadTestObserverResumable&) = delete;
+  DownloadTestObserverResumable& operator=(
+      const DownloadTestObserverResumable&) = delete;
+
   ~DownloadTestObserverResumable() override {}
 
  private:
@@ -365,8 +376,6 @@ class DownloadTestObserverResumable : public content::DownloadTestObserver {
 
   bool was_previously_resumable_;
   size_t transitions_left_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadTestObserverResumable);
 };
 
 // IDs and paths of CRX files used in tests.
@@ -385,6 +394,10 @@ class DownloadsHistoryDataCollector {
   explicit DownloadsHistoryDataCollector(Profile* profile)
       : profile_(profile) {}
 
+  DownloadsHistoryDataCollector(const DownloadsHistoryDataCollector&) = delete;
+  DownloadsHistoryDataCollector& operator=(
+      const DownloadsHistoryDataCollector&) = delete;
+
   std::vector<history::DownloadRow> WaitForDownloadInfo() {
     std::vector<history::DownloadRow> results;
     HistoryServiceFactory::GetForProfile(profile_,
@@ -401,8 +414,6 @@ class DownloadsHistoryDataCollector {
 
  private:
   Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadsHistoryDataCollector);
 };
 
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
@@ -539,6 +550,9 @@ class HistoryObserver : public DownloadHistory::Observer {
         ->AddObserver(this);
   }
 
+  HistoryObserver(const HistoryObserver&) = delete;
+  HistoryObserver& operator=(const HistoryObserver&) = delete;
+
   ~HistoryObserver() override {
     DownloadCoreService* service =
         DownloadCoreServiceFactory::GetForBrowserContext(profile_);
@@ -571,8 +585,6 @@ class HistoryObserver : public DownloadHistory::Observer {
   Profile* profile_;
   bool waiting_ = false;
   bool seen_stored_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryObserver);
 };
 
 class DownloadTest : public InProcessBrowserTest {
@@ -1332,6 +1344,9 @@ class FakeSafeBrowsingService : public safe_browsing::TestSafeBrowsingService {
  public:
   FakeSafeBrowsingService() : TestSafeBrowsingService() {}
 
+  FakeSafeBrowsingService(const FakeSafeBrowsingService&) = delete;
+  FakeSafeBrowsingService& operator=(const FakeSafeBrowsingService&) = delete;
+
  protected:
   ~FakeSafeBrowsingService() override {}
 
@@ -1341,9 +1356,6 @@ class FakeSafeBrowsingService : public safe_browsing::TestSafeBrowsingService {
       override {
     return new FakeDownloadProtectionService();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
 };
 
 // Factory that creates FakeSafeBrowsingService instances.
@@ -1392,6 +1404,9 @@ class DownloadWakeLockTest : public DownloadTest {
  public:
   DownloadWakeLockTest() = default;
 
+  DownloadWakeLockTest(const DownloadWakeLockTest&) = delete;
+  DownloadWakeLockTest& operator=(const DownloadWakeLockTest&) = delete;
+
   void Initialize() {
     content::GetDeviceService().BindWakeLockProvider(
         wake_lock_provider_.BindNewPipeAndPassReceiver());
@@ -1415,7 +1430,6 @@ class DownloadWakeLockTest : public DownloadTest {
 
  protected:
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider_;
-  DISALLOW_COPY_AND_ASSIGN(DownloadWakeLockTest);
 };
 
 }  // namespace
@@ -3348,7 +3362,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   ASSERT_EQ(jpeg_url, download_items[1]->GetOriginalUrl());
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadErrorsServer) {
+// TODO(crbug.com/1249757): Flaky on Windows 7.
+#if defined(OS_WIN)
+#define MAYBE_DownloadErrorsServer DISABLED_DownloadErrorsServer
+#else
+#define MAYBE_DownloadErrorsServer DownloadErrorsServer
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadErrorsServer) {
   DownloadInfo download_info[] = {
       {// Normal navigated download.
        "a_zip_file.zip", "a_zip_file.zip", DOWNLOAD_NAVIGATE,
@@ -4177,7 +4197,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
         (index == 0 ? std::string(".zip") :
                       base::StringPrintf(" (%d).zip", index)),
               target_path.BaseName().AsUTF8Unsafe());
-    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::PathExists(target_path));
     ASSERT_TRUE(VerifyFile(target_path, origin_contents,
                            origin_contents.size()));

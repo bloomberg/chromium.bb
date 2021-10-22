@@ -15,6 +15,7 @@
 #include "libANGLE/Surface.h"
 #include "libANGLE/renderer/driver_utils.h"
 #include "libANGLE/renderer/glslang_wrapper_utils.h"
+#include "libANGLE/renderer/metal/CompilerMtl.h"
 #include "libANGLE/renderer/metal/ContextMtl.h"
 #include "libANGLE/renderer/metal/DeviceMtl.h"
 #include "libANGLE/renderer/metal/IOSurfaceSurfaceMtl.h"
@@ -136,8 +137,7 @@ angle::Result DisplayMtl::initializeImpl(egl::Display *display)
 {
     ANGLE_MTL_OBJC_SCOPE
     {
-        mMetalDevice =
-            [getMetalDeviceMatchingAttribute(display->getAttributeMap()) ANGLE_MTL_AUTORELEASE];
+        mMetalDevice = getMetalDeviceMatchingAttribute(display->getAttributeMap());
         // If we can't create a device, fail initialization.
         if (!mMetalDevice.get())
         {
@@ -228,14 +228,15 @@ DeviceImpl *DisplayMtl::createDevice()
     return new DeviceMtl();
 }
 
-id<MTLDevice> DisplayMtl::getMetalDeviceMatchingAttribute(const egl::AttributeMap &attribs)
+mtl::AutoObjCPtr<id<MTLDevice>> DisplayMtl::getMetalDeviceMatchingAttribute(
+    const egl::AttributeMap &attribs)
 {
 #if defined(ANGLE_PLATFORM_MACOS) || defined(ANGLE_PLATFORM_MACCATALYST)
     const std::string anglePreferredDevice = angle::GetEnvironmentVar(kANGLEPreferredDeviceEnv);
-    NSArray<id<MTLDevice>> *deviceList     = MTLCopyAllDevices();
+    auto deviceList                        = mtl::adoptObjCObj(MTLCopyAllDevices());
     if (anglePreferredDevice != "")
     {
-        for (id<MTLDevice> device in deviceList)
+        for (id<MTLDevice> device in deviceList.get())
         {
             if ([device.name.lowercaseString
                     containsString:[NSString stringWithUTF8String:anglePreferredDevice.c_str()]
@@ -255,7 +256,7 @@ id<MTLDevice> DisplayMtl::getMetalDeviceMatchingAttribute(const egl::AttributeMa
 #endif
     // If we can't find anything, or are on a platform that doesn't support power options, create a
     // default device.
-    return MTLCreateSystemDefaultDevice();
+    return mtl::adoptObjCObj(MTLCreateSystemDefaultDevice());
 }
 
 egl::Error DisplayMtl::waitClient(const gl::Context *context)
@@ -360,12 +361,13 @@ ExternalImageSiblingImpl *DisplayMtl::createExternalImageSibling(const gl::Conte
 
 gl::Version DisplayMtl::getMaxSupportedESVersion() const
 {
-    // NOTE(hqle): Supports GLES 3.0 on iOS GPU Family 4+ for now.
-#if TARGET_OS_SIMULATOR  // Simulator should be able to support ES3, despite not supporting iOS GPU
-                         // Family 4 in its entirety.
+#if TARGET_OS_SIMULATOR
+    // Simulator should be able to support ES3, despite not supporting iOS GPU
+    // Family 3 in its entirety.
+    // FIXME: None of the feature conditions are checked for simulator support.
     return gl::Version(3, 0);
 #else
-    if (supportsEitherGPUFamily(4, 1))
+    if (supportsEitherGPUFamily(3, 1))
     {
         return mtl::kMaxSupportedGLVersion;
     }
@@ -398,12 +400,12 @@ egl::Error DisplayMtl::makeCurrent(egl::Display *display,
 
 void DisplayMtl::generateExtensions(egl::DisplayExtensions *outExtensions) const
 {
-    outExtensions->flexibleSurfaceCompatibility = true;
-    outExtensions->iosurfaceClientBuffer        = true;
-    outExtensions->surfacelessContext           = true;
-    outExtensions->displayTextureShareGroup     = true;
-    outExtensions->displaySemaphoreShareGroup   = true;
-    outExtensions->mtlTextureClientBuffer       = true;
+    outExtensions->iosurfaceClientBuffer      = true;
+    outExtensions->surfacelessContext         = true;
+    outExtensions->noConfigContext            = true;
+    outExtensions->displayTextureShareGroup   = true;
+    outExtensions->displaySemaphoreShareGroup = true;
+    outExtensions->mtlTextureClientBuffer     = true;
 
     if (mFeatures.hasEvents.enabled)
     {
@@ -415,8 +417,8 @@ void DisplayMtl::generateExtensions(egl::DisplayExtensions *outExtensions) const
     // Note that robust resource initialization is not yet implemented. We only expose
     // this extension so that ANGLE can be initialized in Chrome. WebGL will fail to use
     // this extension (anglebug.com/4929)
-    outExtensions->robustResourceInitialization = true;
-    outExtensions->powerPreference              = true;
+    outExtensions->robustResourceInitializationANGLE = true;
+    outExtensions->powerPreference                   = true;
 
     // EGL_KHR_image
     outExtensions->image     = true;
@@ -428,6 +430,16 @@ void DisplayMtl::generateCaps(egl::Caps *outCaps) const {}
 void DisplayMtl::populateFeatureList(angle::FeatureList *features)
 {
     mFeatures.populateFeatureList(features);
+}
+
+EGLenum DisplayMtl::EGLDrawingBufferTextureTarget()
+{
+    // TODO(anglebug.com/6395): Apple's implementation conditionalized this on
+    // MacCatalyst and whether it was running on ARM64 or X64, preferring
+    // EGL_TEXTURE_RECTANGLE_ANGLE. Metal can bind IOSurfaces to regular 2D
+    // textures, and rectangular textures don't work in the SPIR-V Metal
+    // backend, so for the time being use EGL_TEXTURE_2D on all platforms.
+    return EGL_TEXTURE_2D;
 }
 
 egl::ConfigSet DisplayMtl::generateConfigs()
@@ -453,7 +465,7 @@ egl::ConfigSet DisplayMtl::generateConfigs()
     config.transparentType = EGL_NONE;
 
     // Pbuffer
-    config.bindToTextureTarget = EGL_TEXTURE_2D;
+    config.bindToTextureTarget = EGLDrawingBufferTextureTarget();
     config.maxPBufferWidth     = 4096;
     config.maxPBufferHeight    = 4096;
     config.maxPBufferPixels    = 4096 * 4096;
@@ -646,8 +658,16 @@ void DisplayMtl::ensureCapsInitialized() const
     // NOTE(hqle): Metal has some problems drawing big point size even though
     // Metal-Feature-Set-Tables.pdf says that max supported point size is 511. We limit it to 64
     // for now. http://anglebug.com/4816
-    mNativeCaps.maxAliasedPointSize = 64;
 
+    // NOTE(kpiddington): This seems to be fixed in macOS Monterey
+    if (ANGLE_APPLE_AVAILABLE_XCI(12.0, 15.0, 15.0))
+    {
+        mNativeCaps.maxAliasedPointSize = 511;
+    }
+    else
+    {
+        mNativeCaps.maxAliasedPointSize = 64;
+    }
     mNativeCaps.minAliasedLineWidth = 1.0f;
     mNativeCaps.maxAliasedLineWidth = 1.0f;
 
@@ -723,7 +743,17 @@ void DisplayMtl::ensureCapsInitialized() const
     // Fill in additional limits for UBOs and SSBOs.
     mNativeCaps.maxUniformBufferBindings = mNativeCaps.maxCombinedUniformBlocks;
     mNativeCaps.maxUniformBlockSize      = mtl::kMaxUBOSize;  // Default according to GLES 3.0 spec.
-    mNativeCaps.uniformBufferOffsetAlignment = 1;
+    if (supportsAppleGPUFamily(1))
+    {
+        mNativeCaps.uniformBufferOffsetAlignment =
+            16;  // on Apple based GPU's We can ignore data types when setting constant buffer
+                 // alignment at 16.
+    }
+    else
+    {
+        mNativeCaps.uniformBufferOffsetAlignment =
+            256;  // constant buffers on all other GPUs must be aligned to 256.
+    }
 
     mNativeCaps.maxShaderStorageBufferBindings     = 0;
     mNativeCaps.maxShaderStorageBlockSize          = 0;
@@ -750,7 +780,7 @@ void DisplayMtl::ensureCapsInitialized() const
     mNativeCaps.programBinaryFormats.push_back(GL_PROGRAM_BINARY_ANGLE);
 
     // GL_APPLE_clip_distance
-    mNativeCaps.maxClipDistances = 8;
+    mNativeCaps.maxClipDistances = mFeatures.directMetalGeneration.enabled ? 0 : 8;
 
     // Metal doesn't support GL_TEXTURE_COMPARE_MODE=GL_NONE for shadow samplers
     mNativeLimitations.noShadowSamplerCompareModeNone = true;
@@ -780,30 +810,36 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions = gl::Extensions();
 
     // Enable this for simple buffer readback testing, but some functionality is missing.
-    // NOTE(hqle): Support full mapBufferRange extension.
-    mNativeExtensions.mapBufferOES           = true;
-    mNativeExtensions.mapBufferRange         = true;
-    mNativeExtensions.textureStorage         = true;
-    mNativeExtensions.drawBuffers            = true;
-    mNativeExtensions.drawBuffersIndexedEXT  = true;
-    mNativeExtensions.drawBuffersIndexedOES  = true;
-    mNativeExtensions.fragDepth              = true;
-    mNativeExtensions.framebufferBlitANGLE   = true;
-    mNativeExtensions.framebufferBlitNV      = true;
-    mNativeExtensions.framebufferMultisample = true;
-    mNativeExtensions.copyTexture            = true;
-    mNativeExtensions.copyCompressedTexture  = false;
+    // NOTE(hqle): Support full mapBufferRangeEXT extension.
+    mNativeExtensions.mapbufferOES                  = true;
+    mNativeExtensions.mapBufferRangeEXT             = true;
+    mNativeExtensions.textureStorageEXT             = true;
+    mNativeExtensions.drawBuffersEXT                = true;
+    mNativeExtensions.drawBuffersIndexedEXT         = true;
+    mNativeExtensions.drawBuffersIndexedOES         = true;
+    mNativeExtensions.fragDepthEXT                  = true;
+    mNativeExtensions.framebufferBlitANGLE          = true;
+    mNativeExtensions.framebufferBlitNV             = true;
+    mNativeExtensions.framebufferMultisampleANGLE   = true;
+    mNativeExtensions.copyTextureCHROMIUM           = true;
+    mNativeExtensions.copyCompressedTextureCHROMIUM = false;
 
     // EXT_debug_marker is not implemented yet, but the entry points must be exposed for the
     // Metal backend to be used in Chrome (http://anglebug.com/4946)
-    mNativeExtensions.debugMarker = true;
+    mNativeExtensions.debugMarkerEXT = true;
 
-    mNativeExtensions.robustness             = true;
-    mNativeExtensions.textureBorderClampOES  = false;  // not implemented yet
-    mNativeExtensions.translatedShaderSource = true;
-    mNativeExtensions.discardFramebuffer     = true;
+    mNativeExtensions.robustnessEXT               = true;
+    mNativeExtensions.textureBorderClampOES       = false;  // not implemented yet
+    mNativeExtensions.translatedShaderSourceANGLE = true;
+    mNativeExtensions.discardFramebufferEXT       = true;
+    // TODO(anglebug.com/6395): Apple's implementation exposed
+    // mNativeExtensions.textureRectangle = true here and
+    // EGL_TEXTURE_RECTANGLE_ANGLE as the eglBindTexImage texture target on
+    // macOS. This no longer seems necessary as IOSurfaces can be bound to
+    // regular 2D textures with Metal, and causes other problems such as
+    // breaking the SPIR-V Metal compiler.
 
-    // TODO(anglebug.com/5505): figure out why WebGL drawing buffer
+    // TODO(anglebug.com/6395): figure out why WebGL drawing buffer
     // creation fails on macOS when the Metal backend advertises the
     // EXT_multisampled_render_to_texture extension.
 #if !defined(ANGLE_PLATFORM_MACOS)
@@ -811,41 +847,41 @@ void DisplayMtl::initializeExtensions() const
     if (mFeatures.allowMultisampleStoreAndResolve.enabled &&
         mFeatures.hasDepthAutoResolve.enabled && mFeatures.hasStencilAutoResolve.enabled)
     {
-        mNativeExtensions.multisampledRenderToTexture = true;
+        mNativeExtensions.multisampledRenderToTextureEXT = true;
     }
 #endif
 
     // Enable EXT_blend_minmax
-    mNativeExtensions.blendMinMax = true;
+    mNativeExtensions.blendMinmaxEXT = true;
 
-    mNativeExtensions.eglImageOES         = true;
-    mNativeExtensions.eglImageExternalOES = false;
+    mNativeExtensions.EGLImageOES         = true;
+    mNativeExtensions.EGLImageExternalOES = false;
     // NOTE(hqle): Support GL_OES_EGL_image_external_essl3.
-    mNativeExtensions.eglImageExternalEssl3OES = false;
+    mNativeExtensions.EGLImageExternalEssl3OES = false;
 
-    mNativeExtensions.memoryObject   = false;
-    mNativeExtensions.memoryObjectFd = false;
+    mNativeExtensions.memoryObjectEXT   = false;
+    mNativeExtensions.memoryObjectFdEXT = false;
 
-    mNativeExtensions.semaphore   = false;
-    mNativeExtensions.semaphoreFd = false;
+    mNativeExtensions.semaphoreEXT   = false;
+    mNativeExtensions.semaphoreFdEXT = false;
 
     mNativeExtensions.instancedArraysANGLE = mFeatures.hasBaseVertexInstancedDraw.enabled;
     mNativeExtensions.instancedArraysEXT   = mNativeExtensions.instancedArraysANGLE;
 
-    mNativeExtensions.robustBufferAccessBehavior = false;
+    mNativeExtensions.robustBufferAccessBehaviorKHR = false;
 
-    mNativeExtensions.eglSyncOES = false;
+    mNativeExtensions.EGLSyncOES = false;
 
-    mNativeExtensions.occlusionQueryBoolean = true;
+    mNativeExtensions.occlusionQueryBooleanEXT = true;
 
-    mNativeExtensions.disjointTimerQuery          = false;
-    mNativeExtensions.queryCounterBitsTimeElapsed = false;
-    mNativeExtensions.queryCounterBitsTimestamp   = false;
+    mNativeExtensions.disjointTimerQueryEXT = false;
+    mNativeCaps.queryCounterBitsTimeElapsed = 0;
+    mNativeCaps.queryCounterBitsTimestamp   = 0;
 
-    mNativeExtensions.textureFilterAnisotropic = true;
-    mNativeExtensions.maxTextureAnisotropy     = 16;
+    mNativeExtensions.textureFilterAnisotropicEXT = true;
+    mNativeCaps.maxTextureAnisotropy              = 16;
 
-    mNativeExtensions.textureNPOTOES = true;
+    mNativeExtensions.textureNpotOES = true;
 
     mNativeExtensions.texture3DOES = true;
 
@@ -857,7 +893,7 @@ void DisplayMtl::initializeExtensions() const
     mNativeExtensions.getProgramBinaryOES = true;
 
     // GL_APPLE_clip_distance
-    mNativeExtensions.clipDistanceAPPLE = true;
+    mNativeExtensions.clipDistanceAPPLE = !mFeatures.directMetalGeneration.enabled;
 
     // GL_NV_pixel_buffer_object
     mNativeExtensions.pixelBufferObjectNV = true;
@@ -870,7 +906,10 @@ void DisplayMtl::initializeExtensions() const
         mNativeExtensions.fenceNV = true;
 
         // GL_OES_EGL_sync
-        mNativeExtensions.eglSyncOES = true;
+        mNativeExtensions.EGLSyncOES = true;
+
+        // GL_ARB_sync
+        mNativeExtensions.syncARB = true;
     }
 }
 
@@ -889,7 +928,7 @@ void DisplayMtl::initializeTextureCaps() const
     // emulated.
     if (supportsAppleGPUFamily(1) && gl::DetermineCompressedTextureETCSupport(mNativeTextureCaps))
     {
-        mNativeExtensions.compressedTextureETC = true;
+        mNativeExtensions.compressedTextureEtcANGLE = true;
     }
     else
     {
@@ -897,22 +936,22 @@ void DisplayMtl::initializeTextureCaps() const
     }
 
     // Enable ASTC sliced 3D, requires MTLGPUFamilyApple3
-    if (supportsAppleGPUFamily(3) && mNativeExtensions.textureCompressionASTCLDRKHR)
+    if (supportsAppleGPUFamily(3) && mNativeExtensions.textureCompressionAstcLdrKHR)
     {
-        mNativeExtensions.textureCompressionSliced3dASTCKHR = true;
+        mNativeExtensions.textureCompressionAstcSliced3dKHR = true;
     }
 
     // Enable ASTC HDR, requires MTLGPUFamilyApple6
-    if (supportsAppleGPUFamily(6) && mNativeExtensions.textureCompressionASTCLDRKHR)
+    if (supportsAppleGPUFamily(6) && mNativeExtensions.textureCompressionAstcLdrKHR)
     {
-        mNativeExtensions.textureCompressionASTCHDRKHR = true;
+        mNativeExtensions.textureCompressionAstcHdrKHR = true;
     }
 
     // Disable all depth buffer and stencil buffer readback extensions until we need them
     mNativeExtensions.readDepthNV         = false;
     mNativeExtensions.readStencilNV       = false;
     mNativeExtensions.depthBufferFloat2NV = false;
-    mNativeExtensions.textureCompressionASTCLDRKHR &= supportsAppleGPUFamily(2);
+    mNativeExtensions.textureCompressionAstcLdrKHR &= supportsAppleGPUFamily(2);
 }
 
 void DisplayMtl::initializeLimitations()
@@ -987,12 +1026,15 @@ void DisplayMtl::initializeFeatures()
     ANGLE_FEATURE_CONDITION((&mFeatures), rewriteRowMajorMatrices, true);
     ANGLE_FEATURE_CONDITION((&mFeatures), emulateTransformFeedback, true);
 
+    ANGLE_FEATURE_CONDITION((&mFeatures), intelExplicitBoolCastWorkaround,
+                            isIntel() && GetMacOSVersion() < OSVersion(11, 0, 0));
+    ANGLE_FEATURE_CONDITION((&mFeatures), intelDisableFastMath,
+                            isIntel() && GetMacOSVersion() < OSVersion(12, 0, 0));
+
     ANGLE_FEATURE_CONDITION((&mFeatures), forceNonCSBaseMipmapGeneration, isIntel());
 
     bool defaultDirectToMetal = true;
-#if ANGLE_ENABLE_METAL_SPIRV
-    defaultDirectToMetal = false;
-#endif
+
     ANGLE_FEATURE_CONDITION((&mFeatures), directMetalGeneration, defaultDirectToMetal);
 
     angle::PlatformMethods *platform = ANGLEPlatformCurrent();
@@ -1010,22 +1052,16 @@ angle::Result DisplayMtl::initializeShaderLibrary()
 #ifdef ANGLE_METAL_XCODE_BUILDS_SHADERS
     mDefaultShadersAsyncInfo.reset(new DefaultShaderAsyncInfoMtl);
 
-    NSString *path = [NSBundle bundleWithIdentifier:@"com.apple.WebKit"].bundlePath;
-    NSError *error = nullptr;
-    mDefaultShadersAsyncInfo->defaultShaders =
-        [getMetalDevice() newDefaultLibraryWithBundle:[NSBundle bundleWithPath:path] error:&error];
-
-    if (error && !mDefaultShadersAsyncInfo->defaultShaders)
-    {
-        ANGLE_MTL_OBJC_SCOPE
-        {
-            ERR() << "Internal error: newDefaultLibraryWithBundle failed. "
-                  << error.localizedDescription.UTF8String;
-        }
-        mDefaultShadersAsyncInfo->defaultShadersCompileError = std::move(error);
-        return angle::Result::Stop;
-    }
-    mDefaultShadersAsyncInfo->compiled = true;
+    const uint8_t *compiled_shader_binary;
+    size_t compiled_shader_binary_len;
+    compiled_shader_binary                           = gMetalBinaryShaders;
+    compiled_shader_binary_len                       = gMetalBinaryShaders_len;
+    mtl::AutoObjCPtr<NSError *> err                  = nil;
+    mtl::AutoObjCPtr<id<MTLLibrary>> mDefaultShaders = mtl::CreateShaderLibraryFromBinary(
+        getMetalDevice(), compiled_shader_binary, compiled_shader_binary_len, &err);
+    mDefaultShadersAsyncInfo->defaultShaders             = std::move(mDefaultShaders.get());
+    mDefaultShadersAsyncInfo->defaultShadersCompileError = std::move(err.get());
+    mDefaultShadersAsyncInfo->compiled                   = true;
 
 #else
     mDefaultShadersAsyncInfo.reset(new DefaultShaderAsyncInfoMtl);
@@ -1267,13 +1303,14 @@ mtl::AutoObjCObj<MTLSharedEventListener> DisplayMtl::getOrCreateSharedEventListe
         ANGLE_MTL_OBJC_SCOPE
         {
             mSharedEventListener = [[[MTLSharedEventListener alloc] init] ANGLE_MTL_AUTORELEASE];
+            ASSERT(mSharedEventListener);  // Failure here most probably means a sandbox issue.
         }
     }
     return mSharedEventListener;
 }
 #endif
 
-bool DisplayMtl::useDirectToMetalCompiler()
+bool DisplayMtl::useDirectToMetalCompiler() const
 {
     return mFeatures.directMetalGeneration.enabled;
 }

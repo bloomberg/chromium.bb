@@ -249,10 +249,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static uint64_t get_sbad(AVMotionEstContext *me_ctx, int x, int y, int x_mv, int y_mv)
@@ -1245,7 +1242,6 @@ static const AVFilterPad minterpolate_inputs[] = {
         .filter_frame  = filter_frame,
         .config_props  = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad minterpolate_outputs[] = {
@@ -1254,7 +1250,6 @@ static const AVFilterPad minterpolate_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_minterpolate = {
@@ -1264,6 +1259,6 @@ const AVFilter ff_vf_minterpolate = {
     .priv_class    = &minterpolate_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = minterpolate_inputs,
-    .outputs       = minterpolate_outputs,
+    FILTER_INPUTS(minterpolate_inputs),
+    FILTER_OUTPUTS(minterpolate_outputs),
 };

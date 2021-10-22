@@ -51,6 +51,7 @@
 <translation id="2289270750774289114">Nachfragen, wenn eine Website nach Bluetooth-Geräten in der Nähe suchen möchte (empfohlen)</translation>
 <translation id="2315043854645842844">Die clientseitige Zertifikatauswahl wird vom Betriebssystem nicht unterstützt.</translation>
 <translation id="2359808026110333948">Weiter</translation>
+<translation id="2379925928934107488">Sofern möglich, dunkles Design auf Websites anwenden, wenn Chrome das dunkle Design verwendet</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> und <ph name="NUM_MORE" /> weitere zugelassen}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> und <ph name="NUM_MORE" /> weitere zugelassen}}</translation>
 <translation id="2434158240863470628">Download abgeschlossen <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -63,6 +64,7 @@
 <translation id="2570922361219980984">Der Standortzugriff ist für dieses Gerät ebenfalls deaktiviert. Sie können ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="257931822824936280">Maximiert – zum Minimieren klicken</translation>
 <translation id="2586657967955657006">Zwischenablage</translation>
+<translation id="2597457036804169544">Dunkles Design nicht auf Websites anwenden</translation>
 <translation id="2621115761605608342">JavaScript für eine bestimmte Website zulassen.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2677748264148917807">Verlassen</translation>
@@ -101,6 +103,7 @@
 <translation id="3600792891314830896">Websites stummschalten, die Ton wiedergeben</translation>
 <translation id="3744111561329211289">Hintergrundsynchronisierung</translation>
 <translation id="3763247130972274048">Tippen Sie links oder rechts im Video doppelt, um 10 s zu überspringen</translation>
+<translation id="3797520601150691162">Dunkles Design auf eine bestimmte Website nicht anwenden</translation>
 <translation id="381841723434055211">Telefonnummern</translation>
 <translation id="3835233591525155343">Meine Gerätenutzung</translation>
 <translation id="385051799172605136">Zurück</translation>
@@ -113,6 +116,7 @@
 <translation id="4008040567710660924">Cookies für eine bestimmte Website werden zugelassen.</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4165986682804962316">Website-Einstellungen</translation>
+<translation id="4176463684765177261">Deaktiviert</translation>
 <translation id="4200726100658658164">Standorteinstellungen öffnen</translation>
 <translation id="4226663524361240545">Bei Benachrichtigungen kann das Gerät vibrieren</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
@@ -166,6 +170,7 @@
 <translation id="5505264765875738116">Websites können nicht fragen, ob Sie Benachrichtigungen erhalten möchten</translation>
 <translation id="5516455585884385570">Benachrichtigungseinstellungen öffnen</translation>
 <translation id="5527111080432883924">Nachfragen, bevor einer Website erlaubt wird, Texte und Bilder aus der Zwischenablage abzurufen (empfohlen)</translation>
+<translation id="5553374991681107062">Letzte</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5596627076506792578">Weitere Optionen</translation>
 <translation id="5649053991847567735">Auto-Downloads</translation>
@@ -180,6 +185,7 @@
 <translation id="5876056640971328065">Video anhalten</translation>
 <translation id="5887687176710214216">Gestern zuletzt besucht</translation>
 <translation id="5916664084637901428">An</translation>
+<translation id="59174027418879706">Aktiviert</translation>
 <translation id="5922853908706496913">Bildschirmfreigabe läuft</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5975083100439434680">Verkleinern</translation>
@@ -196,6 +202,7 @@
 <translation id="6196640612572343990">Drittanbieter-Cookies blockieren</translation>
 <translation id="6216432067784365534">Optionen für <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">„<ph name="APP_NAME" />“ deinstallieren?</translation>
+<translation id="6233545266937675277">Desktopversion von Websites anfordern</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> und <ph name="PERMISSION_2" /> blockiert</translation>
 <translation id="6270391203985052864">Websites können fragen, ob Sie Benachrichtigungen erhalten möchten</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
@@ -209,6 +216,7 @@
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> und <ph name="NUM_MORE" /> weitere blockiert}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> und <ph name="NUM_MORE" /> weitere blockiert}}</translation>
 <translation id="6554732001434021288">Vor <ph name="NUM_DAYS" /> Tagen zuletzt besucht</translation>
 <translation id="6561560012278703671">Ein Symbol in der Adressleiste einblenden (störende Aufforderungen zum Annehmen von Benachrichtigungen werden blockiert)</translation>
+<translation id="6593061639179217415">Desktopwebsite</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> GB</translation>
 <translation id="6612358246767739896">Geschützte Inhalte</translation>
 <translation id="662080504995468778">Bleiben</translation>
@@ -240,6 +248,7 @@
 <translation id="7302486331832100261">Normalerweise blockieren Sie Benachrichtigungen. Sie können auf Details tippen, um sie zuzulassen.</translation>
 <translation id="7423098979219808738">Zuerst fragen</translation>
 <translation id="7423538860840206698">Es dürfen keine Dateien aus der Zwischenablage abgerufen werden</translation>
+<translation id="7425915948813553151">Dunkles Design für Websites</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Eine Website verwendet Ihr Mikrofon</translation>
 <translation id="7561196759112975576">Immer</translation>
@@ -263,6 +272,7 @@
 <translation id="7999064672810608036">Möchten Sie wirklich alle lokalen Daten einschließlich Cookies löschen und alle Berechtigungen für diese Website zurücksetzen?</translation>
 <translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
+<translation id="8042586301629853791">Sortieren nach:</translation>
 <translation id="8067883171444229417">Video ansehen</translation>
 <translation id="8068648041423924542">Zertifikat kann nicht ausgewählt werden.</translation>
 <translation id="8087000398470557479">Dieser Inhalt ist von <ph name="DOMAIN_NAME" /> und wurde von Google bereitgestellt.</translation>
@@ -276,6 +286,7 @@
 <translation id="8211406090763984747">Verbindung ist sicher</translation>
 <translation id="8249310407154411074">Ganz nach oben</translation>
 <translation id="8261506727792406068">Löschen</translation>
+<translation id="8267092878336850213">Mobile Version von Websites anfordern</translation>
 <translation id="8300705686683892304">Von App verwaltet</translation>
 <translation id="8324158725704657629">Nicht mehr fragen</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>

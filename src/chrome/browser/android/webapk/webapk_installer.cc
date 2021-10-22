@@ -69,6 +69,9 @@ constexpr int kWebApkDownloadUrlTimeoutMs = 60000;
 
 class CacheClearer : public content::BrowsingDataRemover::Observer {
  public:
+  CacheClearer(const CacheClearer&) = delete;
+  CacheClearer& operator=(const CacheClearer&) = delete;
+
   ~CacheClearer() override { remover_->RemoveObserver(this); }
 
   // Clear Chrome's cache. Run |callback| once clearing the cache is complete.
@@ -96,8 +99,6 @@ class CacheClearer : public content::BrowsingDataRemover::Observer {
   content::BrowsingDataRemover* remover_;
 
   base::OnceClosure install_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CacheClearer);
 };
 
 // Reads |file| and returns contents. Must be called on a background thread.
@@ -465,7 +466,7 @@ void WebApkInstaller::SendRequest(
   DCHECK(server_url_.is_valid());
 
   timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(webapk_server_timeout_ms_),
+      FROM_HERE, base::Milliseconds(webapk_server_timeout_ms_),
       base::BindOnce(&WebApkInstaller::OnResult, weak_ptr_factory_.GetWeakPtr(),
                      WebApkInstallResult::FAILURE));
 

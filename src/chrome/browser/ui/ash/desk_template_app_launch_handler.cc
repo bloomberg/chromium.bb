@@ -11,8 +11,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/ash/full_restore/full_restore_app_launch_handler.h"
-#include "chrome/browser/ash/full_restore/full_restore_service.h"
+#include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
+#include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,30 +21,29 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "components/full_restore/restore_data.h"
-#include "components/full_restore/window_info.h"
+#include "components/app_restore/restore_data.h"
+#include "components/app_restore/window_info.h"
 #include "extensions/common/extension.h"
 
 namespace {
 
 // The restore data owned by this class will clear after being set. This is a
 // temporary estimate of how long it takes to launch apps.
-constexpr base::TimeDelta kClearRestoreDataDuration =
-    base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kClearRestoreDataDuration = base::Seconds(5);
 
 }  // namespace
 
 DeskTemplateAppLaunchHandler::DeskTemplateAppLaunchHandler(Profile* profile)
     : ash::AppLaunchHandler(profile) {
-  full_restore::DeskTemplateReadHandler::GetInstance()->SetDelegate(this);
+  app_restore::DeskTemplateReadHandler::GetInstance()->SetDelegate(this);
 }
 
 DeskTemplateAppLaunchHandler::~DeskTemplateAppLaunchHandler() {
-  full_restore::DeskTemplateReadHandler::GetInstance()->SetDelegate(nullptr);
+  app_restore::DeskTemplateReadHandler::GetInstance()->SetDelegate(nullptr);
 }
 
 void DeskTemplateAppLaunchHandler::SetRestoreDataAndLaunch(
-    std::unique_ptr<full_restore::RestoreData> new_restore_data) {
+    std::unique_ptr<app_restore::RestoreData> new_restore_data) {
   // Another desk template is underway.
   // TODO(sammiequon): Checking for `restore_data_clone_` is temporary. We will
   // want to use a better check of whether a desk template is underway. Perhaps
@@ -70,17 +69,17 @@ void DeskTemplateAppLaunchHandler::SetRestoreDataAndLaunch(
       kClearRestoreDataDuration);
 }
 
-std::unique_ptr<full_restore::WindowInfo>
+std::unique_ptr<app_restore::WindowInfo>
 DeskTemplateAppLaunchHandler::GetWindowInfo(int restore_window_id) {
   if (!restore_data_clone_)
     return nullptr;
 
   // Try to find the window info associated with `restore_window_id`.
-  const full_restore::RestoreData::AppIdToLaunchList& launch_list =
+  const app_restore::RestoreData::AppIdToLaunchList& launch_list =
       restore_data_clone_->app_id_to_launch_list();
   for (const auto& it : launch_list) {
     const std::string& app_id = it.first;
-    const full_restore::AppRestoreData* app_restore_data =
+    const app_restore::AppRestoreData* app_restore_data =
         restore_data_clone_->GetAppRestoreData(app_id, restore_window_id);
     if (app_restore_data)
       return app_restore_data->GetWindowInfo();
@@ -95,31 +94,9 @@ int32_t DeskTemplateAppLaunchHandler::FetchRestoreWindowId(
                              : 0;
 }
 
-bool DeskTemplateAppLaunchHandler::IsFullRestoreRunning() const {
-  ash::full_restore::FullRestoreService* full_restore_service =
-      ash::full_restore::FullRestoreService::GetForProfile(
-          const_cast<Profile*>(profile()));
-  if (!full_restore_service)
-    return false;
-  ash::full_restore::FullRestoreAppLaunchHandler*
-      full_restore_app_launch_handler =
-          full_restore_service->app_launch_handler();
-  DCHECK(full_restore_app_launch_handler);
-  base::TimeTicks full_restore_start_time =
-      full_restore_app_launch_handler->restore_start_time();
-
-  // Full restore has not started yet.
-  if (full_restore_start_time.is_null())
-    return false;
-
-  // We estimate that full restore is still running if it has been less than
-  // five seconds since it started.
-  return (base::TimeTicks::Now() - full_restore_start_time) <
-         kClearRestoreDataDuration;
-}
-
 bool DeskTemplateAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
-    const std::string& app_id) {
+    const std::string& app_id,
+    const app_restore::RestoreData::LaunchList& launch_list) {
   // Find out if the app can have multiple instances. Apps that can have
   // multiple instances are:
   //   1) System web apps which can open multiple windows
@@ -166,7 +143,7 @@ bool DeskTemplateAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
     return true;
 
   return ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
-      app_id);
+      app_id, launch_list);
 }
 
 void DeskTemplateAppLaunchHandler::OnExtensionLaunching(
@@ -190,7 +167,7 @@ void DeskTemplateAppLaunchHandler::LaunchBrowsers() {
       continue;
 
     for (const auto& window_iter : iter.second) {
-      const std::unique_ptr<full_restore::AppRestoreData>& app_restore_data =
+      const std::unique_ptr<app_restore::AppRestoreData>& app_restore_data =
           window_iter.second;
 
       absl::optional<std::vector<GURL>> urls = app_restore_data->urls;

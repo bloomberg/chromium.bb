@@ -236,10 +236,14 @@ namespace utils {
             // Block size of a multi-planar format depends on aspect.
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
 
+            // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:570): implement depth16unorm
+            case wgpu::TextureFormat::Depth16Unorm:
             case wgpu::TextureFormat::Undefined:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     uint32_t GetTextureFormatBlockWidth(wgpu::TextureFormat textureFormat) {
@@ -349,10 +353,14 @@ namespace utils {
             // Block size of a multi-planar format depends on aspect.
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
 
+            // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:570): implement depth16unorm
+            case wgpu::TextureFormat::Depth16Unorm:
             case wgpu::TextureFormat::Undefined:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     uint32_t GetTextureFormatBlockHeight(wgpu::TextureFormat textureFormat) {
@@ -462,10 +470,14 @@ namespace utils {
             // Block size of a multi-planar format depends on aspect.
             case wgpu::TextureFormat::R8BG8Biplanar420Unorm:
 
+            // TODO(dawn:666): implement stencil8
             case wgpu::TextureFormat::Stencil8:
+            // TODO(dawn:570): implement depth16unorm
+            case wgpu::TextureFormat::Depth16Unorm:
             case wgpu::TextureFormat::Undefined:
-                UNREACHABLE();
+                break;
         }
+        UNREACHABLE();
     }
 
     const char* GetWGSLColorTextureComponentType(wgpu::TextureFormat textureFormat) {

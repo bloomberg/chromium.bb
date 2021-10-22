@@ -34,6 +34,7 @@
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/test/stream_builder.h"
 #include "components/feed/core/v2/test/test_util.h"
+#include "components/feed/core/v2/types.h"
 #include "components/feed/core/v2/wire_response_translator.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_status_code.h"
@@ -151,7 +152,7 @@ class TestSurfaceBase : public FeedStreamSurface {
  private:
   std::string CurrentState();
 
-  bool IsInitialLoadSpinnerUpdate(const feedui::StreamUpdate& update);
+  bool IsInitialLoadSpinnerUpdate(const feedui::StreamUpdate& stream_update);
 
   // The stream if it was attached using the constructor.
   base::WeakPtr<FeedStream> stream_;
@@ -387,6 +388,7 @@ class TestMetricsReporter : public MetricsReporter {
                     bool loaded_new_content_from_network,
                     base::TimeDelta stored_content_age,
                     const ContentStats& content_stats,
+                    const RequestMetadata& request_metadata,
                     std::unique_ptr<LoadLatencyTimes> latencies) override;
   void OnLoadMoreBegin(const StreamType& stream_type,
                        SurfaceId surface_id) override;
@@ -395,7 +397,7 @@ class TestMetricsReporter : public MetricsReporter {
                   const ContentStats& content_stats) override;
   void OnBackgroundRefresh(const StreamType& stream_type,
                            LoadStreamStatus final_status) override;
-  void OnClearAll(base::TimeDelta time_since_last_clear) override;
+  void OnClearAll(base::TimeDelta since_last_clear) override;
   void OnUploadActions(UploadActionsStatus status) override;
 
   struct StreamMetrics {

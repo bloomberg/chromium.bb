@@ -36,7 +36,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="174539241580958092">Giriş xətası səbəbindən Google Chrome datanızı sinxronizasiya edə bilmədi.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1786003790898721085"><ph name="TARGET_DEVICE_NAME" /> cihazınızda Chrome'a daxil olduğunuza əmin olun və sonra yenidən göndərin.</translation>
-<translation id="1810203443153428607">Chrome OS'i quraşdırdıqda cihazınızdakı bütün data əvəzlənəcəkdir.</translation>
 <translation id="1812689907177901597">Bunu deaktiv etməklə Chrome'a giriş etmədən Gmail kimi Google saytlarına daxil ola bilərsiniz</translation>
 <translation id="1860536484129686729">Chrome bu sayt üçün kameraya giriş tələb edir</translation>
 <translation id="1873233029667955273">Google Chrome defolt brauzeriniz deyil</translation>
@@ -86,8 +85,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2926676257163822632">Zəif parolları tapmaq asandır. Chrome'un <ph name="BEGIN_LINK" />sizin üçün güclü parollar yaratmasına və yadda saxlamasına<ph name="END_LINK" /> imkan verin.</translation>
 <translation id="2926952073016206995">Chrome bu sayt üçün kamera icazəsi tələb edir</translation>
 <translation id="2929907241665500097">Chrome güncəllənmədi, xəta baş verdi. <ph name="BEGIN_LINK" />Chrome'un güncəllənmə problemlərini və alınmayan güncəllənmələri həll edin.<ph name="END_LINK" /></translation>
-<translation id="2944515913673001130"><ph name="BEGIN_PARAGRAPH1" />Son xatırlatma: quraşdırma nəticəsində <ph name="BEGIN_BOLD" />sərt diskdəki bütün data silinəcək<ph name="END_BOLD" />. Lazımlı bütün datanı yedəkləyin.<ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Quraşdırma başladıqdan sonra ləğv edilə bilməz.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="2969728957078202736"><ph name="PAGE_TITLE" /> - Şəbəkəyə Giriş - Chrome</translation>
 <translation id="3037838751736561277">Google Chrome arxa fon rejimindədir.</translation>
 <translation id="3059710691562604940">Təhlükəsiz Baxış deaktivdir. Chrome onu aktiv etməyi tövsiyə edir.</translation>
@@ -135,7 +132,6 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4251615635259297716">Chrome datanız bu hesab ilə birləşdirilsin?</translation>
 <translation id="4281844954008187215">Xidmət Şərtləri</translation>
 <translation id="4293420128516039005">Chrome'u cihazlarda sinxronizasiya etmək və fərdiləşdirmək üçün daxil olun</translation>
-<translation id="429583012151745428">Quraşdırma davam edir. Cihazı deaktiv etməyin. Quraşdırma iyirmi dəqiqədən çox çəkməməlidir. Quraşdırıldıqdan sonra maşın avtomatik olaraq bağlanacaq.</translation>
 <translation id="4325083532956419387">Chrome OS versiyası</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -179,11 +175,6 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="5386244825306882791">O, həmçinin Chrome'u başlatdığınız zaman və ya Omnibox'dan axtarış etdiyiniz zaman göstərilən səhifəyə nəzarət edir.</translation>
 <translation id="5394833366792865639">Chrome tabı paylaşın</translation>
 <translation id="5430073640787465221">Tərcih faylınız zədələnib və ya yanlışdır.  Google Chrome ayarlarınızı bərpa edə bilmir.</translation>
-<translation id="5449497480926255862"><ph name="BEGIN_PARAGRAPH1" />İşə başlamazdan əvvəl, datanızın güncəl yedəyinin olduğuna əmin olun. Chrome OS'i quraşdırdıqda sərt diskinizdəki bütün data əvəzlənəcəkdir.<ph name="END_PARAGRAPH1" />
-          <ph name="BEGIN_PARAGRAPH2" />Google, hər hansı bir data itkisinə görə məsuliyyət daşımır və Chrome OS'in sertifikatsız modellərdə işləyəcəyinə zəmanət vermir. Sertifikatlı modellər haqqında ətraflı məlumat üçün [TBD] bölməsini ziyarət edin.<ph name="END_PARAGRAPH2" />
-          <ph name="BEGIN_PARAGRAPH3" />Chrome OS'in quraşdırılması və datanın silinməsi haqqında ətraflı məlumat: [TBD URL]<ph name="END_PARAGRAPH3" />
-          <ph name="BEGIN_PARAGRAPH4" />Davam etməyə hazırsınızsa, “Chrome OS'i quraşdırın” seçiminə toxunun və quraşdırma zamanı sizi bir neçə asan addımla yönləndirəcəyik. Kompüterinizdə hər hansı bir dəyişiklik etmədən əvvəl təsdiqləmək üçün əlavə bir şansınız olacaq.<ph name="END_PARAGRAPH4" /></translation>
-<translation id="5486618155264784386">Chrome OS quraşdırın</translation>
 <translation id="556024056938947818">Google Chrome parolları göstərməyə cəhd edir.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Hər hansı ayar bu səhifədə göstərilməsə, <ph name="LINK_BEGIN" />
@@ -238,7 +229,6 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="7155997830309522122">Bu halda, Chrome'da saxlanmış parolları redaktə edərək yeni parola uyğunlaşdırın.</translation>
 <translation id="7161904924553537242">Google Chrome'a xoş gəlmisiniz</translation>
 <translation id="7242029209006116544">İdarə olunan hesabla daxil olursnuz və onun inzibati idarəetməsini Google Chrome profilinizə verirsiniz. Tətbiqləriniz, əlfəcinləriniz, tarixçəniz və digər ayarlarınız Chrome datanızla birlikdə <ph name="USER_NAME" /> üzərinə həmişəlik bənd olacaq. Bu datanı Google Hesabları Paneli vasitəsilə silə bilərsiniz, lakin bu datanı digər hesabla əlaqəli edə bilməzsiniz. Mövcud Chrome datanızı ayrı saxlamaq üçün yeni profil yarada bilərsiniz. <ph name="LEARN_MORE" /></translation>
-<translation id="7275165473619697274">Chrome OS quraşdırılır</translation>
 <translation id="7295052994004373688">Bu dil Google Chrome UI-ni göstərmək üçün istifadə edilir</translation>
 <translation id="7296210096911315575">Mühüm istifadə və təhlükəsizlik məlumatı</translation>
 <translation id="7308322188646931570">Faylları endirmək üçün Chrome yaddaşa giriş tələb edir</translation>

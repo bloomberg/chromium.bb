@@ -51,8 +51,7 @@ namespace {
 // |kCheckInvalidatorStateDelay|, InvalidationService is still in
 // TRANSIENT_INVALIDATION_ERROR state, disconnect from it and try to reregister
 // all the topics.
-constexpr base::TimeDelta kCheckInvalidatorStateDelay =
-    base::TimeDelta::FromMinutes(3);
+constexpr base::TimeDelta kCheckInvalidatorStateDelay = base::Minutes(3);
 
 // After reregistering all the topics |kTransientErrorDisconnectLimit| number of
 // times, when InvalidationService is failing due to
@@ -77,6 +76,11 @@ class AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver
   explicit InvalidationServiceObserver(
       AffiliatedInvalidationServiceProviderImpl* parent,
       invalidation::InvalidationService* invalidation_service);
+
+  InvalidationServiceObserver(const InvalidationServiceObserver&) = delete;
+  InvalidationServiceObserver& operator=(const InvalidationServiceObserver&) =
+      delete;
+
   ~InvalidationServiceObserver() override;
 
   invalidation::InvalidationService* GetInvalidationService();
@@ -98,8 +102,6 @@ class AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver
 
   // The number of times TRANSIENT_INVALIDATION_ERROR should cause disconnect.
   int transient_error_disconnect_limit_ = kTransientErrorDisconnectLimit;
-
-  DISALLOW_COPY_AND_ASSIGN(InvalidationServiceObserver);
 };
 
 AffiliatedInvalidationServiceProviderImpl::InvalidationServiceObserver::

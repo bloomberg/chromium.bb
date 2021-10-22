@@ -34,9 +34,12 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
  public:
   explicit DeviceEventRouterImpl(
       SystemNotificationManager* notification_manager)
-      : DeviceEventRouter(notification_manager,
-                          base::TimeDelta::FromSeconds(0)),
+      : DeviceEventRouter(notification_manager, base::Seconds(0)),
         external_storage_disabled(false) {}
+
+  DeviceEventRouterImpl(const DeviceEventRouterImpl&) = delete;
+  DeviceEventRouterImpl& operator=(const DeviceEventRouterImpl&) = delete;
+
   ~DeviceEventRouterImpl() override = default;
 
   // DeviceEventRouter overrides.
@@ -60,9 +63,6 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
 
   // Flag returned by |IsExternalStorageDisabled|.
   bool external_storage_disabled;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceEventRouterImpl);
 };
 
 }  // namespace

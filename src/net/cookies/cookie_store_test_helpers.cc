@@ -46,6 +46,7 @@ std::unique_ptr<CookieChangeSubscription>
 DelayedCookieMonsterChangeDispatcher::AddCallbackForCookie(
     const GURL& url,
     const std::string& name,
+    const absl::optional<CookiePartitionKey>& cookie_partition_key,
     CookieChangeCallback callback) {
   ADD_FAILURE();
   return nullptr;
@@ -53,6 +54,7 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForCookie(
 std::unique_ptr<CookieChangeSubscription>
 DelayedCookieMonsterChangeDispatcher::AddCallbackForUrl(
     const GURL& url,
+    const absl::optional<CookiePartitionKey>& cookie_partition_key,
     CookieChangeCallback callback) {
   ADD_FAILURE();
   return nullptr;
@@ -102,16 +104,17 @@ void DelayedCookieMonster::SetCanonicalCookieAsync(
       FROM_HERE,
       base::BindOnce(&DelayedCookieMonster::InvokeSetCookiesCallback,
                      base::Unretained(this), std::move(callback)),
-      base::TimeDelta::FromMilliseconds(kDelayedTime));
+      base::Milliseconds(kDelayedTime));
 }
 
 void DelayedCookieMonster::GetCookieListWithOptionsAsync(
     const GURL& url,
     const CookieOptions& options,
+    const CookiePartitionKeychain& cookie_partition_keychain,
     CookieMonster::GetCookieListCallback callback) {
   did_run_ = false;
   cookie_monster_->GetCookieListWithOptionsAsync(
-      url, options,
+      url, options, cookie_partition_keychain,
       base::BindOnce(
           &DelayedCookieMonster::GetCookieListWithOptionsInternalCallback,
           base::Unretained(this)));
@@ -120,7 +123,7 @@ void DelayedCookieMonster::GetCookieListWithOptionsAsync(
       FROM_HERE,
       base::BindOnce(&DelayedCookieMonster::InvokeGetCookieListCallback,
                      base::Unretained(this), std::move(callback)),
-      base::TimeDelta::FromMilliseconds(kDelayedTime));
+      base::Milliseconds(kDelayedTime));
 }
 
 void DelayedCookieMonster::GetAllCookiesAsync(GetAllCookiesCallback callback) {

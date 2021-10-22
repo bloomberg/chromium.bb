@@ -6,8 +6,9 @@ import './diagnostics_fonts_css.js';
 import './diagnostics_shared_css.js';
 
 import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {TroubleshootingInfo} from './diagnostics_types.js';
 
 /**
  * @constructor
@@ -30,22 +31,16 @@ export class NetworkTroubleshootingElement extends
 
   static get properties() {
     return {
-      networkType: {type: String, value: ''},
+      /** @type {TroubleshootingInfo} */
+      troubleshootingInfo: {
+        type: Object,
+      },
     }
   }
 
   /** @protected */
-  onTroubleConnectingClicked_() {
-    // TODO(michaelcheco): Add correct URL.
-    window.open('https://support.google.com/chromebook?p=diagnostics_');
-  }
-
-  /**
-   * @protected
-   * @return {string}
-   */
-  computeTroubleConnectingText_() {
-    return loadTimeData.getStringF('troubleshootingText', this.networkType);
+  onLinkTextClicked_() {
+    window.open(this.troubleshootingInfo.url);
   }
 }
 

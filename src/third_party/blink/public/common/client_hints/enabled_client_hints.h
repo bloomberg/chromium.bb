@@ -50,7 +50,11 @@ class BLINK_COMMON_EXPORT EnabledClientHints {
   //
   // If `type` is not a valid WebClientHintsType value, nothing is changed (no
   // client hints get enabled).
+  //
+  // If `third_party_url` is not nullptr, use it to validate the Origin Trial
+  // token.
   void SetIsEnabled(const GURL& url,
+                    const GURL* third_party_url,
                     const net::HttpResponseHeaders* response_headers,
                     network::mojom::WebClientHintsType type,
                     bool should_send);
@@ -59,6 +63,8 @@ class BLINK_COMMON_EXPORT EnabledClientHints {
   std::vector<network::mojom::WebClientHintsType> GetEnabledHints() const;
 
  private:
+  // Deprecated/removed preferences will stick around in this array
+  // unused. Consider refactoring into a map down the road.
   std::array<bool,
              static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) +
                  1>

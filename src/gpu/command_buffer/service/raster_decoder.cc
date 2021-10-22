@@ -77,7 +77,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -124,6 +124,10 @@ class ScopedGLErrorSuppressor {
       : function_name_(function_name), error_state_(error_state) {
     ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state_, function_name_);
   }
+
+  ScopedGLErrorSuppressor(const ScopedGLErrorSuppressor&) = delete;
+  ScopedGLErrorSuppressor& operator=(const ScopedGLErrorSuppressor&) = delete;
+
   ~ScopedGLErrorSuppressor() {
     ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_, function_name_);
   }
@@ -131,7 +135,6 @@ class ScopedGLErrorSuppressor {
  private:
   const char* function_name_;
   gles2::ErrorState* error_state_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedGLErrorSuppressor);
 };
 
 // Temporarily changes a decoder's bound texture and restore it when this
@@ -151,13 +154,14 @@ class ScopedTextureBinder {
       gr_context->resetContext(kTextureBinding_GrGLBackendState);
   }
 
+  ScopedTextureBinder(const ScopedTextureBinder&) = delete;
+  ScopedTextureBinder& operator=(const ScopedTextureBinder&) = delete;
+
   ~ScopedTextureBinder() { state_->api()->glBindTextureFn(target_, 0); }
 
  private:
   gles2::ContextState* state_;
   GLenum target_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTextureBinder);
 };
 
 // Temporarily changes a decoder's PIXEL_UNPACK_BUFFER to 0 and set pixel
@@ -185,10 +189,11 @@ class ScopedPixelUnpackState {
                                kPixelStore_GrGLBackendState);
     }
   }
-  ~ScopedPixelUnpackState() = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedPixelUnpackState);
+  ScopedPixelUnpackState(const ScopedPixelUnpackState&) = delete;
+  ScopedPixelUnpackState& operator=(const ScopedPixelUnpackState&) = delete;
+
+  ~ScopedPixelUnpackState() = default;
 };
 
 // Commands that are explicitly listed as OK to occur between
@@ -239,10 +244,13 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
 
   ~SharedImageProviderImpl() override { read_accessors_.clear(); }
 
-  sk_sp<SkImage> OpenSharedImageForRead(const gpu::Mailbox& mailbox) override {
+  sk_sp<SkImage> OpenSharedImageForRead(const gpu::Mailbox& mailbox,
+                                        Error& error) override {
     auto it = read_accessors_.find(mailbox);
-    if (it != read_accessors_.end())
+    error = Error::kNoError;
+    if (it != read_accessors_.end()) {
       return it->second.read_access_sk_image;
+    }
 
     auto shared_image_skia =
         shared_image_factory_->ProduceSkia(mailbox, shared_context_state_);
@@ -252,6 +260,7 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
                               ("Attempting to operate on unknown mailbox:" +
                                mailbox.ToDebugString())
                                   .c_str());
+      error = Error::kUnknownMailbox;
       return nullptr;
     }
 
@@ -266,6 +275,7 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
                               ("Couldn't access shared image for mailbox:" +
                                mailbox.ToDebugString())
                                   .c_str());
+      error = Error::kNoAccess;
       return nullptr;
     }
 
@@ -282,6 +292,7 @@ class SharedImageProviderImpl final : public cc::SharedImageProvider {
       ERRORSTATE_SET_GL_ERROR(error_state_, GL_INVALID_OPERATION,
                               "SharedImageProviderImpl::OpenSharedImageForRead",
                               "Couldn't create output SkImage.");
+      error = Error::kSkImageCreationFailed;
       return nullptr;
     }
 
@@ -427,6 +438,10 @@ class RasterDecoderImpl final : public RasterDecoder,
                     SharedImageManager* shared_image_manager,
                     scoped_refptr<SharedContextState> shared_context_state,
                     bool is_privileged);
+
+  RasterDecoderImpl(const RasterDecoderImpl&) = delete;
+  RasterDecoderImpl& operator=(const RasterDecoderImpl&) = delete;
+
   ~RasterDecoderImpl() override;
 
   gles2::GLES2Util* GetGLES2Util() override { return &util_; }
@@ -936,6 +951,11 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::unique_ptr<SharedImageRepresentationSkia> shared_image_;
   std::unique_ptr<SharedImageRepresentationSkia::ScopedWriteAccess>
       scoped_shared_image_write_;
+
+  std::unique_ptr<SharedImageRepresentationRaster> shared_image_raster_;
+  std::unique_ptr<SharedImageRepresentationRaster::ScopedWriteAccess>
+      scoped_shared_image_raster_write_;
+
   SkSurface* sk_surface_ = nullptr;
   std::unique_ptr<SharedImageProviderImpl> paint_op_shared_image_provider_;
 
@@ -960,11 +980,11 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   bool is_privileged_ = false;
 
+  const bool is_raw_draw_enabled_;
+
   gl::GLApi* api_ = nullptr;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RasterDecoderImpl);
 };
 
 constexpr RasterDecoderImpl::CommandInfo RasterDecoderImpl::command_info[] = {
@@ -1073,7 +1093,8 @@ RasterDecoderImpl::RasterDecoderImpl(
       font_manager_(base::MakeRefCounted<ServiceFontManager>(
           this,
           gpu_preferences_.disable_oopr_debug_crash_dump)),
-      is_privileged_(is_privileged) {
+      is_privileged_(is_privileged),
+      is_raw_draw_enabled_(features::IsUsingRawDraw()) {
   DCHECK(shared_context_state_);
   shared_context_state_->AddContextLostObserver(this);
 }
@@ -3392,6 +3413,12 @@ class TransferCacheDeserializeHelperImpl final
       : raster_decoder_id_(raster_decoder_id), transfer_cache_(transfer_cache) {
     DCHECK(transfer_cache_);
   }
+
+  TransferCacheDeserializeHelperImpl(
+      const TransferCacheDeserializeHelperImpl&) = delete;
+  TransferCacheDeserializeHelperImpl& operator=(
+      const TransferCacheDeserializeHelperImpl&) = delete;
+
   ~TransferCacheDeserializeHelperImpl() override = default;
 
   void CreateLocalEntry(
@@ -3413,8 +3440,6 @@ class TransferCacheDeserializeHelperImpl final
 
   const int raster_decoder_id_;
   ServiceTransferCache* const transfer_cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransferCacheDeserializeHelperImpl);
 };
 
 }  // namespace
@@ -3483,9 +3508,22 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
                                        "generated by ProduceTextureCHROMIUM.";
 
   DCHECK(!shared_image_);
-  shared_image_ = shared_image_representation_factory_.ProduceSkia(
-      mailbox, shared_context_state_.get());
-  if (!shared_image_) {
+  DCHECK(!shared_image_raster_);
+
+  SharedImageRepresentation* shared_image = nullptr;
+  if (is_raw_draw_enabled_) {
+    shared_image_raster_ =
+        shared_image_representation_factory_.ProduceRaster(mailbox);
+    shared_image = shared_image_raster_.get();
+  }
+
+  if (!shared_image) {
+    shared_image_ = shared_image_representation_factory_.ProduceSkia(
+        mailbox, shared_context_state_.get());
+    shared_image = shared_image_.get();
+  }
+
+  if (!shared_image) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBeginRasterCHROMIUM",
                        "passed invalid mailbox.");
     return;
@@ -3494,9 +3532,10 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
   // This check only fails on validating decoder since clear tracking for
   // passthrough textures is done by ANGLE. Nonetheless the check is important
   // so that clients cannot use uninitialized textures with validating decoder.
-  if (!needs_clear && !shared_image_->IsCleared()) {
+  if (!needs_clear && !shared_image->IsCleared()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "SharedImage not cleared before use.");
+    shared_image_raster_.reset();
     shared_image_.reset();
     return;
   }
@@ -3505,7 +3544,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
   DCHECK(!raster_canvas_);
 
   SkColorType sk_color_type = viz::ResourceFormatToClosestSkColorType(
-      /*gpu_compositing=*/true, shared_image_->format());
+      /*gpu_compositing=*/true, shared_image->format());
 
   int final_msaa_count;
   uint32_t flags;
@@ -3537,6 +3576,26 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(GLuint sk_color,
   SkSurfaceProps surface_props(flags, kUnknown_SkPixelGeometry);
   if (can_use_lcd_text) {
     surface_props = skia::LegacyDisplayGlobals::GetSkSurfaceProps(flags);
+  }
+
+  if (shared_image_raster_) {
+    absl::optional<SkColor> clear_color;
+    if (needs_clear)
+      clear_color.emplace(sk_color);
+    scoped_shared_image_raster_write_ =
+        shared_image_raster_->BeginScopedWriteAccess(
+            final_msaa_count, surface_props, clear_color);
+    if (!scoped_shared_image_raster_write_) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
+                         "failed to create surface");
+      shared_image_raster_.reset();
+      return;
+    }
+
+    if (needs_clear)
+      shared_image_raster_->SetCleared();
+
+    return;
   }
 
   std::vector<GrBackendSemaphore> begin_semaphores;
@@ -3611,7 +3670,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   TRACE_EVENT1("gpu", "RasterDecoderImpl::DoRasterCHROMIUM", "raster_id",
                ++raster_chromium_id_);
 
-  if (!sk_surface_) {
+  if (!sk_surface_ && !scoped_shared_image_raster_write_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glRasterCHROMIUM",
                        "RasterCHROMIUM without BeginRasterCHROMIUM");
     return;
@@ -3647,9 +3706,6 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
     return;
   }
 
-  alignas(
-      cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
-
   cc::PlaybackParams playback_params(nullptr, SkM44());
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
   cc::PaintOp::DeserializeOptions options(
@@ -3658,6 +3714,16 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
       paint_op_shared_image_provider_.get());
   options.crash_dump_on_failure =
       !gpu_preferences_.disable_oopr_debug_crash_dump;
+
+  if (scoped_shared_image_raster_write_) {
+    auto* paint_op_buffer =
+        scoped_shared_image_raster_write_->paint_op_buffer();
+    paint_op_buffer->Deserialize(paint_buffer_memory, raster_shm_size, options);
+    return;
+  }
+
+  alignas(
+      cc::PaintOpBuffer::PaintOpAlign) char data[sizeof(cc::LargestPaintOp)];
 
   size_t paint_buffer_size = raster_shm_size;
   gl::ScopedProgressReporter report_progress(
@@ -3710,9 +3776,23 @@ bool RasterDecoderImpl::EnsureDDLReadyForRaster() {
 
 void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   TRACE_EVENT0("gpu", "RasterDecoderImpl::DoEndRasterCHROMIUM");
-  if (!sk_surface_) {
+  if (!sk_surface_ && !scoped_shared_image_raster_write_) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glEndRasterCHROMIUM",
                        "EndRasterCHROMIUM without BeginRasterCHROMIUM");
+    return;
+  }
+
+  if (scoped_shared_image_raster_write_) {
+    scoped_shared_image_raster_write_->set_callback(base::BindOnce(
+        [](scoped_refptr<ServiceFontManager> font_manager,
+           std::vector<SkDiscardableHandleId> handles) {
+          if (!font_manager->is_destroyed())
+            font_manager->Unlock(handles);
+        },
+        font_manager_, std::move(locked_handles_)));
+    scoped_shared_image_raster_write_.reset();
+    shared_image_raster_.reset();
+    locked_handles_.clear();
     return;
   }
 

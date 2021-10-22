@@ -26,7 +26,6 @@ THIRD_PARTY_LIBRARIES = [
     'google-auth',
     'graphy',
     'html5lib-python',
-    'httplib2',
     'idna',
     'ijson',
     'jquery',
@@ -40,6 +39,7 @@ THIRD_PARTY_LIBRARIES = [
     'polymer2/bower_components/chopsui',
     'pyasn1',
     'pyasn1_modules',
+    'pyparsing',
     'redux/redux.min.js',
     'requests',
     'requests_toolbelt',
@@ -49,6 +49,14 @@ THIRD_PARTY_LIBRARIES = [
     'urllib3',
     'webapp2',
     'webtest',
+]
+
+THIRD_PARTY_LIBRARIES_PY2 = THIRD_PARTY_LIBRARIES + [
+    'httplib2/python2/httplib2'
+]
+
+THIRD_PARTY_LIBRARIES_PY3 = THIRD_PARTY_LIBRARIES + [
+    'httplib2/python3/httplib2'
 ]
 
 # Files and directories in catapult/dashboard.
@@ -153,7 +161,10 @@ def _CatapultThirdPartyLibraryPaths():
       os.path.join(_CATAPULT_PATH, 'common', 'node_runner', 'node_runner',
                    'node_modules', '@chopsui', 'tsmon-client',
                    'tsmon-client.js'))
-  for library in THIRD_PARTY_LIBRARIES:
+  third_party_libraries = (
+      THIRD_PARTY_LIBRARIES_PY3 if sys.version_info.major == 3
+      else THIRD_PARTY_LIBRARIES_PY2)
+  for library in third_party_libraries:
     paths.append(os.path.join(_CATAPULT_PATH, 'third_party', library))
   return paths
 

@@ -30,8 +30,12 @@ class NullVideoSinkTest : public testing::Test,
  public:
   NullVideoSinkTest() {
     // Never use null TimeTicks since they have special connotations.
-    tick_clock_.Advance(base::TimeDelta::FromMicroseconds(12345));
+    tick_clock_.Advance(base::Microseconds(12345));
   }
+
+  NullVideoSinkTest(const NullVideoSinkTest&) = delete;
+  NullVideoSinkTest& operator=(const NullVideoSinkTest&) = delete;
+
   ~NullVideoSinkTest() override = default;
 
   std::unique_ptr<NullVideoSink> ConstructSink(bool clockless,
@@ -67,12 +71,10 @@ class NullVideoSinkTest : public testing::Test,
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::SimpleTestTickClock tick_clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(NullVideoSinkTest);
 };
 
 TEST_F(NullVideoSinkTest, BasicFunctionality) {
-  const base::TimeDelta kInterval = base::TimeDelta::FromMilliseconds(25);
+  const base::TimeDelta kInterval = base::Milliseconds(25);
 
   std::unique_ptr<NullVideoSink> sink = ConstructSink(false, kInterval);
   scoped_refptr<VideoFrame> test_frame = CreateFrame(base::TimeDelta());
@@ -125,7 +127,7 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
 
 TEST_F(NullVideoSinkTest, ClocklessFunctionality) {
   // Construct the sink with a huge interval, it should still complete quickly.
-  const base::TimeDelta interval = base::TimeDelta::FromSeconds(10);
+  const base::TimeDelta interval = base::Seconds(10);
   std::unique_ptr<NullVideoSink> sink = ConstructSink(true, interval);
 
   scoped_refptr<VideoFrame> test_frame = CreateFrame(base::TimeDelta());

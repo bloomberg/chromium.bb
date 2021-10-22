@@ -25,6 +25,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "cc/base/completion_event.h"
 #include "cc/benchmarks/micro_benchmark.h"
 #include "cc/benchmarks/micro_benchmark_controller.h"
 #include "cc/cc_export.h"
@@ -630,8 +631,14 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
   void RequestMainFrameUpdate(bool report_cc_metrics);
-  void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
-  void WillCommit();
+  void FinishCommitOnImplThread(
+      LayerTreeHostImpl* host_impl,
+      std::vector<std::unique_ptr<SwapPromise>> swap_promises);
+  void WillCommit(std::unique_ptr<CompletionEvent> completion);
+  bool in_commit() const {
+    return commit_completion_event_ && !commit_completion_event_->IsSignaled();
+  }
+  void WaitForCommitCompletion();
   void CommitComplete();
   void RequestNewLayerTreeFrameSink();
   void DidInitializeLayerTreeFrameSink();
@@ -708,7 +715,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetElementScrollOffsetMutated(
       ElementId element_id,
       ElementListType list_type,
-      const gfx::ScrollOffset& scroll_offset) override;
+      const gfx::Vector2dF& scroll_offset) override;
 
   void ElementIsAnimatingChanged(const PropertyToElementIdMap& element_id_map,
                                  ElementListType list_type,
@@ -723,7 +730,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       PaintWorkletInput::PropertyValue property_value) override {}
 
   void ScrollOffsetAnimationFinished() override {}
-  gfx::ScrollOffset GetScrollOffsetForAnimation(
+  gfx::Vector2dF GetScrollOffsetForAnimation(
       ElementId element_id) const override;
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
@@ -758,6 +765,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // synchronization.
   void SetImplCommitStartTime(base::TimeTicks commit_start_time) {
     impl_commit_start_time_ = commit_start_time;
+  }
+  void SetImplCommitFinishTime(base::TimeTicks commit_finish_time) {
+    impl_commit_finish_time_ = commit_finish_time;
   }
 
   void SetDelegatedInkMetadata(
@@ -829,7 +839,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // client. This lets the client skip a commit if the value does not change.
   void UpdateScrollOffsetFromImpl(
       const ElementId&,
-      const gfx::ScrollOffset& delta,
+      const gfx::Vector2dF& delta,
       const absl::optional<TargetSnapAreaElementIds>&);
 
   const CompositorMode compositor_mode_;
@@ -1003,6 +1013,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // sent from the main thread. Zero if the most recent BeginMainFrame did not
   // result in a commit (due to no change in content).
   base::TimeTicks impl_commit_start_time_;
+  base::TimeTicks impl_commit_finish_time_;
+
+  std::unique_ptr<CompletionEvent> commit_completion_event_;
 
   EventsMetricsManager events_metrics_manager_;
 

@@ -224,23 +224,30 @@ class Internals {
   static const int kExternalOneByteRepresentationTag = 0x0a;
 
   static const uint32_t kNumIsolateDataSlots = 4;
+  static const int kStackGuardSize = 7 * kApiSystemPointerSize;
+  static const int kBuiltinTier0EntryTableSize = 13 * kApiSystemPointerSize;
+  static const int kBuiltinTier0TableSize = 13 * kApiSystemPointerSize;
 
   // IsolateData layout guarantees.
-  static const int kIsolateEmbedderDataOffset = 0;
+  static const int kIsolateCageBaseOffset = 0;
+  static const int kIsolateStackGuardOffset =
+      kIsolateCageBaseOffset + kApiSystemPointerSize;
+  static const int kBuiltinTier0EntryTableOffset =
+      kIsolateStackGuardOffset + kStackGuardSize;
+  static const int kBuiltinTier0TableOffset =
+      kBuiltinTier0EntryTableOffset + kBuiltinTier0EntryTableSize;
+  static const int kIsolateEmbedderDataOffset =
+      kBuiltinTier0TableOffset + kBuiltinTier0TableSize;
   static const int kIsolateFastCCallCallerFpOffset =
-      kNumIsolateDataSlots * kApiSystemPointerSize;
+      kIsolateEmbedderDataOffset + kNumIsolateDataSlots * kApiSystemPointerSize;
   static const int kIsolateFastCCallCallerPcOffset =
       kIsolateFastCCallCallerFpOffset + kApiSystemPointerSize;
   static const int kIsolateFastApiCallTargetOffset =
       kIsolateFastCCallCallerPcOffset + kApiSystemPointerSize;
-  static const int kIsolateCageBaseOffset =
-      kIsolateFastApiCallTargetOffset + kApiSystemPointerSize;
   static const int kIsolateLongTaskStatsCounterOffset =
-      kIsolateCageBaseOffset + kApiSystemPointerSize;
-  static const int kIsolateStackGuardOffset =
-      kIsolateLongTaskStatsCounterOffset + kApiSizetSize;
+      kIsolateFastApiCallTargetOffset + kApiSystemPointerSize;
   static const int kIsolateRootsOffset =
-      kIsolateStackGuardOffset + 7 * kApiSystemPointerSize;
+      kIsolateLongTaskStatsCounterOffset + kApiSizetSize;
 
   static const int kExternalPointerTableBufferOffset = 0;
   static const int kExternalPointerTableLengthOffset =
@@ -488,15 +495,10 @@ constexpr bool VirtualMemoryCageIsEnabled() {
 }
 
 #ifdef V8_VIRTUAL_MEMORY_CAGE
-// Size of the pointer compression cage located at the start of the virtual
-// memory cage.
-constexpr size_t kVirtualMemoryCagePointerCageSize =
-    Internals::kPtrComprCageReservationSize;
-
 // Size of the virtual memory cage, excluding the guard regions surrounding it.
 constexpr size_t kVirtualMemoryCageSize = size_t{1} << 40;  // 1 TB
 
-static_assert(kVirtualMemoryCageSize > kVirtualMemoryCagePointerCageSize,
+static_assert(kVirtualMemoryCageSize > Internals::kPtrComprCageReservationSize,
               "The virtual memory cage must be larger than the pointer "
               "compression cage contained within it.");
 
@@ -518,19 +520,21 @@ static_assert((kVirtualMemoryCageGuardRegionSize %
               "The size of the virtual memory cage guard region must be a "
               "multiple of its required alignment.");
 
-// Minimum possible size of the virtual memory cage, excluding the guard regions
-// surrounding it. Used by unit tests.
-constexpr size_t kVirtualMemoryCageMinimumSize =
-    2 * kVirtualMemoryCagePointerCageSize;
+// Minimum size of the virtual memory cage, excluding the guard regions
+// surrounding it. If the cage reservation fails, its size is currently halved
+// until either the reservation succeeds or the minimum size is reached. A
+// minimum of 32GB allows the 4GB pointer compression region as well as the
+// ArrayBuffer partition and two 10GB WASM memory cages to fit into the cage.
+constexpr size_t kVirtualMemoryCageMinimumSize = size_t{32} << 30;  // 32 GB
 
 // For now, even if the virtual memory cage is enabled, we still allow backing
 // stores to be allocated outside of it as fallback. This will simplify the
 // initial rollout. However, if the heap sandbox is also enabled, we already use
 // the "enforcing mode" of the virtual memory cage. This is useful for testing.
 #ifdef V8_HEAP_SANDBOX
-constexpr bool kAllowBackingStoresOutsideDataCage = false;
+constexpr bool kAllowBackingStoresOutsideCage = false;
 #else
-constexpr bool kAllowBackingStoresOutsideDataCage = true;
+constexpr bool kAllowBackingStoresOutsideCage = true;
 #endif  // V8_HEAP_SANDBOX
 
 #endif  // V8_VIRTUAL_MEMORY_CAGE
@@ -564,14 +568,6 @@ V8_INLINE void PerformCastCheck(T* data) {
 class BackingStoreBase {};
 
 }  // namespace internal
-
-V8_EXPORT bool CopyAndConvertArrayToCppBufferInt32(Local<Array> src,
-                                                   int32_t* dst,
-                                                   uint32_t max_length);
-
-V8_EXPORT bool CopyAndConvertArrayToCppBufferFloat64(Local<Array> src,
-                                                     double* dst,
-                                                     uint32_t max_length);
 
 }  // namespace v8
 

@@ -55,9 +55,9 @@ class MockPasswordManagerClient
   MockPasswordManagerClient() = default;
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_CONST_METHOD0(GetProfilePasswordStoreInterface,
+  MOCK_CONST_METHOD0(GetProfilePasswordStore,
                      password_manager::PasswordStoreInterface*());
-  MOCK_CONST_METHOD0(GetAccountPasswordStoreInterface,
+  MOCK_CONST_METHOD0(GetAccountPasswordStore,
                      password_manager::PasswordStoreInterface*());
   MOCK_CONST_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD(bool,
@@ -124,23 +124,24 @@ class WebsiteLoginManagerImplTest : public testing::Test {
         &browser_context_, nullptr);
     profile_store_ = new password_manager::MockPasswordStoreInterface;
 
-    ON_CALL(client_, GetProfilePasswordStoreInterface())
+    ON_CALL(client_, GetProfilePasswordStore())
         .WillByDefault(Return(profile_store_.get()));
 
     if (base::FeatureList::IsEnabled(
             password_manager::features::kEnablePasswordsAccountStorage)) {
       account_store_ = new password_manager::MockPasswordStoreInterface;
 
-      ON_CALL(client_, GetAccountPasswordStoreInterface())
+      ON_CALL(client_, GetAccountPasswordStore())
           .WillByDefault(Return(account_store_.get()));
     }
     ON_CALL(*store(), GetLogins(_, _))
-        .WillByDefault(
-            WithArg<1>([](password_manager::PasswordStoreConsumer* consumer) {
+        .WillByDefault(WithArg<1>(
+            [this](password_manager::PasswordStoreConsumer* consumer) {
               std::vector<std::unique_ptr<PasswordForm>> result;
               result.push_back(
                   std::make_unique<PasswordForm>(MakeSimplePasswordForm()));
-              consumer->OnGetPasswordStoreResults(std::move(result));
+              consumer->OnGetPasswordStoreResultsFrom(store(),
+                                                      std::move(result));
             }));
 
     manager_ = std::make_unique<WebsiteLoginManagerImpl>(&client_,

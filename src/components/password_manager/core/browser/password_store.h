@@ -67,6 +67,9 @@ class PasswordStore : public PasswordStoreInterface {
 
   explicit PasswordStore(std::unique_ptr<PasswordStoreBackend> backend);
 
+  PasswordStore(const PasswordStore&) = delete;
+  PasswordStore& operator=(const PasswordStore&) = delete;
+
   // Always call this too on the UI thread.
   // TODO(crbug.bom/1218413): Move initialization into the core interface, too.
   bool Init(
@@ -84,6 +87,8 @@ class PasswordStore : public PasswordStoreInterface {
   // must already be initialized if it is non-null.
   // TODO(crbug.bom/1218413): Inject into constructor or `Init()` instead.
   void SetAffiliatedMatchHelper(std::unique_ptr<AffiliatedMatchHelper> helper);
+
+  // TODO(crbug.com/1252350): Delete this method once it's no longer used.
   AffiliatedMatchHelper* affiliated_match_helper() const {
     return affiliated_match_helper_.get();
   }
@@ -125,9 +130,6 @@ class PasswordStore : public PasswordStoreInterface {
   CreateSyncControllerDelegate() override;
   PasswordStoreBackend* GetBackendForTesting() override;
 
-  // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
-  bool ScheduleTask(base::OnceClosure task);
-
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
 
@@ -148,18 +150,6 @@ class PasswordStore : public PasswordStoreInterface {
   // this class anymore.
   PasswordStore();
   ~PasswordStore() override;
-
-  // Create a TaskRunner to be saved in |background_task_runner_|.
-  virtual scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
-      const;
-
-  scoped_refptr<base::SequencedTaskRunner> main_task_runner() const {
-    return main_task_runner_;
-  }
-
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner() const {
-    return background_task_runner_;
-  }
 
   // This member is called to perform the actual interaction with the storage.
   // TODO(crbug.com/1217071): Make private std::unique_ptr as soon as the
@@ -192,21 +182,17 @@ class PasswordStore : public PasswordStoreInterface {
   void InjectAffiliationAndBrandingInformation(LoginsReply callback,
                                                LoginsResult forms);
 
-  // The local backend is currently a ref-counted type because it still inherits
+  // The local backend is a ref-counted type in tests because it still inherits
   // from PasswordStore and this would be a self reference. So, if `this` is an
   // instance of PasswordStoreImpl, this member is not used.
   //
-  // If the backend is injected via the public constructor, this backend_deleter
-  // owns the instance and deletes it on destruction. Once backend_ is a
-  // unique_ptr, too, this deleter can simply be removed.
-  // TODO(crbug.com/1217071): Remove once once backend_ is a unique_ptr.
+  // The backend is injected via the public constructor, this member owns the
+  // instance and deletes it by calling PasswordStoreBackend::Shutdown on it.
   std::unique_ptr<PasswordStoreBackend> backend_deleter_ = nullptr;
 
   // TaskRunner for tasks that run on the main sequence (usually the UI thread).
+  // TODO(crbug.com/1217071): Move into backend_.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
-
-  // TaskRunner for all the background operations.
-  scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The observers.
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
@@ -215,22 +201,8 @@ class PasswordStore : public PasswordStoreInterface {
 
   PrefService* prefs_ = nullptr;
 
-  bool shutdown_called_ = false;
-
   InitStatus init_status_ = InitStatus::kUnknown;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
-
-// For testing only.
-#if defined(UNIT_TEST)
-inline std::ostream& operator<<(std::ostream& os,
-                                const PasswordFormDigest& digest) {
-  return os << "PasswordFormDigest(scheme: " << digest.scheme
-            << ", signon_realm: " << digest.signon_realm
-            << ", url: " << digest.url << ")";
-}
-#endif
 
 }  // namespace password_manager
 

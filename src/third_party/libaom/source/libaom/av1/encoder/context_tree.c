@@ -37,10 +37,16 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
   dst_ctx->rd_mode_is_ready = src_ctx->rd_mode_is_ready;
 }
 
-void av1_setup_shared_coeff_buffer(struct aom_internal_error_info *error,
-                                   PC_TREE_SHARED_BUFFERS *shared_bufs) {
-  for (int i = 0; i < 3; i++) {
-    const int max_num_pix = MAX_SB_SIZE * MAX_SB_SIZE;
+void av1_setup_shared_coeff_buffer(const SequenceHeader *const seq_params,
+                                   PC_TREE_SHARED_BUFFERS *shared_bufs,
+                                   struct aom_internal_error_info *error) {
+  const int num_planes = seq_params->monochrome ? 1 : MAX_MB_PLANE;
+  const int max_sb_square_y = 1 << num_pels_log2_lookup[seq_params->sb_size];
+  const int max_sb_square_uv = max_sb_square_y >> (seq_params->subsampling_x +
+                                                   seq_params->subsampling_y);
+  for (int i = 0; i < num_planes; i++) {
+    const int max_num_pix =
+        (i == AOM_PLANE_Y) ? max_sb_square_y : max_sb_square_uv;
     AOM_CHECK_MEM_ERROR(error, shared_bufs->coeff_buf[i],
                         aom_memalign(32, max_num_pix * sizeof(tran_low_t)));
     AOM_CHECK_MEM_ERROR(error, shared_bufs->qcoeff_buf[i],

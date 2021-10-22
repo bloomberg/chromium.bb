@@ -35,16 +35,18 @@ struct HW {
 
 struct OS {
   OS();
+
+  OS(const OS&) = delete;
+  OS& operator=(const OS&) = delete;
+
   OS(OS&&);
+
   ~OS();
 
   std::string platform;
   std::string version;
   std::string service_pack;
   std::string arch;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OS);
 };
 
 struct Updater {
@@ -89,7 +91,12 @@ struct Ping {
 
 struct App {
   App();
+
+  App(const App&) = delete;
+  App& operator=(const App&) = delete;
+
   App(App&&);
+
   ~App();
 
   std::string app_id;
@@ -118,17 +125,22 @@ struct App {
 
   // Progress/result pings.
   absl::optional<std::vector<base::Value>> events;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(App);
 };
 
 struct Request {
   Request();
+
+  Request(const Request&) = delete;
+  Request& operator=(const Request&) = delete;
+
   Request(Request&&);
+
   ~Request();
 
   std::string protocol_version;
+
+  // True if the updater operates in the per-system configuration.
+  bool is_machine = false;
 
   // Unique identifier for this session, used to correlate multiple requests
   // associated with a single update operation.
@@ -137,7 +149,6 @@ struct Request {
   // Unique identifier for this request, used to associate the same request
   // received multiple times on the server.
   std::string request_id;
-
   std::string updatername;
   std::string updaterversion;
   std::string prodversion;
@@ -169,9 +180,6 @@ struct Request {
   absl::optional<Updater> updater;
 
   std::vector<App> apps;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
 }  // namespace protocol_request

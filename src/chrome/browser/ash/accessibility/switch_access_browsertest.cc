@@ -13,13 +13,13 @@
 #include "chrome/browser/ash/accessibility/accessibility_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/extension_load_waiter_one_shot.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/browsertest_util.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
@@ -43,7 +43,12 @@ class SwitchAccessTest : public InProcessBrowserTest {
                           const std::set<int>& next_key_codes,
                           const std::set<int>& previous_key_codes) {
     AccessibilityManager* manager = AccessibilityManager::Get();
+
+    extensions::ExtensionHostTestHelper host_helper(
+        manager->profile(), extension_misc::kSwitchAccessExtensionId);
     manager->SetSwitchAccessEnabled(true);
+    host_helper.WaitForHostCompletedFirstLoad();
+
     manager->SetSwitchAccessKeysForTest(
         select_key_codes,
         prefs::kAccessibilitySwitchAccessSelectDeviceKeyCodes);
@@ -85,13 +90,6 @@ class SwitchAccessTest : public InProcessBrowserTest {
     std::string script;
     ASSERT_TRUE(base::ReadFileToString(test_support_path, &script))
         << test_support_path;
-
-    // Wait for the extension to load.
-    base::RunLoop loop;
-    ExtensionLoadWaiterOneShot waiter;
-    waiter.WaitForExtension(extension_misc::kSwitchAccessExtensionId,
-                            loop.QuitClosure());
-    loop.Run();
 
     std::string result =
         extensions::browsertest_util::ExecuteScriptInBackgroundPage(

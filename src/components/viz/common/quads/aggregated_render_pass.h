@@ -25,8 +25,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/rrect_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/rrect_f.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace viz {
 class AggregatedRenderPass;
@@ -41,6 +41,9 @@ using AggregatedRenderPassId = base::IdTypeU64<AggregatedRenderPass>;
 // all of the AggregatedRenderPasses.
 class VIZ_COMMON_EXPORT AggregatedRenderPass : public RenderPassInternal {
  public:
+  AggregatedRenderPass(const AggregatedRenderPass&) = delete;
+  AggregatedRenderPass& operator=(const AggregatedRenderPass&) = delete;
+
   ~AggregatedRenderPass();
 
   AggregatedRenderPass();
@@ -107,8 +110,6 @@ class VIZ_COMMON_EXPORT AggregatedRenderPass : public RenderPassInternal {
         "AggregatedRenderPass");
     return quad_list.AllocateAndCopyFrom(DrawQuadType::MaterialCast(quad));
   }
-
-  DISALLOW_COPY_AND_ASSIGN(AggregatedRenderPass);
 };
 
 using AggregatedRenderPassList =

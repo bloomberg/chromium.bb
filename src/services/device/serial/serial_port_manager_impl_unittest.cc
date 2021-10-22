@@ -84,6 +84,10 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
     manager_->SetSerialEnumeratorForTesting(std::move(enumerator));
   }
 
+  SerialPortManagerImplTest(const SerialPortManagerImplTest&) = delete;
+  SerialPortManagerImplTest& operator=(const SerialPortManagerImplTest&) =
+      delete;
+
   ~SerialPortManagerImplTest() override = default;
 
   // Since not all functions need to use a MockBluetoothAdapter, this function
@@ -154,8 +158,6 @@ class SerialPortManagerImplTest : public DeviceServiceTestBase {
 
  private:
   std::unique_ptr<SerialPortManagerImpl> manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImplTest);
 };
 
 // This is to simply test that we can enumerate devices on the platform without
@@ -181,7 +183,7 @@ TEST_F(SerialPortManagerImplTest, GetDevices) {
   Bind(port_manager.BindNewPipeAndPassReceiver());
   const std::set<base::FilePath> expected_paths = {
       kFakeDevicePath1, kFakeDevicePath2,
-      base::FilePath::FromUTF8Unsafe(kDeviceAddress)};
+      base::FilePath::FromASCII(kDeviceAddress)};
 
   base::RunLoop loop;
   port_manager->GetDevices(base::BindLambdaForTesting(
@@ -280,7 +282,7 @@ TEST_F(SerialPortManagerImplTest, OpenBluetoothDevicePort) {
   enumerator_->RemoveDevicePath(kFakeDevicePath2);
 
   const std::set<base::FilePath> expected_paths = {
-      base::FilePath::FromUTF8Unsafe(kDeviceAddress)};
+      base::FilePath::FromASCII(kDeviceAddress)};
 
   mojo::Remote<mojom::SerialPort> serial_port;
   base::RunLoop loop;
@@ -327,7 +329,7 @@ TEST_F(SerialPortManagerImplTest, BluetoothPortRemovedAndAdded) {
     port_manager->GetDevices(base::BindLambdaForTesting(
         [&](std::vector<mojom::SerialPortInfoPtr> results) {
           for (const auto& port : results) {
-            if (port->path == base::FilePath::FromUTF8Unsafe(kDeviceAddress)) {
+            if (port->path == base::FilePath::FromASCII(kDeviceAddress)) {
               port1_token = port->token;
               break;
             }
@@ -345,7 +347,7 @@ TEST_F(SerialPortManagerImplTest, BluetoothPortRemovedAndAdded) {
     EXPECT_CALL(client, OnPortRemoved(_))
         .WillOnce(Invoke([&](mojom::SerialPortInfoPtr port) {
           EXPECT_EQ(port1_token, port->token);
-          EXPECT_EQ(port->path, base::FilePath::FromUTF8Unsafe(kDeviceAddress));
+          EXPECT_EQ(port->path, base::FilePath::FromASCII(kDeviceAddress));
           EXPECT_EQ(mojom::DeviceType::SPP_DEVICE, port->type);
           run_loop.Quit();
         }));
@@ -365,7 +367,7 @@ TEST_F(SerialPortManagerImplTest, BluetoothPortRemovedAndAdded) {
     EXPECT_CALL(client, OnPortAdded(_))
         .WillOnce(Invoke([&](mojom::SerialPortInfoPtr port) {
           EXPECT_NE(port1_token, port->token);
-          EXPECT_EQ(port->path, base::FilePath::FromUTF8Unsafe(kDeviceAddress));
+          EXPECT_EQ(port->path, base::FilePath::FromASCII(kDeviceAddress));
           EXPECT_EQ(mojom::DeviceType::SPP_DEVICE, port->type);
           run_loop.Quit();
         }));

@@ -49,7 +49,6 @@
 #include "remoting/host/win/worker_process_launcher.h"
 
 using base::win::ScopedHandle;
-using base::TimeDelta;
 
 namespace {
 
@@ -86,6 +85,10 @@ class DaemonProcessWin : public DaemonProcess {
   DaemonProcessWin(scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
                    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
                    base::OnceClosure stopped_callback);
+
+  DaemonProcessWin(const DaemonProcessWin&) = delete;
+  DaemonProcessWin& operator=(const DaemonProcessWin&) = delete;
+
   ~DaemonProcessWin() override;
 
   // WorkerProcessIpcDelegate implementation.
@@ -139,8 +142,6 @@ class DaemonProcessWin : public DaemonProcess {
   base::win::RegKey pairing_registry_unprivileged_key_;
 
   std::unique_ptr<EtwTraceConsumer> etw_trace_consumer_;
-
-  DISALLOW_COPY_AND_ASSIGN(DaemonProcessWin);
 };
 
 DaemonProcessWin::DaemonProcessWin(

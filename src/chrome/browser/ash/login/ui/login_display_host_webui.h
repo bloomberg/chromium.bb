@@ -59,6 +59,10 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public MultiUserWindowManagerObserver {
  public:
   LoginDisplayHostWebUI();
+
+  LoginDisplayHostWebUI(const LoginDisplayHostWebUI&) = delete;
+  LoginDisplayHostWebUI& operator=(const LoginDisplayHostWebUI&) = delete;
+
   ~LoginDisplayHostWebUI() override;
 
   // LoginDisplayHost:
@@ -80,6 +84,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void ShowOsInstallScreen() override;
+  void ShowGuestTosScreen() override;
   void HideOobeDialog() override;
   void SetShelfButtonsEnabled(bool enabled) override;
   void UpdateOobeDialogState(OobeDialogState state) override;
@@ -285,8 +290,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   base::ObserverList<LoginDisplayHost::Observer> observers_;
 
   base::WeakPtrFactory<LoginDisplayHostWebUI> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostWebUI);
 };
 
 }  // namespace ash

@@ -377,25 +377,9 @@ void ComponentLoader::AddFileManagerExtension() {
       l10n_util::GetStringUTF8(IDS_FILEMANAGER_APP_DESCRIPTION));
 }
 
-void ComponentLoader::AddVideoPlayerExtension() {
-  // TODO(b/186168810): Delete this entirely around M96 when it has has a
-  // chance to be cleaned up.
-  if (extensions::ExtensionPrefs::Get(profile_)
-          ->ShouldInstallObsoleteComponentExtension(
-              file_manager::kVideoPlayerAppId)) {
-    Add(IDR_VIDEO_PLAYER_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("video_player")));
-  }
-}
-
 void ComponentLoader::AddAudioPlayerExtension() {
-  // TODO(b/189172062): Guard this with ShouldInstallObsoleteComponentExtension
-  // when the feature is on and stable.
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kMediaAppHandlesAudio)) {
-    Add(IDR_AUDIO_PLAYER_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("audio_player")));
-  }
+  Add(IDR_AUDIO_PLAYER_MANIFEST,
+      base::FilePath(FILE_PATH_LITERAL("audio_player")));
 }
 
 void ComponentLoader::AddImageLoaderExtension() {
@@ -413,21 +397,6 @@ void ComponentLoader::AddGuestModeTestExtension(const base::FilePath& path) {
 
 void ComponentLoader::AddKeyboardApp() {
   Add(IDR_KEYBOARD_MANIFEST, base::FilePath(FILE_PATH_LITERAL("keyboard")));
-}
-
-void ComponentLoader::AddChromeCameraApp() {
-  // Only adding the Chrome App version of camera app for migration purpose.
-  // We should remove this method totally after a few milestones.
-  if (profile_->GetPrefs()->GetBoolean(
-          chromeos::prefs::kHasCameraAppMigratedToSWA)) {
-    return;
-  }
-
-  base::FilePath resources_path;
-  if (base::PathService::Get(chrome::DIR_RESOURCES, &resources_path)) {
-    AddComponentFromDir(resources_path.Append(extension_misc::kCameraAppPath),
-                        extension_misc::kCameraAppId, base::RepeatingClosure());
-  }
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -544,8 +513,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
           switches::kLoadGuestModeTestExtension));
       AddGuestModeTestExtension(path);
     }
-    AddChromeCameraApp();
-    AddVideoPlayerExtension();
     AddAudioPlayerExtension();
     AddFileManagerExtension();
     AddImageLoaderExtension();

@@ -152,13 +152,17 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
                             bool forceTexturesSetting,
                             bool uniformBuffersDirty);
 
-    std::array<uint32_t, mtl::kMaxShaderXFBs> getXfbBindings() const { return mXfbBindings; }
     std::string getTranslatedShaderSource(const gl::ShaderType shaderType) const
     {
         return mMslShaderTranslateInfo[shaderType].metalShaderSource;
     }
 
-    mtl::RenderPipelineCache *mMetalXfbRenderPipelineCache;
+    mtl::TranslatedShaderInfo getTranslatedShaderInfo(const gl::ShaderType shaderType) const
+    {
+        return mMslShaderTranslateInfo[shaderType];
+    }
+
+    bool hasFlatAttribute() const { return programHasFlatAttributes(); }
 
   private:
     template <int cols, int rows>
@@ -232,6 +236,8 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
 
     mtl::BufferPool *getBufferPool(ContextMtl *context);
 
+    bool programHasFlatAttributes() const;
+
     // State for the default uniform blocks.
     struct DefaultUniformBlock final : private angle::NonCopyable
     {
@@ -281,7 +287,6 @@ class ProgramMtl : public ProgramImpl, public mtl::RenderPipelineCacheSpecialize
     uint32_t mShadowCompareModes[mtl::kMaxShaderSamplers];
 
     mtl::RenderPipelineCache mMetalRenderPipelineCache;
-    std::array<uint32_t, mtl::kMaxShaderXFBs> mXfbBindings;
     mtl::BufferPool *mAuxBufferPool;
 };
 

@@ -12,7 +12,6 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/sha2.h"
-#include "extensions/common/constants.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -82,19 +81,30 @@ AppId GenerateAppIdFromManifest(const blink::mojom::Manifest& manifest) {
       crypto::SHA256HashString(GenerateAppIdUnhashedFromManifest(manifest)));
 }
 
+std::string GenerateRecommendedId(const GURL& start_url) {
+  if (!start_url.is_valid()) {
+    return base::EmptyString();
+  }
+
+  std::string full_url = start_url.spec();
+  std::string origin = start_url.GetOrigin().spec();
+  DCHECK(!full_url.empty() && !origin.empty() &&
+         origin.size() <= full_url.size());
+  // Make recommended id starts with a leading slash so it's clear to developers
+  // that it's a root-relative url path. In reality it's always root-relative
+  // because the base_url is the origin.
+  return full_url.substr(origin.size() - 1);
+}
+
 bool IsValidWebAppUrl(const GURL& app_url) {
   if (app_url.is_empty() || app_url.inner_url())
     return false;
-  // kExtensionScheme is defined in extensions/common:common_constants. It's ok
-  // to depend on it.
+
+  // TODO(crbug.com/1253234): Remove chrome-extension scheme and use
+  // SchemeIsHTTPOrHTTPS() instead of IsValidWebAppUrl();
   return app_url.SchemeIs(url::kHttpScheme) ||
          app_url.SchemeIs(url::kHttpsScheme) ||
-         app_url.SchemeIs(extensions::kExtensionScheme);
-}
-
-bool IsValidExtensionUrl(const GURL& app_url) {
-  return !app_url.is_empty() && !app_url.inner_url() &&
-         app_url.SchemeIs(extensions::kExtensionScheme);
+         app_url.SchemeIs("chrome-extension");
 }
 
 absl::optional<AppId> FindInstalledAppWithUrlInScope(Profile* profile,

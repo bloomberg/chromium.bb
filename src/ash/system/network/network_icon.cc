@@ -25,11 +25,11 @@
 #include "components/onc/onc_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/vector_icon_types.h"
 
 using chromeos::network_config::mojom::ActivationStateType;
@@ -49,6 +49,9 @@ class NetworkIconImpl {
   NetworkIconImpl(const std::string& guid,
                   IconType icon_type,
                   NetworkType network_type);
+
+  NetworkIconImpl(const NetworkIconImpl&) = delete;
+  NetworkIconImpl& operator=(const NetworkIconImpl&) = delete;
 
   // Determines whether or not the associated network might be dirty and if so
   // updates and generates the icon. Does nothing if network no longer exists.
@@ -82,8 +85,6 @@ class NetworkIconImpl {
 
   // Generated icon image.
   gfx::ImageSkia image_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkIconImpl);
 };
 
 //------------------------------------------------------------------------------

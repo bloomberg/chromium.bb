@@ -41,6 +41,7 @@ group("resources") {
       "read_later:resources",
       "settings:resources",
       "signin:resources",
+      "support_tool:resources",
       "tab_search:resources",
       "whats_new:resources",
     ]
@@ -68,6 +69,10 @@ group("resources") {
       "nearby_share:resources",
       "settings/chromeos:resources",
     ]
+  }
+
+  if (is_win || is_mac || is_linux || is_chromeos_ash) {
+    public_deps += [ "connectors_internals:resources" ]
   }
 
   if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {
@@ -117,6 +122,7 @@ if (enable_js_type_check) {
       "memory_internals:closure_compile",
       "predictors:closure_compile",
       "reset_password:closure_compile",
+      "support_tool:closure_compile",
     ]
     if (is_linux || is_chromeos || is_win || is_mac) {
       deps += [
@@ -161,9 +167,6 @@ if (enable_js_type_check) {
     }
     if (enable_pdf) {
       deps += [ "pdf:closure_compile" ]
-    }
-    if (enable_print_preview) {
-      deps += [ "print_preview:closure_compile" ]
     }
     if (enable_webui_tab_strip) {
       deps += [ "tab_strip:closure_compile" ]

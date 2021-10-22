@@ -399,12 +399,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
       const ScrollOffset&,
       mojom::blink::ScrollType = mojom::blink::ScrollType::kProgrammatic);
 
-  // This will set the scroll position without clamping, and it will do all
-  // post-update work even if the scroll position didn't change.
-  void SetScrollPositionUnconditionally(
-      const DoublePoint&,
-      mojom::blink::ScrollType = mojom::blink::ScrollType::kProgrammatic);
-
   // TODO(szager): Actually run these after all of layout is finished.
   // Currently, they run at the end of box()'es layout (or after all flexbox
   // layout has finished) but while document layout is still happening.
@@ -451,10 +445,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
                                  kIgnoreOverlayScrollbarSize) const override;
   int HorizontalScrollbarHeight(OverlayScrollbarClipBehavior =
                                     kIgnoreOverlayScrollbarSize) const override;
-
-  DoubleSize AdjustedScrollOffset() const {
-    return ToDoubleSize(DoublePoint(ScrollOrigin()) + scroll_offset_);
-  }
 
   void PositionOverflowControls();
 
@@ -605,10 +595,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntRect ScrollingBackgroundVisualRect(
       const PhysicalOffset& paint_offset) const;
   const DisplayItemClient& GetScrollingBackgroundDisplayItemClient() const {
-    return scrolling_background_display_item_client_;
+    return *scrolling_background_display_item_client_;
   }
   const DisplayItemClient& GetScrollCornerDisplayItemClient() const {
-    return scroll_corner_display_item_client_;
+    return *scroll_corner_display_item_client_;
   }
 
   const cc::SnapContainerData* GetSnapContainerData() const override;
@@ -841,9 +831,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   IntRect vertical_scrollbar_visual_rect_;
   IntRect scroll_corner_and_resizer_visual_rect_;
 
-  class ScrollingBackgroundDisplayItemClient final : public DisplayItemClient {
-    DISALLOW_NEW();
-
+  class ScrollingBackgroundDisplayItemClient final
+      : public GarbageCollected<ScrollingBackgroundDisplayItemClient>,
+        public DisplayItemClient {
    public:
     explicit ScrollingBackgroundDisplayItemClient(
         const PaintLayerScrollableArea& scrollable_area)
@@ -858,9 +848,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
     Member<const PaintLayerScrollableArea> scrollable_area_;
   };
 
-  class ScrollCornerDisplayItemClient final : public DisplayItemClient {
-    DISALLOW_NEW();
-
+  class ScrollCornerDisplayItemClient final
+      : public GarbageCollected<ScrollCornerDisplayItemClient>,
+        public DisplayItemClient {
    public:
     explicit ScrollCornerDisplayItemClient(
         const PaintLayerScrollableArea& scrollable_area)
@@ -875,9 +865,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
     Member<const PaintLayerScrollableArea> scrollable_area_;
   };
 
-  ScrollingBackgroundDisplayItemClient
-      scrolling_background_display_item_client_{*this};
-  ScrollCornerDisplayItemClient scroll_corner_display_item_client_{*this};
+  Member<ScrollingBackgroundDisplayItemClient>
+      scrolling_background_display_item_client_ =
+          MakeGarbageCollected<ScrollingBackgroundDisplayItemClient>(*this);
+  Member<ScrollCornerDisplayItemClient> scroll_corner_display_item_client_ =
+      MakeGarbageCollected<ScrollCornerDisplayItemClient>(*this);
   absl::optional<HistoryItem::ViewState> pending_view_state_;
 };
 

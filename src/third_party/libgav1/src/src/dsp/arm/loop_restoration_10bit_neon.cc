@@ -81,24 +81,28 @@ inline void WienerHorizontalSum(const uint16x8_t s[3], const int16_t filter[4],
 
 inline void WienerHorizontalTap7(const uint16_t* src,
                                  const ptrdiff_t src_stride,
+                                 const ptrdiff_t wiener_stride,
                                  const ptrdiff_t width, const int height,
                                  const int16_t filter[4],
                                  int16_t** const wiener_buffer) {
+  const ptrdiff_t src_width =
+      width + ((kRestorationHorizontalBorder - 1) * sizeof(*src));
   for (int y = height; y != 0; --y) {
     const uint16_t* src_ptr = src;
     uint16x8_t s[8];
     s[0] = vld1q_u16(src_ptr);
-    ptrdiff_t x = width;
+    ptrdiff_t x = wiener_stride;
+    ptrdiff_t valid_bytes = src_width * 2;
     do {
       src_ptr += 8;
-      s[7] = vld1q_u16(src_ptr);
+      valid_bytes -= 16;
+      s[7] = Load1QMsanU16(src_ptr, 16 - valid_bytes);
       s[1] = vextq_u16(s[0], s[7], 1);
       s[2] = vextq_u16(s[0], s[7], 2);
       s[3] = vextq_u16(s[0], s[7], 3);
       s[4] = vextq_u16(s[0], s[7], 4);
       s[5] = vextq_u16(s[0], s[7], 5);
       s[6] = vextq_u16(s[0], s[7], 6);
-
       int32x4x2_t sum;
       sum.val[0] = sum.val[1] =
           vdupq_n_s32(1 << (kInterRoundBitsHorizontal - 1));
@@ -115,17 +119,22 @@ inline void WienerHorizontalTap7(const uint16_t* src,
 
 inline void WienerHorizontalTap5(const uint16_t* src,
                                  const ptrdiff_t src_stride,
+                                 const ptrdiff_t wiener_stride,
                                  const ptrdiff_t width, const int height,
                                  const int16_t filter[4],
                                  int16_t** const wiener_buffer) {
+  const ptrdiff_t src_width =
+      width + ((kRestorationHorizontalBorder - 1) * sizeof(*src));
   for (int y = height; y != 0; --y) {
     const uint16_t* src_ptr = src;
     uint16x8_t s[6];
     s[0] = vld1q_u16(src_ptr);
-    ptrdiff_t x = width;
+    ptrdiff_t x = wiener_stride;
+    ptrdiff_t valid_bytes = src_width * 2;
     do {
       src_ptr += 8;
-      s[5] = vld1q_u16(src_ptr);
+      valid_bytes -= 16;
+      s[5] = Load1QMsanU16(src_ptr, 16 - valid_bytes);
       s[1] = vextq_u16(s[0], s[5], 1);
       s[2] = vextq_u16(s[0], s[5], 2);
       s[3] = vextq_u16(s[0], s[5], 3);
@@ -494,7 +503,6 @@ void WienerFilter_NEON(
                              filter_horizontal);
   PopulateWienerCoefficients(restoration_info, WienerInfo::kVertical,
                              filter_vertical);
-
   // horizontal filtering.
   const int height_horizontal =
       height + kWienerFilterTaps - 1 - 2 * number_rows_to_skip;
@@ -505,20 +513,20 @@ void WienerFilter_NEON(
   const auto* const bottom = static_cast<const uint16_t*>(bottom_border);
   if (number_leading_zero_coefficients[WienerInfo::kHorizontal] == 0) {
     WienerHorizontalTap7(top + (2 - height_extra) * top_border_stride - 3,
-                         top_border_stride, wiener_stride, height_extra,
+                         top_border_stride, wiener_stride, width, height_extra,
                          filter_horizontal, &wiener_buffer_horizontal);
-    WienerHorizontalTap7(src - 3, stride, wiener_stride, height,
+    WienerHorizontalTap7(src - 3, stride, wiener_stride, width, height,
                          filter_horizontal, &wiener_buffer_horizontal);
-    WienerHorizontalTap7(bottom - 3, bottom_border_stride, wiener_stride,
+    WienerHorizontalTap7(bottom - 3, bottom_border_stride, wiener_stride, width,
                          height_extra, filter_horizontal,
                          &wiener_buffer_horizontal);
   } else if (number_leading_zero_coefficients[WienerInfo::kHorizontal] == 1) {
     WienerHorizontalTap5(top + (2 - height_extra) * top_border_stride - 2,
-                         top_border_stride, wiener_stride, height_extra,
+                         top_border_stride, wiener_stride, width, height_extra,
                          filter_horizontal, &wiener_buffer_horizontal);
-    WienerHorizontalTap5(src - 2, stride, wiener_stride, height,
+    WienerHorizontalTap5(src - 2, stride, wiener_stride, width, height,
                          filter_horizontal, &wiener_buffer_horizontal);
-    WienerHorizontalTap5(bottom - 2, bottom_border_stride, wiener_stride,
+    WienerHorizontalTap5(bottom - 2, bottom_border_stride, wiener_stride, width,
                          height_extra, filter_horizontal,
                          &wiener_buffer_horizontal);
   } else if (number_leading_zero_coefficients[WienerInfo::kHorizontal] == 2) {
@@ -570,10 +578,22 @@ void WienerFilter_NEON(
 //------------------------------------------------------------------------------
 // SGR
 
+// SIMD overreads 8 - (width % 8) - 2 * padding pixels, where padding is 3 for
+// Pass 1 and 2 for Pass 2.
+constexpr int kOverreadInBytesPass1 = 4;
+constexpr int kOverreadInBytesPass2 = 8;
+
 inline void LoadAligned16x2U16(const uint16_t* const src[2], const ptrdiff_t x,
                                uint16x8_t dst[2]) {
   dst[0] = vld1q_u16(src[0] + x);
   dst[1] = vld1q_u16(src[1] + x);
+}
+
+inline void LoadAligned16x2U16Msan(const uint16_t* const src[2],
+                                   const ptrdiff_t x, const ptrdiff_t border,
+                                   uint16x8_t dst[2]) {
+  dst[0] = Load1QMsanU16(src[0] + x, sizeof(**src) * (x + 8 - border));
+  dst[1] = Load1QMsanU16(src[1] + x, sizeof(**src) * (x + 8 - border));
 }
 
 inline void LoadAligned16x3U16(const uint16_t* const src[3], const ptrdiff_t x,
@@ -583,9 +603,23 @@ inline void LoadAligned16x3U16(const uint16_t* const src[3], const ptrdiff_t x,
   dst[2] = vld1q_u16(src[2] + x);
 }
 
+inline void LoadAligned16x3U16Msan(const uint16_t* const src[3],
+                                   const ptrdiff_t x, const ptrdiff_t border,
+                                   uint16x8_t dst[3]) {
+  dst[0] = Load1QMsanU16(src[0] + x, sizeof(**src) * (x + 8 - border));
+  dst[1] = Load1QMsanU16(src[1] + x, sizeof(**src) * (x + 8 - border));
+  dst[2] = Load1QMsanU16(src[2] + x, sizeof(**src) * (x + 8 - border));
+}
+
 inline void LoadAligned32U32(const uint32_t* const src, uint32x4_t dst[2]) {
   dst[0] = vld1q_u32(src + 0);
   dst[1] = vld1q_u32(src + 4);
+}
+
+inline void LoadAligned32U32Msan(const uint32_t* const src, const ptrdiff_t x,
+                                 const ptrdiff_t border, uint32x4_t dst[2]) {
+  dst[0] = Load1QMsanU32(src + x + 0, sizeof(*src) * (x + 4 - border));
+  dst[1] = Load1QMsanU32(src + x + 4, sizeof(*src) * (x + 8 - border));
 }
 
 inline void LoadAligned32x2U32(const uint32_t* const src[2], const ptrdiff_t x,
@@ -594,11 +628,26 @@ inline void LoadAligned32x2U32(const uint32_t* const src[2], const ptrdiff_t x,
   LoadAligned32U32(src[1] + x, dst[1]);
 }
 
+inline void LoadAligned32x2U32Msan(const uint32_t* const src[2],
+                                   const ptrdiff_t x, const ptrdiff_t border,
+                                   uint32x4_t dst[2][2]) {
+  LoadAligned32U32Msan(src[0], x, border, dst[0]);
+  LoadAligned32U32Msan(src[1], x, border, dst[1]);
+}
+
 inline void LoadAligned32x3U32(const uint32_t* const src[3], const ptrdiff_t x,
                                uint32x4_t dst[3][2]) {
   LoadAligned32U32(src[0] + x, dst[0]);
   LoadAligned32U32(src[1] + x, dst[1]);
   LoadAligned32U32(src[2] + x, dst[2]);
+}
+
+inline void LoadAligned32x3U32Msan(const uint32_t* const src[3],
+                                   const ptrdiff_t x, const ptrdiff_t border,
+                                   uint32x4_t dst[3][2]) {
+  LoadAligned32U32Msan(src[0], x, border, dst[0]);
+  LoadAligned32U32Msan(src[1], x, border, dst[1]);
+  LoadAligned32U32Msan(src[2], x, border, dst[2]);
 }
 
 inline void StoreAligned32U16(uint16_t* const dst, const uint16x8_t src[2]) {
@@ -889,23 +938,27 @@ inline void Sum565(const uint32x4_t src[3], uint32x4_t dst[2]) {
 }
 
 inline void BoxSum(const uint16_t* src, const ptrdiff_t src_stride,
-                   const ptrdiff_t /*width*/, const ptrdiff_t sum_stride,
+                   const ptrdiff_t width, const ptrdiff_t sum_stride,
                    const ptrdiff_t sum_width, uint16_t* sum3, uint16_t* sum5,
                    uint32_t* square_sum3, uint32_t* square_sum5) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src) * width;
   int y = 2;
   do {
     uint16x8_t s[3];
     uint32x4_t sq[6];
-    s[0] = vld1q_u16(src);
+    s[0] = Load1QMsanU16(src, overread_in_bytes);
     Square(s[0], sq);
     ptrdiff_t x = sum_width;
     do {
       uint16x8_t row3[2], row5[2];
       uint32x4_t row_sq3[2], row_sq5[2];
-      s[1] = vld1q_u16(src + 8);
+      s[1] = Load1QMsanU16(
+          src + 8, overread_in_bytes + sizeof(*src) * (sum_width - x + 8));
       x -= 16;
       src += 16;
-      s[2] = vld1q_u16(src);
+      s[2] = Load1QMsanU16(src,
+                           overread_in_bytes + sizeof(*src) * (sum_width - x));
       Square(s[1], sq + 2);
       Square(s[2], sq + 4);
       SumHorizontal16(s, &row3[0], &row3[1], &row5[0], &row5[1]);
@@ -937,24 +990,29 @@ inline void BoxSum(const uint16_t* src, const ptrdiff_t src_stride,
 
 template <int size>
 inline void BoxSum(const uint16_t* src, const ptrdiff_t src_stride,
-                   const ptrdiff_t /*width*/, const ptrdiff_t sum_stride,
+                   const ptrdiff_t width, const ptrdiff_t sum_stride,
                    const ptrdiff_t sum_width, uint16_t* sums,
                    uint32_t* square_sums) {
   static_assert(size == 3 || size == 5, "");
+  const ptrdiff_t overread_in_bytes =
+      ((size == 5) ? kOverreadInBytesPass1 : kOverreadInBytesPass2) -
+      sizeof(*src) * width;
   int y = 2;
   do {
     uint16x8_t s[3];
     uint32x4_t sq[6];
-    s[0] = vld1q_u16(src);
+    s[0] = Load1QMsanU16(src, overread_in_bytes);
     Square(s[0], sq);
     ptrdiff_t x = sum_width;
     do {
       uint16x8_t row[2];
       uint32x4_t row_sq[4];
-      s[1] = vld1q_u16(src + 8);
+      s[1] = Load1QMsanU16(
+          src + 8, overread_in_bytes + sizeof(*src) * (sum_width - x + 8));
       x -= 16;
       src += 16;
-      s[2] = vld1q_u16(src);
+      s[2] = Load1QMsanU16(src,
+                           overread_in_bytes + sizeof(*src) * (sum_width - x));
       Square(s[1], sq + 2);
       Square(s[2], sq + 4);
       if (size == 3) {
@@ -1307,7 +1365,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess5Lo(
 }
 
 LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess5(
-    const uint16x8_t s[2][4], const ptrdiff_t /*sum_width*/, const ptrdiff_t x,
+    const uint16x8_t s[2][4], const ptrdiff_t sum_width, const ptrdiff_t x,
     const uint32_t scale, uint16_t* const sum5[5],
     uint32_t* const square_sum5[5], uint32x4_t sq[2][8], uint8x16_t ma[2],
     uint32x4_t b[6]) {
@@ -1337,8 +1395,8 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess5(
   StoreAligned32U32(square_sum5[3] + x + 8, sq5[3]);
   Sum5Horizontal32(sq[1] + 4, sq5[4]);
   StoreAligned32U32(square_sum5[4] + x + 8, sq5[4]);
-  LoadAligned16x3U16(sum5, x + 8, s5[1]);
-  LoadAligned32x3U32(square_sum5, x + 8, sq5);
+  LoadAligned16x3U16Msan(sum5, x + 8, sum_width, s5[1]);
+  LoadAligned32x3U32Msan(square_sum5, x + 8, sum_width, sq5);
   CalculateIntermediate5<0>(s5[1], sq5, scale, &ma[1], b + 4);
 }
 
@@ -1359,7 +1417,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess5LastRowLo(
 }
 
 LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess5LastRow(
-    const uint16x8_t s[4], const ptrdiff_t /*sum_width*/, const ptrdiff_t x,
+    const uint16x8_t s[4], const ptrdiff_t sum_width, const ptrdiff_t x,
     const uint32_t scale, const uint16_t* const sum5[5],
     const uint32_t* const square_sum5[5], uint32x4_t sq[8], uint8x16_t ma[2],
     uint32x4_t b[6]) {
@@ -1381,8 +1439,8 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess5LastRow(
   Sum5Horizontal32(sq + 4, sq5[3]);
   sq5[4][0] = sq5[3][0];
   sq5[4][1] = sq5[3][1];
-  LoadAligned16x3U16(sum5, x + 8, s5[1]);
-  LoadAligned32x3U32(square_sum5, x + 8, sq5);
+  LoadAligned16x3U16Msan(sum5, x + 8, sum_width, s5[1]);
+  LoadAligned32x3U32Msan(square_sum5, x + 8, sum_width, sq5);
   CalculateIntermediate5<0>(s5[1], sq5, scale, &ma[1], b + 4);
 }
 
@@ -1403,7 +1461,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess3Lo(
 }
 
 LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess3(
-    const uint16x8_t s[4], const ptrdiff_t x, const ptrdiff_t /*sum_width*/,
+    const uint16x8_t s[4], const ptrdiff_t x, const ptrdiff_t sum_width,
     const uint32_t scale, uint16_t* const sum3[3],
     uint32_t* const square_sum3[3], uint32x4_t sq[8], uint8x16_t ma[2],
     uint32x4_t b[6]) {
@@ -1423,8 +1481,8 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess3(
   Square(s[3], sq + 6);
   Sum3Horizontal32(sq + 4, sq3[2]);
   StoreAligned32U32(square_sum3[2] + x + 8, sq3[2]);
-  LoadAligned16x2U16(sum3, x + 8, s3 + 1);
-  LoadAligned32x2U32(square_sum3, x + 8, sq3);
+  LoadAligned16x2U16Msan(sum3, x + 8, sum_width, s3 + 1);
+  LoadAligned32x2U32Msan(square_sum3, x + 8, sum_width, sq3);
   CalculateSumAndIndex3(s3 + 1, sq3, scale, &sum[1], &index[1]);
   CalculateIntermediate(sum, index, ma, b + 2);
 }
@@ -1466,7 +1524,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess(
     const uint16x8_t s[2][4], const ptrdiff_t x, const uint16_t scales[2],
     uint16_t* const sum3[4], uint16_t* const sum5[5],
     uint32_t* const square_sum3[4], uint32_t* const square_sum5[5],
-    const ptrdiff_t /*sum_width*/, uint32x4_t sq[2][8], uint8x16_t ma3[2][2],
+    const ptrdiff_t sum_width, uint32x4_t sq[2][8], uint8x16_t ma3[2][2],
     uint32x4_t b3[2][6], uint8x16_t ma5[2], uint32x4_t b5[6]) {
   uint16x8_t s3[2][4], s5[2][5], sum[2][2], index[2][2];
   uint32x4_t sq3[4][2], sq5[5][2];
@@ -1506,15 +1564,15 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcess(
   SumHorizontal32(sq[1] + 4, &sq3[3][0], &sq3[3][1], &sq5[4][0], &sq5[4][1]);
   StoreAligned32U32(square_sum3[3] + x + 8, sq3[3]);
   StoreAligned32U32(square_sum5[4] + x + 8, sq5[4]);
-  LoadAligned16x2U16(sum3, x + 8, s3[1]);
-  LoadAligned32x2U32(square_sum3, x + 8, sq3);
+  LoadAligned16x2U16Msan(sum3, x + 8, sum_width, s3[1]);
+  LoadAligned32x2U32Msan(square_sum3, x + 8, sum_width, sq3);
   CalculateSumAndIndex3(s3[1], sq3, scales[1], &sum[0][1], &index[0][1]);
   CalculateSumAndIndex3(s3[1] + 1, sq3 + 1, scales[1], &sum[1][1],
                         &index[1][1]);
   CalculateIntermediate(sum[0], index[0], ma3[0], b3[0] + 2);
   CalculateIntermediate(sum[1], index[1], ma3[1], b3[1] + 2);
-  LoadAligned16x3U16(sum5, x + 8, s5[1]);
-  LoadAligned32x3U32(square_sum5, x + 8, sq5);
+  LoadAligned16x3U16Msan(sum5, x + 8, sum_width, s5[1]);
+  LoadAligned32x3U32Msan(square_sum5, x + 8, sum_width, sq5);
   CalculateIntermediate5<0>(s5[1], sq5, scales[0], &ma5[1], b5 + 4);
 }
 
@@ -1542,7 +1600,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcessLastRowLo(
 }
 
 LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcessLastRow(
-    const uint16x8_t s[4], const ptrdiff_t /*sum_width*/, const ptrdiff_t x,
+    const uint16x8_t s[4], const ptrdiff_t sum_width, const ptrdiff_t x,
     const uint16_t scales[2], const uint16_t* const sum3[4],
     const uint16_t* const sum5[5], const uint32_t* const square_sum3[4],
     const uint32_t* const square_sum5[5], uint32x4_t sq[8], uint8x16_t ma3[2],
@@ -1565,14 +1623,14 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPreProcessLastRow(
 
   Square(s[3], sq + 6);
   SumHorizontal32(sq + 4, &sq3[2][0], &sq3[2][1], &sq5[3][0], &sq5[3][1]);
-  LoadAligned16x3U16(sum5, x + 8, s5[1]);
+  LoadAligned16x3U16Msan(sum5, x + 8, sum_width, s5[1]);
   s5[1][4] = s5[1][3];
-  LoadAligned32x3U32(square_sum5, x + 8, sq5);
+  LoadAligned32x3U32Msan(square_sum5, x + 8, sum_width, sq5);
   sq5[4][0] = sq5[3][0];
   sq5[4][1] = sq5[3][1];
   CalculateIntermediate5<0>(s5[1], sq5, scales[0], ma5 + 1, b5 + 4);
-  LoadAligned16x2U16(sum3, x + 8, s3[1]);
-  LoadAligned32x2U32(square_sum3, x + 8, sq3);
+  LoadAligned16x2U16Msan(sum3, x + 8, sum_width, s3[1]);
+  LoadAligned32x2U32Msan(square_sum3, x + 8, sum_width, sq3);
   CalculateSumAndIndex3(s3[1], sq3, scales[1], &sum[1], &index[1]);
   CalculateIntermediate(sum, index, ma3, b3 + 2);
 }
@@ -1584,14 +1642,16 @@ inline void BoxSumFilterPreProcess5(const uint16_t* const src0,
                                     uint32_t* const square_sum5[5],
                                     const ptrdiff_t sum_width, uint16_t* ma565,
                                     uint32_t* b565) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src0) * width;
   uint16x8_t s[2][4];
   uint8x16_t mas[2];
   uint32x4_t sq[2][8], bs[6];
 
-  s[0][0] = vld1q_u16(src0 + 0);
-  s[0][1] = vld1q_u16(src0 + 8);
-  s[1][0] = vld1q_u16(src1 + 0);
-  s[1][1] = vld1q_u16(src1 + 8);
+  s[0][0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[0][1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
+  s[1][0] = Load1QMsanU16(src1 + 0, overread_in_bytes + 0);
+  s[1][1] = Load1QMsanU16(src1 + 8, overread_in_bytes + 16);
   Square(s[0][0], sq[0]);
   Square(s[1][0], sq[1]);
   BoxFilterPreProcess5Lo(s, scale, sum5, square_sum5, sq, &mas[0], bs);
@@ -1602,10 +1662,15 @@ inline void BoxSumFilterPreProcess5(const uint16_t* const src0,
     uint16x8_t ma[2];
     uint32x4_t b[4];
 
-    s[0][2] = vld1q_u16(src0 + x + 16);
-    s[0][3] = vld1q_u16(src0 + x + 24);
-    s[1][2] = vld1q_u16(src1 + x + 16);
-    s[1][3] = vld1q_u16(src1 + x + 24);
+    s[0][2] = Load1QMsanU16(src0 + x + 16,
+                            overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[0][3] = Load1QMsanU16(src0 + x + 24,
+                            overread_in_bytes + sizeof(*src0) * (x + 24));
+    s[1][2] = Load1QMsanU16(src1 + x + 16,
+                            overread_in_bytes + sizeof(*src1) * (x + 16));
+    s[1][3] = Load1QMsanU16(src1 + x + 24,
+                            overread_in_bytes + sizeof(*src1) * (x + 24));
+
     BoxFilterPreProcess5(s, sum_width, x + 8, scale, sum5, square_sum5, sq, mas,
                          bs);
     Prepare3_8<0>(mas, ma5);
@@ -1638,12 +1703,14 @@ LIBGAV1_ALWAYS_INLINE void BoxSumFilterPreProcess3(
     uint16_t* const sum3[3], uint32_t* const square_sum3[3],
     const ptrdiff_t sum_width, uint16_t* ma343, uint16_t* ma444, uint32_t* b343,
     uint32_t* b444) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass2 - sizeof(*src) * width;
   uint16x8_t s[4];
   uint8x16_t mas[2];
   uint32x4_t sq[8], bs[6];
 
-  s[0] = vld1q_u16(src + 0);
-  s[1] = vld1q_u16(src + 8);
+  s[0] = Load1QMsanU16(src + 0, overread_in_bytes + 0);
+  s[1] = Load1QMsanU16(src + 8, overread_in_bytes + 16);
   Square(s[0], sq);
   // Quiet "may be used uninitialized" warning.
   mas[0] = mas[1] = vdupq_n_u8(0);
@@ -1651,8 +1718,10 @@ LIBGAV1_ALWAYS_INLINE void BoxSumFilterPreProcess3(
 
   int x = 0;
   do {
-    s[2] = vld1q_u16(src + x + 16);
-    s[3] = vld1q_u16(src + x + 24);
+    s[2] = Load1QMsanU16(src + x + 16,
+                         overread_in_bytes + sizeof(*src) * (x + 16));
+    s[3] = Load1QMsanU16(src + x + 24,
+                         overread_in_bytes + sizeof(*src) * (x + 24));
     BoxFilterPreProcess3(s, x + 8, sum_width, scale, sum3, square_sum3, sq, mas,
                          bs);
     uint8x16_t ma3[3];
@@ -1691,14 +1760,16 @@ inline void BoxSumFilterPreProcess(
     const ptrdiff_t sum_width, uint16_t* const ma343[4], uint16_t* const ma444,
     uint16_t* ma565, uint32_t* const b343[4], uint32_t* const b444,
     uint32_t* b565) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src0) * width;
   uint16x8_t s[2][4];
   uint8x16_t ma3[2][2], ma5[2];
   uint32x4_t sq[2][8], b3[2][6], b5[6];
 
-  s[0][0] = vld1q_u16(src0 + 0);
-  s[0][1] = vld1q_u16(src0 + 8);
-  s[1][0] = vld1q_u16(src1 + 0);
-  s[1][1] = vld1q_u16(src1 + 8);
+  s[0][0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[0][1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
+  s[1][0] = Load1QMsanU16(src1 + 0, overread_in_bytes + 0);
+  s[1][1] = Load1QMsanU16(src1 + 8, overread_in_bytes + 16);
   Square(s[0][0], sq[0]);
   Square(s[1][0], sq[1]);
   BoxFilterPreProcessLo(s, scales, sum3, sum5, square_sum3, square_sum5, sq,
@@ -1710,10 +1781,14 @@ inline void BoxSumFilterPreProcess(
     uint32x4_t b[4];
     uint8x16_t ma3x[3], ma5x[3];
 
-    s[0][2] = vld1q_u16(src0 + x + 16);
-    s[0][3] = vld1q_u16(src0 + x + 24);
-    s[1][2] = vld1q_u16(src1 + x + 16);
-    s[1][3] = vld1q_u16(src1 + x + 24);
+    s[0][2] = Load1QMsanU16(src0 + x + 16,
+                            overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[0][3] = Load1QMsanU16(src0 + x + 24,
+                            overread_in_bytes + sizeof(*src0) * (x + 24));
+    s[1][2] = Load1QMsanU16(src1 + x + 16,
+                            overread_in_bytes + sizeof(*src1) * (x + 16));
+    s[1][3] = Load1QMsanU16(src1 + x + 24,
+                            overread_in_bytes + sizeof(*src1) * (x + 24));
     BoxFilterPreProcess(s, x + 8, scales, sum3, sum5, square_sum3, square_sum5,
                         sum_width, sq, ma3, b3, ma5, b5);
 
@@ -1842,14 +1917,17 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass1(
     uint32_t* const square_sum5[5], const int width, const ptrdiff_t sum_width,
     const uint32_t scale, const int16_t w0, uint16_t* const ma565[2],
     uint32_t* const b565[2], uint16_t* const dst) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src0) * width;
   uint16x8_t s[2][4];
   uint8x16_t mas[2];
   uint32x4_t sq[2][8], bs[6];
 
-  s[0][0] = vld1q_u16(src0 + 0);
-  s[0][1] = vld1q_u16(src0 + 8);
-  s[1][0] = vld1q_u16(src1 + 0);
-  s[1][1] = vld1q_u16(src1 + 8);
+  s[0][0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[0][1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
+  s[1][0] = Load1QMsanU16(src1 + 0, overread_in_bytes + 0);
+  s[1][1] = Load1QMsanU16(src1 + 8, overread_in_bytes + 16);
+
   Square(s[0][0], sq[0]);
   Square(s[1][0], sq[1]);
   BoxFilterPreProcess5Lo(s, scale, sum5, square_sum5, sq, &mas[0], bs);
@@ -1861,10 +1939,14 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass1(
     uint8x16_t ma5[3];
     int16x8_t p[2];
 
-    s[0][2] = vld1q_u16(src0 + x + 16);
-    s[0][3] = vld1q_u16(src0 + x + 24);
-    s[1][2] = vld1q_u16(src1 + x + 16);
-    s[1][3] = vld1q_u16(src1 + x + 24);
+    s[0][2] = Load1QMsanU16(src0 + x + 16,
+                            overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[0][3] = Load1QMsanU16(src0 + x + 24,
+                            overread_in_bytes + sizeof(*src0) * (x + 24));
+    s[1][2] = Load1QMsanU16(src1 + x + 16,
+                            overread_in_bytes + sizeof(*src1) * (x + 16));
+    s[1][3] = Load1QMsanU16(src1 + x + 24,
+                            overread_in_bytes + sizeof(*src1) * (x + 24));
     BoxFilterPreProcess5(s, sum_width, x + 8, scale, sum5, square_sum5, sq, mas,
                          bs);
     Prepare3_8<0>(mas, ma5);
@@ -1917,12 +1999,14 @@ inline void BoxFilterPass1LastRow(
     const ptrdiff_t sum_width, const uint32_t scale, const int16_t w0,
     uint16_t* const sum5[5], uint32_t* const square_sum5[5], uint16_t* ma565,
     uint32_t* b565, uint16_t* const dst) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src0) * width;
   uint16x8_t s[4];
   uint8x16_t mas[2];
   uint32x4_t sq[8], bs[6];
 
-  s[0] = vld1q_u16(src0 + 0);
-  s[1] = vld1q_u16(src0 + 8);
+  s[0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
   Square(s[0], sq);
   BoxFilterPreProcess5LastRowLo(s, scale, sum5, square_sum5, sq, &mas[0], bs);
 
@@ -1932,8 +2016,10 @@ inline void BoxFilterPass1LastRow(
     uint32x4_t b[2][2];
     uint8x16_t ma5[3];
 
-    s[2] = vld1q_u16(src0 + x + 16);
-    s[3] = vld1q_u16(src0 + x + 24);
+    s[2] = Load1QMsanU16(src0 + x + 16,
+                         overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[3] = Load1QMsanU16(src0 + x + 24,
+                         overread_in_bytes + sizeof(*src0) * (x + 24));
     BoxFilterPreProcess5LastRow(s, sum_width, x + 8, scale, sum5, square_sum5,
                                 sq, mas, bs);
     Prepare3_8<0>(mas, ma5);
@@ -1972,12 +2058,14 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass2(
     uint16_t* const sum3[3], uint32_t* const square_sum3[3],
     uint16_t* const ma343[3], uint16_t* const ma444[2], uint32_t* const b343[3],
     uint32_t* const b444[2], uint16_t* const dst) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass2 - sizeof(*src0) * width;
   uint16x8_t s[4];
   uint8x16_t mas[2];
   uint32x4_t sq[8], bs[6];
 
-  s[0] = vld1q_u16(src0 + 0);
-  s[1] = vld1q_u16(src0 + 8);
+  s[0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
   Square(s[0], sq);
   // Quiet "may be used uninitialized" warning.
   mas[0] = mas[1] = vdupq_n_u8(0);
@@ -1985,8 +2073,10 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass2(
 
   int x = 0;
   do {
-    s[2] = vld1q_u16(src0 + x + 16);
-    s[3] = vld1q_u16(src0 + x + 24);
+    s[2] = Load1QMsanU16(src0 + x + 16,
+                         overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[3] = Load1QMsanU16(src0 + x + 24,
+                         overread_in_bytes + sizeof(*src0) * (x + 24));
     BoxFilterPreProcess3(s, x + 8, sum_width, scale, sum3, square_sum3, sq, mas,
                          bs);
     uint16x8_t ma[3];
@@ -2034,14 +2124,16 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
     const ptrdiff_t sum_width, uint16_t* const ma343[4],
     uint16_t* const ma444[3], uint16_t* const ma565[2], uint32_t* const b343[4],
     uint32_t* const b444[3], uint32_t* const b565[2], uint16_t* const dst) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src0) * width;
   uint16x8_t s[2][4];
   uint8x16_t ma3[2][2], ma5[2];
   uint32x4_t sq[2][8], b3[2][6], b5[6];
 
-  s[0][0] = vld1q_u16(src0 + 0);
-  s[0][1] = vld1q_u16(src0 + 8);
-  s[1][0] = vld1q_u16(src1 + 0);
-  s[1][1] = vld1q_u16(src1 + 8);
+  s[0][0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[0][1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
+  s[1][0] = Load1QMsanU16(src1 + 0, overread_in_bytes + 0);
+  s[1][1] = Load1QMsanU16(src1 + 8, overread_in_bytes + 16);
   Square(s[0][0], sq[0]);
   Square(s[1][0], sq[1]);
   BoxFilterPreProcessLo(s, scales, sum3, sum5, square_sum3, square_sum5, sq,
@@ -2054,10 +2146,14 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
     uint8x16_t ma3x[2][3], ma5x[3];
     int16x8_t p[2][2];
 
-    s[0][2] = vld1q_u16(src0 + x + 16);
-    s[0][3] = vld1q_u16(src0 + x + 24);
-    s[1][2] = vld1q_u16(src1 + x + 16);
-    s[1][3] = vld1q_u16(src1 + x + 24);
+    s[0][2] = Load1QMsanU16(src0 + x + 16,
+                            overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[0][3] = Load1QMsanU16(src0 + x + 24,
+                            overread_in_bytes + sizeof(*src0) * (x + 24));
+    s[1][2] = Load1QMsanU16(src1 + x + 16,
+                            overread_in_bytes + sizeof(*src1) * (x + 16));
+    s[1][3] = Load1QMsanU16(src1 + x + 24,
+                            overread_in_bytes + sizeof(*src1) * (x + 24));
 
     BoxFilterPreProcess(s, x + 8, scales, sum3, sum5, square_sum3, square_sum5,
                         sum_width, sq, ma3, b3, ma5, b5);
@@ -2097,8 +2193,10 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
     vst1q_u16(ma565[1] + x + 8, ma[0][1]);
     Sum565(b5 + 2, b[0][1]);
     StoreAligned32U32(b565[1] + x + 8, b[0][1]);
-    const uint16x8_t sr0_hi = vld1q_u16(src + x + 8);
-    const uint16x8_t sr1_hi = vld1q_u16(src + stride + x + 8);
+    const uint16x8_t sr0_hi = Load1QMsanU16(
+        src + x + 8, overread_in_bytes + 4 + sizeof(*src) * (x + 8));
+    const uint16x8_t sr1_hi = Load1QMsanU16(
+        src + stride + x + 8, overread_in_bytes + 4 + sizeof(*src) * (x + 8));
     ma[0][0] = vld1q_u16(ma565[0] + x + 8);
     LoadAligned32U32(b565[0] + x + 8, b[0][0]);
     p[0][0] = CalculateFilteredOutputPass1(sr0_hi, ma[0], b[0]);
@@ -2146,14 +2244,16 @@ inline void BoxFilterLastRow(
     uint16_t* const ma343, uint16_t* const ma444, uint16_t* const ma565,
     uint32_t* const b343, uint32_t* const b444, uint32_t* const b565,
     uint16_t* const dst) {
+  const ptrdiff_t overread_in_bytes =
+      kOverreadInBytesPass1 - sizeof(*src0) * width;
   uint16x8_t s[4];
   uint8x16_t ma3[2], ma5[2];
   uint32x4_t sq[8], b3[6], b5[6];
   uint16x8_t ma[3];
   uint32x4_t b[3][2];
 
-  s[0] = vld1q_u16(src0 + 0);
-  s[1] = vld1q_u16(src0 + 8);
+  s[0] = Load1QMsanU16(src0 + 0, overread_in_bytes + 0);
+  s[1] = Load1QMsanU16(src0 + 8, overread_in_bytes + 16);
   Square(s[0], sq);
   // Quiet "may be used uninitialized" warning.
   ma3[0] = ma3[1] = vdupq_n_u8(0);
@@ -2165,8 +2265,10 @@ inline void BoxFilterLastRow(
     uint8x16_t ma3x[3], ma5x[3];
     int16x8_t p[2];
 
-    s[2] = vld1q_u16(src0 + x + 16);
-    s[3] = vld1q_u16(src0 + x + 24);
+    s[2] = Load1QMsanU16(src0 + x + 16,
+                         overread_in_bytes + sizeof(*src0) * (x + 16));
+    s[3] = Load1QMsanU16(src0 + x + 24,
+                         overread_in_bytes + sizeof(*src0) * (x + 24));
     BoxFilterPreProcessLastRow(s, sum_width, x + 8, scales, sum3, sum5,
                                square_sum3, square_sum5, sq, ma3, ma5, b3, b5);
     Prepare3_8<0>(ma3, ma3x);
@@ -2190,7 +2292,8 @@ inline void BoxFilterLastRow(
     Sum565(b5 + 2, b[1]);
     ma[2] = Sum343Hi(ma3x);
     Sum343(b3 + 2, b[2]);
-    const uint16x8_t sr_hi = vld1q_u16(src + x + 8);
+    const uint16x8_t sr_hi = Load1QMsanU16(
+        src + x + 8, overread_in_bytes + 4 + sizeof(*src) * (x + 8));
     ma[0] = vld1q_u16(ma565 + x + 8);
     LoadAligned32U32(b565 + x + 8, b[0]);
     p[0] = CalculateFilteredOutputPass1(sr_hi, ma, b);
@@ -2354,6 +2457,7 @@ inline void BoxFilterProcessPass1(const RestorationUnitInfo& restoration_info,
   b565[0] = sgr_buffer->b565;
   b565[1] = b565[0] + temp_stride;
   assert(scale != 0);
+
   BoxSum<5>(top_border, top_border_stride, width, sum_stride, sum_width,
             sum5[1], square_sum5[1]);
   sum5[0] = sum5[1];

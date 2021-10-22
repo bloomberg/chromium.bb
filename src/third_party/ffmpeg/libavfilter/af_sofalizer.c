@@ -604,9 +604,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     td.temp_afft = s->temp_afft;
 
     if (s->type == TIME_DOMAIN) {
-        ctx->internal->execute(ctx, sofalizer_convolute, &td, NULL, 2);
+        ff_filter_execute(ctx, sofalizer_convolute, &td, NULL, 2);
     } else if (s->type == FREQUENCY_DOMAIN) {
-        ctx->internal->execute(ctx, sofalizer_fast_convolute, &td, NULL, 2);
+        ff_filter_execute(ctx, sofalizer_fast_convolute, &td, NULL, 2);
     }
     emms_c();
 
@@ -648,7 +648,6 @@ static int activate(AVFilterContext *ctx)
 static int query_formats(AVFilterContext *ctx)
 {
     struct SOFAlizerContext *s = ctx->priv;
-    AVFilterFormats *formats = NULL;
     AVFilterChannelLayouts *layouts = NULL;
     int ret, sample_rates[] = { 48000, -1 };
     static const enum AVSampleFormat sample_fmts[] = {
@@ -656,10 +655,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_NONE
     };
 
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret)
         return ret;
 
@@ -681,10 +677,7 @@ static int query_formats(AVFilterContext *ctx)
         return ret;
 
     sample_rates[0] = s->sample_rate;
-    formats = ff_make_format_list(sample_rates);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_samplerates_from_list(ctx, sample_rates);
 }
 
 static int getfilter_float(AVFilterContext *ctx, float x, float y, float z,
@@ -1102,7 +1095,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1110,7 +1102,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_sofalizer = {
@@ -1122,7 +1113,7 @@ const AVFilter ff_af_sofalizer = {
     .activate      = activate,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

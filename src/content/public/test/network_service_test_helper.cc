@@ -97,6 +97,9 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     }
   }
 
+  NetworkServiceTestImpl(const NetworkServiceTestImpl&) = delete;
+  NetworkServiceTestImpl& operator=(const NetworkServiceTestImpl&) = delete;
+
   ~NetworkServiceTestImpl() override {
     network::NetworkContext::SetCertVerifierForTesting(nullptr);
   }
@@ -115,6 +118,10 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
           break;
         case network::mojom::ResolverType::kResolverTypeFailTimeout:
           host_resolver->AddSimulatedTimeoutFailure(rule->host_pattern);
+          break;
+        case network::mojom::ResolverType::
+            kResolverTypeFailHTTPSServiceFormRecord:
+          host_resolver->AddSimulatedHTTPSServiceFormRecord(rule->host_pattern);
           break;
         case network::mojom::ResolverType::kResolverTypeIPLiteral: {
           net::IPAddress ip_address;
@@ -310,8 +317,6 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   base::MemoryPressureListener::MemoryPressureLevel
       latest_memory_pressure_level_ =
           base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkServiceTestImpl);
 };
 
 NetworkServiceTestHelper::NetworkServiceTestHelper()

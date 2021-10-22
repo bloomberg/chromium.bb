@@ -492,9 +492,10 @@ void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
       kInsecureDownloadHistogramTargetInsecure};
 
   std::vector<const std::string> histograms;
-  for (auto* initiator : initiator_types) {
-    for (auto* download : download_types) {
-      histograms.push_back(GetDLBlockingHistogramName(initiator, download));
+  for (auto* initiator_init : initiator_types) {
+    for (auto* download_init : download_types) {
+      histograms.push_back(
+          GetDLBlockingHistogramName(initiator_init, download_init));
     }
   }
 
@@ -1710,6 +1711,9 @@ class TestDownloadDialogBridge : public DownloadDialogBridge {
  public:
   TestDownloadDialogBridge() = default;
 
+  TestDownloadDialogBridge(const TestDownloadDialogBridge&) = delete;
+  TestDownloadDialogBridge& operator=(const TestDownloadDialogBridge&) = delete;
+
   // DownloadDialogBridge implementation.
   void ShowDialog(gfx::NativeWindow native_window,
                   int64_t total_bytes,
@@ -1718,6 +1722,7 @@ class TestDownloadDialogBridge : public DownloadDialogBridge {
                   const base::FilePath& suggested_path,
                   bool supports_later_dialog,
                   bool show_date_time_picker,
+                  bool is_incognito,
                   DownloadDialogBridge::DialogCallback callback) override {
     dialog_shown_count_++;
     dialog_type_ = dialog_type;
@@ -1745,8 +1750,6 @@ class TestDownloadDialogBridge : public DownloadDialogBridge {
   DownloadLocationDialogType dialog_type_;
   DownloadTargetDeterminerDelegate::ConfirmationCallback
       dialog_complete_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDownloadDialogBridge);
 };
 
 }  // namespace

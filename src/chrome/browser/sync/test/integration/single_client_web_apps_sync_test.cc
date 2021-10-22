@@ -47,8 +47,8 @@ const char kVersion[] = "1.0.0.1";
 // the OS sync feature.
 class SingleClientWebAppsOsSyncTest : public SyncConsentOptionalSyncTest {
  public:
-  SingleClientWebAppsOsSyncTest() : SyncConsentOptionalSyncTest(SINGLE_CLIENT) {
-  }
+  SingleClientWebAppsOsSyncTest()
+      : SyncConsentOptionalSyncTest(SINGLE_CLIENT) {}
   ~SingleClientWebAppsOsSyncTest() override = default;
 };
 
@@ -122,15 +122,14 @@ class SingleClientWebAppsSyncTest : public SyncTest {
             kDefaultTime));
   }
 
+  // TODO(crbug.com/1065748): remove this function and any tests.
   void InjectBookmarkAppEntityToFakeServer(const std::string& app_id,
                                            const std::string& url) {
     sync_pb::EntitySpecifics entity;
     sync_pb::AppSpecifics* app_specifics = entity.mutable_app();
-    app_specifics->set_bookmark_app_url(url);
 
     sync_pb::ExtensionSpecifics* extension_specifics =
         app_specifics->mutable_extension();
-    extension_specifics->set_name(app_id);
     // Required fields for a valid ExtensionSpecifics
     extension_specifics->set_id(app_id);
     extension_specifics->set_update_url(url);
@@ -256,6 +255,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   info.description = u"Test description";
   info.start_url = url;
   info.scope = url;
+  info.manifest_id = manifest_id;
   const web_app::AppId installed_app_id =
       apps_helper::InstallWebApp(GetProfile(0), info);
 
@@ -285,6 +285,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWebAppsSyncTest,
   info.description = u"Test description";
   info.start_url = url;
   info.scope = url;
+  info.manifest_id = manifest_id;
   const web_app::AppId installed_app_id =
       apps_helper::InstallWebApp(GetProfile(0), info);
 

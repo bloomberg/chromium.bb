@@ -22,6 +22,7 @@
 #include "src/gpu/GrUtil.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/vk/GrVkGpu.h"
+#include "src/gpu/vk/GrVkImage.h"
 #include "src/gpu/vk/GrVkInterface.h"
 #include "src/gpu/vk/GrVkRenderTarget.h"
 #include "src/gpu/vk/GrVkTexture.h"
@@ -395,6 +396,7 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
     // On ARM devices we are seeing an average perf win of around 50%-60% across the board.
     if (kARM_VkVendor == properties.vendorID) {
         fPreferDiscardableMSAAAttachment = true;
+        fSupportsMemorylessAttachments = true;
     }
 
     this->initGrCaps(vkInterface, physDev, properties, memoryProperties, features, extensions);
@@ -1543,16 +1545,16 @@ GrCaps::SurfaceReadPixelsSupport GrVkCaps::surfaceSupportsReadPixels(
         return SurfaceReadPixelsSupport::kUnsupported;
     }
     if (auto tex = static_cast<const GrVkTexture*>(surface->asTexture())) {
-        auto texAttachment = tex->textureAttachment();
-        if (!texAttachment) {
+        auto texImage = tex->textureImage();
+        if (!texImage) {
             return SurfaceReadPixelsSupport::kUnsupported;
         }
         // We can't directly read from a VkImage that has a ycbcr sampler.
-        if (texAttachment->ycbcrConversionInfo().isValid()) {
+        if (texImage->ycbcrConversionInfo().isValid()) {
             return SurfaceReadPixelsSupport::kCopyToTexture2D;
         }
         // We can't directly read from a compressed format
-        if (GrVkFormatIsCompressed(texAttachment->imageFormat())) {
+        if (GrVkFormatIsCompressed(texImage->imageFormat())) {
             return SurfaceReadPixelsSupport::kCopyToTexture2D;
         }
         return SurfaceReadPixelsSupport::kSupported;
@@ -1581,12 +1583,12 @@ bool GrVkCaps::onSurfaceSupportsWritePixels(const GrSurface* surface) const {
     }
     // We can't write to a texture that has a ycbcr sampler.
     if (auto tex = static_cast<const GrVkTexture*>(surface->asTexture())) {
-        auto texAttachment = tex->textureAttachment();
-        if (!texAttachment) {
+        auto texImage = tex->textureImage();
+        if (!texImage) {
             return false;
         }
         // We can't directly read from a VkImage that has a ycbcr sampler.
-        if (texAttachment->ycbcrConversionInfo().isValid()) {
+        if (texImage->ycbcrConversionInfo().isValid()) {
             return false;
         }
     }

@@ -54,6 +54,23 @@ const char kProgressBarExperiment[] = "4400697";
 // DISABLED by the user tap.
 const char kNonStickyTtsButtonStateExperiment[] = "4624822";
 
+bool ShouldSuppressKeyboardForState(AutofillAssistantState state) {
+  switch (state) {
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::RUNNING:
+      return true;
+
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::BROWSE:
+    case AutofillAssistantState::MODAL_DIALOG:
+    case AutofillAssistantState::STOPPED:
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::INACTIVE:
+      return false;
+  }
+}
+
 }  // namespace
 
 Controller::Controller(
@@ -70,7 +87,6 @@ Controller::Controller(
       service_(service ? std::move(service)
                        : ServiceImpl::Create(web_contents->GetBrowserContext(),
                                              client_)),
-      user_data_(std::make_unique<UserData>()),
       navigating_to_new_document_(web_contents->IsWaitingForResponse()),
       tts_controller_(std::move(tts_controller)) {
   user_model_.AddObserver(this);
@@ -132,7 +148,7 @@ Service* Controller::GetService() {
 WebController* Controller::GetWebController() {
   if (!web_controller_) {
     web_controller_ =
-        WebController::CreateForWebContents(web_contents(), user_data_.get());
+        WebController::CreateForWebContents(web_contents(), &user_data_);
   }
   return web_controller_.get();
 }
@@ -158,14 +174,10 @@ std::string Controller::GetEmailAddressForAccessTokenAccount() {
   return client_->GetEmailAddressForAccessTokenAccount();
 }
 
-std::string Controller::GetLocale() {
-  return client_->GetLocale();
-}
-
 std::string Controller::GetDisplayStringsLocale() {
   if (GetSettings().display_strings_locale.empty()) {
     // Fallback locale
-    return GetLocale();
+    return client_->GetLocale();
   }
   return GetSettings().display_strings_locale;
 }
@@ -668,7 +680,7 @@ bool Controller::SetForm(
   form_.reset();
   form_result_.reset();
   form_changed_callback_ = base::DoNothing();
-  form_cancel_callback_ = base::DoNothing::Once<const ClientStatus&>();
+  form_cancel_callback_ = base::DoNothing();
 
   if (!form) {
     for (ControllerObserver& observer : observers_) {
@@ -916,7 +928,10 @@ bool Controller::EnterState(AutofillAssistantState state) {
   }
   state_ = state;
 
+  bool should_suppress_keyboard = ShouldSuppressKeyboardForState(state_);
+  SuppressKeyboard(should_suppress_keyboard);
   for (ControllerObserver& observer : observers_) {
+    observer.OnKeyboardSuppressionStateChanged(should_suppress_keyboard);
     observer.OnStateChanged(state);
   }
 
@@ -1093,8 +1108,8 @@ void Controller::OnGetScripts(const GURL& url,
 
   autostart_timeout_script_path_ =
       response_proto.script_timeout_error().script_path();
-  autostart_timeout_ = base::TimeDelta::FromMilliseconds(
-      response_proto.script_timeout_error().timeout_ms());
+  autostart_timeout_ =
+      base::Milliseconds(response_proto.script_timeout_error().timeout_ms());
   if (allow_autostart())
     absolute_autostart_timeout_ = tick_clock_->NowTicks() + autostart_timeout_;
 
@@ -1159,7 +1174,7 @@ void Controller::ExecuteScript(const std::string& script_path,
   // TODO(crbug.com/806868): Consider making ClearRunnableScripts part of
   // ExecuteScripts to simplify the controller.
   script_tracker()->ExecuteScript(
-      script_path, user_data_.get(), std::move(context),
+      script_path, &user_data_, std::move(context),
       base::BindOnce(&Controller::OnScriptExecuted,
                      // script_tracker_ is owned by Controller.
                      base::Unretained(this), script_path, end_state));
@@ -1266,9 +1281,7 @@ void Controller::InitFromParameters() {
   if (details->UpdateFromParameters(trigger_context_->GetScriptParameters()))
     SetDetails(std::move(details), base::TimeDelta());
 
-  if (user_data_ != nullptr) {
-    trigger_context_->GetScriptParameters().WriteToUserData(user_data_.get());
-  }
+  trigger_context_->GetScriptParameters().WriteToUserData(&user_data_);
 
   const absl::optional<std::string> overlay_color =
       trigger_context_->GetScriptParameters().GetOverlayColors();
@@ -1292,8 +1305,8 @@ void Controller::InitFromParameters() {
       trigger_context_->GetScriptParameters().GetPasswordChangeUsername();
   if (password_change_username) {
     DCHECK(GetDeeplinkURL().is_valid());  // |deeplink_url_| must be set.
-    user_data_->selected_login_.emplace(GetDeeplinkURL().GetOrigin(),
-                                        *password_change_username);
+    user_data_.selected_login_.emplace(GetDeeplinkURL().GetOrigin(),
+                                       *password_change_username);
   }
 
   if (trigger_context_->HasExperimentId(kProgressBarExperiment)) {
@@ -1392,6 +1405,10 @@ bool Controller::ShouldShowOverlay() const {
   return overlay_behavior_ == ConfigureUiStateProto::DEFAULT;
 }
 
+bool Controller::ShouldSuppressKeyboard() const {
+  return ShouldSuppressKeyboardForState(state_);
+}
+
 void Controller::OnScriptSelected(const ScriptHandle& handle,
                                   std::unique_ptr<TriggerContext> context) {
   ExecuteScript(handle.path, handle.start_message, handle.needs_ui,
@@ -1399,10 +1416,6 @@ void Controller::OnScriptSelected(const ScriptHandle& handle,
                 state_ == AutofillAssistantState::TRACKING
                     ? AutofillAssistantState::TRACKING
                     : AutofillAssistantState::PROMPT);
-}
-
-void Controller::OnUserInteractionInsideTouchableArea() {
-  GetOrCheckScripts();
 }
 
 std::string Controller::GetDebugContext() {
@@ -1437,17 +1450,17 @@ const CollectUserDataOptions* Controller::GetCollectUserDataOptions() const {
 }
 
 const UserData* Controller::GetUserData() const {
-  return user_data_.get();
+  return &user_data_;
 }
 
 void Controller::OnCollectUserDataContinueButtonClicked() {
-  if (!collect_user_data_options_ || !user_data_)
+  if (!collect_user_data_options_)
     return;
 
   auto callback = std::move(collect_user_data_options_->confirm_callback);
 
   SetCollectUserDataOptions(nullptr);
-  std::move(callback).Run(user_data_.get(), &user_model_);
+  std::move(callback).Run(&user_data_, &user_model_);
 }
 
 void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
@@ -1457,16 +1470,13 @@ void Controller::OnCollectUserDataAdditionalActionTriggered(int index) {
   auto callback =
       std::move(collect_user_data_options_->additional_actions_callback);
   SetCollectUserDataOptions(nullptr);
-  std::move(callback).Run(index, user_data_.get(), &user_model_);
+  std::move(callback).Run(index, &user_data_, &user_model_);
 }
 
 void Controller::OnTextLinkClicked(int link) {
-  if (!user_data_)
-    return;
-
   auto callback = std::move(collect_user_data_options_->terms_link_callback);
   SetCollectUserDataOptions(nullptr);
-  std::move(callback).Run(link, user_data_.get(), &user_model_);
+  std::move(callback).Run(link, &user_data_, &user_model_);
 }
 
 void Controller::OnFormActionLinkClicked(int link) {
@@ -1544,30 +1554,27 @@ void Controller::OnSpokenFeedbackAccessibilityServiceChanged(bool enabled) {
 
 void Controller::SetDateTimeRangeStartDate(
     const absl::optional<DateProto>& date) {
-  if (!user_data_)
-    return;
-
-  if (user_data_->date_time_range_start_date_.has_value() && date.has_value() &&
+  if (user_data_.date_time_range_start_date_.has_value() && date.has_value() &&
       CollectUserDataAction::CompareDates(
-          *user_data_->date_time_range_start_date_, *date) == 0) {
+          *user_data_.date_time_range_start_date_, *date) == 0) {
     return;
   }
 
-  user_data_->date_time_range_start_date_ = date;
+  user_data_.date_time_range_start_date_ = date;
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
+    observer.OnUserDataChanged(user_data_,
                                UserData::FieldChange::DATE_TIME_RANGE_START);
   }
 
   if (CollectUserDataAction::SanitizeDateTimeRange(
-          &user_data_->date_time_range_start_date_,
-          &user_data_->date_time_range_start_timeslot_,
-          &user_data_->date_time_range_end_date_,
-          &user_data_->date_time_range_end_timeslot_,
+          &user_data_.date_time_range_start_date_,
+          &user_data_.date_time_range_start_timeslot_,
+          &user_data_.date_time_range_end_date_,
+          &user_data_.date_time_range_end_timeslot_,
           *collect_user_data_options_,
           /* change_start = */ false)) {
     for (ControllerObserver& observer : observers_) {
-      observer.OnUserDataChanged(user_data_.get(),
+      observer.OnUserDataChanged(user_data_,
                                  UserData::FieldChange::DATE_TIME_RANGE_END);
     }
   }
@@ -1577,30 +1584,27 @@ void Controller::SetDateTimeRangeStartDate(
 
 void Controller::SetDateTimeRangeStartTimeSlot(
     const absl::optional<int>& timeslot_index) {
-  if (!user_data_)
-    return;
-
-  if (user_data_->date_time_range_start_timeslot_.has_value() &&
+  if (user_data_.date_time_range_start_timeslot_.has_value() &&
       timeslot_index.has_value() &&
-      *user_data_->date_time_range_start_timeslot_ == *timeslot_index) {
+      *user_data_.date_time_range_start_timeslot_ == *timeslot_index) {
     return;
   }
 
-  user_data_->date_time_range_start_timeslot_ = timeslot_index;
+  user_data_.date_time_range_start_timeslot_ = timeslot_index;
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
+    observer.OnUserDataChanged(user_data_,
                                UserData::FieldChange::DATE_TIME_RANGE_START);
   }
 
   if (CollectUserDataAction::SanitizeDateTimeRange(
-          &user_data_->date_time_range_start_date_,
-          &user_data_->date_time_range_start_timeslot_,
-          &user_data_->date_time_range_end_date_,
-          &user_data_->date_time_range_end_timeslot_,
+          &user_data_.date_time_range_start_date_,
+          &user_data_.date_time_range_start_timeslot_,
+          &user_data_.date_time_range_end_date_,
+          &user_data_.date_time_range_end_timeslot_,
           *collect_user_data_options_,
           /* change_start = */ false)) {
     for (ControllerObserver& observer : observers_) {
-      observer.OnUserDataChanged(user_data_.get(),
+      observer.OnUserDataChanged(user_data_,
                                  UserData::FieldChange::DATE_TIME_RANGE_END);
     }
   }
@@ -1610,30 +1614,27 @@ void Controller::SetDateTimeRangeStartTimeSlot(
 
 void Controller::SetDateTimeRangeEndDate(
     const absl::optional<DateProto>& date) {
-  if (!user_data_)
-    return;
-
-  if (user_data_->date_time_range_end_date_.has_value() && date.has_value() &&
-      CollectUserDataAction::CompareDates(
-          *user_data_->date_time_range_end_date_, *date) == 0) {
+  if (user_data_.date_time_range_end_date_.has_value() && date.has_value() &&
+      CollectUserDataAction::CompareDates(*user_data_.date_time_range_end_date_,
+                                          *date) == 0) {
     return;
   }
 
-  user_data_->date_time_range_end_date_ = date;
+  user_data_.date_time_range_end_date_ = date;
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
+    observer.OnUserDataChanged(user_data_,
                                UserData::FieldChange::DATE_TIME_RANGE_END);
   }
 
   if (CollectUserDataAction::SanitizeDateTimeRange(
-          &user_data_->date_time_range_start_date_,
-          &user_data_->date_time_range_start_timeslot_,
-          &user_data_->date_time_range_end_date_,
-          &user_data_->date_time_range_end_timeslot_,
+          &user_data_.date_time_range_start_date_,
+          &user_data_.date_time_range_start_timeslot_,
+          &user_data_.date_time_range_end_date_,
+          &user_data_.date_time_range_end_timeslot_,
           *collect_user_data_options_,
           /* change_start = */ true)) {
     for (ControllerObserver& observer : observers_) {
-      observer.OnUserDataChanged(user_data_.get(),
+      observer.OnUserDataChanged(user_data_,
                                  UserData::FieldChange::DATE_TIME_RANGE_START);
     }
   }
@@ -1643,30 +1644,27 @@ void Controller::SetDateTimeRangeEndDate(
 
 void Controller::SetDateTimeRangeEndTimeSlot(
     const absl::optional<int>& timeslot_index) {
-  if (!user_data_)
-    return;
-
-  if (user_data_->date_time_range_end_timeslot_.has_value() &&
+  if (user_data_.date_time_range_end_timeslot_.has_value() &&
       timeslot_index.has_value() &&
-      *user_data_->date_time_range_end_timeslot_ == *timeslot_index) {
+      *user_data_.date_time_range_end_timeslot_ == *timeslot_index) {
     return;
   }
 
-  user_data_->date_time_range_end_timeslot_ = timeslot_index;
+  user_data_.date_time_range_end_timeslot_ = timeslot_index;
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
+    observer.OnUserDataChanged(user_data_,
                                UserData::FieldChange::DATE_TIME_RANGE_END);
   }
 
   if (CollectUserDataAction::SanitizeDateTimeRange(
-          &user_data_->date_time_range_start_date_,
-          &user_data_->date_time_range_start_timeslot_,
-          &user_data_->date_time_range_end_date_,
-          &user_data_->date_time_range_end_timeslot_,
+          &user_data_.date_time_range_start_date_,
+          &user_data_.date_time_range_start_timeslot_,
+          &user_data_.date_time_range_end_date_,
+          &user_data_.date_time_range_end_timeslot_,
           *collect_user_data_options_,
           /* change_start = */ true)) {
     for (ControllerObserver& observer : observers_) {
-      observer.OnUserDataChanged(user_data_.get(),
+      observer.OnUserDataChanged(user_data_,
                                  UserData::FieldChange::DATE_TIME_RANGE_START);
     }
   }
@@ -1676,16 +1674,14 @@ void Controller::SetDateTimeRangeEndTimeSlot(
 
 void Controller::SetAdditionalValue(const std::string& client_memory_key,
                                     const ValueProto& value) {
-  if (!user_data_)
-    return;
-  if (!user_data_->HasAdditionalValue(client_memory_key)) {
+  if (!user_data_.HasAdditionalValue(client_memory_key)) {
     NOTREACHED() << client_memory_key << " not found";
     return;
   }
-  user_data_->SetAdditionalValue(client_memory_key, value);
+  user_data_.SetAdditionalValue(client_memory_key, value);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
+    observer.OnUserDataChanged(user_data_,
                                UserData::FieldChange::ADDITIONAL_VALUES);
   }
 }
@@ -1715,15 +1711,15 @@ void Controller::SetContactInfo(
 void Controller::SetCreditCard(
     std::unique_ptr<autofill::CreditCard> card,
     std::unique_ptr<autofill::AutofillProfile> billing_profile) {
-  if (user_data_ == nullptr || collect_user_data_options_ == nullptr) {
+  if (collect_user_data_options_ == nullptr) {
     return;
   }
 
   DCHECK(!collect_user_data_options_->billing_address_name.empty());
 
-  user_model_.SetSelectedCreditCard(std::move(card), user_data_.get());
+  user_model_.SetSelectedCreditCard(std::move(card), &user_data_);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::CARD);
+    observer.OnUserDataChanged(user_data_, UserData::FieldChange::CARD);
   }
   SetProfile(collect_user_data_options_->billing_address_name,
              UserData::FieldChange::BILLING_ADDRESS,
@@ -1734,41 +1730,32 @@ void Controller::SetProfile(
     const std::string& key,
     UserData::FieldChange field_change,
     std::unique_ptr<autofill::AutofillProfile> profile) {
-  if (user_data_ == nullptr) {
-    return;
-  }
-
-  user_model_.SetSelectedAutofillProfile(key, std::move(profile),
-                                         user_data_.get());
+  user_model_.SetSelectedAutofillProfile(key, std::move(profile), &user_data_);
 
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(), field_change);
+    observer.OnUserDataChanged(user_data_, field_change);
   }
   UpdateCollectUserDataActions();
 }
 
 void Controller::SetTermsAndConditions(
     TermsAndConditionsState terms_and_conditions) {
-  if (!user_data_)
-    return;
-
-  user_data_->terms_and_conditions_ = terms_and_conditions;
+  user_data_.terms_and_conditions_ = terms_and_conditions;
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
+    observer.OnUserDataChanged(user_data_,
                                UserData::FieldChange::TERMS_AND_CONDITIONS);
   }
 }
 
 void Controller::SetLoginOption(std::string identifier) {
-  if (!user_data_ || !collect_user_data_options_)
+  if (!collect_user_data_options_)
     return;
 
-  user_data_->login_choice_identifier_.assign(identifier);
+  user_data_.login_choice_identifier_.assign(identifier);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(),
-                               UserData::FieldChange::LOGIN_CHOICE);
+    observer.OnUserDataChanged(user_data_, UserData::FieldChange::LOGIN_CHOICE);
   }
 }
 
@@ -1777,13 +1764,13 @@ void Controller::UpdateCollectUserDataActions() {
   // that updating the PR action buttons will also clear the suggestions. We
   // should update the action buttons only if there are use cases of PR +
   // suggestions.
-  if (!collect_user_data_options_ || !user_data_) {
+  if (!collect_user_data_options_) {
     SetUserActions(nullptr);
     return;
   }
 
   bool confirm_button_enabled = CollectUserDataAction::IsUserDataComplete(
-      *user_data_, user_model_, *collect_user_data_options_);
+      user_data_, user_model_, *collect_user_data_options_);
 
   UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);
@@ -2037,9 +2024,6 @@ void Controller::OnNavigationShutdownOrError(const GURL& url,
 
 void Controller::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
     return;
@@ -2056,8 +2040,12 @@ void Controller::DidStartNavigation(
     return;
   }
 
+  bool is_user_initiated_or_back_forward =
+      !navigation_handle->IsRendererInitiated() ||
+      navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK;
+
   if (state_ == AutofillAssistantState::STOPPED &&
-      !navigation_handle->IsRendererInitiated() &&
+      is_user_initiated_or_back_forward &&
       !navigation_handle->WasServerRedirect()) {
     if (can_recover_from_stopped_) {
       // Usually when in STOPPED (e.g. through |OnScriptError|) the
@@ -2085,23 +2073,24 @@ void Controller::DidStartNavigation(
   //  In the last two cases, autofill assistant might still give up later on if
   //  it discovers that the new page has no scripts.
   //
-  // Everything else, such as going back to a previous page, or refreshing the
-  // page is considered an end condition. If going back to a previous page is
-  // required, consider using the BROWSE state instead.
+  // Everything else, such as going back to a previous page (whether
+  // user-initiated or javascript-initiated), or refreshing the page is
+  // considered an end condition. If going back to a previous page is required,
+  // consider using the BROWSE state instead.
   if (state_ == AutofillAssistantState::PROMPT &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
-      !navigation_handle->IsRendererInitiated()) {
+      is_user_initiated_or_back_forward) {
     OnNavigationShutdownOrError(navigation_handle->GetURL(),
                                 Metrics::DropOutReason::NAVIGATION);
     return;
   }
 
-  // When in RUNNING state, all renderer initiated navigation is allowed,
-  // user initiated navigation will cause an error.
+  // When in RUNNING state, all renderer initiated navigation except
+  // back/forward is allowed, user initiated navigation will cause an error.
   if (state_ == AutofillAssistantState::RUNNING &&
       !navigation_handle->WasServerRedirect() &&
-      !navigation_handle->IsRendererInitiated()) {
+      is_user_initiated_or_back_forward) {
     OnNavigationShutdownOrError(
         navigation_handle->GetURL(),
         Metrics::DropOutReason::NAVIGATION_WHILE_RUNNING);
@@ -2116,9 +2105,6 @@ void Controller::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // TODO(b/159871774): Rethink how we handle navigation events. The early
   // return here may prevent us from updating |navigating_to_new_document_|.
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted() || !IsNavigatingToNewDocument()) {
@@ -2177,6 +2163,21 @@ void Controller::OnWebContentsFocused(
   }
 }
 
+void Controller::WebContentsDestroyed() {
+  suppress_keyboard_raii_.reset();
+}
+
+void Controller::SuppressKeyboard(bool suppress) {
+  if (suppress) {
+    if (!suppress_keyboard_raii_) {
+      suppress_keyboard_raii_ =
+          std::make_unique<SuppressKeyboardRAII>(web_contents());
+    }
+  } else {
+    suppress_keyboard_raii_.reset();
+  }
+}
+
 void Controller::OnValueChanged(const std::string& identifier,
                                 const ValueProto& new_value) {
   event_handler_.DispatchEvent({EventProto::kOnValueChanged, identifier});
@@ -2212,7 +2213,7 @@ void Controller::SetCollectUserDataOptions(CollectUserDataOptions* options) {
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnCollectUserDataOptionsChanged(collect_user_data_options_);
-    observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::ALL);
+    observer.OnUserDataChanged(user_data_, UserData::FieldChange::ALL);
   }
 }
 
@@ -2230,12 +2231,12 @@ void Controller::WriteUserData(
     base::OnceCallback<void(UserData*, UserData::FieldChange*)>
         write_callback) {
   UserData::FieldChange field_change = UserData::FieldChange::NONE;
-  std::move(write_callback).Run(user_data_.get(), &field_change);
+  std::move(write_callback).Run(&user_data_, &field_change);
   if (field_change == UserData::FieldChange::NONE) {
     return;
   }
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get(), field_change);
+    observer.OnUserDataChanged(user_data_, field_change);
   }
   UpdateCollectUserDataActions();
 }

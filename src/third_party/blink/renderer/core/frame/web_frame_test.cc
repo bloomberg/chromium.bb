@@ -70,7 +70,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
@@ -214,7 +213,7 @@
 #include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/base/mojom/ui_base_types.mojom-shared.h"
 #include "ui/events/keycodes/dom/dom_key.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "v8/include/v8.h"
 
 using blink::mojom::SelectionMenuBehavior;
@@ -2050,9 +2049,9 @@ TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksWithWrapContentMode) {
   LocalFrame* frame = web_view_helper.LocalMainFrame()->GetFrame();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
   auto* scroll_node = visual_viewport.GetScrollTranslationNode()->ScrollNode();
-  EXPECT_EQ(IntRect(0, 0, viewport_width, viewport_height),
+  EXPECT_EQ(gfx::Rect(viewport_width, viewport_height),
             scroll_node->ContainerRect());
-  EXPECT_EQ(IntSize(viewport_width, viewport_height),
+  EXPECT_EQ(gfx::Size(viewport_width, viewport_height),
             scroll_node->ContentsSize());
 }
 
@@ -3013,7 +3012,7 @@ class WebFrameResizeTest : public WebFrameTest {
   void TestResizeYieldsCorrectScrollAndScale(
       const char* url,
       const float initial_page_scale_factor,
-      const gfx::ScrollOffset& scroll_offset,
+      const gfx::Vector2dF& scroll_offset,
       const gfx::Size& viewport_size,
       const bool should_scale_relative_to_viewport_width) {
     RegisterMockedHttpURLLoad(url);
@@ -3042,7 +3041,7 @@ class WebFrameResizeTest : public WebFrameTest {
           (should_scale_relative_to_viewport_width ? 1 / aspect_ratio : 1);
       EXPECT_NEAR(expected_page_scale_factor,
                   web_view_helper.GetWebView()->PageScaleFactor(), 0.05f);
-      EXPECT_EQ(gfx::ScrollOffset(),
+      EXPECT_EQ(gfx::Vector2dF(),
                 web_view_helper.LocalMainFrame()->GetScrollOffset());
     }
 
@@ -3054,7 +3053,7 @@ class WebFrameResizeTest : public WebFrameTest {
           initial_page_scale_factor);
       web_view_helper.LocalMainFrame()->SetScrollOffset(scroll_offset);
       UpdateAllLifecyclePhases(web_view_helper.GetWebView());
-      const gfx::ScrollOffset expected_scroll_offset =
+      const gfx::Vector2dF expected_scroll_offset =
           web_view_helper.LocalMainFrame()->GetScrollOffset();
       web_view_helper.Resize(
           gfx::Size(viewport_size.width(), viewport_size.height() * 0.8f));
@@ -3078,7 +3077,7 @@ TEST_F(WebFrameResizeTest,
   // long as the content adjusts according to the device-width.
   const char* url = "resize_scroll_mobile.html";
   const float kInitialPageScaleFactor = 1;
-  const gfx::ScrollOffset scroll_offset(0, 50);
+  const gfx::Vector2dF scroll_offset(0, 50);
   const gfx::Size viewport_size(120, 160);
   const bool kShouldScaleRelativeToViewportWidth = true;
 
@@ -3094,7 +3093,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForMinimumScale) {
   // on rotation and not do anything strange.
   const char* url = "resize_scroll_minimum_scale.html";
   const float kInitialPageScaleFactor = 1;
-  const gfx::ScrollOffset scroll_offset(0, 0);
+  const gfx::Vector2dF scroll_offset(0, 0);
   const gfx::Size viewport_size(240, 320);
   const bool kShouldScaleRelativeToViewportWidth = false;
 
@@ -3108,7 +3107,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedWidth) {
   // viewport width.
   const char* url = "resize_scroll_fixed_width.html";
   const float kInitialPageScaleFactor = 2;
-  const gfx::ScrollOffset scroll_offset(0, 200);
+  const gfx::Vector2dF scroll_offset(0, 200);
   const gfx::Size viewport_size(240, 320);
   const bool kShouldScaleRelativeToViewportWidth = true;
 
@@ -3122,7 +3121,7 @@ TEST_F(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForFixedLayout) {
   // viewport width.
   const char* url = "resize_scroll_fixed_layout.html";
   const float kInitialPageScaleFactor = 2;
-  const gfx::ScrollOffset scroll_offset(200, 400);
+  const gfx::Vector2dF scroll_offset(200, 400);
   const gfx::Size viewport_size(320, 240);
   const bool kShouldScaleRelativeToViewportWidth = true;
 
@@ -3221,7 +3220,7 @@ void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
                                 float scale) {
   web_view->SetPageScaleFactor(scale);
   web_view->MainFrameImpl()->SetScrollOffset(
-      gfx::ScrollOffset(scroll.x(), scroll.y()));
+      gfx::Vector2dF(scroll.x(), scroll.y()));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       DocumentUpdateReason::kTest);
 }
@@ -3231,7 +3230,7 @@ void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
       web_view_impl->FakePageScaleAnimationPageScaleForTesting() /
       web_view_impl->PageScaleFactor();
   web_view_impl->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), scale_delta, false, 0, 0,
+      {gfx::Vector2dF(), gfx::Vector2dF(), scale_delta, false, 0, 0,
        cc::BrowserControlsState::kBoth});
   scale = web_view_impl->PageScaleFactor();
 }
@@ -3430,7 +3429,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   EXPECT_FLOAT_EQ(1, scale);
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         0.6f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   SimulateDoubleTap(web_view_helper.GetWebView(), bottom_point, scale);
@@ -3443,7 +3442,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   // should go back to minimum scale.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
 
@@ -3501,7 +3500,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // 1 < minimumPageScale < doubleTapZoomAlreadyLegibleScale
@@ -3525,7 +3524,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale
@@ -3597,7 +3596,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // 1 < maximumLegibleScaleFactor < minimumPageScale <
@@ -3622,7 +3621,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // minimumPageScale < 1 < maximumLegibleScaleFactor <
@@ -3647,7 +3646,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale <
@@ -3723,7 +3722,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // 1 < accessibilityFontScaleFactor < minimumPageScale <
@@ -3748,7 +3747,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // minimumPageScale < 1 < accessibilityFontScaleFactor <
@@ -3773,7 +3772,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   // Zoom in to reset double_tap_zoom_in_effect flag.
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.1f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   // minimumPageScale < 1 < doubleTapZoomAlreadyLegibleScale <
@@ -4312,7 +4311,7 @@ TEST_F(WebFrameTest, ReloadPreservesState) {
   web_view_helper.InitializeAndLoad(base_url_ + url, &client);
   web_view_helper.Resize(gfx::Size(kPageWidth, kPageHeight));
   web_view_helper.LocalMainFrame()->SetScrollOffset(
-      gfx::ScrollOffset(kPageWidth / 4, kPageHeight / 4));
+      gfx::Vector2dF(kPageWidth / 4, kPageHeight / 4));
   web_view_helper.GetWebView()->SetPageScaleFactor(kPageScaleFactor);
 
   // Reload the page and end up at the same url. State should not be propagated.
@@ -4320,7 +4319,7 @@ TEST_F(WebFrameTest, ReloadPreservesState) {
       WebFrameLoadType::kReload);
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
-  EXPECT_EQ(gfx::ScrollOffset(),
+  EXPECT_EQ(gfx::Vector2dF(),
             web_view_helper.LocalMainFrame()->GetScrollOffset());
   EXPECT_EQ(1.0f, web_view_helper.GetWebView()->PageScaleFactor());
 }
@@ -4476,7 +4475,7 @@ class ContextLifetimeTestWebFrameClient
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType,
+      FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params) override {
     return CreateLocalChild(*Frame(), scope,
                             std::make_unique<ContextLifetimeTestWebFrameClient>(
@@ -7100,7 +7099,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   scrollable_area->DidCompositorScroll(FloatPoint(0, 1));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.7f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   EXPECT_TRUE(client.WasFrameScrolled());
@@ -7113,7 +7112,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   scrollable_area->DidCompositorScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.0f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   EXPECT_TRUE(client.WasFrameScrolled());
@@ -7125,7 +7124,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   scrollable_area->DidCompositorScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         1.0f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   EXPECT_FALSE(client.WasFrameScrolled());
@@ -7136,7 +7135,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   scrollable_area->DidCompositorScroll(FloatPoint(9, 15));
   web_view_helper.GetWebView()
       ->MainFrameWidget()
-      ->ApplyViewportChangesForTesting({gfx::ScrollOffset(), gfx::Vector2dF(),
+      ->ApplyViewportChangesForTesting({gfx::Vector2dF(), gfx::Vector2dF(),
                                         0.6f, false, 0, 0,
                                         cc::BrowserControlsState::kBoth});
   EXPECT_TRUE(client.WasFrameScrolled());
@@ -7358,7 +7357,7 @@ class TestCachePolicyWebFrameClient
       const WebString&,
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
-      mojom::blink::FrameOwnerElementType,
+      FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params) override {
     auto child = std::make_unique<TestCachePolicyWebFrameClient>();
     auto* child_ptr = child.get();
@@ -7824,7 +7823,7 @@ class FailCreateChildFrame : public frame_test_helpers::TestWebFrameClient {
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties& frame_owner_properties,
-      mojom::blink::FrameOwnerElementType,
+      FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params) override {
     ++call_count_;
     return nullptr;
@@ -7903,29 +7902,29 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->SetPageScaleFactor(2.0f);
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
 
-  web_view->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 2000));
+  web_view->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 2000));
   EXPECT_EQ(ScrollOffset(0, 1900),
             frame_view->LayoutViewport()->GetScrollOffset());
 
   // Simulate the browser controls showing by 20px, thus shrinking the viewport
   // and allowing it to scroll an additional 20px.
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        20.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   EXPECT_EQ(ScrollOffset(0, 1920),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Show more, make sure the scroll actually gets clamped.
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        20.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
-  web_view->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 2000));
+  web_view->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 2000));
   EXPECT_EQ(ScrollOffset(0, 1940),
             frame_view->LayoutViewport()->GetScrollOffset());
 
   // Hide until there's 10px showing.
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        -30.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   EXPECT_EQ(ScrollOffset(0, 1910),
             frame_view->LayoutViewport()->MaximumScrollOffset());
@@ -7934,7 +7933,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // accommodate the browser controls and Blink's view of the browser controls
   // matches that of the CC
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        30.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   web_view->ResizeWithBrowserControls(gfx::Size(100, 60), 40.0f, 0, true);
   UpdateAllLifecyclePhases(web_view_helper.GetWebView());
@@ -7943,7 +7942,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
 
   // Now simulate hiding.
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        -10.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   EXPECT_EQ(ScrollOffset(0, 1930),
             frame_view->LayoutViewport()->MaximumScrollOffset());
@@ -7951,7 +7950,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // Reset to original state: 100px widget height, browser controls fully
   // hidden.
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        -30.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   web_view->ResizeWithBrowserControls(gfx::Size(100, 100),
                                       browser_controls_height, 0, false);
@@ -7964,13 +7963,13 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   // sure we're not losing any pixels when applying the adjustment on the
   // main frame.
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        1.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   EXPECT_EQ(ScrollOffset(0, 1901),
             frame_view->LayoutViewport()->MaximumScrollOffset());
 
   web_view->MainFrameWidget()->ApplyViewportChangesForTesting(
-      {gfx::ScrollOffset(), gfx::Vector2dF(), 1.0f, false,
+      {gfx::Vector2dF(), gfx::Vector2dF(), 1.0f, false,
        2.0f / browser_controls_height, 0, cc::BrowserControlsState::kBoth});
   EXPECT_EQ(ScrollOffset(0, 1903),
             frame_view->LayoutViewport()->MaximumScrollOffset());
@@ -8938,7 +8937,7 @@ class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType,
+      FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params) override {
     return CreateLocalChild(*Frame(), scope,
                             std::make_unique<WebFrameSwapTestClient>(this),
@@ -11107,7 +11106,7 @@ class WebLocalFrameVisibilityChangeTest
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType,
+      FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params) override {
     return CreateLocalChild(*Frame(), scope, &child_client_,
                             std::move(policy_container_bind_params));
@@ -12595,6 +12594,40 @@ TEST_F(WebFrameSimTest, ScrollFocusedEditableIntoViewNoLayoutObject) {
   EXPECT_EQ(ScrollOffset(0, 0), area->GetScrollOffset());
 }
 
+TEST_F(WebFrameSimTest, ScrollEditContextIntoView) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(500, 600));
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+
+  SimRequest r("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  r.Complete(R"HTML(
+      <!DOCTYPE html>
+      <div id="target" style='width:2000px;height:2000px'></div>
+      <script>
+        const editContext = new EditContext();
+        const target = document.getElementById('target');
+        target.editContext = editContext;
+        target.focus();
+        let controlBound = new DOMRect(500, 850, 1, 20);
+        let dummySelectionBound = new DOMRect(0, 0, 0, 0);
+        editContext.updateBounds(controlBound, dummySelectionBound);
+      </script>
+  )HTML");
+
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+
+  WebView()
+      .MainFrameImpl()
+      ->FrameWidgetImpl()
+      ->ScrollFocusedEditableElementIntoView();
+
+  // scrollOffset.x = controlBound.x - left padding = 500 - 150 = 350
+  // scrollOffset.y = controlBound.y - (viewport.height - controlBound.height)/2
+  //                = 850 - (600 - 20) / 2 = 560
+  EXPECT_EQ(IntPoint(350, 560),
+            WebView().FakePageScaleAnimationTargetPositionForTesting());
+}
+
 TEST_F(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/frame.html", "text/html");
@@ -12818,7 +12851,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
         const WebString& fallback_name,
         const FramePolicy&,
         const WebFrameOwnerProperties&,
-        mojom::blink::FrameOwnerElementType,
+        FrameOwnerElementType,
         WebPolicyContainerBindParams policy_container_bind_params) override {
       return CreateLocalChild(*Frame(), scope, &child_client_,
                               std::move(policy_container_bind_params));
@@ -13356,7 +13389,7 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   // Make the page scale and scroll with the given parameters.
   EXPECT_EQ(0.5f, WebView().PageScaleFactor());
   WebView().SetPageScaleFactor(2.0f);
-  WebView().MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(94, 111));
+  WebView().MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(94, 111));
   WebView().SetVisualViewportOffset(gfx::PointF(12, 20));
   EXPECT_EQ(2.0f, WebView().PageScaleFactor());
   EXPECT_EQ(94, WebView().MainFrameImpl()->GetScrollOffset().x());

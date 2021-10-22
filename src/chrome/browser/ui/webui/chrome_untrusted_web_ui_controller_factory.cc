@@ -13,8 +13,13 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/common/url_constants.h"
+#include "printing/buildflags/buildflags.h"
 #include "ui/webui/webui_config.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui_untrusted.h"
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/video_tutorials/video_player_ui.h"
@@ -22,6 +27,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "ash/webui/file_manager/file_manager_untrusted_ui.h"
 #include "ash/webui/help_app_ui/help_app_kids_magazine_untrusted_ui.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_untrusted_ui_config.h"
 #include "chrome/browser/ash/web_applications/media_app/media_app_guest_ui_config.h"
@@ -56,6 +62,10 @@ WebUIConfigList CreateConfigs() {
   ALLOW_UNUSED_LOCAL(register_config);
 
   // Register WebUIConfigs below.
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  register_config(std::make_unique<printing::PrintPreviewUIUntrustedConfig>());
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
 #if defined(OS_ANDROID)
   register_config(std::make_unique<video_tutorials::VideoPlayerUIConfig>());
 #endif  // defined(OS_ANDROID)
@@ -72,6 +82,9 @@ WebUIConfigList CreateConfigs() {
       std::make_unique<ash::HelpAppKidsMagazineUntrustedUIConfig>());
   if (ash::features::IsProjectorEnabled())
     register_config(std::make_unique<chromeos::UntrustedProjectorUIConfig>());
+  if (ash::features::IsFileManagerSwaEnabled())
+    register_config(
+        std::make_unique<ash::file_manager::FileManagerUntrustedUIConfig>());
 #if !defined(OFFICIAL_BUILD)
   register_config(std::make_unique<ash::TelemetryExtensionUntrustedUIConfig>());
   register_config(std::make_unique<ash::UntrustedSampleSystemWebAppUIConfig>());

@@ -32,7 +32,9 @@
 #include "remoting/host/ipc_keyboard_layout_monitor.h"
 #include "remoting/host/ipc_mouse_cursor_monitor.h"
 #include "remoting/host/ipc_screen_controls.h"
+#include "remoting/host/ipc_url_forwarder_configurator.h"
 #include "remoting/host/ipc_video_frame_capturer.h"
+#include "remoting/host/remote_open_url/remote_open_url_util.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/event.pb.h"
@@ -64,6 +66,9 @@ class DesktopSessionProxy::IpcSharedBufferCore
     // After being mapped, |region| is no longer needed and can be discarded.
   }
 
+  IpcSharedBufferCore(const IpcSharedBufferCore&) = delete;
+  IpcSharedBufferCore& operator=(const IpcSharedBufferCore&) = delete;
+
   int id() const { return id_; }
   size_t size() const { return mapping_.size(); }
   const void* memory() const { return mapping_.memory(); }
@@ -74,8 +79,6 @@ class DesktopSessionProxy::IpcSharedBufferCore
 
   int id_;
   base::ReadOnlySharedMemoryMapping mapping_;
-
-  DISALLOW_COPY_AND_ASSIGN(IpcSharedBufferCore);
 };
 
 class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
@@ -89,10 +92,11 @@ class DesktopSessionProxy::IpcSharedBuffer : public webrtc::SharedMemory {
                      core->id()),
         core_(core) {}
 
+  IpcSharedBuffer(const IpcSharedBuffer&) = delete;
+  IpcSharedBuffer& operator=(const IpcSharedBuffer&) = delete;
+
  private:
   scoped_refptr<IpcSharedBufferCore> core_;
-
-  DISALLOW_COPY_AND_ASSIGN(IpcSharedBuffer);
 };
 
 DesktopSessionProxy::DesktopSessionProxy(
@@ -187,7 +191,7 @@ std::string DesktopSessionProxy::GetCapabilities() const {
     result += protocol::kFileTransferCapability;
   }
 
-  if (options_.enable_remote_open_url()) {
+  if (options_.enable_remote_open_url() && IsRemoteOpenUrlSupported()) {
     result += " ";
     result += protocol::kRemoteOpenUrlCapability;
   }
@@ -270,27 +274,20 @@ void DesktopSessionProxy::OnAssociatedInterfaceRequest(
     mojo::ScopedInterfaceEndpointHandle handle) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (interface_name == mojom::ClipboardEventObserver::Name_) {
-    if (clipboard_observer_receiver_.is_bound()) {
+  if (interface_name == mojom::DesktopSessionEventHandler::Name_) {
+    if (desktop_session_event_handler_.is_bound()) {
       LOG(ERROR) << "Receiver already bound for associated interface: "
-                 << mojom::ClipboardEventObserver::Name_;
+                 << mojom::DesktopSessionEventHandler::Name_;
       CrashProcess(base::Location::Current());
     }
 
-    mojo::PendingAssociatedReceiver<mojom::ClipboardEventObserver>
+    mojo::PendingAssociatedReceiver<mojom::DesktopSessionEventHandler>
         pending_receiver(std::move(handle));
-    clipboard_observer_receiver_.Bind(std::move(pending_receiver));
-  } else if (interface_name == mojom::UrlForwarderStateObserver::Name_) {
-    if (url_forwarder_state_observer_receiver_.is_bound()) {
-      LOG(ERROR) << "Receiver already bound for associated interface: "
-                 << mojom::UrlForwarderStateObserver::Name_;
-      CrashProcess(base::Location::Current());
-      return;
-    }
-
-    mojo::PendingAssociatedReceiver<mojom::UrlForwarderStateObserver>
-        pending_receiver(std::move(handle));
-    url_forwarder_state_observer_receiver_.Bind(std::move(pending_receiver));
+    desktop_session_event_handler_.Bind(std::move(pending_receiver));
+  } else {
+    LOG(ERROR) << "Unknown associated interface requested: " << interface_name
+               << ", crashing this process";
+    CrashProcess(base::Location::Current());
   }
 }
 
@@ -315,9 +312,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
       client_session_control_->client_jid(), screen_resolution_, options_));
 
-  desktop_channel_->GetRemoteAssociatedInterface(&clipboard_handler_remote_);
-  desktop_channel_->GetRemoteAssociatedInterface(
-      &url_forwarder_configurator_remote_);
+  desktop_channel_->GetRemoteAssociatedInterface(&desktop_session_control_);
 
   desktop_session_id_ = session_id;
 
@@ -328,14 +323,13 @@ void DesktopSessionProxy::DetachFromDesktop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   desktop_channel_.reset();
-  clipboard_handler_remote_.reset();
-  clipboard_observer_receiver_.reset();
-  url_forwarder_configurator_remote_.reset();
-  url_forwarder_state_observer_receiver_.reset();
+  desktop_session_control_.reset();
+  desktop_session_event_handler_.reset();
+  desktop_session_id_ = UINT32_MAX;
+
   current_url_forwarder_state_ = mojom::UrlForwarderState::kUnknown;
   // We don't reset |is_url_forwarder_set_up_callback_| here since the request
   // can come in before the DetachFromDesktop-AttachToDesktop sequence.
-  desktop_session_id_ = UINT32_MAX;
 
   shared_buffers_.clear();
 
@@ -412,8 +406,8 @@ void DesktopSessionProxy::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  if (clipboard_handler_remote_) {
-    clipboard_handler_remote_->InjectClipboardEvent(event);
+  if (desktop_session_control_) {
+    desktop_session_control_->InjectClipboardEvent(event);
   }
 }
 
@@ -577,14 +571,14 @@ void DesktopSessionProxy::SetUpUrlForwarder(
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!set_up_url_forwarder_callback_);
 
-  if (!url_forwarder_configurator_remote_.is_connected()) {
+  if (!desktop_session_control_.is_connected()) {
     LOG(ERROR) << "The UrlForwarderConfigurator remote is not connected. Setup "
                << "request ignored.";
     callback.Run(SetUpUrlForwarderResponse::FAILED);
     return;
   }
   set_up_url_forwarder_callback_ = callback;
-  url_forwarder_configurator_remote_->SetUpUrlForwarder();
+  desktop_session_control_->SetUpUrlForwarder();
 }
 
 void DesktopSessionProxy::OnUrlForwarderStateChange(

@@ -14,7 +14,7 @@
 #include "chrome/browser/ash/input_method/ui/grammar_suggestion_window.h"
 #include "chrome/browser/ash/input_method/ui/suggestion_window_view.h"
 #include "chrome/browser/ash/input_method/ui/undo_window.h"
-#include "ui/base/ime/chromeos/ime_assistive_window_handler_interface.h"
+#include "ui/base/ime/ash/ime_assistive_window_handler_interface.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -37,6 +37,11 @@ class AssistiveWindowController : public views::WidgetObserver,
       AssistiveWindowControllerDelegate* delegate,
       Profile* profile,
       ui::ime::AssistiveAccessibilityView* accessibility_view = nullptr);
+
+  AssistiveWindowController(const AssistiveWindowController&) = delete;
+  AssistiveWindowController& operator=(const AssistiveWindowController&) =
+      delete;
+
   ~AssistiveWindowController() override;
 
   ui::ime::SuggestionWindowView* GetSuggestionWindowViewForTesting();
@@ -77,8 +82,6 @@ class AssistiveWindowController : public views::WidgetObserver,
   size_t confirmed_length_ = 0;
   Bounds bounds_;
   bool tracking_last_suggestion_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AssistiveWindowController);
 };
 
 }  // namespace input_method

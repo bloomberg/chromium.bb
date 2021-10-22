@@ -69,6 +69,9 @@ class ImageSanitizerTest : public testing::Test {
  public:
   ImageSanitizerTest() = default;
 
+  ImageSanitizerTest(const ImageSanitizerTest&) = delete;
+  ImageSanitizerTest& operator=(const ImageSanitizerTest&) = delete;
+
  protected:
   void CreateValidImage(const base::FilePath::StringPieceType& file_name) {
     ASSERT_TRUE(WriteBase64DataToFile(kBase64edValidPng, file_name));
@@ -187,8 +190,6 @@ class ImageSanitizerTest : public testing::Test {
   std::map<base::FilePath, SkBitmap> decoded_images_;
   bool done_callback_called_ = false;
   bool decoded_image_callback_called_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageSanitizerTest);
 };
 
 }  // namespace
@@ -301,8 +302,7 @@ TEST_F(ImageSanitizerTest, NoCallbackAfterDelete) {
   // Wait a bit and ensure no callback has been called.
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(200));
+      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(200));
   run_loop.Run();
   EXPECT_FALSE(done_callback_called());
   EXPECT_FALSE(decoded_image_callback_called());

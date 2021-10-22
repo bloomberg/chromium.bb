@@ -223,7 +223,7 @@ export class RemoteCall {
     return repeatUntil(async () => {
       const elements = await this.callRemoteTestUtil(
           'deepQueryAllElements', appId, [query, styleNames]);
-      if (elements.length > 0) {
+      if (elements && elements.length > 0) {
         return /** @type {ElementObject} */ (elements[0]);
       }
       return pending(caller, 'Element %s is not found.', query);
@@ -499,7 +499,8 @@ export class RemoteCallFilesApp extends RemoteCall {
       return this.callRemoteTestUtil('getWindows', null, []);
     }
 
-    return await sendTestMessage({name: 'getWindowsSWA', isSWA: true});
+    return JSON.parse(
+        await sendTestMessage({name: 'getWindowsSWA', isSWA: true}));
   }
 
   /**
@@ -789,5 +790,27 @@ export class RemoteCallFilesApp extends RemoteCall {
           '. Actual: ' + volumesCount;
       return pending(caller, msg);
     });
+  }
+
+  /**
+   * Isolates the specified banner to test. The banner is still checked against
+   * it's filters, but is now the top priority banner.
+   * @param {string} appId App window Id
+   * @param {string} bannerTagName Banner tag name in lowercase to isolate.
+   */
+  async isolateBannerForTesting(appId, bannerTagName) {
+    await this.waitFor('isFileManagerLoaded', appId, true);
+    chrome.test.assertTrue(await this.callRemoteTestUtil(
+        'isolateBannerForTesting', appId, [bannerTagName]));
+  }
+
+  /**
+   * Disables banners from attaching to the DOM.
+   * @param {string} appId App window Id
+   */
+  async disableBannersForTesting(appId) {
+    await this.waitFor('isFileManagerLoaded', appId, true);
+    chrome.test.assertTrue(
+        await this.callRemoteTestUtil('disableBannersForTesting', appId, []));
   }
 }

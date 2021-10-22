@@ -24,12 +24,9 @@
 #include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
-#if defined(USE_X11)
-#include "ui/events/test/events_test_utils_x11.h"
-#include "ui/events/x/events_x_utils.h"
-#endif
-
 #if defined(OS_WIN)
+#include <windows.h>
+
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
@@ -41,18 +38,18 @@ class TestTickClock : public base::TickClock {
  public:
   TestTickClock() = default;
 
+  TestTickClock(const TestTickClock&) = delete;
+  TestTickClock& operator=(const TestTickClock&) = delete;
+
   // Unconditionally returns a tick count that is 1ms later than the previous
   // call, starting at 1ms.
   base::TimeTicks NowTicks() const override {
-    static constexpr base::TimeDelta kOneMillisecond =
-        base::TimeDelta::FromMilliseconds(1);
+    static constexpr base::TimeDelta kOneMillisecond = base::Milliseconds(1);
     return ticks_ += kOneMillisecond;
   }
 
  private:
   mutable base::TimeTicks ticks_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTickClock);
 };
 
 namespace {
@@ -76,8 +73,8 @@ class TestTouchEvent : public ui::TouchEvent {
                                       /* force */ 0.0f),
                    flags) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTouchEvent);
+  TestTouchEvent(const TestTouchEvent&) = delete;
+  TestTouchEvent& operator=(const TestTouchEvent&) = delete;
 };
 
 const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
@@ -326,7 +323,7 @@ void EventGenerator::GestureTapAt(const gfx::Point& location) {
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, converted_location,
-      press.time_stamp() + base::TimeDelta::FromMilliseconds(50),
+      press.time_stamp() + base::Milliseconds(50),
       ui::PointerDetails(ui::EventPointerType::kTouch, kTouchId));
   Dispatch(&release);
 }
@@ -344,7 +341,7 @@ void EventGenerator::GestureTapDownAndUp(const gfx::Point& location) {
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, converted_location,
-      press.time_stamp() + base::TimeDelta::FromMilliseconds(1000),
+      press.time_stamp() + base::Milliseconds(1000),
       ui::PointerDetails(ui::EventPointerType::kTouch, kTouchId));
   Dispatch(&release);
 }
@@ -356,7 +353,7 @@ base::TimeDelta EventGenerator::CalculateScrollDurationForFlingVelocity(
     int steps) {
   const float kGestureDistance = (start - end).Length();
   const float kFlingStepDelay = (kGestureDistance / velocity) / steps * 1000000;
-  return base::TimeDelta::FromMicroseconds(kFlingStepDelay);
+  return base::Microseconds(kFlingStepDelay);
 }
 
 void EventGenerator::GestureScrollSequence(const gfx::Point& start,
@@ -441,17 +438,16 @@ void EventGenerator::GestureMultiFingerScrollWithDelays(
   bool pressed[kMaxTouchPoints];
   for (int i = 0; i < count; ++i) {
     pressed[i] = false;
-    press_time[i] = press_time_first +
-        base::TimeDelta::FromMilliseconds(delay_adding_finger_ms[i]);
-    release_time[i] = press_time_first + base::TimeDelta::FromMilliseconds(
-                                             delay_releasing_finger_ms[i]);
+    press_time[i] =
+        press_time_first + base::Milliseconds(delay_adding_finger_ms[i]);
+    release_time[i] =
+        press_time_first + base::Milliseconds(delay_releasing_finger_ms[i]);
     DCHECK_LE(press_time[i], release_time[i]);
   }
 
   for (int step = 0; step < steps; ++step) {
     base::TimeTicks move_time =
-        press_time_first +
-        base::TimeDelta::FromMilliseconds(event_separation_time_ms * step);
+        press_time_first + base::Milliseconds(event_separation_time_ms * step);
 
     for (int i = 0; i < count; ++i) {
       if (!pressed[i] && move_time >= press_time[i]) {
@@ -487,8 +483,7 @@ void EventGenerator::GestureMultiFingerScrollWithDelays(
   }
 
   base::TimeTicks default_release_time =
-      press_time_first +
-      base::TimeDelta::FromMilliseconds(event_separation_time_ms * steps);
+      press_time_first + base::Milliseconds(event_separation_time_ms * steps);
   // Ensures that all pressed fingers are released in the end.
   for (int i = 0; i < count; ++i) {
     if (pressed[i]) {

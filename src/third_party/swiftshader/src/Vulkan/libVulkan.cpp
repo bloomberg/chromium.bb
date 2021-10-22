@@ -365,6 +365,8 @@ static const ExtensionProperties deviceExtensionProperties[] = {
 	// The following extension is used by ANGLE to emulate blitting the stencil buffer
 	{ { VK_EXT_SHADER_STENCIL_EXPORT_EXTENSION_NAME, VK_EXT_SHADER_STENCIL_EXPORT_SPEC_VERSION } },
 	{ { VK_EXT_IMAGE_ROBUSTNESS_EXTENSION_NAME, VK_EXT_IMAGE_ROBUSTNESS_SPEC_VERSION } },
+	// Useful for D3D emulation
+	{ { VK_EXT_4444_FORMATS_EXTENSION_NAME, VK_EXT_4444_FORMATS_SPEC_VERSION } },
 #ifndef __ANDROID__
 	// We fully support the KHR_swapchain v70 additions, so just track the spec version.
 	{ { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_KHR_SWAPCHAIN_SPEC_VERSION } },
@@ -791,11 +793,9 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 			break;
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT:
 			{
-				const VkPhysicalDeviceLineRasterizationFeaturesEXT *lineRasterizationFeatures = reinterpret_cast<const VkPhysicalDeviceLineRasterizationFeaturesEXT *>(extensionCreateInfo);
-				if((lineRasterizationFeatures->smoothLines != VK_FALSE) ||
-				   (lineRasterizationFeatures->stippledBresenhamLines != VK_FALSE) ||
-				   (lineRasterizationFeatures->stippledRectangularLines != VK_FALSE) ||
-				   (lineRasterizationFeatures->stippledSmoothLines != VK_FALSE))
+				const auto *lineRasterizationFeatures = reinterpret_cast<const VkPhysicalDeviceLineRasterizationFeaturesEXT *>(extensionCreateInfo);
+				bool hasFeatures = vk::Cast(physicalDevice)->hasExtendedFeatures(lineRasterizationFeatures);
+				if(!hasFeatures)
 				{
 					return VK_ERROR_FEATURE_NOT_PRESENT;
 				}
@@ -804,12 +804,11 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT:
 			{
 				const VkPhysicalDeviceProvokingVertexFeaturesEXT *provokingVertexFeatures = reinterpret_cast<const VkPhysicalDeviceProvokingVertexFeaturesEXT *>(extensionCreateInfo);
-
-				// Provoking vertex is supported.
-				// provokingVertexFeatures->provokingVertexLast can be VK_TRUE or VK_FALSE.
-				// No action needs to be taken on our end in either case; it's the apps responsibility to check
-				// that the provokingVertexLast feature is enabled before using the provoking vertex convention.
-				(void)provokingVertexFeatures->provokingVertexLast;
+				bool hasFeatures = vk::Cast(physicalDevice)->hasExtendedFeatures(provokingVertexFeatures);
+				if(!hasFeatures)
+				{
+					return VK_ERROR_FEATURE_NOT_PRESENT;
+				}
 			}
 			break;
 		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT:
@@ -872,6 +871,36 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateDevice(VkPhysicalDevice physicalDevice, c
 				// VK_EXT_custom_border_color is always enabled
 				(void)customBorderColorFeatures->customBorderColors;
 				(void)customBorderColorFeatures->customBorderColorWithoutFormat;
+			}
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
+			{
+				const auto *vk11Features = reinterpret_cast<const VkPhysicalDeviceVulkan11Features *>(extensionCreateInfo);
+				bool hasFeatures = vk::Cast(physicalDevice)->hasExtendedFeatures(vk11Features);
+				if(!hasFeatures)
+				{
+					return VK_ERROR_FEATURE_NOT_PRESENT;
+				}
+			}
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
+			{
+				const auto *vk12Features = reinterpret_cast<const VkPhysicalDeviceVulkan12Features *>(extensionCreateInfo);
+				bool hasFeatures = vk::Cast(physicalDevice)->hasExtendedFeatures(vk12Features);
+				if(!hasFeatures)
+				{
+					return VK_ERROR_FEATURE_NOT_PRESENT;
+				}
+			}
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT:
+			{
+				const auto *depthClipFeatures = reinterpret_cast<const VkPhysicalDeviceDepthClipEnableFeaturesEXT *>(extensionCreateInfo);
+				bool hasFeatures = vk::Cast(physicalDevice)->hasExtendedFeatures(depthClipFeatures);
+				if(!hasFeatures)
+				{
+					return VK_ERROR_FEATURE_NOT_PRESENT;
+				}
 			}
 			break;
 		default:
@@ -1025,21 +1054,8 @@ VKAPI_ATTR VkResult VKAPI_CALL vkAllocateMemory(VkDevice device, const VkMemoryA
 	TRACE("(VkDevice device = %p, const VkMemoryAllocateInfo* pAllocateInfo = %p, const VkAllocationCallbacks* pAllocator = %p, VkDeviceMemory* pMemory = %p)",
 	      device, pAllocateInfo, pAllocator, pMemory);
 
-	vk::DeviceMemory::ExtendedAllocationInfo extendedAllocationInfo = {};
-	VkResult result = vk::DeviceMemory::ParseAllocationInfo(pAllocateInfo, &extendedAllocationInfo);
-	if(result != VK_SUCCESS)
-	{
-		return result;
-	}
+	VkResult result = vk::DeviceMemory::Allocate(pAllocator, pAllocateInfo, pMemory, vk::Cast(device));
 
-	result = vk::DeviceMemory::Create(pAllocator, pAllocateInfo, pMemory, extendedAllocationInfo, vk::Cast(device));
-	if(result != VK_SUCCESS)
-	{
-		return result;
-	}
-
-	// Make sure the memory allocation is done now so that OOM errors can be checked now
-	result = vk::Cast(*pMemory)->allocate();
 	if(result != VK_SUCCESS)
 	{
 		vk::destroy(*pMemory, pAllocator);

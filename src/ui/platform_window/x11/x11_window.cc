@@ -35,7 +35,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_event_translation.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
 #include "ui/gfx/x/x11_window_event_manager.h"
@@ -191,6 +191,7 @@ X11Window::X11Window(PlatformWindowDelegate* platform_window_delegate)
       x_root_window_(GetX11RootWindow()) {
   DCHECK(connection_);
   DCHECK_NE(x_root_window_, x11::Window::None);
+  DCHECK(platform_window_delegate_);
 
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
@@ -463,6 +464,8 @@ bool X11Window::IsVisible() const {
 }
 
 void X11Window::PrepareForShutdown() {
+  if (HasCapture())
+    X11WindowManager::GetInstance()->UngrabEvents(this);
   connection_->RemoveEventObserver(this);
   DCHECK(X11EventSource::HasInstance());
   X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
@@ -1468,7 +1471,7 @@ int X11Window::UpdateDrag(const gfx::Point& screen_point) {
 
   auto data = std::make_unique<OSExchangeData>(
       std::make_unique<XOSExchangeDataProvider>(
-          drag_drop_client_->xwindow(),
+          drag_drop_client_->xwindow(), target_current_context->source_window(),
           target_current_context->fetched_targets()));
   int suggested_operations = target_current_context->GetDragOperation();
   // KDE-based file browsers such as Dolphin change the drag operation depending
@@ -1892,9 +1895,7 @@ void X11Window::AfterActivationStateChanged() {
   if (had_pointer_capture && !has_pointer_capture)
     OnXWindowLostCapture();
 
-  // A window can be both minimized and active from x11's perspective.
-  // But we treat a minimized window as inactive for platform consistency.
-  bool is_active = IsActive() && !IsMinimized();
+  bool is_active = IsActive();
   if (!was_active_ && is_active)
     SetFlashFrameHint(false);
 

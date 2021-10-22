@@ -163,6 +163,11 @@ class InputMethodPrivateNotifyImeMenuItemActivatedFunction
  public:
   InputMethodPrivateNotifyImeMenuItemActivatedFunction() = default;
 
+  InputMethodPrivateNotifyImeMenuItemActivatedFunction(
+      const InputMethodPrivateNotifyImeMenuItemActivatedFunction&) = delete;
+  InputMethodPrivateNotifyImeMenuItemActivatedFunction& operator=(
+      const InputMethodPrivateNotifyImeMenuItemActivatedFunction&) = delete;
+
  protected:
   ~InputMethodPrivateNotifyImeMenuItemActivatedFunction() override = default;
 
@@ -172,8 +177,6 @@ class InputMethodPrivateNotifyImeMenuItemActivatedFunction
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.notifyImeMenuItemActivated",
                              INPUTMETHODPRIVATE_NOTIFYIMEMENUITEMACTIVATED)
-  DISALLOW_COPY_AND_ASSIGN(
-      InputMethodPrivateNotifyImeMenuItemActivatedFunction);
 };
 
 class InputMethodPrivateGetCompositionBoundsFunction
@@ -192,6 +195,10 @@ class InputMethodPrivateGetCompositionBoundsFunction
 class InputImeEventRouter : public InputImeEventRouterBase {
  public:
   explicit InputImeEventRouter(Profile* profile);
+
+  InputImeEventRouter(const InputImeEventRouter&) = delete;
+  InputImeEventRouter& operator=(const InputImeEventRouter&) = delete;
+
   ~InputImeEventRouter() override;
 
   bool RegisterImeExtension(
@@ -219,8 +226,6 @@ class InputImeEventRouter : public InputImeEventRouterBase {
       engine_map_;
   // The first party ime extension which is unloaded unexpectedly.
   std::string unloaded_component_extension_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
 
 }  // namespace extensions

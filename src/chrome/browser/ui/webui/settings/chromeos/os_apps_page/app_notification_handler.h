@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_OS_APPS_PAGE_APP_NOTIFICATION_HANDLER_H_
 
 #include "ash/public/cpp/message_center_ash.h"
-#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_apps_page/mojom/app_notification_handler.mojom.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -50,21 +49,20 @@ class AppNotificationHandler
   void SetNotificationPermission(
       const std::string& app_id,
       apps::mojom::PermissionPtr permission) override;
+  void GetApps(GetAppsCallback callback) override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
 
-  void GetApps();
-
-  bool in_quiet_mode_;
+  std::vector<app_notification::mojom::AppPtr> GetAppList();
+  void NotifyAppChanged(app_notification::mojom::AppPtr app);
 
   mojo::RemoteSet<app_notification::mojom::AppNotificationsObserver>
       observer_list_;
 
   apps::AppServiceProxyChromeOs* app_service_proxy_;
-  std::vector<app_notification::mojom::AppPtr> apps_;
 
   mojo::Receiver<app_notification::mojom::AppNotificationsHandler> receiver_{
       this};

@@ -54,7 +54,7 @@ namespace {
 // Provide a random time delta in seconds before fetching models and host model
 // features.
 base::TimeDelta RandomFetchDelay() {
-  return base::TimeDelta::FromSeconds(base::RandInt(
+  return base::Seconds(base::RandInt(
       optimization_guide::features::PredictionModelFetchRandomMinDelaySecs(),
       optimization_guide::features::PredictionModelFetchRandomMaxDelaySecs()));
 }
@@ -166,7 +166,7 @@ BuildPredictionModelFromCommandLineForOptimizationTarget(
   absl::optional<
       std::pair<std::string, absl::optional<optimization_guide::proto::Any>>>
       model_file_path_and_metadata =
-          optimization_guide::switches::GetModelOverrideForOptimizationTarget(
+          optimization_guide::GetModelOverrideForOptimizationTarget(
               optimization_target);
   if (!model_file_path_and_metadata)
     return nullptr;
@@ -313,7 +313,7 @@ void PredictionManager::AddObserverForOptimizationTargetModel(
       registered_observers_for_optimization_targets_.end()) {
     DLOG(ERROR) << "Did not add observer for optimization target "
                 << static_cast<int>(optimization_target)
-                << " since an observer for the target was already registered";
+                << " since an observer for the target was already registered ";
     return;
   }
 
@@ -381,9 +381,9 @@ base::flat_map<std::string, float> PredictionManager::BuildFeatureMap(
   for (const auto& model_feature : model_features) {
     absl::optional<float> value;
     if (host_model_features) {
-      const auto it = host_model_features->find(model_feature);
-      if (it != host_model_features->end())
-        value = it->second;
+      const auto feature_it = host_model_features->find(model_feature);
+      if (feature_it != host_model_features->end())
+        value = feature_it->second;
     }
     feature_map.emplace_back(model_feature, value.value_or(-1.0f));
   }
@@ -631,10 +631,10 @@ void PredictionManager::UpdateHostModelFeatures(
               features::PredictionModelFetchInterval(),
           /*expiry_time=*/clock_->Now() +
               features::StoredHostModelFeaturesFreshnessDuration());
-  for (const auto& host_model_features : host_model_features) {
-    if (ProcessAndStoreHostModelFeatures(host_model_features)) {
+  for (const auto& features : host_model_features) {
+    if (ProcessAndStoreHostModelFeatures(features)) {
       host_model_features_update_data->CopyHostModelFeaturesIntoUpdateData(
-          host_model_features);
+          features);
     }
   }
 
@@ -667,7 +667,9 @@ void PredictionManager::UpdatePredictionModels(
           prediction_model_download_manager_->StartDownload(download_url);
         }
         base::UmaHistogramBoolean(
-            "OptimizationGuide.PredictionManager.IsDownloadUrlValid",
+            "OptimizationGuide.PredictionManager.IsDownloadUrlValid." +
+                GetStringNameForOptimizationTarget(
+                    model.model_info().optimization_target()),
             download_url.is_valid());
         if (switches::IsDebugLogsEnabled() && download_url.is_valid()) {
           debug_msg += "\nOptimization Target: " +
@@ -1080,7 +1082,7 @@ void PredictionManager::MaybeScheduleModelFetch() {
     return;
 
   if (switches::ShouldOverrideFetchModelsAndFeaturesTimer()) {
-    fetch_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
+    fetch_timer_.Start(FROM_HERE, base::Seconds(1), this,
                        &PredictionManager::FetchModels);
   } else {
     ScheduleModelsFetch();
@@ -1089,16 +1091,14 @@ void PredictionManager::MaybeScheduleModelFetch() {
 
 base::Time PredictionManager::GetLastFetchAttemptTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(
-          pref_service_->GetInt64(prefs::kModelAndFeaturesLastFetchAttempt)));
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(
+      pref_service_->GetInt64(prefs::kModelAndFeaturesLastFetchAttempt)));
 }
 
 base::Time PredictionManager::GetLastFetchSuccessTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(
-          pref_service_->GetInt64(prefs::kModelLastFetchSuccess)));
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(
+      pref_service_->GetInt64(prefs::kModelLastFetchSuccess)));
 }
 
 void PredictionManager::ScheduleModelsFetch() {

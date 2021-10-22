@@ -48,6 +48,12 @@ std::u16string FormatMessage(const std::string& remote_user_email,
 class It2MeConfirmationDialogChromeOS : public It2MeConfirmationDialog {
  public:
   explicit It2MeConfirmationDialogChromeOS(DialogStyle style);
+
+  It2MeConfirmationDialogChromeOS(const It2MeConfirmationDialogChromeOS&) =
+      delete;
+  It2MeConfirmationDialogChromeOS& operator=(
+      const It2MeConfirmationDialogChromeOS&) = delete;
+
   ~It2MeConfirmationDialogChromeOS() override;
 
   // It2MeConfirmationDialog implementation.
@@ -67,8 +73,6 @@ class It2MeConfirmationDialogChromeOS : public It2MeConfirmationDialog {
   ResultCallback callback_;
 
   DialogStyle style_;
-
-  DISALLOW_COPY_AND_ASSIGN(It2MeConfirmationDialogChromeOS);
 };
 
 It2MeConfirmationDialogChromeOS::It2MeConfirmationDialogChromeOS(
@@ -155,9 +159,12 @@ void It2MeConfirmationDialogChromeOS::OnEnterpriseNotificationResult(
   if (!button_index.has_value())
     return;  // This happens when the user clicks the notification itself.
 
+  // Note: |by_user| must be false, otherwise the notification will not actually
+  // be removed but instead it will be moved into the message center bubble
+  // (because the message was pinned).
   message_center::MessageCenter::Get()->RemoveNotification(
       kEnterpriseNotificationId,
-      /*by_user=*/true);
+      /*by_user=*/false);
 
   std::move(callback_).Run(*button_index == 0 ? Result::CANCEL : Result::OK);
 }

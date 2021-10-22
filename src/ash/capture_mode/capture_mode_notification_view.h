@@ -30,22 +30,22 @@ class ASH_EXPORT CaptureModeNotificationView
   // notifications. There is a banner on top of the image area of the
   // notification to indicate the image has been copied to clipboard.
   static std::unique_ptr<message_center::MessageView> CreateForImage(
-      const message_center::Notification& notification);
+      const message_center::Notification& notification,
+      bool shown_in_popup);
 
   // Creates the custom capture mode notification for video capture
   // notifications. There is a superimposed "play" icon on top of the video
   // thumbnail image.
   static std::unique_ptr<message_center::MessageView> CreateForVideo(
-      const message_center::Notification& notification);
+      const message_center::Notification& notification,
+      bool shown_in_popup);
 
   // message_center::NotificationView:
   void Layout() override;
 
   // views::ViewObserver:
-  void OnChildViewAdded(views::View* observed_view,
-                        views::View* child) override;
-  void OnChildViewRemoved(views::View* observed_view,
-                          views::View* child) override;
+  void OnViewVisibilityChanged(View* observed_view,
+                               View* starting_view) override;
   void OnViewIsDeleting(View* observed_view) override;
 
  private:

@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/values.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "chromeos/login/auth/user_context.h"
 
-namespace chromeos {
-
-class UserContext;
+namespace ash {
 
 // Structure that defines data that need to be passed between screens during
 // WizardController flows.
@@ -66,18 +66,20 @@ class WizardContext {
   // terms of service screen to managed users before entering the session.
   bool end_onboarding_after_tos = false;
 
+  // When --tpm-is-dynamic switch is set TPM ownership check is happening
+  // right before enrollment. If TPM is owned TpmErrorScreen occurs and this
+  // flag helps to set right error message.
+  bool tpm_owned_error = false;
+
+  // True if this is a branded build (i.e. Google Chrome).
+  bool is_branded_build;
+
   // Authorization data that is required by PinSetup screen to add PIN as
   // another possible auth factor. Can be empty (if PIN is not supported).
   // In future will be replaced by AuthSession.
   std::unique_ptr<UserContext> extra_factors_auth_session;
 };
 
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-using ::chromeos::WizardContext;
-}
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_WIZARD_CONTEXT_H_

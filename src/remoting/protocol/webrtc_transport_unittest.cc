@@ -41,8 +41,7 @@ namespace {
 const char kChannelName[] = "test_channel";
 const char kAuthKey[] = "test_auth_key";
 
-constexpr base::TimeDelta kWaitForThreadJoinTimeout =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kWaitForThreadJoinTimeout = base::Milliseconds(200);
 
 class TestTransportEventHandler : public WebrtcTransport::EventHandler {
  public:
@@ -52,6 +51,11 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
       IncomingChannelCallback;
 
   TestTransportEventHandler() = default;
+
+  TestTransportEventHandler(const TestTransportEventHandler&) = delete;
+  TestTransportEventHandler& operator=(const TestTransportEventHandler&) =
+      delete;
+
   ~TestTransportEventHandler() override = default;
 
   // All callbacks must be set before the test handler is passed to a Transport
@@ -102,13 +106,16 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   base::RepeatingClosure connected_callback_;
   ErrorCallback error_callback_;
   IncomingChannelCallback incoming_channel_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestTransportEventHandler);
 };
 
 class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
  public:
   TestMessagePipeEventHandler() = default;
+
+  TestMessagePipeEventHandler(const TestMessagePipeEventHandler&) = delete;
+  TestMessagePipeEventHandler& operator=(const TestMessagePipeEventHandler&) =
+      delete;
+
   ~TestMessagePipeEventHandler() override = default;
 
   void set_open_callback(const base::RepeatingClosure& callback) {
@@ -152,8 +159,6 @@ class TestMessagePipeEventHandler : public MessagePipe::EventHandler {
   base::RepeatingClosure closed_callback_;
 
   std::list<std::unique_ptr<CompoundBuffer>> received_messages_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMessagePipeEventHandler);
 };
 
 class FakeThreadJoinWatchdog : public base::Watchdog {

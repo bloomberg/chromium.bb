@@ -96,7 +96,7 @@ class State : angle::NonCopyable
           const EGLenum clientType,
           const Version &clientVersion,
           bool debug,
-          bool bindGeneratesResource,
+          bool bindGeneratesResourceCHROMIUM,
           bool clientArraysEnabled,
           bool robustResourceInit,
           bool programBinaryCacheEnabled,
@@ -121,7 +121,7 @@ class State : angle::NonCopyable
     const Limitations &getLimitations() const { return mLimitations; }
     egl::ShareGroup *getShareGroup() const { return mShareGroup; }
 
-    bool isWebGL() const { return mExtensions.webglCompatibility; }
+    bool isWebGL() const { return mExtensions.webglCompatibilityANGLE; }
 
     bool isWebGL1() const { return (isWebGL() && mClientVersion.major == 2); }
 
@@ -539,7 +539,7 @@ class State : angle::NonCopyable
         mDirtyObjects.set(DIRTY_OBJECT_VERTEX_ARRAY);
     }
 
-    void setVertexBindingDivisor(GLuint bindingIndex, GLuint divisor);
+    void setVertexBindingDivisor(const Context *context, GLuint bindingIndex, GLuint divisor);
 
     // Pixel pack state manipulation
     void setPackAlignment(GLint alignment);

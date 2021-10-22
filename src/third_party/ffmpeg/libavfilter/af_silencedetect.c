@@ -131,10 +131,34 @@ static void silencedetect_##name(SilenceDetectContext *s, AVFrame *insamples,   
                nb_samples_notify, time_base);                                    \
 }
 
+#define SILENCE_DETECT_PLANAR(name, type)                                        \
+static void silencedetect_##name(SilenceDetectContext *s, AVFrame *insamples,    \
+                                 int nb_samples, int64_t nb_samples_notify,      \
+                                 AVRational time_base)                           \
+{                                                                                \
+    const int channels = insamples->channels;                                    \
+    const type noise = s->noise;                                                 \
+                                                                                 \
+    nb_samples /= channels;                                                      \
+    for (int i = 0; i < nb_samples; i++) {                                       \
+        for (int ch = 0; ch < insamples->channels; ch++) {                       \
+            const type *p = (const type *)insamples->extended_data[ch];          \
+            update(s, insamples, p[i] < noise && p[i] > -noise,                  \
+                   channels * i + ch,                                            \
+                   nb_samples_notify, time_base);                                \
+        }                                                                        \
+    }                                                                            \
+}
+
 SILENCE_DETECT(dbl, double)
 SILENCE_DETECT(flt, float)
 SILENCE_DETECT(s32, int32_t)
 SILENCE_DETECT(s16, int16_t)
+
+SILENCE_DETECT_PLANAR(dblp, double)
+SILENCE_DETECT_PLANAR(fltp, float)
+SILENCE_DETECT_PLANAR(s32p, int32_t)
+SILENCE_DETECT_PLANAR(s16p, int16_t)
 
 static int config_input(AVFilterLink *inlink)
 {
@@ -165,6 +189,18 @@ static int config_input(AVFilterLink *inlink)
         s->noise *= INT16_MAX;
         s->silencedetect = silencedetect_s16;
         break;
+    case AV_SAMPLE_FMT_DBLP: s->silencedetect = silencedetect_dblp; break;
+    case AV_SAMPLE_FMT_FLTP: s->silencedetect = silencedetect_fltp; break;
+    case AV_SAMPLE_FMT_S32P:
+        s->noise *= INT32_MAX;
+        s->silencedetect = silencedetect_s32p;
+        break;
+    case AV_SAMPLE_FMT_S16P:
+        s->noise *= INT16_MAX;
+        s->silencedetect = silencedetect_s16p;
+        break;
+    default:
+        return AVERROR_BUG;
     }
 
     return 0;
@@ -197,35 +233,22 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
-    AVFilterChannelLayouts *layouts = NULL;
     static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_DBL,
-        AV_SAMPLE_FMT_FLT,
-        AV_SAMPLE_FMT_S32,
-        AV_SAMPLE_FMT_S16,
+        AV_SAMPLE_FMT_DBL, AV_SAMPLE_FMT_DBLP,
+        AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_FLTP,
+        AV_SAMPLE_FMT_S32, AV_SAMPLE_FMT_S32P,
+        AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_S16P,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_layouts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -247,7 +270,6 @@ static const AVFilterPad silencedetect_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad silencedetect_outputs[] = {
@@ -255,7 +277,6 @@ static const AVFilterPad silencedetect_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_silencedetect = {
@@ -264,7 +285,7 @@ const AVFilter ff_af_silencedetect = {
     .priv_size     = sizeof(SilenceDetectContext),
     .query_formats = query_formats,
     .uninit        = uninit,
-    .inputs        = silencedetect_inputs,
-    .outputs       = silencedetect_outputs,
+    FILTER_INPUTS(silencedetect_inputs),
+    FILTER_OUTPUTS(silencedetect_outputs),
     .priv_class    = &silencedetect_class,
 };

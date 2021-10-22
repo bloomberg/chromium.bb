@@ -22,6 +22,7 @@
 #include "components/services/storage/public/mojom/storage_service.mojom-forward.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
+#include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_context_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
@@ -42,15 +43,16 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom.h"
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
-}
+}  // namespace leveldb_proto
 
 namespace net {
 class IsolationInfo;
-}
+}  // namespace net
 
 namespace content {
 
@@ -84,6 +86,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       public network::mojom::NetworkContextClient,
       public network::mojom::URLLoaderNetworkServiceObserver {
  public:
+  StoragePartitionImpl(const StoragePartitionImpl&) = delete;
+  StoragePartitionImpl& operator=(const StoragePartitionImpl&) = delete;
+
   // It is guaranteed that storage partitions are destructed before the
   // browser context starts shutting down its corresponding IO thread residents
   // (e.g. resource context).
@@ -162,11 +167,9 @@ class CONTENT_EXPORT StoragePartitionImpl
       override;
   ContentIndexContextImpl* GetContentIndexContext() override;
   NativeIOContext* GetNativeIOContext() override;
-#if !defined(OS_ANDROID)
   HostZoomMap* GetHostZoomMap() override;
   HostZoomLevelContext* GetHostZoomLevelContext() override;
   ZoomLevelDelegate* GetZoomLevelDelegate() override;
-#endif  // !defined(OS_ANDROID)
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
   leveldb_proto::ProtoDatabaseProvider* GetProtoDatabaseProvider() override;
   void SetProtoDatabaseProvider(
@@ -210,6 +213,7 @@ class CONTENT_EXPORT StoragePartitionImpl
           network_context_remote) override;
   BackgroundFetchContext* GetBackgroundFetchContext();
   PaymentAppContextImpl* GetPaymentAppContext();
+  BroadcastChannelService* GetBroadcastChannelService();
   BroadcastChannelProvider* GetBroadcastChannelProvider();
   BluetoothAllowedDevicesMap* GetBluetoothAllowedDevicesMap();
   BlobRegistryWrapper* GetBlobRegistry();
@@ -228,14 +232,16 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
+      const blink::LocalFrameToken& local_frame_token,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
   void BindSessionStorageNamespace(
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver)
       override;
   void BindSessionStorageArea(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
+      const blink::LocalFrameToken& local_frame_token,
       const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
 
@@ -542,14 +548,13 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<SharedWorkerServiceImpl> shared_worker_service_;
   std::unique_ptr<PushMessagingContext> push_messaging_context_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
-#if !defined(OS_ANDROID)
   std::unique_ptr<HostZoomLevelContext, BrowserThread::DeleteOnUIThread>
       host_zoom_level_context_;
-#endif  // !defined(OS_ANDROID)
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundFetchContext> background_fetch_context_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
   scoped_refptr<PaymentAppContextImpl> payment_app_context_;
+  std::unique_ptr<BroadcastChannelService> broadcast_channel_service_;
   std::unique_ptr<BroadcastChannelProvider> broadcast_channel_provider_;
   std::unique_ptr<BluetoothAllowedDevicesMap> bluetooth_allowed_devices_map_;
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
@@ -663,8 +668,6 @@ class CONTENT_EXPORT StoragePartitionImpl
   int next_pending_trust_token_issuance_callback_key_ = 0;
 
   base::WeakPtrFactory<StoragePartitionImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };
 
 }  // namespace content

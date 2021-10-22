@@ -35,6 +35,9 @@ if (use_cfi_diag || is_ubsan || is_ubsan_security || is_ubsan_vptr) {
   _sanitizer_runtimes = [ "$clang_base_path/lib/clang/$clang_version/lib/linux/libclang_rt.ubsan_standalone-$_sanitizer_arch-android.so" ]
 }
 
+_BUNDLETOOL_JAR_PATH =
+    "//third_party/android_build_tools/bundletool/bundletool.jar"
+
 # Creates a dist directory for a native executable.
 #
 # Running a native executable on a device requires all the shared library
@@ -2758,7 +2761,6 @@ if (enable_java_templates) {
                                "secondary_native_lib_placeholders",
                                "sources",
                                "static_library_dependent_targets",
-                               "use_classic_desugar",
                                "library_always_compress",
                                "library_renames",
                              ])
@@ -3499,7 +3501,6 @@ if (enable_java_templates) {
                                "testonly",
                                "uncompress_dex",
                                "uncompress_shared_libraries",
-                               "use_classic_desugar",
                                "library_always_compress",
                                "library_renames",
                                "use_chromium_linker",
@@ -4342,7 +4343,6 @@ if (enable_java_templates) {
         "missing_classes_allowlist",
         "requires_android",
         "testonly",
-        "use_classic_desugar",
       ]
 
       # Create android_java_prebuilt target for extra jars within jars/.
@@ -4567,10 +4567,6 @@ if (enable_java_templates) {
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
 
-    if (!_proguard_enabled && defined(invoker.min_sdk_version)) {
-      not_needed(invoker, [ "min_sdk_version" ])
-    }
-
     # Prevent "unused variable".
     not_needed([ "_enable_multidex" ])
 
@@ -4710,11 +4706,7 @@ if (enable_java_templates) {
     if (_proguard_enabled) {
       # If this Bundle uses a static library, the static library APK will
       # create the synchronized dex file path.
-      if (_uses_static_library_synchronized_proguard) {
-        if (defined(invoker.min_sdk_version)) {
-          not_needed(invoker, [ "min_sdk_version" ])
-        }
-      } else {
+      if (!_uses_static_library_synchronized_proguard) {
         dex(_dex_target) {
           forward_variables_from(invoker,
                                  [
@@ -4860,7 +4852,8 @@ if (enable_java_templates) {
     _bundle_target_name = "${_target_name}__bundle"
     action_with_pydeps(_bundle_target_name) {
       script = "//build/android/gyp/create_app_bundle.py"
-      inputs = _all_module_zip_paths + _all_module_build_configs
+      inputs = _all_module_zip_paths + _all_module_build_configs +
+               [ _BUNDLETOOL_JAR_PATH ]
       outputs = [ _bundle_path ]
       deps = _all_create_module_targets + [ ":$_build_config_target" ]
       args = [
@@ -4876,6 +4869,16 @@ if (enable_java_templates) {
           invoker.compress_shared_libraries) {
         args += [ "--compress-shared-libraries" ]
       }
+      _min_sdk_version = default_min_sdk_version
+      if (defined(invoker.min_sdk_version)) {
+        _min_sdk_version = invoker.min_sdk_version
+      }
+
+      # Android P+ support loading from stored dex.
+      if (_min_sdk_version < 27) {
+        args += [ "--compress-dex" ]
+      }
+
       if (treat_warnings_as_errors) {
         args += [ "--warnings-as-errors" ]
       }
@@ -5071,7 +5074,10 @@ if (enable_java_templates) {
     _apks_path = "$root_build_dir/apks/$_bundle_name.apks"
     action_with_pydeps("${_target_name}_apks") {
       script = "//build/android/gyp/create_app_bundle_apks.py"
-      inputs = [ _bundle_path ]
+      inputs = [
+        _bundle_path,
+        _BUNDLETOOL_JAR_PATH,
+      ]
       outputs = [ _apks_path ]
       data = [ _apks_path ]
       args = [

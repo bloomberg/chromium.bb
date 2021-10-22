@@ -37,6 +37,8 @@
 #include "libavutil/timestamp.h"
 #include "libavutil/samplefmt.h"
 
+#include "libavcodec/defs.h"
+
 #include "audio.h"
 #include "avfilter.h"
 #include "internal.h"
@@ -241,7 +243,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -249,7 +250,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_ashowinfo = {
@@ -257,6 +257,6 @@ const AVFilter ff_af_ashowinfo = {
     .description = NULL_IF_CONFIG_SMALL("Show textual information for each audio frame."),
     .priv_size   = sizeof(AShowInfoContext),
     .uninit      = uninit,
-    .inputs      = inputs,
-    .outputs     = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
 };

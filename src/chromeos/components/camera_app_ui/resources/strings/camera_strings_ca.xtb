@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1113173431709655881">Mode de càmera</translation>
 <translation id="1175958423215084756">Enllaç detectat. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">Imatges de la galeria</translation>
 <translation id="1300209025925956156">Escaneja el document</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> no està endollada.</translation>
 <translation id="1473110567575736769">Temporitzador de 3 segons</translation>
 <translation id="1545749641540134597">Escaneja el codi QR</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">No s'ha gravat res</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">Escaneja</translation>
 <translation id="2549985041256363841">Inicia la gravació</translation>
 <translation id="2599796128805996109">Càmera posterior</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> s</translation>
+<translation id="2761536921376153655">Tipus de cerca</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> està endollada.</translation>
 <translation id="2968794441791257519">Les fotos i els vídeos que es facin amb la càmera es mouran a la carpeta Baixades. Pots accedir-hi des de Fitxers.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">Ves a la galeria</translation>
 <translation id="520537883758714667">L'escaneig de documents ja està disponible</translation>
 <translation id="5268823927180092501">Activa el mode de document en totes les càmeres</translation>
+<translation id="5317780077021120954">Desa</translation>
 <translation id="5444515100983837161">Col·loca totes les vores del document dins del marc. L'escaneig funciona millor si el document i el fons tenen colors diferents.</translation>
 <translation id="5671277269877808209">Quadrat</translation>
 <translation id="5746169159649715125">Desa com a PDF</translation>
@@ -86,6 +92,7 @@
 
 Si els teus suggeriments fan referència a la qualitat d'imatge o de vídeo, adjunta una foto o un vídeo de mostra i descriu quin problema hi ha. Per exemple, la foto és massa fosca o el motiu central no està enfocat.</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapíxels</translation>
+<translation id="6527303717912515753">Comparteix</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6681668084120808868">Fes una foto</translation>
 <translation id="6778482348691154169">No es pot fer la foto</translation>
@@ -94,15 +101,19 @@ Si els teus suggeriments fan referència a la qualitat d'imatge o de vídeo, adj
 <translation id="698156982839284926">3 segons</translation>
 <translation id="712848772518857951">Confirmes que vols suprimir <ph name="COUNT" /> elements?</translation>
 <translation id="7134221860976209830">Temporitzador de 10 segons</translation>
+<translation id="7191890674911603392">Tipus de gravació</translation>
 <translation id="7243947652761655814">Resolució del vídeo</translation>
 <translation id="7337660886763914220">Hi ha errors al sistema de fitxers.</translation>
 <translation id="7450541714075000668">El text s'ha copiat</translation>
+<translation id="7476762461674917065">Mostra l'opció de gravació en format GIF</translation>
+<translation id="7488619942230388918">Grava un vídeo en format GIF</translation>
 <translation id="7557677699350329807">Canvia a la càmera següent</translation>
 <translation id="7607002721634913082">En pausa</translation>
 <translation id="7608223098072244877">4 per 4</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7726641833034062494">Grava un vídeo normal</translation>
 <translation id="7983668134180549431">Text detectat.</translation>
 <translation id="8067883171444229417">Reprodueix el vídeo</translation>
 <translation id="8120146556401698679">Panoràmica, inclinació i zoom</translation>

@@ -163,7 +163,6 @@ class QuicChromiumClientSessionTest
         migrate_session_early_v2_(false),
         go_away_on_path_degrading_(false) {
     FLAGS_quic_enable_http3_grease_randomness = false;
-    FLAGS_quic_reloadable_flag_quic_ack_cid_frames = true;
     quic::QuicEnableVersion(version_);
     // Advance the time, because timers do not like uninitialized times.
     clock_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
@@ -1711,7 +1710,7 @@ TEST_P(QuicChromiumClientSessionTest, CanPoolExpectCT) {
 
   // Adding Expect-CT data for different NetworkIsolationKeys should have no
   // effect.
-  base::Time expiry = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiry = base::Time::Now() + base::Days(1);
   transport_security_state_->AddExpectCT(
       "www.example.org", expiry, true /* enforce */, GURL() /* report_url */,
       NetworkIsolationKey::CreateTransient());

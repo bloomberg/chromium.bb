@@ -683,7 +683,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     scoped_refptr<SiteInstance> initial_site_instance(
         current_frame_host()->GetSiteInstance());
 
-    // Ensure it has a RenderFrameHostProxy for another cross-site page.
+    // Ensure it has a RenderFrameProxyHost for another cross-site page.
     GURL non_coop_cross_site_page(
         https_server()->GetURL("b.com", "/title1.html"));
     OpenPopup(current_frame_host(), non_coop_cross_site_page, "");
@@ -729,7 +729,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     GURL non_coop_cross_site_page(
         https_server()->GetURL("b.com", "/title1.html"));
 
-    // Ensure it has a RenderFrameHostProxy for another cross-site page.
+    // Ensure it has a RenderFrameProxyHost for another cross-site page.
     OpenPopup(current_frame_host(), non_coop_cross_site_page, "");
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -788,7 +788,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     scoped_refptr<SiteInstance> initial_site_instance(
         current_frame_host()->GetSiteInstance());
 
-    // Ensure it has a RenderFrameHostProxy for another cross-site page.
+    // Ensure it has a RenderFrameProxyHost for another cross-site page.
     OpenPopup(current_frame_host(), cross_origin_non_coop_page, "");
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -830,7 +830,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     scoped_refptr<SiteInstance> initial_site_instance(
         current_frame_host()->GetSiteInstance());
 
-    // Ensure it has a RenderFrameHostProxy for another cross-site page.
+    // Ensure it has a RenderFrameProxyHost for another cross-site page.
     OpenPopup(current_frame_host(), cross_origin_non_coop_page, "");
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -890,7 +890,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     EXPECT_EQ(current_frame_host()->cross_origin_opener_policy(),
               CoopSameOriginAllowPopups());
 
-    // Ensure it has a RenderFrameHostProxy for another cross-site page.
+    // Ensure it has a RenderFrameProxyHost for another cross-site page.
     OpenPopup(current_frame_host(), cross_origin_non_coop_page, "");
 
     EXPECT_EQ(web_contents()
@@ -932,7 +932,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
     scoped_refptr<SiteInstance> initial_site_instance(
         current_frame_host()->GetSiteInstance());
 
-    // Ensure it has a RenderFrameHostProxy for another cross-site page.
+    // Ensure it has a RenderFrameProxyHost for another cross-site page.
     OpenPopup(current_frame_host(), cross_origin_non_coop_page, "");
     EXPECT_EQ(web_contents()
                   ->GetFrameTree()
@@ -1018,7 +1018,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   scoped_refptr<SiteInstance> initial_site_instance(
       current_frame_host()->GetSiteInstance());
 
-  // Ensure it has a RenderFrameHostProxy for another cross-site page.
+  // Ensure it has a RenderFrameProxyHost for another cross-site page.
   Shell* popup_shell = OpenPopup(current_frame_host(), coop_page, "");
   GURL cross_site_iframe(https_server()->GetURL("b.com", "/title1.html"));
   TestNavigationManager iframe_navigation(popup_shell->web_contents(),
@@ -2251,8 +2251,9 @@ IN_PROC_BROWSER_TEST_P(VirtualBrowsingContextGroupTest,
   EXPECT_NE(group_4, group_1);
 }
 
-// This test is flaky on Win: https://crbug.com/1125998.
-#if defined(OS_WIN)
+// This test is flaky on Win, Mac, Linux and ChromeOS: https://crbug.com/1125998
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_CrossOriginIsolatedSiteInstance_MainFrame \
   DISABLED_CrossOriginIsolatedSiteInstance_MainFrame
 #else

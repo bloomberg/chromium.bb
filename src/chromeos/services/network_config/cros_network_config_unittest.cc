@@ -141,6 +141,9 @@ class CrosNetworkConfigTest : public testing::Test {
     SetupNetworks();
   }
 
+  CrosNetworkConfigTest(const CrosNetworkConfigTest&) = delete;
+  CrosNetworkConfigTest& operator=(const CrosNetworkConfigTest&) = delete;
+
   ~CrosNetworkConfigTest() override {
     cros_network_config_.reset();
     helper_.reset();
@@ -252,7 +255,7 @@ class CrosNetworkConfigTest : public testing::Test {
     wifi1_path_ = helper()->ConfigureService(
         R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "ready",
             "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false,
-            "TrafficCounterResetTime": 1234567899876543})");
+            "TrafficCounterResetTime": 123456789987654})");
     helper()->ConfigureService(
         R"({"GUID": "wifi2_guid", "Type": "wifi", "SSID": "wifi2",
             "State": "idle", "SecurityClass": "psk", "Strength": 100,
@@ -678,8 +681,6 @@ class CrosNetworkConfigTest : public testing::Test {
   std::unique_ptr<CrosNetworkConfigTestObserver> observer_;
   std::string wifi1_path_;
   std::string vpn_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrosNetworkConfigTest);
 };
 
 TEST_F(CrosNetworkConfigTest, GetNetworkState) {
@@ -1004,7 +1005,7 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_EQ(mojom::OncSource::kNone, properties->source);
   EXPECT_EQ(false, properties->type_properties->get_wifi()->is_syncable);
   ASSERT_TRUE(properties->traffic_counter_reset_time);
-  EXPECT_EQ(1234567899876543,
+  EXPECT_EQ(123456789987654,
             properties->traffic_counter_reset_time->ToDeltaSinceWindowsEpoch()
                 .InMilliseconds());
 

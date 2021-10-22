@@ -31,6 +31,10 @@ class APIRequestHandler {
   // ExtensionHostMsg_Request_Params IPC struct.
   struct Request {
     Request();
+
+    Request(const Request&) = delete;
+    Request& operator=(const Request&) = delete;
+
     ~Request();
 
     int request_id = -1;
@@ -38,9 +42,6 @@ class APIRequestHandler {
     bool has_async_response_handler = false;
     bool has_user_gesture = false;
     std::unique_ptr<base::Value> arguments_list;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Request);
   };
 
   using SendRequestMethod =
@@ -51,23 +52,20 @@ class APIRequestHandler {
                     APILastError last_error,
                     ExceptionHandler* exception_handler,
                     const InteractionProvider* interaction_provider);
+
+  APIRequestHandler(const APIRequestHandler&) = delete;
+  APIRequestHandler& operator=(const APIRequestHandler&) = delete;
+
   ~APIRequestHandler();
 
-  // Begins the process of processing the request. Returns the identifier of the
-  // pending request, or -1 if no pending request was added (which can happen if
-  // no callback was specified).
-  int StartRequest(v8::Local<v8::Context> context,
-                   const std::string& method,
-                   std::unique_ptr<base::Value> arguments_list,
-                   v8::Local<v8::Function> callback,
-                   v8::Local<v8::Function> custom_callback);
-
-  // Starts a request and returns a promise, which will be resolved or rejected
-  // when the request is completed.
-  std::pair<int, v8::Local<v8::Promise>> StartPromiseBasedRequest(
+  // Begins the process of processing the request. If this is a promise based
+  // request returns the associated promise, otherwise returns an empty promise.
+  v8::Local<v8::Promise> StartRequest(
       v8::Local<v8::Context> context,
       const std::string& method,
       std::unique_ptr<base::Value> arguments_list,
+      binding::AsyncResponseType async_type,
+      v8::Local<v8::Function> callback,
       v8::Local<v8::Function> custom_callback);
 
   // Adds a pending request for the request handler to manage (and complete via
@@ -132,13 +130,6 @@ class APIRequestHandler {
   // Returns the next request ID to be used.
   int GetNextRequestId();
 
-  // Common implementation for starting a request.
-  void StartRequestImpl(v8::Local<v8::Context> context,
-                        int request_id,
-                        const std::string& method,
-                        std::unique_ptr<base::Value> arguments_list,
-                        std::unique_ptr<AsyncResultHandler> async_handler);
-
   // Common implementation for completing a request.
   void CompleteRequestImpl(int request_id,
                            const ArgumentAdapter& arguments,
@@ -169,8 +160,6 @@ class APIRequestHandler {
 
   // Outlives |this|.
   const InteractionProvider* const interaction_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(APIRequestHandler);
 };
 
 }  // namespace extensions

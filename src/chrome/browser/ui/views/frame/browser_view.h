@@ -88,6 +88,10 @@ class LensSidePanelController;
 }  // namespace lens
 #endif
 
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+class SideSearchBrowserController;
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+
 namespace ui {
 class NativeTheme;
 }  // namespace ui
@@ -205,6 +209,12 @@ class BrowserView : public BrowserWindow,
     return lens_side_panel_controller_.get();
   }
 #endif
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  SideSearchBrowserController* side_search_controller() {
+    return side_search_controller_.get();
+  }
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   void set_contents_border_widget(views::Widget* contents_border_widget) {
     GetBrowserViewLayout()->set_contents_border_widget(contents_border_widget);
@@ -431,6 +441,7 @@ class BrowserView : public BrowserWindow,
       ExclusiveAccessBubbleType bubble_type,
       ExclusiveAccessBubbleHideCallback bubble_first_hide_callback,
       bool force_update) override;
+  bool IsExclusiveAccessBubbleDisplayed() const override;
   void OnExclusiveAccessUserInput() override;
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
@@ -550,7 +561,6 @@ class BrowserView : public BrowserWindow,
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
 
-  void ShowInProductHelpPromo(InProductHelpFeature iph_feature) override;
   FeaturePromoController* GetFeaturePromoController() override;
 
   void ShowIncognitoClearBrowsingDataDialog() override;
@@ -852,6 +862,11 @@ class BrowserView : public BrowserWindow,
   // whenever the touch mode changes.
   void MaybeShowReadingListInSidePanelIPH();
 
+  void UpdateWindowControlsOverlayEnabled();
+
+  // Updates the visibility of the Window Controls Overlay toggle button.
+  void UpdateWindowControlsOverlayToggleVisible();
+
   // The BrowserFrame that hosts this view.
   BrowserFrame* frame_ = nullptr;
 
@@ -962,6 +977,11 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<lens::LensSidePanelController> lens_side_panel_controller_;
 #endif
 
+  // Controls the browser window's side panel for the Side Search feature.
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+  std::unique_ptr<SideSearchBrowserController> side_search_controller_;
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.
   ToolbarButtonProvider* toolbar_button_provider_ = nullptr;
@@ -1063,6 +1083,9 @@ class BrowserView : public BrowserWindow,
   // tab loading animation.
   absl::optional<ui::ThroughputTracker> loading_animation_tracker_;
 #endif
+
+  bool window_controls_overlay_enabled_ = false;
+  bool should_show_window_controls_overlay_toggle_ = false;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

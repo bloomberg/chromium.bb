@@ -121,7 +121,8 @@
   },
   {
     "prefix": "stable",
-    "bases": ["fast/css3-text/css3-text-decoration/stable",
+    "bases": ["external/wpt/css/css-cascade/presentational-hints-cascade.html",
+              "fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
               "http/tests/navigation",
               "http/tests/sendbeacon",
@@ -163,21 +164,6 @@
     "bases": ["external/wpt/media-source",
               "media"],
     "args": ["--use-gpu-in-tests"]
-  },
-  {
-    "prefix": "synchronous_html_parser",
-    "bases": ["http/tests/devtools/sources/debugger-breakpoints",
-              "http/tests/inspector-protocol",
-              "http/tests/preload",
-              "external/wpt/html/semantics",
-              "external/wpt/html/syntax/parsing",
-              "external/wpt/html/the-xhtml-syntax",
-              "external/wpt/preload",
-              "external/wpt/signed-exchange",
-              "media",
-              "svg"],
-    "args": ["--enable-blink-features=ForceSynchronousHTMLParsing",
-             "--enable-features=SharedArrayBuffer"]
   },
   {
     "prefix": "shared_array_buffer_on_desktop",
@@ -338,30 +324,30 @@
     "prefix": "dark-mode-default",
     "bases": ["dark-mode/colors",
               "dark-mode/images"],
-    "args": ["--blink-settings=forceDarkModeEnabled=true"]
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true"]
   },
   {
     "prefix": "dark-mode-images-filter-all",
     "bases": ["dark-mode/images"],
-    "args": ["--blink-settings=forceDarkModeEnabled=true",
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
              "--dark-mode-settings=ImagePolicy=0"]
   },
   {
     "prefix": "dark-mode-images-filter-none",
     "bases": ["dark-mode/images"],
-    "args": ["--blink-settings=forceDarkModeEnabled=true",
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
              "--dark-mode-settings=ImagePolicy=1"]
   },
   {
     "prefix": "dark-mode-images-grayscale",
     "bases": ["dark-mode/images"],
-    "args": ["--blink-settings=forceDarkModeEnabled=true",
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
              "--dark-mode-settings=ImagePolicy=0,ImageGrayScalePercent=1.0"]
   },
   {
     "prefix": "dark-mode-increase-text-contrast",
     "bases": ["dark-mode/colors"],
-    "args": ["--blink-settings=forceDarkModeEnabled=true",
+    "args": ["--blink-settings=preferredColorScheme=0,forceDarkModeEnabled=true",
              "--dark-mode-settings=IncreaseTextContrast=1"]
   },
   {
@@ -485,6 +471,7 @@
               "external/wpt/content-security-policy/gen",
               "external/wpt/fetch/",
               "external/wpt/html/cross-origin-embedder-policy",
+              "external/wpt/html/semantics/scripting-1/the-script-element/module/import-meta",
               "external/wpt/referrer-policy",
               "external/wpt/resource-timing",
               "external/wpt/service-workers",
@@ -503,11 +490,10 @@
              "--enable-blink-features=CorsRFC1918"]
   },
   {
-    "prefix": "coep-for-shared-worker",
+    "prefix": "without-coep-for-shared-worker",
     "bases": ["external/wpt/html/cross-origin-embedder-policy"],
-    "args": ["--enable-features=COEPForSharedWorker"]
+    "args": ["--disable-features=COEPForSharedWorker"]
   },
-
   {
     "prefix": "direct-sockets",
     "bases": ["external/wpt/raw-sockets"],
@@ -552,7 +538,9 @@
   },
   {
     "prefix": "wasm-csp",
-    "bases": ["wasm"],
+    "bases": [
+      "wasm",
+      "external/wpt/content-security-policy/wasm-unsafe-eval"],
     "args": ["--enable-blink-features=WebAssemblyCSP"]
   },
   {
@@ -560,16 +548,6 @@
     "bases": ["http/tests/devtools/isolated-code-cache"],
     "args": ["--enable-features=SplitCacheByNetworkIsolationKey",
              "--disable-site-isolation-trials"]
-  },
-  {
-    "prefix": "not-plz-service-worker",
-    "bases": ["http/tests/serviceworker",
-              "http/tests/devtools/service-workers",
-              "http/tests/devtools/console",
-              "http/tests/inspector-protocol",
-              "external/wpt/service-workers",
-              "external/wpt/html/cross-origin-embedder-policy"],
-    "args": ["--disable-features=PlzServiceWorker"]
   },
   {
     "prefix": "not-split-http-cache-not-site-per-process",
@@ -618,7 +596,7 @@
     "args": ["--enable-features=ReduceUserAgent"]
   },
   {
-    "prefix": "file-system-access-access-handle-incognito",
+    "prefix": "fsa-incognito",
     "bases": ["external/wpt/file-system-access"],
     "args": ["--enable-features=IncognitoFileSystemContextForTesting"]
   },
@@ -655,15 +633,14 @@
   {
     "prefix": "system-color-compute",
     "bases": ["external/wpt/css/css-color"],
-    "args": ["--enable-blink-features=CSSColorScheme,CSSSystemColorComputeToSelf"]
+    "args": ["--enable-blink-features=CSSSystemColorComputeToSelf"]
   },
   {
     "prefix": "dark-color-scheme",
     "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
               "fast/forms/color-scheme",
               "http/tests/eye-dropper"],
-    "args": ["--force-dark-mode",
-             "--enable-blink-features=CSSColorScheme",
+    "args": ["--blink-settings=preferredColorScheme=0",
              "--enable-features=EyeDropper"]
   },
   {
@@ -709,7 +686,8 @@
     "prefix": "css-calc-infinity-and-nan-disabled",
     "bases": ["external/wpt/html/rendering/non-replaced-elements/the-page/crashtests/",
               "external/wpt/css/css-values/",
-              "external/wpt/css/css-transforms/parsing/"],
+              "external/wpt/css/css-transforms/parsing/",
+              "external/wpt/css/css-transforms/crashtests/"],
     "args": ["--disable-blink-features=CSSCalcInfinityAndNaN"]
   },
   {
@@ -953,13 +931,6 @@
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
-    "prefix": "scroll-unification-synchronous_html_parser",
-    "bases": ["external/wpt/dom"],
-    "args": ["--enable-features=ScrollUnification",
-             "--enable-threaded-compositing",
-             "--enable-blink-features=ForceSynchronousHTMLParsing"]
-  },
-  {
     "prefix": "scroll-unification-unified-autoplay",
     "bases": ["external/wpt/feature-policy"],
     "args": ["--enable-features=ScrollUnification",
@@ -1018,7 +989,8 @@
   },
   {
     "prefix": "prerender",
-    "bases": [ "wpt_internal/prerender",
+    "bases": [ "external/wpt/speculation-rules/prerender",
+               "wpt_internal/prerender",
                "http/tests/inspector-protocol/prerender"],
     "args": [ "--enable-features=Prerender2" ]
   },
@@ -1030,7 +1002,8 @@
   },
   {
     "prefix": "force-renderer-accessibility",
-    "bases": ["accessibility/details-summary-crash.html",
+    "bases": ["accessibility/accessibility-beforematch-marker-crash.html",
+              "accessibility/details-summary-crash.html",
               "accessibility/slot-poison.html",
               "accessibility/virtual-node-child-removal.html",
               "accessibility/virtual-node-parent-removal.html",
@@ -1048,7 +1021,9 @@
               "external/wpt/accessibility/crashtests/map-inside-map-2.html",
               "external/wpt/accessibility/crashtests/move-owned-inside-another-owned.html",
               "external/wpt/accessibility/crashtests/slot-assignment-lockup.html",
-              "external/wpt/accessibility/crashtests/validation-message.html"],
+              "external/wpt/accessibility/crashtests/validation-message.html",
+              "editing/text-iterator/auto-expand-details.html",
+              "editing/text-iterator/auto-expand-details-shadowdom.html"],
     "args": ["--force-renderer-accessibility"]
   },
   {
@@ -1103,7 +1078,41 @@
       "fast/css/fontfaceset-multiple-families.html",
       "fast/css/unused-data-url-fontface.html"
     ],
-    "args": ["--disable-features=SyncLoadDataUrlFonts"]
+    "args": [ "--disable-features=SyncLoadDataUrlFonts" ]
+  },
+  {
+    "prefix": "parakeet",
+    "bases": ["external/wpt/parakeet"],
+    "args": ["--enable-features=InterestGroupStorage,AdInterestGroupAPI,Parakeet"]
+  },
+  {
+    "prefix": "automatic-lazy-frame-loading",
+    "bases": ["wpt_internal/lazyembed"],
+    "args": [
+      "--enable-features=AutomaticLazyFrameLoadingToEmbeds:allowed_websites/http%3A%2F%2Fbad3p.test%3A3001%7C%2Fembed"
+    ]
+  },
+  {
+    "prefix": "initially-invisible-images-lcp",
+    "bases": ["external/wpt/largest-contentful-paint/initially-invisible-images.html"],
+    "args": [ "--enable-features=IncludeInitiallyInvisibleImagesInLCP"]
+  },
+  {
+    "prefix": "background-svg-in-lcp",
+    "bases": ["external/wpt/largest-contentful-paint/"],
+    "args": [ "--enable-features=IncludeBackgroundSVGInLCP"]
+  },
+  {
+    "prefix": "css-highlight-inheritance",
+    "bases": [
+      "external/wpt/css/css-pseudo",
+      "wpt_internal/css/css-pseudo"
+    ],
+    "args": ["--enable-blink-features=HighlightInheritance"]
+  },
+  {
+    "prefix": "fenced-frame-mparch",
+    "bases": ["fenced_frame", "wpt_internal/fenced_frame"],
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch"]
   }
 ]
-

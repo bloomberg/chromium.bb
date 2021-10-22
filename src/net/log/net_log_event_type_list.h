@@ -523,6 +523,13 @@ EVENT_TYPE(SOCKS_UNKNOWN_ADDRESS_TYPE)
 //  }
 EVENT_TYPE(SSL_CONNECT)
 
+// Emitted at the start of an SSL handshakes that use ECH. The following
+// parameters are attached.
+// {
+//     "bytes": <The ECHConfigList used, base64 encoded>
+// }
+EVENT_TYPE(SSL_ECH_CONFIG_LIST)
+
 // The start/end of an SSL server handshake (aka "accept").
 EVENT_TYPE(SSL_SERVER_HANDSHAKE)
 
@@ -1184,7 +1191,8 @@ EVENT_TYPE(HTTP_STREAM_JOB_RESUMED)
 // The following parameters are attached:
 //   {
 //      "url": <String of request URL>,
-//      "is_preconnect": <True if controller is created for a preconnect.>,
+//      "is_preconnect": <True if controller is created for a preconnect>,
+//      "private_mode": <Privacy mode of the request>,
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER)
 
@@ -3987,7 +3995,31 @@ EVENT_TYPE(CORS_REQUEST)
 // It contains the following parameter:
 //  {
 //    "preflight_required": <Boolean indicating whether preflight request is
-//                          required>
+//                          required>,
 //    "preflight_required_reason": <The reason why preflight is required>
 //  }
 EVENT_TYPE(CHECK_CORS_PREFLIGHT_REQUIRED)
+
+// This event is logged when PreflightController checks preflight cache.
+// It contains the following parameter:
+//  {
+//    "status": <The result of cache checking. "hit-and-pass",
+//              "hit-and-fail", "miss" or "stale">
+//  }
+EVENT_TYPE(CHECK_CORS_PREFLIGHT_CACHE)
+
+// This event is logged when PreflightController gets CORS preflight result
+// from preflight request.
+// It contains the following parameter:
+//  {
+//    "access-control-allow-headers": <List of headers given in
+//                                    `Access-Control-Allow-Headers`>,
+//    "access-control-allow-methods": <List of methods given in
+//                                    `Access-Control-Allow-Methods`>
+//  }
+EVENT_TYPE(CORS_PREFLIGHT_RESULT)
+
+// This event is logged when PreflightController gets CORS preflight result
+// from preflight cache.
+// The parameters are the same as for CORS_PREFLIGHT_RESULT.
+EVENT_TYPE(CORS_PREFLIGHT_CACHED_RESULT)

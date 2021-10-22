@@ -58,9 +58,10 @@ const auto kIgnoreLogMessageCB = base::DoNothing();
 
 MediaDeviceSaltAndOrigin GetSaltAndOrigin(int /* process_id */,
                                           int /* frame_id */) {
-  return MediaDeviceSaltAndOrigin(
-      "fake_media_device_salt", "fake_group_id_salt",
-      url::Origin::Create(GURL("https://test.com")), /*has_focus=*/true);
+  return MediaDeviceSaltAndOrigin("fake_media_device_salt",
+                                  "fake_group_id_salt",
+                                  url::Origin::Create(GURL("https://test.com")),
+                                  /*has_focus=*/true, /*is_background=*/false);
 }
 
 // This class mocks the audio manager and overrides some methods to ensure that
@@ -72,6 +73,10 @@ class MockAudioManager : public media::FakeAudioManager {
                          &fake_audio_log_factory_),
         num_output_devices_(2),
         num_input_devices_(kNumAudioInputDevices) {}
+
+  MockAudioManager(const MockAudioManager&) = delete;
+  MockAudioManager& operator=(const MockAudioManager&) = delete;
+
   ~MockAudioManager() override {}
 
   MOCK_METHOD1(MockGetAudioInputDeviceNames, void(media::AudioDeviceNames*));
@@ -167,7 +172,6 @@ class MockAudioManager : public media::FakeAudioManager {
   std::string default_device_id_;
   std::string communications_device_id_;
   std::set<std::string> removed_input_audio_device_ids_;
-  DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };
 
 // This class mocks the video capture device factory and overrides some methods
@@ -230,6 +234,10 @@ class MediaDevicesManagerTest : public ::testing::Test {
   MediaDevicesManagerTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         video_capture_device_factory_(nullptr) {}
+
+  MediaDevicesManagerTest(const MediaDevicesManagerTest&) = delete;
+  MediaDevicesManagerTest& operator=(const MediaDevicesManagerTest&) = delete;
+
   ~MediaDevicesManagerTest() override { audio_manager_->Shutdown(); }
 
   MOCK_METHOD1(MockCallback, void(const MediaDeviceEnumeration&));
@@ -344,9 +352,6 @@ class MediaDevicesManagerTest : public ::testing::Test {
   testing::StrictMock<MockMediaDevicesManagerClient>
       media_devices_manager_client_;
   std::set<std::string> removed_device_ids_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MediaDevicesManagerTest);
 };
 
 TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioInput) {

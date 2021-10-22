@@ -23,13 +23,18 @@ class PasswordStoreInterface;
 class LeakDetectionDelegateHelper : public PasswordStoreConsumer {
  public:
   // Type alias for |callback_|.
-  using LeakTypeReply =
-      base::OnceCallback<void(IsSaved, IsReused, GURL, std::u16string)>;
+  using LeakTypeReply = base::OnceCallback<
+      void(IsSaved, IsReused, GURL, std::u16string, std::vector<GURL>)>;
 
   LeakDetectionDelegateHelper(
       scoped_refptr<PasswordStoreInterface> profile_store,
       scoped_refptr<PasswordStoreInterface> account_store,
       LeakTypeReply callback);
+
+  LeakDetectionDelegateHelper(const LeakDetectionDelegateHelper&) = delete;
+  LeakDetectionDelegateHelper& operator=(const LeakDetectionDelegateHelper&) =
+      delete;
+
   ~LeakDetectionDelegateHelper() override;
 
   // Request all credentials with |password| from the store.
@@ -57,9 +62,6 @@ class LeakDetectionDelegateHelper : public PasswordStoreConsumer {
 
   int wait_counter_ = 0;
   std::vector<std::unique_ptr<PasswordForm>> partial_results_;
-
-  // Instances should be neither copyable nor assignable.
-  DISALLOW_COPY_AND_ASSIGN(LeakDetectionDelegateHelper);
 };
 
 }  // namespace password_manager

@@ -13,7 +13,7 @@
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/lock_screen_apps/app_manager.h"
-#include "chrome/browser/chromeos/note_taking_helper.h"
+#include "chrome/browser/ash/note_taking_helper.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
@@ -37,6 +37,10 @@ class AppManagerImpl : public AppManager,
                        public extensions::ExtensionRegistryObserver {
  public:
   explicit AppManagerImpl(const base::TickClock* tick_clock);
+
+  AppManagerImpl(const AppManagerImpl&) = delete;
+  AppManagerImpl& operator=(const AppManagerImpl&) = delete;
+
   ~AppManagerImpl() override;
 
   // AppManager implementation:
@@ -187,8 +191,6 @@ class AppManagerImpl : public AppManager,
   int available_lock_screen_app_reloads_ = 0;
 
   base::WeakPtrFactory<AppManagerImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppManagerImpl);
 };
 
 }  // namespace lock_screen_apps

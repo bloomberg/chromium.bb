@@ -23,6 +23,8 @@ class ContinueTaskView;
 // The container for the Continue Tasks results view. The view contains a preset
 // number of ContinueTaskViews that get populated based on the list of results
 // passed in SetResult.
+// ContinueTaskContainerView will accommodate Continue Task views in a grid
+// layout with the number of columns specified at construction.
 class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
                                              public views::View {
  public:
@@ -49,6 +51,9 @@ class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
   int num_results() const { return num_results_; }
 
   void SetResults(SearchModel::SearchResults* results);
+
+  // See AppsGridView::DisableFocusForShowingActiveFolder().
+  void DisableFocusForShowingActiveFolder(bool disabled);
 
  private:
   void ScheduleUpdate();

@@ -5,13 +5,9 @@
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_apps.h"
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
-#include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -22,11 +18,12 @@
 #include "chrome/browser/web_applications/preinstalled_web_apps/google_slides.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/youtube.h"
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/web_applications/preinstalled_web_apps/calculator.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/google_calendar.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/google_chat.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/google_meet.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -47,12 +44,6 @@ std::vector<ExternalInstallOptions> GetPreinstalledWebApps() {
     return {};
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // With Lacros, web apps are not installed using the Ash browser.
-  if (base::FeatureList::IsEnabled(features::kWebAppsCrosapi))
-    return {};
-#endif
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // TODO(crbug.com/1104692): Replace these C++ configs with JSON configs like
   // those seen in: chrome/test/data/web_app_default_apps/good_json
@@ -71,11 +62,12 @@ std::vector<ExternalInstallOptions> GetPreinstalledWebApps() {
       GetConfigForGoogleSheets(),
       GetConfigForGoogleSlides(),
       GetConfigForYouTube(),
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_CHROMEOS)
+      GetConfigForCalculator(),
       GetConfigForGoogleCalendar(),
       GetConfigForGoogleChat(),
       GetConfigForGoogleMeet(),
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
       // clang-format on
   };
 #else

@@ -319,6 +319,10 @@ class WasmDataLoaderClient final
  public:
   explicit WasmDataLoaderClient(FetchDataLoaderForWasmStreaming* loader)
       : loader_(loader) {}
+
+  WasmDataLoaderClient(const WasmDataLoaderClient&) = delete;
+  WasmDataLoaderClient& operator=(const WasmDataLoaderClient&) = delete;
+
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
   void Abort() override { loader_->AbortFromClient(); }
@@ -330,7 +334,6 @@ class WasmDataLoaderClient final
 
  private:
   Member<FetchDataLoaderForWasmStreaming> loader_;
-  DISALLOW_COPY_AND_ASSIGN(WasmDataLoaderClient);
 };
 
 // ExceptionToAbortStreamingScope converts a possible exception to an abort
@@ -347,6 +350,11 @@ class ExceptionToAbortStreamingScope {
                                  ExceptionState& exception_state)
       : streaming_(streaming), exception_state_(exception_state) {}
 
+  ExceptionToAbortStreamingScope(const ExceptionToAbortStreamingScope&) =
+      delete;
+  ExceptionToAbortStreamingScope& operator=(
+      const ExceptionToAbortStreamingScope&) = delete;
+
   ~ExceptionToAbortStreamingScope() {
     if (!exception_state_.HadException())
       return;
@@ -358,8 +366,6 @@ class ExceptionToAbortStreamingScope {
  private:
   std::shared_ptr<v8::WasmStreaming> streaming_;
   ExceptionState& exception_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExceptionToAbortStreamingScope);
 };
 
 scoped_refptr<base::SingleThreadTaskRunner> GetContextTaskRunner(

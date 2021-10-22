@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_
 
 #include "third_party/blink/public/platform/web_string.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-isolate.h"
 
 namespace mojo {
 class BinderMap;
@@ -74,6 +74,9 @@ BLINK_EXPORT v8::Isolate* MainThreadIsolate();
 // Alters the rendering of content to conform to a fixed set of rules.
 BLINK_EXPORT void SetWebTestMode(bool);
 BLINK_EXPORT bool WebTestMode();
+
+// Alters whether the browser can handle focus events while running web tests.
+BLINK_EXPORT void SetBrowserCanHandleFocusForWebTest(bool);
 
 // Alters the rendering of fonts for web tests.
 BLINK_EXPORT void SetFontAntialiasingEnabledForTest(bool);

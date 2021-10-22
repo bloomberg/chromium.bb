@@ -62,6 +62,8 @@ enum {
     MODE_SIZE  = 1 << 7,
     MODE_RATE  = 1 << 8,
     MODE_EOF   = 1 << 9,
+    MODE_SCIN  = 1 << 10,
+    MODE_SCOUT = 1 << 11,
 };
 
 #define OFFSET(x) offsetof(GraphMonitorContext, x)
@@ -88,6 +90,8 @@ static const AVOption graphmonitor_options[] = {
         { "size",             NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_SIZE},    0, 0, VF, "flags" },
         { "rate",             NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_RATE},    0, 0, VF, "flags" },
         { "eof",              NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_EOF},     0, 0, VF, "flags" },
+        { "sample_count_in",  NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_SCOUT},   0, 0, VF, "flags" },
+        { "sample_count_out", NULL, 0, AV_OPT_TYPE_CONST, {.i64=MODE_SCIN},    0, 0, VF, "flags" },
     { "rate", "set video rate", OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, VF },
     { "r",    "set video rate", OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, VF },
     { NULL }
@@ -226,6 +230,16 @@ static void draw_items(AVFilterContext *ctx, AVFrame *out,
     }
     if (s->flags & MODE_FCOUT) {
         snprintf(buffer, sizeof(buffer)-1, " | out: %"PRId64, l->frame_count_out);
+        drawtext(out, xpos, ypos, buffer, s->white);
+        xpos += strlen(buffer) * 8;
+    }
+    if (s->flags & MODE_SCIN) {
+        snprintf(buffer, sizeof(buffer)-1, " | sin: %"PRId64, l->sample_count_in);
+        drawtext(out, xpos, ypos, buffer, s->white);
+        xpos += strlen(buffer) * 8;
+    }
+    if (s->flags & MODE_SCOUT) {
+        snprintf(buffer, sizeof(buffer)-1, " | sout: %"PRId64, l->sample_count_out);
         drawtext(out, xpos, ypos, buffer, s->white);
         xpos += strlen(buffer) * 8;
     }
@@ -381,7 +395,6 @@ static const AVFilterPad graphmonitor_inputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 static const AVFilterPad graphmonitor_outputs[] = {
@@ -390,7 +403,6 @@ static const AVFilterPad graphmonitor_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_graphmonitor = {
@@ -400,8 +412,8 @@ const AVFilter ff_vf_graphmonitor = {
     .priv_class    = &graphmonitor_class,
     .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = graphmonitor_inputs,
-    .outputs       = graphmonitor_outputs,
+    FILTER_INPUTS(graphmonitor_inputs),
+    FILTER_OUTPUTS(graphmonitor_outputs),
 };
 
 #endif // CONFIG_GRAPHMONITOR_FILTER
@@ -416,7 +428,6 @@ static const AVFilterPad agraphmonitor_inputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 static const AVFilterPad agraphmonitor_outputs[] = {
@@ -425,7 +436,6 @@ static const AVFilterPad agraphmonitor_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_avf_agraphmonitor = {
@@ -435,7 +445,7 @@ const AVFilter ff_avf_agraphmonitor = {
     .priv_class    = &agraphmonitor_class,
     .query_formats = query_formats,
     .activate      = activate,
-    .inputs        = agraphmonitor_inputs,
-    .outputs       = agraphmonitor_outputs,
+    FILTER_INPUTS(agraphmonitor_inputs),
+    FILTER_OUTPUTS(agraphmonitor_outputs),
 };
 #endif // CONFIG_AGRAPHMONITOR_FILTER

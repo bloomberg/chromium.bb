@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "cc/paint/paint_image.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "pdf/mojom/pdf.mojom.h"
 #include "pdf/pdf_accessibility_action_handler.h"
 #include "pdf/pdf_view_plugin_base.h"
@@ -112,6 +114,9 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
     // Notifies the frame widget about the selection bound change.
     virtual void UpdateSelectionBounds() = 0;
 
+    // Gets the embedder's origin as a serialized string.
+    virtual std::string GetEmbedderOriginString() = 0;
+
     // Returns the local frame to which the web plugin container belongs.
     virtual blink::WebLocalFrame* GetFrame() = 0;
 
@@ -198,18 +203,31 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   void StopFind() override;
   bool CanRotateView() override;
   void RotateView(blink::WebPlugin::RotationType type) override;
+
+  bool ShouldDispatchImeEventsToPlugin() override;
   blink::WebTextInputType GetPluginTextInputType() override;
+  gfx::Rect GetPluginCaretBounds() override;
+  void ImeSetCompositionForPlugin(
+      const blink::WebString& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end) override;
+  void ImeCommitTextForPlugin(
+      const blink::WebString& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int relative_cursor_pos) override;
+  void ImeFinishComposingTextForPlugin(bool keep_selection) override;
 
   // PdfViewPluginBase:
   void UpdateCursor(ui::mojom::CursorType new_cursor_type) override;
   void NotifySelectedFindResultChanged(int current_find_index) override;
+  void CaretChanged(const gfx::Rect& caret_rect) override;
   void Alert(const std::string& message) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;
-  void SubmitForm(const std::string& url,
-                  const void* data,
-                  int length) override;
   std::vector<SearchStringResult> SearchString(const char16_t* string,
                                                const char16_t* term,
                                                bool case_sensitive) override;
@@ -249,11 +267,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   const gfx::Rect& GetPluginRectForTesting() const { return plugin_rect(); }
 
+  float GetDeviceScaleForTesting() const { return device_scale(); }
+
  protected:
   // PdfViewPluginBase:
   base::WeakPtr<PdfViewPluginBase> GetWeakPtr() override;
   std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() override;
-  void DidOpen(std::unique_ptr<UrlLoader> loader, int32_t result) override;
   void SendMessage(base::Value message) override;
   void SaveAs() override;
   void InitImageData(const gfx::Size& size) override;
@@ -286,7 +305,8 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool InitializeCommon(std::unique_ptr<ContainerWrapper> container_wrapper,
                         std::unique_ptr<PDFiumEngine> engine);
 
-  void OnViewportChanged(const gfx::Rect& view_rect, float new_device_scale);
+  void OnViewportChanged(const gfx::Rect& plugin_rect_in_css_pixel,
+                         float new_device_scale);
 
   // Invalidates the entire web plugin container and schedules a paint of the
   // page in it.
@@ -298,6 +318,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool Paste(const blink::WebString& value);
   bool Undo();
   bool Redo();
+
+  // Helper method for converting IME text to input events.
+  // TODO(crbug.com/1253665): Consider handling composition events.
+  void HandleImeCommit(const blink::WebString& text);
 
   // Callback to print without re-entrancy issues. The callback prevents the
   // invocation of printing in the middle of an event handler, which is risky;
@@ -318,8 +342,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   std::unique_ptr<Client> const client_;
 
+  // Used to access the services provided by the browser.
   // May be unbound in unit tests.
   mojo::AssociatedRemote<pdf::mojom::PdfService> const pdf_service_remote_;
+
+  // Used to access find-in-page interface provided by the PDF extension.
+  mojo::Remote<pdf::mojom::PdfFindInPage> find_remote_;
 
   // The id of the current find operation, or -1 if no current operation is
   // present.
@@ -327,6 +355,10 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   blink::WebTextInputType text_input_type_ =
       blink::WebTextInputType::kWebTextInputTypeNone;
+
+  gfx::Rect caret_rect_;
+
+  blink::WebString composition_text_;
 
   // Whether the plugin element currently has focus.
   bool has_focus_ = false;
@@ -342,6 +374,12 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
 
   // The viewport coordinates to DIP (device-independent pixel) ratio.
   float viewport_to_dip_scale_ = 1.0f;
+
+  // The device pixel to CSS pixel ratio.
+  float device_to_css_scale_ = 1.0f;
+
+  // The plugin rect in CSS pixels.
+  gfx::Rect css_plugin_rect_;
 
   // May be null in unit tests.
   std::unique_ptr<PdfAccessibilityDataHandler> const

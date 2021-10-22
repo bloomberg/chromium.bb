@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/skia/include/core/SkSize.h"
-#include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -62,6 +61,8 @@ class PLATFORM_EXPORT FloatSize {
       : width_(width), height_(height) {}
   constexpr explicit FloatSize(const IntSize& s)
       : FloatSize(s.Width(), s.Height()) {}
+  constexpr explicit FloatSize(const gfx::Vector2dF& v)
+      : FloatSize(v.x(), v.y()) {}
   constexpr explicit FloatSize(const gfx::Size& s)
       : FloatSize(s.width(), s.height()) {}
   constexpr explicit FloatSize(const gfx::SizeF& s)
@@ -155,13 +156,6 @@ class PLATFORM_EXPORT FloatSize {
     return gfx::Vector2dF(width_, height_);
   }
 
-  // blink::ScrollOffset is typedef'd as FloatSize. When exposing outside blink
-  // it should probably be exposed as a gfx::ScrollOffset (as opposed to a
-  // Vector2dF).
-  constexpr explicit operator gfx::ScrollOffset() const {
-    return gfx::ScrollOffset(width_, height_);
-  }
-
   String ToString() const;
 
  private:
@@ -212,23 +206,23 @@ constexpr bool operator!=(const FloatSize& a, const FloatSize& b) {
 }
 
 inline IntSize RoundedIntSize(const FloatSize& p) {
-  return IntSize(clampTo<int>(roundf(p.Width())),
-                 clampTo<int>(roundf(p.Height())));
+  return IntSize(ClampTo<int>(roundf(p.Width())),
+                 ClampTo<int>(roundf(p.Height())));
 }
 
 inline IntSize FlooredIntSize(const FloatSize& p) {
-  return IntSize(clampTo<int>(floorf(p.Width())),
-                 clampTo<int>(floorf(p.Height())));
+  return IntSize(ClampTo<int>(floorf(p.Width())),
+                 ClampTo<int>(floorf(p.Height())));
 }
 
 inline IntSize ExpandedIntSize(const FloatSize& p) {
-  return IntSize(clampTo<int>(ceilf(p.Width())),
-                 clampTo<int>(ceilf(p.Height())));
+  return IntSize(ClampTo<int>(ceilf(p.Width())),
+                 ClampTo<int>(ceilf(p.Height())));
 }
 
 inline IntPoint FlooredIntPoint(const FloatSize& p) {
-  return IntPoint(clampTo<int>(floorf(p.Width())),
-                  clampTo<int>(floorf(p.Height())));
+  return IntPoint(ClampTo<int>(floorf(p.Width())),
+                  ClampTo<int>(floorf(p.Height())));
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatSize&);

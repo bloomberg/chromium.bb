@@ -41,35 +41,26 @@ class IOSChromeMetricsServiceClientTest : public PlatformTest {
         browser_state_(TestChromeBrowserState::Builder().Build()),
         enabled_state_provider_(/*consent=*/false, /*enabled=*/false) {}
 
+  IOSChromeMetricsServiceClientTest(const IOSChromeMetricsServiceClientTest&) =
+      delete;
+  IOSChromeMetricsServiceClientTest& operator=(
+      const IOSChromeMetricsServiceClientTest&) = delete;
+
   void SetUp() override {
     PlatformTest::SetUp();
     metrics::MetricsService::RegisterPrefs(prefs_.registry());
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        &prefs_, &enabled_state_provider_, std::wstring(), base::FilePath(),
-        base::BindRepeating(
-            &IOSChromeMetricsServiceClientTest::FakeStoreClientInfoBackup,
-            base::Unretained(this)),
-        base::BindRepeating(
-            &IOSChromeMetricsServiceClientTest::LoadFakeClientInfoBackup,
-            base::Unretained(this)));
+        &prefs_, &enabled_state_provider_, std::wstring(), base::FilePath());
+    metrics_state_manager_->InstantiateFieldTrialList();
   }
 
  protected:
-  void FakeStoreClientInfoBackup(const metrics::ClientInfo& client_info) {}
-
-  std::unique_ptr<metrics::ClientInfo> LoadFakeClientInfoBackup() {
-    return std::make_unique<metrics::ClientInfo>();
-  }
-
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<ChromeBrowserState> browser_state_;
   metrics::TestEnabledStateProvider enabled_state_provider_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IOSChromeMetricsServiceClientTest);
 };
 
 namespace {

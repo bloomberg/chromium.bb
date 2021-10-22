@@ -328,6 +328,10 @@ const char kArcPrivacyPolicyURLPath[] = "arc/privacy_policy";
 
 const char kArcTermsURLPath[] = "arc/terms";
 
+// TODO(crbug.com/1248270): Use real link to Bluetooth pairing learn more.
+const char kBluetoothPairingLearnMoreUrl[] =
+    "https://support.google.com/chromebook/?p=bluetooth_pairing";
+
 const char kChromeAccessibilityHelpURL[] =
     "https://support.google.com/chromebook/topic/6323347";
 
@@ -404,10 +408,10 @@ const char kNaturalScrollHelpURL[] =
 
 const char kOemEulaURLPath[] = "oem";
 
-const char kOnlineEulaURLPath[] =
+const char kGoogleEulaOnlineURLPath[] =
     "https://policies.google.com/terms/embedded?hl=%s";
 
-const char kAdditionalToSOnlineURLPath[] =
+const char kCrosEulaOnlineURLPath[] =
     "https://www.google.com/intl/%s/chrome/terms/";
 
 const char kOsSettingsSearchHelpURL[] =
@@ -473,5 +477,9 @@ const char kChromeSyncLearnMoreURL[] =
 const char kOutdatedPluginLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_outdated_plugin";
 #endif
+
+// TODO (b/184137843): Use real link to phone hub notifications and apps access.
+const char kPhoneHubPermissionLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=multidevice";
 
 }  // namespace chrome

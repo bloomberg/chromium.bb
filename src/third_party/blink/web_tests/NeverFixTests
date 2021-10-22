@@ -1,5 +1,4 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12
-#         Mac10.13 Win Win7 Win10.1909 Win10.20h2 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.12 Mac10.13 Mac10.14 Mac10.15 Mac11.0 Mac11-arm64 Win Win7 Win10.20h2 ]
 # tags: [ Release Debug ]
 # results: [ Skip Pass ]
 
@@ -59,8 +58,6 @@ fast/harness/results.html [ Skip ]
 # Only maintain this for the latest macOS.
 [ Win ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Linux ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
-[ Mac10.10 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
-[ Mac10.11 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 [ Mac10.12 ] virtual/text-antialias/mac-system-ui-trak.html [ Skip ]
 
 # Tests Mac system font specific weight variations.
@@ -118,8 +115,6 @@ fast/harness/results.html [ Skip ]
 # AAT Small Caps test not supported on platforms other than Mac 10.13.
 [ Linux ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 [ Win ] virtual/text-antialias/small-caps-aat.html [ Skip ]
-[ Mac10.10 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
-[ Mac10.11 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 [ Mac10.12 ] virtual/text-antialias/small-caps-aat.html [ Skip ]
 
 # Linux layout tests do not have a Myanmar fallback font.
@@ -257,8 +252,6 @@ crbug.com/551843 [ Win ] virtual/text-antialias/emoji-font-weight-mac.html [ Ski
 # Variable system font only supported on Mac 10.12 and newer atm.
 crbug.com/670246 [ Linux ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
 crbug.com/670246 [ Win ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
-crbug.com/670246 [ Mac10.10 ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
-crbug.com/670246 [ Mac10.11 ] virtual/text-antialias/variable-fonts/variable-mac-system-font.html [ Skip ]
 
 # prefer_compositing_to_lcd_text causes things to get composited regardless of their opaqueness, causing the test to fail
 crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/overflow-scroll-background-opaque-to-transparent.html [ Skip ]
@@ -385,15 +378,6 @@ external/wpt/encrypted-media/clearkey-events-session-closed-event.https.html [ S
 external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ Skip ]
 external/wpt/media-source/mediasource-invalid-codec.html [ Skip ]
 
-# The hyphen character renders slightly differently from U+002D HYPHEN-MINUS.
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-auto-inline-010.html [ Skip ]
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-011.html [ Skip ]
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-012.html [ Skip ]
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-013.html [ Skip ]
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-inline-011.html [ Skip ]
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-manual-inline-012.html [ Skip ]
-[ Mac10.10 ] external/wpt/css/css-text/hyphens/hyphens-none-013.html [ Skip ]
-
 # No browsers implemented the spec behavior, not web compatible, no consensus.
 # https://github.com/w3c/csswg-drafts/issues/1518
 external/wpt/css/CSS2/text/letter-spacing-079.xht [ Skip ]
@@ -439,6 +423,7 @@ external/wpt/css/css-text/word-boundary/* [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-line-break-001.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-line-break-002.html [ Skip ]
 external/wpt/css/css-text/writing-system/writing-system-segment-break-001.html [ Skip ]
+external/wpt/css/css-text/writing-system/writing-system-text-transform-001.html [ Skip ]
 
 # Tests without any implementations.
 # https://github.com/w3c/csswg-drafts/issues/4576
@@ -1096,15 +1081,27 @@ external/wpt/FileAPI/FileReader/test_notreadableerrors-manual.html [ Skip ]
 external/wpt/FileAPI/FileReader/test_securityerrors-manual.html [ Skip ]
 external/wpt/FileAPI/url/url_createobjecturl_file_img-manual.html [ Skip ]
 external/wpt/accelerometer/LinearAccelerationSensor-shake-threshold-manual.https.html [ Skip ]
-external/wpt/appmanifest/file_handlers-member/file_handlers-member-manual.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-app-region-window-controls-overlay-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-css-environment-variables-window-controls-overlay-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-media-feature-browser-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-media-feature-fullscreen-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-media-feature-minimal-ui-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-media-feature-standalone-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-media-feature-standalone-overrides-browser-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/display-override-member/display-override-member-media-feature-window-controls-overlay-overrides-browser-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/file_handlers-member/file_handlers-member-manual.tentative.html [ Skip ]
+external/wpt/appmanifest/protocol_handlers-member/protocol_handlers-member-manual.tentative.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-empty-name-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-invalid-url-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-out-of-scope-url-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-undefined-name-manual.html [ Skip ]
 external/wpt/appmanifest/shortcuts-member/shortcuts-member-skip-for-undefined-url-manual.html [ Skip ]
+external/wpt/appmanifest/id-member/id-member-manifest-update-manual.tentative.html [ Skip ]
 external/wpt/audio-output/setSinkId-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-charging-manual.https.html [ Skip ]
+external/wpt/battery-status/battery-discharging-manual.https.html [ Skip ]
+external/wpt/battery-status/battery-full-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-plugging-in-manual.https.html [ Skip ]
 external/wpt/battery-status/battery-unplugging-manual.https.html [ Skip ]
 external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ Skip ]
@@ -1185,6 +1182,7 @@ external/wpt/css/css-animations/animation-timing-function-011-manual.html [ Skip
 external/wpt/css/css-animations/animation-timing-function-012-manual.html [ Skip ]
 external/wpt/css/css-animations/animationstart-and-animationend-events-manual.html [ Skip ]
 external/wpt/css/css-counter-styles/counter-style-speak-as-manual.html [ Skip ]
+external/wpt/css/css-text/text-transform/text-transform-copy-paste-001-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-000-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-002-manual.html [ Skip ]
 external/wpt/css/css-transitions/transition-delay-003-manual.html [ Skip ]
@@ -1369,7 +1367,6 @@ external/wpt/html/semantics/embedded-content/media-elements/video_muted_present-
 external/wpt/html/semantics/embedded-content/media-elements/video_volume_loudest-manual.html [ Skip ]
 external/wpt/html/semantics/embedded-content/media-elements/video_volume_silent-manual.html [ Skip ]
 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_003-manual.htm [ Skip ]
-external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_004-manual.htm [ Skip ]
 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_006-manual.htm [ Skip ]
 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_007-manual.htm [ Skip ]
 external/wpt/html/semantics/embedded-content/the-iframe-element/sandbox_008-manual.htm [ Skip ]
@@ -1443,7 +1440,6 @@ external/wpt/payment-request/payment-response/payerName-attribute-manual.https.h
 external/wpt/payment-request/payment-response/payerPhone-attribute-manual.https.html [ Skip ]
 external/wpt/payment-request/payment-response/rejects_if_not_active-manual.https.html [ Skip ]
 external/wpt/payment-request/payment-response/requestId-attribute-manual.https.html [ Skip ]
-external/wpt/payment-request/rejects_if_not_active-manual.https.html [ Skip ]
 external/wpt/payment-request/show-method-postmessage-manual.https.html [ Skip ]
 external/wpt/payment-request/user-abort-algorithm-manual.https.html [ Skip ]
 external/wpt/pointerevents/pointerevent_touch-action-button-test_touch-manual.html [ Skip ]
@@ -1847,6 +1843,7 @@ external/wpt/serial/serialPort_loopback-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback_BreakError-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback_BufferOverrunError-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_disconnect-manual.https.html [ Skip ]
+external/wpt/serial/serialPort_readable-manual.https.html [ Skip ]
 
 # CPU test is enough for this one as there are gradient issues on the GPU
 crbug.com/626703 [ Linux ] external/wpt/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol-handler-query-nosw-manual.https.html [ Skip ]
@@ -1971,6 +1968,12 @@ crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-system-
 crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-local-linux.html [ Skip ]
 crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-local-linux.html [ Skip ]
 crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-local-linux.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-weight-fallback.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-weight-fallback.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-fallback.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-fallback.html [ Skip ]
+crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-fallback.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-fallback.html [ Skip ]
 
 # Tests Mac system font available only in Regular style in Mac set of fonts.
 crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-weight-system-mac.html [ Skip ]
@@ -1989,3 +1992,29 @@ crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-style-local-mac
 crbug.com/509989 [ Win ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]
 crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]
 crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-local-mac.html [ Skip ]
+
+# Tests Win system font available only in Regular style in Win set of fonts.
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-weight-system-win.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-weight-system-win.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-system-win.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-weight-system-win.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-weight-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-weight-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-weight-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-weight-local-win.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-weight-local-win.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-weight-local-win.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-weight-local-win.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-style-system-win.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-system-win.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-system-win.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-system-win.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-style-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-auto-system-win.html [ Skip ]
+crbug.com/509989 [ Linux ] virtual/text-antialias/font-synthesis-style-local-win.html [ Skip ]
+crbug.com/509989 [ Mac ] virtual/text-antialias/font-synthesis-style-local-win.html [ Skip ]
+crbug.com/509989 [ Fuchsia ] virtual/text-antialias/font-synthesis-style-local-win.html [ Skip ]
+crbug.com/509989 [ Android ] virtual/text-antialias/font-synthesis-style-local-win.html [ Skip ]

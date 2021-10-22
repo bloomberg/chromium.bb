@@ -25,6 +25,7 @@
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/browser/referrer_chain_provider.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/core/browser/safe_browsing_token_fetcher.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -69,7 +70,12 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
       std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
       bool is_off_the_record,
       signin::IdentityManager* identity_manager,
-      bool try_token_fetch);
+      bool try_token_fetch,
+      SafeBrowsingMetricsCollector* metrics_collector);
+
+  PasswordProtectionServiceBase(const PasswordProtectionServiceBase&) = delete;
+  PasswordProtectionServiceBase& operator=(
+      const PasswordProtectionServiceBase&) = delete;
 
   ~PasswordProtectionServiceBase() override;
 
@@ -295,6 +301,7 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
       LoginReputationClientRequest::Frame* frame) = 0;
 
   virtual void FillUserPopulation(
+      const GURL& main_frame_url,
       LoginReputationClientRequest* request_proto) = 0;
 
   virtual bool IsExtendedReporting() = 0;
@@ -349,10 +356,6 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
       LoginReputationClientRequest::TriggerType trigger_type,
       const GURL& url,
       ReusedPasswordAccountType password_type) = 0;
-
-  const std::list<std::string>& common_spoofed_domains() const {
-    return common_spoofed_domains_;
-  }
 
   // Subclasses may override this method to either cancel or resume deferred
   // navigations. By default, deferred navigations are not handled.
@@ -435,10 +438,6 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
   // cookie store.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // List of most commonly spoofed domains to default to on the password warning
-  // dialog.
-  std::list<std::string> common_spoofed_domains_;
-
   base::ScopedObservation<history::HistoryService,
                           history::HistoryServiceObserver>
       history_service_observation_{this};
@@ -465,8 +464,10 @@ class PasswordProtectionServiceBase : public history::HistoryServiceObserver {
   // Use this to disable token fetches from ios and certain tests.
   bool try_token_fetch_;
 
+  // Unowned object used for recording metrics/prefs.
+  SafeBrowsingMetricsCollector* metrics_collector_;
+
   base::WeakPtrFactory<PasswordProtectionServiceBase> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(PasswordProtectionServiceBase);
 };
 
 }  // namespace safe_browsing

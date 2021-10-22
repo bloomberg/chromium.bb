@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/share/share_metrics.h"
 #include "chrome/browser/sharesheet/sharesheet_metrics.h"
 #include "chrome/browser/sharesheet/sharesheet_service.h"
 #include "chrome/browser/sharesheet/sharesheet_service_factory.h"
@@ -34,22 +35,6 @@ namespace sharing_hub {
 
 namespace {
 
-// The source from which the sharing hub was launched from.
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. Keep in sync with ShareSourceDesktop
-// in src/tools/metrics/histograms/enums.xml.
-enum class ShareSourceDesktop {
-  kUnknown = 0,
-  kOmniboxSharingHub = 1,
-  kMaxValue = kOmniboxSharingHub,
-};
-
-const char kAnyShareStarted[] = "Sharing.AnyShareStartedDesktop";
-
-void LogShareSourceDesktop(ShareSourceDesktop source) {
-  UMA_HISTOGRAM_ENUMERATION(kAnyShareStarted, source);
-}
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Result of the CrOS sharesheet, i.e. whether the user selects a share target
 // after opening the sharesheet.
@@ -72,6 +57,7 @@ SharingHubSharesheetResult GetSharesheetResultHistogram(
       return SharingHubSharesheetResult::SUCCESS;
     case sharesheet::SharesheetResult::kCancel:
     case sharesheet::SharesheetResult::kErrorAlreadyOpen:
+    case sharesheet::SharesheetResult::kErrorWindowClosed:
       return SharingHubSharesheetResult::CANCELED;
   }
 }
@@ -90,8 +76,7 @@ SharingHubBubbleController::~SharingHubBubbleController() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (base::FeatureList::IsEnabled(features::kSharesheet) &&
-      base::FeatureList::IsEnabled(features::kChromeOSSharingHub) &&
+  if (base::FeatureList::IsEnabled(features::kChromeOSSharingHub) &&
       sharesheet_controller_) {
     sharesheet_controller_->CloseBubble(sharesheet::SharesheetResult::kCancel);
   }
@@ -123,7 +108,7 @@ void SharingHubBubbleController::ShowBubble() {
 #else
   sharing_hub_bubble_view_ =
       browser->window()->ShowSharingHubBubble(web_contents_, this, true);
-  LogShareSourceDesktop(ShareSourceDesktop::kOmniboxSharingHub);
+  share::LogShareSourceDesktop(share::ShareSourceDesktop::kOmniboxSharingHub);
 #endif
 }
 
@@ -148,8 +133,7 @@ bool SharingHubBubbleController::ShouldOfferOmniboxIcon() {
     return false;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(features::kSharesheet) &&
-         base::FeatureList::IsEnabled(features::kChromeOSSharingHub);
+  return base::FeatureList::IsEnabled(features::kChromeOSSharingHub);
 #else
   return SharingHubOmniboxEnabled(web_contents_->GetBrowserContext());
 #endif
@@ -172,7 +156,7 @@ SharingHubBubbleController::GetThirdPartyActions() {
 
   SharingHubModel* model = GetSharingHubModel();
   if (model)
-    model->GetThirdPartyActionList(web_contents_, &actions);
+    model->GetThirdPartyActionList(&actions);
 
   return actions;
 }
@@ -228,8 +212,7 @@ SharingHubModel* SharingHubBubbleController::GetSharingHubModel() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void SharingHubBubbleController::ShowSharesheet(
     views::Button* highlighted_button) {
-  if (!base::FeatureList::IsEnabled(features::kSharesheet) ||
-      !base::FeatureList::IsEnabled(features::kChromeOSSharingHub)) {
+  if (!base::FeatureList::IsEnabled(features::kChromeOSSharingHub)) {
     return;
   }
 
@@ -284,6 +267,6 @@ SharingHubBubbleController::SharingHubBubbleController(
   DCHECK(web_contents);
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(SharingHubBubbleController)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(SharingHubBubbleController);
 
 }  // namespace sharing_hub

@@ -132,14 +132,13 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest, OmniboxPasteAndGo) {
 }
 
 // This test is flaky on MacOS with ASAN or DBG. https://crbug.com/1173317
-#if defined(OS_MAC)
-#if defined(ADDRESS_SANITIZER) || !defined(NDEBUG)
+#if defined(OS_MAC) && (defined(ADDRESS_SANITIZER) || !defined(NDEBUG))
 #define MAYBE_AnchorLinkClick DISABLED_AnchorLinkClick
 #else
 #define MAYBE_AnchorLinkClick AnchorLinkClick
-#endif  // ADDRESS_SANITIZER || !NDEBUG
-#endif  // OS_MAC
-IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest, AnchorLinkClick) {
+#endif  // OS_MAC && (ADDRESS_SANITIZER || !NDEBUG)
+IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
+                       MAYBE_AnchorLinkClick) {
   WaitForTestSystemAppInstall();
 
   GURL kInitiatingChromeUrl = GURL(chrome::kChromeUIAboutURL);
@@ -502,10 +501,9 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWindowSizeControlsTest,
 // it's less complicated to add SWA to LoginManagerTest than adding multi-logins
 // to SWA browsertest.
 class SystemWebAppManagerMultiDesktopLaunchBrowserTest
-    : public chromeos::LoginManagerTest {
+    : public ash::LoginManagerTest {
  public:
-  SystemWebAppManagerMultiDesktopLaunchBrowserTest()
-      : chromeos::LoginManagerTest() {
+  SystemWebAppManagerMultiDesktopLaunchBrowserTest() : ash::LoginManagerTest() {
     login_mixin_.AppendRegularUsers(2);
     account_id1_ = login_mixin_.users()[0].account_id;
     account_id2_ = login_mixin_.users()[1].account_id;
@@ -574,7 +572,7 @@ class SystemWebAppManagerMultiDesktopLaunchBrowserTest
 
  protected:
   std::unique_ptr<TestSystemWebAppInstallation> installation_;
-  chromeos::LoginManagerMixin login_mixin_{&mixin_host_};
+  ash::LoginManagerMixin login_mixin_{&mixin_host_};
   AccountId account_id1_;
   AccountId account_id2_;
 };

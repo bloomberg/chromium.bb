@@ -115,6 +115,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
 
   ExtensionFunction();
 
+  ExtensionFunction(const ExtensionFunction&) = delete;
+  ExtensionFunction& operator=(const ExtensionFunction&) = delete;
+
   static void EnsureShutdownNotifierFactoryBuilt();
 
   // Returns true if the function has permission to run.
@@ -465,6 +468,13 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // additional work or cleanup.
   virtual void OnResponded();
 
+  // Called when the `browser_context_` associated with this ExtensionFunction
+  // is shutting down. Immediately after this call, `browser_context_` will be
+  // set to null. Subclasses should override this method to perform any cleanup
+  // that needs to happen before the context shuts down, such as removing
+  // observers of KeyedServices.
+  virtual void OnBrowserContextShutdown() {}
+
   // Return true if the argument to this function at |index| was provided and
   // is non-null.
   bool HasOptionalArgument(size_t index);
@@ -607,8 +617,6 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   std::vector<std::string> transferred_blob_uuids_;
 
   int worker_thread_id_ = -1;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_

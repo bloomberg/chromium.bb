@@ -63,8 +63,6 @@ extern const char kSuggestedContentEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLauncherResultEverLaunched[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kHasCameraAppMigratedToSWA[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kLauncherSearchNormalizerParameters[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDeviceSystemWideTracingEnabled[];
@@ -285,6 +283,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfAlignment[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfAlignmentLocal[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfAutoHideBehavior[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfAutoHideBehaviorLocal[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfLauncherNudge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfPreferences[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowLogoutButtonInTray[];
@@ -378,6 +377,15 @@ extern const char kNextImeShortcutReminderDismissed[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kImprovedShortcutsNotificationShownCount[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLacrosProxyControllingExtension[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kFastPairEnabled[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDeskTemplatesEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPreconfiguredDeskTemplates[];
 
 }  // namespace prefs
 }  // namespace ash

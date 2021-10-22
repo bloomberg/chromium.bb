@@ -11,19 +11,27 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/http/http_status_code.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "url/gurl.h"
 
 PrefetchProxyProxyConfigurator::PrefetchProxyProxyConfigurator()
     : prefetch_proxy_server_(net::ProxyServer(
-          net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+          net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
           net::HostPortPair::FromURL(PrefetchProxyProxyHost()))),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(PrefetchProxyProxyHost().is_valid());
 
+  std::string header_value = "key=" + google_apis::GetAPIKey();
+  std::string server_experiment_group = PrefetchProxyServerExperimentGroup();
+  if (server_experiment_group != "") {
+    header_value += ",exp=" + server_experiment_group;
+  }
+
   connect_tunnel_headers_.SetHeader(PrefetchProxyProxyHeaderKey(),
-                                    "key=" + google_apis::GetAPIKey());
+                                    header_value);
 }
 
 PrefetchProxyProxyConfigurator::~PrefetchProxyProxyConfigurator() = default;
@@ -143,7 +151,7 @@ void PrefetchProxyProxyConfigurator::OnTunnelProxyConnectionError(
     // Pick a random value between 1-5 mins if the proxy didn't give us a
     // Retry-After value. The randomness will help ensure there is no sudden
     // wave of requests following a proxy error.
-    retry_proxy_at = clock_->Now() + base::TimeDelta::FromSeconds(base::RandInt(
+    retry_proxy_at = clock_->Now() + base::Seconds(base::RandInt(
                                          base::Time::kSecondsPerMinute,
                                          5 * base::Time::kSecondsPerMinute));
   }

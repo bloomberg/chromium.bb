@@ -411,10 +411,7 @@ static int query_formats(AVFilterContext *ctx)
     // According to filter_design.txt, using ff_set_common_formats() this way
     // ensures the pixel formats of the input and output will be the same. That
     // saves a bit of effort possibly needing to handle format conversions.
-    AVFilterFormats *formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 // At this point we know the pixel format used for both input and output.  We
@@ -519,7 +516,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -527,7 +523,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_normalize = {
@@ -537,8 +532,8 @@ const AVFilter ff_vf_normalize = {
     .priv_class    = &normalize_class,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
     .process_command = ff_filter_process_command,
 };

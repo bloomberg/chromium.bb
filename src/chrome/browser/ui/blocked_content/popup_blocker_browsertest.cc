@@ -94,6 +94,9 @@ class CloseObserver : public content::WebContentsObserver {
   explicit CloseObserver(WebContents* contents)
       : content::WebContentsObserver(contents) {}
 
+  CloseObserver(const CloseObserver&) = delete;
+  CloseObserver& operator=(const CloseObserver&) = delete;
+
   void Wait() { close_loop_.Run(); }
 
   // content::WebContentsObserver:
@@ -101,13 +104,15 @@ class CloseObserver : public content::WebContentsObserver {
 
  private:
   base::RunLoop close_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseObserver);
 };
 
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
  public:
   PopupBlockerBrowserTest() {}
+
+  PopupBlockerBrowserTest(const PopupBlockerBrowserTest&) = delete;
+  PopupBlockerBrowserTest& operator=(const PopupBlockerBrowserTest&) = delete;
+
   ~PopupBlockerBrowserTest() override {}
 
   // InProcessBrowserTest:
@@ -238,9 +243,6 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 
     return web_contents;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PopupBlockerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, BlockWebContentsCreation) {
@@ -831,11 +833,20 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsDisableBackForwardCache) {
   rfh.WaitUntilRenderFrameDeleted();
 }
 
+#if defined(OS_WIN)
+// Frequently timing out on Win7 CI builder. See https://crbug.com/1251717.
+#define MAYBE_PopupTriggeredFromDifferentWebContents \
+  DISABLED_PopupTriggeredFromDifferentWebContents
+#else
+#define MAYBE_PopupTriggeredFromDifferentWebContents \
+  PopupTriggeredFromDifferentWebContents
+#endif
+
 // Make sure the poput is attributed to the right WebContents when it is
 // triggered from a different WebContents. Regression test for
 // https://crbug.com/1128495
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       PopupTriggeredFromDifferentWebContents) {
+                       MAYBE_PopupTriggeredFromDifferentWebContents) {
   const GURL url(
       embedded_test_server()->GetURL("/popup_blocker/popup-in-href.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));

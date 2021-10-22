@@ -46,6 +46,9 @@ class BASE_EXPORT Win32StackFrameUnwinder {
   // on. Provides a seam for testing.
   class BASE_EXPORT UnwindFunctions {
    public:
+    UnwindFunctions(const UnwindFunctions&) = delete;
+    UnwindFunctions& operator=(const UnwindFunctions&) = delete;
+
     virtual ~UnwindFunctions();
 
     virtual PRUNTIME_FUNCTION LookupFunctionEntry(DWORD64 program_counter,
@@ -57,12 +60,13 @@ class BASE_EXPORT Win32StackFrameUnwinder {
 
    protected:
     UnwindFunctions();
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(UnwindFunctions);
   };
 
   explicit Win32StackFrameUnwinder();
+
+  Win32StackFrameUnwinder(const Win32StackFrameUnwinder&) = delete;
+  Win32StackFrameUnwinder& operator=(const Win32StackFrameUnwinder&) = delete;
+
   ~Win32StackFrameUnwinder();
 
   // Attempts to unwind the frame represented by |context|, where the
@@ -78,8 +82,6 @@ class BASE_EXPORT Win32StackFrameUnwinder {
   friend class Win32StackFrameUnwinderTest;
 
   std::unique_ptr<UnwindFunctions> unwind_functions_;
-
-  DISALLOW_COPY_AND_ASSIGN(Win32StackFrameUnwinder);
 };
 
 }  // namespace base

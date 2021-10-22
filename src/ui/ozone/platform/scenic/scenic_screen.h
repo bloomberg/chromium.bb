@@ -19,14 +19,11 @@ namespace ui {
 class ScenicScreen : public PlatformScreen {
  public:
   ScenicScreen();
+
+  ScenicScreen(const ScenicScreen&) = delete;
+  ScenicScreen& operator=(const ScenicScreen&) = delete;
+
   ~ScenicScreen() override;
-
-  // Processes window state change events for the ScenicWindow |window_id_|.
-  void OnWindowAdded(int32_t window_id);
-  void OnWindowRemoved(int32_t window_id);
-  void OnWindowBoundsChanged(int32_t window_id, gfx::Rect bounds);
-
-  base::WeakPtr<ScenicScreen> GetWeakPtr();
 
   // display::Screen implementation.
   const std::vector<display::Display>& GetAllDisplays() const override;
@@ -44,15 +41,7 @@ class ScenicScreen : public PlatformScreen {
   void RemoveObserver(display::DisplayObserver* observer) override;
 
  private:
-  using DisplayVector = std::vector<display::Display>;
-
-  DisplayVector displays_;
-
-  base::ObserverList<display::DisplayObserver> observers_;
-
-  base::WeakPtrFactory<ScenicScreen> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScenicScreen);
+  std::vector<display::Display> displays_;
 };
 
 }  // namespace ui

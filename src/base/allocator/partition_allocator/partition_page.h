@@ -114,16 +114,18 @@ template <bool thread_safe>
 struct __attribute__((packed)) SlotSpanMetadata {
   PartitionFreelistEntry* freelist_head = nullptr;
   SlotSpanMetadata<thread_safe>* next_slot_span = nullptr;
-  PartitionBucket<thread_safe>* const bucket;
+  PartitionBucket<thread_safe>* const bucket = nullptr;
 
   // Deliberately signed, 0 for empty or decommitted slot spans, -n for full
   // slot spans:
   int16_t num_allocated_slots = 0;
   uint16_t num_unprovisioned_slots = 0;
-  int8_t empty_cache_index = 0;  // -1 if not in the empty cache.
-                                 // < kMaxFreeableSpans.
-  static_assert(kMaxFreeableSpans < std::numeric_limits<int8_t>::max(), "");
-  const bool can_store_raw_size;
+  // -1 if not in the empty cache. < kMaxFreeableSpans.
+  int16_t empty_cache_index : kEmptyCacheIndexBits;
+  uint16_t can_store_raw_size : 1;
+  uint16_t unused : (16 - kEmptyCacheIndexBits - 1);
+  // Cannot use the full 64 bits in this bitfield, as this structure is embedded
+  // in PartitionPage, which has other fields as well, and must fit in 32 bytes.
 
   explicit SlotSpanMetadata(PartitionBucket<thread_safe>* bucket);
 
@@ -237,7 +239,7 @@ struct __attribute__((packed)) SlotSpanMetadata {
   static SlotSpanMetadata sentinel_slot_span_;
   // For the sentinel.
   constexpr SlotSpanMetadata() noexcept
-      : bucket(nullptr), can_store_raw_size(false) {}
+      : empty_cache_index(0), can_store_raw_size(false), unused(0) {}
 };
 static_assert(sizeof(SlotSpanMetadata<ThreadSafe>) <= kPageMetadataSize,
               "SlotSpanMetadata must fit into a Page Metadata slot.");
@@ -262,7 +264,7 @@ struct SubsequentPageMetadata {
 // more than 1 page, the page metadata may contain rudimentary additional
 // information.
 template <bool thread_safe>
-struct PartitionPage {
+struct __attribute__((packed)) PartitionPage {
   // "Pack" the union so that common page metadata still fits within
   // kPageMetadataSize. (SlotSpanMetadata is also "packed".)
   union __attribute__((packed)) {
@@ -289,7 +291,7 @@ struct PartitionPage {
   static constexpr uint16_t kMaxSlotSpanMetadataBits = 6;
   static constexpr uint16_t kMaxSlotSpanMetadataOffset =
       (1 << kMaxSlotSpanMetadataBits) - 1;
-  uint8_t slot_span_metadata_offset;
+  uint8_t slot_span_metadata_offset : kMaxSlotSpanMetadataBits;
 
   // |is_valid| tells whether the page is part of a slot span. If |false|,
   // |has_valid_span_after_this| tells whether it's an unused region in between
@@ -299,6 +301,7 @@ struct PartitionPage {
   //   |!slot_span_metadata_offset && slot_span_metadata->bucket|.
   bool is_valid : 1;
   bool has_valid_span_after_this : 1;
+  uint8_t unused;
 
   ALWAYS_INLINE static PartitionPage* FromPtr(void* slot_start);
 
@@ -414,58 +417,6 @@ ALWAYS_INLINE bool IsWithinSuperPagePayload(void* ptr, bool with_quarantine) {
   void* payload_start = SuperPagePayloadBegin(super_page_base, with_quarantine);
   void* payload_end = SuperPagePayloadEnd(super_page_base);
   return ptr >= payload_start && ptr < payload_end;
-}
-
-// Returns the start of a slot, or nullptr if |maybe_inner_ptr| is not inside of
-// an existing slot span. The function may return a non-nullptr pointer even
-// inside a decommitted or free slot span, it's the caller responsibility to
-// check if memory is actually allocated.
-//
-// |maybe_inner_ptr| must be within a normal-bucket super page, and more
-// specifically within the payload area (i.e. area devoted to slot spans).
-template <bool thread_safe>
-ALWAYS_INLINE char* GetSlotStartInSuperPage(char* maybe_inner_ptr) {
-#if DCHECK_IS_ON()
-  PA_DCHECK(IsManagedByNormalBuckets(maybe_inner_ptr));
-  char* super_page_ptr = reinterpret_cast<char*>(
-      reinterpret_cast<uintptr_t>(maybe_inner_ptr) & kSuperPageBaseMask);
-  auto* extent = reinterpret_cast<PartitionSuperPageExtentEntry<thread_safe>*>(
-      PartitionSuperPageToMetadataArea(super_page_ptr));
-  PA_DCHECK(IsWithinSuperPagePayload(maybe_inner_ptr,
-                                     extent->root->IsQuarantineAllowed()));
-#endif
-  // Don't use FromSlotInnerPtr() because |is_valid| DCHECKs can fail there.
-  auto* page = PartitionPage<thread_safe>::FromPtr(maybe_inner_ptr);
-  if (!page->is_valid)
-    return nullptr;
-  page -= page->slot_span_metadata_offset;
-  PA_DCHECK(page->is_valid);
-  PA_DCHECK(!page->slot_span_metadata_offset);
-  auto* slot_span = &page->slot_span_metadata;
-  // Check if the slot span is actually used and valid.
-  if (!slot_span->bucket)
-    return nullptr;
-#if DCHECK_IS_ON()
-  PA_DCHECK(PartitionRoot<thread_safe>::IsValidSlotSpan(slot_span));
-#endif
-  char* const slot_span_begin = static_cast<char*>(
-      SlotSpanMetadata<thread_safe>::ToSlotSpanStartPtr(slot_span));
-  const ptrdiff_t ptr_offset = maybe_inner_ptr - slot_span_begin;
-#if DCHECK_IS_ON()
-  PA_DCHECK(0 <= ptr_offset &&
-            ptr_offset < static_cast<ptrdiff_t>(
-                             slot_span->bucket->get_pages_per_slot_span() *
-                             PartitionPageSize()));
-#endif
-  // Slot span size in bytes is not necessarily multiple of partition page.
-  if (ptr_offset >=
-      static_cast<ptrdiff_t>(slot_span->bucket->get_bytes_per_span()))
-    return nullptr;
-  const size_t slot_size = slot_span->bucket->slot_size;
-  const size_t slot_number = slot_span->bucket->GetSlotNumber(ptr_offset);
-  char* const result = slot_span_begin + (slot_number * slot_size);
-  PA_DCHECK(result <= maybe_inner_ptr && maybe_inner_ptr < result + slot_size);
-  return result;
 }
 
 // Converts from a pointer to the PartitionPage object (within super pages's

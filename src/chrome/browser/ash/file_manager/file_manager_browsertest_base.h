@@ -107,7 +107,14 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
 
     // Whether test should run Files app UI as JS modules.
     bool enable_js_modules = true;
+
+    // Whether test should run with the new Banners framework feature.
+    bool enable_banners_framework = false;
   };
+
+  FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;
+  FileManagerBrowserTestBase& operator=(const FileManagerBrowserTestBase&) =
+      delete;
 
  protected:
   FileManagerBrowserTestBase();
@@ -238,8 +245,6 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   base::FilePath devtools_code_coverage_dir_;
   DevToolsAgentMap devtools_agent_;
   uint32_t process_id_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestBase);
 };
 
 std::ostream& operator<<(std::ostream& out, GuestMode mode);

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
-#include "extensions/browser/value_store/value_store_change.h"
+#include "components/value_store/value_store_change.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace syncer {
@@ -31,6 +31,10 @@ class SettingsSyncProcessor {
   SettingsSyncProcessor(const std::string& extension_id,
                         syncer::ModelType type,
                         syncer::SyncChangeProcessor* sync_processor);
+
+  SettingsSyncProcessor(const SettingsSyncProcessor&) = delete;
+  SettingsSyncProcessor& operator=(const SettingsSyncProcessor&) = delete;
+
   ~SettingsSyncProcessor();
 
   // Initializes this with the initial state of sync.
@@ -62,8 +66,6 @@ class SettingsSyncProcessor {
   // Keys of the settings that are currently being synced. Used to decide what
   // kind of action (ADD, UPDATE, REMOVE) to send to sync.
   std::set<std::string> synced_keys_;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsSyncProcessor);
 };
 
 }  // namespace extensions

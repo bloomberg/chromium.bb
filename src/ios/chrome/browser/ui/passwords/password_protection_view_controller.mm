@@ -20,13 +20,11 @@
   self.image = [UIImage imageNamed:@"password_breach_illustration"];
   self.helpButtonAvailable = NO;
   self.primaryActionAvailable = YES;
-  self.titleString =
-      l10n_util::GetNSString(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
+  self.titleString = l10n_util::GetNSString(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_SAVED_PASSWORD_SUMMARY);
   self.primaryActionString =
       l10n_util::GetNSString(IDS_PAGE_INFO_CHECK_PASSWORDS_BUTTON);
-  if (@available(iOS 13.4, *)) {
-    self.pointerInteractionEnabled = YES;
-  }
+  self.pointerInteractionEnabled = YES;
   [super viewDidLoad];
   self.view.accessibilityIdentifier =
       kPasswordProtectionViewAccessibilityIdentifier;

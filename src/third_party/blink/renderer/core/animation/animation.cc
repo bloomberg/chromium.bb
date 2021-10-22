@@ -37,7 +37,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/animation_utils.h"
 #include "third_party/blink/renderer/core/animation/compositor_animations.h"
@@ -200,7 +199,7 @@ Animation* Animation::Create(AnimationEffect* effect,
   }
   DCHECK(IsA<DocumentTimeline>(timeline) || timeline->IsScrollTimeline());
 
-  if (effect && timeline->IsProgressBasedTimeline()) {
+  if (effect && timeline->IsScrollTimeline()) {
     if (effect->timing_.iteration_duration) {
       if (effect->timing_.iteration_duration->is_inf()) {
         exception_state.ThrowTypeError(
@@ -364,7 +363,7 @@ bool Animation::ConvertCSSNumberishToTime(
     return true;
   }
 
-  if (timeline_ && timeline_->IsProgressBasedTimeline()) {
+  if (timeline_ && timeline_->IsScrollTimeline()) {
     // Progress based timeline
     if (numberish->IsCSSNumericValue()) {
       CSSUnitValue* numberish_as_percentage =
@@ -522,7 +521,7 @@ V8CSSNumberish* Animation::startTime() const {
 
 V8CSSNumberish* Animation::ConvertTimeToCSSNumberish(
     AnimationTimeDelta time) const {
-  if (timeline_ && timeline_->IsProgressBasedTimeline()) {
+  if (timeline_ && timeline_->IsScrollTimeline()) {
     return To<ScrollTimeline>(*timeline_).ConvertTimeToProgress(time);
   }
   return MakeGarbageCollected<V8CSSNumberish>(time.InMillisecondsF());
@@ -2096,7 +2095,7 @@ base::TimeDelta Animation::ComputeCompositorTimeOffset() const {
   double time_offset_s =
       reversed ? EffectEnd().InSecondsF() - current_time.value().InSecondsF()
                : current_time.value().InSecondsF();
-  return base::TimeDelta::FromSecondsD(time_offset_s / fabs(playback_rate));
+  return base::Seconds(time_offset_s / fabs(playback_rate));
 }
 
 void Animation::MarkPendingIfCompositorPropertyAnimationChanges(
@@ -2462,9 +2461,10 @@ void Animation::DetachCompositedLayers() {
     compositor_animation_->GetAnimation()->DetachElement();
 }
 
-void Animation::NotifyAnimationStarted(double monotonic_time, int group) {
+void Animation::NotifyAnimationStarted(base::TimeDelta monotonic_time,
+                                       int group) {
   document_->GetPendingAnimations().NotifyCompositorAnimationStarted(
-      monotonic_time, group);
+      monotonic_time.InSecondsF(), group);
 }
 
 void Animation::AddedEventListener(
@@ -2489,7 +2489,7 @@ void Animation::PauseForTesting(AnimationTimeDelta pause_time) {
     DCHECK(current_time);
     To<KeyframeEffect>(content_.Get())
         ->PauseAnimationForTestingOnCompositor(
-            base::TimeDelta::FromSecondsD(current_time.value().InSecondsF()));
+            base::Seconds(current_time.value().InSecondsF()));
   }
 
   // Do not wait for animation ready to lock in the hold time. Otherwise,
@@ -2804,7 +2804,7 @@ bool Animation::IsInDisplayLockedSubtree() {
 
   if (last_display_lock_update_time_ < display_lock_update_timestamp) {
     const Element* element =
-        DisplayLockUtilities::NearestLockedExclusiveAncestor(*owning_element);
+        DisplayLockUtilities::LockedAncestorPreventingPaint(*owning_element);
     is_in_display_locked_subtree_ = !!element;
     last_display_lock_update_time_ = display_lock_update_timestamp;
   }

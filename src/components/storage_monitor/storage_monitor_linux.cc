@@ -83,6 +83,12 @@ std::string MakeDeviceUniqueId(struct udev_device* device) {
 class ScopedGetDeviceInfoResultRecorder {
  public:
   ScopedGetDeviceInfoResultRecorder() = default;
+
+  ScopedGetDeviceInfoResultRecorder(const ScopedGetDeviceInfoResultRecorder&) =
+      delete;
+  ScopedGetDeviceInfoResultRecorder& operator=(
+      const ScopedGetDeviceInfoResultRecorder&) = delete;
+
   ~ScopedGetDeviceInfoResultRecorder() {
     UMA_HISTOGRAM_BOOLEAN("MediaDeviceNotification.UdevRequestSuccess",
                           result_);
@@ -94,8 +100,6 @@ class ScopedGetDeviceInfoResultRecorder {
 
  private:
   bool result_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedGetDeviceInfoResultRecorder);
 };
 
 // Returns the storage partition size of the device specified by |device_path|.
@@ -220,7 +224,7 @@ StorageMonitor::EjectStatus EjectPathOnBlockingTaskRunner(
   if (!process.IsValid())
     return StorageMonitor::EJECT_FAILURE;
 
-  static constexpr auto kEjectTimeout = base::TimeDelta::FromSeconds(3);
+  static constexpr auto kEjectTimeout = base::Seconds(3);
   int exit_code = -1;
   if (!process.WaitForExitWithTimeout(kEjectTimeout, &exit_code)) {
     process.Terminate(-1, false);

@@ -17,12 +17,6 @@
 namespace openscreen {
 namespace cast {
 
-// Mirroring App identifier.
-constexpr char kMirroringAppId[] = "0F5096E8";
-
-// Mirroring App identifier for audio-only mirroring.
-constexpr char kMirroringAudioOnlyAppId[] = "85CDB22F";
-
 // Default target playout delay. The playout delay is the window of time between
 // capture from the source until presentation at the receiver.
 constexpr std::chrono::milliseconds kDefaultTargetPlayoutDelay(400);

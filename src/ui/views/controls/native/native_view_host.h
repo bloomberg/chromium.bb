@@ -35,6 +35,10 @@ class VIEWS_EXPORT NativeViewHost : public View {
   METADATA_HEADER(NativeViewHost);
 
   NativeViewHost();
+
+  NativeViewHost(const NativeViewHost&) = delete;
+  NativeViewHost& operator=(const NativeViewHost&) = delete;
+
   ~NativeViewHost() override;
 
   // Attach a gfx::NativeView to this View. Its bounds will be kept in sync
@@ -148,8 +152,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
 
   // Color to paint in the background while resizing.
   SkColor resize_background_color_ = SK_ColorWHITE;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeViewHost);
 };
 
 }  // namespace views

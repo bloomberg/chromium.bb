@@ -116,6 +116,10 @@ class FeatureCounter {
  public:
   explicit FeatureCounter(ExecutionContext* context)
       : context_(context), is_unconstrained_(true) {}
+
+  FeatureCounter(const FeatureCounter&) = delete;
+  FeatureCounter& operator=(const FeatureCounter&) = delete;
+
   void Count(WebFeature feature) {
     UseCounter::Count(context_, feature);
     is_unconstrained_ = false;
@@ -125,8 +129,6 @@ class FeatureCounter {
  private:
   Persistent<ExecutionContext> context_;
   bool is_unconstrained_;
-
-  DISALLOW_COPY_AND_ASSIGN(FeatureCounter);
 };
 
 void CountAudioConstraintUses(ExecutionContext* context,
@@ -318,9 +320,8 @@ class UserMediaRequest::V8Callbacks final : public UserMediaRequest::Callbacks {
     UserMediaRequest::Callbacks::Trace(visitor);
   }
 
-  void OnSuccess(ScriptWrappable* callback_this_value,
-                 MediaStream* stream) override {
-    success_callback_->InvokeAndReportException(callback_this_value, stream);
+  void OnSuccess(MediaStream* stream) override {
+    success_callback_->InvokeAndReportException(nullptr, stream);
   }
   void OnError(ScriptWrappable* callback_this_value,
                const V8MediaStreamError* error) override {
@@ -567,7 +568,7 @@ void UserMediaRequest::OnMediaStreamInitialized(MediaStream* stream) {
   RecordIdentifiabilityMetric(surface_, GetExecutionContext(),
                               IdentifiabilityBenignStringToken(g_empty_string));
   // After this call, the execution context may be invalid.
-  callbacks_->OnSuccess(nullptr, stream);
+  callbacks_->OnSuccess(stream);
   is_resolved_ = true;
 }
 

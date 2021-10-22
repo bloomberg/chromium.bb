@@ -35,6 +35,10 @@ class FontPrefChangeNotifier : public PrefObserver, public KeyedService {
   class Registrar {
    public:
     Registrar();
+
+    Registrar(const Registrar&) = delete;
+    Registrar& operator=(const Registrar&) = delete;
+
     ~Registrar();
 
     bool is_registered() const { return !!notifier_; }
@@ -52,12 +56,14 @@ class FontPrefChangeNotifier : public PrefObserver, public KeyedService {
 
     FontPrefChangeNotifier* notifier_ = nullptr;
     FontPrefChangeNotifier::Callback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(Registrar);
   };
 
   // The pref service must outlive this class.
   explicit FontPrefChangeNotifier(PrefService* pref_service);
+
+  FontPrefChangeNotifier(const FontPrefChangeNotifier&) = delete;
+  FontPrefChangeNotifier& operator=(const FontPrefChangeNotifier&) = delete;
+
   ~FontPrefChangeNotifier() override;
 
  private:
@@ -75,8 +81,6 @@ class FontPrefChangeNotifier : public PrefObserver, public KeyedService {
   // Non-owning pointers to the Registrars that have registered themselves
   // with us. We expect few registrars.
   base::ObserverList<Registrar>::Unchecked registrars_;
-
-  DISALLOW_COPY_AND_ASSIGN(FontPrefChangeNotifier);
 };
 
 #endif  // CHROME_BROWSER_FONT_PREF_CHANGE_NOTIFIER_H_

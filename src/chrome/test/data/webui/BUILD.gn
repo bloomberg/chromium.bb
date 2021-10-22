@@ -43,6 +43,7 @@ if (include_js_tests) {
       "//chrome/browser/ui",
       "//ui/webui/resources/js:post_message_api_client.m",
       "//ui/webui/resources/js:post_message_api_server.m",
+      "//ui/webui/resources/js:webview_manager",
     ]
     data = [
       "$root_gen_dir/chrome/test/data/webui/fake_chrome_event.m.js",
@@ -99,6 +100,7 @@ if (include_js_tests) {
       "settings/cr_settings_browsertest.js",
       "settings/privacy_sandbox_browsertest.js",
       "settings/settings_idle_load_browsertest.js",
+      "support_tool/support_tool_browsertest.js",
       "tab_search/tab_search_browsertest.js",
       "text_defaults_browsertest.js",
       "webui_resource_async_browsertest.js",
@@ -164,6 +166,7 @@ if (include_js_tests) {
         "settings/chromeos/a11y/v3_os_a11y_browsertest.js",
         "settings/chromeos/os_settings_v3_browsertest.js",
         "sys_internals/sys_internals_browsertest.js",
+        "webview_manager/webview_manager_browsertest.js",
       ]
     } else {
       sources += [
@@ -350,6 +353,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_feature_toggle_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_notification_access_setup_dialog_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_page_tests.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_permissions_setup_dialog_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_smartlock_item_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_smartlock_subpage_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_subpage_tests.m.js",
@@ -365,7 +369,6 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_page_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_pairing_dialog_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_summary_tests.m.js",
-        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_device_battery_info_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_devices_subpage_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_device_detail_subpage_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_bluetooth_change_device_name_dialog_tests.m.js",
@@ -383,6 +386,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_people_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_privacy_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_settings_menu_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_sync_controls_optional_disabled_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_sync_controls_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/lock_screen_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/os_printing_page_tests.m.js",
@@ -450,6 +454,7 @@ if (include_js_tests) {
         "chromeos/diagnostics/diagnostics_browsertest.js",
         "chromeos/os_feedback_ui/os_feedback_browsertest.js",
         "chromeos/personalization_app/personalization_app_component_browsertest.js",
+        "chromeos/personalization_app/personalization_app_controller_browsertest.js",
         "chromeos/print_management/print_management_browsertest.js",
         "chromeos/scanning/scanning_app_browsertest.js",
         "chromeos/shimless_rma/shimless_rma_browsertest.js",
@@ -553,9 +558,6 @@ group("closure_compile") {
       "nearby_share/shared:closure_compile",
       "settings/chromeos:closure_compile",
     ]
-  }
-  if (enable_print_preview) {
-    deps += [ "print_preview:closure_compile" ]
   }
 }
 

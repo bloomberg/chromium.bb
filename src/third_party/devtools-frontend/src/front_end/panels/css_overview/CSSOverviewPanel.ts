@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as CSSOverviewComponents from './components/components.js';
 import cssOverviewStyles from './cssOverview.css.js';
 import type * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -15,7 +16,6 @@ import {Events, OverviewController} from './CSSOverviewController.js';
 import type {GlobalStyleStats} from './CSSOverviewModel.js';
 import {CSSOverviewModel} from './CSSOverviewModel.js';
 import {CSSOverviewProcessingView} from './CSSOverviewProcessingView.js';
-import {CSSOverviewStartView} from './CSSOverviewStartView.js';
 import type {UnusedDeclaration} from './CSSOverviewUnusedDeclarations.js';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -24,20 +24,20 @@ let CSSOverviewPanelInstance: CSSOverviewPanel;
 export class CSSOverviewPanel extends UI.Panel.Panel {
   private readonly model: CSSOverviewModel;
   private readonly controller: OverviewController;
-  private readonly startView: CSSOverviewStartView;
+  private readonly startView: CSSOverviewComponents.CSSOverviewStartView.CSSOverviewStartView;
   private readonly processingView: CSSOverviewProcessingView;
   private readonly completedView: CSSOverviewCompletedView;
-  private backgroundColors?: Map<string, Set<number>>;
-  private textColors?: Map<string, Set<number>>;
-  private fillColors?: Map<string, Set<number>>;
-  private borderColors?: Map<string, Set<number>>;
-  private fontInfo?: Map<string, Map<string, Map<string, number[]>>>;
-  private mediaQueries?: Map<string, Protocol.CSS.CSSMedia[]>;
-  private unusedDeclarations?: Map<string, UnusedDeclaration[]>;
-  private elementCount?: number;
+  private backgroundColors!: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  private textColors!: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  private fillColors!: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  private borderColors!: Map<string, Set<Protocol.DOM.BackendNodeId>>;
+  private fontInfo!: Map<string, Map<string, Map<string, Protocol.DOM.BackendNodeId[]>>>;
+  private mediaQueries!: Map<string, Protocol.CSS.CSSMedia[]>;
+  private unusedDeclarations!: Map<string, UnusedDeclaration[]>;
+  private elementCount!: number;
   private cancelled?: boolean;
-  private globalStyleStats?: GlobalStyleStats;
-  private textColorContrastIssues?: Map<string, ContrastIssue[]>;
+  private globalStyleStats!: GlobalStyleStats;
+  private textColorContrastIssues!: Map<string, ContrastIssue[]>;
 
   private constructor() {
     super('css_overview');
@@ -48,7 +48,9 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     this.model = (model as CSSOverviewModel);
 
     this.controller = new OverviewController();
-    this.startView = new CSSOverviewStartView(this.controller);
+    this.startView = new CSSOverviewComponents.CSSOverviewStartView.CSSOverviewStartView();
+    this.startView.addEventListener(
+        'overviewstartrequested', () => this.controller.dispatchEventToListeners(Events.RequestOverviewStart));
     this.processingView = new CSSOverviewProcessingView(this.controller);
     this.completedView = new CSSOverviewCompletedView(this.controller, model.target());
 
@@ -97,10 +99,11 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
         nonSimple: 0,
       },
     };
+    this.textColorContrastIssues = new Map();
     this.renderInitialView();
   }
 
-  private requestNodeHighlight(evt: Common.EventTarget.EventTargetEvent): void {
+  private requestNodeHighlight(evt: Common.EventTarget.EventTargetEvent<number>): void {
     this.model.highlightNode((evt.data as Protocol.DOM.BackendNodeId));
   }
 
@@ -108,32 +111,33 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     this.processingView.hideWidget();
     this.completedView.hideWidget();
 
-    this.startView.show(this.contentElement);
+    this.contentElement.append(this.startView);
+    this.startView.show();
   }
 
   private renderOverviewStartedView(): void {
-    this.startView.hideWidget();
+    this.startView.hide();
     this.completedView.hideWidget();
 
     this.processingView.show(this.contentElement);
   }
 
   private renderOverviewCompletedView(): void {
-    this.startView.hideWidget();
+    this.startView.hide();
     this.processingView.hideWidget();
 
     this.completedView.show(this.contentElement);
     this.completedView.setOverviewData({
-      backgroundColors: (this.backgroundColors as Map<string, Set<number>>),
-      textColors: (this.textColors as Map<string, Set<number>>),
-      textColorContrastIssues: (this.textColorContrastIssues as Map<string, ContrastIssue[]>),
-      fillColors: (this.fillColors as Map<string, Set<number>>),
-      borderColors: (this.borderColors as Map<string, Set<number>>),
-      globalStyleStats: this.globalStyleStats as GlobalStyleStats,
-      fontInfo: (this.fontInfo as Map<string, Map<string, Map<string, number[]>>>),
-      elementCount: (this.elementCount as number),
-      mediaQueries: (this.mediaQueries as Map<string, Protocol.CSS.CSSMedia[]>),
-      unusedDeclarations: (this.unusedDeclarations as Map<string, UnusedDeclaration[]>),
+      backgroundColors: this.backgroundColors,
+      textColors: this.textColors,
+      textColorContrastIssues: this.textColorContrastIssues,
+      fillColors: this.fillColors,
+      borderColors: this.borderColors,
+      globalStyleStats: this.globalStyleStats,
+      fontInfo: this.fontInfo,
+      elementCount: this.elementCount,
+      mediaQueries: this.mediaQueries,
+      unusedDeclarations: this.unusedDeclarations,
     });
   }
 

@@ -361,7 +361,7 @@ void MockRenderProcessHost::AddFilter(BrowserMessageFilter* filter) {
 }
 
 base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() {
-  return base::TimeDelta::FromMilliseconds(0);
+  return base::Milliseconds(0);
 }
 
 void MockRenderProcessHost::BindReceiver(
@@ -389,12 +389,28 @@ size_t MockRenderProcessHost::GetKeepAliveRefCount() const {
   return keep_alive_ref_count_;
 }
 
-void MockRenderProcessHost::IncrementKeepAliveRefCount() {
+void MockRenderProcessHost::IncrementKeepAliveRefCount(uint64_t handle_id) {
   ++keep_alive_ref_count_;
 }
 
-void MockRenderProcessHost::DecrementKeepAliveRefCount() {
+void MockRenderProcessHost::DecrementKeepAliveRefCount(uint64_t handle_id) {
   --keep_alive_ref_count_;
+}
+
+std::string MockRenderProcessHost::GetKeepAliveDurations() const {
+  return std::string("MockRenderProcessHost: durations not tracked.");
+}
+
+size_t MockRenderProcessHost::GetShutdownDelayRefCount() const {
+  return 0;
+}
+
+void MockRenderProcessHost::IncrementRfhCount() {}
+
+void MockRenderProcessHost::DecrementRfhCount() {}
+
+int MockRenderProcessHost::GetRfhCount() const {
+  return 0;
 }
 
 void MockRenderProcessHost::IncrementWorkerRefCount() {

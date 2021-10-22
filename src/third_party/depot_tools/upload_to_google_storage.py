@@ -100,7 +100,7 @@ def _upload_worker(
           continue
     stdout_queue.put('%d> Uploading %s...' % (
         thread_num, filename))
-    gsutil_args = ['cp']
+    gsutil_args = ['-h', 'Cache-Control:public, max-age=31536000', 'cp']
     if gzip:
       gsutil_args.extend(['-z', gzip])
     gsutil_args.extend([filename, file_url])

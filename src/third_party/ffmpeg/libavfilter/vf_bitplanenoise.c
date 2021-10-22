@@ -67,10 +67,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *formats = ff_make_format_list(pixfmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixfmts);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -203,7 +200,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame   = filter_frame,
         .config_props   = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -211,7 +207,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_bitplanenoise = {
@@ -219,8 +214,8 @@ const AVFilter ff_vf_bitplanenoise = {
     .description    = NULL_IF_CONFIG_SMALL("Measure bit plane noise."),
     .priv_size      = sizeof(BPNContext),
     .query_formats  = query_formats,
-    .inputs         = inputs,
-    .outputs        = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .priv_class     = &bitplanenoise_class,
     .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

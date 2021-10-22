@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/avatar_menu.h"
@@ -52,7 +53,7 @@ constexpr int kIconSizeForNonTouchUi = 22;
 
 // static
 base::TimeDelta AvatarToolbarButton::g_iph_min_delay_after_creation =
-    base::TimeDelta::FromSeconds(2);
+    base::Seconds(2);
 
 AvatarToolbarButton::AvatarToolbarButton(BrowserView* browser_view)
     : AvatarToolbarButton(browser_view, nullptr) {}
@@ -354,8 +355,10 @@ void AvatarToolbarButton::MaybeShowProfileSwitchIPHInitialized(bool success) {
 
   DCHECK(
       feature_promo_controller_->feature_engagement_tracker()->IsInitialized());
-  feature_promo_controller_->MaybeShowPromo(
-      feature_engagement::kIPHProfileSwitchFeature);
+  if (browser_->window()->IsActive() ||
+      FeaturePromoControllerViews::IsActiveWindowCheckBlockedForTesting())
+    feature_promo_controller_->MaybeShowPromo(
+        feature_engagement::kIPHProfileSwitchFeature);
 }
 
 BEGIN_METADATA(AvatarToolbarButton, ToolbarButton)

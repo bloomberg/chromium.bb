@@ -29,6 +29,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -773,6 +774,11 @@ void DirectionalIntraPredictorZone2_NEON(
   // processed at a time without branching in an inner loop to check the base.
   uint8_t top_buffer[288];
   uint8_t left_buffer[288];
+#if LIBGAV1_MSAN
+  memset(top_buffer, 0, sizeof(top_buffer));
+  memset(left_buffer, 0, sizeof(left_buffer));
+#endif  // LIBGAV1_MSAN
+
   memcpy(top_buffer + 128, static_cast<const uint8_t*>(top_row) - 16, 160);
   memcpy(left_buffer + 128, static_cast<const uint8_t*>(left_column) - 16, 160);
   const uint8_t* top_ptr = top_buffer + 144;
@@ -2078,6 +2084,10 @@ void DirectionalIntraPredictorZone2_NEON(
   // processed at a time without branching in an inner loop to check the base.
   uint16_t top_buffer[288];
   uint16_t left_buffer[288];
+#if LIBGAV1_MSAN
+  memset(top_buffer, 0, sizeof(top_buffer));
+  memset(left_buffer, 0, sizeof(left_buffer));
+#endif  // LIBGAV1_MSAN
   memcpy(top_buffer + 128, static_cast<const uint16_t*>(top_row) - 16, 160);
   memcpy(left_buffer + 128, static_cast<const uint16_t*>(left_column) - 16,
          160);

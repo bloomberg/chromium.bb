@@ -21,12 +21,9 @@ BUILD_TYPES = {
         'is_msan = true',
         'msan_track_origins = 2',
     ],
-    'tsan': ['is_tsan = true'],
-    'asan': ['is_asan = true']
 }
 
-# Xenial support is in development (https://crbug.com/1244199).
-SUPPORTED_RELEASES = frozenset([ 'trusty', 'xenial' ])
+SUPPORTED_RELEASE = 'xenial'
 
 
 class Error(Exception):
@@ -57,7 +54,6 @@ def build_libraries(build_type, ubuntu_release, jobs, use_goma):
       'is_debug = false',
       'use_goma = %s' % str(use_goma).lower(),
       'use_locally_built_instrumented_libraries = true',
-      'instrumented_libraries_platform = "%s"' % ubuntu_release
   ] + BUILD_TYPES[build_type]
   with open(os.path.join(build_dir, 'args.gn'), 'w') as f:
     f.write('\n'.join(gn_args) + '\n')
@@ -65,9 +61,8 @@ def build_libraries(build_type, ubuntu_release, jobs, use_goma):
   subprocess.check_call(['ninja', '-j%d' % jobs, '-C', build_dir,
                          'third_party/instrumented_libraries:locally_built'])
   with tarfile.open('%s.tgz' % archive_name, mode='w:gz') as f:
-    prefix = build_type.split('-', 1)[0]
-    f.add('%s/instrumented_libraries/%s' % (build_dir, prefix),
-          arcname=prefix,
+    f.add('%s/instrumented_libraries/lib' % build_dir,
+          arcname='lib',
           filter=_tar_filter)
     f.add('%s/instrumented_libraries/sources' % build_dir,
           arcname='sources',
@@ -102,7 +97,7 @@ def main():
     args.build_type = BUILD_TYPES.keys()
 
   ubuntu_release = _get_release()
-  if ubuntu_release not in SUPPORTED_RELEASES:
+  if ubuntu_release != SUPPORTED_RELEASE:
     raise UnsupportedReleaseError('%s is not a supported release' %
                                   _get_release())
   build_types = sorted(set(args.build_type))

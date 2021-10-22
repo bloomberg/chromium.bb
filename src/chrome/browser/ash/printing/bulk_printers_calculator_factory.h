@@ -14,7 +14,7 @@
 
 class AccountId;
 
-namespace chromeos {
+namespace ash {
 
 class BulkPrintersCalculator;
 
@@ -26,6 +26,11 @@ class BulkPrintersCalculatorFactory {
   static BulkPrintersCalculatorFactory* Get();
 
   BulkPrintersCalculatorFactory();
+
+  BulkPrintersCalculatorFactory(const BulkPrintersCalculatorFactory&) = delete;
+  BulkPrintersCalculatorFactory& operator=(
+      const BulkPrintersCalculatorFactory&) = delete;
+
   ~BulkPrintersCalculatorFactory();
 
   // Returns a WeakPtr to the BulkPrintersCalculator registered for
@@ -54,10 +59,8 @@ class BulkPrintersCalculatorFactory {
       printers_by_user_;
   std::unique_ptr<BulkPrintersCalculator> device_printers_;
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(BulkPrintersCalculatorFactory);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_BULK_PRINTERS_CALCULATOR_FACTORY_H_

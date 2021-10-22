@@ -115,6 +115,9 @@ class MultiWindowResizeController::ResizeView : public views::View {
   ResizeView(MultiWindowResizeController* controller, Direction direction)
       : controller_(controller), direction_(direction) {}
 
+  ResizeView(const ResizeView&) = delete;
+  ResizeView& operator=(const ResizeView&) = delete;
+
   // views::View overrides:
   gfx::Size CalculatePreferredSize() const override {
     const bool vert = direction_ == Direction::kLeftRight;
@@ -185,8 +188,6 @@ class MultiWindowResizeController::ResizeView : public views::View {
 
   MultiWindowResizeController* controller_;
   const Direction direction_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResizeView);
 };
 
 // MouseWatcherHost implementation for MultiWindowResizeController. Forwards
@@ -195,6 +196,9 @@ class MultiWindowResizeController::ResizeMouseWatcherHost
     : public views::MouseWatcherHost {
  public:
   ResizeMouseWatcherHost(MultiWindowResizeController* host) : host_(host) {}
+
+  ResizeMouseWatcherHost(const ResizeMouseWatcherHost&) = delete;
+  ResizeMouseWatcherHost& operator=(const ResizeMouseWatcherHost&) = delete;
 
   // MouseWatcherHost overrides:
   bool Contains(const gfx::Point& point_in_screen, EventType type) override {
@@ -205,8 +209,6 @@ class MultiWindowResizeController::ResizeMouseWatcherHost
 
  private:
   MultiWindowResizeController* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResizeMouseWatcherHost);
 };
 
 MultiWindowResizeController::ResizeWindows::ResizeWindows()
@@ -258,8 +260,7 @@ void MultiWindowResizeController::Show(aura::Window* window,
   StartObserving(windows_.window2);
   show_location_in_parent_ =
       ConvertPointToTarget(window, window->parent(), point_in_window);
-  show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kShowDelayMS),
-                    this,
+  show_timer_.Start(FROM_HERE, base::Milliseconds(kShowDelayMS), this,
                     &MultiWindowResizeController::ShowIfValidMouseLocation);
 }
 
@@ -324,8 +325,7 @@ MultiWindowResizeController::DetermineWindowsFromScreenPoint(
 void MultiWindowResizeController::CreateMouseWatcher() {
   mouse_watcher_ = std::make_unique<views::MouseWatcher>(
       std::make_unique<ResizeMouseWatcherHost>(this), this);
-  mouse_watcher_->set_notify_on_exit_time(
-      base::TimeDelta::FromMilliseconds(kHideDelayMS));
+  mouse_watcher_->set_notify_on_exit_time(base::Milliseconds(kHideDelayMS));
   DCHECK(resize_widget_);
   mouse_watcher_->Start(resize_widget_->GetNativeWindow());
 }

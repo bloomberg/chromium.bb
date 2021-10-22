@@ -13,9 +13,6 @@ namespace features {
 const base::Feature kWebPaymentsExperimentalFeatures{
     "WebPaymentsExperimentalFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kReturnGooglePayInBasicCard{
-    "ReturnGooglePayInBasicCard", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if defined(OS_IOS)
 const base::Feature kWebPaymentsNativeApps{"WebPaymentsNativeApps",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -57,12 +54,6 @@ const base::Feature kAppStoreBillingDebug{"AppStoreBillingDebug",
 
 const base::Feature kStrictHasEnrolledAutofillInstrument{
     "StrictHasEnrolledAutofillInstrument", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPaymentRequestSkipToGPay{
-    "PaymentRequestSkipToGPay", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPaymentRequestSkipToGPayIfNoCard{
-    "PaymentRequestSkipToGPayIfNoCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownRankJustInTimePaymentApp{
     "DownRankJustInTimePaymentApp", base::FEATURE_DISABLED_BY_DEFAULT};

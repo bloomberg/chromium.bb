@@ -280,11 +280,20 @@ def IsUploadedForReviewAndLanded(robo_configuration):
   if not IsUploadedForReview(robo_configuration):
     shell.log("Is not uploaded for review")
     return False
+  # Make sure we're up-to-date with origin, to fetch the (hopefully) landed
+  # sushi branch.
+  if robo_configuration.Call(["git", "fetch", "origin"]):
+    raise Exception("Could not fetch from origin")
+
+  branch_name = robo_configuration.sushi_branch_name()
   # See if origin/sushi and local/sushi are the same.  This check by itself
   # isn't sufficient, since it would return true any time the two are in sync.
   diff = shell.output_or_error(["git", "diff",
-               "origin/" + robo_configuration.sushi_branch_name(),
-               robo_configuration.sushi_branch_name()])
+               "origin/" + branch_name, branch_name])
+  if diff:
+    print("WARNING: Local and origin branches differ. Run `git diff origin/" +
+            branch_name + " " + branch_name + "` to see how.")
+
   return not diff
 
 @RequiresCleanWorkingDirectory
@@ -296,6 +305,26 @@ def UploadForReview(robo_configuration):
             "Sushi branch is already uploaded for review!  (try git cl web)")
   shell.log("Uploading sushi branch for review.")
   os.system("git cl upload")
+
+@RequiresCleanWorkingDirectory
+def MergeBackToOriginMaster(robo_configuration):
+  """Once the sushi branch has landed in origin after review, merge it back
+     to origin/master locally and push it."""
+  robo_configuration.chdir_to_ffmpeg_home();
+  if not IsUploadedForReviewAndLanded(robo_configuration):
+    raise Exception("The CL must be reviewed and landed before proceeding.")
+  # TODO: check if the merge has already been done, and fail.  Also, add a
+  # skip_fn to the step in robosushi, so we skip this step cleanly.
+
+  # TODO: actually do stuff.
+  raise Exception("Robosushi can't automativally merge back to master yet. " \
+                  "Please see go/robosushi for what to do next.")
+  # create local_merge_branch tracking origin/master
+  # check out local_merge_branch  # does this make us forget our sushi branch?
+  # git merge sushsi_branch
+  # git push origin local_branch_name
+  # git checkout origin/master (or sushi?)
+  # git branch -R local_merge_branch
 
 @RequiresCleanWorkingDirectory
 def TryFakeDepsRoll(robo_configuration):

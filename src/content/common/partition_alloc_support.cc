@@ -25,6 +25,11 @@
 #include "base/system/sys_info.h"
 #endif
 
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#include "base/allocator/partition_allocator/memory_reclaimer.h"
+#include "base/threading/thread_task_runner_handle.h"
+#endif
+
 namespace content {
 namespace internal {
 
@@ -52,9 +57,11 @@ void SetProcessNameForPCScan(const std::string& process_type) {
 
 bool EnablePCScanForMallocPartitionsIfNeeded() {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+  using Config = base::internal::PCScan::InitConfig;
   DCHECK(base::FeatureList::GetInstance());
   if (base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan)) {
-    base::allocator::EnablePCScan(/*dcscan*/ false);
+    base::allocator::EnablePCScan({Config::WantedWriteProtectionMode::kEnabled,
+                                   Config::SafepointMode::kEnabled});
     return true;
   }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
@@ -63,48 +70,53 @@ bool EnablePCScanForMallocPartitionsIfNeeded() {
 
 bool EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded() {
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+  using Config = base::internal::PCScan::InitConfig;
   DCHECK(base::FeatureList::GetInstance());
   if (base::FeatureList::IsEnabled(
           base::features::kPartitionAllocPCScanBrowserOnly)) {
-    const bool dcscan_wanted =
-        base::FeatureList::IsEnabled(base::features::kPartitionAllocDCScan);
+    const Config::WantedWriteProtectionMode wp_mode =
+        base::FeatureList::IsEnabled(base::features::kPartitionAllocDCScan)
+            ? Config::WantedWriteProtectionMode::kEnabled
+            : Config::WantedWriteProtectionMode::kDisabled;
 #if !defined(PA_STARSCAN_UFFD_WRITE_PROTECTOR_SUPPORTED)
-    CHECK(!dcscan_wanted)
+    CHECK_EQ(Config::WantedWriteProtectionMode::kDisabled, wp_mode)
         << "DCScan is currently only supported on Linux based systems";
 #endif
-    base::allocator::EnablePCScan(dcscan_wanted);
+    base::allocator::EnablePCScan({wp_mode, Config::SafepointMode::kEnabled});
     return true;
   }
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
   return false;
 }
 
-// This function should be executed as early as possible once we can get the
-// command line arguments and determine whether the process needs BRP support.
-// Until that moment, all heap allocations end up in a slower temporary
-// partition with no thread cache and cause heap fragmentation.
-//
-// Furthermore, since the function has to allocate a new partition, it must
-// only run once.
-void ConfigurePartitionRefCountSupportIfNeeded(bool enable_ref_count) {
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_BACKUP_REF_PTR)
-  base::allocator::ConfigurePartitionRefCountSupport(enable_ref_count);
+bool EnablePCScanForMallocPartitionsInRendererProcessIfNeeded() {
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+  using Config = base::internal::PCScan::InitConfig;
+  DCHECK(base::FeatureList::GetInstance());
+  if (base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocPCScanRendererOnly)) {
+    const Config::WantedWriteProtectionMode wp_mode =
+        base::FeatureList::IsEnabled(base::features::kPartitionAllocDCScan)
+            ? Config::WantedWriteProtectionMode::kEnabled
+            : Config::WantedWriteProtectionMode::kDisabled;
+#if !defined(PA_STARSCAN_UFFD_WRITE_PROTECTOR_SUPPORTED)
+    CHECK_EQ(Config::WantedWriteProtectionMode::kDisabled, wp_mode)
+        << "DCScan is currently only supported on Linux based systems";
 #endif
-}
-
-void ReconfigurePartitionForKnownProcess(const std::string& process_type) {
-  DCHECK_NE(process_type, switches::kZygoteProcess);
-
-  // No specified process type means this is the Browser process.
-  ConfigurePartitionRefCountSupportIfNeeded(
-      process_type.empty()
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_IN_RENDERER_PROCESS)
-      || process_type == switches::kRendererProcess
-#endif
-  );
+    base::allocator::EnablePCScan({wp_mode, Config::SafepointMode::kDisabled});
+    return true;
+  }
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && defined(PA_ALLOW_PCSCAN)
+  return false;
 }
 
 }  // namespace
+
+void ReconfigurePartitionForKnownProcess(const std::string& process_type) {
+  DCHECK_NE(process_type, switches::kZygoteProcess);
+  // TODO(keishi): Move the code to enable BRP back here after Finch
+  // experiments.
+}
 
 PartitionAllocSupport::PartitionAllocSupport() = default;
 
@@ -129,9 +141,7 @@ void PartitionAllocSupport::ReconfigureEarlyish(
   // These initializations are only relevant for PartitionAlloc-Everywhere
   // builds.
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-
   base::allocator::EnablePartitionAllocMemoryReclaimer();
-
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }
 
@@ -197,15 +207,37 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
   // TODO(bartekn): Switch to DCHECK once confirmed there are no issues.
   CHECK(base::FeatureList::GetInstance());
 
+  bool enable_brp = false;
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  if (base::FeatureList::IsEnabled(
+          base::features::kPartitionAllocBackupRefPtr)) {
+    // No specified process type means this is the Browser process.
+    enable_brp = process_type.empty();
+    if (base::features::kBackupRefPtrEnabledProcessesParam.Get() ==
+        base::features::BackupRefPtrEnabledProcesses::kBrowserAndRenderer) {
+      enable_brp |= process_type == switches::kRendererProcess;
+    }
+  }
+  base::allocator::ConfigurePartitionBackupRefPtrSupport(enable_brp);
+#endif
+
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   base::allocator::ReconfigurePartitionAllocLazyCommit();
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+
+  // Don't enable PCScan if BRP is enabled.
+  if (enable_brp)
+    return;
 
   bool scan_enabled = EnablePCScanForMallocPartitionsIfNeeded();
   // No specified process type means this is the Browser process.
   if (process_type.empty()) {
     scan_enabled = scan_enabled ||
                    EnablePCScanForMallocPartitionsInBrowserProcessIfNeeded();
+  }
+  if (process_type == switches::kRendererProcess) {
+    scan_enabled = scan_enabled ||
+                   EnablePCScanForMallocPartitionsInRendererProcessIfNeeded();
   }
   if (scan_enabled) {
     if (base::FeatureList::IsEnabled(
@@ -274,11 +306,13 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
     // is not carefully tuned. Only control the threshold here to avoid changing
     // the rest of the code below.
     // As of 2021, 64 bits Android devices are not memory constrained.
-    largest_cached_size_ = base::internal::ThreadCache::kDefaultSizeThreshold;
+    largest_cached_size_ =
+        base::internal::ThreadCacheLimits::kDefaultSizeThreshold;
 #else
-    largest_cached_size_ = base::internal::ThreadCache::kLargeSizeThreshold;
+    largest_cached_size_ =
+        base::internal::ThreadCacheLimits::kLargeSizeThreshold;
     base::internal::ThreadCache::SetLargestCachedSize(
-        base::internal::ThreadCache::kLargeSizeThreshold);
+        base::internal::ThreadCacheLimits::kLargeSizeThreshold);
 #endif  // defined(OS_ANDROID) && !defined(ARCH_CPU_64_BITS)
   }
 
@@ -297,6 +331,11 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
     base::internal::PCScan::scheduler().SetNewSchedulingBackend(
         *mu_aware_task_based_backend.get());
   }
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  base::PartitionAllocMemoryReclaimer::Instance()->Start(
+      base::ThreadTaskRunnerHandle::Get());
+#endif
 }
 
 void PartitionAllocSupport::OnForegrounded() {
@@ -327,7 +366,7 @@ void PartitionAllocSupport::OnBackgrounded() {
   //
   // TODO(lizeb): Consider forcing a one-off thread cache purge.
   base::internal::ThreadCache::SetLargestCachedSize(
-      base::internal::ThreadCache::kDefaultSizeThreshold);
+      base::internal::ThreadCacheLimits::kDefaultSizeThreshold);
 #endif  // defined(PA_THREAD_CACHE_SUPPORTED) &&
         // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 }

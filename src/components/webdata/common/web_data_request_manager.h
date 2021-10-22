@@ -35,6 +35,9 @@ class WebDataRequestManager;
 //////////////////////////////////////////////////////////////////////////////
 class WebDataRequest {
  public:
+  WebDataRequest(const WebDataRequest&) = delete;
+  WebDataRequest& operator=(const WebDataRequest&) = delete;
+
   virtual ~WebDataRequest();
 
   // Returns the identifier for this request.
@@ -82,8 +85,6 @@ class WebDataRequest {
 
   // Identifier for this request.
   const WebDataServiceBase::Handle handle_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
 };
 
 //////////////////////////////////////////////////////////////////////////////
@@ -98,6 +99,9 @@ class WebDataRequestManager
     : public base::RefCountedThreadSafe<WebDataRequestManager> {
  public:
   WebDataRequestManager();
+
+  WebDataRequestManager(const WebDataRequestManager&) = delete;
+  WebDataRequestManager& operator=(const WebDataRequestManager&) = delete;
 
   // Factory function to create a new WebDataRequest.
   // Retrieves a WeakPtr to the |consumer| so that |consumer| does not have to
@@ -128,8 +132,6 @@ class WebDataRequestManager
   WebDataServiceBase::Handle next_request_handle_;
 
   std::map<WebDataServiceBase::Handle, WebDataRequest*> pending_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebDataRequestManager);
 };
 
 #endif  // COMPONENTS_WEBDATA_COMMON_WEB_DATA_REQUEST_MANAGER_H__

@@ -20,14 +20,14 @@ class DesksBarScrollViewLayout;
 class DeskBarHoverObserver;
 class DeskDragProxy;
 class DeskMiniView;
-class ExpandedStateNewDeskButton;
+class ExpandedDesksBarButton;
 class GradientLayerDelegate;
 class NewDeskButton;
 class OverviewGrid;
 class PersistentDesksBarVerticalDotsButton;
 class ScrollArrowButton;
 class ZeroStateDefaultDeskButton;
-class ZeroStateNewDeskButton;
+class ZeroStateIconButton;
 
 // A bar that resides at the top portion of the overview mode's ShieldView,
 // which contains the virtual desks mini_views, as well as the new desk button.
@@ -36,6 +36,10 @@ class ASH_EXPORT DesksBarView : public views::View,
                                 public views::ScrollView::Observer {
  public:
   explicit DesksBarView(OverviewGrid* overview_grid);
+
+  DesksBarView(const DesksBarView&) = delete;
+  DesksBarView& operator=(const DesksBarView&) = delete;
+
   ~DesksBarView() override;
 
   static constexpr int kZeroStateBarHeight = 40;
@@ -56,12 +60,20 @@ class ASH_EXPORT DesksBarView : public views::View,
     return zero_state_default_desk_button_;
   }
 
-  ZeroStateNewDeskButton* zero_state_new_desk_button() const {
+  ZeroStateIconButton* zero_state_new_desk_button() const {
     return zero_state_new_desk_button_;
   }
 
-  ExpandedStateNewDeskButton* expanded_state_new_desk_button() const {
+  ExpandedDesksBarButton* expanded_state_new_desk_button() const {
     return expanded_state_new_desk_button_;
+  }
+
+  ZeroStateIconButton* zero_state_desks_templates_button() const {
+    return zero_state_desks_templates_button_;
+  }
+
+  ExpandedDesksBarButton* expanded_state_desks_templates_button() const {
+    return expanded_state_desks_templates_button_;
   }
 
   const std::vector<DeskMiniView*>& mini_views() const { return mini_views_; }
@@ -159,16 +171,19 @@ class ASH_EXPORT DesksBarView : public views::View,
   void OnContentsScrollEnded() override;
 
   // This is called on initialization, creating a new desk through the
-  // NewDeskButton or ExpandedStateNewDeskButton, or expanding from zero state
+  // NewDeskButton or ExpandedDesksBarButton, or expanding from zero state
   // bar to the expanded desks bar. Performs the expanding animation if
   // |expanding_bar_view| is true, otherwise animates the mini_views (also the
-  // ExpandedStateNewDeskButton) to their final positions if
+  // ExpandedDesksBarButton) to their final positions if
   // |initializing_bar_view| is false.
   void UpdateNewMiniViews(bool initializing_bar_view, bool expanding_bar_view);
 
   // If the focused |mini_view| is outside of the scroll view's visible bounds,
   // scrolls the bar to make sure it can always be seen.
   void ScrollToShowMiniViewIfNecessary(const DeskMiniView* mini_view);
+
+  void OnNewDeskButtonPressed(
+      DesksCreationRemovalSource desks_creation_removal_source);
 
  private:
   friend class DesksBarScrollViewLayout;
@@ -195,7 +210,7 @@ class ASH_EXPORT DesksBarView : public views::View,
   int GetFirstMiniViewXOffset() const;
 
   // Updates the visibility of the two buttons inside the zero state desks bar
-  // and the ExpandedStateNewDeskButton on the desk bar's state.
+  // and the ExpandedDesksBarButton on the desk bar's state.
   void UpdateDeskButtonsVisibility();
 
   // Updates the visibility of |left_scroll_button_| and |right_scroll_button_|.
@@ -218,6 +233,8 @@ class ASH_EXPORT DesksBarView : public views::View,
   // Gets the adjusted scroll position based on |position| to make sure no desk
   // preview is cropped at the start position of the scrollable bar.
   int GetAdjustedUncroppedScrollPosition(int position) const;
+
+  void OnDesksTemplatesButtonPressed();
 
   // A view that shows a dark gary transparent background that can be animated
   // when the very first mini_views are created.
@@ -244,8 +261,9 @@ class ASH_EXPORT DesksBarView : public views::View,
   // Puts the contents in a ScrollView to support scrollable desks.
   views::ScrollView* scroll_view_ = nullptr;
 
-  // Contents of |scroll_view_|, which includes |mini_views_| and
-  // |expanded_state_new_desk_button_| currently.
+  // Contents of `scroll_view_`, which includes `mini_views_`,
+  // `expanded_state_new_desk_button_` and optionally
+  // `expanded_state_desks_templates_button_` currently.
   views::View* scroll_view_contents_ = nullptr;
 
   // If this is true, when `UpdateNewMiniViews()` is called, the newly created
@@ -254,8 +272,13 @@ class ASH_EXPORT DesksBarView : public views::View,
   bool should_name_nudge_ = false;
 
   ZeroStateDefaultDeskButton* zero_state_default_desk_button_ = nullptr;
-  ZeroStateNewDeskButton* zero_state_new_desk_button_ = nullptr;
-  ExpandedStateNewDeskButton* expanded_state_new_desk_button_ = nullptr;
+  ZeroStateIconButton* zero_state_new_desk_button_ = nullptr;
+  ExpandedDesksBarButton* expanded_state_new_desk_button_ = nullptr;
+
+  // Buttons to show the desks templates grid.
+  ZeroStateIconButton* zero_state_desks_templates_button_ = nullptr;
+  ExpandedDesksBarButton* expanded_state_desks_templates_button_ = nullptr;
+
   ScrollArrowButton* left_scroll_button_ = nullptr;
   ScrollArrowButton* right_scroll_button_ = nullptr;
   // Mini view whose preview is being dragged.
@@ -271,8 +294,6 @@ class ASH_EXPORT DesksBarView : public views::View,
   // persistent desks bar. Note that this button will only be created when
   // BentoBar is enabled.
   PersistentDesksBarVerticalDotsButton* vertical_dots_button_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DesksBarView);
 };
 
 }  // namespace ash

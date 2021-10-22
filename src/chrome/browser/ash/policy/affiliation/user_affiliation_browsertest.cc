@@ -119,6 +119,10 @@ class UserAffiliationBrowserTest
     affiliation_mixin_.set_affiliated(GetParam().affiliated);
   }
 
+  UserAffiliationBrowserTest(const UserAffiliationBrowserTest&) = delete;
+  UserAffiliationBrowserTest& operator=(const UserAffiliationBrowserTest&) =
+      delete;
+
  protected:
   // MixinBasedInProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -160,7 +164,7 @@ class UserAffiliationBrowserTest
     MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(browser_main_parts);
 
     login_ui_visible_waiter_ =
-        std::make_unique<chromeos::LoginOrLockScreenVisibleWaiter>();
+        std::make_unique<ash::LoginOrLockScreenVisibleWaiter>();
   }
 
   void SetUpOnMainThread() override {
@@ -214,7 +218,8 @@ class UserAffiliationBrowserTest
  private:
   void SetUpTestSystemSlotOnIO(bool* out_system_slot_constructed_successfully) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    test_system_slot_ = std::make_unique<crypto::ScopedTestSystemNSSKeySlot>();
+    test_system_slot_ = std::make_unique<crypto::ScopedTestSystemNSSKeySlot>(
+        /*simulate_token_loader=*/false);
     *out_system_slot_constructed_successfully =
         test_system_slot_->ConstructedSuccessfully();
   }
@@ -236,17 +241,14 @@ class UserAffiliationBrowserTest
 
   std::unique_ptr<crypto::ScopedTestSystemNSSKeySlot> test_system_slot_;
 
-  std::unique_ptr<chromeos::LoginOrLockScreenVisibleWaiter>
-      login_ui_visible_waiter_;
+  std::unique_ptr<ash::LoginOrLockScreenVisibleWaiter> login_ui_visible_waiter_;
 
-  chromeos::DeviceStateMixin device_state_{
+  ash::DeviceStateMixin device_state_{
       &mixin_host_,
       GetParam().active_directory
-          ? chromeos::DeviceStateMixin::State::
+          ? ash::DeviceStateMixin::State::
                 OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED
-          : chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
-
-  DISALLOW_COPY_AND_ASSIGN(UserAffiliationBrowserTest);
+          : ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
 IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_TestAffiliation) {

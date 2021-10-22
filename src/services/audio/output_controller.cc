@@ -26,15 +26,13 @@
 #include "services/audio/concurrent_stream_metric_reporter.h"
 #include "services/audio/stream_monitor.h"
 
-using base::TimeDelta;
 
 namespace audio {
 
 namespace {
 
 // Time in seconds between two successive measurements of audio power levels.
-constexpr base::TimeDelta kPowerMonitorLogInterval =
-    base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kPowerMonitorLogInterval = base::Seconds(15);
 
 const char* StateToString(OutputController::State state) {
   switch (state) {
@@ -76,7 +74,7 @@ OutputController::ErrorStatisticsTracker::ErrorStatisticsTracker(
   // WedgeCheck() will look to see if |on_more_io_data_called_| is true after
   // the timeout expires and log this as a UMA stat. If the stream is
   // paused/closed before the timer fires, nothing is logged.
-  wedge_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(5), this,
+  wedge_timer_.Start(FROM_HERE, base::Seconds(5), this,
                      &ErrorStatisticsTracker::WedgeCheck);
 }
 
@@ -134,9 +132,8 @@ OutputController::OutputController(
       volume_(1.0),
       state_(kEmpty),
       sync_reader_(sync_reader),
-      power_monitor_(
-          params.sample_rate(),
-          TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)) {
+      power_monitor_(params.sample_rate(),
+                     base::Milliseconds(kPowerMeasurementTimeConstantMillis)) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(activity_monitor_);
@@ -492,7 +489,7 @@ void OutputController::OnError(ErrorType type) {
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&OutputController::ReportError, weak_this_for_stream_),
-      base::TimeDelta::FromSeconds(1));
+      base::Seconds(1));
 }
 
 void OutputController::StopCloseAndClearStream() {

@@ -18,6 +18,8 @@
 #include "ash/wm/window_state.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/chromeos_buildflags.h"
+#include "components/exo/display.h"
+#include "components/exo/shell_surface_base.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_observer.h"
 #include "components/exo/wayland/wl_output.h"
@@ -192,11 +194,11 @@ void aura_surface_intent_to_snap(wl_client* client,
 }
 
 void aura_surface_set_snap_left(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<AuraSurface>(resource)->SetSnapLeft();
+  GetUserDataAs<AuraSurface>(resource)->SetSnapPrimary();
 }
 
 void aura_surface_set_snap_right(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<AuraSurface>(resource)->SetSnapRight();
+  GetUserDataAs<AuraSurface>(resource)->SetSnapSecondary();
 }
 
 void aura_surface_unset_snap(wl_client* client, wl_resource* resource) {
@@ -245,6 +247,16 @@ void aura_surface_set_initial_workspace(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetInitialWorkspace(initial_workspace);
 }
 
+void aura_surface_set_pin(wl_client* client,
+                          wl_resource* resource,
+                          int32_t trusted) {
+  GetUserDataAs<AuraSurface>(resource)->Pin(trusted);
+}
+
+void aura_surface_unset_pin(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraSurface>(resource)->Unpin();
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame,
     aura_surface_set_parent,
@@ -270,7 +282,9 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_unset_pip,
     aura_surface_set_aspect_ratio,
     aura_surface_move_to_desk,
-    aura_surface_set_initial_workspace};
+    aura_surface_set_initial_workspace,
+    aura_surface_set_pin,
+    aura_surface_unset_pin};
 
 }  // namespace
 
@@ -369,20 +383,20 @@ void AuraSurface::IntentToSnap(uint32_t snap_direction) {
       surface_->HideSnapPreview();
       break;
     case ZAURA_SURFACE_SNAP_DIRECTION_LEFT:
-      surface_->ShowSnapPreviewToLeft();
+      surface_->ShowSnapPreviewToPrimary();
       break;
     case ZAURA_SURFACE_SNAP_DIRECTION_RIGHT:
-      surface_->ShowSnapPreviewToRight();
+      surface_->ShowSnapPreviewToSecondary();
       break;
   }
 }
 
-void AuraSurface::SetSnapLeft() {
-  surface_->SetSnappedToLeft();
+void AuraSurface::SetSnapPrimary() {
+  surface_->SetSnappedToPrimary();
 }
 
-void AuraSurface::SetSnapRight() {
-  surface_->SetSnappedToRight();
+void AuraSurface::SetSnapSecondary() {
+  surface_->SetSnappedToSecondary();
 }
 
 void AuraSurface::UnsetSnap() {
@@ -578,6 +592,14 @@ void AuraSurface::SetInitialWorkspace(const char* initial_workspace) {
   surface_->SetInitialWorkspace(initial_workspace);
 }
 
+void AuraSurface::Pin(bool trusted) {
+  surface_->Pin(trusted);
+}
+
+void AuraSurface::Unpin() {
+  surface_->Unpin();
+}
+
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -586,6 +608,9 @@ namespace {
 class AuraOutput : public WaylandDisplayObserver {
  public:
   explicit AuraOutput(wl_resource* resource) : resource_(resource) {}
+
+  AuraOutput(const AuraOutput&) = delete;
+  AuraOutput& operator=(const AuraOutput&) = delete;
 
   // Overridden from WaylandDisplayObserver:
   bool SendDisplayMetrics(const display::Display& display,
@@ -658,8 +683,6 @@ class AuraOutput : public WaylandDisplayObserver {
 
  private:
   wl_resource* const resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuraOutput);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -679,7 +702,7 @@ const uint32_t kFixedBugIds[] = {
 class WaylandAuraShell : public ash::DesksController::Observer,
                          public ash::TabletModeObserver {
  public:
-  explicit WaylandAuraShell(wl_resource* aura_shell_resource)
+  WaylandAuraShell(wl_resource* aura_shell_resource, Display* display)
       : aura_shell_resource_(aura_shell_resource) {
     WMHelperChromeOS* helper = WMHelperChromeOS::GetInstance();
     helper->AddTabletModeObserver(this);
@@ -697,6 +720,9 @@ class WaylandAuraShell : public ash::DesksController::Observer,
         zaura_shell_send_bug_fix(aura_shell_resource_, bug_id);
       }
     }
+    display->seat()->SetFocusChangedCallback(
+        base::BindRepeating(&WaylandAuraShell::FocusedSurfaceChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     OnDesksChanged();
     OnDeskActivationChanged();
@@ -773,8 +799,34 @@ class WaylandAuraShell : public ash::DesksController::Observer,
         ash::DesksController::Get()->GetActiveDeskIndex());
   }
 
+  void FocusedSurfaceChanged(Surface* gained_active_surface,
+                             Surface* lost_active_surface,
+                             bool has_focused_client) {
+    if (wl_resource_get_version(aura_shell_resource_) <
+        ZAURA_SHELL_ACTIVATED_SINCE_VERSION)
+      return;
+    if (gained_active_surface == lost_active_surface)
+      return;
+
+    wl_resource* gained_active_surface_resource =
+        gained_active_surface ? GetSurfaceResource(gained_active_surface)
+                              : nullptr;
+    wl_resource* lost_active_surface_resource =
+        lost_active_surface ? GetSurfaceResource(lost_active_surface) : nullptr;
+
+    wl_client* client = wl_resource_get_client(aura_shell_resource_);
+
+    zaura_shell_send_activated(aura_shell_resource_,
+                               gained_active_surface_resource,
+                               lost_active_surface_resource);
+
+    wl_client_flush(client);
+  }
+
   // The aura shell resource associated with observer.
   wl_resource* const aura_shell_resource_;
+
+  base::WeakPtrFactory<WaylandAuraShell> weak_ptr_factory_{this};
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH))
 
@@ -815,7 +867,9 @@ void aura_shell_get_aura_output(wl_client* client,
 }
 
 const struct zaura_shell_interface aura_shell_implementation = {
-    aura_shell_get_aura_surface, aura_shell_get_aura_output};
+    aura_shell_get_aura_surface,
+    aura_shell_get_aura_output,
+};
 
 }  // namespace
 
@@ -828,8 +882,9 @@ void bind_aura_shell(wl_client* client,
                          std::min(version, kZAuraShellVersion), id);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  Display* display = static_cast<Display*>(data);
   SetImplementation(resource, &aura_shell_implementation,
-                    std::make_unique<WaylandAuraShell>(resource));
+                    std::make_unique<WaylandAuraShell>(resource, display));
 #else
   wl_resource_set_implementation(resource, &aura_shell_implementation, nullptr,
                                  nullptr);

@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {AppManagementUserAction} from './constants.m.js';
-// #import {recordAppManagementUserAction} from './util.m.js';
-// clang-format on
+import './shared_style.js';
+import '//resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+
+import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {BrowserProxy} from './browser_proxy.js';
+import {AppManagementUserAction} from './constants.js';
+import {recordAppManagementUserAction} from './util.js';
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'app-management-more-permissions-item',
 
   properties: {
@@ -20,9 +25,8 @@ Polymer({
   },
 
   onClick_() {
-    app_management.BrowserProxy.getInstance().handler.openNativeSettings(
-        this.app.id);
-    app_management.util.recordAppManagementUserAction(
+    BrowserProxy.getInstance().handler.openNativeSettings(this.app.id);
+    recordAppManagementUserAction(
         this.app.type, AppManagementUserAction.NativeSettingsOpened);
   },
 });

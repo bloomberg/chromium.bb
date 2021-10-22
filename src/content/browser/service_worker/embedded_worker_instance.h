@@ -126,6 +126,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   };
 
   explicit EmbeddedWorkerInstance(ServiceWorkerVersion* owner_version);
+
+  EmbeddedWorkerInstance(const EmbeddedWorkerInstance&) = delete;
+  EmbeddedWorkerInstance& operator=(const EmbeddedWorkerInstance&) = delete;
+
   ~EmbeddedWorkerInstance() override;
 
   // Starts the worker. It is invalid to call this when the worker is not in
@@ -175,11 +179,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   void SetDevToolsAttached(bool attached);
   bool devtools_attached() const { return devtools_attached_; }
-
-  // Ensures that the UMA for how long this worker ran for, normally emitted
-  // when the worker stops, is not emitted. Takes effect only for the current
-  // running session, and has no effect if the worker is not currently running.
-  void AbortLifetimeTracking();
 
   bool network_accessed_for_script() const {
     return network_accessed_for_script_;
@@ -263,7 +262,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
-  class ScopedLifetimeTracker;
   struct StartInfo;
   class WorkerProcessHandle;
   friend class EmbeddedWorkerInstanceTest;
@@ -366,7 +364,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Contains info to be recorded on completing StartWorker sequence.
   // Set on Start() and cleared on OnStarted().
   std::unique_ptr<StartInfo> inflight_start_info_;
-  std::unique_ptr<ScopedLifetimeTracker> lifetime_tracker_;
 
   // This is valid only after a process is allocated for the worker.
   ServiceWorkerMetrics::StartSituation start_situation_ =
@@ -402,8 +399,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   absl::optional<blink::ServiceWorkerToken> token_;
 
   base::WeakPtrFactory<EmbeddedWorkerInstance> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstance);
 };
 
 }  // namespace content

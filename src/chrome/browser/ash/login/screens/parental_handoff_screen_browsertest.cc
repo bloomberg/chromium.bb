@@ -84,7 +84,7 @@ class ParentalHandoffScreenBrowserTest : public OobeBaseTest {
 
   ParentalHandoffScreen::ScreenExitCallback original_callback_;
 
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
 
   base::test::ScopedFeatureList feature_list_;
 
@@ -105,8 +105,6 @@ ParentalHandoffScreenBrowserTest::ParentalHandoffScreenBrowserTest() {
 }
 
 void ParentalHandoffScreenBrowserTest::SetUpOnMainThread() {
-  is_google_branded_build_ =
-      WizardController::ForceBrandedBuildForTesting(true);
   assistant_is_enabled_ =
       AssistantOptInFlowScreen::ForceLibAssistantEnabledForTesting(false);
   ParentalHandoffScreen* screen = GetParentalHandoffScreen();
@@ -115,6 +113,7 @@ void ParentalHandoffScreenBrowserTest::SetUpOnMainThread() {
       base::BindRepeating(&ParentalHandoffScreenBrowserTest::HandleScreenExit,
                           base::Unretained(this)));
   OobeBaseTest::SetUpOnMainThread();
+  LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
 }
 
 void ParentalHandoffScreenBrowserTest::WaitForScreenExit() {

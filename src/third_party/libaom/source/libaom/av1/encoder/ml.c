@@ -16,7 +16,7 @@
 #include "av1/encoder/ml.h"
 
 void av1_nn_output_prec_reduce(float *const output, int num_output) {
-  const int prec_bits = 11;
+  const int prec_bits = 9;
   const int prec = 1 << prec_bits;
   const float inv_prec = (float)(1.0 / prec);
   for (int i = 0; i < num_output; i++) {

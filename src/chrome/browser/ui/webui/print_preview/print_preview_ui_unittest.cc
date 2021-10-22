@@ -49,6 +49,10 @@ bool IsShowingWebContentsModalDialog(WebContents* tab) {
 class PrintPreviewUIUnitTest : public PrintPreviewTest {
  public:
   PrintPreviewUIUnitTest() {}
+
+  PrintPreviewUIUnitTest(const PrintPreviewUIUnitTest&) = delete;
+  PrintPreviewUIUnitTest& operator=(const PrintPreviewUIUnitTest&) = delete;
+
   ~PrintPreviewUIUnitTest() override {}
 
  protected:
@@ -57,9 +61,6 @@ class PrintPreviewUIUnitTest : public PrintPreviewTest {
 
     chrome::NewTab(browser());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrintPreviewUIUnitTest);
 };
 
 // Create/Get a preview tab for initiator.
@@ -209,19 +210,6 @@ TEST_F(PrintPreviewUIUnitTest, ShouldCancelRequest) {
       *preview_ui->GetIDForPrintPreviewUI(), kFirstRequestId));
   EXPECT_FALSE(PrintPreviewUI::ShouldCancelRequest(
       *preview_ui->GetIDForPrintPreviewUI(), kSecondRequestId));
-}
-
-TEST_F(PrintPreviewUIUnitTest, ParseDataPath) {
-  EXPECT_FALSE(
-      PrintPreviewUI::ParseDataPath("pdf/browser_api.js", nullptr, nullptr));
-  EXPECT_TRUE(PrintPreviewUI::ParseDataPath("1/2/print.pdf", nullptr, nullptr));
-
-  int ui_id = -1;
-  int page_index = -2;
-  EXPECT_TRUE(
-      PrintPreviewUI::ParseDataPath("3/4/print.pdf", &ui_id, &page_index));
-  EXPECT_EQ(ui_id, 3);
-  EXPECT_EQ(page_index, 4);
 }
 
 // Ensures that a failure cancels all pending actions.

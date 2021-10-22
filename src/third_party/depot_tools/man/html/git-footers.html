@@ -774,7 +774,7 @@ commit might look like:</p></div>
 </div></div>
 <div class="literalblock">
 <div class="content">
-<pre><code>Cr-Commit-Position: refs/heads/master@{#292272}
+<pre><code>Cr-Commit-Position: refs/heads/main@{#292272}
 Tech-Debt-Introduced: 17 nanoMSOffices</code></pre>
 </div></div>
 <div class="paragraph"><p><code>git footers</code> knows how to extract this information.</p></div>
@@ -810,7 +810,7 @@ case-normalized.</p></div>
 </p>
 <div class="literalblock">
 <div class="content">
-<pre><code>refs/heads/master@{#292272}
+<pre><code>refs/heads/main@{#292272}
 refs/branch-heads/branchname</code></pre>
 </div></div>
 </dd>
@@ -829,7 +829,7 @@ refs/branch-heads/branchname</code></pre>
 <dd>
 <p>
   Extracts and prints the Chrome commit position ref name only
-  (<code>ref/heads/master</code> or <code>refs/branch-heads/branchname</code> in the example above).
+  (<code>ref/heads/main</code> or <code>refs/branch-heads/branchname</code> in the example above).
 </p>
 </dd>
 </dl></div>
@@ -841,16 +841,16 @@ refs/branch-heads/branchname</code></pre>
 <div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git footers HEAD</span>
 Tech-Debt-Introduced: -4 microMSOffices
 Tech-Debt-Introduced: 17 microMSOffices
-Cr-Commit-Position: refs/heads/master@{#292272}
+Cr-Commit-Position: refs/heads/main@{#292272}
 <span style="font-weight: bold; color: #ffffff">$ git footers --key Tech-Debt-Introduced HEAD</span>
 -4 microMSOffices
 17 microMSOffices
 <span style="font-weight: bold; color: #ffffff">$ git footers --position HEAD</span>
-refs/heads/master@{#292272}
+refs/heads/main@{#292272}
 <span style="font-weight: bold; color: #ffffff">$ git footers --position-num HEAD</span>
 292272
 <span style="font-weight: bold; color: #ffffff">$ git footers --position-ref HEAD</span>
-refs/heads/master
+refs/heads/main
 </code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
@@ -873,7 +873,7 @@ by checking out the <a href="https://chromium.googlesource.com/chromium/tools/de
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2021-07-01 07:07:00 PDT
+ 2021-10-05 09:49:24 PDT
 </div>
 </div>
 </body>

@@ -48,7 +48,7 @@ using base::test::RunOnceClosure;
 using testing::_;
 using MountFailure = DriveFsHost::MountObserver::MountFailure;
 
-constexpr base::TimeDelta kTokenLifetime = base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kTokenLifetime = base::Hours(1);
 
 class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
                     public mojom::SearchQuery {
@@ -104,6 +104,10 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
       : identity_manager_(identity_manager),
         account_id_(account_id),
         drive_notification_manager_(&invalidation_service_) {}
+
+  TestingDriveFsHostDelegate(const TestingDriveFsHostDelegate&) = delete;
+  TestingDriveFsHostDelegate& operator=(const TestingDriveFsHostDelegate&) =
+      delete;
 
   ~TestingDriveFsHostDelegate() override {
     drive_notification_manager_.Shutdown();
@@ -179,8 +183,6 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
   invalidation::FakeInvalidationService invalidation_service_;
   drive::DriveNotificationManager drive_notification_manager_;
   drivefs::mojom::ExtensionConnectionParamsPtr extension_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingDriveFsHostDelegate);
 };
 
 class MockDriveFsHostObserver : public DriveFsHostObserver {
@@ -199,6 +201,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
             network::TestNetworkConnectionTracker::CreateInstance()) {
     clock_.SetNow(base::Time::Now());
   }
+
+  DriveFsHostTest(const DriveFsHostTest&) = delete;
+  DriveFsHostTest& operator=(const DriveFsHostTest&) = delete;
 
  protected:
   void SetUp() override {
@@ -342,9 +347,6 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   mojo::PendingReceiver<mojom::DriveFsDelegate> pending_delegate_receiver_;
   std::string token_;
   absl::optional<std::string> init_access_token_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DriveFsHostTest);
 };
 
 TEST_F(DriveFsHostTest, Basic) {
@@ -736,7 +738,7 @@ TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
       "auth token", clock_.Now() + kTokenLifetime);
   EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 
-  absl::optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  absl::optional<base::TimeDelta> delay = base::Seconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
@@ -772,7 +774,7 @@ TEST_F(DriveFsHostTest, Remount_RequestInflight) {
       base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
                                      const std::string& token) { FAIL(); }));
 
-  absl::optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  absl::optional<base::TimeDelta> delay = base::Seconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
@@ -797,7 +799,7 @@ TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
       base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
                                      const std::string& token) { FAIL(); }));
 
-  absl::optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  absl::optional<base::TimeDelta> delay = base::Seconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();

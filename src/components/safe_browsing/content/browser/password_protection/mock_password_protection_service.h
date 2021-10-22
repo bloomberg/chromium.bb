@@ -22,7 +22,13 @@ class MockPasswordProtectionService : public PasswordProtectionService {
       std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher,
       bool is_off_the_record,
       signin::IdentityManager* identity_manager,
-      bool try_token_fetch);
+      bool try_token_fetch,
+      SafeBrowsingMetricsCollector* metrics_collector);
+
+  MockPasswordProtectionService(const MockPasswordProtectionService&) = delete;
+  MockPasswordProtectionService& operator=(
+      const MockPasswordProtectionService&) = delete;
+
   ~MockPasswordProtectionService() override;
 
   // safe_browsing::PasswordProtectionService
@@ -44,7 +50,8 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_CONST_METHOD1(IsAccountGmail, bool(const std::string&));
   MOCK_CONST_METHOD1(IsURLAllowlistedForPasswordEntry, bool(const GURL&));
 
-  MOCK_METHOD1(FillUserPopulation, void(LoginReputationClientRequest*));
+  MOCK_METHOD2(FillUserPopulation,
+               void(const GURL&, LoginReputationClientRequest*));
   MOCK_METHOD0(CanSendSamplePing, bool());
   MOCK_METHOD0(IsIncognito, bool());
   MOCK_METHOD0(IsExtendedReporting, bool());
@@ -112,9 +119,6 @@ class MockPasswordProtectionService : public PasswordProtectionService {
            PasswordType,
            const std::vector<password_manager::MatchingReusedCredential>&,
            bool));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordProtectionService);
 };
 
 }  // namespace safe_browsing

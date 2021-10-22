@@ -34,6 +34,11 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "v8/include/v8-container.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 
 namespace extensions {
 
@@ -486,7 +491,8 @@ void ExtensionFrameHelper::ExecuteCode(mojom::ExecuteCodeParamsPtr param,
   // Sanity checks.
   if (param->injection->is_css()) {
     if (param->injection->get_css()->sources.empty()) {
-      mojo::ReportBadMessage("At least one CSS source must be specified.");
+      local_frame_receiver_.ReportBadMessage(
+          "At least one CSS source must be specified.");
       return;
     }
 
@@ -496,14 +502,15 @@ void ExtensionFrameHelper::ExecuteCode(mojom::ExecuteCodeParamsPtr param,
                               [](const mojom::CSSSourcePtr& source) {
                                 return source->key.has_value();
                               })) {
-      mojo::ReportBadMessage(
+      local_frame_receiver_.ReportBadMessage(
           "An injection key must be specified for CSS removal.");
       return;
     }
   } else {
     DCHECK(param->injection->is_js());  // Enforced by mojo.
     if (param->injection->get_js()->sources.empty()) {
-      mojo::ReportBadMessage("At least one JS source must be specified.");
+      local_frame_receiver_.ReportBadMessage(
+          "At least one JS source must be specified.");
       return;
     }
   }

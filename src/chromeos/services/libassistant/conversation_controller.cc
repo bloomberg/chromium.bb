@@ -29,8 +29,7 @@ using assistant::AssistantQuerySource;
 
 namespace {
 
-constexpr base::TimeDelta kStopInteractionDelayTime =
-    base::TimeDelta::FromMilliseconds(500);
+constexpr base::TimeDelta kStopInteractionDelayTime = base::Milliseconds(500);
 
 // A macro which ensures we are running on the main thread.
 #define ENSURE_MOJOM_THREAD(method, ...)                                    \
@@ -247,10 +246,9 @@ void ConversationController::AddAuthenticationStateObserver(
 
 void ConversationController::OnAssistantClientCreated(
     AssistantClient* assistant_client) {
-  // Registers ActionModule when AssistantManagerInternal has been created
-  // but not yet started.
-  assistant_client->assistant_manager_internal()->RegisterActionModule(
-      action_module_.get());
+  // Registers ActionModule when AssistantClient has been created but not yet
+  // started.
+  assistant_client->RegisterActionModule(action_module_.get());
 
   assistant_client->assistant_manager_internal()->SetAssistantManagerDelegate(
       assistant_manager_delegate_.get());
@@ -547,7 +545,7 @@ void ConversationController::OnScheduleWait(int id, int time_ms) {
             }
           },
           weak_factory_.GetWeakPtr(), id),
-      base::TimeDelta::FromMilliseconds(time_ms));
+      base::Milliseconds(time_ms));
 
   // Notify subscribers that a wait has been started.
   for (auto& observer : observers_)

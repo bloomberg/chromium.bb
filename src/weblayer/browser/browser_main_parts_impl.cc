@@ -16,8 +16,8 @@
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/captive_portal/core/buildflags.h"
+#include "components/performance_manager/embedder/graph_features.h"
 #include "components/performance_manager/embedder/performance_manager_lifetime.h"
-#include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/prefs/pref_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -75,10 +75,6 @@
 #include "weblayer/common/features.h"
 #endif
 
-#if defined(USE_AURA) && defined(USE_X11)
-#include "ui/base/ui_base_features.h"
-#include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
-#endif
 // TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
 // complete.
 #if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -194,13 +190,6 @@ int BrowserMainPartsImpl::PreCreateThreads() {
   return content::RESULT_CODE_NORMAL_EXIT;
 }
 
-void BrowserMainPartsImpl::PreCreateMainMessageLoop() {
-#if defined(USE_AURA) && defined(USE_X11)
-  if (!features::IsUsingOzonePlatform())
-    ui::TouchFactory::SetTouchDeviceListFromCommandLine();
-#endif
-}
-
 int BrowserMainPartsImpl::PreEarlyInitialization() {
   browser_process_ = std::make_unique<BrowserProcess>(std::move(local_state_));
 
@@ -222,7 +211,10 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
 void BrowserMainPartsImpl::PostCreateThreads() {
   performance_manager_lifetime_ =
       std::make_unique<performance_manager::PerformanceManagerLifetime>(
-          performance_manager::Decorators::kMinimal, base::DoNothing());
+          performance_manager::GraphFeatures::WithMinimal()
+              // Reports performance-related UMA/UKM.
+              .EnableMetricsCollector(),
+          base::DoNothing());
 
   translate::TranslateDownloadManager* download_manager =
       translate::TranslateDownloadManager::GetInstance();

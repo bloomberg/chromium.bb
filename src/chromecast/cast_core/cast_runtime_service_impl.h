@@ -9,7 +9,7 @@
 
 #include "chromecast/cast_core/cast_runtime_metrics_recorder.h"
 #include "chromecast/cast_core/cast_runtime_service.h"
-#include "chromecast/cast_core/runtime_service.h"
+#include "chromecast/cast_core/runtime_application_dispatcher.h"
 
 namespace content {
 class BrowserContext;
@@ -42,14 +42,8 @@ class CastRuntimeServiceImpl
   // CastRuntimeMetricsRecorder::EventBuilderFactory overrides.
   std::unique_ptr<CastEventBuilder> CreateEventBuilder() override;
 
-  NetworkContextGetter network_context_getter() {
-    return network_context_getter_;
-  }
-
  private:
-  NetworkContextGetter network_context_getter_;
-
-  RuntimeService runtime_service_;
+  RuntimeApplicationDispatcher app_dispatcher_;
 };
 
 }  // namespace chromecast

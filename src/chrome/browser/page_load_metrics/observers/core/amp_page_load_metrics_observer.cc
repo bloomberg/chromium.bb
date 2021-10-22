@@ -448,15 +448,13 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
             std::string(kHistogramPrefix)
                 .append(kHistogramAMPSubframeFirstInputDelay),
             subframe_info.timing->interactive_timing->first_input_delay.value(),
-            base::TimeDelta::FromMilliseconds(1),
-            base::TimeDelta::FromSeconds(60), 50);
+            base::Milliseconds(1), base::Seconds(60), 50);
       } else {
         UMA_HISTOGRAM_CUSTOM_TIMES(
             std::string(kHistogramPrefix)
                 .append(kHistogramAMPSubframeFirstInputDelayFullNavigation),
             subframe_info.timing->interactive_timing->first_input_delay.value(),
-            base::TimeDelta::FromMilliseconds(1),
-            base::TimeDelta::FromSeconds(60), 50);
+            base::Milliseconds(1), base::Seconds(60), 50);
       }
     }
   }
@@ -500,6 +498,12 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
           "Subframe.SessionWindow.Gap1000ms.Max5000ms",
           page_load_metrics::LayoutShiftUmaValue(
               normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls));
+      base::UmaHistogramCustomCounts(
+          "PageLoad.Clients.AMP.LayoutInstability.MaxCumulativeShiftScore."
+          "Subframe.SessionWindow.Gap1000ms.Max5000ms2",
+          page_load_metrics::LayoutShiftUmaValue10000(
+              normalized_cls_data.session_windows_gap1000ms_max5000ms_max_cls),
+          1, 24000, 50);
     }
     RecordMobileFriendliness(builder);
   } else {
@@ -518,17 +522,6 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
   }
 
   builder.Record(ukm::UkmRecorder::Get());
-}
-
-static constexpr int ViewportStatusToInt(blink::mojom::ViewportStatus status) {
-  switch (status) {
-    case blink::mojom::ViewportStatus::kYes:
-      return 1;
-    case blink::mojom::ViewportStatus::kNo:
-      return 0;
-    case blink::mojom::ViewportStatus::kUnknown:
-      return -1;
-  }
 }
 
 void AMPPageLoadMetricsObserver::RecordMobileFriendliness(
@@ -551,9 +544,8 @@ void AMPPageLoadMetricsObserver::RecordMobileFriendliness(
     return;
 
   builder.SetSubFrame_MobileFriendliness_ViewportDeviceWidth(
-      ViewportStatusToInt(mf.viewport_device_width));
-  builder.SetSubFrame_MobileFriendliness_AllowUserZoom(
-      ViewportStatusToInt(mf.allow_user_zoom));
+      mf.viewport_device_width);
+  builder.SetSubFrame_MobileFriendliness_AllowUserZoom(mf.allow_user_zoom);
   builder.SetSubFrame_MobileFriendliness_SmallTextRatio(mf.small_text_ratio);
   builder.SetSubFrame_MobileFriendliness_ViewportInitialScaleX10(
       page_load_metrics::GetBucketedViewportInitialScale(mf));

@@ -28,6 +28,10 @@ class VisitDatabase {
   // Must call InitVisitTable() before using to make sure the database is
   // initialized.
   VisitDatabase();
+
+  VisitDatabase(const VisitDatabase&) = delete;
+  VisitDatabase& operator=(const VisitDatabase&) = delete;
+
   virtual ~VisitDatabase();
 
   // Deletes the visit table. Used for rapidly clearing all visits. In this
@@ -217,8 +221,9 @@ class VisitDatabase {
   // Get the time of the first item in our database.
   bool GetStartDate(base::Time* first_visit);
 
-  // Get the source information about the given visits.
+  // Get the source information about the given visit(s).
   void GetVisitsSource(const VisitVector& visits, VisitSourceMap* sources);
+  VisitSource GetVisitSource(const VisitID visit_id);
 
   // Returns the list of Google domain visits of the user based on the Google
   // searches issued in the specified time interval.
@@ -276,9 +281,6 @@ class VisitDatabase {
   // A subprocedure in the process of migration to version 40.
   bool GetAllVisitedURLRowidsForMigrationToVersion40(
       std::vector<URLID>* visited_url_rowids_sorted);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
 };
 
 // Columns, in order, of the visit table.

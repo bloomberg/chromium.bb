@@ -917,6 +917,12 @@ void PrefetchProxyTabHelper::OnPrefetchComplete(
     }
 
     // Do nothing with the response, i.e.: don't cache it.
+
+    // Cancels the current request.
+    DCHECK(page_->url_loaders_.find(loader) != page_->url_loaders_.end());
+    page_->url_loaders_.erase(page_->url_loaders_.find(loader));
+
+    Prefetch();
     return;
   }
 
@@ -970,9 +976,8 @@ void PrefetchProxyTabHelper::HandlePrefetchResponse(
   absl::optional<base::TimeDelta> total_time = GetTotalPrefetchTime(head.get());
   if (total_time) {
     UMA_HISTOGRAM_CUSTOM_TIMES("PrefetchProxy.Prefetch.Mainframe.TotalTime",
-                               *total_time,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromSeconds(30), 100);
+                               *total_time, base::Milliseconds(10),
+                               base::Seconds(30), 100);
   }
 
   absl::optional<base::TimeDelta> connect_time =
@@ -1424,7 +1429,7 @@ void PrefetchProxyTabHelper::CheckEligibilityOfURL(
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   options.set_return_excluded_cookies();
   default_storage_partition->GetCookieManagerForBrowserProcess()->GetCookieList(
-      url, options,
+      url, options, net::CookiePartitionKeychain::Todo(),
       base::BindOnce(&OnGotCookieList, url, std::move(result_callback)));
 }
 
@@ -1530,7 +1535,7 @@ void PrefetchProxyTabHelper::CopyIsolatedCookiesOnAfterSRPClick(
 
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   page_->isolated_cookie_manager_->GetCookieList(
-      url, options,
+      url, options, net::CookiePartitionKeychain::Todo(),
       base::BindOnce(
           &PrefetchProxyTabHelper::OnGotIsolatedCookiesToCopyAfterSRPClick,
           weak_factory_.GetWeakPtr(), url));
@@ -1612,7 +1617,6 @@ void PrefetchProxyTabHelper::CreateIsolatedURLLoaderFactory() {
       PrefetchProxyServiceFactory::GetForProfile(profile_);
 
   auto context_params = network::mojom::NetworkContextParams::New();
-  context_params->context_name = "prefetch_proxy";
   context_params->user_agent = content::GetReducedUserAgent(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMobileUserAgent),
@@ -1670,4 +1674,4 @@ void PrefetchProxyTabHelper::CreateIsolatedURLLoaderFactory() {
           std::move(isolated_factory_remote)));
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefetchProxyTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PrefetchProxyTabHelper);

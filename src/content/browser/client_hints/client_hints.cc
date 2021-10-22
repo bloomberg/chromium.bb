@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
@@ -22,7 +23,9 @@
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/client_hints_controller_delegate.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -47,6 +50,7 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -91,9 +95,8 @@ unsigned long RoundRtt(const std::string& host,
 
   // Limit the maximum reported value and the granularity to reduce
   // fingerprinting.
-  constexpr base::TimeDelta kMaxRtt = base::TimeDelta::FromSeconds(3);
-  constexpr base::TimeDelta kGranularity =
-      base::TimeDelta::FromMilliseconds(50);
+  constexpr base::TimeDelta kMaxRtt = base::Seconds(3);
+  constexpr base::TimeDelta kGranularity = base::Milliseconds(50);
 
   const base::TimeDelta modified_rtt =
       std::min(rtt.value() * GetRandomMultiplier(host), kMaxRtt);
@@ -138,10 +141,12 @@ double GetDeviceScaleFactor() {
 
 // Returns the zoom factor for a given |url|.
 double GetZoomFactor(BrowserContext* context, const GURL& url) {
-// Android does not have the concept of zooming in like desktop.
 #if defined(OS_ANDROID)
-  return 1.0;
-#else
+  // On Android, use the default value when the AccessibilityPageZoom
+  // feature is not enabled.
+  if (!base::FeatureList::IsEnabled(features::kAccessibilityPageZoom))
+    return 1.0;
+#endif
 
   double zoom_level = HostZoomMap::GetDefaultForBrowserContext(context)
                           ->GetZoomLevelForHostAndScheme(
@@ -154,7 +159,6 @@ double GetZoomFactor(BrowserContext* context, const GURL& url) {
   }
 
   return blink::PageZoomLevelToZoomFactor(zoom_level);
-#endif
 }
 
 // Returns a string corresponding to |value|. The returned string satisfies
@@ -205,75 +209,94 @@ GetWebHoldbackEffectiveConnectionType() {
 void SetHeaderToDouble(net::HttpRequestHeaders* headers,
                        WebClientHintsType client_hint_type,
                        double value) {
-  headers->SetHeader(
-      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)],
-      DoubleToSpecCompliantString(value));
+  headers->SetHeader(network::GetClientHintToNameMap().at(client_hint_type),
+                     DoubleToSpecCompliantString(value));
 }
 
 void SetHeaderToInt(net::HttpRequestHeaders* headers,
                     WebClientHintsType client_hint_type,
                     double value) {
-  headers->SetHeader(
-      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)],
-      base::NumberToString(std::round(value)));
+  headers->SetHeader(network::GetClientHintToNameMap().at(client_hint_type),
+                     base::NumberToString(std::round(value)));
 }
 
 void SetHeaderToString(net::HttpRequestHeaders* headers,
                        WebClientHintsType client_hint_type,
                        const std::string& value) {
-  headers->SetHeader(
-      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)],
-      value);
+  headers->SetHeader(network::GetClientHintToNameMap().at(client_hint_type),
+                     value);
 }
 
 void RemoveClientHintHeader(WebClientHintsType client_hint_type,
                             net::HttpRequestHeaders* headers) {
-  headers->RemoveHeader(
-      network::kClientHintsNameMapping[static_cast<int>(client_hint_type)]);
+  headers->RemoveHeader(network::GetClientHintToNameMap().at(client_hint_type));
 }
 
-void AddDeviceMemoryHeader(net::HttpRequestHeaders* headers) {
+void AddDeviceMemoryHeader(net::HttpRequestHeaders* headers,
+                           bool use_deprecated_version = false) {
   DCHECK(headers);
   blink::ApproximatedDeviceMemory::Initialize();
   const float device_memory =
       blink::ApproximatedDeviceMemory::GetApproximatedDeviceMemory();
   DCHECK_LT(0.0, device_memory);
-  SetHeaderToDouble(headers, WebClientHintsType::kDeviceMemory_DEPRECATED,
+  SetHeaderToDouble(headers,
+                    use_deprecated_version
+                        ? WebClientHintsType::kDeviceMemory_DEPRECATED
+                        : WebClientHintsType::kDeviceMemory,
                     device_memory);
 }
 
 void AddDPRHeader(net::HttpRequestHeaders* headers,
                   BrowserContext* context,
-                  const GURL& url) {
+                  const GURL& url,
+                  bool use_deprecated_version = false) {
   DCHECK(headers);
   DCHECK(context);
   double device_scale_factor = GetDeviceScaleFactor();
   double zoom_factor = GetZoomFactor(context, url);
-  SetHeaderToDouble(headers, WebClientHintsType::kDpr_DEPRECATED,
+  SetHeaderToDouble(headers,
+                    use_deprecated_version ? WebClientHintsType::kDpr_DEPRECATED
+                                           : WebClientHintsType::kDpr,
                     device_scale_factor * zoom_factor);
 }
 
 void AddViewportWidthHeader(net::HttpRequestHeaders* headers,
                             BrowserContext* context,
-                            const GURL& url) {
+                            const GURL& url,
+                            bool use_deprecated_version = false) {
   DCHECK(headers);
   DCHECK(context);
   // The default value on Android. See
   // https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/viewportAndroid.css.
   double viewport_width = 980;
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  // On Android, use the default value when the AccessibilityPageZoom
+  // feature is not enabled.
+  if (!base::FeatureList::IsEnabled(features::kAccessibilityPageZoom)) {
+    SetHeaderToInt(headers,
+                   use_deprecated_version
+                       ? WebClientHintsType::kViewportWidth_DEPRECATED
+                       : WebClientHintsType::kViewportWidth,
+                   viewport_width);
+    return;
+  }
+#endif
+
   double device_scale_factor = GetDeviceScaleFactor();
   viewport_width = (display::Screen::GetScreen()
                         ->GetPrimaryDisplay()
                         .GetSizeInPixel()
                         .width()) /
                    GetZoomFactor(context, url) / device_scale_factor;
-#endif  // !OS_ANDROID
   DCHECK_LT(0, viewport_width);
   // TODO(yoav): Find out why this 0 check is needed...
   if (viewport_width > 0) {
-    SetHeaderToInt(headers, WebClientHintsType::kViewportWidth_DEPRECATED, viewport_width);
+    SetHeaderToInt(headers,
+                   use_deprecated_version
+                       ? WebClientHintsType::kViewportWidth_DEPRECATED
+                       : WebClientHintsType::kViewportWidth,
+                   viewport_width);
   }
 }
 
@@ -283,11 +306,25 @@ void AddViewportHeightHeader(net::HttpRequestHeaders* headers,
   DCHECK(headers);
   DCHECK(context);
 
+  double overall_scale_factor =
+      GetZoomFactor(context, url) * GetDeviceScaleFactor();
   double viewport_height = (display::Screen::GetScreen()
                                 ->GetPrimaryDisplay()
                                 .GetSizeInPixel()
                                 .height()) /
-                           GetZoomFactor(context, url) / GetDeviceScaleFactor();
+                           overall_scale_factor;
+#if defined(OS_ANDROID)
+  // On Android, the viewport is scaled so the width is 980 and the height
+  // maintains the same ratio.
+  // TODO(1246208): Improve the usefulness of the viewport client hints for
+  // navigation requests.
+  double viewport_width = (display::Screen::GetScreen()
+                               ->GetPrimaryDisplay()
+                               .GetSizeInPixel()
+                               .width()) /
+                          overall_scale_factor;
+  viewport_height *= 980.0 / viewport_width;
+#endif  // OS_ANDROID
 
   DCHECK_LT(0, viewport_height);
 
@@ -371,13 +408,6 @@ void AddEctHeader(net::HttpRequestHeaders* headers,
       blink::kWebEffectiveConnectionTypeMapping[effective_connection_type]);
 }
 
-void AddLangHeader(net::HttpRequestHeaders* headers, BrowserContext* context) {
-  SetHeaderToString(
-      headers, WebClientHintsType::kLang,
-      blink::SerializeLangClientHint(
-          GetContentClient()->browser()->GetAcceptLangs(context)));
-}
-
 void AddPrefersColorSchemeHeader(net::HttpRequestHeaders* headers,
                                  FrameTreeNode* frame_tree_node) {
   if (!frame_tree_node)
@@ -424,6 +454,83 @@ bool IsPermissionsPolicyForClientHintsEnabled() {
   return base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints);
 }
 
+bool IsSameOrigin(const GURL& url1, const GURL& url2) {
+  return url::Origin::Create(url1).IsSameOriginWith(url::Origin::Create(url2));
+}
+
+// Returns true iff the `url` is embedded inside a frame that has the
+// Sec-CH-UA-Reduced client hint and thus, is enrolled in the
+// UserAgentReduction Origin Trial.
+//
+// TODO(crbug.com/1258063): Remove when the UserAgentReduction Origin Trial is
+// finished.
+bool IsUserAgentReductionEnabledForEmbeddedFrame(
+    const GURL& url,
+    const GURL& main_frame_url,
+    FrameTreeNode* frame_tree_node,
+    ClientHintsControllerDelegate* delegate) {
+  bool is_embedder_ua_reduced = false;
+  RenderFrameHostImpl* current = frame_tree_node->current_frame_host();
+  while (current) {
+    const GURL& current_url = (current == frame_tree_node->current_frame_host())
+                                  ? url
+                                  : current->GetLastCommittedURL();
+
+    // Don't use Sec-CH-UA-Reduced from third-party origins if third-party
+    // cookies are blocked, so that we don't reveal any more user data than
+    // is allowed by the cookie settings.
+    if (IsSameOrigin(current_url, main_frame_url) ||
+        !delegate->AreThirdPartyCookiesBlocked(current_url)) {
+      blink::EnabledClientHints current_url_hints;
+      delegate->GetAllowedClientHintsFromSource(current_url,
+                                                &current_url_hints);
+      if ((is_embedder_ua_reduced =
+               base::Contains(current_url_hints.GetEnabledHints(),
+                              WebClientHintsType::kUAReduced))) {
+        break;
+      }
+    }
+
+    current = current->GetParent();
+  }
+  return is_embedder_ua_reduced;
+}
+
+// TODO(crbug.com/1258063): Delete this function when the UserAgentReduction
+// Origin Trial is finished.
+void RemoveAllClientHintsExceptUaReduced(
+    const GURL& url,
+    FrameTreeNode* frame_tree_node,
+    ClientHintsControllerDelegate* delegate,
+    std::vector<WebClientHintsType>* accept_ch,
+    GURL* main_frame_url,
+    GURL const** third_party_url) {
+  const url::Origin request_origin = url::Origin::Create(url);
+  RenderFrameHostImpl* main_frame =
+      frame_tree_node->frame_tree()->GetMainFrame();
+
+  for (auto it = accept_ch->begin(); it != accept_ch->end();) {
+    if (*it == WebClientHintsType::kUAReduced) {
+      ++it;
+    } else {
+      it = accept_ch->erase(it);
+    }
+  }
+
+  if (!request_origin.IsSameOriginWith(main_frame->GetLastCommittedOrigin())) {
+    // If third-party cookeis are blocked, we will not persist the
+    // Sec-CH-UA-Reduced client hint in a third-party context.
+    if (delegate->AreThirdPartyCookiesBlocked(url)) {
+      accept_ch->clear();
+      return;
+    }
+    // Third-party contexts need the correct main frame URL and third-party
+    // URL in order to validate the Origin Trial token correctly, if present.
+    *main_frame_url = main_frame->GetLastCommittedURL();
+    *third_party_url = &url;
+  }
+}
+
 // Captures the state used in applying client hints.
 struct ClientHintsExtendedData {
   ClientHintsExtendedData(const GURL& url,
@@ -450,9 +557,26 @@ struct ClientHintsExtendedData {
     }
 
     delegate->GetAllowedClientHintsFromSource(main_frame_url, &hints);
+
+    // If this is not a top-level frame, then check if any of the ancestors
+    // in the path that led to this request have Sec-CH-UA-Reduced set.
+    // TODO(crbug.com/1258063): Remove once the UserAgentReduction Origin Trial
+    // is finished.
+    if (frame_tree_node && !is_main_frame) {
+      is_embedder_ua_reduced = IsUserAgentReductionEnabledForEmbeddedFrame(
+          url, main_frame_url, frame_tree_node, delegate);
+    }
   }
 
   blink::EnabledClientHints hints;
+  // If true, one of the ancestor requests in the path to this request had
+  // Sec-CH-UA-Reduced in their Accept-CH cache.  Only applies to embedded
+  // requests (top-level requests will always set this to false).
+  //
+  // If an embedder of a request has Sec-CH-UA-Reduced, it means it will
+  // receive the reduced User-Agent header, so we want to also send the reduced
+  // User-Agent for the embedded request as well.
+  bool is_embedder_ua_reduced = false;
   url::Origin resource_origin;
   bool is_main_frame = false;
   GURL main_frame_url;
@@ -464,16 +588,18 @@ bool IsClientHintAllowed(const ClientHintsExtendedData& data,
                          WebClientHintsType type) {
   if (!IsPermissionsPolicyForClientHintsEnabled() || data.is_main_frame)
     return data.is_1p_origin;
-  return data.permissions_policy &&
-         data.permissions_policy->IsFeatureEnabledForOrigin(
-             blink::kClientHintsPermissionsPolicyMapping[static_cast<int>(
-                 type)],
-             data.resource_origin);
+  return (data.is_embedder_ua_reduced &&
+          type == WebClientHintsType::kUAReduced) ||
+         (data.permissions_policy &&
+          data.permissions_policy->IsFeatureEnabledForOrigin(
+              blink::GetClientHintToPolicyFeatureMap().at(type),
+              data.resource_origin));
 }
 
 bool ShouldAddClientHint(const ClientHintsExtendedData& data,
                          WebClientHintsType type) {
-  if (!blink::IsClientHintSentByDefault(type) && !data.hints.IsEnabled(type))
+  if (!blink::IsClientHintSentByDefault(type) && !data.hints.IsEnabled(type) &&
+      !data.is_embedder_ua_reduced)
     return false;
   return IsClientHintAllowed(data, type);
 }
@@ -654,12 +780,22 @@ void AddRequestClientHintsHeaders(
 
   // Add Headers
   if (ShouldAddClientHint(data, WebClientHintsType::kDeviceMemory_DEPRECATED)) {
+    AddDeviceMemoryHeader(headers, /*use_deprecated_version*/ true);
+  }
+  if (ShouldAddClientHint(data, WebClientHintsType::kDeviceMemory)) {
     AddDeviceMemoryHeader(headers);
   }
   if (ShouldAddClientHint(data, WebClientHintsType::kDpr_DEPRECATED)) {
+    AddDPRHeader(headers, context, url, /*use_deprecated_version*/ true);
+  }
+  if (ShouldAddClientHint(data, WebClientHintsType::kDpr)) {
     AddDPRHeader(headers, context, url);
   }
   if (ShouldAddClientHint(data, WebClientHintsType::kViewportWidth_DEPRECATED)) {
+    AddViewportWidthHeader(headers, context, url,
+                           /*use_deprecated_version*/ true);
+  }
+  if (ShouldAddClientHint(data, WebClientHintsType::kViewportWidth)) {
     AddViewportWidthHeader(headers, context, url);
   }
   if (ShouldAddClientHint(
@@ -677,9 +813,6 @@ void AddRequestClientHintsHeaders(
   if (ShouldAddClientHint(data, WebClientHintsType::kEct_DEPRECATED)) {
     AddEctHeader(headers, network_quality_tracker, url);
   }
-  if (ShouldAddClientHint(data, WebClientHintsType::kLang)) {
-    AddLangHeader(headers, context);
-  }
 
   if (UserAgentClientHintEnabled()) {
     UpdateNavigationRequestClientUaHeadersImpl(
@@ -696,7 +829,7 @@ void AddRequestClientHintsHeaders(
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      network::mojom::WebClientHintsType::kViewportHeight ==
+      network::mojom::WebClientHintsType::kViewportWidth ==
           network::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 
@@ -786,13 +919,34 @@ ParseAndPersistAcceptCHForNavigation(
     return absl::nullopt;
   }
 
-  // Only the main frame should parse accept-CH.
-  if (!frame_tree_node->IsMainFrame())
-    return absl::nullopt;
+  std::vector<WebClientHintsType> accept_ch = parsed_headers->accept_ch.value();
+  GURL main_frame_url = url;
+  GURL const* third_party_url = nullptr;
+  // Only the main frame should parse accept-CH, except for the temporary
+  // Sec-CH-UA-Reduced client hint (used for the User-Agent reduction origin
+  // trial).
+  //
+  // Note that if Sec-CH-UA-Reduced is persisted for an embedded frame, it
+  // means a subsequent top-level navigation will read Sec-CH-UA-Reduced from
+  // the Accept-CH cache and send a reduced User-Agent string.
+  //
+  // TODO(crbug.com/1258063): Delete this call when the UserAgentReduction
+  // Origin Trial is finished.
+  if (!frame_tree_node->IsMainFrame()) {
+    RemoveAllClientHintsExceptUaReduced(url, frame_tree_node, delegate,
+                                        &accept_ch, &main_frame_url,
+                                        &third_party_url);
+    if (accept_ch.empty()) {
+      // There are is no Sec-CH-UA-Reduced in Accept-CH for the embedded frame,
+      // so nothing should be persisted.
+      return absl::nullopt;
+    }
+  }
 
   blink::EnabledClientHints enabled_hints;
-  for (const WebClientHintsType type : parsed_headers->accept_ch.value()) {
-    enabled_hints.SetIsEnabled(url, response_headers, type, true);
+  for (const WebClientHintsType type : accept_ch) {
+    enabled_hints.SetIsEnabled(main_frame_url, third_party_url,
+                               response_headers, type, true);
   }
 
   const std::vector<WebClientHintsType> persisted_hints =
@@ -820,9 +974,8 @@ void PersistAcceptCH(const GURL& url,
   // base::TimeDelta::Max cannot be used. As this will be removed once the
   // FeaturePolicyForClientHints feature is shipped, a reasonably large value
   // was chosen instead.
-  base::TimeDelta duration = use_persist_duration
-                                 ? *persist_duration
-                                 : base::TimeDelta::FromDays(1000000);
+  base::TimeDelta duration =
+      use_persist_duration ? *persist_duration : base::Days(1000000);
 
   delegate->PersistClientHints(url::Origin::Create(url), hints,
                                std::move(duration));
@@ -838,7 +991,12 @@ CONTENT_EXPORT std::vector<WebClientHintsType> LookupAcceptCHForCommit(
   }
 
   const ClientHintsExtendedData data(url, frame_tree_node, delegate);
-  return data.hints.GetEnabledHints();
+  std::vector<WebClientHintsType> hints = data.hints.GetEnabledHints();
+  if (data.is_embedder_ua_reduced &&
+      !base::Contains(hints, WebClientHintsType::kUAReduced)) {
+    hints.push_back(WebClientHintsType::kUAReduced);
+  }
+  return hints;
 }
 
 bool AreCriticalHintsMissing(

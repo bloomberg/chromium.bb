@@ -68,7 +68,7 @@ class FakeFileHandlingExpiryService
     : public blink::mojom::FileHandlingExpiryInterceptorForTesting {
  public:
   FakeFileHandlingExpiryService()
-      : expiry_time_(base::Time::Now() + base::TimeDelta::FromDays(1)) {}
+      : expiry_time_(base::Time::Now() + base::Days(1)) {}
 
   blink::mojom::FileHandlingExpiry* GetForwardingInterface() override {
     NOTREACHED();
@@ -314,6 +314,22 @@ class WebAppFileHandlingBrowserTest : public WebAppFileHandlingTestBase {
   content::WebContents* web_contents_ = nullptr;
   std::unique_ptr<content::WebContentsDestroyedWatcher> destroyed_watcher_;
 };
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest, ManifestFields) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL app_url(
+      embedded_test_server()->GetURL("/web_app_file_handling/basic_app.html"));
+  const AppId app_id = InstallWebAppFromManifest(browser(), app_url);
+  auto* provider = WebAppProvider::GetForTest(browser()->profile());
+  const WebApp* web_app = provider->registrar().GetAppById(app_id);
+  ASSERT_TRUE(web_app);
+
+  ASSERT_EQ(1U, web_app->file_handlers().size());
+  EXPECT_EQ(embedded_test_server()->GetURL(
+                "/web_app_file_handling/icons_app_load.html"),
+            web_app->file_handlers()[0].action);
+  EXPECT_EQ(u"Plain Text!", web_app->file_handlers()[0].display_name);
+}
 
 IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                        LaunchConsumerIsNotTriggeredWithNoFiles) {
@@ -809,8 +825,9 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingOriginTrialBrowserTest,
 }
 
 // Part 2: Test that expired file handlers for an app are cleaned up.
+// Disabled due to flakiness. http://crbug.com/1249357
 IN_PROC_BROWSER_TEST_F(WebAppFileHandlingOriginTrialBrowserTest,
-                       ExpiredTrialHandlersAreCleanedUpAtLaunch) {
+                       DISABLED_ExpiredTrialHandlersAreCleanedUpAtLaunch) {
   EXPECT_EQ(1, file_handler_manager().TriggerFileHandlerCleanupForTesting());
 }
 
@@ -1184,10 +1201,11 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingIconBrowserTest, Basic) {
 
   ASSERT_EQ(1U, web_app->file_handlers().size());
   if (WebAppFileHandlerManager::IconsEnabled()) {
-    ASSERT_EQ(1U, web_app->file_handlers()[0].icons.size());
-    EXPECT_EQ(20, web_app->file_handlers()[0].icons[0].square_size_px);
+    ASSERT_EQ(1U, web_app->file_handlers()[0].downloaded_icons.size());
+    EXPECT_EQ(20,
+              web_app->file_handlers()[0].downloaded_icons[0].square_size_px);
   } else {
-    EXPECT_TRUE(web_app->file_handlers()[0].icons.empty());
+    EXPECT_TRUE(web_app->file_handlers()[0].downloaded_icons.empty());
   }
 }
 

@@ -25,9 +25,9 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/mojom/delegated_ink_point_renderer.mojom.h"
-#include "ui/gfx/transform.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -79,6 +79,12 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
       public viz::HitTestRegionObserver {
  public:
   RenderWidgetHostInputEventRouter();
+
+  RenderWidgetHostInputEventRouter(const RenderWidgetHostInputEventRouter&) =
+      delete;
+  RenderWidgetHostInputEventRouter& operator=(
+      const RenderWidgetHostInputEventRouter&) = delete;
+
   ~RenderWidgetHostInputEventRouter() final;
 
   void OnRenderWidgetHostViewBaseDestroyed(
@@ -459,8 +465,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter final
 
   base::WeakPtrFactory<RenderWidgetHostInputEventRouter> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouter);
   friend class RenderWidgetHostInputEventRouterTest;
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessHitTestBrowserTest,
                            CacheCoordinateTransformUponMouseDown);

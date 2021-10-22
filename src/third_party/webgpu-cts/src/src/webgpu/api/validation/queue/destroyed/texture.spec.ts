@@ -2,7 +2,7 @@ export const description = `
 Tests using a destroyed texture on a queue.
 
 - used in {writeTexture,
-  setBindGroup, copyT2T {src,dst}, copyB2T, copyT2B, copyImageBitmapToTexture,
+  setBindGroup, copyT2T {src,dst}, copyB2T, copyT2B, copyExternalImageToTexture,
   color attachment {0,>0}, {D,S,DS} attachment, ..?}
 - x= if applicable, {in pass, in bundle}
 - x= {destroyed, not destroyed (control case)}

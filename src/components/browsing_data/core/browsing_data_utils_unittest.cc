@@ -102,8 +102,10 @@ TEST_F(BrowsingDataUtilsTest, AutofillCounterResult) {
 // Tests the output of the Passwords counter.
 TEST_F(BrowsingDataUtilsTest, PasswordsCounterResult) {
   auto store = base::MakeRefCounted<password_manager::TestPasswordStore>();
+  store->Init(prefs());
   PasswordsCounter counter(
-      scoped_refptr<password_manager::PasswordStore>(store), nullptr, nullptr);
+      scoped_refptr<password_manager::PasswordStoreInterface>(store), nullptr,
+      nullptr);
 
   // Use a separate struct for input to make test cases easier to read after
   // auto formatting.

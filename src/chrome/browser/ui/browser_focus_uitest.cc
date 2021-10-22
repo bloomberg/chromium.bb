@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_ClickingMovesFocus) {
   // we can start clicking on them.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
-      base::TimeDelta::FromMilliseconds(kActionDelayMs));
+      base::Milliseconds(kActionDelayMs));
   content::RunMessageLoop();
 #endif  // defined(OS_POSIX)
 
@@ -627,7 +627,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NavigateFromOmniboxIntoNewTab) {
   controller->OnAutocompleteAccept(
       url2, nullptr, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_TYPED, AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-      base::TimeTicks(), false);
+      base::TimeTicks(), false, std::u16string(), AutocompleteMatch(),
+      AutocompleteMatch());
 
   // Make sure the second tab is selected.
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
@@ -739,7 +740,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NoFocusForBackgroundNTP) {
 
 // Tests that the location bar is focusable when showing, which is the case in
 // popup windows.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, PopupLocationBar) {
+// TODO(crbug.com/1255472): Flaky on Linux.
+#if defined(OS_LINUX)
+#define MAYBE_PopupLocationBar DISABLED_PopupLocationBar
+#else
+#define MAYBE_PopupLocationBar PopupLocationBar
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_PopupLocationBar) {
   Browser* popup_browser = CreateBrowserForPopup(browser()->profile());
 
   // Make sure the popup is in the front. Otherwise the test is flaky.

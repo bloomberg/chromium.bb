@@ -56,6 +56,11 @@ class ChromeDownloadManagerDelegate
       public DownloadTargetDeterminerDelegate {
  public:
   explicit ChromeDownloadManagerDelegate(Profile* profile);
+
+  ChromeDownloadManagerDelegate(const ChromeDownloadManagerDelegate&) = delete;
+  ChromeDownloadManagerDelegate& operator=(
+      const ChromeDownloadManagerDelegate&) = delete;
+
   ~ChromeDownloadManagerDelegate() override;
 
   // Should be called before the first call to ShouldCompleteDownload() to
@@ -133,6 +138,10 @@ class ChromeDownloadManagerDelegate
       override;
   std::unique_ptr<download::DownloadItemRenameHandler>
   GetRenameHandlerForDownload(download::DownloadItem* download_item) override;
+  void CheckSavePackageAllowed(
+      download::DownloadItem* download_item,
+      base::flat_map<base::FilePath, base::FilePath> save_package_files,
+      content::SavePackageAllowedCallback callback) override;
 
   // Opens a download using the platform handler. DownloadItem::OpenDownload,
   // which ends up being handled by OpenDownload(), will open a download in the
@@ -146,20 +155,25 @@ class ChromeDownloadManagerDelegate
   class SafeBrowsingState : public DownloadCompletionBlocker {
    public:
     SafeBrowsingState() = default;
+
+    SafeBrowsingState(const SafeBrowsingState&) = delete;
+    SafeBrowsingState& operator=(const SafeBrowsingState&) = delete;
+
     ~SafeBrowsingState() override;
 
     // String pointer used for identifying safebrowing data associated with
     // a download item.
     static const char kSafeBrowsingUserDataKey[];
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(SafeBrowsingState);
   };
 #endif  // FULL_SAFE_BROWSING
 
   // Callback function after the DownloadProtectionService completes.
   void CheckClientDownloadDone(uint32_t download_id,
                                safe_browsing::DownloadCheckResult result);
+
+  // Callback function after scanning completes for a save package.
+  void CheckSavePackageScanningDone(uint32_t download_id,
+                                    safe_browsing::DownloadCheckResult result);
 
   base::WeakPtr<ChromeDownloadManagerDelegate> GetWeakPtr();
 
@@ -327,8 +341,6 @@ class ChromeDownloadManagerDelegate
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<ChromeDownloadManagerDelegate> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_CHROME_DOWNLOAD_MANAGER_DELEGATE_H_

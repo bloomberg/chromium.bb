@@ -41,16 +41,16 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.RemoteHungProcessTerminateReason"
-    enum="RemoteHungProcessTerminateReason" expires_after="M77">
+    enum="RemoteHungProcessTerminateReason" expires_after="2022-04-24">
   <owner>gab@chromium.org</owner>
-  <owner>aseren@yandex-team.ru</owner>
+  <owner>etienneb@chromium.org</owner>
   <summary>The reason of remote hang processes termination.</summary>
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.RemoteProcessInteractionResult"
-    enum="RemoteProcessInteractionResult" expires_after="M81">
+    enum="RemoteProcessInteractionResult" expires_after="2022-04-24">
   <owner>gab@chromium.org</owner>
-  <owner>aseren@yandex-team.ru</owner>
+  <owner>etienneb@chromium.org</owner>
   <summary>
     Used to send the result of interaction with remote process as histograms in
     case when remote process influences on start.
@@ -58,9 +58,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessErrorCode.Posix"
-    enum="PopularOSErrno" expires_after="M77">
+    enum="PopularOSErrno" expires_after="M98">
   <owner>gab@chromium.org</owner>
-  <owner>aseren@yandex-team.ru</owner>
+  <owner>etienneb@chromium.org</owner>
   <summary>
     The error code of remote process termination on Posix in case when remote
     process hung.
@@ -68,9 +68,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessErrorCode.Windows"
-    enum="WinGetLastError" expires_after="M81">
+    enum="WinGetLastError" expires_after="M98">
   <owner>gab@chromium.org</owner>
-  <owner>aseren@yandex-team.ru</owner>
+  <owner>etienneb@chromium.org</owner>
   <summary>
     The error code of remote process termination on Windows in case when remote
     process hung.
@@ -78,9 +78,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessTime" units="ms"
-    expires_after="2020-03-08">
+    expires_after="M98">
   <owner>gab@chromium.org</owner>
-  <owner>aseren@yandex-team.ru</owner>
+  <owner>etienneb@chromium.org</owner>
   <summary>
     Time it takes from TerminateProcess call to the moment when we stop waiting
     for remote process switches to signal state.
@@ -88,16 +88,17 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminationWaitErrorCode.Windows"
-    enum="WinGetLastError" expires_after="M81">
+    enum="WinGetLastError" expires_after="M98">
   <owner>gab@chromium.org</owner>
-  <owner>aseren@yandex-team.ru</owner>
+  <owner>etienneb@chromium.org</owner>
   <summary>
     The error code of wating for remote process termination on Windows.
   </summary>
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToCreate" units="ms"
-    expires_after="2018-08-30">
+    expires_after="2022-05-01">
+  <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     Time it takes to grab the process singleton. Reported once per successful
@@ -106,7 +107,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToFailure" units="ms"
-    expires_after="2018-08-30">
+    expires_after="2022-05-01">
+  <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     Time it takes to return an error from the process singleton algorithm (nor
@@ -116,7 +118,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToNotify" units="ms"
-    expires_after="2018-08-30">
+    expires_after="2022-04-24">
+  <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
     Time it takes to find the process singleton owner and notify it. Reported
@@ -145,7 +148,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Chrome.Tabs.AnimationSmoothness.TabLoading" units="%"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>yichenz@chromium.org</owner>
   <owner>chromeos-wmp@google.com</owner>
   <summary>
@@ -169,7 +172,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeColors.ColorOnLoad" enum="ChromeColorsInfo"
-    expires_after="2022-01-23">
+    expires_after="2022-04-03">
   <owner>gayane@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>

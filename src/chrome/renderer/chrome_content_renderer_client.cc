@@ -165,6 +165,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/origin.h"
+#include "v8/include/v8-isolate.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/renderer/sandbox_status_extension_android.h"
@@ -211,6 +212,8 @@
 #include "chrome/renderer/pdf/chrome_pdf_internal_plugin_delegate.h"
 #include "components/pdf/common/internal_plugin_helpers.h"
 #include "components/pdf/renderer/internal_plugin_renderer_helpers.h"
+#include "components/pdf/renderer/pdf_find_in_page.h"
+#include "pdf/pdf_features.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -224,7 +227,7 @@
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/renderer/printing/chrome_print_render_frame_helper_delegate.h"
 #include "components/printing/renderer/print_render_frame_helper.h"  // nogncheck
-#include "printing/print_settings.h"  // nogncheck
+#include "printing/metafile_agent.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -587,7 +590,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
       features::kContinuousSearch;
 #else
   const base::Feature& kSearchResultExtractorFeature =
-      history_clusters::kMemories;
+      history_clusters::kJourneys;
 #endif
   if (render_frame->IsMainFrame() &&
       base::FeatureList::IsEnabled(kSearchResultExtractorFeature)) {
@@ -714,6 +717,14 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new feed::RssLinkReader(render_frame, registry);
   }
 #endif
+
+#if BUILDFLAG(ENABLE_PDF)
+  if (base::FeatureList::IsEnabled(chrome_pdf::features::kPdfUnseasoned)) {
+    associated_interfaces->AddInterface(
+        base::BindRepeating(&pdf::PdfFindInPageFactory::BindReceiver,
+                            render_frame->GetRoutingID()));
+  }
+#endif
 }
 
 void ChromeContentRendererClient::WebViewCreated(blink::WebView* web_view) {
@@ -769,15 +780,8 @@ bool ChromeContentRendererClient::IsPluginHandledExternally(
     // Only actually treat the internal PDF plugin as externally handled if
     // used within an origin allowed to create the internal PDF plugin;
     // otherwise, let Blink try to create the in-process PDF plugin.
-    url::Origin frame_origin = render_frame->GetWebFrame()->GetSecurityOrigin();
-    if (IsPdfInternalPluginAllowedOrigin(frame_origin)) {
-      // TODO(crbug.com/1238829): Until this is fixed, allow Print Preview to
-      // create the in-process plugin directly within its own frames.
-      if (frame_origin ==
-          url::Origin::Create(GURL(chrome::kChromeUIPrintURL))) {
-        DCHECK_EQ(original_url.GetOrigin(), chrome::kChromeUIPrintURL);
-        return false;
-      }
+    if (IsPdfInternalPluginAllowedOrigin(
+            render_frame->GetWebFrame()->GetSecurityOrigin())) {
       return true;
     }
   }
@@ -1102,13 +1106,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder = create_blocked_plugin(
             IDR_DISABLED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_DISABLED, group_name));
-        break;
-      }
-      case chrome::mojom::PluginStatus::kFlashHiddenPreferHtml: {
-        placeholder = create_blocked_plugin(
-            IDR_PREFER_HTML_PLUGIN_HTML,
-            l10n_util::GetStringFUTF16(IDS_PLUGIN_PREFER_HTML_BY_DEFAULT,
-                                       group_name));
         break;
       }
       case chrome::mojom::PluginStatus::kOutdatedBlocked: {

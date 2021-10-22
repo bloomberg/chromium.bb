@@ -71,6 +71,8 @@ ERRORPRONE_WARNINGS_TO_DISABLE = [
     # Android platform default is always UTF-8.
     # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
     'DefaultCharset',
+    # Low priority since there are lots of tags that don't fit this check.
+    'UnrecognisedJavadocTag',
     # Low priority since the alternatives still work.
     'JdkObsolete',
     # We don't use that many lambdas.
@@ -240,6 +242,10 @@ def _ParsePackageAndClassNames(java_file):
       # Considers a leading * as a continuation of a multi-line comment (our
       # linter doesn't enforce a space before it like there should be).
       l = re.sub(r'^(?://.*|/?\*.*?(?:\*/\s*|$))', '', l)
+      # Stripping things between double quotes (strings), so if the word "class"
+      # shows up in a string this doesn't trigger. This isn't strictly correct
+      # (with escaped quotes) but covers a very large percentage of cases.
+      l = re.sub('(?:".*?")', '', l)
 
       m = re.match(r'package\s+(.*?);', l)
       if m and not package_name:

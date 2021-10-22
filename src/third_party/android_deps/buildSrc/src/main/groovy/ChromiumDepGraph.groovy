@@ -315,7 +315,14 @@ class ChromiumDepGraph {
     ]
 
     final Map<String, DependencyDescription> dependencies = [:]
-    final Set<String> lowerVersionOverride = [] as Set
+    final Set<String> lowerVersionOverride = [
+        // kotlin deps here to prevent 3pp packager from claiming they are out
+        // of date on a ~weekly basis. https://crbug.com/1257197
+        'org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm',
+        'org_jetbrains_kotlinx_kotlinx_coroutines_android',
+        'org_jetbrains_kotlin_kotlin_stdlib_jdk8',
+        'org_jetbrains_kotlin_kotlin_stdlib_jdk7',
+        ] as Set
 
     Project[] projects
     Logger logger
@@ -671,9 +678,10 @@ class ChromiumDepGraph {
                 if (repoUrls.contains(repoUrl)) {
                     continue
                 }
-                // Special case to check androidx.dev first and avoid new androidx deps always failing for mavenCentral.
-                // Also preserves the order between mavenCentral and google so that mavenCentral is queried last.
-                if (repoUrl.contains('androidx.dev')) {
+                // If the component is from androidx, we likely need the nightly builds from androidx.dev, so check that
+                // repo first to avoid potential 404s. Inserting at the front preserves order between google and
+                // mavenCentral.
+                if (component.group.contains('androidx') && repoUrl.contains('androidx.dev')) {
                     repoUrls.add(0, repoUrl)
                 } else {
                     repoUrls.add(repoUrl)

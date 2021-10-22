@@ -101,7 +101,6 @@
 #include "content/browser/quota/quota_context.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
-#include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/plugin_registry_impl.h"
@@ -158,7 +157,7 @@
 #include "media/capture/capture_switches.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "media/webrtc/webrtc_switches.h"
+#include "media/webrtc/webrtc_features.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/scoped_message_error_crash_key.h"
@@ -1327,19 +1326,6 @@ bool PrepareToAddNewPluginExceptions(int process_id) {
   return true;  // success
 }
 
-void AddAllowedRequestInitiatorForPluginOnUIThread(
-    int process_id,
-    const url::Origin& allowed_request_initiator) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!PrepareToAddNewPluginExceptions(process_id))
-    return;
-
-  GetPluginExceptionsForNetworkService()[process_id]
-      .allowed_request_initiators.insert(allowed_request_initiator);
-  GetNetworkService()->AddAllowedRequestInitiatorForPlugin(
-      process_id, allowed_request_initiator);
-}
-
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 static constexpr size_t kUnknownPlatformProcessLimit = 0;
 
@@ -1674,7 +1660,7 @@ const unsigned int RenderProcessHostImpl::kMaxFrameDepthForPriority =
 
 // static
 const base::TimeDelta RenderProcessHostImpl::kKeepAliveHandleFactoryTimeout =
-    base::TimeDelta::FromMilliseconds(kKeepAliveHandleFactoryTimeoutInMSec);
+    base::Milliseconds(kKeepAliveHandleFactoryTimeoutInMSec);
 
 RenderProcessHostImpl::RenderProcessHostImpl(
     BrowserContext* browser_context,
@@ -1689,6 +1675,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       keep_alive_ref_count_(0),
       worker_ref_count_(0),
       shutdown_delay_ref_count_(0),
+      render_frame_host_count_(0),
       are_ref_counts_disabled_(false),
       visible_clients_(0),
       priority_(!blink::kLaunchingProcessIsBackgrounded,
@@ -1715,12 +1702,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
           storage_partition_impl_->GetGeneratedCodeCacheContext()),
       channel_connected_(false),
       sent_render_process_ready_(false),
-      push_messaging_manager_(
-          nullptr,
-          base::OnTaskRunnerDeleter(
-
-              BrowserThread::GetTaskRunnerForThread(
-                  ServiceWorkerContext::GetCoreThreadId()))),
       instance_weak_factory_(absl::in_place, this),
       shutdown_exit_code_(-1) {
   CHECK(!browser_context->ShutdownStarted());
@@ -1743,38 +1724,26 @@ RenderProcessHostImpl::RenderProcessHostImpl(
   if (!GetBrowserContext()->IsOffTheRecord() &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      CacheShaderInfo(GetID(), storage_partition_impl_->GetPath());
-    } else {
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&CacheShaderInfo, GetID(),
-                                    storage_partition_impl_->GetPath()));
-    }
+    CacheShaderInfo(GetID(), storage_partition_impl_->GetPath());
   }
 
   // This instance of PushMessagingManager is only used from clients
   // bound to service workers (i.e. PushProvider), since frame-bound
   // clients will rely on BrowserInterfaceBroker instead. Therefore,
   // pass an invalid frame ID here.
-  //
-  // Constructing the manager must occur after RegisterHost(), since
-  // PushMessagingManager::Core looks up |this| using the process id.
-  push_messaging_manager_.reset(new PushMessagingManager(
-      GetID(),
+  push_messaging_manager_ = std::make_unique<PushMessagingManager>(
+      *this,
       /* render_frame_id= */ ChildProcessHost::kInvalidUniqueID,
-      storage_partition_impl_->GetServiceWorkerContext()));
+      base::WrapRefCounted(storage_partition_impl_->GetServiceWorkerContext()));
 
   InitializeChannelProxy();
 
   const int id = GetID();
   const uint64_t tracing_id =
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(id);
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? GetUIThreadTaskRunner({})
-                         : GetIOThreadTaskRunner({});
   gpu_client_.reset(
       new viz::GpuClient(std::make_unique<BrowserGpuClientDelegate>(), id,
-                         tracing_id, task_runner));
+                         tracing_id, GetUIThreadTaskRunner({})));
 }
 
 // static
@@ -1859,23 +1828,11 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache)) {
-    if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-      RemoveShaderInfo(GetID());
-    } else {
-      GetIOThreadTaskRunner({})->PostTask(
-          FROM_HERE, base::BindOnce(&RemoveShaderInfo, GetID()));
-    }
+    RemoveShaderInfo(GetID());
   }
 
   if (cleanup_network_service_plugin_exceptions_upon_destruction_)
     RemoveNetworkServicePluginExceptions(GetID());
-
-
-  // Manually delete here in order to avoid DeleteOnIOThread trait when
-  // kProcessHostOnUI is enabled.
-  DCHECK(gpu_client_);
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI))
-    delete gpu_client_.release();
 
   // "Cleanup in progress"
   TRACE_EVENT_END("shutdown", perfetto::Track::FromPointer(this),
@@ -2112,12 +2069,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(pepper_renderer_connection_.get());
 #endif
 
+  // TODO(https://crbug.com/1178670): Move this initialization out of
+  // CreateMessageFilters().
   p2p_socket_dispatcher_host_ =
       std::make_unique<P2PSocketDispatcherHost>(GetID());
-
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context(
-      static_cast<ServiceWorkerContextWrapper*>(
-          storage_partition_impl_->GetServiceWorkerContext()));
 }
 
 void RenderProcessHostImpl::BindCacheStorage(
@@ -2167,12 +2122,11 @@ void RenderProcessHostImpl::BindFileSystemManager(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Note, the base::Unretained() is safe because the target object has an IO
   // thread deleter and the callback is also targeting the IO thread.
-  // TODO(https://crbug.com/873661): Pass origin to FileSystemManager.
   GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&FileSystemManagerImpl::BindReceiver,
                      base::Unretained(file_system_manager_impl_.get()),
-                     std::move(receiver)));
+                     storage_key, std::move(receiver)));
 }
 
 void RenderProcessHostImpl::BindFileSystemAccessManager(
@@ -2208,14 +2162,22 @@ void RenderProcessHostImpl::BindNativeIOHost(
 }
 
 void RenderProcessHostImpl::BindRestrictedCookieManagerForServiceWorker(
-    const url::Origin& origin,
+    const blink::StorageKey& storage_key,
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   StoragePartitionImpl* storage_partition =
       static_cast<StoragePartitionImpl*>(GetStoragePartition());
+
   storage_partition->CreateRestrictedCookieManager(
-      network::mojom::RestrictedCookieManagerRole::SCRIPT, origin,
-      net::IsolationInfo::ToDoUseTopFrameOriginAsWell(origin),
+      network::mojom::RestrictedCookieManagerRole::SCRIPT, storage_key.origin(),
+      net::IsolationInfo::Create(
+          net::IsolationInfo::RequestType::kOther,
+          url::Origin::Create(storage_key.top_level_site().GetURL()),
+          storage_key.origin(), storage_key.ToNetSiteForCookies(),
+          /*party_context=*/absl::nullopt,
+          storage_key.nonce().has_value() ? &storage_key.nonce().value()
+                                          : nullptr),
       true /* is_service_worker */, GetID(), MSG_ROUTING_NONE,
       std::move(receiver),
       storage_partition->CreateCookieAccessObserverForServiceWorker());
@@ -2357,13 +2319,15 @@ bool RenderProcessHostImpl::IsProcessShutdownDelayedForTesting() {
 void RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin(
     int process_id,
     const url::Origin& allowed_request_initiator) {
-  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                          ? BrowserThread::UI
-                          : BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&AddAllowedRequestInitiatorForPluginOnUIThread,
-                                process_id, allowed_request_initiator));
+  if (!PrepareToAddNewPluginExceptions(process_id))
+    return;
+
+  GetPluginExceptionsForNetworkService()[process_id]
+      .allowed_request_initiators.insert(allowed_request_initiator);
+  GetNetworkService()->AddAllowedRequestInitiatorForPlugin(
+      process_id, allowed_request_initiator);
 }
 
 void RenderProcessHostImpl::
@@ -2436,6 +2400,8 @@ void RenderProcessHostImpl::WriteIntoTrace(
                                      FieldMetadata_BrowserContext>());
   }
 
+  // Pid() can be called only on valid process, so we should check for this
+  // before accessing it.
   // TODO(ssid): Consider moving this to ChildProcessLauncher proto field.
   if (child_process_launcher_) {
     const base::Process& process = child_process_launcher_->GetProcess();
@@ -2556,30 +2522,18 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   // on the IO thread.
   //
   // TODO(https://crbug.com/873661): Make PepperFileSystemHost access this with
-  // the RenderFrameHost's registry, and remove this registration.
-  registry->AddInterface(
-      base::BindRepeating(&FileSystemManagerImpl::BindReceiver,
-                          base::Unretained(file_system_manager_impl_.get())));
+  // the RenderFrameHost's registry, and remove this registration. The empty
+  // construction of StorageKey will also be removed at that time.
+  registry->AddInterface(base::BindRepeating(
+      &FileSystemManagerImpl::BindReceiver,
+      base::Unretained(file_system_manager_impl_.get()), blink::StorageKey()));
 
-  // |gpu_client_| outlives the registry, because its destruction is posted to
-  // IO thread from the destructor of |this|.
-  if (base::FeatureList::IsEnabled(features::kProcessHostOnUI)) {
-    AddUIThreadInterface(
-        registry.get(),
-        base::BindRepeating(&viz::GpuClient::Add,
-                            base::Unretained(gpu_client_.get())));
-  } else {
-    registry->AddInterface(base::BindRepeating(
-        &viz::GpuClient::Add, base::Unretained(gpu_client_.get())));
-  }
+  AddUIThreadInterface(
+      registry.get(), base::BindRepeating(&viz::GpuClient::Add,
+                                          base::Unretained(gpu_client_.get())));
 
   registry->AddInterface(
       base::BindRepeating(&GpuDataManagerImpl::BindReceiver));
-
-  registry->AddInterface(
-      base::BindRepeating(&FileUtilitiesHostImpl::Create, GetID()),
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   // Note, the base::Unretained() is safe because the target object has an IO
   // thread deleter and the callback is also targeting the IO thread.  When
@@ -2861,10 +2815,12 @@ bool RenderProcessHostImpl::IsProcessBackgrounded() {
   return priority_.is_background();
 }
 
-void RenderProcessHostImpl::IncrementKeepAliveRefCount() {
+void RenderProcessHostImpl::IncrementKeepAliveRefCount(uint64_t handle_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!are_ref_counts_disabled_);
   ++keep_alive_ref_count_;
+  DCHECK(!keep_alive_start_times_.contains(handle_id));
+  keep_alive_start_times_[handle_id] = base::Time::Now();
 }
 
 bool RenderProcessHostImpl::AreAllRefCountsZero() {
@@ -2872,13 +2828,44 @@ bool RenderProcessHostImpl::AreAllRefCountsZero() {
          shutdown_delay_ref_count_ == 0;
 }
 
-void RenderProcessHostImpl::DecrementKeepAliveRefCount() {
+void RenderProcessHostImpl::DecrementKeepAliveRefCount(uint64_t handle_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!are_ref_counts_disabled_);
   DCHECK_GT(keep_alive_ref_count_, 0U);
   --keep_alive_ref_count_;
+  DCHECK(keep_alive_start_times_.contains(handle_id));
+  keep_alive_start_times_.erase(handle_id);
   if (AreAllRefCountsZero())
     Cleanup();
+}
+
+std::string RenderProcessHostImpl::GetKeepAliveDurations() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::stringstream result;
+  base::Time now = base::Time::Now();
+  result << keep_alive_start_times_.size() << " uid/time-deltas:";
+  for (auto entry : keep_alive_start_times_)
+    result << " " << entry.first << "/" << (now - entry.second);
+  result << ".";
+  return result.str();
+}
+
+size_t RenderProcessHostImpl::GetShutdownDelayRefCount() const {
+  return shutdown_delay_ref_count_;
+}
+
+void RenderProcessHostImpl::IncrementRfhCount() {
+  render_frame_host_count_++;
+  ChildProcessSecurityPolicyImpl::GetInstance()->SetRenderFrameHostCount(
+      GetID(), render_frame_host_count_);
+}
+void RenderProcessHostImpl::DecrementRfhCount() {
+  render_frame_host_count_--;
+  ChildProcessSecurityPolicyImpl::GetInstance()->SetRenderFrameHostCount(
+      GetID(), render_frame_host_count_);
+}
+int RenderProcessHostImpl::GetRfhCount() const {
+  return render_frame_host_count_;
 }
 
 void RenderProcessHostImpl::IncrementWorkerRefCount() {
@@ -3410,7 +3397,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // Allow this to be set when invoking the browser and relayed along.
     sandbox::policy::switches::kEnableSandboxLogging,
 #endif
-    switches::kAgcStartupMinVolume,
     switches::kAllowLoopbackInPeerConnection,
     switches::kAndroidFontsPath,
     switches::kAudioBufferSize,
@@ -3484,6 +3470,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kForceGpuMemAvailableMb,
     switches::kForceHighContrast,
     switches::kForceOverlayFullscreenVideo,
+    switches::kForceRasterColorProfile,
     switches::kForceVideoOverlays,
     switches::kFullMemoryCrashReport,
     switches::kGaiaUrl,
@@ -3610,6 +3597,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kLacrosEnablePlatformEncryptedHevc,
     switches::kLacrosEnablePlatformHevc,
     switches::kLacrosUseChromeosProtectedMedia,
+    switches::kLacrosUseChromeosProtectedAv1,
 #endif
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
@@ -3744,8 +3732,10 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
   if (worker_ref_count_ != 0)
     return false;
 
-  // Note: we intentionally don't include a |shutdown_delay_ref_count_| check
-  // here, since it doesn't preclude fast shutdown.
+  // TODO(wjmaclean): This is probably unnecessary, but let's remove it in a
+  // separate CL to be safe.
+  if (shutdown_delay_ref_count_ != 0)
+    return false;
 
   // Set this before ProcessDied() so observers can tell if the render process
   // died due to fast shutdown versus another cause.
@@ -4488,37 +4478,6 @@ RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
 }
 
 // static
-RenderProcessHost* RenderProcessHostImpl::GetUnusedProcessHostForServiceWorker(
-    SiteInstanceImpl* site_instance) {
-  DCHECK(site_instance->is_for_service_worker());
-  if (site_instance->process_reuse_policy() !=
-      SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE) {
-    return nullptr;
-  }
-
-  auto& spare_process_manager = SpareRenderProcessHostManager::GetInstance();
-  iterator iter(AllHostsIterator());
-  while (!iter.IsAtEnd()) {
-    auto* host = iter.GetCurrentValue();
-    // This function tries to choose the process that will be chosen by a
-    // navigation that will use the service worker that is being started.
-    // Prefer to not take the spare process host, since if the navigation is
-    // out of the New Tab Page on Android, it will be using the existing NTP
-    // process instead of the spare process. If this function doesn't find a
-    // suitable process, the spare can still be chosen when
-    // MaybeTakeSpareRenderProcessHost() is called later.
-    bool is_spare = (host == spare_process_manager.spare_render_process_host());
-
-    if (!is_spare && host->IsUnused() &&
-        MayReuseAndIsSuitable(host, site_instance)) {
-      return host;
-    }
-    iter.Advance();
-  }
-  return nullptr;
-}
-
-// static
 RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForSite(
     const IsolationContext& isolation_context,
     const SiteInfo& site_info) {
@@ -4622,16 +4581,6 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
   if (!render_process_host) {
     render_process_host =
         site_instance->GetSiteInstanceGroupProcessIfAvailable();
-  }
-
-  // If a process hasn't been selected yet, and the site instance is for a
-  // service worker, try to use an unused process host. One might have been
-  // created for a navigation and this will let the navigation and the service
-  // worker share the same process.
-  if (base::FeatureList::IsEnabled(
-          features::kServiceWorkerPrefersUnusedProcess) &&
-      !render_process_host && is_unmatched_service_worker) {
-    render_process_host = GetUnusedProcessHostForServiceWorker(site_instance);
   }
 
   if (render_process_host) {

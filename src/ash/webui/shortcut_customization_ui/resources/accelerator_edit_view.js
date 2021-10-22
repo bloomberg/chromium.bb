@@ -12,7 +12,7 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ViewState} from './accelerator_view.js'
-import {AcceleratorInfo, AcceleratorKeys, AcceleratorState, AcceleratorType} from './shortcut_types.js';
+import {AcceleratorInfo, AcceleratorKeys, AcceleratorSource, AcceleratorState, AcceleratorType} from './shortcut_types.js';
 
 /**
  * @fileoverview
@@ -52,6 +52,13 @@ export class AcceleratorEditViewElement extends PolymerElement {
         reflectToAttribute: true,
       },
 
+      /** @private */
+      isAddView_: {
+        type: Boolean,
+        computed: 'computeIsAddView_(viewState)',
+        reflectToAttribute: true,
+      },
+
       viewState: {
         type: Number,
         value: ViewState.VIEW,
@@ -69,7 +76,18 @@ export class AcceleratorEditViewElement extends PolymerElement {
         type: Boolean,
         value: false,
         reflectToAttribute: true,
-      }
+      },
+
+      action: {
+        type: Number,
+        value: 0,
+      },
+
+      /** @type {!AcceleratorSource} */
+      source: {
+        type: Number,
+        value: 0,
+      },
     }
   }
 
@@ -104,6 +122,14 @@ export class AcceleratorEditViewElement extends PolymerElement {
    */
   showEditView_() {
     return this.viewState !== ViewState.VIEW;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeIsAddView_() {
+    return this.viewState === ViewState.ADD;
   }
 }
 

@@ -21,6 +21,7 @@ class Value;
 
 namespace net {
 
+class IsolationInfo;
 class NetworkIsolationKey;
 class ReportingContext;
 
@@ -35,11 +36,19 @@ class NET_EXPORT ReportingHeaderParser {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
+  // They should also be kept in sync with the NetReportingHeaderType enum
+  // in tools/metrics/histograms/enums.xml
   enum class ReportingHeaderType {
     kReportTo = 0,
     kReportToInvalid = 1,
-    kMaxValue = kReportToInvalid,
+    kReportingEndpoints = 2,
+    kReportingEndpointsInvalid = 3,
+    kMaxValue = kReportingEndpointsInvalid,
   };
+
+  ReportingHeaderParser() = delete;
+  ReportingHeaderParser(const ReportingHeaderParser&) = delete;
+  ReportingHeaderParser& operator=(const ReportingHeaderParser&) = delete;
 
   static void ParseReportToHeader(
       ReportingContext* context,
@@ -50,14 +59,11 @@ class NET_EXPORT ReportingHeaderParser {
   static void ProcessParsedReportingEndpointsHeader(
       ReportingContext* context,
       const base::UnguessableToken& reporting_source,
-      const NetworkIsolationKey& network_isolation_key,
+      const IsolationInfo& isolation_info,
       const url::Origin& origin,
       base::flat_map<std::string, std::string> parsed_header);
 
   static void RecordReportingHeaderType(ReportingHeaderType header_type);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ReportingHeaderParser);
 };
 
 }  // namespace net

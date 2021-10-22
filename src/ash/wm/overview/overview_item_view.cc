@@ -20,6 +20,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -41,20 +42,17 @@ namespace ash {
 namespace {
 
 // Duration of the show/hide animation of the header.
-constexpr base::TimeDelta kHeaderFadeDuration =
-    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kHeaderFadeDuration = base::Milliseconds(167);
 
 // Delay before the show animation of the header.
-constexpr base::TimeDelta kHeaderFadeInDelay =
-    base::TimeDelta::FromMilliseconds(83);
+constexpr base::TimeDelta kHeaderFadeInDelay = base::Milliseconds(83);
 
 // Duration of the slow show animation of the close button.
 constexpr base::TimeDelta kCloseButtonSlowFadeInDuration =
-    base::TimeDelta::FromMilliseconds(300);
+    base::Milliseconds(300);
 
 // Delay before the slow show animation of the close button.
-constexpr base::TimeDelta kCloseButtonSlowFadeInDelay =
-    base::TimeDelta::FromMilliseconds(750);
+constexpr base::TimeDelta kCloseButtonSlowFadeInDelay = base::Milliseconds(750);
 
 constexpr int kCloseButtonInkDropRadiusDp = 18;
 
@@ -88,6 +86,8 @@ void AnimateLayerOpacity(ui::Layer* layer, bool visible) {
 // The close button for the overview item. It has a custom ink drop.
 class OverviewCloseButton : public views::ImageButton {
  public:
+  METADATA_HEADER(OverviewCloseButton);
+
   explicit OverviewCloseButton(PressedCallback callback)
       : views::ImageButton(std::move(callback)) {
     views::InkDrop::Get(this)->SetMode(
@@ -126,6 +126,9 @@ class OverviewCloseButton : public views::ImageButton {
         ripple_attributes.inkdrop_opacity);
   }
 };
+
+BEGIN_METADATA(OverviewCloseButton, views::ImageButton)
+END_METADATA
 
 }  // namespace
 
@@ -314,10 +317,6 @@ gfx::Point OverviewItemView::GetMagnifierFocusPointInScreen() {
                     title_bounds.CenterPoint().y());
 }
 
-const char* OverviewItemView::GetClassName() const {
-  return "OverviewItemView";
-}
-
 bool OverviewItemView::OnMousePressed(const ui::MouseEvent& event) {
   if (!overview_item_)
     return views::View::OnMousePressed(event);
@@ -373,5 +372,8 @@ void OverviewItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       l10n_util::GetStringUTF8(
           IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
 }
+
+BEGIN_METADATA(OverviewItemView, WindowMiniView)
+END_METADATA
 
 }  // namespace ash

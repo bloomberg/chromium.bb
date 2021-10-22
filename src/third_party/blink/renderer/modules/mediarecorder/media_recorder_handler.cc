@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-using base::TimeDelta;
 using base::TimeTicks;
 
 namespace blink {
@@ -264,7 +263,7 @@ bool MediaRecorderHandler::Start(int timeslice) {
 
   invalidated_ = false;
 
-  timeslice_ = base::TimeDelta::FromMilliseconds(timeslice);
+  timeslice_ = base::Milliseconds(timeslice);
   slice_origin_timestamp_ = base::TimeTicks::Now();
 
   video_tracks_ = media_stream_->VideoComponents();
@@ -368,7 +367,7 @@ void MediaRecorderHandler::Stop() {
   invalidated_ = true;
 
   recording_ = false;
-  timeslice_ = base::TimeDelta::FromMilliseconds(0);
+  timeslice_ = base::Milliseconds(0);
   video_recorders_.clear();
   audio_recorders_.clear();
   webm_muxer_.reset();

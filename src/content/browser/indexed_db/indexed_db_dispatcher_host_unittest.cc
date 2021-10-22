@@ -122,6 +122,10 @@ struct TestDatabaseConnection {
         connection_callbacks->CreateInterfacePtrAndBind(), db_name, version,
         version_change_transaction.BindNewEndpointAndPassReceiver(task_runner),
         upgrade_txn_id);
+    // ForcedClose is called on shutdown and depending on ordering and timing
+    // may or may not happen, which is fine.
+    EXPECT_CALL(*connection_callbacks, ForcedClose())
+        .Times(testing::AnyNumber());
   }
 
   scoped_refptr<base::SequencedTaskRunner> task_runner;
@@ -1406,13 +1410,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBContentChanged) {
   loop6.Run();
 }
 
-// Flaky on Mac and Linux ASAN builds. See: crbug.com/1189512.
-#if defined(OS_MAC) || (defined(OS_LINUX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_DatabaseOperationSequencing DISABLED_DatabaseOperationSequencing
-#else
-#define MAYBE_DatabaseOperationSequencing DatabaseOperationSequencing
-#endif
-TEST_F(IndexedDBDispatcherHostTest, MAYBE_DatabaseOperationSequencing) {
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_DatabaseOperationSequencing) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const std::u16string kObjectStoreName1 = u"os1";

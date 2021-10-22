@@ -170,6 +170,7 @@
 ਇਹ ਇਜਾਜ਼ਤ ਦੇਣ ਲਈ, ਹੇਠਾਂ '<ph name="BUTTON_NAME" />' ਬਟਨ 'ਤੇ ਕਲਿੱਕ ਕਰੋ। ਖੁੱਲ੍ਹਣ ਵਾਲੇ 'ਪਹੁੰਚਯੋਗਤਾ' ਤਰਜੀਹਾਂ ਪੇਨ ਵਿੱਚ '<ph name="SERVICE_SCRIPT_NAME" />' ਦੇ ਨਾਲ ਵਾਲੇ ਬਾਕਸ ਵਿੱਚ ਨਿਸ਼ਾਨ ਲਗਾਓ।
 
 ਜੇ '<ph name="SERVICE_SCRIPT_NAME" />' 'ਤੇ ਪਹਿਲਾਂ ਹੀ ਨਿਸ਼ਾਨ ਲੱਗਾ ਹੋਇਆ ਹੈ, ਤਾਂ ਇਸ ਤੋਂ ਨਿਸ਼ਾਨ ਹਟਾਓ ਅਤੇ ਫਿਰ ਦੁਬਾਰਾ ਨਿਸ਼ਾਨ ਲਗਾਓ।</translation>
+<translation id="8305209735512572429">ਵੈੱਬ ਪ੍ਰਮਾਣੀਕਰਨ ਰਿਮੋਟਿੰਗ ਪ੍ਰਕਿਰਿਆ</translation>
 <translation id="8383794970363966105">Chromoting ਨੂੰ ਵਰਤਣ ਲਈ, ਤੁਹਾਨੂੰ ਆਪਣੇ ਡੀਵਾਈਸ 'ਤੇ ਕੋਈ Google ਖਾਤਾ ਸ਼ਾਮਲ ਕਰਨਾ ਪਵੇਗਾ।</translation>
 <translation id="8386846956409881180">ਹੋਸਟ ਨੂੰ ਅਵੈਧ OAuth ਕ੍ਰੀਡੈਂਸ਼ੀਅਲਾਂ ਨਾਲ ਸੰਰੂਪਿਤ ਕੀਤਾ ਗਿਆ ਹੈ।</translation>
 <translation id="8397385476380433240"><ph name="PRODUCT_NAME" /> ਨੂੰ ਇਜਾਜ਼ਤ ਦਿਓ</translation>

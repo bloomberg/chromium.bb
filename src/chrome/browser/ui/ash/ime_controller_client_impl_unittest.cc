@@ -17,22 +17,22 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/ui/ash/test_ime_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/fake_input_method_delegate.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
-#include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
-#include "ui/base/ime/chromeos/mock_input_method_manager.h"
-
-using chromeos::input_method::FakeInputMethodDelegate;
-using chromeos::input_method::InputMethodDescriptor;
-using chromeos::input_method::InputMethodManager;
-using chromeos::input_method::InputMethodUtil;
-using chromeos::input_method::MockInputMethodManager;
-using ui::ime::InputMethodMenuItem;
-using ui::ime::InputMethodMenuManager;
+#include "ui/base/ime/ash/fake_input_method_delegate.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_util.h"
+#include "ui/base/ime/ash/mock_ime_candidate_window_handler.h"
+#include "ui/base/ime/ash/mock_input_method_manager.h"
 
 namespace {
+
+using ::ash::input_method::FakeInputMethodDelegate;
+using ::ash::input_method::InputMethodDescriptor;
+using ::ash::input_method::InputMethodManager;
+using ::ash::input_method::InputMethodUtil;
+using ::ash::input_method::MockInputMethodManager;
+using ::ui::ime::InputMethodMenuItem;
+using ::ui::ime::InputMethodMenuManager;
 
 // Used to look up IME names.
 std::u16string GetLocalizedString(int resource_id) {
@@ -58,6 +58,9 @@ class TestInputMethodManager : public MockInputMethodManager {
       input_methods_ = {ime1, ime2};
     }
 
+    TestState(const TestState&) = delete;
+    TestState& operator=(const TestState&) = delete;
+
     // MockInputMethodManager::State:
     void ChangeInputMethod(const std::string& input_method_id,
                            bool show_message) override {
@@ -65,8 +68,8 @@ class TestInputMethodManager : public MockInputMethodManager {
       current_ime_id_ = input_method_id;
       last_show_message_ = show_message;
     }
-    std::unique_ptr<std::vector<InputMethodDescriptor>> GetActiveInputMethods()
-        const override {
+    std::unique_ptr<std::vector<InputMethodDescriptor>>
+    GetEnabledInputMethodsSortedByLocalizedDisplayNames() const override {
       return std::make_unique<std::vector<InputMethodDescriptor>>(
           input_methods_);
     }
@@ -100,11 +103,13 @@ class TestInputMethodManager : public MockInputMethodManager {
    protected:
     friend base::RefCounted<InputMethodManager::State>;
     ~TestState() override {}
-
-    DISALLOW_COPY_AND_ASSIGN(TestState);
   };
 
   TestInputMethodManager() : state_(new TestState), util_(&delegate_) {}
+
+  TestInputMethodManager(const TestInputMethodManager&) = delete;
+  TestInputMethodManager& operator=(const TestInputMethodManager&) = delete;
+
   ~TestInputMethodManager() override = default;
 
   // MockInputMethodManager:
@@ -123,8 +128,7 @@ class TestInputMethodManager : public MockInputMethodManager {
   void ActivateInputMethodMenuItem(const std::string& key) override {
     last_activate_menu_item_key_ = key;
   }
-  void OverrideKeyboardKeyset(
-      chromeos::input_method::ImeKeyset keyset) override {
+  void OverrideKeyboardKeyset(ash::input_method::ImeKeyset keyset) override {
     keyboard_keyset_ = keyset;
   }
 
@@ -139,12 +143,9 @@ class TestInputMethodManager : public MockInputMethodManager {
   int add_menu_observer_count_ = 0;
   int remove_menu_observer_count_ = 0;
   std::string last_activate_menu_item_key_;
-  chromeos::input_method::ImeKeyset keyboard_keyset_;
+  ash::input_method::ImeKeyset keyboard_keyset_;
   FakeInputMethodDelegate delegate_;
   InputMethodUtil util_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestInputMethodManager);
 };
 
 class ImeControllerClientImplTest : public testing::Test {
@@ -153,6 +154,11 @@ class ImeControllerClientImplTest : public testing::Test {
     input_method_manager_.delegate_.set_get_localized_string_callback(
         base::BindRepeating(&GetLocalizedString));
   }
+
+  ImeControllerClientImplTest(const ImeControllerClientImplTest&) = delete;
+  ImeControllerClientImplTest& operator=(const ImeControllerClientImplTest&) =
+      delete;
+
   ~ImeControllerClientImplTest() override = default;
 
  protected:
@@ -163,8 +169,6 @@ class ImeControllerClientImplTest : public testing::Test {
 
  private:
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImeControllerClientImplTest);
 };
 
 TEST_F(ImeControllerClientImplTest, Construction) {
@@ -242,9 +246,8 @@ TEST_F(ImeControllerClientImplTest, ShowImeMenuOnShelf) {
 
 TEST_F(ImeControllerClientImplTest, InputMethodChanged) {
   ui::IMEBridge::Initialize();
-  std::unique_ptr<chromeos::MockIMECandidateWindowHandler>
-      mock_candidate_window =
-          std::make_unique<chromeos::MockIMECandidateWindowHandler>();
+  auto mock_candidate_window =
+      std::make_unique<ash::MockIMECandidateWindowHandler>();
   ui::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
 
   ImeControllerClientImpl client(&input_method_manager_);
@@ -346,10 +349,10 @@ TEST_F(ImeControllerClientImplTest, OverrideKeyboardKeyset) {
   client.Init();
   bool callback_called = false;
   client.OverrideKeyboardKeyset(
-      chromeos::input_method::ImeKeyset::kEmoji,
+      ash::input_method::ImeKeyset::kEmoji,
       base::BindLambdaForTesting(
           [&callback_called]() { callback_called = true; }));
-  EXPECT_EQ(chromeos::input_method::ImeKeyset::kEmoji,
+  EXPECT_EQ(ash::input_method::ImeKeyset::kEmoji,
             input_method_manager_.keyboard_keyset_);
   EXPECT_TRUE(callback_called);
 }

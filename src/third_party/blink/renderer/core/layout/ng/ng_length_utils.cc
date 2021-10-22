@@ -239,7 +239,9 @@ LayoutUnit InlineSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                      EBoxSizing box_sizing,
                                      LayoutUnit block_size) {
   if (box_sizing == EBoxSizing::kBorderBox) {
-    return LayoutUnit::FromDoubleRound(block_size * logical_aspect_ratio);
+    return std::max(
+        border_padding.InlineSum(),
+        LayoutUnit::FromDoubleRound(block_size * logical_aspect_ratio));
   }
 
   return LayoutUnit::FromDoubleRound((block_size - border_padding.BlockSum()) *
@@ -252,7 +254,9 @@ LayoutUnit InlineSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                      EBoxSizing box_sizing,
                                      LayoutUnit block_size) {
   if (box_sizing == EBoxSizing::kBorderBox) {
-    return block_size.MulDiv(aspect_ratio.inline_size, aspect_ratio.block_size);
+    return std::max(
+        border_padding.InlineSum(),
+        block_size.MulDiv(aspect_ratio.inline_size, aspect_ratio.block_size));
   }
   block_size -= border_padding.BlockSum();
   return block_size.MulDiv(aspect_ratio.inline_size, aspect_ratio.block_size) +
@@ -265,7 +269,9 @@ LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                     EBoxSizing box_sizing,
                                     LayoutUnit inline_size) {
   if (box_sizing == EBoxSizing::kBorderBox) {
-    return LayoutUnit::FromDoubleRound(inline_size * logical_aspect_ratio);
+    return std::max(
+        border_padding.BlockSum(),
+        LayoutUnit::FromDoubleRound(inline_size * logical_aspect_ratio));
   }
 
   return LayoutUnit::FromDoubleRound(
@@ -280,8 +286,9 @@ LayoutUnit BlockSizeFromAspectRatio(const NGBoxStrut& border_padding,
                                     LayoutUnit inline_size) {
   DCHECK_GE(inline_size, border_padding.InlineSum());
   if (box_sizing == EBoxSizing::kBorderBox) {
-    return inline_size.MulDiv(aspect_ratio.block_size,
-                              aspect_ratio.inline_size);
+    return std::max(
+        border_padding.BlockSum(),
+        inline_size.MulDiv(aspect_ratio.block_size, aspect_ratio.inline_size));
   }
   inline_size -= border_padding.InlineSum();
   return inline_size.MulDiv(aspect_ratio.block_size, aspect_ratio.inline_size) +
@@ -607,6 +614,26 @@ MinMaxSizes ComputeTransferredMinMaxInlineSizes(
   if (block_min_max.max_size != LayoutUnit::Max()) {
     transferred_min_max.max_size = InlineSizeFromAspectRatio(
         border_padding, ratio, sizing, block_min_max.max_size);
+  }
+  // Minimum size wins over maximum size.
+  transferred_min_max.max_size =
+      std::max(transferred_min_max.max_size, transferred_min_max.min_size);
+  return transferred_min_max;
+}
+
+MinMaxSizes ComputeTransferredMinMaxBlockSizes(
+    const LogicalSize& ratio,
+    const MinMaxSizes& inline_min_max,
+    const NGBoxStrut& border_padding,
+    const EBoxSizing sizing) {
+  MinMaxSizes transferred_min_max = {LayoutUnit(), LayoutUnit::Max()};
+  if (inline_min_max.min_size > LayoutUnit()) {
+    transferred_min_max.min_size = BlockSizeFromAspectRatio(
+        border_padding, ratio, sizing, inline_min_max.min_size);
+  }
+  if (inline_min_max.max_size != LayoutUnit::Max()) {
+    transferred_min_max.max_size = BlockSizeFromAspectRatio(
+        border_padding, ratio, sizing, inline_min_max.max_size);
   }
   // Minimum size wins over maximum size.
   transferred_min_max.max_size =

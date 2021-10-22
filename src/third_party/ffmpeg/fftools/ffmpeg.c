@@ -653,6 +653,7 @@ static void ffmpeg_cleanup(int ret)
                    av_err2str(AVERROR(errno)));
     }
     av_freep(&vstats_filename);
+    av_freep(&filter_nbthreads);
 
     av_freep(&input_streams);
     av_freep(&input_files);
@@ -3571,11 +3572,6 @@ static int init_output_stream(OutputStream *ost, AVFrame *frame,
         }
         if (!av_dict_get(ost->encoder_opts, "threads", NULL, 0))
             av_dict_set(&ost->encoder_opts, "threads", "auto", 0);
-        if (ost->enc->type == AVMEDIA_TYPE_AUDIO &&
-            !codec->defaults &&
-            !av_dict_get(ost->encoder_opts, "b", NULL, 0) &&
-            !av_dict_get(ost->encoder_opts, "ab", NULL, 0))
-            av_dict_set(&ost->encoder_opts, "b", "128000", 0);
 
         ret = hw_device_setup_for_encode(ost);
         if (ret < 0) {
@@ -4926,7 +4922,6 @@ static int transcode(void)
                 av_dict_free(&ost->encoder_opts);
                 av_dict_free(&ost->sws_dict);
                 av_dict_free(&ost->swr_opts);
-                av_dict_free(&ost->resample_opts);
             }
         }
     }

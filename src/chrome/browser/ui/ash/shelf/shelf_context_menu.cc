@@ -15,9 +15,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/ash/full_restore/full_restore_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
@@ -30,6 +30,7 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/vector_icons.h"
@@ -287,7 +288,7 @@ void ShelfContextMenu::AddContextMenuOption(ui::SimpleMenuModel* menu_model,
   if (!icon.is_empty()) {
     menu_model->AddItemWithStringIdAndIcon(
         type, string_id,
-        ui::ImageModel::FromVectorIcon(icon, /*color_id=*/-1,
+        ui::ImageModel::FromVectorIcon(icon, ui::kColorMenuIcon,
                                        ash::kAppContextMenuIconSize));
     return;
   }

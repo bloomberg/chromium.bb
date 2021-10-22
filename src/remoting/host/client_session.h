@@ -110,6 +110,10 @@ class ClientSession : public protocol::HostStub,
       const base::TimeDelta& max_duration,
       scoped_refptr<protocol::PairingRegistry> pairing_registry,
       const std::vector<HostExtension*>& extensions);
+
+  ClientSession(const ClientSession&) = delete;
+  ClientSession& operator=(const ClientSession&) = delete;
+
   ~ClientSession() override;
 
   // Returns the set of capabilities negotiated between client and host.
@@ -212,6 +216,10 @@ class ClientSession : public protocol::HostStub,
       std::unique_ptr<protocol::MessagePipe> pipe);
 
   void CreateUrlForwarderControlMessageHandler(
+      const std::string& channel_name,
+      std::unique_ptr<protocol::MessagePipe> pipe);
+
+  void CreateRemoteWebAuthnMessageHandler(
       const std::string& channel_name,
       std::unique_ptr<protocol::MessagePipe> pipe);
 
@@ -357,8 +365,6 @@ class ClientSession : public protocol::HostStub,
   // Used to disable callbacks to |this| once DisconnectSession() has been
   // called.
   base::WeakPtrFactory<ClientSessionControl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ClientSession);
 };
 
 }  // namespace remoting

@@ -64,7 +64,7 @@ constexpr char kManualConfigComponentVersion[] = "0.0.0";
 // Provides a random time delta in seconds between |kFetchRandomMinDelay| and
 // |kFetchRandomMaxDelay|.
 base::TimeDelta RandomFetchDelay() {
-  return base::TimeDelta::FromSeconds(base::RandInt(
+  return base::Seconds(base::RandInt(
       optimization_guide::features::ActiveTabsHintsFetchRandomMinDelaySecs(),
       optimization_guide::features::ActiveTabsHintsFetchRandomMaxDelaySecs()));
 }
@@ -221,6 +221,8 @@ class ScopedCanApplyOptimizationLogger {
         url_(url) {}
 
   ~ScopedCanApplyOptimizationLogger() {
+    if (!optimization_guide::switches::IsDebugLogsEnabled())
+      return;
     DCHECK_NE(type_decision_,
               optimization_guide::OptimizationTypeDecision::kUnknown);
     DVLOG(0) << "OptimizationGuide: CanApplyOptimization: "
@@ -819,7 +821,7 @@ void HintsManager::CleanUpFetcherForNavigation(const GURL& navigation_url) {
 base::Time HintsManager::GetLastHintsFetchAttemptTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(pref_service_->GetInt64(
+      base::Microseconds(pref_service_->GetInt64(
           optimization_guide::prefs::kHintsFetcherLastFetchAttempt)));
 }
 
@@ -922,7 +924,9 @@ void HintsManager::RegisterOptimizationTypes(
         optimization_guide::proto::OptimizationType_Name(optimization_type));
     if (!value) {
       if (!is_off_the_record_ &&
-          !ShouldIgnoreNewlyRegisteredOptimizationType(optimization_type)) {
+          !ShouldIgnoreNewlyRegisteredOptimizationType(optimization_type) &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kHintsProtoOverride)) {
         should_clear_hints_for_new_type_ = true;
       }
       previously_registered_opt_types->SetBoolKey(
@@ -1318,8 +1322,8 @@ void HintsManager::MaybeFetchHintsForNavigation(
       base::BindOnce(&HintsManager::OnPageNavigationHintsFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      navigation_data->GetWeakPtr(), url,
-                     base::flat_set<GURL>({url}),
-                     base::flat_set<std::string>({url.host()})));
+                     base::flat_set<GURL>(urls.begin(), urls.end()),
+                     base::flat_set<std::string>(hosts.begin(), hosts.end())));
   if (fetch_attempted) {
     navigation_data->set_hints_fetch_start(base::TimeTicks::Now());
 
@@ -1382,6 +1386,11 @@ optimization_guide::HintCache* HintsManager::hint_cache() {
 optimization_guide::PushNotificationManager*
 HintsManager::push_notification_manager() {
   return push_notification_manager_.get();
+}
+
+optimization_guide::HintsFetcherFactory*
+HintsManager::GetHintsFetcherFactory() {
+  return hints_fetcher_factory_.get();
 }
 
 bool HintsManager::HasAllInformationForDecisionAvailable(

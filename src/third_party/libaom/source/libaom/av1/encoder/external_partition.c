@@ -91,3 +91,8 @@ bool av1_ext_part_send_features(ExtPartController *ext_part_controller,
   if (status != AOM_EXT_PART_OK) return false;
   return true;
 }
+
+aom_ext_part_decision_mode_t av1_get_ext_part_decision_mode(
+    const ExtPartController *ext_part_controller) {
+  return ext_part_controller->funcs.decision_mode;
+}

@@ -145,7 +145,7 @@ LayoutUnit ComputeFloatAncestorInlineEndSize(
   return inline_end_size;
 }
 
-// See NGLineBreaker::SplitTextByGlyphs().
+// See NGLineBreaker::SplitTextIntoSegments().
 void CollectCharIndex(void* context,
                       unsigned char_index,
                       Glyph,
@@ -248,9 +248,18 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
   available_width_ = ComputeAvailableWidth();
   break_iterator_.SetBreakSpace(BreakSpaceType::kAfterSpaceRun);
   if (is_svg_text_) {
-    svg_resolved_iterator_ =
-        std::make_unique<ResolvedTextLayoutAttributesIterator>(
-            node_.SvgCharacterDataList());
+    const auto& char_data_list = node_.SvgCharacterDataList();
+    if (node_.SvgTextPathRangeList().IsEmpty() &&
+        node_.SvgTextLengthRangeList().IsEmpty() &&
+        (char_data_list.IsEmpty() ||
+         (char_data_list.size() == 1 && char_data_list[0].first == 0))) {
+      needs_svg_segmentation_ = false;
+    } else {
+      needs_svg_segmentation_ = true;
+      svg_resolved_iterator_ =
+          std::make_unique<ResolvedTextLayoutAttributesIterator>(
+              char_data_list);
+    }
   }
 
   if (!break_token)
@@ -476,9 +485,6 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   // avoid rare code path.
   const NGInlineItemResults& item_results = line_info->Results();
   DCHECK(item_results.IsEmpty());
-
-  if (is_svg_text_)
-    line_info->MutableResults()->ReserveCapacity(text_content_.length());
 
   if (item_index_) {
     // We're past the first line
@@ -954,7 +960,7 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
   }
 
   if (is_svg_text_) {
-    SplitTextIntoSegements(item, line_info);
+    SplitTextIntoSegments(item, line_info);
     return;
   }
 
@@ -989,15 +995,16 @@ void NGLineBreaker::HandleText(const NGInlineItem& item,
 // Split in PrepareLayout() or after producing NGFragmentItem would need
 // additional memory overhead. So we split in NGLineBreaker while it converts
 // NGInlineItems to NGInlineItemResults.
-void NGLineBreaker::SplitTextIntoSegements(const NGInlineItem& item,
-                                           NGLineInfo* line_info) {
+void NGLineBreaker::SplitTextIntoSegments(const NGInlineItem& item,
+                                          NGLineInfo* line_info) {
   DCHECK(RuntimeEnabledFeatures::SVGTextNGEnabled());
   DCHECK(is_svg_text_);
   DCHECK_EQ(offset_, item.StartOffset());
 
   const ShapeResult& shape = *item.TextShapeResult();
-  if (shape.NumGlyphs() == 0) {
+  if (shape.NumGlyphs() == 0 || !needs_svg_segmentation_) {
     NGInlineItemResult* result = AddItem(item, line_info);
+    result->should_create_line_box = true;
     result->shape_result = ShapeResultView::Create(&shape);
     result->inline_size = shape.SnappedWidth();
     offset_ = item.EndOffset();
@@ -1015,7 +1022,14 @@ void NGLineBreaker::SplitTextIntoSegements(const NGInlineItem& item,
   wtf_size_t size = index_list.size();
   unsigned glyph_start = offset_;
   for (wtf_size_t i = 0; i < size; ++i) {
-    DCHECK_EQ(glyph_start, index_list[i]);
+#if DCHECK_IS_ON()
+    // The first glyph index can be greater than StartIndex() if the leading
+    // part of the string was not mapped to any glyphs.
+    if (i == 0)
+      DCHECK_LE(glyph_start, index_list[0]);
+    else
+      DCHECK_EQ(glyph_start, index_list[i]);
+#endif
     unsigned glyph_end = i + 1 < size ? index_list[i + 1] : shape.EndIndex();
     StringView text_view(Text());
     bool should_split = i == size - 1;
@@ -1304,80 +1318,77 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
 
     unsigned non_hangable_run_end = end_offset;
     if (item.Style()->WhiteSpace() != EWhiteSpace::kBreakSpaces) {
-      while (non_hangable_run_end > item.StartOffset() &&
+      while (non_hangable_run_end > start_offset &&
              IsBreakableSpace(text[non_hangable_run_end - 1])) {
         --non_hangable_run_end;
       }
-      end_offset = non_hangable_run_end;
     }
 
-    if (end_offset >= item.EndOffset())
+    if (non_hangable_run_end >= item.EndOffset())
       break;
 
-    // Ignore soft-hyphen opportunities if `hyphens: none`.
-    bool has_hyphen = text[non_hangable_run_end - 1] == kSoftHyphenCharacter;
-    if (has_hyphen && !enable_soft_hyphen_) {
-      ++end_offset;
-      if (end_offset < item.EndOffset())
-        continue;
-      has_hyphen = false;
-    }
-
-    if (UNLIKELY(hyphenation_)) {
-      // When 'hyphens: auto', compute all hyphenation opportunities.
-      if (!hyphen_inline_size) {
-        if (!item_result->hyphen_shape_result)
-          item_result->ShapeHyphen();
-        hyphen_inline_size = item_result->HyphenInlineSize();
+    // |word_len| may be zero if |start_offset| is at a breakable space.
+    CHECK_GE(non_hangable_run_end, start_offset);
+    if (wtf_size_t word_len = non_hangable_run_end - start_offset) {
+      // Ignore soft-hyphen opportunities if `hyphens: none`.
+      bool has_hyphen = text[non_hangable_run_end - 1] == kSoftHyphenCharacter;
+      if (UNLIKELY(has_hyphen && !enable_soft_hyphen_ &&
+                   non_hangable_run_end == end_offset)) {
+        ++end_offset;
+        if (end_offset < item.EndOffset())
+          continue;
+        has_hyphen = false;
       }
-      wtf_size_t word_len = non_hangable_run_end - start_offset;
-      const StringView word(text, start_offset, word_len);
-      Vector<wtf_size_t, 8> locations = hyphenation_->HyphenLocations(word);
-      // |locations| is a list of hyphenation points in the descending order.
-      // Append 0 to process all parts the same way.
-      DCHECK(std::is_sorted(locations.rbegin(), locations.rend()));
-      DCHECK(!locations.Contains(0u));
-      DCHECK(!locations.Contains(word_len));
-      locations.push_back(0);
-      LayoutUnit max_part_width;
-      for (const wtf_size_t location : locations) {
-        LayoutUnit part_width = LayoutUnit::FromFloatCeil(ComputeWordWidth(
-            shape_result, start_offset + location, start_offset + word_len));
-        if (has_hyphen)
-          part_width += *hyphen_inline_size;
-        max_part_width = std::max(part_width, max_part_width);
-        word_len = location;
-        has_hyphen = true;
-      }
-      min_width = std::max(max_part_width.ToFloat(), min_width);
-    } else {
-      float word_width =
-          ComputeWordWidth(shape_result, start_offset, non_hangable_run_end);
 
-      // Append hyphen-width to `word_width` if the word is hyphenated.
-      if (has_hyphen) {
+      if (UNLIKELY(hyphenation_)) {
+        // When 'hyphens: auto', compute all hyphenation opportunities.
         if (!hyphen_inline_size) {
           if (!item_result->hyphen_shape_result)
             item_result->ShapeHyphen();
           hyphen_inline_size = item_result->HyphenInlineSize();
         }
-        word_width =
-            (LayoutUnit::FromFloatCeil(word_width) + *hyphen_inline_size)
-                .ToFloat();
-      }
+        const StringView word(text, start_offset, word_len);
+        Vector<wtf_size_t, 8> locations = hyphenation_->HyphenLocations(word);
+        // |locations| is a list of hyphenation points in the descending order.
+        // Append 0 to process all parts the same way.
+        DCHECK(std::is_sorted(locations.rbegin(), locations.rend()));
+        DCHECK(!locations.Contains(0u));
+        DCHECK(!locations.Contains(word_len));
+        locations.push_back(0);
+        LayoutUnit max_part_width;
+        for (const wtf_size_t location : locations) {
+          LayoutUnit part_width = LayoutUnit::FromFloatCeil(ComputeWordWidth(
+              shape_result, start_offset + location, start_offset + word_len));
+          if (has_hyphen)
+            part_width += *hyphen_inline_size;
+          max_part_width = std::max(part_width, max_part_width);
+          word_len = location;
+          has_hyphen = true;
+        }
+        min_width = std::max(max_part_width.ToFloat(), min_width);
+      } else {
+        float word_width =
+            ComputeWordWidth(shape_result, start_offset, non_hangable_run_end);
 
-      min_width = std::max(word_width, min_width);
+        // Append hyphen-width to `word_width` if the word is hyphenated.
+        if (has_hyphen) {
+          if (!hyphen_inline_size) {
+            if (!item_result->hyphen_shape_result)
+              item_result->ShapeHyphen();
+            hyphen_inline_size = item_result->HyphenInlineSize();
+          }
+          word_width =
+              (LayoutUnit::FromFloatCeil(word_width) + *hyphen_inline_size)
+                  .ToFloat();
+        }
+
+        min_width = std::max(word_width, min_width);
+      }
     }
 
     last_end_offset = non_hangable_run_end;
-    // TODO (jfernandez): I think that having the non_hangable_run_end
-    // would make this loop unnecessary/redudant.
     start_offset = end_offset;
-    while (start_offset < item.EndOffset() &&
-           IsBreakableSpace(text[start_offset])) {
-      ++start_offset;
-    }
-    end_offset = start_offset + 1;
+    ++end_offset;
   }
 
   if (saved_line_break_type.has_value())
@@ -1465,7 +1476,7 @@ scoped_refptr<ShapeResultView> NGLineBreaker::TruncateLineEndResult(
   ShapeResultView::Segment segments[2];
   segments[0] = {source_result, start_offset, last_safe};
   segments[1] = {end_result.get(), 0, end_offset};
-  return ShapeResultView::Create(&segments[0], 2);
+  return ShapeResultView::Create(segments);
 }
 
 // Update |ShapeResult| in |item_result| to match to its |start_offset| and
@@ -1730,6 +1741,44 @@ void NGLineBreaker::HandleForcedLineBreak(const NGInlineItem* item,
   if (item) {
     DCHECK_EQ(item->TextType(), NGTextType::kForcedLineBreak);
     DCHECK_EQ(Text()[item->StartOffset()], kNewlineCharacter);
+
+    // Special-code for BR clear elements. If we have floats that extend into
+    // subsequent fragmentainers, we cannot get past the floats in the current
+    // fragmentainer. If this is the case, and if there's anything on the line
+    // before the BR element, add a line break before it, so that we at least
+    // attempt to place that part of the line right away. The remaining BR clear
+    // element will be placed on a separate line, which we'll push past as many
+    // fragmentainers as we need to. Example:
+    //
+    // <div style="columns:4; column-fill:auto; height:100px;">
+    //   <div style="float:left; width:10px; height:350px;"></div>
+    //   first column<br clear="all">
+    //   fourth column
+    // </div>
+    //
+    // Here we'll create one line box for the first float fragment and the text
+    // "first column". We'll later on attempt to create another line box for the
+    // BR element, but it will fail in the inline layout algorithm, because it's
+    // impossible to clear past the float. We'll retry in the second and third
+    // columns, but the float is still in the way. Finally, in the fourth
+    // column, we'll add the BR, add clearance, and then create a line for the
+    // text "fourth column" past the float.
+    //
+    // This solution isn't perfect, because of this additional line box for the
+    // BR element. We'll push the line box containing the BR to a fragmentainer
+    // where it doesn't really belong, and it will take up block space there
+    // (this can be observed if the float clearance is less than the height of
+    // the line, so that there will be a gap between the bottom of the float and
+    // the content that follows). No browser engines currently get BR clearance
+    // across fragmentainers right.
+    if (item->GetLayoutObject() && item->GetLayoutObject()->IsBR() &&
+        exclusion_space_->NeedsClearancePastFragmentainer(
+            item->Style()->Clear(*current_style_))) {
+      if (!line_info->Results().IsEmpty()) {
+        state_ = LineBreakState::kDone;
+        return;
+      }
+    }
 
     NGInlineItemResult* item_result = AddItem(*item, line_info);
     item_result->should_create_line_box = true;

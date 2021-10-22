@@ -83,6 +83,10 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManagerObserver {
  public:
   ArcPlayStoreDisabledWaiter() { ArcSessionManager::Get()->AddObserver(this); }
 
+  ArcPlayStoreDisabledWaiter(const ArcPlayStoreDisabledWaiter&) = delete;
+  ArcPlayStoreDisabledWaiter& operator=(const ArcPlayStoreDisabledWaiter&) =
+      delete;
+
   ~ArcPlayStoreDisabledWaiter() override {
     ArcSessionManager::Get()->RemoveObserver(this);
   }
@@ -103,13 +107,15 @@ class ArcPlayStoreDisabledWaiter : public ArcSessionManagerObserver {
   }
 
   base::RunLoop* run_loop_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcPlayStoreDisabledWaiter);
 };
 
 class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
  protected:
   ArcSessionManagerTest() = default;
+
+  ArcSessionManagerTest(const ArcSessionManagerTest&) = delete;
+  ArcSessionManagerTest& operator=(const ArcSessionManagerTest&) = delete;
+
   ~ArcSessionManagerTest() override = default;
 
   // MixinBasedInProcessBrowserTest:
@@ -223,14 +229,12 @@ class ArcSessionManagerTest : public MixinBasedInProcessBrowserTest {
   }
 
  private:
-  chromeos::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
+  ash::LocalPolicyTestServerMixin local_policy_mixin_{&mixin_host_};
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_environment_adaptor_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionManagerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ArcSessionManagerTest, ConsumerAccount) {

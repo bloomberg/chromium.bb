@@ -45,6 +45,8 @@ generate_grd("build_grd") {
   out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
   input_files = [
     "history.html",
+    "images/journeys.svg",
+    "images/list.svg",
     "images/sign_in_promo_dark.svg",
     "images/sign_in_promo.svg",
   ]
@@ -71,6 +73,8 @@ preprocess_if_expr("preprocess") {
     "constants.ts",
     "externs.ts",
     "history_clusters/browser_proxy.ts",
+    "history_clusters/metrics_proxy.ts",
+    "history_clusters/open_window_proxy.ts",
     "history.ts",
     "lazy_load.ts",
     "query_manager.ts",
@@ -156,6 +160,8 @@ ts_library("build_ts") {
     "history_clusters/cluster.ts",
     "history_clusters/clusters.ts",
     "history_clusters/history_clusters.mojom-webui.js",
+    "history_clusters/metrics_proxy.ts",
+    "history_clusters/open_window_proxy.ts",
     "history_clusters/page_favicon.ts",
     "history_clusters/search_query.ts",
     "history_clusters/shared_style.ts",
@@ -181,7 +187,10 @@ ts_library("build_ts") {
     "//ui/webui/resources:library",
     "//ui/webui/resources/mojo:library",
   ]
-  definitions = [ "//tools/typescript/definitions/chrome_send.d.ts" ]
+  definitions = [
+    "//tools/typescript/definitions/chrome_send.d.ts",
+    "//tools/typescript/definitions/metrics_private.d.ts",
+  ]
   extra_deps = [
     ":copy_history_clusters_mojom",
     ":preprocess",

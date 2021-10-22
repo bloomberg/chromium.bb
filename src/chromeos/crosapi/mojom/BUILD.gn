@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//printing/buildflags/buildflags.gni")
 
 mojom("mojom") {
   sources = [
@@ -12,6 +13,7 @@ mojom("mojom") {
     "app_window_tracker.mojom",
     "automation.mojom",
     "bitmap.mojom",
+    "browser_app_instance_registry.mojom",
     "browser_version.mojom",
     "cert_database.mojom",
     "clipboard.mojom",
@@ -26,10 +28,12 @@ mojom("mojom") {
     "file_manager.mojom",
     "geolocation.mojom",
     "holding_space_service.mojom",
+    "identity_manager.mojom",
     "idle_service.mojom",
     "image_writer.mojom",
     "keystore_error.mojom",
     "keystore_service.mojom",
+    "kiosk_session_service.mojom",
     "local_printer.mojom",
     "message_center.mojom",
     "metrics_reporting.mojom",
@@ -43,6 +47,7 @@ mojom("mojom") {
     "resource_manager.mojom",
     "screen_manager.mojom",
     "select_file.mojom",
+    "structured_metrics_service.mojom",
     "system_display.mojom",
     "task_manager.mojom",
     "test_controller.mojom",
@@ -55,6 +60,7 @@ mojom("mojom") {
   public_deps = [
     "//chromeos/components/sensors/mojom",
     "//chromeos/services/machine_learning/public/mojom",
+    "//components/metrics/structured/mojom",
     "//components/services/app_service/public/mojom:mojom",
     "//media/capture/mojom:image_capture",
     "//media/capture/mojom:video_capture_types",
@@ -114,28 +120,37 @@ mojom("mojom") {
           cpp = "::apps::mojom::AppType"
         },
         {
-          mojom = "crosapi.mojom.Intent"
-          cpp = "::apps::mojom::IntentPtr"
-          move_only = true
-        },
-        {
-          mojom = "crosapi.mojom.IntentFile"
-          cpp = "::apps::mojom::IntentFilePtr"
-          move_only = true
-        },
-        {
           mojom = "crosapi.mojom.LaunchSource"
           cpp = "::apps::mojom::LaunchSource"
+        },
+        {
+          mojom = "crosapi.mojom.BrowserWindowInstanceUpdate"
+          cpp = "::apps::BrowserWindowInstanceUpdate"
+          move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.BrowserAppInstanceUpdate"
+          cpp = "::apps::BrowserAppInstanceUpdate"
+          move_only = true
+        },
+        {
+          mojom = "crosapi.mojom.BrowserAppInstanceType"
+          cpp = "::apps::BrowserAppInstanceUpdate::Type"
         },
       ]
       traits_headers = [
         "//chromeos/crosapi/mojom/app_service_types_mojom_traits.h",
+        "//chromeos/crosapi/mojom/browser_app_instance_registry_mojom_traits.h",
         "//components/services/app_service/public/mojom/types.mojom.h",
       ]
-      traits_sources =
-          [ "//chromeos/crosapi/mojom/app_service_types_mojom_traits.cc" ]
-      traits_public_deps =
-          [ "//components/services/app_service/public/mojom:mojom" ]
+      traits_sources = [
+        "//chromeos/crosapi/mojom/app_service_types_mojom_traits.cc",
+        "//chromeos/crosapi/mojom/browser_app_instance_registry_mojom_traits.cc",
+      ]
+      traits_public_deps = [
+        "//components/services/app_service/public/cpp:browser_app_instance_registry_update",
+        "//components/services/app_service/public/mojom:mojom",
+      ]
     },
   ]
 }

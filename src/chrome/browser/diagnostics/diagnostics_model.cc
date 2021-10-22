@@ -53,6 +53,9 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
  public:
   DiagnosticsModelImpl() : tests_run_(0) {}
 
+  DiagnosticsModelImpl(const DiagnosticsModelImpl&) = delete;
+  DiagnosticsModelImpl& operator=(const DiagnosticsModelImpl&) = delete;
+
   ~DiagnosticsModelImpl() override {}
 
   int GetTestRunCount() const override { return tests_run_; }
@@ -141,9 +144,6 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
 
   std::vector<std::unique_ptr<DiagnosticsTest>> tests_;
   int tests_run_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelImpl);
 };
 
 // Each platform can have their own tests. For the time being there is only
@@ -171,8 +171,8 @@ class DiagnosticsModelWin : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelWin);
+  DiagnosticsModelWin(const DiagnosticsModelWin&) = delete;
+  DiagnosticsModelWin& operator=(const DiagnosticsModelWin&) = delete;
 };
 
 #elif defined(OS_MAC)
@@ -195,8 +195,8 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
     tests_.push_back(MakeSqliteWebDatabaseTrackerDbTest());
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelMac);
+  DiagnosticsModelMac(const DiagnosticsModelMac&) = delete;
+  DiagnosticsModelMac& operator=(const DiagnosticsModelMac&) = delete;
 };
 
 #elif defined(OS_POSIX)
@@ -225,8 +225,8 @@ class DiagnosticsModelPosix : public DiagnosticsModelImpl {
 #endif
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelPosix);
+  DiagnosticsModelPosix(const DiagnosticsModelPosix&) = delete;
+  DiagnosticsModelPosix& operator=(const DiagnosticsModelPosix&) = delete;
 };
 
 #elif defined(OS_FUCHSIA)

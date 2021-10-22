@@ -12,6 +12,7 @@
 #include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "pdf/mojom/pdf.mojom.h"
@@ -37,6 +38,9 @@ class PDFWebContentsHelper
       public ui::TouchSelectionMenuClient,
       public content::TouchSelectionControllerClientManager::Observer {
  public:
+  PDFWebContentsHelper(const PDFWebContentsHelper&) = delete;
+  PDFWebContentsHelper& operator=(const PDFWebContentsHelper&) = delete;
+
   ~PDFWebContentsHelper() override;
 
   static void CreateForWebContentsWithClient(
@@ -93,6 +97,7 @@ class PDFWebContentsHelper
                         const gfx::PointF& right,
                         int32_t right_height) override;
   void SetPluginCanSave(bool can_save) override;
+  void GetPdfFindInPage(GetPdfFindInPageCallback callback) override;
 
   content::RenderFrameHostReceiverSet<mojom::PdfService> pdf_service_receivers_;
   std::unique_ptr<PDFWebContentsHelperClient> const client_;
@@ -108,9 +113,9 @@ class PDFWebContentsHelper
 
   mojo::Remote<mojom::PdfListener> remote_pdf_client_;
 
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  mojo::AssociatedRemote<mojom::PdfFindInPageFactory> find_factory_remote_;
 
-  DISALLOW_COPY_AND_ASSIGN(PDFWebContentsHelper);
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace pdf

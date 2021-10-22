@@ -21,6 +21,11 @@ class WebContents;
 class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
  public:
   explicit SearchIPCRouterPolicyImpl(content::WebContents* web_contents);
+
+  SearchIPCRouterPolicyImpl(const SearchIPCRouterPolicyImpl&) = delete;
+  SearchIPCRouterPolicyImpl& operator=(const SearchIPCRouterPolicyImpl&) =
+      delete;
+
   ~SearchIPCRouterPolicyImpl() override;
 
  private:
@@ -31,7 +36,6 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessDeleteMostVisitedItem() override;
   bool ShouldProcessUndoMostVisitedDeletion() override;
   bool ShouldProcessUndoAllMostVisitedDeletions() override;
-  bool ShouldProcessLogEvent() override;
   bool ShouldSendSetInputInProgress(bool is_active_tab) override;
   bool ShouldSendOmniboxFocusChanged() override;
   bool ShouldSendMostVisitedInfo() override;
@@ -45,8 +49,6 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
 
   content::WebContents* web_contents_;
   bool is_incognito_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchIPCRouterPolicyImpl);
 };
 
 #endif  // CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_POLICY_IMPL_H_

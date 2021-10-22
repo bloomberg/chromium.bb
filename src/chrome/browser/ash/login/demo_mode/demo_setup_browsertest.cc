@@ -107,14 +107,18 @@ constexpr int kInvokeDemoModeGestureTapsCount = 10;
 class DemoSetupTestBase : public OobeBaseTest {
  public:
   DemoSetupTestBase() = default;
+
+  DemoSetupTestBase(const DemoSetupTestBase&) = delete;
+  DemoSetupTestBase& operator=(const DemoSetupTestBase&) = delete;
+
   ~DemoSetupTestBase() override = default;
 
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
     update_engine_client()->set_update_check_result(
         UpdateEngineClient::UPDATE_RESULT_FAILED);
-    branded_build_override_ =
-        WizardController::ForceBrandedBuildForTesting(true);
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
     DisconnectAllNetworks();
   }
 
@@ -302,8 +306,6 @@ class DemoSetupTestBase : public OobeBaseTest {
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
   std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupTestBase);
 };
 
 class DemoSetupArcSupportedTest : public DemoSetupTestBase {
@@ -436,8 +438,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   // Advance time to make interval in between taps longer than expected by
   // multi-tap gesture detector.
-  SetFakeTimeForMultiTapDetector(kFakeTime +
-                                 base::TimeDelta::FromMilliseconds(500));
+  SetFakeTimeForMultiTapDetector(kFakeTime + base::Milliseconds(500));
 
   MultiTapOobeContainer(5);
   IsConfirmationDialogHidden();
@@ -473,8 +474,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
+  DISABLED_OnlineSetupFlowSuccessWithCountryCustomization
+#else
+#define MAYBE_OnlineSetupFlowSuccessWithCountryCustomization \
+  OnlineSetupFlowSuccessWithCountryCustomization
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       OnlineSetupFlowSuccessWithCountryCustomization) {
+                       MAYBE_OnlineSetupFlowSuccessWithCountryCustomization) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -529,7 +538,14 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, OnlineSetupFlowErrorDefault) {
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OnlineSetupFlowErrorDefault DISABLED_OnlineSetupFlowErrorDefault
+#else
+#define MAYBE_OnlineSetupFlowErrorDefault OnlineSetupFlowErrorDefault
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
+                       MAYBE_OnlineSetupFlowErrorDefault) {
   // Simulate online setup failure.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
@@ -595,8 +611,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
+// TODO(crbug.com/1150349): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OnlineSetupFlowCrosComponentFailure \
+  DISABLED_OnlineSetupFlowCrosComponentFailure
+#else
+#define MAYBE_OnlineSetupFlowCrosComponentFailure \
+  OnlineSetupFlowCrosComponentFailure
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       OnlineSetupFlowCrosComponentFailure) {
+                       MAYBE_OnlineSetupFlowCrosComponentFailure) {
   // Simulate failure to load demo resources CrOS component.
   // There is no enrollment attempt, as process fails earlier.
   enrollment_helper_.ExpectNoEnrollment();
@@ -729,8 +753,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_OfflineSetupFlowErrorPowerwashRequired \
+  DISABLED_OfflineSetupFlowErrorPowerwashRequired
+#else
+#define MAYBE_OfflineSetupFlowErrorPowerwashRequired \
+  OfflineSetupFlowErrorPowerwashRequired
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       OfflineSetupFlowErrorPowerwashRequired) {
+                       MAYBE_OfflineSetupFlowErrorPowerwashRequired) {
   // Simulate offline setup failure.
   enrollment_helper_.ExpectOfflineEnrollmentError(
       policy::EnrollmentStatus::ForLockError(
@@ -828,7 +860,13 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   test::WaitForEulaScreen();
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnNetworkScreen) {
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_BackOnNetworkScreen DISABLED_BackOnNetworkScreen
+#else
+#define MAYBE_BackOnNetworkScreen BackOnNetworkScreen
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, MAYBE_BackOnNetworkScreen) {
   SimulateNetworkConnected();
   TriggerDemoModeOnWelcomeScreen();
   test::OobeJS().ClickOnPath(kDemoPreferencesNext);
@@ -929,8 +967,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, MAYBE_RetryOnErrorScreen) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ShowOfflineSetupOptionOnNetworkList \
+  DISABLED_ShowOfflineSetupOptionOnNetworkList
+#else
+#define MAYBE_ShowOfflineSetupOptionOnNetworkList \
+  ShowOfflineSetupOptionOnNetworkList
+#endif
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
-                       ShowOfflineSetupOptionOnNetworkList) {
+                       MAYBE_ShowOfflineSetupOptionOnNetworkList) {
   TriggerDemoModeOnWelcomeScreen();
 
   SimulateOfflineEnvironment();
@@ -954,6 +1000,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 class DemoSetupProgressStepsTest : public DemoSetupArcSupportedTest {
  public:
   DemoSetupProgressStepsTest() = default;
+
+  DemoSetupProgressStepsTest(const DemoSetupProgressStepsTest&) = delete;
+  DemoSetupProgressStepsTest& operator=(const DemoSetupProgressStepsTest&) =
+      delete;
+
   ~DemoSetupProgressStepsTest() override = default;
 
   // Checks how many steps have been rendered in the demo setup screen.
@@ -976,7 +1027,6 @@ class DemoSetupProgressStepsTest : public DemoSetupArcSupportedTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupProgressStepsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(DemoSetupProgressStepsTest,
@@ -1010,6 +1060,11 @@ IN_PROC_BROWSER_TEST_F(DemoSetupProgressStepsTest,
 class DemoSetupArcUnsupportedTest : public DemoSetupTestBase {
  public:
   DemoSetupArcUnsupportedTest() = default;
+
+  DemoSetupArcUnsupportedTest(const DemoSetupArcUnsupportedTest&) = delete;
+  DemoSetupArcUnsupportedTest& operator=(const DemoSetupArcUnsupportedTest&) =
+      delete;
+
   ~DemoSetupArcUnsupportedTest() override = default;
 
   // DemoSetupTestBase:
@@ -1018,12 +1073,16 @@ class DemoSetupArcUnsupportedTest : public DemoSetupTestBase {
     command_line->AppendSwitchASCII(switches::kArcAvailability, "none");
     ASSERT_FALSE(arc::IsArcAvailable());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupArcUnsupportedTest);
 };
 
-IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotStartWithAccelerator) {
+// TODO(crbug.com/1150349): Flaky on ChromeOS ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DoNotStartWithAccelerator DISABLED_DoNotStartWithAccelerator
+#else
+#define MAYBE_DoNotStartWithAccelerator DoNotStartWithAccelerator
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest,
+                       MAYBE_DoNotStartWithAccelerator) {
   IsConfirmationDialogHidden();
 
   InvokeDemoModeWithAccelerator();
@@ -1041,6 +1100,10 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcUnsupportedTest, DoNotInvokeWithTaps) {
 
 // Demo setup tests related to Force Re-Enrollment.
 class DemoSetupFRETest : public DemoSetupArcSupportedTest {
+ public:
+  DemoSetupFRETest(const DemoSetupFRETest&) = delete;
+  DemoSetupFRETest& operator=(const DemoSetupFRETest&) = delete;
+
  protected:
   DemoSetupFRETest() {
     statistics_provider_.SetMachineStatistic(system::kSerialNumberKeyForTest,
@@ -1057,9 +1120,6 @@ class DemoSetupFRETest : public DemoSetupArcSupportedTest {
   }
 
   system::ScopedFakeStatisticsProvider statistics_provider_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DemoSetupFRETest);
 };
 
 IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
@@ -1087,7 +1147,13 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceFromFactory) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, NonEnterpriseDevice) {
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_NonEnterpriseDevice DISABLED_NonEnterpriseDevice
+#else
+#define MAYBE_NonEnterpriseDevice NonEnterpriseDevice
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, MAYBE_NonEnterpriseDevice) {
   // Simulating device that was never set for enterprise:
   // * "active_date" is set
   // * "check_enrollment" and "block_devmode" flags are set to false.
@@ -1150,7 +1216,13 @@ IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, MAYBE_LegacyDemoModeDevice) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, DeviceWithFRE) {
+// Disabled due to test failure. http://crbug.com/1249355
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_DeviceWithFRE DISABLED_DeviceWithFRE
+#else
+#define MAYBE_DeviceWithFRE DeviceWithFRE
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupFRETest, MAYBE_DeviceWithFRE) {
   // Simulating device that requires FRE. "check_enrollment", "block_devmode"
   // and "ActivateDate" flags are set.
   statistics_provider_.SetMachineStatistic(system::kActivateDateKey, "2018-01");

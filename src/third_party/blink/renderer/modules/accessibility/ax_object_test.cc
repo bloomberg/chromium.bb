@@ -1000,7 +1000,7 @@ TEST_F(AccessibilityTest, LineBreakInDisplayLockedIsLineBreakingObject) {
   ASSERT_EQ(ax::mojom::Role::kParagraph, paragraph->RoleValue());
   ASSERT_EQ(3, paragraph->UnignoredChildCount());
   ASSERT_EQ(paragraph->GetNode(),
-            DisplayLockUtilities::NearestLockedInclusiveAncestor(
+            DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(
                 *paragraph->GetNode()))
       << "The <p> element should be display locked.";
   EXPECT_TRUE(paragraph->IsLineBreakingObject());
@@ -1010,9 +1010,9 @@ TEST_F(AccessibilityTest, LineBreakInDisplayLockedIsLineBreakingObject) {
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, br->RoleValue())
       << "The <br> child should be display locked and thus have a generic "
          "role.";
-  ASSERT_EQ(
-      paragraph->GetNode(),
-      DisplayLockUtilities::NearestLockedInclusiveAncestor(*br->GetNode()))
+  ASSERT_EQ(paragraph->GetNode(),
+            DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(
+                *br->GetNode()))
       << "The <br> child should be display locked.";
   EXPECT_TRUE(br->IsLineBreakingObject());
 }
@@ -1191,6 +1191,28 @@ TEST_F(AccessibilityTest, IsSelectedFromFocusSupported) {
   // TODO(crbug.com/1143451): #option5 should not support selection from focus
   // because #option4 is explicitly selected.
   EXPECT_TRUE(option5->IsSelectedFromFocusSupported());
+}
+
+TEST_F(AccessibilityTest, GetBoundsInFrameCoordinatesSvgText) {
+  // This test doesn't work with the legacy SVG text.
+  if (!RuntimeEnabledFeatures::SVGTextNGEnabled())
+    return;
+  SetBodyInnerHTML(R"HTML(
+  <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+    <text id="t1" x="100">Text1</text>
+    <text id="t2" x="50">Text1</text>
+  </svg>)HTML");
+
+  AXObject* text1 = GetAXObjectByElementId("t1");
+  ASSERT_NE(text1, nullptr);
+  AXObject* text2 = GetAXObjectByElementId("t2");
+  ASSERT_NE(text2, nullptr);
+  LayoutRect bounds1 = text1->GetBoundsInFrameCoordinates();
+  LayoutRect bounds2 = text2->GetBoundsInFrameCoordinates();
+
+  // Check if bounding boxes for SVG <text> respect to positioning
+  // attributes such as 'x'.
+  EXPECT_GT(bounds1.X(), bounds2.X());
 }
 
 }  // namespace test

@@ -438,6 +438,9 @@ class TestCacheStorageCache : public LegacyCacheStorageCache {
                                 0 /* cache_padding */),
         delay_backend_creation_(false) {}
 
+  TestCacheStorageCache(const TestCacheStorageCache&) = delete;
+  TestCacheStorageCache& operator=(const TestCacheStorageCache&) = delete;
+
   ~TestCacheStorageCache() override { base::RunLoop().RunUntilIdle(); }
 
   void CreateBackend(ErrorCallback callback) override {
@@ -488,8 +491,6 @@ class TestCacheStorageCache : public LegacyCacheStorageCache {
  private:
   bool delay_backend_creation_;
   ErrorCallback backend_creation_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCacheStorageCache);
 };
 
 class MockLegacyCacheStorage : public LegacyCacheStorage {
@@ -1974,8 +1975,7 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_DifferentTimeStamp) {
       base::MakeRefCounted<net::IOBuffer>(kSize);
   memset(buffer->data(), 0, kSize);
   EXPECT_FALSE(WriteSideData(no_body_request_->url,
-                             response_time + base::TimeDelta::FromSeconds(1),
-                             buffer, kSize));
+                             response_time + base::Seconds(1), buffer, kSize));
   EXPECT_EQ(CacheStorageError::kErrorNotFound, callback_error_);
   ASSERT_TRUE(Delete(no_body_request_));
 }

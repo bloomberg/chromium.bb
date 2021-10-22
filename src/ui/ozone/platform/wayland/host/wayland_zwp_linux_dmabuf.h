@@ -30,21 +30,27 @@ class WaylandConnection;
 class WaylandZwpLinuxDmabuf
     : public wl::GlobalObjectRegistrar<WaylandZwpLinuxDmabuf> {
  public:
-  static void Register(WaylandConnection* connection);
+  static constexpr char kInterfaceName[] = "zwp_linux_dmabuf_v1";
+
   static void Instantiate(WaylandConnection* connection,
                           wl_registry* registry,
                           uint32_t name,
+                          const std::string& interface,
                           uint32_t version);
 
   WaylandZwpLinuxDmabuf(zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
                         WaylandConnection* connection);
+
+  WaylandZwpLinuxDmabuf(const WaylandZwpLinuxDmabuf&) = delete;
+  WaylandZwpLinuxDmabuf& operator=(const WaylandZwpLinuxDmabuf&) = delete;
+
   ~WaylandZwpLinuxDmabuf();
 
   // Requests to create a wl_buffer backed by the dmabuf prime |fd| descriptor.
   // The result is sent back via the |callback|. If buffer creation failed,
   // nullptr is sent back via the callback. Otherwise, a pointer to the
   // |wl_buffer| is sent.
-  void CreateBuffer(base::ScopedFD fd,
+  void CreateBuffer(const base::ScopedFD& fd,
                     const gfx::Size& size,
                     const std::vector<uint32_t>& strides,
                     const std::vector<uint32_t>& offsets,
@@ -105,8 +111,6 @@ class WaylandZwpLinuxDmabuf
   base::flat_map<struct zwp_linux_buffer_params_v1*,
                  wl::OnRequestBufferCallback>
       pending_params_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandZwpLinuxDmabuf);
 };
 
 }  // namespace ui

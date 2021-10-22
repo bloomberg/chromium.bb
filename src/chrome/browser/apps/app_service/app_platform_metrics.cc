@@ -13,6 +13,10 @@
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +35,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/types_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
@@ -42,14 +47,15 @@
 #include "extensions/common/extension.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/aura/window.h"
 
 namespace {
 
 // UMA metrics for a snapshot count of installed apps.
 constexpr char kAppsCountHistogramPrefix[] = "Apps.AppsCount.";
-constexpr char kAppsCountPerInstallSourceHistogramPrefix[] =
-    "Apps.AppsCountPerInstallSource.";
+constexpr char kAppsCountPerInstallReasonHistogramPrefix[] =
+    "Apps.AppsCountPerInstallReason.";
 constexpr char kAppsRunningDurationHistogramPrefix[] = "Apps.RunningDuration.";
 constexpr char kAppsRunningPercentageHistogramPrefix[] =
     "Apps.RunningPercentage.";
@@ -58,17 +64,18 @@ constexpr char kAppsUsageTimeHistogramPrefix[] = "Apps.UsageTime.";
 constexpr char kAppsUsageTimeHistogramPrefixV2[] = "Apps.UsageTimeV2.";
 constexpr char kAppPreviousReadinessStatus[] = "Apps.PreviousReadinessStatus.";
 
-constexpr char kInstallSourceUnknownHistogram[] = "Unknown";
-constexpr char kInstallSourceSystemHistogram[] = "System";
-constexpr char kInstallSourcePolicyHistogram[] = "Policy";
-constexpr char kInstallSourceOemHistogram[] = "Oem";
-constexpr char kInstallSourcePreloadHistogram[] = "Preload";
-constexpr char kInstallSourceSyncHistogram[] = "Sync";
-constexpr char kInstallSourceUserHistogram[] = "User";
+constexpr char kInstallReasonUnknownHistogram[] = "Unknown";
+constexpr char kInstallReasonSystemHistogram[] = "System";
+constexpr char kInstallReasonPolicyHistogram[] = "Policy";
+constexpr char kInstallReasonOemHistogram[] = "Oem";
+constexpr char kInstallReasonPreloadHistogram[] = "Preload";
+constexpr char kInstallReasonSyncHistogram[] = "Sync";
+constexpr char kInstallReasonUserHistogram[] = "User";
+constexpr char kInstallReasonSubAppHistogram[] = "SubApp";
 
-constexpr base::TimeDelta kMinDuration = base::TimeDelta::FromSeconds(1);
-constexpr base::TimeDelta kMaxDuration = base::TimeDelta::FromDays(1);
-constexpr base::TimeDelta kMaxUsageDuration = base::TimeDelta::FromMinutes(5);
+constexpr base::TimeDelta kMinDuration = base::Seconds(1);
+constexpr base::TimeDelta kMaxDuration = base::Days(1);
+constexpr base::TimeDelta kMaxUsageDuration = base::Minutes(5);
 constexpr int kDurationBuckets = 100;
 constexpr int kUsageTimeBuckets = 50;
 
@@ -157,7 +164,7 @@ apps::AppTypeName GetAppTypeNameForWebApp(
             // The app type may be kSystemWeb (system web apps in Ash when
             // Lacros web apps are enabled), or kWeb (all other cases).
             type_name =
-                (update.InstallSource() == apps::mojom::InstallSource::kSystem)
+                (update.InstallReason() == apps::mojom::InstallReason::kSystem)
                     ? apps::AppTypeName::kSystemWeb
                     : apps::AppTypeName::kWeb;
             window_mode = update.WindowMode();
@@ -183,22 +190,24 @@ apps::AppTypeName GetAppTypeNameForWebApp(
   return apps::AppTypeName::kWeb;
 }
 
-std::string GetInstallSource(apps::mojom::InstallSource install_source) {
-  switch (install_source) {
-    case apps::mojom::InstallSource::kUnknown:
-      return kInstallSourceUnknownHistogram;
-    case apps::mojom::InstallSource::kSystem:
-      return kInstallSourceSystemHistogram;
-    case apps::mojom::InstallSource::kPolicy:
-      return kInstallSourcePolicyHistogram;
-    case apps::mojom::InstallSource::kOem:
-      return kInstallSourceOemHistogram;
-    case apps::mojom::InstallSource::kDefault:
-      return kInstallSourcePreloadHistogram;
-    case apps::mojom::InstallSource::kSync:
-      return kInstallSourceSyncHistogram;
-    case apps::mojom::InstallSource::kUser:
-      return kInstallSourceUserHistogram;
+std::string GetInstallReason(apps::mojom::InstallReason install_reason) {
+  switch (install_reason) {
+    case apps::mojom::InstallReason::kUnknown:
+      return kInstallReasonUnknownHistogram;
+    case apps::mojom::InstallReason::kSystem:
+      return kInstallReasonSystemHistogram;
+    case apps::mojom::InstallReason::kPolicy:
+      return kInstallReasonPolicyHistogram;
+    case apps::mojom::InstallReason::kOem:
+      return kInstallReasonOemHistogram;
+    case apps::mojom::InstallReason::kDefault:
+      return kInstallReasonPreloadHistogram;
+    case apps::mojom::InstallReason::kSync:
+      return kInstallReasonSyncHistogram;
+    case apps::mojom::InstallReason::kUser:
+      return kInstallReasonUserHistogram;
+    case apps::mojom::InstallReason::kSubApp:
+      return kInstallReasonSubAppHistogram;
   }
 }
 
@@ -320,6 +329,52 @@ apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
   }
 }
 
+// Returns AppTypeNameV2 used for app launch metrics.
+apps::AppTypeNameV2 GetAppTypeNameV2(Profile* profile,
+                                     apps::mojom::AppType app_type,
+                                     const std::string& app_id,
+                                     apps::mojom::LaunchContainer container) {
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+      return apps::AppTypeNameV2::kUnknown;
+    case apps::mojom::AppType::kArc:
+      return apps::AppTypeNameV2::kArc;
+    case apps::mojom::AppType::kBuiltIn:
+      return apps::AppTypeNameV2::kBuiltIn;
+    case apps::mojom::AppType::kCrostini:
+      return apps::AppTypeNameV2::kCrostini;
+    case apps::mojom::AppType::kExtension:
+      return container == apps::mojom::LaunchContainer::kLaunchContainerWindow
+                 ? apps::AppTypeNameV2::kChromeAppWindow
+                 : apps::AppTypeNameV2::kChromeAppTab;
+    case apps::mojom::AppType::kWeb: {
+      apps::AppTypeName app_type_name =
+          GetAppTypeNameForWebApp(profile, app_id, container);
+      if (app_type_name == apps::AppTypeName::kChromeBrowser) {
+        return apps::AppTypeNameV2::kWebTab;
+      } else if (app_type_name == apps::AppTypeName::kSystemWeb) {
+        return apps::AppTypeNameV2::kSystemWeb;
+      } else {
+        return apps::AppTypeNameV2::kWebWindow;
+      }
+    }
+    case apps::mojom::AppType::kMacOs:
+      return apps::AppTypeNameV2::kMacOs;
+    case apps::mojom::AppType::kPluginVm:
+      return apps::AppTypeNameV2::kPluginVm;
+    case apps::mojom::AppType::kStandaloneBrowser:
+      return apps::AppTypeNameV2::kStandaloneBrowser;
+    case apps::mojom::AppType::kRemote:
+      return apps::AppTypeNameV2::kRemote;
+    case apps::mojom::AppType::kBorealis:
+      return apps::AppTypeNameV2::kBorealis;
+    case apps::mojom::AppType::kSystemWeb:
+      return apps::AppTypeNameV2::kSystemWeb;
+    case apps::mojom::AppType::kStandaloneBrowserExtension:
+      return apps::AppTypeNameV2::kStandaloneBrowserExtension;
+  }
+}
+
 // Records the number of times Chrome OS apps are launched grouped by the launch
 // source.
 void RecordAppLaunchSource(apps::mojom::LaunchSource launch_source) {
@@ -333,12 +388,24 @@ void RecordAppLaunchPerAppType(apps::AppTypeName app_type_name) {
     return;
   }
 
-  base::UmaHistogramEnumeration("Apps.AppLaunchPerAppType", app_type_name);
+  base::UmaHistogramEnumeration(apps::kAppLaunchPerAppTypeHistogramName,
+                                app_type_name);
+}
+
+// Records the number of times Chrome OS apps are launched grouped by the app
+// type V2.
+void RecordAppLaunchPerAppTypeV2(apps::AppTypeNameV2 app_type_name_v2) {
+  if (app_type_name_v2 == apps::AppTypeNameV2::kUnknown) {
+    return;
+  }
+
+  base::UmaHistogramEnumeration(apps::kAppLaunchPerAppTypeV2HistogramName,
+                                app_type_name_v2);
 }
 
 // Due to the privacy limitation, only ARC apps, Chrome apps and web apps(PWA),
-// system web apps and builtin apps are recorded because they are synced to
-// server/cloud, or part of OS. Other app types, e.g. Crostini, remote apps,
+// system web apps, builtin apps and Crostini apps are recorded because they are
+// synced to server/cloud, or part of OS. Other app types, e.g. remote apps,
 // etc, are not recorded. So returns true if the app_type_name is allowed to
 // record UKM. Otherwise, returns false.
 //
@@ -351,9 +418,9 @@ bool ShouldRecordUkmForAppTypeName(apps::AppTypeName app_type_name) {
     case apps::AppTypeName::kChromeBrowser:
     case apps::AppTypeName::kWeb:
     case apps::AppTypeName::kSystemWeb:
+    case apps::AppTypeName::kCrostini:
       return true;
     case apps::AppTypeName::kUnknown:
-    case apps::AppTypeName::kCrostini:
     case apps::AppTypeName::kMacOs:
     case apps::AppTypeName::kPluginVm:
     case apps::AppTypeName::kStandaloneBrowser:
@@ -393,6 +460,10 @@ constexpr char kAppRunningDuration[] =
     "app_platform_metrics.app_running_duration";
 constexpr char kAppActivatedCount[] =
     "app_platform_metrics.app_activated_count";
+
+constexpr char kAppLaunchPerAppTypeHistogramName[] = "Apps.AppLaunchPerAppType";
+constexpr char kAppLaunchPerAppTypeV2HistogramName[] =
+    "Apps.AppLaunchPerAppTypeV2";
 
 constexpr char kArcHistogramName[] = "Arc";
 constexpr char kBuiltInHistogramName[] = "BuiltIn";
@@ -534,6 +605,8 @@ void RecordAppLaunchMetrics(Profile* profile,
   RecordAppLaunchSource(launch_source);
   RecordAppLaunchPerAppType(
       GetAppTypeName(profile, app_type, app_id, container));
+  RecordAppLaunchPerAppTypeV2(
+      GetAppTypeNameV2(profile, app_type, app_id, container));
 
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   if (proxy && proxy->AppPlatformMetrics()) {
@@ -577,12 +650,12 @@ std::string AppPlatformMetrics::GetAppsCountHistogramNameForTest(
 
 // static
 std::string
-AppPlatformMetrics::GetAppsCountPerInstallSourceHistogramNameForTest(
+AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
     AppTypeName app_type_name,
-    apps::mojom::InstallSource install_source) {
-  return kAppsCountPerInstallSourceHistogramPrefix +
+    apps::mojom::InstallReason install_reason) {
+  return kAppsCountPerInstallReasonHistogramPrefix +
          GetAppTypeHistogramName(app_type_name) + "." +
-         GetInstallSource(install_source);
+         GetInstallReason(install_reason);
 }
 
 // static
@@ -722,7 +795,8 @@ void AppPlatformMetrics::OnAppUpdate(const apps::AppUpdate& update) {
   }
 
   if (!update.ReadinessChanged() ||
-      update.Readiness() != apps::mojom::Readiness::kReady) {
+      update.Readiness() != apps::mojom::Readiness::kReady ||
+      apps_util::IsInstalled(update.PriorReadiness())) {
     return;
   }
 
@@ -745,7 +819,7 @@ void AppPlatformMetrics::OnInstanceUpdate(const apps::InstanceUpdate& update) {
   }
 
   auto app_id = update.AppId();
-  auto app_type = app_registry_cache_.GetAppType(app_id);
+  auto app_type = GetAppType(app_id);
   if (app_type == apps::mojom::AppType::kUnknown) {
     return;
   }
@@ -983,11 +1057,11 @@ void AppPlatformMetrics::ClearRunningDuration() {
 
 void AppPlatformMetrics::RecordAppsCount(apps::mojom::AppType app_type) {
   std::map<AppTypeName, int> app_count;
-  std::map<AppTypeName, std::map<apps::mojom::InstallSource, int>>
-      app_count_per_install_source;
+  std::map<AppTypeName, std::map<apps::mojom::InstallReason, int>>
+      app_count_per_install_reason;
   app_registry_cache_.ForEachApp(
       [app_type, this, &app_count,
-       &app_count_per_install_source](const apps::AppUpdate& update) {
+       &app_count_per_install_reason](const apps::AppUpdate& update) {
         if (app_type != apps::mojom::AppType::kUnknown &&
             (update.AppType() != app_type ||
              update.AppId() == extension_misc::kChromeAppId)) {
@@ -1004,7 +1078,7 @@ void AppPlatformMetrics::RecordAppsCount(apps::mojom::AppType app_type) {
         }
 
         ++app_count[app_type_name];
-        ++app_count_per_install_source[app_type_name][update.InstallSource()];
+        ++app_count_per_install_reason[app_type_name][update.InstallReason()];
       });
 
   for (auto it : app_count) {
@@ -1016,11 +1090,11 @@ void AppPlatformMetrics::RecordAppsCount(apps::mojom::AppType app_type) {
       // often.
       base::UmaHistogramCounts1000(kAppsCountHistogramPrefix + histogram_name,
                                    it.second);
-      for (auto install_source_it : app_count_per_install_source[it.first]) {
+      for (auto install_reason_it : app_count_per_install_reason[it.first]) {
         base::UmaHistogramCounts1000(
-            kAppsCountPerInstallSourceHistogramPrefix + histogram_name + "." +
-                GetInstallSource(install_source_it.first),
-            install_source_it.second);
+            kAppsCountPerInstallReasonHistogramPrefix + histogram_name + "." +
+                GetInstallReason(install_reason_it.first),
+            install_reason_it.second);
       }
     }
   }
@@ -1146,7 +1220,8 @@ void AppPlatformMetrics::RecordAppsInstallUkm(const apps::AppUpdate& update,
 
   ukm::builders::ChromeOSApp_InstalledApp builder(source_id);
   builder.SetAppType((int)app_type_name)
-      .SetInstallSource((int)update.InstallSource())
+      .SetInstallReason((int)update.InstallReason())
+      .SetInstallSource2((int)update.InstallSource())
       .SetInstallTime((int)install_time)
       .SetUserDeviceMatrix(user_type_by_device_type_)
       .Record(ukm::UkmRecorder::Get());
@@ -1178,10 +1253,12 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(const std::string& app_id) {
     case apps::mojom::AppType::kWeb:
     case apps::mojom::AppType::kSystemWeb: {
       std::string publisher_id;
-      app_registry_cache_.ForOneApp(
-          app_id, [&publisher_id](const apps::AppUpdate& update) {
-            publisher_id = update.PublisherId();
-          });
+      apps::mojom::InstallReason install_reason;
+      app_registry_cache_.ForOneApp(app_id, [&publisher_id, &install_reason](
+                                                const apps::AppUpdate& update) {
+        publisher_id = update.PublisherId();
+        install_reason = update.InstallReason();
+      });
       if (publisher_id.empty()) {
         return ukm::kInvalidSourceId;
       }
@@ -1190,12 +1267,21 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(const std::string& app_id) {
             publisher_id);
         break;
       }
+      if (app_type == apps::mojom::AppType::kSystemWeb ||
+          install_reason == apps::mojom::InstallReason::kSystem) {
+        // For system web apps, call GetSourceIdForChromeApp to record the app
+        // id because the url could be filtered by the server side.
+        source_id = ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(app_id);
+        break;
+      }
       source_id =
           ukm::AppSourceUrlRecorder::GetSourceIdForPWA(GURL(publisher_id));
       break;
     }
-    case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kCrostini:
+      source_id = GetSourceIdForCrostini(app_id);
+      break;
+    case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kMacOs:
     case apps::mojom::AppType::kPluginVm:
     case apps::mojom::AppType::kStandaloneBrowser:
@@ -1234,6 +1320,38 @@ void AppPlatformMetrics::RecordAppReadinessStatus(
   }
 
   base::UmaHistogramEnumeration(histogram_name, readiness);
+}
+
+ukm::SourceId AppPlatformMetrics::GetSourceIdForCrostini(
+    const std::string& app_id) {
+  if (app_id == crostini::kCrostiniTerminalSystemAppId) {
+    // The terminal is special, since it's actually a web app (though one we
+    // count as Crostini) it doesn't have a desktop id, so give it a fake one.
+    return ukm::AppSourceUrlRecorder::GetSourceIdForCrostini("CrostiniTerminal",
+                                                             "Terminal");
+  }
+  auto* registry =
+      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_);
+  auto registration = registry->GetRegistration(app_id);
+  if (!registration) {
+    return ukm::kInvalidSourceId;
+  }
+  auto desktop_id = registration->DesktopFileId() == ""
+                        ? "NoId"
+                        : registration->DesktopFileId();
+  return ukm::AppSourceUrlRecorder::GetSourceIdForCrostini(
+      desktop_id, registration->Name());
+}
+
+apps::mojom::AppType AppPlatformMetrics::GetAppType(const std::string& app_id) {
+  auto type = app_registry_cache_.GetAppType(app_id);
+  if (type != mojom::AppType::kUnknown) {
+    return type;
+  }
+  if (crostini::IsCrostiniShelfAppId(profile_, app_id)) {
+    return mojom::AppType::kCrostini;
+  }
+  return mojom::AppType::kUnknown;
 }
 
 }  // namespace apps

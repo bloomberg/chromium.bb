@@ -618,8 +618,9 @@ class BrowserAutofillManagerTest : public testing::Test {
 
     // Mock payments response.
     payments::PaymentsClient::UnmaskResponseDetails response;
-    response.card_type = is_virtual_card ? AutofillClient::VIRTUAL_CARD
-                                         : AutofillClient::SERVER_CARD;
+    response.card_type = is_virtual_card
+                             ? AutofillClient::PaymentsRpcCardType::kVirtualCard
+                             : AutofillClient::PaymentsRpcCardType::kServerCard;
     full_card_request->OnDidGetRealPan(result,
                                        response.with_real_pan(real_pan));
   }
@@ -750,8 +751,7 @@ class BrowserAutofillManagerTest : public testing::Test {
                             "04", "2999", "1");
     credit_card1.set_guid("00000000-0000-0000-0000-000000000004");
     credit_card1.set_use_count(10);
-    credit_card1.set_use_date(AutofillClock::Now() -
-                              base::TimeDelta::FromDays(5));
+    credit_card1.set_use_date(AutofillClock::Now() - base::Days(5));
     personal_data_.AddCreditCard(credit_card1);
 
     CreditCard credit_card2;
@@ -760,8 +760,7 @@ class BrowserAutofillManagerTest : public testing::Test {
                             "10", "2998", "1");
     credit_card2.set_guid("00000000-0000-0000-0000-000000000005");
     credit_card2.set_use_count(5);
-    credit_card2.set_use_date(AutofillClock::Now() -
-                              base::TimeDelta::FromDays(4));
+    credit_card2.set_use_date(AutofillClock::Now() - base::Days(4));
     personal_data_.AddCreditCard(credit_card2);
 
     CreditCard credit_card3;
@@ -1871,46 +1870,6 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   external_delegate_->CheckSuggestionCount(kDefaultPageID, 2);
 }
 
-TEST_P(BrowserAutofillManagerStructuredProfileTest,
-       GetCreditCardSuggestions_IPHFeatureSetForVirtualCards) {
-  personal_data_.ClearCreditCards();
-  // Add a Virtual Card.
-  CreditCard virtual_card;
-  test::SetCreditCardInfo(&virtual_card, "Lorem Ispium",
-                          "5555555555554444",  // Mastercard
-                          "10", "2998", "1");
-  virtual_card.set_guid("00000000-0000-0000-0000-000000000007");
-  virtual_card.set_record_type(CreditCard::RecordType::VIRTUAL_CARD);
-  personal_data_.AddServerCreditCard(virtual_card);
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-  // Set the field being edited to credit card number field.
-  const FormFieldData& credit_card_number_field = form.fields[1];
-  const std::string card_value = base::JoinString(
-      {"Mastercard  ", test::ObfuscatedCardDigitsAsUTF8("4444")}, "");
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string card_label = std::string("10/98");
-#else
-  const std::string card_label = std::string("Expires on 10/98");
-#endif
-  GetAutofillSuggestions(form, credit_card_number_field);
-
-  // Assert that there is only one credit card suggestions returned.
-  external_delegate_->CheckSuggestionCount(kDefaultPageID, 1);
-  auto expected_suggestion =
-      Suggestion(card_value, card_label, kMasterCard,
-                 browser_autofill_manager_->GetPackedCreditCardID(7));
-#if defined(OS_ANDROID)
-  // The IPH feature is available only on Android.
-  expected_suggestion.feature_for_iph =
-      feature_engagement::kIPHKeyboardAccessoryPaymentVirtualCardFeature.name;
-#endif  // OS_ANDROID
-  CheckSuggestions(kDefaultPageID, expected_suggestion);
-}
-
 // Test that we will eventually return the credit card signin promo when there
 // are no credit card suggestions and the promo is active. See the tests in
 // AutofillExternalDelegateTest that test whether the promo is added.
@@ -2059,8 +2018,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
                           "5231567890123456",  // Mastercard
                           "05", "2999", "1");
   credit_card.set_guid("00000000-0000-0000-0000-000000000007");
-  credit_card.set_use_date(AutofillClock::Now() -
-                           base::TimeDelta::FromDays(15));
+  credit_card.set_use_date(AutofillClock::Now() - base::Days(15));
   personal_data_.AddCreditCard(credit_card);
 
   // Set up our form data.
@@ -2151,16 +2109,14 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
                           "2010", "1");
   credit_card1.set_guid("00000000-0000-0000-0000-000000000002");
   credit_card1.set_use_count(300);
-  credit_card1.set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(10));
+  credit_card1.set_use_date(AutofillClock::Now() - base::Days(10));
   personal_data_.AddCreditCard(credit_card1);
 
   // Add an expired card with a lower frecency score.
   CreditCard credit_card2("1141084B-72D7-4B73-90CF-3D6AC154673B",
                           test::kEmptyOrigin);
   credit_card2.set_use_count(3);
-  credit_card2.set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(1));
+  credit_card2.set_use_date(AutofillClock::Now() - base::Days(1));
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2011", "1");
   credit_card2.set_guid("00000000-0000-0000-0000-000000000003");
@@ -2224,14 +2180,14 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   CreditCard credit_card1(CreditCard::FULL_SERVER_CARD, "c789");
   test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
                           "4234567890123456" /* Visa */, "04", "2010", "1");
-  credit_card1.set_use_date(now - base::TimeDelta::FromDays(10));
+  credit_card1.set_use_date(now - base::Days(10));
   credit_card1.set_guid("00000000-0000-0000-0000-000000000001");
   personal_data_.AddServerCreditCard(credit_card1);
 
   // Add an expired masked card last used 180 days ago.
   CreditCard credit_card2(CreditCard::MASKED_SERVER_CARD, "c987");
   test::SetCreditCardInfo(&credit_card2, "Jane Doe", "6543", "01", "2010", "1");
-  credit_card2.set_use_date(now - base::TimeDelta::FromDays(181));
+  credit_card2.set_use_date(now - base::Days(181));
   credit_card2.SetNetworkForMaskedCard(kVisaCard);
   credit_card2.set_guid("00000000-0000-0000-0000-000000000002");
   personal_data_.AddServerCreditCard(credit_card2);
@@ -2239,7 +2195,7 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   // Add an expired local card last used 180 days ago.
   CreditCard credit_card3("1141084B-72D7-4B73-90CF-3D6AC154673B",
                           test::kEmptyOrigin);
-  credit_card3.set_use_date(now - base::TimeDelta::FromDays(182));
+  credit_card3.set_use_date(now - base::Days(182));
   test::SetCreditCardInfo(&credit_card3, "John Dillinger",
                           "378282246310005" /* American Express */, "01",
                           "2010", "1");
@@ -2883,7 +2839,7 @@ TEST_P(BrowserAutofillManagerLogAblationTest, TestLogging) {
   }
 
   // Advance time and possibly submit the form.
-  base::TimeDelta time_delta = base::TimeDelta::FromSeconds(42);
+  base::TimeDelta time_delta = base::Seconds(42);
   clock.Advance(time_delta);
   if (params.submit_form)
     FormSubmitted(form);
@@ -7659,7 +7615,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   CardUnmaskDelegate::UserProvidedUnmaskDetails details;
   details.cvc = u"123";
   full_card_unmask_delegate()->OnUnmaskPromptAccepted(details);
-  OnDidGetRealPan(AutofillClient::SUCCESS, "4012888888881881");
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess,
+                  "4012888888881881");
   browser_autofill_manager_->OnFormSubmitted(form, false,
                                              SubmissionSource::FORM_SUBMISSION);
 }
@@ -7675,7 +7632,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   details.exp_month = u"02";
   details.exp_year = u"2018";
   full_card_unmask_delegate()->OnUnmaskPromptAccepted(details);
-  OnDidGetRealPan(AutofillClient::SUCCESS, "4012888888881881");
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess,
+                  "4012888888881881");
 }
 
 TEST_P(BrowserAutofillManagerStructuredProfileTest,
@@ -8311,8 +8269,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormsSeen(mixed_forms);
 
   // Suggestions should always be displayed.
-  for (const FormFieldData& field : mixed_form.fields) {
-    GetAutofillSuggestions(mixed_form, field);
+  for (const FormFieldData& mixed_form_field : mixed_form.fields) {
+    GetAutofillSuggestions(mixed_form, mixed_form_field);
     EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
   }
 }
@@ -8352,8 +8310,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   browser_autofill_manager_->AddSeenFormStructure(std::move(form_structure));
 
   // Make sure the form can be autofilled.
-  for (const FormFieldData& field : form.fields) {
-    GetAutofillSuggestions(form, field);
+  for (const FormFieldData& form_field : form.fields) {
+    GetAutofillSuggestions(form, form_field);
     ASSERT_TRUE(external_delegate_->on_suggestions_returned_seen());
   }
 
@@ -8361,8 +8319,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   form.fields[0].css_classes += u"a";
 
   // Expect the form still can be autofilled.
-  for (const FormFieldData& field : form.fields) {
-    GetAutofillSuggestions(form, field);
+  for (const FormFieldData& form_field : form.fields) {
+    GetAutofillSuggestions(form, form_field);
     EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
   }
 
@@ -8371,8 +8329,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   form.action = net::AppendQueryParameter(form.action, "arg", "value");
 
   // Expect the form still can be autofilled.
-  for (const FormFieldData& field : form.fields) {
-    GetAutofillSuggestions(form, field);
+  for (const FormFieldData& form_field : form.fields) {
+    GetAutofillSuggestions(form, form_field);
     EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
   }
 }
@@ -8405,8 +8363,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormsSeen({form});
 
   // Suggestions should be displayed.
-  for (const FormFieldData& field : form.fields) {
-    GetAutofillSuggestions(form, field);
+  for (const FormFieldData& form_field : form.fields) {
+    GetAutofillSuggestions(form, form_field);
     EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
   }
 }
@@ -9284,69 +9242,6 @@ TEST_F(BrowserAutofillManagerTest, DontImportUpiIdWhenIncognito) {
   EXPECT_EQ(0, personal_data_.num_times_save_upi_id_called());
 }
 
-// Tests the vote generation for the address enhancement types.
-TEST_F(BrowserAutofillManagerTest, PossibleFieldTypesForEnhancementVotes) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kAutofillAddressEnhancementVotes},
-      {features::kAutofillEnableSupportForMoreStructureInAddresses});
-
-  std::vector<AutofillProfile> profiles = {AutofillProfile()};
-  profiles[0].SetRawInfo(ADDRESS_HOME_STREET_NAME, u"StreetName");
-  profiles[0].SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER, u"HouseNumber");
-  profiles[0].SetRawInfo(ADDRESS_HOME_PREMISE_NAME, u"Premise");
-  profiles[0].SetRawInfo(ADDRESS_HOME_SUBPREMISE, u"Subpremise");
-
-  FormData form;
-  FormFieldData field1;
-  test::CreateTestFormField("somelabel", "someid", "StreetName", "text",
-                            &field1);
-  form.fields.push_back(field1);
-  test::CreateTestFormField("somelabel", "someid", "HouseNumber", "text",
-                            &field1);
-  form.fields.push_back(field1);
-  test::CreateTestFormField("somelabel", "someid", "Premise", "text", &field1);
-  form.fields.push_back(field1);
-  test::CreateTestFormField("somelabel", "someid", "Subpremise", "text",
-                            &field1);
-  form.fields.push_back(field1);
-
-  FormStructure form_structure(form);
-
-  BrowserAutofillManager::DeterminePossibleFieldTypesForUploadForTest(
-      profiles, {}, std::u16string(), "en-us", &form_structure);
-
-  ASSERT_EQ(4U, form_structure.field_count());
-
-  EXPECT_EQ(form_structure.field(0)->possible_types(),
-            ServerFieldTypeSet({ADDRESS_HOME_STREET_NAME}));
-  EXPECT_EQ(form_structure.field(1)->possible_types(),
-            ServerFieldTypeSet({ADDRESS_HOME_HOUSE_NUMBER}));
-  EXPECT_EQ(form_structure.field(2)->possible_types(),
-            ServerFieldTypeSet({ADDRESS_HOME_PREMISE_NAME}));
-  EXPECT_EQ(form_structure.field(3)->possible_types(),
-            ServerFieldTypeSet({ADDRESS_HOME_SUBPREMISE}));
-
-  // Disable the feature and verify that no possible types are detected.
-  scoped_feature_list.Reset();
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAutofillAddressEnhancementVotes);
-
-  BrowserAutofillManager::DeterminePossibleFieldTypesForUploadForTest(
-      profiles, {}, std::u16string(), "en-us", &form_structure);
-
-  ASSERT_EQ(4U, form_structure.field_count());
-
-  EXPECT_EQ(form_structure.field(0)->possible_types(),
-            ServerFieldTypeSet({UNKNOWN_TYPE}));
-  EXPECT_EQ(form_structure.field(1)->possible_types(),
-            ServerFieldTypeSet({UNKNOWN_TYPE}));
-  EXPECT_EQ(form_structure.field(2)->possible_types(),
-            ServerFieldTypeSet({UNKNOWN_TYPE}));
-  EXPECT_EQ(form_structure.field(3)->possible_types(),
-            ServerFieldTypeSet({UNKNOWN_TYPE}));
-}
-
 TEST_F(BrowserAutofillManagerTest, PageLanguageGetsCorrectlySet) {
   FormData form;
   test::CreateTestAddressFormData(&form);
@@ -10055,8 +9950,7 @@ class BrowserAutofillManagerTestForSharingNickname
                             "378282246310005" /* American Express */, "04",
                             "2999", "1");
     local_card.set_use_count(3);
-    local_card.set_use_date(AutofillClock::Now() -
-                            base::TimeDelta::FromDays(1));
+    local_card.set_use_date(AutofillClock::Now() - base::Days(1));
     local_card.SetNickname(base::UTF8ToUTF16(local_nickname_));
     local_card.set_guid("00000000-0000-0000-0000-000000000001");
     return local_card;

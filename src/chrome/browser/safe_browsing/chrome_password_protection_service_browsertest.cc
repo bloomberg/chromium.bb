@@ -101,6 +101,11 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
  public:
   ChromePasswordProtectionServiceBrowserTest() {}
 
+  ChromePasswordProtectionServiceBrowserTest(
+      const ChromePasswordProtectionServiceBrowserTest&) = delete;
+  ChromePasswordProtectionServiceBrowserTest& operator=(
+      const ChromePasswordProtectionServiceBrowserTest&) = delete;
+
   void SetUp() override {
     ASSERT_TRUE(embedded_test_server()->Start());
     InProcessBrowserTest::SetUp();
@@ -201,7 +206,6 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
   base::CallbackListSubscription create_services_subscription_;
-  DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionServiceBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
@@ -388,8 +392,8 @@ IN_PROC_BROWSER_TEST_F(
   // Simulate removing the compromised credentials on mark site as legitimate
   // action.
   scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-      PasswordStoreFactory::GetInterfaceForProfile(
-          browser()->profile(), ServiceAccessType::EXPLICIT_ACCESS);
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::EXPLICIT_ACCESS);
 
   // In order to test removal, we need to make sure it was added first.
   const std::string kSignonRealm = "https://example.test";

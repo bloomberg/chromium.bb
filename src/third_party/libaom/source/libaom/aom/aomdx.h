@@ -425,6 +425,20 @@ enum aom_dec_control_id {
   /*!\brief Codec control function to get the S_FRAME coding information
    */
   AOMD_GET_S_FRAME_INFO,
+
+  /*!\brief Codec control function to get the show frame flag, int parameter
+   */
+  AOMD_GET_SHOW_FRAME_FLAG,
+
+  /*!\brief Codec control function to get the base q index of a frame, int
+   * parameter
+   */
+  AOMD_GET_BASE_Q_IDX,
+
+  /*!\brief Codec control function to get the order hint of a frame, unsigned
+   * int parameter
+   */
+  AOMD_GET_ORDER_HINT,
 };
 
 /*!\cond */

@@ -19,6 +19,7 @@ import {ElementsPanel} from './ElementsPanel.js';
 import {StyleEditorWidget} from './StyleEditorWidget.js';
 import type {StylePropertiesSection} from './StylesSidebarPane.js';
 import {CSSPropertyPrompt, StylesSidebarPane, StylesSidebarPropertyRenderer} from './StylesSidebarPane.js';
+import {getCssDeclarationAsJavascriptProperty} from './StylePropertyUtils.js';
 
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
@@ -83,6 +84,14 @@ const UIStrings = {
   * @description Title of the button that opens the CSS Grid editor in the Styles panel.
   */
   gridEditorButton: 'Open `grid` editor',
+  /**
+  *@description A context menu item in Styles panel to copy CSS declaration as JavaScript property.
+  */
+  copyCssDeclarationAsJs: 'Copy declaration as JS',
+  /**
+  *@description A context menu item in Styles panel to copy all declarations of CSS rule as JavaScript properties.
+  */
+  copyAllCssDeclarationsAsJs: 'Copy all declarations as JS',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -660,12 +669,22 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     if (this.valueElement && section && section.editable && this.property.name === 'display') {
       const propertyValue = this.property.trimmedValueWithoutImportant();
       if (propertyValue === 'flex' || propertyValue === 'inline-flex') {
-        this.listItemElement.appendChild(StyleEditorWidget.createTriggerButton(
-            this.parentPaneInternal, section, FlexboxEditor, i18nString(UIStrings.flexboxEditorButton)));
+        const button = StyleEditorWidget.createTriggerButton(
+            this.parentPaneInternal, section, FlexboxEditor, i18nString(UIStrings.flexboxEditorButton));
+        this.listItemElement.appendChild(button);
+        const helper = this.parentPaneInternal.swatchPopoverHelper();
+        if (helper.isShowing(StyleEditorWidget.instance())) {
+          helper.setAnchorElement(button);
+        }
       }
       if (propertyValue === 'grid' || propertyValue === 'inline-grid') {
-        this.listItemElement.appendChild(StyleEditorWidget.createTriggerButton(
-            this.parentPaneInternal, section, GridEditor, i18nString(UIStrings.gridEditorButton)));
+        const button = StyleEditorWidget.createTriggerButton(
+            this.parentPaneInternal, section, GridEditor, i18nString(UIStrings.gridEditorButton));
+        this.listItemElement.appendChild(button);
+        const helper = this.parentPaneInternal.swatchPopoverHelper();
+        if (helper.isShowing(StyleEditorWidget.instance())) {
+          helper.setAnchorElement(button);
+        }
       }
     }
 
@@ -836,6 +855,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
       this.viewComputedValue();
     });
 
+    contextMenu.clipboardSection().appendItem(
+        i18nString(UIStrings.copyCssDeclarationAsJs), this.copyCssDeclarationAsJs.bind(this));
+
+    contextMenu.defaultSection().appendItem(
+        i18nString(UIStrings.copyAllCssDeclarationsAsJs), this.copyAllCssDeclarationAsJs.bind(this));
+
     contextMenu.show();
   }
 
@@ -858,6 +883,19 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     const filterInput = (computedStyleWidget.input as HTMLInputElement);
     filterInput.value = this.property.name;
     filterInput.focus();
+  }
+
+  private copyCssDeclarationAsJs(): void {
+    const cssDeclarationValue = getCssDeclarationAsJavascriptProperty(this.property);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(cssDeclarationValue);
+  }
+
+  private copyAllCssDeclarationAsJs(): void {
+    const section = this.section() as StylePropertiesSection;
+    const leadingProperties = (section.style()).leadingProperties();
+    const cssDeclarationsAsJsProperties =
+        leadingProperties.filter(property => !property.disabled).map(getCssDeclarationAsJavascriptProperty);
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(cssDeclarationsAsJsProperties.join(',\n'));
   }
 
   private navigateToSource(element: Element, omitFocus?: boolean): void {

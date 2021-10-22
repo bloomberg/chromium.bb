@@ -504,14 +504,6 @@ static gl::TextureCaps GenerateTextureFormatCaps(const FunctionsGL *functions,
             functions->getInternalformativ(GL_RENDERBUFFER, queryInternalFormat, GL_SAMPLES,
                                            static_cast<GLsizei>(samples.size()), &samples[0]);
 
-            if (internalFormat == GL_STENCIL_INDEX8)
-            {
-                // The query below does generates an error with STENCIL_INDEX8 on NVIDIA driver
-                // 382.33. So for now we assume that the same sampling modes are conformant for
-                // STENCIL_INDEX8 as for DEPTH24_STENCIL8. Clean this up once the driver is fixed.
-                // http://anglebug.com/2059
-                queryInternalFormat = GL_DEPTH24_STENCIL8;
-            }
             for (size_t sampleIndex = 0; sampleIndex < samples.size(); sampleIndex++)
             {
                 if (features.limitMaxMSAASamplesTo4.enabled && samples[sampleIndex] > 4)
@@ -1337,40 +1329,40 @@ void GenerateCaps(const FunctionsGL *functions,
 
     // Extension support
     extensions->setTextureExtensionSupport(*textureCapsMap);
-    extensions->textureCompressionASTCHDRKHR =
-        extensions->textureCompressionASTCLDRKHR &&
+    extensions->textureCompressionAstcHdrKHR =
+        extensions->textureCompressionAstcLdrKHR &&
         functions->hasExtension("GL_KHR_texture_compression_astc_hdr");
-    extensions->textureCompressionSliced3dASTCKHR =
-        (extensions->textureCompressionASTCLDRKHR &&
+    extensions->textureCompressionAstcSliced3dKHR =
+        (extensions->textureCompressionAstcLdrKHR &&
          functions->hasExtension("GL_KHR_texture_compression_astc_sliced_3d")) ||
-        extensions->textureCompressionASTCHDRKHR;
+        extensions->textureCompressionAstcHdrKHR;
     extensions->elementIndexUintOES = functions->standard == STANDARD_GL_DESKTOP ||
                                       functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                       functions->hasGLESExtension("GL_OES_element_index_uint");
     extensions->getProgramBinaryOES = caps->programBinaryFormats.size() > 0;
-    extensions->readFormatBGRA      = functions->isAtLeastGL(gl::Version(1, 2)) ||
-                                 functions->hasGLExtension("GL_EXT_bgra") ||
-                                 functions->hasGLESExtension("GL_EXT_read_format_bgra");
+    extensions->readFormatBgraEXT   = functions->isAtLeastGL(gl::Version(1, 2)) ||
+                                    functions->hasGLExtension("GL_EXT_bgra") ||
+                                    functions->hasGLESExtension("GL_EXT_read_format_bgra");
     extensions->pixelBufferObjectNV = functions->isAtLeastGL(gl::Version(2, 1)) ||
                                       functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                       functions->hasGLExtension("GL_ARB_pixel_buffer_object") ||
                                       functions->hasGLExtension("GL_EXT_pixel_buffer_object") ||
                                       functions->hasGLESExtension("GL_NV_pixel_buffer_object");
-    extensions->glSyncARB    = nativegl::SupportsFenceSync(functions);
-    extensions->mapBufferOES = functions->isAtLeastGL(gl::Version(1, 5)) ||
+    extensions->syncARB      = nativegl::SupportsFenceSync(functions);
+    extensions->mapbufferOES = functions->isAtLeastGL(gl::Version(1, 5)) ||
                                functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                functions->hasGLESExtension("GL_OES_mapbuffer");
-    extensions->mapBufferRange = functions->isAtLeastGL(gl::Version(3, 0)) ||
-                                 functions->hasGLExtension("GL_ARB_map_buffer_range") ||
-                                 functions->isAtLeastGLES(gl::Version(3, 0)) ||
-                                 functions->hasGLESExtension("GL_EXT_map_buffer_range");
-    extensions->textureNPOTOES = functions->standard == STANDARD_GL_DESKTOP ||
+    extensions->mapBufferRangeEXT = functions->isAtLeastGL(gl::Version(3, 0)) ||
+                                    functions->hasGLExtension("GL_ARB_map_buffer_range") ||
+                                    functions->isAtLeastGLES(gl::Version(3, 0)) ||
+                                    functions->hasGLESExtension("GL_EXT_map_buffer_range");
+    extensions->textureNpotOES = functions->standard == STANDARD_GL_DESKTOP ||
                                  functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                  functions->hasGLESExtension("GL_OES_texture_npot");
-    // TODO(jmadill): Investigate emulating EXT_draw_buffers on ES 3.0's core functionality.
-    extensions->drawBuffers = functions->isAtLeastGL(gl::Version(2, 0)) ||
-                              functions->hasGLExtension("ARB_draw_buffers") ||
-                              functions->hasGLESExtension("GL_EXT_draw_buffers");
+    // Note that we could emulate EXT_draw_buffers on ES 3.0's core functionality.
+    extensions->drawBuffersEXT = functions->isAtLeastGL(gl::Version(2, 0)) ||
+                                 functions->hasGLExtension("ARB_draw_buffers") ||
+                                 functions->hasGLESExtension("GL_EXT_draw_buffers");
     extensions->drawBuffersIndexedEXT =
         !features.disableDrawBuffersIndexed.enabled &&
         (functions->isAtLeastGL(gl::Version(4, 0)) ||
@@ -1380,59 +1372,60 @@ void GenerateCaps(const FunctionsGL *functions,
          functions->hasGLESExtension("GL_OES_draw_buffers_indexed") ||
          functions->hasGLESExtension("GL_EXT_draw_buffers_indexed"));
     extensions->drawBuffersIndexedOES = extensions->drawBuffersIndexedEXT;
-    extensions->textureStorage        = functions->standard == STANDARD_GL_DESKTOP ||
-                                 functions->hasGLESExtension("GL_EXT_texture_storage");
-    extensions->textureFilterAnisotropic =
+    extensions->textureStorageEXT     = functions->standard == STANDARD_GL_DESKTOP ||
+                                    functions->hasGLESExtension("GL_EXT_texture_storage");
+    extensions->textureFilterAnisotropicEXT =
         functions->hasGLExtension("GL_EXT_texture_filter_anisotropic") ||
         functions->hasGLESExtension("GL_EXT_texture_filter_anisotropic");
-    extensions->occlusionQueryBoolean = nativegl::SupportsOcclusionQueries(functions);
-    extensions->maxTextureAnisotropy =
-        extensions->textureFilterAnisotropic
+    extensions->occlusionQueryBooleanEXT = nativegl::SupportsOcclusionQueries(functions);
+    caps->maxTextureAnisotropy =
+        extensions->textureFilterAnisotropicEXT
             ? QuerySingleGLFloat(functions, GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)
             : 0.0f;
     extensions->fenceNV = FenceNVGL::Supported(functions) || FenceNVSyncGL::Supported(functions);
-    extensions->blendMinMax = functions->isAtLeastGL(gl::Version(1, 5)) ||
-                              functions->hasGLExtension("GL_EXT_blend_minmax") ||
-                              functions->isAtLeastGLES(gl::Version(3, 0)) ||
-                              functions->hasGLESExtension("GL_EXT_blend_minmax");
+    extensions->blendMinmaxEXT = functions->isAtLeastGL(gl::Version(1, 5)) ||
+                                 functions->hasGLExtension("GL_EXT_blend_minmax") ||
+                                 functions->isAtLeastGLES(gl::Version(3, 0)) ||
+                                 functions->hasGLESExtension("GL_EXT_blend_minmax");
     extensions->framebufferBlitNV = functions->isAtLeastGL(gl::Version(3, 0)) ||
                                     functions->hasGLExtension("GL_EXT_framebuffer_blit") ||
                                     functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                     functions->hasGLESExtension("GL_NV_framebuffer_blit");
     extensions->framebufferBlitANGLE =
         extensions->framebufferBlitNV || functions->hasGLESExtension("GL_ANGLE_framebuffer_blit");
-    extensions->framebufferMultisample = extensions->framebufferBlitANGLE && caps->maxSamples > 0;
-    extensions->multisampledRenderToTexture =
+    extensions->framebufferMultisampleANGLE =
+        extensions->framebufferBlitANGLE && caps->maxSamples > 0;
+    extensions->multisampledRenderToTextureEXT =
         !features.disableMultisampledRenderToTexture.enabled &&
         (functions->hasGLESExtension("GL_EXT_multisampled_render_to_texture") ||
          functions->hasGLESExtension("GL_IMG_multisampled_render_to_texture"));
-    extensions->multisampledRenderToTexture2 =
+    extensions->multisampledRenderToTexture2EXT =
         !features.disableMultisampledRenderToTexture.enabled &&
-        extensions->multisampledRenderToTexture &&
+        extensions->multisampledRenderToTextureEXT &&
         functions->hasGLESExtension("GL_EXT_multisampled_render_to_texture2");
     extensions->standardDerivativesOES = functions->isAtLeastGL(gl::Version(2, 0)) ||
                                          functions->hasGLExtension("GL_ARB_fragment_shader") ||
                                          functions->hasGLESExtension("GL_OES_standard_derivatives");
-    extensions->shaderTextureLOD = functions->isAtLeastGL(gl::Version(3, 0)) ||
-                                   functions->hasGLExtension("GL_ARB_shader_texture_lod") ||
-                                   functions->hasGLESExtension("GL_EXT_shader_texture_lod");
-    extensions->fragDepth = functions->standard == STANDARD_GL_DESKTOP ||
-                            functions->hasGLESExtension("GL_EXT_frag_depth");
+    extensions->shaderTextureLodEXT = functions->isAtLeastGL(gl::Version(3, 0)) ||
+                                      functions->hasGLExtension("GL_ARB_shader_texture_lod") ||
+                                      functions->hasGLESExtension("GL_EXT_shader_texture_lod");
+    extensions->fragDepthEXT = functions->standard == STANDARD_GL_DESKTOP ||
+                               functions->hasGLESExtension("GL_EXT_frag_depth");
 
     // Support video texture extension on non Android backends.
     // TODO(crbug.com/776222): support Android and Apple devices.
-    extensions->webglVideoTexture = !IsAndroid() && !IsApple();
+    extensions->videoTextureWEBGL = !IsAndroid() && !IsApple();
 
     if (functions->hasGLExtension("GL_ARB_shader_viewport_layer_array") ||
         functions->hasGLExtension("GL_NV_viewport_array2"))
     {
-        extensions->multiview  = true;
-        extensions->multiview2 = true;
+        extensions->multiviewOVR  = true;
+        extensions->multiview2OVR = true;
         // GL_MAX_ARRAY_TEXTURE_LAYERS is guaranteed to be at least 256.
         const int maxLayers = QuerySingleGLInt(functions, GL_MAX_ARRAY_TEXTURE_LAYERS);
         // GL_MAX_VIEWPORTS is guaranteed to be at least 16.
         const int maxViewports       = QuerySingleGLInt(functions, GL_MAX_VIEWPORTS);
-        extensions->maxViews         = static_cast<GLuint>(std::min(maxLayers, maxViewports));
+        caps->maxViews               = static_cast<GLuint>(std::min(maxLayers, maxViewports));
         *multiviewImplementationType = MultiviewImplementationTypeGL::NV_VIEWPORT_ARRAY2;
     }
 
@@ -1452,46 +1445,46 @@ void GenerateCaps(const FunctionsGL *functions,
                                        functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                        functions->hasGLESExtension("GL_EXT_instanced_arrays");
     extensions->instancedArraysEXT = extensions->instancedArraysANGLE;
-    extensions->unpackSubimage     = functions->standard == STANDARD_GL_DESKTOP ||
+    extensions->unpackSubimageEXT  = functions->standard == STANDARD_GL_DESKTOP ||
+                                    functions->isAtLeastGLES(gl::Version(3, 0)) ||
+                                    functions->hasGLESExtension("GL_EXT_unpack_subimage");
+    extensions->shaderNoperspectiveInterpolationNV = functions->isAtLeastGL(gl::Version(3, 0));
+    extensions->packSubimageNV                     = functions->standard == STANDARD_GL_DESKTOP ||
                                  functions->isAtLeastGLES(gl::Version(3, 0)) ||
-                                 functions->hasGLESExtension("GL_EXT_unpack_subimage");
-    extensions->noperspectiveInterpolationNV = functions->isAtLeastGL(gl::Version(3, 0));
-    extensions->packSubimage                 = functions->standard == STANDARD_GL_DESKTOP ||
-                               functions->isAtLeastGLES(gl::Version(3, 0)) ||
-                               functions->hasGLESExtension("GL_NV_pack_subimage");
+                                 functions->hasGLESExtension("GL_NV_pack_subimage");
     extensions->vertexArrayObjectOES = functions->isAtLeastGL(gl::Version(3, 0)) ||
                                        functions->hasGLExtension("GL_ARB_vertex_array_object") ||
                                        functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                        functions->hasGLESExtension("GL_OES_vertex_array_object");
-    extensions->debugMarker = functions->isAtLeastGL(gl::Version(4, 3)) ||
-                              functions->hasGLExtension("GL_KHR_debug") ||
-                              functions->hasGLExtension("GL_EXT_debug_marker") ||
-                              functions->isAtLeastGLES(gl::Version(3, 2)) ||
-                              functions->hasGLESExtension("GL_KHR_debug") ||
-                              functions->hasGLESExtension("GL_EXT_debug_marker");
-    extensions->eglImageOES         = functions->hasGLESExtension("GL_OES_EGL_image");
-    extensions->eglImageExternalOES = functions->hasGLESExtension("GL_OES_EGL_image_external");
-    extensions->eglImageExternalWrapModesEXT =
+    extensions->debugMarkerEXT = functions->isAtLeastGL(gl::Version(4, 3)) ||
+                                 functions->hasGLExtension("GL_KHR_debug") ||
+                                 functions->hasGLExtension("GL_EXT_debug_marker") ||
+                                 functions->isAtLeastGLES(gl::Version(3, 2)) ||
+                                 functions->hasGLESExtension("GL_KHR_debug") ||
+                                 functions->hasGLESExtension("GL_EXT_debug_marker");
+    extensions->EGLImageOES         = functions->hasGLESExtension("GL_OES_EGL_image");
+    extensions->EGLImageExternalOES = functions->hasGLESExtension("GL_OES_EGL_image_external");
+    extensions->EGLImageExternalWrapModesEXT =
         functions->hasExtension("GL_EXT_EGL_image_external_wrap_modes");
-    extensions->eglImageExternalEssl3OES =
+    extensions->EGLImageExternalEssl3OES =
         functions->hasGLESExtension("GL_OES_EGL_image_external_essl3");
-    extensions->eglImageArray = functions->hasGLESExtension("GL_EXT_EGL_image_array");
+    extensions->EGLImageArrayEXT = functions->hasGLESExtension("GL_EXT_EGL_image_array");
 
-    extensions->eglSyncOES = functions->hasGLESExtension("GL_OES_EGL_sync");
+    extensions->EGLSyncOES = functions->hasGLESExtension("GL_OES_EGL_sync");
 
     if (!features.disableTimestampQueries.enabled &&
         (functions->isAtLeastGL(gl::Version(3, 3)) ||
          functions->hasGLExtension("GL_ARB_timer_query") ||
          functions->hasGLESExtension("GL_EXT_disjoint_timer_query")))
     {
-        extensions->disjointTimerQuery = true;
+        extensions->disjointTimerQueryEXT = true;
 
         // If we can't query the counter bits, leave them at 0.
         if (!features.queryCounterBitsGeneratesErrors.enabled)
         {
-            extensions->queryCounterBitsTimeElapsed =
+            caps->queryCounterBitsTimeElapsed =
                 QueryQueryValue(functions, GL_TIME_ELAPSED, GL_QUERY_COUNTER_BITS);
-            extensions->queryCounterBitsTimestamp =
+            caps->queryCounterBitsTimestamp =
                 QueryQueryValue(functions, GL_TIMESTAMP, GL_QUERY_COUNTER_BITS);
         }
     }
@@ -1499,46 +1492,46 @@ void GenerateCaps(const FunctionsGL *functions,
     // the EXT_multisample_compatibility is written against ES3.1 but can apply
     // to earlier versions so therefore we're only checking for the extension string
     // and not the specific GLES version.
-    extensions->multisampleCompatibility =
+    extensions->multisampleCompatibilityEXT =
         functions->isAtLeastGL(gl::Version(1, 3)) ||
         functions->hasGLESExtension("GL_EXT_multisample_compatibility");
 
-    extensions->framebufferMixedSamples =
+    extensions->framebufferMixedSamplesCHROMIUM =
         functions->hasGLExtension("GL_NV_framebuffer_mixed_samples") ||
         functions->hasGLESExtension("GL_NV_framebuffer_mixed_samples");
 
-    extensions->robustness = functions->isAtLeastGL(gl::Version(4, 5)) ||
-                             functions->hasGLExtension("GL_KHR_robustness") ||
-                             functions->hasGLExtension("GL_ARB_robustness") ||
-                             functions->isAtLeastGLES(gl::Version(3, 2)) ||
-                             functions->hasGLESExtension("GL_KHR_robustness") ||
-                             functions->hasGLESExtension("GL_EXT_robustness");
+    extensions->robustnessEXT = functions->isAtLeastGL(gl::Version(4, 5)) ||
+                                functions->hasGLExtension("GL_KHR_robustness") ||
+                                functions->hasGLExtension("GL_ARB_robustness") ||
+                                functions->isAtLeastGLES(gl::Version(3, 2)) ||
+                                functions->hasGLESExtension("GL_KHR_robustness") ||
+                                functions->hasGLESExtension("GL_EXT_robustness");
 
-    extensions->robustBufferAccessBehavior =
-        extensions->robustness &&
+    extensions->robustBufferAccessBehaviorKHR =
+        extensions->robustnessEXT &&
         (functions->hasGLExtension("GL_ARB_robust_buffer_access_behavior") ||
          functions->hasGLESExtension("GL_KHR_robust_buffer_access_behavior"));
 
-    extensions->copyTexture = true;
-    extensions->syncQuery   = SyncQueryGL::IsSupported(functions);
+    extensions->copyTextureCHROMIUM = true;
+    extensions->syncQueryCHROMIUM   = SyncQueryGL::IsSupported(functions);
 
     // Note that OES_texture_storage_multisample_2d_array support could be extended down to GL 3.2
     // if we emulated texStorage* API on top of texImage*.
-    extensions->textureStorageMultisample2DArrayOES =
+    extensions->textureStorageMultisample2dArrayOES =
         functions->isAtLeastGL(gl::Version(4, 2)) || functions->isAtLeastGLES(gl::Version(3, 2));
 
-    extensions->multiviewMultisample = extensions->textureStorageMultisample2DArrayOES &&
-                                       (extensions->multiview || extensions->multiview2);
+    extensions->multiviewMultisampleANGLE = extensions->textureStorageMultisample2dArrayOES &&
+                                            (extensions->multiviewOVR || extensions->multiview2OVR);
 
-    extensions->textureMultisample = functions->isAtLeastGL(gl::Version(3, 2)) ||
-                                     functions->hasGLExtension("GL_ARB_texture_multisample");
+    extensions->textureMultisampleANGLE = functions->isAtLeastGL(gl::Version(3, 2)) ||
+                                          functions->hasGLExtension("GL_ARB_texture_multisample");
 
-    extensions->textureSRGBDecode = functions->hasGLExtension("GL_EXT_texture_sRGB_decode") ||
-                                    functions->hasGLESExtension("GL_EXT_texture_sRGB_decode");
+    extensions->textureSRGBDecodeEXT = functions->hasGLExtension("GL_EXT_texture_sRGB_decode") ||
+                                       functions->hasGLESExtension("GL_EXT_texture_sRGB_decode");
 
     // ANGLE treats ETC1 as ETC2 for ES 3.0 and higher because it becomes a core format, and they
     // are backwards compatible.
-    extensions->compressedETC1RGB8SubTexture =
+    extensions->compressedETC1RGB8SubTextureEXT =
         functions->isAtLeastGLES(gl::Version(3, 0)) ||
         functions->hasGLESExtension("GL_EXT_compressed_ETC1_RGB8_sub_texture");
 
@@ -1552,42 +1545,42 @@ void GenerateCaps(const FunctionsGL *functions,
             // Apple Intel/AMD drivers do not correctly use the TEXTURE_SRGB_DECODE property of
             // sampler states.  Disable this extension when we would advertise any ES version
             // that has samplers.
-            extensions->textureSRGBDecode = false;
+            extensions->textureSRGBDecodeEXT = false;
         }
     }
 #endif
 
-    extensions->sRGBWriteControl = functions->isAtLeastGL(gl::Version(3, 0)) ||
-                                   functions->hasGLExtension("GL_EXT_framebuffer_sRGB") ||
-                                   functions->hasGLExtension("GL_ARB_framebuffer_sRGB") ||
-                                   functions->hasGLESExtension("GL_EXT_sRGB_write_control");
+    extensions->sRGBWriteControlEXT = functions->isAtLeastGL(gl::Version(3, 0)) ||
+                                      functions->hasGLExtension("GL_EXT_framebuffer_sRGB") ||
+                                      functions->hasGLExtension("GL_ARB_framebuffer_sRGB") ||
+                                      functions->hasGLESExtension("GL_EXT_sRGB_write_control");
 
 #if defined(ANGLE_PLATFORM_ANDROID)
     // SRGB blending does not appear to work correctly on the Nexus 5. Writing to an SRGB
     // framebuffer with GL_FRAMEBUFFER_SRGB enabled and then reading back returns the same value.
     // Disabling GL_FRAMEBUFFER_SRGB will then convert in the wrong direction.
-    extensions->sRGBWriteControl = false;
+    extensions->sRGBWriteControlEXT = false;
 
-    // BGRA formats do not appear to be accepted by the Nexus 5X driver dispite the extension being
+    // BGRA formats do not appear to be accepted by the Nexus 5X driver despite the extension being
     // exposed.
-    extensions->textureFormatBGRA8888 = false;
+    extensions->textureFormatBGRA8888EXT = false;
 #endif
 
     // EXT_discard_framebuffer can be implemented as long as glDiscardFramebufferEXT or
     // glInvalidateFramebuffer is available
-    extensions->discardFramebuffer = functions->isAtLeastGL(gl::Version(4, 3)) ||
-                                     functions->hasGLExtension("GL_ARB_invalidate_subdata") ||
-                                     functions->isAtLeastGLES(gl::Version(3, 0)) ||
-                                     functions->hasGLESExtension("GL_EXT_discard_framebuffer") ||
-                                     functions->hasGLESExtension("GL_ARB_invalidate_subdata");
+    extensions->discardFramebufferEXT = functions->isAtLeastGL(gl::Version(4, 3)) ||
+                                        functions->hasGLExtension("GL_ARB_invalidate_subdata") ||
+                                        functions->isAtLeastGLES(gl::Version(3, 0)) ||
+                                        functions->hasGLESExtension("GL_EXT_discard_framebuffer") ||
+                                        functions->hasGLESExtension("GL_ARB_invalidate_subdata");
 
-    extensions->translatedShaderSource = true;
+    extensions->translatedShaderSourceANGLE = true;
 
     if (functions->isAtLeastGL(gl::Version(3, 1)) ||
         functions->hasGLExtension("GL_ARB_texture_rectangle"))
     {
-        extensions->textureRectangle  = true;
-        caps->maxRectangleTextureSize = std::min(
+        extensions->textureRectangleANGLE = true;
+        caps->maxRectangleTextureSize     = std::min(
             QuerySingleGLInt(functions, GL_MAX_RECTANGLE_TEXTURE_SIZE_ANGLE), textureSizeLimit);
     }
 
@@ -1675,25 +1668,25 @@ void GenerateCaps(const FunctionsGL *functions,
     // EXT_blend_func_extended.
     // Note that this could be implemented also on top of native EXT_blend_func_extended, but it's
     // currently not fully implemented.
-    extensions->blendFuncExtended = !features.disableBlendFuncExtended.enabled &&
-                                    functions->standard == STANDARD_GL_DESKTOP &&
-                                    functions->hasGLExtension("GL_ARB_blend_func_extended");
-    if (extensions->blendFuncExtended)
+    extensions->blendFuncExtendedEXT = !features.disableBlendFuncExtended.enabled &&
+                                       functions->standard == STANDARD_GL_DESKTOP &&
+                                       functions->hasGLExtension("GL_ARB_blend_func_extended");
+    if (extensions->blendFuncExtendedEXT)
     {
         // TODO(http://anglebug.com/1085): Support greater values of
         // MAX_DUAL_SOURCE_DRAW_BUFFERS_EXT queried from the driver. See comments in ProgramGL.cpp
         // for more information about this limitation.
-        extensions->maxDualSourceDrawBuffers = 1;
+        caps->maxDualSourceDrawBuffers = 1;
     }
 
     // EXT_float_blend
     // Assume all desktop driver supports this by default.
-    extensions->floatBlend = functions->standard == STANDARD_GL_DESKTOP ||
-                             functions->hasGLESExtension("GL_EXT_float_blend") ||
-                             functions->isAtLeastGLES(gl::Version(3, 2));
+    extensions->floatBlendEXT = functions->standard == STANDARD_GL_DESKTOP ||
+                                functions->hasGLESExtension("GL_EXT_float_blend") ||
+                                functions->isAtLeastGLES(gl::Version(3, 2));
 
     // ANGLE_base_vertex_base_instance
-    extensions->baseVertexBaseInstance =
+    extensions->baseVertexBaseInstanceANGLE =
         functions->isAtLeastGL(gl::Version(3, 2)) || functions->isAtLeastGLES(gl::Version(3, 2)) ||
         functions->hasGLESExtension("GL_OES_draw_elements_base_vertex") ||
         functions->hasGLESExtension("GL_EXT_draw_elements_base_vertex");
@@ -1711,7 +1704,7 @@ void GenerateCaps(const FunctionsGL *functions,
     // ANGLE_compressed_texture_etc
     // Expose this extension only when we support the formats or we're running on top of a native
     // ES driver.
-    extensions->compressedTextureETC =
+    extensions->compressedTextureEtcANGLE =
         (features.allowEtcFormats.enabled || functions->standard == STANDARD_GL_ES) &&
         gl::DetermineCompressedTextureETCSupport(*textureCapsMap);
 
@@ -1725,27 +1718,27 @@ void GenerateCaps(const FunctionsGL *functions,
     if (features.unsizedsRGBReadPixelsDoesntTransform.enabled &&
         !functions->isAtLeastGLES(gl::Version(3, 0)))
     {
-        extensions->sRGB = false;
+        extensions->sRGBEXT = false;
     }
 
-    extensions->provokingVertex = functions->hasGLExtension("GL_ARB_provoking_vertex") ||
-                                  functions->hasGLExtension("GL_EXT_provoking_vertex") ||
-                                  functions->isAtLeastGL(gl::Version(3, 2));
+    extensions->provokingVertexANGLE = functions->hasGLExtension("GL_ARB_provoking_vertex") ||
+                                       functions->hasGLExtension("GL_EXT_provoking_vertex") ||
+                                       functions->isAtLeastGL(gl::Version(3, 2));
 
     extensions->textureExternalUpdateANGLE = true;
     extensions->texture3DOES               = functions->isAtLeastGL(gl::Version(1, 2)) ||
                                functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                functions->hasGLESExtension("GL_OES_texture_3D");
 
-    extensions->memoryObject = functions->hasGLExtension("GL_EXT_memory_object") ||
-                               functions->hasGLESExtension("GL_EXT_memory_object");
-    extensions->semaphore = functions->hasGLExtension("GL_EXT_semaphore") ||
-                            functions->hasGLESExtension("GL_EXT_semaphore");
-    extensions->memoryObjectFd = functions->hasGLExtension("GL_EXT_memory_object_fd") ||
-                                 functions->hasGLESExtension("GL_EXT_memory_object_fd");
-    extensions->semaphoreFd = !features.disableSemaphoreFd.enabled &&
-                              (functions->hasGLExtension("GL_EXT_semaphore_fd") ||
-                               functions->hasGLESExtension("GL_EXT_semaphore_fd"));
+    extensions->memoryObjectEXT = functions->hasGLExtension("GL_EXT_memory_object") ||
+                                  functions->hasGLESExtension("GL_EXT_memory_object");
+    extensions->semaphoreEXT = functions->hasGLExtension("GL_EXT_semaphore") ||
+                               functions->hasGLESExtension("GL_EXT_semaphore");
+    extensions->memoryObjectFdEXT = functions->hasGLExtension("GL_EXT_memory_object_fd") ||
+                                    functions->hasGLESExtension("GL_EXT_memory_object_fd");
+    extensions->semaphoreFdEXT = !features.disableSemaphoreFd.enabled &&
+                                 (functions->hasGLExtension("GL_EXT_semaphore_fd") ||
+                                  functions->hasGLESExtension("GL_EXT_semaphore_fd"));
     extensions->gpuShader5EXT = functions->isAtLeastGL(gl::Version(4, 0)) ||
                                 functions->isAtLeastGLES(gl::Version(3, 2)) ||
                                 functions->hasGLExtension("GL_ARB_gpu_shader5") ||
@@ -1801,7 +1794,7 @@ void GenerateCaps(const FunctionsGL *functions,
         LimitVersion(maxSupportedESVersion, gl::Version(3, 1));
     }
 
-    extensions->yuvTargetEXT = functions->hasGLESExtension("GL_EXT_YUV_target");
+    extensions->YUVTargetEXT = functions->hasGLESExtension("GL_EXT_YUV_target");
 
     // PVRTC1 textures must be squares on Apple platforms.
     if (IsApple())
@@ -2004,7 +1997,7 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
                             IsAndroid() || (IsApple() && (isIntel || isAMD || isNvidia)));
     ANGLE_FEATURE_CONDITION(features, limitMax3dArrayTextureSizeTo1024, limitMaxTextureSize);
 
-    ANGLE_FEATURE_CONDITION(features, allowClearForRobustResourceInit, IsApple());
+    ANGLE_FEATURE_CONDITION(features, allowClearForRobustResourceInit, false);
 
     // The WebGL conformance/uniforms/out-of-bounds-uniform-array-access test has been seen to fail
     // on AMD and Android devices.

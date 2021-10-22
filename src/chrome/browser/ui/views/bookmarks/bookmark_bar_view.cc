@@ -89,6 +89,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/types/event_type.h"
@@ -1435,14 +1436,13 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
                ? ui::ImageModel::FromImage(favicon::GetDefaultFavicon())
                : ui::ImageModel::FromImage(image);
   } else {
-    icon =
-        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kNormal,
-                                      ui::NativeTheme::kColorId_MenuIconColor);
+    icon = chrome::GetBookmarkFolderIcon(
+        chrome::BookmarkFolderIconType::kNormal, ui::kColorMenuIcon);
   }
 
   button_drag_utils::SetDragImage(
       node->url(), node->GetTitle(),
-      views::GetImageSkiaFromImageModel(icon, GetNativeTheme()), &press_pt,
+      views::GetImageSkiaFromImageModel(icon, GetColorProvider()), &press_pt,
       *widget, data);
   WriteBookmarkDragData(node, data);
 }
@@ -1838,8 +1838,16 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
             }
             break;
         }
-        // Set empty border for 6px horizontal padding.
-        button->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, 6)));
+        // Set empty border using the default horizontal padding (but leaving
+        // vertical empty). This provides enough space to render some
+        // background to the left and right of the label. There's no need to
+        // set the top and bottom margins because the bookmarks bar is a fixed
+        // height and the button will be stretched vertically to fit.
+        gfx::Insets insets =
+            GetLayoutProvider()->GetInsetsMetric(views::INSETS_LABEL_BUTTON);
+        insets.set_top(0);
+        insets.set_bottom(0);
+        button->SetBorder(views::CreateEmptyBorder(insets));
       } else {
         if (tp->HasCustomColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) {
           button->SetImageModel(
@@ -1851,8 +1859,7 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
           button->SetImageModel(
               views::Button::STATE_NORMAL,
               chrome::GetBookmarkFolderIcon(
-                  chrome::BookmarkFolderIconType::kNormal,
-                  ui::NativeTheme::kColorId_DefaultIconColor));
+                  chrome::BookmarkFolderIconType::kNormal, ui::kColorIcon));
         }
       }
     }
@@ -2006,7 +2013,7 @@ void BookmarkBarView::StartShowFolderDropMenuTimer(const BookmarkNode* node) {
       FROM_HERE,
       base::BindOnce(&BookmarkBarView::ShowDropFolderForNode,
                      show_folder_method_factory_.GetWeakPtr(), node),
-      base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
+      base::Milliseconds(views::GetMenuShowDelay()));
 }
 
 void BookmarkBarView::CalculateDropLocation(
@@ -2186,12 +2193,12 @@ views::Button* BookmarkBarView::DetermineViewToThrobFromRemove(
   const BookmarkNode* old_node = parent;
   size_t old_index_on_bb = old_index;
   while (old_node && old_node != bbn) {
-    const BookmarkNode* parent = old_node->parent();
-    if (parent == bbn) {
+    const BookmarkNode* old_parent = old_node->parent();
+    if (old_parent == bbn) {
       old_index_on_bb = static_cast<size_t>(bbn->GetIndexOf(old_node));
       break;
     }
-    old_node = parent;
+    old_node = old_parent;
   }
   if (old_node) {
     if (old_index_on_bb >= GetFirstHiddenNodeIndex()) {
@@ -2233,14 +2240,12 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
   } else {
     other_bookmarks_button_->SetImageModel(
         views::Button::STATE_NORMAL,
-        chrome::GetBookmarkFolderIcon(
-            chrome::BookmarkFolderIconType::kNormal,
-            ui::NativeTheme::kColorId_DefaultIconColor));
+        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kNormal,
+                                      ui::kColorIcon));
     managed_bookmarks_button_->SetImageModel(
         views::Button::STATE_NORMAL,
-        chrome::GetBookmarkFolderIcon(
-            chrome::BookmarkFolderIconType::kManaged,
-            ui::NativeTheme::kColorId_DefaultIconColor));
+        chrome::GetBookmarkFolderIcon(chrome::BookmarkFolderIconType::kManaged,
+                                      ui::kColorIcon));
   }
 
   if (apps_page_shortcut_->GetVisible())

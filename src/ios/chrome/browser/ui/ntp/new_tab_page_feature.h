@@ -7,10 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to choose between the legacy new tab page or the refactored one.
-// Use IsRefactoredNTP() instead of this constant directly.
-extern const base::Feature kRefactoredNTP;
-
 // Feature flag to enable showing a live preview for discover feed when opening
 // the feed context menu.
 extern const base::Feature kEnableDiscoverFeedPreview;
@@ -18,11 +14,22 @@ extern const base::Feature kEnableDiscoverFeedPreview;
 // Feature flag to enable improving the usage of memory of the NTP.
 extern const base::Feature kEnableNTPMemoryEnhancement;
 
-// Parameter to enable/disable the logging of the refactoredNTP.
-extern const char kRefactoredNTPLoggingEnabled[];
+// Feature flag to enable static resource serving for the discover feed.
+extern const base::Feature kEnableDiscoverFeedStaticResourceServing;
 
-// Whether the refactored NTP is used instead of the legacy one.
-bool IsRefactoredNTP();
+// Feature flag to enable discofeed endpoint for the discover feed.
+extern const base::Feature kEnableDiscoverFeedDiscoFeedEndpoint;
+
+// Feature flag to enable static resource serving for the discover feed.
+extern const base::Feature kEnableDiscoverFeedStaticResourceServing;
+
+// A parameter to indicate whether Reconstructed Templates is enabled for static
+// resource serving.
+extern const char kDiscoverFeedSRSReconstructedTemplatesEnabled[];
+
+// A parameter to indicate whether Preload Templates is enabled for static
+// resource serving.
+extern const char kDiscoverFeedSRSPreloadTemplatesEnabled[];
 
 // Whether the discover feed content preview is shown in the context menu.
 bool IsDiscoverFeedPreviewEnabled();

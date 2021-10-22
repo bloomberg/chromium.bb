@@ -27,7 +27,7 @@ using testing::IsEmpty;
 using testing::UnorderedElementsAre;
 
 constexpr char kAllowedRequestsHistogram[] =
-    "API.StorageAccess.AllowedRequests";
+    "API.StorageAccess.AllowedRequests2";
 
 constexpr char kDomainURL[] = "http://example.com";
 constexpr char kURL[] = "http://foo.com";
@@ -197,6 +197,21 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAUnblocks) {
             CONTENT_SETTING_BLOCK);
   EXPECT_EQ(settings.GetCookieSetting(third_url, top_level_url, nullptr),
             CONTENT_SETTING_BLOCK);
+
+  // If cookies are globally blocked, SAA grants should be ignored.
+  {
+    settings.set_content_settings(
+        {CreateSetting("*", "*", CONTENT_SETTING_BLOCK)});
+    settings.set_block_third_party_cookies(true);
+    base::HistogramTester histogram_tester;
+    EXPECT_EQ(settings.GetCookieSetting(url, top_level_url, nullptr),
+              CONTENT_SETTING_BLOCK);
+    histogram_tester.ExpectTotalCount(kAllowedRequestsHistogram, 1);
+    histogram_tester.ExpectBucketCount(
+        kAllowedRequestsHistogram,
+        static_cast<int>(net::cookie_util::StorageAccessResult::ACCESS_BLOCKED),
+        1);
+  }
 }
 
 // Subdomains of the granted embedding url should not gain access if a valid
@@ -269,8 +284,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAExpiredGrant) {
       {CreateSetting("*", "*", CONTENT_SETTING_ALLOW)});
   settings.set_block_third_party_cookies(true);
 
-  base::Time expiration_time =
-      base::Time::Now() + base::TimeDelta::FromSeconds(100);
+  base::Time expiration_time = base::Time::Now() + base::Seconds(100);
   settings.set_storage_access_grants(
       {CreateSetting(url.host(), top_level_url.host(), CONTENT_SETTING_ALLOW,
                      expiration_time)});
@@ -283,7 +297,7 @@ TEST_F(CookieSettingsTest, GetCookieSettingSAAExpiredGrant) {
 
   // If we fastforward past the expiration of our grant the result should be
   // CONTENT_SETTING_BLOCK now.
-  FastForwardTime(base::TimeDelta::FromSeconds(101));
+  FastForwardTime(base::Seconds(101));
   EXPECT_EQ(settings.GetCookieSetting(url, top_level_url, nullptr),
             CONTENT_SETTING_BLOCK);
 }
@@ -596,6 +610,19 @@ TEST_F(CookieSettingsTest, IsCookieAccessible_SamePartyConsideredFirstParty) {
   // not be accessible.
   settings.set_content_settings(
       {CreateSetting(kFPSMemberURL, "*", CONTENT_SETTING_BLOCK)});
+  EXPECT_FALSE(settings.IsCookieAccessible(
+      *sameparty_cookie, GURL(kFPSMemberURL), net::SiteForCookies(),
+      url::Origin::Create(GURL(kFPSOwnerURL))));
+  // It wasn't blocked by third-party cookie blocking settings, so we shouldn't
+  // record the metric.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Cookie.SameParty.BlockedByThirdPartyCookieBlockingSetting"),
+              ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
+
+  // If the SameParty cookie is blocked by the global default setting (i.e. if
+  // the user has blocked all cookies), it should not be accessible.
+  settings.set_content_settings(
+      {CreateSetting("*", "*", CONTENT_SETTING_BLOCK)});
   EXPECT_FALSE(settings.IsCookieAccessible(
       *sameparty_cookie, GURL(kFPSMemberURL), net::SiteForCookies(),
       url::Origin::Create(GURL(kFPSOwnerURL))));

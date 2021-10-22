@@ -68,6 +68,10 @@ const int64_t kIdShift = 1 << 16;
 // that window and browser commands are really triggering the paths that lead
 // to UKM logs.
 class TabActivityWatcherTest : public InProcessBrowserTest {
+ public:
+  TabActivityWatcherTest(const TabActivityWatcherTest&) = delete;
+  TabActivityWatcherTest& operator=(const TabActivityWatcherTest&) = delete;
+
  protected:
   TabActivityWatcherTest() {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
@@ -180,8 +184,6 @@ class TabActivityWatcherTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabActivityWatcherTest);
 };
 
 class TabActivityWatcherTestWithBackgroundLogDisabled
@@ -203,14 +205,14 @@ IN_PROC_BROWSER_TEST_F(TabActivityWatcherTestWithBackgroundLogDisabled,
   // Use test clock so tabs have non-zero backgrounded times.
   base::SimpleTestTickClock test_clock;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing(&test_clock);
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
 
   AddTabAtIndex(1, test_urls_[0], ui::PAGE_TRANSITION_LINK);
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
 
   browser()->tab_strip_model()->ActivateTabAt(
       0, {TabStripModel::GestureType::kOther});
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
 
   // A background tab is scored successfully.
   absl::optional<float> background_score =
@@ -553,19 +555,19 @@ IN_PROC_BROWSER_TEST_F(
   // Use test clock so tabs have non-zero backgrounded times.
   base::SimpleTestTickClock test_clock;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing(&test_clock);
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_urls_[0]));
   // Insert the tab@1.
   AddTabAtIndex(1, test_urls_[1], ui::PAGE_TRANSITION_LINK);
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
   // Insert the tab@2.
   AddTabAtIndex(2, test_urls_[2], ui::PAGE_TRANSITION_LINK);
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
   // Activate tab@0.
   browser()->tab_strip_model()->ActivateTabAt(
       0, {TabStripModel::GestureType::kOther});
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
 
   // TabManager_TabMetrics should not have been logged yet.
   EXPECT_EQ(0, ukm_entry_checker_->NumNewEntriesRecorded(kTabMetricsEntryName));
@@ -602,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(
   // label_id_1.
   browser()->tab_strip_model()->ActivateTabAt(
       1, {TabStripModel::GestureType::kOther});
-  test_clock.Advance(base::TimeDelta::FromMinutes(1));
+  test_clock.Advance(base::Minutes(1));
   {
     SCOPED_TRACE("");
     ukm_entry_checker_->ExpectNewEntry(

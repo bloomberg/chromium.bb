@@ -123,10 +123,8 @@ static av_cold int init(AVFilterContext *ctx)
         if (!pad.name)
             return AVERROR(ENOMEM);
 
-        if ((ret = ff_insert_inpad(ctx, i, &pad)) < 0) {
-            av_freep(&pad.name);
+        if ((ret = ff_append_inpad_free_name(ctx, &pad)) < 0)
             return ret;
-        }
     }
 
     return 0;
@@ -179,7 +177,8 @@ static int process_frame(FFFrameSync *fs)
         ff_fill_rectangle(&s->draw, &s->color, out->data, out->linesize,
                           0, 0, outlink->w, outlink->h);
 
-    ctx->internal->execute(ctx, process_slice, out, NULL, FFMIN(s->nb_inputs, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, process_slice, out, NULL,
+                      FFMIN(s->nb_inputs, ff_filter_get_nb_threads(ctx)));
 
     return ff_filter_frame(outlink, out);
 }
@@ -371,14 +370,10 @@ static int config_output(AVFilterLink *outlink)
 static av_cold void uninit(AVFilterContext *ctx)
 {
     StackContext *s = ctx->priv;
-    int i;
 
     ff_framesync_uninit(&s->fs);
     av_freep(&s->frames);
     av_freep(&s->items);
-
-    for (i = 0; i < ctx->nb_inputs; i++)
-        av_freep(&ctx->input_pads[i].name);
 }
 
 static int activate(AVFilterContext *ctx)
@@ -401,7 +396,6 @@ static const AVFilterPad outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 #if CONFIG_HSTACK_FILTER
@@ -415,7 +409,7 @@ const AVFilter ff_vf_hstack = {
     .priv_size     = sizeof(StackContext),
     .priv_class    = &hstack_class,
     .query_formats = query_formats,
-    .outputs       = outputs,
+    FILTER_OUTPUTS(outputs),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,
@@ -435,7 +429,7 @@ const AVFilter ff_vf_vstack = {
     .priv_size     = sizeof(StackContext),
     .priv_class    = &vstack_class,
     .query_formats = query_formats,
-    .outputs       = outputs,
+    FILTER_OUTPUTS(outputs),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,
@@ -462,7 +456,7 @@ const AVFilter ff_vf_xstack = {
     .priv_size     = sizeof(StackContext),
     .priv_class    = &xstack_class,
     .query_formats = query_formats,
-    .outputs       = outputs,
+    FILTER_OUTPUTS(outputs),
     .init          = init,
     .uninit        = uninit,
     .activate      = activate,

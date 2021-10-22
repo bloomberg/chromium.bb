@@ -1,6 +1,6 @@
 <style include="history-clusters-shared-style">
   :host {
-    cursor: pointer;
+    align-items: center;
     display: flex;
     height: 64px;
   }
@@ -16,30 +16,40 @@
     justify-content: space-between;
     min-width: 0;
     outline: none;
+    padding-inline-start: var(--cluster-padding-horizontal);
     user-select: none;
+  }
+
+  :host(:not([is-top-visit])) #header {
+    padding-inline-start: calc(var(--cluster-padding-horizontal) +
+                               var(--top-visit-favicon-size) +
+                               var(--favicon-margin));
   }
 
   :host-context(.focus-outline-visible) #header:focus {
     box-shadow: inset 0 0 0 2px var(--cr-focus-outline-color);
   }
 
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
   #start-justified {
     align-items: center;
-    color: inherit;
     display: flex;
     min-width: 0;
-    text-decoration: none;
   }
 
   #page-info {
     display: flex;
     flex-direction: column;
-    line-height: 28px;
     min-width: 0;
   }
 
   #title-and-annotations {
     display: flex;
+    line-height: 28px;
   }
 
   .annotation {
@@ -61,14 +71,15 @@
     font-size: .875rem;  /* 14px */
   }
 
-  #hostname {
-    color: var(--google-blue-600);
-  }
-
   :host([is-top-visit]) #title,
   :host([is-top-visit]) #hostname {
     font-size: 1.125rem;  /* 18px */
-    font-weight: 700;
+    font-weight: 500;
+  }
+
+  #hostname {
+    color: var(--url-hostname-color);
+    line-height: 20px;
   }
 
   #debug-info {
@@ -95,12 +106,25 @@
     flex-shrink: 0;
   }
 
+  :host(:not([is-top-visit])) #timestamp {
+    display: none;
+  }
+
   #actionMenuButton {
-    --cr-icon-button-margin-end: 1px;
+    --cr-icon-button-margin-end: 8px;
+  }
+
+  :host([is-top-visit]) #actionMenuButton {
+    --cr-icon-button-icon-size: 24px;
+  }
+
+  :host(:not([has-related-visits])) #removeAllButton {
+    display: none;
   }
 </style>
-<div id="header" tabindex="0">
-  <a id="start-justified" href="[[visit.normalizedUrl.url]]" tabindex="-1">
+<a id="header" href="[[visit.normalizedUrl.url]]" on-click="onClick_"
+    on-auxclick="onAuxClick_" on-keydown="onKeydown_">
+  <div id="start-justified">
     <page-favicon is-top-visit-favicon="[[isTopVisit]]"
         url="[[visit.normalizedUrl]]">
     </page-favicon>
@@ -112,19 +136,20 @@
         </template>
       </div>
       <span id="hostname" class="truncate" hidden="[[isSearchResultsPage_]]">
-        [[getHostnameFromUrl_(visit.normalizedUrl)]]
+        [[getHostname_(visit)]]
         <!-- Print the debug next to the hostname to keep layout the same. -->
         <span id="debug-info" hidden="[[!debugInfo_]]">[[debugInfo_]]</span>
       </span>
     </div>
-  </a>
+  </div>
   <div id="end-justified">
-    <div id="timestamp" hidden="[[!isTopVisit]]">[[visit.relativeDate]]</div>
+    <div id="timestamp">[[visit.relativeDate]]</div>
     <cr-icon-button id="actionMenuButton" class="icon-more-vert"
+        title="$i18n{actionMenuDescription}" aria-haspopup="menu"
         on-click="onActionMenuButtonClick_">
     </cr-icon-button>
   </div>
-</div>
+</a>
 
 <cr-lazy-render id="actionMenu">
   <template>
@@ -132,8 +157,8 @@
       <button class="dropdown-item" on-click="onRemoveSelfButtonClick_">
         $i18n{removeFromHistory}
       </button>
-      <button class="dropdown-item" on-click="onRemoveAllButtonClick_"
-          hidden="[[!hasRelatedVisits_]]">
+      <button id="removeAllButton" class="dropdown-item"
+          on-click="onRemoveAllButtonClick_">
         $i18n{removeAllFromHistory}
       </button>
     </cr-action-menu>

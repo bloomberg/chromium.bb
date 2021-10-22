@@ -60,6 +60,10 @@ class VideoFrameHandleReleaserImpl final
  public:
   VideoFrameHandleReleaserImpl() { DVLOG(3) << __func__; }
 
+  VideoFrameHandleReleaserImpl(const VideoFrameHandleReleaserImpl&) = delete;
+  VideoFrameHandleReleaserImpl& operator=(const VideoFrameHandleReleaserImpl&) =
+      delete;
+
   ~VideoFrameHandleReleaserImpl() final { DVLOG(3) << __func__; }
 
   // Register a VideoFrame to recieve release callbacks. A reference to |frame|
@@ -92,8 +96,6 @@ class VideoFrameHandleReleaserImpl final
  private:
   // TODO(sandersd): Also track age, so that an overall limit can be enforced.
   std::map<base::UnguessableToken, scoped_refptr<VideoFrame>> video_frames_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameHandleReleaserImpl);
 };
 
 MojoVideoDecoderService::MojoVideoDecoderService(
@@ -135,9 +137,16 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {
 void MojoVideoDecoderService::GetSupportedConfigs(
     GetSupportedConfigsCallback callback) {
   DVLOG(3) << __func__;
-  TRACE_EVENT0("media", "MojoVideoDecoderService::GetSupportedConfigs");
 
-  std::move(callback).Run(mojo_media_client_->GetSupportedVideoDecoderConfigs(),
+  mojo_media_client_->GetSupportedVideoDecoderConfigs(
+      base::BindOnce(&MojoVideoDecoderService::OnSupportedVideoDecoderConfigs,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void MojoVideoDecoderService::OnSupportedVideoDecoderConfigs(
+    GetSupportedConfigsCallback callback,
+    SupportedVideoDecoderConfigs configs) {
+  std::move(callback).Run(std::move(configs),
                           mojo_media_client_->GetDecoderImplementationType());
 }
 

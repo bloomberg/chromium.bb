@@ -89,6 +89,24 @@ void UninstallWebAppWithDialogFromStartupSwitch(const AppId& app_id,
 
 #endif  // defined(OS_WIN)
 
+DisplayMode GetExtensionDisplayMode(Profile* profile,
+                                    const extensions::Extension* extension) {
+  // Platform apps always open in an app window and their user preference is
+  // meaningless.
+  if (extension->is_platform_app())
+    return DisplayMode::kStandalone;
+
+  switch (extensions::GetLaunchContainer(
+      extensions::ExtensionPrefs::Get(profile), extension)) {
+    case extensions::LaunchContainer::kLaunchContainerWindow:
+    case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
+      return DisplayMode::kStandalone;
+    case extensions::LaunchContainer::kLaunchContainerTab:
+    case extensions::LaunchContainer::kLaunchContainerNone:
+      return DisplayMode::kBrowser;
+  }
+}
+
 }  // namespace
 
 // static
@@ -104,7 +122,11 @@ WebAppUiManagerImpl* WebAppUiManagerImpl::Get(
 
 WebAppUiManagerImpl::WebAppUiManagerImpl(Profile* profile)
     : dialog_manager_(std::make_unique<WebAppDialogManager>(profile)),
-      profile_(profile) {}
+      profile_(profile) {
+  // Register the source for the chrome://web-app-internals page.
+  content::URLDataSource::Add(
+      profile_, std::make_unique<WebAppInternalsSource>(profile_));
+}
 
 WebAppUiManagerImpl::~WebAppUiManagerImpl() = default;
 
@@ -129,10 +151,6 @@ void WebAppUiManagerImpl::Start() {
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&WebAppUiManagerImpl::OnExtensionSystemReady,
                                 weak_ptr_factory_.GetWeakPtr()));
-
-  // Register the source for the chrome://web-app-internals page.
-  content::URLDataSource::Add(
-      profile_, std::make_unique<WebAppInternalsSource>(profile_));
 
   BrowserList::AddObserver(this);
 }
@@ -210,20 +228,10 @@ bool WebAppUiManagerImpl::UninstallAndReplaceIfExists(
         app_sorting->SetPageOrdinal(to_app,
                                     app_sorting->GetPageOrdinal(from_app));
 
-        // User pref for window/tab launch.
-        switch (extensions::GetLaunchContainer(
-            extensions::ExtensionPrefs::Get(profile_), from_extension)) {
-          case extensions::LaunchContainer::kLaunchContainerWindow:
-          case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
-            sync_bridge_->SetAppUserDisplayMode(
-                to_app, DisplayMode::kStandalone, /*is_user_action=*/false);
-            break;
-          case extensions::LaunchContainer::kLaunchContainerTab:
-          case extensions::LaunchContainer::kLaunchContainerNone:
-            sync_bridge_->SetAppUserDisplayMode(to_app, DisplayMode::kBrowser,
-                                                /*is_user_action=*/false);
-            break;
-        }
+        sync_bridge_->SetAppUserDisplayMode(
+            to_app, GetExtensionDisplayMode(profile_, from_extension),
+            /*is_user_action=*/false);
+
         has_migrated = true;
         auto shortcut_info = web_app::ShortcutInfoForExtensionAndProfile(
             from_extension, profile_);

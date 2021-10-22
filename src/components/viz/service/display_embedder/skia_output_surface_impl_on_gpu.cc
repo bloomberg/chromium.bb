@@ -30,6 +30,7 @@
 #include "components/viz/service/display_embedder/skia_output_device_offscreen.h"
 #include "components/viz/service/display_embedder/skia_output_device_webview.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
+#include "components/viz/service/display_embedder/skia_render_copy_results.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
@@ -72,7 +73,7 @@
 #endif
 
 #if (BUILDFLAG(ENABLE_VULKAN) || BUILDFLAG(SKIA_USE_DAWN)) && \
-    (defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11))
+    defined(USE_OZONE_PLATFORM_X11)
 #include "components/viz/service/display_embedder/skia_output_device_x11.h"
 #endif
 
@@ -83,16 +84,8 @@
 #endif
 #endif
 
-#if defined(USE_OZONE) || defined(USE_X11)
-#include "ui/base/ui_base_features.h"
-#endif
-
 #if defined(OS_FUCHSIA)
 #include "components/viz/service/display_embedder/output_presenter_fuchsia.h"
-#endif
-
-#if defined(USE_X11)
-#include "components/viz/service/display_embedder/output_presenter_x11.h"
 #endif
 
 namespace viz {
@@ -122,268 +115,16 @@ base::RepeatingCallback<void(Args...)> CreateSafeRepeatingCallback(
 // Returns whether SkiaOutputDeviceX11 can be instantiated on this platform.
 bool MayFallBackToSkiaOutputDeviceX11() {
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
-    return ui::OzonePlatform::GetInstance()
-        ->GetPlatformProperties()
-        .skia_can_fall_back_to_x11;
-  }
-#endif
-#if defined(USE_X11)
-  return true;
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .skia_can_fall_back_to_x11;
 #else
   return false;
-#endif  // defined(USE_X11)
+#endif  // defined(USE_OZONE)
 }
 #endif  // BUILDFLAG(ENABLE_VULKAN)
 
-struct ReadPixelsContext {
-  ReadPixelsContext(std::unique_ptr<CopyOutputRequest> request,
-                    const gfx::Rect& result_rect,
-                    const gfx::ColorSpace& color_space,
-                    base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu)
-      : request(std::move(request)),
-        result_rect(result_rect),
-        color_space(color_space),
-        impl_on_gpu(impl_on_gpu) {}
-
-  std::unique_ptr<CopyOutputRequest> request;
-  gfx::Rect result_rect;
-  gfx::ColorSpace color_space;
-  base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu;
-};
-
 }  // namespace
-
-class SkiaOutputSurfaceImplOnGpu::AsyncReadResultLock
-    : public base::RefCountedThreadSafe<
-          SkiaOutputSurfaceImplOnGpu::AsyncReadResultLock> {
- public:
-  AsyncReadResultLock() = default;
-  base::Lock& lock() { return lock_; }
-
- private:
-  friend class base::RefCountedThreadSafe<
-      SkiaOutputSurfaceImplOnGpu::AsyncReadResultLock>;
-  ~AsyncReadResultLock() = default;
-
-  base::Lock lock_;
-};
-
-// Helper class for holding AsyncReadResult.
-class SkiaOutputSurfaceImplOnGpu::AsyncReadResultHelper {
- public:
-  explicit AsyncReadResultHelper(
-      SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
-      std::unique_ptr<const SkSurface::AsyncReadResult> result)
-      : lock_(impl_on_gpu->async_read_result_lock_),
-        impl_on_gpu_(impl_on_gpu),
-        result_(std::move(result)) {
-    base::AutoLock auto_lock(lock());
-    impl_on_gpu_->async_read_result_helpers_.insert(this);
-  }
-
-  ~AsyncReadResultHelper() {
-      base::AutoLock auto_lock(lock());
-      if (impl_on_gpu_) {
-        DCHECK(impl_on_gpu_->async_read_result_helpers_.count(this));
-        impl_on_gpu_->async_read_result_helpers_.erase(this);
-      }
-  }
-
-  base::Lock& lock() const { return lock_->lock(); }
-
-  void reset() {
-    AssertLockAcquired();
-    impl_on_gpu_ = nullptr;
-    result_.reset();
-  }
-
-  const SkSurface::AsyncReadResult* operator->() const {
-    AssertLockAcquired();
-    return result_.get();
-  }
-
-  explicit operator bool() const {
-    AssertLockAcquired();
-    return !!result_;
-  }
-
- private:
-  void AssertLockAcquired() const {
-    if (lock_)
-      lock().AssertAcquired();
-  }
-
-  const scoped_refptr<AsyncReadResultLock> lock_;
-  SkiaOutputSurfaceImplOnGpu* impl_on_gpu_;
-  std::unique_ptr<const SkSurface::AsyncReadResult> result_;
-};
-
-class SkiaOutputSurfaceImplOnGpu::CopyOutputResultYUV
-    : public CopyOutputResult {
- public:
-  CopyOutputResultYUV(SkiaOutputSurfaceImplOnGpu* impl,
-                      const gfx::Rect& rect,
-                      std::unique_ptr<const SkSurface::AsyncReadResult> result)
-      : CopyOutputResult(Format::I420_PLANES,
-                         Destination::kSystemMemory,
-                         rect,
-                         /*needs_lock_for_bitmap=*/false),
-        result_(impl, std::move(result)) {
-#if DCHECK_IS_ON()
-    base::AutoLock auto_lock(result_.lock());
-    DCHECK_EQ(3, result_->count());
-    DCHECK_EQ(0, size().width() % 2);
-    DCHECK_EQ(0, size().height() % 2);
-#endif
-  }
-
-  ~CopyOutputResultYUV() override = default;
-
-  static void OnReadbackDone(
-      void* c,
-      std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
-    auto context = base::WrapUnique(static_cast<ReadPixelsContext*>(c));
-    auto* impl_on_gpu = context->impl_on_gpu.get();
-
-    // This will automatically send an empty result.
-    if (!impl_on_gpu)
-      return;
-
-    DCHECK_CALLED_ON_VALID_THREAD(impl_on_gpu->thread_checker_);
-
-    impl_on_gpu->ReadbackDone();
-
-    // This will automatically send an empty result.
-    if (!async_result)
-      return;
-
-    auto result = std::make_unique<CopyOutputResultYUV>(
-        impl_on_gpu, context->result_rect, std::move(async_result));
-    context->request->SendResult(std::move(result));
-  }
-
-  // CopyOutputResult implementation:
-  bool ReadI420Planes(uint8_t* y_out,
-                      int y_out_stride,
-                      uint8_t* u_out,
-                      int u_out_stride,
-                      uint8_t* v_out,
-                      int v_out_stride) const override {
-    // Hold the lock so the AsyncReadResultHelper will not be reset during
-    // pixel data reading.
-    base::AutoLock auto_lock(result_.lock());
-
-    // The |result_| has been reset.
-    if (!result_)
-      return false;
-
-    auto* data0 = static_cast<const uint8_t*>(result_->data(0));
-    auto* data1 = static_cast<const uint8_t*>(result_->data(1));
-    auto* data2 = static_cast<const uint8_t*>(result_->data(2));
-    libyuv::CopyPlane(data0, result_->rowBytes(0), y_out, y_out_stride,
-                      width(0), height(0));
-    libyuv::CopyPlane(data1, result_->rowBytes(1), u_out, u_out_stride,
-                      width(1), height(1));
-    libyuv::CopyPlane(data2, result_->rowBytes(2), v_out, v_out_stride,
-                      width(2), height(2));
-    return true;
-  }
-
- private:
-  uint32_t width(int plane) const {
-    return plane == 0 ? size().width() : size().width() / 2;
-  }
-
-  uint32_t height(int plane) const {
-    return plane == 0 ? size().height() : size().height() / 2;
-  }
-
-  AsyncReadResultHelper result_;
-};
-
-class SkiaOutputSurfaceImplOnGpu::CopyOutputResultRGBA
-    : public CopyOutputResult {
- public:
-  CopyOutputResultRGBA(SkiaOutputSurfaceImplOnGpu* impl,
-                       const gfx::Rect& rect,
-                       std::unique_ptr<const SkSurface::AsyncReadResult> result,
-                       const gfx::ColorSpace& color_space)
-      : CopyOutputResult(Format::RGBA,
-                         Destination::kSystemMemory,
-                         rect,
-                         /*needs_lock_for_bitmap=*/true),
-        result_(impl, std::move(result)),
-        color_space_(color_space.ToSkColorSpace()) {}
-
-  ~CopyOutputResultRGBA() override {
-    // cached_bitmap()->pixelRef() should not be used after CopyOutputResultRGBA
-    // is released.
-    DCHECK(!cached_bitmap()->pixelRef() ||
-           cached_bitmap()->pixelRef()->unique());
-  }
-
-  static void OnReadbackDone(
-      void* c,
-      std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
-    auto context = base::WrapUnique(static_cast<ReadPixelsContext*>(c));
-
-    // This will automatically send an empty result.
-    auto* impl_on_gpu = context->impl_on_gpu.get();
-    if (!impl_on_gpu)
-      return;
-
-    DCHECK_CALLED_ON_VALID_THREAD(impl_on_gpu->thread_checker_);
-    impl_on_gpu->ReadbackDone();
-
-    // This will automatically send an empty result.
-    if (!async_result)
-      return;
-
-    auto result = std::make_unique<CopyOutputResultRGBA>(
-        impl_on_gpu, context->result_rect, std::move(async_result),
-        context->color_space);
-    context->request->SendResult(std::move(result));
-  }
-
-  const SkBitmap& AsSkBitmap() const override {
-    if (!result_) {
-      // The |result_| has been reset, the cached_bitmap() should be reset too.
-      *cached_bitmap() = SkBitmap();
-    } else if (!bitmap_created_) {
-      const auto* data = result_->data(0);
-      auto row_bytes = result_->rowBytes(0);
-      auto info = SkImageInfo::MakeN32Premul(size().width(), size().height(),
-                                             color_space_);
-      SkBitmap bitmap;
-      bitmap.installPixels(info, const_cast<void*>(data), row_bytes);
-
-      *cached_bitmap() = std::move(bitmap);
-      bitmap_created_ = true;
-    }
-
-    return CopyOutputResult::AsSkBitmap();
-  }
-
-  bool LockSkBitmap() const override NO_THREAD_SAFETY_ANALYSIS {
-    result_.lock().Acquire();
-    if (!result_) {
-      result_.lock().Release();
-      return false;
-    }
-    return true;
-  }
-
-  void UnlockSkBitmap() const override NO_THREAD_SAFETY_ANALYSIS {
-    result_.lock().AssertAcquired();
-    result_.lock().Release();
-  }
-
- private:
-  AsyncReadResultHelper result_;
-  const sk_sp<SkColorSpace> color_space_;
-  mutable bool bitmap_created_ = false;
-};
 
 SkiaOutputSurfaceImplOnGpu::PromiseImageAccessHelper::PromiseImageAccessHelper(
     SkiaOutputSurfaceImplOnGpu* impl_on_gpu)
@@ -879,7 +620,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputRGBA(
       num_readbacks_pending_++;
       surface->asyncRescaleAndReadPixels(
           dst_info, src_rect, SkSurface::RescaleGamma::kSrc, rescale_mode,
-          &CopyOutputResultRGBA::OnReadbackDone, context.release());
+          &CopyOutputResultSkiaRGBA::OnReadbackDone, context.release());
 
       break;
     }
@@ -1097,7 +838,12 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
           {geometry.result_selection.width(),
            geometry.result_selection.height()},
           SkSurface::RescaleGamma::kSrc, rescale_mode,
-          &CopyOutputResultYUV::OnReadbackDone, context.release());
+          &CopyOutputResultSkiaYUV::OnReadbackDone, context.release());
+      break;
+    }
+    case CopyOutputRequest::ResultFormat::NV12_PLANES: {
+      // TODO(https://crbug.com/1216287): Add support for NV12.
+      NOTREACHED();
       break;
     }
     case CopyOutputRequest::ResultFormat::RGBA: {
@@ -1313,14 +1059,12 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
                "is_using_vulkan", is_using_vulkan());
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform()) {
     gpu::SurfaceHandle surface_handle = dependency_->GetSurfaceHandle();
     if (surface_handle != gpu::kNullSurfaceHandle) {
       window_surface_ = ui::OzonePlatform::GetInstance()
                             ->GetSurfaceFactoryOzone()
                             ->CreatePlatformWindowSurface(surface_handle);
     }
-  }
 #endif
 
   context_state_ = dependency_->GetSharedContextState();
@@ -1449,10 +1193,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
 #endif
 
 #if defined(USE_OZONE)
-  bool needs_background_image =
-      features::IsUsingOzonePlatform() && ui::OzonePlatform::GetInstance()
-                                              ->GetPlatformProperties()
-                                              .needs_background_image;
+  bool needs_background_image = ui::OzonePlatform::GetInstance()
+                                    ->GetPlatformProperties()
+                                    .needs_background_image;
 #else   // defined(USE_OZONE)
   bool needs_background_image = false;
 #endif  // !defined(USE_OZONE)
@@ -1462,15 +1205,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
   auto output_presenter = OutputPresenterFuchsia::Create(
       window_surface_.get(), dependency_, shared_image_factory_.get(),
       shared_image_representation_factory_.get());
-#elif defined(USE_X11)
-  const bool use_x11_present =
-      base::FeatureList::IsEnabled(features::kUseX11Present) &&
-      !features::IsUsingOzonePlatform();
-  auto output_presenter = use_x11_present
-                              ? OutputPresenterX11::Create(
-                                    dependency_, shared_image_factory_.get(),
-                                    shared_image_representation_factory_.get())
-                              : nullptr;
 #else
   auto output_presenter =
       OutputPresenterGL::Create(dependency_, shared_image_factory_.get(),
@@ -1499,7 +1233,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
         GetDidSwapBuffersCompleteCallback());
   }
   if (MayFallBackToSkiaOutputDeviceX11()) {
-#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+#if defined(USE_OZONE_PLATFORM_X11)
     if (output_device) {
       output_device_ = std::move(output_device);
     } else {
@@ -1510,7 +1244,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
     }
     if (output_device_)
       return true;
-#endif  // defined(USE_X11) || BUILDFLAG(OZONE_PLATFORM_X11)
+#endif  // BUILDFLAG(OZONE_PLATFORM_X11)
   }
   if (!output_device)
     return false;
@@ -1540,7 +1274,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
         shared_gpu_deps_->memory_tracker(),
         GetDidSwapBuffersCompleteCallback());
   } else {
-#if defined(USE_X11) || defined(USE_OZONE_PLATFORM_X11)
+#if defined(USE_OZONE_PLATFORM_X11)
     // TODO(rivr): Set up a Vulkan swapchain so that Linux can also use
     // SkiaOutputDeviceDawn.
     if (MayFallBackToSkiaOutputDeviceX11()) {
@@ -1762,9 +1496,19 @@ void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersCompleteInternal(
 
 #if defined(OS_APPLE) || defined(USE_OZONE)
   // |available_render_pass_overlay_backings_| are used or released in
-  // SwapBuffers() for every frames.
+  // SwapBuffers() for every frames. For Ozone-Wayland
+  // |available_render_pass_overlay_backings_| is not always empty because the
+  // buffer management in 'GbmSurfacelessWayland::SwapBuffersAsync' will cause
+  // an accumulation of unsubmitted frames in |unsubmitted_frames_|. These are
+  // submitted in 'GbmSurfacelessWayland::MaybeSubmitFrames'. Later
+  // 'GbmSurfacelessWayland::OnSubmission' will then call the callback of these
+  // |submitted_frames| more than once. This means that this function
+  // 'DidSwapBuffersCompleteInternal' will get executed again before the
+  // corresponding 'SkiaOutputSurfaceImplOnGpu::SwapBuffersInternal' has cleared
+  // 'available_render_pass_overlay_backings_'.
+#if !defined(USE_OZONE)
   DCHECK(available_render_pass_overlay_backings_.empty());
-
+#endif
   // Erase mailboxes of render pass overlays from |params.released_overlays| and
   // move released backings for those render pass overlays from
   // |in_flight_render_pass_overlay_backings_| to
@@ -1915,6 +1659,28 @@ void SkiaOutputSurfaceImplOnGpu::InitDelegatedInkPointRendererReceiver(
     gl_surface_->InitDelegatedInkPointRendererReceiver(
         std::move(pending_receiver));
   }
+}
+
+const scoped_refptr<AsyncReadResultLock>
+SkiaOutputSurfaceImplOnGpu::GetAsyncReadResultLock() const {
+  return async_read_result_lock_;
+}
+
+void SkiaOutputSurfaceImplOnGpu::AddAsyncReadResultHelper(
+    AsyncReadResultHelper* helper) {
+  DCHECK(helper);
+
+  base::AutoLock auto_lock(async_read_result_lock_->lock());
+  async_read_result_helpers_.insert(helper);
+}
+
+void SkiaOutputSurfaceImplOnGpu::RemoveAsyncReadResultHelper(
+    AsyncReadResultHelper* helper) {
+  DCHECK(helper);
+
+  base::AutoLock auto_lock(async_read_result_lock_->lock());
+  DCHECK(async_read_result_helpers_.count(helper));
+  async_read_result_helpers_.erase(helper);
 }
 
 void SkiaOutputSurfaceImplOnGpu::EnsureBackbuffer() {

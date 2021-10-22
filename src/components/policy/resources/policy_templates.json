@@ -144,6 +144,13 @@
 #   'default_for_managed_devices_doc_only', which documents an explicitly
 #   implemented default policy value for managed devices.
 #
+#   'items' is used to outline the behavior of each state the policy can take.
+#   This field is only used for policies of type 'main', 'int-enum', or
+#   'string-enum'. For 'main' policies, it describes how the policy behaves when
+#   set to True or False, and whether the unset state is different from the
+#   enabled/disabled states. For 'enum' policies, it lists all possible values
+#   the policy can be set to along with a brief description.
+#
 #   Additional information is specified under the 'features' key:
 #   'dynamic_refresh' controls if the generated documentation should state that
 #   the policy supports dynamic refresh or not. Supporting dynamic refresh means
@@ -923,7 +930,8 @@
         'DeviceLoginScreenSitePerProcess',
         'DeviceLoginScreenAutoSelectCertificateForUrls',
         'DeviceShowNumericKeyboardForPassword',
-        'DeviceFamilyLinkAccountsAllowed'
+        'DeviceFamilyLinkAccountsAllowed',
+        'DeviceLoginScreenPromptOnMultipleMatchingCertificates',
       ],
     },
     {
@@ -932,6 +940,7 @@
       'caption': '''User and device reporting''',
       'desc': '''Controls what kind of user and device information is reported.''',
       'policies': [
+        'EnableDeviceGranularReporting',
         'ReportDeviceVersionInfo',
         'ReportDeviceBootMode',
         'ReportDeviceUsers',
@@ -952,6 +961,7 @@
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
         'ReportDevicePowerStatus',
+        'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
         'ReportDeviceAppInfo',
         'ReportDeviceBluetoothInfo',
@@ -1056,6 +1066,7 @@
         'SuggestedContentEnabled',
         'DeviceShowLowDiskSpaceNotification',
         'WebXRImmersiveArEnabled',
+        'PromptOnMultipleMatchingCertificates',
       ],
     },
     {
@@ -2067,7 +2078,7 @@
     },
     {
       'name': 'ForceLegacyDefaultReferrerPolicy',
-      'owners': ['davidvc@chromium.org', 'chrome-network-stack@chromium.org'],
+      'owners': ['kaustubhag@chromium.org', 'chrome-network-stack@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:80-87', 'chrome_os:80-87'],
@@ -4269,7 +4280,9 @@
 
       If you set the policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the cache size you provide—whether or not users specify the --disk-cache-size flag. (Values below a few megabytes are rounded up.)
 
-      If not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default size. Users can change that setting using the --disk-cache-size flag.''',
+      If not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the default size. Users can change that setting using the --disk-cache-size flag.
+
+      Note: The value specified in this policy is used as a hint to various cache subsystems in the browser. Therefore the actual total disk consumption of all caches will be higher but within the same order of magnitude as the value specified.''',
       'label': '''Set disk cache size''',
     },
     {
@@ -5906,7 +5919,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the default search provider',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the default search provider',
+        },
+        {
+          'value': None,
+          'caption': 'Enable the default search provider and allow users to modify the search provier list',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 40,
       'caption': '''Enable the default search provider''',
       'tags': [],
@@ -5927,6 +5955,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable access to the default search provider context menu',
+        },
+        {
+          'value': False,
+          'caption': 'Disable access to the default search provider context menu',
+        },
+      ],
       'example_value': True,
       'id': 715,
       'caption': '''Allow default search provider context menu search access''',
@@ -7781,6 +7819,35 @@
       'desc': '''Leaving the policy unset or setting it to Enabled allows users to view and use the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item in the context menu. Setting the policy to Disabled means users will not see the <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search menu item in the context menu when <ph name="GOOGLE_LENS_PRODUCT_NAME">Google Lens</ph> region search is supported.''',
     },
     {
+      'name': 'SideSearchEnabled',
+      'owners': ['tluk@chromium.org', 'chrome-cros@google.com'],
+      'type': 'main',
+      'schema' : {'type': 'boolean'},
+      'supported_on': ['chrome_os:96-'],
+      'example_value': False,
+      'features':{
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable showing <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a Browser side panel.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable showing <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a Browser side panel.',
+        },
+      ],
+      'id': 906,
+      'default': True,
+      'caption': '''Allow showing the most recent <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a Browser side panel''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled or leaving the policy unset means that users can bring up their most recent <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a side panel via toggling an icon in the toolbar.
+
+      Setting the policy to Disabled removes the icon from the toolbar that opens the side panel with the <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results.''',
+    },
+    {
       'name': 'InsecurePrivateNetworkRequestsAllowed',
       'owners': [
         'titouan@chromium.org',
@@ -7799,6 +7866,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow insecure websites to make requests to any network endpoint',
+        },
+        {
+          'value': False,
+          'caption': 'Use default behavior when determining if insecure websites can make requests to any network endpoint',
+        },
+      ],
       'example_value': False,
       'id': 766,
       'caption': '''Specifies whether to allow insecure websites to make requests to more-private network endpoints''',
@@ -8211,6 +8288,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow both user-level and system-level native messaging hosts',
+        },
+        {
+          'value': False,
+          'caption': 'Allow only system-level native messaging hosts',
+        },
+      ],
       'example_value': False,
       'id': 253,
       'caption': '''Allow user-level Native Messaging hosts (installed without admin permissions)''',
@@ -8229,6 +8316,16 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Disable support for 3D graphics APIs',
+        },
+        {
+          'value': False,
+          'caption': 'Enable support for 3D graphics APIs',
+        },
+      ],
       'example_value': False,
       'id': 55,
       'caption': '''Disable support for 3D graphics APIs''',
@@ -8426,7 +8523,22 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Lock the device when it becomes idle or suspended',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent the device from locking when it becomes idle or suspended',
+        },
+        {
+          'value': None,
+          'caption': 'Allow users to decide whether the device should lock when it becomes idle or suspended',
+        },
+      ],
       'example_value': True,
+      'default': None,
       'id': 61,
       'caption': '''Enable lock when the device become idle or suspended''',
       'tags': [],
@@ -8501,6 +8613,16 @@
         'dynamic_refresh': False,
         'per_profile': True,
       },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable signing in with additional Google accounts',
+        },
+        {
+          'value': False,
+          'caption': 'Disable signing in with additional Google accounts',
+        },
+      ],
       'example_value': False,
       'id': 406,
       'caption': '''Allow Sign-in To Additional Google Accounts''',
@@ -8859,7 +8981,7 @@
     },
     {
       'name': 'SecurityKeyPermitAttestation',
-      'owners': ['agl@chromium.org', 'martinkr@chromium.org'],
+      'owners': ['agl@chromium.org', 'martinkr@google.com'],
       'tags': ['website-sharing'],
       'type': 'list',
       'schema': {
@@ -8877,6 +8999,41 @@
       'desc': '''Setting the policy specifies URLs and domains for which no prompt appears when attestation certificates from Security Keys are requested. A signal is also sent to the Security Key indicating that individual attestation may be used. Without this, when sites request attestation of Security Keys, users are prompted in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 65 and later.
 
       URLs will only match as U2F appIDs. Domains only match as webauthn RP IDs. So to cover both U2F and webauthn APIs, list the appID URL and domain for a given site.''',
+    },
+    {
+      'name': 'U2fSecurityKeyApiEnabled',
+      'owners': ['martinkr@google.com', 'agl@chromium.org'],
+      'tags': [],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow using the U2F Security Key API.',
+        },
+        {
+          'value': False,
+          'caption': 'Apply default settings for U2F API deprecation.',
+        },
+      ],
+      'supported_on': ['chrome.*:96-103'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default': False,
+      'id': 903,
+      'caption': '''Allow using the deprecated U2F Security Key API''',
+      'desc': '''If set to Enabled, the deprecated U2F Security Key API can be used and the deprecation reminder prompt shown for U2F API requests is suppressed.
+
+      If the policy is set to Disabled or left unset, the default behavior will apply.
+
+      The U2F Security Key API is deprecated and it will be disabled by default in Chrome 98.
+
+      This is a temporary opt-out mechanism. The U2F API will be removed from Chrome in Chrome 104, at which point this policy will cease to be supported.
+
+      For more information about the deprecation of the U2F Security Key API, please refer to https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A.''',
     },
     {
       'name': 'GCFUserDataDir',
@@ -10057,6 +10214,36 @@
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.'''
     },
     {
+      'name': 'EnableDeviceGranularReporting',
+      'owners': ['cros-reporting-team@google.com', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow granular reporting controls',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow granular reporting controls',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 901,
+      'caption': '''Enable granular reporting controls''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to enabled or leaving it unset allows for the device to recieve granular reporting controls.
+      Setting the policy to Disabled means enrolled devices won't receive granular reporting controls.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
       'name': 'ReportDeviceVersionInfo',
       'owners': ['cros-reporting-team@google.com', 'lbaraz@chromium.org'],
       'type': 'main',
@@ -10172,7 +10359,7 @@
       'owners': ['tylergarrett@google.com', 'cros-reporting-team@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -10224,7 +10411,7 @@
       'owners': ['tylergarrett@google.com', 'cros-reporting-team@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -10309,6 +10496,37 @@
       'desc': '''Setting the policy to Enabled or leaving it unset has enrolled devices report the active kiosk session information such as application ID and version.
 
       Setting the policy to Disabled means enrolled devices don't report kiosk session information.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceSecurityStatus',
+      'owners': ['cros-reporting-team@google.com', 'tylergarrett@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Report security status',
+        },
+        {
+          'value': False,
+          'caption': 'Do not report security status',
+        },
+      ],
+      'example_value': False,
+      'default': False,
+      'id': 900,
+      'caption': '''Report device security status''',
+      'tags': ['admin-sharing'],
+      'desc': '''Setting the policy to enabled or leaving it unset has enrolled devices report device TPM security status.
+
+      Setting the policy to Disabled means enrolled devices don't record or report TPM security status.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -10667,7 +10885,7 @@
       'owners': ['anasr@google.com', 'cros-reporting-team@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'supported_chrome_os_management': ['google_cloud'],
       'device_only': True,
       'features': {
@@ -11375,7 +11593,7 @@
 
       If set, devices will update up to a selected version.
 
-      The exact format of this policy value is an impelmentation details of the update service and may change. The policy value is not processed on the device.
+      The exact format of this policy value is an implementation detail of the update service and may change. The policy value is not processed on the device.
 
       If used together with <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME">DeviceTargetVersionPrefix</ph>, this policy will be checked first by update service.
       Unlike <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME">DeviceTargetVersionPrefix</ph> (which may allow minor updates), devices will stay on the selected version until the value of this policy is changed.
@@ -18650,9 +18868,8 @@
         'ios:88-',
       ],
       'features': {
-        'dynamic_refresh': False,
+        'dynamic_refresh': True,
         'per_profile': False,
-        'platform_only': True,
         'metapolicy_type': 'precedence',
       },
       'example_value': False,
@@ -18664,6 +18881,40 @@
       Setting the policy to Disabled or leaving it unset means platform policy takes precedence if it conflicts with cloud policy.
 
       This mandatory policy affects machine scope cloud policies.''',
+    },
+    {
+      'name': 'CloudUserPolicyOverridesCloudMachinePolicy',
+      'owners': ['igorruvinov@chromium.org', 'zmin@chromium.org', 'pastarmovj@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:96-'],
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow user cloud policies to override machine cloud policies.',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent user cloud policies from overriding machine cloud policies.',
+        },
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'metapolicy_type': 'precedence',
+      },
+      'example_value': False,
+      'default': False,
+      'id': 899,
+      'caption': '''Allow user cloud policies to override <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> policies.''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled allows policies associated with a <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph> account to take precedence if they conflict with <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> policies.
+
+      Only policies originating from secure users can be merged. A secure user is affiliated with the organization that manages their browser using <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. All other user-level policies will have default precedence.
+
+      The policy can be combined with <ph name="POLICY_CLOUDPOLICYOVERRIDESPLATFORMPOLICY">CloudPolicyOverridesPlatformPolicy</ph>. If both policies are enabled, user cloud policies will also take precedence over conflicting platform policies.
+
+      Leaving the policy unset or setting it to disabled causes user-level cloud policies to have default priority.''',
     },
     {
       'name': 'PromptForDownloadLocation',
@@ -18755,7 +19006,7 @@
     },
     {
       'name': 'IsolateOrigins',
-      'owners': ['palmer@chromium.org', 'creis@chromium.org'],
+      'owners': ['alexmos@chromium.org', 'creis@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['chrome.*:63-', 'chrome_os:63-'],
@@ -18764,19 +19015,25 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': 'https://example.com/,https://othersite.org/',
+      'example_value': 'https://a.example.com/,https://othersite.org/,https://[*.]corp.example.com',
       'id': 398,
       'caption': '''Enable Site Isolation for specified origins''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy means each of the named origins in a comma-separated list runs in its own process, and it isolates origins named by subdomains. For example, specifying https://example.com/ isolates https://foo.example.com/ as part of the https://example.com/ site.
+      'desc': '''Setting the policy means each of the named origins in a comma-separated list runs in a dedicated process. Each named origin's process will only be allowed to contain documents from that origin and its subdomains. For example, specifying https://a1.example.com/ allows https://a2.a1.example.com/ in the same process, but not https://example.com or https://b.example.com.
 
-      Setting it to off or leaving it unset lets users change this setting.
+      Since <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 77, you can also specify a range of origins to isolate using a wildcard. For example, specifying https://[*.]corp.example.com will give every origin underneath https://corp.example.com its own dedicated process, including https://corp.example.com itself, https://a1.corp.example.com, and https://a2.a1.corp.example.com.
+
+      Note that all sites (i.e., scheme plus eTLD+1, such as https://example.com) are already isolated by default on Desktop platforms, as noted in the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy. This <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> policy is useful to isolate specific origins at a finer granularity (e.g., https://a.example.com).
+
+      Also note that origins isolated by this policy will be unable to script other origins in the same site, which is otherwise possible if two same-site documents modify their document.domain values to match. Administrators should confirm this uncommon behavior is not used on an origin before isolating it.
+
+      Setting the policy to off or leaving it unset lets users change this setting.
 
       Note: For Android, use the <ph name="ISOLATE_ORIGINS_ANDROID_POLICY_NAME">IsolateOriginsAndroid</ph> policy instead.''',
     },
     {
       'name': 'SitePerProcess',
-      'owners': ['palmer@chromium.org', 'creis@chromium.org'],
+      'owners': ['alexmos@chromium.org', 'creis@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:63-', 'chrome_os:63-'],
@@ -18787,11 +19044,13 @@
       },
       'example_value': True,
       'id': 399,
-      'caption': '''Enable Site Isolation for every site''',
+      'caption': '''Require Site Isolation for every site''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to Enabled isolates all sites. (Each site runs in its own process.) Setting the policy to Disabled or leaving it unset doesn't turn off site isolation, but it lets users opt out (for example, by using Disable site isolation in chrome://flags).
+      'desc': '''Since <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 67, site isolation has been enabled by default on all Desktop platforms, causing every site to run in its own process. A site is a scheme plus eTLD+1 (e.g., https://example.com). Setting this policy to Enabled does not change that behavior; it only prevents users from opting out (for example, using Disable site isolation in chrome://flags). Since <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 76, setting the policy to Disabled or leaving it unset doesn't turn off site isolation, but instead allows users to opt out.
 
-      <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> might also be useful for fine-tuning origins. On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and earlier, set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. (Because if the values don't match, a delay can occur when entering a user session.)
+      <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> might also be useful for isolating specific origins at a finer granularity than site (e.g., https://a.example.com).
+
+      On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> version 76 and earlier, set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. (If the values don't match, a delay can occur when entering a user session.)
 
       Note: For Android, use the <ph name="SITE_PER_PROCESS_ANDROID_POLICY_NAME">SitePerProcessAndroid</ph> policy instead.''',
     },
@@ -18807,7 +19066,7 @@
         'per_profile': False,
       },
       'deprecated': True,
-      'example_value': 'https://example.com/,https://othersite.org/',
+      'example_value': 'https://a.example.com/,https://othersite.org/,https://[*.]corp.example.com',
       'id': 417,
       'caption': '''Enable Site Isolation for specified origins''',
       'tags': ['system-security'],
@@ -18841,7 +19100,7 @@
     },
     {
       'name': 'IsolateOriginsAndroid',
-      'owners': ['palmer@chromium.org', 'creis@chromium.org'],
+      'owners': ['alexmos@chromium.org', 'creis@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
       'supported_on': ['android:68-'],
@@ -18850,11 +19109,15 @@
         'dynamic_refresh': False,
         'per_profile': False,
       },
-      'example_value': 'https://example.com/,https://othersite.org/',
+      'example_value': 'https://a.example.com/,https://othersite.org/,https://[*.]corp.example.com',
       'id': 445,
       'caption': '''Enable Site Isolation for specified origins on Android devices''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy means each of the named origins in a comma-separated list runs in its own process, and it isolates origins named by subdomains. For example, specifying https://example.com/ isolates https://foo.example.com/ as part of the https://example.com/ site.  Note that Android isolates certain sensitive sites by default starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 77, and this policy extends that mode to isolate specific additional origins.
+      'desc': '''Setting the policy means each of the named origins in a comma-separated list runs in a dedicated process on Android. Each named origin's process will only be allowed to contain documents from that origin and its subdomains. For example, specifying https://a1.example.com/ allows https://a2.a1.example.com/ in the same process, but not https://example.com or https://b.example.com. Note that Android isolates certain sensitive sites by default starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 77, and this policy extends that mode to isolate specific additional origins.
+
+      Since <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 77, you can also specify a range of origins to isolate using a wildcard. For example, specifying https://[*.]corp.example.com will give every origin underneath https://corp.example.com its own dedicated process, including https://corp.example.com itself, https://a1.corp.example.com, and https://a2.a1.corp.example.com.
+
+      Note that origins isolated by this policy will be unable to script other origins in the same site, which is otherwise possible if two same-site documents modify their document.domain values to match. Administrators should confirm this uncommon behavior is not used on an origin before isolating it.
 
       Setting the policy to Disabled turns off any form of site isolation, including isolation of sensitive sites and field trials of IsolateOriginsAndroid, SitePerProcessAndroid, and other site isolation modes. Users can still turn on IsolateOrigins manually, through the command line flag.
 
@@ -18864,7 +19127,7 @@
     },
     {
       'name': 'SitePerProcessAndroid',
-      'owners': ['palmer@chromium.org', 'creis@chromium.org'],
+      'owners': ['alexmos@chromium.org', 'creis@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['android:68-'],
@@ -18877,11 +19140,13 @@
       'id': 446,
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
-      'desc': '''Setting the policy to Enabled isolates all sites (each site runs in its own process). Note that Android isolates certain sensitive sites by default starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 77, and this policy extends that default site isolation mode to apply to all sites.
+      'desc': '''Setting the policy to Enabled isolates all sites on Android, such that each site runs in its own process, and it prevents users from opting out. A site is a scheme plus eTLD+1 (e.g., https://example.com). Note that Android isolates certain sensitive sites by default starting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 77, and this policy extends that default site isolation mode to apply to all sites.
 
       Setting the policy to Disabled turns off any form of site isolation, including isolation of sensitive sites and field trials of IsolateOriginsAndroid, SitePerProcessAndroid, and other site isolation modes. Users can still turn the policy on manually.
 
       Leaving the policy unset means users can change this setting.
+
+      <ph name="ISOLATE_ORIGINS_ANDROID_POLICY_NAME">IsolateOriginsAndroid</ph> might also be useful for isolating specific origins at a finer granularity than site (e.g., https://a.example.com).
 
       Note: Support for isolating every site on Android will improve, but currently it may cause performance problems, especially on low-end devices. This policy applies only to Chrome on Android running on devices with strictly more than 1 GB of RAM. To isolate specific sites while limiting performance impact for users, use <ph name="ISOLATE_ORIGINS_ANDROID_POLICY_NAME">IsolateOriginsAndroid</ph> with a list of the sites you want to isolate.  To apply the policy on non-Android platforms, use <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph>.''',
     },
@@ -18920,6 +19185,45 @@
       When set to True, sites can use SharedArrayBuffer with no restrictions.
       When set to False or not set, sites can only use SharedArrayBuffers when
       cross-origin isolated.''',
+    },
+    {
+      'name': 'SandboxExternalProtocolBlocked',
+      'owners': ['arthursonzogni@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:96-', 'chrome_os:96-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow Chrome to block navigations to external protocols inside sandboxed iframe',
+        },
+        {
+          'value': False,
+          'caption': 'Prevent Chrome to block navigations to external protocols inside sandboxed iframe',
+        },
+      ],
+      'example_value': True,
+      'default': True,
+      'id': 913,
+      'caption': 'Allow Chrome to block navigations toward external protocols in sandboxed iframes',
+      'tags': ['system-security'],
+      'desc': '''Chrome will block navigations toward external protocols inside
+      sandboxed iframe. See https://chromestatus.com/features/5680742077038592.
+
+      When True, this lets Chrome blocks those navigations.
+
+      When False, this prevents Chrome from blocking those navigations.
+
+      This defaults to True: security feature enabled.
+
+      This can be used by Enterprise affected by these restrictions to
+      temporarily lift it.
+      ''',
     },
     {
       'name': 'CrossOriginWebAssemblyModuleSharingEnabled',
@@ -19132,7 +19436,7 @@
       'owners': ['khorimoto@google.com', 'cros-connectivity@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:97-'],
       'device_only': True,
       'features': {
         'can_be_mandatory': True,
@@ -26287,8 +26591,7 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           },
         },
       },
-      'future_on': ['android'],
-      'supported_on': ['chrome.*:89-', 'chrome_os:89-'],
+      'supported_on': ['chrome.*:89-', 'chrome_os:89-', 'android:96-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -26537,7 +26840,6 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           'caption': '''Hosted apps data''',
         },
       ],
-      'future_on': ['android'],
       'supported_on': ['chrome.*:89-', 'chrome_os:89-'],
       'features': {
         'dynamic_refresh': True,
@@ -27605,7 +27907,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'owners': ['mpetrisor@chromium.org', 'hendrich@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'device_only': True,
       'features': {
         'dynamic_refresh': True,
@@ -27641,7 +27943,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
           'pattern': '^[a-p]{32}$',
         },
       },
-      'future_on': ['chrome_os'],
+      'supported_on': ['chrome_os:96-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -27744,6 +28046,325 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       If this policy is enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will continue to allow Chrome Apps to be run on these platforms until the final date when Chrome Apps support is removed on all platforms, June 2022.
       If this policy is disabled or unset, Chrome Apps may not be allowed to run, depending on the status of the deprecation rollout.
       In either case, Chrome Apps that are force installed by policy will continue to be allowed.''',
+    },
+    {
+      'name': 'FullRestoreEnabled',
+      'owners': ['nancylingwang@chromium.org', 'sammiequon@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the full restore feature.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the full restore feature.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 897,
+      'caption': '''Enable the full restore feature''',
+      'tags': [],
+      'desc': '''Setting the policy to enable the full restore feature.
+      If this policy is true, apps and app windows will be restored or not restored after a crash or reboot based on the restore app setting.
+      If this policy is false, only browser windows are automatcially launched.'''
+    },
+    {
+      'name': 'GhostWindowEnabled',
+      'owners': ['nancylingwang@chromium.org', 'sstan@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the ghost window feature.',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the ghost window feature.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 898,
+      'caption': '''Enable the ghost window feature''',
+      'tags': [],
+      'desc': '''Setting the policy to enable the ghost window feature.
+      If this policy is true, ARC ghost windows will be created before ARC boots after a crash or reboot based on the restore app setting.
+      If this policy is false, there is no ghost window created before ARC boots. Arc apps are restored after ARC boots'''
+    },
+    {
+      'name': 'WebSQLInThirdPartyContextEnabled',
+      'owners': ['arichiv@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:96-101', 'chrome.*:96-101', 'chrome_os:96-101'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force WebSQL in third-party contexts to be re-enabled.',
+        },
+        {
+          'value': False,
+          'caption': 'Allow WebSQL in third-party contexts to be disabled by default.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 902,
+      'caption': '''Force WebSQL in third-party contexts to be re-enabled.''',
+      'tags': [],
+      'desc': '''WebSQL in third-party contexts (e.g., cross-site iframes) is off by default as of M97 and will be fully removed in M101.
+          If this policy is set to false or unset, WebSQL in third party contexts will remain off.
+          If this policy is set to true, WebSQL in third-party contexts will be re-enabled.''',
+    },
+    {
+      'name': 'DeviceLoginScreenPromptOnMultipleMatchingCertificates',
+      'owners': ['emaxx@chromium.org', 'pmarko@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'device_only': True,
+      'supported_on': ['chrome_os:96-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Prompt the user to select the client certificate whenever the auto-selection policy matches multiple certificates.',
+        },
+        {
+          'value': False,
+          'caption': 'Do not prompt the user to select a client certificate on the sign-in screen.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 904,
+      'tags': [],
+      'caption': '''Prompt for the client certificate when multiple certificates match on the sign-in screen.''',
+      'desc': '''This policy controls whether the user is prompted to select a client certificate on the sign-in screen in the frame hosting the SAML flow when more than one certificate matches <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_POLICY_NAME">DeviceLoginScreenAutoSelectCertificateForUrls</ph>.
+      If this policy is set to Enabled, the user is asked to select the client certificate whenever the auto-selection policy matches multiple certificates.
+      If this policy is set to Disabled or not set, the user is never prompted to select a client certificate on the sign-in screen.
+      Note: This policy is in general not recommended, since it imposes potential privacy risks (in case device-wide TPM-backed certificates are used) and presents poor user experience.''',
+    },
+    {
+      'name': 'PromptOnMultipleMatchingCertificates',
+      'owners': ['emaxx@chromium.org', 'pmarko@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:96-', 'chrome.*:96-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Prompt the user to select the client certificate whenever the auto-selection policy matches multiple certificates.',
+        },
+        {
+          'value': False,
+          'caption': 'Only prompt the user when no certificate matches the auto-selection.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 905,
+      'tags': [],
+      'caption': '''Prompt for the client certificate when multiple certificates match.''',
+      'desc': '''This policy controls whether the user is prompted to select a client certificate when more than one certificate matches <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_POLICY_NAME">AutoSelectCertificateForUrls</ph>.
+      If this policy is set to Enabled, the user is prompted to select a client certificate whenever the auto-selection policy matches multiple certificates.
+      If this policy is set to Disabled or not set, the user may only be prompted when no certificate matches the auto-selection.''',
+    },
+    {
+      'name': 'AccessCodeCastEnabled',
+      'owners': ['bmalcolm@chromium.org', 'bzielinski@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome.*', 'chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'User will be given the option in the <ph name="PRODUCT_NAME">Google Cast</ph> menu to select cast devices by using an access code or by scanning a QR code.',
+        },
+        {
+          'value': False,
+          'caption': 'User will not be given the option in the <ph name="PRODUCT_NAME">Google Cast</ph> menu to select cast devices by using an access code or by scanning a QR code.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 907,
+      'tags': [],
+      'caption': '''Allow users to select cast devices with an access code or QR code from within the <ph name="PRODUCT_NAME">Google Cast</ph> menu.''',
+      'desc': '''This policy controls whether a user will be presented with an option, within the <ph name="PRODUCT_NAME">Google Cast</ph> menu which allows them to cast to cast devices that do not appear in the <ph name="PRODUCT_NAME">Google Cast</ph> menu, using either the access code or QR code displayed on the cast devices's screen.
+      By default, a user must reenter the access code or rescan the QR code in order to initiate a subsequent casting session, but if the <ph name="ACCESS_CODE_CAST_DEVICE_DURATION_POLICY_NAME">AccessCodeCastDeviceDuration</ph> policy has been set to a non-zero value (the default is zero), then the cast device will remain in the list of available cast devices until the specified period of time has expired.
+      When this policy is set to Enabled, users will be presented with the option to select cast devices by using an access code or by scanning a QR code.
+      When this policy is set to Disabled or not set, users will not be given the option to select cast devices by using an access code or by scanning a QR code.''',
+    },
+    {
+      'name': 'AccessCodeCastDeviceDuration',
+      'owners': ['bmalcolm@chromium.org', 'gbj@google.com'],
+      'type': 'int',
+      'schema': { 'type': 'integer', 'minimum': 0 },
+      'future_on': ['chrome.*', 'chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'default': 0,
+      'example_value': 60,
+      'id': 908,
+      'tags': [],
+      'caption': '''Specifies how long (in seconds) a cast device selected with an access code or QR code stays in the <ph name="PRODUCT_NAME">Google Cast</ph> menu's list of cast devices.''',
+      'desc': '''This policy specifies how long (in seconds) a cast device that was previously selected via an access code or QR code can be seen within the <ph name="PRODUCT_NAME">Google Cast</ph> menu of cast devices.
+      The lifetime of an entry starts at the time the access code was first entered or the QR code was first scanned.
+      During this period the cast device will appear in the <ph name="PRODUCT_NAME">Google Cast</ph> menu's list of cast devices.
+      After this period, in order to use the cast device again the access code must be reentered or the QR code must be rescanned.
+      By default, the period is zero seconds, so cast devices will not stay in the <ph name="PRODUCT_NAME">Google Cast</ph> menu, and so the access code must be reentered, or the QR code rescanned, in order to initiate a new casting session.
+      Note that this policy only affects how long a cast devices appears in the <ph name="PRODUCT_NAME">Google Cast</ph> menu, and has no effect on any ongoing cast session which will continue even if the period expires.
+      This policy has no effect unless the <ph name="ACCESS_CODE_CAST_ENABLED_POLICY_NAME">AccessCodeCastEnabled</ph> policy is Enabled.''',
+    },
+    {
+      'name': 'NetworkServiceSandboxEnabled',
+      'owners': ['wfh@chromium.org', 'file://services/network/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.win:96-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      # This policy has no default value because the default will be changing over time as the network sandbox is rolled out.
+      'example_value': True,
+      'id': 909,
+      'items': [
+        {
+          'value': True,
+          'caption': 'Enable the network service sandbox',
+        },
+        {
+          'value': False,
+          'caption': 'Disable the network service sandbox',
+        },
+      ],
+      'caption': '''Enable the network service sandbox''',
+      'tags': ['system-security'],
+      'desc': '''This policy controls whether or not the network service process runs sandboxed.
+      If this policy is enabled, the network service process will run sandboxed.
+      If this policy is disabled, the network service process will run unsandboxed. This leaves users open to additional security risks related to running the network service unsandboxed.
+      If this policy is not set, the default configuration for the network sandbox will be used. This may vary depending on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> release, currently running field trials, and platform.
+      This policy is intended to give enterprises flexibility to disable the network sandbox if they use third party software that interferes with the network service sandbox.''',
+    },
+    {
+      'name': 'DeskTemplatesEnabled',
+      'owners': ['brianbeck@chromium.org', 'yzd@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow users to use predefined desk templates',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow users to use predefined desk templates',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 910,
+      'caption': '''Allow users to select a preconfigured desktop layout to load''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled allows users to use preconfigured desktop layout templates.  Setting the policy to Disabled or unset means these templates will be unavailable.'''
+    },
+    {
+      'name': 'PreconfiguredDeskTemplates',
+      'owners': ['brianbeck@chromium.org', 'yzd@chromium.org'],
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': {
+            'description': 'The URL from which the desk template can be downloaded.',
+            'type': 'string'
+          },
+          'hash': {
+            'description': 'The SHA-256 hash of the desk template.',
+            'type': 'string'
+          }
+        },
+      },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {"url":"https://example.com/a.json", "hash":"842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32"},
+      'max_size': 1048576,
+      'id': 911,
+      'caption': '''Allow users to select a preconfigured desktop layout to load''',
+      'tags': [],
+      'desc': '''If set, this policy contains information to download a desk template file.  The file contains a desk template to be provisioned for the current user.
+      If not set, no preconfigured desk template will be included in the list of desk templates.  If the <ph name="DESK_TEMPLATES_ENABLED_POLICY_NAME">DeskTemplatesEnabled</ph>
+      policy is not set to true, this policy has no effect.'''
+    },
+    {
+      'name': 'FastPairEnabled',
+      'owners': ['file://ash/quick_pair/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'future_on': ['chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force Fast Pair (fast Bluetooth pairing) to be enabled.',
+        },
+        {
+          'value': False,
+          'caption': 'Force Fast Pair (fast Bluetooth pairing) to be disabled.',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 912,
+      'caption': '''Enable Fast Pair (fast Bluetooth pairing)''',
+      'tags': [],
+      'desc': '''Setting this policy will force Fast Pair to be enabled or disabled.
+      Fast Pair is a new Bluetooth pairing flow that links paired peripherals with a GAIA account.
+      This allows other Chrome OS (and Android) devices signed in with the same GAIA account to pair automatically.
+      If unset, Fast Pair will follow Chrome OS's default, which is enabled.''',
     },
   ],
   'messages': {
@@ -28113,6 +28734,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
     'SystemTimezoneAutomaticDetection': 'system_timezone.timezone_detection_type',
+    'EnableDeviceGranularReporting': 'device_reporting.enable_granular_reporting',
     'ReportDeviceActivityTimes': 'device_reporting.report_activity_times',
     'ReportDeviceAudioStatus': 'device_reporting.report_audio_status',
     'ReportDeviceBootMode': 'device_reporting.report_boot_mode',
@@ -28122,6 +28744,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceNetworkStatus': 'device_reporting.report_network_status',
     'ReportDeviceUsers': 'device_reporting.report_users',
     'ReportDeviceHardwareStatus': 'device_reporting.report_hardware_status',
+    'ReportDeviceSecurityStatus': 'device_reporting.report_security_status',
     'ReportDeviceSessionStatus': 'device_reporting.report_session_status',
     'ReportDeviceGraphicsStatus': 'device_reporting.report_graphics_status',
     'ReportDeviceCrashReportInfo': 'device_reporting.report_crash_report_info',
@@ -28200,6 +28823,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceScheduledReboot': 'device_scheduled_reboot.device_scheduled_reboot_settings',
     'DevicePciPeripheralDataAccessEnabled': 'device_pci_peripheral_data_access_enabled_v2.enabled',
     'DeviceRestrictedManagedGuestSessionEnabled': 'device_restricted_managed_guest_session_enabled.enabled',
+    'DeviceLoginScreenPromptOnMultipleMatchingCertificates': 'login_screen_prompt_on_multiple_matching_certificates.value',
   },
   'policy_atomic_group_definitions': [
     {
@@ -28573,6 +29197,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'name': 'UserAndDeviceReporting',
       'caption': '''User and device reporting''',
       'policies': [
+        'EnableDeviceGranularReporting',
         'ReportDeviceVersionInfo',
         'ReportDeviceBootMode',
         'ReportDeviceUsers',
@@ -28593,6 +29218,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDeviceMemoryInfo',
         'ReportDeviceBacklightInfo',
         'ReportDevicePowerStatus',
+        'ReportDeviceSecurityStatus',
         'ReportDeviceStorageStatus',
         'ReportDeviceAppInfo',
         'ReportDeviceBluetoothInfo',
@@ -28704,6 +29330,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 896,
+  'highest_id_currently_used': 913,
   'highest_atomic_group_id_currently_used': 41
 }

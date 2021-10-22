@@ -10,9 +10,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_scroll_timeline_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_csskeywordvalue_cssnumericvalue_scrolltimelineelementbasedoffset_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_offset.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline_util.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_values.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -37,13 +38,6 @@ using ScrollTimelineSet =
 ScrollTimelineSet& GetScrollTimelineSet() {
   DEFINE_STATIC_LOCAL(Persistent<ScrollTimelineSet>, set,
                       (MakeGarbageCollected<ScrollTimelineSet>()));
-  return *set;
-}
-
-using ActiveScrollTimelineSet = HeapHashCountedSet<WeakMember<Node>>;
-ActiveScrollTimelineSet& GetActiveScrollTimelineSet() {
-  DEFINE_STATIC_LOCAL(Persistent<ActiveScrollTimelineSet>, set,
-                      (MakeGarbageCollected<ActiveScrollTimelineSet>()));
   return *set;
 }
 
@@ -130,34 +124,27 @@ ScrollTimeline* ScrollTimeline::Create(Document& document,
     scroll_offsets.push_back(scroll_offset);
   }
 
-  absl::optional<double> time_range;
-  if (options->timeRange()->IsDouble()) {
-    time_range = absl::make_optional(options->timeRange()->GetAsDouble());
-  }
-
   // The scrollingElement depends on style/layout-tree in quirks mode. Update
   // such that subsequent calls to ScrollingElementNoLayout returns up-to-date
   // information.
   if (document.InQuirksMode())
     document.UpdateStyleAndLayoutTree();
 
-  return MakeGarbageCollected<ScrollTimeline>(
-      &document, scroll_source, orientation, scroll_offsets, time_range);
+  return MakeGarbageCollected<ScrollTimeline>(&document, scroll_source,
+                                              orientation, scroll_offsets);
 }
 
 ScrollTimeline::ScrollTimeline(
     Document* document,
     absl::optional<Element*> scroll_source,
     ScrollDirection orientation,
-    HeapVector<Member<ScrollTimelineOffset>> scroll_offsets,
-    absl::optional<double> time_range)
+    HeapVector<Member<ScrollTimelineOffset>> scroll_offsets)
     : AnimationTimeline(document),
       scroll_source_(
           scroll_source.value_or(document->ScrollingElementNoLayout())),
       resolved_scroll_source_(ResolveScrollSource(scroll_source_)),
       orientation_(orientation),
-      scroll_offsets_(std::move(scroll_offsets)),
-      time_range_(time_range) {
+      scroll_offsets_(std::move(scroll_offsets)) {
   if (resolved_scroll_source_) {
     ScrollTimelineSet& set = GetScrollTimelineSet();
     if (!set.Contains(resolved_scroll_source_)) {
@@ -307,33 +294,13 @@ V8CSSNumberish* ScrollTimeline::currentTime() {
   // progress of the timeline
   auto current_time = timeline_state_snapshotted_.current_time;
 
-  // TODO(crbug.com/1140602): Support progress based animations
-  // We are currently abusing the intended use of the "auto" keyword. We are
-  // using it here as a signal to use progress based timeline instead of having
-  // a range based current time.
-  // We are doing this to maintain backwards compatibility with existing tests.
-  if (time_range_) {
-    // not using progress based, return time as double
-    if (current_time) {
-      return MakeGarbageCollected<V8CSSNumberish>(
-          current_time->InMillisecondsF());
-    }
-    return nullptr;
-  } else {
-    if (current_time) {
-      return ConvertTimeToProgress(AnimationTimeDelta(current_time.value()));
-    }
-    return nullptr;
+  if (current_time) {
+    return ConvertTimeToProgress(AnimationTimeDelta(current_time.value()));
   }
+  return nullptr;
 }
 
 V8CSSNumberish* ScrollTimeline::duration() {
-  // TODO (crbug.com/1216655): Time range should be removed from ScrollTimeline.
-  // Currently still left in for the sake of backwards compatibility with
-  // existing tests.
-  if (time_range_) {
-    return MakeGarbageCollected<V8CSSNumberish>(time_range_.value());
-  }
   return MakeGarbageCollected<V8CSSNumberish>(CSSUnitValues::percent(100));
 }
 
@@ -379,12 +346,7 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() const {
     return {TimelinePhase::kBefore, base::TimeDelta(), resolved_offsets};
   }
 
-  // TODO (crbug.com/1216655): Time range should be removed from ScrollTimeline.
-  // Currently still left in for the sake of backwards compatibility with
-  // existing tests.
-  base::TimeDelta duration =
-      time_range_ ? base::TimeDelta::FromMillisecondsD(time_range_.value())
-                  : base::TimeDelta::FromSecondsD(GetDuration()->InSecondsF());
+  base::TimeDelta duration = base::Seconds(GetDuration()->InSecondsF());
 
   // 3.2 If current scroll offset is greater than or equal to effective end
   // offset:
@@ -404,10 +366,9 @@ ScrollTimeline::TimelineState ScrollTimeline::ComputeTimelineState() const {
   // 3.3.2 The current time is the result of evaluating the following
   // expression:
   //     progress × effective time range
-  absl::optional<base::TimeDelta> calculated_current_time =
-      base::TimeDelta::FromMillisecondsD(scroll_timeline_util::ComputeProgress(
-                                             current_offset, resolved_offsets) *
-                                         duration.InMillisecondsF());
+  absl::optional<base::TimeDelta> calculated_current_time = base::Milliseconds(
+      scroll_timeline_util::ComputeProgress(current_offset, resolved_offsets) *
+      duration.InMillisecondsF());
   return {TimelinePhase::kActive, calculated_current_time, resolved_offsets};
 }
 
@@ -502,20 +463,6 @@ const HeapVector<Member<V8ScrollTimelineOffset>> ScrollTimeline::scrollOffsets()
   return scroll_offsets;
 }
 
-V8UnionDoubleOrScrollTimelineAutoKeyword* ScrollTimeline::timeRange() const {
-  // TODO(crbug.com/1140602): Support progress based animations
-  // We are currently abusing the intended use of the "auto" keyword. We are
-  // using it here as a signal to use progress based timeline instead of having
-  // a range based current time.
-  // We are doing this maintain backwards compatibility with existing tests.
-  if (time_range_) {
-    return MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(
-        time_range_.value());
-  }
-  return MakeGarbageCollected<V8UnionDoubleOrScrollTimelineAutoKeyword>(
-      V8ScrollTimelineAutoKeyword(V8ScrollTimelineAutoKeyword::Enum::kAuto));
-}
-
 void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
                                             double& current_offset,
                                             double& max_offset) const {
@@ -570,43 +517,33 @@ void ScrollTimeline::AnimationDetached(Animation* animation) {
     resolved_scroll_source_->UnregisterScrollTimeline(this);
 }
 
-void ScrollTimeline::WorkletAnimationAttached() {
+void ScrollTimeline::WorkletAnimationAttached(WorkletAnimationBase* worklet) {
   if (!resolved_scroll_source_)
     return;
-  GetActiveScrollTimelineSet().insert(resolved_scroll_source_);
-}
-
-void ScrollTimeline::WorkletAnimationDetached() {
-  if (!resolved_scroll_source_)
-    return;
-  GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
+  attached_worklet_animations_.insert(worklet);
 }
 
 void ScrollTimeline::Trace(Visitor* visitor) const {
   visitor->Trace(scroll_source_);
   visitor->Trace(resolved_scroll_source_);
   visitor->Trace(scroll_offsets_);
+  visitor->Trace(attached_worklet_animations_);
   AnimationTimeline::Trace(visitor);
 }
 
-bool ScrollTimeline::HasActiveScrollTimeline(Node* node) {
-  ActiveScrollTimelineSet& worklet_animations_set =
-      GetActiveScrollTimelineSet();
-  auto worklet_animations_it = worklet_animations_set.find(node);
-  if (worklet_animations_it != worklet_animations_set.end() &&
-      worklet_animations_it->value > 0)
-    return true;
-
+void ScrollTimeline::InvalidateCompositingState(Node* node) {
   ScrollTimelineSet& set = GetScrollTimelineSet();
   auto it = set.find(node);
   if (it == set.end())
-    return false;
+    return;
 
   for (auto& timeline : *it->value) {
-    if (timeline->HasAnimations())
-      return true;
+    for (const WeakMember<WorkletAnimationBase>& worklet_animation :
+         timeline->attached_worklet_animations_) {
+      node->GetDocument().GetWorkletAnimationController().InvalidateAnimation(
+          *worklet_animation);
+    }
   }
-  return false;
 }
 
 void ScrollTimeline::Invalidate(Node* node) {

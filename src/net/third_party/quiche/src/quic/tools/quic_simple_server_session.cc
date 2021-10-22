@@ -10,6 +10,7 @@
 #include "quic/core/http/quic_server_initiated_spdy_stream.h"
 #include "quic/core/http/quic_spdy_session.h"
 #include "quic/core/quic_connection.h"
+#include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
@@ -18,30 +19,21 @@
 namespace quic {
 
 QuicSimpleServerSession::QuicSimpleServerSession(
-    const QuicConfig& config,
-    const ParsedQuicVersionVector& supported_versions,
-    QuicConnection* connection,
-    QuicSession::Visitor* visitor,
+    const QuicConfig& config, const ParsedQuicVersionVector& supported_versions,
+    QuicConnection* connection, QuicSession::Visitor* visitor,
     QuicCryptoServerStreamBase::Helper* helper,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache,
     QuicSimpleServerBackend* quic_simple_server_backend)
-    : QuicServerSessionBase(config,
-                            supported_versions,
-                            connection,
-                            visitor,
-                            helper,
-                            crypto_config,
-                            compressed_certs_cache),
+    : QuicServerSessionBase(config, supported_versions, connection, visitor,
+                            helper, crypto_config, compressed_certs_cache),
       highest_promised_stream_id_(
           QuicUtils::GetInvalidStreamId(connection->transport_version())),
       quic_simple_server_backend_(quic_simple_server_backend) {
   QUICHE_DCHECK(quic_simple_server_backend_);
 }
 
-QuicSimpleServerSession::~QuicSimpleServerSession() {
-  DeleteConnection();
-}
+QuicSimpleServerSession::~QuicSimpleServerSession() { DeleteConnection(); }
 
 std::unique_ptr<QuicCryptoServerStreamBase>
 QuicSimpleServerSession::CreateQuicCryptoServerStream(
@@ -75,8 +67,8 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(QuicStreamId id) {
 
 QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(
     PendingStream* pending) {
-  QuicSpdyStream* stream = new QuicSimpleServerStream(
-      pending, this, BIDIRECTIONAL, quic_simple_server_backend_);
+  QuicSpdyStream* stream =
+      new QuicSimpleServerStream(pending, this, quic_simple_server_backend_);
   ActivateStream(absl::WrapUnique(stream));
   return stream;
 }
@@ -144,15 +136,15 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
         promised_streams_[index].is_cancelled = true;
       }
     }
-    control_frame_manager().WriteOrBufferRstStream(frame.stream_id,
-                                                   QUIC_RST_ACKNOWLEDGEMENT, 0);
+    control_frame_manager().WriteOrBufferRstStream(
+        frame.stream_id,
+        QuicResetStreamError::FromInternal(QUIC_RST_ACKNOWLEDGEMENT), 0);
     connection()->OnStreamReset(frame.stream_id, QUIC_RST_ACKNOWLEDGEMENT);
   }
 }
 
 spdy::Http2HeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
-    std::string request_url,
-    QuicBackendResponse::ServerPushInfo resource,
+    std::string request_url, QuicBackendResponse::ServerPushInfo resource,
     const spdy::Http2HeaderBlock& original_request_headers) {
   QuicUrl push_request_url = resource.request_url;
 

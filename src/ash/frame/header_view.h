@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/display_observer.h"
 #include "ui/views/view.h"
 
 namespace chromeos {
@@ -46,7 +47,8 @@ class ASH_EXPORT HeaderView
     : public views::View,
       public chromeos::ImmersiveFullscreenControllerDelegate,
       public TabletModeObserver,
-      public aura::WindowObserver {
+      public aura::WindowObserver,
+      public display::DisplayObserver {
  public:
   // |target_widget| is the widget that the caption buttons act on.
   // |target_widget| is not necessarily the same as the widget the header is
@@ -55,6 +57,10 @@ class ASH_EXPORT HeaderView
   // However, clicking a caption button should act on the target widget.
   HeaderView(views::Widget* target_widget,
              views::NonClientFrameView* frame_view);
+
+  HeaderView(const HeaderView&) = delete;
+  HeaderView& operator=(const HeaderView&) = delete;
+
   ~HeaderView() override;
 
   METADATA_HEADER(HeaderView);
@@ -101,6 +107,10 @@ class ASH_EXPORT HeaderView
                                const void* key,
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
+
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   chromeos::FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
@@ -181,8 +191,6 @@ class ASH_EXPORT HeaderView
   // Observes property changes to |target_widget_|'s window.
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       window_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HeaderView);
 };
 
 }  // namespace ash

@@ -13,6 +13,8 @@
 #include "fxjs/xfa/cfxjse_class.h"
 #include "fxjs/xfa/cfxjse_engine.h"
 #include "third_party/base/numerics/safe_conversions.h"
+#include "v8/include/v8-object.h"
+#include "v8/include/v8-primitive.h"
 #include "xfa/fxfa/parser/cxfa_document.h"
 #include "xfa/fxfa/parser/cxfa_list.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
@@ -46,7 +48,9 @@ CJS_Result CJX_List::append(CFX_V8* runtime,
   if (!pNode)
     return CJS_Result::Failure(JSMessage::kValueError);
 
-  GetXFAList()->Append(pNode);
+  if (!GetXFAList()->Append(pNode))
+    return CJS_Result::Failure(JSMessage::kWouldBeCyclic);
+
   return CJS_Result::Success();
 }
 

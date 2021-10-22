@@ -4,6 +4,8 @@
 
 #include "ui/base/ui_base_features.h"
 
+#include <stdlib.h>
+
 #include "build/chromeos_buildflags.h"
 
 #if defined(OS_WIN)
@@ -17,6 +19,22 @@
 namespace features {
 
 #if defined(OS_WIN)
+// Once enabled, the exact behavior is dictated by the field trial param
+// name `kApplyNativeOcclusionToCompositorType`.
+const base::Feature kApplyNativeOcclusionToCompositor{
+    "ApplyNativeOcclusionToCompositor", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Field trial param name for `kApplyNativeOcclusionToCompositor`.
+const char kApplyNativeOcclusionToCompositorType[] = "type";
+// Indicates occlusion should be applied to the compositor.
+const char kApplyNativeOcclusionToCompositorTypeApplyOnly[] = "apply";
+// Indicates occlusion should be applied to the compositor, and when occluded
+// the root surface should be evicted when hidden/occluded.
+const char kApplyNativeOcclusionToCompositorTypeApplyAndEvict[] =
+    "apply-and-evict";
+// Indicates the root surface should be evicted when hidden/occluded.
+const char kApplyNativeOcclusionToCompositorTypeEvictOnly[] = "evict";
+
 // If enabled, calculate native window occlusion - Windows-only.
 const base::Feature kCalculateNativeWinOcclusion{
     "CalculateNativeWinOcclusion", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -26,7 +44,16 @@ const base::Feature kCalculateNativeWinOcclusion{
 const base::Feature kScreenPowerListenerForNativeWinOcclusion{
     "ScreenPowerListenerForNativeWinOcclusion",
     base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // OW_WIN
+
+// If enabled, displays Windows 11 style menus on Windows 11.
+const base::Feature kWin11StyleMenus{"Win11StyleMenus",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If this Windows 11 style menu feature parameter is enabled, displays that
+// style menu on all Windows versions.
+const char kWin11StyleMenuAllWindowsVersionsName[] = "All Windows Versions";
+
+#endif  // defined(OS_WIN)
 
 // Whether or not to delegate color queries to the color provider.
 const base::Feature kColorProviderRedirection = {
@@ -87,13 +114,6 @@ const base::Feature kSystemCaptionStyle{"SystemCaptionStyle",
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kNotificationIndicator = {"EnableNotificationIndicator",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsNotificationIndicatorEnabled() {
-  return base::FeatureList::IsEnabled(kNotificationIndicator);
-}
-
 // Enables GPU rasterization for all UI drawing (where not blocklisted).
 const base::Feature kUiGpuRasterization = {"UiGpuRasterization",
 #if defined(OS_APPLE) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_FUCHSIA) || \
@@ -138,10 +158,15 @@ const base::Feature kExperimentalFlingAnimation {
 #endif
 };
 
-#if defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
 // Cached in Java as well, make sure defaults are updated together.
 const base::Feature kElasticOverscroll = {"ElasticOverscroll",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_ANDROID)
+                                          base::FEATURE_ENABLED_BY_DEFAULT
+#else  // defined(OS_ANDROID)
+                                          base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 #endif  // defined(OS_WIN) || defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -171,9 +196,6 @@ bool IsUsingWMPointerForTouch() {
          base::FeatureList::IsEnabled(kPointerEventsForTouch);
 }
 
-// Enables Logging for DirectManipulation.
-const base::Feature kPrecisionTouchpadLogging{
-    "PrecisionTouchpadLogging", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
@@ -290,12 +312,11 @@ const base::Feature kUIDebugTools{"ui-debug-tools",
 
 bool IsSwipeToMoveCursorEnabled() {
   static const bool enabled =
-      base::FeatureList::IsEnabled(kSwipeToMoveCursor)
 #if defined(OS_ANDROID)
-      && base::android::BuildInfo::GetInstance()->sdk_int() >=
-             base::android::SDK_VERSION_R;
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_R;
 #else
-      ;
+      base::FeatureList::IsEnabled(kSwipeToMoveCursor);
 #endif
   return enabled;
 }

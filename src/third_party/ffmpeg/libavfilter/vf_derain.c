@@ -58,19 +58,17 @@ AVFILTER_DEFINE_CLASS(derain);
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats;
     const enum AVPixelFormat pixel_fmts[] = {
         AV_PIX_FMT_RGB24,
         AV_PIX_FMT_NONE
     };
 
-    formats = ff_make_format_list(pixel_fmts);
-
-    return ff_set_common_formats(ctx, formats);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
+    DNNAsyncStatusType async_state = 0;
     AVFilterContext *ctx  = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
     DRContext *dr_context = ctx->priv;
@@ -91,6 +89,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         av_frame_free(&in);
         return AVERROR(EIO);
     }
+    do {
+        async_state = ff_dnn_get_result(&dr_context->dnnctx, &in, &out);
+    } while (async_state == DAST_NOT_READY);
+
+    if (async_state != DAST_SUCCESS)
+        return AVERROR(EINVAL);
 
     av_frame_free(&in);
 
@@ -115,7 +119,6 @@ static const AVFilterPad derain_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad derain_outputs[] = {
@@ -123,7 +126,6 @@ static const AVFilterPad derain_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_derain = {
@@ -133,8 +135,8 @@ const AVFilter ff_vf_derain = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = derain_inputs,
-    .outputs       = derain_outputs,
+    FILTER_INPUTS(derain_inputs),
+    FILTER_OUTPUTS(derain_outputs),
     .priv_class    = &derain_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };

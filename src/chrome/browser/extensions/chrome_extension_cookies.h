@@ -45,6 +45,9 @@ class ChromeExtensionCookies
       public content_settings::Observer,
       public content_settings::CookieSettings::Observer {
  public:
+  ChromeExtensionCookies(const ChromeExtensionCookies&) = delete;
+  ChromeExtensionCookies& operator=(const ChromeExtensionCookies&) = delete;
+
   // Gets (or creates) an appropriate instance for given |context| from
   // ChromeExtensionCookiesFactory.
   static ChromeExtensionCookies* Get(content::BrowserContext* context);
@@ -74,6 +77,10 @@ class ChromeExtensionCookies
    public:
     IOData(std::unique_ptr<content::CookieStoreConfig> creation_config,
            network::mojom::CookieManagerParamsPtr initial_mojo_cookie_settings);
+
+    IOData(const IOData&) = delete;
+    IOData& operator=(const IOData&) = delete;
+
     ~IOData();
 
     void CreateRestrictedCookieManager(
@@ -108,8 +115,6 @@ class ChromeExtensionCookies
 
     mojo::UniqueReceiverSet<network::mojom::RestrictedCookieManager>
         restricted_cookie_managers_;
-
-    DISALLOW_COPY_AND_ASSIGN(IOData);
   };
 
   explicit ChromeExtensionCookies(Profile* profile);
@@ -137,8 +142,6 @@ class ChromeExtensionCookies
   base::ScopedObservation<content_settings::CookieSettings,
                           content_settings::CookieSettings::Observer>
       cookie_settings_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeExtensionCookies);
 };
 
 }  // namespace extensions

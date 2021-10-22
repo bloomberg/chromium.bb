@@ -20,6 +20,7 @@
 
         <!-- Spinner styles -->
         <item name="spinnerStyle">@style/SpinnerStyle</item>
+        <item name="android:progressBarStyle">@style/ProgressBarStyle</item>
 
         <!-- Popup styles -->
         <!-- Set android popup menu attributes for context menu styles because the context menus are
@@ -71,7 +72,7 @@
     <!-- AlertDialog styles -->
     <style name="Base.Theme.Chromium.AlertDialog"
         parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="android:textColorPrimary">@color/default_text_color</item>
+        <item name="android:textColorPrimary">@macro/default_text_color</item>
         <item name="android:windowBackground">@drawable/dialog_bg_tinted</item>
         <item name="android:windowTitleStyle">@style/TextAppearance.AlertDialogTitleStyle</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
@@ -130,6 +131,10 @@
         <item name="android:paddingTop">10dp</item>
     </style>
 
+    <style name="ProgressBarStyle" parent="Widget.AppCompat.ProgressBar">
+        <item name="android:indeterminateTint">@macro/default_icon_color_accent1</item>
+    </style>
+
     <!-- Spinner styles -->
     <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
         <item name="android:popupBackground">@drawable/dialog_bg_tinted</item>
@@ -168,19 +173,9 @@
         <item name="android:paddingStart">16dp</item>
     </style>
 
-    <!-- Fullscreen -->
-    <style name="Base.Theme.Chromium.Fullscreen" parent="Theme.BrowserUI.DayNight">
-        <!-- With ActionBar but not window title -->
-        <!-- TODO(huayinz): Check if windowActionBar is actually needed. -->
-        <item name="windowActionBar">true</item>
-        <item name="colorPrimary">@color/default_control_color_active</item>
-        <item name="colorAccent">@color/default_control_color_active</item>
-    </style>
-    <style name="Theme.Chromium.Fullscreen" parent="Base.Theme.Chromium.Fullscreen" />
-
     <style name="ModernToolbar" parent="Widget.MaterialComponents.Toolbar">
         <item name="titleTextAppearance">@style/TextAppearance.Headline.Primary</item>
-        <item name="titleTextColor">@color/default_text_color</item>
+        <item name="titleTextColor">@macro/default_text_color</item>
         <item name="windowActionBarOverlay">true</item>
         <item name="android:background">@color/default_bg_color</item>
     </style>

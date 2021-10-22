@@ -34,6 +34,10 @@ class PaymentRequestDisplayManager : public KeyedService {
    public:
     DisplayHandle(base::WeakPtr<PaymentRequestDisplayManager> display_manager,
                   base::WeakPtr<ContentPaymentRequestDelegate> delegate);
+
+    DisplayHandle(const DisplayHandle&) = delete;
+    DisplayHandle& operator=(const DisplayHandle&) = delete;
+
     ~DisplayHandle();
     void Show(base::WeakPtr<PaymentRequest> request);
     void Retry();
@@ -54,10 +58,14 @@ class PaymentRequestDisplayManager : public KeyedService {
     bool was_shown_ = false;
 
     base::WeakPtrFactory<DisplayHandle> weak_ptr_factory_{this};
-    DISALLOW_COPY_AND_ASSIGN(DisplayHandle);
   };
 
   PaymentRequestDisplayManager();
+
+  PaymentRequestDisplayManager(const PaymentRequestDisplayManager&) = delete;
+  PaymentRequestDisplayManager& operator=(const PaymentRequestDisplayManager&) =
+      delete;
+
   ~PaymentRequestDisplayManager() override;
 
   // If no PaymentRequest is currently showing, returns a unique_ptr to a
@@ -80,7 +88,6 @@ class PaymentRequestDisplayManager : public KeyedService {
   base::WeakPtr<DisplayHandle> current_handle_;
 
   base::WeakPtrFactory<PaymentRequestDisplayManager> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(PaymentRequestDisplayManager);
 };
 
 }  // namespace payments

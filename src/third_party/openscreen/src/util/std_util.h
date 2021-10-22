@@ -5,6 +5,8 @@
 #ifndef UTIL_STD_UTIL_H_
 #define UTIL_STD_UTIL_H_
 
+#include <stddef.h>
+
 #include <algorithm>
 #include <map>
 #include <string>
@@ -85,6 +87,24 @@ std::vector<T> GetVectorWithCapacity(size_t size) {
   std::vector<T> results;
   results.reserve(size);
   return results;
+}
+
+// Returns true if an element equal to |element| is found in |container|.
+// C.begin() must return an iterator to the beginning of C and C.end() must
+// return an iterator to the end.
+template <typename C, typename E>
+bool Contains(const C& container, const E& element) {
+  return std::find(container.begin(), container.end(), element) !=
+         container.end();
+}
+
+// Returns true if any element in |container| returns true for |predicate|.
+// C.begin() must return an iterator to the beginning of C and C.end() must
+// return an iterator to the end.
+template <typename C, typename P>
+bool ContainsIf(const C& container, P predicate) {
+  return std::find_if(container.begin(), container.end(),
+                      std::move(predicate)) != container.end();
 }
 
 }  // namespace openscreen

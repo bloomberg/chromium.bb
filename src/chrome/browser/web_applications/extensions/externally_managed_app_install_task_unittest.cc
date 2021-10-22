@@ -22,12 +22,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
-#include "chrome/browser/web_applications/test/test_data_retriever.h"
-#include "chrome/browser/web_applications/test/test_install_finalizer.h"
-#include "chrome/browser/web_applications/test/test_os_integration_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
-#include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
+#include "chrome/browser/web_applications/test/fake_data_retriever.h"
+#include "chrome/browser/web_applications/test/fake_install_finalizer.h"
+#include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_data_retriever.h"
@@ -100,18 +101,7 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
 
   // Returns what would be the AppId if an app is installed with |url|.
   AppId GetAppIdForUrl(const GURL& url) {
-    return TestInstallFinalizer::GetAppIdForUrl(url);
-  }
-
-  std::unique_ptr<WebApp> CreateWebApp(const AppId& app_id,
-                                       const GURL& start_url) {
-    auto web_app = std::make_unique<WebApp>(app_id);
-    web_app->SetStartUrl(start_url);
-    web_app->SetName("App Name");
-    web_app->AddSource(Source::kPolicy);
-    web_app->SetDisplayMode(DisplayMode::kStandalone);
-    web_app->SetUserDisplayMode(DisplayMode::kStandalone);
-    return web_app;
+    return FakeInstallFinalizer::GetAppIdForUrl(url);
   }
 
   void RegisterApp(std::unique_ptr<web_app::WebApp> web_app) {
@@ -179,7 +169,7 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
         FROM_HERE,
         base::BindLambdaForTesting(
             [&, app_id, url, code, callback = std::move(callback)]() mutable {
-              auto web_app = CreateWebApp(app_id, url);
+              auto web_app = test::CreateWebApp(url, Source::kPolicy);
               RegisterApp(std::move(web_app));
               std::move(callback).Run(app_id, code);
             }));
@@ -301,7 +291,7 @@ class ExternallyManagedAppInstallTaskTest
 
     url_loader_ = std::make_unique<TestWebAppUrlLoader>();
 
-    auto* provider = TestWebAppProvider::Get(profile());
+    auto* provider = FakeWebAppProvider::Get(profile());
 
     auto registrar = std::make_unique<WebAppRegistrarMutable>(profile());
     registrar_ = registrar.get();
@@ -314,14 +304,14 @@ class ExternallyManagedAppInstallTaskTest
     auto install_manager = std::make_unique<WebAppInstallManager>(profile());
     install_manager_ = install_manager.get();
 
-    auto os_integration_manager = std::make_unique<TestOsIntegrationManager>(
+    auto os_integration_manager = std::make_unique<FakeOsIntegrationManager>(
         profile(), /*app_shortcut_manager=*/nullptr,
         /*file_handler_manager=*/nullptr,
         /*protocol_handler_manager=*/nullptr,
         /*url_handler_manager*/ nullptr);
     os_integration_manager_ = os_integration_manager.get();
 
-    auto ui_manager = std::make_unique<TestWebAppUiManager>();
+    auto ui_manager = std::make_unique<FakeWebAppUiManager>();
     ui_manager_ = ui_manager.get();
 
     provider->SetRegistrar(std::move(registrar));
@@ -338,17 +328,17 @@ class ExternallyManagedAppInstallTaskTest
  protected:
   TestWebAppUrlLoader& url_loader() { return *url_loader_; }
 
-  TestWebAppUiManager* ui_manager() { return ui_manager_; }
+  FakeWebAppUiManager* ui_manager() { return ui_manager_; }
   WebAppRegistrar* registrar() { return registrar_; }
   TestExternallyManagedAppInstallFinalizer* finalizer() {
     return install_finalizer_;
   }
   WebAppInstallManager* install_manager() { return install_manager_; }
-  TestOsIntegrationManager* os_integration_manager() {
+  FakeOsIntegrationManager* os_integration_manager() {
     return os_integration_manager_;
   }
 
-  TestDataRetriever* data_retriever() { return data_retriever_; }
+  FakeDataRetriever* data_retriever() { return data_retriever_; }
 
   const WebApplicationInfo& web_app_info() {
     DCHECK_EQ(1u, install_finalizer_->web_app_info_list().size());
@@ -362,7 +352,7 @@ class ExternallyManagedAppInstallTaskTest
 
   std::unique_ptr<ExternallyManagedAppInstallTask>
   GetInstallationTaskWithTestMocks(ExternalInstallOptions options) {
-    auto data_retriever = std::make_unique<TestDataRetriever>();
+    auto data_retriever = std::make_unique<FakeDataRetriever>();
     data_retriever_ = data_retriever.get();
 
     install_manager_->SetDataRetrieverFactoryForTesting(
@@ -394,10 +384,10 @@ class ExternallyManagedAppInstallTaskTest
   std::unique_ptr<TestWebAppUrlLoader> url_loader_;
   WebAppInstallManager* install_manager_ = nullptr;
   WebAppRegistrar* registrar_ = nullptr;
-  TestDataRetriever* data_retriever_ = nullptr;
+  FakeDataRetriever* data_retriever_ = nullptr;
   TestExternallyManagedAppInstallFinalizer* install_finalizer_ = nullptr;
-  TestWebAppUiManager* ui_manager_ = nullptr;
-  TestOsIntegrationManager* os_integration_manager_ = nullptr;
+  FakeWebAppUiManager* ui_manager_ = nullptr;
+  FakeOsIntegrationManager* os_integration_manager_ = nullptr;
 };
 
 class ExternallyManagedAppInstallTaskWithRunOnOsLoginTest
@@ -733,7 +723,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallPlaceholder) {
             EXPECT_EQ(base::UTF8ToUTF16(kWebAppUrl.spec()), web_app_info.title);
             EXPECT_EQ(kWebAppUrl, web_app_info.start_url);
             EXPECT_EQ(web_app_info.user_display_mode, DisplayMode::kStandalone);
-            EXPECT_TRUE(web_app_info.icon_infos.empty());
+            EXPECT_TRUE(web_app_info.manifest_icons.empty());
             EXPECT_TRUE(web_app_info.icon_bitmaps.any.empty());
 
             run_loop.Quit();
@@ -777,7 +767,7 @@ TEST_F(ExternallyManagedAppInstallTaskTest,
             EXPECT_EQ(base::UTF8ToUTF16(kWebAppUrl.spec()), web_app_info.title);
             EXPECT_EQ(kWebAppUrl, web_app_info.start_url);
             EXPECT_EQ(web_app_info.user_display_mode, DisplayMode::kStandalone);
-            EXPECT_TRUE(web_app_info.icon_infos.empty());
+            EXPECT_TRUE(web_app_info.manifest_icons.empty());
             EXPECT_TRUE(web_app_info.icon_bitmaps.any.empty());
 
             run_loop.Quit();

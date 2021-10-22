@@ -69,6 +69,11 @@ class MediaSessionImplVisibilityBrowserTest
                                           BackgroundResuming::ENABLED);
   }
 
+  MediaSessionImplVisibilityBrowserTest(
+      const MediaSessionImplVisibilityBrowserTest&) = delete;
+  MediaSessionImplVisibilityBrowserTest& operator=(
+      const MediaSessionImplVisibilityBrowserTest&) = delete;
+
   ~MediaSessionImplVisibilityBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -132,7 +137,7 @@ class MediaSessionImplVisibilityBrowserTest
         GetVisibilityTestData().session_state_after_hide;
 
     if (state_before_hide == state_after_hide) {
-      Wait(base::TimeDelta::FromSeconds(1));
+      Wait(base::Seconds(1));
       ASSERT_EQ(state_after_hide,
                 media_session_->GetMediaSessionInfoSync()->state);
     } else {
@@ -170,8 +175,6 @@ class MediaSessionImplVisibilityBrowserTest
 
   WebContents* web_contents_;
   MediaSessionImpl* media_session_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionImplVisibilityBrowserTest);
 };
 
 namespace {

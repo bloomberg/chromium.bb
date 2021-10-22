@@ -26,9 +26,11 @@
 
 namespace dawn_native {
 
-    class CommandEncoder final : public ObjectBase {
+    class CommandEncoder final : public ApiObjectBase {
       public:
         CommandEncoder(DeviceBase* device, const CommandEncoderDescriptor* descriptor);
+
+        ObjectType GetType() const;
 
         CommandIterator AcquireCommands();
         CommandBufferResourceUsage AcquireResourceUsages();
@@ -68,9 +70,16 @@ namespace dawn_native {
                                 uint32_t queryCount,
                                 BufferBase* destination,
                                 uint64_t destinationOffset);
+        void APIWriteBuffer(BufferBase* buffer,
+                            uint64_t bufferOffset,
+                            const uint8_t* data,
+                            uint64_t size);
         void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
         CommandBufferBase* APIFinish(const CommandBufferDescriptor* descriptor = nullptr);
+
+        void EncodeSetValidatedBufferLocationsInternal(
+            std::vector<DeferredBufferLocationUpdate> updates);
 
       private:
         ResultOrError<Ref<CommandBufferBase>> FinishInternal(
@@ -93,6 +102,9 @@ namespace dawn_native {
 
         uint64_t mDebugGroupStackSize = 0;
     };
+
+    // For the benefit of template generation.
+    using CommandEncoderBase = CommandEncoder;
 
 }  // namespace dawn_native
 

@@ -45,8 +45,9 @@ namespace dawn_native { namespace opengl {
                 case wgpu::IndexFormat::Uint32:
                     return GL_UNSIGNED_INT;
                 case wgpu::IndexFormat::Undefined:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         GLenum VertexFormatType(wgpu::VertexFormat format) {
@@ -339,9 +340,6 @@ namespace dawn_native { namespace opengl {
 
                             GLenum access;
                             switch (bindingInfo.storageTexture.access) {
-                                case wgpu::StorageTextureAccess::ReadOnly:
-                                    access = GL_READ_ONLY;
-                                    break;
                                 case wgpu::StorageTextureAccess::WriteOnly:
                                     access = GL_WRITE_ONLY;
                                     break;
@@ -846,6 +844,27 @@ namespace dawn_native { namespace opengl {
                     break;
                 }
 
+                case Command::SetValidatedBufferLocationsInternal:
+                    DoNextSetValidatedBufferLocationsInternal();
+                    break;
+
+                case Command::WriteBuffer: {
+                    WriteBufferCmd* write = mCommands.NextCommand<WriteBufferCmd>();
+                    uint64_t offset = write->offset;
+                    uint64_t size = write->size;
+                    if (size == 0) {
+                        continue;
+                    }
+
+                    Buffer* dstBuffer = ToBackend(write->buffer.Get());
+                    uint8_t* data = mCommands.NextData<uint8_t>(size);
+                    dstBuffer->EnsureDataInitializedAsDestination(offset, size);
+
+                    gl.BindBuffer(GL_ARRAY_BUFFER, dstBuffer->GetHandle());
+                    gl.BufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+                    break;
+                }
+
                 default:
                     UNREACHABLE();
             }
@@ -1055,8 +1074,7 @@ namespace dawn_native { namespace opengl {
                     }
                 }
 
-                if (attachmentInfo->storeOp == wgpu::StoreOp::Discard ||
-                    attachmentInfo->storeOp == wgpu::StoreOp::Clear) {
+                if (attachmentInfo->storeOp == wgpu::StoreOp::Discard) {
                     // TODO(natlee@microsoft.com): call glDiscard to do optimization
                 }
             }
@@ -1169,16 +1187,17 @@ namespace dawn_native { namespace opengl {
 
                 case Command::DrawIndexedIndirect: {
                     DrawIndexedIndirectCmd* draw = iter->NextCommand<DrawIndexedIndirectCmd>();
+                    ASSERT(!draw->indirectBufferLocation->IsNull());
+
                     vertexStateBufferBindingTracker.Apply(gl);
                     bindGroupTracker.Apply(gl);
 
-                    uint64_t indirectBufferOffset = draw->indirectOffset;
-                    Buffer* indirectBuffer = ToBackend(draw->indirectBuffer.Get());
-
+                    Buffer* indirectBuffer = ToBackend(draw->indirectBufferLocation->GetBuffer());
                     gl.BindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer->GetHandle());
                     gl.DrawElementsIndirect(
                         lastPipeline->GetGLPrimitiveTopology(), indexBufferFormat,
-                        reinterpret_cast<void*>(static_cast<intptr_t>(indirectBufferOffset)));
+                        reinterpret_cast<void*>(
+                            static_cast<intptr_t>(draw->indirectBufferLocation->GetOffset())));
                     break;
                 }
 

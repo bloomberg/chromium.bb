@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ash/input_method/candidate_window_controller.h"
 #include "chrome/browser/ash/input_method/ui/candidate_window_view.h"
-#include "ui/base/ime/chromeos/ime_candidate_window_handler_interface.h"
+#include "ui/base/ime/ash/ime_candidate_window_handler_interface.h"
 #include "ui/base/ime/infolist_entry.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -39,6 +39,11 @@ class CandidateWindowControllerImpl
       public IMECandidateWindowHandlerInterface {
  public:
   CandidateWindowControllerImpl();
+
+  CandidateWindowControllerImpl(const CandidateWindowControllerImpl&) = delete;
+  CandidateWindowControllerImpl& operator=(
+      const CandidateWindowControllerImpl&) = delete;
+
   ~CandidateWindowControllerImpl() override;
 
   // CandidateWindowController overrides:
@@ -88,8 +93,6 @@ class CandidateWindowControllerImpl
   std::vector<ui::InfolistEntry> latest_infolist_entries_;
 
   base::ObserverList<CandidateWindowController::Observer>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(CandidateWindowControllerImpl);
 };
 
 }  // namespace input_method

@@ -12,7 +12,7 @@
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_util.h"
-#include "ash/wm/desks/expanded_state_new_desk_button.h"
+#include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -36,6 +36,12 @@ namespace ash {
 class OverviewHighlightControllerTest : public AshTestBase {
  public:
   OverviewHighlightControllerTest() = default;
+
+  OverviewHighlightControllerTest(const OverviewHighlightControllerTest&) =
+      delete;
+  OverviewHighlightControllerTest& operator=(
+      const OverviewHighlightControllerTest&) = delete;
+
   ~OverviewHighlightControllerTest() override = default;
 
   // AshTestBase:
@@ -55,9 +61,6 @@ class OverviewHighlightControllerTest : public AshTestBase {
       SendKey(key);
     } while (!GetOverviewHighlightedWindow());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverviewHighlightControllerTest);
 };
 
 // Tests traversing some windows in overview mode with the tab key.
@@ -176,9 +179,9 @@ TEST_F(OverviewHighlightControllerTest, ItemClosed) {
 
 // Tests basic selection across multiple monitors.
 TEST_F(OverviewHighlightControllerTest, BasicMultiMonitorArrowKeyNavigation) {
-  UpdateDisplay("400x400,400x400");
+  UpdateDisplay("500x400,500x400");
   const gfx::Rect bounds1(100, 100);
-  const gfx::Rect bounds2(450, 0, 100, 100);
+  const gfx::Rect bounds2(550, 0, 100, 100);
   std::unique_ptr<aura::Window> window4(CreateTestWindow(bounds2));
   std::unique_ptr<aura::Window> window3(CreateTestWindow(bounds2));
   std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds1));
@@ -203,14 +206,14 @@ TEST_F(OverviewHighlightControllerTest, BasicMultiMonitorArrowKeyNavigation) {
 // Tests first monitor when display order doesn't match left to right screen
 // positions.
 TEST_F(OverviewHighlightControllerTest, MultiMonitorReversedOrder) {
-  UpdateDisplay("400x400,400x400");
+  UpdateDisplay("500x400,500x400");
   Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::LEFT, 0));
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window2(CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window1(
-      CreateTestWindow(gfx::Rect(-350, 0, 100, 100)));
+      CreateTestWindow(gfx::Rect(-450, 0, 100, 100)));
   EXPECT_EQ(root_windows[1], window1->GetRootWindow());
   EXPECT_EQ(root_windows[0], window2->GetRootWindow());
 
@@ -233,12 +236,12 @@ TEST_F(OverviewHighlightControllerTest, MultiMonitorReversedOrder) {
 
 // Tests three monitors where the grid becomes empty on one of the monitors.
 TEST_F(OverviewHighlightControllerTest, ThreeMonitor) {
-  UpdateDisplay("400x400,400x400,400x400");
+  UpdateDisplay("500x400,500x400,500x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::unique_ptr<aura::Window> window3(
-      CreateTestWindow(gfx::Rect(800, 0, 100, 100)));
+      CreateTestWindow(gfx::Rect(1000, 0, 100, 100)));
   std::unique_ptr<aura::Window> window2(
-      CreateTestWindow(gfx::Rect(400, 0, 100, 100)));
+      CreateTestWindow(gfx::Rect(500, 0, 100, 100)));
   std::unique_ptr<aura::Window> window1(CreateTestWindow(gfx::Rect(100, 100)));
   EXPECT_EQ(root_windows[0], window1->GetRootWindow());
   EXPECT_EQ(root_windows[1], window2->GetRootWindow());
@@ -256,7 +259,7 @@ TEST_F(OverviewHighlightControllerTest, ThreeMonitor) {
   EXPECT_EQ(nullptr, GetOverviewHighlightedWindow());
   ToggleOverview();
 
-  window3 = CreateTestWindow(gfx::Rect(800, 0, 100, 100));
+  window3 = CreateTestWindow(gfx::Rect(1000, 0, 100, 100));
   ToggleOverview();
   SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
   SendKeyUntilOverviewItemIsHighlighted(ui::VKEY_RIGHT);
@@ -339,6 +342,12 @@ class DesksOverviewHighlightControllerTest
     : public OverviewHighlightControllerTest {
  public:
   DesksOverviewHighlightControllerTest() = default;
+
+  DesksOverviewHighlightControllerTest(
+      const DesksOverviewHighlightControllerTest&) = delete;
+  DesksOverviewHighlightControllerTest& operator=(
+      const DesksOverviewHighlightControllerTest&) = delete;
+
   ~DesksOverviewHighlightControllerTest() override = default;
 
   // OverviewHighlightControllerTest:
@@ -372,9 +381,6 @@ class DesksOverviewHighlightControllerTest
     EXPECT_EQ(view->bounds().height(),
               view->GetWidget()->GetWindowBoundsInScreen().height());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DesksOverviewHighlightControllerTest);
 };
 
 // Tests that we can tab through the desk mini views, new desk button and
@@ -414,7 +420,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
 
-  EXPECT_EQ(desk_bar_view->expanded_state_new_desk_button()->new_desk_button(),
+  EXPECT_EQ(desk_bar_view->expanded_state_new_desk_button()->inner_button(),
             GetHighlightedView());
   CheckDeskBarViewSize(desk_bar_view, "new desk button");
 
@@ -439,7 +445,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingReverse) {
   // Tests that the first highlighted item when reversing is the new desk
   // button.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(desk_bar_view->expanded_state_new_desk_button()->new_desk_button(),
+  EXPECT_EQ(desk_bar_view->expanded_state_new_desk_button()->inner_button(),
             GetHighlightedView());
 
   // Tests that after the new desk button comes the mini views and their desk
@@ -465,7 +471,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingReverse) {
   // the overview items.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_EQ(desk_bar_view->expanded_state_new_desk_button()->new_desk_button(),
+  EXPECT_EQ(desk_bar_view->expanded_state_new_desk_button()->inner_button(),
             GetHighlightedView());
 }
 
@@ -514,7 +520,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   EXPECT_EQ(desk_bar_view1->mini_views()[1]->desk_name_view(),
             GetHighlightedView());
   SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(desk_bar_view1->expanded_state_new_desk_button()->new_desk_button(),
+  EXPECT_EQ(desk_bar_view1->expanded_state_new_desk_button()->inner_button(),
             GetHighlightedView());
 
   // Tests that the next tab will bring us to the first overview item on the
@@ -532,7 +538,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(desk_bar_view2->expanded_state_new_desk_button()->new_desk_button(),
+  EXPECT_EQ(desk_bar_view2->expanded_state_new_desk_button()->inner_button(),
             GetHighlightedView());
 
   // Tests that after tabbing through the items on the second display, the
@@ -550,7 +556,7 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(desk_bar_view3->expanded_state_new_desk_button()->new_desk_button(),
+  EXPECT_EQ(desk_bar_view3->expanded_state_new_desk_button()->inner_button(),
             GetHighlightedView());
 
   // Tests that after tabbing through the items on the third display, the next
@@ -694,7 +700,7 @@ TEST_F(DesksOverviewHighlightControllerTest,
       GetDesksBarViewForRoot(Shell::GetPrimaryRootWindow());
   ASSERT_FALSE(desk_bar_view->IsZeroState());
   const auto* new_desk_button =
-      desk_bar_view->expanded_state_new_desk_button()->new_desk_button();
+      desk_bar_view->expanded_state_new_desk_button()->inner_button();
   const auto* desks_controller = DesksController::Get();
 
   auto check_name_view_at_index = [this](const auto* desk_bar_view, int index) {

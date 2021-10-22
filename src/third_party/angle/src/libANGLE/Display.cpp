@@ -901,7 +901,7 @@ Error Display::initialize()
     if (mConfigSet.size() == 0)
     {
         mImplementation->terminate();
-        return EglNotInitialized();
+        return EglNotInitialized() << "No configs were generated.";
     }
 
     // OpenGL ES1 is implemented in the frontend, explicitly add ES1 support to all configs
@@ -980,6 +980,14 @@ Error Display::terminate(Thread *thread)
         {
             return NoError();
         }
+    }
+
+    // Destroy all of the Contexts for this Display, since none of them are current anymore.
+    while (!mContextSet.empty())
+    {
+        gl::Context *context = *mContextSet.begin();
+        context->setIsDestroyed();
+        ANGLE_TRY(releaseContext(context, thread));
     }
 
     mMemoryProgramCache.clear();
@@ -1512,20 +1520,6 @@ Error Display::releaseContext(gl::Context *context, Thread *thread)
 
     ANGLE_TRY(context->onDestroy(this));
 
-    // If eglTerminate() has previously been called and this is the last Context the Display owns,
-    // we can now fully terminate the display and release all of its resources.
-    for (const gl::Context *ctx : mContextSet)
-    {
-        if (ctx->getRefCount() > 0)
-        {
-            return NoError();
-        }
-    }
-    if (mIsTerminated)
-    {
-        return terminate(thread);
-    }
-
     return NoError();
 }
 
@@ -1563,6 +1557,22 @@ Error Display::destroyContext(Thread *thread, gl::Context *context)
         ANGLE_TRY(
             makeCurrent(thread, context, currentDrawSurface, currentReadSurface, currentContext));
     }
+
+    // If eglTerminate() has previously been called and this is the last Context the Display owns,
+    // we can now fully terminate the display and release all of its resources.
+    if (mIsTerminated)
+    {
+        for (const gl::Context *ctx : mContextSet)
+        {
+            if (ctx->getRefCount() > 0)
+            {
+                return NoError();
+            }
+        }
+
+        return terminate(thread);
+    }
+
     return NoError();
 }
 
@@ -1818,7 +1828,7 @@ void Display::initDisplayExtensions()
     mDisplayExtensions.getAllProcAddresses = true;
 
     // Enable program cache control since it is not back-end dependent.
-    mDisplayExtensions.programCacheControl = true;
+    mDisplayExtensions.programCacheControlANGLE = true;
 
     // Request extension is implemented in the ANGLE frontend
     mDisplayExtensions.createContextExtensionsEnabled = true;

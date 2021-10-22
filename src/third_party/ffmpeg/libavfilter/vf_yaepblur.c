@@ -83,7 +83,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(pix_fmts));
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 typedef struct ThreadData {
@@ -253,12 +253,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         td.height       = s->planeheight[plane];
         td.src          = in->data[plane];
         td.src_linesize = in->linesize[plane];
-        ctx->internal->execute(ctx, s->pre_calculate_row, &td, NULL, FFMIN(td.height, nb_threads));
-        ctx->internal->execute(ctx, pre_calculate_col, &td, NULL, FFMIN(td.width,  nb_threads));
+        ff_filter_execute(ctx, s->pre_calculate_row, &td, NULL,
+                          FFMIN(td.height, nb_threads));
+        ff_filter_execute(ctx, pre_calculate_col, &td, NULL,
+                          FFMIN(td.width,  nb_threads));
 
         td.dst          = out->data[plane];
         td.dst_linesize = out->linesize[plane];
-        ctx->internal->execute(ctx, s->filter_slice, &td, NULL, FFMIN(td.height, nb_threads));
+        ff_filter_execute(ctx, s->filter_slice, &td, NULL,
+                          FFMIN(td.height, nb_threads));
     }
 
     if (out != in)
@@ -309,7 +312,6 @@ static const AVFilterPad yaep_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad yaep_outputs[] = {
@@ -317,7 +319,6 @@ static const AVFilterPad yaep_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(YAEPContext, x)
@@ -342,8 +343,8 @@ const AVFilter ff_vf_yaepblur = {
     .priv_class      = &yaepblur_class,
     .uninit          = uninit,
     .query_formats   = query_formats,
-    .inputs          = yaep_inputs,
-    .outputs         = yaep_outputs,
+    FILTER_INPUTS(yaep_inputs),
+    FILTER_OUTPUTS(yaep_outputs),
     .flags           = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

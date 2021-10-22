@@ -12,6 +12,7 @@ import {ContentSecurityPolicyIssue} from './ContentSecurityPolicyIssue.js';
 import {CorsIssue} from './CorsIssue.js';
 import {CrossOriginEmbedderPolicyIssue, isCrossOriginEmbedderPolicyIssue} from './CrossOriginEmbedderPolicyIssue.js';
 import {DeprecationIssue} from './DeprecationIssue.js';
+import {GenericIssue} from './GenericIssue.js';
 import {HeavyAdIssue} from './HeavyAdIssue.js';
 import type {Issue, IssueKind} from './Issue.js';
 import {Events} from './IssuesManagerEvents.js';
@@ -94,6 +95,10 @@ const issueCodeHandlers = new Map<
     Protocol.Audits.InspectorIssueCode.WasmCrossOriginModuleSharingIssue,
     WasmCrossOriginModuleSharingIssue.fromInspectorIssue,
   ],
+  [
+    Protocol.Audits.InspectorIssueCode.GenericIssue,
+    GenericIssue.fromInspectorIssue,
+  ],
 ]);
 
 /**
@@ -154,7 +159,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes
   private allIssues = new Map<string, Issue>();
   private filteredIssues = new Map<string, Issue>();
   private issueCounts = new Map<IssueKind, number>();
-  private hiddenIssueCount: number = 0;
+  private hiddenIssueCount = new Map<IssueKind, number>();
   private hasSeenTopFrameNavigated = false;
   private sourceFrameIssuesManager = new SourceFrameIssuesManager(this);
   private issuesById: Map<string, Issue> = new Map();
@@ -273,7 +278,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes
         this.updateIssueHiddenStatus(issue, values);
       }
       if (issue.isHidden()) {
-        this.hiddenIssueCount++;
+        this.hiddenIssueCount.set(issue.getKind(), 1 + (this.hiddenIssueCount.get(issue.getKind()) || 0));
       }
       this.dispatchEventToListeners(Events.IssueAdded, {issuesModel, issue});
     }
@@ -288,13 +293,20 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes
 
   numberOfIssues(kind?: IssueKind): number {
     if (kind) {
-      return this.issueCounts.get(kind) ?? 0;
+      return (this.issueCounts.get(kind) ?? 0) - this.numberOfHiddenIssues(kind);
     }
-    return this.filteredIssues.size;
+    return this.filteredIssues.size - this.numberOfHiddenIssues();
   }
 
-  numberOfHiddenIssues(): number {
-    return this.hiddenIssueCount;
+  numberOfHiddenIssues(kind?: IssueKind): number {
+    if (kind) {
+      return this.hiddenIssueCount.get(kind) ?? 0;
+    }
+    let count = 0;
+    for (const num of this.hiddenIssueCount.values()) {
+      count += num;
+    }
+    return count;
   }
 
   numberOfAllStoredIssues(): number {
@@ -327,7 +339,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes
     this.filteredIssues.clear();
     this.issueCounts.clear();
     this.issuesById.clear();
-    this.hiddenIssueCount = 0;
+    this.hiddenIssueCount.clear();
     const values = this.hideIssueSetting?.get();
     const hideIssuesFeature = Root.Runtime.experiments.isEnabled('hideIssuesFeature');
     for (const [key, issue] of this.allIssues) {
@@ -338,7 +350,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes
         this.filteredIssues.set(key, issue);
         this.issueCounts.set(issue.getKind(), 1 + (this.issueCounts.get(issue.getKind()) ?? 0));
         if (issue.isHidden()) {
-          this.hiddenIssueCount++;
+          this.hiddenIssueCount.set(issue.getKind(), 1 + (this.hiddenIssueCount.get(issue.getKind()) || 0));
         }
         const issueId = issue.getIssueId();
         if (issueId) {

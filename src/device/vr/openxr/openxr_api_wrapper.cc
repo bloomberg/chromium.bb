@@ -26,7 +26,7 @@
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace device {
 
@@ -42,8 +42,7 @@ constexpr XrViewConfigurationType kSupportedViewConfiguration =
 // occasionally polled, a timer loop run every kTimeBetweenPollingEvents to poll
 // events if significant time has elapsed since the last time events were
 // polled.
-constexpr base::TimeDelta kTimeBetweenPollingEvents =
-    base::TimeDelta::FromSecondsD(1);
+constexpr base::TimeDelta kTimeBetweenPollingEvents = base::Seconds(1);
 
 }  // namespace
 

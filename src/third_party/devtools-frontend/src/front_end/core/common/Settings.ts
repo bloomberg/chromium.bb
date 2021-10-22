@@ -34,32 +34,30 @@ import * as Root from '../root/root.js';
 import type {Color} from './Color.js';
 import {Format} from './Color.js';
 import {Console} from './Console.js';
-import type {EventDescriptor, EventTargetEvent} from './EventTarget.js';
+import type {GenericEvents, EventDescriptor, EventTargetEvent} from './EventTarget.js';
 import {ObjectWrapper} from './Object.js';
 import {getLocalizedSettingsCategory, getRegisteredSettings, maybeRemoveSettingExtension, RegExpSettingItem, registerSettingExtension, registerSettingsForTest, resetSettings, SettingCategory, SettingExtensionOption, SettingRegistration, SettingType} from './SettingRegistration.js';
 
 let settingsInstance: Settings|undefined;
 
 export class Settings {
-  readonly globalStorage: SettingsStorage;
-  private readonly localStorage: SettingsStorage;
   private readonly sessionStorage: SettingsStorage;
   settingNameSet: Set<string>;
   orderValuesBySettingCategory: Map<SettingCategory, Set<number>>;
-  private eventSupport: ObjectWrapper;
+  private eventSupport: ObjectWrapper<GenericEvents>;
   private registry: Map<string, Setting<unknown>>;
   readonly moduleSettings: Map<string, Setting<unknown>>;
 
-  private constructor(globalStorage: SettingsStorage, localStorage: SettingsStorage) {
-    this.globalStorage = globalStorage;
-    this.localStorage = localStorage;
+  private constructor(
+      private readonly syncedStorage: SettingsStorage, readonly globalStorage: SettingsStorage,
+      private readonly localStorage: SettingsStorage) {
     this.sessionStorage = new SettingsStorage({});
 
     this.settingNameSet = new Set();
 
     this.orderValuesBySettingCategory = new Map();
 
-    this.eventSupport = new ObjectWrapper();
+    this.eventSupport = new ObjectWrapper<GenericEvents>();
     this.registry = new Map();
     this.moduleSettings = new Map();
 
@@ -91,16 +89,17 @@ export class Settings {
 
   static instance(opts: {
     forceNew: boolean|null,
+    syncedStorage: SettingsStorage|null,
     globalStorage: SettingsStorage|null,
     localStorage: SettingsStorage|null,
-  } = {forceNew: null, globalStorage: null, localStorage: null}): Settings {
-    const {forceNew, globalStorage, localStorage} = opts;
+  } = {forceNew: null, syncedStorage: null, globalStorage: null, localStorage: null}): Settings {
+    const {forceNew, syncedStorage, globalStorage, localStorage} = opts;
     if (!settingsInstance || forceNew) {
-      if (!globalStorage || !localStorage) {
+      if (!syncedStorage || !globalStorage || !localStorage) {
         throw new Error(`Unable to create settings: global and local storage must be provided: ${new Error().stack}`);
       }
 
-      settingsInstance = new Settings(globalStorage, localStorage);
+      settingsInstance = new Settings(syncedStorage, globalStorage, localStorage);
     }
 
     return settingsInstance;
@@ -179,12 +178,14 @@ export class Settings {
 
   private storageFromType(storageType?: SettingStorageType): SettingsStorage {
     switch (storageType) {
-      case (SettingStorageType.Local):
+      case SettingStorageType.Local:
         return this.localStorage;
-      case (SettingStorageType.Session):
+      case SettingStorageType.Session:
         return this.sessionStorage;
-      case (SettingStorageType.Global):
+      case SettingStorageType.Global:
         return this.globalStorage;
+      case SettingStorageType.Synced:
+        return this.syncedStorage;
     }
     return this.globalStorage;
   }
@@ -195,12 +196,14 @@ export class Settings {
 }
 
 export interface SettingsBackingStore {
+  register(setting: string): void;
   set(setting: string, value: string): void;
   remove(setting: string): void;
   clear(): void;
 }
 
 export const NOOP_STORAGE: SettingsBackingStore = {
+  register: () => {},
   set: () => {},
   remove: () => {},
   clear: () => {},
@@ -210,6 +213,11 @@ export class SettingsStorage {
   constructor(
       private object: Record<string, string>, private readonly backingStore: SettingsBackingStore = NOOP_STORAGE,
       private readonly storagePrefix: string = '') {
+  }
+
+  register(name: string): void {
+    name = this.storagePrefix + name;
+    this.backingStore.register(name);
   }
 
   set(name: string, value: string): void {
@@ -270,45 +278,35 @@ function removeSetting(setting: Setting<unknown>): void {
   settings.getRegistry().delete(name);
   settings.moduleSettings.delete(name);
 
-  setting.getStorage().remove(name);
+  setting.storage.remove(name);
 }
 
 export class Setting<V> {
-  private nameInternal: string;
-  private defaultValueInternal: V;
-  private readonly eventSupport: ObjectWrapper;
-  private storage: SettingsStorage;
   private titleFunction!: () => Platform.UIString.LocalizedString;
   private titleInternal!: string;
-  private registration: SettingRegistration|null;
+  private registration: SettingRegistration|null = null;
   private requiresUserAction?: boolean;
   private value?: V;
   // TODO(crbug.com/1172300) Type cannot be inferred without changes to consumers. See above.
   private serializer: Serializer<unknown, V> = JSON;
   private hadUserAction?: boolean;
 
-  constructor(name: string, defaultValue: V, eventSupport: ObjectWrapper, storage: SettingsStorage) {
-    this.nameInternal = name;
-    this.defaultValueInternal = defaultValue;
-    this.eventSupport = eventSupport;
-    this.storage = storage;
-    this.registration = null;
+  constructor(
+      readonly name: string, readonly defaultValue: V, private readonly eventSupport: ObjectWrapper<GenericEvents>,
+      readonly storage: SettingsStorage) {
+    storage.register(name);
   }
 
   setSerializer(serializer: Serializer<unknown, V>): void {
     this.serializer = serializer;
   }
 
-  addChangeListener(listener: (arg0: EventTargetEvent) => void, thisObject?: Object): EventDescriptor {
-    return this.eventSupport.addEventListener(this.nameInternal, listener, thisObject);
+  addChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): EventDescriptor {
+    return this.eventSupport.addEventListener(this.name, listener, thisObject);
   }
 
-  removeChangeListener(listener: (arg0: EventTargetEvent) => void, thisObject?: Object): void {
-    this.eventSupport.removeEventListener(this.nameInternal, listener, thisObject);
-  }
-
-  get name(): string {
-    return this.nameInternal;
+  removeChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): void {
+    this.eventSupport.removeEventListener(this.name, listener, thisObject);
   }
 
   title(): string {
@@ -337,19 +335,19 @@ export class Setting<V> {
 
   get(): V {
     if (this.requiresUserAction && !this.hadUserAction) {
-      return this.defaultValueInternal;
+      return this.defaultValue;
     }
 
     if (typeof this.value !== 'undefined') {
       return this.value;
     }
 
-    this.value = this.defaultValueInternal;
-    if (this.storage.has(this.nameInternal)) {
+    this.value = this.defaultValue;
+    if (this.storage.has(this.name)) {
       try {
-        this.value = this.serializer.parse(this.storage.get(this.nameInternal));
+        this.value = this.serializer.parse(this.storage.get(this.name));
       } catch (e) {
-        this.storage.remove(this.nameInternal);
+        this.storage.remove(this.name);
       }
     }
     return this.value;
@@ -361,14 +359,14 @@ export class Setting<V> {
     try {
       const settingString = this.serializer.stringify(value);
       try {
-        this.storage.set(this.nameInternal, settingString);
+        this.storage.set(this.name, settingString);
       } catch (e) {
-        this.printSettingsSavingError(e.message, this.nameInternal, settingString);
+        this.printSettingsSavingError(e.message, this.name, settingString);
       }
     } catch (e) {
-      Console.instance().error('Cannot stringify setting with name: ' + this.nameInternal + ', error: ' + e.message);
+      Console.instance().error('Cannot stringify setting with name: ' + this.name + ', error: ' + e.message);
     }
-    this.eventSupport.dispatchEventToListeners(this.nameInternal, value);
+    this.eventSupport.dispatchEventToListeners(this.name, value);
   }
 
   setRegistration(registration: SettingRegistration): void {
@@ -427,18 +425,11 @@ export class Setting<V> {
   }
 
   private printSettingsSavingError(message: string, name: string, value: string): void {
-    const errorMessage = 'Error saving setting with name: ' + this.nameInternal + ', value length: ' + value.length +
-        '. Error: ' + message;
+    const errorMessage =
+        'Error saving setting with name: ' + this.name + ', value length: ' + value.length + '. Error: ' + message;
     console.error(errorMessage);
     Console.instance().error(errorMessage);
     this.storage.dumpSizes();
-  }
-  defaultValue(): V {
-    return this.defaultValueInternal;
-  }
-
-  getStorage(): SettingsStorage {
-    return this.storage;
   }
 }
 
@@ -449,7 +440,8 @@ export class RegExpSetting extends Setting<any> {
   private regex?: RegExp|null;
 
   constructor(
-      name: string, defaultValue: string, eventSupport: ObjectWrapper, storage: SettingsStorage, regexFlags?: string) {
+      name: string, defaultValue: string, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage,
+      regexFlags?: string) {
     super(name, defaultValue ? [{pattern: defaultValue}] : [], eventSupport, storage);
     this.regexFlags = regexFlags;
   }
@@ -501,7 +493,7 @@ export class VersionController {
   }
 
   static get currentVersion(): number {
-    return 30;
+    return 31;
   }
 
   updateVersion(): void {
@@ -998,6 +990,13 @@ export class VersionController {
     removeSetting(drawerCloseableTabSetting);
   }
 
+  private updateVersionFrom30To31(): void {
+    // Remove recorder_recordings setting that was used for storing recordings
+    // by an old recorder experiment.
+    const recordingsSetting = Settings.instance().createSetting('recorder_recordings', []);
+    removeSetting(recordingsSetting);
+  }
+
   private migrateSettingsFromLocalStorage(): void {
     // This step migrates all the settings except for the ones below into the browser profile.
     const localSettings = new Set<string>([
@@ -1040,8 +1039,16 @@ export class VersionController {
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
 export enum SettingStorageType {
+  /**
+   * Synced storage persists settings with the active Chrome profile but also
+   * syncs the settings across devices via Chrome Sync.
+   */
+  Synced = 'Synced',
+  /** Global storage persists settings with the active Chrome profile */
   Global = 'Global',
+  /** Uses Window.localStorage */
   Local = 'Local',
+  /** Session storage dies when DevTools window closes */
   Session = 'Session',
 }
 

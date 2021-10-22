@@ -53,6 +53,9 @@ class NetworkFetcher {
   // trusted.
   static constexpr char kHeaderXRetryAfter[] = "X-Retry-After";
 
+  NetworkFetcher(const NetworkFetcher&) = delete;
+  NetworkFetcher& operator=(const NetworkFetcher&) = delete;
+
   virtual ~NetworkFetcher() = default;
 
   virtual void PostRequest(
@@ -72,9 +75,6 @@ class NetworkFetcher {
 
  protected:
   NetworkFetcher() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcher);
 };
 
 class NetworkFetcherFactory
@@ -82,13 +82,13 @@ class NetworkFetcherFactory
  public:
   virtual std::unique_ptr<NetworkFetcher> Create() const = 0;
 
+  NetworkFetcherFactory(const NetworkFetcherFactory&) = delete;
+  NetworkFetcherFactory& operator=(const NetworkFetcherFactory&) = delete;
+
  protected:
   friend class base::RefCountedThreadSafe<NetworkFetcherFactory>;
   NetworkFetcherFactory() = default;
   virtual ~NetworkFetcherFactory() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkFetcherFactory);
 };
 
 }  // namespace update_client

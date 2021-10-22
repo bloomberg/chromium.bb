@@ -17,15 +17,19 @@
 
 #include "dawn_native/Commands.h"
 #include "dawn_native/Error.h"
-#include "dawn_native/Extensions.h"
+#include "dawn_native/Features.h"
 #include "dawn_native/Format.h"
 #include "dawn_native/Forward.h"
+#include "dawn_native/Limits.h"
 #include "dawn_native/ObjectBase.h"
+#include "dawn_native/ObjectType_autogen.h"
+#include "dawn_native/StagingBuffer.h"
 #include "dawn_native/Toggles.h"
 
 #include "dawn_native/DawnNative.h"
 #include "dawn_native/dawn_platform.h"
 
+#include <mutex>
 #include <utility>
 
 namespace dawn_platform {
@@ -46,7 +50,6 @@ namespace dawn_native {
     class PersistentCache;
     class StagingBufferBase;
     struct CallbackTask;
-    struct FlatComputePipelineDescriptor;
     struct InternalPipelineStore;
     struct ShaderModuleParseResult;
 
@@ -75,7 +78,45 @@ namespace dawn_native {
             return false;
         }
 
-        MaybeError ValidateObject(const ObjectBase* object) const;
+        template <typename... Args>
+        bool ConsumedError(MaybeError maybeError, const char* formatStr, const Args&... args) {
+            if (DAWN_UNLIKELY(maybeError.IsError())) {
+                std::unique_ptr<ErrorData> error = maybeError.AcquireError();
+                if (error->GetType() == InternalErrorType::Validation) {
+                    std::string out;
+                    absl::UntypedFormatSpec format(formatStr);
+                    if (absl::FormatUntyped(&out, format, {absl::FormatArg(args)...})) {
+                        error->AppendContext(std::move(out));
+                    }
+                }
+                ConsumeError(std::move(error));
+                return true;
+            }
+            return false;
+        }
+
+        template <typename T, typename... Args>
+        bool ConsumedError(ResultOrError<T> resultOrError,
+                           T* result,
+                           const char* formatStr,
+                           const Args&... args) {
+            if (DAWN_UNLIKELY(resultOrError.IsError())) {
+                std::unique_ptr<ErrorData> error = resultOrError.AcquireError();
+                if (error->GetType() == InternalErrorType::Validation) {
+                    std::string out;
+                    absl::UntypedFormatSpec format(formatStr);
+                    if (absl::FormatUntyped(&out, format, {absl::FormatArg(args)...})) {
+                        error->AppendContext(std::move(out));
+                    }
+                }
+                ConsumeError(std::move(error));
+                return true;
+            }
+            *result = resultOrError.AcquireSuccess();
+            return false;
+        }
+
+        MaybeError ValidateObject(const ApiObjectBase* object) const;
 
         AdapterBase* GetAdapter() const;
         dawn_platform::Platform* GetPlatform() const;
@@ -209,6 +250,7 @@ namespace dawn_native {
 
         QueueBase* APIGetQueue();
 
+        bool APIGetLimits(SupportedLimits* limits);
         void APIInjectError(wgpu::ErrorType type, const char* message);
         bool APITick();
 
@@ -256,10 +298,11 @@ namespace dawn_native {
         };
         State GetState() const;
         bool IsLost() const;
+        std::mutex* GetObjectListMutex(ObjectType type);
 
-        std::vector<const char*> GetEnabledExtensions() const;
+        std::vector<const char*> GetEnabledFeatures() const;
         std::vector<const char*> GetTogglesUsed() const;
-        bool IsExtensionEnabled(Extension extension) const;
+        bool IsFeatureEnabled(Feature feature) const;
         bool IsToggleEnabled(Toggle toggle) const;
         bool IsValidationEnabled() const;
         bool IsRobustnessEnabled() const;
@@ -299,8 +342,15 @@ namespace dawn_native {
                                                  WGPUCreateComputePipelineAsyncCallback callback,
                                                  void* userdata,
                                                  size_t blueprintHash);
+        void AddRenderPipelineAsyncCallbackTask(Ref<RenderPipelineBase> pipeline,
+                                                std::string errorMessage,
+                                                WGPUCreateRenderPipelineAsyncCallback callback,
+                                                void* userdata);
 
         PipelineCompatibilityToken GetNextPipelineCompatibilityToken();
+
+        const std::string& GetLabel() const;
+        void APISetLabel(const char* label);
 
       protected:
         void SetToggle(Toggle toggle, bool isEnabled);
@@ -326,7 +376,7 @@ namespace dawn_native {
             const PipelineLayoutDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) = 0;
-        virtual ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
+        virtual Ref<RenderPipelineBase> CreateUninitializedRenderPipelineImpl(
             const RenderPipelineDescriptor* descriptor) = 0;
         virtual ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
             const SamplerDescriptor* descriptor) = 0;
@@ -345,6 +395,7 @@ namespace dawn_native {
         virtual ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) = 0;
+        virtual void SetLabelImpl();
 
         virtual MaybeError TickImpl() = 0;
         void FlushCallbackTaskQueue();
@@ -353,25 +404,26 @@ namespace dawn_native {
 
         std::pair<Ref<ComputePipelineBase>, size_t> GetCachedComputePipeline(
             const ComputePipelineDescriptor* descriptor);
-        std::pair<Ref<RenderPipelineBase>, size_t> GetCachedRenderPipeline(
-            const RenderPipelineDescriptor* descriptor);
+        Ref<RenderPipelineBase> GetCachedRenderPipeline(
+            RenderPipelineBase* uninitializedRenderPipeline);
         Ref<ComputePipelineBase> AddOrGetCachedComputePipeline(
             Ref<ComputePipelineBase> computePipeline,
             size_t blueprintHash);
-        Ref<RenderPipelineBase> AddOrGetCachedRenderPipeline(Ref<RenderPipelineBase> renderPipeline,
-                                                             size_t blueprintHash);
-        virtual void CreateComputePipelineAsyncImpl(
-            std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
-            size_t blueprintHash,
-            WGPUCreateComputePipelineAsyncCallback callback,
+        Ref<RenderPipelineBase> AddOrGetCachedRenderPipeline(
+            Ref<RenderPipelineBase> renderPipeline);
+        virtual void CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                                    size_t blueprintHash,
+                                                    WGPUCreateComputePipelineAsyncCallback callback,
+                                                    void* userdata);
+        Ref<RenderPipelineBase> CreateUninitializedRenderPipeline(
+            const RenderPipelineDescriptor* descriptor);
+        virtual void InitializeRenderPipelineAsyncImpl(
+            Ref<RenderPipelineBase> renderPipeline,
+            WGPUCreateRenderPipelineAsyncCallback callback,
             void* userdata);
-        virtual void CreateRenderPipelineAsyncImpl(const RenderPipelineDescriptor* descriptor,
-                                                   size_t blueprintHash,
-                                                   WGPUCreateRenderPipelineAsyncCallback callback,
-                                                   void* userdata);
 
         void ApplyToggleOverrides(const DeviceDescriptor* deviceDescriptor);
-        void ApplyExtensions(const DeviceDescriptor* deviceDescriptor);
+        void ApplyFeatures(const DeviceDescriptor* deviceDescriptor);
 
         void SetDefaultToggles();
 
@@ -442,6 +494,14 @@ namespace dawn_native {
 
         State mState = State::BeingCreated;
 
+        // Encompasses the mutex and the actual list that contains all live objects "owned" by the
+        // device.
+        struct ApiObjectList {
+            std::mutex mutex;
+            LinkedList<ApiObjectBase> objects;
+        };
+        PerObjectType<ApiObjectList> mObjectLists;
+
         FormatTable mFormatTable;
 
         TogglesSet mEnabledToggles;
@@ -449,7 +509,9 @@ namespace dawn_native {
         size_t mLazyClearCountForTesting = 0;
         std::atomic_uint64_t mNextPipelineCompatibilityToken;
 
-        ExtensionsSet mEnabledExtensions;
+        CombinedLimits mLimits;
+        FeaturesSet mEnabledExtensions;
+        FeaturesSet mEnabledFeatures;
 
         std::unique_ptr<InternalPipelineStore> mInternalPipelineStore;
 
@@ -457,6 +519,7 @@ namespace dawn_native {
 
         std::unique_ptr<CallbackTaskManager> mCallbackTaskManager;
         std::unique_ptr<dawn_platform::WorkerTaskPool> mWorkerTaskPool;
+        std::string mLabel;
     };
 
 }  // namespace dawn_native

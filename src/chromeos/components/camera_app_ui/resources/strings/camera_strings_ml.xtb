@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
+<translation id="1113173431709655881">ക്യാമറാ മോഡ്</translation>
 <translation id="1175958423215084756">ലിങ്ക് തിരിച്ചറിഞ്ഞു. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ഗാലറി ചിത്രങ്ങൾ</translation>
 <translation id="1300209025925956156">നിങ്ങളുടെ ഡോക്യുമെന്റ് സ്‌കാൻ ചെയ്യുക</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> അൺപ്ലഗ് ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="1473110567575736769">3 സെക്കൻഡ് ടൈമർ</translation>
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">സാധാരണം</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ഒന്നും റെക്കോർഡ് ചെയ്‌തില്ല</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="2549985041256363841">റെക്കോർഡിംഗ് ആരംഭിക്കൂ</translation>
 <translation id="2599796128805996109">പിൻ ക്യാമറ</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> സെക്കൻഡ്</translation>
+<translation id="2761536921376153655">സ്‌കാൻ തരം</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> പ്ലഗ്-ഇൻ ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="2968794441791257519">ക്യാമറ ഉപയോഗിച്ച് എടുത്ത ഫോട്ടോകളും വീഡിയോകളും 'ഡൗൺലോഡുകൾ' ഫോൾഡറിലേക്ക് നീക്കും. നിങ്ങൾക്ക് അവ Files-ൽ ആക്‌സസ് ചെയ്യാനാവും.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">ഗാലറിയിലേക്ക് പോവുക</translation>
 <translation id="520537883758714667">ഡോക്യുമെന്റ് സ്‌കാൻ ചെയ്യൽ ഇപ്പോൾ ലഭ്യമാണ്</translation>
 <translation id="5268823927180092501">എല്ലാ ക്യാമറകളിലും ഡോക്യുമെന്റ് മോഡ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
+<translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5444515100983837161">ഡോക്യുമെന്റിന്റെ എല്ലാ അരികുകളും ഫ്രെയിമിനകത്ത് വയ്ക്കുക. ഡോക്യുമെന്റും അതിന്റെ പശ്ചാത്തലവും വ്യത്യസ്ത നിറങ്ങളിലാണെങ്കിൽ സ്‌കാൻ ചെയ്യൽ മികച്ച രീതിയിൽ പ്രവർത്തിക്കുന്നു.</translation>
 <translation id="5671277269877808209">ചതുരം</translation>
 <translation id="5746169159649715125">PDF ആയി സംരക്ഷിക്കുക</translation>
@@ -86,6 +92,7 @@
 
 നിങ്ങളുടെ ഫീഡ്‌ബാക്ക് ചിത്രത്തെക്കുറിച്ചോ വീഡിയോ നിലവാരത്തെക്കുറിച്ചോ ആണെങ്കിൽ, സാമ്പിൾ ഫോട്ടോയോ വീഡിയോയോ അറ്റാച്ച് ചെയ്‌ത് പ്രശ്‌നം എന്താണെന്ന് വിവരിക്കുക. (ഉദാഹരണത്തിന്, ഫോട്ടോ വളരെ ഇരുണ്ടതാണ് അല്ലെങ്കിൽ വസ്‌തു ഫോക്കസിലല്ല ഉള്ളത്.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> മെഗാ പിക്‌സൽ</translation>
+<translation id="6527303717912515753">പങ്കിടുക</translation>
 <translation id="667999046851023355">പ്രമാണം</translation>
 <translation id="6681668084120808868">ഫോട്ടോ എടുക്കുക</translation>
 <translation id="6778482348691154169">ഫോട്ടോ എടുക്കാനായില്ല</translation>
@@ -94,15 +101,19 @@
 <translation id="698156982839284926">3 സെക്കൻഡ്</translation>
 <translation id="712848772518857951">നിങ്ങൾക്ക് ശരിക്കും <ph name="COUNT" /> ഇനങ്ങൾ നീക്കംചെയ്യണോ?</translation>
 <translation id="7134221860976209830">10 സെക്കൻഡ് ടൈമർ</translation>
+<translation id="7191890674911603392">റെക്കോർഡ് തരം</translation>
 <translation id="7243947652761655814">വീഡിയോ റെസല്യൂഷൻ</translation>
 <translation id="7337660886763914220">ഫയൽ സിസ്‌റ്റം പിശകുകൾ.</translation>
 <translation id="7450541714075000668">ടെക്‌സ്റ്റ് പകർത്തി</translation>
+<translation id="7476762461674917065">GIF റെക്കോർഡിംഗ് ഓപ്ഷൻ കാണിക്കുക</translation>
+<translation id="7488619942230388918">GIF വീഡിയോ റെക്കോർഡ് ചെയ്യുക</translation>
 <translation id="7557677699350329807">അടുത്ത ക്യാമറയിലേക്ക് മാറുക</translation>
 <translation id="7607002721634913082">അല്പംനിര്‍ത്തി</translation>
 <translation id="7608223098072244877">4 ബൈ 4</translation>
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="7658239707568436148">റദ്ദാക്കൂ</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7726641833034062494">സാധാരണ വീഡിയോ റെക്കോർഡ് ചെയ്യുക</translation>
 <translation id="7983668134180549431">ടെക്‌സ്റ്റ് തിരിച്ചറിഞ്ഞു.</translation>
 <translation id="8067883171444229417">വീഡിയോ പ്ലേ ചെയ്യുക</translation>
 <translation id="8120146556401698679">പാൻ ടിൽറ്റ് സൂം</translation>

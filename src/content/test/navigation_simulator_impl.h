@@ -50,7 +50,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   static std::unique_ptr<NavigationSimulatorImpl> CreateHistoryNavigation(
       int offset,
-      WebContents* web_contents);
+      WebContents* web_contents,
+      bool is_renderer_initiated);
 
   // TODO(https://crbug.com/1131832): Remove |original_url| as it's not used.
   static std::unique_ptr<NavigationSimulatorImpl> CreateRendererInitiated(
@@ -58,7 +59,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       RenderFrameHost* render_frame_host);
 
   static std::unique_ptr<NavigationSimulatorImpl> CreateFromPending(
-      WebContents* contents);
+      NavigationController& controller);
 
   // Creates a NavigationSimulator for an already-started navigation happening
   // in |frame_tree_node|. Can be used to drive the navigation to completion.
@@ -92,8 +93,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetPermissionsPolicyHeader(
       blink::ParsedPermissionsPolicy permissions_policy_header) override;
   void SetContentsMimeType(const std::string& contents_mime_type) override;
+  void SetRedirectHeaders(
+      scoped_refptr<net::HttpResponseHeaders> redirect_headers) override;
   void SetResponseHeaders(
       scoped_refptr<net::HttpResponseHeaders> response_headers) override;
+  void SetResponseBody(
+      mojo::ScopedDataPipeConsumerHandle response_body) override;
   void SetAutoAdvance(bool auto_advance) override;
   void SetResolveErrorInfo(
       const net::ResolveErrorInfo& resolve_error_info) override;
@@ -188,10 +193,6 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void set_searchable_form_encoding(
       const std::string& searchable_form_encoding) {
     searchable_form_encoding_ = searchable_form_encoding;
-  }
-
-  void set_history_url_for_data_url(const GURL& history_url_for_data_url) {
-    history_url_for_data_url_ = history_url_for_data_url;
   }
 
   void set_href_translate(const std::string& href_translate) {
@@ -361,8 +362,10 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker_receiver_;
   std::string contents_mime_type_;
+  scoped_refptr<net::HttpResponseHeaders> redirect_headers_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   blink::ParsedPermissionsPolicy permissions_policy_header_;
+  mojo::ScopedDataPipeConsumerHandle response_body_;
   network::mojom::CSPDisposition should_check_main_world_csp_ =
       network::mojom::CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
@@ -381,7 +384,6 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       blink::mojom::MixedContentContextType::kBlockable;
   GURL searchable_form_url_;
   std::string searchable_form_encoding_;
-  absl::optional<GURL> history_url_for_data_url_;
   std::string href_translate_;
   blink::mojom::RequestContextType request_context_type_ =
       blink::mojom::RequestContextType::LOCATION;

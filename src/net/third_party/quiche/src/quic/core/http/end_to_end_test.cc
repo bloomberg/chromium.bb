@@ -80,7 +80,7 @@ using ::testing::_;
 using ::testing::Assign;
 using ::testing::Invoke;
 using ::testing::NiceMock;
-using testing::NotNull;
+using ::testing::UnorderedElementsAreArray;
 
 namespace quic {
 namespace test {
@@ -378,7 +378,10 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
       copt.push_back(kILD0);
     }
     copt.push_back(kPLE1);
-    copt.push_back(kRVCM);
+    if (!GetQuicReloadableFlag(
+            quic_remove_connection_migration_connection_option)) {
+      copt.push_back(kRVCM);
+    }
     client_config_.SetConnectionOptionsToSend(copt);
 
     // Start the server first, because CreateQuicClient() attempts
@@ -724,21 +727,37 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   }
 
   std::string ReadDataFromWebTransportStreamUntilFin(
-      WebTransportStream* stream) {
+      WebTransportStream* stream, MockStreamVisitor* visitor = nullptr) {
+    QuicStreamId id = stream->GetStreamId();
     std::string buffer;
+
+    // Try reading data if immediately available.
+    WebTransportStream::ReadResult result = stream->Read(&buffer);
+    if (result.fin) {
+      return buffer;
+    }
+
     while (true) {
       bool can_read = false;
-      auto visitor = std::make_unique<MockStreamVisitor>();
+      if (visitor == nullptr) {
+        auto visitor_owned = std::make_unique<MockStreamVisitor>();
+        visitor = visitor_owned.get();
+        stream->SetVisitor(std::move(visitor_owned));
+      }
       EXPECT_CALL(*visitor, OnCanRead()).WillOnce(Assign(&can_read, true));
-      stream->SetVisitor(std::move(visitor));
       client_->WaitUntil(5000 /*ms*/, [&can_read]() { return can_read; });
       if (!can_read) {
-        ADD_FAILURE() << "Waiting for readable data on stream "
-                      << stream->GetStreamId() << " timed out";
+        ADD_FAILURE() << "Waiting for readable data on stream " << id
+                      << " timed out";
+        return buffer;
+      }
+      if (GetClientSession()->GetOrCreateSpdyDataStream(id) == nullptr) {
+        ADD_FAILURE() << "Stream " << id
+                      << " was deleted while waiting for incoming data";
         return buffer;
       }
 
-      WebTransportStream::ReadResult result = stream->Read(&buffer);
+      result = stream->Read(&buffer);
       if (result.fin) {
         return buffer;
       }
@@ -747,6 +766,19 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
                       << stream->GetStreamId();
         return buffer;
       }
+    }
+  }
+
+  void ReadAllIncomingWebTransportUnidirectionalStreams(
+      WebTransportSession* session) {
+    while (true) {
+      WebTransportStream* received_stream =
+          session->AcceptIncomingUnidirectionalStream();
+      if (received_stream == nullptr) {
+        break;
+      }
+      received_webtransport_unidirectional_streams_.push_back(
+          ReadDataFromWebTransportStreamUntilFin(received_stream));
     }
   }
 
@@ -790,6 +822,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   int override_client_connection_id_length_ = -1;
   uint8_t expected_server_connection_id_length_;
   bool enable_web_transport_ = false;
+  std::vector<std::string> received_webtransport_unidirectional_streams_;
 };
 
 // Run all end to end tests with all supported versions.
@@ -799,6 +832,8 @@ INSTANTIATE_TEST_SUITE_P(EndToEndTests,
                          ::testing::PrintToStringParamName());
 
 TEST_P(EndToEndTest, HandshakeSuccessful) {
+  SetQuicReloadableFlag(quic_delay_sequencer_buffer_allocation_until_new_data,
+                        true);
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForOneRttKeysAvailable());
   ASSERT_TRUE(server_thread_);
@@ -852,6 +887,51 @@ TEST_P(EndToEndTest, HandshakeSuccessful) {
     ADD_FAILURE() << "Missing server connection";
   }
   server_thread_->Resume();
+}
+
+TEST_P(EndToEndTest, ExportKeyingMaterial) {
+  ASSERT_TRUE(Initialize());
+  if (!version_.UsesTls()) {
+    return;
+  }
+  const char* kExportLabel = "label";
+  const int kExportLen = 30;
+  std::string client_keying_material_export, server_keying_material_export;
+
+  EXPECT_TRUE(client_->client()->WaitForOneRttKeysAvailable());
+  ASSERT_TRUE(server_thread_);
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  server_thread_->Pause();
+  QuicSpdySession* server_session = GetServerSession();
+  QuicCryptoStream* server_crypto_stream = nullptr;
+  if (server_session != nullptr) {
+    server_crypto_stream =
+        QuicSessionPeer::GetMutableCryptoStream(server_session);
+  } else {
+    ADD_FAILURE() << "Missing server session";
+  }
+  if (server_crypto_stream != nullptr) {
+    ASSERT_TRUE(server_crypto_stream->ExportKeyingMaterial(
+        kExportLabel, /*context=*/"", kExportLen,
+        &server_keying_material_export));
+
+  } else {
+    ADD_FAILURE() << "Missing server crypto stream";
+  }
+  server_thread_->Resume();
+
+  QuicSpdyClientSession* client_session = GetClientSession();
+  ASSERT_TRUE(client_session);
+  QuicCryptoStream* client_crypto_stream =
+      QuicSessionPeer::GetMutableCryptoStream(client_session);
+  ASSERT_TRUE(client_crypto_stream);
+  ASSERT_TRUE(client_crypto_stream->ExportKeyingMaterial(
+      kExportLabel, /*context=*/"", kExportLen,
+      &client_keying_material_export));
+  ASSERT_EQ(client_keying_material_export.size(),
+            static_cast<size_t>(kExportLen));
+  EXPECT_EQ(client_keying_material_export, server_keying_material_export);
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
@@ -6035,6 +6115,30 @@ TEST_P(EndToEndTest, WebTransportSessionSetup) {
   server_thread_->Resume();
 }
 
+TEST_P(EndToEndTest, WebTransportSessionSetupWithEchoWithSuffix) {
+  enable_web_transport_ = true;
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  // "/echoFoo" should be accepted as "echo" with "set-header" query.
+  WebTransportHttp3* web_transport = CreateWebTransportSession(
+      "/echoFoo?set-header=bar:baz", /*wait_for_server_response=*/true);
+  ASSERT_NE(web_transport, nullptr);
+
+  server_thread_->Pause();
+  QuicSpdySession* server_session = GetServerSession();
+  EXPECT_TRUE(server_session->GetWebTransportSession(web_transport->id()) !=
+              nullptr);
+  server_thread_->Resume();
+  const spdy::SpdyHeaderBlock* response_headers = client_->response_headers();
+  auto it = response_headers->find("bar");
+  EXPECT_NE(it, response_headers->end());
+  EXPECT_EQ(it->second, "baz");
+}
+
 TEST_P(EndToEndTest, WebTransportSessionWithLoss) {
   enable_web_transport_ = true;
   // Enable loss to verify all permutations of receiving SETTINGS and
@@ -6073,6 +6177,13 @@ TEST_P(EndToEndTest, WebTransportSessionUnidirectionalStream) {
   WebTransportStream* outgoing_stream =
       session->OpenOutgoingUnidirectionalStream();
   ASSERT_TRUE(outgoing_stream != nullptr);
+
+  auto stream_visitor = std::make_unique<NiceMock<MockStreamVisitor>>();
+  bool data_acknowledged = false;
+  EXPECT_CALL(*stream_visitor, OnWriteSideInDataRecvdState())
+      .WillOnce(Assign(&data_acknowledged, true));
+  outgoing_stream->SetVisitor(std::move(stream_visitor));
+
   EXPECT_TRUE(outgoing_stream->Write("test"));
   EXPECT_TRUE(outgoing_stream->SendFin());
 
@@ -6088,6 +6199,10 @@ TEST_P(EndToEndTest, WebTransportSessionUnidirectionalStream) {
   WebTransportStream::ReadResult result = received_stream->Read(&received_data);
   EXPECT_EQ(received_data, "test");
   EXPECT_TRUE(result.fin);
+
+  client_->WaitUntil(2000,
+                     [&data_acknowledged]() { return data_acknowledged; });
+  EXPECT_TRUE(data_acknowledged);
 }
 
 TEST_P(EndToEndTest, WebTransportSessionUnidirectionalStreamSentEarly) {
@@ -6138,11 +6253,24 @@ TEST_P(EndToEndTest, WebTransportSessionBidirectionalStream) {
 
   WebTransportStream* stream = session->OpenOutgoingBidirectionalStream();
   ASSERT_TRUE(stream != nullptr);
+
+  auto stream_visitor_owned = std::make_unique<NiceMock<MockStreamVisitor>>();
+  MockStreamVisitor* stream_visitor = stream_visitor_owned.get();
+  bool data_acknowledged = false;
+  EXPECT_CALL(*stream_visitor, OnWriteSideInDataRecvdState())
+      .WillOnce(Assign(&data_acknowledged, true));
+  stream->SetVisitor(std::move(stream_visitor_owned));
+
   EXPECT_TRUE(stream->Write("test"));
   EXPECT_TRUE(stream->SendFin());
 
-  std::string received_data = ReadDataFromWebTransportStreamUntilFin(stream);
+  std::string received_data =
+      ReadDataFromWebTransportStreamUntilFin(stream, stream_visitor);
   EXPECT_EQ(received_data, "test");
+
+  client_->WaitUntil(2000,
+                     [&data_acknowledged]() { return data_acknowledged; });
+  EXPECT_TRUE(data_acknowledged);
 }
 
 TEST_P(EndToEndTest, WebTransportSessionBidirectionalStreamWithBuffering) {
@@ -6223,6 +6351,183 @@ TEST_P(EndToEndTest, WebTransportDatagrams) {
   });
   client_->WaitUntil(5000, [&received]() { return received > 0; });
   EXPECT_GT(received, 0);
+}
+
+TEST_P(EndToEndTest, WebTransportSessionClose) {
+  enable_web_transport_ = true;
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  WebTransportHttp3* session =
+      CreateWebTransportSession("/echo", /*wait_for_server_response=*/true);
+  ASSERT_TRUE(session != nullptr);
+  NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
+
+  WebTransportStream* stream = session->OpenOutgoingBidirectionalStream();
+  ASSERT_TRUE(stream != nullptr);
+  QuicStreamId stream_id = stream->GetStreamId();
+  EXPECT_TRUE(stream->Write("test"));
+  // Keep stream open.
+
+  bool close_received = false;
+  EXPECT_CALL(visitor, OnSessionClosed(42, "test error"))
+      .WillOnce(Assign(&close_received, true));
+  session->CloseSession(42, "test error");
+  client_->WaitUntil(2000, [&]() { return close_received; });
+  EXPECT_TRUE(close_received);
+
+  QuicSpdyStream* spdy_stream =
+      GetClientSession()->GetOrCreateSpdyDataStream(stream_id);
+  EXPECT_TRUE(spdy_stream == nullptr);
+}
+
+TEST_P(EndToEndTest, WebTransportSessionCloseWithoutCapsule) {
+  enable_web_transport_ = true;
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  WebTransportHttp3* session =
+      CreateWebTransportSession("/echo", /*wait_for_server_response=*/true);
+  ASSERT_TRUE(session != nullptr);
+  NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
+
+  WebTransportStream* stream = session->OpenOutgoingBidirectionalStream();
+  ASSERT_TRUE(stream != nullptr);
+  QuicStreamId stream_id = stream->GetStreamId();
+  EXPECT_TRUE(stream->Write("test"));
+  // Keep stream open.
+
+  bool close_received = false;
+  EXPECT_CALL(visitor, OnSessionClosed(0, ""))
+      .WillOnce(Assign(&close_received, true));
+  session->CloseSessionWithFinOnlyForTests();
+  client_->WaitUntil(2000, [&]() { return close_received; });
+  EXPECT_TRUE(close_received);
+
+  QuicSpdyStream* spdy_stream =
+      GetClientSession()->GetOrCreateSpdyDataStream(stream_id);
+  EXPECT_TRUE(spdy_stream == nullptr);
+}
+
+TEST_P(EndToEndTest, WebTransportSessionReceiveClose) {
+  enable_web_transport_ = true;
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  WebTransportHttp3* session = CreateWebTransportSession(
+      "/session-close", /*wait_for_server_response=*/true);
+  ASSERT_TRUE(session != nullptr);
+  NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
+
+  WebTransportStream* stream = session->OpenOutgoingUnidirectionalStream();
+  ASSERT_TRUE(stream != nullptr);
+  QuicStreamId stream_id = stream->GetStreamId();
+  EXPECT_TRUE(stream->Write("42 test error"));
+  EXPECT_TRUE(stream->SendFin());
+
+  // Have some other streams open pending, to ensure they are closed properly.
+  stream = session->OpenOutgoingUnidirectionalStream();
+  stream = session->OpenOutgoingBidirectionalStream();
+
+  bool close_received = false;
+  EXPECT_CALL(visitor, OnSessionClosed(42, "test error"))
+      .WillOnce(Assign(&close_received, true));
+  client_->WaitUntil(2000, [&]() { return close_received; });
+  EXPECT_TRUE(close_received);
+
+  QuicSpdyStream* spdy_stream =
+      GetClientSession()->GetOrCreateSpdyDataStream(stream_id);
+  EXPECT_TRUE(spdy_stream == nullptr);
+}
+
+TEST_P(EndToEndTest, WebTransportSessionStreamTermination) {
+  enable_web_transport_ = true;
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  WebTransportHttp3* session =
+      CreateWebTransportSession("/resets", /*wait_for_server_response=*/true);
+  ASSERT_TRUE(session != nullptr);
+
+  NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
+  EXPECT_CALL(visitor, OnIncomingUnidirectionalStreamAvailable())
+      .WillRepeatedly([this, session]() {
+        ReadAllIncomingWebTransportUnidirectionalStreams(session);
+      });
+
+  WebTransportStream* stream = session->OpenOutgoingBidirectionalStream();
+  QuicStreamId id1 = stream->GetStreamId();
+  ASSERT_TRUE(stream != nullptr);
+  EXPECT_TRUE(stream->Write("test"));
+  stream->ResetWithUserCode(42);
+
+  // This read fails if the stream is closed in both directions, since that
+  // results in stream object being deleted.
+  std::string received_data = ReadDataFromWebTransportStreamUntilFin(stream);
+  EXPECT_LE(received_data.size(), 4u);
+
+  stream = session->OpenOutgoingBidirectionalStream();
+  QuicStreamId id2 = stream->GetStreamId();
+  ASSERT_TRUE(stream != nullptr);
+  EXPECT_TRUE(stream->Write("test"));
+  stream->SendStopSending(24);
+
+  std::array<std::string, 2> expected_log = {
+      absl::StrCat("Received reset for stream ", id1, " with error code 42"),
+      absl::StrCat("Received stop sending for stream ", id2,
+                   " with error code 24"),
+  };
+  client_->WaitUntil(2000, [this, &expected_log]() {
+    return received_webtransport_unidirectional_streams_.size() >=
+           expected_log.size();
+  });
+  EXPECT_THAT(received_webtransport_unidirectional_streams_,
+              UnorderedElementsAreArray(expected_log));
+
+  // Since we closed the read side, cleanly closing the write side should result
+  // in the stream getting deleted.
+  ASSERT_TRUE(GetClientSession()->GetOrCreateSpdyDataStream(id2) != nullptr);
+  EXPECT_TRUE(stream->SendFin());
+  EXPECT_TRUE(client_->WaitUntil(2000, [this, id2]() {
+    return GetClientSession()->GetOrCreateSpdyDataStream(id2) == nullptr;
+  }));
+}
+
+TEST_P(EndToEndTest, WebTransportSession404) {
+  enable_web_transport_ = true;
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  WebTransportHttp3* session = CreateWebTransportSession(
+      "/does-not-exist", /*wait_for_server_response=*/false);
+  ASSERT_TRUE(session != nullptr);
+  QuicSpdyStream* connect_stream = client_->latest_created_stream();
+  QuicStreamId connect_stream_id = connect_stream->id();
+
+  WebTransportStream* stream = session->OpenOutgoingBidirectionalStream();
+  ASSERT_TRUE(stream != nullptr);
+  EXPECT_TRUE(stream->Write("test"));
+  EXPECT_TRUE(stream->SendFin());
+
+  EXPECT_TRUE(client_->WaitUntil(-1, [this, connect_stream_id]() {
+    return GetClientSession()->GetOrCreateSpdyDataStream(connect_stream_id) ==
+           nullptr;
+  }));
 }
 
 }  // namespace

@@ -12,6 +12,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/features.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/layers/recording_source.h"
@@ -59,7 +60,8 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "PictureLayer::PushPropertiesTo");
-  DropRecordingSourceContentIfInvalid();
+  DropRecordingSourceContentIfInvalid(
+      base_layer->layer_tree_impl()->source_frame_number());
 
   layer_impl->SetNearestNeighbor(picture_layer_inputs_.nearest_neighbor);
   layer_impl->set_gpu_raster_max_texture_size(
@@ -105,7 +107,7 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
 }
 
 void PictureLayer::SetNeedsDisplayRect(const gfx::Rect& layer_rect) {
-  DCHECK(!layer_tree_host() || !layer_tree_host()->in_paint_layer_contents());
+  DCHECK(IsPropertyChangeAllowed());
   if (recording_source_)
     recording_source_->SetNeedsDisplayRect(layer_rect);
   Layer::SetNeedsDisplayRect(layer_rect);
@@ -197,11 +199,13 @@ sk_sp<SkPicture> PictureLayer::GetPicture() const {
 }
 
 void PictureLayer::ClearClient() {
+  DCHECK(IsMutationAllowed());
   picture_layer_inputs_.client = nullptr;
   UpdateDrawsContent(HasDrawableContent());
 }
 
 void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
+  DCHECK(IsMutationAllowed());
   if (picture_layer_inputs_.nearest_neighbor == nearest_neighbor)
     return;
 
@@ -214,6 +218,7 @@ bool PictureLayer::HasDrawableContent() const {
 }
 
 void PictureLayer::SetIsBackdropFilterMask(bool is_backdrop_filter_mask) {
+  DCHECK(IsMutationAllowed());
   if (picture_layer_inputs_.is_backdrop_filter_mask == is_backdrop_filter_mask)
     return;
 
@@ -267,8 +272,8 @@ void PictureLayer::CaptureContent(const gfx::Rect& rect,
   }
 }
 
-void PictureLayer::DropRecordingSourceContentIfInvalid() {
-  int source_frame_number = layer_tree_host()->SourceFrameNumber();
+void PictureLayer::DropRecordingSourceContentIfInvalid(
+    int source_frame_number) {
   gfx::Size recording_source_bounds = recording_source_->GetSize();
 
   gfx::Size layer_bounds = bounds();

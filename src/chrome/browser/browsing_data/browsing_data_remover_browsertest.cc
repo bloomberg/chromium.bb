@@ -64,9 +64,9 @@
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/net/system_proxy_manager.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -76,8 +76,7 @@ using content::BrowsingDataFilterBuilder;
 namespace {
 static const char* kExampleHost = "example.com";
 static const char* kLocalHost = "localhost";
-static const base::Time kLastHour =
-    base::Time::Now() - base::TimeDelta::FromHours(1);
+static const base::Time kLastHour = base::Time::Now() - base::Hours(1);
 }  // namespace
 
 class BrowsingDataRemoverBrowserTest
@@ -197,7 +196,7 @@ class BrowsingDataRemoverBrowserTest
 #endif
 
   inline void ExpectCookieTreeModelCount(int expected) {
-    std::unique_ptr<CookiesTreeModel> model = GetCookiesTreeModel(GetBrowser());
+    std::unique_ptr<CookiesTreeModel> model = GetCookiesTreeModel(GetProfile());
     EXPECT_EQ(expected, GetCookiesTreeModelCount(model->GetRoot()))
         << GetCookiesTreeModelInfo(model->GetRoot());
   }
@@ -1027,7 +1026,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   // On some Macs the file system uses second granularity. So before
   // creating the second license, delay for 1 second so that the new
   // license's time is not the same second as |start|.
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+  base::PlatformThread::Sleep(base::Seconds(1));
 #endif
 
   // This test should use a different domain than the PRE_ test, so there

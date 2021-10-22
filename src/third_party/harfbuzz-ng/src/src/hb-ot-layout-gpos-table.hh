@@ -1144,7 +1144,7 @@ struct PairValueRecord
   }
 
   protected:
-  HBGlyphID	secondGlyph;		/* GlyphID of second glyph in the
+  HBGlyphID16	secondGlyph;		/* GlyphID of second glyph in the
 					 * pair--first glyph is listed in the
 					 * Coverage table */
   ValueRecord	values;			/* Positioning data for the first glyph
@@ -1386,9 +1386,9 @@ struct PairPosFormat1
     | hb_filter (glyphset, hb_first)
     | hb_filter ([this, c, out] (const Offset16To<PairSet>& _)
 		 {
+                   auto snap = c->serializer->snapshot ();
 		   auto *o = out->pairSet.serialize_append (c->serializer);
 		   if (unlikely (!o)) return false;
-		   auto snap = c->serializer->snapshot ();
 		   bool ret = o->serialize_subset (c, _, this, valueFormat, out->valueFormat);
 		   if (!ret)
 		   {

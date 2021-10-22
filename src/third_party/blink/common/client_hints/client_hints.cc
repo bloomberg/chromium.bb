@@ -9,6 +9,7 @@
 
 #include "base/cxx17_backports.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -19,38 +20,67 @@
 
 namespace blink {
 
-const unsigned kClientHintsNumberOfLegacyHints = 4;
+const int kClientHintsNumberOfLegacyHints = 4;
 
-const mojom::PermissionsPolicyFeature kClientHintsPermissionsPolicyMapping[] = {
-    // Legacy Hints that are sent cross-origin regardless of Permissions Policy
-    // when kAllowClientHintsToThirdParty is enabled.
-    mojom::PermissionsPolicyFeature::kClientHintDeviceMemory,
-    mojom::PermissionsPolicyFeature::kClientHintDPR,
-    mojom::PermissionsPolicyFeature::kClientHintWidth,
-    mojom::PermissionsPolicyFeature::kClientHintViewportWidth,
-    // End of legacy hints.
-    mojom::PermissionsPolicyFeature::kClientHintRTT,
-    mojom::PermissionsPolicyFeature::kClientHintDownlink,
-    mojom::PermissionsPolicyFeature::kClientHintECT,
-    mojom::PermissionsPolicyFeature::kClientHintLang,
-    mojom::PermissionsPolicyFeature::kClientHintUA,
-    mojom::PermissionsPolicyFeature::kClientHintUAArch,
-    mojom::PermissionsPolicyFeature::kClientHintUAPlatform,
-    mojom::PermissionsPolicyFeature::kClientHintUAModel,
-    mojom::PermissionsPolicyFeature::kClientHintUAMobile,
-    mojom::PermissionsPolicyFeature::kClientHintUAFullVersion,
-    mojom::PermissionsPolicyFeature::kClientHintUAPlatformVersion,
-    mojom::PermissionsPolicyFeature::kClientHintPrefersColorScheme,
-    mojom::PermissionsPolicyFeature::kClientHintUABitness,
-    mojom::PermissionsPolicyFeature::kClientHintUAReduced,
-    mojom::PermissionsPolicyFeature::kClientHintViewportHeight,
-};
+ClientHintToPolicyFeatureMap MakeClientHintToPolicyFeatureMap() {
+  return {
+      // Legacy Hints that are sent cross-origin regardless of Permissions
+      // Policy when kAllowClientHintsToThirdParty is enabled.
+      {network::mojom::WebClientHintsType::kDeviceMemory_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintDeviceMemory},
+      {network::mojom::WebClientHintsType::kDpr_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintDPR},
+      {network::mojom::WebClientHintsType::kResourceWidth_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintWidth},
+      {network::mojom::WebClientHintsType::kViewportWidth_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintViewportWidth},
+      // End of legacy hints.
+      {network::mojom::WebClientHintsType::kRtt_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintRTT},
+      {network::mojom::WebClientHintsType::kDownlink_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintDownlink},
+      {network::mojom::WebClientHintsType::kEct_DEPRECATED,
+       mojom::PermissionsPolicyFeature::kClientHintECT},
+      {network::mojom::WebClientHintsType::kUA,
+       mojom::PermissionsPolicyFeature::kClientHintUA},
+      {network::mojom::WebClientHintsType::kUAArch,
+       mojom::PermissionsPolicyFeature::kClientHintUAArch},
+      {network::mojom::WebClientHintsType::kUAPlatform,
+       mojom::PermissionsPolicyFeature::kClientHintUAPlatform},
+      {network::mojom::WebClientHintsType::kUAModel,
+       mojom::PermissionsPolicyFeature::kClientHintUAModel},
+      {network::mojom::WebClientHintsType::kUAMobile,
+       mojom::PermissionsPolicyFeature::kClientHintUAMobile},
+      {network::mojom::WebClientHintsType::kUAFullVersion,
+       mojom::PermissionsPolicyFeature::kClientHintUAFullVersion},
+      {network::mojom::WebClientHintsType::kUAPlatformVersion,
+       mojom::PermissionsPolicyFeature::kClientHintUAPlatformVersion},
+      {network::mojom::WebClientHintsType::kPrefersColorScheme,
+       mojom::PermissionsPolicyFeature::kClientHintPrefersColorScheme},
+      {network::mojom::WebClientHintsType::kUABitness,
+       mojom::PermissionsPolicyFeature::kClientHintUABitness},
+      {network::mojom::WebClientHintsType::kUAReduced,
+       mojom::PermissionsPolicyFeature::kClientHintUAReduced},
+      {network::mojom::WebClientHintsType::kViewportHeight,
+       mojom::PermissionsPolicyFeature::kClientHintViewportHeight},
+      {network::mojom::WebClientHintsType::kDeviceMemory,
+       mojom::PermissionsPolicyFeature::kClientHintDeviceMemory},
+      {network::mojom::WebClientHintsType::kDpr,
+       mojom::PermissionsPolicyFeature::kClientHintDPR},
+      {network::mojom::WebClientHintsType::kResourceWidth,
+       mojom::PermissionsPolicyFeature::kClientHintWidth},
+      {network::mojom::WebClientHintsType::kViewportWidth,
+       mojom::PermissionsPolicyFeature::kClientHintViewportWidth},
+  };
+}
 
-static_assert(
-    base::size(kClientHintsPermissionsPolicyMapping) ==
-        static_cast<int>(network::mojom::WebClientHintsType::kMaxValue) + 1,
-    "Client Hint table sizes must be identical between types and feature "
-    "policies");
+const ClientHintToPolicyFeatureMap& GetClientHintToPolicyFeatureMap() {
+  DCHECK_EQ(network::GetClientHintToNameMap().size(),
+            MakeClientHintToPolicyFeatureMap().size());
+  static const base::NoDestructor<ClientHintToPolicyFeatureMap> map(
+      MakeClientHintToPolicyFeatureMap());
+  return *map;
+}
 
 const char* const kWebEffectiveConnectionTypeMapping[] = {
     "4g" /* Unknown */, "4g" /* Offline */, "slow-2g" /* Slow 2G */,
@@ -59,17 +89,6 @@ const char* const kWebEffectiveConnectionTypeMapping[] = {
 
 const size_t kWebEffectiveConnectionTypeMappingCount =
     base::size(kWebEffectiveConnectionTypeMapping);
-
-std::string SerializeLangClientHint(const std::string& raw_language_list) {
-  base::StringTokenizer t(raw_language_list, ",");
-  std::string result;
-  while (t.GetNext()) {
-    if (!result.empty())
-      result.append(", ");
-    base::StrAppend(&result, {"\"", t.token_piece(), "\""});
-  }
-  return result;
-}
 
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
   switch (type) {
@@ -91,23 +110,25 @@ void FindClientHintsToRemove(const PermissionsPolicy* permissions_policy,
                              std::vector<std::string>* removed_headers) {
   DCHECK(removed_headers);
   url::Origin origin = url::Origin::Create(url);
-  size_t startHint = 0;
+  int startHint = 0;
   if (base::FeatureList::IsEnabled(features::kAllowClientHintsToThirdParty)) {
     // Do not remove any legacy Client Hints
     startHint = kClientHintsNumberOfLegacyHints;
   }
-  for (size_t i = startHint; i < network::kClientHintsNameMappingCount; ++i) {
+  for (const auto& elem : network::GetClientHintToNameMap()) {
+    const auto& type = elem.first;
+    const auto& header = elem.second;
+    if (static_cast<int>(type) < startHint)
+      continue;
     // Remove the hint if any is true:
     // * Permissions policy is null (we're in a sync XHR case) and the hint is
     // not sent by default.
     // * Permissions policy exists and doesn't allow for the hint.
-    if ((!permissions_policy &&
-         !IsClientHintSentByDefault(
-             static_cast<network::mojom::WebClientHintsType>(i))) ||
+    if ((!permissions_policy && !IsClientHintSentByDefault(type)) ||
         (permissions_policy &&
          !permissions_policy->IsFeatureEnabledForOrigin(
-             blink::kClientHintsPermissionsPolicyMapping[i], origin))) {
-      removed_headers->push_back(network::kClientHintsNameMapping[i]);
+             blink::GetClientHintToPolicyFeatureMap().at(type), origin))) {
+      removed_headers->push_back(header);
     }
   }
 }

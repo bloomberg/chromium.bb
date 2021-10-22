@@ -25,7 +25,6 @@
 #include "chrome/browser/webshare/prepare_directory_task.h"
 #include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/browser/webshare/store_files_task.h"
-#include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -62,6 +61,7 @@ blink::mojom::ShareError SharesheetResultToShareError(
       return blink::mojom::ShareError::OK;
     case sharesheet::SharesheetResult::kCancel:
     case sharesheet::SharesheetResult::kErrorAlreadyOpen:
+    case sharesheet::SharesheetResult::kErrorWindowClosed:
       return blink::mojom::ShareError::CANCELED;
   }
 }
@@ -114,7 +114,7 @@ void SharesheetClient::Share(
             FROM_HERE,
             base::BindOnce(std::move(callback),
                            blink::mojom::ShareError::CANCELED),
-            base::TimeDelta::FromSecondsD(delay_seconds));
+            base::Seconds(delay_seconds));
     return;
   }
 
@@ -195,7 +195,7 @@ void SharesheetClient::OnStoreFiles(blink::mojom::ShareError error) {
   if (!web_contents() || error != blink::mojom::ShareError::OK) {
     std::move(current_share_->callback).Run(error);
     PrepareDirectoryTask::ScheduleSharedFileDeletion(
-        std::move(current_share_->file_paths), base::TimeDelta::FromMinutes(0));
+        std::move(current_share_->file_paths), base::Minutes(0));
     current_share_ = absl::nullopt;
     return;
   }
@@ -229,10 +229,6 @@ void SharesheetClient::ShowSharesheet(
     DeliveredCallback delivered_callback) {
   DCHECK_EQ(file_paths.size(), content_types.size());
   DCHECK_EQ(file_paths.size(), file_sizes.size());
-  if (!base::FeatureList::IsEnabled(features::kSharesheet)) {
-    std::move(delivered_callback).Run(sharesheet::SharesheetResult::kCancel);
-    return;
-  }
 
   Profile* const profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

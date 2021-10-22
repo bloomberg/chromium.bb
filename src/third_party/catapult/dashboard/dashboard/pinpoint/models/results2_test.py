@@ -6,6 +6,8 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import collections
+import datetime
 import itertools
 import logging
 import mock
@@ -14,10 +16,18 @@ import unittest
 from google.appengine.api import taskqueue
 
 from dashboard.common import testing_common
+from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models import results2
+from dashboard.pinpoint.models.change import change
+from dashboard.pinpoint.models.change import commit
 from dashboard.pinpoint.models.quest import read_value
+from dashboard.pinpoint.models.quest import run_test
+from dashboard.services import swarming
 from tracing.value import histogram_set
 from tracing.value import histogram as histogram_module
+
+_TEST_START_TIME = datetime.datetime.fromtimestamp(1326244364)
+_TEST_START_TIME_STR = _TEST_START_TIME.strftime('%Y-%m-%d %H:%M:%S.%f')
 
 _ATTEMPT_DATA = {
     "executions": [{
@@ -124,6 +134,9 @@ _JOB_MISSING_EXECUTIONS = {
     "quests": ["Test"],
 }
 
+FakeBenchmarkArguments = collections.namedtuple(
+    'FakeBenchmarkArguments', ['benchmark', 'story'])
+
 
 @mock.patch.object(results2.cloudstorage, 'listbucket')
 class GetCachedResults2Test(unittest.TestCase):
@@ -131,7 +144,7 @@ class GetCachedResults2Test(unittest.TestCase):
   def testGetCachedResults2_Cached_ReturnsResult(self, mock_cloudstorage):
     mock_cloudstorage.return_value = ['foo']
 
-    job = _JobStub(_JOB_WITH_DIFFERENCES, '123')
+    job = _JobStub(_JOB_WITH_DIFFERENCES, '123', job_state.PERFORMANCE)
     url = results2.GetCachedResults2(job)
 
     self.assertEqual(
@@ -142,7 +155,7 @@ class GetCachedResults2Test(unittest.TestCase):
   def testGetCachedResults2_Uncached_Fails(self, mock_cloudstorage):
     mock_cloudstorage.return_value = []
 
-    job = _JobStub(_JOB_WITH_DIFFERENCES, '123')
+    job = _JobStub(_JOB_WITH_DIFFERENCES, '123', job_state.PERFORMANCE)
     url = results2.GetCachedResults2(job)
 
     self.assertIsNone(url)
@@ -154,7 +167,7 @@ class ScheduleResults2Generation2Test(unittest.TestCase):
   def testScheduleResults2Generation2_FailedPreviously(self, mock_add):
     mock_add.side_effect = taskqueue.TombstonedTaskError
 
-    job = _JobStub(_JOB_WITH_DIFFERENCES, '123')
+    job = _JobStub(_JOB_WITH_DIFFERENCES, '123', job_state.PERFORMANCE)
     result = results2.ScheduleResults2Generation(job)
     self.assertFalse(result)
 
@@ -162,7 +175,7 @@ class ScheduleResults2Generation2Test(unittest.TestCase):
   def testScheduleResults2Generation2_AlreadyRunning(self, mock_add):
     mock_add.side_effect = taskqueue.TaskAlreadyExistsError
 
-    job = _JobStub(_JOB_WITH_DIFFERENCES, '123')
+    job = _JobStub(_JOB_WITH_DIFFERENCES, '123', job_state.PERFORMANCE)
     result = results2.ScheduleResults2Generation(job)
     self.assertTrue(result)
 
@@ -171,16 +184,19 @@ class ScheduleResults2Generation2Test(unittest.TestCase):
     results2, 'open', mock.mock_open(read_data='fake_viewer'), create=True)
 class GenerateResults2Test(testing_common.TestCase):
 
-  @mock.patch.object(results2, '_FetchHistograms',
-                     mock.MagicMock(return_value=['a', 'b']))
+  @mock.patch.object(
+      results2, '_FetchHistograms',
+      mock.MagicMock(return_value=[
+          results2.HistogramData(None, ['a', 'b'])
+      ]))
   @mock.patch.object(results2, '_GcsFileStream', mock.MagicMock())
   @mock.patch.object(results2.render_histograms_viewer,
                      'RenderHistogramsViewer')
   def testPost_Renders(self, mock_render):
-    job = _JobStub(None, '123')
+    job = _JobStub(None, '123', job_state.PERFORMANCE)
     results2.GenerateResults2(job)
 
-    mock_render.assert_called_with(['a', 'b'],
+    mock_render.assert_called_with([['a', 'b']],
                                    mock.ANY,
                                    reset_results=True,
                                    vulcanized_html='fake_viewer')
@@ -194,7 +210,7 @@ class GenerateResults2Test(testing_common.TestCase):
   @mock.patch.object(results2, '_JsonFromExecution')
   def testTypeDispatch_LegacyHistogramExecution(self, mock_json, mock_render):
     job = _JobStub(
-        None, '123',
+        None, '123', job_state.PERFORMANCE,
         _JobStateFake({
             'f00c0de': [{
                 'executions': [
@@ -231,7 +247,7 @@ class GenerateResults2Test(testing_common.TestCase):
   @mock.patch.object(results2, '_JsonFromExecution')
   def testTypeDispatch_LegacyGraphJsonExecution(self, mock_json, mock_render):
     job = _JobStub(
-        None, '123',
+        None, '123', job_state.PERFORMANCE,
         _JobStateFake({
             'f00c0de': [{
                 'executions': [
@@ -270,7 +286,7 @@ class GenerateResults2Test(testing_common.TestCase):
   @mock.patch.object(results2, '_JsonFromExecution')
   def testTypeDispatch_ReadValueExecution(self, mock_json, mock_render):
     job = _JobStub(
-        None, '123',
+        None, '123', job_state.PERFORMANCE,
         _JobStateFake({
             'f00c0de': [{
                 'executions': [
@@ -311,7 +327,7 @@ class GenerateResults2Test(testing_common.TestCase):
   def testTypeDispatch_ReadValueExecution_MultipleChanges(
       self, mock_json, mock_render):
     job = _JobStub(
-        None, '123',
+        None, '123', job_state.PERFORMANCE,
         _JobStateFake({
             'f00c0de': [{
                 'executions': [
@@ -363,6 +379,281 @@ class GenerateResults2Test(testing_common.TestCase):
         expected_histogram_set_a.AsDicts() + expected_histogram_set_b.AsDicts(),
         histograms)
 
+  @mock.patch.object(results2, '_GcsFileStream', mock.MagicMock())
+  @mock.patch.object(results2, '_InsertBQRows')
+  @mock.patch.object(results2.render_histograms_viewer,
+                     'RenderHistogramsViewer')
+  @mock.patch.object(results2, '_JsonFromExecution')
+  @mock.patch.object(swarming, 'Swarming')
+  @mock.patch.object(commit.Commit, 'GetOrCacheCommitInfo')
+  def testTypeDispatch_PushBQ(self, mock_commit_info, mock_swarming, mock_json, mock_render,
+                              mock_bqinsert):
+    mock_commit_info.return_value = {
+        'author': {
+            'email': 'author@chromium.org'
+        },
+        'created': datetime.date.today(),
+        'commit': 'aaa7336',
+        'committer': {
+            'time': 'Fri Jan 01 00:01:00 2016'
+        },
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Reviewed-on: https://foo/c/chromium/src/+/123\n'
+                   'Cr-Commit-Position: refs/heads/main@{#437745}',
+    }
+
+    test_execution = run_test._RunTestExecution("fake_server", None, None, None,
+                                                None, None)
+    test_execution._task_id = "fake_task"
+
+    commit_a = commit.Commit("fakerepo", "fakehashA")
+    change_a = change.Change([commit_a], variant=0)
+    commit_b = commit.Commit("fakeRepo", "fakehashB")
+    patch_b = FakePatch("fakePatchServer", "fakePatchNo", "fakePatchRev")
+    change_b = change.Change([commit_b], patch_b, variant=1)
+
+    benchmark_arguments = FakeBenchmarkArguments("fake_benchmark", "fake_story")
+    job = _JobStub(
+        None,
+        'fake_job_id',
+        None,
+        _JobStateFake({
+            change_a: [{
+                'executions': [
+                    test_execution,
+                    read_value.ReadValueExecution(
+                        'fake_filename', ['fake_filename'], 'fake_metric',
+                        'fake_grouping_label', 'fake_trace_or_story', 'avg',
+                        'fake_chart', 'https://isolate_server',
+                        'deadc0decafef00d')
+                ]
+            }],
+            change_b: [{
+                'executions': [
+                    test_execution,
+                    read_value.ReadValueExecution(
+                        'fake_filename', ['fake_filename'], 'fake_metric',
+                        'fake_grouping_label', 'fake_trace_or_story', 'avg',
+                        'fake_chart', 'https://isolate_server',
+                        'deadc0decafef00d')
+                ]
+            }],
+        }),
+        benchmark_arguments=benchmark_arguments,
+        batch_id="fake_batch_id",
+        configuration="fake_configuration")
+    histograms = []
+
+    def TraverseHistograms(hists, *args, **kw_args):
+      del args
+      del kw_args
+      for histogram in hists:
+        histograms.append(histogram)
+
+    task_mock = mock.Mock()
+    task_mock.Result.return_value = {
+        "bot_dimensions": {
+            "device_type": "type",
+            "device_os": "os"
+        }
+    }
+    mock_swarming.return_value.Task.return_value = task_mock
+    mock_render.side_effect = TraverseHistograms
+    lcp_histogram = histogram_module.Histogram('largestContentfulPaint',
+                                               'count')
+    lcp_histogram.AddSample(42)
+    fcp_histogram = histogram_module.Histogram('timeToFirstContentfulPaint',
+                                               'count')
+    fcp_histogram.AddSample(11)
+    cls_histogram = histogram_module.Histogram('overallCumulativeLayoutShift',
+                                               'count')
+    cls_histogram.AddSample(22)
+    tbt_histogram = histogram_module.Histogram('totalBlockingTime', 'count')
+    tbt_histogram.AddSample(33)
+    useless_histogram = histogram_module.Histogram('someUselessMetric', 'count')
+    useless_histogram.AddSample(42)
+    expected_histogram_set = histogram_set.HistogramSet([
+        lcp_histogram, fcp_histogram, cls_histogram, tbt_histogram,
+        useless_histogram
+    ])
+    mock_json.return_value = expected_histogram_set.AsDicts()
+
+    expected_rows = [{
+        'job_start_time': _TEST_START_TIME_STR,
+        'batch_id': 'fake_batch_id',
+        'dims': {
+            'device': {
+                'cfg': 'fake_configuration',
+                'os': 'os'
+            },
+            'test_info': {
+                'story': 'fake_story',
+                'benchmark': 'fake_benchmark'
+            },
+            'pairing': {
+                'replica': 0,
+                'variant': 0
+            },
+            'checkout': {
+                'repo': 'fakerepo',
+                'git_hash': 'fakehashA',
+                'commit_position': 437745,
+                'branch': 'refs/heads/main'
+            }
+        },
+        'measures': {
+            'core_web_vitals': {
+                'timeToFirstContentfulPaint': 11.0,
+                'totalBlockingTime': 33.0,
+                'largestContentfulPaint': 42.0,
+                'overallCumulativeLayoutShift': 22.0
+            }
+        },
+        'run_id': 'fake_job_id'
+    }, {
+        'job_start_time': _TEST_START_TIME_STR,
+        'batch_id': 'fake_batch_id',
+        'dims': {
+            'device': {
+                'cfg': 'fake_configuration',
+                'os': 'os'
+            },
+            'test_info': {
+                'story': 'fake_story',
+                'benchmark': 'fake_benchmark'
+            },
+            'pairing': {
+                'replica': 0,
+                'variant': 1
+            },
+            'checkout': {
+                'patch_gerrit_revision': 'fake_patch_set',
+                'commit_position': 437745,
+                'patch_gerrit_change': 'fake_patch_issue',
+                'repo': 'fakeRepo',
+                'branch': 'refs/heads/main',
+                'git_hash': 'fakehashB'
+            }
+        },
+        'measures': {
+            'core_web_vitals': {
+                'timeToFirstContentfulPaint': 11.0,
+                'totalBlockingTime': 33.0,
+                'largestContentfulPaint': 42.0,
+                'overallCumulativeLayoutShift': 22.0
+            }
+        },
+        'run_id': 'fake_job_id'
+    }]
+
+    results2.GenerateResults2(job)
+    self.maxDiff = None
+    self.assertItemsEqual(mock_bqinsert.call_args[0][3], expected_rows)
+
+  @mock.patch.object(results2, '_GcsFileStream', mock.MagicMock())
+  @mock.patch.object(results2, '_InsertBQRows')
+  @mock.patch.object(results2.render_histograms_viewer,
+                     'RenderHistogramsViewer')
+  @mock.patch.object(results2, '_JsonFromExecution')
+  @mock.patch.object(swarming, 'Swarming')
+  @mock.patch.object(commit.Commit, 'GetOrCacheCommitInfo')
+  def testTypeDispatch_PushBQNoRows(self, mock_commit_info, mock_swarming, mock_json, mock_render,
+                                    mock_bqinsert):
+    mock_commit_info.return_value = {
+        'author': {
+            'email': 'author@chromium.org'
+        },
+        'created': datetime.date.today(),
+        'commit': 'aaa7336',
+        'committer': {
+            'time': 'Fri Jan 01 00:01:00 2016'
+        },
+        'message': 'Subject.\n\n'
+                   'Commit message.\n'
+                   'Reviewed-on: https://foo/c/chromium/src/+/123\n'
+                   'Cr-Commit-Position: refs/heads/main@{#437745}',
+    }
+
+    test_execution = run_test._RunTestExecution("fake_server", None, None, None,
+                                                None, None)
+    test_execution._task_id = "fake_task"
+
+    commit_a = commit.Commit("fakerepo", "fakehashA")
+    change_a = change.Change([commit_a])
+    commit_b = commit.Commit("fakeRepo", "fakehashB")
+    patch_b = FakePatch("fakePatchServer", "fakePatchNo", "fakePatchRev")
+    change_b = change.Change([commit_b], patch_b)
+
+    benchmark_arguments = FakeBenchmarkArguments("fake_benchmark", "fake_story")
+    job = _JobStub(
+        None,
+        'fake_job_id',
+        None,
+        _JobStateFake({
+            change_a: [{
+                'executions': [
+                    test_execution,
+                    read_value.ReadValueExecution(
+                        'fake_filename', ['fake_filename'], 'fake_metric',
+                        'fake_grouping_label', 'fake_trace_or_story', 'avg',
+                        'fake_chart', 'https://isolate_server',
+                        'deadc0decafef00d')
+                ]
+            }],
+            change_b: [{
+                'executions': [
+                    test_execution,
+                    read_value.ReadValueExecution(
+                        'fake_filename', ['fake_filename'], 'fake_metric',
+                        'fake_grouping_label', 'fake_trace_or_story', 'avg',
+                        'fake_chart', 'https://isolate_server',
+                        'deadc0decafef00d')
+                ]
+            }],
+        }),
+        benchmark_arguments=benchmark_arguments,
+        batch_id="fake_batch_id",
+        configuration="fake_configuration")
+    histograms = []
+
+    def TraverseHistograms(hists, *args, **kw_args):
+      del args
+      del kw_args
+      for histogram in hists:
+        histograms.append(histogram)
+
+    task_mock = mock.Mock()
+    task_mock.Result.return_value = {
+        "bot_dimensions": {
+            "device_type": "type",
+            "device_os": "os"
+        }
+    }
+    mock_swarming.return_value.Task.return_value = task_mock
+    mock_render.side_effect = TraverseHistograms
+    useless_histogram = histogram_module.Histogram('someUselessMetric', 'count')
+    useless_histogram.AddSample(42)
+    expected_histogram_set = histogram_set.HistogramSet([
+        useless_histogram
+    ])
+    mock_json.return_value = expected_histogram_set.AsDicts()
+
+    results2.GenerateResults2(job)
+    self.assertFalse(mock_bqinsert.called)
+
+
+class FakePatch(
+    collections.namedtuple('GerritPatch', ('server', 'change', 'revision'))):
+
+  def BuildParameters(self):
+    return {
+        "patch_gerrit_url": "fake_gerrit_url",
+        "project": "fake_project",
+        "patch_issue": "fake_patch_issue",
+        "patch_set": "fake_patch_set"
+    }
+
 
 class _AttemptFake(object):
 
@@ -405,10 +696,22 @@ class _JobStateFake(object):
 
 class _JobStub(object):
 
-  def __init__(self, job_dict, job_id, state=None):
+  def __init__(self,
+               job_dict,
+               job_id,
+               comparison_mode,
+               state=None,
+               batch_id=None,
+               configuration=None,
+               benchmark_arguments=None):
     self._job_dict = job_dict
+    self.comparison_mode = comparison_mode
     self.job_id = job_id
     self.state = state
+    self.batch_id = batch_id
+    self.configuration = configuration
+    self.benchmark_arguments = benchmark_arguments
+    self.started_time = _TEST_START_TIME
 
   def AsDict(self, options=None):
     del options

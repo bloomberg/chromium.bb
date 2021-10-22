@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_interface.h"
 
 namespace password_manager {
 
@@ -22,6 +22,9 @@ struct PasswordForm;
 class FormSaver {
  public:
   FormSaver() = default;
+
+  FormSaver(const FormSaver&) = delete;
+  FormSaver& operator=(const FormSaver&) = delete;
 
   virtual ~FormSaver() = default;
 
@@ -68,9 +71,6 @@ class FormSaver {
 
   // Creates a new FormSaver with the same state as |*this|.
   virtual std::unique_ptr<FormSaver> Clone() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FormSaver);
 };
 
 }  // namespace password_manager

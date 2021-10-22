@@ -7,13 +7,10 @@
 #include <sstream>
 #include <string>
 
-#include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
 #include "base/time/time.h"
 
 namespace ash {
@@ -53,35 +50,48 @@ std::string getRoutineTypeString(mojom::RoutineType type) {
   return routineName.substr(1, routineName.size() - 1);
 }
 
+// Get the category for the routine `type`.
+std::string GetRoutineCategory(mojom::RoutineType type) {
+  switch (type) {
+    case mojom::RoutineType::kBatteryCharge:
+    case mojom::RoutineType::kBatteryDischarge:
+    case mojom::RoutineType::kCpuCache:
+    case mojom::RoutineType::kCpuStress:
+    case mojom::RoutineType::kCpuFloatingPoint:
+    case mojom::RoutineType::kCpuPrime:
+    case mojom::RoutineType::kMemory:
+      return "system";
+    case mojom::RoutineType::kLanConnectivity:
+    case mojom::RoutineType::kSignalStrength:
+    case mojom::RoutineType::kGatewayCanBePinged:
+    case mojom::RoutineType::kHasSecureWiFiConnection:
+    case mojom::RoutineType::kDnsResolverPresent:
+    case mojom::RoutineType::kDnsLatency:
+    case mojom::RoutineType::kDnsResolution:
+    case mojom::RoutineType::kCaptivePortal:
+    case mojom::RoutineType::kHttpFirewall:
+    case mojom::RoutineType::kHttpsFirewall:
+    case mojom::RoutineType::kHttpsLatency:
+    case mojom::RoutineType::kArcHttp:
+    case mojom::RoutineType::kArcPing:
+    case mojom::RoutineType::kArcDnsResolution:
+      return "network";
+  };
+}
+
 }  // namespace
 
-RoutineLog::RoutineLog(const base::FilePath& routine_log_file_path)
-    : routine_log_file_path_(routine_log_file_path) {
-  sequenced_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
-}
+RoutineLog::RoutineLog(const base::FilePath& log_base_path)
+    : log_base_path_(log_base_path) {}
 
 RoutineLog::~RoutineLog() = default;
-
-void RoutineLog::LogContentToFile(const std::string& contents) {
-  // Ensure file exists.
-  if (!base::PathExists(routine_log_file_path_)) {
-    CreateFile();
-  }
-
-  // Write contents to file.
-  AppendToLog(contents);
-}
 
 void RoutineLog::LogRoutineStarted(mojom::RoutineType type) {
   std::stringstream log_line;
   log_line << GetCurrentDateTimeAsString() << kSeparator
            << getRoutineTypeString(type) << kSeparator << kStartedDescription
            << kNewline;
-  sequenced_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&RoutineLog::LogContentToFile,
-                                base::Unretained(this), log_line.str()));
+  Append(type, log_line.str());
 }
 
 void RoutineLog::LogRoutineCompleted(mojom::RoutineType type,
@@ -90,51 +100,42 @@ void RoutineLog::LogRoutineCompleted(mojom::RoutineType type,
   log_line << GetCurrentDateTimeAsString() << kSeparator
            << getRoutineTypeString(type) << kSeparator
            << getRoutineResultString(result) << kNewline;
-  sequenced_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&RoutineLog::LogContentToFile,
-                                base::Unretained(this), log_line.str()));
+  Append(type, log_line.str());
 }
 
-void RoutineLog::LogRoutineCancelled() {
+void RoutineLog::LogRoutineCancelled(mojom::RoutineType type) {
   std::stringstream log_line;
   log_line << GetCurrentDateTimeAsString() << kSeparator
            << kCancelledDescription << kNewline;
-  sequenced_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&RoutineLog::LogContentToFile,
-                                base::Unretained(this), log_line.str()));
+  Append(type, log_line.str());
 }
 
-std::string RoutineLog::GetContents() const {
-  if (!base::PathExists(routine_log_file_path_)) {
+std::string RoutineLog::GetContentsForCategory(
+    const std::string& category) const {
+  const auto iter = logs_.find(category);
+  if (iter == logs_.end()) {
     return "";
   }
 
-  std::string contents;
-  base::ReadFileToString(routine_log_file_path_, &contents);
-
-  return contents;
+  return iter->second->GetContents();
 }
 
-void RoutineLog::AppendToLog(const std::string& content) {
-  base::AppendToFile(routine_log_file_path_, content);
+void RoutineLog::Append(mojom::RoutineType type, const std::string& text) {
+  std::string category = GetRoutineCategory(type);
+
+  // Insert a new log if it doesn't exist then append to it.
+  base::FilePath log_path = GetCategoryLogFilePath(category);
+  auto iter = logs_.find(category);
+  if (iter == logs_.end()) {
+    iter = logs_.emplace(category, std::make_unique<AsyncLog>(log_path)).first;
+  }
+
+  iter->second->Append(text);
 }
 
-void RoutineLog::CreateFile() {
-  DCHECK(!base::PathExists(routine_log_file_path_));
-
-  if (!base::PathExists(routine_log_file_path_.DirName())) {
-    const bool create_dir_success =
-        base::CreateDirectory(routine_log_file_path_.DirName());
-    if (!create_dir_success) {
-      LOG(ERROR) << "Failed to create Diagnostics Routine Log directory.";
-      return;
-    }
-  }
-
-  const bool create_file_success = base::WriteFile(routine_log_file_path_, "");
-  if (!create_file_success) {
-    LOG(ERROR) << "Failed to create Diagnostics Routine Log file.";
-  }
+base::FilePath RoutineLog::GetCategoryLogFilePath(const std::string& category) {
+  std::string name = "diagnostics_routines_" + category + ".log";
+  return log_base_path_.Append(name);
 }
 
 }  // namespace diagnostics

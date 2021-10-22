@@ -116,14 +116,12 @@ struct ContextualManagementSourceUpdate {
   bool managed;
 };
 
-namespace {
-const char kDomain[] = "domain.com";
-const char kUser[] = "user@domain.com";
-const char kManager[] = "manager@domain.com";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+namespace {
+const char kUser[] = "user@domain.com";
 const char kGaiaId[] = "gaia_id";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }  // namespace
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // This class is just to mock the behaviour of the few flags we need for
@@ -134,29 +132,31 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
   TestDeviceStatusCollector(PrefService* local_state,
                             bool report_activity_times,
                             bool report_nics,
+                            bool report_hardware_data,
                             bool report_users,
-                            bool report_hw_status,
                             bool report_crash_info,
                             bool report_app_info_and_activity)
       : policy::DeviceStatusCollector(local_state, nullptr),
         report_activity_times_(report_activity_times),
         report_nics_(report_nics),
+        report_hardware_data_(report_hardware_data),
         report_users_(report_users),
-        report_hw_status_(report_hw_status),
         report_crash_info_(report_crash_info),
         report_app_info_and_activity_(report_app_info_and_activity) {}
   ~TestDeviceStatusCollector() override = default;
 
-  bool ShouldReportActivityTimes() const override {
+  bool IsReportingActivityTimes() const override {
     return report_activity_times_;
   }
-  bool ShouldReportNetworkInterfaces() const override { return report_nics_; }
-  bool ShouldReportUsers() const override { return report_users_; }
-  bool ShouldReportHardwareStatus() const override { return report_hw_status_; }
-  bool ShouldReportCrashReportInfo() const override {
+  bool IsReportingNetworkData() const override { return report_nics_; }
+  bool IsReportingHardwareData() const override {
+    return report_hardware_data_;
+  }
+  bool IsReportingUsers() const override { return report_users_; }
+  bool IsReportingCrashReportInfo() const override {
     return report_crash_info_;
   }
-  bool ShouldReportAppInfoAndActivity() const override {
+  bool IsReportingAppInfoAndActivity() const override {
     return report_app_info_and_activity_;
   }
 
@@ -168,8 +168,8 @@ class TestDeviceStatusCollector : public policy::DeviceStatusCollector {
  private:
   bool report_activity_times_;
   bool report_nics_;
+  bool report_hardware_data_;
   bool report_users_;
-  bool report_hw_status_;
   bool report_crash_info_;
   bool report_app_info_and_activity_;
 };
@@ -356,8 +356,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   struct TestConfig {
     bool report_activity_times;
     bool report_nics;
+    bool report_hardware_data;
     bool report_users;
-    bool report_hw_status;
     bool report_crash_info;
     bool report_app_info_and_activity;
     bool report_dlp_events;
@@ -378,8 +378,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   void ResetTestConfig(bool default_value) {
     setup_config_.report_activity_times = default_value;
     setup_config_.report_nics = default_value;
+    setup_config_.report_hardware_data = default_value;
     setup_config_.report_users = default_value;
-    setup_config_.report_hw_status = default_value;
     setup_config_.report_crash_info = default_value;
     setup_config_.report_app_info_and_activity = default_value;
     setup_config_.report_dlp_events = default_value;
@@ -442,8 +442,8 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     const TestDeviceStatusCollector* status_collector =
         new TestDeviceStatusCollector(
             &local_state_, GetTestConfig().report_activity_times,
-            GetTestConfig().report_nics, GetTestConfig().report_users,
-            GetTestConfig().report_hw_status, GetTestConfig().report_crash_info,
+            GetTestConfig().report_nics, GetTestConfig().report_hardware_data,
+            GetTestConfig().report_users, GetTestConfig().report_crash_info,
             GetTestConfig().report_app_info_and_activity);
     settings_.device_settings()->SetTrustedStatus(
         chromeos::CrosSettingsProvider::TRUSTED);
@@ -556,7 +556,7 @@ class ManagementUIHandlerTests : public TestingBaseClass {
         managed_user.get(), std::move(store), std::move(data_manager),
         base::FilePath() /* component_policy_cache_path */,
         policy::UserCloudPolicyManagerAsh::PolicyEnforcement::kPolicyRequired,
-        base::TimeDelta::FromMinutes(1) /* policy_refresh_timeout */,
+        base::Minutes(1) /* policy_refresh_timeout */,
         base::BindOnce(&ManagementUIHandlerTests::OnFatalError,
                        base::Unretained(this)),
         account_id, task_runner_);
@@ -1020,8 +1020,8 @@ TEST_F(ManagementUIHandlerTests, AllEnabledDeviceReportingInfo) {
   const base::Value info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportActivityTimes, "device activity"},
-      {kManagementReportHardwareStatus, "device statistics"},
-      {kManagementReportNetworkInterfaces, "device"},
+      {kManagementReportNetworkData, "device"},
+      {kManagementReportHardwareData, "device statistics"},
       {kManagementReportCrashReports, "crash report"},
       {kManagementReportAppInfoAndActivity, "app info and activity"},
       {kManagementLogUploadEnabled, "logs"},
@@ -1044,8 +1044,8 @@ TEST_F(ManagementUIHandlerTests,
   const base::Value info = SetUpForReportingInfo();
   const std::map<std::string, std::string> expected_elements = {
       {kManagementReportActivityTimes, "device activity"},
-      {kManagementReportHardwareStatus, "device statistics"},
-      {kManagementReportNetworkInterfaces, "device"},
+      {kManagementReportNetworkData, "device"},
+      {kManagementReportHardwareData, "device statistics"},
       {kManagementReportCrashReports, "crash report"},
       {kManagementReportAppInfoAndActivity, "app info and activity"},
       {kManagementLogUploadEnabled, "logs"},
@@ -1382,47 +1382,4 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   }
 
   EXPECT_EQ(expected_info, *threat_protection_info->FindListKey("info"));
-}
-
-TEST_F(ManagementUIHandlerTests, GetAccountManager) {
-  TestingProfile::Builder builder_managed_user;
-  builder_managed_user.SetProfileName(kUser);
-  builder_managed_user.OverridePolicyConnectorIsManagedForTesting(true);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-  std::unique_ptr<TestingProfileManager> profile_manager =
-      std::make_unique<TestingProfileManager>(
-          TestingBrowserProcess::GetGlobal());
-  ASSERT_TRUE(profile_manager->SetUp());
-  builder_managed_user.SetUserCloudPolicyManagerAsh(BuildCloudPolicyManager());
-#else
-  builder_managed_user.SetUserCloudPolicyManager(BuildCloudPolicyManager());
-#endif
-  auto managed_user = builder_managed_user.Build();
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::UserCloudPolicyManagerAsh* policy_manager =
-      managed_user->GetUserCloudPolicyManagerAsh();
-  policy::MockCloudPolicyStore* mock_store =
-      static_cast<policy::MockCloudPolicyStore*>(
-          policy_manager->core()->store());
-#else
-  policy::UserCloudPolicyManager* policy_manager =
-      managed_user->GetUserCloudPolicyManager();
-  policy::MockUserCloudPolicyStore* mock_store =
-      static_cast<policy::MockUserCloudPolicyStore*>(
-          policy_manager->core()->store());
-#endif
-
-  DCHECK(mock_store);
-  mock_store->policy_ = std::make_unique<enterprise_management::PolicyData>();
-
-  // If no managed_by, then just calculate the domain from the user.
-  EXPECT_FALSE(mock_store->policy_->has_managed_by());
-  EXPECT_EQ(kDomain, handler_.GetAccountManager(managed_user.get()));
-
-  // If managed_by is set, then use that value.
-  mock_store->policy_->set_managed_by(kManager);
-  EXPECT_EQ(kManager, handler_.GetAccountManager(managed_user.get()));
 }

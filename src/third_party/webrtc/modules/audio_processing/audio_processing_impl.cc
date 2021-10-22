@@ -234,9 +234,8 @@ bool AudioProcessingImpl::SubmoduleStates::HighPassFilteringRequired() const {
          noise_suppressor_enabled_;
 }
 
-AudioProcessingImpl::AudioProcessingImpl(const webrtc::Config& config)
-    : AudioProcessingImpl(config,
-                          /*capture_post_processor=*/nullptr,
+AudioProcessingImpl::AudioProcessingImpl()
+    : AudioProcessingImpl(/*capture_post_processor=*/nullptr,
                           /*render_pre_processor=*/nullptr,
                           /*echo_control_factory=*/nullptr,
                           /*echo_detector=*/nullptr,
@@ -245,7 +244,6 @@ AudioProcessingImpl::AudioProcessingImpl(const webrtc::Config& config)
 int AudioProcessingImpl::instance_count_ = 0;
 
 AudioProcessingImpl::AudioProcessingImpl(
-    const webrtc::Config& config,
     std::unique_ptr<CustomProcessing> capture_post_processor,
     std::unique_ptr<CustomProcessing> render_pre_processor,
     std::unique_ptr<EchoControlFactory> echo_control_factory,
@@ -299,23 +297,6 @@ AudioProcessingImpl::AudioProcessingImpl(
   if (!submodules_.echo_detector) {
     submodules_.echo_detector = rtc::make_ref_counted<ResidualEchoDetector>();
   }
-
-#if !(defined(WEBRTC_ANDROID) || defined(WEBRTC_IOS))
-  // TODO(webrtc:5298): Remove once the use of ExperimentalNs has been
-  // deprecated.
-  config_.transient_suppression.enabled = config.Get<ExperimentalNs>().enabled;
-
-  // TODO(webrtc:5298): Remove once the use of ExperimentalAgc has been
-  // deprecated.
-  config_.gain_controller1.analog_gain_controller.enabled =
-      config.Get<ExperimentalAgc>().enabled;
-  config_.gain_controller1.analog_gain_controller.startup_min_volume =
-      config.Get<ExperimentalAgc>().startup_min_volume;
-  config_.gain_controller1.analog_gain_controller.clipped_level_min =
-      config.Get<ExperimentalAgc>().clipped_level_min;
-  config_.gain_controller1.analog_gain_controller.enable_digital_adaptive =
-      !config.Get<ExperimentalAgc>().digital_adaptive_disabled;
-#endif
 
   Initialize();
 }
@@ -1165,13 +1146,15 @@ int AudioProcessingImpl::ProcessCaptureStreamLocked() {
                                 levels.peak, 1, RmsLevel::kMinLevelDb, 64);
   }
 
+  // Detect an analog gain change.
+  int analog_mic_level = recommended_stream_analog_level_locked();
+  const bool analog_mic_level_changed =
+      capture_.prev_analog_mic_level != analog_mic_level &&
+      capture_.prev_analog_mic_level != -1;
+  capture_.prev_analog_mic_level = analog_mic_level;
+
   if (submodules_.echo_controller) {
-    // Detect and flag any change in the analog gain.
-    int analog_mic_level = recommended_stream_analog_level_locked();
-    capture_.echo_path_gain_change =
-        capture_.prev_analog_mic_level != analog_mic_level &&
-        capture_.prev_analog_mic_level != -1;
-    capture_.prev_analog_mic_level = analog_mic_level;
+    capture_.echo_path_gain_change = analog_mic_level_changed;
 
     // Detect and flag any change in the capture level adjustment pre-gain.
     if (submodules_.capture_levels_adjuster) {

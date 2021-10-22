@@ -14,6 +14,7 @@
 #include "ash/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ash/app_list/views/folder_header_view.h"
 #include "ash/app_list/views/folder_header_view_delegate.h"
+#include "ash/app_list/views/paged_apps_grid_view.h"
 #include "base/scoped_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/compositor/throughput_tracker.h"
@@ -36,13 +37,22 @@ class PageSwitcher;
 
 // Displays folder contents via an AppsGridView. App items can be dragged out
 // of the folder to the main apps grid.
-class ASH_EXPORT AppListFolderView : public views::View,
-                                     public FolderHeaderViewDelegate,
-                                     public AppListModelObserver,
-                                     public views::ViewObserver,
-                                     public AppsGridViewFolderDelegate {
+class ASH_EXPORT AppListFolderView
+    : public views::View,
+      public FolderHeaderViewDelegate,
+      public AppListModelObserver,
+      public views::ViewObserver,
+      public AppsGridViewFolderDelegate,
+      public PagedAppsGridView::ContainerDelegate {
  public:
   METADATA_HEADER(AppListFolderView);
+
+  // The maximum number of columns a folder can have.
+  static constexpr int kMaxFolderColumns = 4;
+
+  // When using paged folder item grid, the maximum number of rows a folder
+  // items grid can have.
+  static constexpr int kMaxPagedFolderRows = 4;
 
   AppListFolderView(AppListFolderController* folder_controller,
                     AppsGridView* root_apps_grid_view,
@@ -65,6 +75,10 @@ class ASH_EXPORT AppListFolderView : public views::View,
     virtual bool IsAnimationRunning() = 0;
   };
 
+  // Sets the `AppListConfig` that should be used to configure app list item
+  // size within the folder items grid.
+  void UpdateAppListConfig(const AppListConfig* config);
+
   // Configures AppListFolderView to show the contents for the folder item
   // associated with `folder_item_view`. The folder view will be anchored at
   // `folder_item_view`.
@@ -85,10 +99,13 @@ class ASH_EXPORT AppListFolderView : public views::View,
   // Closes the folder page and goes back the top level page.
   void CloseFolderPage();
 
+  // Focuses the first app item. Does not set the selection or perform a11y
+  // announce if `silently` is true.
+  void FocusFirstItem(bool silently);
+
   // views::View
   void Layout() override;
   void ChildPreferredSizeChanged(View* child) override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // AppListModelObserver
@@ -155,18 +172,36 @@ class ASH_EXPORT AppListFolderView : public views::View,
   void HandleKeyboardReparent(AppListItemView* reparented_view,
                               ui::KeyboardCode key_code) override;
 
-  const AppListConfig& GetAppListConfig() const;
+  // PagedAppsGridView::ContainerDelegate:
+  bool IsPointWithinPageFlipBuffer(const gfx::Point& point) const override;
+  bool IsPointWithinBottomDragBuffer(const gfx::Point& point,
+                                     int page_flip_zone_size) const override;
+
+  const AppListConfig* GetAppListConfig() const;
 
  private:
   // Creates an apps grid view with fixed-size pages.
-  void InitWithPagedAppsGrid(ContentsView* contents_view);
+  void CreatePagedAppsGrid(ContentsView* contents_view);
 
   // Creates a vertically scrollable apps grid view.
-  void InitWithScrollableAppsGrid();
+  void CreateScrollableAppsGrid();
 
   // Returns the compositor associated to the widget containing this view.
   // Returns nullptr if there isn't one associated with this widget.
   ui::Compositor* GetCompositor();
+
+  // Calculates whether the folder would fit in the bounding box if it had the
+  // max allowed number of rows, and condenses the margins between grid items if
+  // this is not the case. The goal is to prevent a portion of folder UI from
+  // getting laid out outside the bounding box. Tile size scaling done for the
+  // top level apps grid should ensure the folder UI reasonably fits within the
+  // bounding box with no item margins. At certain screen sizes, this approach
+  // also fails, but at that point the top level apps grid doesn't work too well
+  // either.
+  // No-op if the productivity launcher is enabled, in which case folder grid is
+  // scrollable, and should handle the case where grid bounds overflow bounding
+  // box size gracefully.
+  void ShrinkGridTileMarginsWhenNeeded();
 
   // Resets the folder view state. Called when the folder view gets hidden (and
   // hide animations finish) to disassociate the folder view with the current
@@ -203,6 +238,8 @@ class ASH_EXPORT AppListFolderView : public views::View,
   AppListModel* const model_;
   AppListViewDelegate* const view_delegate_;
   AppListFolderItem* folder_item_ = nullptr;  // Not owned.
+
+  // The folder item in the root apps grid associated with this folder.
   AppListItemView* folder_item_view_ = nullptr;
 
   // The bounds of the activated folder item icon relative to this view.

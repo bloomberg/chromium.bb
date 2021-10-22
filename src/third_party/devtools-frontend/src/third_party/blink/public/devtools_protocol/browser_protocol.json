@@ -830,7 +830,9 @@
         },
         {
             "domain": "ApplicationCache",
+            "description": "The domain is deprecated as AppCache is being removed (see crbug.com/582750).",
             "experimental": true,
+            "deprecated": true,
             "dependencies": [
                 "Page"
             ],
@@ -1625,6 +1627,30 @@
                     ]
                 },
                 {
+                    "id": "GenericIssueErrorType",
+                    "type": "string",
+                    "enum": [
+                        "CrossOriginPortalPostMessageError"
+                    ]
+                },
+                {
+                    "id": "GenericIssueDetails",
+                    "description": "Depending on the concrete errorType, different properties are set.",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "errorType",
+                            "description": "Issues with the same errorType are aggregated in the frontend.",
+                            "$ref": "GenericIssueErrorType"
+                        },
+                        {
+                            "name": "frameId",
+                            "optional": true,
+                            "$ref": "Page.FrameId"
+                        }
+                    ]
+                },
+                {
                     "id": "InspectorIssueCode",
                     "description": "A unique identifier for the type of issue. Each type may use one of the\noptional fields in InspectorIssueDetails to convey more specific\ninformation about the kind of issue.",
                     "type": "string",
@@ -1641,7 +1667,8 @@
                         "AttributionReportingIssue",
                         "QuirksModeIssue",
                         "NavigatorUserAgentIssue",
-                        "WasmCrossOriginModuleSharingIssue"
+                        "WasmCrossOriginModuleSharingIssue",
+                        "GenericIssue"
                     ]
                 },
                 {
@@ -1713,6 +1740,11 @@
                             "name": "wasmCrossOriginModuleSharingIssue",
                             "optional": true,
                             "$ref": "WasmCrossOriginModuleSharingIssueDetails"
+                        },
+                        {
+                            "name": "genericIssueDetails",
+                            "optional": true,
+                            "$ref": "GenericIssueDetails"
                         }
                     ]
                 },
@@ -10723,6 +10755,7 @@
                         "HeaderDisallowedByPreflightResponse",
                         "RedirectContainsCredentials",
                         "InsecurePrivateNetwork",
+                        "InvalidPrivateNetworkAccess",
                         "NoCorsRedirectModeNotFollow"
                     ]
                 },
@@ -11185,7 +11218,8 @@
                         "SchemefulSameSiteLax",
                         "SchemefulSameSiteUnspecifiedTreatedAsLax",
                         "SamePartyFromCrossPartyContext",
-                        "SamePartyConflictsWithOtherAttributes"
+                        "SamePartyConflictsWithOtherAttributes",
+                        "NameValuePairExceedsMaxSize"
                     ]
                 },
                 {
@@ -11206,7 +11240,8 @@
                         "SchemefulSameSiteStrict",
                         "SchemefulSameSiteLax",
                         "SchemefulSameSiteUnspecifiedTreatedAsLax",
-                        "SamePartyFromCrossPartyContext"
+                        "SamePartyFromCrossPartyContext",
+                        "NameValuePairExceedsMaxSize"
                     ]
                 },
                 {
@@ -13922,6 +13957,46 @@
                     ]
                 },
                 {
+                    "id": "IsolatedElementHighlightConfig",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "isolationModeHighlightConfig",
+                            "description": "A descriptor for the highlight appearance of an element in isolation mode.",
+                            "$ref": "IsolationModeHighlightConfig"
+                        },
+                        {
+                            "name": "nodeId",
+                            "description": "Identifier of the isolated element to highlight.",
+                            "$ref": "DOM.NodeId"
+                        }
+                    ]
+                },
+                {
+                    "id": "IsolationModeHighlightConfig",
+                    "type": "object",
+                    "properties": [
+                        {
+                            "name": "resizerColor",
+                            "description": "The fill color of the resizers (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "resizerHandleColor",
+                            "description": "The fill color for resizer handles (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        },
+                        {
+                            "name": "maskColor",
+                            "description": "The fill color for the mask covering non-isolated elements (default: transparent).",
+                            "optional": true,
+                            "$ref": "DOM.RGBA"
+                        }
+                    ]
+                },
+                {
                     "id": "InspectMode",
                     "type": "string",
                     "enum": [
@@ -14366,6 +14441,20 @@
                             "$ref": "HingeConfig"
                         }
                     ]
+                },
+                {
+                    "name": "setShowIsolatedElements",
+                    "description": "Show elements in isolation mode with overlays.",
+                    "parameters": [
+                        {
+                            "name": "isolatedElementHighlightConfigs",
+                            "description": "An array of node identifiers and descriptors for the highlight appearance.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "IsolatedElementHighlightConfig"
+                            }
+                        }
+                    ]
                 }
             ],
             "events": [
@@ -14513,7 +14602,6 @@
                         "ch-device-memory",
                         "ch-downlink",
                         "ch-ect",
-                        "ch-lang",
                         "ch-prefers-color-scheme",
                         "ch-rtt",
                         "ch-ua",
@@ -14627,7 +14715,8 @@
                         "WrongVersion",
                         "FeatureDisabled",
                         "TokenDisabled",
-                        "FeatureDisabledForUser"
+                        "FeatureDisabledForUser",
+                        "UnknownTrial"
                     ]
                 },
                 {
@@ -15465,6 +15554,8 @@
                         "ContentWebBluetooth",
                         "ContentWebUSB",
                         "ContentMediaSession",
+                        "ContentMediaSessionService",
+                        "ContentMediaPlay",
                         "EmbedderPopupBlockerTabHelper",
                         "EmbedderSafeBrowsingTriggeredPopupBlocker",
                         "EmbedderSafeBrowsingThreatDetails",
@@ -15772,12 +15863,18 @@
                 },
                 {
                     "name": "getAppId",
-                    "description": "Returns the unique (PWA) app id.",
+                    "description": "Returns the unique (PWA) app id.\nOnly returns values if the feature flag 'WebAppEnableManifestId' is enabled",
                     "experimental": true,
                     "returns": [
                         {
                             "name": "appId",
-                            "description": "Only returns a value if the feature flag 'WebAppEnableManifestId' is enabled",
+                            "description": "App id, either from manifest's id attribute or computed from start_url",
+                            "optional": true,
+                            "type": "string"
+                        },
+                        {
+                            "name": "recommendedId",
+                            "description": "Recommendation for manifest's id attribute to match current id computed from start_url",
                             "optional": true,
                             "type": "string"
                         }
@@ -22875,47 +22972,6 @@
                             }
                         }
                     ]
-                },
-                {
-                    "id": "CounterInfo",
-                    "description": "Collected counter information.",
-                    "experimental": true,
-                    "type": "object",
-                    "properties": [
-                        {
-                            "name": "name",
-                            "description": "Counter name.",
-                            "type": "string"
-                        },
-                        {
-                            "name": "value",
-                            "description": "Counter value.",
-                            "type": "integer"
-                        }
-                    ]
-                },
-                {
-                    "id": "RuntimeCallCounterInfo",
-                    "description": "Runtime call counter information.",
-                    "experimental": true,
-                    "type": "object",
-                    "properties": [
-                        {
-                            "name": "name",
-                            "description": "Counter name.",
-                            "type": "string"
-                        },
-                        {
-                            "name": "value",
-                            "description": "Counter value.",
-                            "type": "number"
-                        },
-                        {
-                            "name": "time",
-                            "description": "Counter time in seconds.",
-                            "type": "number"
-                        }
-                    ]
                 }
             ],
             "commands": [
@@ -23038,56 +23094,6 @@
                             "type": "array",
                             "items": {
                                 "$ref": "ScriptTypeProfile"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "enableCounters",
-                    "description": "Enable counters collection.",
-                    "experimental": true
-                },
-                {
-                    "name": "disableCounters",
-                    "description": "Disable counters collection.",
-                    "experimental": true
-                },
-                {
-                    "name": "getCounters",
-                    "description": "Retrieve counters.",
-                    "experimental": true,
-                    "returns": [
-                        {
-                            "name": "result",
-                            "description": "Collected counters information.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "CounterInfo"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "enableRuntimeCallStats",
-                    "description": "Enable run time call stats collection.",
-                    "experimental": true
-                },
-                {
-                    "name": "disableRuntimeCallStats",
-                    "description": "Disable run time call stats collection.",
-                    "experimental": true
-                },
-                {
-                    "name": "getRuntimeCallStats",
-                    "description": "Retrieve run time call stats.",
-                    "experimental": true,
-                    "returns": [
-                        {
-                            "name": "result",
-                            "description": "Collected runtime call counter information.",
-                            "type": "array",
-                            "items": {
-                                "$ref": "RuntimeCallCounterInfo"
                             }
                         }
                     ]

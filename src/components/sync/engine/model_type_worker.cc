@@ -46,7 +46,7 @@ namespace syncer {
 namespace {
 
 const char kTimeUntilEncryptionKeyFoundHistogramPrefix[] =
-    "Sync.ModelTypeTimeUntilEncryptionKeyFound.";
+    "Sync.ModelTypeTimeUntilEncryptionKeyFound2.";
 const char kUndecryptablePendingUpdatesDroppedHistogramPrefix[] =
     "Sync.ModelTypeUndecryptablePendingUpdatesDropped.";
 const char kBlockedByUndecryptableUpdateHistogramName[] =
@@ -170,14 +170,13 @@ bool DecryptPasswordSpecifics(const Cryptographer& cryptographer,
 
 }  // namespace
 
-ModelTypeWorker::ModelTypeWorker(
-    ModelType type,
-    const sync_pb::ModelTypeState& initial_state,
-    Cryptographer* cryptographer,
-    bool encryption_enabled,
-    PassphraseType passphrase_type,
-    NudgeHandler* nudge_handler,
-    CancelationSignal* cancelation_signal)
+ModelTypeWorker::ModelTypeWorker(ModelType type,
+                                 const sync_pb::ModelTypeState& initial_state,
+                                 Cryptographer* cryptographer,
+                                 bool encryption_enabled,
+                                 PassphraseType passphrase_type,
+                                 NudgeHandler* nudge_handler,
+                                 CancelationSignal* cancelation_signal)
     : type_(type),
       cryptographer_(cryptographer),
       nudge_handler_(nudge_handler),
@@ -185,7 +184,7 @@ ModelTypeWorker::ModelTypeWorker(
       model_type_state_(initial_state),
       encryption_enabled_(encryption_enabled),
       passphrase_type_(passphrase_type),
-      min_gu_responses_to_ignore_key_(
+      min_get_updates_to_ignore_key_(
           switches::kMinGuResponsesToIgnoreKey.Get()) {
   DCHECK(cryptographer_);
   DCHECK(!AlwaysEncryptedUserTypes().Has(type_) || encryption_enabled_);
@@ -369,19 +368,10 @@ void ModelTypeWorker::ProcessGetUpdatesResponse(
   // ones. So some encryption keys may no longer fit the definition of unknown.
   RemoveKeysNoLongerUnknown();
 
-  if (!encryption_enabled_ || cryptographer_->CanEncrypt()) {
-    if (!entries_pending_decryption_.empty()) {
-      base::UmaHistogramEnumeration(kBlockedByUndecryptableUpdateHistogramName,
-                                    ModelTypeHistogramValue(type_));
-    }
-
-    // Encryption keys should've been known in this state.
-    for (auto& key_and_info : unknown_encryption_keys_by_name_) {
-      key_and_info.second.gu_responses_while_should_have_been_known++;
-      // If the key is now missing for too long, drop pending updates encrypted
-      // with it. This eventually unblocks a worker having undecryptable data.
-      MaybeDropPendingUpdatesEncryptedWith(key_and_info.first);
-    }
+  if (!entries_pending_decryption_.empty() &&
+      (!encryption_enabled_ || cryptographer_->CanEncrypt())) {
+    base::UmaHistogramEnumeration(kBlockedByUndecryptableUpdateHistogramName,
+                                  ModelTypeHistogramValue(type_));
   }
 }
 
@@ -470,6 +460,18 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   // sync technically isn't done yet but by the time this value is persisted to
   // disk on the model thread it will be.
   model_type_state_.set_initial_sync_done(true);
+
+  if (!entries_pending_decryption_.empty() &&
+      (!encryption_enabled_ || cryptographer_->CanEncrypt())) {
+    DCHECK(BlockForEncryption());
+    for (auto& key_and_info : unknown_encryption_keys_by_name_) {
+      key_and_info.second.get_updates_while_should_have_been_known++;
+      // If the key is now missing for too long, drop pending updates encrypted
+      // with it. This eventually unblocks a worker having undecryptable data.
+      MaybeDropPendingUpdatesEncryptedWith(key_and_info.first);
+    }
+  }
+
   // Download cycle is done, pass all updates to the processor.
   SendPendingUpdatesToProcessorIfReady();
 }
@@ -703,11 +705,11 @@ void ModelTypeWorker::DecryptStoredEntities() {
   for (const UnknownEncryptionKeyInfo& newly_found_key : newly_found_keys) {
     // Don't record UMA for the dominant case where the key was only unknown
     // while the cryptographer was pending external interaction.
-    if (newly_found_key.gu_responses_while_should_have_been_known > 0) {
+    if (newly_found_key.get_updates_while_should_have_been_known > 0) {
       base::UmaHistogramCounts1000(
           base::StrCat({kTimeUntilEncryptionKeyFoundHistogramPrefix,
                         ModelTypeToHistogramSuffix(type_)}),
-          newly_found_key.gu_responses_while_should_have_been_known);
+          newly_found_key.get_updates_while_should_have_been_known);
     }
   }
 }
@@ -804,8 +806,8 @@ bool ModelTypeWorker::ShouldIgnoreUpdatesEncryptedWith(
     return false;
   }
   if (unknown_encryption_keys_by_name_.at(key_name)
-          .gu_responses_while_should_have_been_known <
-      min_gu_responses_to_ignore_key_) {
+          .get_updates_while_should_have_been_known <
+      min_get_updates_to_ignore_key_) {
     return false;
   }
   return base::FeatureList::IsEnabled(

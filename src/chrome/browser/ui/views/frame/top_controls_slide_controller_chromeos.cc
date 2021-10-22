@@ -155,6 +155,10 @@ class TopControlsSlideTabObserver
       permission_manager->AddObserver(this);
   }
 
+  TopControlsSlideTabObserver(const TopControlsSlideTabObserver&) = delete;
+  TopControlsSlideTabObserver& operator=(const TopControlsSlideTabObserver&) =
+      delete;
+
   ~TopControlsSlideTabObserver() override {
     auto* permission_manager =
         permissions::PermissionRequestManager::FromWebContents(web_contents());
@@ -268,8 +272,6 @@ class TopControlsSlideTabObserver
   // right before the final layout of the BrowserView.
   // https://crbug.com/885223.
   bool shrink_renderer_size_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(TopControlsSlideTabObserver);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -697,7 +699,7 @@ void TopControlsSlideControllerChromeOS::Refresh() {
 
   for (auto* layer : layers) {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
+    settings.SetTransitionDuration(base::Milliseconds(0));
     settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
     layer->SetTransform(trans);

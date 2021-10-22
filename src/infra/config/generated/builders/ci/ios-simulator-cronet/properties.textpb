@@ -1,7 +1,7 @@
 {
   "$build/chromium_tests": {
     "project_trigger_overrides": {
-      "chromium": "chromium-m95"
+      "chromium": "chromium-m96"
     }
   },
   "$build/goma": {
@@ -13,9 +13,6 @@
     "devshell": true,
     "git_auth": true
   },
-  "$recipe_engine/isolated": {
-    "server": "https://isolateserver.appspot.com"
-  },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
     "grouping_keys": [
@@ -24,5 +21,5 @@
     ]
   },
   "recipe": "chromium",
-  "xcode_build_version": "13a5212g"
+  "xcode_build_version": "13a233"
 }

@@ -24,6 +24,11 @@ class MediaEngagementSession;
 
 class MediaEngagementContentsObserver : public content::WebContentsObserver {
  public:
+  MediaEngagementContentsObserver(const MediaEngagementContentsObserver&) =
+      delete;
+  MediaEngagementContentsObserver& operator=(
+      const MediaEngagementContentsObserver&) = delete;
+
   ~MediaEngagementContentsObserver() override;
 
   // WebContentsObserver implementation.
@@ -142,13 +147,14 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
    public:
     explicit PlaybackTimer(base::Clock*);
 
+    PlaybackTimer(const PlaybackTimer&) = delete;
+    PlaybackTimer& operator=(const PlaybackTimer&) = delete;
+
     void Start();
     void Stop();
     bool IsRunning() const;
     base::TimeDelta Elapsed() const;
     void Reset();
-
-    DISALLOW_COPY_AND_ASSIGN(PlaybackTimer);
 
    private:
     // The clock is owned by |service_| which already owns |this|.
@@ -161,8 +167,13 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // A structure containing all the information we have about a player's state.
   struct PlayerState {
     explicit PlayerState(base::Clock*);
-    ~PlayerState();
+
+    PlayerState(const PlayerState&) = delete;
+    PlayerState& operator=(const PlayerState&) = delete;
+
     PlayerState(PlayerState&&);
+
+    ~PlayerState();
 
     absl::optional<bool> muted;
     absl::optional<bool> playing;           // Currently playing.
@@ -181,8 +192,6 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
 
     bool reached_end_of_stream = false;
     std::unique_ptr<PlaybackTimer> playback_timer;
-
-    DISALLOW_COPY_AND_ASSIGN(PlayerState);
   };
   std::map<content::MediaPlayerId, PlayerState> player_states_;
   PlayerState& GetPlayerState(const content::MediaPlayerId& id);
@@ -250,8 +259,6 @@ class MediaEngagementContentsObserver : public content::WebContentsObserver {
   // may be shared by other instances if they are part of the same session. It
   // willl be null if it is not part of a session.
   scoped_refptr<MediaEngagementSession> session_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaEngagementContentsObserver);
 };
 
 #endif  // CHROME_BROWSER_MEDIA_MEDIA_ENGAGEMENT_CONTENTS_OBSERVER_H_

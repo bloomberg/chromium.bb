@@ -35,6 +35,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/memories_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -46,6 +47,8 @@
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {
+
+constexpr char kIsHistoryClustersVisibleKey[] = "isHistoryClustersVisible";
 
 constexpr char kIsUserSignedInKey[] = "isUserSignedIn";
 
@@ -125,19 +128,28 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 
   // History clusters
   source->AddBoolean("isHistoryClustersEnabled",
-                     base::FeatureList::IsEnabled(history_clusters::kMemories));
-  source->AddBoolean("isHistoryClustersDebug",
-                     base::FeatureList::IsEnabled(history_clusters::kDebug));
+                     base::FeatureList::IsEnabled(history_clusters::kJourneys));
+  source->AddBoolean(
+      kIsHistoryClustersVisibleKey,
+      profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible));
+  source->AddBoolean(
+      "isHistoryClustersDebug",
+      base::FeatureList::IsEnabled(history_clusters::kUserVisibleDebug));
 
-  // TODO(crbug.com/1173908): Replace these with localized strings.
-  source->AddString("headerTitle", u"Based on activity related to \"$1\"");
-  source->AddString("historyClustersMenuItem", u"Journeys");
-  source->AddString("relatedSearchesLabel", u"Related:");
-  source->AddString("removeAllFromHistory", u"Remove Journey from history");
-  source->AddString("removeFromHistoryToast", u"Item removed");
-  source->AddString("savedInTabGroup", u"Saved in tab group");
-  source->AddString("toggleButtonLabelLess", u"Show less");
-  source->AddString("toggleButtonLabelMore", u"Show more");
+  static constexpr webui::LocalizedString kHistoryClustersStrings[] = {
+      {"disableHistoryClusters", IDS_HISTORY_CLUSTERS_DISABLE_MENU_ITEM_LABEL},
+      {"enableHistoryClusters", IDS_HISTORY_CLUSTERS_ENABLE_MENU_ITEM_LABEL},
+      {"headerText", IDS_HISTORY_CLUSTERS_HEADER_TEXT},
+      {"historyClustersTabLabel", IDS_HISTORY_CLUSTERS_JOURNEYS_TAB_LABEL},
+      {"historyListTabLabel", IDS_HISTORY_CLUSTERS_LIST_TAB_LABEL},
+      {"relatedSearchesHeader", IDS_HISTORY_CLUSTERS_RELATED_SEARCHES_HEADER},
+      {"removeAllFromHistory", IDS_HISTORY_CLUSTERS_REMOVE_ALL_ITEMS},
+      {"removeFromHistoryToast", IDS_HISTORY_CLUSTERS_REMOVE_ITEM_TOAST},
+      {"savedInTabGroup", IDS_HISTORY_CLUSTERS_SAVED_IN_TABGROUP_LABEL},
+      {"toggleButtonLabelLess", IDS_HISTORY_CLUSTERS_SHOW_LESS_BUTTON_LABEL},
+      {"toggleButtonLabelMore", IDS_HISTORY_CLUSTERS_SHOW_MORE_BUTTON_LABEL},
+  };
+  source->AddLocalizedStrings(kHistoryClustersStrings);
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kHistoryResources, kHistoryResourcesSize),
@@ -158,6 +170,11 @@ HistoryUI::HistoryUI(content::WebUI* web_ui)
   content::WebUIDataSource* data_source = CreateHistoryUIHTMLSource(profile);
   ManagedUIHandler::Initialize(web_ui, data_source);
   content::WebUIDataSource::Add(profile, data_source);
+
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(history_clusters::prefs::kVisible,
+                             base::BindRepeating(&HistoryUI::UpdateDataSource,
+                                                 base::Unretained(this)));
 
   web_ui->AddMessageHandler(std::make_unique<webui::NavigationHandler>());
   auto browsing_history_handler = std::make_unique<BrowsingHistoryHandler>();
@@ -204,8 +221,12 @@ void HistoryUI::UpdateDataSource() {
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  std::unique_ptr<base::DictionaryValue> update(new base::DictionaryValue);
+  std::unique_ptr<base::DictionaryValue> update =
+      std::make_unique<base::DictionaryValue>();
   update->SetBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
+  update->SetBoolean(
+      kIsHistoryClustersVisibleKey,
+      profile->GetPrefs()->GetBoolean(history_clusters::prefs::kVisible));
 
   content::WebUIDataSource::Update(profile, chrome::kChromeUIHistoryHost,
                                    std::move(update));

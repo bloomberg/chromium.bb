@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "build/build_config.h"
 #include "core/fxcodec/cfx_codec_memory.h"
@@ -124,8 +125,8 @@ class JpegDecoder final : public ScanlineDecoder {
               bool ColorTransform);
 
   // ScanlineDecoder:
-  bool v_Rewind() override;
-  uint8_t* v_GetNextLine() override;
+  bool Rewind() override;
+  pdfium::span<uint8_t> GetNextLine() override;
   uint32_t GetSrcOffset() override;
 
   bool InitDecode(bool bAcceptKnownBadHeader);
@@ -135,7 +136,7 @@ class JpegDecoder final : public ScanlineDecoder {
   jpeg_error_mgr m_Jerr;
   jpeg_source_mgr m_Src;
   pdfium::span<const uint8_t> m_SrcSpan;
-  std::unique_ptr<uint8_t, FxFreeDeleter> m_pScanlineBuf;
+  std::vector<uint8_t, FxAllocAllocator<uint8_t>> m_ScanlineBuf;
   bool m_bInited = false;
   bool m_bStarted = false;
   bool m_bJpegTransform = false;
@@ -175,6 +176,9 @@ JpegDecoder::JpegDecoder() {
 JpegDecoder::~JpegDecoder() {
   if (m_bInited)
     jpeg_destroy_decompress(&m_Cinfo);
+
+  // Span in superclass can't outlive our buffer.
+  m_pLastScanline = pdfium::span<uint8_t>();
 }
 
 bool JpegDecoder::InitDecode(bool bAcceptKnownBadHeader) {
@@ -262,14 +266,14 @@ bool JpegDecoder::Create(pdfium::span<const uint8_t> src_span,
     return false;
 
   CalcPitch();
-  m_pScanlineBuf.reset(FX_Alloc(uint8_t, m_Pitch));
+  m_ScanlineBuf = std::vector<uint8_t, FxAllocAllocator<uint8_t>>(m_Pitch);
   m_nComps = m_Cinfo.num_components;
   m_bpc = 8;
   m_bStarted = false;
   return true;
 }
 
-bool JpegDecoder::v_Rewind() {
+bool JpegDecoder::Rewind() {
   if (m_bStarted) {
     jpeg_destroy_decompress(&m_Cinfo);
     if (!InitDecode(/*bAcceptKnownBadHeader=*/false)) {
@@ -294,13 +298,16 @@ bool JpegDecoder::v_Rewind() {
   return true;
 }
 
-uint8_t* JpegDecoder::v_GetNextLine() {
+pdfium::span<uint8_t> JpegDecoder::GetNextLine() {
   if (setjmp(m_JmpBuf) == -1)
-    return nullptr;
+    return pdfium::span<uint8_t>();
 
-  uint8_t* row_array[] = {m_pScanlineBuf.get()};
+  uint8_t* row_array[] = {m_ScanlineBuf.data()};
   int nlines = jpeg_read_scanlines(&m_Cinfo, row_array, 1);
-  return nlines > 0 ? m_pScanlineBuf.get() : nullptr;
+  if (nlines <= 0)
+    return pdfium::span<uint8_t>();
+
+  return m_ScanlineBuf;
 }
 
 uint32_t JpegDecoder::GetSrcOffset() {
@@ -463,7 +470,7 @@ bool JpegModule::JpegEncode(const RetainPtr<CFX_DIBBase>& pSource,
   JSAMPROW row_pointer[1];
   JDIMENSION row;
   while (cinfo.next_scanline < cinfo.image_height) {
-    const uint8_t* src_scan = pSource->GetScanline(cinfo.next_scanline);
+    const uint8_t* src_scan = pSource->GetScanline(cinfo.next_scanline).data();
     if (nComponents > 1) {
       uint8_t* dest_scan = line_buf;
       if (nComponents == 3) {

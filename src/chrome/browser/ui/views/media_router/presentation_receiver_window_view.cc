@@ -72,6 +72,9 @@ class FullscreenWindowObserver : public aura::WindowObserver {
     window_observation_.Observe(observed_window);
   }
 
+  FullscreenWindowObserver(const FullscreenWindowObserver&) = delete;
+  FullscreenWindowObserver& operator=(const FullscreenWindowObserver&) = delete;
+
   ~FullscreenWindowObserver() override = default;
 
  private:
@@ -99,8 +102,6 @@ class FullscreenWindowObserver : public aura::WindowObserver {
 
   base::ScopedObservation<aura::Window, aura::WindowObserver>
       window_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FullscreenWindowObserver);
 };
 
 #endif
@@ -349,6 +350,10 @@ void PresentationReceiverWindowView::UpdateExclusiveAccessExitBubbleContent(
 
   exclusive_access_bubble_ = std::make_unique<ExclusiveAccessBubbleViews>(
       this, url, bubble_type, std::move(bubble_first_hide_callback));
+}
+
+bool PresentationReceiverWindowView::IsExclusiveAccessBubbleDisplayed() const {
+  return exclusive_access_bubble_ && exclusive_access_bubble_->IsShowing();
 }
 
 void PresentationReceiverWindowView::OnExclusiveAccessUserInput() {}

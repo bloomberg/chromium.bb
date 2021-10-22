@@ -514,6 +514,11 @@ void InstallableManager::CleanupAndStartNextTask() {
   // |valid_manifest_| shouldn't be re-used across tasks because its state is
   // dependent on current task's |params|.
   valid_manifest_ = std::make_unique<ValidManifestProperty>();
+  if (manifest_->error == NO_MANIFEST || manifest_->error == MANIFEST_EMPTY) {
+    valid_manifest_->fetched = true;
+    valid_manifest_->is_valid = false;
+  }
+
   task_queue_.Next();
   WorkOnTask();
 }
@@ -718,11 +723,6 @@ bool InstallableManager::IsManifestValidForWebApp(
 void InstallableManager::CheckServiceWorker() {
   DCHECK(!worker_->fetched);
   DCHECK(!blink::IsEmptyManifest(manifest()));
-  // Service workers need a StorageKey (storage partitioning key), since we only
-  // install for top-level frames we can assume the StorageKey will always be in
-  // a 1P context. DCHECK this just to be sure.
-  DCHECK(GetWebContents() &&
-         GetWebContents()->GetMainFrame()->GetParent() == nullptr);
 
   if (!service_worker_context_)
     return;
@@ -1024,6 +1024,6 @@ bool InstallableManager::has_worker() {
   return worker_->has_worker;
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(InstallableManager)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(InstallableManager);
 
 }  // namespace webapps

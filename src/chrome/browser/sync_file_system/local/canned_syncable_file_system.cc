@@ -175,6 +175,9 @@ class WriteHelper {
                                       base::GenerateGUID(),
                                       blob_data)) {}
 
+  WriteHelper(const WriteHelper&) = delete;
+  WriteHelper& operator=(const WriteHelper&) = delete;
+
   ~WriteHelper() = default;
 
   ScopedTextBlob* scoped_text_blob() const { return blob_data_.get(); }
@@ -197,8 +200,6 @@ class WriteHelper {
   int64_t bytes_written_;
   std::unique_ptr<storage::BlobStorageContext> blob_storage_context_;
   std::unique_ptr<ScopedTextBlob> blob_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(WriteHelper);
 };
 
 void DidGetUsageAndQuota(storage::StatusCallback callback,
@@ -465,7 +466,7 @@ File::Error CannedSyncableFileSystem::DeleteFileSystem() {
   return RunOnThread<File::Error>(
       io_task_runner_.get(), FROM_HERE,
       base::BindOnce(&FileSystemContext::DeleteFileSystem, file_system_context_,
-                     url::Origin::Create(origin_), type_));
+                     blink::StorageKey(url::Origin::Create(origin_)), type_));
 }
 
 blink::mojom::QuotaStatusCode CannedSyncableFileSystem::GetUsageAndQuota(

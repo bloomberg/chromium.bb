@@ -64,6 +64,11 @@ class PlatformSensorChromeOSTestBase {
     sensor_device_->SetChannelsEnabledWithId(receiver_id_, {0}, false);
   }
 
+  void OnSensorDeviceDisconnect(uint32_t custom_reason_code,
+                                const std::string& description) {
+    custom_reason_code_ = custom_reason_code;
+  }
+
   std::unique_ptr<chromeos::sensors::FakeSensorDevice> sensor_device_;
   std::unique_ptr<FakePlatformSensorProvider> provider_;
   scoped_refptr<PlatformSensorChromeOS> sensor_;
@@ -72,6 +77,8 @@ class PlatformSensorChromeOSTestBase {
   mojo::Remote<chromeos::sensors::mojom::SensorDevice> sensor_device_remote_;
   mojo::PendingReceiver<chromeos::sensors::mojom::SensorDevice>
       pending_receiver_;
+
+  absl::optional<uint32_t> custom_reason_code_;
 
   base::test::SingleThreadTaskEnvironment task_environment;
 };
@@ -88,7 +95,11 @@ class PlatformSensorChromeOSOneChannelTest
 
     sensor_ = base::MakeRefCounted<PlatformSensorChromeOS>(
         kFakeDeviceId, type, provider_->GetSensorReadingBuffer(type),
-        provider_.get(), kScaleValue, std::move(sensor_device_remote_));
+        provider_.get(),
+        base::BindOnce(
+            &PlatformSensorChromeOSOneChannelTest::OnSensorDeviceDisconnect,
+            base::Unretained(this)),
+        kScaleValue, std::move(sensor_device_remote_));
 
     EXPECT_EQ(sensor_->GetReportingMode(),
               type == mojom::SensorType::AMBIENT_LIGHT
@@ -125,7 +136,7 @@ class PlatformSensorChromeOSOneChannelTest
   void GetRoundedSensorReadingSingle(SensorReadingSingle* reading_single) {
     reading_single->value = kFakeSampleData * kScaleValue;
     reading_single->timestamp =
-        base::TimeDelta::FromNanoseconds(kFakeTimestampData).InSecondsF();
+        base::Nanoseconds(kFakeTimestampData).InSecondsF();
 
     // No need to do rounding for these types of sensors.
   }
@@ -189,7 +200,10 @@ TEST_P(PlatformSensorChromeOSOneChannelTest, GetSamples) {
   base::RunLoop().RunUntilIdle();
   // No reading updated.
 
-  sensor_device_->ResetObserverRemote(receiver_id_);
+  sensor_device_->ResetObserverRemoteWithReason(
+      receiver_id_,
+      chromeos::sensors::mojom::SensorDeviceDisconnectReason::DEVICE_REMOVED,
+      "Device was removed");
 
   base::RunLoop loop;
   // Wait until the disconnect arrives at |sensor_|.
@@ -197,6 +211,10 @@ TEST_P(PlatformSensorChromeOSOneChannelTest, GetSamples) {
       .WillOnce(base::test::RunOnceClosure(loop.QuitClosure()));
   loop.Run();
 
+  EXPECT_EQ(
+      custom_reason_code_,
+      static_cast<uint32_t>(chromeos::sensors::mojom::
+                                SensorDeviceDisconnectReason::DEVICE_REMOVED));
   sensor_->RemoveClient(client.get());
 }
 
@@ -256,6 +274,9 @@ class PlatformSensorChromeOSAxesTest
 
     sensor_ = base::MakeRefCounted<PlatformSensorChromeOS>(
         kFakeDeviceId, type, provider_->GetSensorReadingBuffer(type), nullptr,
+        base::BindOnce(
+            &PlatformSensorChromeOSAxesTest::OnSensorDeviceDisconnect,
+            base::Unretained(this)),
         kScaleValue, std::move(sensor_device_remote_));
 
     EXPECT_EQ(sensor_->GetReportingMode(), mojom::ReportingMode::CONTINUOUS);
@@ -296,8 +317,7 @@ class PlatformSensorChromeOSAxesTest
     reading_xyz->x = kFakeAxesSampleData[0] * kScaleValue;
     reading_xyz->y = kFakeAxesSampleData[1] * kScaleValue;
     reading_xyz->z = kFakeAxesSampleData[2] * kScaleValue;
-    reading_xyz->timestamp =
-        base::TimeDelta::FromNanoseconds(kFakeTimestampData).InSecondsF();
+    reading_xyz->timestamp = base::Nanoseconds(kFakeTimestampData).InSecondsF();
 
     switch (GetParam().first) {
       case mojom::SensorType::ACCELEROMETER:

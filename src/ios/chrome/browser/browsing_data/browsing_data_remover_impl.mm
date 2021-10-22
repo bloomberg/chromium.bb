@@ -49,6 +49,8 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/language/url_language_histogram_factory.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
+#import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_remover_helper.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -417,7 +419,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_PASSWORDS)) {
     base::RecordAction(base::UserMetricsAction("ClearBrowsingData_Passwords"));
     password_manager::PasswordStoreInterface* password_store =
-        IOSChromePasswordStoreFactory::GetInterfaceForBrowserState(
+        IOSChromePasswordStoreFactory::GetForBrowserState(
             browser_state_, ServiceAccessType::EXPLICIT_ACCESS)
             .get();
 
@@ -482,8 +484,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
         ExternalFileRemoverFactory::GetForBrowserState(browser_state_);
     if (external_file_remover) {
       external_file_remover->RemoveAfterDelay(
-          base::TimeDelta::FromSeconds(0),
-          CreatePendingTaskCompletionClosure());
+          base::Seconds(0), CreatePendingTaskCompletionClosure());
     }
   }
 
@@ -622,6 +623,10 @@ void BrowsingDataRemoverImpl::NotifyRemovalComplete() {
           ios::AccountConsistencyServiceFactory::GetForBrowserState(
               browser_state_)) {
     account_consistency_service->OnBrowsingDataRemoved();
+  }
+  if (OptimizationGuideService* optimization_guide_service =
+          OptimizationGuideServiceFactory::GetForBrowserState(browser_state_)) {
+    optimization_guide_service->OnBrowsingDataRemoved();
   }
 
   {

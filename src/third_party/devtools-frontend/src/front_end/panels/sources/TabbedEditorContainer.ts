@@ -236,11 +236,10 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
         SourceFrame.SourcesTextEditor.Events.SelectionChanged, this.selectionChanged, this);
   }
 
-  private scrollChanged(event: Common.EventTarget.EventTargetEvent): void {
+  private scrollChanged({data: lineNumber}: Common.EventTarget.EventTargetEvent<number>): void {
     if (this.scrollTimer) {
       clearTimeout(this.scrollTimer);
     }
-    const lineNumber = (event.data as number);
     this.scrollTimer = window.setTimeout(saveHistory.bind(this), 100);
     if (this.currentFileInternal) {
       this.history.updateScrollLineNumber(this.currentFileInternal.url(), lineNumber);
@@ -251,8 +250,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
     }
   }
 
-  private selectionChanged(event: Common.EventTarget.EventTargetEvent): void {
-    const range = (event.data as TextUtils.TextRange.TextRange);
+  private selectionChanged({data: range}: Common.EventTarget.EventTargetEvent<TextUtils.TextRange.TextRange>): void {
     if (this.currentFileInternal) {
       this.history.updateSelectionRange(this.currentFileInternal.url(), range);
     }
@@ -471,7 +469,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
       this.restoreEditorProperties(view, savedSelectionRange, savedScrollLineNumber);
     }
 
-    this.tabbedPane.appendTab(tabId, title, view, tooltip, userGesture, undefined, index);
+    this.tabbedPane.appendTab(tabId, title, view, tooltip, userGesture, undefined, undefined, index);
 
     this.updateFileTitle(uiSourceCode);
     this.addUISourceCodeListeners(uiSourceCode);
@@ -511,10 +509,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
     }
   }
 
-  private tabClosed(event: Common.EventTarget.EventTargetEvent): void {
-    const tabId = (event.data.tabId as string);
-    const userGesture = (event.data.isUserGesture as boolean);
-
+  private tabClosed(event: Common.EventTarget.EventTargetEvent<UI.TabbedPane.EventData>): void {
+    const {tabId, isUserGesture} = event.data;
     const uiSourceCode = this.files.get(tabId);
     if (this.currentFileInternal === uiSourceCode) {
       this.removeViewListeners();
@@ -531,19 +527,18 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper<Ev
 
       this.dispatchEventToListeners(Events.EditorClosed, uiSourceCode);
 
-      if (userGesture) {
+      if (isUserGesture) {
         this.editorClosedByUserAction(uiSourceCode);
       }
     }
   }
 
-  private tabSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const tabId = (event.data.tabId as string);
-    const userGesture = (event.data.isUserGesture as boolean);
+  private tabSelected(event: Common.EventTarget.EventTargetEvent<UI.TabbedPane.EventData>): void {
+    const {tabId, isUserGesture} = event.data;
 
     const uiSourceCode = this.files.get(tabId);
     if (uiSourceCode) {
-      this.innerShowFile(uiSourceCode, userGesture);
+      this.innerShowFile(uiSourceCode, isUserGesture);
     }
   }
 

@@ -166,6 +166,10 @@ class GetResult {
   GetResult(network::mojom::URLResponseHeadPtr response, int result)
       : response_(std::move(response)), result_(result) {}
   GetResult(GetResult&& other) : result_(other.result_) {}
+
+  GetResult(const GetResult&) = delete;
+  GetResult& operator=(const GetResult&) = delete;
+
   ~GetResult() = default;
 
   std::string GetResponseHeaderByName(const std::string& name) const {
@@ -180,8 +184,6 @@ class GetResult {
  private:
   network::mojom::URLResponseHeadPtr response_;
   int result_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetResult);
 };
 
 }  // namespace
@@ -689,7 +691,6 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
   // TODO(lazyboy): The behavior is probably incorrect.
   {
     TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
-    base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
     ASSERT_TRUE(base::MakeFileUnreadable(file_path));
     EXPECT_EQ(net::ERR_ACCESS_DENIED,
               DoRequestOrLoad(extension, kEmptyJs).result());
@@ -702,7 +703,6 @@ TEST_F(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
   // TODO(lazyboy): The behavior is probably incorrect.
   {
     TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
-    base::FilePath file_path = unzipped_path.AppendASCII(kEmptyJs);
     ASSERT_TRUE(base::DieFileDie(file_path, false));
     EXPECT_EQ(net::ERR_FILE_NOT_FOUND,
               DoRequestOrLoad(extension, kEmptyJs).result());

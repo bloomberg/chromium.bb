@@ -62,6 +62,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
+#include "sandbox/policy/features.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
@@ -74,9 +75,9 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/net/dhcp_wpad_url_client.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -221,6 +222,10 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
     DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
+  URLLoaderFactoryForSystem(const URLLoaderFactoryForSystem&) = delete;
+  URLLoaderFactoryForSystem& operator=(const URLLoaderFactoryForSystem&) =
+      delete;
+
   // mojom::URLLoaderFactory implementation:
 
   void CreateLoaderAndStart(
@@ -261,8 +266,6 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 
   SEQUENCE_CHECKER(sequence_checker_);
   SystemNetworkContextManager* manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForSystem);
 };
 
 network::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
@@ -465,6 +468,12 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif
 
   registry->RegisterListPref(prefs::kExplicitlyAllowedNetworkPorts);
+
+#if defined(OS_WIN)
+  registry->RegisterBooleanPref(
+      prefs::kNetworkServiceSandboxEnabled,
+      sandbox::policy::features::IsNetworkSandboxEnabled());
+#endif  // defined(OS_WIN)
 }
 
 // static
@@ -738,6 +747,19 @@ SystemNetworkContextManager::GetNetExportFileWriter() {
   return net_export_file_writer_.get();
 }
 
+// static
+bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
+#if defined(OS_WIN)
+  auto* local_state = g_browser_process->local_state();
+  if (local_state &&
+      local_state->HasPrefPath(prefs::kNetworkServiceSandboxEnabled)) {
+    return local_state->GetBoolean(prefs::kNetworkServiceSandboxEnabled);
+  }
+#endif  // defined(OS_WIN)
+  // If no policy is specified, then delegate to global sandbox configuration.
+  return sandbox::policy::features::IsNetworkSandboxEnabled();
+}
+
 void SystemNetworkContextManager::FlushSSLConfigManagerForTesting() {
   ssl_config_service_manager_->FlushForTesting();
 }
@@ -774,8 +796,6 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   // TODO(mmenke): Set up parameters here (in memory cookie store, etc).
   network::mojom::NetworkContextParamsPtr network_context_params =
       CreateDefaultNetworkContextParams();
-
-  network_context_params->context_name = std::string("system");
 
   network_context_params->enable_referrers = enable_referrers_.GetValue();
 

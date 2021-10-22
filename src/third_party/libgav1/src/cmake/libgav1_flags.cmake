@@ -259,5 +259,18 @@ macro(libgav1_set_test_flags)
   if(LIBGAV1_ENABLE_TESTS)
     set(LIBGAV1_TEST_CXX_FLAGS ${LIBGAV1_CXX_FLAGS})
     list(FILTER LIBGAV1_TEST_CXX_FLAGS EXCLUDE REGEX "-Wframe-larger-than")
+
+    if(NOT CMAKE_CXX_COMPILER_ID STREQUAL CMAKE_C_COMPILER_ID)
+      message(
+        FATAL_ERROR
+          "C/CXX compiler mismatch (${CMAKE_C_COMPILER_ID} vs"
+          " ${CMAKE_CXX_COMPILER_ID})! Compiler flags are only tested using"
+          " CMAKE_CXX_COMPILER, rerun cmake with CMAKE_C_COMPILER set to the"
+          " C compiler from the same package as CMAKE_CXX_COMPILER to ensure"
+          " the build completes successfully.")
+    endif()
+    set(LIBGAV1_TEST_C_FLAGS ${LIBGAV1_TEST_CXX_FLAGS})
+    list(FILTER LIBGAV1_TEST_C_FLAGS EXCLUDE REGEX
+         "-fvisibility-inlines-hidden")
   endif()
 endmacro()

@@ -32,6 +32,11 @@ class AuthenticatorSheetModelBase
  public:
   explicit AuthenticatorSheetModelBase(
       AuthenticatorRequestDialogModel* dialog_model);
+
+  AuthenticatorSheetModelBase(const AuthenticatorSheetModelBase&) = delete;
+  AuthenticatorSheetModelBase& operator=(const AuthenticatorSheetModelBase&) =
+      delete;
+
   ~AuthenticatorSheetModelBase() override;
 
   AuthenticatorRequestDialogModel* dialog_model() const {
@@ -61,8 +66,6 @@ class AuthenticatorSheetModelBase
 
  private:
   AuthenticatorRequestDialogModel* dialog_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticatorSheetModelBase);
 };
 
 // The sheet shown for selecting the transport over which the security key
@@ -284,29 +287,6 @@ class AuthenticatorAndroidAccessorySheetModel
   std::u16string GetStepTitle() const override;
   std::u16string GetStepDescription() const override;
   ui::MenuModel* GetOtherMechanismsMenuModel() override;
-
-  std::unique_ptr<OtherMechanismsMenuModel> other_mechanisms_menu_model_;
-};
-
-class AuthenticatorPaaskV2SheetModel : public AuthenticatorSheetModelBase {
- public:
-  explicit AuthenticatorPaaskV2SheetModel(
-      AuthenticatorRequestDialogModel* dialog_model);
-  ~AuthenticatorPaaskV2SheetModel() override;
-
- private:
-  // AuthenticatorSheetModelBase:
-  bool IsBackButtonVisible() const override;
-  bool IsActivityIndicatorVisible() const override;
-  const gfx::VectorIcon& GetStepIllustration(
-      ImageColorScheme color_scheme) const override;
-  std::u16string GetStepTitle() const override;
-  std::u16string GetStepDescription() const override;
-  ui::MenuModel* GetOtherMechanismsMenuModel() override;
-  bool IsAcceptButtonVisible() const override;
-  bool IsAcceptButtonEnabled() const override;
-  std::u16string GetAcceptButtonLabel() const override;
-  void OnAccept() override;
 
   std::unique_ptr<OtherMechanismsMenuModel> other_mechanisms_menu_model_;
 };

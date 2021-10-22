@@ -38,6 +38,10 @@ class InstallableManager
       public content::WebContentsUserData<InstallableManager> {
  public:
   explicit InstallableManager(content::WebContents* web_contents);
+
+  InstallableManager(const InstallableManager&) = delete;
+  InstallableManager& operator=(const InstallableManager&) = delete;
+
   ~InstallableManager() override;
 
   // Returns the minimum icon size in pixels for a site to be installable.
@@ -146,19 +150,21 @@ class InstallableManager
 
   struct IconProperty {
     IconProperty();
+
+    // This class contains a std::unique_ptr and therefore must be move-only.
+    IconProperty(const IconProperty&) = delete;
+    IconProperty& operator=(const IconProperty&) = delete;
+
     IconProperty(IconProperty&& other);
-    ~IconProperty();
     IconProperty& operator=(IconProperty&& other);
+
+    ~IconProperty();
 
     InstallableStatusCode error;
     IconPurpose purpose;
     GURL url;
     std::unique_ptr<SkBitmap> icon;
     bool fetched;
-
-   private:
-    // This class contains a std::unique_ptr and therefore must be move-only.
-    DISALLOW_COPY_AND_ASSIGN(IconProperty);
   };
 
   // Returns true if an icon for the given usage is fetched successfully, or
@@ -283,8 +289,6 @@ class InstallableManager
   base::WeakPtrFactory<InstallableManager> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(InstallableManager);
 };
 
 }  // namespace webapps

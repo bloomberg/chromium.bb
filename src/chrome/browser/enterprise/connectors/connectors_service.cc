@@ -48,7 +48,14 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "components/user_manager/user.h"
 #include "extensions/common/constants.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/policy/core/common/cloud/affiliation.h"
+#include "components/policy/core/common/policy_loader_lacros.h"
 #endif
 
 namespace enterprise_connectors {
@@ -75,6 +82,9 @@ void PopulateDeviceMetadata(const ReportingSettings& reporting_settings,
   auto* manager = profile->GetUserCloudPolicyManagerAsh();
   if (manager && manager->core() && manager->core()->client())
     client_id = manager->core()->client()->client_id();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(crbug.com/1252802): Add the client ID for LaCrOS.
+  std::string client_id = "";
 #else
   std::string client_id =
       policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
@@ -98,6 +108,38 @@ bool IsURLExemptFromAnalysis(const GURL& url) {
 
   return false;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// Returns the single main profile, or nullptr if none is found.
+Profile* GetMainProfile() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return nullptr;
+  auto profiles = g_browser_process->profile_manager()->GetLoadedProfiles();
+  const auto main_it = base::ranges::find_if(
+      profiles, [](Profile* profile) { return profile->IsMainProfile(); });
+  if (main_it == profiles.end())
+    return nullptr;
+  return *main_it;
+}
+
+bool IsMainUserAffiliated() {
+  const enterprise_management::PolicyData* policy =
+      policy::PolicyLoaderLacros::main_user_policy_data();
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosService::Get()->init_params();
+  if (policy && !policy->user_affiliation_ids().empty() && init_params &&
+      init_params->device_properties &&
+      init_params->device_properties->device_affiliation_ids.has_value()) {
+    const auto& user_ids = policy->user_affiliation_ids();
+    const auto& device_ids =
+        init_params->device_properties->device_affiliation_ids.value();
+    return policy::IsAffiliated({user_ids.begin(), user_ids.end()},
+                                {device_ids.begin(), device_ids.end()});
+  }
+  return false;
+}
+#endif
 
 }  // namespace
 
@@ -358,7 +400,6 @@ std::vector<std::string> ConnectorsService::GetAnalysisServiceProviderNames(
   return connectors_manager_->GetAnalysisServiceProviderNames(connector);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
 std::string ConnectorsService::GetManagementDomain() {
   if (!ConnectorsEnabled())
     return std::string();
@@ -384,6 +425,18 @@ std::string ConnectorsService::GetManagementDomain() {
   if (!scope.has_value())
     return std::string();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  return chrome::GetAccountManagerIdentity(
+             Profile::FromBrowserContext(context_))
+      .value_or(std::string());
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // In LaCros it's always managed by main profile policy.
+  const enterprise_management::PolicyData* policy =
+      policy::PolicyLoaderLacros::main_user_policy_data();
+  if (policy && policy->has_managed_by())
+    return policy->managed_by();
+  return std::string();
+#else
   if (scope.value() == policy::PolicyScope::POLICY_SCOPE_USER) {
     return chrome::GetAccountManagerIdentity(
                Profile::FromBrowserContext(context_))
@@ -400,8 +453,8 @@ std::string ConnectorsService::GetManagementDomain() {
   return (store && store->has_policy())
              ? gaia::ExtractDomainName(store->policy()->username())
              : std::string();
-}
 #endif
+}
 
 absl::optional<std::string> ConnectorsService::GetDMTokenForRealTimeUrlCheck()
     const {
@@ -449,9 +502,8 @@ ConnectorsService::DmToken::~DmToken() = default;
 
 absl::optional<ConnectorsService::DmToken> ConnectorsService::GetDmToken(
     const char* scope_pref) const {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // On CrOS, the device must be affiliated to use the DM token for
-  // scanning/reporting so we always use the browser DM token.
+#if defined(OS_CHROMEOS)
+  // On CrOS the settings from primary profile applies to all profiles.
   return GetBrowserDmToken();
 #else
   return GetPolicyScope(scope_pref) == policy::POLICY_SCOPE_USER
@@ -471,14 +523,16 @@ ConnectorsService::GetBrowserDmToken() const {
   return DmToken(dm_token.value(), policy::POLICY_SCOPE_MACHINE);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
 absl::optional<ConnectorsService::DmToken>
 ConnectorsService::GetProfileDmToken() const {
   if (!CanUseProfileDmToken())
     return absl::nullopt;
 
+  Profile* profile = Profile::FromBrowserContext(context_);
+
   policy::UserCloudPolicyManager* policy_manager =
-      Profile::FromBrowserContext(context_)->GetUserCloudPolicyManager();
+      profile->GetUserCloudPolicyManager();
   if (!policy_manager || !policy_manager->IsClientRegistered())
     return absl::nullopt;
 
@@ -487,15 +541,16 @@ ConnectorsService::GetProfileDmToken() const {
 }
 
 bool ConnectorsService::CanUseProfileDmToken() const {
+  Profile* profile = Profile::FromBrowserContext(context_);
+
   // If the browser isn't managed by CBCM, then the profile DM token can be
   // used.
   if (!policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid())
     return true;
 
-  return chrome::enterprise_util::IsProfileAffiliated(
-      Profile::FromBrowserContext(context_));
+  return chrome::enterprise_util::IsProfileAffiliated(profile);
 }
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // !defined(OS_CHROMEOS)
 
 policy::PolicyScope ConnectorsService::GetPolicyScope(
     const char* scope_pref) const {
@@ -519,8 +574,16 @@ std::unique_ptr<ClientMetadata> ConnectorsService::BuildClientMetadata() {
   if (!reporting_settings.has_value())
     return nullptr;
 
-  bool include_device_info = !reporting_settings.value().per_profile;
   Profile* profile = Profile::FromBrowserContext(context_);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  const bool include_device_info = user && user->IsAffiliated();
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  const bool include_device_info = IsMainUserAffiliated();
+#else
+  const bool include_device_info = !reporting_settings.value().per_profile;
+#endif
 
   auto metadata = std::make_unique<ClientMetadata>(
       reporting::GetContextAsClientMetadata(profile));
@@ -566,6 +629,22 @@ KeyedService* ConnectorsServiceFactory::BuildServiceInstanceFor(
 
 content::BrowserContext* ConnectorsServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
+  // On Chrome OS, settings from the primary/main profile apply to all
+  // profiles, besides incognito.
+  // However, the primary/main profile might not exist in tests - then the
+  // provided |context| is still used.
+  if (context && !context->IsOffTheRecord() &&
+      !Profile::FromBrowserContext(context)->AsTestingProfile()) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
+    if (primary_profile)
+      return primary_profile;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+    Profile* main_profile = GetMainProfile();
+    if (main_profile)
+      return main_profile;
+#endif
+  }
   return context;
 }
 

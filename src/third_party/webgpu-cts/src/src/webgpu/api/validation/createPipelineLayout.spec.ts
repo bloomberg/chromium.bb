@@ -117,4 +117,27 @@ g.test('bind_group_layouts,device_mismatch')
     { layout0Mismatched: true, layout1Mismatched: false },
     { layout0Mismatched: false, layout1Mismatched: true },
   ])
-  .unimplemented();
+  .fn(async t => {
+    const { layout0Mismatched, layout1Mismatched } = t.params;
+
+    const mismatched = layout0Mismatched || layout1Mismatched;
+
+    if (mismatched) {
+      await t.selectMismatchedDeviceOrSkipTestCase(undefined);
+    }
+
+    const bglDescriptor: GPUBindGroupLayoutDescriptor = {
+      entries: [],
+    };
+
+    const layout0 = layout0Mismatched
+      ? t.mismatchedDevice.createBindGroupLayout(bglDescriptor)
+      : t.device.createBindGroupLayout(bglDescriptor);
+    const layout1 = layout1Mismatched
+      ? t.mismatchedDevice.createBindGroupLayout(bglDescriptor)
+      : t.device.createBindGroupLayout(bglDescriptor);
+
+    t.expectValidationError(() => {
+      t.device.createPipelineLayout({ bindGroupLayouts: [layout0, layout1] });
+    }, mismatched);
+  });

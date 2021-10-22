@@ -35,12 +35,19 @@ class MachineCertificateUploaderImpl : public MachineCertificateUploader {
   MachineCertificateUploaderImpl(policy::CloudPolicyClient* policy_client,
                                  AttestationFlow* attestation_flow);
 
+  MachineCertificateUploaderImpl(const MachineCertificateUploaderImpl&) =
+      delete;
+  MachineCertificateUploaderImpl& operator=(
+      const MachineCertificateUploaderImpl&) = delete;
+
   ~MachineCertificateUploaderImpl() override;
 
   // Sets the retry limit in number of tries; useful in testing.
-  void set_retry_limit(int limit) { retry_limit_ = limit; }
+  void set_retry_limit_for_testing(int limit) { retry_limit_ = limit; }
   // Sets the retry delay in seconds; useful in testing.
-  void set_retry_delay(int retry_delay) { retry_delay_ = retry_delay; }
+  void set_retry_delay_for_testing(int retry_delay) {
+    retry_delay_ = retry_delay;
+  }
 
   using UploadCallback =
       base::OnceCallback<void(bool /*certificate_uploaded*/)>;
@@ -112,8 +119,6 @@ class MachineCertificateUploaderImpl : public MachineCertificateUploader {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<MachineCertificateUploaderImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MachineCertificateUploaderImpl);
 };
 
 }  // namespace attestation

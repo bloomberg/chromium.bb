@@ -56,6 +56,7 @@ import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsP
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.components.browser_ui.site_settings.R;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
+import org.chromium.components.browser_ui.site_settings.SingleCategorySettings.AutoDarkSiteSettingObserver;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.TriStateSiteSettingsPreference;
@@ -92,6 +93,17 @@ import java.util.concurrent.TimeoutException;
 public class SiteSettingsTest {
     public static final String SITE_SETTINGS_BATCH_NAME = "site_settings";
 
+    static class TestAutoDarkObserver implements AutoDarkSiteSettingObserver {
+        public boolean mDefaultValue;
+        @Override
+        public void onDefaultValueChanged(boolean isEnabled) {
+            mDefaultValue = isEnabled;
+        }
+
+        @Override
+        public void onSiteExceptionChanged(boolean isAdded) {}
+    }
+
     @ClassRule
     public static PermissionTestRule mPermissionRule = new PermissionTestRule(true);
 
@@ -114,7 +126,7 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             for (int t = 0; t < SiteSettingsCategory.Type.NUM_ENTRIES; t++) {
                 if (SiteSettingsCategory.contentSettingsType(t) >= 0) {
-                    WebsitePreferenceBridge.setContentSetting(getBrowserContextHandle(),
+                    WebsitePreferenceBridge.setDefaultContentSetting(getBrowserContextHandle(),
                             SiteSettingsCategory.contentSettingsType(t),
                             ContentSettingValues.DEFAULT);
                 }
@@ -1151,6 +1163,55 @@ public class SiteSettingsTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
+    public void testAllowAutoDark() {
+        TestAutoDarkObserver observer = new TestAutoDarkObserver();
+        SingleCategorySettings.setAutoDarkSiteSettingsObserver(observer);
+
+        doTestSiteSettingPermissions("AutoDarkWebContent",
+                SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT,
+                ContentSettingsType.AUTO_DARK_WEB_CONTENT, true);
+
+        Assert.assertTrue("Auto dark should be enabled.", observer.mDefaultValue);
+        SingleCategorySettings.setAutoDarkSiteSettingsObserver(null);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockAutoDark() {
+        TestAutoDarkObserver observer = new TestAutoDarkObserver();
+        observer.mDefaultValue = true;
+        SingleCategorySettings.setAutoDarkSiteSettingsObserver(observer);
+
+        doTestSiteSettingPermissions("AutoDarkWebContent",
+                SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT,
+                ContentSettingsType.AUTO_DARK_WEB_CONTENT, false);
+
+        Assert.assertFalse("Auto dark should be disabled.", observer.mDefaultValue);
+        SingleCategorySettings.setAutoDarkSiteSettingsObserver(null);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowRequestDesktopSite() {
+        doTestSiteSettingPermissions("RequestDesktopSite",
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                ContentSettingsType.REQUEST_DESKTOP_SITE, true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockRequestDesktopSite() {
+        doTestSiteSettingPermissions("RequestDesktopSite",
+                SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE,
+                ContentSettingsType.REQUEST_DESKTOP_SITE, false);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
     @DisableIf.
     Build(message = "Flaky, see crbug.com/1170671", sdk_is_less_than = Build.VERSION_CODES.Q)
     public void testEmbargoedNotificationSiteSettings() throws Exception {
@@ -1205,9 +1266,9 @@ public class SiteSettingsTest {
                 "exampleToBlock.com", "/chrome/test/data/notifications/notification_tester.html");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            WebsitePreferenceBridgeJni.get().setSettingForOrigin(getBrowserContextHandle(),
-                    ContentSettingsType.NOTIFICATIONS, urlToBlock, urlToBlock,
-                    ContentSettingValues.BLOCK);
+            WebsitePreferenceBridgeJni.get().setPermissionSettingForOrigin(
+                    getBrowserContextHandle(), ContentSettingsType.NOTIFICATIONS, urlToBlock,
+                    urlToBlock, ContentSettingValues.BLOCK);
         });
 
         final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(

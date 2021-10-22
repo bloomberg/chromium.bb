@@ -15,7 +15,7 @@ import androidx.annotation.Nullable;
  *
  * Should only be called on the UI thread.
  */
-public interface SurfaceScopeDependencyProvider extends FeedLoggingDependencyProvider {
+public interface SurfaceScopeDependencyProvider {
     /** Returns the activity. */
     @Nullable
     default Activity getActivity() {
@@ -171,4 +171,9 @@ public interface SurfaceScopeDependencyProvider extends FeedLoggingDependencyPro
      * @param observer An Object returned by |addHeaderOffsetObserver|.
      */
     default void removeHeaderOffsetObserver(SurfaceHeaderOffsetObserver observer) {}
+
+    /** Returns whether or not activity logging should be enabled. */
+    default boolean isActivityLoggingEnabled() {
+        return false;
+    }
 }

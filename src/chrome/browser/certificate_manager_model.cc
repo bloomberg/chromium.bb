@@ -58,8 +58,6 @@ using content::BrowserThread;
 //                                               NssCertDatabaseGetter
 //                                                         |
 //                               CertificateManagerModel::DidGetCertDBOnIOThread
-//                                                         |
-//                                       crypto::IsTPMTokenEnabledForNSS
 //                  v--------------------------------------/
 // CertificateManagerModel::DidGetCertDBOnUIThread
 //                  |
@@ -96,6 +94,10 @@ class CertificateManagerModel::CertsSource {
   // certificates provided by this CertsSource changes.
   explicit CertsSource(base::RepeatingClosure certs_source_updated_callback)
       : certs_source_updated_callback_(certs_source_updated_callback) {}
+
+  CertsSource(const CertsSource&) = delete;
+  CertsSource& operator=(const CertsSource&) = delete;
+
   virtual ~CertsSource() = default;
 
   // Returns the CertInfos provided by this CertsSource.
@@ -173,8 +175,6 @@ class CertificateManagerModel::CertsSource {
   // If true, the CertificateManagerModel should be holding back update
   // notifications.
   bool hold_back_updates_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(CertsSource);
 };
 
 namespace {
@@ -189,6 +189,10 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource,
     // Observe CertDatabase changes to refresh when it's updated.
     cert_database_observation_.Observe(net::CertDatabase::GetInstance());
   }
+
+  CertsSourcePlatformNSS(const CertsSourcePlatformNSS&) = delete;
+  CertsSourcePlatformNSS& operator=(const CertsSourcePlatformNSS&) = delete;
+
   ~CertsSourcePlatformNSS() override = default;
 
   // net::CertDatabase::Observer
@@ -277,8 +281,6 @@ class CertsSourcePlatformNSS : public CertificateManagerModel::CertsSource,
       cert_database_observation_{this};
 
   base::WeakPtrFactory<CertsSourcePlatformNSS> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CertsSourcePlatformNSS);
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -305,6 +307,9 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
         mode_(mode) {
     policy_certs_provider_->AddPolicyProvidedCertsObserver(this);
   }
+
+  CertsSourcePolicy(const CertsSourcePolicy&) = delete;
+  CertsSourcePolicy& operator=(const CertsSourcePolicy&) = delete;
 
   ~CertsSourcePolicy() override {
     policy_certs_provider_->RemovePolicyProvidedCertsObserver(this);
@@ -377,8 +382,6 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
 
   chromeos::PolicyCertificateProvider* policy_certs_provider_;
   Mode mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(CertsSourcePolicy);
 };
 
 // Provides certificates made available by extensions through the
@@ -391,6 +394,9 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
       : CertsSource(certs_source_updated_callback),
         certificate_provider_service_(std::move(certificate_provider_service)) {
   }
+
+  CertsSourceExtensions(const CertsSourceExtensions&) = delete;
+  CertsSourceExtensions& operator=(const CertsSourceExtensions&) = delete;
 
   void Refresh() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -445,8 +451,6 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
   std::unique_ptr<chromeos::CertificateProvider> certificate_provider_service_;
 
   base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CertsSourceExtensions);
 };
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

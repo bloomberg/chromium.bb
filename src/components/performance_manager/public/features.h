@@ -16,28 +16,6 @@
 namespace performance_manager {
 namespace features {
 
-// The feature that gates the TabLoadingFrameNavigationPolicy, and its
-// mechanism counterpart the TabLoadingFrameNavigationScheduler.
-extern const base::Feature kTabLoadingFrameNavigationThrottles;
-
-// Parameters controlling the TabLoadingFrameNavigationThrottles feature.
-struct TabLoadingFrameNavigationThrottlesParams {
-  TabLoadingFrameNavigationThrottlesParams();
-  ~TabLoadingFrameNavigationThrottlesParams();
-
-  static TabLoadingFrameNavigationThrottlesParams GetParams();
-
-  // The minimum and maximum amount of time throttles will be applied to
-  // non-primary content frames.
-  base::TimeDelta minimum_throttle_timeout;
-  base::TimeDelta maximum_throttle_timeout;
-
-  // The multiple of elapsed time from navigation start until
-  // FirstContentfulPaint (FCP) that is used in calculating the timeout to apply
-  // to the throttles.
-  double fcp_multiple;
-};
-
 // The feature that gates whether or not the PM runs on the main (UI) thread.
 extern const base::Feature kRunOnMainThread;
 
@@ -121,7 +99,7 @@ class BFCachePerformanceManagerPolicyParams {
       false};
 
   // The back forward cache should be flushed after the tab goes to background
-  // and elapses this delay. If the value is minus (such as -1), the back
+  // and elapses this delay. If the value is negative (such as -1), the back
   // forward cache in the background tabs will not be flushed.
   static constexpr base::FeatureParam<int> kDelayToFlushBackgroundTabInSeconds{
       &features::kBFCachePerformanceManagerPolicy,

@@ -5,6 +5,7 @@
 #include "extensions/browser/api/declarative_net_request/file_sequence_helper.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <set>
 #include <utility>
 
@@ -39,17 +40,19 @@ namespace {
 namespace dnr_api = extensions::api::declarative_net_request;
 
 // A class to help in indexing multiple rulesets.
-// TODO(kzar): Look into either combining this with the separate IndexHelper
-//             class, or rename that other class to InstallIndexHelper.
+// TODO(crbug.com/1254680): Look into unifying this with the InstallIndexHelper
+//                          class, moving any differing logic to the clients.
 class IndexHelper : public base::RefCountedThreadSafe<IndexHelper> {
  public:
   using IndexCallback = base::OnceCallback<void(LoadRequestData)>;
   IndexHelper(LoadRequestData data, IndexCallback callback)
       : data_(std::move(data)), callback_(std::move(callback)) {}
 
+  IndexHelper(const IndexHelper&) = delete;
+  IndexHelper& operator=(const IndexHelper&) = delete;
+
   // Starts indexing rulesets. Must be called on the extension file task runner.
-  void Start(
-      RulesetSource::InvalidRuleParseBehavior invalid_rule_parse_behavior) {
+  void Start(uint8_t parse_flags) {
     DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
     std::vector<RulesetInfo*> rulesets_to_index;
@@ -71,8 +74,8 @@ class IndexHelper : public base::RefCountedThreadSafe<IndexHelper> {
     for (RulesetInfo* ruleset : rulesets_to_index) {
       auto callback = base::BindOnce(&IndexHelper::OnIndexCompleted, this,
                                      ruleset, barrier_closure);
-      ruleset->source().IndexAndPersistJSONRuleset(
-          &decoder_, invalid_rule_parse_behavior, std::move(callback));
+      ruleset->source().IndexAndPersistJSONRuleset(&decoder_, parse_flags,
+                                                   std::move(callback));
     }
   }
 
@@ -137,8 +140,6 @@ class IndexHelper : public base::RefCountedThreadSafe<IndexHelper> {
   // We use a single shared Data Decoder service instance to process all of the
   // rulesets for this IndexHelper.
   data_decoder::DataDecoder decoder_;
-
-  DISALLOW_COPY_AND_ASSIGN(IndexHelper);
 };
 
 UpdateDynamicRulesStatus GetUpdateDynamicRuleStatus(LoadRulesetResult result) {
@@ -264,8 +265,10 @@ bool UpdateAndIndexDynamicRules(const FileBackedRulesetSource& source,
   }
 
   // Index rules.
-  ParseInfo info = source.IndexRules(
-      std::move(new_rules), RulesetSource::InvalidRuleParseBehavior::kError);
+  auto parse_flags = RulesetSource::kRaiseErrorOnInvalidRules |
+                     RulesetSource::kRaiseWarningOnLargeRegexRules;
+  ParseInfo info = source.IndexRules(std::move(new_rules), parse_flags);
+
   if (info.has_error()) {
     *error = info.error();
     *status = UpdateDynamicRulesStatus::kErrorInvalidRules;
@@ -274,16 +277,15 @@ bool UpdateAndIndexDynamicRules(const FileBackedRulesetSource& source,
 
   // Treat rules which exceed the regex memory limit as errors if these are new
   // rules. Just surface an error for the first such rule.
-  for (int rule_id : info.regex_limit_exceeded_rules()) {
-    if (!base::Contains(rule_ids_to_add, rule_id)) {
+  for (auto warning : info.rule_ignored_warnings()) {
+    if (!base::Contains(rule_ids_to_add, warning.rule_id)) {
       // Any rule added earlier which is ignored now (say due to exceeding the
       // regex memory limit), will be silently ignored.
       // TODO(crbug.com/1050780): Notify the extension about the same.
       continue;
     }
 
-    *error = ErrorUtils::FormatErrorMessage(
-        kErrorRegexTooLarge, base::NumberToString(rule_id), kRegexFilterKey);
+    *error = warning.message;
     *status = UpdateDynamicRulesStatus::kErrorRegexTooLarge;
     return false;
   }
@@ -406,8 +408,7 @@ void FileSequenceHelper::LoadRulesets(
   // indexing these rulesets now.
 
   // Ignore invalid static rules during deferred indexing or while re-indexing.
-  auto invalid_rule_parse_behavior =
-      RulesetSource::InvalidRuleParseBehavior::kIgnore;
+  auto parse_flags = RulesetSource::kNone;
 
   // Using a WeakPtr is safe since `index_callback` will be called on this
   // sequence itself.
@@ -417,7 +418,7 @@ void FileSequenceHelper::LoadRulesets(
 
   auto index_helper = base::MakeRefCounted<IndexHelper>(
       std::move(load_data), std::move(index_callback));
-  index_helper->Start(invalid_rule_parse_behavior);
+  index_helper->Start(parse_flags);
 }
 
 void FileSequenceHelper::UpdateDynamicRules(

@@ -51,7 +51,7 @@
 #include "third_party/base/span.h"
 
 #ifdef PDF_ENABLE_V8
-#include "fxjs/cfx_v8.h"
+#include "fxjs/cfx_v8_array_buffer_allocator.h"
 #include "third_party/base/no_destructor.h"
 #endif
 
@@ -1063,9 +1063,10 @@ FPDF_GetNamedDestByName(FPDF_DOCUMENT document, FPDF_BYTESTRING name) {
 
 #ifdef PDF_ENABLE_V8
 FPDF_EXPORT const char* FPDF_CALLCONV FPDF_GetRecommendedV8Flags() {
-  // Use interpreted JS only to avoid RWX pages in our address space.
-  // Reduce exposure since no PDF should contain web assembly.
-  return "--jitless --no-expose-wasm";
+  // Use interpreted JS only to avoid RWX pages in our address space. Also,
+  // --jitless implies --no-expose-wasm, which reduce exposure since no PDF
+  // should contain web assembly.
+  return "--jitless";
 }
 
 FPDF_EXPORT void* FPDF_CALLCONV FPDF_GetArrayBufferAllocatorSharedInstance() {

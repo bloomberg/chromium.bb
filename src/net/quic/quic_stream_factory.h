@@ -110,6 +110,10 @@ enum AllActiveSessionsGoingAwayReason {
 class NET_EXPORT_PRIVATE QuicStreamRequest {
  public:
   explicit QuicStreamRequest(QuicStreamFactory* factory);
+
+  QuicStreamRequest(const QuicStreamRequest&) = delete;
+  QuicStreamRequest& operator=(const QuicStreamRequest&) = delete;
+
   ~QuicStreamRequest();
 
   // |cert_verify_flags| is bitwise OR'd of CertVerifier::VerifyFlags and it is
@@ -193,8 +197,6 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   bool expect_on_host_resolution_;
   // Callback passed to WaitForHostResolution().
   CompletionOnceCallback host_resolution_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamRequest);
 };
 
 // A factory for fetching QuicChromiumClientSessions.
@@ -246,6 +248,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicContext* context);
+
+  QuicStreamFactory(const QuicStreamFactory&) = delete;
+  QuicStreamFactory& operator=(const QuicStreamFactory&) = delete;
+
   ~QuicStreamFactory() override;
 
   // Returns true if there is an existing session for |session_key| or if the
@@ -618,8 +624,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   const bool use_network_isolation_key_for_crypto_configs_;
 
   base::WeakPtrFactory<QuicStreamFactory> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QuicStreamFactory);
 };
 
 }  // namespace net

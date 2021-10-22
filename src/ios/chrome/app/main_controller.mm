@@ -214,6 +214,12 @@ class MainControllerAuthenticationServiceDelegate
   MainControllerAuthenticationServiceDelegate(
       ChromeBrowserState* browser_state,
       id<BrowsingDataCommands> dispatcher);
+
+  MainControllerAuthenticationServiceDelegate(
+      const MainControllerAuthenticationServiceDelegate&) = delete;
+  MainControllerAuthenticationServiceDelegate& operator=(
+      const MainControllerAuthenticationServiceDelegate&) = delete;
+
   ~MainControllerAuthenticationServiceDelegate() override;
 
   // AuthenticationServiceDelegate implementation.
@@ -222,8 +228,6 @@ class MainControllerAuthenticationServiceDelegate
  private:
   ChromeBrowserState* browser_state_ = nullptr;
   __weak id<BrowsingDataCommands> dispatcher_ = nil;
-
-  DISALLOW_COPY_AND_ASSIGN(MainControllerAuthenticationServiceDelegate);
 };
 
 MainControllerAuthenticationServiceDelegate::
@@ -372,6 +376,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize isColdStart = _isColdStart;
 @synthesize appLaunchTime = _appLaunchTime;
 @synthesize isFirstRun = _isFirstRun;
+@synthesize didFinishLaunchingTime = _didFinishLaunchingTime;
+@synthesize firstSceneConnectionTime = _firstSceneConnectionTime;
 
 #pragma mark - Application lifecycle
 
@@ -720,7 +726,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)activateFirstUserActionRecorderWithBackgroundTime:
     (NSTimeInterval)backgroundTime {
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(backgroundTime);
+  base::TimeDelta delta = base::Seconds(backgroundTime);
   _firstUserActionRecorder.reset(new FirstUserActionRecorder(delta));
 }
 
@@ -1076,9 +1082,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     // performance.
     ExternalFileRemoverFactory::GetForBrowserState(
         self.appState.mainBrowserState)
-        ->RemoveAfterDelay(
-            base::TimeDelta::FromSeconds(kExternalFilesCleanupDelaySeconds),
-            base::OnceClosure());
+        ->RemoveAfterDelay(base::Seconds(kExternalFilesCleanupDelaySeconds),
+                           base::OnceClosure());
   }
 }
 

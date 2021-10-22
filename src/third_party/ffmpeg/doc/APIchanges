@@ -14,6 +14,38 @@ libavutil:     2021-04-27
 
 API changes, most recent first:
 
+2021-09-08 - xxxxxxxxxx - lavu 57.5.100 - hwcontext_d3d11va.h
+  Add AVD3D11VAFramesContext.texture_infos
+
+2021-09-06 - xxxxxxxxxx - lsws 6.1.100 - swscale.h
+  Add AVFrame-based scaling API:
+    - sws_scale_frame()
+    - sws_frame_start()
+    - sws_frame_end()
+    - sws_send_slice()
+    - sws_receive_slice()
+    - sws_receive_slice_alignment()
+
+2021-09-02 - xxxxxxxxxx - lavc 59.7.100 - avcodec.h
+  Incremented the number of elements of AVCodecParser.codec_ids to seven.
+
+2021-08-24 - xxxxxxxxxx - lavc 59.6.100 - avcodec.h
+  Add FF_CODEC_PROPERTY_FILM_GRAIN
+
+2021-08-20 - xxxxxxxxxx - lavfi 8.3.100 - avfilter.H
+  Add avfilter_filter_pad_count() as a replacement for avfilter_pad_count().
+  Deprecate avfilter_pad_count().
+
+2021-08-17 - xxxxxxxxxx - lavu 57.4.101 - opt.h
+  av_opt_copy() now guarantees that allocated src and dst options
+  don't alias each other even on error.
+
+2021-08-14 - xxxxxxxxxx - lavu 57.4.100 - imgutils.h
+  Add av_image_copy_plane_uc_from()
+
+2021-08-02 - xxxxxxxxxx - lavc 59.4.100 - packet.h
+  Add AVPacket.opaque, AVPacket.opaque_ref, AVPacket.time_base.
+
 2021-07-23 - xxxxxxxxxx - lavu 57.3.100 - common.h macros.h
   Move several macros (AV_NE, FFDIFFSIGN, FFMAX, FFMAX3, FFMIN, FFMIN3,
   FFSWAP, FF_ARRAY_ELEMS, MKTAG, MKBETAG) from common.h to macros.h.

@@ -575,13 +575,6 @@ void WASAPIAudioInputStream::Stop() {
       __func__, min_timestamp_diff_.InMillisecondsF(),
       max_timestamp_diff_.InMillisecondsF());
 
-  const bool monotonic_timestamps =
-      min_timestamp_diff_ >= base::TimeDelta::FromMicroseconds(1);
-  base::UmaHistogramBoolean("Media.Audio.Capture.Win.MonotonicTimestamps",
-                            monotonic_timestamps);
-  SendLogMessage("%s => (Media.Audio.Capture.Win.MonotonicTimestamps=%s)",
-                 __func__, monotonic_timestamps ? "true" : "false");
-
   started_ = false;
   sink_ = nullptr;
 }
@@ -895,13 +888,12 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     base::TimeTicks capture_time;
     if (!timestamp_error_was_detected) {
       // Use the latest |capture_time_100ns| since it is marked as valid.
-      capture_time +=
-          base::TimeDelta::FromMicroseconds(capture_time_100ns / 10.0);
+      capture_time += base::Microseconds(capture_time_100ns / 10.0);
     }
     if (capture_time <= last_capture_time_) {
       // Latest |capture_time_100ns| can't be trusted. Ensure a monotonic time-
       // stamp sequence by adding one microsecond to the latest timestamp.
-      capture_time = last_capture_time_ + base::TimeDelta::FromMicroseconds(1);
+      capture_time = last_capture_time_ + base::Microseconds(1);
     }
 
     // Keep track of max and min time difference between two successive time-
@@ -1629,14 +1621,12 @@ void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
       __func__, total_glitches_, total_lost_frames_, lost_frames_ms);
   if (total_glitches_ != 0) {
     UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.LostFramesInMs",
-                             base::TimeDelta::FromMilliseconds(lost_frames_ms));
+                             base::Milliseconds(lost_frames_ms));
     int64_t largest_glitch_ms =
         (largest_glitch_frames_ * 1000) / input_format_.Format.nSamplesPerSec;
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Media.Audio.Capture.LargestGlitchMs",
-        base::TimeDelta::FromMilliseconds(largest_glitch_ms),
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
-        50);
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Capture.LargestGlitchMs",
+                               base::Milliseconds(largest_glitch_ms),
+                               base::Milliseconds(1), base::Minutes(1), 50);
   }
 
   // TODO(https://crbug.com/825744): It can be possible to replace
@@ -1645,14 +1635,9 @@ void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
                              num_data_discontinuity_warnings_);
   SendLogMessage("%s => (discontinuity warnings=[%" PRIu64 "])", __func__,
                  num_data_discontinuity_warnings_);
-  base::UmaHistogramCounts1M("Media.Audio.Capture.Win.TimestampErrors",
-                             num_timestamp_errors_);
   SendLogMessage("%s => (timstamp errors=[%" PRIu64 "])", __func__,
                  num_timestamp_errors_);
   if (num_timestamp_errors_ > 0) {
-    base::UmaHistogramLongTimes(
-        "Media.Audio.Capture.Win.TimeUntilFirstTimestampError",
-        time_until_first_timestamp_error_);
     SendLogMessage("%s => (time until first timestamp error=[%" PRId64 " ms])",
                    __func__,
                    time_until_first_timestamp_error_.InMilliseconds());

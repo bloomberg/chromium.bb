@@ -5,6 +5,7 @@
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -30,7 +31,7 @@ namespace {
 base::TimeTicks g_last_reshape_failure = base::TimeTicks();
 
 NOINLINE void CheckForLoopFailuresBufferQueue() {
-  const auto threshold = base::TimeDelta::FromSeconds(1);
+  const auto threshold = base::Seconds(1);
   auto now = base::TimeTicks::Now();
   if (!g_last_reshape_failure.is_null() &&
       now - g_last_reshape_failure < threshold) {
@@ -226,6 +227,7 @@ void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
   submitted_image_ = nullptr;
   displayed_image_ = nullptr;
   available_images_.clear();
+  primary_plane_waiting_on_paint_ = true;
 }
 
 bool SkiaOutputDeviceBufferQueue::IsPrimaryPlaneOverlay() const {
@@ -518,9 +520,11 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   }
 
 #if defined(USE_OZONE)
+  std::set<gpu::Mailbox> released_solid_color_overlays;
   for (const auto& mailbox : overlay_mailboxes) {
     auto it = solid_color_images_.find(mailbox);
     if (it != solid_color_images_.end()) {
+      released_solid_color_overlays.insert(mailbox);
       solid_color_cache_.insert(
           std::make_pair(it->second.first, std::move(it->second.second)));
       solid_color_images_.erase(it);
@@ -540,21 +544,38 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   }
 #endif
 
+  std::vector<gpu::Mailbox> released_overlays;
+  auto on_overlay_release =
+#if defined(OS_APPLE)
+      [&released_overlays](const OverlayData& overlay) {
+        // Right now, only macOS needs to return maliboxes of released
+        // overlays, so SkiaRenderer can unlock resources for them.
+        released_overlays.push_back(overlay.mailbox());
+      };
+#elif defined(USE_OZONE)
+      [&released_overlays,
+       &released_solid_color_overlays](const OverlayData& overlay) {
+        // Delegated compositing on Ozone needs to return mailboxes of released
+        // overlays, so SkiaRenderer can unlock resources for them. However, the
+        // solid color buffers originating in this class and should not
+        // propagate up to SkiaRenderer.
+        if (released_solid_color_overlays.find(overlay.mailbox()) ==
+            released_solid_color_overlays.end()) {
+          released_overlays.push_back(overlay.mailbox());
+        }
+      };
+#else
+      [](const OverlayData& overlay) {};
+#endif
+
   // Go through backings of all overlays, and release overlay backings which are
   // not used.
-  std::vector<gpu::Mailbox> released_overlays;
-  base::EraseIf(overlays_, [&released_overlays](auto& overlay) {
+  base::EraseIf(overlays_, [&on_overlay_release](auto& overlay) {
     if (!overlay.unique())
       return false;
     if (overlay.IsInUseByWindowServer())
       return false;
-#if defined(OS_APPLE)
-    // Right now, only macOS needs to return maliboxes of released overlays, so
-    // SkiaRenderer can unlock resources for them.
-    released_overlays.push_back(overlay.mailbox());
-#else
-    ALLOW_UNUSED_LOCAL(released_overlays);
-#endif
+    on_overlay_release(overlay);
     overlay.Unref();
     return true;
   });

@@ -12,6 +12,8 @@ group("resources") {
     ":close_button_color",
     ":disabled_tint_color",
     ":favicon_background_color",
+    ":green_50_color",
+    ":green_700_color",
     ":green_color",
     ":grey_100_color",
     ":grey_200_color",
@@ -37,6 +39,7 @@ group("resources") {
     ":table_view_row_highlight_color",
     ":tertiary_background_color",
     ":text_primary_color",
+    ":text_quaternary_color",
     ":text_secondary_color",
     ":text_tertiary_color",
     ":textfield_background_color",
@@ -72,6 +75,14 @@ colorset("favicon_background_color") {
 
 colorset("green_color") {
   sources = [ "green_color.colorset/Contents.json" ]
+}
+
+colorset("green_50_color") {
+  sources = [ "green_50_color.colorset/Contents.json" ]
+}
+
+colorset("green_700_color") {
+  sources = [ "green_700_color.colorset/Contents.json" ]
 }
 
 colorset("grey_50_color") {
@@ -156,6 +167,10 @@ colorset("text_tertiary_color") {
 
 colorset("text_primary_color") {
   sources = [ "text_primary_color.colorset/Contents.json" ]
+}
+
+colorset("text_quaternary_color") {
+  sources = [ "text_quaternary_color.colorset/Contents.json" ]
 }
 
 colorset("text_secondary_color") {

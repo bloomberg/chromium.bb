@@ -19,7 +19,7 @@ import {CrSearchFieldElement} from '//resources/cr_elements/cr_search_field/cr_s
 import {FindShortcutBehavior} from '//resources/cr_elements/find_shortcut_behavior.js';
 import {assert} from '//resources/js/assert.m.js';
 import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {I18nMixin, I18nMixinInterface} from '//resources/js/i18n_mixin.js';
 import {listenOnce} from '//resources/js/util.m.js';
 import {IronResizableBehavior} from '//resources/polymer/v3_0/iron-resizable-behavior/iron-resizable-behavior.js';
 import {afterNextRender, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -29,7 +29,7 @@ import {loadTimeData} from '../i18n_setup.js';
 import {Route, RouteObserverMixin, Router} from '../router.js';
 import {getSettingIdParameter} from '../setting_id_param_util.js';
 
-interface SettingsSubpageElement {
+export interface SettingsSubpageElement {
   $: {
     closeButton: HTMLElement,
   };
@@ -37,12 +37,11 @@ interface SettingsSubpageElement {
 
 const SettingsSubpageElementBase =
     mixinBehaviors(
-        [FindShortcutBehavior, I18nBehavior, IronResizableBehavior],
-        RouteObserverMixin(PolymerElement)) as
-    {new (): PolymerElement & FindShortcutBehavior & I18nBehavior};
+        [FindShortcutBehavior, IronResizableBehavior],
+        RouteObserverMixin(I18nMixin(PolymerElement))) as
+    {new (): PolymerElement & FindShortcutBehavior & I18nMixinInterface};
 
-/** @polymer */
-class SettingsSubpageElement extends SettingsSubpageElementBase {
+export class SettingsSubpageElement extends SettingsSubpageElementBase {
   static get is() {
     return 'settings-subpage';
   }

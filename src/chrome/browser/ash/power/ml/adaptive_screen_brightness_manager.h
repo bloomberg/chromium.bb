@@ -45,12 +45,10 @@ class AdaptiveScreenBrightnessManager
       public viz::mojom::VideoDetectorObserver {
  public:
   // Duration of inactivity that marks the end of an activity.
-  static constexpr base::TimeDelta kInactivityDuration =
-      base::TimeDelta::FromSeconds(20);
+  static constexpr base::TimeDelta kInactivityDuration = base::Seconds(20);
 
   // Interval at which data should be logged.
-  static constexpr base::TimeDelta kLoggingInterval =
-      base::TimeDelta::FromMinutes(10);
+  static constexpr base::TimeDelta kLoggingInterval = base::Minutes(10);
 
   AdaptiveScreenBrightnessManager(
       std::unique_ptr<AdaptiveScreenBrightnessUkmLogger> ukm_logger,
@@ -60,6 +58,11 @@ class AdaptiveScreenBrightnessManager
       MagnificationManager* magnification_manager,
       mojo::PendingReceiver<viz::mojom::VideoDetectorObserver> receiver,
       std::unique_ptr<base::RepeatingTimer> periodic_timer);
+
+  AdaptiveScreenBrightnessManager(const AdaptiveScreenBrightnessManager&) =
+      delete;
+  AdaptiveScreenBrightnessManager& operator=(
+      const AdaptiveScreenBrightnessManager&) = delete;
 
   ~AdaptiveScreenBrightnessManager() override;
 
@@ -155,8 +158,6 @@ class AdaptiveScreenBrightnessManager
   absl::optional<ScreenBrightnessEvent_Event_Reason> reason_;
 
   base::WeakPtrFactory<AdaptiveScreenBrightnessManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AdaptiveScreenBrightnessManager);
 };
 
 }  // namespace ml

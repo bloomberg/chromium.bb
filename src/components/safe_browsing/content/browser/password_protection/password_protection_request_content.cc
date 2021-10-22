@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_service.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
@@ -36,8 +37,14 @@ namespace {
 const int kDomFeatureTimeoutMs = 3000;
 
 // Parameters chosen to ensure privacy is preserved by visual features.
+#if defined(OS_ANDROID)
+const int kMinWidthForVisualFeatures = 258;
+const int kMinHeightForVisualFeatures = 258;
+#else
 const int kMinWidthForVisualFeatures = 576;
 const int kMinHeightForVisualFeatures = 576;
+#endif
+
 #endif  // BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
@@ -185,7 +192,7 @@ void PasswordProtectionRequestContent::GetDomFeatures() {
           base::BindOnce(
               &PasswordProtectionRequestContent::OnGetDomFeatureTimeout,
               AsWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kDomFeatureTimeoutMs));
+          base::Milliseconds(kDomFeatureTimeoutMs));
   dom_feature_start_time_ = base::TimeTicks::Now();
 }
 
@@ -258,23 +265,10 @@ void PasswordProtectionRequestContent::MaybeCollectVisualFeatures() {
       !password_protection_service()->IsIncognito()) {
     content::RenderWidgetHostView* view =
         web_contents_ ? web_contents_->GetRenderWidgetHostView() : nullptr;
-    base::UmaHistogramBoolean(
-        "PasswordProtection.AndroidVisualFeaturesViewNull", (view == nullptr));
-    if (view) {
-      base::UmaHistogramBoolean(
-          "PasswordProtection.AndroidVisualFeaturesNativeViewNull",
-          (view->GetNativeView() == nullptr));
-    }
     if (view && view->GetNativeView()) {
       gfx::SizeF content_area_size = view->GetNativeView()->viewport_size();
       request_proto_->set_content_area_height(content_area_size.height());
       request_proto_->set_content_area_width(content_area_size.width());
-      base::UmaHistogramCounts10000(
-          "PasswordProtection.AndroidVisualFeaturesNativeViewWidth",
-          content_area_size.width());
-      base::UmaHistogramCounts10000(
-          "PasswordProtection.AndroidVisualFeaturesNativeViewHeight",
-          content_area_size.height());
     }
   }
 #endif

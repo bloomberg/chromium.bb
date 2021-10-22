@@ -47,7 +47,6 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
@@ -141,8 +140,9 @@ class CreditCardCVCAuthenticatorTest : public testing::Test {
 
     // Mock payments response.
     payments::PaymentsClient::UnmaskResponseDetails response;
-    response.card_type = is_virtual_card ? AutofillClient::VIRTUAL_CARD
-                                         : AutofillClient::SERVER_CARD;
+    response.card_type = is_virtual_card
+                             ? AutofillClient::PaymentsRpcCardType::kVirtualCard
+                             : AutofillClient::PaymentsRpcCardType::kServerCard;
     full_card_request->OnDidGetRealPan(result,
                                        response.with_real_pan(real_pan));
   }
@@ -164,10 +164,9 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardSuccess) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   AutofillTickClock::NowTicks());
+                                   &personal_data_manager_);
 
-  OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber);
   EXPECT_TRUE(requester_->did_succeed());
   EXPECT_EQ(kTestNumber16, requester_->number());
 }
@@ -176,10 +175,10 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardNetworkError) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   AutofillTickClock::NowTicks());
+                                   &personal_data_manager_);
 
-  OnDidGetRealPan(AutofillClient::NETWORK_ERROR, std::string());
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kNetworkError,
+                  std::string());
   EXPECT_FALSE(requester_->did_succeed());
 }
 
@@ -187,10 +186,10 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardPermanentFailure) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   AutofillTickClock::NowTicks());
+                                   &personal_data_manager_);
 
-  OnDidGetRealPan(AutofillClient::PERMANENT_FAILURE, std::string());
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kPermanentFailure,
+                  std::string());
   EXPECT_FALSE(requester_->did_succeed());
 }
 
@@ -198,13 +197,13 @@ TEST_F(CreditCardCVCAuthenticatorTest, AuthenticateServerCardTryAgainFailure) {
   CreditCard card = CreateServerCard(kTestGUID, kTestNumber);
 
   cvc_authenticator_->Authenticate(&card, requester_->GetWeakPtr(),
-                                   &personal_data_manager_,
-                                   AutofillTickClock::NowTicks());
+                                   &personal_data_manager_);
 
-  OnDidGetRealPan(AutofillClient::TRY_AGAIN_FAILURE, std::string());
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kTryAgainFailure,
+                  std::string());
   EXPECT_FALSE(requester_->did_succeed());
 
-  OnDidGetRealPan(AutofillClient::SUCCESS, kTestNumber);
+  OnDidGetRealPan(AutofillClient::PaymentsRpcResult::kSuccess, kTestNumber);
   EXPECT_TRUE(requester_->did_succeed());
   EXPECT_EQ(kTestNumber16, requester_->number());
 }

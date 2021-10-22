@@ -44,6 +44,10 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   BookmarkBridge(JNIEnv* env,
                  const base::android::JavaRef<jobject>& obj,
                  const base::android::JavaRef<jobject>& j_profile);
+
+  BookmarkBridge(const BookmarkBridge&) = delete;
+  BookmarkBridge& operator=(const BookmarkBridge&) = delete;
+
   void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>&);
 
   jlong GetBookmarkIdForWebContents(
@@ -154,6 +158,24 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                       jint type,
                       const base::android::JavaParamRef<jobject>& url);
 
+  void SetPowerBookmarkMeta(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong id,
+      jint type,
+      const base::android::JavaParamRef<jbyteArray>& bytes);
+
+  base::android::ScopedJavaLocalRef<jbyteArray> GetPowerBookmarkMeta(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jlong id,
+      jint type);
+
+  void DeletePowerBookmarkMeta(JNIEnv* env,
+                               const base::android::JavaParamRef<jobject>& obj,
+                               jlong id,
+                               jint type);
+
   bool DoesBookmarkExist(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          jlong id,
@@ -181,6 +203,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
                        const base::android::JavaParamRef<jobject>& obj,
                        const base::android::JavaParamRef<jobject>& j_list,
                        const base::android::JavaParamRef<jstring>& j_query,
+                       const base::android::JavaParamRef<jobjectArray>& j_tags,
                        jint max_results);
 
   base::android::ScopedJavaLocalRef<jobject> AddFolder(
@@ -209,6 +232,15 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
   base::android::ScopedJavaLocalRef<jobject> AddBookmark(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_parent_id_obj,
+      jint index,
+      const base::android::JavaParamRef<jstring>& j_title,
+      const base::android::JavaParamRef<jobject>& j_url);
+
+  base::android::ScopedJavaLocalRef<jobject> AddPowerBookmark(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents,
       const base::android::JavaParamRef<jobject>& j_parent_id_obj,
       jint index,
       const base::android::JavaParamRef<jstring>& j_title,
@@ -331,8 +363,6 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
 
   // Observes the profile destruction and creation.
   base::ScopedObservation<Profile, ProfileObserver> profile_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkBridge);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_BOOKMARKS_BOOKMARK_BRIDGE_H_

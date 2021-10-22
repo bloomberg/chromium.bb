@@ -82,6 +82,60 @@ typedef void (*cfl_predict_lbd_fn)(const int16_t* src,
 extern "C" {
 #endif
 
+void aom_comp_avg_upsampled_pred_c(MACROBLOCKD* xd,
+                                   const struct AV1Common* const cm,
+                                   int mi_row,
+                                   int mi_col,
+                                   const MV* const mv,
+                                   uint8_t* comp_pred,
+                                   const uint8_t* pred,
+                                   int width,
+                                   int height,
+                                   int subpel_x_q3,
+                                   int subpel_y_q3,
+                                   const uint8_t* ref,
+                                   int ref_stride,
+                                   int subpel_search);
+#define aom_comp_avg_upsampled_pred aom_comp_avg_upsampled_pred_c
+
+void aom_comp_mask_upsampled_pred_c(MACROBLOCKD* xd,
+                                    const struct AV1Common* const cm,
+                                    int mi_row,
+                                    int mi_col,
+                                    const MV* const mv,
+                                    uint8_t* comp_pred,
+                                    const uint8_t* pred,
+                                    int width,
+                                    int height,
+                                    int subpel_x_q3,
+                                    int subpel_y_q3,
+                                    const uint8_t* ref,
+                                    int ref_stride,
+                                    const uint8_t* mask,
+                                    int mask_stride,
+                                    int invert_mask,
+                                    int subpel_search);
+#define aom_comp_mask_upsampled_pred aom_comp_mask_upsampled_pred_c
+
+void aom_dist_wtd_comp_avg_upsampled_pred_c(
+    MACROBLOCKD* xd,
+    const struct AV1Common* const cm,
+    int mi_row,
+    int mi_col,
+    const MV* const mv,
+    uint8_t* comp_pred,
+    const uint8_t* pred,
+    int width,
+    int height,
+    int subpel_x_q3,
+    int subpel_y_q3,
+    const uint8_t* ref,
+    int ref_stride,
+    const DIST_WTD_COMP_PARAMS* jcp_param,
+    int subpel_search);
+#define aom_dist_wtd_comp_avg_upsampled_pred \
+  aom_dist_wtd_comp_avg_upsampled_pred_c
+
 void aom_quantize_b_helper_c(const tran_low_t* coeff_ptr,
                              intptr_t n_coeffs,
                              const int16_t* zbin_ptr,
@@ -113,6 +167,21 @@ void aom_quantize_b_helper_neon(const tran_low_t* coeff_ptr,
                                 const qm_val_t* iqm_ptr,
                                 const int log_scale);
 #define aom_quantize_b_helper aom_quantize_b_helper_neon
+
+void aom_upsampled_pred_c(MACROBLOCKD* xd,
+                          const struct AV1Common* const cm,
+                          int mi_row,
+                          int mi_col,
+                          const MV* const mv,
+                          uint8_t* comp_pred,
+                          int width,
+                          int height,
+                          int subpel_x_q3,
+                          int subpel_y_q3,
+                          const uint8_t* ref,
+                          int ref_stride,
+                          int subpel_search);
+#define aom_upsampled_pred aom_upsampled_pred_c
 
 int64_t av1_block_error_c(const tran_low_t* coeff,
                           const tran_low_t* dqcoeff,
@@ -1292,17 +1361,9 @@ void av1_quantize_lp_c(const int16_t* coeff_ptr,
                        int16_t* dqcoeff_ptr,
                        const int16_t* dequant_ptr,
                        uint16_t* eob_ptr,
-                       const int16_t* scan);
-void av1_quantize_lp_neon(const int16_t* coeff_ptr,
-                          intptr_t n_coeffs,
-                          const int16_t* round_ptr,
-                          const int16_t* quant_ptr,
-                          int16_t* qcoeff_ptr,
-                          int16_t* dqcoeff_ptr,
-                          const int16_t* dequant_ptr,
-                          uint16_t* eob_ptr,
-                          const int16_t* scan);
-#define av1_quantize_lp av1_quantize_lp_neon
+                       const int16_t* scan,
+                       const int16_t* iscan);
+#define av1_quantize_lp av1_quantize_lp_c
 
 void av1_resize_and_extend_frame_c(const YV12_BUFFER_CONFIG* src,
                                    YV12_BUFFER_CONFIG* dst,

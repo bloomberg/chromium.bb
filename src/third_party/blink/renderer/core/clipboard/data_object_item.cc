@@ -152,44 +152,29 @@ File* DataObjectItem::GetAsFile() const {
   if (source_ == DataSource::kInternalSource) {
     if (file_)
       return file_.Get();
+
+    // If this file is not backed by |file_| then it must be a |shared_buffer_|.
     DCHECK(shared_buffer_);
-    // TODO: This code is currently impossible--we never populate
-    // |shared_buffer_| when dragging in. At some point though, we may need to
-    // support correctly converting a shared buffer into a file.
-    return nullptr;
+    auto data = std::make_unique<BlobData>();
+    data->SetContentType(type_);
+    for (const auto& span : *shared_buffer_)
+      data->AppendBytes(span.data(), span.size());
+    const uint64_t length = data->length();
+    auto blob = BlobDataHandle::Create(std::move(data), length);
+    return MakeGarbageCollected<File>(
+        DecodeURLEscapeSequences(base_url_.LastPathComponent(),
+                                 DecodeURLMode::kUTF8OrIsomorphic),
+        base::Time::Now(), std::move(blob));
   }
 
   DCHECK_EQ(source_, DataSource::kClipboardSource);
   if (GetType() == kMimeTypeImagePng) {
-    // TODO(crbug.com/1223849): Reorder to initialize `data` after the system
-    // clipboard call once `ReadImage()` is removed entirely. This was moved up
-    // to allow `AppendBytes()` to read either vector or buffer data.
+    mojo_base::BigBuffer png_data =
+        system_clipboard_->ReadPng(mojom::blink::ClipboardBuffer::kStandard);
+
     auto data = std::make_unique<BlobData>();
     data->SetContentType(kMimeTypeImagePng);
-
-    if (RuntimeEnabledFeatures::ClipboardReadPngEnabled()) {
-      mojo_base::BigBuffer png_data =
-          system_clipboard_->ReadPng(mojom::blink::ClipboardBuffer::kStandard);
-
-      data->AppendBytes(png_data.data(), png_data.size());
-    } else {
-      SkBitmap bitmap = system_clipboard_->ReadImage(
-          mojom::blink::ClipboardBuffer::kStandard);
-
-      SkPixmap pixmap;
-      bitmap.peekPixels(&pixmap);
-
-      // Set encoding options to favor speed over size.
-      SkPngEncoder::Options options;
-      options.fZLibLevel = 1;
-      options.fFilterFlags = SkPngEncoder::FilterFlag::kNone;
-
-      Vector<uint8_t> png_data;
-      if (!ImageEncoder::Encode(&png_data, pixmap, options))
-        return nullptr;
-
-      data->AppendBytes(png_data.data(), png_data.size());
-    }
+    data->AppendBytes(png_data.data(), png_data.size());
 
     const uint64_t length = data->length();
     auto blob = BlobDataHandle::Create(std::move(data), length);

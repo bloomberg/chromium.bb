@@ -14,6 +14,7 @@
 #include "components/safe_browsing/core/browser/password_protection/password_protection_service_base.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
+#include "components/safe_browsing/core/common/utils.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -214,7 +215,8 @@ void PasswordProtectionRequest::FillRequestProto(bool is_sampled_ping) {
     request_proto_->set_report_type(LoginReputationClientRequest::FULL_REPORT);
   }
 
-  password_protection_service_->FillUserPopulation(request_proto_.get());
+  password_protection_service_->FillUserPopulation(main_frame_url_,
+                                                   request_proto_.get());
   request_proto_->set_stored_verdict_cnt(
       password_protection_service_->GetStoredVerdictCount(trigger_type_));
 
@@ -376,9 +378,8 @@ void PasswordProtectionRequest::SendRequestWithToken(
   bool has_access_token = !access_token.empty();
   LogPasswordProtectionRequestTokenHistogram(trigger_type_, has_access_token);
   if (has_access_token) {
-    resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        base::StrCat({kAuthHeaderBearer, access_token}));
+    SetAccessTokenAndClearCookieInResourceRequest(resource_request.get(),
+                                                  access_token);
   }
   resource_request->url =
       PasswordProtectionServiceBase::GetPasswordProtectionRequestUrl();
@@ -405,7 +406,7 @@ void PasswordProtectionRequest::StartTimeout() {
   ui_task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&PasswordProtectionRequest::Cancel, AsWeakPtr(), true),
-      base::TimeDelta::FromMilliseconds(request_timeout_in_ms_));
+      base::Milliseconds(request_timeout_in_ms_));
 }
 
 void PasswordProtectionRequest::OnURLLoaderComplete(

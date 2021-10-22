@@ -170,15 +170,6 @@ const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 // apps.
 const char kDebugPackedApps[]               = "debug-packed-apps";
 
-// Values for the enable-desktop-pwas-attention-badging-cros flag.
-const char kDesktopPWAsAttentionBadgingCrOSApiAndNotifications[] =
-    "api-and-notifications";
-const char kDesktopPWAsAttentionBadgingCrOSApiOverridesNotifications[] =
-    "api-overrides-notifications";
-const char kDesktopPWAsAttentionBadgingCrOSApiOnly[] = "api-only";
-const char kDesktopPWAsAttentionBadgingCrOSNotificationsOnly[] =
-    "notifications-only";
-
 // Passes command line parameters to the DevTools front-end.
 const char kDevToolsFlags[]                 = "devtools-flags";
 
@@ -634,6 +625,9 @@ const char kForceEnableNightMode[] = "force-enable-night-mode";
 
 // Forces the update menu badge to show.
 const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
+
+// Forces signin FRE flow.
+const char kForceEnableSigninFRE[] = "force-enable-signin-fre";
 
 // Forces the update menu type to a specific type.
 const char kForceUpdateMenuType[] = "force-update-menu-type";

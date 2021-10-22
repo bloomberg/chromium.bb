@@ -18,6 +18,20 @@ static_library("bloomfilter") {
   ]
 }
 
+static_library("entities") {
+  sources = [
+    "batch_entity_metadata_task.cc",
+    "batch_entity_metadata_task.h",
+    "entity_metadata.cc",
+    "entity_metadata.h",
+    "entity_metadata_provider.h",
+  ]
+  public_deps = [
+    "//base",
+    "//third_party/abseil-cpp:absl",
+  ]
+}
+
 static_library("core") {
   sources = [
     "command_line_top_host_provider.cc",
@@ -102,11 +116,12 @@ static_library("core") {
   ]
   if (build_with_tflite_lib) {
     public_deps += [
+      ":entities",
       "//components/optimization_guide/core:machine_learning",
       "//third_party/tflite",
       "//third_party/tflite:tflite_public_headers",
-      "//third_party/tflite-support",
-      "//third_party/tflite-support:tflite-support-proto",
+      "//third_party/tflite_support",
+      "//third_party/tflite_support:tflite_support_proto",
     ]
   }
 
@@ -145,6 +160,8 @@ if (build_with_tflite_lib) {
 static_library("test_support") {
   testonly = true
   sources = [
+    "mock_push_notification_manager.cc",
+    "mock_push_notification_manager.h",
     "optimization_guide_test_util.cc",
     "optimization_guide_test_util.h",
     "proto_database_provider_test_base.cc",
@@ -162,13 +179,36 @@ static_library("test_support") {
     "//base",
     "//components/leveldb_proto",
     "//components/optimization_guide/proto:optimization_guide_proto",
+    "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
+}
+
+if (is_ios) {
+  source_set("eg_test_support+eg2") {
+    testonly = true
+    sources = [
+      "optimization_guide_constants.cc",
+      "optimization_guide_constants.h",
+      "optimization_guide_enums.h",
+      "optimization_guide_switches.cc",
+      "optimization_guide_switches.h",
+      "optimization_guide_test_util.cc",
+      "optimization_guide_test_util.h",
+    ]
+    deps = [
+      "//base",
+      "//components/optimization_guide/proto:optimization_guide_proto",
+      "//url",
+    ]
+  }
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "batch_entity_metadata_task_unittest.cc",
     "bloom_filter_unittest.cc",
     "command_line_top_host_provider_unittest.cc",
     "decision_tree_prediction_model_unittest.cc",
@@ -204,6 +244,7 @@ source_set("unit_tests") {
   deps = [
     ":bloomfilter",
     ":core",
+    ":entities",
     ":test_support",
     "//base",
     "//base/test:test_support",
@@ -227,8 +268,8 @@ source_set("unit_tests") {
     deps += [
       "//third_party/tflite",
       "//third_party/tflite:tflite_public_headers",
-      "//third_party/tflite-support",
-      "//third_party/tflite-support:tflite-support-proto",
+      "//third_party/tflite_support",
+      "//third_party/tflite_support:tflite_support_proto",
     ]
   }
 }

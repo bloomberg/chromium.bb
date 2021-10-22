@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/scoped_multi_source_observation.h"
 #include "ui/aura/aura_export.h"
-#include "ui/aura/native_window_occlusion_tracker.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host_observer.h"
@@ -58,10 +57,11 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   class AURA_EXPORT ScopedPause {
    public:
     ScopedPause();
-    ~ScopedPause();
 
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ScopedPause);
+    ScopedPause(const ScopedPause&) = delete;
+    ScopedPause& operator=(const ScopedPause&) = delete;
+
+    ~ScopedPause();
   };
 
   // Used to exclude a window and all descendants from occlusion calculation.
@@ -79,6 +79,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   class AURA_EXPORT ScopedExclude : public WindowObserver {
    public:
     explicit ScopedExclude(Window* window);
+
+    ScopedExclude(const ScopedExclude&) = delete;
+    ScopedExclude& operator=(const ScopedExclude&) = delete;
+
     ~ScopedExclude() override;
 
     Window* window() { return window_; }
@@ -90,7 +94,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     void Shutdown();
 
     Window* window_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedExclude);
   };
 
   // Forces the occlusion state of a window to VISIBLE regardless of the drawn
@@ -105,6 +108,10 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   class AURA_EXPORT ScopedForceVisible : public WindowObserver {
    public:
     explicit ScopedForceVisible(Window* window);
+
+    ScopedForceVisible(const ScopedForceVisible&) = delete;
+    ScopedForceVisible& operator=(const ScopedForceVisible&) = delete;
+
     ~ScopedForceVisible() override;
 
    private:
@@ -114,7 +121,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     void Shutdown();
 
     Window* window_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedForceVisible);
   };
 
   // Holds occlusion related information for tracked windows.
@@ -124,6 +130,9 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
     // Region in root window coordinates that is occluded.
     SkRegion occluded_region;
   };
+
+  WindowOcclusionTracker(const WindowOcclusionTracker&) = delete;
+  WindowOcclusionTracker& operator=(const WindowOcclusionTracker&) = delete;
 
   // Start tracking the occlusion state of |window|.
   void Track(Window* window);
@@ -395,12 +404,6 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // values. If the occlusion tracker is not computing for a specific window
   // (most of the time it is not), this will be nullptr.
   Window* target_occlusion_window_ = nullptr;
-
-  // Shim to connect WindowOcclusionTracker with native window occlusion
-  // tracker(s), currently just NativeWindowOcclusionTrackerWin.
-  NativeWindowOcclusionTracker native_window_occlusion_tracker_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTracker);
 };
 
 }  // namespace aura

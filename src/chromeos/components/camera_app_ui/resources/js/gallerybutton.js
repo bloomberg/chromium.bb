@@ -14,10 +14,11 @@ import {
 import {ResultSaver} from './models/result_saver.js';
 import {VideoSaver} from './models/video_saver.js';
 import {ChromeHelper} from './mojo/chrome_helper.js';
-import {scaleImage, scalePdfImage, scaleVideo} from './thumbnailer.js';
+import {scale} from './thumbnailer.js';
 import {
   ErrorLevel,
   ErrorType,
+  VideoType,
 } from './type.js';
 
 /**
@@ -83,15 +84,7 @@ class CoverPhoto {
     }
 
     try {
-      const thumbnail = await (async () => {
-        if (filesystem.hasVideoPrefix(file)) {
-          return await scaleVideo(blob, THUMBNAIL_WIDTH);
-        }
-        if (filesystem.hasPdfSuffix(file)) {
-          return await scalePdfImage(blob, THUMBNAIL_WIDTH);
-        }
-        return await scaleImage(blob, THUMBNAIL_WIDTH);
-      })();
+      const thumbnail = await scale(blob, THUMBNAIL_WIDTH);
       return new CoverPhoto(file, URL.createObjectURL(thumbnail));
     } catch (e) {
       reportError(
@@ -225,8 +218,16 @@ export class GalleryButton {
   /**
    * @override
    */
+  async saveGif(blob, name) {
+    const file = await filesystem.saveBlob(blob, name);
+    await this.updateCover_(file);
+  }
+
+  /**
+   * @override
+   */
   async startSaveVideo(videoRotation) {
-    const file = await filesystem.createVideoFile();
+    const file = await filesystem.createVideoFile(VideoType.MP4);
     return VideoSaver.createForFile(file, videoRotation);
   }
 

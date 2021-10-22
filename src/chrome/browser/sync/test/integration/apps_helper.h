@@ -87,20 +87,20 @@ syncer::StringOrdinal GetPageOrdinalForApp(Profile* profile, int app_index);
 
 // Sets a new |page_ordinal| value for the application at the given index
 // on |profile|.
-void SetPageOrdinalForApp(
-    Profile* profile, int app_index,
-    const syncer::StringOrdinal& page_ordinal);
+void SetPageOrdinalForApp(Profile* profile,
+                          int app_index,
+                          const syncer::StringOrdinal& page_ordinal);
 
 // Gets the app launch ordinal value for the application at the given index on
 // |profile|.
-syncer::StringOrdinal GetAppLaunchOrdinalForApp(
-    Profile* profile, int app_index);
+syncer::StringOrdinal GetAppLaunchOrdinalForApp(Profile* profile,
+                                                int app_index);
 
 // Sets a new |page_ordinal| value for the application at the given index
 // on |profile|.
-void SetAppLaunchOrdinalForApp(
-    Profile* profile, int app_index,
-    const syncer::StringOrdinal& app_launch_ordinal);
+void SetAppLaunchOrdinalForApp(Profile* profile,
+                               int app_index,
+                               const syncer::StringOrdinal& app_launch_ordinal);
 
 // Copy the page and app launch ordinal value for the application at the given
 // index on |profile_source| to |profile_destination|.
@@ -124,6 +124,10 @@ class AppsMatchChecker : public StatusChangeChecker,
                          public extensions::InstallObserver {
  public:
   AppsMatchChecker();
+
+  AppsMatchChecker(const AppsMatchChecker&) = delete;
+  AppsMatchChecker& operator=(const AppsMatchChecker&) = delete;
+
   ~AppsMatchChecker() override;
 
   // StatusChangeChecker implementation.
@@ -170,8 +174,6 @@ class AppsMatchChecker : public StatusChangeChecker,
   base::ScopedMultiSourceObservation<extensions::InstallTracker,
                                      extensions::InstallObserver>
       install_tracker_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AppsMatchChecker);
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_

@@ -37,7 +37,8 @@ LensRegionSearchController::~LensRegionSearchController() {
   CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 
-void LensRegionSearchController::Start(bool is_google_default_search_provider) {
+void LensRegionSearchController::Start(bool use_fullscreen_capture,
+                                       bool is_google_default_search_provider) {
   is_google_default_search_provider_ = is_google_default_search_provider;
   if (!web_contents() || !browser_)
     return;
@@ -59,7 +60,11 @@ void LensRegionSearchController::Start(bool is_google_default_search_provider) {
       callback = base::BindOnce(&LensRegionSearchController::OnCaptureCompleted,
                                 weak_this_);
   in_capture_mode_ = true;
-  screenshot_flow_->Start(std::move(callback));
+  if (use_fullscreen_capture) {
+    screenshot_flow_->StartFullscreenCapture(std::move(callback));
+  } else {
+    screenshot_flow_->Start(std::move(callback));
+  }
 }
 
 gfx::Image LensRegionSearchController::ResizeImageIfNecessary(

@@ -18,8 +18,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents_delegate.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_final_status.h"
 #include "components/no_state_prefetch/common/prerender_canceler.mojom.h"
-#include "components/no_state_prefetch/common/prerender_final_status.h"
 #include "components/no_state_prefetch/common/prerender_origin.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
@@ -55,6 +55,10 @@ class NoStatePrefetchContents : public content::WebContentsObserver,
   class Factory {
    public:
     Factory() {}
+
+    Factory(const Factory&) = delete;
+    Factory& operator=(const Factory&) = delete;
+
     virtual ~Factory() {}
 
     // Ownership is not transferred through this interface as
@@ -68,9 +72,6 @@ class NoStatePrefetchContents : public content::WebContentsObserver,
         const content::Referrer& referrer,
         const absl::optional<url::Origin>& initiator_origin,
         Origin origin) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
   class Observer {
@@ -95,6 +96,9 @@ class NoStatePrefetchContents : public content::WebContentsObserver,
     Observer() {}
     virtual ~Observer() = 0;
   };
+
+  NoStatePrefetchContents(const NoStatePrefetchContents&) = delete;
+  NoStatePrefetchContents& operator=(const NoStatePrefetchContents&) = delete;
 
   ~NoStatePrefetchContents() override;
 
@@ -303,8 +307,6 @@ class NoStatePrefetchContents : public content::WebContentsObserver,
   int64_t network_bytes_;
 
   base::WeakPtrFactory<NoStatePrefetchContents> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NoStatePrefetchContents);
 };
 
 }  // namespace prerender

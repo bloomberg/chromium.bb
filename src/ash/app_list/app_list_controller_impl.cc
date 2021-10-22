@@ -55,6 +55,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/callback_list.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
@@ -68,8 +69,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "extensions/common/constants.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -95,7 +96,7 @@ constexpr float kOverviewFadeAnimationScale = 0.92f;
 // The home launcher animation duration for transitions that accompany overview
 // fading transitions.
 constexpr base::TimeDelta kOverviewFadeAnimationDuration =
-    base::TimeDelta::FromMilliseconds(350);
+    base::Milliseconds(350);
 
 // Update layer animation settings for launcher scale and opacity animation that
 // runs on overview mode change.
@@ -115,11 +116,13 @@ class WindowAnimationsCallback : public ui::LayerAnimationObserver {
   WindowAnimationsCallback(base::OnceClosure callback,
                            ui::LayerAnimator* animator)
       : callback_(std::move(callback)), animator_(animator) {
-    animator_->AddObserver(this);
+    subscription_ = animator_->AddSequenceScheduledCallback(
+        base::BindRepeating(&WindowAnimationsCallback::OnSequenceScheduled,
+                            base::Unretained(this)));
   }
   WindowAnimationsCallback(const WindowAnimationsCallback&) = delete;
   WindowAnimationsCallback& operator=(const WindowAnimationsCallback&) = delete;
-  ~WindowAnimationsCallback() override { animator_->RemoveObserver(this); }
+  ~WindowAnimationsCallback() override = default;
 
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
@@ -130,11 +133,18 @@ class WindowAnimationsCallback : public ui::LayerAnimationObserver {
   }
   void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override {}
+
   void OnDetachedFromSequence(ui::LayerAnimationSequence* sequence) override {
     FireCallbackIfDone();
   }
 
  private:
+  void OnSequenceScheduled(ui::LayerAnimationSequence* sequence) {
+    // LayerAnimationSequence::RemoveObserver is called by the ancestor during
+    // destruction.
+    sequence->AddObserver(this);
+  }
+
   // Fires the callback if all scheduled animations completed (either ended or
   // got aborted).
   void FireCallbackIfDone() {
@@ -146,6 +156,7 @@ class WindowAnimationsCallback : public ui::LayerAnimationObserver {
 
   base::OnceClosure callback_;
   ui::LayerAnimator* animator_;  // Owned by the layer that is animating.
+  base::CallbackListSubscription subscription_;
 };
 
 // Minimizes all windows in |windows| that aren't in the home screen container,
@@ -262,10 +273,8 @@ GetTransitionFromMetricsAnimationInfo(
 
 AppListControllerImpl::AppListControllerImpl()
     : model_(std::make_unique<AppListModel>()),
-      fullscreen_presenter_(std::make_unique<AppListPresenterImpl>(this)),
-      is_notification_indicator_enabled_(
-          ::features::IsNotificationIndicatorEnabled()) {
-  if (features::IsAppListBubbleEnabled())
+      fullscreen_presenter_(std::make_unique<AppListPresenterImpl>(this)) {
+  if (features::IsProductivityLauncherEnabled())
     bubble_presenter_ = std::make_unique<AppListBubblePresenter>(this);
 
   model_->AddObserver(this);
@@ -370,12 +379,6 @@ void AppListControllerImpl::RemoveUninstalledItem(const std::string& id) {
   model_->DeleteUninstalledItem(id);
 }
 
-void AppListControllerImpl::MoveItemToFolder(const std::string& id,
-                                             const std::string& folder_id) {
-  AppListItem* item = model_->FindItem(id);
-  model_->MoveItemToFolder(item, folder_id);
-}
-
 void AppListControllerImpl::SetStatus(AppListModelStatus status) {
   model_->SetStatus(status);
 }
@@ -407,6 +410,9 @@ void AppListControllerImpl::SetItemMetadata(
   if (!item)
     return;
 
+  // TODO(https://crbug.com/1252433): refactor this function because the current
+  // implementation is bug prone.
+
   // data may not contain valid position or icon. Preserve it in this case.
   if (!data->position.IsValid())
     data->position = item->position();
@@ -429,6 +435,9 @@ void AppListControllerImpl::SetItemMetadata(
   // icon here. Skip it.
   if (data->icon.isNull())
     data->icon = item->GetDefaultIcon();
+
+  if (data->folder_id != item->folder_id())
+    model_->MoveItemToFolder(item, data->folder_id);
 
   item->SetMetadata(std::move(data));
 }
@@ -561,7 +570,7 @@ void AppListControllerImpl::DismissAppList() {
 
   // Don't check tablet mode here. This function can be called during tablet
   // mode transitions and we always want to close anyway.
-  if (features::IsAppListBubbleEnabled())
+  if (features::IsProductivityLauncherEnabled())
     bubble_presenter_->Dismiss();
 
   fullscreen_presenter_->Dismiss(base::TimeTicks());
@@ -582,7 +591,7 @@ void AppListControllerImpl::ShowAppList() {
     bubble_presenter_->Show(GetDisplayIdToShowAppListOn());
     return;
   }
-  DCHECK(!features::IsAppListBubbleEnabled() ||
+  DCHECK(!features::IsProductivityLauncherEnabled() ||
          !bubble_presenter_->IsShowing());
   fullscreen_presenter_->Show(AppListViewState::kPeeking,
                               GetDisplayIdToShowAppListOn(), base::TimeTicks(),
@@ -609,8 +618,7 @@ bool AppListControllerImpl::IsVisible() {
 void AppListControllerImpl::OnAppListItemAdded(AppListItem* item) {
   client_->OnItemAdded(profile_id_, item->CloneMetadata());
 
-  if (is_notification_indicator_enabled_ && cache_ &&
-      notification_badging_pref_enabled_.value_or(false)) {
+  if (cache_ && notification_badging_pref_enabled_.value_or(false)) {
     // Update the notification badge indicator for the newly added app list
     // item.
     cache_->ForOneApp(item->id(), [item](const apps::AppUpdate& update) {
@@ -622,30 +630,26 @@ void AppListControllerImpl::OnAppListItemAdded(AppListItem* item) {
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
-  if (is_notification_indicator_enabled_) {
-    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-    pref_change_registrar_->Init(pref_service);
+  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  pref_change_registrar_->Init(pref_service);
 
-    pref_change_registrar_->Add(
-        prefs::kAppNotificationBadgingEnabled,
-        base::BindRepeating(
-            &AppListControllerImpl::UpdateAppNotificationBadging,
-            base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAppNotificationBadgingEnabled,
+      base::BindRepeating(&AppListControllerImpl::UpdateAppNotificationBadging,
+                          base::Unretained(this)));
 
-    // Observe AppRegistryCache for the current active account to get
-    // notification updates.
-    AccountId account_id =
-        Shell::Get()->session_controller()->GetActiveAccountId();
-    cache_ =
-        apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id);
-    Observe(cache_);
+  // Observe AppRegistryCache for the current active account to get
+  // notification updates.
+  AccountId account_id =
+      Shell::Get()->session_controller()->GetActiveAccountId();
+  cache_ = apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id);
+  Observe(cache_);
 
-    // Resetting the recorded pref forces the next call to
-    // UpdateAppNotificationBadging() to update notification badging for every
-    // app item.
-    notification_badging_pref_enabled_.reset();
-    UpdateAppNotificationBadging();
-  }
+  // Resetting the recorded pref forces the next call to
+  // UpdateAppNotificationBadging() to update notification badging for every
+  // app item.
+  notification_badging_pref_enabled_.reset();
+  UpdateAppNotificationBadging();
 
   if (!IsTabletMode()) {
     DismissAppList();
@@ -784,7 +788,7 @@ ShelfAction AppListControllerImpl::ToggleAppList(
     return SHELF_ACTION_APP_LIST_SHOWN;
   }
 
-  if (features::IsAppListBubbleEnabled()) {
+  if (features::IsProductivityLauncherEnabled()) {
 #if !defined(OFFICIAL_BUILD)
     // Make shift-click on the shelf button toggle the non-bubble app list. This
     // allows developers to compare behavior without restarting to flip the
@@ -1055,8 +1059,8 @@ void AppListControllerImpl::OnTabletModeStarted() {
   if (app_list_view && app_list_view->is_side_shelf())
     DismissAppList();
 
-  // AppListBubble is only used in clamshell mode.
-  if (features::IsAppListBubbleEnabled())
+  // The bubble launcher is only used in clamshell mode.
+  if (features::IsProductivityLauncherEnabled())
     DismissAppList();
 
   fullscreen_presenter_->OnTabletModeChanged(true);
@@ -2041,7 +2045,7 @@ bool AppListControllerImpl::ShouldShowHomeScreen() const {
 }
 
 bool AppListControllerImpl::ShouldShowAppListBubble() const {
-  return !IsTabletMode() && features::IsAppListBubbleEnabled();
+  return !IsTabletMode() && features::IsProductivityLauncherEnabled();
 }
 
 void AppListControllerImpl::UpdateForOverviewModeChange(bool show_home_launcher,

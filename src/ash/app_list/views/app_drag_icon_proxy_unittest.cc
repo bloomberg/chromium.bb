@@ -15,7 +15,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -232,8 +232,7 @@ TEST_F(AppDragIconProxyTest,
   {
     ui::ScopedLayerAnimationSettings animation_settings(
         drag_icon_proxy->GetImageLayerForTesting()->GetAnimator());
-    animation_settings.SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(300));
+    animation_settings.SetTransitionDuration(base::Milliseconds(300));
     gfx::Transform transform;
     transform.Translate(100, 100);
     drag_icon_proxy->GetImageLayerForTesting()->SetTransform(transform);

@@ -84,11 +84,6 @@ export default commandLineArgs => ({
       compress: {
         pure_funcs: commandLineArgs.configDCHECK ? ['Platform.DCHECK'] : [],
       },
-      mangle: {
-        properties: {
-          regex: /^#\w+/,
-        },
-      },
     }),
     {
       name: 'devtools-plugin',
@@ -134,6 +129,15 @@ export default commandLineArgs => ({
         // The CodeMirror addons look like bundles (addon/comment/comment.js) but are not.
         if (importedFileDirectory.includes(path.join('front_end', 'third_party', 'codemirror', 'package'))) {
           return null;
+        }
+
+        // The LightHouse bundle shouldn't be processed by `terser` again, as it is uniquely built
+        if (importedFilelocation.includes(
+                path.join('front_end', 'third_party', 'lighthouse', 'lighthouse-dt-bundle.js'))) {
+          return {
+            id: importedFilelocation,
+            external: true,
+          };
         }
 
         const importedFileName = path.basename(importedFilelocation, '.js');

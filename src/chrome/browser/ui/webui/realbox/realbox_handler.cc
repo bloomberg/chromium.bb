@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/realbox/realbox_handler.h"
 
+#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -26,6 +27,7 @@
 #include "chrome/grit/new_tab_page_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/navigation_metrics/navigation_metrics.h"
+#include "components/omnibox/browser/actions/omnibox_pedal_implementations.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -87,7 +89,12 @@ constexpr char kDriveSlidesIconResourceName[] =
 constexpr char kDriveVideoIconResourceName[] = "realbox/icons/drive_video.svg";
 constexpr char kExtensionAppIconResourceName[] =
     "realbox/icons/extension_app.svg";
+constexpr char kGoogleCalendarIconResourceName[] = "realbox/icons/calendar.svg";
+constexpr char kGoogleKeepNoteIconResourceName[] = "realbox/icons/note.svg";
+constexpr char kGoogleSitesIconResourceName[] = "realbox/icons/sites.svg";
 constexpr char kPageIconResourceName[] = "realbox/icons/page.svg";
+constexpr char kPedalsIconResourceName[] =
+    "chrome://theme/current-channel-logo";
 constexpr char kTrendingUpIconResourceName[] = "realbox/icons/trending_up.svg";
 
 base::flat_map<int32_t, realbox::mojom::SuggestionGroupPtr>
@@ -186,6 +193,16 @@ std::vector<realbox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
         match.type == AutocompleteMatchType::CALCULATOR ||
         (match.answer.has_value() &&
          base::FeatureList::IsEnabled(omnibox::kNtpRealboxSuggestionAnswers));
+    if (match.action &&
+        base::FeatureList::IsEnabled(omnibox::kNtpRealboxPedals)) {
+      mojom_match->action = realbox::mojom::Action::New(
+          match.action->GetLabelStrings().accessibility_hint,
+          match.action->GetLabelStrings().accessibility_suffix,
+          match.action->GetLabelStrings().hint,
+          match.action->GetLabelStrings().suggestion_contents,
+          RealboxHandler::PedalVectorIconToResourceName(
+              match.action->GetVectorIcon()));
+    }
     matches.push_back(std::move(mojom_match));
   }
   return matches;
@@ -291,7 +308,7 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
   } else if (icon.name == omnibox::kPageIcon.name) {
     return kPageIconResourceName;
   } else if (icon.name == omnibox::kPedalIcon.name) {
-    return "";  // Pedals are not supported in the NTP Realbox.
+    return kPedalsIconResourceName;
   } else if (icon.name == vector_icons::kSearchIcon.name) {
     return kSearchIconResourceName;
   } else if (icon.name == omnibox::kTrendingUpIcon.name) {
@@ -299,6 +316,35 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
   } else {
     NOTREACHED()
         << "Every vector icon returned by AutocompleteMatch::GetVectorIcon "
+           "must have an equivalent SVG resource for the NTP Realbox.";
+    return "";
+  }
+}
+
+// static
+std::string RealboxHandler::PedalVectorIconToResourceName(
+    const gfx::VectorIcon& icon) {
+  if (icon.name == omnibox::kDriveFormsIcon.name) {
+    return kDriveFormIconResourceName;
+  } else if (icon.name == omnibox::kDriveDocsIcon.name) {
+    return kDriveDocsIconResourceName;
+  } else if (icon.name == omnibox::kDriveSheetsIcon.name) {
+    return kDriveSheetsIconResourceName;
+  } else if (icon.name == omnibox::kDriveSlidesIcon.name) {
+    return kDriveSlidesIconResourceName;
+  } else if (icon.name == omnibox::kGoogleCalendarIcon.name) {
+    return kGoogleCalendarIconResourceName;
+  } else if (icon.name == omnibox::kGoogleKeepNoteIcon.name) {
+    return kGoogleKeepNoteIconResourceName;
+  } else if (icon.name == omnibox::kGoogleSitesIcon.name) {
+    return kGoogleSitesIconResourceName;
+  } else if (icon.name == omnibox::kGoogleSuperGIcon.name) {
+    return kGoogleGIconResourceName;
+  } else if (icon.name == omnibox::kPedalIcon.name) {
+    return kPedalsIconResourceName;
+  } else {
+    NOTREACHED()
+        << "Every vector icon returned by OmniboxAction::GetVectorIcon "
            "must have an equivalent SVG resource for the NTP Realbox.";
     return "";
   }
@@ -411,8 +457,9 @@ void RealboxHandler::OpenAutocompleteMatch(
   const auto now = base::TimeTicks::Now();
   base::TimeDelta elapsed_time_since_first_autocomplete_query =
       now - time_user_first_modified_realbox_;
-  autocomplete_controller_->UpdateMatchDestinationURLWithQueryFormulationTime(
-      elapsed_time_since_first_autocomplete_query, &match);
+  autocomplete_controller_
+      ->UpdateMatchDestinationURLWithAdditionalAssistedQueryStats(
+          elapsed_time_since_first_autocomplete_query, &match);
 
   LOCAL_HISTOGRAM_BOOLEAN("Omnibox.EventCount", true);
 
@@ -459,7 +506,7 @@ void RealboxHandler::OpenAutocompleteMatch(
       /*middle_button=*/mouse_button == 1, alt_key, ctrl_key, meta_key,
       shift_key);
 
-  base::TimeDelta default_time_delta = base::TimeDelta::FromMilliseconds(-1);
+  base::TimeDelta default_time_delta = base::Milliseconds(-1);
 
   if (time_user_first_modified_realbox_.is_null())
     elapsed_time_since_first_autocomplete_query = default_time_delta;
@@ -503,6 +550,20 @@ void RealboxHandler::OpenAutocompleteMatch(
                              disposition, match.transition, false));
 }
 
+void RealboxHandler::OpenURL(const GURL& destination_url,
+                             TemplateURLRef::PostContent* post_content,
+                             WindowOpenDisposition disposition,
+                             ui::PageTransition transition,
+                             AutocompleteMatchType::Type type,
+                             base::TimeTicks match_selection_timestamp,
+                             bool destination_url_entered_without_scheme,
+                             const std::u16string&,
+                             const AutocompleteMatch&,
+                             const AutocompleteMatch&) {
+  web_contents_->OpenURL(content::OpenURLParams(
+      destination_url, content::Referrer(), disposition, transition, false));
+}
+
 void RealboxHandler::DeleteAutocompleteMatch(uint8_t line) {
   if (autocomplete_controller_->result().size() <= line ||
       !autocomplete_controller_->result().match_at(line).SupportsDeletion()) {
@@ -533,6 +594,34 @@ void RealboxHandler::ToggleSuggestionGroupIdVisibility(
 void RealboxHandler::LogCharTypedToRepaintLatency(base::TimeDelta latency) {
   UMA_HISTOGRAM_TIMES("NewTabPage.Realbox.CharTypedToRepaintLatency.ToPaint",
                       latency);
+}
+
+void RealboxHandler::ExecuteAction(uint8_t line,
+                                   base::TimeTicks match_selection_timestamp,
+                                   uint8_t mouse_button,
+                                   bool alt_key,
+                                   bool ctrl_key,
+                                   bool meta_key,
+                                   bool shift_key) {
+  if (!autocomplete_controller_ ||
+      autocomplete_controller_->result().size() <= line) {
+    return;
+  }
+
+  const auto& match = autocomplete_controller_->result().match_at(line);
+  if (!match.action) {
+    return;
+  }
+  WindowOpenDisposition disposition = ui::DispositionFromClick(
+      /*middle_button=*/mouse_button == 1, alt_key, ctrl_key, meta_key,
+      shift_key);
+
+  match.action->RecordActionExecuted(line);
+  OmniboxAction::ExecutionContext context(
+      *(autocomplete_controller_->autocomplete_provider_client()),
+      base::BindOnce(&RealboxHandler::OpenURL, weak_ptr_factory_.GetWeakPtr()),
+      match_selection_timestamp, disposition);
+  match.action->Execute(context);
 }
 
 void RealboxHandler::OnResultChanged(AutocompleteController* controller,

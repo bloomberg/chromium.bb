@@ -203,10 +203,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GBRAP,     AV_PIX_FMT_GBRAP10,    AV_PIX_FMT_GBRAP12,    AV_PIX_FMT_GBRAP16,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -318,7 +315,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     av_frame_copy_props(out, in);
 
     td.in = in; td.out = out;
-    ctx->internal->execute(ctx, filter_slice, &td, NULL, FFMIN(rect->planeheight[1], ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, filter_slice, &td, NULL,
+                      FFMIN(rect->planeheight[1], ff_filter_get_nb_threads(ctx)));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -345,7 +343,6 @@ static const AVFilterPad lenscorrection_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad lenscorrection_outputs[] = {
@@ -354,7 +351,6 @@ static const AVFilterPad lenscorrection_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_lenscorrection = {
@@ -362,8 +358,8 @@ const AVFilter ff_vf_lenscorrection = {
     .description   = NULL_IF_CONFIG_SMALL("Rectify the image by correcting for lens distortion."),
     .priv_size     = sizeof(LenscorrectionCtx),
     .query_formats = query_formats,
-    .inputs        = lenscorrection_inputs,
-    .outputs       = lenscorrection_outputs,
+    FILTER_INPUTS(lenscorrection_inputs),
+    FILTER_OUTPUTS(lenscorrection_outputs),
     .priv_class    = &lenscorrection_class,
     .uninit        = uninit,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,

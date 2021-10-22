@@ -16,6 +16,7 @@
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
+#include "v8/include/v8-object.h"
 
 namespace extensions {
 
@@ -175,9 +176,13 @@ void ChromeSetting::HandleFunction(const std::string& method_name,
 
   parse_result.arguments_list->Insert(
       parse_result.arguments_list->GetList().begin(), base::Value(pref_name_));
-  request_handler_->StartRequest(
+
+  v8::Local<v8::Promise> promise = request_handler_->StartRequest(
       context, full_name, std::move(parse_result.arguments_list),
-      parse_result.callback, v8::Local<v8::Function>());
+      parse_result.async_type, parse_result.callback,
+      v8::Local<v8::Function>());
+  if (!promise.IsEmpty())
+    arguments->Return(promise);
 }
 
 }  // namespace extensions

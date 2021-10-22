@@ -40,6 +40,8 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
   assertEquals('A', preprocess('A'));
   assertEquals('a.', preprocess('a.'));
   assertEquals('.a', preprocess('.a'));
+  assertEquals('Ａ', preprocess('ａ'));
+  assertEquals('Б', preprocess('б'));
 
   // Only summarize punctuation if there are three or more occurrences without
   // a space in between.
@@ -81,7 +83,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
   };
 
   // Asks this test to process the next task immediately.
-  const flushNextTask = function() {
+  const flushNextTask = () => {
     const task = tasks.shift();
     if (!task) {
       return;
@@ -94,7 +96,7 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
       assertEquals(task.expectedVoice, actualVoice);
       flushNextTask();
     }));
-  }.bind(this);
+  };
 
   assertTrue(!tts.currentVoice);
 
@@ -131,7 +133,7 @@ TEST_F(
     'ChromeVoxTtsBackgroundTest', 'DISABLED_EmptyStringCallsCallbacks',
     function() {
       let startCalls = 0, endCalls = 0;
-      assertCallsCallbacks = function(text, speakCalls) {
+      assertCallsCallbacks = (text, speakCalls) => {
         tts.speak(text, QueueMode.QUEUE, {
           startCallback() {
             ++startCalls;
@@ -142,7 +144,7 @@ TEST_F(
             assertEquals(endCalls, startCalls);
           })
         });
-      }.bind(this);
+      };
 
       assertCallsCallbacks('', 1);
       assertCallsCallbacks('  ', 2);
@@ -176,6 +178,8 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'AnnounceCapitalLetters', function() {
   localStorage['capitalStrategy'] = 'announceCapitals';
   assertEquals('Cap A', preprocess('A'));
   assertEquals('Cap Z', preprocess('Z'));
+  assertEquals('Cap Ａ', preprocess('Ａ'));
+  assertEquals('Cap Б', preprocess('Б'));
 
   // Do not announce capital for the following inputs.
   assertEquals('BB', preprocess('BB'));
@@ -248,6 +252,13 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
   assertEquals(
       'An unanswered call lasts for 30 seconds.', lastSpokenTextString);
 
+  tts.speak('１００');
+  assertEquals('１００', lastSpokenTextString);
+
+  tts.speak('An unanswered call lasts for ３０ seconds.');
+  assertEquals(
+      'An unanswered call lasts for ３０ seconds.', lastSpokenTextString);
+
   localStorage['numberReadingStyle'] = 'asDigits';
   tts.speak('100');
   assertEquals('1 0 0', lastSpokenTextString);
@@ -255,6 +266,13 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'NumberReadingStyle', function() {
   tts.speak('An unanswered call lasts for 30 seconds.');
   assertEquals(
       'An unanswered call lasts for 3 0 seconds.', lastSpokenTextString);
+
+  tts.speak('１００');
+  assertEquals('１ ０ ０', lastSpokenTextString);
+
+  tts.speak('An unanswered call lasts for ３０ seconds.');
+  assertEquals(
+      'An unanswered call lasts for ３ ０ seconds.', lastSpokenTextString);
 });
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'SplitLongText', function() {
@@ -341,9 +359,15 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Phonetics', function() {
   tts.speak('t', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
   assertTrue(spokenStrings.includes('T'));
   assertTrue(spokenStrings.includes('ティー タイム'));
+
   tts.speak('a', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
   assertTrue(spokenStrings.includes('A'));
   assertTrue(spokenStrings.includes('エイ アニマル'));
+
+  tts.speak('A', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
+  assertTrue(spokenStrings.includes('A'));
+  assertTrue(spokenStrings.includes('エイ アニマル'));
+
   tts.speak('人', QueueMode.QUEUE, {lang: 'ja', phoneticCharacters: true});
   assertTrue(spokenStrings.includes('人'));
   assertTrue(spokenStrings.includes('ヒト，ニンゲン ノ ニン'));

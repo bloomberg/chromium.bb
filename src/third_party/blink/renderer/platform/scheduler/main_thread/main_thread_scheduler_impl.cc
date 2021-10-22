@@ -74,6 +74,9 @@ const int64_t kSecondsPerMinute = 60;
 constexpr const char kResourceFetchPriorityExperiment[] =
     "ResourceFetchPriorityExperiment";
 
+constexpr base::TimeDelta kPrioritizeCompositingAfterDelay =
+    base::Milliseconds(100);
+
 v8::RAILMode RAILModeToV8RAILMode(RAILMode rail_mode) {
   switch (rail_mode) {
     case RAILMode::kResponse:
@@ -312,7 +315,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
     // The real uptime of the machine is irrelevant if we're using virtual time
     // we choose an arbitrary initial offset.
     main_thread_only().initial_virtual_time_ticks =
-        base::TimeTicks() + base::TimeDelta::FromSeconds(10);
+        base::TimeTicks() + base::Seconds(10);
     EnableVirtualTime();
     SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   }
@@ -322,7 +325,7 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
 
   // Explicitly set the priority of this queue since it is not managed by
   // the main thread scheduler.
-  memory_purge_task_queue_->GetTaskQueue()->SetQueuePriority(
+  memory_purge_task_queue_->SetQueuePriority(
       ComputePriority(memory_purge_task_queue_.get()));
 }
 
@@ -469,12 +472,14 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           "Scheduler.PrioritizeCompositingAfterInput",
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      compositor_priority_experiments(main_thread_scheduler_impl),
       main_thread_compositing_is_fast(false),
       compositor_priority(TaskQueue::QueuePriority::kNormalPriority,
                           "Scheduler.CompositorPriority",
                           &main_thread_scheduler_impl->tracing_controller_,
                           TaskQueue::PriorityToString),
+      last_frame_time(now),
+      should_prioritize_compositor_task_queue_after_delay(false),
+      have_seen_a_frame(false),
       audible_power_mode_voter(
           power_scheduler::PowerModeArbiter::GetInstance()->NewVoter(
               "PowerModeVoter.Audible")) {}
@@ -924,7 +929,7 @@ void MainThreadSchedulerImpl::WillBeginFrame(const viz::BeginFrameArgs& args) {
     any_thread().begin_main_frame_on_critical_path = args.on_critical_path;
   }
   SetPrioritizeCompositingAfterInput(false);
-  main_thread_only().compositor_priority_experiments.OnWillBeginMainFrame();
+  main_thread_only().have_seen_a_frame = true;
 }
 
 void MainThreadSchedulerImpl::DidCommitFrameToCompositor() {
@@ -1001,7 +1006,7 @@ void MainThreadSchedulerImpl::SetAllRenderWidgetsHidden(bool hidden) {
     // Ensure that we stop running idle tasks after a few seconds of being
     // hidden.
     base::TimeDelta end_idle_when_hidden_delay =
-        base::TimeDelta::FromMilliseconds(kEndIdleWhenHiddenDelayMillis);
+        base::Milliseconds(kEndIdleWhenHiddenDelayMillis);
     control_task_queue_->GetTaskRunnerWithDefaultTaskType()->PostDelayedTask(
         FROM_HERE, end_renderer_hidden_idle_period_closure_.GetCallback(),
         end_idle_when_hidden_delay);
@@ -1209,8 +1214,7 @@ void MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread() {
                "MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread");
   base::AutoLock lock(any_thread_lock_);
   any_thread().fling_compositor_escalation_deadline =
-      helper_.NowTicks() +
-      base::TimeDelta::FromMilliseconds(kFlingEscalationLimitMillis);
+      helper_.NowTicks() + base::Milliseconds(kFlingEscalationLimitMillis);
 }
 
 void MainThreadSchedulerImpl::DidScheduleBeginMainFrame() {
@@ -1620,6 +1624,11 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // will otherwise miss this information in traces.
   CreateTraceEventObjectSnapshotLocked();
 
+  // Update the compositor priority before the early out check because the
+  // priority computation relies on state outside of the policy
+  // (main_thread_compositing_is_fast) that may have been updated here.
+  UpdateCompositorTaskQueuePriority();
+
   // TODO(alexclarke): Can we get rid of force update now?
   // talp: Can't get rid of this, as per-agent scheduling happens on top of the
   //  policy, based on agent states.
@@ -1640,8 +1649,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   Policy old_policy = main_thread_only().current_policy;
   main_thread_only().current_policy = new_policy;
-
-  UpdateCompositorTaskQueuePriority();
 
   UpdateStateForAllTaskQueues(old_policy);
 }
@@ -1670,7 +1677,7 @@ void MainThreadSchedulerImpl::UpdateTaskQueueState(
     const Policy& new_policy,
     bool should_update_priority) const {
   if (should_update_priority)
-    task_queue->GetTaskQueue()->SetQueuePriority(ComputePriority(task_queue));
+    task_queue->SetQueuePriority(ComputePriority(task_queue));
 
   if (task_queue_enabled_voter) {
     task_queue_enabled_voter->SetVoteToEnable(
@@ -1766,7 +1773,7 @@ base::TimeDelta MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration()
     case UseCase::kEarlyLoading:
     case UseCase::kLoading:
     case UseCase::kNone:
-      return base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis);
+      return base::Milliseconds(kRailsResponseTimeMillis);
 
     case UseCase::kMainThreadCustomInputHandling:
     case UseCase::kMainThreadGesture:
@@ -1776,7 +1783,7 @@ base::TimeDelta MainThreadSchedulerImpl::EstimateLongestJankFreeTaskDuration()
 
     default:
       NOTREACHED();
-      return base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis);
+      return base::Milliseconds(kRailsResponseTimeMillis);
   }
 }
 
@@ -1824,7 +1831,7 @@ base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime() {
   virtual_time_control_task_queue_ =
       helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
           MainThreadTaskQueue::QueueType::kControl));
-  virtual_time_control_task_queue_->GetTaskQueue()->SetQueuePriority(
+  virtual_time_control_task_queue_->SetQueuePriority(
       TaskQueue::kControlPriority);
   virtual_time_control_task_queue_->GetTaskQueue()->SetTimeDomain(
       virtual_time_domain_.get());
@@ -2552,9 +2559,9 @@ void MainThreadSchedulerImpl::OnTaskStarted(
           : absl::nullopt};
 
   main_thread_only().task_priority_for_tracing =
-      queue ? absl::optional<TaskQueue::QueuePriority>(
-                  queue->GetTaskQueue()->GetQueuePriority())
-            : absl::nullopt;
+      queue
+          ? absl::optional<TaskQueue::QueuePriority>(queue->GetQueuePriority())
+          : absl::nullopt;
 }
 
 void MainThreadSchedulerImpl::OnTaskCompleted(
@@ -2597,8 +2604,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
 
   RecordTaskUkm(queue.get(), task, *task_timing);
 
-  main_thread_only().compositor_priority_experiments.OnTaskCompleted(
-      queue.get(), main_thread_only().compositor_priority, task_timing);
+  MaybeUpdateCompositorTaskQueuePriorityOnTaskCompleted(queue.get(),
+                                                        *task_timing);
 
   find_in_page_budget_pool_controller_->OnTaskCompleted(queue.get(),
                                                         task_timing);
@@ -2674,7 +2681,7 @@ UkmRecordingStatus MainThreadSchedulerImpl::RecordTaskUkmImpl(
     // Trade off for privacy: Round to seconds for times below 10 minutes and
     // minutes afterwards.
     int64_t seconds_since_backgrounded = 0;
-    if (time_since_backgrounded < base::TimeDelta::FromMinutes(10)) {
+    if (time_since_backgrounded < base::Minutes(10)) {
       seconds_since_backgrounded = time_since_backgrounded.InSeconds();
     } else {
       seconds_since_backgrounded =
@@ -2807,11 +2814,6 @@ void MainThreadSchedulerImpl::SetPrioritizeCompositingAfterInput(
   UpdateCompositorTaskQueuePriority();
 }
 
-void MainThreadSchedulerImpl::
-    OnCompositorPriorityExperimentUpdateCompositorPriority() {
-  UpdateCompositorTaskQueuePriority();
-}
-
 TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputeCompositorPriority()
     const {
   if (main_thread_only().prioritize_compositing_after_input) {
@@ -2826,22 +2828,51 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputeCompositorPriority()
     if (computed_compositor_priority) {
       return computed_compositor_priority.value();
     } else if (main_thread_only()
-                   .compositor_priority_experiments.IsExperimentActive()) {
-      return main_thread_only()
-          .compositor_priority_experiments.GetCompositorPriority();
+                   .should_prioritize_compositor_task_queue_after_delay) {
+      return TaskQueue::QueuePriority::kVeryHighPriority;
     }
   }
   return TaskQueue::QueuePriority::kNormalPriority;
 }
 
 void MainThreadSchedulerImpl::UpdateCompositorTaskQueuePriority() {
+  TaskQueue::QueuePriority old_compositor_priority =
+      main_thread_only().compositor_priority;
   main_thread_only().compositor_priority = ComputeCompositorPriority();
+
+  if (old_compositor_priority == main_thread_only().compositor_priority)
+    return;
+
   for (const auto& pair : task_runners_) {
     if (pair.first->GetPrioritisationType() !=
         MainThreadTaskQueue::QueueTraits::PrioritisationType::kCompositor)
       continue;
-    pair.first->GetTaskQueue()->SetQueuePriority(
-        ComputePriority(pair.first.get()));
+    pair.first->SetQueuePriority(ComputePriority(pair.first.get()));
+  }
+}
+
+void MainThreadSchedulerImpl::
+    MaybeUpdateCompositorTaskQueuePriorityOnTaskCompleted(
+        MainThreadTaskQueue* queue,
+        const base::sequence_manager::TaskQueue::TaskTiming& task_timing) {
+  bool current_should_prioritize_compositor_task_queue =
+      main_thread_only().should_prioritize_compositor_task_queue_after_delay;
+  if (queue &&
+      queue->queue_type() == MainThreadTaskQueue::QueueType::kCompositor &&
+      main_thread_only().have_seen_a_frame) {
+    main_thread_only().last_frame_time = task_timing.end_time();
+    main_thread_only().have_seen_a_frame = false;
+    main_thread_only().should_prioritize_compositor_task_queue_after_delay =
+        false;
+  } else if (task_timing.end_time() - main_thread_only().last_frame_time >=
+             kPrioritizeCompositingAfterDelay) {
+    main_thread_only().should_prioritize_compositor_task_queue_after_delay =
+        true;
+  }
+
+  if (main_thread_only().should_prioritize_compositor_task_queue_after_delay !=
+      current_should_prioritize_compositor_task_queue) {
+    UpdateCompositorTaskQueuePriority();
   }
 }
 

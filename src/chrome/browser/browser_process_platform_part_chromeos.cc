@@ -16,8 +16,11 @@
 #include "chrome/browser/ash/login/saml/in_session_password_change_manager.h"
 #include "chrome/browser/ash/login/session/chrome_session_manager.h"
 #include "chrome/browser/ash/login/users/chrome_user_manager_impl.h"
+#include "chrome/browser/ash/net/delay_network_call.h"
+#include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/scheduler_configuration_manager.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/device_disabling_manager.h"
@@ -27,9 +30,6 @@
 #include "chrome/browser/ash/system/timezone_resolver_manager.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/net/delay_network_call.h"
-#include "chrome/browser/chromeos/net/system_proxy_manager.h"
-#include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -48,9 +48,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
+#include "components/app_restore/features.h"
 #include "components/arc/enterprise/arc_data_snapshotd_manager.h"
 #include "components/arc/enterprise/snapshot_hours_policy_service.h"
-#include "components/full_restore/features.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
@@ -75,6 +75,11 @@ class PrimaryProfileServicesShutdownNotifierFactory
         PrimaryProfileServicesShutdownNotifierFactory>::get();
   }
 
+  PrimaryProfileServicesShutdownNotifierFactory(
+      const PrimaryProfileServicesShutdownNotifierFactory&) = delete;
+  PrimaryProfileServicesShutdownNotifierFactory& operator=(
+      const PrimaryProfileServicesShutdownNotifierFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<
       PrimaryProfileServicesShutdownNotifierFactory>;
@@ -83,8 +88,6 @@ class PrimaryProfileServicesShutdownNotifierFactory
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "PrimaryProfileServices") {}
   ~PrimaryProfileServicesShutdownNotifierFactory() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(PrimaryProfileServicesShutdownNotifierFactory);
 };
 
 }  // namespace
@@ -357,9 +360,9 @@ chromeos::TimeZoneResolver* BrowserProcessPlatformPart::GetTimezoneResolver() {
         g_browser_process->shared_url_loader_factory(),
         chromeos::SimpleGeolocationProvider::DefaultGeolocationProviderURL(),
         base::BindRepeating(&ash::system::ApplyTimeZone),
-        base::BindRepeating(&chromeos::DelayNetworkCall,
-                            base::TimeDelta::FromMilliseconds(
-                                chromeos::kDefaultNetworkRetryDelayMS)),
+        base::BindRepeating(
+            &chromeos::DelayNetworkCall,
+            base::Milliseconds(chromeos::kDefaultNetworkRetryDelayMS)),
         g_browser_process->local_state());
   }
   return timezone_resolver_.get();

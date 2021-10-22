@@ -1051,29 +1051,41 @@ Affects:
     libavcodec/h263dec.c
 
 ------------------------------------------------------------------
-commit 628f5287515a4359354922763fabb93f86c00324
+commit b4d520ca6786368a829b38147364f22096f284fa
 Author: liberato@chromium.org <liberato@chromium.org>
-Date:   Fri Jul 30 14:56:01 2021 -0700
+Date:   Fri Jul 30 18:46:38 2021 -0700
 
-    Delete GPL'd macos_kperf.* before merge with chromium
+    M94 FFmpeg roll.
+
+    Bug: 1227259
+    Change-Id: I53e21333100fc603d814806a9f6f807fede2adb6
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/3063817
+    Reviewed-by: Ted Meyer <tmathmeyer@chromium.org>
 
 Affects:
+    libavformat/oggparsevorbis.c
     libavutil/macos_kperf.c
     libavutil/macos_kperf.h
 
 ------------------------------------------------------------------
-commit d67214044b87280d6537d60717de1f20ba2d0741
-Author: liberato@chromium.org <liberato@chromium.org>
-Date:   Fri Jul 30 18:40:25 2021 -0700
+commit 47273666537556c923cc4f4a03d9d42666931876
+Author: Thomas Guilbert <tguilbert@chromium.org>
+Date:   Wed Sep 15 15:44:40 2021 -0700
 
-    Un-fix ogg vorbis to match previous behavior.
+    Fix macro expansion error
 
-    Rather than change chrome's longstanding behavior as part of the m94
-    roll, undo (comment out) the small patch that causes it.  We can
-    revisit this behavior change separately from the roll.
+    This CL fixes an issue that results from the CHROMIUM_NO_LOGGING macro.
+    When it is defined, av_log(...) expands to nothing, which causes this
+    expansion:
+            ff_dlog(ctx, ...) -->  do { if (0) av_log(...)  ; } while (0)
 
-    Bug: 1234960
+    to cause a -Wempty-statement error, due to the empty `if (0) ;`.
+
+    Bug: 1249257
+    Change-Id: I0011ae8e50c8931ac64517fa604775a9838ac8a1
+    Reviewed-on: https://chromium-review.googlesource.com/c/chromium/third_party/ffmpeg/+/3163777
+    Reviewed-by: John Rummell <jrummell@chromium.org>
 
 Affects:
-    libavformat/oggparsevorbis.c
+    libavutil/internal.h
 

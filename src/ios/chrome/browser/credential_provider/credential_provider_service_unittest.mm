@@ -9,7 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/browser/password_store_impl.h"
+#include "components/password_manager/core/browser/site_affiliation/fake_affiliation_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -35,10 +37,11 @@
 
 namespace {
 
+using password_manager::FakeAffiliationService;
 using password_manager::PasswordForm;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForFileOperationTimeout;
-using password_manager::PasswordStoreImpl;
+using password_manager::PasswordStore;
 using password_manager::LoginDatabase;
 
 NSString* const userEmail = @"test@email.com";
@@ -47,6 +50,10 @@ class CredentialProviderServiceTest : public PlatformTest {
  public:
   CredentialProviderServiceTest()
       : chrome_browser_state_(TestChromeBrowserState::Builder().Build()) {}
+
+  CredentialProviderServiceTest(const CredentialProviderServiceTest&) = delete;
+  CredentialProviderServiceTest& operator=(
+      const CredentialProviderServiceTest&) = delete;
 
   void SetUp() override {
     PlatformTest::SetUp();
@@ -80,7 +87,7 @@ class CredentialProviderServiceTest : public PlatformTest {
 
     credential_provider_service_ = std::make_unique<CredentialProviderService>(
         &testing_pref_service_, password_store_, auth_service_,
-        credential_store_, nullptr, &sync_service_);
+        credential_store_, nullptr, &sync_service_, &affiliation_service_);
 
     // Fire sync service state changed to simulate sync setup finishing.
     sync_service_.FireStateChanged();
@@ -95,26 +102,26 @@ class CredentialProviderServiceTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  scoped_refptr<PasswordStoreImpl> CreatePasswordStore() {
-    return base::MakeRefCounted<PasswordStoreImpl>(
-        std::make_unique<LoginDatabase>(
-            temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test")),
-            password_manager::IsAccountStore(false)));
+  scoped_refptr<PasswordStore> CreatePasswordStore() {
+    return base::MakeRefCounted<PasswordStore>(
+        std::make_unique<password_manager::PasswordStoreImpl>(
+            std::make_unique<LoginDatabase>(
+                temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test")),
+                password_manager::IsAccountStore(false))));
   }
 
  protected:
   TestingPrefServiceSimple testing_pref_service_;
   base::ScopedTempDir temp_dir_;
   web::WebTaskEnvironment task_environment_;
-  scoped_refptr<PasswordStoreImpl> password_store_;
+  scoped_refptr<PasswordStore> password_store_;
   id<CredentialStore> credential_store_;
   AuthenticationServiceFake* auth_service_;
   std::unique_ptr<CredentialProviderService> credential_provider_service_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   ChromeAccountManagerService* account_manager_service_;
   syncer::TestSyncService sync_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(CredentialProviderServiceTest);
+  FakeAffiliationService affiliation_service_;
 };
 
 // Test that CredentialProviderService can be created.

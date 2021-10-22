@@ -34,25 +34,25 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
 
   static get properties() {
     return {
-      /** @private {ShimlessRmaServiceInterface} */
-      shimlessRmaService_: {
-        type: Object,
-        value: {},
-      },
-
-      /** @protected {number} */
+      /** @protected */
       canvasSize_: {
         type: Number,
         value: 0,
       },
 
-      /** @protected {string} */
+      /** @protected {!Array<!Array<string>>} */
       rsuChallenge_: {
+        type: Array,
+        value: () => [],
+      },
+
+      /** @protected */
+      rsuHwid_: {
         type: String,
         value: '',
       },
 
-      /** @protected {string} */
+      /** @protected */
       rsuCode_: {
         type: String,
         value: '',
@@ -61,18 +61,35 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
     };
   }
 
+  constructor() {
+    super();
+    /** @private {ShimlessRmaServiceInterface} */
+    this.shimlessRmaService_ = getShimlessRmaService();
+  }
+
   /** @override */
   ready() {
     super.ready();
-    this.shimlessRmaService_ = getShimlessRmaService();
-    this.getRsuChallenge_();
+    this.getRsuChallengeAndHwid_();
   }
 
   /** @private */
-  getRsuChallenge_() {
+  getRsuChallengeAndHwid_() {
     this.shimlessRmaService_.getRsuDisableWriteProtectChallenge().then(
         (result) => {
-          this.rsuChallenge_ = result.challenge;
+          this.rsuChallenge_ = [];
+          // Split raw challenge code every 4 characters.
+          /** @type !Array<string> */
+          const challenge = result.challenge.match(/.{1,4}/g) || [];
+          // Split array of 4 character blocks into multiple arrays of 4 blocks
+          // each.
+          for (let i = 0; i < challenge.length; i += 4) {
+            this.rsuChallenge_.push(challenge.slice(i, i + 4));
+          }
+        });
+    this.shimlessRmaService_.getRsuDisableWriteProtectHwid().then(
+        (result) => {
+          this.rsuHwid_ = result.hwid;
         });
     this.shimlessRmaService_.getRsuDisableWriteProtectChallengeQrCode().then(
         this.updateQrCode_.bind(this));
@@ -103,6 +120,27 @@ export class OnboardingEnterRsuWpDisableCodePageElement extends PolymerElement {
         index++;
       }
     }
+  }
+
+  /**
+   * @private
+   * @return {boolean}
+   * TODO(gavindodd): Add basic validation for the format of RSU code.
+   * Can this use cr-input autovalidate?
+   */
+  rsuCodeIsPlausible_() {
+    return !!this.rsuCode_ && this.rsuCode_.length == 8;
+  }
+
+  /**
+   * @protected
+   * @param {!Event} event
+   */
+  onRsuCodeChanged_(event) {
+    this.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: !this.rsuCodeIsPlausible_()},
+        ));
   }
 
   /**

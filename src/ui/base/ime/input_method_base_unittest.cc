@@ -23,6 +23,9 @@ class ClientChangeVerifier {
  public:
   ClientChangeVerifier() = default;
 
+  ClientChangeVerifier(const ClientChangeVerifier&) = delete;
+  ClientChangeVerifier& operator=(const ClientChangeVerifier&) = delete;
+
   // Expects that focused text input client will not be changed.
   void ExpectClientDoesNotChange() {
     previous_client_ = nullptr;
@@ -105,8 +108,6 @@ class ClientChangeVerifier {
   bool on_will_change_focused_client_called_ = false;
   bool on_did_change_focused_client_called_ = false;
   bool on_text_input_state_changed_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ClientChangeVerifier);
 };
 
 class InputMethodBaseTest : public testing::Test {
@@ -119,6 +120,10 @@ class MockInputMethodBase : public InputMethodBase {
  public:
   explicit MockInputMethodBase(ClientChangeVerifier* verifier)
       : InputMethodBase(nullptr), verifier_(verifier) {}
+
+  MockInputMethodBase(const MockInputMethodBase&) = delete;
+  MockInputMethodBase& operator=(const MockInputMethodBase&) = delete;
+
   ~MockInputMethodBase() override = default;
 
  private:
@@ -145,7 +150,6 @@ class MockInputMethodBase : public InputMethodBase {
   ClientChangeVerifier* const verifier_;
 
   FRIEND_TEST_ALL_PREFIXES(InputMethodBaseTest, CandidateWindowEvents);
-  DISALLOW_COPY_AND_ASSIGN(MockInputMethodBase);
 };
 
 class MockInputMethodObserver : public InputMethodObserver {
@@ -153,6 +157,10 @@ class MockInputMethodObserver : public InputMethodObserver {
   explicit MockInputMethodObserver(ClientChangeVerifier* verifier)
       : verifier_(verifier) {
   }
+
+  MockInputMethodObserver(const MockInputMethodObserver&) = delete;
+  MockInputMethodObserver& operator=(const MockInputMethodObserver&) = delete;
+
   ~MockInputMethodObserver() override = default;
 
  private:
@@ -167,7 +175,6 @@ class MockInputMethodObserver : public InputMethodObserver {
 
   // Not owned.
   ClientChangeVerifier* const verifier_;
-  DISALLOW_COPY_AND_ASSIGN(MockInputMethodObserver);
 };
 
 typedef base::ScopedObservation<InputMethod, InputMethodObserver>

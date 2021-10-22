@@ -40,6 +40,7 @@
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/tracing_features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/tracing/background_reached_code_tracing_observer_android.h"
@@ -115,16 +116,14 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     std::unique_ptr<BackgroundTracingConfig> config,
     DataFiltering data_filtering) {
   // Pass a null ReceiveCallback to use the default upload behaviour.
-  return SetActiveScenarioWithReceiveCallback(std::move(config),
-                                              ReceiveCallback(), data_filtering,
-                                              /*local_output=*/false);
+  return SetActiveScenarioWithReceiveCallback(
+      std::move(config), ReceiveCallback(), data_filtering);
 }
 
 bool BackgroundTracingManagerImpl::SetActiveScenarioWithReceiveCallback(
     std::unique_ptr<BackgroundTracingConfig> config,
     ReceiveCallback receive_callback,
-    DataFiltering data_filtering,
-    bool local_output) {
+    DataFiltering data_filtering) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (config) {
     RecordMetric(Metrics::SCENARIO_ACTIVATION_REQUESTED);
@@ -192,8 +191,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenarioWithReceiveCallback(
   active_scenario_ = std::make_unique<BackgroundTracingActiveScenario>(
       std::move(config_impl), std::move(receive_callback),
       base::BindOnce(&BackgroundTracingManagerImpl::OnScenarioAborted,
-                     base::Unretained(this)),
-      local_output);
+                     base::Unretained(this)));
 
   // Notify observers before starting tracing.
   for (auto* observer : background_tracing_observers_) {
@@ -452,16 +450,12 @@ bool BackgroundTracingManagerImpl::IsAllowedFinalization(
               is_crash_scenario));
 }
 
-std::unique_ptr<base::DictionaryValue>
+absl::optional<base::Value>
 BackgroundTracingManagerImpl::GenerateMetadataDict() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto metadata_dict = std::make_unique<base::DictionaryValue>();
-  if (active_scenario_) {
-    active_scenario_->GenerateMetadataDict(metadata_dict.get());
-  }
-
-  return metadata_dict;
+  if (!active_scenario_)
+    return absl::nullopt;
+  return active_scenario_->GenerateMetadataDict();
 }
 
 void BackgroundTracingManagerImpl::GenerateMetadataProto(

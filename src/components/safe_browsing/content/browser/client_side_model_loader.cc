@@ -70,8 +70,6 @@ const char ModelLoader::kClientModelFinchExperiment[] =
     "ClientSideDetectionModelOnAndroid";
 #endif
 const char ModelLoader::kClientModelFinchParam[] = "ModelNum";
-const char kUmaModelDownloadResponseMetricName[] =
-    "SBClientPhishing.ClientModelDownloadResponseOrErrorCode";
 
 // Command-line flag that can be used to override the current CSD model. Must be
 // provided with an absolute path.
@@ -222,9 +220,6 @@ void ModelLoader::OnURLLoaderComplete(
   int response_code = 0;
   if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers)
     response_code = url_loader_->ResponseInfo()->headers->response_code();
-  V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      kUmaModelDownloadResponseMetricName, url_loader_->NetError(),
-      response_code);
 
   // max_age is valid iff !0.
   base::TimeDelta max_age;
@@ -277,7 +272,7 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
       (status == MODEL_SUCCESS || status == MODEL_NOT_CHANGED)) {
     // We're adding 60s of additional delay to make sure we're past
     // the model's age.
-    max_age += base::TimeDelta::FromMinutes(1);
+    max_age += base::Minutes(1);
     delay_ms = max_age.InMilliseconds();
   }
 
@@ -294,7 +289,7 @@ void ModelLoader::ScheduleFetch(int64_t delay_ms) {
       FROM_HERE,
       base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr(),
                      /*only_from_cache=*/false),
-      base::TimeDelta::FromMilliseconds(delay_ms));
+      base::Milliseconds(delay_ms));
 }
 
 void ModelLoader::CancelFetcher() {

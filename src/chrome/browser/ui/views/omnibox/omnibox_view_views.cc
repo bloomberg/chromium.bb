@@ -48,7 +48,7 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
@@ -192,8 +192,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
 
 OmniboxViewViews::~OmniboxViewViews() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::input_method::InputMethodManager::Get()->
-      RemoveCandidateWindowObserver(this);
+  ash::input_method::InputMethodManager::Get()->RemoveCandidateWindowObserver(
+      this);
 #endif
 
   // Explicitly teardown members which have a reference to us.  Just to be safe
@@ -228,8 +228,8 @@ void OmniboxViewViews::Init() {
   SetBorder(views::CreateEmptyBorder(kTextfieldInsets));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::input_method::InputMethodManager::Get()->
-      AddCandidateWindowObserver(this);
+  ash::input_method::InputMethodManager::Get()->AddCandidateWindowObserver(
+      this);
 #endif
 }
 
@@ -686,13 +686,13 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   if (!views::FocusManager::IsTabTraversalKeyEvent(event))
     return false;
 
-  if (!model()->popup_model()->IsOpen())
+  if (!model()->PopupIsOpen())
     return false;
 
-  model()->popup_model()->StepSelection(event.IsShiftDown()
-                                            ? OmniboxPopupSelection::kBackward
-                                            : OmniboxPopupSelection::kForward,
-                                        OmniboxPopupSelection::kStateOrLine);
+  model()->StepPopupSelection(event.IsShiftDown()
+                                  ? OmniboxPopupSelection::kBackward
+                                  : OmniboxPopupSelection::kForward,
+                              OmniboxPopupSelection::kStateOrLine);
 
   return true;
 }
@@ -808,8 +808,7 @@ void OmniboxViewViews::ClearAccessibilityLabel() {
 void OmniboxViewViews::SetAccessibilityLabel(const std::u16string& display_text,
                                              const AutocompleteMatch& match,
                                              bool notify_text_changed) {
-  if (model()->popup_model()->selected_line() ==
-      OmniboxPopupSelection::kNoMatch) {
+  if (model()->GetPopupSelection().line == OmniboxPopupSelection::kNoMatch) {
     // If nothing is selected in the popup, we are in the no-default-match edge
     // case, and |match| is a synthetically generated match. In that case,
     // bypass OmniboxPopupModel and get the label from our synthetic |match|.
@@ -819,7 +818,7 @@ void OmniboxViewViews::SetAccessibilityLabel(const std::u16string& display_text,
         &friendly_suggestion_text_prefix_length_);
   } else {
     friendly_suggestion_text_ =
-        model()->popup_model()->GetAccessibilityLabelForCurrentSelection(
+        model()->GetPopupAccessibilityLabelForCurrentSelection(
             display_text, true, &friendly_suggestion_text_prefix_length_);
   }
 
@@ -1048,9 +1047,12 @@ bool OmniboxViewViews::OnMousePressed(const ui::MouseEvent& event) {
   PermitExternalProtocolHandler();
 
   // Clear focus of buttons, but do not clear keyword mode.
-  if (model()->popup_model() && model()->popup_model()->selected_line_state() !=
-                                    OmniboxPopupSelection::KEYWORD_MODE) {
-    model()->popup_model()->SetSelectedLineState(OmniboxPopupSelection::NORMAL);
+  if (model()->PopupIsOpen()) {
+    OmniboxPopupSelection selection = model()->GetPopupSelection();
+    if (selection.state != OmniboxPopupSelection::KEYWORD_MODE) {
+      selection.state = OmniboxPopupSelection::NORMAL;
+      model()->SetPopupSelection(selection);
+    }
   }
 
   is_mouse_pressed_ = true;
@@ -1212,7 +1214,7 @@ bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
     const ui::KeyEvent& event) {
   if (views::FocusManager::IsTabTraversalKeyEvent(event) &&
       ((model()->is_keyword_hint() && !event.IsShiftDown()) ||
-       model()->popup_model()->IsOpen())) {
+       model()->PopupIsOpen())) {
     return true;
   }
   if (event.key_code() == ui::VKEY_ESCAPE)
@@ -1254,7 +1256,7 @@ void OmniboxViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // between the omnibox and the list of suggestions, and determine which
   // suggestion is currently selected, even though focus remains here on
   // the omnibox.
-  if (model()->popup_model()->IsOpen()) {
+  if (model()->PopupIsOpen()) {
     int32_t popup_view_id =
         popup_view_->GetViewAccessibility().GetUniqueId().Get();
     node_data->AddIntListAttribute(ax::mojom::IntListAttribute::kControlsIds,
@@ -1356,9 +1358,6 @@ void OmniboxViewViews::OnBlur() {
   // Save the user's existing selection to restore it later.
   saved_selection_for_focus_change_ = GetRenderText()->GetAllSelections();
 
-  // popup_model() can be null in tests.
-  OmniboxPopupModel* popup_model = model()->popup_model();
-
   // If the view is showing text that's not user-text, revert the text to the
   // permanent display text. This usually occurs if Steady State Elisions is on
   // and the user has unelided, but not edited the URL.
@@ -1390,8 +1389,7 @@ void OmniboxViewViews::OnBlur() {
   // midst of running but hasn't yet opened the popup, it will be halted.
   // If we fully reverted in this case, we'd lose the cursor/highlight
   // information saved above.
-  if (!model()->user_input_in_progress() && popup_model &&
-      popup_model->IsOpen() &&
+  if (!model()->user_input_in_progress() && model()->PopupIsOpen() &&
       GetText() != model()->GetPermanentDisplayText()) {
     RevertAll();
   } else {
@@ -1525,12 +1523,12 @@ bool OmniboxViewViews::ShouldShowPlaceholderText() const {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void OmniboxViewViews::CandidateWindowOpened(
-      chromeos::input_method::InputMethodManager* manager) {
+    ash::input_method::InputMethodManager* manager) {
   ime_candidate_window_open_ = true;
 }
 
 void OmniboxViewViews::CandidateWindowClosed(
-      chromeos::input_method::InputMethodManager* manager) {
+    ash::input_method::InputMethodManager* manager) {
   ime_candidate_window_open_ = false;
 }
 #endif
@@ -1566,22 +1564,20 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   const bool command = event.IsCommandDown();
   switch (event.key_code()) {
     case ui::VKEY_RETURN: {
-      OmniboxPopupModel* popup_model = model()->popup_model();
-      if (popup_model && popup_model->TriggerSelectionAction(
-                             popup_model->selection(), event.time_stamp())) {
-        return true;
-      } else if ((alt && !shift) || (shift && command)) {
-        model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             event.time_stamp());
+      WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB;
+      if ((alt && !shift) || (shift && command)) {
+        disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
       } else if (alt || command) {
-        model()->AcceptInput(WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                             event.time_stamp());
+        disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
       } else if (shift) {
-        model()->AcceptInput(WindowOpenDisposition::NEW_WINDOW,
-                             event.time_stamp());
+        disposition = WindowOpenDisposition::NEW_WINDOW;
+      }
+      if (model()->PopupIsOpen() &&
+          model()->TriggerPopupSelectionAction(
+              model()->GetPopupSelection(), event.time_stamp(), disposition)) {
+        return true;
       } else {
-        model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB,
-                             event.time_stamp());
+        model()->AcceptInput(disposition, event.time_stamp());
       }
       return true;
     }
@@ -1593,9 +1589,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_DELETE:
-      if (shift && model()->popup_model()->IsOpen()) {
-        model()->popup_model()->TryDeletingLine(
-            model()->popup_model()->selected_line());
+      if (shift && model()->PopupIsOpen()) {
+        model()->TryDeletingPopupLine(model()->GetPopupSelection().line);
       }
       break;
 
@@ -1625,8 +1620,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       if (control || alt || shift || GetReadOnly())
         return false;
       if (!model()->MaybeStartQueryForPopup()) {
-        model()->popup_model()->StepSelection(OmniboxPopupSelection::kBackward,
-                                              OmniboxPopupSelection::kAllLines);
+        model()->StepPopupSelection(OmniboxPopupSelection::kBackward,
+                                    OmniboxPopupSelection::kAllLines);
       }
       return true;
 
@@ -1634,8 +1629,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       if (control || alt || shift || GetReadOnly())
         return false;
       if (!model()->MaybeStartQueryForPopup()) {
-        model()->popup_model()->StepSelection(OmniboxPopupSelection::kForward,
-                                              OmniboxPopupSelection::kAllLines);
+        model()->StepPopupSelection(OmniboxPopupSelection::kForward,
+                                    OmniboxPopupSelection::kAllLines);
       }
       return true;
 
@@ -1686,12 +1681,13 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
       break;
 
     case ui::VKEY_SPACE: {
-      OmniboxPopupModel* popup_model = model()->popup_model();
-      if (popup_model && !control && !alt && !shift &&
-          popup_model->selection().IsButtonFocused()) {
-        if (popup_model->TriggerSelectionAction(popup_model->selection(),
-                                                event.time_stamp())) {
-          return true;
+      if (model()->PopupIsOpen()) {
+        OmniboxPopupSelection selection = model()->GetPopupSelection();
+        if (selection.IsButtonFocused() && !control && !alt && !shift) {
+          if (model()->TriggerPopupSelectionAction(selection,
+                                                   event.time_stamp())) {
+            return true;
+          }
         }
       }
       break;
@@ -1838,8 +1834,10 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 
-  menu_contents->AddItemWithStringId(IDC_EDIT_SEARCH_ENGINES,
-                                     IDS_EDIT_SEARCH_ENGINES);
+  menu_contents->AddItemWithStringId(
+      IDC_EDIT_SEARCH_ENGINES, OmniboxFieldTrial::IsActiveSearchEnginesEnabled()
+                                   ? IDS_MANAGE_SEARCH_ENGINES_AND_SITE_SEARCH
+                                   : IDS_MANAGE_SEARCH_ENGINES);
 
   const PrefService::Preference* show_full_urls_pref =
       location_bar_view_->profile()->GetPrefs()->FindPreference(

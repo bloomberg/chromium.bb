@@ -399,6 +399,7 @@
                       manager,
                       memory );
 
+    manager->nodes_list = NULL;
     manager->num_nodes  = 0;
     manager->num_caches = 0;
 
@@ -596,7 +597,7 @@
         goto Exit;
       }
 
-      if ( !FT_ALLOC( cache, clazz->cache_size ) )
+      if ( !FT_QALLOC( cache, clazz->cache_size ) )
       {
         cache->manager   = manager;
         cache->memory    = memory;

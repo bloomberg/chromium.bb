@@ -28,13 +28,16 @@ namespace {
 using testing::_;
 
 constexpr char kTestEmail[] = "test@example.com";
-constexpr base::TimeDelta kTokenLifetime = base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kTokenLifetime = base::Hours(1);
 
 class AuthDelegateImpl : public DriveFsAuth::Delegate {
  public:
   AuthDelegateImpl(signin::IdentityManager* identity_manager,
                    const AccountId& account_id)
       : identity_manager_(identity_manager), account_id_(account_id) {}
+
+  AuthDelegateImpl(const AuthDelegateImpl&) = delete;
+  AuthDelegateImpl& operator=(const AuthDelegateImpl&) = delete;
 
   ~AuthDelegateImpl() override = default;
 
@@ -56,13 +59,14 @@ class AuthDelegateImpl : public DriveFsAuth::Delegate {
 
   signin::IdentityManager* const identity_manager_;
   const AccountId account_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthDelegateImpl);
 };
 
 class DriveFsAuthTest : public ::testing::Test {
  public:
   DriveFsAuthTest() = default;
+
+  DriveFsAuthTest(const DriveFsAuthTest&) = delete;
+  DriveFsAuthTest& operator=(const DriveFsAuthTest&) = delete;
 
  protected:
   void SetUp() override {
@@ -103,9 +107,6 @@ class DriveFsAuthTest : public ::testing::Test {
   std::unique_ptr<AuthDelegateImpl> delegate_;
   std::unique_ptr<DriveFsAuth> auth_;
   base::MockOneShotTimer* timer_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DriveFsAuthTest);
 };
 
 TEST_F(DriveFsAuthTest, GetAccessToken_Success) {
@@ -280,7 +281,7 @@ TEST_F(DriveFsAuthTest, CacheExpired) {
   EXPECT_TRUE(identity_test_env_.IsAccessTokenRequestPending());
   RespondWithAccessToken("auth token");
 
-  clock_.Advance(base::TimeDelta::FromHours(2));
+  clock_.Advance(base::Hours(2));
 
   // The token expired so a new one is requested.
   auth_->GetAccessToken(true, base::BindOnce([](mojom::AccessTokenStatus status,

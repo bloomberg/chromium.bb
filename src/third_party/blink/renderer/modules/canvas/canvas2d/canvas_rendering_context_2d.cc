@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer/array_buffer_contents.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
-#include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -241,7 +240,6 @@ void CanvasRenderingContext2D::DidSetSurfaceSize() {
 }
 
 void CanvasRenderingContext2D::Trace(Visitor* visitor) const {
-  visitor->Trace(hit_region_manager_);
   visitor->Trace(filter_operations_);
   CanvasRenderingContext::Trace(visitor);
   BaseRenderingContext2D::Trace(visitor);
@@ -396,17 +394,6 @@ void CanvasRenderingContext2D::clearRect(double x,
                                          double width,
                                          double height) {
   BaseRenderingContext2D::clearRect(x, y, width, height);
-
-  if (UNLIKELY(hit_region_manager_) && LIKELY(std::isfinite(x)) &&
-      LIKELY(std::isfinite(y)) && LIKELY(std::isfinite(width)) &&
-      LIKELY(std::isfinite(height))) {
-    FloatRect rect(clampTo<float>(x), clampTo<float>(y), clampTo<float>(width),
-                   clampTo<float>(height));
-    auto transform = GetState().GetAffineTransform();
-    PostDeferrableAction(WTF::Bind(&HitRegionManager::RemoveHitRegionsInRect,
-                                   WrapPersistent(hit_region_manager_.Get()),
-                                   rect, transform));
-  }
 }
 
 sk_sp<PaintFilter> CanvasRenderingContext2D::StateGetFilter() {
@@ -446,7 +433,8 @@ cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvasForDraw(
                !canvas()->GetCanvas2DLayerBridge()->ResourceProvider()))
     return nullptr;
   CanvasRenderingContext::DidDraw(dirty_rect, draw_type);
-  if (!layer_count_) {
+  // Always draw everything during printing.
+  if (!layer_count_ && !canvas()->IsPrinting()) {
     // TODO(crbug.com/1246486): Make auto-flushing layer friendly.
     canvas()
         ->GetCanvas2DLayerBridge()
@@ -679,45 +667,6 @@ bool CanvasRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, canvas());
 }
 
-HitTestCanvasResult* CanvasRenderingContext2D::GetControlAndIdIfHitRegionExists(
-    const PhysicalOffset& location) {
-  if (HitRegionsCount() <= 0)
-    return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
-
-  LayoutBox* box = canvas()->GetLayoutBox();
-  FloatPoint local_pos(box->AbsoluteToLocalPoint(location));
-  if (box->StyleRef().HasBorder() || box->StyleRef().MayHavePadding())
-    local_pos.Move(FloatSize(-box->PhysicalContentBoxOffset()));
-  float scaleWidth = box->ContentWidth().ToFloat() == 0.0f
-                         ? 1.0f
-                         : canvas()->width() / box->ContentWidth();
-  float scaleHeight = box->ContentHeight().ToFloat() == 0.0f
-                          ? 1.0f
-                          : canvas()->height() / box->ContentHeight();
-  local_pos.Scale(scaleWidth, scaleHeight);
-
-  HitRegion* hit_region = HitRegionAtPoint(local_pos);
-  if (hit_region) {
-    Element* control = hit_region->Control();
-    if (control && canvas()->IsSupportedInteractiveCanvasFallback(*control)) {
-      return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(),
-                                                       hit_region->Control());
-    }
-    return MakeGarbageCollected<HitTestCanvasResult>(hit_region->Id(), nullptr);
-  }
-  return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
-}
-
-String CanvasRenderingContext2D::GetIdFromControl(const Element* element) {
-  if (HitRegionsCount() <= 0)
-    return String();
-
-  if (HitRegion* hit_region =
-          hit_region_manager_->GetHitRegionByControl(element))
-    return hit_region->Id();
-  return String();
-}
-
 static inline TextDirection ToTextDirection(
     CanvasRenderingContext2DState::Direction direction,
     HTMLCanvasElement* canvas,
@@ -779,7 +728,7 @@ void CanvasRenderingContext2D::setLetterSpacing(const double letter_spacing) {
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  float letter_spacing_float = clampTo<float>(letter_spacing);
+  float letter_spacing_float = ClampTo<float>(letter_spacing);
   GetState().SetLetterSpacing(letter_spacing_float, Host()->GetFontSelector());
 }
 
@@ -794,7 +743,7 @@ void CanvasRenderingContext2D::setWordSpacing(const double word_spacing) {
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  float word_spacing_float = clampTo<float>(word_spacing);
+  float word_spacing_float = ClampTo<float>(word_spacing);
   GetState().SetWordSpacing(word_spacing_float, Host()->GetFontSelector());
 }
 
@@ -985,12 +934,13 @@ void CanvasRenderingContext2D::fillFormattedText(
   sk_sp<PaintRecord> recording = formatted_text->PaintFormattedText(
       canvas()->GetDocument(), GetState().GetFontDescription(), x, y,
       wrap_width, bounds);
-  Draw([recording](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
-       { c->drawPicture(recording); },
-       [](const SkIRect& rect) { return false; }, bounds,
-       CanvasRenderingContext2DState::PaintType::kFillPaintType,
-       CanvasRenderingContext2DState::kNoImage,
-       CanvasPerformanceMonitor::DrawType::kText);
+  Draw<OverdrawOp::kNone>(
+      [recording](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+      { c->drawPicture(recording); },
+      [](const SkIRect& rect) { return false; }, bounds,
+      CanvasRenderingContext2DState::PaintType::kFillPaintType,
+      CanvasRenderingContext2DState::kNoImage,
+      CanvasPerformanceMonitor::DrawType::kText);
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
@@ -1048,8 +998,8 @@ void CanvasRenderingContext2D::DrawTextInternal(
                    bidi_override);
   text_run.SetNormalizeSpace(true);
   // Draw the item text at the correct point.
-  FloatPoint location(clampTo<float>(x),
-                      clampTo<float>(y + GetFontBaseline(*font_data)));
+  FloatPoint location(ClampTo<float>(x),
+                      ClampTo<float>(y + GetFontBaseline(*font_data)));
   double font_width = font.Width(text_run);
 
   bool use_max_width = (max_width && *max_width < font_width);
@@ -1075,7 +1025,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
   FloatRect bounds(
       location.X() - font_metrics.Height() / 2,
       location.Y() - font_metrics.Ascent() - font_metrics.LineGap(),
-      clampTo<float>(width + font_metrics.Height()),
+      ClampTo<float>(width + font_metrics.Height()),
       font_metrics.LineSpacing());
   if (paint_type == CanvasRenderingContext2DState::kStrokePaintType)
     InflateStrokeRect(bounds);
@@ -1087,11 +1037,11 @@ void CanvasRenderingContext2D::DrawTextInternal(
     // still work. As the width of canvas is scaled, so text can be scaled to
     // match the given maxwidth, update text location so it appears on desired
     // place.
-    c->scale(clampTo<float>(width / font_width), 1);
-    location.SetX(location.X() / clampTo<float>(width / font_width));
+    c->scale(ClampTo<float>(width / font_width), 1);
+    location.SetX(location.X() / ClampTo<float>(width / font_width));
   }
 
-  Draw(
+  Draw<OverdrawOp::kNone>(
       [this, text = std::move(text), direction, bidi_override, location](
           cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
       {
@@ -1244,83 +1194,6 @@ void CanvasRenderingContext2D::UpdateElementAccessibility(const Path& path,
 
   // Update the accessible object.
   ax_object_cache->SetCanvasObjectBounds(canvas(), element, element_rect);
-}
-
-void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions* options,
-                                            ExceptionState& exception_state) {
-  if (options->id().IsEmpty() && !options->control()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Both id and control are null.");
-    return;
-  }
-
-  if (options->control() &&
-      !canvas()->IsSupportedInteractiveCanvasFallback(*options->control())) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "The control is neither null nor a "
-                                      "supported interactive canvas fallback "
-                                      "element.");
-    return;
-  }
-
-  Path hit_region_path = options->path() ? options->path()->GetPath() : path_;
-
-  cc::PaintCanvas* c = GetOrCreatePaintCanvas();
-
-  if (hit_region_path.IsEmpty() || !c || !IsTransformInvertible() ||
-      c->isClipEmpty()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "The specified path has no pixels.");
-    return;
-  }
-
-  hit_region_path.Transform(GetState().GetAffineTransform());
-
-  if (GetState().HasClip()) {
-    hit_region_path =
-        GetState().IntersectPathWithClip(hit_region_path.GetSkPath());
-    if (hit_region_path.IsEmpty()) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                        "The specified path has no pixels.");
-    }
-  }
-
-  if (!hit_region_manager_)
-    hit_region_manager_ = MakeGarbageCollected<HitRegionManager>();
-
-  // Remove previous region (with id or control)
-  hit_region_manager_->RemoveHitRegionById(options->id());
-  hit_region_manager_->RemoveHitRegionByControl(options->control());
-
-  auto* hit_region = MakeGarbageCollected<HitRegion>(hit_region_path, options);
-  Element* element = hit_region->Control();
-  if (element && element->IsDescendantOf(canvas()))
-    UpdateElementAccessibility(hit_region->GetPath(), hit_region->Control());
-  hit_region_manager_->AddHitRegion(hit_region);
-}
-
-void CanvasRenderingContext2D::removeHitRegion(const String& id) {
-  if (hit_region_manager_)
-    hit_region_manager_->RemoveHitRegionById(id);
-}
-
-void CanvasRenderingContext2D::clearHitRegions() {
-  if (hit_region_manager_)
-    hit_region_manager_->RemoveAllHitRegions();
-}
-
-HitRegion* CanvasRenderingContext2D::HitRegionAtPoint(const FloatPoint& point) {
-  if (hit_region_manager_)
-    return hit_region_manager_->GetHitRegionAtPoint(point);
-
-  return nullptr;
-}
-
-unsigned CanvasRenderingContext2D::HitRegionsCount() const {
-  if (hit_region_manager_)
-    return hit_region_manager_->GetHitRegionsCount();
-
-  return 0;
 }
 
 // TODO(aaronhk) This is only used for the size heuristic. Delete this function

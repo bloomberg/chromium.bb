@@ -32,10 +32,14 @@ class OAuthHttpFetcher : public HttpFetcher, public OAuth2ApiCallFlow {
   OAuthHttpFetcher& operator=(const OAuthHttpFetcher&) = delete;
   ~OAuthHttpFetcher() override;
 
-  // Performs a GET request to the desired URL and returns the response, if
-  // available, as a string to the provided |callback|.
+  // HttpFetcher::
   void ExecuteGetRequest(const GURL& url,
                          FetchCompleteCallback callback) override;
+  void ExecutePostRequest(const GURL& url,
+                          const std::string& body,
+                          FetchCompleteCallback callback) override;
+  void ExecuteDeleteRequest(const GURL& url,
+                            FetchCompleteCallback callback) override;
 
  protected:
   // Reduce the visibility of OAuth2ApiCallFlow::Start() to avoid exposing
@@ -45,6 +49,7 @@ class OAuthHttpFetcher : public HttpFetcher, public OAuth2ApiCallFlow {
   // google_apis::OAuth2ApiCallFlow:
   GURL CreateApiCallUrl() override;
   std::string CreateApiCallBody() override;
+  std::string CreateApiCallBodyContentType() override;
   void ProcessApiCallSuccess(const network::mojom::URLResponseHead* head,
                              std::unique_ptr<std::string> body) override;
   void ProcessApiCallFailure(int net_error,
@@ -52,17 +57,20 @@ class OAuthHttpFetcher : public HttpFetcher, public OAuth2ApiCallFlow {
                              std::unique_ptr<std::string> body) override;
   net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag()
       override;
+  std::string GetRequestTypeForBody(const std::string& body) override;
 
  private:
+  void StartRequest(const GURL& url, FetchCompleteCallback callback);
   void OnAccessTokenFetched(GoogleServiceAuthError error,
                             signin::AccessTokenInfo access_token_info);
-  void Reset();
 
   net::PartialNetworkTrafficAnnotationTag traffic_annotation_;
   OAuth2AccessTokenManager::ScopeSet oauth_scopes_;
 
   bool has_call_started_ = false;
   GURL url_;
+  std::string body_;
+  RequestType request_type_;
   FetchCompleteCallback callback_;
 
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>

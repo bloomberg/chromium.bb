@@ -16,7 +16,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
+#include "ui/base/ime/ash/fake_ime_keyboard.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/modifier_key.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -167,7 +167,7 @@ class ChromeVoxAccessibilityEventRewriterTest
 
   std::unique_ptr<AccessibilityEventRewriter> accessibility_event_rewriter_;
 
-  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos_;
 
  private:
@@ -560,7 +560,7 @@ class SwitchAccessAccessibilityEventRewriterTest : public AshTestBase {
   EventCapturer event_capturer_;
   AccessibilityControllerImpl* controller_ = nullptr;
   std::unique_ptr<SwitchAccessTestDelegate> delegate_;
-  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<AccessibilityEventRewriter> accessibility_event_rewriter_;
   std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos_;
 };
@@ -812,7 +812,7 @@ class MagnifierAccessibilityEventRewriterTest : public AshTestBase {
   EventCapturer event_capturer_;
   AccessibilityControllerImpl* controller_ = nullptr;
   std::unique_ptr<MagnifierTestDelegate> delegate_;
-  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<AccessibilityEventRewriter> accessibility_event_rewriter_;
   std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos_;
 };

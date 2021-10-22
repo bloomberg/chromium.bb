@@ -16,7 +16,7 @@ namespace base {
 class Clock;
 }  // namespace base
 
-namespace chromeos {
+namespace ash {
 
 class PrintJobHistoryCleaner {
  public:
@@ -26,6 +26,10 @@ class PrintJobHistoryCleaner {
 
   PrintJobHistoryCleaner(PrintJobDatabase* print_job_database,
                          PrefService* pref_service);
+
+  PrintJobHistoryCleaner(const PrintJobHistoryCleaner&) = delete;
+  PrintJobHistoryCleaner& operator=(const PrintJobHistoryCleaner&) = delete;
+
   ~PrintJobHistoryCleaner();
 
   // Removes expired print jobs from the database.
@@ -42,7 +46,7 @@ class PrintJobHistoryCleaner {
   void OnPrintJobsRetrieved(
       base::OnceClosure callback,
       bool success,
-      std::vector<printing::proto::PrintJobInfo> print_job_infos);
+      std::vector<chromeos::printing::proto::PrintJobInfo> print_job_infos);
   void OnPrintJobsDeleted(base::OnceClosure callback, bool success);
 
   // This object is owned by PrintJobHistoryService and outlives
@@ -60,10 +64,8 @@ class PrintJobHistoryCleaner {
   base::Time oldest_print_job_completion_time_;
 
   base::WeakPtrFactory<PrintJobHistoryCleaner> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PrintJobHistoryCleaner);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_HISTORY_PRINT_JOB_HISTORY_CLEANER_H_

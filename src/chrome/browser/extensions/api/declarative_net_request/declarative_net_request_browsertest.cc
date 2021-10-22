@@ -75,6 +75,7 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/web_transport_simple_test_server.h"
 #include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -180,11 +181,19 @@ class DeclarativeNetRequestBrowserTest
       public ::testing::WithParamInterface<ExtensionLoadType> {
  public:
   DeclarativeNetRequestBrowserTest() {
-    feature_list_.InitWithFeatures({blink::features::kFledgeInterestGroups,
-                                    blink::features::kFledgeInterestGroupAPI},
-                                   {});
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/
+        {blink::features::kInterestGroupStorage,
+         blink::features::kAdInterestGroupAPI, blink::features::kFledge},
+        /*disabled_features=*/
+        {});
     net::test_server::RegisterDefaultHandlers(embedded_test_server());
   }
+
+  DeclarativeNetRequestBrowserTest(const DeclarativeNetRequestBrowserTest&) =
+      delete;
+  DeclarativeNetRequestBrowserTest& operator=(
+      const DeclarativeNetRequestBrowserTest&) = delete;
 
   // Returns the path of the files served by the EmbeddedTestServer.
   static base::FilePath GetHttpServerPath() {
@@ -601,6 +610,13 @@ class DeclarativeNetRequestBrowserTest
         std::make_unique<RulesetManagerObserver>(ruleset_manager());
   }
 
+  net::EmbeddedTestServer* https_server() {
+    if (!https_server_)
+      InitializeHttpsServer();
+
+    return https_server_.get();
+  }
+
  private:
   enum class RulesetScope { kDynamic, kSession };
   void UpdateRules(const ExtensionId& extension_id,
@@ -792,6 +808,18 @@ class DeclarativeNetRequestBrowserTest
     return ExecuteScriptInBackgroundPage(extension_id, script);
   }
 
+  void InitializeHttpsServer() {
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+
+    https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    https_server_->AddDefaultHandlers();
+    https_server_->ServeFilesFromDirectory(GetHttpServerPath());
+    https_server_->RegisterRequestMonitor(
+        base::BindRepeating(&DeclarativeNetRequestBrowserTest::MonitorRequest,
+                            base::Unretained(this)));
+  }
+
   base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir temp_dir_;
 
@@ -814,7 +842,8 @@ class DeclarativeNetRequestBrowserTest
   // Path to the PEM file for the last installed packed extension.
   base::FilePath last_pem_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestBrowserTest);
+  // Most tests don't use this, so it is initialized lazily.
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 using DeclarativeNetRequestBrowserTest_Packed =
@@ -1652,17 +1681,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, RedirectPriority) {
 // Test that upgradeScheme rules will change the scheme of matching requests to
 // https.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
-  auto get_url_for_host = [this](std::string hostname, const char* scheme) {
-    GURL url = embedded_test_server()->GetURL(hostname,
-                                              "/pages_with_script/index.html");
-
-    url::Replacements<char> replacements;
-    replacements.SetScheme(scheme, url::Component(0, strlen(scheme)));
-
-    return url.ReplaceComponents(replacements);
+  auto get_url_for_host = [this](std::string hostname) {
+    return embedded_test_server()->GetURL(hostname,
+                                          "/pages_with_script/index.html");
   };
 
-  GURL google_url = get_url_for_host("google.com", url::kHttpScheme);
+  GURL google_url = get_url_for_host("google.com");
   struct {
     std::string url_filter;
     int id;
@@ -1712,23 +1736,22 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, UpgradeRules) {
 
   struct {
     std::string hostname;
-    const char* scheme;
     // |expected_final_url| is null if the request is expected to be blocked.
     absl::optional<GURL> expected_final_url;
   } test_cases[] = {
-      {"exact.com", url::kHttpScheme, absl::nullopt},
+      {"exact.com", absl::nullopt},
       // http://example.com -> https://example.com/ -> http://google.com
-      {"example.com", url::kHttpScheme, google_url},
+      {"example.com", google_url},
       // test_extension_2 should upgrade the scheme for http://yahoo.com
       // despite having no host permissions. Note that this request is not
       // matched with test_extension_1's ruleset as test_extension_2 is
       // installed more recently.
       // http://yahoo.com -> https://yahoo.com/ -> http://google.com
-      {"yahoo.com", url::kHttpScheme, google_url},
+      {"yahoo.com", google_url},
   };
 
   for (const auto& test_case : test_cases) {
-    GURL url = get_url_for_host(test_case.hostname, test_case.scheme);
+    GURL url = get_url_for_host(test_case.hostname);
     SCOPED_TRACE(base::StringPrintf("Testing %s", url.spec().c_str()));
 
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -1803,6 +1826,94 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
     WaitForExtensionsWithRulesetsCount(0);
     WaitForExtensionsWithRulesetsCount(1);
     test_enabled_in_incognito(false);
+  }
+}
+
+// Tests the declarativeNetRequestWithHostAccess permission.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, HostAccessPermission) {
+  std::vector<TestRule> rules;
+  int rule_id = kMinValidID;
+
+  auto get_url = [this](const std::string& host, const std::string& query) {
+    std::string path = "/pages_with_script/index.html?q=" + query;
+
+    return embedded_test_server()->GetURL(host, path);
+  };
+
+  {
+    TestRule rule = CreateMainFrameBlockRule("block");
+    rule.id = rule_id++;
+    rules.push_back(rule);
+  }
+
+  {
+    TestRule rule = CreateGenericRule(rule_id++);
+    rule.condition->url_filter = "redirect";
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = "redirect";
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = get_url("final.com", "final").spec();
+    rules.push_back(rule);
+  }
+
+  {
+    TestRule rule = CreateGenericRule(rule_id++);
+    rule.condition->url_filter = "|http://*upgrade";
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = "upgradeScheme";
+    rules.push_back(rule);
+  }
+
+  {
+    // Have a rule which redirects upgraded https requests to a special url. It
+    // might seem that this can be avoided by using a HTTPS test server but it
+    // doesn't seem trivial to listen to the same port on both http and https.
+    TestRule rule = CreateGenericRule(rule_id++);
+    rule.condition->url_filter = "|https://*upgrade";
+    rule.condition->resource_types = std::vector<std::string>({"main_frame"});
+    rule.action->type = "redirect";
+    rule.action->redirect.emplace();
+    rule.action->redirect->url = get_url("https.com", "https").spec();
+    rules.push_back(rule);
+  }
+
+  set_config_flags(
+      ConfigFlag::kConfig_HasDelarativeNetRequestWithHostAccessPermission |
+      ConfigFlag::kConfig_OmitDeclarativeNetRequestPermission);
+  ASSERT_NO_FATAL_FAILURE(
+      LoadExtensionWithRules(rules, "directory", {"*://allowed.com:*/*"}));
+
+  struct {
+    GURL url;
+    // nullopt if expected to be blocked.
+    absl::optional<GURL> expected_final_url;
+  } cases[] = {
+      {get_url("allowed.com", "block"), absl::nullopt},
+      {get_url("notallowed.com", "block"), get_url("notallowed.com", "block")},
+      {get_url("allowed.com", "redirect"), get_url("final.com", "final")},
+      {get_url("notallowed.com", "redirect"),
+       get_url("notallowed.com", "redirect")},
+
+      // This should be upgraded first and then match the https->http rule.
+      {get_url("allowed.com", "upgrade"), get_url("https.com", "https")},
+
+      {get_url("notallowed.com", "upgrade"),
+       get_url("notallowed.com", "upgrade")},
+  };
+
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE(
+        base::StringPrintf("Testing %s", test_case.url.spec().c_str()));
+
+    if (!test_case.expected_final_url) {
+      EXPECT_TRUE(IsNavigationBlocked(test_case.url));
+      continue;
+    }
+
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), test_case.url));
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+    EXPECT_EQ(*test_case.expected_final_url,
+              web_contents()->GetLastCommittedURL());
   }
 }
 
@@ -4331,16 +4442,16 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Advance the clock to capture a timestamp after when the first request was
   // made.
-  clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  clock_.Advance(base::Milliseconds(100));
   base::Time timestamp_1 = clock_.Now();
-  clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  clock_.Advance(base::Milliseconds(100));
 
   // Navigate to example.com again. This should cause |rule| to be matched.
   NavigateFrame(kFrameName1, sub_frame_url);
 
   // Advance the clock to capture a timestamp after when the second request was
   // made.
-  clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  clock_.Advance(base::Milliseconds(100));
   base::Time timestamp_2 = clock_.Now();
 
   int first_tab_id = ExtensionTabUtil::GetTabId(web_contents());
@@ -4960,6 +5071,11 @@ class DeclarativeNetRequestHostPermissionsBrowserTest
  public:
   DeclarativeNetRequestHostPermissionsBrowserTest() {}
 
+  DeclarativeNetRequestHostPermissionsBrowserTest(
+      const DeclarativeNetRequestHostPermissionsBrowserTest&) = delete;
+  DeclarativeNetRequestHostPermissionsBrowserTest& operator=(
+      const DeclarativeNetRequestHostPermissionsBrowserTest&) = delete;
+
  protected:
   struct FrameRedirectResult {
     std::string child_frame_name;
@@ -5003,9 +5119,6 @@ class DeclarativeNetRequestHostPermissionsBrowserTest
   std::string GetMatchPatternForDomain(const std::string& domain) const {
     return "*://*." + domain + ".com/*";
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestHostPermissionsBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestHostPermissionsBrowserTest,
@@ -5049,6 +5162,11 @@ class DeclarativeNetRequestResourceTypeBrowserTest
     : public DeclarativeNetRequestBrowserTest {
  public:
   DeclarativeNetRequestResourceTypeBrowserTest() {}
+
+  DeclarativeNetRequestResourceTypeBrowserTest(
+      const DeclarativeNetRequestResourceTypeBrowserTest&) = delete;
+  DeclarativeNetRequestResourceTypeBrowserTest& operator=(
+      const DeclarativeNetRequestResourceTypeBrowserTest&) = delete;
 
  protected:
   // TODO(crbug.com/696822): Add tests for "object", "ping", "other", "font",
@@ -5177,9 +5295,6 @@ class DeclarativeNetRequestResourceTypeBrowserTest
     }
     LoadExtensionWithRules(rules);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestResourceTypeBrowserTest);
 };
 
 // These are split into two tests to prevent a timeout. See crbug.com/787957.
@@ -6030,9 +6145,9 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 }
 
 // Tests that the "requestMethods" and "excludedRequestMethods" properties of a
-// rule condition are considered properly for non-HTTP(s) requests.
+// rule condition are considered properly for WebSocket requests.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
-                       BlockRequests_NonHTTPMethods) {
+                       BlockRequests_WebSocket) {
   // Load an extension with some DNR rules that have different request method
   // conditions.
   std::vector<TestRule> rules;
@@ -6115,6 +6230,83 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
             actual_blocked);
 }
 
+class DeclarativeNetRequestWebTransportTest
+    : public DeclarativeNetRequestBrowserTest {
+ public:
+  DeclarativeNetRequestWebTransportTest() { webtransport_server_.Start(); }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    DeclarativeNetRequestBrowserTest::SetUpCommandLine(command_line);
+    webtransport_server_.SetUpCommandLine(command_line);
+  }
+
+ protected:
+  content::WebTransportSimpleTestServer webtransport_server_;
+};
+
+// Tests that the "requestMethods" and "excludedRequestMethods" properties of a
+// rule condition are considered properly for WebTransport requests.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestWebTransportTest, BlockRequests) {
+  ASSERT_TRUE(https_server()->Start());
+
+  // Load an extension with some rules that have different request method
+  // conditions.
+  std::vector<TestRule> rules;
+
+  // We need to prefix "echo" so that the server accepts it.
+  TestRule rule1 = CreateGenericRule(1);
+  rule1.condition->url_filter = "echo1_default";
+  rules.push_back(rule1);
+
+  TestRule rule2 = CreateGenericRule(2);
+  rule2.condition->url_filter = "echo2_include";
+  rule2.condition->request_methods = {"connect"};
+  rules.push_back(rule2);
+
+  TestRule rule4 = CreateGenericRule(3);
+  rule4.condition->url_filter = "echo3_exclude";
+  rule4.condition->excluded_request_methods = {"connect"};
+  rules.push_back(rule4);
+
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/echo")));
+
+  const char kOpenWebTransportScript[] = R"((
+    async () =>
+    {
+      const testCases = ["echo1_default", "echo2_include", "echo3_exclude" ];
+
+      let blockedTestCases = [];
+
+      await Promise.allSettled(
+        testCases.map(testCase =>
+          new Promise(async (resolve) =>
+          {
+            try {
+              const transport = new WebTransport(
+                `https://localhost:%d/${testCase}`);
+              await transport.ready;
+            } catch (e) {
+              blockedTestCases.push(testCase);
+            }
+            resolve();
+          })
+        )
+      );
+      return blockedTestCases.sort().join();
+    }
+  )())";
+
+  content::RenderFrameHost* main_frame = GetMainFrame();
+  EXPECT_EQ("echo1_default,echo2_include",
+            content::EvalJs(main_frame,
+                            base::StringPrintf(
+                                kOpenWebTransportScript,
+                                webtransport_server_.server_address().port())));
+}
+
 // Tests that FLEDGE requests can be blocked by the declarativeNetRequest API,
 // and that if they try to redirect requests, the request is blocked, instead of
 // being redirected.
@@ -6122,25 +6314,17 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, FledgeAuctionScripts) {
   const char kAddedHeaderName[] = "Header-Name";
   const char kAddedHeaderValue[] = "Header-Value";
 
-  net::EmbeddedTestServer https_server(
-      net::test_server::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  https_server.AddDefaultHandlers();
-  https_server.ServeFilesFromDirectory(GetHttpServerPath());
-  https_server.RegisterRequestMonitor(
-      base::BindRepeating(&DeclarativeNetRequestBrowserTest::MonitorRequest,
-                          base::Unretained(this)));
-  ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(https_server()->Start());
 
   ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), https_server.GetURL("/echo")));
+      ui_test_utils::NavigateToURL(browser(), https_server()->GetURL("/echo")));
 
   GURL bidding_logic_url =
-      https_server.GetURL("/interest_group/bidding_logic.js");
+      https_server()->GetURL("/interest_group/bidding_logic.js");
   GURL decision_logic_url =
-      https_server.GetURL("/interest_group/decision_logic.js");
-  GURL bidder_report_url = https_server.GetURL("/echo?bidder_report");
-  GURL decision_report_url = https_server.GetURL("/echo?decision_report");
+      https_server()->GetURL("/interest_group/decision_logic.js");
+  GURL bidder_report_url = https_server()->GetURL("/echo?bidder_report");
+  GURL decision_report_url = https_server()->GetURL("/echo?decision_report");
 
   // Add an interest group.
   EXPECT_EQ("done", content::EvalJs(
@@ -6192,13 +6376,10 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, FledgeAuctionScripts) {
       url::Origin::Create(decision_logic_url).Serialize(),
       decision_logic_url.spec());
 
-  // Unfortunately, there's a race between adding an interest group and running
-  // an auction, with no API in Javascript currently available to wait until an
-  // interest group has been added, so can only run the auction until there's a
-  // result, which means the interest group has been added.
-  while ("https://example.com/render" !=
-         content::EvalJs(web_contents(), run_auction_command)) {
-  }
+  // The auction should return a unique URN URL.
+  GURL ad_url(
+      content::EvalJs(web_contents(), run_auction_command).ExtractString());
+  EXPECT_TRUE(ad_url.SchemeIs(url::kUrnScheme));
 
   // Wait to see both the report request of both worklets.
   WaitForRequest(bidder_report_url);
@@ -6226,9 +6407,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, FledgeAuctionScripts) {
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
       {block_report_rule}, "test_extension2", {URLPattern::kAllUrlsPattern}));
 
-  // Running the auction again should result in the same URL winning.
-  EXPECT_EQ("https://example.com/render",
-            content::EvalJs(web_contents(), run_auction_command));
+  // Run the auction again.
+  ad_url = GURL(
+      content::EvalJs(web_contents(), run_auction_command).ExtractString());
+  EXPECT_TRUE(ad_url.SchemeIs(url::kUrnScheme));
+
   // Wait for the decision script's report URL to be requested.
   WaitForRequest(decision_report_url);
   // The bidder script should be blocked. Unfortunately, there's no way to wait
@@ -6249,7 +6432,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, FledgeAuctionScripts) {
   redirect_bidding_logic_rule.action->type = "redirect";
   redirect_bidding_logic_rule.action->redirect.emplace();
   redirect_bidding_logic_rule.action->redirect->url =
-      https_server.GetURL("/interest_group/bidding_logic2.js").spec();
+      https_server()->GetURL("/interest_group/bidding_logic2.js").spec();
 
   ASSERT_NO_FATAL_FAILURE(
       LoadExtensionWithRules({redirect_bidding_logic_rule}, "test_extension3",
@@ -6425,6 +6608,11 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          DeclarativeNetRequestAllowAllRequestsBrowserTest,
+                         ::testing::Values(ExtensionLoadType::PACKED,
+                                           ExtensionLoadType::UNPACKED));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DeclarativeNetRequestWebTransportTest,
                          ::testing::Values(ExtensionLoadType::PACKED,
                                            ExtensionLoadType::UNPACKED));
 

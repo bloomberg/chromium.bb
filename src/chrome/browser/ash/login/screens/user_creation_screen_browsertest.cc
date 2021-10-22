@@ -84,8 +84,8 @@ class UserCreationScreenTest
   absl::optional<UserCreationScreen::Result> screen_result_;
 
  protected:
-  chromeos::DeviceStateMixin device_state_{
-      &mixin_host_, chromeos::DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
 
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
@@ -106,7 +106,7 @@ class UserCreationScreenTest
   base::RepeatingClosure screen_exit_callback_;
 
   base::test::ScopedFeatureList feature_list_;
-  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  FakeGaiaMixin fake_gaia_{&mixin_host_};
 };
 
 // Verify flow for setting up the device for self.
@@ -194,7 +194,7 @@ class UserCreationScreenLoginTest : public UserCreationScreenTest {
   UserCreationScreenLoginTest() : UserCreationScreenTest() {
     login_manager_mixin_.AppendRegularUsers(1);
     device_state_.SetState(
-        chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED);
+        DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED);
   }
 
  private:
@@ -233,7 +233,7 @@ class UserCreationScreenEnrolledTest : public UserCreationScreenTest {
   UserCreationScreenEnrolledTest() : UserCreationScreenTest() {
     login_manager_mixin_.AppendRegularUsers(1);
     device_state_.SetState(
-        chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
+        DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED);
   }
 
  private:

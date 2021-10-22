@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/views/animation/animation_abort_handle.h"
 #include "ui/views/animation/ink_drop_animation_ended_reason.h"
 #include "ui/views/views_export.h"
@@ -63,6 +63,9 @@ class VIEWS_EXPORT InkDropHighlight {
   // this still uses the default highlight opacity. Users who supply a
   // |base_color| with alpha will also want to call set_visible_opacity(1.f);.
   InkDropHighlight(const gfx::SizeF& size, SkColor base_color);
+
+  InkDropHighlight(const InkDropHighlight&) = delete;
+  InkDropHighlight& operator=(const InkDropHighlight&) = delete;
 
   virtual ~InkDropHighlight();
 
@@ -134,8 +137,6 @@ class VIEWS_EXPORT InkDropHighlight {
   std::unique_ptr<AnimationAbortHandle> animation_abort_handle_;
 
   InkDropHighlightObserver* observer_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(InkDropHighlight);
 };
 
 // Returns a human readable string for |animation_type|.  Useful for logging.

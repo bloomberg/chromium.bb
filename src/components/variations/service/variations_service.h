@@ -87,6 +87,9 @@ class VariationsService
     virtual ~Observer() {}
   };
 
+  VariationsService(const VariationsService&) = delete;
+  VariationsService& operator=(const VariationsService&) = delete;
+
   ~VariationsService() override;
 
   // Enum used to choose whether GetVariationsServerURL will return an HTTPS
@@ -190,9 +193,6 @@ class VariationsService
   // Wrapper around VariationsFieldTrialCreator::SetupFieldTrials().
   // TODO(crbug/1245646): Remove |extend_variations_safe_mode| param.
   bool SetupFieldTrials(
-      const char* kEnableGpuBenchmarking,
-      const char* kEnableFeatures,
-      const char* kDisableFeatures,
       const std::vector<std::string>& variation_ids,
       const std::vector<base::FeatureList::FeatureOverrideInfo>&
           extra_overrides,
@@ -431,8 +431,6 @@ class VariationsService
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<VariationsService> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VariationsService);
 };
 
 }  // namespace variations

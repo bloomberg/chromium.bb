@@ -26,8 +26,7 @@ namespace blink {
 
 namespace {
 bool ShouldAssignToCustomSlot(const Node& node) {
-  if (IsA<HTMLDetailsElement>(node.parentElement()))
-    return HTMLDetailsElement::IsFirstSummary(node);
+  DCHECK(!IsA<HTMLDetailsElement>(node.parentElement()));
   if (IsA<HTMLSelectElement>(node.parentElement()))
     return HTMLSelectElement::CanAssignToSelectSlot(node);
   if (IsA<HTMLOptGroupElement>(node.parentElement()))
@@ -272,6 +271,9 @@ void SlotAssignment::RecalcAssignment() {
     FlatTreeTraversalForbiddenScope forbid_flat_tree_traversal(
         owner_->GetDocument());
 
+    if (owner_->IsUserAgent() && owner_->IsManualSlotting()) {
+      owner_->host().ManuallyAssignSlots();
+    }
     needs_assignment_recalc_ = false;
 
     for (Member<HTMLSlotElement> slot : Slots())
@@ -353,10 +355,15 @@ void SlotAssignment::RecalcAssignment() {
     for (auto& slot : Slots()) {
       // TODO(crbug.com/1208573): Consider if we really need to be using
       // IsInLockedSubtreeCrossingFrames, or if
-      // NearestLockedInclusiveAncestorWithinTreeScope is good enough as-is.
+      // LockedInclusiveAncestorPreventingStyleWithinTreeScope is good enough
+      // as-is.
+      //
+      // If we have an ancestor that blocks style recalc, we should let
+      // DidRecalcAssignNodes know this, since we may need to do work that
+      // would otherwise be done in layout tree building.
       slot->DidRecalcAssignedNodes(
-          DisplayLockUtilities::NearestLockedInclusiveAncestorWithinTreeScope(
-              *slot));
+          !!DisplayLockUtilities::
+               LockedInclusiveAncestorPreventingStyleWithinTreeScope(*slot));
     }
   }
 
@@ -385,7 +392,7 @@ const HeapVector<Member<HTMLSlotElement>>& SlotAssignment::Slots() {
 HTMLSlotElement* SlotAssignment::FindSlot(const Node& node) {
   if (!node.IsSlotable())
     return nullptr;
-  if (!owner_->SupportsNameBasedSlotAssignment())
+  if (!owner_->SupportsNameBasedSlotAssignment() && !owner_->IsManualSlotting())
     return FindSlotInUserAgentShadow(node);
   return owner_->IsManualSlotting()
              ? FindSlotInManualSlotting(const_cast<Node&>(node))

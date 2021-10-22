@@ -54,8 +54,8 @@ static INLINE int get_lr_sync_range(int width) {
 #endif
 
 // Allocate memory for lf row synchronization
-static void loop_filter_alloc(AV1LfSync *lf_sync, AV1_COMMON *cm, int rows,
-                              int width, int num_workers) {
+void av1_loop_filter_alloc(AV1LfSync *lf_sync, AV1_COMMON *cm, int rows,
+                           int width, int num_workers) {
   lf_sync->rows = rows;
 #if CONFIG_MULTITHREAD
   {
@@ -400,7 +400,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   if (!lf_sync->sync_range || sb_rows != lf_sync->rows ||
       num_workers > lf_sync->num_workers) {
     av1_loop_filter_dealloc(lf_sync);
-    loop_filter_alloc(lf_sync, cm, sb_rows, cm->width, num_workers);
+    av1_loop_filter_alloc(lf_sync, cm, sb_rows, cm->width, num_workers);
   }
 
   // Initialize cur_sb_col to -1 for all SB rows.
@@ -467,7 +467,7 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                     plane_start <= 0 && 0 < plane_end;
   planes_to_lf[1] = cm->lf.filter_level_u && plane_start <= 1 && 1 < plane_end;
   planes_to_lf[2] = cm->lf.filter_level_v && plane_start <= 2 && 2 < plane_end;
-  // If the luma plane is purposely not filtered, the chroma planes neither.
+  // If the luma plane is purposely not filtered, neither are the chroma planes.
   if (!planes_to_lf[0] && plane_start <= 0 && 0 < plane_end) return;
   // Early exit.
   if (!planes_to_lf[0] && !planes_to_lf[1] && !planes_to_lf[2]) return;
@@ -550,9 +550,9 @@ static INLINE void lr_sync_write(void *const lr_sync, int r, int c,
 }
 
 // Allocate memory for loop restoration row synchronization
-static void loop_restoration_alloc(AV1LrSync *lr_sync, AV1_COMMON *cm,
-                                   int num_workers, int num_rows_lr,
-                                   int num_planes, int width) {
+void av1_loop_restoration_alloc(AV1LrSync *lr_sync, AV1_COMMON *cm,
+                                int num_workers, int num_rows_lr,
+                                int num_planes, int width) {
   lr_sync->rows = num_rows_lr;
   lr_sync->num_planes = num_planes;
 #if CONFIG_MULTITHREAD
@@ -841,11 +841,11 @@ static void foreach_rest_unit_in_planes_mt(AV1LrStruct *lr_ctxt,
   int i;
   assert(MAX_MB_PLANE == 3);
 
-  if (!lr_sync->sync_range || num_rows_lr != lr_sync->rows ||
-      num_workers > lr_sync->num_workers || num_planes != lr_sync->num_planes) {
+  if (!lr_sync->sync_range || num_rows_lr > lr_sync->rows ||
+      num_workers > lr_sync->num_workers || num_planes > lr_sync->num_planes) {
     av1_loop_restoration_dealloc(lr_sync, num_workers);
-    loop_restoration_alloc(lr_sync, cm, num_workers, num_rows_lr, num_planes,
-                           cm->width);
+    av1_loop_restoration_alloc(lr_sync, cm, num_workers, num_rows_lr,
+                               num_planes, cm->width);
   }
 
   // Initialize cur_sb_col to -1 for all SB rows.

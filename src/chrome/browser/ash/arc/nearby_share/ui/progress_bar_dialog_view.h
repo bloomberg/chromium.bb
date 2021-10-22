@@ -20,10 +20,10 @@ namespace arc {
 
 class ProgressBarDialogView : public views::BoxLayoutView {
  public:
-  ProgressBarDialogView();
-  ~ProgressBarDialogView() override;
+  explicit ProgressBarDialogView(bool is_multiple_files);
   ProgressBarDialogView(const ProgressBarDialogView&) = delete;
   ProgressBarDialogView& operator=(const ProgressBarDialogView&) = delete;
+  ~ProgressBarDialogView() override;
 
   static void Show(aura::Window* parent, ProgressBarDialogView* view);
 
@@ -47,6 +47,9 @@ class ProgressBarDialogView : public views::BoxLayoutView {
 
   // Message label for the progress bar.
   views::Label* message_label_ = nullptr;
+
+  // Indicates whether multiple files are being shared for UI string.
+  const bool is_multiple_files_;
 };
 
 }  // namespace arc

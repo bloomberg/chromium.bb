@@ -912,6 +912,12 @@ message NetworkInterface {
 
   // The device path associated with this network interface.
   optional string device_path = 5;
+
+  // The integrated circuit card ID associated with the device's sim card.
+  optional string iccid = 6;
+
+  // The mobile directory number associated with the device's sim card.
+  optional string mdn = 7;
 }
 
 // Information about configured/visible networks - this is separate from
@@ -1391,11 +1397,16 @@ message BootInfo {
   enum BootMethod {
     UNKNOWN = 0;
     CROS_SECURE = 1;
+    // This field maps to kCrosEfi from cros_healthd.
     CROS_UEFI = 2;
     CROS_LEGACY = 3;
+    CROS_EFI_SECURE = 4;
   }
   optional BootMethod boot_method = 1;
-  optional bool secure_boot = 2;
+
+  // DEPRECATED: secure_boot is deprecated in favor of the
+  // CROS_EFI_SECURE BootMethod value.
+  optional bool secure_boot = 2 [deprecated = true];
 }
 
 // Report device level status.
@@ -1735,6 +1746,9 @@ message ExtensionRequest {
   // [request_timestamp] is milliseconds since Epoch in UTC timezone
   // (Java time).
   optional int64 request_timestamp = 2;
+
+  // User justification describing why the extension is being requested.
+  optional string justification = 3;
 }
 
 // Extension information.
@@ -1797,6 +1811,9 @@ message Extension {
 
   // True if the extension comes from web store.
   optional bool from_webstore = 13;
+
+  // Manifest version of the extension.
+  optional int32 manifest_version = 14;
 }
 
 // Plugin information.
@@ -1867,7 +1884,7 @@ message Policy {
 
     // A policy is set by Google's cloud management tool but has higher
     // priority.
-    SOURCE_PRIORITY_CLOUD = 6;
+    SOURCE_PRIORITY_CLOUD_DEPRECATED = 6;
 
     // A policy is set by multiple sources and value has been merged.
     SOURCE_MERGED = 7;
@@ -2980,12 +2997,22 @@ message ActiveDirectoryUserSigninResponse {
 
 // Contains information about the TPM used on the device.
 message TpmVersionInfo {
+  enum GscVersion {
+    GSC_VERSION_UNSPECIFIED = 0;
+    GSC_VERSION_NOT_GSC = 1;
+    GSC_VERSION_CR50 = 2;
+    GSC_VERSION_TI50 = 3;
+  }
   optional uint32 family = 1;
   optional uint64 spec_level = 2;
   optional uint32 manufacturer = 3;
   optional uint32 tpm_model = 4;
   optional uint64 firmware_version = 5;
   optional string vendor_specific = 6;
+  optional GscVersion gsc_version = 7;
+  // This field represents the tpm device id and vendor id
+  // which is a combined value as declared in the TPM spec.
+  optional string did_vid = 8;
 }
 
 // Contains status of the TPM unit.
@@ -3003,7 +3030,18 @@ message TpmStatusInfo {
   optional int32 dictionary_attack_threshold = 7;
   optional bool dictionary_attack_lockout_in_effect = 8;
   optional int32 dictionary_attack_lockout_seconds_remaining = 9;
-  optional bool boot_lockbox_finalized = 10;
+  // DEPRECATED: Not filled by the client anymore (since b/172748724).
+  optional bool boot_lockbox_finalized = 10 [deprecated = true];
+  optional bool owner_password_is_present = 11;
+  optional TpmSupportedFeatures tpm_supported_features = 12;
+}
+
+// Contains information about specific features of the TPM unit.
+message TpmSupportedFeatures {
+  optional bool is_allowed = 1;
+  optional bool support_pinweaver = 2;
+  optional bool support_runtime_selection = 3;
+  optional bool support_u2f = 4;
 }
 
 // System state included with some log events.
@@ -3491,6 +3529,34 @@ message RsuLookupKeyUploadResponse {
   optional bool rsu_lookup_key_updated = 1;
 }
 
+// Information about an eSIM profile installed on an EUICC (Embedded Universal
+// Integrated Circuit Card).
+message ESimProfileInfo {
+  // ICCID of the eSIM profile. Upto 22 decimal digits encoded
+  // as ASCII string.
+  // Example: 3554020401587593554020.
+  optional string iccid = 1;
+
+  // SMDP (Subscription Management - Data Preparation) server address
+  // that was used to install this eSIM profile. Upto 255 characters
+  // encoded as UTF8 string.
+  // Example: LPA:1$esim.example.com$
+  optional string smdp_address = 2;
+}
+
+// Request from device to server to update information about EUICCs
+// on the device.
+message UploadEuiccInfoRequest {
+  // Number of EUICCs on the device.
+  optional uint32 euicc_count = 1;
+
+  // List of policy provisioned eSIM profiles on the device.
+  repeated ESimProfileInfo esim_profiles = 2;
+}
+
+// Response from server to device for EUICC status update.
+message UploadEuiccInfoResponse {}
+
 // An event used for reporting when a new print job has completed.
 message PrintJobEvent {
   message PrintJobConfiguration {
@@ -3925,6 +3991,7 @@ message BrowserPublicKeyUploadResponse {
 //     * refresh_account
 //     * client_cert_provisioning
 //     * browser_public_key_upload
+//     * upload_euicc_info
 //   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
 //     browser.
 //   * apptype: MUST BE Android or Chrome.
@@ -3983,6 +4050,7 @@ message BrowserPublicKeyUploadResponse {
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
 //   refresh_account: refresh_account_request
 //   client_cert_provisioning: client_certificate_provisioning_request
+//   upload_euicc_info: upload_euicc_info_request
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
 
@@ -4103,7 +4171,10 @@ message DeviceManagementRequest {
   // Request from browser to upload public key.
   optional BrowserPublicKeyUploadRequest browser_public_key_upload_request = 38;
 
-  // Next id: 39.
+  // Request to upload info about eSIM provisioning.
+  optional UploadEuiccInfoRequest upload_euicc_info_request = 39;
+
+  // Next id: 40.
 }
 
 // Response from server to device.
@@ -4243,7 +4314,9 @@ message DeviceManagementResponse {
   optional BrowserPublicKeyUploadResponse browser_public_key_upload_response =
       36;
 
-  // Next id: 37.
+  optional UploadEuiccInfoResponse upload_euicc_info_response = 37;
+
+  // Next id: 38.
 }
 
 // Device State Information stored in the server is retrieval at

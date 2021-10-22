@@ -28,6 +28,8 @@ class LabelButton;
 
 namespace ash {
 
+class LoginAuthFactorsView;
+class FingerprintAuthModel;
 class LoginPasswordView;
 class LoginPinView;
 class LoginPinInputView;
@@ -98,6 +100,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
     views::View* disabled_auth_message() const;
     views::Button* challenge_response_button();
     views::Label* challenge_response_label();
+    LoginAuthFactorsView* auth_factors_view() const;
     bool HasAuthMethod(AuthMethods auth_method) const;
     const std::u16string& GetDisabledAuthMessageContent() const;
 
@@ -132,6 +135,10 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   };
 
   LoginAuthUserView(const LoginUserInfo& user, const Callbacks& callbacks);
+
+  LoginAuthUserView(const LoginAuthUserView&) = delete;
+  LoginAuthUserView& operator=(const LoginAuthUserView&) = delete;
+
   ~LoginAuthUserView() override;
 
   // Set the displayed set of auth methods. |auth_methods| contains or-ed
@@ -277,6 +284,8 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   views::LabelButton* online_sign_in_button_ = nullptr;
   DisabledAuthMessageView* disabled_auth_message_ = nullptr;
   FingerprintView* fingerprint_view_ = nullptr;
+  LoginAuthFactorsView* auth_factors_view_ = nullptr;
+  FingerprintAuthModel* fingerprint_auth_model_ = nullptr;
   ChallengeResponseView* challenge_response_view_ = nullptr;
   LockedTpmMessageView* locked_tpm_message_view_ = nullptr;
 
@@ -297,8 +306,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   std::unique_ptr<UiState> previous_state_;
 
   base::WeakPtrFactory<LoginAuthUserView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginAuthUserView);
 };
 
 }  // namespace ash

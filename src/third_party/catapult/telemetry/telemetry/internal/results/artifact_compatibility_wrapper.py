@@ -22,6 +22,8 @@ def ArtifactCompatibilityWrapperFactory(artifact_impl):
     return TelemetryArtifactCompatibilityWrapper(artifact_impl)
   elif isinstance(artifact_impl, artifacts.Artifacts):
     return TypArtifactCompatibilityWrapper(artifact_impl)
+  elif isinstance(artifact_impl, FullLoggingArtifactImpl):
+    return FullLoggingArtifactCompatibilityWrapper()
   elif artifact_impl is None:
     return LoggingArtifactCompatibilityWrapper()
   raise RuntimeError('Given unsupported artifact implementation %s' %
@@ -88,3 +90,29 @@ class LoggingArtifactCompatibilityWrapper(ArtifactCompatibilityWrapper):
         'with name %s. To store the full artifact, run the test in either a '
         'Telemetry or typ context.' % (len(data), name))
     logging.info('Artifact with name %s: %s', name, data[:min(100, len(data))])
+
+
+class FullLoggingArtifactImpl(object):
+  """A dummy 'artifact implementation'.
+
+  Used to specify that FullLoggingArtifactCompatibilityWrapper should be used
+  since there is no actual backing artifact implementation.
+  """
+
+
+class FullLoggingArtifactCompatibilityWrapper(ArtifactCompatibilityWrapper):
+  """Wrapper that logs instead of actually creating artifacts.
+
+  Unlike LoggingArtifactCompatibilityWrapper, logs the entire artifact. This
+  results in more log spam, hence why it is not the default.
+  """
+  def __init__(self):
+    super(FullLoggingArtifactCompatibilityWrapper, self).__init__(None)
+
+  def CreateArtifact(self, name, data):
+    # Don't log binary files as the utf-8 encoding will cause errors.
+    # Note that some tests use the .dmp extension for both crash-dump files and
+    # text files.
+    if os.path.splitext(name)[1].lower() in ['.png', '.dmp']:
+      return
+    logging.info('Artifact with name %s: %s', name, data)

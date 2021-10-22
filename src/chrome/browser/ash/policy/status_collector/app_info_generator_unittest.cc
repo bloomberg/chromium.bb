@@ -15,9 +15,10 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/login/users/mock_user_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_install_finalizer.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
-#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/fake_install_finalizer.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
@@ -206,7 +207,7 @@ class AppInfoGeneratorTest : public ::testing::Test {
                                        -> std::unique_ptr<KeyedService> {
           Profile* profile = Profile::FromBrowserContext(context);
           auto provider =
-              std::make_unique<web_app::TestWebAppProvider>(profile);
+              std::make_unique<web_app::FakeWebAppProvider>(profile);
           auto app_registrar =
               std::make_unique<web_app::WebAppRegistrarMutable>(profile);
           auto system_web_app_manager =
@@ -231,8 +232,7 @@ class AppInfoGeneratorTest : public ::testing::Test {
   }
 
   std::unique_ptr<AppInfoGenerator> GetGenerator(
-      base::TimeDelta max_stored_past_activity_interval =
-          base::TimeDelta::FromDays(0)) {
+      base::TimeDelta max_stored_past_activity_interval = base::Days(0)) {
     return std::make_unique<AppInfoGenerator>(
         nullptr, max_stored_past_activity_interval, &test_clock());
   }
@@ -242,20 +242,6 @@ class AppInfoGeneratorTest : public ::testing::Test {
     generator->OnLogin(profile());
     generator->OnReportingChanged(true);
     return generator;
-  }
-
-  std::unique_ptr<web_app::WebApp> CreateWebApp() {
-    const GURL app_url = GURL("http://app.com/app/path");
-    const web_app::AppId app_id = "c";
-
-    auto web_app = std::make_unique<web_app::WebApp>(app_id);
-    web_app->AddSource(web_app::Source::kDefault);
-    web_app->SetDisplayMode(web_app::DisplayMode::kStandalone);
-    web_app->SetUserDisplayMode(web_app::DisplayMode::kStandalone);
-    web_app->SetName("Name");
-    web_app->SetStartUrl(app_url);
-
-    return web_app;
   }
 
   void RegisterApp(std::unique_ptr<web_app::WebApp> web_app) {
@@ -333,8 +319,11 @@ TEST_F(AppInfoGeneratorTest, GenerateInventoryList) {
 TEST_F(AppInfoGeneratorTest, GenerateWebApp) {
   user_manager()->LoginUser(account_id(), true);
   auto generator = GetReadyGenerator();
+  web_app::AppId app_id;
   {
-    auto web_app = CreateWebApp();
+    auto web_app = web_app::test::CreateWebApp(GURL("http://app.com/app/path"),
+                                               web_app::Source::kDefault);
+    app_id = web_app->app_id();
     auto app = MakeApp(web_app->app_id(), "App",
                        apps::mojom::Readiness::kUninstalledByUser, "",
                        apps::mojom::AppType::kWeb);
@@ -344,7 +333,7 @@ TEST_F(AppInfoGeneratorTest, GenerateWebApp) {
     RegisterApp(std::move(web_app));
   }
 
-  Instance app_instance("c");
+  Instance app_instance(app_id);
   test_clock().SetNow(MakeLocalTime("29-MAR-2020 3:30pm"));
   PushAppInstance(app_instance, apps::InstanceState::kStarted);
   test_clock().SetNow(MakeLocalTime("29-MAR-2020 8:30pm"));
@@ -365,8 +354,11 @@ TEST_F(AppInfoGeneratorTest, GenerateWebApp) {
 TEST_F(AppInfoGeneratorTest, GenerateSystemWebApp) {
   user_manager()->LoginUser(account_id(), true);
   auto generator = GetReadyGenerator();
+  web_app::AppId app_id;
   {
-    auto web_app = CreateWebApp();
+    auto web_app = web_app::test::CreateWebApp(GURL("http://app.com/app/path"),
+                                               web_app::Source::kDefault);
+    app_id = web_app->app_id();
     auto app = MakeApp(web_app->app_id(), "App",
                        apps::mojom::Readiness::kUninstalledByUser, "",
                        apps::mojom::AppType::kSystemWeb);
@@ -376,7 +368,7 @@ TEST_F(AppInfoGeneratorTest, GenerateSystemWebApp) {
     RegisterApp(std::move(web_app));
   }
 
-  Instance app_instance("c");
+  Instance app_instance(app_id);
   test_clock().SetNow(MakeLocalTime("29-MAR-2020 3:30pm"));
   PushAppInstance(app_instance, apps::InstanceState::kStarted);
   test_clock().SetNow(MakeLocalTime("29-MAR-2020 8:30pm"));
@@ -661,7 +653,7 @@ TEST_F(AppInfoGeneratorTest, OnLoginRemoveOldUsage) {
           apps::mojom::AppType::kArc);
   PushApp("b", "SecondApp", apps::mojom::Readiness::kReady, "1.2",
           apps::mojom::AppType::kExtension);
-  auto max_days_past = base::TimeDelta::FromDays(
+  auto max_days_past = base::Days(
       1);  // Exclude all past usage except for UTC today and yesterday.
   auto generator = GetGenerator(max_days_past);
   generator->OnReportingChanged(true);

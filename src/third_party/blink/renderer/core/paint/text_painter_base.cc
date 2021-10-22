@@ -74,7 +74,6 @@ void TextPainterBase::SetEmphasisMark(const AtomicString& emphasis_mark,
 void TextPainterBase::UpdateGraphicsContext(
     GraphicsContext& context,
     const TextPaintStyle& text_style,
-    bool horizontal,
     GraphicsContextStateSaver& state_saver,
     ShadowMode shadow_mode) {
   TextDrawingModeFlags mode = context.TextDrawingMode();
@@ -109,8 +108,7 @@ void TextPainterBase::UpdateGraphicsContext(
       state_saver.SaveIfNeeded();
       context.SetDrawLooper(CreateDrawLooper(
           text_style.shadow.get(), DrawLooperBuilder::kShadowIgnoresAlpha,
-          text_style.current_color, text_style.color_scheme, horizontal,
-          shadow_mode));
+          text_style.current_color, text_style.color_scheme, shadow_mode));
     }
   }
 }
@@ -121,7 +119,6 @@ sk_sp<SkDrawLooper> TextPainterBase::CreateDrawLooper(
     DrawLooperBuilder::ShadowAlphaMode alpha_mode,
     const Color& current_color,
     mojom::blink::ColorScheme color_scheme,
-    bool is_horizontal,
     ShadowMode shadow_mode) {
   DrawLooperBuilder draw_looper_builder;
 
@@ -129,10 +126,8 @@ sk_sp<SkDrawLooper> TextPainterBase::CreateDrawLooper(
   if (shadow_mode != kTextProperOnly && shadow_list) {
     for (wtf_size_t i = shadow_list->Shadows().size(); i--;) {
       const ShadowData& shadow = shadow_list->Shadows()[i];
-      float shadow_x = is_horizontal ? shadow.X() : shadow.Y();
-      float shadow_y = is_horizontal ? shadow.Y() : -shadow.X();
       draw_looper_builder.AddShadow(
-          FloatSize(shadow_x, shadow_y), shadow.Blur(),
+          FloatSize(shadow.X(), shadow.Y()), shadow.Blur(),
           shadow.GetColor().Resolve(current_color, color_scheme),
           DrawLooperBuilder::kShadowRespectsTransforms, alpha_mode);
     }
@@ -238,7 +233,7 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
     const PaintFlags* flags) {
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
-  UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
+  UpdateGraphicsContext(context, text_style, state_saver);
 
   // text-underline-position may flip underline and overline.
   ResolvedUnderlinePosition underline_position =
@@ -273,8 +268,7 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
       const int paint_underline_offset =
           decoration_offset.ComputeUnderlineOffset(
               underline_position, decoration_info.ComputedFontSize(),
-              decoration_info.FontData()->GetFontMetrics(), line_offset,
-              resolved_thickness);
+              decoration_info.FontData(), line_offset, resolved_thickness);
       decoration_info.SetPerLineData(
           TextDecoration::kUnderline, paint_underline_offset,
           TextDecorationInfo::DoubleOffsetFromThickness(resolved_thickness), 1);
@@ -293,7 +287,7 @@ void TextPainterBase::PaintDecorationsExceptLineThrough(
       const int paint_overline_offset =
           decoration_offset.ComputeUnderlineOffsetForUnder(
               line_offset, decoration_info.ComputedFontSize(),
-              resolved_thickness, position);
+              decoration_info.FontData(), resolved_thickness, position);
       decoration_info.SetPerLineData(
           TextDecoration::kOverline, paint_overline_offset,
           -TextDecorationInfo::DoubleOffsetFromThickness(resolved_thickness),
@@ -317,7 +311,7 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
     const PaintFlags* flags) {
   GraphicsContext& context = paint_info.context;
   GraphicsContextStateSaver state_saver(context);
-  UpdateGraphicsContext(context, text_style, horizontal_, state_saver);
+  UpdateGraphicsContext(context, text_style, state_saver);
 
   for (wtf_size_t applied_decoration_index = 0;
        applied_decoration_index < decorations.size();
@@ -376,7 +370,8 @@ void TextPainterBase::PaintDecorationUnderOrOverLine(
 
 void TextPainterBase::PaintEmphasisMarkForCombinedText(
     const TextPaintStyle& text_style,
-    const Font& emphasis_mark_font) {
+    const Font& emphasis_mark_font,
+    const AutoDarkMode& auto_dark_mode) {
   DCHECK(emphasis_mark_font.GetFontDescription().IsVerticalBaseline());
   DCHECK(emphasis_mark_);
   const SimpleFontData* const font_data = font_.PrimaryFont();
@@ -396,8 +391,8 @@ void TextPainterBase::PaintEmphasisMarkForCombinedText(
       text_frame_rect_.Y().ToFloat() + font_ascent + emphasis_mark_offset_);
   const TextRunPaintInfo text_run_paint_info(placeholder_text_run);
   graphics_context_.DrawEmphasisMarks(emphasis_mark_font, text_run_paint_info,
-                                      emphasis_mark_,
-                                      emphasis_mark_text_origin);
+                                      emphasis_mark_, emphasis_mark_text_origin,
+                                      auto_dark_mode);
 }
 
 }  // namespace blink

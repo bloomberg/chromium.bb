@@ -198,6 +198,10 @@
 #include "content/public/browser/plugin_service.h"
 #endif
 
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+#include "chrome/browser/sessions/exit_type_service.h"
+#endif
+
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/first_run/upgrade_util.h"
 #include "chrome/browser/ui/profile_picker.h"
@@ -222,13 +226,12 @@
 static const int kUpdateCheckIntervalHours = 6;
 #endif
 
-#if defined(USE_X11) || defined(OS_WIN) || defined(USE_OZONE)
+#if defined(OS_WIN) || defined(USE_OZONE)
 // How long to wait for the File thread to complete during EndSession, on Linux
 // and Windows. We have a timeout here because we're unable to run the UI
 // messageloop and there's some deadlock risk. Our only option is to exit
 // anyway.
-static constexpr base::TimeDelta kEndSessionTimeout =
-    base::TimeDelta::FromSeconds(10);
+static constexpr base::TimeDelta kEndSessionTimeout = base::Seconds(10);
 #endif
 
 using content::BrowserThread;
@@ -520,6 +523,9 @@ class RundownTaskCounter :
  public:
   RundownTaskCounter();
 
+  RundownTaskCounter(const RundownTaskCounter&) = delete;
+  RundownTaskCounter& operator=(const RundownTaskCounter&) = delete;
+
   // Increments |count_| and returns a closure bound to Decrement(). All
   // closures returned by this RundownTaskCounter's GetRundownClosure() method
   // must be invoked for TimedWait() to complete its wait without timing
@@ -542,8 +548,6 @@ class RundownTaskCounter :
   // until TimedWait is called.
   base::AtomicRefCount count_{1};
   base::WaitableEvent waitable_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(RundownTaskCounter);
 };
 
 RundownTaskCounter::RundownTaskCounter() = default;
@@ -601,12 +605,15 @@ void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
 void BrowserProcessImpl::EndSession() {
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
-  std::vector<Profile*> profiles(pm->GetLoadedProfiles());
   scoped_refptr<RundownTaskCounter> rundown_counter =
       base::MakeRefCounted<RundownTaskCounter>();
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    Profile* profile = profiles[i];
-    profile->SetExitType(Profile::EXIT_SESSION_ENDED);
+  for (Profile* profile : pm->GetLoadedProfiles()) {
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+    ExitTypeService* exit_type_service =
+        ExitTypeService::GetInstanceForProfile(profile);
+    if (exit_type_service)
+      exit_type_service->SetCurrentSessionExitType(ExitType::kForcedShutdown);
+#endif
     if (profile->GetPrefs()) {
       profile->GetPrefs()->CommitPendingWrite(
           base::OnceClosure(), rundown_counter->GetRundownClosure());
@@ -637,7 +644,7 @@ void BrowserProcessImpl::EndSession() {
   //
   // If you change the condition here, be sure to also change
   // ProfileBrowserTests to match.
-#if defined(USE_X11) || defined(OS_WIN) || defined(USE_OZONE)
+#if defined(OS_WIN) || defined(USE_OZONE)
   // Do a best-effort wait on the successful countdown of rundown tasks. Note
   // that if we don't complete "quickly enough", Windows will terminate our
   // process.
@@ -1051,10 +1058,8 @@ StartupData* BrowserProcessImpl::startup_data() {
 // complete.
 #if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 void BrowserProcessImpl::StartAutoupdateTimer() {
-  autoupdate_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromHours(kUpdateCheckIntervalHours),
-      this,
-      &BrowserProcessImpl::OnAutoupdateTimer);
+  autoupdate_timer_.Start(FROM_HERE, base::Hours(kUpdateCheckIntervalHours),
+                          this, &BrowserProcessImpl::OnAutoupdateTimer);
 }
 #endif
 

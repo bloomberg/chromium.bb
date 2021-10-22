@@ -34,6 +34,10 @@ namespace libassistant {
 class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  public:
   explicit AudioOutputProviderImpl(const std::string& device_id);
+
+  AudioOutputProviderImpl(const AudioOutputProviderImpl&) = delete;
+  AudioOutputProviderImpl& operator=(const AudioOutputProviderImpl&) = delete;
+
   ~AudioOutputProviderImpl() override;
 
   void Bind(
@@ -54,15 +58,14 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
 
   std::vector<assistant_client::OutputStreamEncoding>
   GetSupportedStreamEncodings() override;
-
   assistant_client::AudioInput* GetReferenceInput() override;
-
   bool SupportsPlaybackTimestamp() const override;
-
   assistant_client::VolumeControl& GetVolumeControl() override;
-
   void RegisterAudioEmittingStateCallback(
       AudioEmittingStateCallback callback) override;
+
+  void BindAudioDecoderFactory();
+  void UnBindAudioDecoderFactory();
 
  private:
   void BindStreamFactory(
@@ -84,8 +87,6 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
       audio_decoder_factory_;
   std::string device_id_;
   base::WeakPtrFactory<AudioOutputProviderImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AudioOutputProviderImpl);
 };
 
 }  // namespace libassistant

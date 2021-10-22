@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/common/attestation_utils.h"
+#include "chrome/browser/enterprise/connectors/device_trust/attestation/common/proto/device_trust_attestation_ca.pb.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/memory_signing_key_pair.h"
 #include "chrome/browser/enterprise/connectors/device_trust/attestation/desktop/signing_key_pair.h"
 #include "components/enterprise/common/proto/device_trust_report_event.pb.h"
@@ -43,7 +44,7 @@ class DesktopAttestationServiceTest : public testing::Test {
 
     // Make sure a signing key exists for the tests. This won't actual require
     // admin rights because of MemorySigningKeyPair.
-    auto key_pair = test::MemorySigningKeyPair::Create();
+    auto key_pair = test::CreateInMemorySigningKeyPair(nullptr, nullptr);
     ASSERT_TRUE(key_pair->RotateWithAdminRights("fake_dm_token"));
 
     attestation_service_ =

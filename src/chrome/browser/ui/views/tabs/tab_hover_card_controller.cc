@@ -32,27 +32,27 @@ base::TimeDelta GetPreviewImageCaptureDelay(
     case ThumbnailImage::CaptureReadiness::kNotReady: {
       static const int not_ready_delay = base::GetFieldTrialParamByFeatureAsInt(
           features::kTabHoverCardImages,
-          features::kTabHoverCardImagesNotReadyDelayParameterName, 0);
+          features::kTabHoverCardImagesNotReadyDelayParameterName, 800);
       ms = not_ready_delay;
       break;
     }
     case ThumbnailImage::CaptureReadiness::kReadyForInitialCapture: {
       static const int loading_delay = base::GetFieldTrialParamByFeatureAsInt(
           features::kTabHoverCardImages,
-          features::kTabHoverCardImagesLoadingDelayParameterName, 0);
+          features::kTabHoverCardImagesLoadingDelayParameterName, 300);
       ms = loading_delay;
       break;
     }
     case ThumbnailImage::CaptureReadiness::kReadyForFinalCapture: {
       static const int loaded_delay = base::GetFieldTrialParamByFeatureAsInt(
           features::kTabHoverCardImages,
-          features::kTabHoverCardImagesLoadedDelayParameterName, 0);
+          features::kTabHoverCardImagesLoadedDelayParameterName, 300);
       ms = loaded_delay;
       break;
     }
   }
   DCHECK_GE(ms, 0);
-  return base::TimeDelta::FromMilliseconds(ms);
+  return base::Milliseconds(ms);
 }
 
 base::TimeDelta GetShowDelay(int tab_width) {
@@ -79,12 +79,10 @@ base::TimeDelta GetShowDelay(int tab_width) {
   //           |___________________________________________ tab width
   //               |                                |
   //       pinned tab width               standard tab width
-  constexpr base::TimeDelta kMinimumTriggerDelay =
-      base::TimeDelta::FromMilliseconds(300);
+  constexpr base::TimeDelta kMinimumTriggerDelay = base::Milliseconds(300);
   if (tab_width < TabStyle::GetPinnedWidth())
     return kMinimumTriggerDelay;
-  constexpr base::TimeDelta kMaximumTriggerDelay =
-      base::TimeDelta::FromMilliseconds(800);
+  constexpr base::TimeDelta kMaximumTriggerDelay = base::Milliseconds(800);
   double logarithmic_fraction =
       std::log(tab_width - TabStyle::GetPinnedWidth() + 1) /
       std::log(TabStyle::GetStandardWidth() - TabStyle::GetPinnedWidth() + 1);
@@ -92,7 +90,7 @@ base::TimeDelta GetShowDelay(int tab_width) {
   base::TimeDelta delay =
       logarithmic_fraction * scaling_factor + kMinimumTriggerDelay;
   if (tab_width >= TabStyle::GetStandardWidth())
-    delay += base::TimeDelta::FromMilliseconds(max_width_additiona_delay);
+    delay += base::Milliseconds(max_width_additiona_delay);
   return delay;
 }
 
@@ -487,7 +485,7 @@ bool TabHoverCardController::ShouldShowImmediately(const Tab* tab) const {
   // card was last visible then it is shown immediately. This is to account for
   // if hover unintentionally leaves the tab strip.
   constexpr base::TimeDelta kShowWithoutDelayTimeBuffer =
-      base::TimeDelta::FromMilliseconds(300);
+      base::Milliseconds(300);
   base::TimeDelta elapsed_time =
       base::TimeTicks::Now() - last_mouse_exit_timestamp_;
 

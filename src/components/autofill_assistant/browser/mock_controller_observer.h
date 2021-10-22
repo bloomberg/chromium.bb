@@ -27,12 +27,13 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD1(OnBubbleMessageChanged, void(const std::string& message));
   MOCK_METHOD0(CloseCustomTab, void());
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
+  MOCK_METHOD1(OnKeyboardSuppressionStateChanged, void(bool));
   MOCK_METHOD1(OnUserActionsChanged,
                void(const std::vector<UserAction>& user_actions));
   MOCK_METHOD1(OnCollectUserDataOptionsChanged,
                void(const CollectUserDataOptions* options));
   MOCK_METHOD2(OnUserDataChanged,
-               void(const UserData* user_data,
+               void(const UserData& user_data,
                     UserData::FieldChange field_change));
   MOCK_METHOD1(OnDetailsChanged, void(const std::vector<Details>& details));
   MOCK_METHOD1(OnInfoBoxChanged, void(const InfoBox* info_box));

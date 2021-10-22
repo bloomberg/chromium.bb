@@ -53,7 +53,11 @@ TEST_F(FirstPartySetsComponentInstallerTest, FeatureDisabled) {
   scoped_feature_list_.InitAndDisableFeature(net::features::kFirstPartySets);
   auto service =
       std::make_unique<component_updater::MockComponentUpdateService>();
-  EXPECT_CALL(*service, RegisterComponent(_)).Times(0);
+
+  // We still install the component and subscribe to updates even when the
+  // feature is disabled, so that if the feature eventually gets enabled, we
+  // will already have the requisite data.
+  EXPECT_CALL(*service, RegisterComponent(_)).Times(1);
   RegisterFirstPartySetsComponent(service.get());
 
   env_.RunUntilIdle();
@@ -76,7 +80,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, LoadsSets_OnComponentReady) {
                       expectation));
 
   policy->ComponentReady(base::Version(), component_install_dir_.GetPath(),
-                         std::make_unique<base::DictionaryValue>());
+                         base::Value(base::Value::Type::DICTIONARY));
 
   run_loop.Run();
 }
@@ -107,7 +111,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnComponentReady) {
                           dir_v1.GetPath()),
                       sets_v1));
   policy.ComponentReady(base::Version(), dir_v1.GetPath(),
-                        std::make_unique<base::DictionaryValue>());
+                        base::Value(base::Value::Type::DICTIONARY));
 
   // Install newer version of the component, which should not be picked up when
   // calling ComponentReady again.
@@ -116,7 +120,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnComponentReady) {
                           dir_v2.GetPath()),
                       sets_v2));
   policy.ComponentReady(base::Version(), dir_v2.GetPath(),
-                        std::make_unique<base::DictionaryValue>());
+                        base::Value(base::Value::Type::DICTIONARY));
 
   env_.RunUntilIdle();
 
@@ -143,7 +147,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, LoadsSets_OnNetworkRestart) {
         expectation));
 
     policy.ComponentReady(base::Version(), component_install_dir_.GetPath(),
-                          std::make_unique<base::DictionaryValue>());
+                          base::Value(base::Value::Type::DICTIONARY));
 
     run_loop.Run();
   }
@@ -186,7 +190,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnNetworkRestart) {
                           dir_v1.GetPath()),
                       sets_v1));
   policy.ComponentReady(base::Version(), dir_v1.GetPath(),
-                        std::make_unique<base::DictionaryValue>());
+                        base::Value(base::Value::Type::DICTIONARY));
 
   // Install newer version of the component, which should not be picked up when
   // calling ComponentReady again.
@@ -195,7 +199,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, IgnoreNewSets_OnNetworkRestart) {
                           dir_v2.GetPath()),
                       sets_v2));
   policy.ComponentReady(base::Version(), dir_v2.GetPath(),
-                        std::make_unique<base::DictionaryValue>());
+                        base::Value(base::Value::Type::DICTIONARY));
 
   env_.RunUntilIdle();
 
@@ -216,8 +220,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, GetInstallerAttributes_Disabled) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitAndDisableFeature(net::features::kFirstPartySets);
 
-  FirstPartySetsComponentInstallerPolicy policy(
-      base::DoNothing::Repeatedly<const std::string&>());
+  FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
 
   EXPECT_THAT(policy.GetInstallerAttributes(),
               UnorderedElementsAre(Pair(FirstPartySetsComponentInstallerPolicy::
@@ -232,8 +235,7 @@ TEST_F(FirstPartySetsComponentInstallerTest,
       net::features::kFirstPartySets,
       {{net::features::kFirstPartySetsIsDogfooder.name, "false"}});
 
-  FirstPartySetsComponentInstallerPolicy policy(
-      base::DoNothing::Repeatedly<const std::string&>());
+  FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
 
   EXPECT_THAT(policy.GetInstallerAttributes(),
               UnorderedElementsAre(Pair(FirstPartySetsComponentInstallerPolicy::
@@ -247,8 +249,7 @@ TEST_F(FirstPartySetsComponentInstallerTest, GetInstallerAttributes_Dogfooder) {
       net::features::kFirstPartySets,
       {{net::features::kFirstPartySetsIsDogfooder.name, "true"}});
 
-  FirstPartySetsComponentInstallerPolicy policy(
-      base::DoNothing::Repeatedly<const std::string&>());
+  FirstPartySetsComponentInstallerPolicy policy(base::DoNothing());
 
   EXPECT_THAT(policy.GetInstallerAttributes(),
               UnorderedElementsAre(Pair(FirstPartySetsComponentInstallerPolicy::

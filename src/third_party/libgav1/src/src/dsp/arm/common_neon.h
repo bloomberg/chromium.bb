@@ -23,9 +23,12 @@
 
 #include <arm_neon.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+
+#include "src/utils/compiler_attributes.h"
 
 #if 0
 #include <cstdio>
@@ -184,6 +187,20 @@ inline void PrintHex(const int x, const char* name) {
 #define PD(x) PrintReg(x, #x)
 #define PX(x) PrintHex(x, #x)
 
+#if LIBGAV1_MSAN
+#include <sanitizer/msan_interface.h>
+
+inline void PrintShadow(const void* r, const char* const name,
+                        const size_t size) {
+  if (kEnablePrintRegs) {
+    fprintf(stderr, "Shadow for %s:\n", name);
+    __msan_print_shadow(r, size);
+  }
+}
+#define PS(var, N) PrintShadow(var, #var, N)
+
+#endif  // LIBGAV1_MSAN
+
 #endif  // 0
 
 namespace libgav1 {
@@ -245,6 +262,87 @@ inline uint16x4_t Load4U16(const void* const buf) {
 
 inline uint16x8_t Load8U16(const void* const buf) {
   return vld1q_u16(static_cast<const uint16_t*>(buf));
+}
+
+//------------------------------------------------------------------------------
+// Load functions to avoid MemorySanitizer's use-of-uninitialized-value warning.
+
+inline uint8x8_t MaskOverreads(const uint8x8_t source,
+                               const ptrdiff_t over_read_in_bytes) {
+  uint8x8_t dst = source;
+#if LIBGAV1_MSAN
+  if (over_read_in_bytes > 0) {
+    uint8x8_t mask = vdup_n_u8(0);
+    uint8x8_t valid_element_mask = vdup_n_u8(-1);
+    const int valid_bytes =
+        std::min(8, 8 - static_cast<int>(over_read_in_bytes));
+    for (int i = 0; i < valid_bytes; ++i) {
+      // Feed ff bytes into |mask| one at a time.
+      mask = vext_u8(valid_element_mask, mask, 7);
+    }
+    dst = vand_u8(dst, mask);
+  }
+#else
+  static_cast<void>(over_read_in_bytes);
+#endif
+  return dst;
+}
+
+inline uint8x16_t MaskOverreadsQ(const uint8x16_t source,
+                                 const ptrdiff_t over_read_in_bytes) {
+  uint8x16_t dst = source;
+#if LIBGAV1_MSAN
+  if (over_read_in_bytes > 0) {
+    uint8x16_t mask = vdupq_n_u8(0);
+    uint8x16_t valid_element_mask = vdupq_n_u8(-1);
+    const int valid_bytes =
+        std::min(16, 16 - static_cast<int>(over_read_in_bytes));
+    for (int i = 0; i < valid_bytes; ++i) {
+      // Feed ff bytes into |mask| one at a time.
+      mask = vextq_u8(valid_element_mask, mask, 15);
+    }
+    dst = vandq_u8(dst, mask);
+  }
+#else
+  static_cast<void>(over_read_in_bytes);
+#endif
+  return dst;
+}
+
+inline uint8x8_t Load1MsanU8(const uint8_t* const source,
+                             const ptrdiff_t over_read_in_bytes) {
+  return MaskOverreads(vld1_u8(source), over_read_in_bytes);
+}
+
+inline uint8x16_t Load1QMsanU8(const uint8_t* const source,
+                               const ptrdiff_t over_read_in_bytes) {
+  return MaskOverreadsQ(vld1q_u8(source), over_read_in_bytes);
+}
+
+inline uint16x8_t Load1QMsanU16(const uint16_t* const source,
+                                const ptrdiff_t over_read_in_bytes) {
+  return vreinterpretq_u16_u8(MaskOverreadsQ(
+      vreinterpretq_u8_u16(vld1q_u16(source)), over_read_in_bytes));
+}
+
+inline uint16x8x2_t Load2QMsanU16(const uint16_t* const source,
+                                  const ptrdiff_t over_read_in_bytes) {
+  // Relative source index of elements (2 bytes each):
+  // dst.val[0]: 00 02 04 06 08 10 12 14
+  // dst.val[1]: 01 03 05 07 09 11 13 15
+  uint16x8x2_t dst = vld2q_u16(source);
+  dst.val[0] = vreinterpretq_u16_u8(MaskOverreadsQ(
+      vreinterpretq_u8_u16(dst.val[0]), over_read_in_bytes >> 1));
+  dst.val[1] = vreinterpretq_u16_u8(
+      MaskOverreadsQ(vreinterpretq_u8_u16(dst.val[1]),
+                     (over_read_in_bytes >> 1) + (over_read_in_bytes % 4)));
+  return dst;
+}
+
+inline uint32x4_t Load1QMsanU32(const uint32_t* const source,
+                                const ptrdiff_t over_read_in_bytes) {
+  return vreinterpretq_u32_u8(MaskOverreadsQ(
+      vreinterpretq_u8_u32(vld1q_u32(source)), over_read_in_bytes));
 }
 
 //------------------------------------------------------------------------------

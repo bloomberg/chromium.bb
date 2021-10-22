@@ -58,6 +58,11 @@ class SpellcheckInterfaceProvider
     : public service_manager::LocalInterfaceProvider {
  public:
   SpellcheckInterfaceProvider() = default;
+
+  SpellcheckInterfaceProvider(const SpellcheckInterfaceProvider&) = delete;
+  SpellcheckInterfaceProvider& operator=(const SpellcheckInterfaceProvider&) =
+      delete;
+
   ~SpellcheckInterfaceProvider() override = default;
 
   // service_manager::LocalInterfaceProvider:
@@ -69,9 +74,6 @@ class SpellcheckInterfaceProvider
     content::RenderThread::Get()->BindHostReceiver(mojo::GenericPendingReceiver(
         interface_name, std::move(interface_pipe)));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpellcheckInterfaceProvider);
 };
 #endif  // defined(OS_ANDROID)
 
@@ -153,7 +155,7 @@ void ContentRendererClientImpl::RenderFrameCreated(
   if (render_frame->IsMainFrame())
     new webapps::WebPageMetadataAgent(render_frame);
 
-  if (content_capture::features::IsContentCaptureEnabled()) {
+  if (content_capture::features::IsContentCaptureEnabledInWebLayer()) {
     new content_capture::ContentCaptureSender(
         render_frame, render_frame_observer->associated_interfaces());
   }

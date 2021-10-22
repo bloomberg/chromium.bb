@@ -77,7 +77,7 @@ namespace {
 // The time and retry limit to re-check the profile sync service status. The
 // sync extension function can get the correct value of the "syncThemes" user
 // preference only after the profile sync service has been configured.
-constexpr base::TimeDelta kRetryDelay = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kRetryDelay = base::Seconds(10);
 constexpr int kRetryLimit = 3;
 
 // TODO(https://crbug.com/1037624): Update "themes" terminology after sync-split
@@ -136,17 +136,17 @@ const user_manager::User* GetUserFromBrowserContext(
 ash::WallpaperType GetWallpaperType(wallpaper_private::WallpaperSource source) {
   switch (source) {
     case wallpaper_private::WALLPAPER_SOURCE_ONLINE:
-      return ash::ONLINE;
+      return ash::WallpaperType::kOnline;
     case wallpaper_private::WALLPAPER_SOURCE_DAILY:
-      return ash::DAILY;
+      return ash::WallpaperType::kDaily;
     case wallpaper_private::WALLPAPER_SOURCE_CUSTOM:
-      return ash::CUSTOMIZED;
+      return ash::WallpaperType::kCustomized;
     case wallpaper_private::WALLPAPER_SOURCE_OEM:
-      return ash::DEFAULT;
+      return ash::WallpaperType::kDefault;
     case wallpaper_private::WALLPAPER_SOURCE_THIRDPARTY:
-      return ash::THIRDPARTY;
+      return ash::WallpaperType::kThirdParty;
     default:
-      return ash::ONLINE;
+      return ash::WallpaperType::kOnline;
   }
 }
 
@@ -665,7 +665,7 @@ WallpaperPrivateRecordWallpaperUMAFunction::Run() {
 
   ash::WallpaperType source = GetWallpaperType(params->source);
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Source", source,
-                            ash::WALLPAPER_TYPE_COUNT);
+                            ash::WallpaperType::kCount);
   return RespondNow(NoArguments());
 }
 
@@ -887,4 +887,9 @@ void WallpaperPrivateGetSurpriseMeImageFunction::OnSurpriseMeImageFetched(
   ParseImageInfo(image, &image_info);
   Respond(TwoArguments(Value::FromUniquePtrValue(image_info.ToValue()),
                        Value(next_resume_token)));
+}
+
+ExtensionFunction::ResponseAction WallpaperPrivateIsSwaEnabledFunction::Run() {
+  return RespondNow(
+      OneArgument(base::Value(ash::features::IsWallpaperWebUIEnabled())));
 }

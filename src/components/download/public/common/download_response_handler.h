@@ -56,6 +56,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
       DownloadSource download_source,
       std::vector<GURL> url_chain,
       bool is_background_mode);
+
+  DownloadResponseHandler(const DownloadResponseHandler&) = delete;
+  DownloadResponseHandler& operator=(const DownloadResponseHandler&) = delete;
+
   ~DownloadResponseHandler() override;
 
   // network::mojom::URLLoaderClient
@@ -102,6 +106,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   bool has_strong_validators_;
   absl::optional<url::Origin> request_initiator_;
   ::network::mojom::CredentialsMode credentials_mode_;
+  absl::optional<net::IsolationInfo> isolation_info_;
   bool is_partial_request_;
   bool completed_;
 
@@ -113,7 +118,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
 
   // Whether the download is running in background mode.
   bool is_background_mode_;
-  DISALLOW_COPY_AND_ASSIGN(DownloadResponseHandler);
 };
 
 }  // namespace download

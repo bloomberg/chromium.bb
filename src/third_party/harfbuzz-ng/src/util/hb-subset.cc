@@ -418,7 +418,7 @@ parse_nameids (const char *name,
   subset_main_t *subset_main = (subset_main_t *) data;
   hb_bool_t is_remove = (name[strlen (name) - 1] == '-');
   hb_bool_t is_add = (name[strlen (name) - 1] == '+');
-  hb_set_t *name_ids = hb_subset_input_nameid_set (subset_main->input);
+  hb_set_t *name_ids = hb_subset_input_set (subset_main->input, HB_SUBSET_SETS_NAME_ID);
 
 
   if (!is_remove && !is_add) hb_set_clear (name_ids);
@@ -472,7 +472,7 @@ parse_name_languages (const char *name,
   subset_main_t *subset_main = (subset_main_t *) data;
   hb_bool_t is_remove = (name[strlen (name) - 1] == '-');
   hb_bool_t is_add = (name[strlen (name) - 1] == '+');
-  hb_set_t *name_languages = hb_subset_input_namelangid_set (subset_main->input);
+  hb_set_t *name_languages = hb_subset_input_set (subset_main->input, HB_SUBSET_SETS_NAME_LANG_ID);
 
   if (!is_remove && !is_add) hb_set_clear (name_languages);
 
@@ -540,7 +540,7 @@ parse_layout_features (const char *name,
   subset_main_t *subset_main = (subset_main_t *) data;
   hb_bool_t is_remove = (name[strlen (name) - 1] == '-');
   hb_bool_t is_add = (name[strlen (name) - 1] == '+');
-  hb_set_t *layout_features = hb_subset_input_layout_features_set (subset_main->input);
+  hb_set_t *layout_features = hb_subset_input_set (subset_main->input, HB_SUBSET_SETS_LAYOUT_FEATURE_TAG);
 
   if (!is_remove && !is_add) hb_set_clear (layout_features);
 
@@ -584,7 +584,7 @@ parse_drop_tables (const char *name,
   subset_main_t *subset_main = (subset_main_t *) data;
   hb_bool_t is_remove = (name[strlen (name) - 1] == '-');
   hb_bool_t is_add = (name[strlen (name) - 1] == '+');
-  hb_set_t *drop_tables = hb_subset_input_drop_tables_set (subset_main->input);
+  hb_set_t *drop_tables = hb_subset_input_set (subset_main->input, HB_SUBSET_SETS_DROP_TABLE_TAG);
 
   if (!is_remove && !is_add) hb_set_clear (drop_tables);
 
@@ -730,7 +730,7 @@ subset_main_t::add_options ()
   {
     {"gids",		0, 0, G_OPTION_ARG_CALLBACK, (gpointer) &parse_gids,
      "Specify glyph IDs or ranges to include in the subset.\n"
-     "                                                    "
+     "                                                       "
      "Use --gids-=... to subtract codepoints from the current set.", "list of glyph indices/ranges or *"},
     {"gids-",		0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_CALLBACK, (gpointer) &parse_gids,			"Specify glyph IDs or ranges to remove from the subset", "list of glyph indices/ranges or *"},
     {"gids+",		0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_CALLBACK, (gpointer) &parse_gids,			"Specify glyph IDs or ranges to include in the subset", "list of glyph indices/ranges or *"},
@@ -750,12 +750,11 @@ subset_main_t::add_options ()
     {"text-file",	0, 0, G_OPTION_ARG_CALLBACK, (gpointer) &parse_file_for<parse_text, false>,"Specify file to read text from", "filename"},
     {"unicodes",	0, 0, G_OPTION_ARG_CALLBACK, (gpointer) &parse_unicodes,
      "Specify Unicode codepoints or ranges to include in the subset. Use * to include all codepoints.\n"
-     "                                                    "
-     "--unicodes-=... can be used to subtract codepoints "
-     "from the current set.\n"
-     "                                                    "
+     "                                                       "
+     "--unicodes-=... can be used to subtract codepoints from the current set.\n"
+     "                                                       "
      "For example: --unicodes=* --unicodes-=41,42,43 would create a subset with all codepoints\n"
-     "                                                    "
+     "                                                       "
      "except for 41, 42, 43.",
      "list of hex numbers/ranges or *"},
     {"unicodes-",	0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_CALLBACK, (gpointer) &parse_unicodes, "Specify Unicode codepoints or ranges to remove from the subset", "list of hex numbers/ranges or *"},

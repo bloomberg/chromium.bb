@@ -33,6 +33,10 @@ namespace {
 class CompositorTest : public testing::Test {
  public:
   CompositorTest() = default;
+
+  CompositorTest(const CompositorTest&) = delete;
+  CompositorTest& operator=(const CompositorTest&) = delete;
+
   ~CompositorTest() override = default;
 
   void SetUp() override {
@@ -60,8 +64,6 @@ class CompositorTest : public testing::Test {
  private:
   std::unique_ptr<TestContextFactories> context_factories_;
   std::unique_ptr<Compositor> compositor_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorTest);
 };
 
 // For tests that control time.
@@ -120,7 +122,7 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
       gfx::ColorSpace::CreateDisplayP3D65());
   display_color_spaces.SetSDRWhiteLevel(1.f);
   base::TimeTicks vsync_timebase(base::TimeTicks::Now());
-  base::TimeDelta vsync_interval(base::TimeDelta::FromMilliseconds(250));
+  base::TimeDelta vsync_interval(base::Milliseconds(250));
   compositor()->SetDisplayColorMatrix(color_matrix);
   compositor()->SetDisplayColorSpaces(display_color_spaces);
   compositor()->SetDisplayVSyncParameters(vsync_timebase, vsync_interval);

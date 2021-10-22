@@ -31,6 +31,10 @@ class GPU_GLES2_EXPORT MemoryProgramCache : public ProgramCache {
                      bool disable_gpu_shader_disk_cache,
                      bool disable_program_caching_for_transform_feedback,
                      GpuProcessActivityFlags* activity_flags);
+
+  MemoryProgramCache(const MemoryProgramCache&) = delete;
+  MemoryProgramCache& operator=(const MemoryProgramCache&) = delete;
+
   ~MemoryProgramCache() override;
 
   ProgramLoadResult LoadLinkedProgram(
@@ -77,6 +81,9 @@ class GPU_GLES2_EXPORT MemoryProgramCache : public ProgramCache {
                       const OutputVariableList& output_variable_list_1,
                       const InterfaceBlockMap& interface_block_map_1,
                       MemoryProgramCache* program_cache);
+
+    ProgramCacheValue(const ProgramCacheValue&) = delete;
+    ProgramCacheValue& operator=(const ProgramCacheValue&) = delete;
 
     GLenum format() const {
       return format_;
@@ -159,8 +166,6 @@ class GPU_GLES2_EXPORT MemoryProgramCache : public ProgramCache {
     const OutputVariableList output_variable_list_1_;
     const InterfaceBlockMap interface_block_map_1_;
     MemoryProgramCache* const program_cache_;
-
-    DISALLOW_COPY_AND_ASSIGN(ProgramCacheValue);
   };
 
   friend class ProgramCacheValue;
@@ -174,8 +179,6 @@ class GPU_GLES2_EXPORT MemoryProgramCache : public ProgramCache {
   size_t curr_size_bytes_;
   ProgramMRUCache store_;
   GpuProcessActivityFlags* activity_flags_;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryProgramCache);
 };
 
 }  // namespace gles2

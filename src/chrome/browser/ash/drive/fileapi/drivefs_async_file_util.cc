@@ -29,6 +29,10 @@ namespace {
 class DriveFsFileUtil : public storage::LocalFileUtil {
  public:
   DriveFsFileUtil() = default;
+
+  DriveFsFileUtil(const DriveFsFileUtil&) = delete;
+  DriveFsFileUtil& operator=(const DriveFsFileUtil&) = delete;
+
   ~DriveFsFileUtil() override = default;
 
  protected:
@@ -36,9 +40,6 @@ class DriveFsFileUtil : public storage::LocalFileUtil {
     // DriveFS is a trusted filesystem, allow symlinks.
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DriveFsFileUtil);
 };
 
 class CopyOperation {
@@ -64,6 +65,9 @@ class CopyOperation {
         async_file_util_(std::move(async_file_util)) {
     DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   }
+
+  CopyOperation(const CopyOperation&) = delete;
+  CopyOperation& operator=(const CopyOperation&) = delete;
 
   void Start() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -134,8 +138,6 @@ class CopyOperation {
   storage::AsyncFileUtil::StatusCallback callback_;
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   base::WeakPtr<DriveFsAsyncFileUtil> async_file_util_;
-
-  DISALLOW_COPY_AND_ASSIGN(CopyOperation);
 };
 
 // Recursively deletes a folder locally. The folder will still be available in
@@ -154,6 +156,9 @@ class DeleteOperation {
         blocking_task_runner_(std::move(blocking_task_runner)) {
     DCHECK(origin_task_runner_->RunsTasksInCurrentSequence());
   }
+
+  DeleteOperation(const DeleteOperation&) = delete;
+  DeleteOperation& operator=(const DeleteOperation&) = delete;
 
   void Start() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -191,8 +196,6 @@ class DeleteOperation {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   base::FilePath path_in_trash_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteOperation);
 };
 
 }  // namespace

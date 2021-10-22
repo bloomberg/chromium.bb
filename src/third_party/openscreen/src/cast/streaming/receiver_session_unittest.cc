@@ -353,13 +353,13 @@ class ReceiverSessionTest : public ::testing::Test {
   ReceiverSessionTest() : clock_(Clock::time_point{}), task_runner_(&clock_) {}
 
   std::unique_ptr<MockEnvironment> MakeEnvironment() {
-    auto environment_ = std::make_unique<NiceMock<MockEnvironment>>(
+    auto environment = std::make_unique<NiceMock<MockEnvironment>>(
         &FakeClock::now, &task_runner_);
-    ON_CALL(*environment_, GetBoundLocalEndpoint())
+    ON_CALL(*environment, GetBoundLocalEndpoint())
         .WillByDefault(Return(IPEndpoint{{127, 0, 0, 1}, 12345}));
-    environment_->set_socket_state_for_testing(
+    environment->set_socket_state_for_testing(
         Environment::SocketState::kReady);
-    return environment_;
+    return environment;
   }
 
   void SetUp() { SetUpWithPreferences(ReceiverSession::Preferences{}); }

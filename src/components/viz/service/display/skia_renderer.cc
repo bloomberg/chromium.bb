@@ -71,14 +71,10 @@
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/gpu_fence_handle.h"
-#include "ui/gfx/skia_util.h"
-#include "ui/gfx/transform.h"
-#include "ui/gfx/transform_util.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
-#endif
 
 namespace viz {
 
@@ -600,14 +596,20 @@ class SkiaRenderer::ScopedSkImageBuilder {
                        SkAlphaType alpha_type = kPremul_SkAlphaType,
                        GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin,
                        bool use_target_color_space = false);
+
+  ScopedSkImageBuilder(const ScopedSkImageBuilder&) = delete;
+  ScopedSkImageBuilder& operator=(const ScopedSkImageBuilder&) = delete;
+
   ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
+  const cc::PaintOpBuffer* paint_op_buffer() const { return paint_op_buffer_; }
+  const absl::optional<SkColor>& clear_color() const { return clear_color_; }
 
  private:
   const SkImage* sk_image_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSkImageBuilder);
+  const cc::PaintOpBuffer* paint_op_buffer_ = nullptr;
+  absl::optional<SkColor> clear_color_;
 };
 
 SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
@@ -637,10 +639,13 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     image_context->set_alpha_type(alpha_type);
     image_context->set_origin(origin);
   }
+
   skia_renderer->skia_output_surface_->MakePromiseSkImage(image_context);
-  LOG_IF(ERROR, !image_context->has_image())
-      << "Failed to create the promise sk image.";
+  paint_op_buffer_ = image_context->paint_op_buffer();
+  clear_color_ = image_context->clear_color();
   sk_image_ = image_context->image().get();
+  LOG_IF(ERROR, !image_context->has_image() && !paint_op_buffer_)
+      << "Failed to create the promise sk image or get paint ops.";
 }
 
 class SkiaRenderer::ScopedYUVSkImageBuilder {
@@ -706,19 +711,23 @@ class SkiaRenderer::ScopedYUVSkImageBuilder {
     LOG_IF(ERROR, !sk_image_) << "Failed to create the promise sk yuva image.";
   }
 
+  ScopedYUVSkImageBuilder(const ScopedYUVSkImageBuilder&) = delete;
+  ScopedYUVSkImageBuilder& operator=(const ScopedYUVSkImageBuilder&) = delete;
+
   ~ScopedYUVSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_.get(); }
 
  private:
   sk_sp<SkImage> sk_image_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedYUVSkImageBuilder);
 };
 
 class SkiaRenderer::FrameResourceFence : public ResourceFence {
  public:
   FrameResourceFence() = default;
+
+  FrameResourceFence(const FrameResourceFence&) = delete;
+  FrameResourceFence& operator=(const FrameResourceFence&) = delete;
 
   // ResourceFence implementation.
   void Set() override { set_ = true; }
@@ -734,8 +743,6 @@ class SkiaRenderer::FrameResourceFence : public ResourceFence {
   bool set_ = false;
 
   base::WaitableEvent event_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameResourceFence);
 };
 
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
@@ -823,36 +830,36 @@ void SkiaRenderer::SwapBuffersSkipped() {
 }
 
 void SkiaRenderer::SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {
+  auto& read_lock_release_fence_overlay_locks =
+      read_lock_release_fence_overlay_locks_.emplace_back();
+  auto read_fence_lock_iter = committed_overlay_locks_.end();
+
   if (!release_fence.is_null()) {
     // Set release fences for returning for last frame overlay resources.
     for (auto& lock : committed_overlay_locks_) {
       lock.SetReleaseFence(release_fence.Clone());
     }
-  }
-
-  // Right now, only macOS needs to return mailboxes of released overlays, so
-  // we should not release |committed_overlay_locks_| here. The resources in it
-  // will be released by DidReceiveReleasedOverlays() later.
-#if defined(OS_APPLE)
-  for (auto& lock : committed_overlay_locks_) {
-    awaiting_release_overlay_locks_.insert(std::move(lock));
-  }
-#endif  // defined(OS_APPLE)
-
-  // Find all locks that have a read-lock fence associated with them.
-  // If we have a release fence, it's not safe to release them here.
-  // Release them later in BuffersPresented.
-  auto& read_lock_release_fence_overlay_locks =
-      read_lock_release_fence_overlay_locks_.emplace_back();
-  if (!release_fence.is_null()) {
-    auto read_lock_iter = std::partition(
+    // Find all locks that have a read-lock fence associated with them.
+    // If we have a release fence, it's not safe to release them here.
+    // Release them later in BuffersPresented.
+    read_fence_lock_iter = std::partition(
         committed_overlay_locks_.begin(), committed_overlay_locks_.end(),
         [](auto& lock) { return !lock.HasReadLockFence(); });
     read_lock_release_fence_overlay_locks.insert(
         read_lock_release_fence_overlay_locks.end(),
-        std::make_move_iterator(read_lock_iter),
+        std::make_move_iterator(read_fence_lock_iter),
         std::make_move_iterator(committed_overlay_locks_.end()));
   }
+
+  // Right now, only macOS and Ozone need to return mailboxes of released
+  // overlays, so we should not release |committed_overlay_locks_| here. The
+  // resources in it will be released by DidReceiveReleasedOverlays() later.
+#if defined(OS_APPLE) || defined(USE_OZONE)
+  for (auto lock_iter = committed_overlay_locks_.begin();
+       lock_iter != read_fence_lock_iter; ++lock_iter) {
+    awaiting_release_overlay_locks_.insert(std::move(*lock_iter));
+  }
+#endif  // defined(OS_APPLE) || defined(USE_OZONE)
 
   committed_overlay_locks_.clear();
   std::swap(committed_overlay_locks_, pending_overlay_locks_.front());
@@ -866,8 +873,8 @@ void SkiaRenderer::BuffersPresented() {
 
 void SkiaRenderer::DidReceiveReleasedOverlays(
     const std::vector<gpu::Mailbox>& released_overlays) {
-  // This method is only called on macOS right now.
-#if defined(OS_APPLE)
+  // This method is only called on macOS and Ozone right now.
+#if defined(OS_APPLE) || defined(USE_OZONE)
   for (const auto& mailbox : released_overlays) {
     auto it = awaiting_release_overlay_locks_.find(mailbox);
     if (it == awaiting_release_overlay_locks_.end()) {
@@ -878,7 +885,7 @@ void SkiaRenderer::DidReceiveReleasedOverlays(
   }
 #else
   NOTREACHED();
-#endif  // !defined(OS_APPLE)
+#endif  // !(defined(OS_APPLE) || defined (USE_OZONE))
 }
 
 bool SkiaRenderer::FlippedFramebuffer() const {
@@ -1819,6 +1826,53 @@ void SkiaRenderer::DrawSingleImage(const SkImage* image,
       constraint);
 }
 
+void SkiaRenderer::DrawPaintOpBuffer(const cc::PaintOpBuffer* buffer,
+                                     const absl::optional<SkColor>& clear_color,
+                                     const TileDrawQuad* quad,
+                                     const DrawRPDQParams* rpdq_params,
+                                     const DrawQuadParams* params) {
+  if (!batched_quads_.empty())
+    FlushBatchedQuads();
+
+  SkAutoCanvasRestore auto_canvas_restore(current_canvas_, true /* do_save */);
+  PrepareCanvas(params->scissor_rect, params->rounded_corner_bounds,
+                &params->content_device_transform);
+
+  float scale_x = params->rect.width() / quad->tex_coord_rect.width();
+  float scale_y = params->rect.height() / quad->tex_coord_rect.height();
+
+  float offset_x =
+      params->visible_rect.x() - params->vis_tex_coords.x() * scale_x;
+  float offset_y =
+      params->visible_rect.y() - params->vis_tex_coords.y() * scale_y;
+
+  auto visible_rect = gfx::RectFToSkRect(params->visible_rect);
+  current_canvas_->clipRect(visible_rect);
+
+  absl::optional<int> restore_count;
+  sk_sp<SkColorFilter> color_filter =
+      rpdq_params ? GetContentColorFilter() : nullptr;
+  if (quad->ShouldDrawWithBlending() || color_filter) {
+    auto paint = params->paint(color_filter);
+    // TODO(penghuang): saveLayer() is expensive, try to avoid it as much as
+    // possible.
+    restore_count = current_canvas_->saveLayer(&visible_rect, &paint);
+  }
+
+  if (clear_color)
+    current_canvas_->drawColor(*clear_color);
+
+  current_canvas_->translate(offset_x, offset_y);
+  current_canvas_->scale(scale_x, scale_y);
+
+  cc::PlaybackParams playback_params(nullptr, SkM44());
+  buffer->Playback(current_canvas_, playback_params);
+
+  if (restore_count) {
+    current_canvas_->restoreToCount(*restore_count);
+  }
+}
+
 void SkiaRenderer::DrawDebugBorderQuad(const DebugBorderDrawQuad* quad,
                                        DrawQuadParams* params) {
   DCHECK(batched_quads_.empty());
@@ -2106,12 +2160,20 @@ void SkiaRenderer::DrawTileDrawQuad(const TileDrawQuad* quad,
   ScopedSkImageBuilder builder(
       this, quad->resource_id(), /*maybe_concurrent_reads=*/false,
       quad->is_premultiplied ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
+
+  params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
+      quad->tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
+
+  if (builder.paint_op_buffer()) {
+    DrawPaintOpBuffer(builder.paint_op_buffer(), builder.clear_color(), quad,
+                      rpdq_params, params);
+    return;
+  }
+
   const SkImage* image = builder.sk_image();
   if (!image)
     return;
 
-  params->vis_tex_coords = cc::MathUtil::ScaleRectProportional(
-      quad->tex_coord_rect, gfx::RectF(quad->rect), params->visible_rect);
   // When a tile is at the right or bottom edge of the entire tiled area, its
   // images won't be fully filled so use the unclipped texture coords. On
   // interior tiles or left/top tiles, the image has been filled with
@@ -2295,13 +2357,6 @@ void SkiaRenderer::ScheduleOverlays() {
     DCHECK(!ca_layer_overlay.mailbox.IsZero());
   }
 #elif defined(USE_OZONE)
-  // For platforms that don't support overlays, the
-  // current_frame()->overlay_list should be empty, and this code should not be
-  // reached.
-  if (!features::IsUsingOzonePlatform()) {
-    NOTREACHED();
-    return;
-  }
   // Only Wayland uses this code path.
   auto& locks = pending_overlay_locks_.back();
   for (auto& overlay : current_frame()->overlay_list) {
@@ -3096,7 +3151,7 @@ bool SkiaRenderer::UsingSkiaForDelegatedInk() const {
   return delegated_ink_handler_ && delegated_ink_handler_->GetInkRenderer();
 }
 
-#if defined(OS_APPLE)
+#if defined(OS_APPLE) || defined(USE_OZONE)
 bool SkiaRenderer::ScopedReadLockComparator::operator()(
     const DisplayResourceProviderSkia::ScopedReadLockSharedImage& lhs,
     const DisplayResourceProviderSkia::ScopedReadLockSharedImage& rhs) const {
@@ -3114,6 +3169,6 @@ bool SkiaRenderer::ScopedReadLockComparator::operator()(
     const DisplayResourceProviderSkia::ScopedReadLockSharedImage& rhs) const {
   return lhs < rhs.mailbox();
 }
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_APPLE) || defined(USE_OZONE)
 
 }  // namespace viz

@@ -58,7 +58,6 @@
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/widget/device_emulation_params.h"
-#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
@@ -229,7 +228,7 @@ class WebViewTest : public testing::Test {
   void SetUp() override {
     test_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
     // Advance clock so time is not 0.
-    test_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    test_task_runner_->FastForwardBy(base::Seconds(1));
     EventTiming::SetTickClockForTesting(test_task_runner_->GetMockTickClock());
   }
 
@@ -242,7 +241,7 @@ class WebViewTest : public testing::Test {
   void SetViewportSize(const gfx::Size& size) {
     cc::LayerTreeHost* layer_tree_host = web_view_helper_.GetLayerTreeHost();
     layer_tree_host->SetViewportRectAndScale(
-        gfx::Rect(static_cast<gfx::Size>(size)), /*device_scale_factor=*/1.f,
+        gfx::Rect(size), /*device_scale_factor=*/1.f,
         layer_tree_host->local_surface_id_from_parent());
   }
 
@@ -541,7 +540,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   SkCanvas canvas(bitmap, SkSurfaceProps{});
   canvas.clear(kAlphaRed);
 
-  PaintRecordBuilder builder;
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
 
   // Paint the root of the main frame in the way that CompositedLayerMapping
   // would.
@@ -554,11 +553,11 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   view->GetLayoutView()->GetDocument().Lifecycle().AdvanceTo(
       DocumentLifecycle::kInPaint);
   PaintLayerPainter(*root_layer)
-      .PaintLayerContents(builder.Context(), painting_info,
+      .PaintLayerContents(builder->Context(), painting_info,
                           kPaintLayerPaintingCompositingAllPhases);
   view->GetLayoutView()->GetDocument().Lifecycle().AdvanceTo(
       DocumentLifecycle::kPaintClean);
-  builder.EndRecording()->Playback(&canvas);
+  builder->EndRecording()->Playback(&canvas);
 
   // The result should be a blend of red and green.
   SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);
@@ -1576,7 +1575,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
       web_view_helper_.InitializeAndLoad(base_url_ + "form_with_input.html");
   web_view->MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   web_view->MainFrameImpl()->GetFrame()->SetInitialFocus(false);
-  EXPECT_EQ(gfx::ScrollOffset(), web_view->MainFrameImpl()->GetScrollOffset());
+  EXPECT_EQ(gfx::Vector2dF(), web_view->MainFrameImpl()->GetScrollOffset());
 
   // Set up a composition from existing text that needs to be committed.
   Vector<ImeTextSpan> empty_ime_text_spans;
@@ -2433,12 +2432,12 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
   web_view_impl->MainFrameViewWidget()->Resize(gfx::Size(100, 150));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(gfx::ScrollOffset(),
+  EXPECT_EQ(gfx::Vector2dF(),
             web_view_impl->MainFrameImpl()->GetScrollOffset());
 
   // Make the page scale and scroll with the given paremeters.
   web_view_impl->SetPageScaleFactor(2.0f);
-  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(94, 111));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(94, 111));
   EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
   EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().x());
   EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
@@ -2464,7 +2463,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
   // Confirm that resetting the page state resets the saved scroll position.
   web_view_impl->ResetScrollAndScaleState();
   EXPECT_EQ(1.0f, web_view_impl->PageScaleFactor());
-  EXPECT_EQ(gfx::ScrollOffset(),
+  EXPECT_EQ(gfx::Vector2dF(),
             web_view_impl->MainFrameImpl()->GetScrollOffset());
   EXPECT_FALSE(main_frame_local->Loader()
                    .GetDocumentLoader()
@@ -2482,7 +2481,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       DocumentUpdateReason::kTest);
 
   // Emulate a user scroll
-  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 900));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 900));
   auto* main_frame_local =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   Persistent<HistoryItem> item1 =
@@ -2562,7 +2561,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   UpdateAllLifecyclePhases();
 
   // Scroll the page down.
-  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 2000));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 2000));
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
 
   // Enter fullscreen.
@@ -2577,7 +2576,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   // Assert the scroll position on the document element doesn't change.
   ASSERT_EQ(2000, web_view_impl->MainFrameImpl()->GetScrollOffset().y());
 
-  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::ScrollOffset(0, 2100));
+  web_view_impl->MainFrameImpl()->SetScrollOffset(gfx::Vector2dF(0, 2100));
 
   web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases();
@@ -4018,7 +4017,7 @@ class CreateChildCounterFrameClient
       const WebString& fallback_name,
       const FramePolicy&,
       const WebFrameOwnerProperties&,
-      mojom::blink::FrameOwnerElementType,
+      FrameOwnerElementType,
       WebPolicyContainerBindParams policy_container_bind_params) override;
 
   int Count() const { return count_; }
@@ -4033,7 +4032,7 @@ WebLocalFrame* CreateChildCounterFrameClient::CreateChildFrame(
     const WebString& fallback_name,
     const FramePolicy& frame_policy,
     const WebFrameOwnerProperties& frame_owner_properties,
-    mojom::blink::FrameOwnerElementType frame_owner_element_type,
+    FrameOwnerElementType frame_owner_element_type,
     WebPolicyContainerBindParams policy_container_bind_params) {
   ++count_;
   return TestWebFrameClient::CreateChildFrame(
@@ -5524,7 +5523,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   ASSERT_NE(nullptr, document);
 
   base::TimeTicks start_time = test_task_runner_->NowTicks();
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5537,7 +5536,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1, ui::LatencyInfo()));
 
@@ -5554,7 +5553,7 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
                               WebInputEvent::GetStaticTimeStampForTests());
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
+  test_task_runner_->FastForwardBy(base::Milliseconds(60));
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2, ui::LatencyInfo()));
@@ -5579,7 +5578,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5592,7 +5591,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1, ui::LatencyInfo()));
 
@@ -5604,7 +5603,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(longest_input_timestamp);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::Milliseconds(100));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2, ui::LatencyInfo()));
 
@@ -5614,7 +5613,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3, ui::LatencyInfo()));
 
@@ -5626,7 +5625,7 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
 }
 
 TEST_F(WebViewTest, InputDelayReported) {
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
 
@@ -5641,7 +5640,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   ASSERT_NE(nullptr, document);
   GetTestInteractiveDetector(*document);
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   HistogramTester histogram_tester;
   WebKeyboardEvent key_event1(WebInputEvent::Type::kRawKeyDown,
@@ -5650,7 +5649,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event1.dom_key = ui::DomKey::FromCharacter(' ');
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1, ui::LatencyInfo()));
 
@@ -5660,7 +5659,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2, ui::LatencyInfo()));
 
@@ -5670,7 +5669,7 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event3.dom_key = ui::DomKey::FromCharacter(' ');
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event3, ui::LatencyInfo()));
 
@@ -5705,7 +5704,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5719,7 +5718,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   key_event1.windows_key_code = VKEY_SPACE;
   base::TimeTicks key_event1_time = test_task_runner_->NowTicks();
   key_event1.SetTimeStamp(key_event1_time);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event1, ui::LatencyInfo()));
 
@@ -5729,13 +5728,13 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   key_event2.dom_key = ui::DomKey::FromCharacter(' ');
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::Milliseconds(100));
   web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::Milliseconds(100));
   web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::Milliseconds(100));
   // Total input delay is >300ms.
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event2, ui::LatencyInfo()));
@@ -5763,7 +5762,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5774,7 +5773,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   key_event.dom_key = ui::DomKey::FromCharacter(' ');
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::Milliseconds(100));
   web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
   web_view->MainFrameWidget()->HandleInputEvent(
@@ -5797,7 +5796,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   Document* document = main_frame->GetDocument();
   ASSERT_NE(nullptr, document);
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5806,10 +5805,10 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
 
   web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
                                /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(100));
+  test_task_runner_->FastForwardBy(base::Milliseconds(100));
   web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
                                /*initial_state=*/false);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
+  test_task_runner_->FastForwardBy(base::Milliseconds(1));
 
   WebKeyboardEvent key_event(WebInputEvent::Type::kRawKeyDown,
                              WebInputEvent::kNoModifiers,
@@ -5818,7 +5817,7 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   key_event.windows_key_code = VKEY_SPACE;
   base::TimeTicks key_event_time = test_task_runner_->NowTicks();
   key_event.SetTimeStamp(key_event_time);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
 
@@ -5849,7 +5848,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   ASSERT_NE(nullptr, document);
 
   base::TimeTicks start_time = test_task_runner_->NowTicks();
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(70));
+  test_task_runner_->FastForwardBy(base::Milliseconds(70));
 
   InteractiveDetector* interactive_detector =
       GetTestInteractiveDetector(*document);
@@ -5861,7 +5860,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   // Set this to the left button, needed for testing to behave properly.
   pointer_down.SetModifiers(WebInputEvent::kLeftButtonDown);
   pointer_down.button = WebPointerProperties::Button::kLeft;
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+  test_task_runner_->FastForwardBy(base::Milliseconds(50));
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_down, ui::LatencyInfo()));
 
@@ -5873,7 +5872,7 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
   WebPointerEvent pointer_up(
       WebInputEvent::Type::kPointerUp,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(60));
+  test_task_runner_->FastForwardBy(base::Milliseconds(60));
   pointer_up.SetTimeStamp(test_task_runner_->NowTicks());
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(pointer_up, ui::LatencyInfo()));
@@ -5911,9 +5910,9 @@ class MockClockAdvancingWebFrameClient
 // Check that the input delay is correctly reported to the document.
 TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   // Page load timing logic depends on the time not being zero.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
-  MockClockAdvancingWebFrameClient frame_client(
-      test_task_runner_, base::TimeDelta::FromMilliseconds(6000));
+  test_task_runner_->FastForwardBy(base::Milliseconds(1));
+  MockClockAdvancingWebFrameClient frame_client(test_task_runner_,
+                                                base::Milliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5942,7 +5941,7 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(base::Milliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event, ui::LatencyInfo()));
@@ -5958,9 +5957,9 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
 // Check that the longest input delay is correctly reported to the document.
 TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   // Page load timing logic depends on the time not being zero.
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1));
-  MockClockAdvancingWebFrameClient frame_client(
-      test_task_runner_, base::TimeDelta::FromMilliseconds(6000));
+  test_task_runner_->FastForwardBy(base::Milliseconds(1));
+  MockClockAdvancingWebFrameClient frame_client(test_task_runner_,
+                                                base::Milliseconds(6000));
   WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5988,7 +5987,7 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
   key_event.windows_key_code = VKEY_SPACE;
   key_event.SetTimeStamp(test_task_runner_->NowTicks());
 
-  test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(5000));
+  test_task_runner_->FastForwardBy(base::Milliseconds(5000));
 
   web_view->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(key_event, ui::LatencyInfo()));

@@ -509,7 +509,7 @@ class Context final : public egl::LabeledObject, angle::NonCopyable, public angl
         return mState.isCurrentVertexArray(va);
     }
 
-    bool isShared() const { return mShared; }
+    ANGLE_INLINE bool isShared() const { return mShared; }
     // Once a context is setShared() it cannot be undone
     void setShared() { mShared = true; }
 
@@ -829,7 +829,12 @@ class ScopedContextRef
 };
 
 // Thread-local current valid context bound to the thread.
+#if defined(ANGLE_PLATFORM_APPLE)
+extern Context *GetCurrentValidContextTLS();
+extern void SetCurrentValidContextTLS(Context *context);
+#else
 extern thread_local Context *gCurrentValidContext;
+#endif
 
 }  // namespace gl
 

@@ -1163,7 +1163,6 @@ bool MinidumpContext::Read(uint32_t expected_size) {
         BPLOG(INFO) << "MinidumpContext unknown context type " <<
           HexString(cpu_type);
         return false;
-        break;
       }
     }
     SetContextFlags(context_flags);
@@ -4983,12 +4982,9 @@ void MinidumpCrashpadInfo::Print() {
          MDGUIDToString(crashpad_info_.report_id).c_str());
   printf("  client_id = %s\n",
          MDGUIDToString(crashpad_info_.client_id).c_str());
-  for (std::map<std::string, std::string>::const_iterator iterator =
-           simple_annotations_.begin();
-       iterator != simple_annotations_.end();
-       ++iterator) {
-    printf("  simple_annotations[\"%s\"] = %s\n",
-           iterator->first.c_str(), iterator->second.c_str());
+  for (const auto& annot : simple_annotations_) {
+    printf("  simple_annotations[\"%s\"] = %s\n", annot.first.c_str(),
+           annot.second.c_str());
   }
   for (uint32_t module_index = 0;
        module_index < module_crashpad_info_links_.size();
@@ -4997,23 +4993,18 @@ void MinidumpCrashpadInfo::Print() {
            module_index, module_crashpad_info_links_[module_index]);
     printf("  module_list[%d].version = %d\n",
            module_index, module_crashpad_info_[module_index].version);
-    for (uint32_t annotation_index = 0;
-         annotation_index <
-             module_crashpad_info_list_annotations_[module_index].size();
+    const auto& list_annots =
+        module_crashpad_info_list_annotations_[module_index];
+    for (uint32_t annotation_index = 0; annotation_index < list_annots.size();
          ++annotation_index) {
-      printf("  module_list[%d].list_annotations[%d] = %s\n",
-             module_index,
-             annotation_index,
-             module_crashpad_info_list_annotations_
-                 [module_index][annotation_index].c_str());
+      printf("  module_list[%d].list_annotations[%d] = %s\n", module_index,
+             annotation_index, list_annots[annotation_index].c_str());
     }
-    for (std::map<std::string, std::string>::const_iterator iterator =
-             module_crashpad_info_simple_annotations_[module_index].begin();
-         iterator !=
-             module_crashpad_info_simple_annotations_[module_index].end();
-         ++iterator) {
+    const auto& simple_annots =
+        module_crashpad_info_simple_annotations_[module_index];
+    for (const auto& annot : simple_annots) {
       printf("  module_list[%d].simple_annotations[\"%s\"] = %s\n",
-             module_index, iterator->first.c_str(), iterator->second.c_str());
+             module_index, annot.first.c_str(), annot.second.c_str());
     }
   }
 

@@ -301,6 +301,12 @@ void CreditCardFormEventLogger::RecordCardUnmaskFlowEvent(
     case UnmaskAuthFlowType::kCvcFallbackFromFido:
       flow_type_suffix = ".CvcFallbackFromFido";
       break;
+    case UnmaskAuthFlowType::kOtp:
+      flow_type_suffix = ".Otp";
+      break;
+    case UnmaskAuthFlowType::kOtpFallbackFromFido:
+      flow_type_suffix = ".OtpFallbackFromFido";
+      break;
     case UnmaskAuthFlowType::kNone:
       NOTREACHED();
       flow_type_suffix = "";

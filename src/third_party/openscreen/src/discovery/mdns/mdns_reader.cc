@@ -10,6 +10,7 @@
 #include "discovery/common/config.h"
 #include "discovery/mdns/public/mdns_constants.h"
 #include "util/osp_logging.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace discovery {
@@ -385,8 +386,7 @@ bool MdnsReader::Read(DnsType type, Rdata* out) {
     case DnsType::kNSEC:
       return Read<NsecRecordRdata>(out);
     default:
-      OSP_DCHECK(std::find(kSupportedDnsTypes.begin(), kSupportedDnsTypes.end(),
-                           type) == kSupportedDnsTypes.end());
+      OSP_DCHECK(!Contains(kSupportedDnsTypes, type));
       return Read<RawRecordRdata>(out);
   }
 }

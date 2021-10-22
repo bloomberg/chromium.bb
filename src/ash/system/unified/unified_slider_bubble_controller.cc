@@ -226,8 +226,8 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
 void UnifiedSliderBubbleController::CreateSliderController() {
   switch (slider_type_) {
     case SLIDER_TYPE_VOLUME:
-      slider_controller_ = std::make_unique<UnifiedVolumeSliderController>(
-          this, true /* in_bubble */);
+      slider_controller_ =
+          std::make_unique<UnifiedVolumeSliderController>(this);
       return;
     case SLIDER_TYPE_DISPLAY_BRIGHTNESS:
       slider_controller_ =
@@ -245,10 +245,8 @@ void UnifiedSliderBubbleController::CreateSliderController() {
 
 void UnifiedSliderBubbleController::StartAutoCloseTimer() {
   autoclose_.Stop();
-  autoclose_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kTrayPopupAutoCloseDelayInSeconds), this,
-      &UnifiedSliderBubbleController::CloseBubble);
+  autoclose_.Start(FROM_HERE, base::Seconds(kTrayPopupAutoCloseDelayInSeconds),
+                   this, &UnifiedSliderBubbleController::CloseBubble);
 }
 
 }  // namespace ash

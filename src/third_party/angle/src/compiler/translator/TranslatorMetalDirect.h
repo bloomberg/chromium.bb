@@ -23,14 +23,13 @@ constexpr const char kXfbVerticesPerDraw[]        = "xfbVerticesPerDraw";
 constexpr const char kXfbBufferOffsets[]          = "xfbBufferOffsets";
 constexpr const char kAcbBufferOffsets[]          = "acbBufferOffsets";
 constexpr const char kDepthRange[]                = "depthRange";
-constexpr const char kPreRotation[]               = "preRotation";
-constexpr const char kFragRotation[]              = "fragRotation";
 constexpr const char kUnassignedAttributeString[] = " __unassigned_attribute__";
 
 class DriverUniform;
+class DriverUniformMetal;
 class SpecConst;
 class TOutputMSL;
-
+class TranslatorMetalReflection;
 typedef std::unordered_map<size_t, std::string> originalNamesMap;
 typedef std::unordered_map<std::string, size_t> samplerBindingMap;
 typedef std::unordered_map<std::string, size_t> textureBindingMap;
@@ -42,6 +41,11 @@ struct UBOBindingInfo
     size_t arraySize = 0;
 };
 typedef std::unordered_map<std::string, UBOBindingInfo> uniformBufferBindingMap;
+
+namespace mtl
+{
+TranslatorMetalReflection *getTranslatorMetalReflection(const TCompiler *compiler);
+}
 
 class TranslatorMetalReflection
 {
@@ -128,8 +132,10 @@ class TranslatorMetalReflection
     }
     void reset()
     {
-        hasUBOs      = false;
-        hasFlatInput = false;
+        hasUBOs       = false;
+        hasFlatInput  = false;
+        hasAtan       = false;
+        hasInvariance = false;
         originalNames.clear();
         samplerBindings.clear();
         textureBindings.clear();
@@ -137,8 +143,10 @@ class TranslatorMetalReflection
         uniformBufferBindings.clear();
     }
 
-    bool hasUBOs      = false;
-    bool hasFlatInput = false;
+    bool hasUBOs       = false;
+    bool hasFlatInput  = false;
+    bool hasAtan       = false;
+    bool hasInvariance = false;
 
   private:
     originalNamesMap originalNames;
@@ -165,22 +173,25 @@ class TranslatorMetalDirect : public TCompiler
                    ShCompileOptions compileOptions,
                    PerformanceDiagnostics *perfDiagnostics) override;
 
+    // Need to collect variables so that RemoveInactiveInterfaceVariables works.
+    bool shouldCollectVariables(ShCompileOptions compileOptions) override { return true; }
+
     ANGLE_NO_DISCARD bool translateImpl(TInfoSinkBase &sink,
                                         TIntermBlock *root,
                                         ShCompileOptions compileOptions,
                                         PerformanceDiagnostics *perfDiagnostics,
                                         SpecConst *specConst,
-                                        DriverUniform *driverUniforms);
+                                        DriverUniformMetal *driverUniforms);
 
     ANGLE_NO_DISCARD bool shouldFlattenPragmaStdglInvariantAll() override;
 
     ANGLE_NO_DISCARD bool transformDepthBeforeCorrection(TIntermBlock *root,
-                                                         const DriverUniform *driverUniforms);
+                                                         const DriverUniformMetal *driverUniforms);
 
     ANGLE_NO_DISCARD bool appendVertexShaderDepthCorrectionToMain(TIntermBlock *root);
 
     ANGLE_NO_DISCARD bool insertSampleMaskWritingLogic(TIntermBlock &root,
-                                                       DriverUniform &driverUniforms);
+                                                       DriverUniformMetal &driverUniforms);
     ANGLE_NO_DISCARD bool insertRasterizationDiscardLogic(TIntermBlock &root);
 
     ANGLE_NO_DISCARD TIntermSwizzle *getDriverUniformNegFlipYRef(

@@ -9,21 +9,22 @@
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/full_restore/full_restore_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/switchable_windows.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/window_restore/window_restore_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "chromeos/ui/base/display_util.h"
 #include "chromeos/ui/base/window_state_type.h"
-#include "components/full_restore/full_restore_utils.h"
-#include "components/full_restore/window_info.h"
+#include "components/app_restore/window_info.h"
+#include "components/app_restore/window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -144,7 +145,7 @@ std::string GetHistogramNameWithDeviceUIMode(std::string prefix) {
 
 SplitViewMetricsController::DeviceOrientation GetDeviceOrientation(
     const display::Display& display) {
-  return IsDisplayLayoutHorizontal(display)
+  return chromeos::IsDisplayLayoutHorizontal(display)
              ? SplitViewMetricsController::DeviceOrientation::kLandscape
              : SplitViewMetricsController::DeviceOrientation::kPortrait;
 }
@@ -403,12 +404,12 @@ void SplitViewMetricsController::OnDeskNameChanged(
 
 void SplitViewMetricsController::OnWindowInitialized(aura::Window* window) {
   int32_t* activation_index =
-      window->GetProperty(full_restore::kActivationIndexKey);
+      window->GetProperty(app_restore::kActivationIndexKey);
   if (!activation_index)
     return;
 
-  std::unique_ptr<full_restore::WindowInfo> window_info =
-      full_restore::GetWindowInfo(window);
+  app_restore::WindowInfo* window_info =
+      window->GetProperty(app_restore::kWindowInfoKey);
   if (!window_info)
     return;
 
@@ -435,9 +436,9 @@ void SplitViewMetricsController::OnWindowInitialized(aura::Window* window) {
   // `WindowStateObserver` will be added later in `OnWindowParentChanged`.
   window->AddObserver(this);
   no_state_observed_windows_.insert(window);
-  observed_windows_.insert(
-      FullRestoreController::GetWindowToInsertBefore(window, observed_windows_),
-      window);
+  observed_windows_.insert(WindowRestoreController::GetWindowToInsertBefore(
+                               window, observed_windows_),
+                           window);
 }
 
 void SplitViewMetricsController::StartRecordSplitViewMetrics() {
@@ -658,9 +659,8 @@ void SplitViewMetricsController::StopRecordClamshellSplitView() {
   if (MaybePauseRecordBothSnappedClamshellSplitView())
     return;
 
-  base::UmaHistogramLongTimes(
-      kTimeInSplitScreenClamshellHistogram,
-      base::TimeDelta::FromMilliseconds(clamshell_split_view_time_));
+  base::UmaHistogramLongTimes(kTimeInSplitScreenClamshellHistogram,
+                              base::Milliseconds(clamshell_split_view_time_));
   base::UmaHistogramCounts100(kSplitViewResizeWindowCountClamshellHistogram,
                               clamshell_resize_count_);
   clamshell_split_view_time_ = 0;
@@ -705,8 +705,7 @@ void SplitViewMetricsController::StopRecordClamshellMultiDisplaySplitView() {
 
   base::UmaHistogramLongTimes(
       kTimeInMultiDisplaySplitScreenClamshellHistogram,
-      base::TimeDelta::FromMilliseconds(
-          g_clamshell_multi_display_split_view_time_ms));
+      base::Milliseconds(g_clamshell_multi_display_split_view_time_ms));
   g_clamshell_multi_display_split_view_time_ms = 0;
 }
 

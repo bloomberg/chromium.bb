@@ -29,6 +29,7 @@ namespace chrome {
 // Please keep in alphabetical order, with OS/feature specific sections below.
 extern const char kChromeUIAboutHost[];
 extern const char kChromeUIAboutURL[];
+extern const char kChromeUIActivateSafetyCheckSettingsURL[];
 extern const char kChromeUIAccessibilityHost[];
 extern const char kChromeUIAllSitesPath[];
 extern const char kChromeUIAppIconHost[];
@@ -169,6 +170,7 @@ extern const char kChromeUISiteDataDeprecatedPath[];
 extern const char kChromeUISiteDetailsPrefixURL[];
 extern const char kChromeUISiteEngagementHost[];
 extern const char kChromeUISupervisedUserPassphrasePageHost[];
+extern const char kChromeUISupportToolHost[];
 extern const char kChromeUISyncConfirmationHost[];
 extern const char kChromeUISyncConfirmationLoadingPath[];
 extern const char kChromeUISyncConfirmationURL[];
@@ -181,6 +183,8 @@ extern const char kChromeUITermsURL[];
 extern const char kChromeUIThemeHost[];
 extern const char kChromeUIThemeURL[];
 extern const char kChromeUITopChromeDomain[];
+extern const char kChromeUIUntrustedImageEditorURL[];
+extern const char kChromeUIUntrustedPrintURL[];
 extern const char kChromeUIUntrustedThemeURL[];
 extern const char kChromeUIThumbnailHost2[];
 extern const char kChromeUIThumbnailHost[];
@@ -278,6 +282,8 @@ extern const char kChromeUIOSCreditsHost[];
 extern const char kChromeUIOSCreditsURL[];
 extern const char kChromeUIOobeHost[];
 extern const char kChromeUIOobeURL[];
+extern const char kChromeUIParentAccessHost[];
+extern const char kChromeUIParentAccessURL[];
 extern const char kChromeUIPasswordChangeHost[];
 extern const char kChromeUIPasswordChangeUrl[];
 extern const char kChromeUIPrintManagementUrl[];
@@ -321,6 +327,11 @@ extern const char kChromeUIOSSettingsURL[];
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
 extern const char kChromeUIWebUIJsErrorHost[];
 extern const char kChromeUIWebUIJsErrorURL[];
+#endif
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+extern const char kChromeUIConnectorsInternalsHost[];
 #endif
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \

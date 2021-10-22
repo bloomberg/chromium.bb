@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/lacros/browser_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -59,7 +60,7 @@ class WebContentsCanGoBackObserverTest : public InProcessBrowserTest {
         },
         &outer_loop, window_id, expected_value);
     base::RepeatingTimer timer;
-    timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1),
+    timer.Start(FROM_HERE, base::Milliseconds(1),
                 std::move(look_for_property_value));
     outer_loop.Run();
   }

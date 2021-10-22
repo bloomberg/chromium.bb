@@ -43,6 +43,11 @@ class HistoryDeleteDirectivesEqualityChecker
         fake_server_(fake_server),
         num_expected_directives_(num_expected_directives) {}
 
+  HistoryDeleteDirectivesEqualityChecker(
+      const HistoryDeleteDirectivesEqualityChecker&) = delete;
+  HistoryDeleteDirectivesEqualityChecker& operator=(
+      const HistoryDeleteDirectivesEqualityChecker&) = delete;
+
   bool IsExitConditionSatisfied(std::ostream* os) override {
     *os << "Waiting server side HISTORY_DELETE_DIRECTIVES to match expected.";
     const std::vector<sync_pb::SyncEntity> entities =
@@ -63,13 +68,16 @@ class HistoryDeleteDirectivesEqualityChecker
  private:
   fake_server::FakeServer* const fake_server_;
   const size_t num_expected_directives_;
-
-  DISALLOW_COPY_AND_ASSIGN(HistoryDeleteDirectivesEqualityChecker);
 };
 
 class SingleClientHistoryDeleteDirectivesSyncTest : public SyncTest {
  public:
   SingleClientHistoryDeleteDirectivesSyncTest() : SyncTest(SINGLE_CLIENT) {}
+
+  SingleClientHistoryDeleteDirectivesSyncTest(
+      const SingleClientHistoryDeleteDirectivesSyncTest&) = delete;
+  SingleClientHistoryDeleteDirectivesSyncTest& operator=(
+      const SingleClientHistoryDeleteDirectivesSyncTest&) = delete;
 
   ~SingleClientHistoryDeleteDirectivesSyncTest() override {}
 
@@ -90,7 +98,7 @@ class SingleClientHistoryDeleteDirectivesSyncTest : public SyncTest {
     base::CancelableTaskTracker task_tracker;
     history_service->GetHistoryCount(
         /*begin_time=*/time,
-        /*end_time=*/time + base::TimeDelta::FromMicroseconds(1),
+        /*end_time=*/time + base::Microseconds(1),
         base::BindLambdaForTesting([&](history::HistoryCountResult result) {
           ASSERT_TRUE(result.success);
           exists = (result.count != 0);
@@ -100,9 +108,6 @@ class SingleClientHistoryDeleteDirectivesSyncTest : public SyncTest {
     loop.Run();
     return exists;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientHistoryDeleteDirectivesSyncTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientHistoryDeleteDirectivesSyncTest,

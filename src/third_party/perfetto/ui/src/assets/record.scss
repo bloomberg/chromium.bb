@@ -201,7 +201,6 @@
 
   li {
     @include transition();
-    display: block;
     height: 55px;
     padding: 0 1em;
     font-size: 15px;
@@ -312,11 +311,16 @@
     padding: 7px;
     width: 75px;
 
-    &:hover {
+    &:hover:enabled {
       box-shadow: 0 0 4px 0px #999;
     }
 
-    &.load {
+    &:not(:enabled) {
+      background-color: hsl(0, 0%, 83%);
+      color: hsl(0, 0%, 50%);
+    }
+
+    &.load:enabled {
       background-color: hsl(88, 50%, 67%);
     }
 
@@ -326,7 +330,10 @@
 
     &.save {
       width: 160px;
-      background-color: hsl(197, 50%, 67%);
+
+      &:enabled {
+        background-color: hsl(197, 50%, 67%);
+      }
     }
   }
 
@@ -612,7 +619,6 @@
       }
 
       &.selected {
-        background-color: hsl(207, 90%, 74%);
         background-color: hsl(88, 50%, 67%);
         box-shadow: 0 0 4px 0px #999;
       }
@@ -697,7 +703,6 @@
 
       &::-webkit-slider-runnable-track {
         margin: 10px;
-        border-radius: 1px;
         width: 100%;
         height: 10px;
         background-color : #ddd;
@@ -785,22 +790,21 @@
     }
   }
 
+  .chrome-categories {
+    margin: var(--record-section-padding) 0;
+
+    display: flex;
+    flex-direction: row;
+
+    .categories-list {
+      width: 50%;
+    }
+  }
+
   .dropdown {
     border: 1px solid #eee;
     outline: none;
     -webkit-appearance: none;
-
-    &:not(.multicolumn) {
-      overflow: hidden;
-      height: 25px;
-      padding: 0 5px;
-      &:focus, &:hover {
-        height: 30vh;
-        position: absolute;
-        overflow: auto;
-        box-shadow: 0 0 15px 0 #eee;
-      }
-    }
 
     option, optgroup {
       @include transition();
@@ -820,6 +824,23 @@
       &::before {
         display: none;
         content: '';
+      }
+    }
+
+    &.singlecolumn {
+      margin: var(--record-section-padding) 0;
+      padding: 0;
+      max-width: 100%;
+      width: 100%;
+      overflow-y: auto;
+      height: 400px;
+      optgroup {
+        display: grid;
+        padding: 0;
+        grid-template-columns: 1fr;
+      }
+      option {
+        margin: 0;
       }
     }
 

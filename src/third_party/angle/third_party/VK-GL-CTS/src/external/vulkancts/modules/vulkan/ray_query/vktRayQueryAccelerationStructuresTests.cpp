@@ -482,7 +482,7 @@ void GraphicsConfiguration::initConfiguration (Context&						context,
 			break;
 		default:
 			TCU_THROW(InternalError, "Wrong shader source type");
-	};
+	}
 
 	const VkVertexInputBindingDescription vertexInputBindingDescription =
 	{
@@ -740,7 +740,7 @@ bool GraphicsConfiguration::verifyImage (BufferWithMemory*					resultBuffer,
 			break;
 		default:
 			TCU_THROW(InternalError, "Wrong shader source type");
-	};
+	}
 
 	// compare result and reference
 	return tcu::intThresholdCompare(context.getTestContext().getLog(), "Result comparison", "", referenceAccess, resultAccess, tcu::UVec4(0), tcu::COMPARE_LOG_RESULT);
@@ -1553,6 +1553,18 @@ void RayQueryASBasicTestCase::checkSupport (Context& context) const
 
 		if(rayTracingPipelineFeaturesKHR.rayTracingPipeline == DE_FALSE )
 			TCU_THROW(NotSupportedError, "Requires VkPhysicalDeviceRayTracingPipelineFeaturesKHR.rayTracingPipeline");
+	}
+
+	switch (m_data.shaderSourceType)
+	{
+	case SST_VERTEX_SHADER:
+	case SST_TESSELATION_CONTROL_SHADER:
+	case SST_TESSELATION_EVALUATION_SHADER:
+	case SST_GEOMETRY_SHADER:
+		context.requireDeviceCoreFeature(DEVICE_CORE_FEATURE_VERTEX_PIPELINE_STORES_AND_ATOMICS);
+		break;
+	default:
+		break;
 	}
 
 	const VkPhysicalDeviceAccelerationStructureFeaturesKHR&	accelerationStructureFeaturesKHR = context.getAccelerationStructureFeatures();

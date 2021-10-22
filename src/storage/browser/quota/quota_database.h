@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -22,6 +23,7 @@
 #include "base/types/id_type.h"
 #include "components/services/storage/public/cpp/buckets/bucket_id.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
+#include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
 #include "components/services/storage/public/cpp/quota_error_or.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -81,10 +83,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
     base::Time last_modified;
   };
 
-  enum class LazyOpenMode { kCreateIfNotFound, kFailIfNotFound };
-
   // If 'path' is empty, an in memory database will be used.
   explicit QuotaDatabase(const base::FilePath& path);
+
+  QuotaDatabase(const QuotaDatabase&) = delete;
+  QuotaDatabase& operator=(const QuotaDatabase&) = delete;
+
   ~QuotaDatabase();
 
   // Returns whether the record could be found.
@@ -121,33 +125,50 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
                                      const std::string& bucket_name,
                                      blink::mojom::StorageType storage_type);
 
+  // Returns all buckets for `type` in the buckets table. Returns a QuotaError
+  // if the operation has failed.
+  QuotaErrorOr<std::set<BucketLocator>> GetBucketsForType(
+      blink::mojom::StorageType type);
+
   // Retrieves all buckets for `host` and `type`. Returns a QuotaError if the
   // operation has failed.
-  QuotaErrorOr<std::set<BucketInfo>> GetBucketsForHost(
+  QuotaErrorOr<std::set<BucketLocator>> GetBucketsForHost(
       const std::string& host,
+      blink::mojom::StorageType type);
+
+  // Returns all buckets for `storage_key` in the buckets table. Returns a
+  // QuotaError if the operation has failed.
+  QuotaErrorOr<std::set<BucketLocator>> GetBucketsForStorageKey(
+      const blink::StorageKey& storage_key,
       blink::mojom::StorageType type);
 
   // TODO(crbug.com/1202167): Remove once all usages have updated to use
   // SetBucketLastAccessTime.
-  bool SetStorageKeyLastAccessTime(const blink::StorageKey& storage_key,
-                                   blink::mojom::StorageType type,
-                                   base::Time last_accessed);
+  QuotaError SetStorageKeyLastAccessTime(const blink::StorageKey& storage_key,
+                                         blink::mojom::StorageType type,
+                                         base::Time last_accessed)
+      WARN_UNUSED_RESULT;
 
   // Called by QuotaClient implementers to update when the bucket was last
   // accessed.  If `bucket_id` refers to a bucket with an opaque StorageKey, the
   // bucket's last access time will not be updated and the function will return
-  // false.
-  bool SetBucketLastAccessTime(BucketId bucket_id, base::Time last_accessed);
+  // QuotaError::kNotFound. Returns QuotaError::kNone on a successful update.
+  QuotaError SetBucketLastAccessTime(BucketId bucket_id,
+                                     base::Time last_accessed)
+      WARN_UNUSED_RESULT;
 
   // TODO(crbug.com/1202167): Remove once all usages have updated to use
   // SetBucketLastModifiedTime.
-  bool SetStorageKeyLastModifiedTime(const blink::StorageKey& storage_key,
-                                     blink::mojom::StorageType type,
-                                     base::Time last_modified);
+  QuotaError SetStorageKeyLastModifiedTime(const blink::StorageKey& storage_key,
+                                           blink::mojom::StorageType type,
+                                           base::Time last_modified)
+      WARN_UNUSED_RESULT;
 
   // Called by QuotaClient implementers to update when the bucket was last
-  // modified.
-  bool SetBucketLastModifiedTime(BucketId bucket_id, base::Time last_modified);
+  // modified. Returns QuotaError::kNone on a successful update.
+  QuotaError SetBucketLastModifiedTime(BucketId bucket_id,
+                                       base::Time last_modified)
+      WARN_UNUSED_RESULT;
 
   // Register initial `storage_keys` info `type` to the database.
   // This method is assumed to be called only after the installation or
@@ -155,13 +176,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   bool RegisterInitialStorageKeyInfo(
       const std::set<blink::StorageKey>& storage_keys,
       blink::mojom::StorageType type);
-
-  // TODO(crbug.com/1202167): Remove once all usages have been updated to use
-  // GetBucketInfo. Gets the BucketTableEntry for `storage_key`. Returns whether
-  // the record for a storage key's default bucket could be found.
-  bool GetStorageKeyInfo(const blink::StorageKey& storage_key,
-                         blink::mojom::StorageType type,
-                         BucketTableEntry* entry);
 
   // Gets the table entry for `bucket`. Returns whether the record for an
   // origin bucket can be found.
@@ -182,7 +196,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
       const std::set<BucketId>& bucket_exceptions,
       SpecialStoragePolicy* special_storage_policy);
 
-  // Returns all storage keys for `type` in the bucket database.
+  // Returns all storage keys for `type` in the buckets table.
   QuotaErrorOr<std::set<blink::StorageKey>> GetStorageKeysForType(
       blink::mojom::StorageType type);
 
@@ -203,6 +217,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   void SetDisabledForTesting(bool disable) { is_disabled_ = disable; }
 
  private:
+  enum class EnsureOpenedMode { kCreateIfNotFound, kFailIfNotFound };
+
   struct COMPONENT_EXPORT(STORAGE_BROWSER) QuotaTableEntry {
     std::string host;
     blink::mojom::StorageType type = blink::mojom::StorageType::kUnknown;
@@ -242,7 +258,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   void Commit();
   void ScheduleCommit();
 
-  QuotaError LazyOpen(LazyOpenMode mode);
+  QuotaError EnsureOpened(EnsureOpenedMode mode);
   bool OpenDatabase();
   bool EnsureDatabaseVersion();
   bool ResetSchema();
@@ -273,8 +289,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
 
   std::unique_ptr<sql::Database> db_;
   std::unique_ptr<sql::MetaTable> meta_table_;
-  bool is_recreating_;
-  bool is_disabled_;
+  bool is_recreating_ = false;
+  bool is_disabled_ = false;
 
   base::OneShotTimer timer_;
 
@@ -289,7 +305,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   static const size_t kIndexCount;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  DISALLOW_COPY_AND_ASSIGN(QuotaDatabase);
 };
 
 }  // namespace storage

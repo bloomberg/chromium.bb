@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -31,6 +32,9 @@ class GLSurfaceWayland : public gl::NativeViewGLSurfaceEGL {
 
   GLSurfaceWayland(WaylandEglWindowPtr egl_window, WaylandWindow* window);
 
+  GLSurfaceWayland(const GLSurfaceWayland&) = delete;
+  GLSurfaceWayland& operator=(const GLSurfaceWayland&) = delete;
+
   // gl::GLSurface:
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -53,8 +57,6 @@ class GLSurfaceWayland : public gl::NativeViewGLSurfaceEGL {
   WaylandWindow* const window_;
 
   float scale_factor_ = 1.f;
-
-  DISALLOW_COPY_AND_ASSIGN(GLSurfaceWayland);
 };
 
 }  // namespace ui

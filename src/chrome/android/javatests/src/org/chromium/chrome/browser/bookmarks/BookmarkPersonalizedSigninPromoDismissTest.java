@@ -21,6 +21,7 @@ import android.support.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,6 +33,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.ui.SigninPromoController;
 import org.chromium.chrome.browser.sync.SyncTestRule;
@@ -40,6 +43,7 @@ import org.chromium.chrome.test.util.BookmarkTestRule;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
@@ -65,7 +69,6 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
     public void setUp() throws Exception {
         BookmarkPromoHeader.forcePromoStateForTests(null);
         SigninPromoController.setPrefSigninPromoDeclinedBookmarksForTests(false);
-        SigninPromoController.setSigninPromoImpressionsCountBookmarksForTests(0);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             BookmarkModel bookmarkModel = new BookmarkModel(Profile.fromWebContents(
@@ -77,8 +80,12 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
 
     @After
     public void tearDown() {
-        SigninPromoController.setSigninPromoImpressionsCountBookmarksForTests(0);
+        SharedPreferencesManager.getInstance().removeKey(
+                SigninPromoController.getPromoShowCountPreferenceName(
+                        SigninAccessPoint.BOOKMARK_MANAGER));
         SigninPromoController.setPrefSigninPromoDeclinedBookmarksForTests(false);
+        SharedPreferencesManager.getInstance().removeKey(
+                ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT);
     }
 
     @Test
@@ -97,7 +104,9 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
     @Test
     @MediumTest
     public void testPromoNotExistWhenImpressionLimitReached() {
-        SigninPromoController.setSigninPromoImpressionsCountBookmarksForTests(
+        SharedPreferencesManager.getInstance().writeInt(
+                SigninPromoController.getPromoShowCountPreferenceName(
+                        SigninAccessPoint.BOOKMARK_MANAGER),
                 SigninPromoController.getMaxImpressionsBookmarksForTests());
         mBookmarkTestRule.showBookmarkManager(mSyncTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
@@ -106,10 +115,22 @@ public class BookmarkPersonalizedSigninPromoDismissTest {
     @Test
     @MediumTest
     public void testPromoImpressionCountIncrementAfterDisplayingSigninPromo() {
-        assertEquals(0, SigninPromoController.getSigninPromoImpressionsCountBookmarks());
+        Assert.assertEquals(0,
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT));
+        assertEquals(0,
+                SharedPreferencesManager.getInstance().readInt(
+                        SigninPromoController.getPromoShowCountPreferenceName(
+                                SigninAccessPoint.BOOKMARK_MANAGER)));
         mBookmarkTestRule.showBookmarkManager(mSyncTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
-        assertEquals(1, SigninPromoController.getSigninPromoImpressionsCountBookmarks());
+        assertEquals(1,
+                SharedPreferencesManager.getInstance().readInt(
+                        SigninPromoController.getPromoShowCountPreferenceName(
+                                SigninAccessPoint.BOOKMARK_MANAGER)));
+        Assert.assertEquals(1,
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT));
     }
 
     private void closeBookmarkManager() {

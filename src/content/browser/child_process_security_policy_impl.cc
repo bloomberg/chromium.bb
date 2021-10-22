@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -155,11 +156,32 @@ base::debug::CrashKeyString* GetCanAccessDataFailureReasonKey() {
   return crash_key;
 }
 
+base::debug::CrashKeyString* GetCanAccessDataKeepAliveDurationKey() {
+  static auto* keep_alive_duration_key = base::debug::AllocateCrashKeyString(
+      "keep_alive_duration", base::debug::CrashKeySize::Size256);
+  return keep_alive_duration_key;
+}
+
+base::debug::CrashKeyString* GetCanAccessDataShutdownDelayRefCountKey() {
+  static auto* shutdown_delay_key = base::debug::AllocateCrashKeyString(
+      "shutdown_delay_ref_count", base::debug::CrashKeySize::Size32);
+  return shutdown_delay_key;
+}
+
+base::debug::CrashKeyString* GetCanAccessDataProcessRFHCount() {
+  static auto* process_rfh_count_key = base::debug::AllocateCrashKeyString(
+      "process_rfh_count", base::debug::CrashKeySize::Size32);
+  return process_rfh_count_key;
+}
+
 void LogCanAccessDataForOriginCrashKeys(
     const std::string& expected_process_lock,
     const std::string& killed_process_origin_lock,
     const std::string& requested_origin,
-    const std::string& failure_reason) {
+    const std::string& failure_reason,
+    const std::string& keep_alive_durations,
+    const std::string& shutdown_delay_ref_count,
+    const std::string& process_rfh_count) {
   base::debug::SetCrashKeyString(GetExpectedProcessLockKey(),
                                  expected_process_lock);
   base::debug::SetCrashKeyString(GetKilledProcessOriginLockKey(),
@@ -168,6 +190,12 @@ void LogCanAccessDataForOriginCrashKeys(
                                  requested_origin);
   base::debug::SetCrashKeyString(GetCanAccessDataFailureReasonKey(),
                                  failure_reason);
+  base::debug::SetCrashKeyString(GetCanAccessDataKeepAliveDurationKey(),
+                                 keep_alive_durations);
+  base::debug::SetCrashKeyString(GetCanAccessDataShutdownDelayRefCountKey(),
+                                 shutdown_delay_ref_count);
+  base::debug::SetCrashKeyString(GetCanAccessDataProcessRFHCount(),
+                                 process_rfh_count);
 }
 
 }  // namespace
@@ -378,7 +406,9 @@ bool ChildProcessSecurityPolicyImpl::Handle::CanAccessDataForOrigin(
     const url::Origin& origin) {
   if (child_id_ == ChildProcessHost::kInvalidUniqueID) {
     LogCanAccessDataForOriginCrashKeys(
-        "(unknown)", "(unknown)", origin.GetDebugString(), "handle_not_valid");
+        "(unknown)", "(unknown)", origin.GetDebugString(), "handle_not_valid",
+        "no_keep_alive_durations", "no shutdown delay ref count",
+        "no process rfh count");
     return false;
   }
 
@@ -396,6 +426,9 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
         can_send_midi_sysex_(false),
         browser_context_(browser_context),
         resource_context_(browser_context->GetResourceContext()) {}
+
+  SecurityState(const SecurityState&) = delete;
+  SecurityState& operator=(const SecurityState&) = delete;
 
   ~SecurityState() {
     storage::IsolatedContext* isolated_context =
@@ -654,6 +687,11 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
       browser_context_ = nullptr;
   }
 
+  int render_frame_host_count() const { return render_frame_host_count_; }
+  void set_render_frame_host_count(int count) {
+    render_frame_host_count_ = count;
+  }
+
  private:
   enum class CommitRequestPolicy {
     kRequestOnly,
@@ -722,13 +760,15 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
   // SecurityState's RenderProcessHost, for metrics.
   unsigned max_browsing_instance_count_ = 0;
 
+  // Diagnostic code for https://crbug.com/1148542.
+  // TODO(wjmaclean): Remove once that issue is resolved.
+  int render_frame_host_count_ = 0;
+
   // The set of isolated filesystems the child process is permitted to access.
   FileSystemMap filesystem_permissions_;
 
   BrowserContext* browser_context_;
   ResourceContext* resource_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(SecurityState);
 };
 
 // IsolatedOriginEntry implementation.
@@ -811,7 +851,7 @@ bool ChildProcessSecurityPolicyImpl::IsolatedOriginEntry::
 ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl()
     : browsing_instance_cleanup_delay_(
           RenderProcessHostImpl::kKeepAliveHandleFactoryTimeout +
-          base::TimeDelta::FromSeconds(2)) {
+          base::Seconds(2)) {
   // We know about these schemes and believe them to be safe.
   RegisterWebSafeScheme(url::kHttpScheme);
   RegisterWebSafeScheme(url::kHttpsScheme);
@@ -1824,11 +1864,28 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
     }
   }
 
+  // Record the duration of KeepAlive requests to include in the crash keys.
+  std::string keep_alive_durations;
+  std::string shutdown_delay_ref_count;
+  std::string process_rfh_count;
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    if (auto* process = RenderProcessHostImpl::FromID(child_id)) {
+      keep_alive_durations = process->GetKeepAliveDurations();
+      shutdown_delay_ref_count =
+          base::NumberToString(process->GetShutdownDelayRefCount());
+      process_rfh_count = base::NumberToString(process->GetRfhCount());
+    }
+  } else {
+    keep_alive_durations = "no durations available: on IO thread.";
+  }
+
   // Returning false here will result in a renderer kill.  Set some crash
   // keys that will help understand the circumstances of that kill.
-  LogCanAccessDataForOriginCrashKeys(expected_process_lock.ToString(),
-                                     GetKilledProcessOriginLock(security_state),
-                                     url.GetOrigin().spec(), failure_reason);
+  LogCanAccessDataForOriginCrashKeys(
+      expected_process_lock.ToString(),
+      GetKilledProcessOriginLock(security_state), url.GetOrigin().spec(),
+      failure_reason, keep_alive_durations, shutdown_delay_ref_count,
+      process_rfh_count);
   return false;
 }
 
@@ -1840,6 +1897,15 @@ void ChildProcessSecurityPolicyImpl::IncludeIsolationContext(
   auto* state = GetSecurityState(child_id);
   DCHECK(state);
   state->AddBrowsingInstanceId(isolation_context.browsing_instance_id());
+}
+
+void ChildProcessSecurityPolicyImpl::SetRenderFrameHostCount(int child_id,
+                                                             int count) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::AutoLock lock(lock_);
+  auto state = security_state_.find(child_id);
+  DCHECK(state != security_state_.end());
+  state->second->set_render_frame_host_count(count);
 }
 
 void ChildProcessSecurityPolicyImpl::LockProcess(
@@ -2405,8 +2471,24 @@ void ChildProcessSecurityPolicyImpl::
     // content_unittests don't always report being on the IO thread.
     DCHECK(IsRunningOnExpectedThread());
     base::AutoLock lock(lock_);
-    for (auto& it : security_state_)
+    for (auto& it : security_state_) {
       it.second->ClearBrowsingInstanceId(browsing_instance_id);
+
+      // TODO(wjmaclean): Remove when https://crbug.com/1148542 is resolved.
+      if (it.second->browsing_instance_ids().empty() &&
+          it.second->render_frame_host_count() > 0) {
+        // When there are no more BrowsingInstanceIDs associated with a
+        // RenderProcess, then there should not be any RenderFrameHosts either.
+        // Send a crash dump to alert if this happens and collect state for
+        // debugging.
+        SCOPED_CRASH_KEY_NUMBER("NoBIIDsButHasRFH", "num_rfhs",
+                                it.second->render_frame_host_count());
+        SCOPED_CRASH_KEY_STRING256("NoBIIDsButHasRFH", "process_lock",
+                                   it.second->process_lock().ToString());
+        NOTREACHED();
+        base::debug::DumpWithoutCrashing();
+      }
+    }
     // Note: if the BrowsingInstanceId set is empty at the end of this function,
     // we must never remove the ProcessLock in case the associated RenderProcess
     // is compromised, in which case we wouldn't want to reuse it for another

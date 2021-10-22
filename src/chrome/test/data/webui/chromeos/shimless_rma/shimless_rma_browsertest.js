@@ -49,11 +49,16 @@ const debug_suites_list = [
   'OnboardingUpdatePageTest',
   'OnboardingWaitForManualWpDisablePageTest',
   'ReimagingCalibrationPageTest',
+  'ReimagingCalibrationRunPageTest',
+  'ReimagingCalibrationSetupPageTest',
   'ReimagingFirmwareUpdatePageTest',
   'ReimagingDeviceInformationPageTest',
   'ReimagingProvisioningPageTest',
   'ShimlessRMAAppTest',
+  'WrapupFinalizePageTest',
   'WrapupRepairCompletePageTest',
+  'WrapupRestockPageTest',
+  'WrapupWaitForManualWpEnablePageTest',
 ];
 
 TEST_F('ShimlessRMABrowserTest', 'All', function() {

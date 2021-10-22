@@ -14,7 +14,6 @@ import {FileOperationProgressEvent} from '../../common/js/file_operation_common.
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
-import {ProgressCenterItem, ProgressItemState} from '../../common/js/progress_center_common.js';
 import {TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
@@ -71,7 +70,6 @@ const CommandUtil = {};
  */
 CommandUtil.SharingActionElementId = {
   CONTEXT_MENU: 'file-list',
-  SHARE_BUTTON: 'share-menu-button',
   SHARE_SHEET: 'sharesheet-button',
 };
 
@@ -87,8 +85,6 @@ CommandUtil.getSharingActionSource = event => {
   switch (id) {
     case CommandUtil.SharingActionElementId.CONTEXT_MENU:
       return FileTasks.SharingActionSourceForUMA.CONTEXT_MENU;
-    case CommandUtil.SharingActionElementId.SHARE_BUTTON:
-      return FileTasks.SharingActionSourceForUMA.SHARE_BUTTON;
     case CommandUtil.SharingActionElementId.SHARE_SHEET:
       return FileTasks.SharingActionSourceForUMA.SHARE_SHEET;
     default: {
@@ -1777,52 +1773,6 @@ CommandHandler.COMMANDS_['open-with'] = new class extends FilesCommand {
 };
 
 /**
- * Displays "More actions" dialog for current selection.
- */
-CommandHandler.COMMANDS_['more-actions'] = new class extends FilesCommand {
-  execute(event, fileManager) {
-    fileManager.taskController.getFileTasks()
-        .then(tasks => {
-          tasks.showTaskPicker(
-              fileManager.ui.defaultTaskPicker,
-              str('MORE_ACTIONS_BUTTON_LABEL'), '', task => {
-                tasks.execute(task);
-              }, FileTasks.TaskPickerType.MoreActions);
-        })
-        .catch(error => {
-          if (error) {
-            console.error(error.stack || error);
-          }
-        });
-  }
-
-  /** @override */
-  canExecute(event, fileManager) {
-    const canExecute = fileManager.taskController.canExecuteMoreActions() &&
-        !util.isSharesheetEnabled();
-    event.canExecute = canExecute;
-    event.command.setHidden(!canExecute);
-  }
-};
-
-/**
- * Displays any available (child) sub menu for current selection.
- */
-CommandHandler.COMMANDS_['show-submenu'] = new class extends FilesCommand {
-  execute(event, fileManager) {
-    fileManager.ui.shareMenuButton.showSubMenu();
-  }
-
-  /** @override */
-  canExecute(event, fileManager) {
-    const canExecute = fileManager.taskController.canExecuteShowOverflow();
-    event.canExecute = canExecute;
-    event.command.setHidden(!canExecute);
-  }
-};
-
-
-/**
  * Invoke Sharesheet.
  */
 CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends FilesCommand {
@@ -1841,7 +1791,7 @@ CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends FilesCommand {
   canExecute(event, fileManager) {
     const entries = fileManager.selectionHandler.selection.entries;
 
-    if (!util.isSharesheetEnabled() || !entries || entries.length === 0 ||
+    if (!entries || entries.length === 0 ||
         (entries.some(entry => entry.isDirectory) &&
          (!CommandUtil.isDriveEntries(entries, fileManager.volumeManager) ||
           entries.length > 1))) {

@@ -60,6 +60,9 @@ unset(LT_AGE)
 set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
+if(CONFIG_THREE_PASS)
+  include("${AOM_ROOT}/common/ivf_dec.cmake")
+endif()
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
 include("${AOM_ROOT}/aom_mem/aom_mem.cmake")
 include("${AOM_ROOT}/aom_ports/aom_ports.cmake")
@@ -168,10 +171,11 @@ list(APPEND AOM_COMMON_APP_UTIL_SOURCES
             "${AOM_ROOT}/common/rawenc.c"
             "${AOM_ROOT}/common/rawenc.h"
             "${AOM_ROOT}/common/y4menc.c"
-            "${AOM_ROOT}/common/y4menc.h")
+            "${AOM_ROOT}/common/y4menc.h"
+            "${AOM_ROOT}/common/ivfdec.c"
+            "${AOM_ROOT}/common/ivfdec.h")
 
-list(APPEND AOM_DECODER_APP_UTIL_SOURCES "${AOM_ROOT}/common/ivfdec.c"
-            "${AOM_ROOT}/common/ivfdec.h" "${AOM_ROOT}/common/obudec.c"
+list(APPEND AOM_DECODER_APP_UTIL_SOURCES "${AOM_ROOT}/common/obudec.c"
             "${AOM_ROOT}/common/obudec.h" "${AOM_ROOT}/common/video_reader.c"
             "${AOM_ROOT}/common/video_reader.h")
 
@@ -299,6 +303,9 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 # Setup dependencies.
+if(CONFIG_THREE_PASS)
+  setup_ivf_dec_targets()
+endif()
 setup_aom_dsp_targets()
 setup_aom_mem_targets()
 setup_aom_ports_targets()
@@ -438,6 +445,10 @@ if(CONFIG_AV1_ENCODER)
     add_executable(noise_model "${AOM_ROOT}/examples/noise_model.c"
                                $<TARGET_OBJECTS:aom_common_app_util>
                                $<TARGET_OBJECTS:aom_encoder_app_util>)
+    add_executable(photon_noise_table
+                   "${AOM_ROOT}/examples/photon_noise_table.c"
+                   $<TARGET_OBJECTS:aom_common_app_util>
+                   $<TARGET_OBJECTS:aom_encoder_app_util>)
     add_executable(scalable_encoder "${AOM_ROOT}/examples/scalable_encoder.c"
                                     $<TARGET_OBJECTS:aom_common_app_util>
                                     $<TARGET_OBJECTS:aom_encoder_app_util>)
@@ -448,8 +459,8 @@ if(CONFIG_AV1_ENCODER)
 
     # Maintain a list of encoder example targets.
     list(APPEND AOM_ENCODER_EXAMPLE_TARGETS aomenc lossless_encoder noise_model
-                set_maps simple_encoder scalable_encoder twopass_encoder
-                svc_encoder_rtc)
+                photon_noise_table set_maps simple_encoder scalable_encoder
+                twopass_encoder svc_encoder_rtc)
   endif()
 
   if(ENABLE_TOOLS)

@@ -18,6 +18,8 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -73,7 +75,9 @@ class PrefetchProxyProxyConfiguratorTest : public testing::Test {
     EXPECT_EQ(config->rules.proxies_for_ftp.size(), 0U);
 
     ASSERT_EQ(config->rules.proxies_for_https.size(), 1U);
-    EXPECT_EQ(GURL(config->rules.proxies_for_https.Get().ToURI()), proxy_url);
+    EXPECT_EQ(
+        GURL(net::ProxyServerToProxyUri(config->rules.proxies_for_https.Get())),
+        proxy_url);
   }
 
   PrefetchProxyProxyConfigurator* configurator() {
@@ -135,7 +139,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest,
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(PrefetchProxyProxyHost()));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -145,7 +149,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest,
   histogram_tester.ExpectUniqueSample("PrefetchProxy.Proxy.Fallback.NetError",
                                       std::abs(net::ERR_FAILED), 1);
 
-  FastForwardBy(base::TimeDelta::FromSeconds(5 * 60 + 1));
+  FastForwardBy(base::Seconds(5 * 60 + 1));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
 }
@@ -158,7 +162,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, FallbackDoesRandomBackoff_ErrOK) {
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(PrefetchProxyProxyHost()));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -168,7 +172,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, FallbackDoesRandomBackoff_ErrOK) {
   histogram_tester.ExpectUniqueSample("PrefetchProxy.Proxy.Fallback.NetError",
                                       net::OK, 1);
 
-  FastForwardBy(base::TimeDelta::FromSeconds(5 * 60 + 1));
+  FastForwardBy(base::Seconds(5 * 60 + 1));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
 }
@@ -181,7 +185,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, Fallback_DifferentProxy) {
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(GURL("http://foo.com")));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -199,7 +203,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, TunnelHeaders_200OK) {
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(PrefetchProxyProxyHost()));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -218,7 +222,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, TunnelHeaders_DifferentProxy) {
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(GURL("http://foo.com")));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -237,7 +241,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, TunnelHeaders_500NoRetryAfter) {
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(PrefetchProxyProxyHost()));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -248,7 +252,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, TunnelHeaders_500NoRetryAfter) {
   EXPECT_FALSE(configurator()->IsPrefetchProxyAvailable());
   histogram_tester.ExpectUniqueSample("PrefetchProxy.Proxy.RespCode", 500, 1);
 
-  FastForwardBy(base::TimeDelta::FromSeconds(5 * 60 + 1));
+  FastForwardBy(base::Seconds(5 * 60 + 1));
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
 }
 
@@ -260,7 +264,7 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, TunnelHeaders_500WithRetryAfter) {
       features::kIsolatePrerenders, {{"proxy_host", proxy_url.spec()}});
 
   net::ProxyServer proxy(
-      net::ProxyServer::GetSchemeFromURI(PrefetchProxyProxyHost().scheme()),
+      net::GetSchemeFromUriScheme(PrefetchProxyProxyHost().scheme()),
       net::HostPortPair::FromURL(PrefetchProxyProxyHost()));
 
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
@@ -273,9 +277,27 @@ TEST_F(PrefetchProxyProxyConfiguratorTest, TunnelHeaders_500WithRetryAfter) {
   EXPECT_FALSE(configurator()->IsPrefetchProxyAvailable());
   histogram_tester.ExpectUniqueSample("PrefetchProxy.Proxy.RespCode", 500, 1);
 
-  FastForwardBy(base::TimeDelta::FromSeconds(119));
+  FastForwardBy(base::Seconds(119));
   EXPECT_FALSE(configurator()->IsPrefetchProxyAvailable());
 
-  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(configurator()->IsPrefetchProxyAvailable());
+}
+
+TEST_F(PrefetchProxyProxyConfiguratorTest, ServerExperimentGroup) {
+  GURL proxy_url("https://proxy.com");
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kIsolatePrerenders,
+      {{"proxy_host", proxy_url.spec()},
+       {"proxy_header_key", "test-header"},
+       {"server_experiment_group", "test_group"}});
+
+  configurator()->UpdateCustomProxyConfig();
+  base::RunLoop().RunUntilIdle();
+
+  net::HttpRequestHeaders headers;
+  headers.SetHeader("test-header",
+                    "key=" + google_apis::GetAPIKey() + ",exp=test_group");
+  VerifyLatestProxyConfig(proxy_url, headers);
 }

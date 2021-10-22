@@ -135,6 +135,10 @@ T* AddChildView(std::vector<std::unique_ptr<views::View>>* views,
 class OverlayWindowFrameView : public views::NonClientFrameView {
  public:
   explicit OverlayWindowFrameView(views::Widget* widget) : widget_(widget) {}
+
+  OverlayWindowFrameView(const OverlayWindowFrameView&) = delete;
+  OverlayWindowFrameView& operator=(const OverlayWindowFrameView&) = delete;
+
   ~OverlayWindowFrameView() override = default;
 
   // views::NonClientFrameView:
@@ -194,8 +198,6 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
 
  private:
   views::Widget* widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverlayWindowFrameView);
 };
 
 // OverlayWindow implementation of WidgetDelegate.
@@ -210,6 +212,11 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
     SetTitle(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
     SetOwnedByWidget(true);
   }
+
+  OverlayWindowWidgetDelegate(const OverlayWindowWidgetDelegate&) = delete;
+  OverlayWindowWidgetDelegate& operator=(const OverlayWindowWidgetDelegate&) =
+      delete;
+
   ~OverlayWindowWidgetDelegate() override = default;
 
   // views::WidgetDelegate:
@@ -217,9 +224,6 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
       views::Widget* widget) override {
     return std::make_unique<OverlayWindowFrameView>(widget);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OverlayWindowWidgetDelegate);
 };
 
 // static
@@ -281,7 +285,7 @@ OverlayWindowViews::OverlayWindowViews(
       min_size_(kMinWindowSize),
       hide_controls_timer_(
           FROM_HERE,
-          base::TimeDelta::FromMilliseconds(2500),
+          base::Milliseconds(2500),
           base::BindRepeating(&OverlayWindowViews::UpdateControlsVisibility,
                               base::Unretained(this),
                               false /* is_visible */)) {
@@ -623,13 +627,10 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
       letterbox_region.set_height(window_size.height());
   }
 
-  gfx::Size letterbox_size = letterbox_region.size();
-  gfx::Point origin =
-      gfx::Point((window_size.width() - letterbox_size.width()) / 2,
-                 (window_size.height() - letterbox_size.height()) / 2);
-
-  video_bounds_.set_origin(origin);
-  video_bounds_.set_size(letterbox_region.size());
+  const gfx::Rect video_bounds(
+      gfx::Point((window_size.width() - letterbox_region.size().width()) / 2,
+                 (window_size.height() - letterbox_region.size().height()) / 2),
+      letterbox_region.size());
 
   // Update the layout of the controls.
   UpdateControlsBounds();
@@ -637,9 +638,9 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
   // Update the surface layer bounds to scale with window size changes.
   window_background_view_->SetBoundsRect(
       gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
-  video_view_->SetBoundsRect(video_bounds_);
+  video_view_->SetBoundsRect(video_bounds);
   if (video_view_->layer()->has_external_content())
-    video_view_->layer()->SetSurfaceSize(video_bounds_.size());
+    video_view_->layer()->SetSurfaceSize(video_bounds.size());
 
   // Notify the controller that the bounds have changed.
   controller_->UpdateLayerBounds();
@@ -661,7 +662,7 @@ void OverlayWindowViews::UpdateControlsBounds() {
 
   update_controls_bounds_timer_ = std::make_unique<base::OneShotTimer>();
   update_controls_bounds_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(1),
+      FROM_HERE, base::Seconds(1),
       base::BindOnce(&OverlayWindowViews::OnUpdateControlsBounds,
                      base::Unretained(this)));
 }
@@ -994,6 +995,11 @@ void OverlayWindowViews::SetSurfaceId(const viz::SurfaceId& surface_id) {
       true /* stretch_content_to_fill_bounds */);
 }
 
+void OverlayWindowViews::OnNativeFocus() {
+  UpdateControlsVisibility(true);
+  views::Widget::OnNativeFocus();
+}
+
 void OverlayWindowViews::OnNativeBlur() {
   // Controls should be hidden when there is no more focus on the window. This
   // is used for tabbing and touch interactions. For mouse interactions, the
@@ -1063,11 +1069,11 @@ void OverlayWindowViews::OnKeyEvent(ui::KeyEvent* event) {
     UpdateControlsVisibility(true);
   }
 
-  // If there is no focus affordance on the buttons, only handle space key to
-  // for TogglePlayPause().
+  // If there is no focus affordance on the buttons and play/pause button is
+  // visible, only handle space key for TogglePlayPause().
   views::View* focused_view = GetFocusManager()->GetFocusedView();
   if (!focused_view && event->type() == ui::ET_KEY_PRESSED &&
-      event->key_code() == ui::VKEY_SPACE) {
+      event->key_code() == ui::VKEY_SPACE && show_play_pause_button_) {
     TogglePlayPause();
     event->SetHandled();
   }
@@ -1096,15 +1102,16 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
 
     case ui::ET_MOUSE_EXITED: {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-      // On Lacros, the |event| will always occur within |video_bounds_| despite
-      // the mouse exiting the respective surface so always hide the controls.
+      // On Lacros, the |event| will always occur within
+      // |window_background_view_| despite the mouse exiting the respective
+      // surface so always hide the controls.
       const bool should_update_control_visibility = true;
 #else
       // On Windows, ui::ET_MOUSE_EXITED is triggered when hovering over the
       // media controls because of the HitTest. This check ensures the controls
       // are visible if the mouse is still over the window.
       const bool should_update_control_visibility =
-          !video_bounds_.Contains(event->location());
+          !window_background_view_->bounds().Contains(event->location());
 #endif
       if (should_update_control_visibility)
         UpdateControlsVisibility(false);
@@ -1270,7 +1277,16 @@ void OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
   if (work_area.IsEmpty())
     return;
 
-  max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  const auto new_max_size =
+      gfx::Size(work_area.width() / 2, work_area.height() / 2);
+  // Make sure we only run the logic to update the current size if the maximum
+  // size actually changes. Running it unconditionally means also running it
+  // when DPI <-> pixel computations introduce off-by-1 errors, which leads to
+  // incorrect window sizing/positioning.
+  if (new_max_size == max_size_)
+    return;
+
+  max_size_ = new_max_size;
 
   if (!native_widget())
     return;
@@ -1283,7 +1299,9 @@ void OverlayWindowViews::UpdateMaxSize(const gfx::Rect& work_area) {
     return;
   }
 
-  SetSize(max_size_);
+  gfx::Size clamped_size = GetBounds().size();
+  clamped_size.SetToMin(max_size_);
+  SetSize(clamped_size);
 }
 
 void OverlayWindowViews::TogglePlayPause() {

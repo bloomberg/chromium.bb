@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/aggregated_render_pass_draw_quad.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/stream_video_draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
@@ -166,7 +167,8 @@ bool OverlayCandidate::FromDrawQuad(
     return false;
   }
 
-  candidate->requires_overlay = OverlayCandidate::RequiresOverlay(quad);
+  candidate->requires_overlay =
+      OverlayCandidate::RequiresOverlay(quad);
   candidate->overlay_damage_index =
       sqs->overlay_damage_index.value_or(kInvalidDamageIndex);
 
@@ -276,10 +278,13 @@ int OverlayCandidate::EstimateVisibleDamage(
 
 // static
 bool OverlayCandidate::RequiresOverlay(const DrawQuad* quad) {
+  // Regular priority hint.
   switch (quad->material) {
     case DrawQuad::Material::kTextureContent:
       return TextureDrawQuad::MaterialCast(quad)->protected_video_type ==
-             gfx::ProtectedVideoType::kHardwareProtected;
+                 gfx::ProtectedVideoType::kHardwareProtected ||
+             TextureDrawQuad::MaterialCast(quad)->overlay_priority_hint ==
+                 OverlayPriority::kRequired;
     case DrawQuad::Material::kVideoHole:
       return true;
     case DrawQuad::Material::kYuvVideoContent:
@@ -397,15 +402,7 @@ bool OverlayCandidate::FromSolidColorQuad(
   // TODO(https://crbug.com/1204102) : The 4x4 size is only valid for the non
   // native color support.
   candidate->resource_size_in_pixels = gfx::Size(4, 4);
-  // Fold opacity into the alpha of the color quad.
-  // TODO(https://crbug.com/1204102) : Remove this when we support delegation of
-  // opacity.
-  SkColor color_with_opacity = quad->color;
-  float alpha = (SkColorGetA(color_with_opacity) / 255.f) * candidate->opacity;
-  int alpha_int_clamped = base::clamp(static_cast<int>(alpha * 255.f), 0, 255);
-  color_with_opacity =
-      SkColorSetA(color_with_opacity, static_cast<uint8_t>(alpha_int_clamped));
-  candidate->solid_color = color_with_opacity;
+  candidate->solid_color = quad->color;
   return true;
 }
 
@@ -473,6 +470,12 @@ bool OverlayCandidate::FromTextureQuad(
     const gfx::RectF& primary_rect,
     OverlayCandidate* candidate,
     bool is_delegated_context) {
+  if (quad->overlay_priority_hint == OverlayPriority::kLow) {
+    // For current implementation low priority means this does not promote to
+    // overlay.
+    return false;
+  }
+
   if (quad->nearest_neighbor)
     return false;
   if (quad->background_color != SK_ColorTRANSPARENT &&
@@ -502,6 +505,8 @@ bool OverlayCandidate::FromTextureQuad(
     HandleClipAndSubsampling(candidate, primary_rect);
     candidate->hw_protected_validation_id = quad->hw_protected_validation_id;
   }
+
+  candidate->priority_hint = gfx::OverlayPriorityHint::kRegular;
   return true;
 }
 
@@ -562,6 +567,10 @@ void OverlayCandidate::HandleClipAndSubsampling(
   // not be regarded as clippped after this.
   candidate->display_rect.Intersect(gfx::RectF(*candidate->clip_rect));
   candidate->clip_rect.reset();
+  gfx::Rect rounded_display_rect = gfx::ToRoundedRect(candidate->display_rect);
+  candidate->display_rect.SetRect(
+      rounded_display_rect.x(), rounded_display_rect.y(),
+      rounded_display_rect.width(), rounded_display_rect.height());
 
   // Now correct |uv_rect| if required so that the source rect aligns on a pixel
   // boundary that is a multiple of the chroma subsampling.

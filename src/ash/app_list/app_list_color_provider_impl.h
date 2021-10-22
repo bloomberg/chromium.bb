@@ -41,7 +41,6 @@ class AppListColorProviderImpl : public AppListColorProvider {
   SkColor GetGridBackgroundCardInactiveColor() const override;
   SkColor GetSeparatorColor() const override;
   SkColor GetFocusRingColor() const override;
-  float GetFolderBackgrounBlurSigma() const override;
   SkColor GetRippleAttributesBaseColor(
       SkColor bg_color = gfx::kPlaceholderColor) const override;
   float GetRippleAttributesInkDropOpacity(
@@ -51,8 +50,15 @@ class AppListColorProviderImpl : public AppListColorProvider {
   SkColor GetSearchResultViewHighlightColor() const override;
 
  private:
+  bool ShouldUseDarkLightColors() const;
   // Unowned.
   AshColorProvider* const ash_color_provider_;
+  // Whether feature DarkLightMode is enabled. Cached for efficiency.
+  const bool is_dark_light_mode_enabled_;
+  // Whether feature ProductivityLauncher is enabled. Cached for efficiency.
+  const bool is_productivity_launcher_enabled_;
+  // Whether feature BackgroundBlur is enabled. Cached for efficiency.
+  const bool is_background_blur_enabled_;
 };
 
 }  // namespace ash

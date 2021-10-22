@@ -32,6 +32,11 @@ class DeviceScheduledUpdateChecker
       ash::CrosSettings* cros_settings,
       chromeos::NetworkStateHandler* network_state_handler,
       std::unique_ptr<ScheduledTaskExecutor> update_check_executor);
+
+  DeviceScheduledUpdateChecker(const DeviceScheduledUpdateChecker&) = delete;
+  DeviceScheduledUpdateChecker& operator=(const DeviceScheduledUpdateChecker&) =
+      delete;
+
   ~DeviceScheduledUpdateChecker() override;
 
   // chromeos::system::TimezoneSettings::Observer implementation.
@@ -94,8 +99,6 @@ class DeviceScheduledUpdateChecker
 
   // Timer that is scheduled to check for updates.
   std::unique_ptr<ScheduledTaskExecutor> update_check_executor_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceScheduledUpdateChecker);
 };
 
 namespace update_checker_internal {
@@ -105,15 +108,14 @@ constexpr char kUpdateCheckTimerTag[] = "DeviceScheduledUpdateChecker";
 
 // The timeout after which an OS and policies update is aborted.
 constexpr base::TimeDelta kOsAndPoliciesUpdateCheckHardTimeout =
-    base::TimeDelta::FromMinutes(40);
+    base::Minutes(40);
 
 // The maximum iterations allowed to start an update check timer if the
 // operation fails.
 constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;
 
 // Time to call |StartUpdateCheckTimer| again in case it failed.
-constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime =
-    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kStartUpdateCheckTimerRetryTime = base::Minutes(1);
 
 }  // namespace update_checker_internal
 

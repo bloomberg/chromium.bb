@@ -27,6 +27,7 @@
 
 #include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/common/input/pointer_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
@@ -120,8 +121,11 @@ enum class ElementFlags {
   kContainsFullScreenElement = 1 << 3,
   kIsInTopLayer = 1 << 4,
   kContainsPersistentVideo = 1 << 5,
-
-  kNumberOfElementFlags = 6,  // Size of bitfield used to store the flags.
+  kDidAttachInternals = 1 << 6,
+  kShouldForceLegacyLayoutForChild = 1 << 7,
+  kStyleShouldForceLegacyLayout = 1 << 8,
+  kHasUndoStack = 1 << 9,
+  kNumberOfElementFlags = 10,  // Size of bitfield used to store the flags.
 };
 
 enum class ShadowRootType;
@@ -146,6 +150,8 @@ enum class NamedItemType {
 typedef HeapVector<Member<Attr>> AttrNodeList;
 
 typedef HashMap<AtomicString, SpecificTrustedType> AttrNameToTrustedType;
+
+typedef base::UnguessableToken RegionCaptureCropId;
 
 class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DEFINE_WRAPPERTYPEINFO();
@@ -530,6 +536,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
+
+  const ComputedStyle* ParentComputedStyle() const;
+
   void RecalcStyle(const StyleRecalcChange, const StyleRecalcContext&);
   void RecalcStyleForTraversalRootAncestor();
   void RebuildLayoutTreeForTraversalRootAncestor() {
@@ -550,6 +559,16 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   void SetNeedsCompositingUpdate();
 
+  // Generates a unique crop ID and returns the new value. Not all element
+  // types have a region capture crop id, however using it here allows access
+  // to the element rare data struct. Currently, once an element is marked for
+  // region capture it cannot be unmarked, and repeated calls to this API will
+  // return the same token.
+  RegionCaptureCropId MarkWithRegionCaptureCropId();
+
+  // Returns a null token if not marked for capture.
+  RegionCaptureCropId GetRegionCaptureCropId() const;
+
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
 
   void AttachDeclarativeShadowRoot(HTMLTemplateElement*,
@@ -562,6 +581,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       ShadowRootType,
       FocusDelegation focus_delegation = FocusDelegation::kNone,
       SlotAssignmentMode slot_assignment_mode = SlotAssignmentMode::kNamed);
+  void InitializeShadowRootInternal(ShadowRoot&,
+                                    FocusDelegation,
+                                    SlotAssignmentMode);
 
   // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;
@@ -571,6 +593,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   ShadowRoot* UserAgentShadowRoot() const;
 
   ShadowRoot& EnsureUserAgentShadowRoot();
+
+  // Implements manual slot assignment for user agent shadow roots.
+  virtual void ManuallyAssignSlots() { DCHECK(false); }
 
   bool IsInDescendantTreeOf(const Element* shadow_host) const;
 

@@ -38,7 +38,7 @@
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chrome/browser/ui/webui/management/management_ui_handler.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/version/version_ui.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
@@ -172,9 +172,10 @@ void GetOffHoursStatus(base::DictionaryValue* dict) {
 void GetUserManager(base::DictionaryValue* dict, Profile* profile) {
   CHECK(profile);
 
-  std::string account_manager = ManagementUIHandler::GetAccountManager(profile);
-  if (!account_manager.empty()) {
-    dict->SetString("enterpriseDomainManager", account_manager);
+  absl::optional<std::string> account_manager =
+      chrome::GetAccountManagerIdentity(profile);
+  if (account_manager) {
+    dict->SetString("enterpriseDomainManager", *account_manager);
   }
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -209,6 +210,11 @@ class CloudPolicyCoreStatusProvider
       public policy::CloudPolicyStore::Observer {
  public:
   explicit CloudPolicyCoreStatusProvider(policy::CloudPolicyCore* core);
+
+  CloudPolicyCoreStatusProvider(const CloudPolicyCoreStatusProvider&) = delete;
+  CloudPolicyCoreStatusProvider& operator=(
+      const CloudPolicyCoreStatusProvider&) = delete;
+
   ~CloudPolicyCoreStatusProvider() override;
 
   // policy::CloudPolicyStore::Observer implementation.
@@ -219,9 +225,6 @@ class CloudPolicyCoreStatusProvider
   // Policy status is read from the CloudPolicyClient, CloudPolicyStore and
   // CloudPolicyRefreshScheduler hosted by this |core_|.
   policy::CloudPolicyCore* core_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CloudPolicyCoreStatusProvider);
 };
 
 // A cloud policy status provider for user policy.
@@ -229,6 +232,11 @@ class UserCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
  public:
   explicit UserCloudPolicyStatusProvider(policy::CloudPolicyCore* core,
                                          Profile* profile);
+
+  UserCloudPolicyStatusProvider(const UserCloudPolicyStatusProvider&) = delete;
+  UserCloudPolicyStatusProvider& operator=(
+      const UserCloudPolicyStatusProvider&) = delete;
+
   ~UserCloudPolicyStatusProvider() override;
 
   // CloudPolicyCoreStatusProvider implementation.
@@ -236,7 +244,6 @@ class UserCloudPolicyStatusProvider : public CloudPolicyCoreStatusProvider {
 
  private:
   Profile* profile_;
-  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStatusProvider);
 };
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -246,6 +253,12 @@ class UserCloudPolicyStatusProviderChromeOS
  public:
   explicit UserCloudPolicyStatusProviderChromeOS(policy::CloudPolicyCore* core,
                                                  Profile* profile);
+
+  UserCloudPolicyStatusProviderChromeOS(
+      const UserCloudPolicyStatusProviderChromeOS&) = delete;
+  UserCloudPolicyStatusProviderChromeOS& operator=(
+      const UserCloudPolicyStatusProviderChromeOS&) = delete;
+
   ~UserCloudPolicyStatusProviderChromeOS() override;
 
   // CloudPolicyCoreStatusProvider implementation.
@@ -253,7 +266,6 @@ class UserCloudPolicyStatusProviderChromeOS
 
  private:
   Profile* profile_;
-  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyStatusProviderChromeOS);
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -264,6 +276,12 @@ class DeviceCloudPolicyStatusProviderChromeOS
  public:
   explicit DeviceCloudPolicyStatusProviderChromeOS(
       policy::BrowserPolicyConnectorAsh* connector);
+
+  DeviceCloudPolicyStatusProviderChromeOS(
+      const DeviceCloudPolicyStatusProviderChromeOS&) = delete;
+  DeviceCloudPolicyStatusProviderChromeOS& operator=(
+      const DeviceCloudPolicyStatusProviderChromeOS&) = delete;
+
   ~DeviceCloudPolicyStatusProviderChromeOS() override;
 
   // CloudPolicyCoreStatusProvider implementation.
@@ -271,8 +289,6 @@ class DeviceCloudPolicyStatusProviderChromeOS
 
  private:
   std::string enterprise_domain_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyStatusProviderChromeOS);
 };
 
 // A cloud policy status provider that reads policy status from the policy core
@@ -288,6 +304,12 @@ class DeviceLocalAccountPolicyStatusProvider
   DeviceLocalAccountPolicyStatusProvider(
       const std::string& user_id,
       policy::DeviceLocalAccountPolicyService* service);
+
+  DeviceLocalAccountPolicyStatusProvider(
+      const DeviceLocalAccountPolicyStatusProvider&) = delete;
+  DeviceLocalAccountPolicyStatusProvider& operator=(
+      const DeviceLocalAccountPolicyStatusProvider&) = delete;
+
   ~DeviceLocalAccountPolicyStatusProvider() override;
 
   // PolicyStatusProvider implementation.
@@ -300,8 +322,6 @@ class DeviceLocalAccountPolicyStatusProvider
  private:
   const std::string user_id_;
   policy::DeviceLocalAccountPolicyService* service_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceLocalAccountPolicyStatusProvider);
 };
 
 // Provides status for Active Directory user policy.
@@ -312,6 +332,11 @@ class UserActiveDirectoryPolicyStatusProvider
   explicit UserActiveDirectoryPolicyStatusProvider(
       policy::ActiveDirectoryPolicyManager* policy_manager,
       Profile* profile);
+
+  UserActiveDirectoryPolicyStatusProvider(
+      const UserActiveDirectoryPolicyStatusProvider&) = delete;
+  UserActiveDirectoryPolicyStatusProvider& operator=(
+      const UserActiveDirectoryPolicyStatusProvider&) = delete;
 
   ~UserActiveDirectoryPolicyStatusProvider() override;
 
@@ -325,7 +350,6 @@ class UserActiveDirectoryPolicyStatusProvider
  private:
   policy::ActiveDirectoryPolicyManager* const policy_manager_;  // not owned.
   Profile* profile_;
-  DISALLOW_COPY_AND_ASSIGN(UserActiveDirectoryPolicyStatusProvider);
 };
 
 // Provides status for Device Active Directory policy.
@@ -336,6 +360,11 @@ class DeviceActiveDirectoryPolicyStatusProvider
       policy::ActiveDirectoryPolicyManager* policy_manager,
       const std::string& enterprise_domain_manager);
 
+  DeviceActiveDirectoryPolicyStatusProvider(
+      const DeviceActiveDirectoryPolicyStatusProvider&) = delete;
+  DeviceActiveDirectoryPolicyStatusProvider& operator=(
+      const DeviceActiveDirectoryPolicyStatusProvider&) = delete;
+
   ~DeviceActiveDirectoryPolicyStatusProvider() override = default;
 
   // PolicyStatusProvider implementation.
@@ -343,8 +372,6 @@ class DeviceActiveDirectoryPolicyStatusProvider
 
  private:
   std::string enterprise_domain_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceActiveDirectoryPolicyStatusProvider);
 };
 #endif
 
@@ -394,7 +421,7 @@ UserCloudPolicyStatusProvider::UserCloudPolicyStatusProvider(
     Profile* profile)
     : CloudPolicyCoreStatusProvider(core), profile_(profile) {}
 
-UserCloudPolicyStatusProvider::~UserCloudPolicyStatusProvider() {}
+UserCloudPolicyStatusProvider::~UserCloudPolicyStatusProvider() = default;
 
 void UserCloudPolicyStatusProvider::GetStatus(base::DictionaryValue* dict) {
   if (!core_->store()->is_managed())
@@ -413,7 +440,7 @@ UserCloudPolicyStatusProviderChromeOS::UserCloudPolicyStatusProviderChromeOS(
 }
 
 UserCloudPolicyStatusProviderChromeOS::
-    ~UserCloudPolicyStatusProviderChromeOS() {}
+    ~UserCloudPolicyStatusProviderChromeOS() = default;
 
 void UserCloudPolicyStatusProviderChromeOS::GetStatus(
     base::DictionaryValue* dict) {
@@ -611,7 +638,7 @@ void UpdaterStatusProvider::OnDomainReceived(std::string domain) {
 
 #endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-PolicyUIHandler::PolicyUIHandler() {}
+PolicyUIHandler::PolicyUIHandler() = default;
 
 PolicyUIHandler::~PolicyUIHandler() {
   GetPolicyService()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);

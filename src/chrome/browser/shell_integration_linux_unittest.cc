@@ -34,11 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
-#endif
 
 using ::testing::ElementsAre;
 
@@ -50,6 +46,9 @@ namespace {
 class MockEnvironment : public base::Environment {
  public:
   MockEnvironment() {}
+
+  MockEnvironment(const MockEnvironment&) = delete;
+  MockEnvironment& operator=(const MockEnvironment&) = delete;
 
   void Set(base::StringPiece name, const std::string& value) {
     variables_[std::string(name)] = value;
@@ -77,8 +76,6 @@ class MockEnvironment : public base::Environment {
 
  private:
   std::map<std::string, std::string> variables_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockEnvironment);
 };
 
 // This helps EXPECT_THAT(..., ElementsAre(...)) print out more meaningful
@@ -615,6 +612,7 @@ TEST(ShellIntegrationTest, GetMimeTypesRegistrationFileContents) {
       accept_entry.file_extensions.insert(".foo");
       file_handler.accept.push_back(accept_entry);
     }
+    file_handler.display_name = u"FoO";
     file_handlers.push_back(file_handler);
   }
   {
@@ -632,6 +630,8 @@ TEST(ShellIntegrationTest, GetMimeTypesRegistrationFileContents) {
     {
       apps::FileHandler::AcceptEntry accept_entry;
       accept_entry.mime_type = "application/bar";
+      // A name that has a reserved XML character.
+      file_handler.display_name = u"ba<r";
       accept_entry.file_extensions.insert(".bar");
       accept_entry.file_extensions.insert(".baz");
       file_handler.accept.push_back(accept_entry);
@@ -642,19 +642,21 @@ TEST(ShellIntegrationTest, GetMimeTypesRegistrationFileContents) {
   const std::string file_contents =
       GetMimeTypesRegistrationFileContents(file_handlers);
   const std::string expected_file_contents =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      "<?xml version=\"1.0\"?>\n"
       "<mime-info "
       "xmlns=\"http://www.freedesktop.org/standards/shared-mime-info\">\n"
-      "  <mime-type type=\"application/foo\">\n"
-      "    <glob pattern=\"*.foo\"/>\n"
-      "  </mime-type>\n"
-      "  <mime-type type=\"application/foobar\">\n"
-      "    <glob pattern=\"*.foobar\"/>\n"
-      "  </mime-type>\n"
-      "  <mime-type type=\"application/bar\">\n"
-      "    <glob pattern=\"*.bar\"/>\n"
-      "    <glob pattern=\"*.baz\"/>\n"
-      "  </mime-type>\n"
+      " <mime-type type=\"application/foo\">\n"
+      "  <comment>FoO</comment>\n"
+      "  <glob pattern=\"*.foo\"/>\n"
+      " </mime-type>\n"
+      " <mime-type type=\"application/foobar\">\n"
+      "  <glob pattern=\"*.foobar\"/>\n"
+      " </mime-type>\n"
+      " <mime-type type=\"application/bar\">\n"
+      "  <comment>ba&lt;r</comment>\n"
+      "  <glob pattern=\"*.bar\"/>\n"
+      "  <glob pattern=\"*.baz\"/>\n"
+      " </mime-type>\n"
       "</mime-info>\n";
 
   EXPECT_EQ(file_contents, expected_file_contents);
@@ -663,16 +665,11 @@ TEST(ShellIntegrationTest, GetMimeTypesRegistrationFileContents) {
 // The WM class name may be either capitalised or not, depending on the
 // platform.
 void CheckProgramClassClass(const std::string& class_name) {
-#if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform() &&
-      ui::OzonePlatform::GetPlatformNameForTest() != "x11") {
-    EXPECT_EQ("foo", class_name);
-  } else {
+  if (ui::OzonePlatform::GetPlatformNameForTest() == "x11") {
     EXPECT_EQ("Foo", class_name);
+  } else {
+    EXPECT_EQ("foo", class_name);
   }
-#else
-  EXPECT_EQ("foo", class_name);
-#endif
 }
 
 TEST(ShellIntegrationTest, WmClass) {

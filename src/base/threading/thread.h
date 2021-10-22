@@ -27,9 +27,6 @@ namespace base {
 
 class MessagePump;
 class RunLoop;
-namespace sequence_manager {
-class TimeDomain;
-}
 
 // IMPORTANT: Instead of creating a base::Thread, consider using
 // base::Create(Sequenced|SingleThread)TaskRunner().
@@ -94,10 +91,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
     // Specifies timer slack for thread message loop.
     TimerSlack timer_slack = TIMER_SLACK_NONE;
 
-    // The time domain to be used by the task queue. This is not compatible with
-    // a non-null |delegate|.
-    sequence_manager::TimeDomain* task_queue_time_domain = nullptr;
-
     // Used to create the MessagePump for the MessageLoop. The callback is Run()
     // on the thread. If message_pump_factory.is_null(), then a MessagePump
     // appropriate for |message_pump_type| is created. Setting this forces the
@@ -132,6 +125,9 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // Constructor.
   // name is a display string to identify the thread.
   explicit Thread(const std::string& name);
+
+  Thread(const Thread&) = delete;
+  Thread& operator=(const Thread&) = delete;
 
   // Destroys the thread, stopping it if necessary.
   //
@@ -339,8 +335,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   // This class is not thread-safe, use this to verify access from the owning
   // sequence of the Thread.
   SequenceChecker owning_sequence_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 }  // namespace base

@@ -418,10 +418,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_CUDA,
         AV_PIX_FMT_NONE
     };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static const AVFilterPad thumbnail_cuda_inputs[] = {
@@ -431,7 +428,6 @@ static const AVFilterPad thumbnail_cuda_inputs[] = {
         .config_props = config_props,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad thumbnail_cuda_outputs[] = {
@@ -440,7 +436,6 @@ static const AVFilterPad thumbnail_cuda_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .request_frame = request_frame,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_thumbnail_cuda = {
@@ -450,8 +445,8 @@ const AVFilter ff_vf_thumbnail_cuda = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = thumbnail_cuda_inputs,
-    .outputs       = thumbnail_cuda_outputs,
+    FILTER_INPUTS(thumbnail_cuda_inputs),
+    FILTER_OUTPUTS(thumbnail_cuda_outputs),
     .priv_class    = &thumbnail_cuda_class,
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

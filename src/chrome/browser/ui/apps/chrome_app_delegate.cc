@@ -137,6 +137,11 @@ class ChromeAppDelegate::NewWindowContentsDelegate
     : public content::WebContentsDelegate {
  public:
   NewWindowContentsDelegate() {}
+
+  NewWindowContentsDelegate(const NewWindowContentsDelegate&) = delete;
+  NewWindowContentsDelegate& operator=(const NewWindowContentsDelegate&) =
+      delete;
+
   ~NewWindowContentsDelegate() override {}
 
   void BecomeOwningDeletageOf(
@@ -151,8 +156,6 @@ class ChromeAppDelegate::NewWindowContentsDelegate
 
  private:
   std::vector<std::unique_ptr<content::WebContents>> owned_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(NewWindowContentsDelegate);
 };
 
 content::WebContents*
@@ -368,7 +371,7 @@ void ChromeAppDelegate::OnHide() {
       FROM_HERE,
       base::BindOnce(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
                      weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kAppWindowFirstShowTimeoutSeconds));
+      base::Seconds(kAppWindowFirstShowTimeoutSeconds));
 }
 
 void ChromeAppDelegate::OnShow() {

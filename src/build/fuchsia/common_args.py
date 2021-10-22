@@ -28,7 +28,7 @@ def _AddTargetSpecificationArgs(arg_parser):
   device_args.add_argument('--device',
                            default=None,
                            choices=BUILTIN_TARGET_NAMES + ['custom'],
-                           help='Choose to run on aemu|qemu|device. '
+                           help='Choose to run on fvdl|aemu|qemu|device. '
                            'By default, Fuchsia will run on AEMU on x64 '
                            'hosts and QEMU on arm64 hosts. Alternatively, '
                            'setting to custom will require specifying the '
@@ -71,12 +71,7 @@ def AddCommonArgs(arg_parser):
     arg_parser: an ArgumentParser object."""
 
   common_args = arg_parser.add_argument_group('common', 'Common arguments')
-  common_args.add_argument('--runner-logs-dir',
-                           help='Directory to write test runner logs to.')
-  common_args.add_argument('--exclude-system-logs',
-                           action='store_false',
-                           dest='include_system_logs',
-                           help='Do not show system log data.')
+  common_args.add_argument('--logs-dir', help='Directory to write logs to.')
   common_args.add_argument('--verbose',
                            '-v',
                            default=False,
@@ -87,10 +82,8 @@ def AddCommonArgs(arg_parser):
       type=os.path.realpath,
       help=('Path to the directory in which build files are located. '
             'Defaults to current directory.'))
-  common_args.add_argument('--system-log-file',
-                           help='File to write system logs to. Specify '
-                           '\'-\' to log to stdout.')
   common_args.add_argument('--fuchsia-out-dir',
+                           default=None,
                            help='Path to a Fuchsia build output directory. '
                            'Setting the GN arg '
                            '"default_fuchsia_build_dir_for_installation" '
@@ -168,6 +161,6 @@ def GetDeploymentTargetForArgs(args):
   if args.device:
     device = args.device
   else:
-    device = 'aemu' if args.target_cpu == 'x64' else 'qemu'
+    device = 'fvdl' if args.target_cpu == 'x64' else 'qemu'
 
   return _LoadTargetClass(_GetPathToBuiltinTarget(device)).CreateFromArgs(args)

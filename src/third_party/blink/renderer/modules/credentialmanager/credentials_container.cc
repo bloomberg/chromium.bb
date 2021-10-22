@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
 #if defined(OS_ANDROID)
@@ -328,6 +329,11 @@ bool IsArrayBufferOrViewBelowSizeLimit(
   return false;
 }
 
+bool IsCredentialDescriptorListBelowSizeLimit(
+    const HeapVector<Member<PublicKeyCredentialDescriptor>>& list) {
+  return list.size() <= mojom::blink::kPublicKeyCredentialDescriptorListMaxSize;
+}
+
 DOMException* CredentialManagerErrorToDOMException(
     CredentialManagerError reason) {
   switch (reason) {
@@ -335,6 +341,13 @@ DOMException* CredentialManagerErrorToDOMException(
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError,
           "A request is already pending.");
+    case CredentialManagerError::PENDING_REQUEST_WEBAUTHN:
+      // WebAuthn's PENDING_REQUEST is mapped to a different
+      // |CredentialManagerError| because WebAuthn wants kInvalidStateError to
+      // be distinctive so that sites can recognise it as
+      // |CREDENTIAL_EXCLUDED|.
+      return MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kOperationError, "A request is already pending.");
     case CredentialManagerError::PASSWORD_STORE_UNAVAILABLE:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError,
@@ -356,12 +369,6 @@ DOMException* CredentialManagerErrorToDOMException(
           DOMExceptionCode::kInvalidStateError,
           "The user attempted to register an authenticator that contains one "
           "of the credentials already registered with the relying party.");
-    case CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:
-      return MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kInvalidStateError,
-          "The user attempted to use an authenticator "
-          "that recognized none of the provided "
-          "credentials.");
     case CredentialManagerError::NOT_IMPLEMENTED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNotSupportedError, "Not implemented");
@@ -589,9 +596,9 @@ void OnMakePublicKeyCredentialComplete(
     extension_outputs->setLargeBlob(large_blob_outputs);
   }
   resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
-      credential->info->id, raw_id, authenticator_response, extension_outputs));
+      credential->info->id, raw_id, authenticator_response,
+      credential->has_transport, credential->transport, extension_outputs));
 }
-
 bool IsForPayment(const CredentialCreationOptions* options,
                   ExecutionContext* context) {
   return RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context) &&
@@ -663,6 +670,7 @@ void OnGetAssertionComplete(
             std::move(credential->info->client_data_json),
             std::move(credential->info->authenticator_data),
             std::move(credential->signature), credential->user_handle);
+
     AuthenticationExtensionsClientOutputs* extension_outputs =
         AuthenticationExtensionsClientOutputs::Create();
     if (credential->echo_appid_extension) {
@@ -701,7 +709,8 @@ void OnGetAssertionComplete(
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id,
         VectorToDOMArrayBuffer(std::move(credential->info->raw_id)),
-        authenticator_response, extension_outputs));
+        authenticator_response, credential->has_transport,
+        credential->transport, extension_outputs));
     return;
   }
   DCHECK(!credential);
@@ -865,12 +874,23 @@ ScriptPromise CredentialsContainer::get(
                         WebFeature::kCredentialManagerGetWithUVM);
     }
 #endif
+
     if (!IsArrayBufferOrViewBelowSizeLimit(options->publicKey()->challenge())) {
       resolver->Reject(DOMException::Create(
           "The `challenge` attribute exceeds the maximum allowed size.",
           "RangeError"));
       return promise;
     }
+
+    if (!IsCredentialDescriptorListBelowSizeLimit(
+            options->publicKey()->allowCredentials())) {
+      resolver->Reject(
+          DOMException::Create("The `allowCredentials` attribute exceeds the "
+                               "maximum allowed size (64).",
+                               "RangeError"));
+      return promise;
+    }
+
     if (options->publicKey()->hasExtensions()) {
       if (options->publicKey()->extensions()->hasAppid()) {
         const auto& appid = options->publicKey()->extensions()->appid();
@@ -921,7 +941,7 @@ ScriptPromise CredentialsContainer::get(
               resolver->GetExecutionContext()) &&
           options->publicKey()->extensions()->hasPayment()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kNotSupportedError,
+            DOMExceptionCode::kNotAllowedError,
             "The 'payment' extension is only valid when creating a "
             "credential"));
         return promise;
@@ -1186,15 +1206,25 @@ ScriptPromise CredentialsContainer::create(
     return promise;
   }
 
+  if (!IsCredentialDescriptorListBelowSizeLimit(
+          options->publicKey()->excludeCredentials())) {
+    resolver->Reject(
+        DOMException::Create("The `excludeCredentials` attribute exceeds the "
+                             "maximum allowed size (64).",
+                             "RangeError"));
+    return promise;
+  }
+
   for (const auto& credential : options->publicKey()->excludeCredentials()) {
     if (!IsArrayBufferOrViewBelowSizeLimit(credential->id())) {
       resolver->Reject(DOMException::Create(
-          "The `excludedCredentials.id` attribute exceeds the maximum "
+          "The `excludeCredentials.id` attribute exceeds the maximum "
           "allowed size.",
           "RangeError"));
       return promise;
     }
   }
+
   if (options->publicKey()->hasExtensions()) {
     if (options->publicKey()->extensions()->hasAppid()) {
       resolver->Reject(MakeGarbageCollected<DOMException>(

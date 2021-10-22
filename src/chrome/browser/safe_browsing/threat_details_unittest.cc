@@ -31,6 +31,7 @@
 #include "components/security_interstitials/content/unsafe_resource_util.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -170,6 +171,10 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
             GURL(chrome::kChromeUINewTabURL)),
         report_sent_(false) {}
 
+  MockSafeBrowsingUIManager(const MockSafeBrowsingUIManager&) = delete;
+  MockSafeBrowsingUIManager& operator=(const MockSafeBrowsingUIManager&) =
+      delete;
+
   // When the serialized report is sent, this is called.
   void SendSerializedThreatDetails(content::BrowserContext* browser_context,
                                    const std::string& serialized) override {
@@ -185,7 +190,6 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
 
   std::string serialized_;
   bool report_sent_;
-  DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingUIManager);
 };
 
 class MockReferrerChainProvider : public ReferrerChainProvider {
@@ -256,8 +260,6 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
     resource->is_subresource = is_subresource;
     resource->threat_type = threat_type;
     resource->threat_source = threat_source;
-    resource->web_contents_getter =
-        security_interstitials::GetWebContentsGetter(primary_main_frame_id);
     resource->render_process_id = primary_main_frame_id.child_id;
     resource->render_frame_id = primary_main_frame_id.frame_routing_id;
   }

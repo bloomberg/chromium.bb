@@ -88,6 +88,10 @@ class EmbeddedWorkerTestHelper {
   EmbeddedWorkerTestHelper(
       const base::FilePath& user_data_directory,
       storage::SpecialStoragePolicy* special_storage_policy);
+
+  EmbeddedWorkerTestHelper(const EmbeddedWorkerTestHelper&) = delete;
+  EmbeddedWorkerTestHelper& operator=(const EmbeddedWorkerTestHelper&) = delete;
+
   virtual ~EmbeddedWorkerTestHelper();
 
   ServiceWorkerContextCore* context();
@@ -188,6 +192,7 @@ class EmbeddedWorkerTestHelper {
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
   std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
@@ -215,8 +220,6 @@ class EmbeddedWorkerTestHelper {
   int new_mock_render_process_id_;
 
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerTestHelper);
 };
 
 template <typename MockType, typename... Args>

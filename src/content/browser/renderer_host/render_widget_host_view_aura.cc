@@ -91,7 +91,7 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
@@ -122,8 +122,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -151,6 +151,10 @@ class RenderWidgetHostViewAura::EventObserverForPopupExit
                           {ui::ET_MOUSE_PRESSED, ui::ET_TOUCH_PRESSED});
   }
 
+  EventObserverForPopupExit(const EventObserverForPopupExit&) = delete;
+  EventObserverForPopupExit& operator=(const EventObserverForPopupExit&) =
+      delete;
+
   ~EventObserverForPopupExit() override {
     aura::Env::GetInstance()->RemoveEventObserver(this);
   }
@@ -162,8 +166,6 @@ class RenderWidgetHostViewAura::EventObserverForPopupExit
 
  private:
   RenderWidgetHostViewAura* rwhva_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventObserverForPopupExit);
 };
 
 void RenderWidgetHostViewAura::ApplyEventObserverForPopupExit(
@@ -206,6 +208,9 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
     view_->window_->AddObserver(this);
   }
 
+  WindowObserver(const WindowObserver&) = delete;
+  WindowObserver& operator=(const WindowObserver&) = delete;
+
   ~WindowObserver() override { view_->window_->RemoveObserver(this); }
 
   // Overridden from aura::WindowObserver:
@@ -231,8 +236,6 @@ class RenderWidgetHostViewAura::WindowObserver : public aura::WindowObserver {
 
  private:
   RenderWidgetHostViewAura* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowObserver);
 };
 
 // This class provides functionality to observe the ancestors of the RWHVA for
@@ -258,6 +261,9 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
     }
   }
 
+  WindowAncestorObserver(const WindowAncestorObserver&) = delete;
+  WindowAncestorObserver& operator=(const WindowAncestorObserver&) = delete;
+
   ~WindowAncestorObserver() override {
     RemoveAncestorObservers();
   }
@@ -280,8 +286,6 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
 
   RenderWidgetHostViewAura* view_;
   std::set<aura::Window*> ancestors_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowAncestorObserver);
 };
 
 
@@ -511,6 +515,8 @@ void RenderWidgetHostViewAura::HandleParentBoundsChanged() {
     else
       host_->SendScreenRects();
   }
+
+  UpdateInsetsWithVirtualKeyboardEnabled();
 }
 
 void RenderWidgetHostViewAura::ParentHierarchyChanged() {
@@ -1467,14 +1473,21 @@ void RenderWidgetHostViewAura::ExtendSelectionAndDelete(
 
 void RenderWidgetHostViewAura::EnsureCaretNotInRect(
     const gfx::Rect& rect_in_screen) {
+  keyboard_occluded_bounds_ = rect_in_screen;
+
+  // If keyboard is disabled, reset the insets_.
+  if (keyboard_occluded_bounds_.IsEmpty())
+    insets_ = gfx::Insets();
+
   aura::Window* top_level_window = window_->GetToplevelWindow();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  wm::EnsureWindowNotInRect(top_level_window, rect_in_screen);
+  wm::EnsureWindowNotInRect(top_level_window, keyboard_occluded_bounds_);
 #endif
 
   // Perform overscroll if the caret is still hidden by the keyboard.
   const gfx::Rect hidden_window_bounds_in_screen = gfx::IntersectRects(
-      rect_in_screen, top_level_window->GetBoundsInScreen());
+      keyboard_occluded_bounds_, top_level_window->GetBoundsInScreen());
+
   if (hidden_window_bounds_in_screen.IsEmpty())
     return;
 
@@ -1505,7 +1518,7 @@ bool RenderWidgetHostViewAura::ShouldDoLearning() {
   return GetTextInputManager() && GetTextInputManager()->should_do_learning();
 }
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
@@ -1555,10 +1568,9 @@ bool RenderWidgetHostViewAura::SetAutocorrectRange(
         TextInputClient::SubClass::kRenderWidgetHostViewAura);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    auto* input_method_manager =
-        chromeos::input_method::InputMethodManager::Get();
+    auto* input_method_manager = ash::input_method::InputMethodManager::Get();
     if (input_method_manager &&
-        chromeos::extension_ime_util::IsExperimentalMultilingual(
+        ash::extension_ime_util::IsExperimentalMultilingual(
             input_method_manager->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id())) {
@@ -1617,10 +1629,18 @@ bool RenderWidgetHostViewAura::AddGrammarFragments(
   if (!input_handler || fragments.empty())
     return false;
 
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
+    return false;
+
   unsigned max_fragment_end = 0;
   std::vector<::ui::ImeTextSpan> ime_text_spans;
   ime_text_spans.reserve(fragments.size());
+  bool conflict_with_spellcheck = false;
   for (auto& fragment : fragments) {
+    if (text_input_manager_->OverlapsWithSpellCheckMarker(fragment.range)) {
+      conflict_with_spellcheck = true;
+      break;
+    }
     ui::ImeTextSpan ui_ime_text_span;
     ui_ime_text_span.type = ui::ImeTextSpan::Type::kGrammarSuggestion;
     ui_ime_text_span.start_offset = fragment.range.start();
@@ -1635,6 +1655,10 @@ bool RenderWidgetHostViewAura::AddGrammarFragments(
       max_fragment_end = fragment.range.end();
     }
   }
+
+  if (conflict_with_spellcheck)
+    return false;
+
   input_handler->AddImeTextSpansToExistingText(0, max_fragment_end,
                                                ime_text_spans);
 
@@ -1643,7 +1667,7 @@ bool RenderWidgetHostViewAura::AddGrammarFragments(
 
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
     absl::optional<gfx::Rect>* control_bounds,
     absl::optional<gfx::Rect>* selection_bounds) {
@@ -1668,7 +1692,9 @@ void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
     }
   }
 }
+#endif
 
+#if defined(OS_WIN)
 void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const std::u16string& active_composition_text,
@@ -1732,8 +1758,10 @@ void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,
   // harmless.
   SetSize(new_bounds.size());
 
-  if (GetInputMethod())
+  if (GetInputMethod()) {
     GetInputMethod()->OnCaretBoundsChanged(this);
+    UpdateInsetsWithVirtualKeyboardEnabled();
+  }
 }
 
 gfx::NativeCursor RenderWidgetHostViewAura::GetCursor(const gfx::Point& point) {
@@ -2303,6 +2331,10 @@ void RenderWidgetHostViewAura::NotifyVirtualKeyboardOverlayRect(
   frame->NotifyVirtualKeyboardOverlayRect(keyboard_root_relative_rect);
 }
 
+bool RenderWidgetHostViewAura::IsHTMLFormPopup() const {
+  return !!popup_parent_host_view_;
+}
+
 bool RenderWidgetHostViewAura::FocusedFrameHasStickyActivation() const {
   // Unless user has interacted with the iframe, we shouldn't be displaying VK
   // or fire geometrychange event.
@@ -2381,6 +2413,17 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (IsMouseLocked())
     UpdateMouseLockRegion();
 #endif
+}
+
+void RenderWidgetHostViewAura::UpdateInsetsWithVirtualKeyboardEnabled() {
+  // Update insets if the keyboard is shown.
+  if (!keyboard_occluded_bounds_.IsEmpty()) {
+    insets_ = gfx::Insets(
+        0, 0,
+        gfx::IntersectRects(GetViewBounds(), keyboard_occluded_bounds_)
+            .height(),
+        0);
+  }
 }
 
 #if defined(OS_WIN)
@@ -2518,7 +2561,7 @@ void RenderWidgetHostViewAura::ForwardKeyboardEventWithLatencyInfo(
 
 void RenderWidgetHostViewAura::CreateSelectionController() {
   ui::TouchSelectionController::Config tsc_config;
-  tsc_config.max_tap_duration = base::TimeDelta::FromMilliseconds(
+  tsc_config.max_tap_duration = base::Milliseconds(
       ui::GestureConfiguration::GetInstance()->long_press_time_in_ms());
   tsc_config.tap_slop = ui::GestureConfiguration::GetInstance()
                             ->max_touch_move_in_pixels_for_click();

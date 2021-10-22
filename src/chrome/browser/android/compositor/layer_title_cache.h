@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace cc {
 class Layer;
@@ -44,6 +44,10 @@ class LayerTitleCache {
                   jint spinner_resource_id,
                   jint spinner_incognito_resource_id,
                   ui::ResourceManager* resource_manager);
+
+  LayerTitleCache(const LayerTitleCache&) = delete;
+  LayerTitleCache& operator=(const LayerTitleCache&) = delete;
+
   void Destroy(JNIEnv* env);
 
   // Called from Java, updates a native cc::Layer based on the new texture
@@ -84,8 +88,6 @@ class LayerTitleCache {
   int spinner_incognito_resource_id_;
 
   ui::ResourceManager* resource_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerTitleCache);
 };
 
 }  // namespace android

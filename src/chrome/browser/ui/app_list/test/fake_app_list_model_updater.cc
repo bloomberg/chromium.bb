@@ -54,18 +54,6 @@ void FakeAppListModelUpdater::RemoveUninstalledItem(const std::string& id) {
   RemoveItem(id);
 }
 
-void FakeAppListModelUpdater::MoveItemToFolder(const std::string& id,
-                                               const std::string& folder_id) {
-  size_t index;
-  if (FindItemIndexForTest(id, &index)) {
-    ChromeAppListItem* item = items_[index].get();
-    ChromeAppListItem::TestApi test_api(item);
-    test_api.SetFolderId(folder_id);
-    for (AppListModelUpdaterObserver& observer : observers_)
-      observer.OnAppListItemUpdated(item);
-  }
-}
-
 void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
                                           const gfx::ImageSkia& icon) {
   ++update_image_count_;
@@ -73,6 +61,33 @@ void FakeAppListModelUpdater::SetItemIcon(const std::string& id,
       !icon_updated_callback_.is_null()) {
     std::move(icon_updated_callback_).Run();
   }
+}
+
+void FakeAppListModelUpdater::SetItemFolderId(const std::string& id,
+                                              const std::string& folder_id) {
+  ChromeAppListItem* item = FindItem(id);
+  item->SetFolderId(folder_id);
+  for (AppListModelUpdaterObserver& observer : observers_)
+    observer.OnAppListItemUpdated(item);
+}
+
+void FakeAppListModelUpdater::SetItemPosition(
+    const std::string& id,
+    const syncer::StringOrdinal& new_position) {
+  ChromeAppListItem* item = FindItem(id);
+  if (!item)
+    return;
+
+  ChromeAppListItem::TestApi(item).SetPosition(new_position);
+}
+
+void FakeAppListModelUpdater::SetItemName(const std::string& id,
+                                          const std::string& new_name) {
+  ChromeAppListItem* item = FindItem(id);
+  if (!item)
+    return;
+
+  ChromeAppListItem::TestApi(item).SetName(new_name);
 }
 
 void FakeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
@@ -212,33 +227,36 @@ void FakeAppListModelUpdater::UpdateAppItemFromSyncItem(
       (!chrome_item->position().IsValid() ||
        !chrome_item->position().Equals(sync_item->item_ordinal))) {
     // This updates the position in both chrome and ash:
-    chrome_item->SetPosition(sync_item->item_ordinal);
+    SetItemPosition(chrome_item->id(), sync_item->item_ordinal);
   }
   // Only update the item name if it is a Folder or the name is empty.
   if (update_name && sync_item->item_name != chrome_item->name() &&
       (chrome_item->is_folder() || chrome_item->name().empty())) {
     // This updates the name in both chrome and ash:
-    chrome_item->SetName(sync_item->item_name);
+    SetItemName(chrome_item->id(), sync_item->item_name);
   }
   if (update_folder && chrome_item->folder_id() != sync_item->parent_id) {
     VLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
     // This updates the folder in both chrome and ash:
-    MoveItemToFolder(chrome_item->id(), sync_item->parent_id);
+    SetItemFolderId(chrome_item->id(), sync_item->parent_id);
   }
 }
 
 void FakeAppListModelUpdater::OnItemAdded(
     std::unique_ptr<ash::AppListItemMetadata> item) {
-  if (!item->is_folder)
-    return;
-
-  std::unique_ptr<ChromeAppListItem> stub_folder =
-      std::make_unique<ChromeAppListItem>(profile_, item->id, this);
+  const std::string& id = item->id;
+  ChromeAppListItem* chrome_item = FindItem(id);
+  if (!chrome_item) {
+    DCHECK(item->is_folder || item->is_page_break);
+    std::unique_ptr<ChromeAppListItem> new_item =
+        std::make_unique<ChromeAppListItem>(profile_, id, this);
+    new_item->SetMetadata(std::move(item));
+    AddItem(std::move(new_item));
+    chrome_item = FindItem(id);
+  }
 
   for (AppListModelUpdaterObserver& observer : observers_)
-    observer.OnAppListItemAdded(stub_folder.get());
-
-  AddItem(std::move(stub_folder));
+    observer.OnAppListItemAdded(chrome_item);
 }
 
 void FakeAppListModelUpdater::OnItemUpdated(

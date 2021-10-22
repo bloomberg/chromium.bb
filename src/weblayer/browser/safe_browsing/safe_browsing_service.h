@@ -37,6 +37,7 @@ class RealTimeUrlLookupServiceBase;
 class RemoteSafeBrowsingDatabaseManager;
 class SafeBrowsingApiHandler;
 class SafeBrowsingNetworkContext;
+class TriggerManager;
 }  // namespace safe_browsing
 
 namespace weblayer {
@@ -48,6 +49,10 @@ class UrlCheckerDelegateImpl;
 class SafeBrowsingService {
  public:
   explicit SafeBrowsingService(const std::string& user_agent);
+
+  SafeBrowsingService(const SafeBrowsingService&) = delete;
+  SafeBrowsingService& operator=(const SafeBrowsingService&) = delete;
+
   ~SafeBrowsingService();
 
   // Executed on UI thread
@@ -76,6 +81,8 @@ class SafeBrowsingService {
   scoped_refptr<safe_browsing::SafeBrowsingUIManager>
   GetSafeBrowsingUIManager();
 
+  safe_browsing::TriggerManager* GetTriggerManager();
+
  private:
   // Executed on IO thread
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
@@ -84,6 +91,7 @@ class SafeBrowsingService {
   // Safe to call multiple times; invocations after the first will be no-ops.
   void StartSafeBrowsingDBManagerOnIOThread();
   void CreateSafeBrowsingUIManager();
+  void CreateTriggerManager();
   void CreateAndStartSafeBrowsingDBManager();
   scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactoryOnIOThread();
@@ -124,7 +132,8 @@ class SafeBrowsingService {
   // IO thread.
   bool started_db_manager_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
+  // Collects data and sends reports to Safe Browsing. Accessed on UI thread.
+  std::unique_ptr<safe_browsing::TriggerManager> trigger_manager_;
 };
 
 }  // namespace weblayer

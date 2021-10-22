@@ -81,6 +81,9 @@ class MockVideoDecoder : public VideoDecoder {
         .WillByDefault(Invoke(this, &MockVideoDecoder::DoReset));
   }
 
+  MockVideoDecoder(const MockVideoDecoder&) = delete;
+  MockVideoDecoder& operator=(const MockVideoDecoder&) = delete;
+
   // Re-declare as public.
   ~MockVideoDecoder() override {}
 
@@ -168,8 +171,6 @@ class MockVideoDecoder : public VideoDecoder {
   OutputCB output_cb_;
   WaitingCB waiting_cb_;
   base::WeakPtrFactory<MockVideoDecoder> weak_this_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockVideoDecoder);
 };
 
 // Proxies CreateVideoDecoder() to a callback.
@@ -282,8 +283,8 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     scoped_refptr<DecoderBuffer> buffer =
         DecoderBuffer::CopyFrom(data.data(), data.size());
 
-    buffer->set_timestamp(base::TimeDelta::FromMilliseconds(timestamp_ms));
-    buffer->set_duration(base::TimeDelta::FromMilliseconds(10));
+    buffer->set_timestamp(base::Milliseconds(timestamp_ms));
+    buffer->set_duration(base::Milliseconds(10));
     buffer->set_is_key_frame(true);
 
     return buffer;
@@ -295,8 +296,8 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     scoped_refptr<DecoderBuffer> buffer =
         DecoderBuffer::CopyFrom(data.data(), data.size());
 
-    buffer->set_timestamp(base::TimeDelta::FromMilliseconds(timestamp_ms));
-    buffer->set_duration(base::TimeDelta::FromMilliseconds(10));
+    buffer->set_timestamp(base::Milliseconds(timestamp_ms));
+    buffer->set_duration(base::Milliseconds(10));
     buffer->set_is_key_frame(true);
 
     return buffer;

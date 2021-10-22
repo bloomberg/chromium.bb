@@ -5,6 +5,10 @@
 #include "chromeos/services/libassistant/test_support/fake_assistant_client.h"
 
 #include "base/callback.h"
+#include "chromeos/assistant/internal/proto/shared/proto/v2/delegate/event_handler_interface.pb.h"
+#include "chromeos/assistant/internal/test_support/fake_alarm_timer_manager.h"
+#include "chromeos/services/libassistant/grpc/utils/timer_utils.h"
+#include "chromeos/services/libassistant/public/cpp/assistant_timer.h"
 
 namespace chromeos {
 namespace libassistant {
@@ -17,7 +21,8 @@ FakeAssistantClient::FakeAssistantClient(
 
 FakeAssistantClient::~FakeAssistantClient() = default;
 
-void FakeAssistantClient::StartServices() {}
+void FakeAssistantClient::StartServices(
+    base::OnceClosure services_ready_callback) {}
 
 void FakeAssistantClient::SetChromeOSApiDelegate(
     assistant_client::ChromeOSApiDelegate* delegate) {}
@@ -68,6 +73,82 @@ void FakeAssistantClient::SetExternalPlaybackState(
 
 void FakeAssistantClient::AddDeviceStateEventObserver(
     GrpcServicesObserver<OnDeviceStateEventRequest>* observer) {}
+
+void FakeAssistantClient::RegisterActionModule(
+    assistant_client::ActionModule* action_module) {}
+
+void FakeAssistantClient::SetInternalOptions(const std::string& locale,
+                                             bool spoken_feedback_enabled) {}
+
+void FakeAssistantClient::SetAuthenticationInfo(const AuthTokens& tokens) {}
+
+void FakeAssistantClient::UpdateAssistantSettings(
+    const ::assistant::ui::SettingsUiUpdate& settings,
+    const std::string& user_id,
+    base::OnceCallback<void(
+        const ::assistant::api::UpdateAssistantSettingsResponse&)> on_done) {}
+
+void FakeAssistantClient::GetAssistantSettings(
+    const ::assistant::ui::SettingsUiSelector& selector,
+    const std::string& user_id,
+    base::OnceCallback<
+        void(const ::assistant::api::GetAssistantSettingsResponse&)> on_done) {}
+
+void FakeAssistantClient::SetLocaleOverride(const std::string& locale) {}
+
+std::string FakeAssistantClient::GetDeviceId() {
+  return assistant_manager()->GetDeviceId();
+}
+
+void FakeAssistantClient::SetDeviceAttributes(bool enable_dark_mode) {}
+
+void FakeAssistantClient::EnableListening(bool listening_enabled) {}
+
+void FakeAssistantClient::AddTimeToTimer(const std::string& id,
+                                         const base::TimeDelta& duration) {
+  fake_alarm_timer_manager()->AddTimeToTimer(id, duration.InSeconds());
+}
+
+void FakeAssistantClient::PauseTimer(const std::string& timer_id) {
+  fake_alarm_timer_manager()->PauseTimer(timer_id);
+}
+
+void FakeAssistantClient::RemoveTimer(const std::string& timer_id) {
+  fake_alarm_timer_manager()->RemoveEvent(timer_id);
+}
+
+void FakeAssistantClient::ResumeTimer(const std::string& timer_id) {
+  fake_alarm_timer_manager()->ResumeTimer(timer_id);
+}
+
+std::vector<assistant::AssistantTimer> FakeAssistantClient::GetTimers() {
+  return GetAllCurrentTimersFromEvents(
+      fake_alarm_timer_manager()->GetAllEvents());
+}
+
+void FakeAssistantClient::RegisterAlarmTimerEventObserver(
+    base::WeakPtr<
+        GrpcServicesObserver<::assistant::api::OnAlarmTimerEventRequest>>
+        observer) {
+  fake_alarm_timer_manager()->RegisterRingingStateListener(
+      [observer = observer, this]() {
+        observer->OnGrpcMessage(
+            CreateOnAlarmTimerEventRequestProtoForV1(GetTimers()));
+      });
+
+  fake_alarm_timer_manager()->RegisterAlarmActionListener(
+      [observer = observer,
+       this](assistant_client::AlarmTimerManager::EventActionType ignore) {
+        observer->OnGrpcMessage(
+            CreateOnAlarmTimerEventRequestProtoForV1(GetTimers()));
+      });
+}
+
+assistant::FakeAlarmTimerManager*
+FakeAssistantClient::fake_alarm_timer_manager() {
+  return reinterpret_cast<assistant::FakeAlarmTimerManager*>(
+      assistant_manager_internal()->GetAlarmTimerManager());
+}
 
 }  // namespace libassistant
 }  // namespace chromeos

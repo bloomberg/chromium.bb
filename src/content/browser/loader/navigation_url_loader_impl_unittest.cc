@@ -149,7 +149,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
  public:
   NavigationURLLoaderImplTest()
       : task_environment_(std::make_unique<BrowserTaskEnvironment>(
-            base::test::TaskEnvironment::MainThreadType::IO)),
+            base::test::TaskEnvironment::MainThreadType::IO,
+            content::BrowserTaskEnvironment::TimeSource::MOCK_TIME)),
         network_change_notifier_(
             net::test::MockNetworkChangeNotifier::Create()) {
     browser_context_ = std::make_unique<TestBrowserContext>();
@@ -207,6 +208,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
     std::unique_ptr<NavigationRequestInfo> request_info(
         std::make_unique<NavigationRequestInfo>(
             std::move(common_params), std::move(begin_params),
+            network::mojom::WebSandboxFlags::kNone,
             net::IsolationInfo::Create(
                 net::IsolationInfo::RequestType::kMainFrame, origin, origin,
                 net::SiteForCookies::FromUrl(url)),
@@ -220,7 +222,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
             false /* obey_origin_policy */,
             net::HttpRequestHeaders() /* cors_exempt_headers */,
             nullptr /* client_security_state */,
-            absl::nullopt /* devtools_accepted_stream_types */));
+            absl::nullopt /* devtools_accepted_stream_types */,
+            false /* is_pdf */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = absl::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
@@ -493,6 +496,37 @@ TEST_F(NavigationURLLoaderImplTest, UpgradeIfInsecureTest) {
   // Same as above, but validating the URL is upgraded to https.
   EXPECT_TRUE(redirect_info.insecure_scheme_was_upgraded);
   EXPECT_EQ(expected_url, redirect_info.new_url);
+}
+
+// Tests that when a navigation timeout is set and the navigation takes longer
+// than that timeout, then the navigation load fails with ERR_TIMED_OUT.
+TEST_F(NavigationURLLoaderImplTest, NavigationTimeoutTest) {
+  ASSERT_TRUE(http_test_server_.Start());
+  const GURL url = http_test_server_.GetURL("/hung");
+  TestNavigationURLLoaderDelegate delegate;
+  std::unique_ptr<NavigationURLLoader> loader =
+      CreateTestLoader(url, std::string(), "GET", &delegate);
+  loader->Start();
+  loader->SetNavigationTimeout(base::Seconds(3));
+  delegate.WaitForRequestFailed();
+  EXPECT_EQ(net::ERR_TIMED_OUT, delegate.net_error());
+}
+
+// Like NavigationTimeoutTest but the navigation initially results in a redirect
+// before hanging, to test a slightly more complicated navigation.
+TEST_F(NavigationURLLoaderImplTest, NavigationTimeoutRedirectTest) {
+  ASSERT_TRUE(http_test_server_.Start());
+  const GURL hang_url = http_test_server_.GetURL("/hung");
+  const GURL redirect_url =
+      http_test_server_.GetURL("/server-redirect?" + hang_url.spec());
+  TestNavigationURLLoaderDelegate delegate;
+  std::unique_ptr<NavigationURLLoader> loader =
+      CreateTestLoader(redirect_url, std::string(), "GET", &delegate);
+  loader->Start();
+  loader->SetNavigationTimeout(base::Seconds(3));
+  delegate.WaitForRequestRedirected();
+  delegate.WaitForRequestFailed();
+  EXPECT_EQ(net::ERR_TIMED_OUT, delegate.net_error());
 }
 
 }  // namespace content

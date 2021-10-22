@@ -132,9 +132,9 @@ namespace dawn_native { namespace vulkan {
         const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
         const RenderPipelineDescriptor* descriptor) {
-        return RenderPipeline::Create(this, descriptor);
+        return RenderPipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
@@ -162,13 +162,16 @@ namespace dawn_native { namespace vulkan {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
-    void Device::CreateComputePipelineAsyncImpl(
-        std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
-        size_t blueprintHash,
-        WGPUCreateComputePipelineAsyncCallback callback,
-        void* userdata) {
-        ComputePipeline::CreateAsync(this, std::move(descriptor), blueprintHash, callback,
-                                     userdata);
+    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                                size_t blueprintHash,
+                                                WGPUCreateComputePipelineAsyncCallback callback,
+                                                void* userdata) {
+        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
+    }
+    void Device::InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                                   WGPUCreateRenderPipelineAsyncCallback callback,
+                                                   void* userdata) {
+        RenderPipeline::InitializeAsync(renderPipeline, callback, userdata);
     }
 
     MaybeError Device::TickImpl() {
@@ -345,31 +348,31 @@ namespace dawn_native { namespace vulkan {
             usedKnobs.features.samplerAnisotropy = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::TextureCompressionBC)) {
+        if (IsFeatureEnabled(Feature::TextureCompressionBC)) {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionBC ==
                    VK_TRUE);
             usedKnobs.features.textureCompressionBC = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::TextureCompressionETC2)) {
+        if (IsFeatureEnabled(Feature::TextureCompressionETC2)) {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionETC2 ==
                    VK_TRUE);
             usedKnobs.features.textureCompressionETC2 = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::TextureCompressionASTC)) {
+        if (IsFeatureEnabled(Feature::TextureCompressionASTC)) {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.textureCompressionASTC_LDR ==
                    VK_TRUE);
             usedKnobs.features.textureCompressionASTC_LDR = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::PipelineStatisticsQuery)) {
+        if (IsFeatureEnabled(Feature::PipelineStatisticsQuery)) {
             ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.pipelineStatisticsQuery ==
                    VK_TRUE);
             usedKnobs.features.pipelineStatisticsQuery = VK_TRUE;
         }
 
-        if (IsExtensionEnabled(Extension::ShaderFloat16)) {
+        if (IsFeatureEnabled(Feature::ShaderFloat16)) {
             const VulkanDeviceInfo& deviceInfo = ToBackend(GetAdapter())->GetDeviceInfo();
             ASSERT(deviceInfo.HasExt(DeviceExt::ShaderFloat16Int8) &&
                    deviceInfo.shaderFloat16Int8Features.shaderFloat16 == VK_TRUE &&
@@ -385,6 +388,11 @@ namespace dawn_native { namespace vulkan {
                               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR);
             featuresChain.Add(&usedKnobs._16BitStorageFeatures,
                               VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES);
+        }
+
+        if (IsFeatureEnabled(Feature::DepthClamping)) {
+            ASSERT(ToBackend(GetAdapter())->GetDeviceInfo().features.depthClamp == VK_TRUE);
+            usedKnobs.features.depthClamp = VK_TRUE;
         }
 
         // Find a universal queue family

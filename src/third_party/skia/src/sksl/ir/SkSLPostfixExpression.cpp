@@ -5,9 +5,11 @@
  * found in the LICENSE file.
  */
 
+#include "src/sksl/ir/SkSLPostfixExpression.h"
+
+#include "include/sksl/SkSLErrorReporter.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
-#include "src/sksl/ir/SkSLPostfixExpression.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
 namespace SkSL {
@@ -17,7 +19,7 @@ std::unique_ptr<Expression> PostfixExpression::Convert(const Context& context,
                                                        Operator op) {
     const Type& baseType = base->type();
     if (!baseType.isNumber()) {
-        context.fErrors->error(base->fOffset,
+        context.fErrors->error(base->fLine,
                                "'" + String(op.operatorName()) + "' cannot operate on '" +
                                baseType.displayName() + "'");
         return nullptr;

@@ -16,10 +16,10 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-class Profile;
 namespace base {
 class Time;
 }
+
 namespace syncer {
 class MetadataBatch;
 class MetadataChangeList;
@@ -56,13 +56,11 @@ struct RegistryUpdateData;
 // ModelTypeChangeProcessor and WebAppDatabase (the storage).
 class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
  public:
-  WebAppSyncBridge(Profile* profile,
-                   AbstractWebAppDatabaseFactory* database_factory,
+  WebAppSyncBridge(AbstractWebAppDatabaseFactory* database_factory,
                    WebAppRegistrarMutable* registrar,
                    SyncInstallDelegate* install_delegate);
   // Tests may inject mocks using this ctor.
   WebAppSyncBridge(
-      Profile* profile,
       AbstractWebAppDatabaseFactory* database_factory,
       WebAppRegistrarMutable* registrar,
       SyncInstallDelegate* install_delegate,
@@ -109,6 +107,24 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   void SetUserLaunchOrdinal(const AppId& app_id,
                             syncer::StringOrdinal user_launch_ordinal);
 
+  // These methods are used by web apps to add or remove allowed
+  // protocol schemes based on user approval or withdrawal of that approval.
+  // Allowed protocol schemes will allow web apps to handle launches from
+  // urls that start with that scheme without asking the user.
+  void AddAllowedLaunchProtocol(const AppId& app_id,
+                                const std::string& protocol_scheme);
+  void RemoveAllowedLaunchProtocol(const AppId& app_id,
+                                   const std::string& protocol_scheme);
+
+  // These methods are used by web apps to add or remove disallowed
+  // protocol schemes based on user preference or withdrawal of that preference.
+  // Disallowed protocol schemes will never allow web apps to handle launches
+  // from urls that start with that scheme.
+  void AddDisallowedLaunchProtocol(const AppId& app_id,
+                                   const std::string& protocol_scheme);
+  void RemoveDisallowedLaunchProtocol(const AppId& app_id,
+                                      const std::string& protocol_scheme);
+
   // An access to read-only registry. Does an upcast to read-only type.
   const WebAppRegistrar& registrar() const { return *registrar_; }
 
@@ -127,6 +143,10 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
   const std::set<AppId>& GetAppsInSyncUninstallForTest();
+
+  void set_disable_checks_for_testing(bool disable_checks_for_testing) {
+    disable_checks_for_testing_ = disable_checks_for_testing;
+  }
 
  private:
   void CheckRegistryUpdateData(const RegistryUpdateData& update_data) const;
@@ -164,13 +184,12 @@ class WebAppSyncBridge : public syncer::ModelTypeSyncBridge {
 
   void MaybeInstallAppsFromSyncAndPendingInstallation();
 
-  Profile* const profile_;
-
   std::unique_ptr<WebAppDatabase> database_;
   WebAppRegistrarMutable* const registrar_;
   SyncInstallDelegate* const install_delegate_;
 
   bool is_in_update_ = false;
+  bool disable_checks_for_testing_ = false;
 
   base::WeakPtrFactory<WebAppSyncBridge> weak_ptr_factory_{this};
 };

@@ -38,8 +38,8 @@
 #include "ui/compositor/layer_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -133,6 +133,12 @@ class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
     layer_->AddCacheRenderSurfaceRequest();
     layer_->AddTrilinearFilteringRequest();
   }
+
+  LayerCachingAndFilteringObserver(const LayerCachingAndFilteringObserver&) =
+      delete;
+  LayerCachingAndFilteringObserver& operator=(
+      const LayerCachingAndFilteringObserver&) = delete;
+
   ~LayerCachingAndFilteringObserver() override {
     if (layer_) {
       layer_->RemoveTrilinearFilteringRequest();
@@ -149,8 +155,6 @@ class ScopedOverviewTransformWindow::LayerCachingAndFilteringObserver
 
  private:
   ui::Layer* layer_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayerCachingAndFilteringObserver);
 };
 
 ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
@@ -469,7 +473,7 @@ void ScopedOverviewTransformWindow::Close() {
       FROM_HERE,
       base::BindOnce(&ScopedOverviewTransformWindow::CloseWidget,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kCloseWindowDelayInMilliseconds));
+      base::Milliseconds(kCloseWindowDelayInMilliseconds));
 }
 
 bool ScopedOverviewTransformWindow::IsMinimized() const {

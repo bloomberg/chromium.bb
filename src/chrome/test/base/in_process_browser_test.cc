@@ -93,6 +93,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/webui/whats_new/whats_new_util.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #endif
 
@@ -101,7 +102,7 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/ash/full_restore/full_restore_app_launch_handler.h"
+#include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
@@ -322,7 +323,7 @@ void InProcessBrowserTest::SetUp() {
   // Default to run in a signed in session of stub user if tests do not run
   // in the login screen (--login-manager), or logged in user session
   // (--login-user), or the guest session (--bwsi). This is essentially
-  // the same as in ChromeBrowserMainPartsChromeos::PreEarlyInitialization
+  // the same as in `ChromeBrowserMainPartsAsh::PreEarlyInitialization`
   // but it will be done on device and only for tests.
   if (!command_line->HasSwitch(chromeos::switches::kLoginManager) &&
       !command_line->HasSwitch(chromeos::switches::kLoginUser) &&
@@ -392,6 +393,10 @@ void InProcessBrowserTest::SetUp() {
   // to fail. See crbug.com/1050012.
   Tab::SetShowHoverCardOnMouseHoverForTesting(false);
 #endif  // defined(TOOLKIT_VIEWS)
+
+  // Auto-redirect to the NTP, which can happen if remote content is enabled on
+  // What's New for tests that simulate first run, is unexpected by most tests.
+  whats_new::DisableRemoteContentForTests();
 
   BrowserTestBase::SetUp();
 }
@@ -632,7 +637,7 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
 
   SelectFirstBrowser();
   if (browser_) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())
       browser_->window()->Restore();
@@ -640,19 +645,6 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
     auto* tab = browser_->tab_strip_model()->GetActiveWebContents();
     content::WaitForLoadStop(tab);
     SetInitialWebContents(tab);
-
-    // For other platforms, they install ui controls in
-    // interactive_ui_tests_main.cc. We can't add it there because we have no
-    // WindowTreeHost initialized at the test runner level.
-    // The ozone implementation of CreateUIControlsAura differs from other
-    // implementation in that it requires a WindowTreeHost. Thus, it must be
-    // initialized here rather than earlier.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    BrowserWindow* window = browser_->window();
-    CHECK(window);
-    ui_controls::InstallUIControlsAura(
-        aura::test::CreateUIControlsAura(window->GetNativeWindow()->GetHost()));
-#endif
   }
 
 #if !defined(OS_ANDROID)

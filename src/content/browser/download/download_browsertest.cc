@@ -270,6 +270,9 @@ class DownloadFileWithDelay : public download::DownloadFileImpl {
       base::WeakPtr<download::DownloadDestinationObserver> observer,
       base::WeakPtr<DownloadFileWithDelayFactory> owner);
 
+  DownloadFileWithDelay(const DownloadFileWithDelay&) = delete;
+  DownloadFileWithDelay& operator=(const DownloadFileWithDelay&) = delete;
+
   ~DownloadFileWithDelay() override;
 
   // Wraps DownloadFileImpl::Rename* and intercepts the return callback,
@@ -298,14 +301,17 @@ class DownloadFileWithDelay : public download::DownloadFileImpl {
   // DownloadFileWithDelay lives on the file thread, but
   // DownloadFileWithDelayFactory is purely a UI thread object.
   base::WeakPtr<DownloadFileWithDelayFactory> owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileWithDelay);
 };
 
 // All routines on this class must be called on the UI thread.
 class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
  public:
   DownloadFileWithDelayFactory();
+
+  DownloadFileWithDelayFactory(const DownloadFileWithDelayFactory&) = delete;
+  DownloadFileWithDelayFactory& operator=(const DownloadFileWithDelayFactory&) =
+      delete;
+
   ~DownloadFileWithDelayFactory() override;
 
   // DownloadFileFactory interface.
@@ -326,8 +332,6 @@ class DownloadFileWithDelayFactory : public download::DownloadFileFactory {
   std::vector<base::OnceClosure> rename_callbacks_;
   base::OnceClosure stop_waiting_;
   base::WeakPtrFactory<DownloadFileWithDelayFactory> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadFileWithDelayFactory);
 };
 
 DownloadFileWithDelay::DownloadFileWithDelay(
@@ -540,6 +544,12 @@ class ErrorInjectionDownloadFile : public download::DownloadFileImpl {
 class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
  public:
   ErrorInjectionDownloadFileFactory() : download_file_(nullptr) {}
+
+  ErrorInjectionDownloadFileFactory(const ErrorInjectionDownloadFileFactory&) =
+      delete;
+  ErrorInjectionDownloadFileFactory& operator=(
+      const ErrorInjectionDownloadFileFactory&) = delete;
+
   ~ErrorInjectionDownloadFileFactory() override = default;
 
   // DownloadFileFactory interface.
@@ -590,8 +600,6 @@ class ErrorInjectionDownloadFileFactory : public download::DownloadFileFactory {
   int64_t injected_error_length_ = 0;
   base::WeakPtrFactory<ErrorInjectionDownloadFileFactory> weak_ptr_factory_{
       this};
-
-  DISALLOW_COPY_AND_ASSIGN(ErrorInjectionDownloadFileFactory);
 };
 
 class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
@@ -763,6 +771,10 @@ class NavigationStartObserver : public WebContentsObserver {
  public:
   explicit NavigationStartObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
+
+  NavigationStartObserver(const NavigationStartObserver&) = delete;
+  NavigationStartObserver& operator=(const NavigationStartObserver&) = delete;
+
   ~NavigationStartObserver() override {}
 
   void WaitForFinished(int navigation_count) {
@@ -786,7 +798,6 @@ class NavigationStartObserver : public WebContentsObserver {
   int navigation_count_ = 0;
   int start_count_ = 0;
   base::OnceClosure completion_closure_;
-  DISALLOW_COPY_AND_ASSIGN(NavigationStartObserver);
 };
 
 bool IsDownloadInState(download::DownloadItem::DownloadState state,
@@ -1963,12 +1974,12 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownInProgress) {
   // message created by Shutdown and before the notification callback
   // created by the IO thread in canceling the request.
   GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&base::PlatformThread::Sleep,
-                                base::TimeDelta::FromMilliseconds(25)));
+      FROM_HERE,
+      base::BindOnce(&base::PlatformThread::Sleep, base::Milliseconds(25)));
   DownloadManagerForShell(shell())->Shutdown();
   GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&base::PlatformThread::Sleep,
-                                base::TimeDelta::FromMilliseconds(25)));
+      FROM_HERE,
+      base::BindOnce(&base::PlatformThread::Sleep, base::Milliseconds(25)));
 }
 
 // Try to shutdown just after we release the download file, by delaying
@@ -3677,6 +3688,53 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, UpdateSiteForCookies) {
                                 site_a.GetURL("a.test", "/")));
 }
 
+// Verifies that isolation info set in DownloadUrlParameters can be populated.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       SiteForCookies_DownloadUrl_IsolationInfoPopulated) {
+  // Setup a server that sets cookie.
+  net::EmbeddedTestServer site_a;
+  base::StringPairs cookie_headers;
+  cookie_headers.push_back(std::make_pair(std::string("Set-Cookie"),
+                                          std::string("A=lax; SameSite=Lax")));
+  cookie_headers.push_back(std::make_pair(
+      std::string("Set-Cookie"), std::string("B=strict; SameSite=Strict")));
+  site_a.RegisterRequestHandler(CreateBasicResponseHandler(
+      "/sets-samesite-cookies", net::HTTP_OK, cookie_headers,
+      "application/octet-stream", "abcd"));
+  ASSERT_TRUE(site_a.Start());
+
+  // Download the file.
+  SetupEnsureNoPendingDownloads();
+  GURL download_url = site_a.GetURL("a.test", "/sets-samesite-cookies");
+  std::unique_ptr<download::DownloadUrlParameters> download_parameters(
+      DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
+          shell()->web_contents(), download_url, TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  // Mark this request a third party request, cookie should be blocked.
+  net::IsolationInfo isolation_info =
+      net::IsolationInfo::CreateForInternalRequest(
+          url::Origin::Create(GURL("http://www.example.com")));
+  download_parameters->set_isolation_info(isolation_info);
+
+  // Verify the isolation info.
+  std::unique_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  ExpectRequestIsolationInfo(download_url, isolation_info,
+                             base::BindLambdaForTesting([&]() {
+                               DownloadManagerForShell(shell())->DownloadUrl(
+                                   std::move(download_parameters));
+                               observer->WaitForFinished();
+                             }));
+
+  // Get the important info from other threads and check it.
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+
+  // Check no cookies are written for URL a.test since it's a third party
+  // cookie.
+  EXPECT_TRUE(content::GetCookies(shell()->web_contents()->GetBrowserContext(),
+                                  download_url)
+                  .empty());
+}
+
 // A filename suggestion specified via a @download attribute should not be
 // effective if the final download URL is in another origin from the original
 // download URL.
@@ -4262,7 +4320,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       base::BindLambdaForTesting([&]() {
         DownloadInProgressObserver observer(DownloadManagerForShell(shell()));
         EXPECT_TRUE(
-            ExecJs(shell()->web_contents()->GetAllFrames()[1],
+            ExecJs(ChildFrameAt(shell()->web_contents(), 0),
                    "var anchorElement = document.querySelector('a[download]'); "
                    "anchorElement.click();"));
         download_item = observer.WaitAndGetInProgressDownload();

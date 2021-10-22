@@ -15,9 +15,11 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/json/json_writer.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/url_util.h"
 #include "net/reporting/reporting_cache.h"
@@ -35,6 +37,12 @@ namespace net {
 namespace {
 
 using ReportList = std::vector<const ReportingReport*>;
+using ReportingUploadHeaderType =
+    ReportingDeliveryAgent::ReportingUploadHeaderType;
+
+void RecordReportingUploadHeaderType(ReportingUploadHeaderType header_type) {
+  base::UmaHistogramEnumeration("Net.Reporting.UploadHeaderType", header_type);
+}
 
 std::string SerializeReports(const ReportList& reports, base::TimeTicks now) {
   base::ListValue reports_value;
@@ -71,28 +79,35 @@ class Delivery {
   // Note that |origin| here (which matches the report's |origin|) is not
   // necessarily the same as the |origin| of the ReportingEndpoint's group key
   // (if the endpoint is configured to include subdomains). Reports with
-  // different group keys can be in the same delivery, as long as the NIK and
-  // report origin are the same, and they all get assigned to the same endpoint
-  // URL.
+  // different group keys can be in the same delivery, as long as the NIK,
+  // report origin and reporting source are the same, and they all get assigned
+  // to the same endpoint URL.
   struct Target {
-    Target(const NetworkIsolationKey& network_isolation_key,
+    Target(const IsolationInfo& isolation_info,
            const url::Origin& origin,
-           const GURL& endpoint_url)
-        : network_isolation_key(network_isolation_key),
+           const GURL& endpoint_url,
+           const absl::optional<base::UnguessableToken> reporting_source)
+        : isolation_info(isolation_info),
           origin(origin),
-          endpoint_url(endpoint_url) {}
+          endpoint_url(endpoint_url),
+          reporting_source(reporting_source) {}
 
     ~Target() = default;
 
     bool operator<(const Target& other) const {
-      return std::tie(network_isolation_key, origin, endpoint_url) <
-             std::tie(other.network_isolation_key, other.origin,
-                      other.endpoint_url);
+      // Note that sorting by NIK here is required for V0 reports; V1 reports
+      // should not need this (but it doesn't hurt). We can remove that as a
+      // comparison key when V0 reporting endpoints are removed.
+      return std::tie(isolation_info.network_isolation_key(), origin,
+                      endpoint_url, reporting_source) <
+             std::tie(other.isolation_info.network_isolation_key(),
+                      other.origin, other.endpoint_url, other.reporting_source);
     }
 
-    NetworkIsolationKey network_isolation_key;
+    IsolationInfo isolation_info;
     url::Origin origin;
     GURL endpoint_url;
+    absl::optional<base::UnguessableToken> reporting_source;
   };
 
   explicit Delivery(const Target& target) : target_(target) {}
@@ -136,6 +151,13 @@ class Delivery {
                                          group_name_and_count.second, success);
     }
     if (success) {
+      ReportingUploadHeaderType upload_type =
+          target_.reporting_source.has_value()
+              ? ReportingUploadHeaderType::kReportingEndpoints
+              : ReportingUploadHeaderType::kReportTo;
+      for (size_t i = 0; i < reports_.size(); ++i) {
+        RecordReportingUploadHeaderType(upload_type);
+      }
       cache->RemoveReports(reports_, /* delivery_success */ true);
     } else {
       cache->IncrementReportsAttempts(reports_);
@@ -143,7 +165,7 @@ class Delivery {
   }
 
   const NetworkIsolationKey& network_isolation_key() const {
-    return target_.network_isolation_key;
+    return target_.isolation_info.network_isolation_key();
   }
   const GURL& endpoint_url() const { return target_.endpoint_url; }
   const ReportList& reports() const { return reports_; }
@@ -173,6 +195,10 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
                                              rand_callback)) {
     context_->AddCacheObserver(this);
   }
+
+  ReportingDeliveryAgentImpl(const ReportingDeliveryAgentImpl&) = delete;
+  ReportingDeliveryAgentImpl& operator=(const ReportingDeliveryAgentImpl&) =
+      delete;
 
   // ReportingDeliveryAgent implementation:
 
@@ -277,9 +303,13 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
       pending_groups_.insert(report_group_key);
 
+      IsolationInfo isolation_info =
+          cache()->GetIsolationInfoForEndpoint(endpoint);
+
       // Add the reports to the appropriate delivery.
-      Delivery::Target target(report_group_key.network_isolation_key,
-                              report_group_key.origin, endpoint.info.url);
+      Delivery::Target target(isolation_info, report_group_key.origin,
+                              endpoint.info.url,
+                              endpoint.group_key.reporting_source);
       auto delivery_it = deliveries.find(target);
       if (delivery_it == deliveries.end()) {
         bool inserted;
@@ -312,8 +342,9 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
       // TODO: Calculate actual max depth.
       uploader()->StartUpload(
-          target.origin, target.endpoint_url, target.network_isolation_key,
+          target.origin, target.endpoint_url, target.isolation_info,
           upload_data, max_depth,
+          /*eligible_for_credentials=*/target.reporting_source.has_value(),
           base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
                          weak_factory_.GetWeakPtr(), std::move(delivery)));
     }
@@ -334,6 +365,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     // configured for both NIK1 and NIK2, and it responds with a 410 on a NIK1
     // connection, then the change in configuration will be detectable on a NIK2
     // connection.
+    // TODO(rodneyding): Handle Remove endpoint for Reporting-Endpoints header.
     if (outcome == ReportingUploader::Outcome::REMOVE_ENDPOINT)
       cache()->RemoveEndpointsForUrl(delivery->endpoint_url());
 
@@ -360,8 +392,6 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
   std::unique_ptr<ReportingEndpointManager> endpoint_manager_;
 
   base::WeakPtrFactory<ReportingDeliveryAgentImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ReportingDeliveryAgentImpl);
 };
 
 }  // namespace

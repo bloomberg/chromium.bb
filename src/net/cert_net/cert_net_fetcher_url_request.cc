@@ -132,6 +132,10 @@ class CertNetFetcherURLRequest::AsyncCertNetFetcherURLRequest {
   // Shutdown() is called or the AsyncCertNetFetcherURLRequest is destroyed.
   explicit AsyncCertNetFetcherURLRequest(URLRequestContext* context);
 
+  AsyncCertNetFetcherURLRequest(const AsyncCertNetFetcherURLRequest&) = delete;
+  AsyncCertNetFetcherURLRequest& operator=(
+      const AsyncCertNetFetcherURLRequest&) = delete;
+
   // The AsyncCertNetFetcherURLRequest is expected to be kept alive until all
   // requests have completed or Shutdown() is called.
   ~AsyncCertNetFetcherURLRequest();
@@ -162,8 +166,6 @@ class CertNetFetcherURLRequest::AsyncCertNetFetcherURLRequest {
   URLRequestContext* context_ = nullptr;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(AsyncCertNetFetcherURLRequest);
 };
 
 namespace {
@@ -179,8 +181,8 @@ Error CanFetchUrl(const GURL& url) {
 
 base::TimeDelta GetTimeout(int timeout_milliseconds) {
   if (timeout_milliseconds == CertNetFetcher::DEFAULT)
-    return base::TimeDelta::FromSeconds(kTimeoutSeconds);
-  return base::TimeDelta::FromMilliseconds(timeout_milliseconds);
+    return base::Seconds(kTimeoutSeconds);
+  return base::Milliseconds(timeout_milliseconds);
 }
 
 size_t GetMaxResponseBytes(int max_response_bytes,
@@ -213,6 +215,9 @@ class CertNetFetcherURLRequest::RequestCore
       : completion_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                           base::WaitableEvent::InitialState::NOT_SIGNALED),
         task_runner_(std::move(task_runner)) {}
+
+  RequestCore(const RequestCore&) = delete;
+  RequestCore& operator=(const RequestCore&) = delete;
 
   void AttachedToJob(Job* job) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -278,12 +283,13 @@ class CertNetFetcherURLRequest::RequestCore
   base::WaitableEvent completion_event_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestCore);
 };
 
 struct CertNetFetcherURLRequest::RequestParams {
   RequestParams();
+
+  RequestParams(const RequestParams&) = delete;
+  RequestParams& operator=(const RequestParams&) = delete;
 
   bool operator<(const RequestParams& other) const;
 
@@ -295,9 +301,6 @@ struct CertNetFetcherURLRequest::RequestParams {
   base::TimeDelta timeout;
 
   // IMPORTANT: When adding fields to this structure, update operator<().
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RequestParams);
 };
 
 CertNetFetcherURLRequest::RequestParams::RequestParams()
@@ -318,6 +321,10 @@ class Job : public URLRequest::Delegate {
  public:
   Job(std::unique_ptr<CertNetFetcherURLRequest::RequestParams> request_params,
       CertNetFetcherURLRequest::AsyncCertNetFetcherURLRequest* parent);
+
+  Job(const Job&) = delete;
+  Job& operator=(const Job&) = delete;
+
   ~Job() override;
 
   const CertNetFetcherURLRequest::RequestParams& request_params() const {
@@ -397,8 +404,6 @@ class Job : public URLRequest::Delegate {
   // Non-owned pointer to the AsyncCertNetFetcherURLRequest that created this
   // job.
   CertNetFetcherURLRequest::AsyncCertNetFetcherURLRequest* parent_;
-
-  DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 }  // namespace

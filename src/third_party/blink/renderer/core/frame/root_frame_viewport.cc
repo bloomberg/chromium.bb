@@ -322,9 +322,9 @@ ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
   ScrollOffset scroll_offset = offset;
   FloatRect user_scrollable = GetUserScrollableRect(LayoutViewport()) +
                               GetUserScrollableRect(GetVisualViewport());
-  scroll_offset.SetWidth(clampTo(scroll_offset.Width(), user_scrollable.X(),
+  scroll_offset.SetWidth(ClampTo(scroll_offset.Width(), user_scrollable.X(),
                                  user_scrollable.MaxX()));
-  scroll_offset.SetHeight(clampTo(scroll_offset.Height(), user_scrollable.Y(),
+  scroll_offset.SetHeight(ClampTo(scroll_offset.Height(), user_scrollable.Y(),
                                   user_scrollable.MaxY()));
   return scroll_offset;
 }
@@ -347,8 +347,8 @@ PhysicalRect RootFrameViewport::ScrollIntoView(
 
   FloatPoint end_point = ScrollOffsetToPosition(new_scroll_offset);
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-      cc::SnapSelectionStrategy::CreateForEndPosition(
-          gfx::ScrollOffset(end_point), true, true);
+      cc::SnapSelectionStrategy::CreateForEndPosition(gfx::Vector2dF(end_point),
+                                                      true, true);
   if (GetLayoutBox()) {
     end_point = GetSnapPositionAndSetTarget(*strategy).value_or(end_point);
     new_scroll_offset = ScrollPositionToOffset(end_point);

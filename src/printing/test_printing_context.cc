@@ -11,6 +11,8 @@
 #include "base/containers/flat_map.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,9 +49,9 @@ void TestPrintingContext::AskUserForSettings(int max_pages,
   NOTIMPLEMENTED();
 }
 
-PrintingContext::Result TestPrintingContext::UseDefaultSettings() {
+mojom::ResultCode TestPrintingContext::UseDefaultSettings() {
   NOTIMPLEMENTED();
-  return PrintingContext::FAILED;
+  return mojom::ResultCode::kFailed;
 }
 
 gfx::Size TestPrintingContext::GetPdfPaperSizeDeviceUnits() {
@@ -57,7 +59,7 @@ gfx::Size TestPrintingContext::GetPdfPaperSizeDeviceUnits() {
   return gfx::Size();
 }
 
-PrintingContext::Result TestPrintingContext::UpdatePrinterSettings(
+mojom::ResultCode TestPrintingContext::UpdatePrinterSettings(
     bool external_preview,
     bool show_system_dialog,
     int page_count) {
@@ -72,34 +74,42 @@ PrintingContext::Result TestPrintingContext::UpdatePrinterSettings(
   if (found == device_settings_.end()) {
     DLOG(ERROR) << "No such device found in test printing context: `"
                 << device_name << "`";
-    return PrintingContext::FAILED;
+    return mojom::ResultCode::kFailed;
   }
 
+  // Perform some initialization, akin to various platform-specific actions in
+  // `InitPrintSettings()`.
   DVLOG(1) << "Updating context settings for device `" << device_name << "`";
-  PrintSettings* settings = found->second.get();
-  settings_ = std::make_unique<PrintSettings>(*settings);
-  return PrintingContext::OK;
+  std::unique_ptr<PrintSettings> existing_settings = std::move(settings_);
+  settings_ = std::make_unique<PrintSettings>(*found->second);
+  settings_->set_dpi(existing_settings->dpi());
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+  for (const auto& item : existing_settings->advanced_settings())
+    settings_->advanced_settings().emplace(item.first, item.second.Clone());
+#endif
+
+  return mojom::ResultCode::kSuccess;
 }
 
-PrintingContext::Result TestPrintingContext::NewDocument(
+mojom::ResultCode TestPrintingContext::NewDocument(
     const std::u16string& document_name) {
   // No-op.
-  return PrintingContext::Result::OK;
+  return mojom::ResultCode::kSuccess;
 }
 
-PrintingContext::Result TestPrintingContext::NewPage() {
+mojom::ResultCode TestPrintingContext::NewPage() {
   NOTIMPLEMENTED();
-  return PrintingContext::Result::FAILED;
+  return mojom::ResultCode::kFailed;
 }
 
-PrintingContext::Result TestPrintingContext::PageDone() {
+mojom::ResultCode TestPrintingContext::PageDone() {
   NOTIMPLEMENTED();
-  return PrintingContext::Result::FAILED;
+  return mojom::ResultCode::kFailed;
 }
 
-PrintingContext::Result TestPrintingContext::DocumentDone() {
+mojom::ResultCode TestPrintingContext::DocumentDone() {
   NOTIMPLEMENTED();
-  return PrintingContext::Result::FAILED;
+  return mojom::ResultCode::kFailed;
 }
 
 void TestPrintingContext::Cancel() {
@@ -113,10 +123,10 @@ printing::NativeDrawingContext TestPrintingContext::context() const {
 }
 
 #if defined(OS_WIN)
-PrintingContext::Result TestPrintingContext::InitWithSettingsForTest(
+mojom::ResultCode TestPrintingContext::InitWithSettingsForTest(
     std::unique_ptr<PrintSettings> settings) {
   NOTIMPLEMENTED();
-  return PrintingContext::Result::FAILED;
+  return mojom::ResultCode::kFailed;
 }
 #endif  // defined(OS_WIN)
 

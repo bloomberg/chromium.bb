@@ -66,6 +66,11 @@ int ChromeEnterpriseRealTimeUrlLookupService::GetReferrerUserGestureLimit()
   return 2;
 }
 
+bool ChromeEnterpriseRealTimeUrlLookupService::CanSendPageLoadToken() const {
+  // Page load token is disabled for enterprise users.
+  return false;
+}
+
 bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {
   return false;
 }
@@ -76,6 +81,8 @@ bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
 
 void ChromeEnterpriseRealTimeUrlLookupService::GetAccessToken(
     const GURL& url,
+    const GURL& last_committed_url,
+    bool is_mainframe,
     RTLookupRequestCallback request_callback,
     RTLookupResponseCallback response_callback,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner) {

@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_animationeffect_animationeffectsequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_documenttimeline_scrolltimeline.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_double_scrolltimelineautokeyword.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
@@ -106,12 +105,10 @@ bool ValidateTimeline(const V8UnionDocumentTimelineOrScrollTimeline* timeline,
   if (!timeline)
     return true;
   if (timeline->IsScrollTimeline()) {
-    V8UnionDoubleOrScrollTimelineAutoKeyword* time_range =
-        timeline->GetAsScrollTimeline()->timeRange();
-    if (time_range->IsScrollTimelineAutoKeyword()) {
-      error_string = "ScrollTimeline timeRange must have non-auto value";
-      return false;
-    }
+    // crbug.com/1238130 Add support for progress based timelines to worklet
+    // animations
+    error_string = "ScrollTimeline is not yet supported for worklet animations";
+    return false;
   }
   return true;
 }
@@ -187,12 +184,12 @@ absl::optional<base::TimeDelta> CalculateStartTime(
   // SetPlaybackRateInternal has a DCHECK for that.
   DCHECK_NE(playback_rate, 0);
   if (current_time.is_max())
-    return base::TimeDelta::FromMilliseconds(0);
+    return base::Milliseconds(0);
   if (current_time.is_min())
     return base::TimeDelta::Max();
   absl::optional<double> timeline_current_time_ms =
       timeline.CurrentTimeMilliseconds();
-  return base::TimeDelta::FromMillisecondsD(timeline_current_time_ms.value()) -
+  return base::Milliseconds(timeline_current_time_ms.value()) -
          (current_time / playback_rate);
 }
 
@@ -315,7 +312,7 @@ WorkletAnimation::WorkletAnimation(
       timings, normalized_timings);
 
   if (timeline_->IsScrollTimeline())
-    To<ScrollTimeline>(*timeline_).WorkletAnimationAttached();
+    To<ScrollTimeline>(*timeline_).WorkletAnimationAttached(this);
 }
 
 String WorkletAnimation::playState() {
@@ -768,8 +765,7 @@ absl::optional<base::TimeDelta> WorkletAnimation::InitialCurrentTime() const {
     return absl::nullopt;
   }
 
-  return (base::TimeDelta::FromMillisecondsD(current_time.value()) -
-          starting_time.value()) *
+  return (base::Milliseconds(current_time.value()) - starting_time.value()) *
          playback_rate_;
 }
 
@@ -829,8 +825,7 @@ absl::optional<base::TimeDelta> WorkletAnimation::CurrentTimeInternal() const {
   if (!timeline_time_ms)
     return absl::nullopt;
 
-  base::TimeDelta timeline_time =
-      base::TimeDelta::FromMillisecondsD(timeline_time_ms.value());
+  base::TimeDelta timeline_time = base::Milliseconds(timeline_time_ms.value());
   DCHECK(start_time_);
   return (timeline_time - start_time_.value()) * playback_rate_;
 }
@@ -889,8 +884,6 @@ void WorkletAnimation::NotifyLocalTimeUpdated(
 
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
-  if (timeline_->IsScrollTimeline())
-    To<ScrollTimeline>(*timeline_).WorkletAnimationDetached();
   DestroyCompositorAnimation();
 }
 

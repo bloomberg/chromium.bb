@@ -30,6 +30,9 @@ namespace views {
 AnimationBuilder::Observer::Observer() = default;
 
 AnimationBuilder::Observer::~Observer() {
+  DCHECK(attached_to_sequence_)
+      << "You must register callbacks and get abort handle before "
+      << "creating a sequence block.";
   if (abort_handle_)
     abort_handle_->OnObserverDeleted();
   base::RepeatingClosure& on_observer_deleted =
@@ -81,11 +84,7 @@ void AnimationBuilder::Observer::SetAbortHandle(
 
 void AnimationBuilder::Observer::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
-  const auto running =
-      base::ranges::count_if(attached_sequences(), [](auto* sequence) {
-        return !sequence->IsFinished(base::TimeTicks::Now());
-      });
-  if (running <= 1) {
+  if (--sequences_to_run_ == 0) {
     if (on_ended_)
       std::move(on_ended_).Run();
     if (abort_handle_ && abort_handle_->animation_state() ==
@@ -128,6 +127,13 @@ void AnimationBuilder::Observer::OnLayerAnimationScheduled(
     std::move(on_scheduled_).Run();
 }
 
+void AnimationBuilder::Observer::OnAttachedToSequence(
+    ui::LayerAnimationSequence* sequence) {
+  ui::LayerAnimationObserver::OnAttachedToSequence(sequence);
+  attached_to_sequence_ = true;
+  sequences_to_run_++;
+}
+
 void AnimationBuilder::Observer::OnDetachedFromSequence(
     ui::LayerAnimationSequence* sequence) {
   if (attached_sequences().empty())
@@ -159,6 +165,15 @@ struct AnimationBuilder::Value {
 AnimationBuilder::AnimationBuilder() = default;
 
 AnimationBuilder::~AnimationBuilder() {
+  DCHECK(!next_animation_observer_)
+      << "Callbacks were scheduled without creating a sequence block "
+         "afterwards. There are no animations to run these callbacks on.";
+  // The observer needs to outlive the AnimationBuilder and will manage its own
+  // lifetime. GetAttachedToSequence should not return false here. This is
+  // DCHECKed in the observer’s destructor.
+  if (animation_observer_ && animation_observer_->GetAttachedToSequence())
+    animation_observer_.release();
+
   for (auto it = layer_animation_sequences_.begin();
        it != layer_animation_sequences_.end();) {
     auto* const target = it->first;
@@ -184,6 +199,32 @@ AnimationBuilder& AnimationBuilder::SetPreemptionStrategy(
   return *this;
 }
 
+AnimationBuilder& AnimationBuilder::OnStarted(base::OnceClosure callback) {
+  GetObserver()->SetOnStarted(std::move(callback));
+  return *this;
+}
+
+AnimationBuilder& AnimationBuilder::OnEnded(base::OnceClosure callback) {
+  GetObserver()->SetOnEnded(std::move(callback));
+  return *this;
+}
+
+AnimationBuilder& AnimationBuilder::OnWillRepeat(
+    base::RepeatingClosure callback) {
+  GetObserver()->SetOnWillRepeat(std::move(callback));
+  return *this;
+}
+
+AnimationBuilder& AnimationBuilder::OnAborted(base::OnceClosure callback) {
+  GetObserver()->SetOnAborted(std::move(callback));
+  return *this;
+}
+
+AnimationBuilder& AnimationBuilder::OnScheduled(base::OnceClosure callback) {
+  GetObserver()->SetOnScheduled(std::move(callback));
+  return *this;
+}
+
 AnimationSequenceBlock AnimationBuilder::Once() {
   repeating_ = false;
   return NewSequence();
@@ -192,31 +233,6 @@ AnimationSequenceBlock AnimationBuilder::Once() {
 AnimationSequenceBlock AnimationBuilder::Repeatedly() {
   repeating_ = true;
   return NewSequence();
-}
-
-void AnimationBuilder::SetOnStarted(base::PassKey<AnimationSequenceBlock>,
-                                    base::OnceClosure callback) {
-  GetObserver()->SetOnStarted(std::move(callback));
-}
-
-void AnimationBuilder::SetOnEnded(base::PassKey<AnimationSequenceBlock>,
-                                  base::OnceClosure callback) {
-  GetObserver()->SetOnEnded(std::move(callback));
-}
-
-void AnimationBuilder::SetOnWillRepeat(base::PassKey<AnimationSequenceBlock>,
-                                       base::RepeatingClosure callback) {
-  GetObserver()->SetOnWillRepeat(std::move(callback));
-}
-
-void AnimationBuilder::SetOnAborted(base::PassKey<AnimationSequenceBlock>,
-                                    base::OnceClosure callback) {
-  GetObserver()->SetOnAborted(std::move(callback));
-}
-
-void AnimationBuilder::SetOnScheduled(base::PassKey<AnimationSequenceBlock>,
-                                      base::OnceClosure callback) {
-  GetObserver()->SetOnScheduled(std::move(callback));
 }
 
 void AnimationBuilder::AddLayerAnimationElement(
@@ -269,7 +285,6 @@ void AnimationBuilder::TerminateSequence(
   }
 
   values_.clear();
-  animation_observer_.release();
 }
 
 std::unique_ptr<AnimationAbortHandle> AnimationBuilder::GetAbortHandle() {
@@ -279,9 +294,9 @@ std::unique_ptr<AnimationAbortHandle> AnimationBuilder::GetAbortHandle() {
 }
 
 AnimationBuilder::Observer* AnimationBuilder::GetObserver() {
-  if (!animation_observer_)
-    animation_observer_ = std::make_unique<Observer>();
-  return animation_observer_.get();
+  if (!next_animation_observer_)
+    next_animation_observer_ = std::make_unique<Observer>();
+  return next_animation_observer_.get();
 }
 
 // static
@@ -291,6 +306,18 @@ void AnimationBuilder::SetObserverDeletedCallbackForTesting(
 }
 
 AnimationSequenceBlock AnimationBuilder::NewSequence() {
+  // Each sequence should have its own observer.
+
+  // The observer needs to outlive the AnimationBuilder and will manage its own
+  // lifetime. GetAttachedToSequence should not return false here. This is
+  // DCHECKed in the observer’s destructor.
+  if (animation_observer_ && animation_observer_->GetAttachedToSequence())
+    animation_observer_.release();
+  if (next_animation_observer_) {
+    animation_observer_ = std::move(next_animation_observer_);
+    next_animation_observer_.reset();
+  }
+
   end_ = base::TimeDelta();
   return AnimationSequenceBlock(base::PassKey<AnimationBuilder>(), this,
                                 base::TimeDelta());

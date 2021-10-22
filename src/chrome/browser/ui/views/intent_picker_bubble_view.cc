@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/services/app_service/public/cpp/intent_constants.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/navigation_handle.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -30,6 +31,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -401,8 +403,7 @@ void IntentPickerBubbleView::Initialize() {
     app_info_.erase(app_info_.begin() + to_erase);
 
   auto scroll_view = std::make_unique<views::ScrollView>();
-  scroll_view->SetBackgroundThemeColorId(
-      ui::NativeTheme::kColorId_BubbleBackground);
+  scroll_view->SetBackgroundThemeColorId(ui::kColorBubbleBackground);
   scroll_view->SetContents(std::move(scrollable_view));
   // This part gives the scroll a fixed width and height. The height depends on
   // how many app candidates we got and how many we actually want to show.

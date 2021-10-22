@@ -119,6 +119,7 @@ class MockBinaryFCMService : public BinaryFCMService {
   MOCK_METHOD2(UnregisterInstanceID,
                void(const std::string& token,
                     BinaryFCMService::UnregisterInstanceIDCallback callback));
+  MOCK_METHOD0(Connected, bool());
 };
 
 class BinaryUploadServiceTest : public testing::Test {
@@ -134,6 +135,8 @@ class BinaryUploadServiceTest : public testing::Test {
     // URLLoaderFactory, so pass nullptr here.
     service_ = std::make_unique<BinaryUploadService>(nullptr, &profile_,
                                                      std::move(fcm_service));
+
+    EXPECT_CALL(*fcm_service_, Connected()).WillRepeatedly(Return(true));
   }
   ~BinaryUploadServiceTest() override {
     MultipartUploadRequest::RegisterFactoryForTests(nullptr);
@@ -190,6 +193,10 @@ class BinaryUploadServiceTest : public testing::Test {
         nullptr, &profile_, std::unique_ptr<BinaryFCMService>(nullptr));
   }
 
+  void ServiceWithDisconnectedFCM() {
+    EXPECT_CALL(*fcm_service_, Connected()).WillRepeatedly(Return(false));
+  }
+
   std::unique_ptr<MockRequest> MakeRequest(
       BinaryUploadService::Result* scanning_result,
       enterprise_connectors::ContentAnalysisResponse* scanning_response,
@@ -220,14 +227,12 @@ class BinaryUploadServiceTest : public testing::Test {
 
   void ValidateAuthorizationTimerIdle() {
     EXPECT_FALSE(service_->timer_.IsRunning());
-    EXPECT_EQ(base::TimeDelta::FromHours(0),
-              service_->timer_.GetCurrentDelay());
+    EXPECT_EQ(base::Hours(0), service_->timer_.GetCurrentDelay());
   }
 
   void ValidateAuthorizationTimerStarted() {
     EXPECT_TRUE(service_->timer_.IsRunning());
-    EXPECT_EQ(base::TimeDelta::FromHours(24),
-              service_->timer_.GetCurrentDelay());
+    EXPECT_EQ(base::Hours(24), service_->timer_.GetCurrentDelay());
   }
 
  protected:
@@ -378,7 +383,7 @@ TEST_F(BinaryUploadServiceTest, TimesOut) {
   ExpectNetworkResponse(true, enterprise_connectors::ContentAnalysisResponse());
   UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(300));
+  task_environment_.FastForwardBy(base::Seconds(300));
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 }
@@ -403,7 +408,7 @@ TEST_F(BinaryUploadServiceTest, OnInstanceIDAfterTimeout) {
   ExpectNetworkResponse(true, enterprise_connectors::ContentAnalysisResponse());
   UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(300));
+  task_environment_.FastForwardBy(base::Seconds(300));
 
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 
@@ -432,7 +437,7 @@ TEST_F(BinaryUploadServiceTest, OnInstanceIDAfterTimeout_Authentication) {
   ExpectNetworkResponse(true, enterprise_connectors::ContentAnalysisResponse());
   service_->MaybeUploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(300));
+  task_environment_.FastForwardBy(base::Seconds(300));
 
   // The auth request timing out means that the result for the real request is
   // UNAUTHORIZED.
@@ -458,7 +463,7 @@ TEST_F(BinaryUploadServiceTest, OnUploadCompleteAfterTimeout) {
   MockRequest* raw_request = request.get();
   UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(300));
+  task_environment_.FastForwardBy(base::Seconds(300));
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 
   // Expect nothing to change if the upload finishes after the timeout.
@@ -481,7 +486,7 @@ TEST_F(BinaryUploadServiceTest, OnGetResponseAfterTimeout) {
   MockRequest* raw_request = request.get();
   UploadForDeepScanning(std::move(request));
   content::RunAllTasksUntilIdle();
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(300));
+  task_environment_.FastForwardBy(base::Seconds(300));
   EXPECT_EQ(scanning_result, BinaryUploadService::Result::TIMEOUT);
 
   // Expect nothing to change if we get a message after the timeout.
@@ -554,6 +559,26 @@ TEST_F(BinaryUploadServiceTest, OnGetSynchronousResponse) {
 
 TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
   ServiceWithNoFCMConnection();
+
+  BinaryUploadService::Result scanning_result =
+      BinaryUploadService::Result::UNKNOWN;
+  enterprise_connectors::ContentAnalysisResponse scanning_response;
+  std::unique_ptr<MockRequest> request =
+      MakeRequest(&scanning_result, &scanning_response, /*is_app*/ false);
+  request->add_tag("dlp");
+  request->add_tag("malware");
+
+  UploadForDeepScanning(std::move(request));
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::UNKNOWN);
+
+  content::RunAllTasksUntilIdle();
+
+  EXPECT_EQ(scanning_result, BinaryUploadService::Result::FAILED_TO_GET_TOKEN);
+}
+
+TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithDisconnectedFCM) {
+  ServiceWithDisconnectedFCM();
 
   BinaryUploadService::Result scanning_result =
       BinaryUploadService::Result::UNKNOWN;

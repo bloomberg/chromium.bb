@@ -18,11 +18,11 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
+#include "chrome/browser/ash/app_restore/arc_window_handler.h"
 #include "chrome/browser/ash/arc/arc_optin_uma.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
-#include "chrome/browser/ash/full_restore/arc_window_handler.h"
-#include "chrome/browser/ash/full_restore/full_restore_arc_task_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
@@ -33,7 +33,8 @@
 #include "chrome/browser/ui/ash/shelf/arc_app_window.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_window_info.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
-#include "components/full_restore/full_restore_utils.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/window_properties.h"
 #include "extensions/common/constants.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/image/image_skia.h"
@@ -63,9 +64,8 @@ AppServiceAppWindowArcTracker::AppServiceAppWindowArcTracker(
   if (arc_session_manager)
     arc_session_manager->AddObserver(this);
 
-  auto* arc_handler =
-      ash::full_restore::FullRestoreArcTaskHandler::GetForProfile(
-          observed_profile_);
+  auto* arc_handler = ash::app_restore::AppRestoreArcTaskHandler::GetForProfile(
+      observed_profile_);
   if (arc_handler)
     arc_handler->OnShelfReady();
 }
@@ -563,9 +563,9 @@ void AppServiceAppWindowArcTracker::HandlePlayStoreLaunch(
     if (sscanf(param.c_str(), arc::kRequestStartTimeParamTemplate,
                &start_request_ms) != 1)
       continue;
-    const base::TimeDelta launch_time =
-        base::TimeTicks::Now() - base::TimeTicks() -
-        base::TimeDelta::FromMilliseconds(start_request_ms);
+    const base::TimeDelta launch_time = base::TimeTicks::Now() -
+                                        base::TimeTicks() -
+                                        base::Milliseconds(start_request_ms);
     DCHECK_GE(launch_time, base::TimeDelta());
     arc::UpdatePlayStoreLaunchTime(launch_time);
   }
@@ -643,7 +643,7 @@ ArcAppWindowInfo* AppServiceAppWindowArcTracker::GetArcAppWindowInfo(
   if (!session_id.has_value())
     return nullptr;
 
-  const std::string* arc_app_id = window->GetProperty(full_restore::kAppIdKey);
+  const std::string* arc_app_id = window->GetProperty(app_restore::kAppIdKey);
   if (!arc_app_id || arc_app_id->empty())
     return nullptr;
 
@@ -692,9 +692,8 @@ void AppServiceAppWindowArcTracker::OnSessionDestroyed(int32_t session_id) {
   session_id_to_arc_app_window_info_.erase(session_id);
 
   // Close the ghost window.
-  auto* arc_handler =
-      ash::full_restore::FullRestoreArcTaskHandler::GetForProfile(
-          observed_profile_);
+  auto* arc_handler = ash::app_restore::AppRestoreArcTaskHandler::GetForProfile(
+      observed_profile_);
   if (arc_handler && arc_handler->window_handler())
     arc_handler->window_handler()->CloseWindow(session_id);
 }

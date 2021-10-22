@@ -29,6 +29,10 @@ using NotificationState = NotificationList::NotificationState;
 class NotificationListTest : public testing::Test {
  public:
   NotificationListTest() {}
+
+  NotificationListTest(const NotificationListTest&) = delete;
+  NotificationListTest& operator=(const NotificationListTest&) = delete;
+
   ~NotificationListTest() override {}
 
   void SetUp() override {
@@ -110,9 +114,6 @@ class NotificationListTest : public testing::Test {
   std::unique_ptr<NotificationList> notification_list_;
   NotificationBlockers blockers_;
   size_t counter_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NotificationListTest);
 };
 
 bool IsInNotifications(const NotificationList::Notifications& notifications,
@@ -567,12 +568,12 @@ TEST_F(NotificationListTest, NotificationOrderAndPriority) {
   optional.priority = 2;
   std::string max_id = AddNotification(optional);
 
-  now += base::TimeDelta::FromSeconds(1);
+  now += base::Seconds(1);
   optional.timestamp = now;
   optional.priority = 1;
   std::string high_id = AddNotification(optional);
 
-  now += base::TimeDelta::FromSeconds(1);
+  now += base::Seconds(1);
   optional.timestamp = now;
   optional.priority = 0;
   std::string default_id = AddNotification(optional);

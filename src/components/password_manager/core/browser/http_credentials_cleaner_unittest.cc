@@ -103,24 +103,29 @@ constexpr static TestCase kCases[] = {
 class MockCredentialsCleanerObserver : public CredentialsCleaner::Observer {
  public:
   MockCredentialsCleanerObserver() = default;
+
+  MockCredentialsCleanerObserver(const MockCredentialsCleanerObserver&) =
+      delete;
+  MockCredentialsCleanerObserver& operator=(
+      const MockCredentialsCleanerObserver&) = delete;
+
   ~MockCredentialsCleanerObserver() override = default;
   MOCK_METHOD0(CleaningCompleted, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockCredentialsCleanerObserver);
 };
 
 class HttpCredentialCleanerTest : public ::testing::TestWithParam<TestCase> {
  public:
   HttpCredentialCleanerTest() = default;
 
+  HttpCredentialCleanerTest(const HttpCredentialCleanerTest&) = delete;
+  HttpCredentialCleanerTest& operator=(const HttpCredentialCleanerTest&) =
+      delete;
+
   ~HttpCredentialCleanerTest() override = default;
 
  protected:
   scoped_refptr<TestPasswordStore> store_ =
       base::MakeRefCounted<TestPasswordStore>();
-
-  DISALLOW_COPY_AND_ASSIGN(HttpCredentialCleanerTest);
 };
 
 TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
@@ -251,8 +256,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
     auto password_store = base::MakeRefCounted<TestPasswordStore>();
     ASSERT_TRUE(password_store->Init(nullptr));
 
-    double last_time =
-        (base::Time::Now() - base::TimeDelta::FromMinutes(10)).ToDoubleT();
+    double last_time = (base::Time::Now() - base::Minutes(10)).ToDoubleT();
     if (should_start_clean_up) {
       // Simulate that the clean-up was performed
       // (HttpCredentialCleaner::kCleanUpDelayInDays + 1) days ago.
@@ -261,8 +265,7 @@ TEST(HttpCredentialCleaner, StartCleanUpTest) {
       // |HttpCredentialCleaner::kCleanUpDelayInDays| days between two
       // clean-ups)
       last_time = (base::Time::Now() -
-                   base::TimeDelta::FromDays(
-                       HttpCredentialCleaner::kCleanUpDelayInDays + 1))
+                   base::Days(HttpCredentialCleaner::kCleanUpDelayInDays + 1))
                       .ToDoubleT();
     }
 

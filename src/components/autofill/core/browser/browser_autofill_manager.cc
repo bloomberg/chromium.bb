@@ -1060,8 +1060,7 @@ void BrowserAutofillManager::FillOrPreviewCreditCardForm(
     // CreditCardAccessManager::FetchCreditCard() will call
     // OnCreditCardFetched() in this class after successfully fetching the card.
     credit_card_access_manager_->FetchCreditCard(
-        credit_card, weak_ptr_factory_.GetWeakPtr(),
-        form_structure->form_parsed_timestamp());
+        credit_card, weak_ptr_factory_.GetWeakPtr());
     return;
   }
 
@@ -1293,8 +1292,7 @@ void BrowserAutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   }
 
   if (autofill_field->Type().group() == FieldTypeGroup::kCreditCard &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillCreditCardAuthentication)) {
+      ::autofill::IsCreditCardFidoAuthenticationEnabled()) {
     credit_card_access_manager_->PrepareToFetchCreditCard();
   }
 }
@@ -1481,7 +1479,8 @@ void BrowserAutofillManager::OnCreditCardFetched(CreditCardFetchResult result,
     gfx::Image* card_art_image = personal_data_->GetCreditCardArtImageForUrl(
         credit_card->card_art_url());
     client()->OnVirtualCardDataAvailable(
-        credit_card, cvc, card_art_image ? *card_art_image : gfx::Image());
+        credit_card_.CardIdentifierStringForAutofillDisplay(), credit_card, cvc,
+        card_art_image ? *card_art_image : gfx::Image());
   }
 
   FillCreditCardForm(credit_card_query_id_, credit_card_form_,
@@ -2041,8 +2040,7 @@ void BrowserAutofillManager::OnFormProcessed(
 
     // Start a new timer to trigger refill.
     filling_context->on_refill_timer.Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kWaitTimeForDynamicFormsMs),
+        FROM_HERE, base::Milliseconds(kWaitTimeForDynamicFormsMs),
         base::BindRepeating(&BrowserAutofillManager::TriggerRefill,
                             weak_ptr_factory_.GetWeakPtr(), form));
   }

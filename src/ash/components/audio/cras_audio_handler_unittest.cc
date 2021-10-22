@@ -42,6 +42,10 @@ class FakeMediaControllerManager
  public:
   FakeMediaControllerManager() = default;
 
+  FakeMediaControllerManager(const FakeMediaControllerManager&) = delete;
+  FakeMediaControllerManager& operator=(const FakeMediaControllerManager&) =
+      delete;
+
   mojo::PendingRemote<media_session::mojom::MediaControllerManager>
   MakeRemote() {
     mojo::PendingRemote<media_session::mojom::MediaControllerManager> remote;
@@ -63,8 +67,6 @@ class FakeMediaControllerManager
   }
 
   mojo::ReceiverSet<media_session::mojom::MediaControllerManager> receivers_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeMediaControllerManager);
 };
 
 const uint64_t kInternalSpeakerId = 10001;
@@ -207,6 +209,9 @@ class TestObserver : public CrasAudioHandler::AudioObserver {
     return output_channel_remixing_changed_count_;
   }
 
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   ~TestObserver() override = default;
 
  protected:
@@ -251,8 +256,6 @@ class TestObserver : public CrasAudioHandler::AudioObserver {
   int output_volume_changed_count_ = 0;
   int input_gain_changed_count_ = 0;
   int output_channel_remixing_changed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 class SystemMonitorObserver
@@ -277,6 +280,10 @@ class SystemMonitorObserver
 class FakeVideoCaptureManager {
  public:
   FakeVideoCaptureManager() = default;
+
+  FakeVideoCaptureManager(const FakeVideoCaptureManager&) = delete;
+  FakeVideoCaptureManager& operator=(const FakeVideoCaptureManager&) = delete;
+
   virtual ~FakeVideoCaptureManager() = default;
 
   void AddObserver(media::VideoCaptureObserver* observer) {
@@ -297,7 +304,6 @@ class FakeVideoCaptureManager {
 
  private:
   base::ObserverList<media::VideoCaptureObserver>::Unchecked observers_;
-  DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureManager);
 };
 
 }  // namespace
@@ -308,6 +314,10 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   CrasAudioHandlerTest()
       : task_environment_(
             base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
+
+  CrasAudioHandlerTest(const CrasAudioHandlerTest&) = delete;
+  CrasAudioHandlerTest& operator=(const CrasAudioHandlerTest&) = delete;
+
   ~CrasAudioHandlerTest() override = default;
 
   void SetUp() override {
@@ -492,9 +502,6 @@ class CrasAudioHandlerTest : public testing::TestWithParam<int> {
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
   std::unique_ptr<FakeMediaControllerManager> fake_manager_;
   std::unique_ptr<FakeVideoCaptureManager> video_capture_manager_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CrasAudioHandlerTest);
 };
 
 class HDMIRediscoverWaiter {
@@ -504,11 +511,14 @@ class HDMIRediscoverWaiter {
       : cras_audio_handler_test_(cras_audio_handler_test),
         grace_period_duration_in_ms_(grace_period_duration_in_ms) {}
 
+  HDMIRediscoverWaiter(const HDMIRediscoverWaiter&) = delete;
+  HDMIRediscoverWaiter& operator=(const HDMIRediscoverWaiter&) = delete;
+
   void WaitUntilTimeOut(int wait_duration_in_ms) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(wait_duration_in_ms));
+        base::Milliseconds(wait_duration_in_ms));
     run_loop.Run();
   }
 
@@ -521,7 +531,7 @@ class HDMIRediscoverWaiter {
         FROM_HERE,
         base::BindOnce(&HDMIRediscoverWaiter::CheckHDMIRediscoverGracePeriodEnd,
                        base::Unretained(this), std::move(quit_loop_func)),
-        base::TimeDelta::FromMilliseconds(grace_period_duration_in_ms_ / 4));
+        base::Milliseconds(grace_period_duration_in_ms_ / 4));
   }
 
   void WaitUntilHDMIRediscoverGracePeriodEnd() {
@@ -533,8 +543,6 @@ class HDMIRediscoverWaiter {
  private:
   CrasAudioHandlerTest* cras_audio_handler_test_;  // not owned
   int grace_period_duration_in_ms_;
-
-  DISALLOW_COPY_AND_ASSIGN(HDMIRediscoverWaiter);
 };
 
 INSTANTIATE_TEST_SUITE_P(StableIdV1, CrasAudioHandlerTest, testing::Values(1));

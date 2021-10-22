@@ -161,6 +161,10 @@ struct PasswordGenerationAgent::GenerationItemInfo {
       : generation_element_(std::move(generation_element)),
         form_data_(std::move(form_data)),
         password_elements_(std::move(password_elements)) {}
+
+  GenerationItemInfo(const GenerationItemInfo&) = delete;
+  GenerationItemInfo& operator=(const GenerationItemInfo&) = delete;
+
   ~GenerationItemInfo() = default;
 
   // Element where we want to trigger password generation UI.
@@ -201,8 +205,6 @@ struct PasswordGenerationAgent::GenerationItemInfo {
   // due to the generated password being edited. It's used to suppress the fake
   // blur events coming from there.
   bool updating_other_password_fileds_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(GenerationItemInfo);
 };
 
 PasswordGenerationAgent::PasswordGenerationAgent(
@@ -569,8 +571,9 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
 
     // Notify `password_agent_` of text changes to the other confirmation
     // password fields.
-    for (const auto& element : current_generation_item_->password_elements_)
-      password_agent_->UpdateStateForTextChange(element);
+    for (const auto& password_element :
+         current_generation_item_->password_elements_)
+      password_agent_->UpdateStateForTextChange(password_element);
   }
   return true;
 }

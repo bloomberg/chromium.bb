@@ -59,6 +59,10 @@ constexpr char kStatusAreaShowBubbleHistogram[] =
 class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
  public:
   explicit UiDelegate(UnifiedSystemTray* owner);
+
+  UiDelegate(const UiDelegate&) = delete;
+  UiDelegate& operator=(const UiDelegate&) = delete;
+
   ~UiDelegate() override;
 
   // MessageCenterUiDelegate:
@@ -90,12 +94,10 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   UnifiedSystemTray* const owner_;
 
   std::unique_ptr<NotificationGroupingController> grouping_controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(UiDelegate);
 };
 
 const base::TimeDelta UnifiedSystemTray::kNotificationCountUpdateDelay =
-    base::TimeDelta::FromMilliseconds(100);
+    base::Milliseconds(100);
 
 UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
     : ui_controller_(std::make_unique<MessageCenterUiController>(this)),

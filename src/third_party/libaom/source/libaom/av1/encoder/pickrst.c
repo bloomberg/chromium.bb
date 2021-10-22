@@ -1734,7 +1734,8 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
     RestorationType best_rtype = RESTORE_NONE;
 
     const int highbd = rsc.cm->seq_params->use_highbitdepth;
-    if (!cpi->sf.lpf_sf.disable_loop_restoration_chroma || !plane) {
+    if ((plane && !cpi->sf.lpf_sf.disable_loop_restoration_chroma) ||
+        (!plane && !cpi->sf.lpf_sf.disable_loop_restoration_luma)) {
       av1_extend_frame(rsc.dgd_buffer, rsc.plane_width, rsc.plane_height,
                        rsc.dgd_stride, RESTORATION_BORDER, RESTORATION_BORDER,
                        highbd);

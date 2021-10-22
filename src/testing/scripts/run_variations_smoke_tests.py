@@ -14,7 +14,7 @@ import shutil
 import sys
 import tempfile
 import time
-import urllib2
+import six.moves.urllib.error
 
 import common
 
@@ -153,6 +153,8 @@ def _find_chrome_binary():
     chrome_name = 'Google Chrome'
     return os.path.join('.', chrome_name + '.app', 'Contents', 'MacOS',
                             chrome_name)
+  elif platform == 'win':
+    return os.path.join('.', 'chrome.exe')
 
 
 def _confirm_new_seed_downloaded(user_data_dir,
@@ -285,7 +287,7 @@ def _run_tests():
     if driver:
       try:
         driver.quit()
-      except urllib2.URLError:
+      except six.moves.urllib.error.URLError:
         # Ignore the error as ChromeDriver may have already exited.
         pass
 
@@ -296,12 +298,13 @@ def main_run(args):
   """Runs the variations smoke tests."""
   logging.basicConfig(level=logging.INFO)
   parser = argparse.ArgumentParser()
-  parser.add_argument('--isolated-script-test-output', type=str, required=True)
+  parser.add_argument('--isolated-script-test-output', type=str)
   args, _ = parser.parse_known_args()
   rc = _run_tests()
-  with open(args.isolated_script_test_output, 'w') as f:
-    common.record_local_script_results('run_variations_smoke_tests', f, [],
-                                       rc == 0)
+  if args.isolated_script_test_output:
+    with open(args.isolated_script_test_output, 'w') as f:
+      common.record_local_script_results('run_variations_smoke_tests', f, [],
+                                         rc == 0)
 
   return rc
 

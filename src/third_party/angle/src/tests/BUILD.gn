@@ -205,6 +205,10 @@ angle_test("angle_unittests") {
     # platforms yet.
     data_deps = [ ":test_utils_unittest_helper" ]
   }
+
+  if (angle_has_rapidjson) {
+    sources += [ "../common/serializer/JsonSerializer_unittest.cpp" ]
+  }
 }
 
 if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
@@ -236,7 +240,7 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
       sources += angle_end2end_tests_win_sources
     }
     if (angle_use_x11) {
-      sources += angle_end2end_tests_x11_sources
+      sources += [ "egl_tests/EGLX11VisualTest.cpp" ]
     }
 
     configs += [ "${angle_root}:libANGLE_config" ]
@@ -246,6 +250,10 @@ if (is_win || is_linux || is_chromeos || is_android || is_fuchsia || is_apple) {
       "$angle_root:angle_gl_enum_utils",
       "$angle_root:angle_image_util",
     ]
+
+    if (angle_has_rapidjson) {
+      deps += [ "$angle_root:angle_json_serializer" ]
+    }
 
     if (is_android) {
       include_dirs += [ "${android_ndk_root}/sysroot/usr/includes" ]
@@ -378,6 +386,10 @@ if (is_win || is_linux || is_chromeos || is_android || is_apple) {
     include_dirs = [ "." ]
     sources =
         angle_white_box_perf_tests_sources + [ "angle_perftests_main.cpp" ]
+
+    if (angle_enable_d3d11 || angle_enable_d3d9) {
+      sources += [ "perf_tests/IndexDataManagerTest.cpp" ]
+    }
 
     deps = [
       ":angle_perftests_static",
@@ -1304,14 +1316,6 @@ if (build_angle_deqp_tests && !is_fuchsia) {
       }
     }
 
-    if (!build_with_chromium) {
-      angle_executable("angle_deqp_${_api}_no_gtest") {
-        testonly = true
-        sources = [ "deqp_support/angle_deqp_tests_main.cpp" ]
-        deps = [ ":$shared_library_name" ]
-      }
-    }
-
     angle_test("angle_deqp_${_api}_tests") {
       deps = [
         ":${shared_library_name}",
@@ -1576,14 +1580,6 @@ group("angle_tests") {
       ":angle_deqp_gles31_tests",
       ":angle_deqp_gles3_tests",
     ]
-    if (!build_with_chromium) {
-      deps += [
-        ":angle_deqp_egl_no_gtest",
-        ":angle_deqp_gles2_no_gtest",
-        ":angle_deqp_gles31_no_gtest",
-        ":angle_deqp_gles3_no_gtest",
-      ]
-    }
   }
   if (build_angle_gles1_conform_tests) {
     deps += [

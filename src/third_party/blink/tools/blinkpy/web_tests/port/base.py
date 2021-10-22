@@ -141,9 +141,9 @@ class Port(object):
         ('mac10.14', 'x86'),
         ('mac10.15', 'x86'),
         ('mac11.0', 'x86'),
+        ('mac11.5', 'x86'),
         ('mac11-arm64', 'arm64'),
         ('win7', 'x86'),
-        ('win10.1909', 'x86'),
         ('win10.20h2', 'x86'),
         ('trusty', 'x86_64'),
         ('fuchsia', 'x86_64'),
@@ -152,9 +152,9 @@ class Port(object):
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': [
             'mac10.12', 'mac10.13', 'mac10.14', 'mac10.15', 'mac11.0',
-            'mac11-arm64'
+            'mac11.5', 'mac11-arm64'
         ],
-        'win': ['win7', 'win10.1909', 'win10.20h2'],
+        'win': ['win7', 'win10.20h2'],
         'linux': ['trusty'],
         'fuchsia': ['fuchsia'],
     }
@@ -1645,9 +1645,7 @@ class Port(object):
     def _flag_specific_expectations_path(self):
         config_name = self.flag_specific_config_name()
         if config_name:
-            return self._filesystem.join(self.web_tests_dir(),
-                                         self.FLAG_EXPECTATIONS_PREFIX,
-                                         config_name)
+            return self.path_to_flag_specific_expectations_file(config_name)
 
     def _flag_specific_baseline_search_path(self):
         config_name = self.flag_specific_config_name()
@@ -1800,6 +1798,11 @@ class Port(object):
     def path_to_webdriver_expectations_file(self):
         return self._filesystem.join(self.web_tests_dir(),
                                      'WebDriverExpectations')
+
+    def path_to_flag_specific_expectations_file(self, flag_specific):
+        return self._filesystem.join(self.web_tests_dir(),
+                                     self.FLAG_EXPECTATIONS_PREFIX,
+                                     flag_specific)
 
     def repository_path(self):
         """Returns the repository path for the chromium code base."""

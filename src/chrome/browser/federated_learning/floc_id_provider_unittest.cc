@@ -160,6 +160,9 @@ class FlocIdProviderUnitTest : public testing::Test {
   FlocIdProviderUnitTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
+  FlocIdProviderUnitTest(const FlocIdProviderUnitTest&) = delete;
+  FlocIdProviderUnitTest& operator=(const FlocIdProviderUnitTest&) = delete;
+
   ~FlocIdProviderUnitTest() override = default;
 
   void SetUp() override {
@@ -306,8 +309,6 @@ class FlocIdProviderUnitTest : public testing::Test {
   MockFlocSortingLshService* sorting_lsh_service_;
 
   base::ScopedTempDir temp_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlocIdProviderUnitTest);
 };
 
 TEST_F(FlocIdProviderUnitTest, DefaultSetup_ComputationState) {
@@ -331,13 +332,13 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_ComputationState) {
 
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(7),
+  EXPECT_EQ(base::Time::Now() + base::Days(7),
             floc_id_provider_->GetApproximateNextComputeTime());
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(1u, floc_id_provider_->log_event_count());
 
   // Advance the clock by 7 days. Expect another computation.
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(7));
+  task_environment_.FastForwardBy(base::Days(7));
 
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
@@ -346,8 +347,7 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_ComputationState) {
 }
 
 TEST_F(FlocIdProviderUnitTest, DefaultSetup_BelowMinimumHistoryDomainSize) {
-  const base::Time kSevenDaysBeforeStart =
-      base::Time::Now() - base::TimeDelta::FromDays(7);
+  const base::Time kSevenDaysBeforeStart = base::Time::Now() - base::Days(7);
 
   AddHistoryEntriesForDomains({"foo.com", "bar.com"}, kSevenDaysBeforeStart);
 
@@ -366,8 +366,7 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_BelowMinimumHistoryDomainSize) {
 }
 
 TEST_F(FlocIdProviderUnitTest, DefaultSetup_MinimumHistoryDomainSize) {
-  const base::Time kSevenDaysBeforeStart =
-      base::Time::Now() - base::TimeDelta::FromDays(7);
+  const base::Time kSevenDaysBeforeStart = base::Time::Now() - base::Days(7);
 
   AddHistoryEntriesForDomains({"foo.com", "bar.com", "baz.com"},
                               kSevenDaysBeforeStart);
@@ -387,8 +386,7 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_MinimumHistoryDomainSize) {
 }
 
 TEST_F(FlocIdProviderUnitTest, DefaultSetup_ScheduledUpdateInterval) {
-  const base::Time kSevenDaysBeforeStart =
-      base::Time::Now() - base::TimeDelta::FromDays(7);
+  const base::Time kSevenDaysBeforeStart = base::Time::Now() - base::Days(7);
 
   AddHistoryEntriesForDomains({"foo.com", "bar.com", "baz.com"},
                               kSevenDaysBeforeStart);
@@ -409,7 +407,7 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_ScheduledUpdateInterval) {
   EXPECT_TRUE(floc_computation_scheduled());
 
   // Advance the clock by 6 days.
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(6));
+  task_environment_.FastForwardBy(base::Days(6));
 
   // Add 3 history entries with a new set of domains.
   const base::Time kSixDaysAfterStart = base::Time::Now();
@@ -420,13 +418,13 @@ TEST_F(FlocIdProviderUnitTest, DefaultSetup_ScheduledUpdateInterval) {
 
   // Advance the clock by 23 hours. Expect no more computation, as the floc id
   // refresh interval is 7 days.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(23));
+  task_environment_.FastForwardBy(base::Hours(23));
 
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(1u, floc_id_provider_->log_event_count());
 
   // Advance the clock by 1 hour. Expect one more computation.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+  task_environment_.FastForwardBy(base::Hours(1));
 
   EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(2u, floc_id_provider_->log_event_count());
@@ -450,7 +448,7 @@ class FlocIdProviderSimpleFeatureParamUnitTest : public FlocIdProviderUnitTest {
 };
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, QualifiedInitialHistory) {
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(7);
+  const base::Time kTime = base::Time::Now() - base::Days(7);
 
   AddHistoryEntriesForDomains({"foo.com"}, kTime);
 
@@ -475,7 +473,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, QualifiedInitialHistory) {
 
   // Advance the clock by 1 day. Expect a computation, as there's no history in
   // the last 7 days so the id has been reset to empty.
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  task_environment_.FastForwardBy(base::Days(1));
 
   EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(2u, floc_id_provider_->log_event_count());
@@ -485,8 +483,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, QualifiedInitialHistory) {
 }
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, UnqualifiedInitialHistory) {
-  AddHistoryEntriesForDomains({"foo.com"},
-                              base::Time::Now() - base::TimeDelta::FromDays(8));
+  AddHistoryEntriesForDomains({"foo.com"}, base::Time::Now() - base::Days(8));
 
   // Initializing the floc provider and sorting-lsh service should trigger the
   // 1st floc computation.
@@ -499,19 +496,19 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, UnqualifiedInitialHistory) {
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
 
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(6);
+  const base::Time kTime = base::Time::Now() - base::Days(6);
   AddHistoryEntriesForDomains({"foo.com"}, kTime);
 
   // Advance the clock by 23 hours. Expect no more computation, as the id
   // refresh interval is 24 hours.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(23));
+  task_environment_.FastForwardBy(base::Hours(23));
 
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(1u, floc_id_provider_->log_event_count());
 
   // Advance the clock by 1 hour. Expect one more computation, as the refresh
   // time is reached and there's a valid history entry in the last 7 days.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+  task_environment_.FastForwardBy(base::Hours(1));
 
   EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(2u, floc_id_provider_->log_event_count());
@@ -524,10 +521,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, UnqualifiedInitialHistory) {
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        HistoryQueryBoundedByFlocAccessibleSince) {
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kSevenDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(7);
-  const base::Time kSixDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(6);
+  const base::Time kSevenDaysBeforeStart = kStartTime - base::Days(7);
+  const base::Time kSixDaysBeforeStart = kStartTime - base::Days(6);
 
   prefs_.SetTime(prefs::kPrivacySandboxFlocDataAccessibleSince,
                  kSixDaysBeforeStart);
@@ -555,12 +550,9 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        FlocAccessibleSinceViolationOnStartup) {
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kSevenDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(7);
-  const base::Time kSixDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(6);
-  const base::Time kTwelveHoursBeforeStart =
-      kStartTime - base::TimeDelta::FromHours(12);
+  const base::Time kSevenDaysBeforeStart = kStartTime - base::Days(7);
+  const base::Time kSixDaysBeforeStart = kStartTime - base::Days(6);
+  const base::Time kTwelveHoursBeforeStart = kStartTime - base::Hours(12);
 
   FlocId floc_id_in_prefs_before_start =
       FlocIdTester::Create(123, FlocId::Status::kValid, kSevenDaysBeforeStart,
@@ -588,7 +580,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
             FlocId::ReadFromPrefs(&prefs_).status());
 
   // Fast forward by 12 hours. This should trigger a scheduled update.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(12));
+  task_environment_.FastForwardBy(base::Hours(12));
 
   // Expect a completed computation and an update to the local prefs.
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
@@ -605,10 +597,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        HistoryDeleteAndScheduledUpdate) {
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kSevenDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(7);
-  const base::Time kSixDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(6);
+  const base::Time kSevenDaysBeforeStart = kStartTime - base::Days(7);
+  const base::Time kSixDaysBeforeStart = kStartTime - base::Days(6);
 
   AddHistoryEntriesForDomains({"foo.com"}, kSevenDaysBeforeStart);
   AddHistoryEntriesForDomains({"bar.com"}, kSixDaysBeforeStart);
@@ -626,7 +616,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
             floc_id());
 
   // Advance the clock by 12 hours. Expect no more computation.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(12));
+  task_environment_.FastForwardBy(base::Hours(12));
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(1u, floc_id_provider_->log_event_count());
 
@@ -644,7 +634,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   // Advance the clock by 12 hours. Expect one more computation, which implies
   // the timer didn't get reset due to the history invalidation. Expect that
   // the floc is derived from "bar.com".
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(12));
+  task_environment_.FastForwardBy(base::Hours(12));
   EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(3u, floc_id_provider_->log_event_count());
   EXPECT_EQ(FlocId::CreateValid(FlocId::SimHashHistory({"bar.com"}),
@@ -653,7 +643,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 }
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, ScheduledUpdateSameFloc) {
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(2);
+  const base::Time kTime = base::Time::Now() - base::Days(2);
 
   AddHistoryEntriesForDomains({"foo.com"}, kTime);
 
@@ -671,7 +661,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, ScheduledUpdateSameFloc) {
 
   // Advance the clock by 1 day. Expect one more computation, but the floc
   // didn't change.
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  task_environment_.FastForwardBy(base::Days(1));
 
   EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(2u, floc_id_provider_->log_event_count());
@@ -763,40 +753,40 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(base::Time::Now(), FlocId::ReadFromPrefs(&prefs_).compute_time());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+  EXPECT_EQ(base::Time::Now() + base::Days(1),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // Move the clock forward 20 hours and update the floc available time,
   // selecting to reset the compute timer.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(20));
+  task_environment_.FastForwardBy(base::Hours(20));
   OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/true);
   const base::Time kResetComputeTime = base::Time::Now();
   EXPECT_EQ(kResetComputeTime, FlocId::ReadFromPrefs(&prefs_).compute_time());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+  EXPECT_EQ(base::Time::Now() + base::Days(1),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // Move the clock forward another 20 hours, moving past the default refresh
   // interval of 24 hours. A new floc id should not have been computed as the
   // timer was reset.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(20));
+  task_environment_.FastForwardBy(base::Hours(20));
   task_environment_.RunUntilIdle();
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromHours(4),
+  EXPECT_EQ(base::Time::Now() + base::Hours(4),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // Update the floc available time without resetting compute time.
   OnFlocDataAccessibleSinceUpdated(
       /*reset_compute_timer=*/false);
   EXPECT_EQ(kResetComputeTime, FlocId::ReadFromPrefs(&prefs_).compute_time());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromHours(4),
+  EXPECT_EQ(base::Time::Now() + base::Hours(4),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // Move the clock forward 5 hours, making 25 hours since the compute timer was
   // reset, a new floc id should have been computed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(5));
+  task_environment_.FastForwardBy(base::Hours(5));
   task_environment_.RunUntilIdle();
   EXPECT_EQ(2u, floc_id_provider_->compute_floc_completed_count());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromHours(23),
+  EXPECT_EQ(base::Time::Now() + base::Hours(23),
             floc_id_provider_->GetApproximateNextComputeTime());
 }
 
@@ -927,9 +917,8 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, FlocIneligibleHistoryEntries) {
   task_environment_.RunUntilIdle();
 
   history::QueryResults query_results;
-  query_results.SetURLResults(
-      {history::URLResult(GURL("https://a.test"),
-                          base::Time::Now() - base::TimeDelta::FromDays(1))});
+  query_results.SetURLResults({history::URLResult(
+      GURL("https://a.test"), base::Time::Now() - base::Days(1))});
 
   set_floc_computation_in_progress(true);
 
@@ -1076,7 +1065,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, GetFlocStatusForWebUiMethod) {
   InitializeFlocIdProviderAndSortingLsh(base::Version("999.0.0"));
   task_environment_.RunUntilIdle();
 
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(1);
+  const base::Time kTime = base::Time::Now() - base::Days(1);
   set_floc_id(FlocId::CreateValid(123, kTime, kTime, 999));
 
   mojom::WebUIFlocStatusPtr status = floc_id_provider_->GetFlocStatusForWebUi();
@@ -1089,8 +1078,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, GetFlocStatusForWebUiMethod) {
       false);
   EXPECT_EQ(status->feature_interest_cohort_api_origin_trial, false);
   EXPECT_EQ(status->feature_interest_cohort_feature_policy, false);
-  EXPECT_EQ(status->feature_param_scheduled_update_interval,
-            base::TimeDelta::FromDays(1));
+  EXPECT_EQ(status->feature_param_scheduled_update_interval, base::Days(1));
   EXPECT_EQ(status->feature_param_minimum_history_domain_size_required, 1);
   EXPECT_EQ(status->feature_param_finch_config_version, 1);
 }
@@ -1100,7 +1088,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   InitializeFlocIdProviderAndSortingLsh(base::Version("999.0.0"));
   task_environment_.RunUntilIdle();
 
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(1);
+  const base::Time kTime = base::Time::Now() - base::Days(1);
   const FlocId expected_floc = FlocId::CreateValid(123, kTime, kTime, 999);
 
   set_floc_id(expected_floc);
@@ -1117,7 +1105,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 
   privacy_sandbox_settings_->SetPrivacySandboxEnabled(false);
 
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(1);
+  const base::Time kTime = base::Time::Now() - base::Days(1);
 
   set_floc_id(FlocId::CreateValid(123, kTime, kTime, 999));
 
@@ -1139,12 +1127,9 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        HistoryDeleteDuringInProgressComputation) {
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kSevenDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(7);
-  const base::Time kSixDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(6);
-  const base::Time kFiveDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(5);
+  const base::Time kSevenDaysBeforeStart = kStartTime - base::Days(7);
+  const base::Time kSixDaysBeforeStart = kStartTime - base::Days(6);
+  const base::Time kFiveDaysBeforeStart = kStartTime - base::Days(5);
 
   AddHistoryEntriesForDomains({"foo.com"}, kSevenDaysBeforeStart);
   AddHistoryEntriesForDomains({"bar.com"}, kSixDaysBeforeStart);
@@ -1169,7 +1154,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   // Advance the clock by 1 day. The "foo.com" should expire. However, we pause
   // before the computation completes.
   floc_id_provider_->set_should_pause_before_compute_floc_completed(true);
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  task_environment_.FastForwardBy(base::Days(1));
 
   EXPECT_TRUE(floc_computation_in_progress());
   EXPECT_EQ(base::Time::Now(),
@@ -1202,7 +1187,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   EXPECT_EQ(3u, floc_id_provider_->compute_floc_completed_count());
   EXPECT_EQ(2u, floc_id_provider_->log_event_count());
   EXPECT_FALSE(need_recompute());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+  EXPECT_EQ(base::Time::Now() + base::Days(1),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // The final floc should be derived from "baz.com".
@@ -1214,7 +1199,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 }
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, NonDefaultSortingLshMapping) {
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(7);
+  const base::Time kTime = base::Time::Now() - base::Days(7);
 
   AddHistoryEntriesForDomains({"foo.com"}, kTime);
 
@@ -1233,7 +1218,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, NonDefaultSortingLshMapping) {
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        NonDefaultSortingLshMapping_Blocked) {
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(7);
+  const base::Time kTime = base::Time::Now() - base::Days(7);
 
   AddHistoryEntriesForDomains({"foo.com"}, kTime);
 
@@ -1250,7 +1235,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 }
 
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, MultipleSortingLshUpdate) {
-  const base::Time kTime = base::Time::Now() - base::TimeDelta::FromDays(1);
+  const base::Time kTime = base::Time::Now() - base::Days(1);
 
   AddHistoryEntriesForDomains({"foo.com"}, kTime);
 
@@ -1272,7 +1257,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, MultipleSortingLshUpdate) {
         return absl::optional<uint64_t>();
       }));
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  task_environment_.FastForwardBy(base::Days(1));
 
   // Expect one more computation, where the result contains a valid sim_hash and
   // an invalid floc_id, as it was blocked. The internal floc is set to the
@@ -1294,7 +1279,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest, MultipleSortingLshUpdate) {
         return absl::optional<uint64_t>();
       }));
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  task_environment_.FastForwardBy(base::Days(1));
 
   // Expect one more computation. The floc should be equal to 6789.
   EXPECT_EQ(3u, floc_id_provider_->compute_floc_completed_count());
@@ -1306,12 +1291,9 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        LastFlocUnexpired_NextScheduledUpdate) {
   // Setups before session start.
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kFourDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(4);
-  const base::Time kThreeDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(3);
-  const base::Time kLastComputeTime =
-      kStartTime - base::TimeDelta::FromHours(12);
+  const base::Time kFourDaysBeforeStart = kStartTime - base::Days(4);
+  const base::Time kThreeDaysBeforeStart = kStartTime - base::Days(3);
+  const base::Time kLastComputeTime = kStartTime - base::Hours(12);
 
   FlocId floc_id_in_prefs_before_start =
       FlocIdTester::Create(123, FlocId::Status::kValid, kFourDaysBeforeStart,
@@ -1342,7 +1324,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   sorting_lsh_service_->ConfigureSortingLsh(base::Version("99.0"));
 
   // Fast forward by 12 hours. This should trigger a scheduled update.
-  task_environment_.FastForwardBy(base::TimeDelta::FromHours(12));
+  task_environment_.FastForwardBy(base::Hours(12));
 
   // Expect a completed computation and an update to the local prefs.
   EXPECT_EQ(1u, floc_id_provider_->compute_floc_completed_count());
@@ -1358,12 +1340,9 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        LastFlocUnexpired_HistoryDelete) {
   // Setups before session start.
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kFourDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(4);
-  const base::Time kThreeDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(3);
-  const base::Time kLastComputeTime =
-      kStartTime - base::TimeDelta::FromHours(12);
+  const base::Time kFourDaysBeforeStart = kStartTime - base::Days(4);
+  const base::Time kThreeDaysBeforeStart = kStartTime - base::Days(3);
+  const base::Time kLastComputeTime = kStartTime - base::Hours(12);
 
   FlocId floc_id_in_prefs_before_start =
       FlocIdTester::Create(123, FlocId::Status::kValid, kFourDaysBeforeStart,
@@ -1403,14 +1382,10 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        LastFlocExpired_ImmediateCompute) {
   // Setups before session start.
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kTwentyDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(20);
-  const base::Time kNineteenDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(19);
-  const base::Time kTwoDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(2);
-  const base::Time kLastComputeTime =
-      kStartTime - base::TimeDelta::FromHours(25);
+  const base::Time kTwentyDaysBeforeStart = kStartTime - base::Days(20);
+  const base::Time kNineteenDaysBeforeStart = kStartTime - base::Days(19);
+  const base::Time kTwoDaysBeforeStart = kStartTime - base::Days(2);
+  const base::Time kLastComputeTime = kStartTime - base::Hours(25);
 
   FlocId floc_id_in_prefs_before_start =
       FlocIdTester::Create(123, FlocId::Status::kValid, kTwentyDaysBeforeStart,
@@ -1455,13 +1430,10 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        NextComputeDelayTooBig_ImmediateCompute) {
   // Setups before session start.
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kFourDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(4);
-  const base::Time kThreeDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(3);
-  const base::Time kTwoDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(2);
-  const base::Time kLastComputeTime = kStartTime + base::TimeDelta::FromDays(1);
+  const base::Time kFourDaysBeforeStart = kStartTime - base::Days(4);
+  const base::Time kThreeDaysBeforeStart = kStartTime - base::Days(3);
+  const base::Time kTwoDaysBeforeStart = kStartTime - base::Days(2);
+  const base::Time kLastComputeTime = kStartTime + base::Days(1);
 
   // Configure the last compute time to be 1 day after the start time, that
   // emulates the situation when the machine time has changed.
@@ -1497,7 +1469,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+  EXPECT_EQ(base::Time::Now() + base::Days(1),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // Expect a completed computation and an update to the local prefs.
@@ -1512,14 +1484,10 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        LastFlocVersionMismatch_ImmediateCompute) {
   // Setups before session start.
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kFourDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(4);
-  const base::Time kThreeDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(3);
-  const base::Time kTwoDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(2);
-  const base::Time kLastComputeTime =
-      kStartTime - base::TimeDelta::FromHours(12);
+  const base::Time kFourDaysBeforeStart = kStartTime - base::Days(4);
+  const base::Time kThreeDaysBeforeStart = kStartTime - base::Days(3);
+  const base::Time kTwoDaysBeforeStart = kStartTime - base::Days(2);
+  const base::Time kLastComputeTime = kStartTime - base::Hours(12);
 
   // Configure a floc with version finch_config_version 0, that is different
   // from the current version 1.
@@ -1553,7 +1521,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   task_environment_.RunUntilIdle();
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
-  EXPECT_EQ(base::Time::Now() + base::TimeDelta::FromDays(1),
+  EXPECT_EQ(base::Time::Now() + base::Days(1),
             floc_id_provider_->GetApproximateNextComputeTime());
 
   // Expect a completed computation and an update to the local prefs.
@@ -1569,12 +1537,9 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
 TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
        UnexpiredComputeTimeAndNoStatusPrefs) {
   const base::Time kStartTime = base::Time::Now();
-  const base::Time kFourDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(4);
-  const base::Time kThreeDaysBeforeStart =
-      kStartTime - base::TimeDelta::FromDays(3);
-  const base::Time kLastComputeTime =
-      kStartTime - base::TimeDelta::FromHours(12);
+  const base::Time kFourDaysBeforeStart = kStartTime - base::Days(4);
+  const base::Time kThreeDaysBeforeStart = kStartTime - base::Days(3);
+  const base::Time kLastComputeTime = kStartTime - base::Hours(12);
 
   FlocId floc_id_in_prefs_before_start = FlocIdTester::Create(
       0, FlocId::Status::kInvalidNoStatusPrefs, kFourDaysBeforeStart,
@@ -1595,7 +1560,7 @@ TEST_F(FlocIdProviderSimpleFeatureParamUnitTest,
   EXPECT_FALSE(prefs_.HasPrefPath(kFlocIdStatusPrefKey));
   EXPECT_FALSE(floc_computation_in_progress());
   EXPECT_TRUE(floc_computation_scheduled());
-  EXPECT_EQ(kLastComputeTime + base::TimeDelta::FromDays(1),
+  EXPECT_EQ(kLastComputeTime + base::Days(1),
             floc_id_provider_->GetApproximateNextComputeTime());
   EXPECT_EQ(0u, floc_id_provider_->compute_floc_completed_count());
 }

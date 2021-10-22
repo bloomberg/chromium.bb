@@ -63,6 +63,9 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
       GpuControl* gpu_control,
       ImageDecodeAcceleratorInterface* image_decode_accelerator);
 
+  RasterImplementation(const RasterImplementation&) = delete;
+  RasterImplementation& operator=(const RasterImplementation&) = delete;
+
   ~RasterImplementation() override;
 
   gpu::ContextResult Initialize(const SharedMemoryLimits& limits);
@@ -158,7 +161,8 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
                       const gfx::Vector2dF& post_translate,
                       const gfx::Vector2dF& post_scale,
                       bool requires_clear,
-                      size_t* max_op_size_hint) override;
+                      size_t* max_op_size_hint,
+                      bool preserve_recording = true) override;
   SyncToken ScheduleImageDecode(base::span<const uint8_t> encoded_data,
                                 const gfx::Size& output_size,
                                 uint32_t transfer_cache_entry_id,
@@ -453,8 +457,6 @@ class RASTER_EXPORT RasterImplementation : public RasterInterface,
 
   // Tracing helpers.
   int raster_chromium_id_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(RasterImplementation);
 };
 
 }  // namespace raster

@@ -62,14 +62,22 @@ extern const base::Feature kWebViewNativeContextMenu;
 // When enabled, display non-live preview for context menus in web content.
 extern const base::Feature kWebViewNativeContextMenuPhase2;
 
-// When enabled, display previews for native context menu in web content.
-extern const base::Feature kWebViewNativeContextMenuPhase3;
-
 // When enabled, the default context menu from WKWebView is used.
 extern const base::Feature kDefaultWebViewContextMenu;
 
 // Disables the screenshots of non-HTML pages on iOS15.
 extern const base::Feature kDisableNonHTMLScreenshotOnIOS15;
+
+// Feature flag that enable Shared Highlighting color change in iOS.
+extern const base::Feature kIOSSharedHighlightingColorChange;
+
+// Feature flag that enables creating pending item on POST form submission.
+// Also, for GET form submissions with same page navigation, retains the
+// transition type of new navigation item.
+extern const base::Feature kCreatePendingItemForPostFormSubmission;
+
+// Enable the new download API if available.
+extern const base::Feature kEnableNewDownloadAPI;
 
 // When true, for each navigation, the default user agent is chosen by the
 // WebClient GetDefaultUserAgent() method. If it is false, the mobile version
@@ -86,13 +94,8 @@ bool UseWebViewNativeContextMenuSystem();
 // When true, screenshots of non-HTML (e.g. PDF) pages should be taken.
 bool ShouldTakeScreenshotOnNonHTMLContent();
 
-// Feature flag that enable Shared Highlighting color change in iOS.
-extern const base::Feature kIOSSharedHighlightingColorChange;
-
-// Feature flag that enables creating pending item on POST form submission.
-// Also, for GET form submissions with same page navigation, retains the
-// transition type of new navigation item.
-extern const base::Feature kCreatePendingItemForPostFormSubmission;
+// When true, the new download API should be used.
+bool IsNewDownloadAPIEnabled();
 
 }  // namespace features
 }  // namespace web

@@ -51,6 +51,7 @@
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
+#include "net/base/proxy_string_util.h"
 #include "net/base/request_priority.h"
 #include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
@@ -300,6 +301,10 @@ class CapturingProxyResolver : public ProxyResolver {
 
   CapturingProxyResolver()
       : proxy_server_(ProxyServer::SCHEME_HTTP, HostPortPair("myproxy", 80)) {}
+
+  CapturingProxyResolver(const CapturingProxyResolver&) = delete;
+  CapturingProxyResolver& operator=(const CapturingProxyResolver&) = delete;
+
   ~CapturingProxyResolver() override = default;
 
   int GetProxyForURL(const GURL& url,
@@ -325,8 +330,6 @@ class CapturingProxyResolver : public ProxyResolver {
   std::vector<LookupInfo> lookup_info_;
 
   ProxyServer proxy_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(CapturingProxyResolver);
 };
 
 class CapturingProxyResolverFactory : public ProxyResolverFactory {
@@ -464,7 +467,7 @@ class HttpNetworkTransactionTest : public PlatformTest,
     base::RunLoop().RunUntilIdle();
     // Set an initial delay to ensure that the first call to TimeTicks::Now()
     // before incrementing the counter does not return a null value.
-    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    FastForwardBy(base::Seconds(1));
   }
 
   void TearDown() override {
@@ -1644,8 +1647,7 @@ TEST_F(HttpNetworkTransactionTest, Ignores1xx) {
 }
 
 TEST_F(HttpNetworkTransactionTest, LoadTimingMeasuresTimeToFirstByteForHttp) {
-  static const base::TimeDelta kDelayAfterFirstByte =
-      base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelayAfterFirstByte = base::Milliseconds(10);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -1715,8 +1717,7 @@ TEST_F(HttpNetworkTransactionTest, LoadTimingMeasuresTimeToFirstByteForHttp) {
 // Tests that the time-to-first-byte reported in a transaction's load timing
 // info uses the first response, even if 1XX/informational.
 void HttpNetworkTransactionTest::Check100ResponseTiming(bool use_spdy) {
-  static const base::TimeDelta kDelayAfter100Response =
-      base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelayAfter100Response = base::Milliseconds(10);
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -3788,7 +3789,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   EXPECT_EQ(407, response->headers->response_code());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
-  EXPECT_EQ(ProxyServer::FromPacString("PROXY myproxy:70"),
+  EXPECT_EQ(PacResultElementToProxyServer("PROXY myproxy:70"),
             response->proxy_server);
 
   // TODO(crbug.com/986744): Fix handling of OnConnected() when proxy
@@ -3818,7 +3819,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyNoKeepAliveHttp11) {
   EXPECT_EQ(200, response->headers->response_code());
   EXPECT_EQ(5, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
-  EXPECT_EQ(ProxyServer::FromPacString("PROXY myproxy:70"),
+  EXPECT_EQ(PacResultElementToProxyServer("PROXY myproxy:70"),
             response->proxy_server);
 
   TransportInfo expected_transport;
@@ -4037,7 +4038,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
     EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
     EXPECT_FALSE(response->did_use_http_auth);
-    EXPECT_EQ(ProxyServer::FromPacString("PROXY myproxy:70"),
+    EXPECT_EQ(PacResultElementToProxyServer("PROXY myproxy:70"),
               response->proxy_server);
 
     TestCompletionCallback callback2;
@@ -4056,7 +4057,7 @@ TEST_F(HttpNetworkTransactionTest, BasicAuthProxyKeepAliveHttp11) {
     EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
     EXPECT_TRUE(CheckBasicProxyAuth(response->auth_challenge));
     EXPECT_TRUE(response->did_use_http_auth);
-    EXPECT_EQ(ProxyServer::FromPacString("PROXY myproxy:70"),
+    EXPECT_EQ(PacResultElementToProxyServer("PROXY myproxy:70"),
               response->proxy_server);
 
     // Flush the idle socket before the NetLog and HttpNetworkTransaction go
@@ -5875,6 +5876,12 @@ TEST_F(HttpNetworkTransactionTest, NonPermanentGenerateAuthTokenError) {
 class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
  public:
   SameProxyWithDifferentSchemesProxyResolver() {}
+
+  SameProxyWithDifferentSchemesProxyResolver(
+      const SameProxyWithDifferentSchemesProxyResolver&) = delete;
+  SameProxyWithDifferentSchemesProxyResolver& operator=(
+      const SameProxyWithDifferentSchemesProxyResolver&) = delete;
+
   ~SameProxyWithDifferentSchemesProxyResolver() override {}
 
   static constexpr uint16_t kProxyPort = 10000;
@@ -5916,9 +5923,6 @@ class SameProxyWithDifferentSchemesProxyResolver : public ProxyResolver {
     NOTREACHED();
     return ERR_NOT_IMPLEMENTED;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SameProxyWithDifferentSchemesProxyResolver);
 };
 
 class SameProxyWithDifferentSchemesProxyResolverFactory
@@ -5927,6 +5931,11 @@ class SameProxyWithDifferentSchemesProxyResolverFactory
   SameProxyWithDifferentSchemesProxyResolverFactory()
       : ProxyResolverFactory(false) {}
 
+  SameProxyWithDifferentSchemesProxyResolverFactory(
+      const SameProxyWithDifferentSchemesProxyResolverFactory&) = delete;
+  SameProxyWithDifferentSchemesProxyResolverFactory& operator=(
+      const SameProxyWithDifferentSchemesProxyResolverFactory&) = delete;
+
   int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
                           std::unique_ptr<ProxyResolver>* resolver,
                           CompletionOnceCallback callback,
@@ -5934,9 +5943,6 @@ class SameProxyWithDifferentSchemesProxyResolverFactory
     *resolver = std::make_unique<SameProxyWithDifferentSchemesProxyResolver>();
     return OK;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SameProxyWithDifferentSchemesProxyResolverFactory);
 };
 
 // Check that when different proxy schemes are all applied to a proxy at the
@@ -7847,7 +7853,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge));
   EXPECT_FALSE(response->did_use_http_auth);
-  EXPECT_EQ(ProxyServer::FromPacString("HTTPS myproxy:70"),
+  EXPECT_EQ(PacResultElementToProxyServer("HTTPS myproxy:70"),
             response->proxy_server);
 
   TestCompletionCallback callback2;
@@ -7871,7 +7877,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetry) {
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(response->did_use_http_auth);
-  EXPECT_EQ(ProxyServer::FromPacString("HTTPS myproxy:70"),
+  EXPECT_EQ(PacResultElementToProxyServer("HTTPS myproxy:70"),
             response->proxy_server);
 
   // The password prompt info should not be set.
@@ -7963,7 +7969,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAlive) {
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(CheckBasicSecureProxyAuth(response->auth_challenge));
   EXPECT_FALSE(response->did_use_http_auth);
-  EXPECT_EQ(ProxyServer::FromPacString("HTTPS myproxy:70"),
+  EXPECT_EQ(PacResultElementToProxyServer("HTTPS myproxy:70"),
             response->proxy_server);
 
   TestCompletionCallback callback2;
@@ -7987,7 +7993,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAlive) {
   EXPECT_EQ(100, response->headers->GetContentLength());
   EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
   EXPECT_TRUE(response->did_use_http_auth);
-  EXPECT_EQ(ProxyServer::FromPacString("HTTPS myproxy:70"),
+  EXPECT_EQ(PacResultElementToProxyServer("HTTPS myproxy:70"),
             response->proxy_server);
 
   // The password prompt info should not be set.
@@ -7998,8 +8004,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAlive) {
 // connection that requires a restart, with a proxy change occurring over the
 // restart.
 TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAliveChangeProxy) {
-  const auto proxy1 = ProxyServer::FromPacString("HTTPS myproxy:70");
-  const auto proxy2 = ProxyServer::FromPacString("HTTPS myproxy2:70");
+  const auto proxy1 = PacResultElementToProxyServer("HTTPS myproxy:70");
+  const auto proxy2 = PacResultElementToProxyServer("HTTPS myproxy2:70");
   auto proxy_delegate = std::make_unique<SingleProxyDelegate>();
   proxy_delegate->set_proxy(proxy1);
 
@@ -8124,7 +8130,7 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxyAuthRetryNoKeepAliveChangeProxy) {
 // occurring over the restart.
 TEST_F(HttpNetworkTransactionTest,
        HttpsProxyAuthRetryNoKeepAliveChangeToDirect) {
-  const auto proxy = ProxyServer::FromPacString("HTTPS myproxy:70");
+  const auto proxy = PacResultElementToProxyServer("HTTPS myproxy:70");
   const auto direct = ProxyServer::Direct();
   auto proxy_delegate = std::make_unique<SingleProxyDelegate>();
   proxy_delegate->set_proxy(proxy);
@@ -11321,7 +11327,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   RecordingTestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  const base::TimeDelta kTimeIncrement = base::TimeDelta::FromSeconds(4);
+  const base::TimeDelta kTimeIncrement = base::Seconds(4);
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   HttpRequestInfo request;
@@ -11485,7 +11491,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   RecordingTestNetLog net_log;
   session_deps_.net_log = &net_log;
 
-  const base::TimeDelta kTimeIncrement = base::TimeDelta::FromSeconds(4);
+  const base::TimeDelta kTimeIncrement = base::Seconds(4);
   session_deps_.host_resolver->set_ondemand_mode(true);
 
   HttpRequestInfo request;
@@ -12631,7 +12637,7 @@ std::unique_ptr<HttpNetworkSession> SetupSessionForGroupIdTests(
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(kProtoHTTP2, "", 444);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort("https", "host.with.alternate", 443),
       NetworkIsolationKey(), alternative_service, expiration);
@@ -12856,7 +12862,7 @@ TEST_F(HttpNetworkTransactionTest, GroupIdForSOCKSConnections) {
     HttpNetworkSessionPeer peer(session.get());
 
     ProxyServer proxy_server(
-        ProxyServer::FromURI(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
+        ProxyUriToProxyServer(tests[i].proxy_server, ProxyServer::SCHEME_HTTP));
     ASSERT_TRUE(proxy_server.is_valid());
     CaptureGroupIdTransportSocketPool* socks_conn_pool =
         new CaptureGroupIdTransportSocketPool(&dummy_connect_job_params_);
@@ -13728,7 +13734,7 @@ TEST_F(HttpNetworkTransactionTest,
       session->http_server_properties();
   AlternativeService alternative_service(kProtoHTTP2, "different.example.org",
                                          444);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -13769,7 +13775,7 @@ TEST_F(HttpNetworkTransactionTest,
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(kProtoHTTP2, "", 444);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -13789,7 +13795,7 @@ TEST_F(HttpNetworkTransactionTest, ClearAlternativeServices) {
       session->http_server_properties();
   url::SchemeHostPort test_server("https", "www.example.org", 443);
   AlternativeService alternative_service(kProtoQUIC, "", 80);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetQuicAlternativeService(
       test_server, NetworkIsolationKey(), alternative_service, expiration,
       session->context().quic_context->params()->supported_versions);
@@ -13948,7 +13954,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicBroken) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(kProtoQUIC, alternative);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetQuicAlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration,
       DefaultSupportedQuicVersions());
@@ -14011,7 +14017,7 @@ TEST_F(HttpNetworkTransactionTest, IdentifyQuicNotBroken) {
 
   // Set up two QUIC alternative services for server.
   AlternativeServiceInfoVector alternative_service_info_vector;
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
 
   AlternativeService alternative_service1(kProtoQUIC, alternative1);
   alternative_service_info_vector.push_back(
@@ -14083,7 +14089,7 @@ TEST_F(HttpNetworkTransactionTest, MarkBrokenAlternateProtocolAndFallback) {
   // Port is ignored by MockConnect anyway.
   const AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                                666);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration);
 
@@ -14148,7 +14154,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedBlocked) {
   const int kUnrestrictedAlternatePort = 1024;
   AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                          kUnrestrictedAlternatePort);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(restricted_port_request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -14199,7 +14205,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedPermitted) {
   const int kUnrestrictedAlternatePort = 1024;
   AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                          kUnrestrictedAlternatePort);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(restricted_port_request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -14249,7 +14255,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortRestrictedAllowed) {
   const int kRestrictedAlternatePort = 80;
   AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                          kRestrictedAlternatePort);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(restricted_port_request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -14299,7 +14305,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed1) {
   const int kRestrictedAlternatePort = 80;
   AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                          kRestrictedAlternatePort);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(unrestricted_port_request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -14349,7 +14355,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolPortUnrestrictedAllowed2) {
   const int kUnrestrictedAlternatePort = 1025;
   AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                          kUnrestrictedAlternatePort);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(unrestricted_port_request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -14391,7 +14397,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
   const int kUnsafePort = 7;
   AlternativeService alternative_service(kProtoHTTP2, "www.example.org",
                                          kUnsafePort);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       url::SchemeHostPort(request.url), NetworkIsolationKey(),
       alternative_service, expiration);
@@ -14722,7 +14728,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   url::SchemeHostPort server("https", "www.example.org", 443);
   HostPortPair alternative("www.example.com", 443);
   AlternativeService alternative_service(kProtoHTTP2, alternative);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration);
 
@@ -15960,10 +15966,10 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   CommonConnectJobParams common_connect_job_params(
       session->CreateCommonConnectJobParams());
   TransportClientSocketPool* transport_pool = new TransportClientSocketPool(
-      50,                                // Max sockets for pool
-      1,                                 // Max sockets per group
-      base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
-      ProxyServer::Direct(), false,      // is_for_websockets
+      50,                            // Max sockets for pool
+      1,                             // Max sockets per group
+      base::Seconds(10),             // unused_idle_socket_timeout
+      ProxyServer::Direct(), false,  // is_for_websockets
       &common_connect_job_params);
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPool(ProxyServer::Direct(),
@@ -17754,7 +17760,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceNotOnHttp11) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(kProtoHTTP2, alternative);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration);
 
@@ -17822,7 +17828,7 @@ TEST_F(HttpNetworkTransactionTest, FailedAlternativeServiceIsNotUserVisible) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(kProtoHTTP2, alternative);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration);
 
@@ -17932,7 +17938,7 @@ TEST_F(HttpNetworkTransactionTest, AlternativeServiceShouldNotPoolToHttp11) {
   HttpServerProperties* http_server_properties =
       session->http_server_properties();
   AlternativeService alternative_service(kProtoHTTP2, alternative);
-  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  base::Time expiration = base::Time::Now() + base::Days(1);
   http_server_properties->SetHttp2AlternativeService(
       server, NetworkIsolationKey(), alternative_service, expiration);
 
@@ -20411,8 +20417,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
        CreateReportRestartWithAuth) {
   std::string extra_header_string = extra_headers_.ToString();
-  static const base::TimeDelta kSleepDuration =
-      base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kSleepDuration = base::Milliseconds(10);
 
   MockWrite data_writes1[] = {
       MockWrite("GET / HTTP/1.1\r\n"
@@ -20515,8 +20520,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
        CreateReportRestartWithAuthAsync) {
   std::string extra_header_string = extra_headers_.ToString();
-  static const base::TimeDelta kSleepDuration =
-      base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kSleepDuration = base::Milliseconds(10);
 
   MockWrite data_writes1[] = {
       MockWrite("GET / HTTP/1.1\r\n"
@@ -21178,8 +21182,7 @@ TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest,
 
 TEST_F(HttpNetworkTransactionNetworkErrorLoggingTest, ReportElapsedTime) {
   std::string extra_header_string = extra_headers_.ToString();
-  static const base::TimeDelta kSleepDuration =
-      base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kSleepDuration = base::Milliseconds(10);
 
   std::vector<MockWrite> data_writes = {
       MockWrite(ASYNC, 0,
@@ -21256,7 +21259,7 @@ TEST_F(HttpNetworkTransactionTest, AlwaysFailRequestToCache) {
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
@@ -21322,7 +21325,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTDoesntConfirm) {
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmSyncWrite) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("https://www.example.org/");
@@ -21445,7 +21448,7 @@ TEST_F(HttpNetworkTransactionTest, ZeroRTTSyncConfirmAsyncWrite) {
 }
 
 TEST_F(HttpNetworkTransactionTest, ZeroRTTAsyncConfirmSyncWrite) {
-  static const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(10);
+  static const base::TimeDelta kDelay = base::Milliseconds(10);
   HttpRequestInfo request;
   request.method = "POST";
   request.url = GURL("https://www.example.org/");

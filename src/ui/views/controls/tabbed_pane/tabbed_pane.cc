@@ -19,14 +19,15 @@
 #include "ui/base/default_style.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/skia_util.h"
-#include "ui/native_theme/native_theme.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -157,9 +158,8 @@ void Tab::OnFocus() {
     // Maintain the current Insets with CreatePaddedBorder.
     int border_size = 2;
     SetBorder(CreatePaddedBorder(
-        CreateSolidBorder(border_size,
-                          GetNativeTheme()->GetSystemColor(
-                              ui::NativeTheme::kColorId_FocusedBorderColor)),
+        CreateSolidBorder(border_size, GetColorProvider()->GetColor(
+                                           ui::kColorFocusableBorderFocused)),
         GetInsets() - gfx::Insets(border_size)));
   }
 
@@ -259,9 +259,9 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags fill_flags;
   fill_flags.setAntiAlias(true);
-  fill_flags.setColor(GetNativeTheme()->GetSystemColor(
-      HasFocus() ? ui::NativeTheme::kColorId_TabHighlightFocusedBackground
-                 : ui::NativeTheme::kColorId_TabHighlightBackground));
+  fill_flags.setColor(GetColorProvider()->GetColor(
+      HasFocus() ? ui::kColorTabBackgroundHighlightedFocused
+                 : ui::kColorTabBackgroundHighlighted));
   canvas->DrawPath(path, fill_flags);
 }
 
@@ -279,10 +279,9 @@ void Tab::UpdatePreferredTitleWidth() {
 
 void Tab::UpdateTitleColor() {
   DCHECK(GetWidget());
-  const SkColor font_color = GetNativeTheme()->GetSystemColor(
-      state_ == State::kActive
-          ? ui::NativeTheme::kColorId_TabTitleColorActive
-          : ui::NativeTheme::kColorId_TabTitleColorInactive);
+  const SkColor font_color = GetColorProvider()->GetColor(
+      state_ == State::kActive ? ui::kColorTabForegroundSelected
+                               : ui::kColorTabForeground);
   title_->SetEnabledColor(font_color);
 }
 
@@ -317,8 +316,8 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
   // These durations are taken from the Paper Tabs source:
   // https://github.com/PolymerElements/paper-tabs/blob/master/paper-tabs.html
   // See |selectionBar.expand| and |selectionBar.contract|.
-  expand_animation_->SetDuration(base::TimeDelta::FromMilliseconds(150));
-  contract_animation_->SetDuration(base::TimeDelta::FromMilliseconds(180));
+  expand_animation_->SetDuration(base::Milliseconds(150));
+  contract_animation_->SetDuration(base::Milliseconds(180));
 }
 
 TabStrip::~TabStrip() = default;
@@ -427,8 +426,8 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
     rect = gfx::Rect(max_cross_axis - kUnselectedBorderThickness, 0,
                      kUnselectedBorderThickness, height());
   }
-  canvas->FillRect(rect, GetNativeTheme()->GetSystemColor(
-                             ui::NativeTheme::kColorId_TabBottomBorder));
+  canvas->FillRect(rect,
+                   GetColorProvider()->GetColor(ui::kColorTabContentSeparator));
 
   Tab* tab = GetSelectedTab();
   if (!tab)
@@ -486,8 +485,8 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
                    max_main_axis - min_main_axis, kSelectedBorderThickness);
   if (!is_horizontal)
     rect.Transpose();
-  canvas->FillRect(rect, GetNativeTheme()->GetSystemColor(
-                             ui::NativeTheme::kColorId_TabSelectedBorderColor));
+  canvas->FillRect(rect,
+                   GetColorProvider()->GetColor(ui::kColorTabBorderSelected));
 }
 
 BEGIN_METADATA(TabStrip, View)

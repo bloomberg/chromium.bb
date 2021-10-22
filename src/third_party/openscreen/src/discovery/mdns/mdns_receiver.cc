@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "discovery/mdns/mdns_reader.h"
+#include "util/std_util.h"
 #include "util/trace_logging.h"
 
 namespace openscreen {
@@ -33,10 +34,7 @@ void MdnsReceiver::SetQueryCallback(
 }
 
 void MdnsReceiver::AddResponseCallback(ResponseClient* callback) {
-  auto it =
-      std::find(response_clients_.begin(), response_clients_.end(), callback);
-  OSP_DCHECK(it == response_clients_.end());
-
+  OSP_DCHECK(!Contains(response_clients_, callback));
   response_clients_.push_back(callback);
 }
 

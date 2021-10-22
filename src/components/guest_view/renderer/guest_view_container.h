@@ -11,7 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "ipc/ipc_message.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 namespace gfx {
 class Size;
@@ -28,6 +29,9 @@ class GuestViewRequest;
 class GuestViewContainer {
  public:
   explicit GuestViewContainer(content::RenderFrame* render_frame);
+
+  GuestViewContainer(const GuestViewContainer&) = delete;
+  GuestViewContainer& operator=(const GuestViewContainer&) = delete;
 
   static GuestViewContainer* FromID(int element_instance_id);
 
@@ -103,8 +107,6 @@ class GuestViewContainer {
   v8::Isolate* element_resize_isolate_;
 
   base::WeakPtrFactory<GuestViewContainer> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GuestViewContainer);
 };
 
 }  // namespace guest_view

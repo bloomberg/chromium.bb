@@ -15,9 +15,6 @@ namespace features {
 // release.
 extern const base::Feature kWebPaymentsExperimentalFeatures;
 
-// Used to control whether Google Pay cards are returned for basic-card.
-extern const base::Feature kReturnGooglePayInBasicCard;
-
 #if defined(OS_IOS)
 // Used to control the support for iOS third party apps as payment methods.
 extern const base::Feature kWebPaymentsNativeApps;
@@ -57,13 +54,6 @@ extern const base::Feature kWebPaymentsRedactShippingAddress;
 // Used to make autofill instrument more restrictive when responding to
 // hasEnrolledInstrument() queries.
 extern const base::Feature kStrictHasEnrolledAutofillInstrument;
-
-// Enables skip-to-GPay experimental flow.
-extern const base::Feature kPaymentRequestSkipToGPay;
-
-// Enables skip-to-GPay experimental flow, but only if user doesn't have an
-// eligible credit card.
-extern const base::Feature kPaymentRequestSkipToGPayIfNoCard;
 
 // If enabled, just-in-time installable payment handlers are ranked lower than
 // complete autofill instruments in payment sheet's method selection section.

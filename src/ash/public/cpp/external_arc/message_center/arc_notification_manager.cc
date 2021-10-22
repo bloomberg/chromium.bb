@@ -48,7 +48,8 @@ constexpr char kManagedProvisioningPackageName[] =
     "com.android.managedprovisioning";
 
 std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
-    const message_center::Notification& notification) {
+    const message_center::Notification& notification,
+    bool shown_in_popup) {
   DCHECK_EQ(notification.notifier_id().type,
             message_center::NotifierType::ARC_APPLICATION);
   DCHECK_EQ(kArcNotificationCustomViewType, notification.custom_view_type());
@@ -61,20 +62,26 @@ class DoNotDisturbManager : public message_center::MessageCenterObserver {
  public:
   explicit DoNotDisturbManager(ArcNotificationManager* manager)
       : manager_(manager) {}
+
+  DoNotDisturbManager(const DoNotDisturbManager&) = delete;
+  DoNotDisturbManager& operator=(const DoNotDisturbManager&) = delete;
+
   void OnQuietModeChanged(bool in_quiet_mode) override {
     manager_->SetDoNotDisturbStatusOnAndroid(in_quiet_mode);
   }
 
  private:
   ArcNotificationManager* const manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DoNotDisturbManager);
 };
 
 class VisibilityManager : public message_center::MessageCenterObserver {
  public:
   explicit VisibilityManager(ArcNotificationManager* manager)
       : manager_(manager) {}
+
+  VisibilityManager(const VisibilityManager&) = delete;
+  VisibilityManager& operator=(const VisibilityManager&) = delete;
+
   void OnCenterVisibilityChanged(
       message_center::Visibility visibility) override {
     manager_->OnMessageCenterVisibilityChanged(toMojom(visibility));
@@ -92,8 +99,6 @@ class VisibilityManager : public message_center::MessageCenterObserver {
   }
 
   ArcNotificationManager* const manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(VisibilityManager);
 };
 
 }  // namespace
@@ -101,6 +106,10 @@ class VisibilityManager : public message_center::MessageCenterObserver {
 class ArcNotificationManager::InstanceOwner {
  public:
   InstanceOwner() = default;
+
+  InstanceOwner(const InstanceOwner&) = delete;
+  InstanceOwner& operator=(const InstanceOwner&) = delete;
+
   ~InstanceOwner() = default;
 
   void SetInstanceRemote(
@@ -127,8 +136,6 @@ class ArcNotificationManager::InstanceOwner {
   ConnectionHolder<NotificationsInstance, NotificationsHost> holder_;
   std::unique_ptr<MojoChannel<NotificationsInstance, NotificationsHost>>
       channel_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstanceOwner);
 };
 
 // static

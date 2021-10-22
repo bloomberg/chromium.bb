@@ -46,9 +46,9 @@
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/transform.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/accessibility_paint_checks.h"
 #include "ui/views/accessibility/ax_event_manager.h"
@@ -125,11 +125,14 @@ class ScopedChildrenLock {
  public:
   explicit ScopedChildrenLock(const View* view)
       : reset_(&view->iterating_, true) {}
+
+  ScopedChildrenLock(const ScopedChildrenLock&) = delete;
+  ScopedChildrenLock& operator=(const ScopedChildrenLock&) = delete;
+
   ~ScopedChildrenLock() = default;
 
  private:
   base::AutoReset<bool> reset_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedChildrenLock);
 };
 #else
 class ScopedChildrenLock {
@@ -640,7 +643,7 @@ gfx::Transform View::GetTransform() const {
     return gfx::Transform();
 
   gfx::Transform transform = layer()->transform();
-  gfx::ScrollOffset scroll_offset = layer()->CurrentScrollOffset();
+  gfx::Vector2dF scroll_offset = layer()->CurrentScrollOffset();
   // Offsets for layer-based scrolling are never negative, but the horizontal
   // scroll direction is reversed in RTL via canvas flipping.
   transform.Translate((GetMirrored() ? 1 : -1) * scroll_offset.x(),
@@ -1249,9 +1252,15 @@ const ui::NativeTheme* View::GetNativeTheme() const {
   if (widget)
     return widget->GetNativeTheme();
 
-  // Crash dump here to ensure we catch fallthrough to the global NativeTheme
-  // instance on all Chromium builds (crbug.com/1056756).
-  base::debug::DumpWithoutCrashing();
+  static bool has_crashed_reported = false;
+  // Crash on debug builds and dump without crashing on release builds to ensure
+  // we catch fallthrough to the global NativeTheme instance on all Chromium
+  // builds (crbug.com/1056756).
+  if (!has_crashed_reported) {
+    DCHECK(false);
+    base::debug::DumpWithoutCrashing();
+    has_crashed_reported = true;
+  }
 
   return ui::NativeTheme::GetInstanceForNativeUi();
 }

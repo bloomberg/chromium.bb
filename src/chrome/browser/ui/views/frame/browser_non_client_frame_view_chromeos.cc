@@ -258,6 +258,15 @@ BrowserNonClientFrameViewChromeOS::GetTabSearchBubbleHost() {
   return tab_search_bubble_host_;
 }
 
+void BrowserNonClientFrameViewChromeOS::UpdateMinimumSize() {
+  gfx::Size current_min_size = GetMinimumSize();
+  if (last_minimum_size_ == current_min_size)
+    return;
+
+  last_minimum_size_ = current_min_size;
+  GetWidget()->OnSizeConstraintsChanged();
+}
+
 gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForClientView() const {
   // The ClientView must be flush with the top edge of the widget so that the
   // web contents can take up the entire screen in immersive fullscreen (with
@@ -485,6 +494,17 @@ void BrowserNonClientFrameViewChromeOS::OnDisplayTabletStateChanged(
     case display::TabletState::kExitingTabletMode:
       break;
   }
+}
+
+void BrowserNonClientFrameViewChromeOS::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  // When the display is rotated, the frame header may have invalid snap icons.
+  // For example, when |features::kVerticalSnapState| is enabled, rotating from
+  // landscape display to portrait display layout should update snap icons from
+  // left/right arrows to upward/downward arrows for top and bottom snaps.
+  if ((changed_metrics & DISPLAY_METRIC_ROTATION) && frame_header_)
+    frame_header_->InvalidateLayout();
 }
 
 void BrowserNonClientFrameViewChromeOS::OnTabletModeToggled(bool enabled) {

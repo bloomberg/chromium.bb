@@ -4,17 +4,18 @@
 
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_view.h"
 
+#include <initializer_list>
 #include <memory>
+#include <numeric>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_bubble_timeout.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
@@ -61,11 +62,11 @@ namespace {
 
 // The amount of time the promo should stay onscreen if the user
 // never hovers over it.
-constexpr base::TimeDelta kDelayDefault = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kDelayDefault = base::Seconds(10);
 
 // The amount of time the promo should stay onscreen after the
 // user stops hovering over it.
-constexpr base::TimeDelta kDelayShort = base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kDelayShort = base::Seconds(3);
 
 // Maximum width of the bubble. Longer strings will cause wrapping.
 constexpr int kBubbleMaxWidthDip = 340;
@@ -82,12 +83,6 @@ constexpr SkColor kBubbleButtonTextColor = SK_ColorWHITE;
 // The outline color of the button.
 constexpr SkColor kBubbleButtonBorderColor = gfx::kGoogleGrey300;
 
-// The focus ring color of the button.
-constexpr SkColor kBubbleButtonFocusRingColor = SK_ColorWHITE;
-
-// The background color of the button when focused.
-constexpr SkColor kBubbleButtonFocusedBackgroundColor = gfx::kGoogleBlue600;
-
 // The background color of the button when highlighted.
 constexpr SkColor kBubbleButtonHighlightColor = gfx::kGoogleBlue300;
 
@@ -97,22 +92,22 @@ class MdIPHBubbleButton : public views::MdTextButton {
 
   MdIPHBubbleButton(PressedCallback callback,
                     const std::u16string& text,
-                    bool has_border)
+                    bool is_default_button)
       : MdTextButton(callback,
                      text,
                      ChromeTextContext::CONTEXT_IPH_BUBBLE_BUTTON),
-        has_border_(has_border) {
+        button_colors_(ComputeButtonColors(is_default_button)) {
     // Prominent style gives a button hover highlight.
     SetProminent(true);
     // TODO(kerenzhu): IPH bubble uses blue600 as the background color
     // for both regular and dark mode. We might want to use a
     // dark-mode-appropriate background color so that overriding text color
     // is not needed.
-    SetEnabledTextColors(kBubbleButtonTextColor);
+    SetEnabledTextColors(button_colors_.text_color);
     // TODO(crbug/1112244): Temporary fix for Mac. Bubble shouldn't be in
     // inactive style when the bubble loses focus.
-    SetTextColor(ButtonState::STATE_DISABLED, kBubbleButtonTextColor);
-    views::FocusRing::Get(this)->SetColor(kBubbleButtonFocusRingColor);
+    SetTextColor(ButtonState::STATE_DISABLED, button_colors_.text_color);
+    views::FocusRing::Get(this)->SetColor(button_colors_.focus_ring_color);
     GetViewAccessibility().OverrideIsLeaf(true);
   }
   MdIPHBubbleButton(const MdIPHBubbleButton&) = delete;
@@ -123,27 +118,39 @@ class MdIPHBubbleButton : public views::MdTextButton {
     // Prominent MD button does not have a border.
     // Override this method to draw a border.
     // Adapted from MdTextButton::UpdateBackgroundColor()
-    ui::NativeTheme* theme = GetNativeTheme();
-
-    // Default button background color is the same as IPH bubble's color.
-    const SkColor kBubbleBackgroundColor = ThemeProperties::GetDefaultColor(
-        ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND, false);
-
-    SkColor bg_color = HasFocus() ? kBubbleButtonFocusedBackgroundColor
-                                  : kBubbleBackgroundColor;
+    SkColor bg_color = button_colors_.background_color;
     if (GetState() == STATE_PRESSED)
-      bg_color = theme->GetSystemButtonPressedColor(bg_color);
-
-    SkColor stroke_color =
-        has_border_ ? kBubbleButtonBorderColor : kBubbleBackgroundColor;
+      bg_color = GetNativeTheme()->GetSystemButtonPressedColor(bg_color);
 
     SetBackground(CreateBackgroundFromPainter(
         views::Painter::CreateRoundRectWith1PxBorderPainter(
-            bg_color, stroke_color, GetCornerRadius())));
+            bg_color, button_colors_.background_stroke_color,
+            GetCornerRadius())));
   }
 
  private:
-  bool has_border_;
+  struct ButtonColors {
+    SkColor text_color;
+    SkColor background_color;
+    SkColor background_stroke_color;
+    SkColor focus_ring_color;
+  };
+
+  static ButtonColors ComputeButtonColors(bool is_default_button) {
+    const SkColor kBubbleBackgroundColor = ThemeProperties::GetDefaultColor(
+        ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND, false);
+    ButtonColors button_colors;
+    button_colors.text_color =
+        is_default_button ? kBubbleBackgroundColor : kBubbleButtonTextColor;
+    button_colors.background_color =
+        is_default_button ? kBubbleButtonTextColor : kBubbleBackgroundColor;
+    button_colors.background_stroke_color =
+        is_default_button ? kBubbleButtonTextColor : kBubbleButtonBorderColor;
+    button_colors.focus_ring_color = kBubbleBackgroundColor;
+    return button_colors;
+  }
+
+  ButtonColors button_colors_;
 };
 
 BEGIN_METADATA(MdIPHBubbleButton, views::MdTextButton)
@@ -162,10 +169,6 @@ class CloseTutorialButton : public views::ImageButton {
         this,
         std::make_unique<views::CircleHighlightPathGenerator>(gfx::Insets()));
     views::InkDrop::Get(this)->SetBaseColor(kBubbleButtonHighlightColor);
-    SetProperty(views::kFlexBehaviorKey,
-                views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
-                                         views::MaximumFlexSizeRule::kUnbounded)
-                    .WithAlignment(views::LayoutAlignment::kEnd));
     SetAccessibleName(l10n_util::GetStringUTF16(IDS_CLOSE_TUTORIAL));
   }
 };
@@ -243,12 +246,13 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
 
   // Bubble will not auto-dismiss if there's buttons.
   if (params.buttons.empty()) {
-    feature_promo_bubble_timeout_ = std::make_unique<FeaturePromoBubbleTimeout>(
-        params.timeout_no_interaction ? *params.timeout_no_interaction
-                                      : kDelayDefault,
-        params.timeout_after_interaction ? *params.timeout_after_interaction
-                                         : kDelayShort,
-        params.timeout_callback);
+    timeout_no_interaction_ = params.timeout_no_interaction
+                                  ? *params.timeout_no_interaction
+                                  : kDelayDefault;
+    timeout_after_interaction_ = params.timeout_after_interaction
+                                     ? *params.timeout_after_interaction
+                                     : kDelayShort;
+    timeout_callback_ = std::move(params.timeout_callback);
   }
 
   const std::u16string body_text = std::move(params.body_text);
@@ -275,14 +279,11 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
   const SkColor text_color = theme_provider->GetColor(
       ThemeProperties::COLOR_FEATURE_PROMO_BUBBLE_TEXT);
 
-  // Add child views.
+  // Add progress indicator (optional) and its container.
   views::View* top_row_container = nullptr;
-  if (params.tutorial_progress_current || params.has_close_button)
-    top_row_container = AddChildView(std::make_unique<views::View>());
-
-  // Add progress indicator.
   if (params.tutorial_progress_current) {
     DCHECK(params.tutorial_progress_max);
+    top_row_container = AddChildView(std::make_unique<views::View>());
     // TODO(crbug.com/1197208): surface progress information in a11y tree
     for (int i = 0; i < params.tutorial_progress_max; ++i) {
       SkColor fill_color = i < params.tutorial_progress_current
@@ -294,6 +295,31 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
     }
   }
 
+  // Add body container views. If there is only text in the body, we won't
+  // bother adding these at all.
+
+  // The bubble body container is horizontal and contains the icon, the text,
+  // and the close button.
+  views::View* bubble_body_container = nullptr;
+  // The text container is vertical and sits inside the bubble body container.
+  // It contains the title and body text of the bubble.
+  views::View* text_container = nullptr;
+  if (params.body_icon || (params.has_close_button && !top_row_container)) {
+    bubble_body_container = AddChildView(std::make_unique<views::View>());
+    text_container =
+        bubble_body_container->AddChildView(std::make_unique<views::View>());
+  }
+
+  // Add the body icon (optional).
+  views::ImageView* icon_view = nullptr;
+  constexpr int kBodyIconSize = 24;
+  if (params.body_icon) {
+    icon_view = bubble_body_container->AddChildView(
+        std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
+            *params.body_icon, text_color, kBodyIconSize)));
+  }
+
+  // This callback is used by both the close button and additional buttons.
   auto close_bubble_and_run_callback = [](FeaturePromoBubbleView* view,
                                           base::RepeatingClosure callback,
                                           const ui::Event& event) {
@@ -301,34 +327,20 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
     callback.Run();
   };
 
-  // Add close button.
+  // Add close button (optional).
+  CloseTutorialButton* close_button = nullptr;
   if (params.has_close_button) {
-    // Close button should only be used for tutorial use cases.
-    DCHECK(params.tutorial_progress_current);
-    top_row_container->AddChildView(
-        std::make_unique<CloseTutorialButton>(base::BindRepeating(
-            close_bubble_and_run_callback, base::Unretained(this),
-            params.dismiss_callback.has_value()
-                ? std::move(params.dismiss_callback.value())
-                : base::DoNothing())));
+    close_button =
+        (top_row_container ? top_row_container : bubble_body_container)
+            ->AddChildView(
+                std::make_unique<CloseTutorialButton>(base::BindRepeating(
+                    close_bubble_and_run_callback, base::Unretained(this),
+                    params.dismiss_callback.has_value()
+                        ? std::move(params.dismiss_callback.value())
+                        : base::DoNothing())));
   }
 
-  // Add body icon (optional) and associated containers.
-  views::View* outer_label_container = nullptr;
-  views::View* inner_label_container = nullptr;
-  views::ImageView* icon_view = nullptr;
-  constexpr int kBodyIconSize = 24;
-  if (params.body_icon) {
-    outer_label_container = AddChildView(std::make_unique<views::View>());
-    icon_view = outer_label_container->AddChildView(
-        std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-            *params.body_icon, text_color, kBodyIconSize)));
-    inner_label_container =
-        outer_label_container->AddChildView(std::make_unique<views::View>());
-  }
-
-  views::View* const label_parent =
-      inner_label_container ? inner_label_container : this;
+  views::View* const label_parent = text_container ? text_container : this;
 
   // Add title label.
   views::Label* title_label = nullptr;
@@ -352,7 +364,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
   body_label->SetMultiLine(true);
   body_label->SetElideBehavior(gfx::NO_ELIDE);
 
-  // Add buttons.
+  // Add other buttons.
   views::View* button_container = nullptr;
   if (!params.buttons.empty()) {
     button_container = AddChildView(std::make_unique<views::View>());
@@ -402,6 +414,24 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
         views::FlexSpecification(top_layout.GetDefaultFlexRule()));
   }
 
+  // Close button should float right in whatever container it's in.
+  if (close_button) {
+    close_button->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(views::LayoutOrientation::kHorizontal,
+                                 views::MinimumFlexSizeRule::kPreferred,
+                                 views::MaximumFlexSizeRule::kUnbounded)
+            .WithAlignment(views::LayoutAlignment::kEnd));
+    close_button->SetProperty(views::kMarginsKey,
+                              gfx::Insets(0, default_spacing, 0, 0));
+  }
+
+  // Icon view should have padding between it and the title or body label.
+  if (icon_view) {
+    icon_view->SetProperty(views::kMarginsKey,
+                           gfx::Insets(0, 0, 0, default_spacing));
+  }
+
   // Set label flex properties. This ensures that if the width of the bubble
   // maxes out the text will shrink on the cross-axis and grow to multiple
   // lines without getting cut off.
@@ -415,41 +445,27 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
   if (title_label)
     title_label->SetProperty(views::kFlexBehaviorKey, text_flex);
 
-  if (outer_label_container) {
+  if (bubble_body_container) {
     auto& outer_layout =
-        outer_label_container
+        bubble_body_container
             ->SetLayoutManager(std::make_unique<views::FlexLayout>())
             ->SetOrientation(views::LayoutOrientation::kHorizontal)
             .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
             .SetIgnoreDefaultMainAxisMargins(true);
-    outer_label_container->SetProperty(
+    bubble_body_container->SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(outer_layout.GetDefaultFlexRule()));
 
     auto& inner_layout =
-        inner_label_container
-            ->SetLayoutManager(std::make_unique<views::FlexLayout>())
+        text_container->SetLayoutManager(std::make_unique<views::FlexLayout>())
             ->SetOrientation(views::LayoutOrientation::kVertical)
             .SetCollapseMargins(true)
             .SetDefault(views::kMarginsKey,
                         gfx::Insets(0, 0, default_spacing, 0))
             .SetIgnoreDefaultMainAxisMargins(true);
-    inner_label_container->SetProperty(
+    text_container->SetProperty(
         views::kFlexBehaviorKey,
         views::FlexSpecification(inner_layout.GetDefaultFlexRule()));
-
-    // Align the midpoint of the first line of text with the icon.
-    const gfx::FontList& first_line_font =
-        title_label ? title_label->font_list() : body_label->font_list();
-    const int to_text_midpoint =
-        first_line_font.GetBaseline() - first_line_font.GetCapHeight() / 2;
-    const int icon_top_margin = to_text_midpoint - kBodyIconSize / 2;
-    icon_view->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets(std::max(0, icon_top_margin), 0, 0, default_spacing));
-    inner_label_container->SetProperty(
-        views::kMarginsKey,
-        gfx::Insets(std::max(0, -icon_top_margin), 0, 0, 0));
   }
 
   // Set up button container layout.
@@ -503,8 +519,9 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(CreateParams params)
   else
     widget->ShowInactive();
 
-  if (feature_promo_bubble_timeout_)
-    feature_promo_bubble_timeout_->OnBubbleShown(this);
+  // Start auto close timer if a timeout is enabled.
+  if (!timeout_no_interaction_.is_zero())
+    StartAutoCloseTimer(timeout_no_interaction_);
 }
 
 FeaturePromoBubbleView::~FeaturePromoBubbleView() = default;
@@ -530,8 +547,16 @@ FeaturePromoBubbleView* FeaturePromoBubbleView::Create(CreateParams params) {
   return new FeaturePromoBubbleView(std::move(params));
 }
 
-FeaturePromoBubbleTimeout* FeaturePromoBubbleView::GetTimeoutForTesting() {
-  return feature_promo_bubble_timeout_.get();
+void FeaturePromoBubbleView::StartAutoCloseTimer(
+    base::TimeDelta auto_close_duration) {
+  auto_close_timer_.Start(FROM_HERE, auto_close_duration, this,
+                          &FeaturePromoBubbleView::OnTimeout);
+}
+
+void FeaturePromoBubbleView::OnTimeout() {
+  if (timeout_callback_)
+    timeout_callback_.Run();
+  CloseBubble();
 }
 
 void FeaturePromoBubbleView::CloseBubble() {
@@ -545,13 +570,17 @@ bool FeaturePromoBubbleView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void FeaturePromoBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  if (feature_promo_bubble_timeout_)
-    feature_promo_bubble_timeout_->OnMouseEntered();
+  // While user is hovering the bubble, do not autoclose.
+  auto_close_timer_.Stop();
 }
 
 void FeaturePromoBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  if (feature_promo_bubble_timeout_)
-    feature_promo_bubble_timeout_->OnMouseExited();
+  if (timeout_after_interaction_.is_zero() && timeout_no_interaction_.is_zero())
+    return;
+
+  StartAutoCloseTimer(timeout_after_interaction_.is_zero()
+                          ? timeout_no_interaction_
+                          : timeout_after_interaction_);
 }
 
 std::u16string FeaturePromoBubbleView::GetAccessibleWindowTitle() const {

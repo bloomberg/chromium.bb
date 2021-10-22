@@ -52,7 +52,7 @@
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
-#include "third_party/blink/public/mojom/page/record_content_to_visible_time_request.mojom.h"
+#include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
@@ -101,6 +101,12 @@ namespace {
 class CloseMessageSendingRenderViewVisitor : public RenderViewVisitor {
  public:
   CloseMessageSendingRenderViewVisitor() = default;
+
+  CloseMessageSendingRenderViewVisitor(
+      const CloseMessageSendingRenderViewVisitor&) = delete;
+  CloseMessageSendingRenderViewVisitor& operator=(
+      const CloseMessageSendingRenderViewVisitor&) = delete;
+
   ~CloseMessageSendingRenderViewVisitor() override = default;
 
   void CloseRenderViews() {
@@ -118,7 +124,6 @@ class CloseMessageSendingRenderViewVisitor : public RenderViewVisitor {
 
  private:
   std::vector<RenderView*> live_render_views;
-  DISALLOW_COPY_AND_ASSIGN(CloseMessageSendingRenderViewVisitor);
 };
 
 class FakeWebURLLoader : public blink::WebURLLoader {
@@ -763,7 +768,7 @@ void RenderViewTest::Reload(const GURL& url) {
   auto common_params = blink::mojom::CommonNavigationParams::New(
       url, absl::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_LINK, blink::mojom::NavigationType::RELOAD,
-      blink::NavigationDownloadPolicy(), false, GURL(), GURL(),
+      blink::NavigationDownloadPolicy(), false, GURL(),
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
       nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
@@ -899,7 +904,7 @@ void RenderViewTest::GoToOffset(int offset,
       url, absl::nullopt, blink::mojom::Referrer::New(),
       ui::PAGE_TRANSITION_FORWARD_BACK,
       blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT,
-      blink::NavigationDownloadPolicy(), false, GURL(), GURL(),
+      blink::NavigationDownloadPolicy(), false, GURL(),
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
       nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,

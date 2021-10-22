@@ -19,7 +19,7 @@ namespace base {
 
 class Value;
 
-}  // base
+}  // namespace base
 
 namespace chromeos {
 
@@ -27,6 +27,9 @@ namespace chromeos {
 class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
  public:
   CryptohomeWebUIHandler();
+
+  CryptohomeWebUIHandler(const CryptohomeWebUIHandler&) = delete;
+  CryptohomeWebUIHandler& operator=(const CryptohomeWebUIHandler&) = delete;
 
   ~CryptohomeWebUIHandler() override;
 
@@ -37,7 +40,7 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
   // This method is called from JavaScript.
   void OnPageLoaded(const base::ListValue* args);
 
-  void DidGetNSSUtilInfoOnUIThread(bool is_tpm_token_ready);
+  void GotIsTPMTokenEnabledOnUIThread(bool is_tpm_token_enabled);
 
   void OnIsMounted(absl::optional<user_data_auth::IsMountedReply> reply);
   void OnPkcs11IsTpmTokenReady(
@@ -53,7 +56,6 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
                              const base::Value& value);
 
   base::WeakPtrFactory<CryptohomeWebUIHandler> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeWebUIHandler);
 };
 
 }  // namespace chromeos

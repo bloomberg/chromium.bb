@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
+import './navigation_shared_vars.js';
 import './page_toolbar.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
@@ -69,6 +74,20 @@ export class NavigationViewPanelElement extends PolymerElement {
 
       /**
        * Can only be set to True if specified from the parent element by
+       * adding show-banner as an attribute to <navigation-view-panel>. If
+       * True, a banner will appear above the 2 column view (sidebar +
+       * page). If False, banner grid-area will not show and regular grid
+       * layout will be used based on show-tool-bar property.
+       * @type {boolean}
+       */
+      showBanner: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
+      /**
+       * Can only be set to True if specified from the parent element by
        * adding show-tool-bar as an attribute to <navigation-view-panel>. If
        * True, a toolbar will appear at the top of the navigation view panel
        * with a 2 column view below it (sidebar + page). If False,
@@ -79,7 +98,32 @@ export class NavigationViewPanelElement extends PolymerElement {
         type: Boolean,
         value: false,
       },
+
+      /** @protected {boolean} */
+      showNav: {
+        type: Boolean,
+      },
     }
+  }
+
+  /** @override */
+  constructor() {
+    super();
+    window.addEventListener('menu-tap', () => this.onMenuButtonTap_());
+
+    /**
+     * Event callback for 'scroll'.
+     * @private {?Function}
+     */
+    this.scrollClassHandler_ = () => {
+      this.onScroll_();
+    };
+  }
+
+  /** @override */
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('scroll', this.scrollClassHandler_);
   }
 
   /**
@@ -150,6 +194,11 @@ export class NavigationViewPanelElement extends PolymerElement {
     if (!this.selectedItem)
       return;
     const pageComponent = this.getPage_(this.selectedItem);
+
+    if (this.$.drawer.open) {
+      this.$.drawer.close();
+    }
+
     this.showPage_(pageComponent);
 
     this.notifyEvent(navigationPageChanged);
@@ -208,6 +257,22 @@ export class NavigationViewPanelElement extends PolymerElement {
     // Hide all existing pages.
     Array.from(components).map((c) => c.hidden = true);
     pageComponent.hidden = false;
+  }
+
+  onMenuButtonTap_() {
+    this.$.drawer.toggle();
+  }
+
+  /** @private */
+  onScroll_() {
+    if (this.showToolBar) {
+      const scrollTop = document.documentElement.scrollTop;
+      if (scrollTop <= 0) {
+        this.shadowRoot.querySelector('page-toolbar').removeAttribute('shadow');
+        return;
+      }
+      this.shadowRoot.querySelector('page-toolbar').setAttribute('shadow', '');
+    }
   }
 }
 

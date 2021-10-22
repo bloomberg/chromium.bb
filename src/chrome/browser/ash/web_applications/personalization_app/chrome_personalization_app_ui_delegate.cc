@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/wallpaper/local_image_info.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
@@ -140,20 +139,17 @@ void ChromePersonalizationAppUiDelegate::GetLocalImages(
 }
 
 void ChromePersonalizationAppUiDelegate::GetLocalImageThumbnail(
-    const base::UnguessableToken& id,
+    const base::FilePath& path,
     GetLocalImageThumbnailCallback callback) {
-  const auto& entry = local_image_info_map_.find(id);
-  if (entry == local_image_info_map_.end()) {
-    mojo::ReportBadMessage("Invalid local image id received");
+  if (local_images_.count(path) == 0) {
+    mojo::ReportBadMessage("Invalid local image path received");
     return;
   }
-  const base::FilePath& file_path = entry->second.path;
-
   if (!thumbnail_loader_)
     thumbnail_loader_ = std::make_unique<ash::ThumbnailLoader>(profile_);
 
   ash::ThumbnailLoader::ThumbnailRequest request(
-      file_path,
+      path,
       gfx::Size(kLocalImageThumbnailSizeDip, kLocalImageThumbnailSizeDip));
 
   thumbnail_loader_->Load(
@@ -190,8 +186,8 @@ void ChromePersonalizationAppUiDelegate::OnWallpaperChanged() {
       GURL(webui::GetBitmapDataUrl(*current_wallpaper_resized.bitmap()));
 
   switch (info.type) {
-    case ash::WallpaperType::DAILY:
-    case ash::WallpaperType::ONLINE: {
+    case ash::WallpaperType::kDaily:
+    case ash::WallpaperType::kOnline: {
       if (info.collection_id.empty() || !info.asset_id.has_value()) {
         DVLOG(2) << "no collection_id or asset_id found";
         // Older versions of ChromeOS do not store these information, need to
@@ -209,7 +205,7 @@ void ChromePersonalizationAppUiDelegate::OnWallpaperChanged() {
                       std::vector<backdrop::Collection>{collection});
       return;
     }
-    case ash::WallpaperType::CUSTOMIZED: {
+    case ash::WallpaperType::kCustomized: {
       base::FilePath file_name = base::FilePath(info.location).BaseName();
 
       // Match selected wallpaper based on full filename including extension.
@@ -225,18 +221,18 @@ void ChromePersonalizationAppUiDelegate::OnWallpaperChanged() {
 
       return;
     }
-    case ash::WallpaperType::DEFAULT:
-    case ash::WallpaperType::DEVICE:
-    case ash::WallpaperType::ONE_SHOT:
-    case ash::WallpaperType::POLICY:
-    case ash::WallpaperType::THIRDPARTY:
+    case ash::WallpaperType::kDefault:
+    case ash::WallpaperType::kDevice:
+    case ash::WallpaperType::kOneShot:
+    case ash::WallpaperType::kPolicy:
+    case ash::WallpaperType::kThirdParty:
       NotifyWallpaperChanged(
           chromeos::personalization_app::mojom::CurrentWallpaper::New(
               wallpaper_data_url, /*attribution=*/std::vector<std::string>(),
               info.layout, info.type,
               /*key=*/base::UnguessableToken::Create().ToString()));
       return;
-    case ash::WallpaperType::WALLPAPER_TYPE_COUNT:
+    case ash::WallpaperType::kCount:
       mojo::ReportBadMessage("Impossible WallpaperType received");
       return;
   }
@@ -272,12 +268,10 @@ void ChromePersonalizationAppUiDelegate::SelectWallpaper(
 }
 
 void ChromePersonalizationAppUiDelegate::SelectLocalImage(
-    const base::UnguessableToken& id,
+    const base::FilePath& path,
     SelectLocalImageCallback callback) {
-  const auto& it = local_image_info_map_.find(id);
-
-  if (it == local_image_info_map_.end()) {
-    mojo::ReportBadMessage("Invalid local image id selected");
+  if (local_images_.count(path) == 0) {
+    mojo::ReportBadMessage("Invalid local image path selected");
     return;
   }
   if (pending_select_local_image_callback_)
@@ -285,7 +279,7 @@ void ChromePersonalizationAppUiDelegate::SelectLocalImage(
   pending_select_local_image_callback_ = std::move(callback);
 
   WallpaperController::Get()->SetCustomWallpaper(
-      GetAccountId(), it->second.path,
+      GetAccountId(), path,
       ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
       /*preview_mode=*/false,
       base::BindOnce(&ChromePersonalizationAppUiDelegate::OnLocalImageSelected,
@@ -368,15 +362,8 @@ void ChromePersonalizationAppUiDelegate::OnFetchCollectionImages(
 void ChromePersonalizationAppUiDelegate::OnGetLocalImages(
     GetLocalImagesCallback callback,
     const std::vector<base::FilePath>& images) {
-  local_image_info_map_.clear();
-  std::vector<ash::LocalImageInfo> result;
-  for (const auto& image_path : images) {
-    ash::LocalImageInfo local_image_info = {base::UnguessableToken::Create(),
-                                            image_path};
-    local_image_info_map_.insert({local_image_info.id, local_image_info});
-    result.push_back(local_image_info);
-  }
-  std::move(callback).Run(std::move(result));
+  local_images_ = std::set<base::FilePath>(images.begin(), images.end());
+  std::move(callback).Run(images);
 }
 
 void ChromePersonalizationAppUiDelegate::OnGetLocalImageThumbnail(

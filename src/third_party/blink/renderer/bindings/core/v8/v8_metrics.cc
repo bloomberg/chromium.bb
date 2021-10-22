@@ -85,7 +85,6 @@ void V8MetricsRecorder::AddMainThreadEvent(
 
 namespace {
 
-#if BUILDFLAG(USE_V8_OILPAN)
 // Helper function to convert a byte count to a KB count, capping at
 // INT_MAX if the number is larger than that.
 constexpr int32_t CappedSizeInKB(int64_t size_in_bytes) {
@@ -100,100 +99,95 @@ constexpr int32_t CappedEfficacyInKBPerMs(double efficacy_in_bytes_per_us) {
 
 void CheckCppEvents(const v8::metrics::GarbageCollectionFullCycle& event) {
   // Check that all used values have been initialized.
-  DCHECK_NE(-1, event.total_cpp.mark_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.total_cpp.weak_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.total_cpp.compact_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.total_cpp.sweep_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_cpp.mark_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_cpp.weak_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_cpp.compact_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_cpp.sweep_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_atomic_cpp.mark_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_atomic_cpp.weak_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_atomic_cpp.compact_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.main_thread_atomic_cpp.sweep_wall_clock_duration_in_us);
-  DCHECK_NE(-1, event.objects_cpp.bytes_before);
-  DCHECK_NE(-1, event.objects_cpp.bytes_after);
-  DCHECK_NE(-1, event.objects_cpp.bytes_freed);
-  DCHECK_NE(-1, event.memory_cpp.bytes_freed);
-  DCHECK_NE(-1, event.efficiency_cpp_in_bytes_per_us);
-  DCHECK_NE(-1, event.main_thread_efficiency_cpp_in_bytes_per_us);
-  DCHECK_NE(-1, event.collection_rate_cpp_in_percent);
+  DCHECK_LE(0, event.total_cpp.mark_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.total_cpp.weak_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.total_cpp.compact_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.total_cpp.sweep_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_cpp.mark_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_cpp.weak_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_cpp.compact_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_cpp.sweep_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_atomic_cpp.mark_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_atomic_cpp.weak_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_atomic_cpp.compact_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.main_thread_atomic_cpp.sweep_wall_clock_duration_in_us);
+  DCHECK_LE(0, event.objects_cpp.bytes_before);
+  DCHECK_LE(0, event.objects_cpp.bytes_after);
+  DCHECK_LE(0, event.objects_cpp.bytes_freed);
+  DCHECK_LE(0, event.memory_cpp.bytes_freed);
+  DCHECK_LE(0, event.efficiency_cpp_in_bytes_per_us);
+  DCHECK_LE(0, event.main_thread_efficiency_cpp_in_bytes_per_us);
+  DCHECK_LE(0, event.collection_rate_cpp_in_percent);
 }
-#endif  // USE_V8_OILPAN
 
 }  // namespace
 
 void V8MetricsRecorder::AddMainThreadEvent(
     const v8::metrics::GarbageCollectionFullCycle& event,
     ContextId context_id) {
-#if BUILDFLAG(USE_V8_OILPAN)
-  // Cpp events should always be populated when building with USE_V8_OILPAN.
   CheckCppEvents(event);
   // Report throughput metrics:
-  UMA_HISTOGRAM_TIMES("V8.GC.Cycle.Full.Cpp",
-                      base::TimeDelta::FromMicroseconds(
-                          event.total_cpp.mark_wall_clock_duration_in_us +
-                          event.total_cpp.weak_wall_clock_duration_in_us +
-                          event.total_cpp.compact_wall_clock_duration_in_us +
-                          event.total_cpp.sweep_wall_clock_duration_in_us));
-  UMA_HISTOGRAM_TIMES("V8.GC.Cycle.Full.Mark.Cpp",
-                      base::TimeDelta::FromMicroseconds(
-                          event.total_cpp.mark_wall_clock_duration_in_us));
-  UMA_HISTOGRAM_TIMES("V8.GC.Cycle.Full.Weak.Cpp",
-                      base::TimeDelta::FromMicroseconds(
-                          event.total_cpp.weak_wall_clock_duration_in_us));
-  UMA_HISTOGRAM_TIMES("V8.GC.Cycle.Full.Compact.Cpp",
-                      base::TimeDelta::FromMicroseconds(
-                          event.total_cpp.compact_wall_clock_duration_in_us));
-  UMA_HISTOGRAM_TIMES("V8.GC.Cycle.Full.Sweep.Cpp",
-                      base::TimeDelta::FromMicroseconds(
-                          event.total_cpp.sweep_wall_clock_duration_in_us));
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.Full.Cpp",
+      base::Microseconds(event.total_cpp.mark_wall_clock_duration_in_us +
+                         event.total_cpp.weak_wall_clock_duration_in_us +
+                         event.total_cpp.compact_wall_clock_duration_in_us +
+                         event.total_cpp.sweep_wall_clock_duration_in_us));
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.Full.Mark.Cpp",
+      base::Microseconds(event.total_cpp.mark_wall_clock_duration_in_us));
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.Full.Weak.Cpp",
+      base::Microseconds(event.total_cpp.weak_wall_clock_duration_in_us));
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.Full.Compact.Cpp",
+      base::Microseconds(event.total_cpp.compact_wall_clock_duration_in_us));
+  UMA_HISTOGRAM_TIMES(
+      "V8.GC.Cycle.Full.Sweep.Cpp",
+      base::Microseconds(event.total_cpp.sweep_wall_clock_duration_in_us));
 
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_cpp.mark_wall_clock_duration_in_us +
           event.main_thread_cpp.weak_wall_clock_duration_in_us +
           event.main_thread_cpp.compact_wall_clock_duration_in_us +
           event.main_thread_cpp.sweep_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Mark.Cpp",
-      base::TimeDelta::FromMicroseconds(
-          event.main_thread_cpp.mark_wall_clock_duration_in_us));
+      base::Microseconds(event.main_thread_cpp.mark_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Weak.Cpp",
-      base::TimeDelta::FromMicroseconds(
-          event.main_thread_cpp.weak_wall_clock_duration_in_us));
+      base::Microseconds(event.main_thread_cpp.weak_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Compact.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_cpp.compact_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Sweep.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_cpp.sweep_wall_clock_duration_in_us));
 
   // Report atomic pause metrics:
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Atomic.Mark.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_atomic_cpp.mark_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Atomic.Weak.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_atomic_cpp.weak_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Atomic.Compact.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_atomic_cpp.compact_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Atomic.Sweep.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_atomic_cpp.sweep_wall_clock_duration_in_us));
   UMA_HISTOGRAM_TIMES(
       "V8.GC.Cycle.MainThread.Full.Atomic.Cpp",
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           event.main_thread_atomic_cpp.mark_wall_clock_duration_in_us +
           event.main_thread_atomic_cpp.weak_wall_clock_duration_in_us +
           event.main_thread_atomic_cpp.compact_wall_clock_duration_in_us +
@@ -245,14 +239,13 @@ void V8MetricsRecorder::AddMainThreadEvent(
                       ("V8.GC.Cycle.CollectionRate.Full.Cpp", 0, 100, 20));
   collection_rate_histogram.Count(base::saturated_cast<base::Histogram::Sample>(
       100 * event.collection_rate_cpp_in_percent));
-#endif  // USE_V8_OILPAN
 }
 
 namespace {
 
 void ReportCppIncrementalLatencyEvent(int64_t duration_us) {
   UMA_HISTOGRAM_TIMES("V8.GC.Event.MainThread.Full.Incremental.Cpp",
-                      base::TimeDelta::FromMicroseconds(duration_us));
+                      base::Microseconds(duration_us));
 }
 
 }  // namespace
@@ -264,7 +257,7 @@ void V8MetricsRecorder::AddMainThreadEvent(
     // This is only a latency event.
     UMA_HISTOGRAM_TIMES(
         "V8.GC.Event.MainThread.Full.Incremental.Mark.Cpp",
-        base::TimeDelta::FromMicroseconds(event.cpp_wall_clock_duration_in_us));
+        base::Microseconds(event.cpp_wall_clock_duration_in_us));
     ReportCppIncrementalLatencyEvent(event.cpp_wall_clock_duration_in_us);
   }
 }
@@ -285,7 +278,7 @@ void V8MetricsRecorder::AddMainThreadEvent(
     // This is only a latency event.
     UMA_HISTOGRAM_TIMES(
         "V8.GC.Event.MainThread.Full.Incremental.Sweep.Cpp",
-        base::TimeDelta::FromMicroseconds(event.cpp_wall_clock_duration_in_us));
+        base::Microseconds(event.cpp_wall_clock_duration_in_us));
     ReportCppIncrementalLatencyEvent(event.cpp_wall_clock_duration_in_us);
   }
 }

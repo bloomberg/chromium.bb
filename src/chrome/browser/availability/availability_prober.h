@@ -136,7 +136,7 @@ class AvailabilityProber
     //   LINEAR: Each probe times out in |base_timeout|.
     //   EXPONENTIAL: Each probe times out in
     //                (|base_timeout| * 2 ^ |successive_timeout_count_|).
-    base::TimeDelta base_timeout = base::TimeDelta::FromSeconds(60);
+    base::TimeDelta base_timeout = base::Seconds(60);
   };
 
   enum class HttpMethod {
@@ -157,6 +157,10 @@ class AvailabilityProber
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const size_t max_cache_entries,
       base::TimeDelta revalidate_cache_after);
+
+  AvailabilityProber(const AvailabilityProber&) = delete;
+  AvailabilityProber& operator=(const AvailabilityProber&) = delete;
+
   ~AvailabilityProber() override;
 
   // Registers the prefs used in this class.
@@ -340,8 +344,6 @@ class AvailabilityProber
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AvailabilityProber> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(AvailabilityProber);
 };
 
 #endif  // CHROME_BROWSER_AVAILABILITY_AVAILABILITY_PROBER_H_

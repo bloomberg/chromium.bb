@@ -11,11 +11,18 @@
 
 #include "core/fxcrt/stl_util.h"
 #include "core/fxcrt/unowned_ptr.h"
+#include "fxjs/cfx_v8_array_buffer_allocator.h"
 #include "fxjs/cjs_object.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_runtimedata.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-exception.h"
+#include "v8/include/v8-isolate.h"
+#include "v8/include/v8-message.h"
+#include "v8/include/v8-primitive.h"
+#include "v8/include/v8-script.h"
 #include "v8/include/v8-util.h"
 
 class CFXJS_PerObjectData;

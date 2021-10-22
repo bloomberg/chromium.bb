@@ -26,6 +26,10 @@ namespace content {
 class FakeDownloadItem : public download::DownloadItem {
  public:
   FakeDownloadItem();
+
+  FakeDownloadItem(const FakeDownloadItem&) = delete;
+  FakeDownloadItem& operator=(const FakeDownloadItem&) = delete;
+
   ~FakeDownloadItem() override;
 
   // download::DownloadItem overrides.
@@ -61,6 +65,7 @@ class FakeDownloadItem : public download::DownloadItem {
   const absl::optional<download::DownloadSchedule>& GetDownloadSchedule()
       const override;
   ::network::mojom::CredentialsMode GetCredentialsMode() const override;
+  const absl::optional<net::IsolationInfo>& GetIsolationInfo() const override;
   bool IsDone() const override;
   const std::string& GetETag() const override;
   const std::string& GetLastModifiedTime() const override;
@@ -95,6 +100,7 @@ class FakeDownloadItem : public download::DownloadItem {
   const download::DownloadItemRerouteInfo& GetRerouteInfo() const override;
   bool IsDangerous() const override;
   bool IsMixedContent() const override;
+  bool ShouldShowIncognitoWarning() const override;
   download::DownloadDangerType GetDangerType() const override;
   download::DownloadItem::MixedContentStatus GetMixedContentStatus()
       const override;
@@ -123,6 +129,7 @@ class FakeDownloadItem : public download::DownloadItem {
       download::DownloadInterruptReason reason) override;
   void ValidateDangerousDownload() override;
   void ValidateMixedContentDownload() override;
+  void AcceptIncognitoWarning() override;
   void StealDangerousDownload(bool delete_file_afterward,
                               AcquireFileCallback callback) override;
   void Rename(const base::FilePath& name,
@@ -201,14 +208,12 @@ class FakeDownloadItem : public download::DownloadItem {
   bool open_when_complete_ = false;
   bool is_dangerous_ = false;
   bool is_mixed_content_ = false;
+  absl::optional<net::IsolationInfo> isolation_info_;
 
   // The members below are to be returned by methods, which return by reference.
-  std::string dummy_string;
   GURL dummy_url;
   absl::optional<url::Origin> dummy_origin;
   base::FilePath dummy_file_path;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDownloadItem);
 };
 
 }  // namespace content

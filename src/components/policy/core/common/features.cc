@@ -21,17 +21,22 @@ const base::Feature kPolicyBlocklistThrottleRequiresPoliciesLoaded{
 const base::FeatureParam<base::TimeDelta>
     kPolicyBlocklistThrottlePolicyLoadTimeout{
         &kPolicyBlocklistThrottleRequiresPoliciesLoaded,
-        "PolicyBlocklistThrottlePolicyLoadTimeout",
-        base::TimeDelta::FromSeconds(20)};
+        "PolicyBlocklistThrottlePolicyLoadTimeout", base::Seconds(20)};
 
 const base::Feature kUploadBrowserDeviceIdentifier{
     "UploadBrowserDeviceIdentifier", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kCRDForManagedUserSessions{
-    "CRDForManagedUserSessions", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrdForManagedUserSessions{
+    "CRDForManagedUserSessions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kLoginEventReporting{"LoginEventReporting",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPasswordBreachEventReporting{
+    "PasswordBreachEventReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeManagementPageAndroid{
+    "ChromeManagementPageAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 

@@ -136,11 +136,36 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     @DisabledTest(message = "https://crbug.com/1233184")
     public void getPropertyModels_screenshotEnabled() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, LinkGeneration.MAX);
+        List<PropertyModel> propertyModels =
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
+                        /*isMultiWindow=*/false);
+
+        assertCorrectModelsAreInTheRightOrder(propertyModels,
+                ImmutableList.of(
+                        mActivity.getResources().getString(R.string.sharing_webnotes_create_card),
+                        mActivity.getResources().getString(R.string.sharing_screenshot),
+                        mActivity.getResources().getString(R.string.sharing_long_screenshot),
+                        mActivity.getResources().getString(R.string.sharing_copy_image),
+                        mActivity.getResources().getString(R.string.sharing_copy),
+                        mActivity.getResources().getString(
+                                R.string.send_tab_to_self_share_activity_title),
+                        mActivity.getResources().getString(R.string.qr_code_share_icon_label),
+                        mActivity.getResources().getString(R.string.sharing_save_image)));
+    }
+
+    @Test
+    @MediumTest
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
+    @DisabledTest(message = "https://crbug.com/1233184")
+    public void getPropertyModels_printingEnabled_includesPrinting() {
+        setUpChromeProvidedSharingOptionsProviderTest(
+                /*printingEnabled=*/true, LinkGeneration.MAX);
         List<PropertyModel> propertyModels =
                 mChromeProvidedSharingOptionsProvider.getPropertyModels(
                         ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
@@ -155,36 +180,13 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         mActivity.getResources().getString(
                                 R.string.send_tab_to_self_share_activity_title),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label),
-                        mActivity.getResources().getString(R.string.sharing_save_image)));
-    }
-
-    @Test
-    @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
-    @DisabledTest(message = "https://crbug.com/1233184")
-    public void getPropertyModels_printingEnabled_includesPrinting() {
-        setUpChromeProvidedSharingOptionsProviderTest(
-                /*printingEnabled=*/true, LinkGeneration.MAX);
-        List<PropertyModel> propertyModels =
-                mChromeProvidedSharingOptionsProvider.getPropertyModels(
-                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
-                        /*isMultiWindow=*/false);
-
-        assertCorrectModelsAreInTheRightOrder(propertyModels,
-                ImmutableList.of(
-                        mActivity.getResources().getString(R.string.sharing_webnotes_create_card),
-                        mActivity.getResources().getString(R.string.sharing_copy_image),
-                        mActivity.getResources().getString(R.string.sharing_copy),
-                        mActivity.getResources().getString(
-                                R.string.send_tab_to_self_share_activity_title),
-                        mActivity.getResources().getString(R.string.qr_code_share_icon_label),
                         mActivity.getResources().getString(R.string.print_share_activity_title),
                         mActivity.getResources().getString(R.string.sharing_save_image)));
     }
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getPropertyModels_sharingHub15Enabled_includesCopyText() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, LinkGeneration.MAX);
@@ -193,12 +195,13 @@ public class ChromeProvidedSharingOptionsProviderTest {
                         ImmutableSet.of(ContentType.TEXT), /*isMultiWindow=*/false);
 
         assertCorrectModelsAreInTheRightOrder(propertyModels,
-                ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_text)));
+                ImmutableList.of(mActivity.getResources().getString(R.string.sharing_screenshot),
+                        mActivity.getResources().getString(R.string.sharing_copy_text)));
     }
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getPropertyModels_linkAndTextShare() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, LinkGeneration.MAX);
@@ -218,7 +221,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getPropertyModels_linkShare() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, LinkGeneration.MAX);
@@ -237,7 +240,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getPropertyModels_textShare() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/false, LinkGeneration.MAX);
@@ -253,7 +256,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     @DisabledTest(message = "https://crbug.com/1233184")
     public void getPropertyModels_multiWindow_doesNotIncludeScreenshot() {
         setUpChromeProvidedSharingOptionsProviderTest(
@@ -277,7 +280,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getPropertyModels_filtersByContentType() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/true, LinkGeneration.MAX);
@@ -295,7 +298,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getPropertyModels_multipleTypes_filtersByContentType() {
         setUpChromeProvidedSharingOptionsProviderTest(
                 /*printingEnabled=*/true, LinkGeneration.MAX);
@@ -306,6 +309,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         assertCorrectModelsAreInTheRightOrder(propertyModels,
                 ImmutableList.of(mActivity.getResources().getString(R.string.sharing_screenshot),
+                        mActivity.getResources().getString(R.string.sharing_long_screenshot),
                         mActivity.getResources().getString(R.string.sharing_copy_url),
                         mActivity.getResources().getString(R.string.sharing_copy_image),
                         mActivity.getResources().getString(
@@ -317,7 +321,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
     @Test
     @MediumTest
     @Features.EnableFeatures({ChromeFeatureList.PREEMPTIVE_LINK_TO_TEXT_GENERATION})
-    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_LONG_SCREENSHOT})
     public void getShareDetailsMetrics_LinkGeneration() {
         @LinkGeneration
         int linkGenerationStatus = LinkGeneration.LINK;
@@ -391,6 +395,13 @@ public class ChromeProvidedSharingOptionsProviderTest {
             if (propertyModel.get(ShareSheetItemViewProperties.LABEL)
                             .equals(mActivity.getResources().getString(
                                     R.string.sharing_webnotes_create_card))) {
+                continue;
+            }
+
+            // There is no link generation for Screenshots yet either.
+            if (propertyModel.get(ShareSheetItemViewProperties.LABEL)
+                            .equals(mActivity.getResources().getString(
+                                    R.string.sharing_screenshot))) {
                 continue;
             }
 

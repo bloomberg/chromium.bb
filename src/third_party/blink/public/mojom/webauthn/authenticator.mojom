@@ -15,6 +15,12 @@ import "url/mojom/url.mojom";
 // credentials and use already-created credentials to get assertions.
 // See https://w3c.github.io/webauthn/.
 
+// The maximum allowable list size for vectors of
+// `PublicKeyCredentialDescriptor` (i.e.
+// `PublicKeyCredentialCreationOptions.exclude_credentials` and
+// `PublicKeyCredentialRequestOptions.allow_credentials`).
+const uint32 kPublicKeyCredentialDescriptorListMaxSize = 64;
+
 enum AuthenticatorStatus {
   SUCCESS,
   PENDING_REQUEST,
@@ -22,11 +28,6 @@ enum AuthenticatorStatus {
   INVALID_DOMAIN,
   INVALID_ICON_URL,
   CREDENTIAL_EXCLUDED,
-
-  // TODO(crbug/964439): Unused in Desktop, but kept around for Android. Delete
-  // once it's fully obsolete.
-  CREDENTIAL_NOT_RECOGNIZED,
-
   NOT_IMPLEMENTED,
   NOT_FOCUSED,
   RESIDENT_CREDENTIALS_UNSUPPORTED,
@@ -86,6 +87,12 @@ struct UvmEntry {
 // The public key and attestation returned by Authenticator::MakeCredential.
 struct MakeCredentialAuthenticatorResponse {
   CommonCredentialInfo info;
+
+  // True if transport exists. False if transport does not exist, e.g. on old
+  // Windows.
+  bool has_transport;
+  // The transport method used to authenticate.
+  AuthenticatorTransport transport;
 
   // A blob of data returned by the authenticator after creating a credential.
   array<uint8> attestation_object;
@@ -148,6 +155,12 @@ struct MakeCredentialAuthenticatorResponse {
 
 struct GetAssertionAuthenticatorResponse {
   CommonCredentialInfo info;
+
+  // True if transport exists. False if transport does not exist, e.g. on old
+  // Windows.
+  bool has_transport;
+  // The transport method used to authenticate.
+  AuthenticatorTransport transport;
 
   // Cryptographic signature proving possession of the credential private key.
   array<uint8> signature;

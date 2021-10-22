@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -14,11 +15,15 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "url/gurl.h"
 
@@ -29,17 +34,46 @@ class ExternalProtocolDialogTestApi {
   explicit ExternalProtocolDialogTestApi(ExternalProtocolDialog* dialog)
       : dialog_(dialog) {}
 
+  ExternalProtocolDialogTestApi(const ExternalProtocolDialogTestApi&) = delete;
+  ExternalProtocolDialogTestApi& operator=(
+      const ExternalProtocolDialogTestApi&) = delete;
+
   void SetCheckBoxSelected(bool checked) {
     dialog_->SetRememberSelectionCheckboxCheckedForTesting(checked);
   }
 
  private:
   ExternalProtocolDialog* dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialogTestApi);
 };
 
 }  // namespace test
+
+namespace {
+constexpr char kInitiatingOrigin[] = "a.test";
+constexpr char kRedirectingOrigin[] = "b.test";
+
+class FakeDefaultProtocolClientWorker
+    : public shell_integration::DefaultProtocolClientWorker {
+ public:
+  explicit FakeDefaultProtocolClientWorker(const std::string& protocol)
+      : DefaultProtocolClientWorker(protocol) {}
+  FakeDefaultProtocolClientWorker(const FakeDefaultProtocolClientWorker&) =
+      delete;
+  FakeDefaultProtocolClientWorker& operator=(
+      const FakeDefaultProtocolClientWorker&) = delete;
+
+ private:
+  ~FakeDefaultProtocolClientWorker() override = default;
+  shell_integration::DefaultWebClientState CheckIsDefaultImpl() override {
+    return shell_integration::DefaultWebClientState::NOT_DEFAULT;
+  }
+
+  void SetAsDefaultImpl(base::OnceClosure on_finished_callback) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, std::move(on_finished_callback));
+  }
+};
+}  // namespace
 
 class ExternalProtocolDialogBrowserTest
     : public DialogBrowserTest,
@@ -50,6 +84,11 @@ class ExternalProtocolDialogBrowserTest
   ExternalProtocolDialogBrowserTest() {
     ExternalProtocolHandler::SetDelegateForTesting(this);
   }
+
+  ExternalProtocolDialogBrowserTest(const ExternalProtocolDialogBrowserTest&) =
+      delete;
+  ExternalProtocolDialogBrowserTest& operator=(
+      const ExternalProtocolDialogBrowserTest&) = delete;
 
   ~ExternalProtocolDialogBrowserTest() override {
     ExternalProtocolHandler::SetDelegateForTesting(nullptr);
@@ -71,11 +110,11 @@ class ExternalProtocolDialogBrowserTest
   // ExternalProtocolHander::Delegate:
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
   CreateShellWorker(const std::string& protocol) override {
-    return nullptr;
+    return base::MakeRefCounted<FakeDefaultProtocolClientWorker>(protocol);
   }
   ExternalProtocolHandler::BlockState GetBlockState(const std::string& scheme,
                                                     Profile* profile) override {
-    return ExternalProtocolHandler::DONT_BLOCK;
+    return ExternalProtocolHandler::UNKNOWN;
   }
   void BlockRequest() override {}
   void RunExternalProtocolDialog(
@@ -83,7 +122,10 @@ class ExternalProtocolDialogBrowserTest
       content::WebContents* web_contents,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const absl::optional<url::Origin>& initiating_origin) override {}
+      const absl::optional<url::Origin>& initiating_origin) override {
+    url_did_launch_ = true;
+    launch_url_ = initiating_origin->host();
+  }
   void LaunchUrlWithoutSecurityCheck(
       const GURL& url,
       content::WebContents* web_contents) override {
@@ -98,6 +140,12 @@ class ExternalProtocolDialogBrowserTest
     blocked_state_ = state;
   }
 
+  void SetUpOnMainThread() override {
+    DialogBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule(kInitiatingOrigin, "127.0.0.1");
+    host_resolver()->AddRule(kRedirectingOrigin, "127.0.0.1");
+  }
+
   base::HistogramTester histogram_tester_;
 
  protected:
@@ -106,9 +154,7 @@ class ExternalProtocolDialogBrowserTest
   url::Origin blocked_origin_;
   BlockState blocked_state_ = BlockState::UNKNOWN;
   bool url_did_launch_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialogBrowserTest);
+  std::string launch_url_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestAccept) {
@@ -230,4 +276,30 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestFocus) {
 #endif
   const views::View* focused_view = focus_manager->GetFocusedView();
   EXPECT_TRUE(focused_view);
+}
+
+// https://crbug.com/1250386
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    defined(OS_LINUX) && defined(USE_OZONE)
+#define MAYBE_OriginNameTest DISABLED_OriginNameTest
+#else
+#define MAYBE_OriginNameTest OriginNameTest
+#endif
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
+                       MAYBE_OriginNameTest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("a.test", "/empty.html")));
+  EXPECT_TRUE(content::ExecJs(
+      web_contents,
+      content::JsReplace("location.href = $1",
+                         embedded_test_server()->GetURL(
+                             "b.test", "/server-redirect?ms-calc:"))));
+  content::WaitForLoadStop(web_contents);
+  EXPECT_TRUE(url_did_launch_);
+  // The url should be the url of the last redirecting server and not of the
+  // request initiator
+  EXPECT_EQ(launch_url_, "b.test");
 }

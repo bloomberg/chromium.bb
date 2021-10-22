@@ -139,14 +139,14 @@ void CdmDocumentServiceImpl::Create(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // The object is bound to the lifetime of |render_frame_host| and the mojo
-  // connection. See DocumentServiceBase for details.
+  // connection. See DocumentService for details.
   new CdmDocumentServiceImpl(render_frame_host, std::move(receiver));
 }
 
 CdmDocumentServiceImpl::CdmDocumentServiceImpl(
     content::RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<media::mojom::CdmDocumentService> receiver)
-    : DocumentServiceBase(render_frame_host, std::move(receiver)),
+    : DocumentService(render_frame_host, std::move(receiver)),
       render_frame_host_(render_frame_host) {}
 
 CdmDocumentServiceImpl::~CdmDocumentServiceImpl() {
@@ -391,6 +391,7 @@ void DeleteMediaFoundationCdmData(
     if (origin_id_string.empty())
       continue;
 
+    DVLOG(2) << __func__ << ": Processing: " << file_path;
     absl::optional<url::Origin> origin = absl::nullopt;
     if (origin_id_mapping.count(origin_id_string) != 0)
       origin = origin_id_mapping.at(origin_id_string);
@@ -417,6 +418,7 @@ void DeleteMediaFoundationCdmData(
     for (auto cdm_data_file_path = file_enumerator.Next();
          !cdm_data_file_path.value().empty();
          cdm_data_file_path = file_enumerator.Next()) {
+      DVLOG(2) << __func__ << ": - Processing: " << cdm_data_file_path;
       base::File::Info file_info;
       if (!base::GetFileInfo(cdm_data_file_path, &file_info)) {
         DVLOG(ERROR) << "Failed to get FileInfo";
@@ -424,8 +426,9 @@ void DeleteMediaFoundationCdmData(
         break;
       }
 
-      if (file_info.last_accessed >= start &&
-          (!end.is_null() || file_info.last_accessed <= end)) {
+      if (file_info.last_modified >= start &&
+          (end.is_null() || file_info.last_modified <= end)) {
+        DVLOG(2) << "Deleting file. Last modified: " << file_info.last_modified;
         should_delete = true;
         break;
       }

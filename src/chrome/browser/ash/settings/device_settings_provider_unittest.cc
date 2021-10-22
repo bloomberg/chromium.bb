@@ -53,6 +53,10 @@ const char kDisabledMessage[] = "This device has been disabled.";
 
 class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
  public:
+  DeviceSettingsProviderTest(const DeviceSettingsProviderTest&) = delete;
+  DeviceSettingsProviderTest& operator=(const DeviceSettingsProviderTest&) =
+      delete;
+
   MOCK_METHOD1(SettingChanged, void(const std::string&));
   MOCK_METHOD0(GetTrustedCallback, void(void));
 
@@ -89,6 +93,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void SetReportingSettings(bool enable_reporting, int frequency) {
     em::DeviceReportingProto* proto =
         device_policy_->payload().mutable_device_reporting();
+    proto->set_enable_granular_reporting(enable_reporting);
     proto->set_report_version_info(enable_reporting);
     proto->set_report_activity_times(enable_reporting);
     proto->set_report_audio_status(enable_reporting);
@@ -105,6 +110,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_os_update_status(enable_reporting);
     proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_report_power_status(enable_reporting);
+    proto->set_report_security_status(enable_reporting);
     proto->set_report_storage_status(enable_reporting);
     proto->set_report_board_status(enable_reporting);
     proto->set_report_app_info(enable_reporting);
@@ -171,6 +177,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   void VerifyReportingSettings(bool expected_enable_state,
                                int expected_frequency) {
     const char* reporting_settings[] = {
+        kEnableDeviceGranularReporting,
         kReportDeviceVersionInfo,
         kReportDeviceActivityTimes,
         kReportDeviceAudioStatus,
@@ -186,6 +193,7 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
         kReportDevicePowerStatus,
         kReportDeviceStorageStatus,
         kReportDeviceSessionStatus,
+        kReportDeviceSecurityStatus,
         kReportDeviceGraphicsStatus,
         kReportDeviceCrashReportInfo,
         kReportDeviceAppInfo,
@@ -443,9 +451,9 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   }
 
   void AddUserToAllowlist(const std::string& user_id) {
-    em::UserAllowlistProto* proto =
-        device_policy_->payload().mutable_user_allowlist();
-    proto->add_user_allowlist(user_id);
+    auto& proto = device_policy_->payload();
+    proto.mutable_user_allowlist()->add_user_allowlist(user_id);
+    proto.mutable_allow_new_users()->set_allow_new_users(true);
     BuildAndInstallDevicePolicy();
   }
 
@@ -460,9 +468,6 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
   std::unique_ptr<DeviceSettingsProvider> provider_;
 
   base::ScopedPathOverride user_data_dir_override_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeviceSettingsProviderTest);
 };
 
 // Same as above, but enrolled into an enterprise
@@ -702,7 +707,7 @@ TEST_F(DeviceSettingsProviderTest, PolicyFailedPermanentlyNotification) {
   ReloadDeviceSettings();
   Mock::VerifyAndClearExpectations(this);
 
-  closure = base::DoNothing::Once();
+  closure = base::DoNothing();
   EXPECT_EQ(CrosSettingsProvider::PERMANENTLY_UNTRUSTED,
             provider_->PrepareTrustedValues(&closure));
   EXPECT_TRUE(closure);  // Ownership of |closure| was not taken.

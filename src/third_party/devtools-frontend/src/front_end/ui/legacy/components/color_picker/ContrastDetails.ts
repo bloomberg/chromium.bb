@@ -66,7 +66,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTyp
   private contrastInfo: ContrastInfo;
   private readonly elementInternal: HTMLElement;
   private readonly toggleMainColorPicker:
-      (arg0?: boolean|undefined, arg1?: Common.EventTarget.EventTargetEvent|undefined) => void;
+      (arg0?: boolean|undefined, arg1?: Common.EventTarget.EventTargetEvent<unknown>|undefined) => void;
   private readonly expandedChangedCallback: () => void;
   private readonly colorSelectedCallback: (arg0: Common.Color.Color) => void;
   private expandedInternal: boolean;
@@ -88,12 +88,13 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTyp
   private contrastPassFailAPCA: HTMLElement;
   private readonly chooseBgColor: HTMLElement;
   private bgColorPickerButton: UI.Toolbar.ToolbarToggle;
-  private readonly bgColorPickedBound: (event: Common.EventTarget.EventTargetEvent) => void;
+  private readonly bgColorPickedBound:
+      (event: Common.EventTarget.EventTargetEvent<Host.InspectorFrontendHostAPI.EyeDropperPickedColorEvent>) => void;
   private readonly bgColorSwatch: Swatch;
   constructor(
       contrastInfo: ContrastInfo, contentElement: Element,
       toggleMainColorPickerCallback:
-          (arg0?: boolean|undefined, arg1?: Common.EventTarget.EventTargetEvent|undefined) => void,
+          (arg0?: boolean|undefined, arg1?: Common.EventTarget.EventTargetEvent<unknown>|undefined) => void,
       expandedChangedCallback: () => void, colorSelectedCallback: (arg0: Common.Color.Color) => void) {
     super();
     this.contrastInfo = contrastInfo;
@@ -375,7 +376,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return this.elementInternal;
   }
 
-  private expandButtonClicked(_event: Common.EventTarget.EventTargetEvent): void {
+  private expandButtonClicked(): void {
     const selection = this.contrastValueBubble.getComponentSelection();
     if (selection) {
       selection.empty();
@@ -449,13 +450,9 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     }
   }
 
-  private bgColorPicked(event: Common.EventTarget.EventTargetEvent): void {
-    const rgbColor = event.data as {
-      r: number,
-      g: number,
-      b: number,
-      a: number,
-    };
+  private bgColorPicked({
+    data: rgbColor,
+  }: Common.EventTarget.EventTargetEvent<Host.InspectorFrontendHostAPI.EyeDropperPickedColorEvent>): void {
     const rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
     const color = Common.Color.Color.fromRGBA(rgba);
     this.contrastInfo.setBgColor(color);

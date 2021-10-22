@@ -53,6 +53,7 @@
 #include "services/network/public/mojom/network_param.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-forward.h"
 #include "services/network/public/mojom/web_transport.mojom-forward.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
 #include "storage/browser/file_system/file_system_context.h"
@@ -60,6 +61,7 @@
 #include "third_party/blink/public/common/loader/previews_state.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/federated_learning/floc.mojom-forward.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -196,6 +198,7 @@ class FileSystemBackend;
 
 namespace content {
 enum class PermissionType;
+enum class SiteIsolationMode;
 enum class SmsFetchFailureType;
 class AuthenticatorRequestClientDelegate;
 class BluetoothDelegate;
@@ -588,9 +591,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to programmatically control whether Site Isolation
   // should be disabled.  Note that this takes precedence over
   // ShouldEnableStrictSiteIsolation() if both return true.
+  // `site_isolation_mode` specifies the site isolation mode to check; this
+  // allows strict site isolation and partial site isolation to be disabled
+  // according to different policies (e.g., different memory thresholds) on
+  // Android.
   //
   // Note that for correctness, the same value should be consistently returned.
-  virtual bool ShouldDisableSiteIsolation();
+  virtual bool ShouldDisableSiteIsolation(
+      SiteIsolationMode site_isolation_mode);
 
   // Retrieves names of any additional site isolation modes from the embedder.
   virtual std::vector<std::string> GetAdditionalSiteIsolationModes();
@@ -602,6 +610,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* context,
       const url::Origin& origin,
       ChildProcessSecurityPolicy::IsolatedOriginSource source) {}
+
+  // Returns true if the given URL needs be loaded with the "isolated
+  // application" isolation level. COOP/COEP headers must also be properly set
+  // in order to enable the application isolation level.
+  virtual bool ShouldUrlUseApplicationIsolationLevel(
+      BrowserContext* browser_context,
+      const GURL& url);
 
   // Allow the embedder to control the maximum renderer process count. Only
   // applies if it is set to a non-zero value.  Once this limit is exceeded,
@@ -644,7 +659,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::string GetApplicationLocale();
 
   // Returns a comma-separate list of language codes, in order of preference.
-  // The value is used to report the "lang" to sites, if requested.
   // The legacy "accept-language" header is not affected by this setting (see
   // |ConfigureNetworkContextParams()| below).
   // (Not called GetAcceptLanguages so it doesn't clash with win32).
@@ -936,6 +950,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to return a delegate for the TtsController.
   virtual TtsControllerDelegate* GetTtsControllerDelegate();
 #endif
+
+  // Applies policy-dictated changes to the manifest that was loaded from the
+  // provided render_frame_host.
+  virtual void MaybeOverrideManifest(RenderFrameHost* render_frame_host,
+                                     blink::mojom::ManifestPtr& manifest) {}
 
   // Allows the embedder to return a TTS platform implementation.
   virtual TtsPlatform* GetTtsPlatform();
@@ -1600,7 +1619,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // If |relative_partition_path| is the empty string, it means this needs to
   // create the default NetworkContext for the BrowserContext.
-  virtual void ConfigureNetworkContextParams(
+  virtual bool ConfigureNetworkContextParams(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path,
@@ -1765,10 +1784,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Otherwise child_id will be the process id and |navigation_ui_data| will be
   // nullptr.
   //
-  // |initiating_origin| is the origin that initiated the navigation to the
-  // external protocol, and may be null, e.g. in the case of browser-initiated
-  // navigations. The initiating origin is intended to help users make security
-  // decisions about whether to allow an external application to launch.
+  // |initiating_origin| is the origin of the last redirecting server (falling
+  // back to the request initiator if there were no redirects / if the request
+  // goes straight to an external protocol, or null, e.g. in the case of
+  // browser-initiated navigations. The initiating origin is intended to help
+  // users make security decisions about whether to allow an external
+  // application to launch.
   virtual bool HandleExternalProtocol(
       const GURL& url,
       base::RepeatingCallback<WebContents*()> web_contents_getter,
@@ -1776,6 +1797,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       int frame_tree_node_id,
       NavigationUIData* navigation_data,
       bool is_main_frame,
+      network::mojom::WebSandboxFlags sandbox_flags,
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const absl::optional<url::Origin>& initiating_origin,
@@ -1786,6 +1808,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       WebContents::Getter web_contents_getter,
       int frame_tree_node_id,
       NavigationUIData* navigation_data,
+      network::mojom::WebSandboxFlags sandbox_flags,
       const network::ResourceRequest& request,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) { return false; }
 
@@ -1830,6 +1853,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if the audio service should be sandboxed. false otherwise.
   virtual bool ShouldSandboxAudioService();
+
+  // Returns true if the network service should be sandboxed. false otherwise.
+  // This is called on the UI thread.
+  virtual bool ShouldSandboxNetworkService();
 
   // Asks the embedder for the PreviewsState which says which previews should
   // be enabled for the given navigation. The PreviewsState is a bitmask of
@@ -1924,7 +1951,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Possibly augment |download_policy| based on the status of |frame_host| as
   // well as |user_gesture|.
   virtual void AugmentNavigationDownloadPolicy(
-      WebContents* web_contents,
       RenderFrameHost* frame_host,
       bool user_gesture,
       blink::NavigationDownloadPolicy* download_policy);

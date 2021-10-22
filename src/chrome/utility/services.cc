@@ -84,13 +84,12 @@
 #include "chrome/services/printing/public/mojom/printing_service.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "chrome/services/printing/print_backend_service_impl.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PRINTING)
 #include "components/services/print_compositor/print_compositor_impl.h"  // nogncheck
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_PRINTING)
@@ -258,16 +257,22 @@ auto RunPaintPreviewCompositor(
 }
 #endif  // BUILDFLAG(ENABLE_PAINT_PREVIEW)
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-auto RunPrintBackendService(
-    mojo::PendingReceiver<printing::mojom::PrintBackendService> receiver) {
-  return std::make_unique<printing::PrintBackendServiceImpl>(
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+auto RunPrintingSandboxedPrintBackendHost(
+    mojo::PendingReceiver<printing::mojom::SandboxedPrintBackendHost>
+        receiver) {
+  return std::make_unique<printing::SandboxedPrintBackendHostImpl>(
       std::move(receiver));
 }
-#endif
+auto RunPrintingUnsandboxedPrintBackendHost(
+    mojo::PendingReceiver<printing::mojom::UnsandboxedPrintBackendHost>
+        receiver) {
+  return std::make_unique<printing::UnsandboxedPrintBackendHostImpl>(
+      std::move(receiver));
+}
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING)
 
+#if BUILDFLAG(ENABLE_PRINTING)
 auto RunPrintCompositor(
     mojo::PendingReceiver<printing::mojom::PrintCompositor> receiver) {
   return std::make_unique<printing::PrintCompositorImpl>(
@@ -388,11 +393,12 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
   services.Add(RunPrintingService);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINTING)
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-  services.Add(RunPrintBackendService);
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+  services.Add(RunPrintingSandboxedPrintBackendHost);
+  services.Add(RunPrintingUnsandboxedPrintBackendHost);
 #endif
+
+#if BUILDFLAG(ENABLE_PRINTING)
   services.Add(RunPrintCompositor);
 #endif
 

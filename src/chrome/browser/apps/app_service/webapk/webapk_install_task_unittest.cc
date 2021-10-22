@@ -16,7 +16,7 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_test_server.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_application_info.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,7 +51,7 @@ std::unique_ptr<WebApplicationInfo> BuildDefaultWebAppInfo() {
   icon.square_size_px = 64;
   icon.purpose = apps::IconInfo::Purpose::kAny;
   icon.url = GURL(kTestAppIcon);
-  app_info->icon_infos.push_back(icon);
+  app_info->manifest_icons.push_back(icon);
 
   apps::ShareTarget target;
   target.action = GURL(kTestAppActionUrl);
@@ -115,7 +115,7 @@ class WebApkInstallTaskTest : public testing::Test {
 
     app_service_test_.SetUp(&profile_);
 
-    auto* const provider = web_app::TestWebAppProvider::Get(&profile_);
+    auto* const provider = web_app::FakeWebAppProvider::Get(&profile_);
     provider->SkipAwaitingExtensionSystem();
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());
 
@@ -322,7 +322,7 @@ TEST_F(WebApkInstallTaskTest, MinterTimeout) {
 
   bool install_success;
   apps::WebApkInstallTask install_task(profile(), app_id);
-  install_task.SetTimeoutForTesting(base::TimeDelta::FromMilliseconds(100));
+  install_task.SetTimeoutForTesting(base::Milliseconds(100));
   base::RunLoop run_loop;
   install_task.Start(base::BindLambdaForTesting([&](bool success) {
     install_success = success;

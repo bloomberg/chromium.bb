@@ -73,6 +73,7 @@ class DatarateTestSVC
     memset(&layer_id_, 0, sizeof(aom_svc_layer_id_t));
     memset(&svc_params_, 0, sizeof(aom_svc_params_t));
     memset(&ref_frame_config_, 0, sizeof(aom_svc_ref_frame_config_t));
+    memset(&ref_frame_comp_pred_, 0, sizeof(aom_svc_ref_frame_comp_pred_t));
     drop_frames_ = 0;
     for (int i = 0; i < 1000; i++) drop_frames_list_[i] = 1000;
     decoded_nframes_ = 0;
@@ -81,6 +82,7 @@ class DatarateTestSVC
     set_frame_level_er_ = 0;
     multi_ref_ = 0;
     use_fixed_mode_svc_ = 0;
+    comp_pred_ = 0;
   }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
@@ -108,14 +110,15 @@ class DatarateTestSVC
     }
     // Set the reference/update flags, layer_id, and reference_map
     // buffer index.
-    frame_flags_ =
-        set_layer_pattern(video->frame(), &layer_id_, &ref_frame_config_,
-                          spatial_layer_id, multi_ref_);
+    frame_flags_ = set_layer_pattern(video->frame(), &layer_id_,
+                                     &ref_frame_config_, &ref_frame_comp_pred_,
+                                     spatial_layer_id, multi_ref_, comp_pred_);
     encoder->Control(AV1E_SET_SVC_LAYER_ID, &layer_id_);
-    // The SET_SVC_REF_FRAME_CONFIG api is for the flexible SVC mode
-    // (i.e., use_fixed_mode_svc == 0).
+    // The SET_SVC_REF_FRAME_CONFIG and AV1E_SET_SVC_REF_FRAME_COMP_PRED api is
+    // for the flexible SVC mode (i.e., use_fixed_mode_svc == 0).
     if (!use_fixed_mode_svc_) {
       encoder->Control(AV1E_SET_SVC_REF_FRAME_CONFIG, &ref_frame_config_);
+      encoder->Control(AV1E_SET_SVC_REF_FRAME_COMP_PRED, &ref_frame_comp_pred_);
     }
     if (set_frame_level_er_) {
       int mode =
@@ -170,9 +173,11 @@ class DatarateTestSVC
   unsigned int GetDecodedFrames() { return decoded_nframes_; }
 
   // Layer pattern configuration.
-  virtual int set_layer_pattern(int frame_cnt, aom_svc_layer_id_t *layer_id,
-                                aom_svc_ref_frame_config_t *ref_frame_config,
-                                int spatial_layer, int multi_ref) {
+  virtual int set_layer_pattern(
+      int frame_cnt, aom_svc_layer_id_t *layer_id,
+      aom_svc_ref_frame_config_t *ref_frame_config,
+      aom_svc_ref_frame_comp_pred_t *ref_frame_comp_pred, int spatial_layer,
+      int multi_ref, int comp_pred) {
     int lag_index = 0;
     int base_count = frame_cnt >> 2;
     layer_id->spatial_layer_id = spatial_layer;
@@ -184,6 +189,11 @@ class DatarateTestSVC
       ref_frame_config->reference[i] = 0;
     }
     for (int i = 0; i < REF_FRAMES; i++) ref_frame_config->refresh[i] = 0;
+    if (comp_pred) {
+      ref_frame_comp_pred->use_comp_pred[0] = 1;  // GOLDEN_LAST
+      ref_frame_comp_pred->use_comp_pred[1] = 1;  // LAST2_LAST
+      ref_frame_comp_pred->use_comp_pred[2] = 1;  // ALTREF_LAST
+    }
     // Set layer_flags to 0 when using ref_frame_config->reference.
     int layer_flags = 0;
     // Always reference LAST.
@@ -464,7 +474,7 @@ class DatarateTestSVC
     for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
       ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.80)
           << " The datarate for the file is lower than target by too much!";
-      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.30)
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.35)
           << " The datarate for the file is greater than target by too much!";
     }
     // Top temporal layers are non_reference, so exlcude them from
@@ -986,7 +996,7 @@ class DatarateTestSVC
     for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
       ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.80)
           << " The datarate for the file is lower than target by too much!";
-      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.30)
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.35)
           << " The datarate for the file is greater than target by too much!";
     }
     // Test that no mismatches have been found.
@@ -1031,7 +1041,7 @@ class DatarateTestSVC
     for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
       ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.80)
           << " The datarate for the file is lower than target by too much!";
-      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.30)
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.35)
           << " The datarate for the file is greater than target by too much!";
     }
     // Test that no mismatches have been found.
@@ -1076,7 +1086,7 @@ class DatarateTestSVC
     for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
       ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.80)
           << " The datarate for the file is lower than target by too much!";
-      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.30)
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.35)
           << " The datarate for the file is greater than target by too much!";
     }
     // Test that no mismatches have been found.
@@ -1122,7 +1132,7 @@ class DatarateTestSVC
     for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
       ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.80)
           << " The datarate for the file is lower than target by too much!";
-      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.30)
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.35)
           << " The datarate for the file is greater than target by too much!";
     }
     // Test that no mismatches have been found.
@@ -1130,6 +1140,40 @@ class DatarateTestSVC
     std::cout << "          Mismatch frames: " << GetMismatchFrames() << "\n";
     EXPECT_EQ(300 - GetDecodedFrames(), drop_frames_);
     EXPECT_EQ((int)GetMismatchFrames(), 0);
+  }
+
+  virtual void BasicRateTargetingSVC3TL1SLMultiRefCompoundTest() {
+    cfg_.rc_buf_initial_sz = 500;
+    cfg_.rc_buf_optimal_sz = 500;
+    cfg_.rc_buf_sz = 1000;
+    cfg_.rc_dropframe_thresh = 0;
+    cfg_.rc_min_quantizer = 0;
+    cfg_.rc_max_quantizer = 63;
+    cfg_.rc_end_usage = AOM_CBR;
+    cfg_.g_lag_in_frames = 0;
+    cfg_.g_error_resilient = 0;
+
+    ::libaom_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30,
+                                         1, 0, 400);
+    cfg_.g_w = 640;
+    cfg_.g_h = 480;
+    const int bitrate_array[2] = { 400, 800 };
+    cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
+    ResetModel();
+    multi_ref_ = 1;
+    comp_pred_ = 1;
+    number_temporal_layers_ = 3;
+    number_spatial_layers_ = 1;
+    target_layer_bitrate_[0] = 50 * cfg_.rc_target_bitrate / 100;
+    target_layer_bitrate_[1] = 70 * cfg_.rc_target_bitrate / 100;
+    target_layer_bitrate_[2] = cfg_.rc_target_bitrate;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+    for (int i = 0; i < number_temporal_layers_ * number_spatial_layers_; i++) {
+      ASSERT_GE(effective_datarate_tl[i], target_layer_bitrate_[i] * 0.80)
+          << " The datarate for the file is lower than target by too much!";
+      ASSERT_LE(effective_datarate_tl[i], target_layer_bitrate_[i] * 1.60)
+          << " The datarate for the file is greater than target by too much!";
+    }
   }
 
   int layer_frame_cnt_;
@@ -1140,6 +1184,7 @@ class DatarateTestSVC
   int target_layer_bitrate_[AOM_MAX_LAYERS];
   aom_svc_params_t svc_params_;
   aom_svc_ref_frame_config_t ref_frame_config_;
+  aom_svc_ref_frame_comp_pred_t ref_frame_comp_pred_;
   aom_svc_layer_id_t layer_id_;
   double effective_datarate_tl[AOM_MAX_LAYERS];
   unsigned int drop_frames_;
@@ -1150,6 +1195,7 @@ class DatarateTestSVC
   int set_frame_level_er_;
   int multi_ref_;
   int use_fixed_mode_svc_;
+  int comp_pred_;
 };
 
 // Check basic rate targeting for CBR, for 3 temporal layers, 1 spatial.
@@ -1258,6 +1304,13 @@ TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL1SLDropTL2Enh) {
 // This allows for successful decoding after dropping enhancement layer frames.
 TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL1SLDropAllEnhFrameER) {
   BasicRateTargetingSVC3TL1SLDropAllEnhFrameERTest();
+}
+
+// Check basic rate targeting for CBR, for 3 temporal layers, 1 spatial layer,
+// with compound prediction on, for pattern with two additional refereces
+// (golden and altref), both updated on base TLO frames.
+TEST_P(DatarateTestSVC, BasicRateTargetingSVC3TL1SLMultiRefCompound) {
+  BasicRateTargetingSVC3TL1SLMultiRefCompoundTest();
 }
 
 AV1_INSTANTIATE_TEST_SUITE(DatarateTestSVC,

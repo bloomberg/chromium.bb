@@ -40,6 +40,10 @@ constexpr char kFingerprint[] = "pinky";
 class FingerprintUnlockTest : public InProcessBrowserTest {
  public:
   FingerprintUnlockTest() = default;
+
+  FingerprintUnlockTest(const FingerprintUnlockTest&) = delete;
+  FingerprintUnlockTest& operator=(const FingerprintUnlockTest&) = delete;
+
   ~FingerprintUnlockTest() override = default;
 
   void SetUp() override {
@@ -210,20 +214,16 @@ class FingerprintUnlockTest : public InProcessBrowserTest {
   QuickUnlockStorage* quick_unlock_storage_;
 
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
-
-  DISALLOW_COPY_AND_ASSIGN(FingerprintUnlockTest);
 };
 
 IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, FingerprintNotTimedOutTest) {
   base::TimeDelta expiration_time = GetExpirationTime();
-  ShowLockScreenAndAdvanceTime(expiration_time / 2,
-                               base::TimeDelta::FromSeconds(0));
+  ShowLockScreenAndAdvanceTime(expiration_time / 2, base::Seconds(0));
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, FingerprintTimedOutTest) {
   base::TimeDelta expiration_time = GetExpirationTime();
-  ShowLockScreenAndAdvanceTime(expiration_time,
-                               base::TimeDelta::FromSeconds(0));
+  ShowLockScreenAndAdvanceTime(expiration_time, base::Seconds(0));
 }
 
 IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, TimeoutIncludesSuspendedTime) {

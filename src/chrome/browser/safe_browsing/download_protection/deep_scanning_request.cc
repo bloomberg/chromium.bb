@@ -298,6 +298,7 @@ DeepScanningRequest::ShouldUploadBinary(download::DownloadItem* item) {
 DeepScanningRequest::DeepScanningRequest(
     download::DownloadItem* item,
     DeepScanTrigger trigger,
+    DownloadCheckResult pre_scan_download_check_result,
     CheckDownloadRepeatingCallback callback,
     DownloadProtectionService* download_service,
     enterprise_connectors::AnalysisSettings settings)
@@ -307,12 +308,14 @@ DeepScanningRequest::DeepScanningRequest(
       download_service_(download_service),
       analysis_settings_(std::move(settings)),
       pending_scan_requests_(1),
+      pre_scan_download_check_result_(pre_scan_download_check_result),
       weak_ptr_factory_(this) {
   item_->AddObserver(this);
 }
 
 DeepScanningRequest::DeepScanningRequest(
     download::DownloadItem* item,
+    DownloadCheckResult pre_scan_download_check_result,
     CheckDownloadRepeatingCallback callback,
     DownloadProtectionService* download_service,
     enterprise_connectors::AnalysisSettings settings,
@@ -324,6 +327,7 @@ DeepScanningRequest::DeepScanningRequest(
       analysis_settings_(std::move(settings)),
       save_package_files_(std::move(save_package_files)),
       pending_scan_requests_(save_package_files_.size()),
+      pre_scan_download_check_result_(pre_scan_download_check_result),
       weak_ptr_factory_(this) {
   item_->AddObserver(this);
 }
@@ -391,21 +395,21 @@ void DeepScanningRequest::StartSavePackageScan() {
       content::DownloadItemUtils::GetBrowserContext(item_));
   std::vector<FileOpeningJob::FileOpeningTask> tasks(pending_scan_requests_);
   size_t i = 0;
-  for (const auto& final_path_and_tmp_path : save_package_files_) {
+  for (const auto& tmp_path_and_final_path : save_package_files_) {
     auto request = std::make_unique<FileAnalysisRequest>(
-        analysis_settings_, final_path_and_tmp_path.second,
-        final_path_and_tmp_path.first.BaseName(), /*mimetype*/ "",
+        analysis_settings_, tmp_path_and_final_path.first,
+        tmp_path_and_final_path.second.BaseName(), /*mimetype*/ "",
         /* delay_opening_file */ true,
         base::BindOnce(&DeepScanningRequest::OnScanComplete,
                        weak_ptr_factory_.GetWeakPtr(),
-                       final_path_and_tmp_path.second));
-    request->set_filename(final_path_and_tmp_path.first.AsUTF8Unsafe());
+                       tmp_path_and_final_path.first));
+    request->set_filename(tmp_path_and_final_path.second.AsUTF8Unsafe());
 
     FileAnalysisRequest* request_raw = request.get();
-    PopulateRequest(request_raw, profile, final_path_and_tmp_path.second);
+    PopulateRequest(request_raw, profile, tmp_path_and_final_path.first);
     request_raw->GetRequestData(base::BindOnce(
         &DeepScanningRequest::OnGotRequestData, weak_ptr_factory_.GetWeakPtr(),
-        final_path_and_tmp_path.first, final_path_and_tmp_path.second,
+        tmp_path_and_final_path.second, tmp_path_and_final_path.first,
         std::move(request)));
     DCHECK_LT(i, tasks.size());
     tasks[i++].request = request_raw;
@@ -562,10 +566,10 @@ void DeepScanningRequest::OnScanComplete(
     if (stored_result) {
       stored_result->file_metadata.push_back(file_metadata);
     } else {
-      auto result =
+      auto scan_result =
           std::make_unique<enterprise_connectors::ScanResult>(file_metadata);
       item_->SetUserData(enterprise_connectors::ScanResult::kKey,
-                         std::move(result));
+                         std::move(scan_result));
     }
   }
 
@@ -574,6 +578,10 @@ void DeepScanningRequest::OnScanComplete(
 
 void DeepScanningRequest::OnDownloadDestroyed(
     download::DownloadItem* download) {
+  if (download->IsSavePackageDownload()) {
+    enterprise_connectors::RunSavePackageScanningCallback(download, false);
+  }
+
   FinishRequest(DownloadCheckResult::UNKNOWN);
 }
 
@@ -599,6 +607,13 @@ void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
             ? GetEventResult(pre_scan_danger_type_, item_)
             : GetEventResult(result, profile);
     report_callbacks_.Notify(event_result);
+  }
+
+  // If the deep-scanning result is unknown for whatever reason, `callback_`
+  // should be called with whatever SB result was known prior to deep scanning.
+  if (result == DownloadCheckResult::UNKNOWN &&
+      trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
+    result = pre_scan_download_check_result_;
   }
 
   for (auto& observer : observers_)

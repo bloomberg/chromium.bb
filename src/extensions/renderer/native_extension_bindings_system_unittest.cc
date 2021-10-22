@@ -926,20 +926,12 @@ TEST_F(NativeExtensionBindingsSystemUnittest, UnmanagedEvents) {
 
 // Tests that a context having access to an aliased API (like networking.onc)
 // does not allow for accessing the source API (networkingPrivate) directly.
-// TODO(https://crbug.com/1243780): Define a platform for extensions on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_AccessToAliasSourceDoesntGiveAliasAccess \
-  DISABLED_AccessToAliasSourceDoesntGiveAliasAccess
-#else
-#define MAYBE_AccessToAliasSourceDoesntGiveAliasAccess \
-  AccessToAliasSourceDoesntGiveAliasAccess
-#endif
 TEST_F(NativeExtensionBindingsSystemUnittest,
-       MAYBE_AccessToAliasSourceDoesntGiveAliasAccess) {
-  const char kWhitelistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+       AccessToAliasSourceDoesntGiveAliasAccess) {
+  const char kAllowlistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .SetID(kWhitelistedId)
+          .SetID(kAllowlistedId)
           .AddPermission("networkingPrivate")
           .Build();
 
@@ -966,20 +958,12 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
 
 // Tests that a context having access to the source for an aliased API does not
 // allow for accessing the alias.
-// TODO(https://crbug.com/1243780): Define a platform for extensions on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_AccessToAliasDoesntGiveAliasSourceAccess \
-  DISABLED_AccessToAliasDoesntGiveAliasSourceAccess
-#else
-#define MAYBE_AccessToAliasDoesntGiveAliasSourceAccess \
-  AccessToAliasDoesntGiveAliasSourceAccess
-#endif
 TEST_F(NativeExtensionBindingsSystemUnittest,
-       MAYBE_AccessToAliasDoesntGiveAliasSourceAccess) {
-  const char kWhitelistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+       AccessToAliasDoesntGiveAliasSourceAccess) {
+  const char kAllowlistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .SetID(kWhitelistedId)
+          .SetID(kAllowlistedId)
           .AddPermission("networking.onc")
           .Build();
   RegisterExtension(extension);
@@ -1005,19 +989,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
 
 // Test that if an extension has access to both an alias and an alias source,
 // the objects on the API are different.
-// TODO(https://crbug.com/1243780): Define a platform for extensions on Fuchsia.
-#if defined(OS_FUCHSIA)
-#define MAYBE_AliasedAPIsAreDifferentObjects \
-  DISABLED_AliasedAPIsAreDifferentObjects
-#else
-#define MAYBE_AliasedAPIsAreDifferentObjects AliasedAPIsAreDifferentObjects
-#endif
-TEST_F(NativeExtensionBindingsSystemUnittest,
-       MAYBE_AliasedAPIsAreDifferentObjects) {
-  const char kWhitelistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
+TEST_F(NativeExtensionBindingsSystemUnittest, AliasedAPIsAreDifferentObjects) {
+  const char kAllowlistedId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
   scoped_refptr<const Extension> extension =
       ExtensionBuilder("extension")
-          .SetID(kWhitelistedId)
+          .SetID(kAllowlistedId)
           .AddPermissions({"networkingPrivate", "networking.onc"})
           .Build();
   RegisterExtension(extension);
@@ -1169,6 +1145,12 @@ class ResponseValidationNativeExtensionBindingsSystemUnittest
       public testing::WithParamInterface<bool> {
  public:
   ResponseValidationNativeExtensionBindingsSystemUnittest() = default;
+
+  ResponseValidationNativeExtensionBindingsSystemUnittest(
+      const ResponseValidationNativeExtensionBindingsSystemUnittest&) = delete;
+  ResponseValidationNativeExtensionBindingsSystemUnittest& operator=(
+      const ResponseValidationNativeExtensionBindingsSystemUnittest&) = delete;
+
   ~ResponseValidationNativeExtensionBindingsSystemUnittest() override = default;
 
   void SetUp() override {
@@ -1184,9 +1166,6 @@ class ResponseValidationNativeExtensionBindingsSystemUnittest
 
  private:
   std::unique_ptr<base::AutoReset<bool>> response_validation_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      ResponseValidationNativeExtensionBindingsSystemUnittest);
 };
 
 TEST_P(ResponseValidationNativeExtensionBindingsSystemUnittest,

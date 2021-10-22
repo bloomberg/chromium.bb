@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lo">
+<translation id="1113173431709655881">ໂໝດກ້ອງຖ່າຍຮູບ</translation>
 <translation id="1175958423215084756">ກວດພົບລິ້ງ. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ຮູບພາບໃນຄັງ</translation>
 <translation id="1300209025925956156">ສະແກນເອກະສານຂອງທ່ານ</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244">ຖອດສາຍ <ph name="CAMERA" /> ແລ້ວ.</translation>
 <translation id="1473110567575736769">ໂມງນັບຖອຍຫຼັງ 3 ວິນາທີ</translation>
 <translation id="1545749641540134597">ສະແກນລະຫັດ QR</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">ປົກ​ກະ​ຕິ</translation>
 <translation id="1620510694547887537">ກ້ອງ​ຖ່າຍ​ຮູບ</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">ບໍ່ໄດ້ບັນທຶກຫຍັງໄວ້</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">ສະແກນ</translation>
 <translation id="2549985041256363841">ເລີ່ມການບັນທຶກ</translation>
 <translation id="2599796128805996109">ກ້ອງຫຼັງ</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" />ວິ</translation>
+<translation id="2761536921376153655">ປະເພດການສະແກນ</translation>
 <translation id="2879583609344924966">ສຽບສາຍ <ph name="CAMERA" /> ແລ້ວ.</translation>
 <translation id="2968794441791257519">ຮູບພາບ ແລະ ວິດີໂອທີ່ຖ່າຍດ້ວຍກ້ອງຖ່າຍຮູບຈະຖືກຍ້າຍໄປໃສ່ໂຟນເດີດາວໂຫຼດ. ທ່ານສາມາດເຂົ້າເຖິງພວກມັນໄດ້ໃນໄຟລ໌.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">ໄປທີ່ຄັງຮູບພາບ</translation>
 <translation id="520537883758714667">ຕອນນີ້ສາມາດສະແກນເອກະສານໄດ້ແລ້ວ</translation>
 <translation id="5268823927180092501">ເປີດການນຳໃຊ້ໂໝດເອກະສານຢູ່ກ້ອງຖ່າຍຮູບທັງໝົດ</translation>
+<translation id="5317780077021120954">ບັນທຶກ</translation>
 <translation id="5444515100983837161">ວາງຂອບທັງໝົດຂອງເອກະສານໄວ້ພາຍໃນເຟຣມ. ການສະແກນເຮັດວຽກໄດ້ດີທີ່ສຸດຫາກເອກະສານ ແລະ ພື້ນຫຼັງເປັນຄົນລະສີກັນ.</translation>
 <translation id="5671277269877808209">ສີ່ຫຼ່ຽມ</translation>
 <translation id="5746169159649715125">ບັນທຶກເປັນ PDF</translation>
@@ -86,6 +92,7 @@
 
 ຖ້າຄຳຕິຊົມຂອງທ່ານກ່ຽວກັບຄຸນນະພາບຮູບ ຫຼື ວິດີໂອ, ກະລຸນາແນບຮູບ ຫຼື ວິດີໂອຕົວຢ່າງມານຳ ແລະ ໃຫ້ລາຍລະອຽດວ່າມີຫຍັງຜິດພາດ. (ຕົວຢ່າງ: ຮູບມືດເກີນໄປ ຫຼື ຮູບເປົ້າໝາຍບໍ່ຢູ່ໃນໂຟກັສ.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> ເມກະພິກເຊວ</translation>
+<translation id="6527303717912515753">ແຊຣ໌</translation>
 <translation id="667999046851023355">ເອ​ກະ​ສານ</translation>
 <translation id="6681668084120808868">ຖ່າຍຮູບ</translation>
 <translation id="6778482348691154169">ບໍ່ສາມາດຖ່າຍຮູບໄດ້</translation>
@@ -94,15 +101,19 @@
 <translation id="698156982839284926">3 ວິນາທີ</translation>
 <translation id="712848772518857951">ທ່ານຕ້ອງການລຶບ <ph name="COUNT" /> ລາຍການອອກແທ້ໆບໍ?</translation>
 <translation id="7134221860976209830">ໂມງນັບຖອຍຫຼັງ 10 ວິນາທີ</translation>
+<translation id="7191890674911603392">ປະເພດການບັນທຶກ</translation>
 <translation id="7243947652761655814">ຄວາມລະອຽດຂອງວິດີໂອ</translation>
 <translation id="7337660886763914220">ຂໍ້ຜິດພາດຂອງໄຟລ໌ລະບົບ.</translation>
 <translation id="7450541714075000668">ສຳເນົາຂໍ້ຄວາມແລ້ວ</translation>
+<translation id="7476762461674917065">ສະແດງຕົວເລືອກການບັນທຶກ GIF</translation>
+<translation id="7488619942230388918">ບັນທຶກວິດີໂອ GIF</translation>
 <translation id="7557677699350329807">ປ່ຽນເປັນກ້ອງຖັດໄປ</translation>
 <translation id="7607002721634913082">ຢຸດແລ້ວ</translation>
 <translation id="7608223098072244877">4 ຄູນ 4</translation>
 <translation id="7649070708921625228">ຊ່ວຍ​ເຫຼືອ</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7726641833034062494">ບັນທຶກວິດີໂອປົກກະຕິ</translation>
 <translation id="7983668134180549431">ກວດພົບຂໍ້ຄວາມ.</translation>
 <translation id="8067883171444229417">ຫຼິ້ນວິດີໂອ</translation>
 <translation id="8120146556401698679">ເລື່ອນ ອຽງ ຊູມ</translation>

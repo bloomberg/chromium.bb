@@ -108,6 +108,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
             Shelf* shelf,
             Delegate* delegate,
             ShelfButtonDelegate* button_delegate);
+
+  ShelfView(const ShelfView&) = delete;
+  ShelfView& operator=(const ShelfView&) = delete;
+
   ~ShelfView() override;
 
   Shelf* shelf() const { return shelf_; }
@@ -197,8 +201,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   bool ShouldEventActivateButton(views::View* view, const ui::Event& event);
 
   // ApplicationDragAndDropHost:
-  bool ShouldStartDrag(const std::string& app_id,
-                       const gfx::Point& location_in_screen) const override;
+  bool ShouldHandleDrag(const std::string& app_id,
+                        const gfx::Point& location_in_screen) const override;
   bool StartDrag(const std::string& app_id,
                  const gfx::Point& location_in_screen,
                  const gfx::Rect& drag_icon_bounds_in_screen) override;
@@ -705,8 +709,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   base::RepeatingClosure context_menu_shown_callback_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };
 
 }  // namespace ash

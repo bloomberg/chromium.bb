@@ -47,6 +47,11 @@ namespace grpc_support {
 #endif
 
 class MAYBE_BidirectionalStreamTest : public ::testing::TestWithParam<bool> {
+ public:
+  MAYBE_BidirectionalStreamTest(const MAYBE_BidirectionalStreamTest&) = delete;
+  MAYBE_BidirectionalStreamTest& operator=(
+      const MAYBE_BidirectionalStreamTest&) = delete;
+
  protected:
   void SetUp() override {
     net::QuicSimpleTestServer::Start();
@@ -70,8 +75,6 @@ class MAYBE_BidirectionalStreamTest : public ::testing::TestWithParam<bool> {
 
  private:
   std::string quic_server_hello_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(MAYBE_BidirectionalStreamTest);
 };
 
 class TestBidirectionalStreamCallback {
@@ -95,9 +98,11 @@ class TestBidirectionalStreamCallback {
     bool flush;
 
     WriteData(const std::string& buffer, bool flush);
-    ~WriteData();
 
-    DISALLOW_COPY_AND_ASSIGN(WriteData);
+    WriteData(const WriteData&) = delete;
+    WriteData& operator=(const WriteData&) = delete;
+
+    ~WriteData();
   };
 
   bidirectional_stream* stream;
@@ -138,8 +143,9 @@ class TestBidirectionalStreamCallback {
         stream->annotation);
   }
 
-  virtual bool MaybeCancel(bidirectional_stream* stream, ResponseStep step) {
-    DCHECK_EQ(stream, this->stream);
+  virtual bool MaybeCancel(bidirectional_stream* bidir_stream,
+                           ResponseStep step) {
+    DCHECK_EQ(bidir_stream, stream);
     response_step = step;
     DVLOG(3) << "Step: " << step;
 
@@ -161,8 +167,8 @@ class TestBidirectionalStreamCallback {
     write_data.push_back(std::make_unique<WriteData>(data, flush));
   }
 
-  virtual void MaybeWriteNextData(bidirectional_stream* stream) {
-    DCHECK_EQ(stream, this->stream);
+  virtual void MaybeWriteNextData(bidirectional_stream* bidir_stream) {
+    DCHECK_EQ(bidir_stream, stream);
     if (write_data.empty())
       return;
     for (const auto& data : write_data) {

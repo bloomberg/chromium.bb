@@ -333,8 +333,6 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   }
 
   is_first_for_node_ = builder->is_first_for_node_;
-  may_have_descendant_above_block_start_ =
-      builder->may_have_descendant_above_block_start_;
   is_fieldset_container_ = builder->is_fieldset_container_;
   is_table_ng_part_ = builder->is_table_ng_part_;
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
@@ -1317,8 +1315,12 @@ void NGPhysicalBoxFragment::AddOutlineRectsForInlineBox(
 #if DCHECK_IS_ON()
     has_this_fragment = has_this_fragment || current.BoxFragment() == this;
 #endif
-    if (!current.Size().IsZero() && !current.GetLayoutObject()->IsSVG())
-      rects->push_back(current.RectInContainerFragment());
+    if (!current.Size().IsZero()) {
+      const NGPhysicalBoxFragment* fragment = current.BoxFragment();
+      DCHECK(fragment);
+      if (!fragment->IsOpaque() && !fragment->IsSvg())
+        rects->push_back(current.RectInContainerFragment());
+    }
 
     // Add descendants if any, in the container-relative coordinate.
     if (!current.HasChildren())

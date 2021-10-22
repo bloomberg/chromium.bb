@@ -16,6 +16,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/value_store/test_value_store_factory.h"
+#include "components/value_store/testing_value_store.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "crypto/symmetric_key.h"
@@ -25,8 +27,6 @@
 #include "extensions/browser/api/storage/value_store_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extensions_browser_client.h"
-#include "extensions/browser/value_store/test_value_store_factory.h"
-#include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,6 +82,10 @@ void GetRegisteredItemsCallback(
 class DataItemTest : public testing::Test {
  public:
   DataItemTest() {}
+
+  DataItemTest(const DataItemTest&) = delete;
+  DataItemTest& operator=(const DataItemTest&) = delete;
+
   ~DataItemTest() override = default;
 
   void SetUp() override {
@@ -310,8 +314,6 @@ class DataItemTest : public testing::Test {
   std::unique_ptr<ValueStoreCache> value_store_cache_;
 
   scoped_refptr<const Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataItemTest);
 };
 
 TEST_F(DataItemTest, OperationsOnUnregisteredItem) {
@@ -565,9 +567,8 @@ TEST_F(DataItemTest, RepeatedWrite) {
   std::vector<char> first_write = {'f', 'i', 'l', 'e', '_', '1'};
   std::vector<char> second_write = {'f', 'i', 'l', 'e', '_', '2'};
 
-  writer->Write(
-      first_write,
-      base::BindOnce(&WriteCallback, base::DoNothing::Once(), &write_result));
+  writer->Write(first_write, base::BindOnce(&WriteCallback, base::DoNothing(),
+                                            &write_result));
   EXPECT_EQ(OperationResult::kSuccess,
             WriteItemAndWaitForResult(writer.get(), second_write));
 

@@ -175,10 +175,10 @@ CookieSettings::GetCookieSettingWithMetadata(
         });
     if (entry != content_settings_.end()) {
       cookie_setting = entry->GetContentSetting();
-      // Site-specific settings override the global "block third-party cookies"
-      // setting.
+      // Site-specific settings and global blocks override the "block
+      // third-party cookies" setting.
       // Note: global settings are implemented as a catch-all (*, *) pattern.
-      if (IsExplicitSetting(*entry))
+      if (IsExplicitSetting(*entry) || cookie_setting == CONTENT_SETTING_BLOCK)
         blocked_by_third_party_setting = false;
     }
   }
@@ -209,8 +209,13 @@ CookieSettings::GetCookieSettingWithMetadata(
       }
     }
   } else {
+    // Cookies aren't blocked solely due to the third-party-cookie blocking
+    // setting, but they still may be blocked due to a global default. So we
+    // have to check what the setting is here.
     FireStorageAccessHistogram(
-        net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
+        cookie_setting == CONTENT_SETTING_BLOCK
+            ? net::cookie_util::StorageAccessResult::ACCESS_BLOCKED
+            : net::cookie_util::StorageAccessResult::ACCESS_ALLOWED);
   }
 
   if (blocked_by_third_party_setting) {

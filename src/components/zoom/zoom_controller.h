@@ -28,6 +28,10 @@ class ZoomObserver;
 class ZoomRequestClient : public base::RefCounted<ZoomRequestClient> {
  public:
   ZoomRequestClient() {}
+
+  ZoomRequestClient(const ZoomRequestClient&) = delete;
+  ZoomRequestClient& operator=(const ZoomRequestClient&) = delete;
+
   virtual bool ShouldSuppressBubble() const = 0;
 
  protected:
@@ -35,8 +39,6 @@ class ZoomRequestClient : public base::RefCounted<ZoomRequestClient> {
 
  private:
   friend class base::RefCounted<ZoomRequestClient>;
-
-  DISALLOW_COPY_AND_ASSIGN(ZoomRequestClient);
 };
 
 // Per-tab class to manage zoom changes and the Omnibox zoom icon. Lives on the
@@ -92,6 +94,9 @@ class ZoomController : public content::WebContentsObserver,
   // a simple, safe and reliable method to find the current zoom level for a
   // given WebContents*.
   static double GetZoomLevelForWebContents(content::WebContents* web_contents);
+
+  ZoomController(const ZoomController&) = delete;
+  ZoomController& operator=(const ZoomController&) = delete;
 
   ~ZoomController() override;
 
@@ -197,8 +202,6 @@ class ZoomController : public content::WebContentsObserver,
   base::CallbackListSubscription zoom_subscription_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(ZoomController);
 };
 
 }  // namespace zoom

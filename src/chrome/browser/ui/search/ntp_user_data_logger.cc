@@ -20,6 +20,7 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
+#include "extensions/common/constants.h"
 
 namespace {
 
@@ -260,15 +261,20 @@ LogoClickType LoggingEventToLogoClick(NTPLoggingEventType event) {
   }
 }
 
+bool IsImpressionFromPreinstalledApp(
+    const ntp_tiles::NTPTileImpression& impression) {
+  return impression.url_for_rappor.is_valid() &&
+         impression.url_for_rappor.SchemeIs(extensions::kExtensionScheme) &&
+         extension_misc::IsPreinstalledAppId(impression.url_for_rappor.host());
+}
 }  // namespace
 
 // Helper macro to log a load time to UMA. There's no good reason why we don't
 // use one of the standard UMA_HISTORAM_*_TIMES macros, but all their ranges are
 // different, and it's not worth changing all the existing histograms.
-#define UMA_HISTOGRAM_LOAD_TIME(name, sample)                      \
-  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample,                         \
-                             base::TimeDelta::FromMilliseconds(1), \
-                             base::TimeDelta::FromSeconds(60), 100)
+#define UMA_HISTOGRAM_LOAD_TIME(name, sample)                     \
+  UMA_HISTOGRAM_CUSTOM_TIMES(name, sample, base::Milliseconds(1), \
+                             base::Seconds(60), 100)
 
 NTPUserDataLogger::NTPUserDataLogger(Profile* profile, const GURL& ntp_url)
     : has_emitted_(false),
@@ -417,6 +423,10 @@ void NTPUserDataLogger::LogMostVisitedImpression(
 void NTPUserDataLogger::LogMostVisitedNavigation(
     const ntp_tiles::NTPTileImpression& impression) {
   ntp_tiles::metrics::RecordTileClick(impression);
+  if (IsImpressionFromPreinstalledApp(impression)) {
+    base::RecordAction(
+        base::UserMetricsAction("NewTabPage.PreinstalledApps.Clicked"));
+  }
 
   // Records the action. This will be available as a time-stamped stream
   // server-side and can be used to compute time-to-long-dwell.
@@ -441,6 +451,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time,
   }
 
   int tiles_count = 0;
+  int num_of_default_apps = 0;
   for (const absl::optional<ntp_tiles::NTPTileImpression>& impression :
        logged_impressions_) {
     if (!impression.has_value()) {
@@ -448,8 +459,14 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time,
     }
     ntp_tiles::metrics::RecordTileImpression(*impression);
     ++tiles_count;
+
+    if (IsImpressionFromPreinstalledApp(*impression)) {
+      ++num_of_default_apps;
+    }
   }
   ntp_tiles::metrics::RecordPageImpression(tiles_count);
+  UMA_HISTOGRAM_COUNTS_100("NewTabPage.NumberOfPreinstalledApps",
+                           num_of_default_apps);
 
   DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
            << "number of tiles: " << tiles_count;
@@ -463,11 +480,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time,
   bool is_google = DefaultSearchProviderIsGoogle();
 
   // Split between NTP variants.
-  if (ntp_url_.SchemeIsHTTPOrHTTPS()) {
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web", load_time);
-    // Only third-party NTPs can be loaded from the web.
-    UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.Web.Other", load_time);
-  } else if (ntp_url_ == GURL(chrome::kChromeUINewTabPageURL)) {
+  if (ntp_url_ == GURL(chrome::kChromeUINewTabPageURL)) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.WebUINTP", load_time);
   } else if (ntp_url_ == GURL(chrome::kChromeUINewTabPageThirdPartyURL)) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.WebUI3PNTP", load_time);

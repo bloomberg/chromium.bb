@@ -1028,7 +1028,7 @@ template<> EIGEN_STRONG_INLINE Packet8d pldexp<Packet8d>(const Packet8d& a, cons
 
 // AVX512F does not define _mm512_extracti32x8_epi32 to extract _m256i from _m512i
 #define EIGEN_EXTRACT_8i_FROM_16i(INPUT, OUTPUT)                           \
-  __m256i OUTPUT##_0 = _mm512_extracti32x8_epi32(INPUT, 0)                 \
+  __m256i OUTPUT##_0 = _mm512_extracti32x8_epi32(INPUT, 0);                \
   __m256i OUTPUT##_1 = _mm512_extracti32x8_epi32(INPUT, 1) 
 #else
 #define EIGEN_EXTRACT_8f_FROM_16f(INPUT, OUTPUT)                \
@@ -1037,7 +1037,7 @@ template<> EIGEN_STRONG_INLINE Packet8d pldexp<Packet8d>(const Packet8d& a, cons
       _mm512_extractf32x4_ps(INPUT, 1), 1);                     \
   __m256 OUTPUT##_1 = _mm256_insertf128_ps(                     \
       _mm256_castps128_ps256(_mm512_extractf32x4_ps(INPUT, 2)), \
-      _mm512_extractf32x4_ps(INPUT, 3), 1);
+      _mm512_extractf32x4_ps(INPUT, 3), 1)
 
 #define EIGEN_EXTRACT_8i_FROM_16i(INPUT, OUTPUT)                    \
   __m256i OUTPUT##_0 = _mm256_insertf128_si256(                     \
@@ -1045,7 +1045,7 @@ template<> EIGEN_STRONG_INLINE Packet8d pldexp<Packet8d>(const Packet8d& a, cons
       _mm512_extracti32x4_epi32(INPUT, 1), 1);                      \
   __m256i OUTPUT##_1 = _mm256_insertf128_si256(                     \
       _mm256_castsi128_si256(_mm512_extracti32x4_epi32(INPUT, 2)),  \
-      _mm512_extracti32x4_epi32(INPUT, 3), 1);
+      _mm512_extracti32x4_epi32(INPUT, 3), 1)
 #endif
 
 #ifdef EIGEN_VECTORIZE_AVX512DQ

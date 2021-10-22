@@ -174,12 +174,16 @@ class SingleClientWithSyncSendInterestedDataTypesTest : public SyncTest {
             switches::kUseSyncInvalidations,
             switches::kUseSyncInvalidationsForWalletAndOffer});
   }
+
+  SingleClientWithSyncSendInterestedDataTypesTest(
+      const SingleClientWithSyncSendInterestedDataTypesTest&) = delete;
+  SingleClientWithSyncSendInterestedDataTypesTest& operator=(
+      const SingleClientWithSyncSendInterestedDataTypesTest&) = delete;
+
   ~SingleClientWithSyncSendInterestedDataTypesTest() override = default;
 
  private:
   base::test::ScopedFeatureList override_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientWithSyncSendInterestedDataTypesTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientWithSyncSendInterestedDataTypesTest,
@@ -221,6 +225,12 @@ class SingleClientWithUseSyncInvalidationsTest : public SyncTest {
         /*disabled_features=*/{
             switches::kUseSyncInvalidationsForWalletAndOffer});
   }
+
+  SingleClientWithUseSyncInvalidationsTest(
+      const SingleClientWithUseSyncInvalidationsTest&) = delete;
+  SingleClientWithUseSyncInvalidationsTest& operator=(
+      const SingleClientWithUseSyncInvalidationsTest&) = delete;
+
   ~SingleClientWithUseSyncInvalidationsTest() override = default;
 
   // Injects a test DeviceInfo entity to the fake server.
@@ -248,8 +258,6 @@ class SingleClientWithUseSyncInvalidationsTest : public SyncTest {
 
  private:
   base::test::ScopedFeatureList override_features_;
-
-  DISALLOW_COPY_AND_ASSIGN(SingleClientWithUseSyncInvalidationsTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientWithUseSyncInvalidationsTest,
@@ -390,6 +398,14 @@ class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
                               switches::kUseSyncInvalidationsForWalletAndOffer},
         /*disabled_features=*/{});
   }
+
+  SingleClientWithUseSyncInvalidationsForWalletAndOfferTest(
+      const SingleClientWithUseSyncInvalidationsForWalletAndOfferTest&) =
+      delete;
+  SingleClientWithUseSyncInvalidationsForWalletAndOfferTest& operator=(
+      const SingleClientWithUseSyncInvalidationsForWalletAndOfferTest&) =
+      delete;
+
   ~SingleClientWithUseSyncInvalidationsForWalletAndOfferTest() override =
       default;
 
@@ -403,9 +419,6 @@ class SingleClientWithUseSyncInvalidationsForWalletAndOfferTest
  private:
   base::test::ScopedFeatureList override_features_;
   fake_server::EntityBuilderFactory entity_builder_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      SingleClientWithUseSyncInvalidationsForWalletAndOfferTest);
 };
 
 IN_PROC_BROWSER_TEST_F(
@@ -516,10 +529,11 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(new_token.empty());
   // New device info should eventually be committed to the server (but the old
   // device info will remain on the server). The FCM token should be present.
-  EXPECT_TRUE(ServerDeviceInfoMatchChecker(
-                  GetFakeServer(), UnorderedElementsAre(HasInstanceIdToken(old_token),
-                                                        HasInstanceIdToken(new_token)))
-                  .Wait());
+  EXPECT_TRUE(
+      ServerDeviceInfoMatchChecker(
+          GetFakeServer(), UnorderedElementsAre(HasInstanceIdToken(old_token),
+                                                HasInstanceIdToken(new_token)))
+          .Wait());
 }
 #endif  // !OS_CHROMEOS
 

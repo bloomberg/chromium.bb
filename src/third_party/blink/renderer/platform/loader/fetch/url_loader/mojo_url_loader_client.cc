@@ -33,7 +33,7 @@ namespace {
 
 constexpr size_t kDefaultMaxBufferedBodyBytesPerRequest = 100 * 1000;
 constexpr base::TimeDelta kGracePeriodToFinishLoadingWhileInBackForwardCache =
-    base::TimeDelta::FromSeconds(60);
+    base::Seconds(60);
 
 }  // namespace
 
@@ -290,7 +290,7 @@ MojoURLLoaderClient::MojoURLLoaderClient(
     const GURL& request_url,
     WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper)
     : back_forward_cache_timeout_(
-          base::TimeDelta::FromSeconds(GetLoadingTasksUnfreezableParamAsInt(
+          base::Seconds(GetLoadingTasksUnfreezableParamAsInt(
               "grace_period_to_finish_loading_in_seconds",
               static_cast<int>(
                   kGracePeriodToFinishLoadingWhileInBackForwardCache
@@ -332,7 +332,6 @@ void MojoURLLoaderClient::OnReceiveResponse(
                last_loaded_url_.GetString().Utf8());
 
   has_received_response_head_ = true;
-  on_receive_response_time_ = base::TimeTicks::Now();
 
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
@@ -448,12 +447,6 @@ void MojoURLLoaderClient::OnStartLoadingResponseBody(
   DCHECK(has_received_response_head_);
   DCHECK(!has_received_response_body_);
   has_received_response_body_ = true;
-
-  if (!on_receive_response_time_.is_null()) {
-    UMA_HISTOGRAM_TIMES(
-        "Renderer.OnReceiveResponseToOnStartLoadingResponseBody",
-        base::TimeTicks::Now() - on_receive_response_time_);
-  }
 
   if (!NeedsStoringMessage()) {
     // Send the message immediately.

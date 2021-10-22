@@ -93,8 +93,13 @@ class AccountSelectionProperties {
     static class DataSharingConsentProperties {
         static final PropertyModel.ReadableObjectPropertyKey<String> PROVIDER_URL =
                 new PropertyModel.ReadableObjectPropertyKey<>("provider_url");
+        static final PropertyModel.ReadableObjectPropertyKey<String> TERMS_OF_SERVICE_URL =
+                new PropertyModel.ReadableObjectPropertyKey<>("terms_of_service_url");
+        static final PropertyModel.ReadableObjectPropertyKey<String> PRIVACY_POLICY_URL =
+                new PropertyModel.ReadableObjectPropertyKey<>("privacy_policy_url");
 
-        static final PropertyKey[] ALL_KEYS = {PROVIDER_URL};
+        static final PropertyKey[] ALL_KEYS = {
+                PROVIDER_URL, TERMS_OF_SERVICE_URL, PRIVACY_POLICY_URL};
 
         private DataSharingConsentProperties() {}
     }
@@ -126,8 +131,8 @@ class AccountSelectionProperties {
         private AutoSignInCancelButtonProperties() {}
     }
 
-    @IntDef({ItemType.HEADER, ItemType.ACCOUNT, ItemType.DATA_SHARING_CONSENT,
-            ItemType.CONTINUE_BUTTON, ItemType.AUTO_SIGN_IN_CANCEL_BUTTON})
+    @IntDef({ItemType.HEADER, ItemType.ACCOUNT, ItemType.CONTINUE_BUTTON,
+            ItemType.AUTO_SIGN_IN_CANCEL_BUTTON, ItemType.DATA_SHARING_CONSENT})
     @Retention(RetentionPolicy.SOURCE)
     @interface ItemType {
         /**
@@ -141,20 +146,20 @@ class AccountSelectionProperties {
         int ACCOUNT = 2;
 
         /**
-         * The user data sharing consent text when there is only one account and it is a sign-up
-         * moment.
-         */
-        int DATA_SHARING_CONSENT = 3;
-
-        /**
          * The continue button at the end of the sheet when there is only one account.
          */
-        int CONTINUE_BUTTON = 4;
+        int CONTINUE_BUTTON = 3;
 
         /**
          * The cancel button at the end of the sheet with auto sign in.
          */
-        int AUTO_SIGN_IN_CANCEL_BUTTON = 5;
+        int AUTO_SIGN_IN_CANCEL_BUTTON = 4;
+
+        /**
+         * The user data sharing consent text when there is only one account and it is a sign-up
+         * moment.
+         */
+        int DATA_SHARING_CONSENT = 5;
     }
 
     private AccountSelectionProperties() {}

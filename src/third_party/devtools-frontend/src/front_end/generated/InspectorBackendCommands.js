@@ -271,6 +271,8 @@ export function registerCommands(inspectorBackend) {
     AttributionTriggerDataTooLarge: 'AttributionTriggerDataTooLarge',
     AttributionEventSourceTriggerDataTooLarge: 'AttributionEventSourceTriggerDataTooLarge'
   });
+  inspectorBackend.registerEnum(
+      'Audits.GenericIssueErrorType', {CrossOriginPortalPostMessageError: 'CrossOriginPortalPostMessageError'});
   inspectorBackend.registerEnum('Audits.InspectorIssueCode', {
     SameSiteCookieIssue: 'SameSiteCookieIssue',
     MixedContentIssue: 'MixedContentIssue',
@@ -284,7 +286,8 @@ export function registerCommands(inspectorBackend) {
     AttributionReportingIssue: 'AttributionReportingIssue',
     QuirksModeIssue: 'QuirksModeIssue',
     NavigatorUserAgentIssue: 'NavigatorUserAgentIssue',
-    WasmCrossOriginModuleSharingIssue: 'WasmCrossOriginModuleSharingIssue'
+    WasmCrossOriginModuleSharingIssue: 'WasmCrossOriginModuleSharingIssue',
+    GenericIssue: 'GenericIssue'
   });
   inspectorBackend.registerEvent('Audits.issueAdded', ['issue']);
   inspectorBackend.registerEnum('Audits.GetEncodedResponseRequestEncoding', {Webp: 'webp', Jpeg: 'jpeg', Png: 'png'});
@@ -1535,6 +1538,7 @@ export function registerCommands(inspectorBackend) {
     HeaderDisallowedByPreflightResponse: 'HeaderDisallowedByPreflightResponse',
     RedirectContainsCredentials: 'RedirectContainsCredentials',
     InsecurePrivateNetwork: 'InsecurePrivateNetwork',
+    InvalidPrivateNetworkAccess: 'InvalidPrivateNetworkAccess',
     NoCorsRedirectModeNotFollow: 'NoCorsRedirectModeNotFollow'
   });
   inspectorBackend.registerEnum(
@@ -1568,7 +1572,8 @@ export function registerCommands(inspectorBackend) {
     SchemefulSameSiteLax: 'SchemefulSameSiteLax',
     SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax',
     SamePartyFromCrossPartyContext: 'SamePartyFromCrossPartyContext',
-    SamePartyConflictsWithOtherAttributes: 'SamePartyConflictsWithOtherAttributes'
+    SamePartyConflictsWithOtherAttributes: 'SamePartyConflictsWithOtherAttributes',
+    NameValuePairExceedsMaxSize: 'NameValuePairExceedsMaxSize'
   });
   inspectorBackend.registerEnum('Network.CookieBlockedReason', {
     SecureOnly: 'SecureOnly',
@@ -1583,7 +1588,8 @@ export function registerCommands(inspectorBackend) {
     SchemefulSameSiteStrict: 'SchemefulSameSiteStrict',
     SchemefulSameSiteLax: 'SchemefulSameSiteLax',
     SchemefulSameSiteUnspecifiedTreatedAsLax: 'SchemefulSameSiteUnspecifiedTreatedAsLax',
-    SamePartyFromCrossPartyContext: 'SamePartyFromCrossPartyContext'
+    SamePartyFromCrossPartyContext: 'SamePartyFromCrossPartyContext',
+    NameValuePairExceedsMaxSize: 'NameValuePairExceedsMaxSize'
   });
   inspectorBackend.registerEnum('Network.AuthChallengeSource', {Server: 'Server', Proxy: 'Proxy'});
   inspectorBackend.registerEnum(
@@ -1919,6 +1925,9 @@ export function registerCommands(inspectorBackend) {
       'Overlay.setShowViewportSizeOnResize', [{'name': 'show', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Overlay.setShowHinge', [{'name': 'hingeConfig', 'type': 'object', 'optional': true}], []);
+  inspectorBackend.registerCommand(
+      'Overlay.setShowIsolatedElements',
+      [{'name': 'isolatedElementHighlightConfigs', 'type': 'object', 'optional': false}], []);
 
   // Page.
   inspectorBackend.registerEnum('Page.AdFrameType', {None: 'none', Child: 'child', Root: 'root'});
@@ -1950,7 +1959,6 @@ export function registerCommands(inspectorBackend) {
     ChDeviceMemory: 'ch-device-memory',
     ChDownlink: 'ch-downlink',
     ChEct: 'ch-ect',
-    ChLang: 'ch-lang',
     ChPrefersColorScheme: 'ch-prefers-color-scheme',
     ChRtt: 'ch-rtt',
     ChUa: 'ch-ua',
@@ -2015,7 +2023,8 @@ export function registerCommands(inspectorBackend) {
     WrongVersion: 'WrongVersion',
     FeatureDisabled: 'FeatureDisabled',
     TokenDisabled: 'TokenDisabled',
-    FeatureDisabledForUser: 'FeatureDisabledForUser'
+    FeatureDisabledForUser: 'FeatureDisabledForUser',
+    UnknownTrial: 'UnknownTrial'
   });
   inspectorBackend.registerEnum('Page.OriginTrialStatus', {
     Enabled: 'Enabled',
@@ -2173,6 +2182,8 @@ export function registerCommands(inspectorBackend) {
     ContentWebBluetooth: 'ContentWebBluetooth',
     ContentWebUSB: 'ContentWebUSB',
     ContentMediaSession: 'ContentMediaSession',
+    ContentMediaSessionService: 'ContentMediaSessionService',
+    ContentMediaPlay: 'ContentMediaPlay',
     EmbedderPopupBlockerTabHelper: 'EmbedderPopupBlockerTabHelper',
     EmbedderSafeBrowsingTriggeredPopupBlocker: 'EmbedderSafeBrowsingTriggeredPopupBlocker',
     EmbedderSafeBrowsingThreatDetails: 'EmbedderSafeBrowsingThreatDetails',
@@ -2273,7 +2284,7 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand('Page.getAppManifest', [], ['url', 'errors', 'data', 'parsed']);
   inspectorBackend.registerCommand('Page.getInstallabilityErrors', [], ['installabilityErrors']);
   inspectorBackend.registerCommand('Page.getManifestIcons', [], ['primaryIcon']);
-  inspectorBackend.registerCommand('Page.getAppId', [], ['appId']);
+  inspectorBackend.registerCommand('Page.getAppId', [], ['appId', 'recommendedId']);
   inspectorBackend.registerCommand('Page.getCookies', [], ['cookies']);
   inspectorBackend.registerCommand('Page.getFrameTree', [], ['frameTree']);
   inspectorBackend.registerCommand(
@@ -3178,12 +3189,6 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand('Profiler.stopTypeProfile', [], []);
   inspectorBackend.registerCommand('Profiler.takePreciseCoverage', [], ['result', 'timestamp']);
   inspectorBackend.registerCommand('Profiler.takeTypeProfile', [], ['result']);
-  inspectorBackend.registerCommand('Profiler.enableCounters', [], []);
-  inspectorBackend.registerCommand('Profiler.disableCounters', [], []);
-  inspectorBackend.registerCommand('Profiler.getCounters', [], ['result']);
-  inspectorBackend.registerCommand('Profiler.enableRuntimeCallStats', [], []);
-  inspectorBackend.registerCommand('Profiler.disableRuntimeCallStats', [], []);
-  inspectorBackend.registerCommand('Profiler.getRuntimeCallStats', [], ['result']);
 
   // Runtime.
   inspectorBackend.registerEnum('Runtime.RemoteObjectType', {

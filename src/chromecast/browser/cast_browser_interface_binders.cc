@@ -7,9 +7,17 @@
 #include "base/bind.h"
 #include "chromecast/browser/application_media_capabilities.h"
 #include "chromecast/browser/application_media_info_manager.h"
+#include "chromecast/browser/audio_socket_broker.h"
 #include "chromecast/browser/cast_navigation_ui_data.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "chromecast/common/mojom/accessibility.mojom.h"
+#include "chromecast/common/mojom/activity_window.mojom.h"
 #include "chromecast/common/mojom/application_media_capabilities.mojom.h"
+#include "chromecast/common/mojom/assistant_messenger.mojom.h"
+#include "chromecast/common/mojom/audio_socket.mojom.h"
+#include "chromecast/common/mojom/cast_demo.mojom.h"
+#include "chromecast/common/mojom/gesture.mojom.h"
+#include "chromecast/common/mojom/settings_ui.mojom.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "components/network_hints/common/network_hints.mojom.h"
 #include "content/public/browser/render_frame_host.h"
@@ -29,22 +37,9 @@ void BindNetworkHintsHandler(
                                                        std::move(receiver));
 }
 
-void BindApplicationMediaCapabilities(
-    content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<mojom::ApplicationMediaCapabilities> receiver) {
-  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
-  if (!web_contents)
-    return;
-  auto* cast_web_contents = CastWebContents::FromWebContents(web_contents);
-  if (!cast_web_contents)
-    return;
-  mojo::GenericPendingReceiver generic_receiver(std::move(receiver));
-  cast_web_contents->TryBindReceiver(generic_receiver);
-}
-
-void BindMediaRemotingRemotee(
-    content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<::media::mojom::Remotee> receiver) {
+template <typename Interface>
+void BindFromCastWebContents(content::RenderFrameHost* frame_host,
+                             mojo::PendingReceiver<Interface> receiver) {
   auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
   if (!web_contents)
     return;
@@ -68,6 +63,12 @@ void BindApplicationMediaInfoManager(
   media::CreateApplicationMediaInfoManager(
       frame_host, std::move(application_session_id),
       /*mixer_audio_enabled=*/false, std::move(receiver));
+}
+
+void BindAudioSocketBroker(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<::chromecast::mojom::AudioSocketBroker> receiver) {
+  media::CreateAudioSocketBroker(frame_host, std::move(receiver));
 }
 
 // Some Cast internals still dynamically set up interface binders after
@@ -110,12 +111,27 @@ void PopulateCastFrameBinders(
     mojo::BinderMapWithContext<content::RenderFrameHost*>* binder_map) {
   binder_map->Add<network_hints::mojom::NetworkHintsHandler>(
       base::BindRepeating(&BindNetworkHintsHandler));
-  binder_map->Add<mojom::ApplicationMediaCapabilities>(
-      base::BindRepeating(&BindApplicationMediaCapabilities));
-  binder_map->Add<::media::mojom::Remotee>(
-      base::BindRepeating(&BindMediaRemotingRemotee));
   binder_map->Add<::media::mojom::CastApplicationMediaInfoManager>(
       base::BindRepeating(&BindApplicationMediaInfoManager));
+  binder_map->Add<::chromecast::mojom::AudioSocketBroker>(
+      base::BindRepeating(&BindAudioSocketBroker));
+
+  binder_map->Add(base::BindRepeating(
+      &BindFromCastWebContents<mojom::ApplicationMediaCapabilities>));
+  binder_map->Add(
+      base::BindRepeating(&BindFromCastWebContents<::media::mojom::Remotee>));
+  binder_map->Add(base::BindRepeating(
+      &BindFromCastWebContents<::chromecast::mojom::ActivityWindow>));
+  binder_map->Add(base::BindRepeating(
+      &BindFromCastWebContents<::chromecast::mojom::AssistantMessageService>));
+  binder_map->Add(base::BindRepeating(
+      &BindFromCastWebContents<::chromecast::mojom::GestureSource>));
+  binder_map->Add(base::BindRepeating(
+      &BindFromCastWebContents<::chromecast::mojom::SettingsPlatform>));
+  binder_map->Add(base::BindRepeating(
+      &BindFromCastWebContents<mojom::CastAccessibilityService>));
+  binder_map->Add(
+      base::BindRepeating(&BindFromCastWebContents<mojom::CastDemo>));
 
   binder_map->SetDefaultBinderDeprecated(
       base::BindRepeating(&HandleGenericReceiver));

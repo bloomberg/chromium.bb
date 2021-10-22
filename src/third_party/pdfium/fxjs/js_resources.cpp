@@ -83,11 +83,14 @@ WideString JSGetStringFromID(JSMessage msg) {
     case JSMessage::kUserGestureRequiredError:
       msg_string = "User gesture required.";
       break;
-    case JSMessage::kTooManyOccurances:
-      msg_string = "Too many occurances.";
+    case JSMessage::kTooManyOccurrences:
+      msg_string = "Too many occurrences.";
       break;
     case JSMessage::kUnknownMethod:
       msg_string = "Unknown method.";
+      break;
+    case JSMessage::kWouldBeCyclic:
+      msg_string = "Operation would create a cycle.";
       break;
     default:
       NOTREACHED();

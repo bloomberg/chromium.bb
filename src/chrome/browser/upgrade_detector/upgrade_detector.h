@@ -62,8 +62,7 @@ class UpgradeDetector {
 
     bool IsValid() const {
       return hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59 &&
-             duration >= base::TimeDelta::FromMinutes(1) &&
-             duration != base::TimeDelta::Max();
+             duration >= base::Minutes(1) && duration != base::TimeDelta::Max();
     }
 
     int hour;
@@ -73,6 +72,9 @@ class UpgradeDetector {
 
   // Returns the singleton implementation instance.
   static UpgradeDetector* GetInstance();
+
+  UpgradeDetector(const UpgradeDetector&) = delete;
+  UpgradeDetector& operator=(const UpgradeDetector&) = delete;
 
   virtual ~UpgradeDetector();
 
@@ -395,8 +397,6 @@ class UpgradeDetector {
   base::ObserverList<UpgradeObserver>::Unchecked observer_list_;
 
   base::WeakPtrFactory<UpgradeDetector> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UpgradeDetector);
 };
 
 #endif  // CHROME_BROWSER_UPGRADE_DETECTOR_UPGRADE_DETECTOR_H_

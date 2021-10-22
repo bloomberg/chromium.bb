@@ -17,7 +17,6 @@ import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
 import org.chromium.services.network.NetworkServiceFeatures;
-import org.chromium.ui.base.UiFeatures;
 
 /**
  * List of experimental features/flags supported for user devices. Add features/flags to this list
@@ -140,15 +139,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_MIXED_CONTENT_AUTOUPGRADES,
                     "Enables autoupgrades for audio/video/image mixed content when mixed content "
                             + "mode is set to MIXED_CONTENT_COMPATIBILITY_MODE"),
-            Flag.baseFeature(UiFeatures.SWIPE_TO_MOVE_CURSOR,
-                    "Enables swipe to move cursor feature."
-                            + "This flag will only take effect on Android 11 and above."),
             Flag.baseFeature(AwFeatures.WEBVIEW_JAVA_JS_BRIDGE_MOJO,
                     "Enables the new Java/JS Bridge code path with mojo implementation."),
             Flag.baseFeature(
                     AwFeatures.WEBVIEW_ORIGIN_TRIALS, "Enables Origin Trials support on WebView."),
-            Flag.baseFeature(
-                    BlinkFeatures.LAYOUT_NG_TABLE, "Enables Blink's next generation table layout."),
             Flag.baseFeature(BlinkFeatures.GMS_CORE_EMOJI,
                     "Enables retrieval of the emoji font through GMS Core "
                             + "improving emoji glyph coverage."),
@@ -190,5 +184,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(ContentFeatures.VERIFY_DID_COMMIT_PARAMS,
                     "Enables reporting of browser and renderer navigation inconsistencies on"
                             + "navigations"),
+            Flag.baseFeature(ContentFeatures.USER_MEDIA_CAPTURE_ON_FOCUS,
+                    "Enables GetUserMedia API will only resolve when the document calling it has"
+                            + "focus"),
+            Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
+                    "Upload UMA metrics logs through MetricsUploadService not via GMS-core."),
     };
 }

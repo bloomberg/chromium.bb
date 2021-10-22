@@ -36,6 +36,10 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
   explicit WebGPUImplementation(WebGPUCmdHelper* helper,
                                 TransferBufferInterface* transfer_buffer,
                                 GpuControl* gpu_control);
+
+  WebGPUImplementation(const WebGPUImplementation&) = delete;
+  WebGPUImplementation& operator=(const WebGPUImplementation&) = delete;
+
   ~WebGPUImplementation() override;
 
   gpu::ContextResult Initialize(const SharedMemoryLimits& limits);
@@ -127,7 +131,9 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
   void RequestDeviceAsync(
       uint32_t requested_adapter_id,
       const WGPUDeviceProperties& requested_device_properties,
-      base::OnceCallback<void(WGPUDevice)> request_device_callback) override;
+      base::OnceCallback<void(WGPUDevice,
+                              const WGPUSupportedLimits*,
+                              const char*)> request_device_callback) override;
 
   WGPUDevice DeprecatedEnsureDefaultDeviceSync() override;
 
@@ -152,14 +158,13 @@ class WEBGPU_EXPORT WebGPUImplementation final : public WebGPUInterface,
       request_adapter_callback_map_;
   DawnRequestAdapterSerial request_adapter_serial_ = 0;
 
-  using RequestDeviceCallback = base::OnceCallback<void(bool)>;
+  using RequestDeviceCallback =
+      base::OnceCallback<void(bool, const WGPUSupportedLimits*, const char*)>;
   base::flat_map<DawnRequestDeviceSerial, RequestDeviceCallback>
       request_device_callback_map_;
   DawnRequestDeviceSerial request_device_serial_ = 0;
 
   std::atomic_bool lost_{false};
-
-  DISALLOW_COPY_AND_ASSIGN(WebGPUImplementation);
 };
 
 }  // namespace webgpu

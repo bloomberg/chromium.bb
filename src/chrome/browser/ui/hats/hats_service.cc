@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/sessions/exit_type_service.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_features.h"
@@ -28,6 +29,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/network_change_notifier.h"
 
@@ -42,6 +44,9 @@ constexpr char kHatsSurveyTriggerTrustSafetyTrustedSurface[] =
     "ts-trusted-surface";
 constexpr char kHatsSurveyTriggerTrustSafetyTransactions[] = "ts-transactions";
 constexpr char kHatsSurveyTriggerAccuracyTips[] = "accuracy-tips";
+constexpr char kHatsSurveyTriggerAutofillAddress[] = "autofill-address";
+constexpr char kHatsSurveyTriggerAutofillCard[] = "autofill-card";
+constexpr char kHatsSurveyTriggerAutofillPassword[] = "autofill-password";
 
 constexpr char kHatsNextSurveyTriggerIDTesting[] =
     "HLpeYy5Av0ugnJ3q1cK0XzzA8UHv";
@@ -60,16 +65,13 @@ constexpr double kHatsSurveyProbabilityDefault = 0;
 // TODO(crbug.com/1160661): When the minimum time between any survey, and the
 // minimum time between a specific survey, are the same, the logic supporting
 // the latter check is superfluous.
-constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
-    base::TimeDelta::FromDays(180);
+constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts = base::Days(180);
 
-constexpr base::TimeDelta kMinimumTimeBetweenAnySurveyStarts =
-    base::TimeDelta::FromDays(180);
+constexpr base::TimeDelta kMinimumTimeBetweenAnySurveyStarts = base::Days(180);
 
-constexpr base::TimeDelta kMinimumTimeBetweenSurveyChecks =
-    base::TimeDelta::FromDays(1);
+constexpr base::TimeDelta kMinimumTimeBetweenSurveyChecks = base::Days(1);
 
-constexpr base::TimeDelta kMinimumProfileAge = base::TimeDelta::FromDays(30);
+constexpr base::TimeDelta kMinimumProfileAge = base::Days(30);
 
 // Preferences Data Model
 // The kHatsSurveyMetadata pref points to a dictionary.
@@ -168,6 +170,14 @@ std::vector<HatsService::SurveyConfig> GetSurveyConfigs() {
       /*presupplied_trigger_id=*/absl::nullopt, std::vector<std::string>{},
       std::vector<std::string>{"Tip shown for URL", "UI interaction"});
 
+  // Autofill surveys.
+  survey_configs.emplace_back(&features::kAutofillAddressSurvey,
+                              kHatsSurveyTriggerAutofillAddress);
+  survey_configs.emplace_back(&features::kAutofillCardSurvey,
+                              kHatsSurveyTriggerAutofillCard);
+  survey_configs.emplace_back(&features::kAutofillPasswordSurvey,
+                              kHatsSurveyTriggerAutofillPassword);
+
   return survey_configs;
 }
 
@@ -226,11 +236,13 @@ HatsService::DelayedSurveyTask::DelayedSurveyTask(
     const std::string& trigger,
     content::WebContents* web_contents,
     const SurveyBitsData& product_specific_bits_data,
-    const SurveyStringData& product_specific_string_data)
+    const SurveyStringData& product_specific_string_data,
+    bool require_same_origin)
     : hats_service_(hats_service),
       trigger_(trigger),
       product_specific_bits_data_(product_specific_bits_data),
-      product_specific_string_data_(product_specific_string_data) {
+      product_specific_string_data_(product_specific_string_data),
+      require_same_origin_(require_same_origin) {
   Observe(web_contents);
 }
 
@@ -245,6 +257,17 @@ void HatsService::DelayedSurveyTask::Launch() {
   hats_service_->LaunchSurveyForWebContents(trigger_, web_contents(),
                                             product_specific_bits_data_,
                                             product_specific_string_data_);
+  hats_service_->RemoveTask(*this);
+}
+
+void HatsService::DelayedSurveyTask::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!require_same_origin_ || !navigation_handle ||
+      !navigation_handle->IsInPrimaryMainFrame() ||
+      navigation_handle->IsSameOrigin()) {
+    return;
+  }
+
   hats_service_->RemoveTask(*this);
 }
 
@@ -314,9 +337,9 @@ bool HatsService::LaunchDelayedSurvey(
   return base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&HatsService::LaunchSurvey, weak_ptr_factory_.GetWeakPtr(),
-                     trigger, base::DoNothing::Once(), base::DoNothing::Once(),
+                     trigger, base::DoNothing(), base::DoNothing(),
                      product_specific_bits_data, product_specific_string_data),
-      base::TimeDelta::FromMilliseconds(timeout_ms));
+      base::Milliseconds(timeout_ms));
 }
 
 bool HatsService::LaunchDelayedSurveyForWebContents(
@@ -324,13 +347,14 @@ bool HatsService::LaunchDelayedSurveyForWebContents(
     content::WebContents* web_contents,
     int timeout_ms,
     const SurveyBitsData& product_specific_bits_data,
-    const SurveyStringData& product_specific_string_data) {
+    const SurveyStringData& product_specific_string_data,
+    bool require_same_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_contents)
     return false;
-  auto result = pending_tasks_.emplace(this, trigger, web_contents,
-                                       product_specific_bits_data,
-                                       product_specific_string_data);
+  auto result = pending_tasks_.emplace(
+      this, trigger, web_contents, product_specific_bits_data,
+      product_specific_string_data, require_same_origin);
   if (!result.second)
     return false;
   auto success = base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
@@ -339,7 +363,7 @@ bool HatsService::LaunchDelayedSurveyForWebContents(
           &HatsService::DelayedSurveyTask::Launch,
           const_cast<HatsService::DelayedSurveyTask&>(*(result.first))
               .GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(timeout_ms));
+      base::Milliseconds(timeout_ms));
   if (!success) {
     pending_tasks_.erase(result.first);
   }
@@ -496,7 +520,7 @@ void HatsService::LaunchSurveyForBrowser(
     return;
   }
   if (IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) ==
-      IncognitoModePrefs::DISABLED) {
+      IncognitoModePrefs::Availability::kDisabled) {
     // Incognito mode needs to be enabled to create an off-the-record profile
     // for HaTS dialog.
     UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
@@ -608,7 +632,7 @@ bool HatsService::CanShowAnySurvey(bool user_prompted) const {
 
   // Do not show surveys if Chrome's last exit was a crash. This avoids
   // biasing survey results unnecessarily.
-  if (profile_->GetLastSessionExitType() == Profile::EXIT_CRASHED) {
+  if (ExitTypeService::GetLastSessionExitType(profile_) == ExitType::kCrashed) {
     UMA_HISTOGRAM_ENUMERATION(kHatsShouldShowSurveyReasonHistogram,
                               ShouldShowSurveyReasons::kNoLastSessionCrashed);
     return false;

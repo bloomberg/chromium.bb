@@ -39,7 +39,7 @@ namespace {
 
 bool g_one_time_migration_enabled_for_testing = true;
 
-// Owned by ChromeBrowserMainPartsChromeos.
+// Owned by `ChromeBrowserMainPartsAsh`.
 chromeos::platform_keys::KeyPermissionsManager*
     g_system_token_key_permissions_manager = nullptr;
 
@@ -162,8 +162,8 @@ void KeyPermissionsManagerImpl::KeyPermissionsInChapsUpdater::
       base::UmaHistogramCustomTimes(
           kMigrationTimeHistogramName,
           /*sample=*/base::TimeTicks::Now() - update_start_time_,
-          /*min=*/base::TimeDelta::FromMilliseconds(1),
-          /*max=*/base::TimeDelta::FromMinutes(5),
+          /*min=*/base::Milliseconds(1),
+          /*max=*/base::Minutes(5),
           /*buckets=*/50);
       break;
     }
@@ -171,8 +171,8 @@ void KeyPermissionsManagerImpl::KeyPermissionsInChapsUpdater::
       base::UmaHistogramCustomTimes(
           kArcUsageUpdateTimeHistogramName,
           /*sample=*/base::TimeTicks::Now() - update_start_time_,
-          /*min=*/base::TimeDelta::FromMilliseconds(1),
-          /*max=*/base::TimeDelta::FromMinutes(5),
+          /*min=*/base::Milliseconds(1),
+          /*max=*/base::Minutes(5),
           /*buckets=*/50);
       break;
     }

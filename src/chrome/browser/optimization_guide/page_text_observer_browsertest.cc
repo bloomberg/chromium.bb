@@ -147,7 +147,7 @@ class PageTextObserverBrowserTest : public InProcessBrowserTest {
     if (request.GetURL().path() == "/slow-first-layout.js") {
       std::unique_ptr<net::test_server::DelayedHttpResponse> resp =
           std::make_unique<net::test_server::DelayedHttpResponse>(
-              base::TimeDelta::FromMilliseconds(500));
+              base::Milliseconds(500));
       resp->set_code(net::HTTP_OK);
       resp->set_content_type("application/javascript");
       resp->set_content(std::string());
@@ -160,7 +160,7 @@ class PageTextObserverBrowserTest : public InProcessBrowserTest {
     if (request.GetURL().path() == "/slow-add-world-text.js") {
       std::unique_ptr<net::test_server::DelayedHttpResponse> resp =
           std::make_unique<net::test_server::DelayedHttpResponse>(
-              base::TimeDelta::FromMilliseconds(500));
+              base::Milliseconds(500));
       resp->set_code(net::HTTP_OK);
       resp->set_content_type("application/javascript");
       resp->set_content(
@@ -321,12 +321,11 @@ IN_PROC_BROWSER_TEST_F(PageTextObserverBrowserTest, OOPIFAMPSubframe) {
   consumer.WaitForPageText();
 
   content::GlobalRenderFrameHostId amp_frame_id;
-  for (auto* rfh : web_contents()->GetMainFrame()->GetFramesInSubtree()) {
-    if (rfh->GetFrameName() == "amp") {
-      amp_frame_id = rfh->GetGlobalId();
-      break;
-    }
-  }
+  content::RenderFrameHost* amp_frame = content::FrameMatchingPredicate(
+      web_contents()->GetPrimaryPage(),
+      base::BindRepeating(&content::FrameMatchesName, "amp"));
+  ASSERT_TRUE(amp_frame);
+  amp_frame_id = amp_frame->GetGlobalId();
 
   ASSERT_TRUE(consumer.result());
 

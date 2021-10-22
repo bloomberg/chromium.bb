@@ -9,10 +9,12 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "quic/core/http/capsule.h"
 #include "quic/core/http/quic_spdy_session.h"
 #include "quic/core/http/quic_spdy_stream.h"
 #include "quic/core/quic_data_reader.h"
 #include "quic/core/quic_data_writer.h"
+#include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_stream.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/quic_utils.h"
@@ -28,6 +30,8 @@ namespace quic {
 namespace {
 class QUIC_NO_EXPORT NoopWebTransportVisitor : public WebTransportVisitor {
   void OnSessionReady(const spdy::SpdyHeaderBlock&) override {}
+  void OnSessionClosed(WebTransportSessionError /*error_code*/,
+                       const std::string& /*error_message*/) override {}
   void OnIncomingBidirectionalStreamAvailable() override {}
   void OnIncomingUnidirectionalStreamAvailable() override {}
   void OnDatagramReceived(absl::string_view /*datagram*/) override {}
@@ -70,7 +74,7 @@ void WebTransportHttp3::AssociateStream(QuicStreamId stream_id) {
   }
 }
 
-void WebTransportHttp3::CloseAllAssociatedStreams() {
+void WebTransportHttp3::OnConnectStreamClosing() {
   // Copy the stream list before iterating over it, as calls to ResetStream()
   // can potentially mutate the |session_| list.
   std::vector<QuicStreamId> streams(streams_.begin(), streams_.end());
@@ -83,6 +87,84 @@ void WebTransportHttp3::CloseAllAssociatedStreams() {
     connect_stream_->UnregisterHttp3DatagramContextId(context_id_);
   }
   connect_stream_->UnregisterHttp3DatagramRegistrationVisitor();
+
+  MaybeNotifyClose();
+}
+
+void WebTransportHttp3::CloseSession(WebTransportSessionError error_code,
+                                     absl::string_view error_message) {
+  if (close_sent_) {
+    QUIC_BUG(WebTransportHttp3 close sent twice)
+        << "Calling WebTransportHttp3::CloseSession() more than once is not "
+           "allowed.";
+    return;
+  }
+  close_sent_ = true;
+
+  // There can be a race between us trying to send our close and peer sending
+  // one.  If we received a close, however, we cannot send ours since we already
+  // closed the stream in response.
+  if (close_received_) {
+    QUIC_DLOG(INFO) << "Not sending CLOSE_WEBTRANSPORT_SESSION as we've "
+                       "already sent one from peer.";
+    return;
+  }
+
+  error_code_ = error_code;
+  error_message_ = std::string(error_message);
+  QuicConnection::ScopedPacketFlusher flusher(
+      connect_stream_->spdy_session()->connection());
+  connect_stream_->WriteCapsule(
+      Capsule::CloseWebTransportSession(error_code, error_message),
+      /*fin=*/true);
+}
+
+void WebTransportHttp3::OnCloseReceived(WebTransportSessionError error_code,
+                                        absl::string_view error_message) {
+  if (close_received_) {
+    QUIC_BUG(WebTransportHttp3 notified of close received twice)
+        << "WebTransportHttp3::OnCloseReceived() may be only called once.";
+  }
+  close_received_ = true;
+
+  // If the peer has sent a close after we sent our own, keep the local error.
+  if (close_sent_) {
+    QUIC_DLOG(INFO) << "Ignoring received CLOSE_WEBTRANSPORT_SESSION as we've "
+                       "already sent our own.";
+    return;
+  }
+
+  error_code_ = error_code;
+  error_message_ = std::string(error_message);
+  connect_stream_->WriteOrBufferBody("", /*fin=*/true);
+  MaybeNotifyClose();
+}
+
+void WebTransportHttp3::OnConnectStreamFinReceived() {
+  // If we already received a CLOSE_WEBTRANSPORT_SESSION capsule, we don't need
+  // to do anything about receiving a FIN, since we already sent one in
+  // response.
+  if (close_received_) {
+    return;
+  }
+  close_received_ = true;
+  if (close_sent_) {
+    QUIC_DLOG(INFO) << "Ignoring received FIN as we've already sent our close.";
+    return;
+  }
+
+  connect_stream_->WriteOrBufferBody("", /*fin=*/true);
+  MaybeNotifyClose();
+}
+
+void WebTransportHttp3::CloseSessionWithFinOnlyForTests() {
+  QUICHE_DCHECK(!close_sent_);
+  close_sent_ = true;
+  if (close_received_) {
+    return;
+  }
+
+  connect_stream_->WriteOrBufferBody("", /*fin=*/true);
 }
 
 void WebTransportHttp3::HeadersReceived(const spdy::SpdyHeaderBlock& headers) {
@@ -173,6 +255,10 @@ MessageStatus WebTransportHttp3::SendOrQueueDatagram(QuicMemSlice datagram) {
       context_id_, absl::string_view(datagram.data(), datagram.length()));
 }
 
+QuicByteCount WebTransportHttp3::GetMaxDatagramSize() const {
+  return connect_stream_->GetMaxDatagramSize(context_id_);
+}
+
 void WebTransportHttp3::SetDatagramMaxTimeInQueue(
     QuicTime::Delta max_time_in_queue) {
   connect_stream_->SetMaxDatagramTimeInQueue(max_time_in_queue);
@@ -188,11 +274,25 @@ void WebTransportHttp3::OnHttp3Datagram(
 
 void WebTransportHttp3::OnContextReceived(
     QuicStreamId stream_id, absl::optional<QuicDatagramContextId> context_id,
-    const Http3DatagramContextExtensions& /*extensions*/) {
+    DatagramFormatType format_type, absl::string_view format_additional_data) {
   if (stream_id != connect_stream_->id()) {
     QUIC_BUG(WT3 bad datagram context registration)
         << ENDPOINT << "Registered stream ID " << stream_id << ", expected "
         << connect_stream_->id();
+    return;
+  }
+  if (format_type != DatagramFormatType::WEBTRANSPORT) {
+    QUIC_DLOG(INFO) << ENDPOINT << "Ignoring unexpected datagram format type "
+                    << DatagramFormatTypeToString(format_type);
+    return;
+  }
+  if (!format_additional_data.empty()) {
+    QUIC_DLOG(ERROR)
+        << ENDPOINT
+        << "Received non-empty format additional data for context ID "
+        << (context_id_.has_value() ? context_id_.value() : 0)
+        << " on stream ID " << connect_stream_->id();
+    session_->ResetStream(connect_stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
   if (!context_is_known_) {
@@ -216,15 +316,14 @@ void WebTransportHttp3::OnContextReceived(
       return;
     }
     context_currently_registered_ = true;
-    Http3DatagramContextExtensions reply_extensions;
-    connect_stream_->RegisterHttp3DatagramContextId(context_id_,
-                                                    reply_extensions, this);
+    connect_stream_->RegisterHttp3DatagramContextId(
+        context_id_, format_type, format_additional_data, this);
   }
 }
 
 void WebTransportHttp3::OnContextClosed(
     QuicStreamId stream_id, absl::optional<QuicDatagramContextId> context_id,
-    const Http3DatagramContextExtensions& /*extensions*/) {
+    ContextCloseCode close_code, absl::string_view close_details) {
   if (stream_id != connect_stream_->id()) {
     QUIC_BUG(WT3 bad datagram context registration)
         << ENDPOINT << "Closed context on stream ID " << stream_id
@@ -239,14 +338,25 @@ void WebTransportHttp3::OnContextClosed(
                     << " on stream ID " << connect_stream_->id();
     return;
   }
-  QUIC_DLOG(INFO) << ENDPOINT << "Received datagram context close on stream ID "
-                  << connect_stream_->id() << ", resetting stream";
-  session_->ResetStream(connect_stream_->id(), QUIC_STREAM_CANCELLED);
+  QUIC_DLOG(INFO) << ENDPOINT
+                  << "Received datagram context close with close code "
+                  << close_code << " close details \"" << close_details
+                  << "\" on stream ID " << connect_stream_->id()
+                  << ", resetting stream";
+  session_->ResetStream(connect_stream_->id(), QUIC_BAD_APPLICATION_PAYLOAD);
+}
+
+void WebTransportHttp3::MaybeNotifyClose() {
+  if (close_notified_) {
+    return;
+  }
+  close_notified_ = true;
+  visitor_->OnSessionClosed(error_code_, error_message_);
 }
 
 WebTransportHttp3UnidirectionalStream::WebTransportHttp3UnidirectionalStream(
     PendingStream* pending, QuicSpdySession* session)
-    : QuicStream(pending, session, READ_UNIDIRECTIONAL, /*is_static=*/false),
+    : QuicStream(pending, session, /*is_static=*/false),
       session_(session),
       adapter_(session, this, sequencer()),
       needs_to_send_preamble_(false) {}
@@ -341,9 +451,34 @@ void WebTransportHttp3UnidirectionalStream::OnClose() {
   session->OnStreamClosed(id());
 }
 
+void WebTransportHttp3UnidirectionalStream::OnStreamReset(
+    const QuicRstStreamFrame& frame) {
+  if (adapter_.visitor() != nullptr) {
+    adapter_.visitor()->OnResetStreamReceived(
+        Http3ErrorToWebTransportOrDefault(frame.ietf_error_code));
+  }
+  QuicStream::OnStreamReset(frame);
+}
+bool WebTransportHttp3UnidirectionalStream::OnStopSending(
+    QuicResetStreamError error) {
+  if (adapter_.visitor() != nullptr) {
+    adapter_.visitor()->OnStopSendingReceived(
+        Http3ErrorToWebTransportOrDefault(error.ietf_application_code()));
+  }
+  return QuicStream::OnStopSending(error);
+}
+void WebTransportHttp3UnidirectionalStream::OnWriteSideInDataRecvdState() {
+  if (adapter_.visitor() != nullptr) {
+    adapter_.visitor()->OnWriteSideInDataRecvdState();
+  }
+
+  QuicStream::OnWriteSideInDataRecvdState();
+}
+
 namespace {
 constexpr uint64_t kWebTransportMappedErrorCodeFirst = 0x52e4a40fa8db;
 constexpr uint64_t kWebTransportMappedErrorCodeLast = 0x52e4a40fa9e2;
+constexpr WebTransportStreamError kDefaultWebTransportError = 0;
 }  // namespace
 
 absl::optional<WebTransportStreamError> Http3ErrorToWebTransport(
@@ -362,6 +497,13 @@ absl::optional<WebTransportStreamError> Http3ErrorToWebTransport(
   uint64_t result = shifted - shifted / 0x1f;
   QUICHE_DCHECK_LE(result, std::numeric_limits<uint8_t>::max());
   return result;
+}
+
+WebTransportStreamError Http3ErrorToWebTransportOrDefault(
+    uint64_t http3_error_code) {
+  absl::optional<WebTransportStreamError> result =
+      Http3ErrorToWebTransport(http3_error_code);
+  return result.has_value() ? *result : kDefaultWebTransportError;
 }
 
 uint64_t WebTransportErrorToHttp3(

@@ -180,7 +180,7 @@ void NetworkMetadataStore::FixSyncedHiddenNetworks() {
     dict.SetBoolKey(shill::kWifiHiddenSsid, false);
     network_configuration_handler_->SetShillProperties(
         network->path(), base::Value::AsDictionaryValue(dict),
-        base::DoNothing::Once(),
+        base::DoNothing(),
         base::BindOnce(&NetworkMetadataStore::OnDisableHiddenError,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -356,7 +356,7 @@ void NetworkMetadataStore::RemoveNetworkFromPref(
 
   const base::DictionaryValue* dict =
       pref_service->GetDictionary(kNetworkMetadataPref);
-  if (!dict || !dict->HasKey(network_guid)) {
+  if (!dict || !dict->FindKey(network_guid)) {
     return;
   }
 
@@ -382,7 +382,7 @@ base::TimeDelta NetworkMetadataStore::GetLastConnectedTimestamp(
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMillisecondsD(timestamp->GetDouble());
+  return base::Milliseconds(timestamp->GetDouble());
 }
 
 void NetworkMetadataStore::SetLastConnectedTimestamp(

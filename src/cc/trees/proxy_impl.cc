@@ -44,7 +44,7 @@ namespace {
 
 // Measured in seconds.
 constexpr auto kSmoothnessTakesPriorityExpirationDelay =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 }  // namespace
 
@@ -196,7 +196,8 @@ void ProxyImpl::SetTargetLocalSurfaceIdOnImpl(
 void ProxyImpl::BeginMainFrameAbortedOnImpl(
     CommitEarlyOutReason reason,
     base::TimeTicks main_thread_start_time,
-    std::vector<std::unique_ptr<SwapPromise>> swap_promises) {
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises,
+    bool scroll_and_viewport_changes_synced) {
   TRACE_EVENT1("cc", "ProxyImpl::BeginMainFrameAbortedOnImplThread", "reason",
                CommitEarlyOutReasonToString(reason));
   DCHECK(IsImplThread());
@@ -204,7 +205,8 @@ void ProxyImpl::BeginMainFrameAbortedOnImpl(
 
   host_impl_->BeginMainFrameAborted(
       reason, std::move(swap_promises),
-      scheduler_->last_dispatched_begin_main_frame_args());
+      scheduler_->last_dispatched_begin_main_frame_args(),
+      scroll_and_viewport_changes_synced);
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
   scheduler_->BeginMainFrameAborted(reason);
 }
@@ -272,6 +274,8 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
     LayerTreeHost* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     const viz::BeginFrameArgs& commit_args,
+    int source_frame_number,
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises,
     bool hold_commit_for_activation) {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToCommitOnImpl");
   DCHECK(!commit_completion_event_);
@@ -285,6 +289,9 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
     completion->Signal();
     return;
   }
+
+  source_frame_number_ = source_frame_number;
+  swap_promises_ = std::move(swap_promises);
 
   // Ideally, we should inform to impl thread when BeginMainFrame is started.
   // But, we can avoid a PostTask in here.
@@ -437,7 +444,7 @@ void ProxyImpl::RenewTreePriority() {
         user_interaction_in_progress);
   }
 
-  if (host_impl_->CurrentScrollDidCheckerboardLargeArea() &&
+  if (host_impl_->CurrentScrollCheckerboardsDueToNoRecording() &&
       base::FeatureList::IsEnabled(
           features::kPreferNewContentForCheckerboardedScrolls)) {
     prefer_new_content = true;
@@ -678,9 +685,9 @@ void ProxyImpl::ScheduledActionCommit() {
   base::ScopedAllowCrossThreadRefCountAccess
       allow_cross_thread_ref_count_access;
 
-  host_impl_->BeginCommit();
+  host_impl_->BeginCommit(source_frame_number_);
   blocked_main_commit().layer_tree_host->FinishCommitOnImplThread(
-      host_impl_.get());
+      host_impl_.get(), std::move(swap_promises_));
 
   // Remove the LayerTreeHost reference before the completion event is signaled
   // and cleared. This is necessary since blocked_main_commit() allows access

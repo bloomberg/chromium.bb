@@ -40,6 +40,8 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+
+class DesksTemplatesPresenter;
 class OverviewDelegate;
 class OverviewGrid;
 class OverviewHighlightController;
@@ -58,6 +60,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   using WindowList = std::vector<aura::Window*>;
 
   explicit OverviewSession(OverviewDelegate* delegate);
+
+  OverviewSession(const OverviewSession&) = delete;
+  OverviewSession& operator=(const OverviewSession&) = delete;
+
   ~OverviewSession() override;
 
   // Initialize with the windows that can be selected.
@@ -268,6 +274,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // |active_window_before_overview_|.
   bool IsWindowActiveWindowBeforeOverview(aura::Window* window) const;
 
+  // Shows the desks templates grids on all displays.
+  void ShowDesksTemplatesGrids();
+
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -318,13 +327,17 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     return highlight_controller_.get();
   }
 
+  DesksTemplatesPresenter* desks_templates_presenter() {
+    return desks_templates_presenter_.get();
+  }
+
   RoundedLabelWidget* no_windows_widget_for_testing() {
     return no_windows_widget_.get();
   }
 
  private:
   friend class DesksAcceleratorsTest;
-  friend class OverviewSessionTest;
+  friend class OverviewTestBase;
 
   // Helper function that moves the highlight forward or backward on the
   // corresponding window grid.
@@ -411,12 +424,13 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   std::unique_ptr<OverviewHighlightController> highlight_controller_;
 
+  // The object responsible to talking to the desk model.
+  std::unique_ptr<DesksTemplatesPresenter> desks_templates_presenter_;
+
   absl::optional<display::ScopedDisplayObserver> display_observer_;
 
   // Boolean to indicate whether chromeVox is enabled or not.
   bool chromevox_enabled_;
-
-  DISALLOW_COPY_AND_ASSIGN(OverviewSession);
 };
 
 }  // namespace ash

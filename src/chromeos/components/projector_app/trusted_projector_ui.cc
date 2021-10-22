@@ -4,6 +4,7 @@
 
 #include "chromeos/components/projector_app/trusted_projector_ui.h"
 
+#include "ash/public/cpp/projector/projector_annotator_controller.h"
 #include "chromeos/components/projector_app/annotator_message_handler.h"
 #include "chromeos/components/projector_app/projector_app_constants.h"
 #include "chromeos/components/projector_app/projector_message_handler.h"
@@ -28,7 +29,8 @@ content::WebUIDataSource* CreateProjectorHTMLSource() {
       base::make_span(kChromeosProjectorAppTrustedResources,
                       kChromeosProjectorAppTrustedResourcesSize));
 
-  source->AddResourcePath("", IDR_CHROMEOS_PROJECTOR_APP_TRUSTED_EMBEDDER_HTML);
+  source->AddResourcePath("",
+                          IDR_CHROMEOS_PROJECTOR_APP_TRUSTED_APP_EMBEDDER_HTML);
 
   std::string csp =
       std::string("frame-src ") + kChromeUIUntrustedProjectorAppUrl + ";";
@@ -56,10 +58,11 @@ TrustedProjectorUI::TrustedProjectorUI(content::WebUI* web_ui, const GURL& url)
   // chrome-untrusted:// iframe.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
-  if (url == GURL(kChromeUITrustedAnnotatorURL)) {
-    web_ui->AddMessageHandler(std::make_unique<AnnotatorMessageHandler>());
+  // RecordingOverlayViewImpl is responsible for creating the
+  // AnnotatorMessageHandler via a helper function in ProjectorClientImpl. Do
+  // nothing here.
+  if (url == GURL(kChromeUITrustedAnnotatorUrl))
     return;
-  }
 
   // The requested WebUI is hosting the Projector SWA.
   web_ui->AddMessageHandler(std::make_unique<ProjectorMessageHandler>());

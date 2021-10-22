@@ -69,12 +69,12 @@ suite(policy_tests.suiteName, function() {
     nativeLayer.setLocalDestinations(
         [{deviceName: initialSettings.printerName, printerName: 'FooName'}]);
     nativeLayer.setPageCount(3);
-    NativeLayerImpl.instance_ = nativeLayer;
+    NativeLayerImpl.setInstance(nativeLayer);
     // <if expr="chromeos or lacros">
     setNativeLayerCrosInstance();
     // </if>
     const pluginProxy = new TestPluginProxy();
-    PluginProxyImpl.instance_ = pluginProxy;
+    PluginProxyImpl.setInstance(pluginProxy);
 
     page = document.createElement('print-preview-app');
     document.body.appendChild(page);

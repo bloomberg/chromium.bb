@@ -114,10 +114,11 @@ class DefaultWidgetDelegate : public WidgetDelegate {
     SetOwnedByWidget(true);
     SetFocusTraversesOut(true);
   }
-  ~DefaultWidgetDelegate() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
+  DefaultWidgetDelegate(const DefaultWidgetDelegate&) = delete;
+  DefaultWidgetDelegate& operator=(const DefaultWidgetDelegate&) = delete;
+
+  ~DefaultWidgetDelegate() override = default;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -878,18 +879,8 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
                                               : nullptr;
 }
 
-const ui::ColorProvider* Widget::GetColorProvider() const {
-  auto color_scheme = GetNativeTheme()->GetDefaultSystemColorScheme();
-  return ui::ColorProviderManager::Get().GetColorProviderFor(
-      {(color_scheme == ui::NativeTheme::ColorScheme::kDark)
-           ? ui::ColorProviderManager::ColorMode::kDark
-           : ui::ColorProviderManager::ColorMode::kLight,
-       (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
-           ? ui::ColorProviderManager::ContrastMode::kHigh
-           : ui::ColorProviderManager::ContrastMode::kNormal,
-       GetNativeTheme()->is_custom_system_theme()
-           ? ui::ColorProviderManager::SystemTheme::kCustom
-           : ui::ColorProviderManager::SystemTheme::kDefault});
+ui::ColorProviderManager::InitializerSupplier* Widget::GetCustomTheme() const {
+  return nullptr;
 }
 
 FocusManager* Widget::GetFocusManager() {
@@ -997,7 +988,7 @@ void Widget::UpdateWindowIcon() {
     non_client_view_->UpdateWindowIcon();
 
   gfx::ImageSkia window_icon = GetImageSkiaFromImageModel(
-      widget_delegate_->GetWindowIcon(), GetNativeTheme());
+      widget_delegate_->GetWindowIcon(), GetColorProvider());
 
   // In general, icon information is read from a |widget_delegate_| and then
   // passed to |native_widget_|. On ChromeOS, for lacros-chrome to support the
@@ -1013,7 +1004,7 @@ void Widget::UpdateWindowIcon() {
   }
 
   gfx::ImageSkia app_icon = GetImageSkiaFromImageModel(
-      widget_delegate_->GetWindowAppIcon(), GetNativeTheme());
+      widget_delegate_->GetWindowAppIcon(), GetColorProvider());
   if (app_icon.isNull()) {
     const gfx::ImageSkia* icon = native_widget_->GetWindowAppIcon();
     if (icon && !icon->isNull())
@@ -1032,6 +1023,8 @@ void Widget::ThemeChanged() {
 
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetThemeChanged(this);
+
+  NotifyColorProviderChanged();
 }
 
 void Widget::DeviceScaleFactorChanged(float old_device_scale_factor,
@@ -1762,6 +1755,30 @@ View* Widget::GetFocusTraversableParentView() {
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   TRACE_EVENT0("ui", "Widget::OnNativeThemeUpdated");
   ThemeChanged();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, ui::ColorProviderSource:
+
+const ui::ColorProvider* Widget::GetColorProvider() const {
+  return ui::ColorProviderManager::Get().GetColorProviderFor(
+      GetColorProviderKey());
+}
+
+ui::ColorProviderManager::Key Widget::GetColorProviderKey() const {
+  const auto* native_theme = GetNativeTheme();
+  const auto color_scheme = native_theme->GetDefaultSystemColorScheme();
+  return ui::ColorProviderManager::Key(
+      (color_scheme == ui::NativeTheme::ColorScheme::kDark)
+          ? ui::ColorProviderManager::ColorMode::kDark
+          : ui::ColorProviderManager::ColorMode::kLight,
+      (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
+          ? ui::ColorProviderManager::ContrastMode::kHigh
+          : ui::ColorProviderManager::ContrastMode::kNormal,
+      native_theme->is_custom_system_theme()
+          ? ui::ColorProviderManager::SystemTheme::kCustom
+          : ui::ColorProviderManager::SystemTheme::kDefault,
+      GetCustomTheme());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

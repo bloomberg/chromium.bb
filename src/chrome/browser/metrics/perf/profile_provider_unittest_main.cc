@@ -27,14 +27,13 @@
 
 namespace metrics {
 
-const base::TimeDelta kPeriodicCollectionInterval =
-    base::TimeDelta::FromHours(1);
-const base::TimeDelta kMaxCollectionDelay = base::TimeDelta::FromSeconds(1);
+const base::TimeDelta kPeriodicCollectionInterval = base::Hours(1);
+const base::TimeDelta kMaxCollectionDelay = base::Seconds(1);
 // Use a 2-sec collection duration.
-const base::TimeDelta kCollectionDuration = base::TimeDelta::FromSeconds(2);
+const base::TimeDelta kCollectionDuration = base::Seconds(2);
 // The timeout in waiting until collection done. 20 seconds is a safe value far
 // beyond the collection duration used.
-const base::TimeDelta kCollectionDoneTimeout = base::TimeDelta::FromSeconds(20);
+const base::TimeDelta kCollectionDoneTimeout = base::Seconds(20);
 
 CollectionParams GetTestCollectionParams() {
   CollectionParams test_params;
@@ -81,6 +80,9 @@ class TestProfileProvider : public ProfileProvider {
     collectors_.push_back(std::move(metric_provider));
   }
 
+  TestProfileProvider(const TestProfileProvider&) = delete;
+  TestProfileProvider& operator=(const TestProfileProvider&) = delete;
+
   void WaitUntilCollectionDone() {
     // Collection shouldn't be done when this method is called, or the test will
     // waste time in |run_loop_| for the duration of |timeout|.
@@ -121,8 +123,6 @@ class TestProfileProvider : public ProfileProvider {
   base::OneShotTimer timeout_timer_;
   base::RunLoop run_loop_;
   bool collection_done_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProfileProvider);
 };
 
 // This test doesn't mock any class used indirectly by ProfileProvider to make
@@ -130,6 +130,11 @@ class TestProfileProvider : public ProfileProvider {
 class ProfileProviderRealCollectionTest : public testing::Test {
  public:
   ProfileProviderRealCollectionTest() {}
+
+  ProfileProviderRealCollectionTest(const ProfileProviderRealCollectionTest&) =
+      delete;
+  ProfileProviderRealCollectionTest& operator=(
+      const ProfileProviderRealCollectionTest&) = delete;
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
@@ -217,8 +222,8 @@ class ProfileProviderRealCollectionTest : public testing::Test {
   void StartSpinningCPU() {
     spin_cpu_ = true;
     spin_cpu_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner({});
-    static constexpr auto spin_duration = base::TimeDelta::FromMilliseconds(1);
-    static constexpr auto sleep_duration = base::TimeDelta::FromMilliseconds(9);
+    static constexpr auto spin_duration = base::Milliseconds(1);
+    static constexpr auto sleep_duration = base::Milliseconds(9);
     spin_cpu_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(
                        [](ProfileProviderRealCollectionTest* self) {
@@ -260,14 +265,12 @@ class ProfileProviderRealCollectionTest : public testing::Test {
   base::WaitableEvent spin_cpu_done_;
 
   std::unique_ptr<TestProfileProvider> profile_provider_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileProviderRealCollectionTest);
 };
 
 // Flaky on chromeos: crbug.com/1184119
 TEST_F(ProfileProviderRealCollectionTest, SuspendDone) {
   // Trigger a resume from suspend.
-  profile_provider_->SuspendDone(base::TimeDelta::FromMinutes(10));
+  profile_provider_->SuspendDone(base::Minutes(10));
 
   profile_provider_->WaitUntilCollectionDone();
   EXPECT_TRUE(profile_provider_->collection_done());
@@ -277,7 +280,7 @@ TEST_F(ProfileProviderRealCollectionTest, SuspendDone) {
 
 TEST_F(ProfileProviderRealCollectionTest, SessionRestoreDone) {
   // Restored 10 tabs.
-  profile_provider_->OnSessionRestoreDone(10);
+  profile_provider_->OnSessionRestoreDone(nullptr, 10);
 
   profile_provider_->WaitUntilCollectionDone();
   EXPECT_TRUE(profile_provider_->collection_done());

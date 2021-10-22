@@ -60,8 +60,7 @@ class CPWL_ListBox : public CPWL_Wnd, public CPWL_ListCtrl::NotifyIface {
   void AddString(const WideString& str);
   void SetTopVisibleIndex(int32_t nItemIndex);
   void ScrollToListItem(int32_t nItemIndex);
-  void ResetContent();
-  void Reset();
+
   void Select(int32_t nItemIndex);
   void Deselect(int32_t nItemIndex);
   void SetCaret(int32_t nItemIndex);
@@ -73,7 +72,6 @@ class CPWL_ListBox : public CPWL_Wnd, public CPWL_ListCtrl::NotifyIface {
   int32_t GetCurSel() const;
   bool IsItemSelected(int32_t nItemIndex) const;
   int32_t GetTopVisibleIndex() const;
-  int32_t FindNext(int32_t nIndex, wchar_t nChar) const;
   CFX_FloatRect GetContentRect() const;
   float GetFirstHeight() const;
   CFX_FloatRect GetListRect() const;
@@ -82,16 +80,11 @@ class CPWL_ListBox : public CPWL_Wnd, public CPWL_ListCtrl::NotifyIface {
     m_pFillerNotify = pNotify;
   }
 
-  void AttachFFLData(CFFL_FormField* pData) { m_pFormFiller = pData; }
-
  protected:
   bool m_bMouseDown = false;
   bool m_bHoverSel = false;
   std::unique_ptr<CPWL_ListCtrl> m_pListCtrl;
   UnownedPtr<IPWL_FillerNotify> m_pFillerNotify;
-
- private:
-  UnownedPtr<CFFL_FormField> m_pFormFiller;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_LIST_BOX_H_

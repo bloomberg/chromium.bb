@@ -12,11 +12,13 @@
 
 namespace content {
 
-extern const char kFileTracingEventCategoryGroup[];
-
 class FileTracingProviderImpl : public base::FileTracing::Provider {
  public:
   FileTracingProviderImpl();
+
+  FileTracingProviderImpl(const FileTracingProviderImpl&) = delete;
+  FileTracingProviderImpl& operator=(const FileTracingProviderImpl&) = delete;
+
   ~FileTracingProviderImpl() override;
 
   // base::FileTracing::Provider:
@@ -28,9 +30,6 @@ class FileTracingProviderImpl : public base::FileTracing::Provider {
                              const base::FilePath& path,
                              int64_t size) override;
   void FileTracingEventEnd(const char* name, const void* id) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FileTracingProviderImpl);
 };
 
 }  // namespace content

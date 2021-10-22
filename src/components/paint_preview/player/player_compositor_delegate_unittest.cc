@@ -150,6 +150,11 @@ class FakePaintPreviewCompositorService : public PaintPreviewCompositorService {
         base::OnTaskRunnerDeleter(task_runner_));
   }
 
+  void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
+                            memory_pressure_level) override {
+    // no-op.
+  }
+
   void SetTimeout() { timeout_ = true; }
 
   bool HasActiveClients() const override {
@@ -880,9 +885,8 @@ TEST_F(PlayerCompositorDelegateTest, Timeout) {
               std::move(quit).Run();
             },
             loop.QuitClosure()),
-        base::TimeDelta::FromSeconds(1), kMaxParallelRequests,
-        std::move(compositor_service));
-    env.FastForwardBy(base::TimeDelta::FromSeconds(5));
+        base::Seconds(1), kMaxParallelRequests, std::move(compositor_service));
+    env.FastForwardBy(base::Seconds(5));
     loop.Run();
   }
   env.RunUntilIdle();

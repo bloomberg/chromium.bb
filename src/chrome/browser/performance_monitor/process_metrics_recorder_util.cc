@@ -4,12 +4,16 @@
 
 #include "chrome/browser/performance_monitor/process_metrics_recorder_util.h"
 
+#include <cmath>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#if defined(OS_MAC)
 #include "chrome/browser/performance_monitor/resource_coalition_mac.h"
+#endif
 
 namespace performance_monitor {
 
@@ -104,7 +108,7 @@ void RecordCoalitionData(const ProcessMonitor::Metrics& metrics,
     constexpr int kMilliFactor = 1000;
     auto scale_sample = [](double sample) -> int {
       // Round the sample to the nearest integer value.
-      return sample * kMilliFactor + 0.5;
+      return std::roundl(sample * kMilliFactor);
     };
     base::UmaHistogramCounts1M(
         base::StrCat(
@@ -126,12 +130,21 @@ void RecordCoalitionData(const ProcessMonitor::Metrics& metrics,
              scenario_suffix}),
         scale_sample(metrics.coalition_data->byteswritten_per_second));
 
+    // EnergyImpact is reported in centi-EI, so scaled up by a factor of 100
+    // for the histogram recording.
+    constexpr double kEnergyImpactScalingFactor = 100.0;
+    base::UmaHistogramCounts100000(
+        base::StrCat({"PerformanceMonitor.ResourceCoalition.EnergyImpact",
+                      scenario_suffix}),
+        std::roundl(metrics.coalition_data->energy_impact_per_second *
+                    kEnergyImpactScalingFactor));
+
     constexpr int kNanoWattToMilliWatt = 1000 * 1000;
     // Use a maximum of 100 watts, or 100 * 1000 milliwatts.
     base::UmaHistogramCounts100000(
         base::StrCat(
             {"PerformanceMonitor.ResourceCoalition.Power", scenario_suffix}),
-        metrics.coalition_data->power_nw / kNanoWattToMilliWatt + 0.5);
+        std::roundl(metrics.coalition_data->power_nw / kNanoWattToMilliWatt));
 
     for (int i = 0;
          i < static_cast<int>(ResourceCoalition::QoSLevels::kMaxValue) + 1;
@@ -163,8 +176,8 @@ void RecordCoalitionData(const ProcessMonitor::Metrics& metrics,
       base::UmaHistogramCustomCounts(
           base::StrCat({"PerformanceMonitor.ResourceCoalition.QoSLevel.",
                         qos_suffix, scenario_suffix}),
-          metrics.coalition_data->qos_time_per_second[i] * kPercentScaleFactor *
-              kCPUUsageFactor,
+          std::roundl(metrics.coalition_data->qos_time_per_second[i] *
+                      kPercentScaleFactor * kCPUUsageFactor),
           kCPUUsageHistogramMin, 100 * kCPUUsageFactor * 1000,
           kCPUUsageHistogramBucketCount);
     }

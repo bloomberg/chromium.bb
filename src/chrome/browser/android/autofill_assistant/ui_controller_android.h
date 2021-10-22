@@ -57,6 +57,10 @@ class UiControllerAndroid : public ControllerObserver {
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jactivity,
       const base::android::JavaRef<jobject>& joverlay_coordinator);
+
+  UiControllerAndroid(const UiControllerAndroid&) = delete;
+  UiControllerAndroid& operator=(const UiControllerAndroid&) = delete;
+
   ~UiControllerAndroid() override;
 
   // Attaches the UI to the given client, its web contents and delegate.
@@ -94,13 +98,15 @@ class UiControllerAndroid : public ControllerObserver {
 
   // Overrides ControllerObserver:
   void OnStateChanged(AutofillAssistantState new_state) override;
+  void OnKeyboardSuppressionStateChanged(
+      bool should_suppress_keyboard) override;
   void OnStatusMessageChanged(const std::string& message) override;
   void OnBubbleMessageChanged(const std::string& message) override;
   void CloseCustomTab() override;
   void OnUserActionsChanged(const std::vector<UserAction>& actions) override;
   void OnCollectUserDataOptionsChanged(
       const CollectUserDataOptions* collect_user_data_options) override;
-  void OnUserDataChanged(const UserData* state,
+  void OnUserDataChanged(const UserData& user_data,
                          UserData::FieldChange field_change) override;
   void OnDetailsChanged(const std::vector<Details>& details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
@@ -251,7 +257,6 @@ class UiControllerAndroid : public ControllerObserver {
   void SetOverlayState(OverlayState state);
   // Applies the specified OverlayState to the UI.
   void ApplyOverlayState(OverlayState state);
-  void AllowShowingSoftKeyboard(bool enabled);
   void ShowContentAndExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
   std::string GetDebugContext();
@@ -305,8 +310,6 @@ class UiControllerAndroid : public ControllerObserver {
   std::unique_ptr<AssistantHeaderModel> header_model_;
 
   base::WeakPtrFactory<UiControllerAndroid> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UiControllerAndroid);
 };
 
 }  // namespace autofill_assistant.

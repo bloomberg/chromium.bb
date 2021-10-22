@@ -108,7 +108,7 @@ FrameTreeNode::FrameTreeNode(
     bool is_created_by_script,
     const base::UnguessableToken& devtools_frame_token,
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
-    blink::mojom::FrameOwnerElementType owner_type,
+    blink::FrameOwnerElementType owner_type,
     const blink::FramePolicy& frame_policy)
     : frame_tree_(frame_tree),
       frame_tree_node_id_(next_frame_tree_node_id_++),
@@ -867,6 +867,25 @@ bool FrameTreeNode::IsInFencedFrameTree() const {
     default:
       return false;
   }
+}
+
+void FrameTreeNode::SetFencedFrameNonceIfNeeded() {
+  if (!IsInFencedFrameTree()) {
+    return;
+  }
+
+  if (IsFencedFrameRoot()) {
+    fenced_frame_nonce_ = base::UnguessableToken::Create();
+    return;
+  }
+
+  // For nested iframes in a fenced frame tree, propagate the same nonce as was
+  // set in the fenced frame root.
+  DCHECK(parent_);
+  absl::optional<base::UnguessableToken> nonce =
+      parent_->frame_tree_node()->fenced_frame_nonce();
+  DCHECK(nonce.has_value());
+  fenced_frame_nonce_ = nonce;
 }
 
 }  // namespace content

@@ -40,6 +40,10 @@ class HoverHighlightView : public ActionableView {
 
   // If |listener| is null then no action is taken on click.
   explicit HoverHighlightView(ViewClickListener* listener);
+
+  HoverHighlightView(const HoverHighlightView&) = delete;
+  HoverHighlightView& operator=(const HoverHighlightView&) = delete;
+
   ~HoverHighlightView() override;
 
   // Convenience function for populating the view with an icon and a label. This
@@ -87,6 +91,7 @@ class HoverHighlightView : public ActionableView {
   views::Label* sub_text_label() { return sub_text_label_; }
   views::ImageView* left_icon() { return left_icon_; }
   views::View* right_view() { return right_view_; }
+  views::View* sub_row() { return sub_row_; }
 
  protected:
   // Override from Button to also set the tooltip for all child elements.
@@ -109,6 +114,10 @@ class HoverHighlightView : public ActionableView {
   int GetHeightForWidth(int width) const override;
   void OnFocus() override;
 
+  // Adds a view that acts as a container for all views that are added into the
+  // sub-row, i.e. the row below the label.
+  void AddSubRowContainer();
+
   void OnEnabledChanged();
 
   // Determines whether the view is populated or not. If it is, Reset() should
@@ -120,6 +129,7 @@ class HoverHighlightView : public ActionableView {
   views::Label* sub_text_label_ = nullptr;
   views::ImageView* left_icon_ = nullptr;
   views::View* right_view_ = nullptr;
+  views::View* sub_row_ = nullptr;
   TriView* tri_view_ = nullptr;
   bool expandable_ = false;
   AccessibilityState accessibility_state_ = AccessibilityState::DEFAULT;
@@ -127,8 +137,6 @@ class HoverHighlightView : public ActionableView {
       AddEnabledChangedCallback(
           base::BindRepeating(&HoverHighlightView::OnEnabledChanged,
                               base::Unretained(this)));
-
-  DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };
 
 }  // namespace ash

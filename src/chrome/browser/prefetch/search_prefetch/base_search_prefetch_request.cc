@@ -75,11 +75,6 @@ class CheckForCancelledOrPausedDelegate
     cancelled_or_paused_ = true;
   }
 
-  void RestartWithModifiedHeadersNow(
-      const net::HttpRequestHeaders& modified_headers) override {
-    cancelled_or_paused_ = true;
-  }
-
   bool cancelled_or_paused() const { return cancelled_or_paused_; }
 
  private:
@@ -91,8 +86,8 @@ std::string GetUserAgentValue(const net::HttpRequestHeaders& headers) {
   // If Sec-CH-UA-Reduced is set on the headers, it means that the token for the
   // UserAgentReduction Origin Trial has been validated and we should send a
   // reduced UA string on the request.
-  std::string header = network::kClientHintsNameMapping[static_cast<int>(
-      network::mojom::WebClientHintsType::kUAReduced)];
+  std::string header = network::GetClientHintToNameMap().at(
+      network::mojom::WebClientHintsType::kUAReduced);
   std::string value;
   return headers.GetHeader(header, &value) && value == "?1"
              ? embedder_support::GetReducedUserAgent()

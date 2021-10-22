@@ -8,6 +8,7 @@
 
 #include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
+#include "base/files/safe_base_name.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -1178,6 +1179,19 @@ TEST_F(FilePathTest, ReferencesParent) {
   }
 }
 
+TEST_F(FilePathTest, FromASCII) {
+  const struct UTF8TestData cases[] = {
+      {FPL("foo.txt"), "foo.txt"},
+      {FPL("!#$%&'()"), "!#$%&'()"},
+  };
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    FilePath from_ascii = FilePath::FromASCII(cases[i].utf8);
+    EXPECT_EQ(FilePath::StringType(cases[i].native), from_ascii.value())
+        << "i: " << i << ", input: " << cases[i].utf8;
+  }
+}
+
 TEST_F(FilePathTest, FromUTF8Unsafe_And_AsUTF8Unsafe) {
   const struct UTF8TestData cases[] = {
     { FPL("foo.txt"), "foo.txt" },
@@ -1228,6 +1242,18 @@ TEST_F(FilePathTest, AppendWithNUL) {
   EXPECT_EQ(FPL("a\\b"), path.value());
 #else
   EXPECT_EQ(FPL("a/b"), path.value());
+#endif
+}
+
+TEST_F(FilePathTest, AppendBaseName) {
+  FilePath dir(FPL("foo"));
+  auto file(SafeBaseName::Create(FPL("bar.txt")));
+  EXPECT_TRUE(file);
+
+#if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  EXPECT_EQ(dir.Append(*file), FilePath(FPL("foo\\bar.txt")));
+#else
+  EXPECT_EQ(dir.Append(*file), FilePath(FPL("foo/bar.txt")));
 #endif
 }
 

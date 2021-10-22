@@ -60,6 +60,10 @@ class FakeEventRouter : public extensions::EventRouter {
       : EventRouter(profile, NULL),
         file_system_(file_system),
         reply_result_(base::File::FILE_OK) {}
+
+  FakeEventRouter(const FakeEventRouter&) = delete;
+  FakeEventRouter& operator=(const FakeEventRouter&) = delete;
+
   ~FakeEventRouter() override {}
 
   // Handles an event which would normally be routed to an extension. Instead
@@ -110,7 +114,6 @@ class FakeEventRouter : public extensions::EventRouter {
  private:
   ProvidedFileSystemInterface* const file_system_;  // Not owned.
   base::File::Error reply_result_;
-  DISALLOW_COPY_AND_ASSIGN(FakeEventRouter);
 };
 
 // Observes the tested file system.
@@ -121,6 +124,10 @@ class Observer : public ProvidedFileSystemObserver {
     ChangeEvent(storage::WatcherManager::ChangeType change_type,
                 const ProvidedFileSystemObserver::Changes& changes)
         : change_type_(change_type), changes_(changes) {}
+
+    ChangeEvent(const ChangeEvent&) = delete;
+    ChangeEvent& operator=(const ChangeEvent&) = delete;
+
     virtual ~ChangeEvent() {}
 
     storage::WatcherManager::ChangeType change_type() const {
@@ -133,11 +140,12 @@ class Observer : public ProvidedFileSystemObserver {
    private:
     const storage::WatcherManager::ChangeType change_type_;
     const ProvidedFileSystemObserver::Changes changes_;
-
-    DISALLOW_COPY_AND_ASSIGN(ChangeEvent);
   };
 
   Observer() : list_changed_counter_(0), tag_updated_counter_(0) {}
+
+  Observer(const Observer&) = delete;
+  Observer& operator=(const Observer&) = delete;
 
   // ProvidedFileSystemInterfaceObserver overrides.
   void OnWatcherChanged(const ProvidedFileSystemInfo& file_system_info,
@@ -181,23 +189,22 @@ class Observer : public ProvidedFileSystemObserver {
   int list_changed_counter_;
   int tag_updated_counter_;
   base::OnceClosure complete_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
 // Stub notification manager, which works in unit tests.
 class StubNotificationManager : public NotificationManagerInterface {
  public:
   StubNotificationManager() {}
+
+  StubNotificationManager(const StubNotificationManager&) = delete;
+  StubNotificationManager& operator=(const StubNotificationManager&) = delete;
+
   ~StubNotificationManager() override {}
 
   // NotificationManagerInterface overrides.
   void ShowUnresponsiveNotification(int id,
                                     NotificationCallback callback) override {}
   void HideUnresponsiveNotification(int id) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubNotificationManager);
 };
 
 typedef std::vector<base::File::Error> Log;

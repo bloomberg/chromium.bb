@@ -17,11 +17,10 @@ import '../settings_shared_css.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {afterNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsBehavior} from '../prefs/prefs_behavior.js';
-import {PrefsBehaviorInterface} from '../prefs/prefs_behavior_ts.js';
+import {PrefsMixin} from '../prefs/prefs_mixin.js';
 
 import {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_browser_proxy.js';
 
@@ -32,8 +31,7 @@ type AccountInfo = {
 };
 
 const SettingsDownloadsPageElementBase =
-    mixinBehaviors([WebUIListenerBehavior, PrefsBehavior], PolymerElement) as
-    {new (): PolymerElement & WebUIListenerBehavior & PrefsBehaviorInterface};
+    WebUIListenerMixin(PrefsMixin(PolymerElement));
 
 /** @polymer */
 class SettingsDownloadsPageElement extends SettingsDownloadsPageElementBase {

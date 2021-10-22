@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 
@@ -149,7 +148,7 @@ bool ClipboardRecentContentGeneric::HasRecentImageFromClipboard() {
   ui::DataTransferEndpoint data_dst = ui::DataTransferEndpoint(
       ui::EndpointType::kDefault, /*notify_if_restricted=*/false);
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      ui::ClipboardFormatType::BitmapType(), ui::ClipboardBuffer::kCopyPaste,
+      ui::ClipboardFormatType::PngType(), ui::ClipboardBuffer::kCopyPaste,
       &data_dst);
 }
 

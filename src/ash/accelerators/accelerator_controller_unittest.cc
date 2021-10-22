@@ -80,9 +80,9 @@
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/media_keys_util.h"
 #include "ui/base/accelerators/test_accelerator_target.h"
-#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/mock_input_method_manager.h"
+#include "ui/base/ime/ash/fake_ime_keyboard.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/mock_input_method_manager.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/mock_input_method.h"
 #include "ui/base/ui_base_features.h"
@@ -100,12 +100,10 @@
 
 namespace ash {
 
-using ::chromeos::WindowStateType;
-using ::chromeos::input_method::InputMethodManager;
-using ::chromeos::input_method::MockInputMethodManager;
-using media_session::mojom::MediaSessionAction;
-
 namespace {
+
+using ::chromeos::WindowStateType;
+using ::media_session::mojom::MediaSessionAction;
 
 struct PrefToAcceleratorEntry {
   const char* pref_name;
@@ -175,6 +173,12 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
  public:
   DummyBrightnessControlDelegate()
       : handle_brightness_down_count_(0), handle_brightness_up_count_(0) {}
+
+  DummyBrightnessControlDelegate(const DummyBrightnessControlDelegate&) =
+      delete;
+  DummyBrightnessControlDelegate& operator=(
+      const DummyBrightnessControlDelegate&) = delete;
+
   ~DummyBrightnessControlDelegate() override = default;
 
   void HandleBrightnessDown(const ui::Accelerator& accelerator) override {
@@ -201,8 +205,6 @@ class DummyBrightnessControlDelegate : public BrightnessControlDelegate {
   int handle_brightness_down_count_;
   int handle_brightness_up_count_;
   ui::Accelerator last_accelerator_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyBrightnessControlDelegate);
 };
 
 class DummyKeyboardBrightnessControlDelegate
@@ -211,6 +213,12 @@ class DummyKeyboardBrightnessControlDelegate
   DummyKeyboardBrightnessControlDelegate()
       : handle_keyboard_brightness_down_count_(0),
         handle_keyboard_brightness_up_count_(0) {}
+
+  DummyKeyboardBrightnessControlDelegate(
+      const DummyKeyboardBrightnessControlDelegate&) = delete;
+  DummyKeyboardBrightnessControlDelegate& operator=(
+      const DummyKeyboardBrightnessControlDelegate&) = delete;
+
   ~DummyKeyboardBrightnessControlDelegate() override = default;
 
   void HandleKeyboardBrightnessDown(
@@ -238,8 +246,6 @@ class DummyKeyboardBrightnessControlDelegate
   int handle_keyboard_brightness_down_count_;
   int handle_keyboard_brightness_up_count_;
   ui::Accelerator last_accelerator_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyKeyboardBrightnessControlDelegate);
 };
 
 class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
@@ -276,6 +282,11 @@ class AcceleratorControllerTest : public AshTestBase {
     delegate_provider_ =
         std::make_unique<TestNewWindowDelegateProvider>(std::move(delegate));
   }
+
+  AcceleratorControllerTest(const AcceleratorControllerTest&) = delete;
+  AcceleratorControllerTest& operator=(const AcceleratorControllerTest&) =
+      delete;
+
   ~AcceleratorControllerTest() override = default;
 
   void SetUp() override {
@@ -411,9 +422,6 @@ class AcceleratorControllerTest : public AshTestBase {
   std::unique_ptr<AcceleratorControllerImpl::TestApi> test_api_;
   MockNewWindowDelegate* new_window_delegate_;
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AcceleratorControllerTest);
 };
 
 namespace {
@@ -919,21 +927,21 @@ TEST_F(AcceleratorControllerTest, RotateScreenInPhysicalTabletState) {
   EXPECT_TRUE(tablet_mode_controller->is_in_tablet_physical_state());
   EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
 
   TriggerRotateScreenShortcut();
 
   EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
-  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+  EXPECT_EQ(chromeos::OrientationType::kPortraitSecondary,
             screen_orientation_controller->GetCurrentOrientation());
 
   // When the device is no longer used as a tablet, the original rotation will
   // be restored.
   ShellTestApi().SetTabletModeEnabledForTest(false);
   EXPECT_FALSE(tablet_mode_controller->is_in_tablet_physical_state());
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
   // User rotation lock remains in place to be restored again when the device
   // goes to physical tablet state again.
@@ -957,14 +965,14 @@ TEST_F(AcceleratorControllerTest,
   EXPECT_TRUE(screen_orientation_controller->IsAutoRotationAllowed());
   EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
 
   TriggerRotateScreenShortcut();
 
   EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
-  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+  EXPECT_EQ(chromeos::OrientationType::kPortraitSecondary,
             screen_orientation_controller->GetCurrentOrientation());
 }
 
@@ -982,16 +990,16 @@ TEST_F(AcceleratorControllerTest, RotateScreenWithWindowLockingOrientation) {
   auto win0 = CreateAppWindow(gfx::Rect{100, 300});
   auto win1 = CreateAppWindow(gfx::Rect{200, 200});
   screen_orientation_controller->LockOrientationForWindow(
-      win0.get(), OrientationLockType::kPortraitPrimary);
+      win0.get(), chromeos::OrientationType::kPortraitPrimary);
   screen_orientation_controller->LockOrientationForWindow(
-      win1.get(), OrientationLockType::kLandscape);
+      win1.get(), chromeos::OrientationType::kLandscape);
 
   // `win0` requests to lock the orientation to only portrait-primary. The
   // shortcut therefore won't be able to change the current rotation at all.
   wm::ActivateWindow(win0.get());
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
-  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+  EXPECT_EQ(chromeos::OrientationType::kPortraitPrimary,
             screen_orientation_controller->GetCurrentOrientation());
 
   TriggerRotateScreenShortcut();
@@ -999,7 +1007,7 @@ TEST_F(AcceleratorControllerTest, RotateScreenWithWindowLockingOrientation) {
   // app-locked.
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
-  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+  EXPECT_EQ(chromeos::OrientationType::kPortraitPrimary,
             screen_orientation_controller->GetCurrentOrientation());
 
   // Activate `win1` which allows any landscape orientations (either primary or
@@ -1008,19 +1016,19 @@ TEST_F(AcceleratorControllerTest, RotateScreenWithWindowLockingOrientation) {
   wm::ActivateWindow(win1.get());
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_FALSE(screen_orientation_controller->user_rotation_locked());
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
 
   TriggerRotateScreenShortcut();
   // User rotation will now be locked.
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
-  EXPECT_EQ(OrientationLockType::kLandscapeSecondary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapeSecondary,
             screen_orientation_controller->GetCurrentOrientation());
   TriggerRotateScreenShortcut();
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
 
   // Hook a mouse device, exiting tablet mode to clamshell mode (but remaining
@@ -1034,21 +1042,21 @@ TEST_F(AcceleratorControllerTest, RotateScreenWithWindowLockingOrientation) {
   wm::ActivateWindow(win0.get());
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(screen_orientation_controller->user_rotation_locked());
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
   TriggerRotateScreenShortcut();
-  EXPECT_EQ(OrientationLockType::kPortraitSecondary,
+  EXPECT_EQ(chromeos::OrientationType::kPortraitSecondary,
             screen_orientation_controller->GetCurrentOrientation());
   TriggerRotateScreenShortcut();
-  EXPECT_EQ(OrientationLockType::kLandscapeSecondary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapeSecondary,
             screen_orientation_controller->GetCurrentOrientation());
 
   wm::ActivateWindow(win1.get());
   TriggerRotateScreenShortcut();
-  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+  EXPECT_EQ(chromeos::OrientationType::kPortraitPrimary,
             screen_orientation_controller->GetCurrentOrientation());
   TriggerRotateScreenShortcut();
-  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+  EXPECT_EQ(chromeos::OrientationType::kLandscapePrimary,
             screen_orientation_controller->GetCurrentOrientation());
 }
 
@@ -1610,6 +1618,12 @@ class SideVolumeButtonAcceleratorTest
 
   SideVolumeButtonAcceleratorTest()
       : region_(GetParam().first), side_(GetParam().second) {}
+
+  SideVolumeButtonAcceleratorTest(const SideVolumeButtonAcceleratorTest&) =
+      delete;
+  SideVolumeButtonAcceleratorTest& operator=(
+      const SideVolumeButtonAcceleratorTest&) = delete;
+
   ~SideVolumeButtonAcceleratorTest() override = default;
 
   void SetUp() override {
@@ -1632,8 +1646,6 @@ class SideVolumeButtonAcceleratorTest
 
  private:
   std::string region_, side_;
-
-  DISALLOW_COPY_AND_ASSIGN(SideVolumeButtonAcceleratorTest);
 };
 
 // Tests the the action of side volume button will get flipped in corresponding
@@ -1648,7 +1660,7 @@ TEST_P(SideVolumeButtonAcceleratorTest, FlipSideVolumeButtonAction) {
   test_api.SetDisplayRotation(display::Display::ROTATE_0,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kLandscapePrimary);
+            chromeos::OrientationType::kLandscapePrimary);
 
   base::UserActionTester user_action_tester;
   const ui::Accelerator volume_down(ui::VKEY_VOLUME_DOWN, ui::EF_NONE);
@@ -1677,7 +1689,7 @@ TEST_P(SideVolumeButtonAcceleratorTest, FlipSideVolumeButtonAction) {
   test_api.SetDisplayRotation(display::Display::ROTATE_270,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kPortraitPrimary);
+            chromeos::OrientationType::kPortraitPrimary);
   ProcessInController(volume_down_from_side_volume_button);
   // Tests that the action of side volume button will not be flipped in portrait
   // primary if the button is at the left or right of screen. Otherwise, the
@@ -1692,7 +1704,7 @@ TEST_P(SideVolumeButtonAcceleratorTest, FlipSideVolumeButtonAction) {
   test_api.SetDisplayRotation(display::Display::ROTATE_180,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kLandscapeSecondary);
+            chromeos::OrientationType::kLandscapeSecondary);
   ProcessInController(volume_down_from_side_volume_button);
   // Tests that the action of side volume button will not be flipped in
   // landscape secondary if the button is at the left or right of keyboard.
@@ -1707,7 +1719,7 @@ TEST_P(SideVolumeButtonAcceleratorTest, FlipSideVolumeButtonAction) {
   test_api.SetDisplayRotation(display::Display::ROTATE_90,
                               display::Display::RotationSource::ACTIVE);
   EXPECT_EQ(test_api.GetCurrentOrientation(),
-            OrientationLockType::kPortraitSecondary);
+            chromeos::OrientationType::kPortraitSecondary);
   ProcessInController(volume_down_from_side_volume_button);
   // Tests that the action of side volume button will be flipped in portrait
   // secondary if the buttonis at the left or right of screen.
@@ -1850,6 +1862,12 @@ TEST_F(AcceleratorControllerTest, ToggleCapsLockAccelerators) {
 class PreferredReservedAcceleratorsTest : public AshTestBase {
  public:
   PreferredReservedAcceleratorsTest() = default;
+
+  PreferredReservedAcceleratorsTest(const PreferredReservedAcceleratorsTest&) =
+      delete;
+  PreferredReservedAcceleratorsTest& operator=(
+      const PreferredReservedAcceleratorsTest&) = delete;
+
   ~PreferredReservedAcceleratorsTest() override = default;
 
   // AshTestBase:
@@ -1862,9 +1880,6 @@ class PreferredReservedAcceleratorsTest : public AshTestBase {
             chromeos::PowerManagerClient::LidState::OPEN,
             chromeos::PowerManagerClient::TabletMode::ON});
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PreferredReservedAcceleratorsTest);
 };
 
 TEST_F(PreferredReservedAcceleratorsTest, AcceleratorsWithFullscreen) {
@@ -2470,6 +2485,11 @@ TEST_F(AcceleratorControllerStartupNotificationTest,
 class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
  public:
   DeprecatedAcceleratorTester() = default;
+
+  DeprecatedAcceleratorTester(const DeprecatedAcceleratorTester&) = delete;
+  DeprecatedAcceleratorTester& operator=(const DeprecatedAcceleratorTester&) =
+      delete;
+
   ~DeprecatedAcceleratorTester() override = default;
 
   ui::Accelerator CreateAccelerator(const AcceleratorData& data) const {
@@ -2494,9 +2514,6 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
   bool IsMessageCenterEmpty() const {
     return message_center()->GetVisibleNotifications().empty();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeprecatedAcceleratorTester);
 };
 
 TEST_F(DeprecatedAcceleratorTester, TestDeprecatedAcceleratorsBehavior) {
@@ -2576,6 +2593,11 @@ constexpr char kUserEmail[] = "user@magnifier";
 class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
  public:
   MagnifiersAcceleratorsTester() = default;
+
+  MagnifiersAcceleratorsTester(const MagnifiersAcceleratorsTester&) = delete;
+  MagnifiersAcceleratorsTester& operator=(const MagnifiersAcceleratorsTester&) =
+      delete;
+
   ~MagnifiersAcceleratorsTester() override = default;
 
   DockedMagnifierController* docked_magnifier_controller() const {
@@ -2597,9 +2619,6 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
     // Create user session and simulate its login.
     SimulateUserLogin(kUserEmail);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MagnifiersAcceleratorsTester);
 };
 
 // TODO (afakhry): Remove this class after refactoring MagnificationManager.
@@ -2607,6 +2626,9 @@ class MagnifiersAcceleratorsTester : public AcceleratorControllerTest {
 class FakeMagnificationManager {
  public:
   FakeMagnificationManager() = default;
+
+  FakeMagnificationManager(const FakeMagnificationManager&) = delete;
+  FakeMagnificationManager& operator=(const FakeMagnificationManager&) = delete;
 
   void SetPrefs(PrefService* prefs) {
     pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
@@ -2626,8 +2648,6 @@ class FakeMagnificationManager {
  private:
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   PrefService* prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeMagnificationManager);
 };
 
 TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
@@ -2833,6 +2853,11 @@ class MediaSessionAcceleratorTest
       public testing::WithParamInterface<MediaSessionAcceleratorTestConfig> {
  public:
   MediaSessionAcceleratorTest() = default;
+
+  MediaSessionAcceleratorTest(const MediaSessionAcceleratorTest&) = delete;
+  MediaSessionAcceleratorTest& operator=(const MediaSessionAcceleratorTest&) =
+      delete;
+
   ~MediaSessionAcceleratorTest() override = default;
 
   // AcceleratorControllerTest:
@@ -2915,8 +2940,6 @@ class MediaSessionAcceleratorTest
 
   base::HistogramTester histogram_tester_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionAcceleratorTest);
 };
 
 INSTANTIATE_TEST_SUITE_P(

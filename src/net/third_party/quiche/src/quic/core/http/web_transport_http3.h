@@ -11,10 +11,11 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/types/optional.h"
 #include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/http/web_transport_stream_adapter.h"
+#include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_stream.h"
 #include "quic/core/quic_types.h"
 #include "quic/core/web_transport_interface.h"
-#include "quic/core/web_transport_stream_adapter.h"
 #include "spdy/core/spdy_header_block.h"
 
 namespace quic {
@@ -48,9 +49,20 @@ class QUIC_EXPORT_PRIVATE WebTransportHttp3
 
   void AssociateStream(QuicStreamId stream_id);
   void OnStreamClosed(QuicStreamId stream_id) { streams_.erase(stream_id); }
-  void CloseAllAssociatedStreams();
+  void OnConnectStreamClosing();
 
   size_t NumberOfAssociatedStreams() { return streams_.size(); }
+
+  void CloseSession(WebTransportSessionError error_code,
+                    absl::string_view error_message) override;
+  void OnCloseReceived(WebTransportSessionError error_code,
+                       absl::string_view error_message);
+  void OnConnectStreamFinReceived();
+
+  // It is legal for WebTransport to be closed without a
+  // CLOSE_WEBTRANSPORT_SESSION capsule.  We always send a capsule, but we still
+  // need to ensure we handle this case correctly.
+  void CloseSessionWithFinOnlyForTests();
 
   // Return the earliest incoming stream that has been received by the session
   // but has not been accepted.  Returns nullptr if there are no incoming
@@ -64,6 +76,7 @@ class QUIC_EXPORT_PRIVATE WebTransportHttp3
   WebTransportStream* OpenOutgoingUnidirectionalStream() override;
 
   MessageStatus SendOrQueueDatagram(QuicMemSlice datagram) override;
+  QuicByteCount GetMaxDatagramSize() const override;
   void SetDatagramMaxTimeInQueue(QuicTime::Delta max_time_in_queue) override;
 
   // From QuicSpdyStream::Http3DatagramVisitor.
@@ -72,14 +85,22 @@ class QUIC_EXPORT_PRIVATE WebTransportHttp3
                        absl::string_view payload) override;
 
   // From QuicSpdyStream::Http3DatagramRegistrationVisitor.
-  void OnContextReceived(
-      QuicStreamId stream_id, absl::optional<QuicDatagramContextId> context_id,
-      const Http3DatagramContextExtensions& extensions) override;
-  void OnContextClosed(
-      QuicStreamId stream_id, absl::optional<QuicDatagramContextId> context_id,
-      const Http3DatagramContextExtensions& extensions) override;
+  void OnContextReceived(QuicStreamId stream_id,
+                         absl::optional<QuicDatagramContextId> context_id,
+                         DatagramFormatType format_type,
+                         absl::string_view format_additional_data) override;
+  void OnContextClosed(QuicStreamId stream_id,
+                       absl::optional<QuicDatagramContextId> context_id,
+                       ContextCloseCode close_code,
+                       absl::string_view close_details) override;
+
+  bool close_received() const { return close_received_; }
 
  private:
+  // Notifies the visitor that the connection has been closed.  Ensures that the
+  // visitor is only ever called once.
+  void MaybeNotifyClose();
+
   QuicSpdySession* const session_;        // Unowned.
   QuicSpdyStream* const connect_stream_;  // Unowned.
   const WebTransportSessionId id_;
@@ -96,6 +117,15 @@ class QUIC_EXPORT_PRIVATE WebTransportHttp3
   absl::flat_hash_set<QuicStreamId> streams_;
   quiche::QuicheCircularDeque<QuicStreamId> incoming_bidirectional_streams_;
   quiche::QuicheCircularDeque<QuicStreamId> incoming_unidirectional_streams_;
+
+  bool close_sent_ = false;
+  bool close_received_ = false;
+  bool close_notified_ = false;
+
+  // Those are set to default values, which are used if the session is not
+  // closed cleanly using an appropriate capsule.
+  WebTransportSessionError error_code_ = 0;
+  std::string error_message_ = "";
 };
 
 class QUIC_EXPORT_PRIVATE WebTransportHttp3UnidirectionalStream
@@ -116,6 +146,9 @@ class QUIC_EXPORT_PRIVATE WebTransportHttp3UnidirectionalStream
   void OnDataAvailable() override;
   void OnCanWriteNewData() override;
   void OnClose() override;
+  void OnStreamReset(const QuicRstStreamFrame& frame) override;
+  bool OnStopSending(QuicResetStreamError error) override;
+  void OnWriteSideInDataRecvdState() override;
 
   WebTransportStream* interface() { return &adapter_; }
   void SetUnblocked() { sequencer()->SetUnblocked(); }
@@ -135,6 +168,11 @@ class QUIC_EXPORT_PRIVATE WebTransportHttp3UnidirectionalStream
 // the provided code is outside of valid range.
 QUIC_EXPORT_PRIVATE absl::optional<WebTransportStreamError>
 Http3ErrorToWebTransport(uint64_t http3_error_code);
+
+// Same as above, but returns default error value (zero) when none could be
+// mapped.
+QUIC_EXPORT_PRIVATE WebTransportStreamError
+Http3ErrorToWebTransportOrDefault(uint64_t http3_error_code);
 
 // Remaps WebTransport error code into an HTTP/3 error code.
 QUIC_EXPORT_PRIVATE uint64_t

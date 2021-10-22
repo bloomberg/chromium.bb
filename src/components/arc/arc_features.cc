@@ -6,6 +6,10 @@
 
 namespace arc {
 
+// Enables users to keep ARC data, during ARC turn-off.
+const base::Feature kArcAllowDataRetention{"ArcAllowDataRetention",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 const base::Feature kBootCompletedBroadcastFeature{
@@ -23,11 +27,24 @@ const base::Feature kDocumentsProviderUnknownSizeFeature{
 // When enabled, Android apps will show the Nearby Share as a share target in
 // its sharesheet.
 const base::Feature kEnableArcNearbyShare{"ArcNearbySharing",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether crosvm for ARCVM does per-VM core scheduling on devices with
+// MDS/L1TF vulnerabilities. When this feature is disabled, crosvm does per-vCPU
+// core scheduling which is more secure.
+//
+// How to safely disable this feature for security (or other) reasons:
+//
+// 1) Visit go/stainless and verify arc.Boot.vm_with_per_vcpu_core_scheduling is
+//    green (it should always be because arc.Boot is a critical test.)
+// 2) Change the default value of this feature to FEATURE_DISABLED_BY_DEFAULT.
+// 3) Monitor arc.Boot.vm at go/stainless after Chrome is rolled.
+const base::Feature kEnablePerVmCoreScheduling{
+    "ArcEnablePerVmCoreScheduling", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to pass throttling notifications to Android side.
 const base::Feature kEnableThrottlingNotification{
-    "ArcEnableThrottlingNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ArcEnableThrottlingNotification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we should delegate audio focus requests from ARC to Chrome.
 const base::Feature kEnableUnifiedAudioFocusFeature{
@@ -44,13 +61,16 @@ const base::Feature kEnableUnmanagedToManagedTransitionFeature{
 const base::Feature kEnableUsap{"ArcEnableUsap",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether ARC apps can share to Web Apps through WebAPKs and TWAs.
-const base::Feature kEnableWebAppShareFeature{"ArcEnableWebAppShare",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls experimental file picker feature for ARC.
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether the guest zram is enabled. This is only for ARCVM.
+const base::Feature kGuestZram{"ArcGuestZram",
+                               base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls the size of the guest zram.
+const base::FeatureParam<int> kGuestZramSize{&kGuestZram, "size", 0};
 
 // Controls image copy & paste app compat feature in ARC.
 const base::Feature kImageCopyPasteCompatFeature{
@@ -91,6 +111,10 @@ const base::Feature kRtVcpuDualCore{"ArcRtVcpuDualCore",
 const base::Feature kRtVcpuQuadCore{"ArcRtVcpuQuadCore",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, unclaimed USB device will be attached to ARCVM by default.
+const base::Feature kUsbDeviceDefaultAttachToArcVm{
+    "UsbDeviceDefaultAttachToArcVm", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ARC high-memory dalvik profile in ARCVM.
 // When enabled, Android tries to use dalvik memory profile tuned for
 // high-memory devices like 8G and 16G. This is enabled without conditions
@@ -117,7 +141,7 @@ const base::Feature kVideoDecoder{"ArcVideoDecoder",
 // If disabled, memory is sized by concierge which, at the time of writing, uses
 // RAM - 1024 MiB.
 const base::Feature kVmMemorySize{"ArcVmMemorySize",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls the amount to "shift" system RAM when sizing ARCVM. The default
 // value of 0 means that ARCVM's memory will be thr same as the system.

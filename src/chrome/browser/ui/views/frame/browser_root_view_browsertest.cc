@@ -18,14 +18,15 @@ class BrowserRootViewBrowserTest : public InProcessBrowserTest {
  public:
   BrowserRootViewBrowserTest() = default;
 
+  BrowserRootViewBrowserTest(const BrowserRootViewBrowserTest&) = delete;
+  BrowserRootViewBrowserTest& operator=(const BrowserRootViewBrowserTest&) =
+      delete;
+
   BrowserRootView* browser_root_view() {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     return static_cast<BrowserRootView*>(
         browser_view->GetWidget()->GetRootView());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserRootViewBrowserTest);
 };
 
 // Clear drop info after performing drop. http://crbug.com/838791
@@ -48,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, ClearDropInfo) {
 #else
 #define MAYBE_PlainString PlainString
 #endif
-IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, PlainString) {
+IN_PROC_BROWSER_TEST_F(BrowserRootViewBrowserTest, MAYBE_PlainString) {
   ui::OSExchangeData data;
   data.SetString(u"Plain string");
   ui::DropTargetEvent event(data, gfx::PointF(), gfx::PointF(),

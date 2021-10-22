@@ -31,10 +31,13 @@ class OptimizationHintsMockComponentUpdateService
     : public component_updater::MockComponentUpdateService {
  public:
   OptimizationHintsMockComponentUpdateService() = default;
-  ~OptimizationHintsMockComponentUpdateService() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(OptimizationHintsMockComponentUpdateService);
+  OptimizationHintsMockComponentUpdateService(
+      const OptimizationHintsMockComponentUpdateService&) = delete;
+  OptimizationHintsMockComponentUpdateService& operator=(
+      const OptimizationHintsMockComponentUpdateService&) = delete;
+
+  ~OptimizationHintsMockComponentUpdateService() override = default;
 };
 
 }  // namespace
@@ -44,6 +47,12 @@ namespace component_updater {
 class OptimizationHintsComponentInstallerTest : public PlatformTest {
  public:
   OptimizationHintsComponentInstallerTest() = default;
+
+  OptimizationHintsComponentInstallerTest(
+      const OptimizationHintsComponentInstallerTest&) = delete;
+  OptimizationHintsComponentInstallerTest& operator=(
+      const OptimizationHintsComponentInstallerTest&) = delete;
+
   ~OptimizationHintsComponentInstallerTest() override = default;
 
   void SetUp() override {
@@ -69,14 +78,13 @@ class OptimizationHintsComponentInstallerTest : public PlatformTest {
   }
 
   void LoadOptimizationHints(const base::Version& ruleset_format) {
-    std::unique_ptr<base::DictionaryValue> manifest(new base::DictionaryValue);
+    base::Value manifest(base::Value::Type::DICTIONARY);
     if (ruleset_format.IsValid()) {
-      manifest->SetString(
+      manifest.SetStringKey(
           OptimizationHintsComponentInstallerPolicy::kManifestRulesetFormatKey,
           ruleset_format.GetString());
     }
-    ASSERT_TRUE(
-        policy_->VerifyInstallation(*manifest, component_install_dir()));
+    ASSERT_TRUE(policy_->VerifyInstallation(manifest, component_install_dir()));
     const base::Version expected_version(kTestHintsVersion);
     policy_->ComponentReady(expected_version, component_install_dir(),
                             std::move(manifest));
@@ -95,8 +103,6 @@ class OptimizationHintsComponentInstallerTest : public PlatformTest {
   base::ScopedTempDir component_install_dir_;
 
   std::unique_ptr<OptimizationHintsComponentInstallerPolicy> policy_;
-
-  DISALLOW_COPY_AND_ASSIGN(OptimizationHintsComponentInstallerTest);
 };
 
 TEST_F(OptimizationHintsComponentInstallerTest,

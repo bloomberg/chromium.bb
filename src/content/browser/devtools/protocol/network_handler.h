@@ -38,6 +38,7 @@ class X509Certificate;
 }  // namespace net
 
 namespace network {
+struct CorsErrorStatus;
 struct ResourceRequest;
 struct URLLoaderCompletionStatus;
 namespace mojom {
@@ -71,6 +72,10 @@ class NetworkHandler : public DevToolsDomainHandler,
                  const base::UnguessableToken& devtools_token,
                  DevToolsIOContext* io_context,
                  base::RepeatingClosure update_loader_factories_callback);
+
+  NetworkHandler(const NetworkHandler&) = delete;
+  NetworkHandler& operator=(const NetworkHandler&) = delete;
+
   ~NetworkHandler() override;
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -334,8 +339,6 @@ class NetworkHandler : public DevToolsDomainHandler,
   absl::optional<std::set<net::SourceStream::SourceType>>
       accepted_stream_types_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };
 
 }  // namespace protocol

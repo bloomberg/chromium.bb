@@ -9,6 +9,10 @@
 #include "base/time/time.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 
+namespace chromeos {
+struct AnnotatorTool;
+}  // namespace chromeos
+
 namespace ash {
 
 class ProjectorClient;
@@ -36,6 +40,10 @@ class ASH_PUBLIC_EXPORT ProjectorController {
 
   static ProjectorController* Get();
 
+  // Returns whether the extended features for projector are enabled. This is
+  // decided based on a command line switch.
+  static bool AreExtendedProjectorFeaturesDisabled();
+
   // Starts a capture mode session for the projector workflow if no video
   // recording is currently in progress. `storage_dir` is the container
   // directory name for screencasts and will be used to create the storage path.
@@ -62,6 +70,15 @@ class ASH_PUBLIC_EXPORT ProjectorController {
 
   // Returns true if we can start a new Projector session.
   virtual bool CanStartNewSession() const = 0;
+
+  // The following functions are callbacks from the annotator back to the
+  // ProjectorController.
+
+  // Callback indicating that the annotator tool has changed.
+  virtual void OnToolSet(const chromeos::AnnotatorTool& tool) = 0;
+  // Callback indicating availability of undo and redo functionalities.
+  virtual void OnUndoRedoAvailabilityChanged(bool undo_available,
+                                             bool redo_available) = 0;
 };
 
 }  // namespace ash

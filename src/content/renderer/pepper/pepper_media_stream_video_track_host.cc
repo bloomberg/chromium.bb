@@ -325,17 +325,9 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
     int64_t ts_ms = static_cast<int64_t>(pp_frame->timestamp *
                                          base::Time::kMillisecondsPerSecond);
     scoped_refptr<VideoFrame> frame = media::VideoFrame::WrapExternalYuvData(
-        FromPpapiFormat(plugin_frame_format_),
-        plugin_frame_size_,
-        gfx::Rect(plugin_frame_size_),
-        plugin_frame_size_,
-        y_stride,
-        uv_stride,
-        uv_stride,
-        y_data,
-        u_data,
-        v_data,
-        base::TimeDelta::FromMilliseconds(ts_ms));
+        FromPpapiFormat(plugin_frame_format_), plugin_frame_size_,
+        gfx::Rect(plugin_frame_size_), plugin_frame_size_, y_stride, uv_stride,
+        uv_stride, y_data, u_data, v_data, base::Milliseconds(ts_ms));
     if (!frame)
       return PP_ERROR_FAILED;
 
@@ -431,6 +423,9 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
       : blink::MediaStreamVideoSource(base::ThreadTaskRunnerHandle::Get()),
         host_(std::move(host)) {}
 
+  VideoSource(const VideoSource&) = delete;
+  VideoSource& operator=(const VideoSource&) = delete;
+
   ~VideoSource() final { StopSourceImpl(); }
 
   void StartSourceImpl(
@@ -464,8 +459,6 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
 
   const base::WeakPtr<PepperMediaStreamVideoTrackHost> host_;
   base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(VideoSource);
 };
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {

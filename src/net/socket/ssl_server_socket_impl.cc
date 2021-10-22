@@ -71,6 +71,10 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
  public:
   SocketImpl(SSLServerContextImpl* context,
              std::unique_ptr<StreamSocket> socket);
+
+  SocketImpl(const SocketImpl&) = delete;
+  SocketImpl& operator=(const SocketImpl&) = delete;
+
   ~SocketImpl() override;
 
   // SSLServerSocket interface.
@@ -220,8 +224,6 @@ class SSLServerContextImpl::SocketImpl : public SSLServerSocket,
   NextProto negotiated_protocol_;
 
   base::WeakPtrFactory<SocketImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SocketImpl);
 };
 
 SSLServerContextImpl::SocketImpl::SocketImpl(
@@ -1054,6 +1056,12 @@ void SSLServerContextImpl::Init() {
     SSL_CTX_set_ocsp_response(ssl_ctx_.get(),
                               ssl_server_config_.ocsp_response.data(),
                               ssl_server_config_.ocsp_response.size());
+  }
+
+  if (!ssl_server_config_.signed_cert_timestamp_list.empty()) {
+    SSL_CTX_set_signed_cert_timestamp_list(
+        ssl_ctx_.get(), ssl_server_config_.signed_cert_timestamp_list.data(),
+        ssl_server_config_.signed_cert_timestamp_list.size());
   }
 
   if (ssl_server_config_.ech_keys) {

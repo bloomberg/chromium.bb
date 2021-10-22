@@ -45,6 +45,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
   private attributionReportingIssues = new Set<IssuesManager.AttributionReportingIssue.AttributionReportingIssue>();
   private wasmCrossOriginModuleSharingIssues =
       new Set<IssuesManager.WasmCrossOriginModuleSharingIssue.WasmCrossOriginModuleSharingIssue>();
+  private genericIssues = new Set<IssuesManager.GenericIssue.GenericIssue>();
   private representative?: IssuesManager.Issue.Issue;
   private aggregatedIssuesCount = 0;
   private key: AggregationKey;
@@ -128,6 +129,10 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
   getWasmCrossOriginModuleSharingIssue():
       ReadonlySet<IssuesManager.WasmCrossOriginModuleSharingIssue.WasmCrossOriginModuleSharingIssue> {
     return this.wasmCrossOriginModuleSharingIssues;
+  }
+
+  getGenericIssues(): ReadonlySet<IssuesManager.GenericIssue.GenericIssue> {
+    return this.genericIssues;
   }
 
   getDescription(): IssuesManager.MarkdownIssueDescription.MarkdownIssueDescription|null {
@@ -221,6 +226,9 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     if (issue instanceof IssuesManager.WasmCrossOriginModuleSharingIssue.WasmCrossOriginModuleSharingIssue) {
       this.wasmCrossOriginModuleSharingIssues.add(issue);
     }
+    if (issue instanceof IssuesManager.GenericIssue.GenericIssue) {
+      this.genericIssues.add(issue);
+    }
   }
 
   getKind(): IssuesManager.Issue.IssueKind {
@@ -271,7 +279,7 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper<EventTyp
 
   private aggregateIssueByStatus(
       aggregatedIssuesMap: Map<AggregationKey, AggregatedIssue>, issue: IssuesManager.Issue.Issue): AggregatedIssue {
-    const key = issue.code() as AggregationKey;
+    const key = issue.code() as unknown as AggregationKey;
     let aggregatedIssue = aggregatedIssuesMap.get(key);
     if (!aggregatedIssue) {
       aggregatedIssue = new AggregatedIssue(issue.code(), key);
@@ -301,6 +309,14 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper<EventTyp
     return result;
   }
 
+  aggregatedIssueKinds(): Set<IssuesManager.Issue.IssueKind> {
+    const result = new Set<IssuesManager.Issue.IssueKind>();
+    for (const issue of this.aggregatedIssuesByKey.values()) {
+      result.add(issue.getKind());
+    }
+    return result;
+  }
+
   numberOfAggregatedIssues(): number {
     return this.aggregatedIssuesByKey.size;
   }
@@ -310,7 +326,7 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper<EventTyp
   }
 
   keyForIssue(issue: IssuesManager.Issue.Issue<string>): AggregationKey {
-    return issue.code() as AggregationKey;
+    return issue.code() as unknown as AggregationKey;
   }
 }
 

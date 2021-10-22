@@ -7,6 +7,12 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "v8/include/v8-context.h"
+#include "v8/include/v8-exception.h"
+#include "v8/include/v8-function.h"
+#include "v8/include/v8-message.h"
+#include "v8/include/v8-primitive.h"
+#include "v8/include/v8-script.h"
 
 namespace shared_storage_worklet {
 
@@ -51,7 +57,7 @@ v8::MaybeLocal<v8::String> CreateUtf8String(v8::Isolate* isolate,
 }  // namespace
 
 WorkletV8Helper::HandleScope::HandleScope(v8::Isolate* isolate)
-    : locker_(isolate), isolate_scope_(isolate), handle_scope_(isolate) {}
+    : isolate_scope_(isolate), handle_scope_(isolate) {}
 
 WorkletV8Helper::HandleScope::~HandleScope() = default;
 

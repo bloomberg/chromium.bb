@@ -58,6 +58,10 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
                       kEnterpriseURL);
   }
 
+  FakePasswordManagerClient(const FakePasswordManagerClient&) = delete;
+  FakePasswordManagerClient& operator=(const FakePasswordManagerClient&) =
+      delete;
+
   ~FakePasswordManagerClient() override {
     password_store_->ShutdownOnUIThread();
   }
@@ -66,8 +70,7 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   url::Origin GetLastCommittedOrigin() const override {
     return last_committed_origin_;
   }
-  MockPasswordStoreInterface* GetProfilePasswordStoreInterface()
-      const override {
+  MockPasswordStoreInterface* GetProfilePasswordStore() const override {
     return password_store_.get();
   }
   signin::IdentityManager* GetIdentityManager() override {
@@ -91,8 +94,6 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
   bool is_incognito_ = false;
   signin::IdentityManager* identity_manager_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePasswordManagerClient);
 };
 
 }  // namespace

@@ -13,7 +13,7 @@
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
-#include "chrome/browser/chromeos/throttle_observer.h"
+#include "chrome/browser/ash/throttle_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -184,11 +184,7 @@ TEST_F(ArcInstanceThrottleTest, TestThrottleInstance) {
 }
 
 // Tests that power instance is correctly notified.
-TEST_F(ArcInstanceThrottleTest, TestPowerNotification) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({arc::kEnableThrottlingNotification},
-                                       {});
-
+TEST_F(ArcInstanceThrottleTest, TestPowerNotificationEnabledByDefault) {
   // Set power instance and it should be automatically notified once connection
   // is made.
   CreatePowerInstance();
@@ -210,7 +206,10 @@ TEST_F(ArcInstanceThrottleTest, TestPowerNotification) {
 }
 
 // Tests that power instance notification is off by default.
-TEST_F(ArcInstanceThrottleTest, TestPowerNotificationDisabledByDefault) {
+TEST_F(ArcInstanceThrottleTest, TestPowerNotificationDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({},
+                                       {arc::kEnableThrottlingNotification});
   // Set power instance and it should be automatically notified once connection
   // is made.
   CreatePowerInstance();

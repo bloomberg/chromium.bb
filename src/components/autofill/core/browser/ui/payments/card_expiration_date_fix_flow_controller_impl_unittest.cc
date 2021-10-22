@@ -30,6 +30,11 @@ class CardExpirationDateFixFlowControllerImplGenericTest {
  public:
   CardExpirationDateFixFlowControllerImplGenericTest() {}
 
+  CardExpirationDateFixFlowControllerImplGenericTest(
+      const CardExpirationDateFixFlowControllerImplGenericTest&) = delete;
+  CardExpirationDateFixFlowControllerImplGenericTest& operator=(
+      const CardExpirationDateFixFlowControllerImplGenericTest&) = delete;
+
   void ShowPrompt(CreditCard credit_card = CreditCard()) {
     controller_->Show(
         test_card_expiration_date_fix_flow_view_.get(), credit_card,
@@ -52,8 +57,6 @@ class CardExpirationDateFixFlowControllerImplGenericTest {
     accepted_month_ = month;
     accepted_year_ = year;
   }
-
-  DISALLOW_COPY_AND_ASSIGN(CardExpirationDateFixFlowControllerImplGenericTest);
 };
 
 class CardExpirationDateFixFlowControllerImplTest
@@ -61,6 +64,12 @@ class CardExpirationDateFixFlowControllerImplTest
       public testing::Test {
  public:
   CardExpirationDateFixFlowControllerImplTest() {}
+
+  CardExpirationDateFixFlowControllerImplTest(
+      const CardExpirationDateFixFlowControllerImplTest&) = delete;
+  CardExpirationDateFixFlowControllerImplTest& operator=(
+      const CardExpirationDateFixFlowControllerImplTest&) = delete;
+
   ~CardExpirationDateFixFlowControllerImplTest() override {}
 
   void SetUp() override {
@@ -68,9 +77,6 @@ class CardExpirationDateFixFlowControllerImplTest
         std::make_unique<TestCardExpirationDateFixFlowView>();
     controller_ = std::make_unique<CardExpirationDateFixFlowControllerImpl>();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CardExpirationDateFixFlowControllerImplTest);
 };
 
 TEST_F(CardExpirationDateFixFlowControllerImplTest, LogShown) {

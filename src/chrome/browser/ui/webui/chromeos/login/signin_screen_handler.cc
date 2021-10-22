@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/error_screens_histogram_helper.h"
@@ -49,7 +50,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -92,10 +92,10 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -107,14 +107,14 @@ namespace {
 
 // Timeout to delay first notification about offline state for a
 // current network.
-constexpr base::TimeDelta kOfflineTimeout = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kOfflineTimeout = base::Seconds(1);
 
 // Timeout to delay first notification about offline state when authenticating
 // to a proxy.
-constexpr base::TimeDelta kProxyAuthTimeout = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kProxyAuthTimeout = base::Seconds(5);
 
 // Timeout used to prevent infinite connecting to a flaky network.
-constexpr base::TimeDelta kConnectingTimeout = base::TimeDelta::FromSeconds(60);
+constexpr base::TimeDelta kConnectingTimeout = base::Seconds(60);
 
 // Max number of Gaia Reload to Show Proxy Auth Dialog.
 const int kMaxGaiaReloadForProxyAuthDialog = 3;
@@ -123,6 +123,9 @@ class CallOnReturn {
  public:
   explicit CallOnReturn(base::OnceClosure callback)
       : callback_(std::move(callback)), call_scheduled_(false) {}
+
+  CallOnReturn(const CallOnReturn&) = delete;
+  CallOnReturn& operator=(const CallOnReturn&) = delete;
 
   ~CallOnReturn() {
     if (call_scheduled_ && !callback_.is_null())
@@ -135,8 +138,6 @@ class CallOnReturn {
  private:
   base::OnceClosure callback_;
   bool call_scheduled_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallOnReturn);
 };
 
 }  // namespace
@@ -189,7 +190,8 @@ SigninScreenHandler::SigninScreenHandler(
       core_oobe_view_(core_oobe_view),
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
-      histogram_helper_(new ErrorScreensHistogramHelper("Signin")) {
+      histogram_helper_(
+          std::make_unique<ErrorScreensHistogramHelper>("Signin")) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
   DCHECK(core_oobe_view_);

@@ -31,8 +31,8 @@ class RLScanlineDecoder final : public ScanlineDecoder {
               int bpc);
 
   // ScanlineDecoder:
-  bool v_Rewind() override;
-  uint8_t* v_GetNextLine() override;
+  bool Rewind() override;
+  pdfium::span<uint8_t> GetNextLine() override;
   uint32_t GetSrcOffset() override { return m_SrcOffset; }
 
  private:
@@ -50,7 +50,10 @@ class RLScanlineDecoder final : public ScanlineDecoder {
 
 RLScanlineDecoder::RLScanlineDecoder() = default;
 
-RLScanlineDecoder::~RLScanlineDecoder() = default;
+RLScanlineDecoder::~RLScanlineDecoder() {
+  // Span in superclass can't outlive our buffer.
+  m_pLastScanline = pdfium::span<uint8_t>();
+}
 
 bool RLScanlineDecoder::CheckDestSize() {
   size_t i = 0;
@@ -109,7 +112,7 @@ bool RLScanlineDecoder::Create(pdfium::span<const uint8_t> src_buf,
   return CheckDestSize();
 }
 
-bool RLScanlineDecoder::v_Rewind() {
+bool RLScanlineDecoder::Rewind() {
   fxcrt::spanclr(pdfium::make_span(m_Scanline));
   m_SrcOffset = 0;
   m_bEOD = false;
@@ -117,11 +120,11 @@ bool RLScanlineDecoder::v_Rewind() {
   return true;
 }
 
-uint8_t* RLScanlineDecoder::v_GetNextLine() {
+pdfium::span<uint8_t> RLScanlineDecoder::GetNextLine() {
   if (m_SrcOffset == 0) {
     GetNextOperator();
   } else if (m_bEOD) {
-    return nullptr;
+    return pdfium::span<uint8_t>();
   }
   uint32_t col_pos = 0;
   bool eol = false;
@@ -160,7 +163,7 @@ uint8_t* RLScanlineDecoder::v_GetNextLine() {
       break;
     }
   }
-  return m_Scanline.data();
+  return m_Scanline;
 }
 
 void RLScanlineDecoder::GetNextOperator() {

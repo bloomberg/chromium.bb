@@ -657,7 +657,7 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Rate control adaptation undershoot control
    *
    * This value, controls the tolerance of the VBR algorithm to undershoot
-   * and is used as a trigger threshold for more agressive adaptation of Q.
+   * and is used as a trigger threshold for more aggressive adaptation of Q.
    *
    * Valid values in the range 0-100.
    */
@@ -666,9 +666,9 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Rate control adaptation overshoot control
    *
    * This value, controls the tolerance of the VBR algorithm to overshoot
-   * and is used as a trigger threshold for more agressive adaptation of Q.
+   * and is used as a trigger threshold for more aggressive adaptation of Q.
    *
-   * Valid values in the range 0-1000.
+   * Valid values in the range 0-100.
    */
   unsigned int rc_overshoot_pct;
 
@@ -878,11 +878,11 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int use_fixed_qp_offsets;
 
-/*!\brief Max number of fixed QP offsets
+/*!\brief Number of fixed QP offsets
  *
  * This defines the number of elements in the fixed_qp_offsets array.
  */
-#define FIXED_QP_OFFSET_COUNT 6
+#define FIXED_QP_OFFSET_COUNT 5
 
   /*!\brief Array of fixed QP offsets
    *
@@ -913,7 +913,7 @@ typedef struct aom_codec_enc_cfg {
  * function directly, to ensure that the ABI version number parameter
  * is properly initialized.
  *
- * If the library was configured with --disable-multithread, this call
+ * If the library was configured with -DCONFIG_MULTITHREAD=0, this call
  * is not thread safe and should be guarded with a lock if being used
  * in a multithreaded context.
  *

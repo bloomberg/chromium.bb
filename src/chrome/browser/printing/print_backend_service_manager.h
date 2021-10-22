@@ -12,8 +12,15 @@
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
 #include "base/unguessable_token.h"
+#include "base/values.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
+#include "printing/buildflags/buildflags.h"
+
+#if !BUILDFLAG(ENABLE_OOP_PRINTING)
+#error "Out-of-process printing must be enabled."
+#endif
 
 namespace crash_keys {
 class ScopedPrinterInfo;
@@ -27,10 +34,6 @@ class PrintBackendServiceManager {
   PrintBackendServiceManager& operator=(const PrintBackendServiceManager&) =
       delete;
 
-  // Returns true if the print backend service should be sandboxed, false
-  // otherwise.
-  bool ShouldSandboxPrintBackendService() const;
-
   // Register as a client of PrintBackendServiceManager.  This acts as a signal
   // of impending activity enabling possible optimizations within the manager.
   uint32_t RegisterClient();
@@ -38,11 +41,6 @@ class PrintBackendServiceManager {
   // Notify the manager that this client is no longer needing print backend
   // services.  This signal might alter the manager's internal optimizations.
   void UnregisterClient(uint32_t id);
-
-  // Acquires a remote handle to the Print Backend Service instance, launching a
-  // process to host the service if necessary.
-  const mojo::Remote<printing::mojom::PrintBackendService>& GetService(
-      const std::string& printer_name);
 
   // Wrappers around mojom::PrintBackendService call.
   void EnumeratePrinters(
@@ -56,6 +54,18 @@ class PrintBackendServiceManager {
       const std::string& printer_name,
       mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
           callback);
+  void UpdatePrintSettings(
+      const std::string& printer_name,
+      base::flat_map<std::string, base::Value> job_settings,
+      mojom::PrintBackendService::UpdatePrintSettingsCallback callback);
+  void StartPrinting(
+      const std::string& printer_name,
+      int document_cookie,
+      const std::u16string& document_name,
+      mojom::PrintTargetType target_type,
+      int page_count,
+      const PrintSettings& settings,
+      mojom::PrintBackendService::StartPrintingCallback callback);
 
   // Query if printer driver has been found to require elevated privilege in
   // order to have print queries/commands succeed.
@@ -116,12 +126,23 @@ class PrintBackendServiceManager {
       RemoteSavedStructCallbacks<mojom::DefaultPrinterNameResult>;
   using RemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks =
       RemoteSavedStructCallbacks<mojom::PrinterSemanticCapsAndDefaultsResult>;
+  using RemoteSavedUpdatePrintSettingsCallbacks =
+      RemoteSavedStructCallbacks<mojom::PrintSettingsResult>;
+  using RemoteSavedStartPrintingCallbacks =
+      RemoteSavedCallbacks<mojom::ResultCode>;
 
   PrintBackendServiceManager();
   ~PrintBackendServiceManager();
 
   // Determine the remote ID that is used for the specified `printer_name`.
   std::string GetRemoteIdForPrinterName(const std::string& printer_name) const;
+
+  // Acquires a remote handle to the Print Backend Service instance, launching a
+  // process to host the service if necessary. |is_sandboxed| is set if the
+  // service was launched within a sandbox.
+  const mojo::Remote<printing::mojom::PrintBackendService>& GetService(
+      const std::string& printer_name,
+      bool* is_sandboxed);
 
   // Help function to reset idle timeout duration to a short value.
   void UpdateServiceToShortIdleTimeout(
@@ -148,6 +169,10 @@ class PrintBackendServiceManager {
   GetRemoteSavedGetDefaultPrinterNameCallbacks(bool sandboxed);
   RemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks&
   GetRemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks(bool sandboxed);
+  RemoteSavedUpdatePrintSettingsCallbacks&
+  GetRemoteSavedUpdatePrintSettingsCallbacks(bool sandboxed);
+  RemoteSavedStartPrintingCallbacks& GetRemoteSavedStartPrintingCallbacks(
+      bool sandboxed);
 
   // Helper function to save outstanding callbacks.
   template <class T, class X>
@@ -183,14 +208,26 @@ class PrintBackendServiceManager {
       const std::string& remote_id,
       const base::UnguessableToken& saved_callback_id,
       mojom::PrinterSemanticCapsAndDefaultsResultPtr printer_caps);
+  void UpdatePrintSettingsDone(bool sandboxed,
+                               const std::string& remote_id,
+                               const base::UnguessableToken& saved_callback_id,
+                               mojom::PrintSettingsResultPtr printer_caps);
+  void StartPrintingDone(bool sandboxed,
+                         const std::string& remote_id,
+                         const base::UnguessableToken& saved_callback_id,
+                         mojom::ResultCode result);
 
-  // Helper function to run outstanding callbacks when a remote has become
+  // Helper functions to run outstanding callbacks when a remote has become
   // disconnected.
   template <class T>
   void RunSavedCallbacksStructResult(
       RemoteSavedStructCallbacks<T>& saved_callbacks,
       const std::string& remote_id,
       mojo::StructPtr<T> result_to_clone);
+  template <class T>
+  void RunSavedCallbacksResult(RemoteSavedCallbacks<T>& saved_callbacks,
+                               const std::string& remote_id,
+                               T result);
 
   using RemotesMap =
       base::flat_map<std::string,
@@ -199,6 +236,11 @@ class PrintBackendServiceManager {
   // Keep separate mapping of remotes for sandboxed vs. unsandboxed services.
   RemotesMap sandboxed_remotes_;
   RemotesMap unsandboxed_remotes_;
+
+  // Keeps remotes for wrapping service hosts alive until they disconnect.
+  mojo::RemoteSet<printing::mojom::SandboxedPrintBackendHost> sandboxed_hosts_;
+  mojo::RemoteSet<printing::mojom::UnsandboxedPrintBackendHost>
+      unsandboxed_hosts_;
 
   // Set of IDs for clients actively engaged in printing.  This could include
   // tabs in print preview as well as an active system print.  Retention of a
@@ -223,9 +265,12 @@ class PrintBackendServiceManager {
       sandboxed_saved_get_printer_semantic_caps_and_defaults_callbacks_;
   RemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks
       unsandboxed_saved_get_printer_semantic_caps_and_defaults_callbacks_;
-
-  // Track if next service started should be sandboxed.
-  bool is_sandboxed_service_ = true;
+  RemoteSavedUpdatePrintSettingsCallbacks
+      sandboxed_saved_update_print_settings_callbacks_;
+  RemoteSavedUpdatePrintSettingsCallbacks
+      unsandboxed_saved_update_print_settings_callbacks_;
+  RemoteSavedStartPrintingCallbacks sandboxed_saved_start_printing_callbacks_;
+  RemoteSavedStartPrintingCallbacks unsandboxed_saved_start_printing_callbacks_;
 
   // Set of printer drivers which require elevated permissions to operate.
   // It is expected that most print drivers will succeed with the preconfigured

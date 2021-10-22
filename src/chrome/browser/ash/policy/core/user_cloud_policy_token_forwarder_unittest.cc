@@ -55,7 +55,7 @@ constexpr char kEmail[] = "email@gmail.com";
 constexpr char kGaiaId[] = "gaia_id";
 constexpr char kOAuthToken[] = "oauth_token";
 
-constexpr base::TimeDelta kTokenLifetime = base::TimeDelta::FromMinutes(30);
+constexpr base::TimeDelta kTokenLifetime = base::Minutes(30);
 
 }  // namespace
 
@@ -73,11 +73,15 @@ class MockUserCloudPolicyManagerAsh : public UserCloudPolicyManagerAsh {
             std::make_unique<MockCloudExternalDataManager>(),
             base::FilePath() /* component_policy_cache_path */,
             UserCloudPolicyManagerAsh::PolicyEnforcement::kPolicyRequired,
-            base::TimeDelta::FromMinutes(1) /* policy_refresh_timeout */,
+            base::Minutes(1) /* policy_refresh_timeout */,
             base::BindOnce(&MockUserCloudPolicyManagerAsh::OnFatalError,
                            base::Unretained(this)),
             account_id,
             task_runner) {}
+
+  MockUserCloudPolicyManagerAsh(const MockUserCloudPolicyManagerAsh&) = delete;
+  MockUserCloudPolicyManagerAsh& operator=(
+      const MockUserCloudPolicyManagerAsh&) = delete;
 
   ~MockUserCloudPolicyManagerAsh() override = default;
 
@@ -85,11 +89,15 @@ class MockUserCloudPolicyManagerAsh : public UserCloudPolicyManagerAsh {
 
  private:
   void OnFatalError() {}
-
-  DISALLOW_COPY_AND_ASSIGN(MockUserCloudPolicyManagerAsh);
 };
 
 class UserCloudPolicyTokenForwarderTest : public testing::Test {
+ public:
+  UserCloudPolicyTokenForwarderTest(const UserCloudPolicyTokenForwarderTest&) =
+      delete;
+  UserCloudPolicyTokenForwarderTest& operator=(
+      const UserCloudPolicyTokenForwarderTest&) = delete;
+
  protected:
   static ash::FakeChromeUserManager* GetFakeUserManager() {
     return static_cast<ash::FakeChromeUserManager*>(
@@ -214,8 +222,6 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
   std::unique_ptr<MockCloudPolicyStore> store_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyTokenForwarderTest);
 };
 
 TEST_F(UserCloudPolicyTokenForwarderTest,

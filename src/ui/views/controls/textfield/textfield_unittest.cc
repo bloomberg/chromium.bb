@@ -93,8 +93,8 @@ class GestureEventForTest : public ui::GestureEvent {
   GestureEventForTest(int x, int y, ui::GestureEventDetails details)
       : GestureEvent(x, y, ui::EF_NONE, base::TimeTicks(), details) {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(GestureEventForTest);
+  GestureEventForTest(const GestureEventForTest&) = delete;
+  GestureEventForTest& operator=(const GestureEventForTest&) = delete;
 };
 
 // This controller will happily destroy the target field passed on
@@ -104,6 +104,10 @@ class TextfieldDestroyerController : public TextfieldController {
   explicit TextfieldDestroyerController(Textfield* target) : target_(target) {
     target_->set_controller(this);
   }
+
+  TextfieldDestroyerController(const TextfieldDestroyerController&) = delete;
+  TextfieldDestroyerController& operator=(const TextfieldDestroyerController&) =
+      delete;
 
   Textfield* target() { return target_.get(); }
 
@@ -118,8 +122,6 @@ class TextfieldDestroyerController : public TextfieldController {
 
  private:
   std::unique_ptr<Textfield> target_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextfieldDestroyerController);
 };
 
 // Class that focuses a textfield when it sees a KeyDown event.
@@ -128,6 +130,9 @@ class TextfieldFocuser : public View {
   explicit TextfieldFocuser(Textfield* textfield) : textfield_(textfield) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
+
+  TextfieldFocuser(const TextfieldFocuser&) = delete;
+  TextfieldFocuser& operator=(const TextfieldFocuser&) = delete;
 
   void set_consume(bool consume) { consume_ = consume; }
 
@@ -140,13 +145,15 @@ class TextfieldFocuser : public View {
  private:
   bool consume_ = true;
   Textfield* textfield_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextfieldFocuser);
 };
 
 class MockInputMethod : public ui::InputMethodBase {
  public:
   MockInputMethod();
+
+  MockInputMethod(const MockInputMethod&) = delete;
+  MockInputMethod& operator=(const MockInputMethod&) = delete;
+
   ~MockInputMethod() override;
 
   // InputMethod:
@@ -203,8 +210,6 @@ class MockInputMethod : public ui::InputMethodBase {
   bool cancel_composition_called_ = false;
 
   int count_show_virtual_keyboard_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(MockInputMethod);
 };
 
 MockInputMethod::MockInputMethod() : ui::InputMethodBase(nullptr) {}
@@ -327,6 +332,10 @@ void MockInputMethod::ClearComposition() {
 class TestTextfield : public views::Textfield {
  public:
   TestTextfield() = default;
+
+  TestTextfield(const TestTextfield&) = delete;
+  TestTextfield& operator=(const TestTextfield&) = delete;
+
   ~TestTextfield() override = default;
 
   // ui::TextInputClient:
@@ -384,8 +393,6 @@ class TestTextfield : public views::Textfield {
   int accessibility_selection_fired_count_ = 0;
 
   base::WeakPtrFactory<TestTextfield> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TestTextfield);
 };
 
 TextfieldTest::TextfieldTest() {
@@ -1579,6 +1586,10 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
   class TestDelegate : public ui::TextEditKeyBindingsDelegateAuraLinux {
    public:
     TestDelegate() = default;
+
+    TestDelegate(const TestDelegate&) = delete;
+    TestDelegate& operator=(const TestDelegate&) = delete;
+
     ~TestDelegate() override = default;
 
     bool MatchEvent(
@@ -1586,9 +1597,6 @@ TEST_F(TextfieldTest, OnKeyPressBinding) {
         std::vector<ui::TextEditCommandAuraLinux>* commands) override {
       return false;
     }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(TestDelegate);
   };
 
   TestDelegate delegate;
@@ -3070,7 +3078,7 @@ TEST_F(TextfieldTest, CommitEmptyComposingTextTest) {
   EXPECT_EQ(composed_text_length, static_cast<uint32_t>(0));
 }
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // SetCompositionFromExistingText is only available on Windows and Chrome OS.
 TEST_F(TextfieldTest, SetCompositionFromExistingTextTest) {
   InitTextfield();

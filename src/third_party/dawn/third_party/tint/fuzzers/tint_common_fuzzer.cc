@@ -14,6 +14,7 @@
 
 #include "fuzzers/tint_common_fuzzer.h"
 
+#include <cassert>
 #include <cstring>
 #include <fstream>
 #include <memory>
@@ -51,26 +52,6 @@ namespace {
   FatalError(diagnostics);
 }
 
-transform::VertexAttributeDescriptor ExtractVertexAttributeDescriptor(
-    Reader* r) {
-  transform::VertexAttributeDescriptor desc{};
-  desc.format = r->enum_class<transform::VertexFormat>(
-      static_cast<uint8_t>(transform::VertexFormat::kLastEntry) + 1);
-  desc.offset = r->read<uint32_t>();
-  desc.shader_location = r->read<uint32_t>();
-  return desc;
-}
-
-transform::VertexBufferLayoutDescriptor ExtractVertexBufferLayoutDescriptor(
-    Reader* r) {
-  transform::VertexBufferLayoutDescriptor desc;
-  desc.array_stride = r->read<uint32_t>();
-  desc.step_mode = r->enum_class<transform::VertexStepMode>(
-      static_cast<uint8_t>(transform::VertexStepMode::kLastEntry) + 1);
-  desc.attributes = r->vector(ExtractVertexAttributeDescriptor);
-  return desc;
-}
-
 bool SPIRVToolsValidationCheck(const tint::Program& program,
                                const std::vector<uint32_t>& spirv) {
   spvtools::SpirvTools tools(SPV_ENV_VULKAN_1_1);
@@ -93,104 +74,24 @@ bool SPIRVToolsValidationCheck(const tint::Program& program,
 
 }  // namespace
 
-Reader::Reader(const uint8_t* data, size_t size) : data_(data), size_(size) {}
-
-std::string Reader::string() {
-  auto count = read<uint8_t>();
-  if (failed_ || size_ < count) {
-    mark_failed();
-    return "";
-  }
-  std::string out(data_, data_ + count);
-  data_ += count;
-  size_ -= count;
-  return out;
+void GenerateSpirvOptions(DataBuilder* b, writer::spirv::Options* options) {
+  *options = b->build<writer::spirv::Options>();
 }
 
-void Reader::mark_failed() {
-  size_ = 0;
-  failed_ = true;
+void GenerateWgslOptions(DataBuilder* b, writer::wgsl::Options* options) {
+  *options = b->build<writer::wgsl::Options>();
 }
 
-void Reader::read(void* out, size_t n) {
-  if (n > size_) {
-    mark_failed();
-    return;
-  }
-  memcpy(out, data_, n);
-  data_ += n;
-  size_ -= n;
+void GenerateHlslOptions(DataBuilder* b, writer::hlsl::Options* options) {
+  *options = b->build<writer::hlsl::Options>();
 }
 
-void ExtractBindingRemapperInputs(Reader* r, tint::transform::DataMap* inputs) {
-  struct Config {
-    uint8_t old_group;
-    uint8_t old_binding;
-    uint8_t new_group;
-    uint8_t new_binding;
-    ast::Access new_access;
-  };
-
-  std::vector<Config> configs = r->vector<Config>();
-  transform::BindingRemapper::BindingPoints binding_points;
-  transform::BindingRemapper::AccessControls accesses;
-  for (const auto& config : configs) {
-    binding_points[{config.old_binding, config.old_group}] = {
-        config.new_binding, config.new_group};
-    accesses[{config.old_binding, config.old_group}] = config.new_access;
-  }
-
-  inputs->Add<transform::BindingRemapper::Remappings>(binding_points, accesses);
-}
-
-void ExtractFirstIndexOffsetInputs(Reader* r,
-                                   tint::transform::DataMap* inputs) {
-  struct Config {
-    uint32_t group;
-    uint32_t binding;
-  };
-
-  Config config = r->read<Config>();
-  inputs->Add<tint::transform::FirstIndexOffset::BindingPoint>(config.binding,
-                                                               config.group);
-}
-
-void ExtractSingleEntryPointInputs(Reader* r,
-                                   tint::transform::DataMap* inputs) {
-  std::string input = r->string();
-  transform::SingleEntryPoint::Config cfg(input);
-  inputs->Add<transform::SingleEntryPoint::Config>(cfg);
-}
-
-void ExtractVertexPullingInputs(Reader* r, tint::transform::DataMap* inputs) {
-  transform::VertexPulling::Config cfg;
-  cfg.entry_point_name = r->string();
-  cfg.vertex_state = r->vector(ExtractVertexBufferLayoutDescriptor);
-  cfg.pulling_group = r->read<uint32_t>();
-  inputs->Add<transform::VertexPulling::Config>(cfg);
-}
-
-void ExtractSpirvOptions(Reader* r, writer::spirv::Options* options) {
-  *options = r->read<writer::spirv::Options>();
-}
-
-void ExtractWgslOptions(Reader* r, writer::wgsl::Options* options) {
-  *options = r->read<writer::wgsl::Options>();
-}
-
-void ExtractHlslOptions(Reader* r, writer::hlsl::Options* options) {
-  *options = r->read<writer::hlsl::Options>();
-}
-
-void ExtractMslOptions(Reader* r, writer::msl::Options* options) {
-  *options = r->read<writer::msl::Options>();
+void GenerateMslOptions(DataBuilder* b, writer::msl::Options* options) {
+  *options = b->build<writer::msl::Options>();
 }
 
 CommonFuzzer::CommonFuzzer(InputFormat input, OutputFormat output)
-    : input_(input),
-      output_(output),
-      transform_manager_(nullptr),
-      inspector_enabled_(false) {}
+    : input_(input), output_(output) {}
 
 CommonFuzzer::~CommonFuzzer() = default;
 
@@ -351,7 +252,7 @@ int CommonFuzzer::Run(const uint8_t* data, size_t size) {
   }
 
   if (transform_manager_) {
-    auto out = transform_manager_->Run(&program, transform_inputs_);
+    auto out = transform_manager_->Run(&program, *transform_inputs_);
     if (!out.program.IsValid()) {
       // Transforms can produce error messages for bad input.
       // Catch ICEs and errors from non transform systems.

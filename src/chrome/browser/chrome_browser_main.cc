@@ -60,6 +60,7 @@
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/chrome_color_mixers.h"
 #include "chrome/browser/component_updater/registration.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -721,8 +722,15 @@ void ChromeBrowserMainParts::PostEarlyInitialization() {
 
 void ChromeBrowserMainParts::ToolkitInitialized() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::ToolkitInitialized");
+
   for (auto& chrome_extra_part : chrome_extra_parts_)
     chrome_extra_part->ToolkitInitialized();
+
+  // Comes after the extra parts' calls since on GTK that builds the native
+  // theme that, in turn, adds the GTK core color mixer; core mixers should all
+  // be added before we add chrome mixers.
+  ui::ColorProviderManager::Get().AppendColorProviderInitializer(
+      base::BindRepeating(AddChromeColorMixers));
 }
 
 void ChromeBrowserMainParts::PreCreateMainMessageLoop() {
@@ -736,7 +744,7 @@ void ChromeBrowserMainParts::PostCreateMainMessageLoop() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PostCreateMainMessageLoop");
 
 #if !defined(OS_ANDROID)
-  // Initialize the upgrade detector here after ChromeBrowserMainPartsChromeos
+  // Initialize the upgrade detector here after `ChromeBrowserMainPartsAsh`
   // has had a chance to connect the DBus services.
   UpgradeDetector::GetInstance()->Init();
 #endif
@@ -1169,7 +1177,7 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
-      base::TimeDelta::FromMinutes(1));
+      base::Minutes(1));
 
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebUsb)) {
@@ -1539,7 +1547,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       base::WrapUnique(new ChromeRLZTrackerDelegate));
   rlz::RLZTracker::InitRlzDelayed(
       first_run::IsChromeFirstRun(), ping_delay < 0,
-      base::TimeDelta::FromSeconds(abs(ping_delay)),
+      base::Seconds(abs(ping_delay)),
       ChromeRLZTrackerDelegate::IsGoogleDefaultSearch(profile_),
       ChromeRLZTrackerDelegate::IsGoogleHomepage(profile_),
       ChromeRLZTrackerDelegate::IsGoogleInStartpages(profile_));
@@ -1631,11 +1639,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
 #if BUILDFLAG(ENABLE_NACL)
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? content::GetUIThreadTaskRunner({})
-                         : content::GetIOThreadTaskRunner({});
-  task_runner->PostTask(FROM_HERE,
-                        base::BindOnce(nacl::NaClProcessHost::EarlyStartup));
+  nacl::NaClProcessHost::EarlyStartup();
 #endif  // BUILDFLAG(ENABLE_NACL)
 
   // Make sure initial prefs are recorded
@@ -1812,14 +1816,13 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Android specific MessageLoop
   NOTREACHED();
 #else
-  // Shutdown the UpgradeDetector here before ChromeBrowserMainPartsChromeos
+  // Shutdown the UpgradeDetector here before `ChromeBrowserMainPartsAsh`
   // disconnects DBus services in its PostDestroyThreads.
   UpgradeDetector::GetInstance()->Shutdown();
 
   // Two different types of hang detection cannot attempt to upload crashes at
   // the same time or they would interfere with each other.
-  constexpr base::TimeDelta kShutdownHangDelay{
-      base::TimeDelta::FromSeconds(300)};
+  constexpr base::TimeDelta kShutdownHangDelay{base::Seconds(300)};
   if (base::HangWatcher::IsCrashReportingEnabled()) {
     // Use ShutdownWatcherHelper logic to choose delay to get identical
     // behavior.

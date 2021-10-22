@@ -26,6 +26,7 @@
 #include "chrome/browser/nearby_sharing/attachment_info.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_http_notifier.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_enums.h"
+#include "chrome/browser/nearby_sharing/fast_initiation/fast_initiation_scanner_feature_usage_metrics.h"
 #include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
 #include "chrome/browser/nearby_sharing/incoming_share_target_info.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager.h"
@@ -133,7 +134,6 @@ class NearbySharingServiceImpl
   NearbyShareLocalDeviceDataManager* GetLocalDeviceDataManager() override;
   NearbyShareContactManager* GetContactManager() override;
   NearbyShareCertificateManager* GetCertificateManager() override;
-  bool AreFastInitiationDevicesDetected() const override;
 
   // NearbyConnectionsManager::IncomingConnectionListener:
   void OnIncomingConnection(const std::string& endpoint_id,
@@ -155,7 +155,8 @@ class NearbySharingServiceImpl
 
   // nearby_share::mojom::NearbyShareSettingsObserver:
   void OnEnabledChanged(bool enabled) override;
-  void OnFastInitiationNotificationEnabledChanged(bool enabled) override;
+  void OnFastInitiationNotificationStateChanged(
+      nearby_share::mojom::FastInitiationNotificationState state) override;
   void OnDeviceNameChanged(const std::string& device_name) override;
   void OnDataUsageChanged(nearby_share::mojom::DataUsage data_usage) override;
   void OnVisibilityChanged(nearby_share::mojom::Visibility visibility) override;
@@ -239,8 +240,8 @@ class NearbySharingServiceImpl
 
   void InvalidateFastInitiationScanning();
   void StartFastInitiationScanning();
-  void OnFastInitiationDeviceFound();
-  void OnFastInitiationDeviceLost();
+  void OnFastInitiationDevicesDetected();
+  void OnFastInitiationDevicesNotDetected();
   void StopFastInitiationScanning();
 
   void ScheduleRotateBackgroundAdvertisementTimer();
@@ -430,6 +431,8 @@ class NearbySharingServiceImpl
   std::unique_ptr<NearbyShareCertificateManager> certificate_manager_;
   NearbyShareSettings settings_;
   NearbyShareFeatureUsageMetrics feature_usage_metrics_;
+  std::unique_ptr<FastInitiationScannerFeatureUsageMetrics>
+      fast_initiation_scanning_metrics_;
   NearbyFileHandler file_handler_;
   bool is_screen_locked_ = false;
   base::OneShotTimer rotate_background_advertisement_timer_;

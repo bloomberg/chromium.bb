@@ -26,8 +26,8 @@ class DummyButton : public views::Button {
  public:
   DummyButton();
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyButton);
+  DummyButton(const DummyButton&) = delete;
+  DummyButton& operator=(const DummyButton&) = delete;
 };
 
 DummyButton::DummyButton() : views::Button(views::Button::PressedCallback()) {}
@@ -36,14 +36,16 @@ DummyButton::DummyButton() : views::Button(views::Button::PressedCallback()) {}
 class DummyEvent : public ui::Event {
  public:
   DummyEvent();
+
+  DummyEvent(const DummyEvent&) = delete;
+  DummyEvent& operator=(const DummyEvent&) = delete;
+
   ~DummyEvent() override;
   int unique_id() const { return unique_id_; }
 
  private:
   static int next_unique_id_;
   int unique_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyEvent);
 };
 
 int DummyEvent::next_unique_id_ = 0;
@@ -62,6 +64,12 @@ class ShelfButtonPressedMetricTrackerTest : public AshTestBase {
       kTimeBetweenWindowMinimizedAndActivatedActionsHistogramName;
 
   ShelfButtonPressedMetricTrackerTest();
+
+  ShelfButtonPressedMetricTrackerTest(
+      const ShelfButtonPressedMetricTrackerTest&) = delete;
+  ShelfButtonPressedMetricTrackerTest& operator=(
+      const ShelfButtonPressedMetricTrackerTest&) = delete;
+
   ~ShelfButtonPressedMetricTrackerTest() override;
 
   // AshTestBase:
@@ -86,9 +94,6 @@ class ShelfButtonPressedMetricTrackerTest : public AshTestBase {
 
   // The TickClock injected in to the test target.
   base::SimpleTestTickClock tick_clock_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfButtonPressedMetricTrackerTest);
 };
 
 const char* ShelfButtonPressedMetricTrackerTest::
@@ -116,7 +121,7 @@ void ShelfButtonPressedMetricTrackerTest::SetUp() {
 
   // Ensure the TickClock->NowTicks() doesn't return base::TimeTicks because
   // ShelfButtonPressedMetricTracker interprets that value as unset.
-  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+  tick_clock_.Advance(base::Milliseconds(100));
 }
 
 void ShelfButtonPressedMetricTrackerTest::TearDown() {
@@ -275,8 +280,7 @@ TEST_F(ShelfButtonPressedMetricTrackerTest,
   base::HistogramTester histogram_tester;
 
   ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_MINIMIZED);
-  tick_clock_.Advance(
-      base::TimeDelta::FromMilliseconds(kTimeDeltaInMilliseconds));
+  tick_clock_.Advance(base::Milliseconds(kTimeDeltaInMilliseconds));
   ButtonPressed(&kDummyButton, SHELF_ACTION_WINDOW_ACTIVATED);
 
   histogram_tester.ExpectTotalCount(

@@ -8,7 +8,7 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "ash/constants/ash_features.h"');
 GEN('#include "ash/constants/ash_features.h"');
-GEN('#include "components/full_restore/features.h"');
+GEN('#include "components/app_restore/features.h"');
 GEN('#include "chrome/common/buildflags.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
@@ -217,8 +217,7 @@ var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
   get featureList() {
     return {
       enabled: super.featureList.enabled.concat([
-        // TODO(https://crbug.com/1227693): Remove kSplitSettingsSync.
-        'chromeos::features::kSplitSettingsSync',
+        'chromeos::features::kSyncConsentOptional',
         'chromeos::features::kSyncSettingsCategorization'
       ])
     };
@@ -228,6 +227,30 @@ var OSSettingsPeoplePageOsSyncV3Test = class extends OSSettingsV3BrowserTest {
 TEST_F('OSSettingsPeoplePageOsSyncV3Test', 'AllJsTests', () => {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var OSSettingsPeoplePageOsSyncOptionalDisabledV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/' +
+      'os_sync_controls_optional_disabled_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(
+          ['chromeos::features::kSyncSettingsCategorization']),
+      disabled: ['chromeos::features::kSyncConsentOptional']
+    };
+  }
+};
+
+TEST_F('OSSettingsPeoplePageOsSyncOptionalDisabledV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
 
 // eslint-disable-next-line no-var
 var OSSettingsPeoplePageV3Test = class extends OSSettingsV3BrowserTest {
@@ -358,7 +381,8 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
  ['AppManagementReducers', 'reducers_test.m.js'],
  ['AppManagementResizeLockItem', 'resize_lock_item_test.m.js'],
- ['AppManagementSupportedLinksItem', 'supported_links_item_test.m.js'],
+ // TODO(crbug/1253891): Re-enable once flakiness is fixed.
+ // ['AppManagementSupportedLinksItem', 'supported_links_item_test.m.js'],
  ['AppManagementToggleRow', 'toggle_row_test.m.js'],
  ['AppManagementUninstallButton', 'uninstall_button_test.m.js'],
  ['BluetoothPage', 'bluetooth_page_tests.m.js'],
@@ -405,6 +429,10 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
    'multidevice_notification_access_setup_dialog_tests.m.js'
  ],
  ['MultidevicePage', 'multidevice_page_tests.m.js'],
+ [
+   'MultidevicePermissionsSetupDialog',
+   'multidevice_permissions_setup_dialog_tests.m.js'
+ ],
  ['MultideviceSmartLockItem', 'multidevice_smartlock_item_test.m.js'],
  ['MultideviceSmartLockSubPage', 'multidevice_smartlock_subpage_test.m.js'],
  ['MultideviceSubPage', 'multidevice_subpage_tests.m.js'],
@@ -433,9 +461,6 @@ TEST_F('OSSettingsOsBluetoothDeviceDetailSubpageV3Test', 'AllJsTests', () => {
  [
    'OsBluetoothChangeDeviceNameDialog',
    'os_bluetooth_change_device_name_dialog_tests.m.js'
- ],
- [
-   'OsBluetoothDeviceBatteryInfo', 'os_bluetooth_device_battery_info_tests.m.js'
  ],
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.m.js'],
  ['OsLanguagesPageV2', 'os_languages_page_v2_tests.m.js'],

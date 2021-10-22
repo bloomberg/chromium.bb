@@ -17,14 +17,16 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/browser/ui/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_controller_views.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,12 +35,15 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/vector_icon_utils.h"
@@ -241,8 +246,7 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
     ui::ImageModel primary_account_avatar,
     bool is_using_account_store) {
   ui::ImageModel computer_image = ui::ImageModel::FromVectorIcon(
-      kComputerWithCircleBackgroundIcon,
-      ui::NativeTheme::kColorId_DefaultIconColor, ComboboxIconSize());
+      kComputerWithCircleBackgroundIcon, ui::kColorIcon, ComboboxIconSize());
 
   ui::SimpleComboboxModel::Item account_destination(
       /*text=*/l10n_util::GetStringUTF16(
@@ -272,13 +276,13 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
 }
 
 base::TimeDelta GetRegularIPHTimeout() {
-  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+  return base::Seconds(base::GetFieldTrialParamByFeatureAsInt(
       feature_engagement::kIPHPasswordsAccountStorageFeature,
       "account_storage_iph_timeout_seconds_regular", 30));
 }
 
 base::TimeDelta GetShortIPHTimeout() {
-  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+  return base::Seconds(base::GetFieldTrialParamByFeatureAsInt(
       feature_engagement::kIPHPasswordsAccountStorageFeature,
       "account_storage_iph_timeout_seconds_short", 10));
 }
@@ -452,6 +456,14 @@ PasswordSaveUpdateView::PasswordSaveUpdateView(
   SetShowIcon(false);
 
   UpdateBubbleUIElements();
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HatsService* hats_service =
+      HatsServiceFactory::GetForProfile(profile, /*create_if_necessary=*/true);
+  CHECK(hats_service);
+  hats_service->LaunchDelayedSurveyForWebContents(
+      kHatsSurveyTriggerAutofillPassword, web_contents, 10000);
 }
 
 PasswordSaveUpdateView::~PasswordSaveUpdateView() {
@@ -528,11 +540,10 @@ void PasswordSaveUpdateView::AddedToWidget() {
 void PasswordSaveUpdateView::OnThemeChanged() {
   PasswordBubbleViewBase::OnThemeChanged();
   if (password_view_button_) {
-    auto* theme = GetNativeTheme();
-    const SkColor icon_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_DefaultIconColor);
+    const auto* color_provider = GetColorProvider();
+    const SkColor icon_color = color_provider->GetColor(ui::kColorIcon);
     const SkColor disabled_icon_color =
-        theme->GetSystemColor(ui::NativeTheme::kColorId_DisabledIconColor);
+        color_provider->GetColor(ui::kColorIconDisabled);
     views::SetImageFromVectorIconWithColor(password_view_button_, kEyeIcon,
                                            GetDefaultSizeOfVectorIcon(kEyeIcon),
                                            icon_color);
@@ -645,8 +656,7 @@ void PasswordSaveUpdateView::MaybeShowIPH(IPHType type) {
   set_close_on_deactivate(false);
 
   FeaturePromoBubbleParams bubble_params;
-  bubble_params.anchor_view = destination_dropdown_;
-  bubble_params.arrow = views::BubbleBorder::RIGHT_CENTER;
+  bubble_params.arrow = FeaturePromoBubbleParams::Arrow::RIGHT_CENTER;
   bubble_params.focus_on_create = true;
   bubble_params.persist_on_blur = false;
   bubble_params.preferred_width = kAccountStoragePromoWidth;
@@ -661,7 +671,7 @@ void PasswordSaveUpdateView::MaybeShowIPH(IPHType type) {
 
     if (promo_controller_->MaybeShowPromoWithParams(
             feature_engagement::kIPHPasswordsAccountStorageFeature,
-            bubble_params)) {
+            bubble_params, destination_dropdown_)) {
       // If the regular promo was shown, the failed reauth promo is
       // definitely finished. If not, we can't be confident it hasn't
       // finished.
@@ -671,8 +681,8 @@ void PasswordSaveUpdateView::MaybeShowIPH(IPHType type) {
     bubble_params.body_string_specifier =
         IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_REAUTH_FAIL;
 
-    failed_reauth_promo_id_ =
-        promo_controller_->ShowCriticalPromo(bubble_params);
+    failed_reauth_promo_id_ = promo_controller_->ShowCriticalPromo(
+        bubble_params, destination_dropdown_);
   }
 
   set_close_on_deactivate(close_save_bubble_on_deactivate_original_value);

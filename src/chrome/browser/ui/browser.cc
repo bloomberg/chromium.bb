@@ -302,7 +302,6 @@
 #include "chrome/browser/sessions/app_session_service_factory.h"
 #endif
 
-using base::TimeDelta;
 using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::NavigationController;
@@ -322,7 +321,7 @@ using web_modal::WebContentsModalDialogManager;
 namespace {
 
 // How long we wait before updating the browser chrome while loading a page.
-constexpr TimeDelta kUIUpdateCoalescingTime = TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kUIUpdateCoalescingTime = base::Milliseconds(200);
 
 BrowserWindow* CreateBrowserWindow(std::unique_ptr<Browser> browser,
                                    bool user_gesture,
@@ -1751,7 +1750,7 @@ void Browser::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
 
   std::vector<blink::mojom::WebFeature> features = {
       blink::mojom::WebFeature::kMovedOrResizedPopup};
-  if (creation_timer_.Elapsed() > base::TimeDelta::FromSeconds(2)) {
+  if (creation_timer_.Elapsed() > base::Seconds(2)) {
     // Additionally measure whether a popup was moved after creation, to
     // distinguish between popups that reposition themselves after load and
     // those which move popups continuously.
@@ -1927,15 +1926,21 @@ void Browser::RendererUnresponsive(
     WebContents* source,
     content::RenderWidgetHost* render_widget_host,
     base::RepeatingClosure hang_monitor_restarter) {
-  TabDialogs::FromWebContents(source)->ShowHungRendererDialog(
-      render_widget_host, std::move(hang_monitor_restarter));
+  // Don't show the page hung dialog when a HTML popup hangs because
+  // the dialog will take the focus and immediately close the popup.
+  if (!render_widget_host->GetView()->IsHTMLFormPopup()) {
+    TabDialogs::FromWebContents(source)->ShowHungRendererDialog(
+        render_widget_host, std::move(hang_monitor_restarter));
+  }
 }
 
 void Browser::RendererResponsive(
     WebContents* source,
     content::RenderWidgetHost* render_widget_host) {
-  TabDialogs::FromWebContents(source)->HideHungRendererDialog(
-      render_widget_host);
+  if (!render_widget_host->GetView()->IsHTMLFormPopup()) {
+    TabDialogs::FromWebContents(source)->HideHungRendererDialog(
+        render_widget_host);
+  }
 }
 
 void Browser::DidNavigatePrimaryMainFramePostCommit(WebContents* web_contents) {
@@ -2399,8 +2404,6 @@ void Browser::OnTabClosing(WebContents* contents) {
 
   if (service)
     service->TabClosing(contents);
-
-  SearchTabHelper::FromWebContents(contents)->OnTabClosing();
 }
 
 void Browser::OnTabDetached(WebContents* contents, bool was_active) {

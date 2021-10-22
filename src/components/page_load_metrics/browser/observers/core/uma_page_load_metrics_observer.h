@@ -138,11 +138,6 @@ extern const char
 extern const char
     kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent[];
 
-// 103 Early Hints metrics for experiment (https://crbug.com/1093693).
-extern const char kHistogramEarlyHintsFirstRequestStartToEarlyHints[];
-extern const char kHistogramEarlyHintsFinalRequestStartToEarlyHints[];
-extern const char kHistogramEarlyHintsEarlyHintsToFinalResponseStart[];
-
 // V8 memory usage metrics.
 extern const char kHistogramMemoryMainframe[];
 extern const char kHistogramMemorySubframeAggregate[];
@@ -175,6 +170,11 @@ class UmaPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   UmaPageLoadMetricsObserver();
+
+  UmaPageLoadMetricsObserver(const UmaPageLoadMetricsObserver&) = delete;
+  UmaPageLoadMetricsObserver& operator=(const UmaPageLoadMetricsObserver&) =
+      delete;
+
   ~UmaPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
@@ -300,8 +300,6 @@ class UmaPageLoadMetricsObserver
 
   bool received_first_subresource_load_ = false;
   base::TimeDelta total_subresource_load_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(UmaPageLoadMetricsObserver);
 };
 
 #endif  // COMPONENTS_PAGE_LOAD_METRICS_BROWSER_OBSERVERS_CORE_UMA_PAGE_LOAD_METRICS_OBSERVER_H_

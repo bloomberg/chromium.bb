@@ -296,10 +296,7 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvasForDraw(
   dirty_rect_for_commit_.join(dirty_rect);
   GetCanvasPerformanceMonitor().DidDraw(draw_type);
   Host()->DidDraw(dirty_rect_for_commit_);
-  if (GetCanvasResourceProvider() &&
-      GetCanvasResourceProvider()->needs_flush()) {
-    FinalizeFrame();
-  } else if (!layer_count_) {
+  if (!layer_count_) {
     // TODO(crbug.com/1246486): Make auto-flushing layer friendly.
     GetCanvasResourceProvider()->FlushIfRecordingLimitExceeded();
   }
@@ -336,8 +333,8 @@ void OffscreenCanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {
     Host()->DiscardResourceProvider();
   }
   uint32_t delay = base::RandInt(1, kMaxIframeContextLoseDelay);
-  dispatch_context_lost_event_timer_.StartOneShot(
-      base::TimeDelta::FromMilliseconds(delay), FROM_HERE);
+  dispatch_context_lost_event_timer_.StartOneShot(base::Milliseconds(delay),
+                                                  FROM_HERE);
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
@@ -451,7 +448,7 @@ void OffscreenCanvasRenderingContext2D::setLetterSpacing(
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  float letter_spacing_float = clampTo<float>(letter_spacing);
+  float letter_spacing_float = ClampTo<float>(letter_spacing);
   GetState().SetLetterSpacing(letter_spacing_float, Host()->GetFontSelector());
 }
 
@@ -467,7 +464,7 @@ void OffscreenCanvasRenderingContext2D::setWordSpacing(
   if (!GetState().HasRealizedFont())
     setFont(font());
 
-  float word_spacing_float = clampTo<float>(word_spacing);
+  float word_spacing_float = ClampTo<float>(word_spacing);
   GetState().SetWordSpacing(word_spacing_float, Host()->GetFontSelector());
 }
 
@@ -720,7 +717,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
     location = FloatPoint();
   }
 
-  Draw(
+  Draw<OverdrawOp::kNone>(
       [this, text = std::move(text), direction, location](
           cc::PaintCanvas* paint_canvas,
           const PaintFlags* flags) /* draw lambda */ {

@@ -90,6 +90,10 @@ class MockPromptProxy {
  public:
   MockPromptProxy(content::WebContents* web_contents,
                   ScopedTestDialogAutoConfirm::AutoConfirm confirm_mode);
+
+  MockPromptProxy(const MockPromptProxy&) = delete;
+  MockPromptProxy& operator=(const MockPromptProxy&) = delete;
+
   ~MockPromptProxy();
 
   bool did_succeed() const { return !extension_id_.empty(); }
@@ -115,8 +119,6 @@ class MockPromptProxy {
   std::u16string error_;
 
   std::unique_ptr<ScopedTestDialogAutoConfirm> auto_confirm;
-
-  DISALLOW_COPY_AND_ASSIGN(MockPromptProxy);
 };
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
@@ -125,6 +127,9 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
                     MockPromptProxy* proxy) :
       ExtensionInstallPrompt(web_contents),
       proxy_(proxy) {}
+
+  MockInstallPrompt(const MockInstallPrompt&) = delete;
+  MockInstallPrompt& operator=(const MockInstallPrompt&) = delete;
 
   // Overriding some of the ExtensionInstallUI API.
   void OnInstallSuccess(scoped_refptr<const Extension> extension,
@@ -139,8 +144,6 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
 
  private:
   MockPromptProxy* proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockInstallPrompt);
 };
 
 MockPromptProxy::MockPromptProxy(

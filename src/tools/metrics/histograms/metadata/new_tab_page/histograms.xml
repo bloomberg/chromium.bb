@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="NewTabPage.ActionAndroid2" enum="NewTabPageActionAndroid2"
-    expires_after="2022-01-09">
+    expires_after="2022-04-03">
   <owner>twellington@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
   <summary>
@@ -34,7 +34,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ActioniOS" enum="NewTabPageActioniOS"
-    expires_after="2021-12-12">
+    expires_after="2022-04-24">
   <owner>justincohen@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -126,7 +126,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Carts.ClickCart.HasDiscount"
-    enum="BooleanHasDiscount" expires_after="2021-12-30">
+    enum="BooleanHasDiscount" expires_after="2022-04-24">
   <owner>meiliang@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -182,7 +182,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Carts.DiscountCountAtLoad" units="count"
-    expires_after="2021-12-30">
+    expires_after="2022-04-17">
   <owner>meiliang@chromium.org</owner>
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -195,7 +195,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Click" enum="NTPElement" expires_after="2022-01-01">
+<histogram name="NewTabPage.Click" enum="NTPElement" expires_after="2022-04-10">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -207,8 +207,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ConcretePage" enum="NewTabPageConcretePage"
+    expires_after="2022-06-01">
+  <owner>danpeng@google.com</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Records the concrete page loaded when navigating to chrome://newtab.
+    Recorded on every NTP load.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.ContentSuggestions.ArticlesListVisible"
-    enum="BooleanVisible" expires_after="2022-01-09">
+    enum="BooleanVisible" expires_after="2022-04-03">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -496,7 +507,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.Preferences.RemoteSuggestions"
-    enum="BooleanEnabled" expires_after="2021-12-26">
+    enum="BooleanEnabled" expires_after="2022-04-03">
   <owner>carlosk@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -726,7 +737,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Customized" enum="NTPCustomizedFeatures"
-    expires_after="2022-01-16">
+    expires_after="2022-04-03">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -737,7 +748,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.CustomizedShortcuts"
-    enum="NTPCustomizedShortcutSettings" expires_after="2022-01-01">
+    enum="NTPCustomizedShortcutSettings" expires_after="2022-04-03">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -761,7 +772,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.CustomizeShortcutAction"
-    enum="NTPCustomizeShortcutAction" expires_after="2022-01-01">
+    enum="NTPCustomizeShortcutAction" expires_after="2022-04-03">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -772,13 +783,39 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Drive.FileClick" units="index"
-    expires_after="2022-01-01">
+    expires_after="2022-04-10">
   <owner>tiborg@chromium.org</owner>
   <owner>aee@chromium.org</owner>
   <owner>andrevincent@google.com</owner>
   <summary>
     Logged when a user clicks on a file within the Drive Module. The index is
     equal to the index of the file.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.HasCredentials" enum="BooleanYesNo"
+    expires_after="2022-06-30">
+  <owner>danpeng@google.com</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs whether Chrome has valid user credentials for the profile the NTP is
+    loading in. Logged when the NTP starts loading. Only logged on the 1P NTP.
+    Note that even if the user has Google as their default search engine,
+    Incognito and Guest mode NTPs are not considered 1P and don't log this
+    histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Height" units="pixels" expires_after="2022-06-01">
+  <owner>danpeng@google.com</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Height of the NTP viewport in CSS pixels. Logged when the NTP loads. Only
+    logged on the 1P NTP. Note that even if the user has Google as their default
+    search engine, Incognito and Guest mode NTPs are not considered 1P and don't
+    log this histogram.
   </summary>
 </histogram>
 
@@ -904,7 +941,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.LogoShown" enum="NewTabPageLogoShown"
-    expires_after="2022-01-16">
+    expires_after="2022-05-01">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -927,7 +964,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.MainUi.ShownTime" units="ms"
-    expires_after="2021-11-12">
+    expires_after="2022-04-17">
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
   <summary>
@@ -948,7 +985,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.DataRequest" enum="NtpModules"
-    expires_after="2022-01-01">
+    expires_after="2022-04-17">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -993,7 +1030,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="NewTabPage.Modules.EnabledOnNTPLoad"
-    enum="BooleanEnabled" expires_after="2022-01-01">
+    enum="BooleanEnabled" expires_after="2022-04-10">
   <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1024,7 +1061,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Hover" enum="NtpModules"
-    expires_after="2022-01-01">
+    expires_after="2022-04-10">
   <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1037,7 +1074,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Impression" units="ms"
-    expires_after="2022-01-09">
+    expires_after="2022-03-13">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1081,7 +1118,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Loaded" units="ms"
-    expires_after="2022-01-09">
+    expires_after="2022-03-13">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1116,7 +1153,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.Usage" units="count"
-    expires_after="2022-01-01">
+    expires_after="2022-04-03">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1128,7 +1165,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Modules.VisibleOnNTPLoad" enum="BooleanVisible"
-    expires_after="2021-12-26">
+    expires_after="2022-04-03">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1186,8 +1223,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.NumberOfPreinstalledApps" units="count"
+    expires_after="M97">
+  <owner>phillis@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    The number of preinstalled apps that are in NTP tiles. Recorded when new tab
+    page is loaded. Recorded before reloading the suggestions, navigating to a
+    URL, switching tabs, changing the active window or closing the tab/shutting
+    down Chrome.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.NumberOfTiles" units="units"
-    expires_after="2022-01-16">
+    expires_after="2022-04-10">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1204,7 +1253,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.OneGoogleBar.RequestLatency" units="ms"
-    expires_after="2021-11-21">
+    expires_after="2022-04-17">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1225,8 +1274,75 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Photos.DataRequest"
+    enum="PhotosModuleRequestResult" expires_after="2022-06-30">
+  <owner>jerem@google.com</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs the state of Photos module API requests. Only logged on the 1P NTP.
+    Note that even if the user has Google as their default search engine,
+    Incognito and Guest mode NTPs are not considered 1P and don't log this
+    histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Photos.DataResponseCount" units="count"
+    expires_after="2022-06-30">
+  <owner>jerem@google.com</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logs the number of memories in the photos module response. Only logged on
+    the 1P NTP. Note that even if the user has Google as their default search
+    engine, Incognito and Guest mode NTPs are not considered 1P and don't log
+    this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Photos.ImageLoad" enum="BooleanSuccess"
+    expires_after="2022-06-30">
+  <owner>tiborg@chromium.org</owner>
+  <owner>jerem@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logged every time we try to load an image in the photos module. This
+    histogram logs 'Success' when loading was successful and 'Failure' when
+    there was an error. Only logged on the 1P NTP. Note that even if the user
+    has Google as their default search engine, Incognito and Guest mode NTPs are
+    not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Photos.ModuleShown" enum="BooleanOptedIn"
+    expires_after="2022-06-30">
+  <owner>tiborg@chromium.org</owner>
+  <owner>jerem@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logged every time the photos module is shown to the user. This histogram
+    logs 'Not opted-in' when the opt-in screen was shown and 'Opted-in' when
+    memories were shown. Only logged on the 1P NTP. Note that even if the user
+    has Google as their default search engine, Incognito and Guest mode NTPs are
+    not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Photos.UserOptIn" enum="BooleanOptedIn"
+    expires_after="2022-06-30">
+  <owner>tiborg@chromium.org</owner>
+  <owner>jerem@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <summary>
+    Logged every time the user decides to opt in ('Opted-in') or out ('Not
+    opted-in') from seeing the photos module. Only logged on the 1P NTP. Note
+    that even if the user has Google as their default search engine, Incognito
+    and Guest mode NTPs are not considered 1P and don't log this histogram.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Promo.EnhancedProtectionPromo"
-    enum="AndroidEnhancedProtectionPromoAction" expires_after="2022-01-09">
+    enum="AndroidEnhancedProtectionPromoAction" expires_after="2022-03-13">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1237,7 +1353,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="NewTabPage.Promo.EnhancedProtectionPromo.ImpressionUntilAction"
-    units="units" expires_after="2022-01-16">
+    units="units" expires_after="2022-03-20">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1249,7 +1365,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="NewTabPage.Promo.EnhancedProtectionPromo.ImpressionUntilDismissal"
-    units="units" expires_after="2022-01-23">
+    units="units" expires_after="2022-03-27">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-core@google.com</owner>
   <summary>
@@ -1350,7 +1466,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.Realbox.CharTypedToRepaintLatency.ToPaint"
-    units="ms" expires_after="2022-01-01">
+    units="ms" expires_after="2022-05-01">
   <owner>mahmadi@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1365,7 +1481,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.RecipeTasks.RecipeClick" units="index"
-    expires_after="2022-01-01">
+    expires_after="2022-04-24">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1765,7 +1881,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.SuggestionsImpression" enum="MostVisitedTileIndex"
-    expires_after="2022-01-23">
+    expires_after="2022-04-10">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1889,7 +2005,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileTitle" enum="NTPTileTitleSource"
-    expires_after="2022-01-01">
+    expires_after="2022-04-10">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1900,7 +2016,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileTitleClicked" enum="NTPTileTitleSource"
-    expires_after="2022-01-01">
+    expires_after="2022-04-10">
   <owner>danielms@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1911,7 +2027,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileType" enum="NTPTileVisualType"
-    expires_after="2021-10-25">
+    expires_after="2022-04-10">
   <owner>dbeam@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
@@ -1922,7 +2038,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TileTypeClicked" enum="NTPTileVisualType"
-    expires_after="2021-10-25">
+    expires_after="2022-04-10">
   <owner>dbeam@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>
@@ -1932,7 +2048,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TimeSinceLastNTP" units="ms"
-    expires_after="2022-01-01">
+    expires_after="2022-04-17">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1947,7 +2063,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2022-01-09">
+<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2022-04-03">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -1959,7 +2075,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.TimeSpentBeforeDismissLens" units="ms"
-    expires_after="M97">
+    expires_after="2022-04-17">
   <owner>yusuyoutube@google.com</owner>
   <owner>benwgold@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -2032,7 +2148,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="NewTabPage.VoiceActions" enum="NewTabPageVoiceAction"
-    expires_after="2022-01-16">
+    expires_after="2022-04-24">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>

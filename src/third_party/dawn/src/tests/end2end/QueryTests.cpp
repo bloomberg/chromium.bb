@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// This file contains test for deprecated parts of Dawn's API while following WebGPU's evolution.
-// It contains test for the "old" behavior that will be deleted once users are migrated, tests that
-// a deprecation warning is emitted when the "old" behavior is used, and tests that an error is
-// emitted when both the old and the new behavior are used (when applicable).
-
 #include "tests/DawnTest.h"
 
 #include "utils/ComboRenderPipelineDescriptor.h"
@@ -36,6 +31,8 @@ class QueryTests : public DawnTest {
 // Clear the content of the result buffer into 0xFFFFFFFF.
 constexpr static uint64_t kSentinelValue = ~uint64_t(0u);
 constexpr static uint64_t kZero = 0u;
+constexpr uint64_t kMinDestinationOffset = 256;
+constexpr uint64_t kMinCount = kMinDestinationOffset / sizeof(uint64_t);
 
 class OcclusionExpectation : public detail::Expectation {
   public:
@@ -410,12 +407,15 @@ TEST_P(OcclusionQueryTests, ResolveToBufferWithOffset) {
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 
+    constexpr uint64_t kBufferSize = kQueryCount * sizeof(uint64_t) + kMinDestinationOffset;
+    constexpr uint64_t kCount = kQueryCount + kMinCount;
+
     // Resolve the query result to first slot in the buffer, other slots should not be written.
     {
-        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        wgpu::Buffer destination = CreateResolveBuffer(kBufferSize);
         // Set sentinel values to check the query is resolved to the correct slot of the buffer.
-        std::vector<uint64_t> sentinelValues(kQueryCount, kSentinelValue);
-        queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+        std::vector<uint64_t> sentinelValues(kCount, kSentinelValue);
+        queue.WriteBuffer(destination, 0, sentinelValues.data(), kBufferSize);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.ResolveQuerySet(querySet, 0, 1, destination, 0);
@@ -424,23 +424,24 @@ TEST_P(OcclusionQueryTests, ResolveToBufferWithOffset) {
 
         EXPECT_BUFFER(destination, 0, sizeof(uint64_t),
                       new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
-        EXPECT_BUFFER_U64_RANGE_EQ(&kSentinelValue, destination, sizeof(uint64_t), 1);
+        EXPECT_BUFFER_U64_RANGE_EQ(sentinelValues.data(), destination, sizeof(uint64_t),
+                                   kCount - 1);
     }
 
     // Resolve the query result to second slot in the buffer, the first one should not be written.
     {
-        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        wgpu::Buffer destination = CreateResolveBuffer(kBufferSize);
         // Set sentinel values to check the query is resolved to the correct slot of the buffer.
-        std::vector<uint64_t> sentinelValues(kQueryCount, kSentinelValue);
-        queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+        std::vector<uint64_t> sentinelValues(kCount, kSentinelValue);
+        queue.WriteBuffer(destination, 0, sentinelValues.data(), kBufferSize);
 
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        encoder.ResolveQuerySet(querySet, 0, 1, destination, sizeof(uint64_t));
+        encoder.ResolveQuerySet(querySet, 0, 1, destination, kMinDestinationOffset);
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
-        EXPECT_BUFFER_U64_RANGE_EQ(&kSentinelValue, destination, 0, 1);
-        EXPECT_BUFFER(destination, sizeof(uint64_t), sizeof(uint64_t),
+        EXPECT_BUFFER_U64_RANGE_EQ(sentinelValues.data(), destination, 0, kMinCount);
+        EXPECT_BUFFER(destination, kMinDestinationOffset, sizeof(uint64_t),
                       new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
     }
 }
@@ -452,17 +453,17 @@ class PipelineStatisticsQueryTests : public QueryTests {
     void SetUp() override {
         DawnTest::SetUp();
 
-        // Skip all tests if pipeline statistics extension is not supported
-        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"pipeline_statistics_query"}));
+        // Skip all tests if pipeline statistics feature is not supported
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"pipeline_statistics_query"}));
     }
 
-    std::vector<const char*> GetRequiredExtensions() override {
-        std::vector<const char*> requiredExtensions = {};
-        if (SupportsExtensions({"pipeline_statistics_query"})) {
-            requiredExtensions.push_back("pipeline_statistics_query");
+    std::vector<const char*> GetRequiredFeatures() override {
+        std::vector<const char*> requiredFeatures = {};
+        if (SupportsFeatures({"pipeline_statistics_query"})) {
+            requiredFeatures.push_back("pipeline_statistics_query");
         }
 
-        return requiredExtensions;
+        return requiredFeatures;
     }
 
     wgpu::QuerySet CreateQuerySetForPipelineStatistics(
@@ -521,16 +522,16 @@ class TimestampQueryTests : public QueryTests {
     void SetUp() override {
         DawnTest::SetUp();
 
-        // Skip all tests if timestamp extension is not supported
-        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"timestamp_query"}));
+        // Skip all tests if timestamp feature is not supported
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"timestamp_query"}));
     }
 
-    std::vector<const char*> GetRequiredExtensions() override {
-        std::vector<const char*> requiredExtensions = {};
-        if (SupportsExtensions({"timestamp_query"})) {
-            requiredExtensions.push_back("timestamp_query");
+    std::vector<const char*> GetRequiredFeatures() override {
+        std::vector<const char*> requiredFeatures = {};
+        if (SupportsFeatures({"timestamp_query"})) {
+            requiredFeatures.push_back("timestamp_query");
         }
-        return requiredExtensions;
+        return requiredFeatures;
     }
 
     wgpu::QuerySet CreateQuerySetForTimestamp(uint32_t queryCount) {
@@ -774,35 +775,44 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
     DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
 
     constexpr uint32_t kQueryCount = 2;
-    constexpr uint64_t kZero = 0;
+    constexpr uint64_t kBufferSize = kQueryCount * sizeof(uint64_t) + kMinDestinationOffset;
+    constexpr uint64_t kCount = kQueryCount + kMinCount;
 
     wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
 
     // Resolve the query result to first slot in the buffer, other slots should not be written
     {
-        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        wgpu::Buffer destination = CreateResolveBuffer(kBufferSize);
+
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
         encoder.ResolveQuerySet(querySet, 0, 1, destination, 0);
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
+        std::vector<uint64_t> zeros(kCount - 1, kZero);
         EXPECT_BUFFER(destination, 0, sizeof(uint64_t), new TimestampExpectation);
-        EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, sizeof(uint64_t), 1);
+        EXPECT_BUFFER_U64_RANGE_EQ(zeros.data(), destination, sizeof(uint64_t), kCount - 1);
     }
 
     // Resolve the query result to the buffer with offset, the slots before the offset
     // should not be written
     {
-        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        wgpu::Buffer destination = CreateResolveBuffer(kBufferSize);
+        // Set sentinel values to check the query is resolved to the correct slot of the buffer.
+        std::vector<uint64_t> sentinelValues(kCount, kZero);
+        queue.WriteBuffer(destination, 0, sentinelValues.data(), kBufferSize);
+
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
-        encoder.ResolveQuerySet(querySet, 0, 1, destination, sizeof(uint64_t));
+        encoder.ResolveQuerySet(querySet, 0, 1, destination, kMinDestinationOffset);
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
 
-        EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, 0, 1);
-        EXPECT_BUFFER(destination, sizeof(uint64_t), sizeof(uint64_t), new TimestampExpectation);
+        std::vector<uint64_t> zeros(kMinCount, kZero);
+        EXPECT_BUFFER_U64_RANGE_EQ(zeros.data(), destination, 0, kMinCount);
+        EXPECT_BUFFER(destination, kMinDestinationOffset, sizeof(uint64_t),
+                      new TimestampExpectation);
     }
 }
 
@@ -814,17 +824,17 @@ TEST_P(TimestampQueryTests, ResolveTwiceToSameBuffer) {
     // the issue is fixed.
     DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
 
-    constexpr uint32_t kQueryCount = 3;
+    constexpr uint32_t kQueryCount = kMinCount + 2;
 
     wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
     wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.WriteTimestamp(querySet, 0);
-    encoder.WriteTimestamp(querySet, 1);
-    encoder.WriteTimestamp(querySet, 2);
-    encoder.ResolveQuerySet(querySet, 0, 2, destination, 0);
-    encoder.ResolveQuerySet(querySet, 1, 2, destination, sizeof(uint64_t));
+    for (uint32_t i = 0; i < kQueryCount; i++) {
+        encoder.WriteTimestamp(querySet, i);
+    }
+    encoder.ResolveQuerySet(querySet, 0, kMinCount + 1, destination, 0);
+    encoder.ResolveQuerySet(querySet, kMinCount, 2, destination, kMinDestinationOffset);
     wgpu::CommandBuffer commands = encoder.Finish();
     queue.Submit(1, &commands);
 

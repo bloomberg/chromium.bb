@@ -71,8 +71,7 @@ void UpdateStatistics(Action action) {
 }
 
 // Maximum interval to display in full mode.
-constexpr base::TimeDelta kMaxIntervalToDisplayInFullMode =
-    base::TimeDelta::FromSecondsD(5.0);
+constexpr base::TimeDelta kMaxIntervalToDisplayInFullMode = base::Seconds(5.0);
 
 base::FilePath GetLastTracingModelPath(Profile* profile) {
   DCHECK(profile);
@@ -105,15 +104,16 @@ std::pair<base::Value, std::string> MaybeLoadLastGraphicsModel(
 class ProcessFilterPassAll : public base::ProcessFilter {
  public:
   ProcessFilterPassAll() = default;
+
+  ProcessFilterPassAll(const ProcessFilterPassAll&) = delete;
+  ProcessFilterPassAll& operator=(const ProcessFilterPassAll&) = delete;
+
   ~ProcessFilterPassAll() override = default;
 
   // base::ProcessFilter:
   bool Includes(const base::ProcessEntry& process) const override {
     return true;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ProcessFilterPassAll);
 };
 
 // Reads name of thread from /proc/pid/task/tid/status.
@@ -631,8 +631,8 @@ void ArcGraphicsTracingHandler::HandleSetMaxTime(const base::ListValue* args) {
     LOG(ERROR) << "Invalid input";
     return;
   }
-  max_tracing_time_ = base::TimeDelta::FromSeconds(args->GetList()[0].GetInt());
-  DCHECK_GE(max_tracing_time_, base::TimeDelta::FromSeconds(1));
+  max_tracing_time_ = base::Seconds(args->GetList()[0].GetInt());
+  DCHECK_GE(max_tracing_time_, base::Seconds(1));
 }
 
 void ArcGraphicsTracingHandler::HandleLoadFromText(

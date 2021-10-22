@@ -9,17 +9,35 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/test/scoped_feature_list.h"
+#include "components/language/core/browser/pref_names.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
 namespace ash {
 
+class TestQuickAnswersStateObserver : public QuickAnswersStateObserver {
+ public:
+  TestQuickAnswersStateObserver() = default;
+
+  TestQuickAnswersStateObserver(const TestQuickAnswersStateObserver&) = delete;
+  TestQuickAnswersStateObserver& operator=(
+      const TestQuickAnswersStateObserver&) = delete;
+
+  ~TestQuickAnswersStateObserver() override = default;
+
+  // QuickAnswersStateObserver:
+  void OnSettingsEnabled(bool settings_enabled) override {
+    settings_enabled_ = settings_enabled;
+  }
+
+  bool settings_enabled() const { return settings_enabled_; }
+
+ private:
+  bool settings_enabled_ = false;
+};
+
 class QuickAnswersStateControllerTest : public AshTestBase {
  protected:
-  QuickAnswersStateControllerTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kQuickAnswers);
-  }
+  QuickAnswersStateControllerTest() = default;
   QuickAnswersStateControllerTest(const QuickAnswersStateControllerTest&) =
       delete;
   QuickAnswersStateControllerTest& operator=(
@@ -32,75 +50,66 @@ class QuickAnswersStateControllerTest : public AshTestBase {
 
     prefs_ = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
     DCHECK(prefs_);
+
+    observer_ = std::make_unique<TestQuickAnswersStateObserver>();
   }
 
   PrefService* prefs() { return prefs_; }
 
-  void NotifyFeatureEligible() {
-    prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
-    prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
-                        true);
-    AssistantState::Get()->NotifyFeatureAllowed(
-        chromeos::assistant::AssistantAllowedState::ALLOWED);
-    AssistantState::Get()->NotifyLocaleChanged(ULOC_US);
+  TestQuickAnswersStateObserver* observer() { return observer_.get(); }
+
+  void SimulateSessionStart() {
+    QuickAnswersState::Get()->RegisterPrefChanges(prefs_);
   }
 
  private:
   PrefService* prefs_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<TestQuickAnswersStateObserver> observer_;
 };
 
-TEST_F(QuickAnswersStateControllerTest, FeatureEligible) {
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-  NotifyFeatureEligible();
-  EXPECT_TRUE(ash::QuickAnswersState::Get()->is_eligible());
+TEST_F(QuickAnswersStateControllerTest, InitObserver) {
+  EXPECT_FALSE(ash::QuickAnswersState::Get()->settings_enabled());
+  prefs()->SetBoolean(quick_answers::prefs::kQuickAnswersEnabled, true);
+
+  // The observer class should get an instant notification about the current
+  // pref value.
+  QuickAnswersState::Get()->AddObserver(observer());
+  EXPECT_TRUE(ash::QuickAnswersState::Get()->settings_enabled());
+  EXPECT_TRUE(observer()->settings_enabled());
+
+  QuickAnswersState::Get()->RemoveObserver(observer());
 }
 
-TEST_F(QuickAnswersStateControllerTest,
-       FeatureIneligibleWhenAssistantDisabled) {
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-  NotifyFeatureEligible();
-  EXPECT_TRUE(ash::QuickAnswersState::Get()->is_eligible());
+TEST_F(QuickAnswersStateControllerTest, NotifySettingsEnabled) {
+  QuickAnswersState::Get()->AddObserver(observer());
 
-  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
+  EXPECT_FALSE(ash::QuickAnswersState::Get()->settings_enabled());
+  EXPECT_FALSE(observer()->settings_enabled());
+
+  // The observer class should get an notification when the pref value changes.
+  prefs()->SetBoolean(quick_answers::prefs::kQuickAnswersEnabled, true);
+  EXPECT_TRUE(ash::QuickAnswersState::Get()->settings_enabled());
+  EXPECT_TRUE(observer()->settings_enabled());
+
+  QuickAnswersState::Get()->RemoveObserver(observer());
 }
 
-TEST_F(QuickAnswersStateControllerTest,
-       FeatureIneligibleWhenAssistantContextDisabled) {
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-  NotifyFeatureEligible();
-  EXPECT_TRUE(ash::QuickAnswersState::Get()->is_eligible());
-
-  prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantContextEnabled,
-                      false);
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-}
-
-TEST_F(QuickAnswersStateControllerTest,
-       FeatureIneligibleWhenAssistantNotAllowed) {
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-  NotifyFeatureEligible();
-  EXPECT_TRUE(ash::QuickAnswersState::Get()->is_eligible());
-
-  AssistantState::Get()->NotifyFeatureAllowed(
-      chromeos::assistant::AssistantAllowedState::DISALLOWED_BY_POLICY);
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-}
-
-TEST_F(QuickAnswersStateControllerTest,
-       FeatureIneligibleWhenLocaleNotSupported) {
-  EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-  NotifyFeatureEligible();
-  EXPECT_TRUE(ash::QuickAnswersState::Get()->is_eligible());
-
+TEST_F(QuickAnswersStateControllerTest, LocaleEligible) {
   UErrorCode error_code = U_ZERO_ERROR;
-  const icu::Locale& old_locale = icu::Locale::getDefault();
-  icu::Locale::setDefault(icu::Locale(ULOC_JAPAN), error_code);
-  AssistantState::Get()->NotifyLocaleChanged(ULOC_JAPAN);
+  icu::Locale::setDefault(icu::Locale(ULOC_US), error_code);
+  prefs()->SetString(language::prefs::kApplicationLocale, "en");
 
+  SimulateSessionStart();
+  EXPECT_TRUE(ash::QuickAnswersState::Get()->is_eligible());
+}
+
+TEST_F(QuickAnswersStateControllerTest, LocaleIneligible) {
+  UErrorCode error_code = U_ZERO_ERROR;
+  icu::Locale::setDefault(icu::Locale(ULOC_CHINESE), error_code);
+  prefs()->SetString(language::prefs::kApplicationLocale, "zh");
+
+  SimulateSessionStart();
   EXPECT_FALSE(ash::QuickAnswersState::Get()->is_eligible());
-  icu::Locale::setDefault(old_locale, error_code);
 }
 
 }  // namespace ash

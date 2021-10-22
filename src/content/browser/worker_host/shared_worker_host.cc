@@ -61,6 +61,9 @@ class SharedWorkerHost::ScopedDevToolsHandle {
         owner, &pause_on_start_, &dev_tools_token_);
   }
 
+  ScopedDevToolsHandle(const ScopedDevToolsHandle&) = delete;
+  ScopedDevToolsHandle& operator=(const ScopedDevToolsHandle&) = delete;
+
   ~ScopedDevToolsHandle() {
     SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(owner_);
   }
@@ -88,8 +91,6 @@ class SharedWorkerHost::ScopedDevToolsHandle {
   bool pause_on_start_;
 
   base::UnguessableToken dev_tools_token_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDevToolsHandle);
 };
 
 class SharedWorkerHost::ScopedProcessHostRef {
@@ -221,6 +222,18 @@ void SharedWorkerHost::Start(
       worker_cross_origin_embedder_policy_ = CoepFromMainResponse(
           final_response_url, main_script_load_params->response_head.get());
     }
+    switch (worker_cross_origin_embedder_policy_->value) {
+      case network::mojom::CrossOriginEmbedderPolicyValue::kNone:
+        OnFeatureUsed(blink::mojom::WebFeature::kCoepNoneSharedWorker);
+        break;
+      case network::mojom::CrossOriginEmbedderPolicyValue::kCredentialless:
+        OnFeatureUsed(
+            blink::mojom::WebFeature::kCoepCredentiallessSharedWorker);
+        break;
+      case network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp:
+        OnFeatureUsed(blink::mojom::WebFeature::kCoepRequireCorpSharedWorker);
+        break;
+    }
 
     // Create a COEP reporter with worker's policy.
     coep_reporter_ = std::make_unique<CrossOriginEmbedderPolicyReporter>(
@@ -294,9 +307,6 @@ void SharedWorkerHost::Start(
       devtools_handle_->pause_on_start(), devtools_handle_->dev_tools_token(),
       std::move(renderer_preferences), std::move(preference_watcher_receiver),
       std::move(content_settings), service_worker_handle_->TakeContainerInfo(),
-      appcache_handle_
-          ? absl::make_optional(appcache_handle_->appcache_host_id())
-          : absl::nullopt,
       std::move(main_script_load_params),
       std::move(subresource_loader_factories), std::move(controller),
       receiver_.BindNewPipeAndPassRemote(), std::move(worker_receiver_),
@@ -307,13 +317,8 @@ void SharedWorkerHost::Start(
   // request endpoint was sent, it can be used, so add it to
   // ServiceWorkerObjectHost.
   if (service_worker_remote_object.is_valid()) {
-    RunOrPostTaskOnThread(
-        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(
-            &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
-            controller_service_worker_object_host,
-            std::move(service_worker_remote_object),
-            service_worker_sent_state));
+    controller_service_worker_object_host->AddRemoteObjectPtrAndUpdateState(
+        std::move(service_worker_remote_object), service_worker_sent_state);
   }
 
   // Monitor the lifetime of the worker.

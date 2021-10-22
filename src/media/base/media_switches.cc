@@ -218,6 +218,8 @@ MEDIA_EXPORT extern const char kLacrosEnablePlatformHevc[] =
     "lacros-enable-platform-hevc";
 MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedMedia[] =
     "lacros-use-chromeos-protected-media";
+MEDIA_EXPORT extern const char kLacrosUseChromeosProtectedAv1[] =
+    "lacros-use-chromeos-protected-av1";
 #endif  // defined(OS_CHROMEOS)
 
 namespace autoplay {
@@ -257,6 +259,10 @@ const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
 const base::Feature kEnableMediaInternals{"enable-media-internals",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables user control over muting tab audio from the tab strip.
+const base::Feature kEnableTabMuting{"enable-tab-muting",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable Picture-in-Picture.
 const base::Feature kPictureInPicture {
   "PictureInPicture",
@@ -282,6 +288,12 @@ const base::Feature kResumeBackgroundVideo {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Experimental: Try to avoid destroying the media player when transferring a
+// media element to a new document.  This is a work in progress, and may cause
+// security and/or stability issues.
+const base::Feature kReuseMediaPlayer{"ReuseMediaPlayer",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, MediaCapabilities will check with GPU Video Accelerator
 // Factories to determine isPowerEfficient = true/false.
@@ -387,6 +399,9 @@ const base::Feature kD3D11VideoDecoderVP9Profile2{
 const base::Feature kD3D11VideoDecoderAV1{"D3D11VideoDecoderEnableAV1",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kD3D11VideoDecoderUseSharedHandle{
+    "D3D11VideoDecoderUseSharedHandle", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
 // DecoderStream for details. When disabled, playback will fail immediately
@@ -435,11 +450,6 @@ constexpr base::FeatureParam<kCrosGlobalMediaControlsPinOptions>
         "CrosGlobalMediaControlsPinParam",
         kCrosGlobalMediaControlsPinOptions::kHeuristic,
         &kCrosGlobalMediaControlsParamOptions);
-
-// Allow global media controls notifications to be dragged out into overlay
-// notifications. It is no-op if kGlobalMediaControls is not enabled.
-const base::Feature kGlobalMediaControlsOverlayControls{
-    "GlobalMediaControlsOverlayControls", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Show picture-in-picture button in Global Media Controls.
 const base::Feature kGlobalMediaControlsPictureInPicture {

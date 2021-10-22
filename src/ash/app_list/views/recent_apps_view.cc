@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_model.h"
@@ -22,14 +23,16 @@
 #include "base/strings/string_util.h"
 #include "extensions/common/constants.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_utils.h"
 #include "url/gurl.h"
 
 namespace ash {
 namespace {
 
-// Horizontal space between apps in dips.
-constexpr int kHorizontalSpacing = 8;
+constexpr size_t kMaxRecommendedApps = 5;
 
 // Sorts increasing by display index, then decreasing by position priority.
 struct CompareByDisplayIndexAndPositionPriority {
@@ -74,7 +77,7 @@ std::vector<std::string> GetRecentAppIdsFromSuggestionChips(
   std::vector<SearchResult*> app_suggestion_results =
       SearchModel::FilterSearchResultsByFunction(
           results, base::BindRepeating(is_app_suggestion),
-          /*max_results=*/5);
+          /*max_results=*/kMaxRecommendedApps);
 
   std::sort(app_suggestion_results.begin(), app_suggestion_results.end(),
             CompareByDisplayIndexAndPositionPriority());
@@ -139,46 +142,127 @@ class RecentAppsView::GridDelegateImpl : public AppListItemView::GridDelegate {
         id, event.flags(), AppListLaunchedFrom::kLaunchedFromSuggestionChip);
     // `this` may be deleted.
   }
-  const AppListConfig& GetAppListConfig() const override {
-    // TODO(crbug.com/1211592): Eliminate this method and use the real config.
-    return *AppListConfigProvider::Get().GetConfigForType(
-        AppListConfigType::kLarge, /*can_create=*/true);
-  }
 
  private:
   AppListViewDelegate* const view_delegate_;
   AppListItemView* selected_view_ = nullptr;
 };
 
-RecentAppsView::RecentAppsView(AppListViewDelegate* view_delegate)
-    : view_delegate_(view_delegate),
+RecentAppsView::RecentAppsView(Delegate* delegate,
+                               AppListViewDelegate* view_delegate)
+    : delegate_(delegate),
+      view_delegate_(view_delegate),
       grid_delegate_(std::make_unique<GridDelegateImpl>(view_delegate_)) {
+  DCHECK(delegate_);
   DCHECK(view_delegate_);
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
-      kHorizontalSpacing));
-  layout->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kCenter);
-
-  std::vector<std::string> app_ids =
-      GetRecentAppIdsFromSuggestionChips(view_delegate_->GetSearchModel());
-
-  AppListModel* model = view_delegate_->GetModel();
-  for (const std::string& app_id : app_ids) {
-    std::string item_id = ItemIdFromAppId(app_id);
-    AppListItem* item = model->FindItem(item_id);
-    if (item) {
-      // NOTE: If you change the view structure, update GetItemForTest() as
-      // well.
-      AddChildView(std::make_unique<AppListItemView>(grid_delegate_.get(), item,
-                                                     view_delegate_));
-    }
-  }
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kHorizontal);
 }
 
 RecentAppsView::~RecentAppsView() = default;
 
-AppListItemView* RecentAppsView::GetItemViewForTest(int index) {
-  return static_cast<AppListItemView*>(children()[index]);
+void RecentAppsView::UpdateAppListConfig(const AppListConfig* app_list_config) {
+  app_list_config_ = app_list_config;
+
+  for (auto* item_view : item_views_)
+    item_view->UpdateAppListConfig(app_list_config);
+}
+
+void RecentAppsView::ShowResults(SearchModel* search_model,
+                                 AppListModel* model) {
+  DCHECK(app_list_config_);
+  item_views_.clear();
+  RemoveAllChildViews();
+
+  std::vector<std::string> app_ids =
+      GetRecentAppIdsFromSuggestionChips(search_model);
+
+  for (const std::string& app_id : app_ids) {
+    std::string item_id = ItemIdFromAppId(app_id);
+    AppListItem* item = model->FindItem(item_id);
+    if (item) {
+      auto* item_view = AddChildView(std::make_unique<AppListItemView>(
+          app_list_config_, grid_delegate_.get(), item, view_delegate_));
+      item_view->SetProperty(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                                   views::MaximumFlexSizeRule::kPreferred));
+      item_view->UpdateAppListConfig(app_list_config_);
+      item_views_.push_back(item_view);
+
+      // Add a empty-space view used to evenly distribute app list item views
+      // within the available space.
+      if (app_id != app_ids.back()) {
+        auto* flex_view = AddChildView(std::make_unique<views::View>());
+        flex_view->GetViewAccessibility().OverrideIsIgnored(true);
+        flex_view->SetFocusBehavior(views::View::FocusBehavior::NEVER);
+        flex_view->SetCanProcessEventsWithinSubtree(false);
+        flex_view->SetProperty(
+            views::kFlexBehaviorKey,
+            views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                     views::MaximumFlexSizeRule::kUnbounded));
+      }
+    }
+  }
+}
+
+int RecentAppsView::GetItemViewCount() const {
+  return item_views_.size();
+}
+
+AppListItemView* RecentAppsView::GetItemViewAt(int index) const {
+  if (static_cast<int>(item_views_.size()) <= index)
+    return nullptr;
+  return item_views_[index];
+}
+
+void RecentAppsView::DisableFocusForShowingActiveFolder(bool disabled) {
+  for (views::View* child : children())
+    child->SetEnabled(!disabled);
+
+  // Prevent items from being accessed by ChromeVox.
+  SetViewIgnoredForAccessibility(this, disabled);
+}
+
+bool RecentAppsView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_UP) {
+    MoveFocusUp();
+    return true;
+  }
+  if (event.key_code() == ui::VKEY_DOWN) {
+    MoveFocusDown();
+    return true;
+  }
+  return false;
+}
+
+void RecentAppsView::MoveFocusUp() {
+  DVLOG(1) << __FUNCTION__;
+  // This function should only run when a child has focus.
+  DCHECK(Contains(GetFocusManager()->GetFocusedView()));
+  DCHECK(!children().empty());
+  delegate_->MoveFocusUpFromRecents();
+}
+
+void RecentAppsView::MoveFocusDown() {
+  DVLOG(1) << __FUNCTION__;
+  // This function should only run when a child has focus.
+  DCHECK(Contains(GetFocusManager()->GetFocusedView()));
+  int column = GetColumnOfFocusedChild();
+  DCHECK_GE(column, 0);
+  delegate_->MoveFocusDownFromRecents(column);
+}
+
+int RecentAppsView::GetColumnOfFocusedChild() const {
+  int column = 0;
+  for (views::View* child : children()) {
+    if (!views::IsViewClass<AppListItemView>(child))
+      continue;
+    if (child->HasFocus())
+      return column;
+    ++column;
+  }
+  return -1;
 }
 
 BEGIN_METADATA(RecentAppsView, views::View)

@@ -112,6 +112,11 @@ class ProtocolHandlerChangeListener : public ProtocolHandlerRegistry::Observer {
   explicit ProtocolHandlerChangeListener(ProtocolHandlerRegistry* registry) {
     registry_observation_.Observe(registry);
   }
+
+  ProtocolHandlerChangeListener(const ProtocolHandlerChangeListener&) = delete;
+  ProtocolHandlerChangeListener& operator=(
+      const ProtocolHandlerChangeListener&) = delete;
+
   ~ProtocolHandlerChangeListener() override = default;
 
   int events() { return events_; }
@@ -127,8 +132,6 @@ class ProtocolHandlerChangeListener : public ProtocolHandlerRegistry::Observer {
   base::ScopedObservation<ProtocolHandlerRegistry,
                           ProtocolHandlerRegistry::Observer>
       registry_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerChangeListener);
 };
 
 class QueryProtocolHandlerOnChange : public ProtocolHandlerRegistry::Observer {
@@ -137,6 +140,10 @@ class QueryProtocolHandlerOnChange : public ProtocolHandlerRegistry::Observer {
       : local_registry_(registry) {
     registry_observation_.Observe(registry);
   }
+
+  QueryProtocolHandlerOnChange(const QueryProtocolHandlerOnChange&) = delete;
+  QueryProtocolHandlerOnChange& operator=(const QueryProtocolHandlerOnChange&) =
+      delete;
 
   // ProtocolHandlerRegistry::Observer:
   void OnProtocolHandlerRegistryChanged() override {
@@ -154,8 +161,6 @@ class QueryProtocolHandlerOnChange : public ProtocolHandlerRegistry::Observer {
   base::ScopedObservation<ProtocolHandlerRegistry,
                           ProtocolHandlerRegistry::Observer>
       registry_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(QueryProtocolHandlerOnChange);
 };
 
 }  // namespace
@@ -349,8 +354,8 @@ TEST_F(ProtocolHandlerRegistryTest, Encode) {
 
 TEST_F(ProtocolHandlerRegistryTest, GetHandlersBetween) {
   base::Time now = base::Time::Now();
-  base::Time one_hour_ago = now - base::TimeDelta::FromHours(1);
-  base::Time two_hours_ago = now - base::TimeDelta::FromHours(2);
+  base::Time one_hour_ago = now - base::Hours(1);
+  base::Time two_hours_ago = now - base::Hours(2);
   ProtocolHandler handler1("bitcoin", GURL("https://example.com"),
                            two_hours_ago,
                            blink::ProtocolHandlerSecurityLevel::kStrict);
@@ -374,8 +379,8 @@ TEST_F(ProtocolHandlerRegistryTest, GetHandlersBetween) {
 
 TEST_F(ProtocolHandlerRegistryTest, ClearHandlersBetween) {
   base::Time now = base::Time::Now();
-  base::Time one_hour_ago = now - base::TimeDelta::FromHours(1);
-  base::Time two_hours_ago = now - base::TimeDelta::FromHours(2);
+  base::Time one_hour_ago = now - base::Hours(1);
+  base::Time two_hours_ago = now - base::Hours(2);
   GURL url("https://example.com");
   ProtocolHandler handler1("bitcoin", url, two_hours_ago,
                            blink::ProtocolHandlerSecurityLevel::kStrict);

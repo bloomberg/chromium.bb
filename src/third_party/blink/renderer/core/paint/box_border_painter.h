@@ -10,11 +10,11 @@
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 
 class ComputedStyle;
-class GraphicsContext;
 class Path;
 struct PhysicalRect;
 
@@ -49,10 +49,11 @@ class BoxBorderPainter {
                           const IntRect& snapped_edge_rect,
                           BoxSide side,
                           Color color,
-                          EBorderStyle style) {
+                          EBorderStyle style,
+                          const AutoDarkMode& auto_dark_mode) {
     DrawLineForBoxSide(context, snapped_edge_rect.X(), snapped_edge_rect.Y(),
                        snapped_edge_rect.MaxX(), snapped_edge_rect.MaxY(), side,
-                       color, style, 0, 0, true);
+                       color, style, 0, 0, true, auto_dark_mode);
   }
 
   // TODO(crbug.com/1201762): The float parameters are truncated to int in the
@@ -69,7 +70,8 @@ class BoxBorderPainter {
                                  EBorderStyle,
                                  int adjacent_edge_width1,
                                  int adjacent_edge_width2,
-                                 bool antialias);
+                                 bool antialias,
+                                 const AutoDarkMode& auto_dark_mode);
 
  private:
   // For PaintBorder().

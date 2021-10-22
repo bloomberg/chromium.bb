@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="BrowserDialogs.ExternalProtocol.HandleState"
-    enum="HandleStateType" expires_after="2022-01-31">
+    enum="HandleStateType" expires_after="2022-05-01">
   <owner>engedy@chromium.org</owner>
   <owner>ravjit@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -43,13 +43,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
-    Tracks whether a permission was granted, rejected, etc. The suffix of the
-    histogram indicates which particular permission.
+    Tracks user interactions on permission prompts, aggregated across all UI
+    dispositions, including quiet permission prompts due to CPSS or Crowd Deny.
+
+    One sample is recorded each time a permission request triggers a prompt,
+    even if the prompt UI is never seen by the user. This histogram does not
+    include permission requests that are granted/denied because the user had
+    previously made a decision; nor requests that are denied by Permission
+    Policy, per-site permission embargo, or are cancelled while queued.
+
+    The suffix of the histogram indicates which particular permission.
   </summary>
 </histogram>
 
-<histogram name="Permissions.Action.WithDisposition" enum="PermissionAction"
-    expires_after="2022-08-25">
+<histogram name="Permissions.Action.WithDisposition.{DispositionType}"
+    enum="PermissionAction" expires_after="2022-08-25">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -59,6 +67,31 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     disposition. Suffixed by the UI disposition that the prompt used. Recorded
     when a permission prompt has been resolved.
   </summary>
+  <token key="DispositionType">
+    <variant name="AnchoredBubble"
+        summary="A bubble under the site settings padlock"/>
+    <variant name="CustomModalDialog" summary="Other custom modal dialogs"/>
+    <variant name="LocationBarLeftChip"
+        summary="A chip on the left-hand side of the location bar that shows
+                 a bubble when clicked"/>
+    <variant name="LocationBarLeftQuietChip"
+        summary="A less prominent version of a chip on the left-hand side of
+                 the location bar that shows a bubble when clicked"/>
+    <variant name="LocationBarRightAnimatedIcon"
+        summary="An animated indicator on the right-hand side of the location
+                 bar"/>
+    <variant name="LocationBarRightStaticIcon"
+        summary="A static indicator on the right-hand side of the location
+                 bar"/>
+    <variant name="MessageUI"
+        summary="A message bubble near top of the screen and below the
+                 location bar (alternative to Infobar UI)"/>
+    <variant name="MiniInfobar"
+        summary="An initially-collapsed infobar at the bottom of the page"/>
+    <variant name="ModalDialog" summary="A modal dialog"/>
+    <variant name="NoneVisible" summary="There was no UI being shown"/>
+    <variant name="NotApplicable" summary="No permission prompt at all"/>
+  </token>
 </histogram>
 
 <histogram name="Permissions.API.CreatedPermissionStatusObjects" units="units"
@@ -74,7 +107,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.AutoBlocker.EmbargoPromptSuppression"
-    enum="PermissionEmbargoStatus" expires_after="M100">
+    enum="PermissionEmbargoStatus" expires_after="2022-05-01">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -91,7 +124,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.AutoBlocker.EmbargoStatus"
-    enum="PermissionEmbargoStatus" expires_after="M100">
+    enum="PermissionEmbargoStatus" expires_after="2022-04-24">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -114,7 +147,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.BatteryLevel.Accepted.LocationSettingsDialog"
-    units="%" expires_after="M96">
+    units="%" expires_after="2022-04-24">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -171,7 +204,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.Chip.TimeToInteraction" units="ms"
-    expires_after="2022-01-02">
+    expires_after="2022-04-17">
   <owner>bsep@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>olesiamarukhno@google.com</owner>
@@ -182,7 +215,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.DidHoldbackQuietUi" enum="Boolean"
-    expires_after="M96">
+    expires_after="2022-05-01">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -228,7 +261,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.NotificationUxQuality"
-    enum="CrowdDenyNotificationUxQuality" expires_after="2022-02-20">
+    enum="CrowdDenyNotificationUxQuality" expires_after="2022-04-24">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -239,7 +272,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.PreloadData.VersionAtAbuseCheckTime"
-    units="date" expires_after="2022-02-13">
+    units="date" expires_after="2022-04-17">
   <owner>elklm@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -261,7 +294,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.SafeBrowsing.RequestDuration" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>andypaicu@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
@@ -273,7 +306,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.CrowdDeny.SafeBrowsing.Verdict"
-    enum="CrowdDenySafeBrowsingVerdict" expires_after="M100">
+    enum="CrowdDenySafeBrowsingVerdict" expires_after="2022-05-01">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -430,7 +463,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.PredictionService.GeolocationRequest"
-    enum="BooleanSent" expires_after="M96">
+    enum="BooleanSent" expires_after="2022-04-17">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -441,7 +474,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.PredictionService.Request" enum="BooleanSent"
-    expires_after="M96">
+    expires_after="2022-04-10">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -755,7 +788,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="Permissions.Usage.ElapsedTimeSinceGrant"
-    units="seconds" expires_after="2021-10-25">
+    units="seconds" expires_after="2022-04-17">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -766,7 +799,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Permissions.WebHid.ChooserClosed" enum="WebHidChooserClosed"
-    expires_after="2022-01-20">
+    expires_after="2022-04-10">
   <owner>mattreynolds@chromium.org</owner>
   <owner>deviceapi-team@google.com</owner>
   <summary>

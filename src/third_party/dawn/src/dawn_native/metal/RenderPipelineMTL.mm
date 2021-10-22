@@ -14,6 +14,7 @@
 
 #include "dawn_native/metal/RenderPipelineMTL.h"
 
+#include "dawn_native/CreatePipelineAsyncTask.h"
 #include "dawn_native/VertexFormat.h"
 #include "dawn_native/metal/DeviceMTL.h"
 #include "dawn_native/metal/PipelineLayoutMTL.h"
@@ -310,15 +311,13 @@ namespace dawn_native { namespace metal {
     }  // anonymous namespace
 
     // static
-    ResultOrError<Ref<RenderPipeline>> RenderPipeline::Create(
+    Ref<RenderPipelineBase> RenderPipeline::CreateUninitialized(
         Device* device,
         const RenderPipelineDescriptor* descriptor) {
-        Ref<RenderPipeline> pipeline = AcquireRef(new RenderPipeline(device, descriptor));
-        DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline;
+        return AcquireRef(new RenderPipeline(device, descriptor));
     }
 
-    MaybeError RenderPipeline::Initialize(const RenderPipelineDescriptor* descriptor) {
+    MaybeError RenderPipeline::Initialize() {
         mMtlPrimitiveTopology = MTLPrimitiveTopology(GetPrimitiveTopology());
         mMtlFrontFace = MTLFrontFace(GetFrontFace());
         mMtlCullMode = ToMTLCullMode(GetCullMode());
@@ -338,36 +337,42 @@ namespace dawn_native { namespace metal {
         }
         descriptorMTL.vertexDescriptor = vertexDesc.Get();
 
-        ShaderModule* vertexModule = ToBackend(descriptor->vertex.module);
-        const char* vertexEntryPoint = descriptor->vertex.entryPoint;
+        const PerStage<ProgrammableStage>& allStages = GetAllStages();
+        const ProgrammableStage& vertexStage = allStages[wgpu::ShaderStage::Vertex];
+        ShaderModule* vertexModule = ToBackend(vertexStage.module).Get();
+        const char* vertexEntryPoint = vertexStage.entryPoint.c_str();
         ShaderModule::MetalFunctionData vertexData;
-
-        const VertexState* vertexStatePtr = &descriptor->vertex;
-        VertexState vertexState;
-        if (vertexStatePtr == nullptr) {
-            vertexState = {};
-            vertexStatePtr = &vertexState;
-        }
-
         DAWN_TRY(vertexModule->CreateFunction(vertexEntryPoint, SingleShaderStage::Vertex,
-                                              ToBackend(GetLayout()), &vertexData, 0xFFFFFFFF, this,
-                                              vertexStatePtr));
+                                              ToBackend(GetLayout()), &vertexData, 0xFFFFFFFF,
+                                              this));
 
         descriptorMTL.vertexFunction = vertexData.function.Get();
         if (vertexData.needsStorageBufferLength) {
             mStagesRequiringStorageBufferLength |= wgpu::ShaderStage::Vertex;
         }
 
-        ShaderModule* fragmentModule = ToBackend(descriptor->fragment->module);
-        const char* fragmentEntryPoint = descriptor->fragment->entryPoint;
-        ShaderModule::MetalFunctionData fragmentData;
-        DAWN_TRY(fragmentModule->CreateFunction(fragmentEntryPoint, SingleShaderStage::Fragment,
-                                                ToBackend(GetLayout()), &fragmentData,
-                                                GetSampleMask()));
+        if (GetStageMask() & wgpu::ShaderStage::Fragment) {
+            const ProgrammableStage& fragmentStage = allStages[wgpu::ShaderStage::Fragment];
+            ShaderModule* fragmentModule = ToBackend(fragmentStage.module).Get();
+            const char* fragmentEntryPoint = fragmentStage.entryPoint.c_str();
+            ShaderModule::MetalFunctionData fragmentData;
+            DAWN_TRY(fragmentModule->CreateFunction(fragmentEntryPoint, SingleShaderStage::Fragment,
+                                                    ToBackend(GetLayout()), &fragmentData,
+                                                    GetSampleMask()));
 
-        descriptorMTL.fragmentFunction = fragmentData.function.Get();
-        if (fragmentData.needsStorageBufferLength) {
-            mStagesRequiringStorageBufferLength |= wgpu::ShaderStage::Fragment;
+            descriptorMTL.fragmentFunction = fragmentData.function.Get();
+            if (fragmentData.needsStorageBufferLength) {
+                mStagesRequiringStorageBufferLength |= wgpu::ShaderStage::Fragment;
+            }
+
+            const auto& fragmentOutputsWritten = fragmentStage.metadata->fragmentOutputsWritten;
+            for (ColorAttachmentIndex i : IterateBitSet(GetColorAttachmentsMask())) {
+                descriptorMTL.colorAttachments[static_cast<uint8_t>(i)].pixelFormat =
+                    MetalPixelFormat(GetColorAttachmentFormat(i));
+                const ColorTargetState* descriptor = GetColorTargetState(i);
+                ComputeBlendDesc(descriptorMTL.colorAttachments[static_cast<uint8_t>(i)],
+                                 descriptor, fragmentOutputsWritten[i]);
+            }
         }
 
         if (HasDepthStencilAttachment()) {
@@ -381,16 +386,6 @@ namespace dawn_native { namespace metal {
             if (internalFormat.HasStencil()) {
                 descriptorMTL.stencilAttachmentPixelFormat = metalFormat;
             }
-        }
-
-        const auto& fragmentOutputsWritten =
-            GetStage(SingleShaderStage::Fragment).metadata->fragmentOutputsWritten;
-        for (ColorAttachmentIndex i : IterateBitSet(GetColorAttachmentsMask())) {
-            descriptorMTL.colorAttachments[static_cast<uint8_t>(i)].pixelFormat =
-                MetalPixelFormat(GetColorAttachmentFormat(i));
-            const ColorTargetState* descriptor = GetColorTargetState(i);
-            ComputeBlendDesc(descriptorMTL.colorAttachments[static_cast<uint8_t>(i)], descriptor,
-                             fragmentOutputsWritten[i]);
         }
 
         descriptorMTL.inputPrimitiveTopology = MTLInputPrimitiveTopology(GetPrimitiveTopology());
@@ -503,6 +498,15 @@ namespace dawn_native { namespace metal {
         }
 
         return mtlVertexDescriptor;
+    }
+
+    void RenderPipeline::InitializeAsync(Ref<RenderPipelineBase> renderPipeline,
+                                         WGPUCreateRenderPipelineAsyncCallback callback,
+                                         void* userdata) {
+        std::unique_ptr<CreateRenderPipelineAsyncTask> asyncTask =
+            std::make_unique<CreateRenderPipelineAsyncTask>(std::move(renderPipeline), callback,
+                                                            userdata);
+        CreateRenderPipelineAsyncTask::RunAsync(std::move(asyncTask));
     }
 
 }}  // namespace dawn_native::metal

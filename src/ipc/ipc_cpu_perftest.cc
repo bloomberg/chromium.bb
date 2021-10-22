@@ -59,7 +59,7 @@ std::string GetLogTitle(const std::string& label, const TestParams& params) {
 }
 
 base::TimeDelta GetFrameTime(size_t frames_per_second) {
-  return base::TimeDelta::FromSecondsD(1.0 / frames_per_second);
+  return base::Seconds(1.0 / frames_per_second);
 }
 
 class PerfCpuLogger {
@@ -75,6 +75,9 @@ class PerfCpuLogger {
     DCHECK_EQ(inital_cpu_usage, 0.0);
   }
 
+  PerfCpuLogger(const PerfCpuLogger&) = delete;
+  PerfCpuLogger& operator=(const PerfCpuLogger&) = delete;
+
   ~PerfCpuLogger() {
     double result = process_metrics_->GetPlatformIndependentCPUUsage();
     base::LogPerfResult(test_name_.c_str(), result, "%");
@@ -83,8 +86,6 @@ class PerfCpuLogger {
  private:
   std::string test_name_;
   std::unique_ptr<base::ProcessMetrics> process_metrics_;
-
-  DISALLOW_COPY_AND_ASSIGN(PerfCpuLogger);
 };
 
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {

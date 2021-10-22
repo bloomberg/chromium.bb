@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share.long_screenshots.bitmap_generation;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.Size;
 
@@ -55,7 +56,7 @@ public class EntryManager {
          * @param contentSize size of the main frame.
          * @param scrollOffset the offset of the viewport rect relative to the main frame.
          */
-        void onCompositorReady(Size contentSize, Size scrollOffset);
+        void onCompositorReady(Size contentSize, Point scrollOffset);
     }
 
     /**
@@ -64,16 +65,30 @@ public class EntryManager {
      * @param inMemory Use memory buffers to store the capture rather than temporary files.
      */
     public EntryManager(Context context, Tab tab, boolean inMemory) {
+        this(new ScreenshotBoundsManager(context, tab), tab, inMemory);
+    }
+
+    /**
+     * @param boundsManager A {@link ScreenshotBoundsManager}.
+     * @param tab Tab to generate the bitmap for.
+     * @param inMemory Use memory buffers to store the capture rather than temporary files.
+     */
+    public EntryManager(ScreenshotBoundsManager boundsManager, Tab tab, boolean inMemory) {
         mEntries = new ArrayList<LongScreenshotsEntry>();
         mQueuedEntries = new ArrayList<LongScreenshotsEntry>();
         mGeneratorObservers = new ObserverList<>();
-        mBoundsManager = new ScreenshotBoundsManager(context, tab);
+        mBoundsManager = boundsManager;
 
         mGenerator = new BitmapGenerator(tab, mBoundsManager, createBitmapGeneratorCallback());
         mGenerator.captureTab(inMemory);
         updateGeneratorStatus(EntryStatus.CAPTURE_IN_PROGRESS);
         // TODO(cb/1153969): Remove, or make this a finch param. Consider increasing default.
         mMaxMemoryUsageInKb = 16 * 1024;
+    }
+
+    @VisibleForTesting
+    public BitmapGenerator getBitmapGeneratorForTesting() {
+        return mGenerator;
     }
 
     /**
@@ -180,9 +195,8 @@ public class EntryManager {
      * @param updateMemoryUsage The callback to be notified of the bitmap memory usage.
      * @return The new entry that generates the bitmap.
      */
-    public LongScreenshotsEntry generateEntry(Rect bounds, boolean boundsRelativeToCapture) {
-        LongScreenshotsEntry entry = new LongScreenshotsEntry(
-                mGenerator, bounds, (bytes) -> {}, boundsRelativeToCapture);
+    public LongScreenshotsEntry generateEntry(Rect bounds) {
+        LongScreenshotsEntry entry = new LongScreenshotsEntry(mGenerator, bounds, (bytes) -> {});
         processEntry(entry, true, false);
         return entry;
     }
@@ -271,7 +285,7 @@ public class EntryManager {
                                     .GENERATOR_COMPOSITOR_CAPTURE_COMPLETE);
 
                     Size contentSize = mGenerator.getContentSize();
-                    Size scrollOffset = mGenerator.getScrollOffset();
+                    Point scrollOffset = mGenerator.getScrollOffset();
                     for (BitmapGeneratorObserver observer : mGeneratorObservers) {
                         observer.onCompositorReady(contentSize, scrollOffset);
                     }

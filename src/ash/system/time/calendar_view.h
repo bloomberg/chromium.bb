@@ -8,8 +8,11 @@
 #include "ash/ash_export.h"
 #include "ash/system/time/calendar_view_controller.h"
 #include "ash/system/tray/tray_detailed_view.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/scoped_multi_source_observation.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/view.h"
 
 namespace views {
 
@@ -22,13 +25,15 @@ namespace ash {
 class CalendarMonthView;
 
 // This view displays a scrollable calendar.
-class ASH_EXPORT CalendarView : public TrayDetailedView,
-                                views::ScrollView::Observer,
-                                CalendarViewController::Observer {
+class ASH_EXPORT CalendarView : public CalendarViewController::Observer,
+                                public TrayDetailedView,
+                                public views::ScrollView::Observer,
+                                public views::ViewObserver {
  public:
   METADATA_HEADER(CalendarView);
 
   CalendarView(DetailedViewDelegate* delegate,
+               UnifiedSystemTrayController* controller,
                CalendarViewController* calendar_view_controller);
   CalendarView(const CalendarView& other) = delete;
   CalendarView& operator=(const CalendarView& other) = delete;
@@ -40,24 +45,42 @@ class ASH_EXPORT CalendarView : public TrayDetailedView,
   // CalendarViewController::Observer:
   void OnMonthChanged(const base::Time::Exploded current_month) override;
 
+  // views::ViewObserver:
+  void OnViewBoundsChanged(views::View* observed_view) override;
+  void OnViewFocused(View* observed_view) override;
+
   // views::View:
   void OnThemeChanged() override;
+  void OnEvent(ui::Event* event) override;
 
-  // Inits the views and auto scroll to the current date.
-  void Init();
+  // TrayDetailedView:
+  void CreateExtraTitleRowButtons() override;
+  views::Button* CreateInfoButton(views::Button::PressedCallback callback,
+                                  int info_accessible_name_id) override;
 
  private:
+  // The header of each month view which shows the month's name. If the year of
+  // this month is not the same as the current month, the year is also shown in
+  // this view.
+  class MonthYearHeaderView;
+
+  // The types to create the `MonthYearHeaderView` which are in corresponding to
+  // the 3 months: `previous_month_`, `current_month_` and `next_month_`.
+  enum LabelType { PREVIOUS, CURRENT, NEXT };
+
   friend class CalendarViewTest;
 
   // Assigns month views and labels based on the current date on screen.
   void SetMonthViews();
 
-  // Returns the today's month position.
+  // Returns the current month first row position.
+  int PositionOfCurrentMonth();
+
+  // Returns the today's row position.
   int PositionOfToday();
 
   // Adds a month label.
-  views::Label* AddLabelWithId(std::u16string label_string,
-                               bool add_at_front = false);
+  views::View* AddLabelWithId(LabelType type, bool add_at_front = false);
 
   // Adds a `CalendarMonthView`.
   CalendarMonthView* AddMonth(base::Time month_first_date,
@@ -71,23 +94,48 @@ class ASH_EXPORT CalendarView : public TrayDetailedView,
   // the `content_view_`.
   void ScrollDownOneMonth();
 
+  // Scrolls up one month then auto scroll to the current month's first row.
+  void ScrollUpOneMonthAndAutoScroll();
+
+  // Scrolls down one month then auto scroll to the current month's first row.
+  void ScrollDownOneMonthAndAutoScroll();
+
+  // Back to the landing view.
+  void ResetToToday();
+
+  // Auto scrolls to today. If the view is big enough we scroll to the first row
+  // of today's month, otherwise we scroll to the position of today's row.
+  void ScrollToToday();
+
+  // If currently focusing on any date cell.
+  bool IsDateCellViewFocused();
+
+  // If focusing on `CalendarDateCellView` is interrupted (by scrolling or by
+  // today's button), resets the content view's `FocusBehavior` to `ALWAYS`.
+  void MaybeResetContentViewFocusBehavior();
+
+  // Unowned.
+  UnifiedSystemTrayController* controller_;
+
   // Owned by `UnifiedCalendarViewController`.
   CalendarViewController* const calendar_view_controller_;
-
-  // Owned by `CalendarView`.
-  views::ScrollView* scroll_view_ = nullptr;
 
   // The content of the `scroll_view_`, which carries months and month labels.
   // Owned by `CalendarView`.
   views::View* content_view_ = nullptr;
 
-  // The followings are owned by `CalendarView`.
-  views::Label* current_label_ = nullptr;
-  views::Label* previous_label_ = nullptr;
-  views::Label* next_label_ = nullptr;
+  // The following is owned by `CalendarView`.
+  views::ScrollView* scroll_view_ = nullptr;
+  views::View* current_label_ = nullptr;
+  views::View* previous_label_ = nullptr;
+  views::View* next_label_ = nullptr;
   CalendarMonthView* previous_month_ = nullptr;
   CalendarMonthView* current_month_ = nullptr;
   CalendarMonthView* next_month_ = nullptr;
+  views::Label* header_ = nullptr;
+  views::Label* header_year_ = nullptr;
+  views::Button* reset_to_today_button_ = nullptr;
+  views::Button* settings_button_ = nullptr;
 
   // If it `is_resetting_scroll_`, we don't calculate the scroll position and we
   // don't need to check if we need to update the month or not.
@@ -101,6 +149,8 @@ class ASH_EXPORT CalendarView : public TrayDetailedView,
   base::ScopedObservation<CalendarViewController,
                           CalendarViewController::Observer>
       scoped_calendar_view_controller_observer_{this};
+  base::ScopedMultiSourceObservation<views::View, views::ViewObserver>
+      scoped_view_observer_{this};
 };
 
 }  // namespace ash

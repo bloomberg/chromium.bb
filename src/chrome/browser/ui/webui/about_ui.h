@@ -20,6 +20,10 @@ class AboutUIHTMLSource : public content::URLDataSource {
  public:
   // Construct a data source for the specified |source_name|.
   AboutUIHTMLSource(const std::string& source_name, Profile* profile);
+
+  AboutUIHTMLSource(const AboutUIHTMLSource&) = delete;
+  AboutUIHTMLSource& operator=(const AboutUIHTMLSource&) = delete;
+
   ~AboutUIHTMLSource() override;
 
   // content::URLDataSource implementation.
@@ -30,8 +34,6 @@ class AboutUIHTMLSource : public content::URLDataSource {
       content::URLDataSource::GotDataCallback callback) override;
   std::string GetMimeType(const std::string& path) override;
   bool ShouldAddContentSecurityPolicy() override;
-  std::string GetContentSecurityPolicy(
-      network::mojom::CSPDirectiveName directive) override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) override;
 
@@ -44,17 +46,16 @@ class AboutUIHTMLSource : public content::URLDataSource {
  private:
   std::string source_name_;
   Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(AboutUIHTMLSource);
 };
 
 class AboutUI : public content::WebUIController {
  public:
   explicit AboutUI(content::WebUI* web_ui, const std::string& host);
-  ~AboutUI() override {}
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(AboutUI);
+  AboutUI(const AboutUI&) = delete;
+  AboutUI& operator=(const AboutUI&) = delete;
+
+  ~AboutUI() override {}
 };
 
 namespace about_ui {

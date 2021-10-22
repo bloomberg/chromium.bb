@@ -170,28 +170,24 @@ TEST_F(AuthenticationFlowTest, TestSignInSimple) {
       signin_metrics::SigninAccountType::kRegular, 1);
 }
 
-// Tests that signing in an already signed in account correctly signs it out
-// and back in.
+// Tests that starting sync while the user is already signed in only.
 TEST_F(AuthenticationFlowTest, TestAlreadySignedIn) {
   CreateAuthenticationFlow(SHOULD_CLEAR_DATA_MERGE_DATA,
-                           POST_SIGNIN_ACTION_NONE, identity1_);
+                           POST_SIGNIN_ACTION_COMMIT_SYNC, identity1_);
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didFetchManagedStatus:nil];
-  }] fetchManagedStatus:browser_state_.get()
-             forIdentity:identity1_];
+  }] fetchManagedStatus:browser_state_.get() forIdentity:identity1_];
 
   [[[performer_ expect] andReturnBool:NO]
       shouldHandleMergeCaseForIdentity:identity1_
                           browserState:browser_state_.get()];
 
-  [[[performer_ expect] andDo:^(NSInvocation*) {
-    [authentication_flow_ didSignOut];
-  }] signOutBrowserState:browser_state_.get()];
-
   [[performer_ expect] signInIdentity:identity1_
                      withHostedDomain:nil
                        toBrowserState:browser_state_.get()];
+
+  [[performer_ expect] commitSyncForBrowserState:browser_state_.get()];
 
   AuthenticationServiceFactory::GetForBrowserState(browser_state_.get())
       ->SignIn(identity1_);
@@ -201,20 +197,21 @@ TEST_F(AuthenticationFlowTest, TestAlreadySignedIn) {
   histogram_tester_.ExpectUniqueSample(
       "Signin.AccountType.SigninConsent",
       signin_metrics::SigninAccountType::kRegular, 1);
-  histogram_tester_.ExpectTotalCount("Signin.AccountType.SyncConsent", 0);
+  histogram_tester_.ExpectUniqueSample(
+      "Signin.AccountType.SyncConsent",
+      signin_metrics::SigninAccountType::kRegular, 1);
 }
 
-// Tests a Sign In of a different account, requiring a sign out of the already
-// signed in account, and asking the user whether data should be cleared or
-// merged.
+// Tests a Sign In&Sync of a different account, requiring a sign out of the
+// already signed in account, and asking the user whether data should be cleared
+// or merged.
 TEST_F(AuthenticationFlowTest, TestSignOutUserChoice) {
   CreateAuthenticationFlow(SHOULD_CLEAR_DATA_USER_CHOICE,
                            POST_SIGNIN_ACTION_COMMIT_SYNC, identity1_);
 
   [[[performer_ expect] andDo:^(NSInvocation*) {
     [authentication_flow_ didFetchManagedStatus:nil];
-  }] fetchManagedStatus:browser_state_.get()
-             forIdentity:identity1_];
+  }] fetchManagedStatus:browser_state_.get() forIdentity:identity1_];
 
   [[[performer_ expect] andReturnBool:YES]
       shouldHandleMergeCaseForIdentity:identity1_

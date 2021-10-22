@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace blink {
 
@@ -51,7 +51,9 @@ bool FrameView::DisplayLockedInParentFrame() {
   // We check the inclusive ancestor to determine whether the subtree is locked,
   // since the contents of the frame are in the subtree of the frame, so they
   // would be locked if the frame owner is itself locked.
-  return DisplayLockUtilities::NearestLockedInclusiveAncestor(*owner);
+  // We use a paint check here, since as lock as we don't allow paint, we are
+  // display locked.
+  return DisplayLockUtilities::LockedInclusiveAncestorPreventingPaint(*owner);
 }
 
 void FrameView::UpdateViewportIntersection(unsigned flags,
@@ -274,8 +276,7 @@ void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
 bool FrameView::RectInParentIsStable(
     const base::TimeTicks& event_timestamp) const {
   if (event_timestamp - rect_in_parent_stable_since_ <
-      base::TimeDelta::FromMilliseconds(
-          mojom::blink::kMinScreenRectStableTimeMs)) {
+      base::Milliseconds(mojom::blink::kMinScreenRectStableTimeMs)) {
     return false;
   }
   LocalFrameView* parent = ParentFrameView();

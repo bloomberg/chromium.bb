@@ -170,7 +170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.FailedTasksChrome"
-    enum="ChromeBrowsingDataRemoverTasks" expires_after="2021-12-19">
+    enum="ChromeBrowsingDataRemoverTasks" expires_after="2022-04-17">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
@@ -226,7 +226,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledAppExcluded"
-    units="Boolean" expires_after="2022-02-16">
+    units="Boolean" expires_after="2022-04-17">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -239,7 +239,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledAppsDialogAction"
-    enum="InstalledAppsDialogActions" expires_after="2022-02-22">
+    enum="InstalledAppsDialogActions" expires_after="2022-04-24">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -249,7 +249,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledAppsDialogShown"
-    units="Boolean" expires_after="2022-02-22">
+    units="Boolean" expires_after="2022-04-24">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -261,7 +261,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledDeselectedNum"
-    units="units" expires_after="2022-02-16">
+    units="units" expires_after="2022-04-17">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -273,7 +273,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.InstalledDeselectedPercent"
-    units="%" expires_after="2022-02-16">
+    units="%" expires_after="2022-04-17">
   <owner>jarrydg@chromium.org</owner>
   <owner>chrome-owp-storage@google.com</owner>
   <summary>
@@ -374,13 +374,265 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.UserDeletedFromTab"
-    enum="ClearBrowsingDataTab" expires_after="2022-02-06">
+    enum="ClearBrowsingDataTab" expires_after="2022-04-17">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <summary>
     Recorded when the user deletes their browsing data. Shows which tab was used
     to perform the deletion.
   </summary>
+</histogram>
+
+<histogram name="History.Clusters.Actions.DidMakeQuery" units="BooleanQueried"
+    expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs whether the user
+    made a query on their history from the journeys page.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Actions.FinalState"
+    units="HistoryClustersFinalState" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs the final state
+    that ended the use of the journeys page (e.g., a link click away from the
+    page).
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Actions.InitialState"
+    units="HistoryClustersInitialState" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs the state that
+    started the use of the journeys page (e.g., a direct navigation to journeys
+    page).
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Actions.LinksOpened" units="links opened"
+    expires_after="M101">
+  <owner>manukh@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logged when the user closed the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs the # of links
+    opened from the journeys page.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Actions.NumQueries"
+    units="number queries made" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logged when the user closes the chrome://history/journeys page (e.g. closed
+    tab, navigated in the same tab, or closed browser). Logs the number of
+    queries the user made while on the journeys page, only logged if at least
+    one query was made.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.BatchEntityLookupLatency" units="ms"
+    expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the latency of querying entities for all the visits being clustered by
+    the on-device backend. Logged when clusters have been calculated based on
+    any request to cluster visits, which could be triggered from several things,
+    including loading the journeys UI, putting a query in the journeys page,
+    etc..
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.BatchEntityLookupSize" units="count"
+    expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the number of entities to be queried for their metadata when preparing
+    to start clustering. The number of entities is the size of the entire batch
+    which is over all visits provided to the backend for clustering. Logged when
+    clusters are requested based on any request to cluster visits, which could
+    be triggered from several things, including loading the journeys UI, putting
+    a query in the journeys page, etc..
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.ClusterSize.{ClusterStatistic}"
+    units="number visits" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the {ClusterStatistic} of all clusters determined by the on-device
+    backend. Logged when clusters have been calculated based on any request to
+    cluster visits, which could be triggered from several things, including
+    loading the
+  </summary>
+  <token key="ClusterStatistic">
+    <variant name="Max" summary="maximum cluster size"/>
+    <variant name="Min" summary="minimum cluster size"/>
+  </token>
+</histogram>
+
+<histogram name="History.Clusters.Backend.GetClusterLatency" units="ms"
+    expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the latency of clustering visits performed by the on-device backend.
+    Logged when clusters have been calculated based on any request to cluster
+    visits, which could be triggered from several things, including loading the
+    journeys UI, putting a query in the journeys page, etc..
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.Backend.NumClustersReturned"
+    units="number clusters returned" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the total number of clusters returned for requested visits. Logged when
+    clusters have been calculated based on any request to cluster visits, which
+    could be triggered from several things, including loading the journeys UI,
+    putting a query in the journeys page, etc..
+  </summary>
+</histogram>
+
+<histogram
+    name="History.Clusters.Backend.NumKeywordsPerCluster.{KeywordStatistic}"
+    units="number keywords" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the {KeywordStatistic} over all clusters determined by the on-device
+    backend. Logged when clusters have been calculated based on any request to
+    cluster visits, which could be triggered from several things, including
+    loading the journeys UI, putting a query in the journeys page, etc..
+  </summary>
+  <token key="KeywordStatistic">
+    <variant name="Max" summary="maximum keywords"/>
+    <variant name="Min" summary="minimum keywords"/>
+  </token>
+</histogram>
+
+<histogram name="History.Clusters.Backend.NumVisitsToCluster"
+    units="number visits" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the total number of visits requested to be clustered by the backend.
+    Logged when any request to cluster visits is made, which could be triggered
+    from several things, including loading the journeys UI, putting a query in
+    the journeys page, etc..
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.PercentClustersFilteredByQuery"
+    units="percent clusters filtered" expires_after="M101">
+  <owner>mcrouse@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Logs the percentage of clusters that were filtered by the specified queried.
+    Logged when any request to cluster visits is made and a query has been
+    specified in the UI.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.ServiceLatency" units="ms"
+    expires_after="M101">
+  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Records the time taken between the History Clusters WebUI handler requests a
+    batch of clusters, and when we get the clusters back from the Service.
+
+    This request occurs when the page is first loaded, when the page is
+    refreshed, when the user changes the History search terms, and when the user
+    scrolls to the bottom of the page and requests the next batch of clusters
+    from the service.
+
+    This metric doesn't distinguish between any of these cases. This metric is
+    recorded on all requests, whether or not it returns clusters.
+
+    This does not take into account the time spent in JavaScript, or updating
+    the DOM.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.UIActions.Cluster.{ClusterAction}"
+    units="index" expires_after="2022-02-25">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Recorded every time the user {ClusterAction} in chrome://history/journeys.
+    The value represents the 0-indexed index of the cluster.
+  </summary>
+  <token key="ClusterAction">
+    <variant name="Deleted" summary="deletes a history cluster"/>
+    <variant name="RelatedSearchClicked"
+        summary="clicks a related search suggestion"/>
+    <variant name="RelatedVisitsVisibilityToggled"
+        summary="toggles visibility of the default-hidden related visits"/>
+    <variant name="VisitClicked" summary="clicks a visit"/>
+  </token>
+</histogram>
+
+<histogram
+    name="History.Clusters.UIActions.RelatedSearch.{RelatedSearchAction}"
+    units="index" expires_after="2022-02-25">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Recorded every time the user {RelatedSearchAction} a related search
+    suggestion in a history cluster in chrome://history/journeys. The value
+    represents the 0-indexed index of the related search suggestion in the
+    respective cluster.
+  </summary>
+  <token key="RelatedSearchAction">
+    <variant name="Clicked" summary="clicks"/>
+  </token>
+</histogram>
+
+<histogram name="History.Clusters.UIActions.ToggledVisibility"
+    units="BooleanVisible" expires_after="2022-02-25">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Recorded every time the user toggles the visibility of the history clusters
+    Web UI shown at chrome://history/journeys from the history Web UI sidebar.
+    The value represents the visibility of the history clusters Web UI.
+  </summary>
+</histogram>
+
+<histogram name="History.Clusters.UIActions.{VisitType}Visit.{VisitAction}"
+    units="index" expires_after="2022-02-25">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-memories@google.com</owner>
+  <summary>
+    Recorded every time the user {VisitAction} a {VisitType} in a history
+    cluster in chrome://history/journeys. The value represents the 0-indexed
+    index of the visit in the respective cluster.
+  </summary>
+  <token key="VisitAction">
+    <variant name="Clicked" summary="clicks"/>
+    <variant name="Deleted" summary="deletes"/>
+  </token>
+  <token key="VisitType">
+    <variant name="" summary="visit"/>
+    <variant name="nonSRP"
+        summary="visit to a url other than the default search results page"/>
+    <variant name="SRP" summary="visit to the default search results page"/>
+  </token>
 </histogram>
 
 <histogram name="History.DatabaseAdvancedMetricsTime" units="ms"
@@ -432,7 +684,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCount1Day" units="domains"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -443,6 +695,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     current date, and also reported once every 24 hours thereafter for the
     latest unreported day, while the profile remains open. If no domains are
     visited in a given day, a count of 0 will be reported for that day.
+
+    Warning: this histogram is logged incorrectly on ChromeOS. See
+    http://crbug.com/1237591
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -467,7 +722,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCount28Day" units="domains"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -479,6 +734,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Also reported once every 24 hours thereafter for the latest unreported
     period, while the profile remains open. If no domains are visited during a
     28-day period, a count of 0 will be reported for that period.
+
+    Warning: this histogram is logged incorrectly on ChromeOS. See
+    http://crbug.com/1237591
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -503,7 +761,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.DomainCount7Day" units="domains"
-    expires_after="2022-02-13">
+    expires_after="2022-04-17">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -515,6 +773,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Also reported once every 24 hours thereafter for the latest unreported
     period, while the profile remains open. If no domains are visited during a
     7-day period, a count 0 will be reported for that period.
+
+    Warning: this histogram is logged incorrectly on ChromeOS. See
+    http://crbug.com/1237591
 
     Warning about delayed data: Chrome may upload logs on a given day without
     uploading this histogram. This can happen because Chrome uploads logs
@@ -617,7 +878,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.HistoryPageView" enum="HistoryPageView"
-    expires_after="2022-02-25">
+    expires_after="2022-05-01">
   <owner>calamity@chromium.org</owner>
   <owner>src/chrome/browser/resources/history/OWNERS</owner>
   <summary>
@@ -697,7 +958,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLHistoryItems" units="items"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <summary>
@@ -708,7 +969,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="ms"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>mpearson@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <summary>
@@ -718,7 +979,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime.RoundTripTime" units="ms"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -744,7 +1005,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexSaveCacheTime" units="ms"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>tommycli@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -766,7 +1027,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.MonthlyHostCount" units="hosts"
-    expires_after="2021-12-12">
+    expires_after="2022-04-10">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -779,7 +1040,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.MonthlyURLCount" units="urls"
-    expires_after="2021-10-04">
+    expires_after="2022-04-04">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -791,6 +1052,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="History.MonthlyVisitCount" units="visits"
     expires_after="2021-10-04">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -922,7 +1186,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.VisitTableCount" units="visits"
-    expires_after="2021-10-04">
+    expires_after="2022-04-04">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -932,7 +1196,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.WeeklyHostCount" units="hosts"
-    expires_after="2021-10-10">
+    expires_after="2022-04-17">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -943,7 +1207,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="History.WeeklyURLCount" units="URLs"
-    expires_after="2022-03-01">
+    expires_after="2022-05-01">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -955,6 +1219,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="History.WeeklyVisitCount" units="visits"
     expires_after="2021-10-04">
+  <obsolete>
+    Removed September 2021.
+  </obsolete>
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>

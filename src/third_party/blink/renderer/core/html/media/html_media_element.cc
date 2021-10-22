@@ -128,6 +128,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/display/screen_info.h"
 
 #ifndef LOG_MEDIA_EVENTS
@@ -212,8 +213,7 @@ void RecordProgressEventTimerState(ProgressEventTimerState state) {
   UMA_HISTOGRAM_ENUMERATION("Media.ProgressEventTimerState", state);
 }
 
-static const base::TimeDelta kStalledNotificationInterval =
-    base::TimeDelta::FromSeconds(3);
+static const base::TimeDelta kStalledNotificationInterval = base::Seconds(3);
 
 void ReportContentTypeResultToUMA(String content_type,
                                   MIMETypeRegistry::SupportsType result) {
@@ -675,7 +675,13 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // refresh the MediaPlayer's LocalFrame and FrameLoader references on document
   // changes so that playback can be resumed properly.
   ignore_preload_none_ = false;
-  InvokeLoadAlgorithm();
+  auto new_origin = GetDocument().TopFrameOrigin();
+  auto old_origin = old_document.TopFrameOrigin();
+  const bool reuse_player =
+      base::FeatureList::IsEnabled(media::kReuseMediaPlayer) && new_origin &&
+      old_origin && old_origin->IsSameOriginWith(new_origin.get());
+  if (!reuse_player)
+    InvokeLoadAlgorithm();
 
   // Decrement the load event delay count on oldDocument now that
   // web_media_player_ has been destroyed and there is no risk of dispatching a
@@ -895,7 +901,7 @@ String HTMLMediaElement::canPlayType(ExecutionContext* context,
   if (IdentifiabilityStudySettings::Get()->ShouldSample(
           blink::IdentifiableSurface::Type::kHTMLMediaElement_CanPlayType)) {
     blink::IdentifiabilityMetricBuilder(context->UkmSourceID())
-        .Set(
+        .Add(
             blink::IdentifiableSurface::FromTypeAndToken(
                 blink::IdentifiableSurface::Type::kHTMLMediaElement_CanPlayType,
                 IdentifiabilityBenignStringToken(mime_type)),
@@ -1654,8 +1660,7 @@ void HTMLMediaElement::StartProgressEventTimer() {
 
   previous_progress_time_ = base::ElapsedTimer();
   // 350ms is not magic, it is in the spec!
-  progress_event_timer_.StartRepeating(base::TimeDelta::FromMilliseconds(350),
-                                       FROM_HERE);
+  progress_event_timer_.StartRepeating(base::Milliseconds(350), FROM_HERE);
 }
 
 void HTMLMediaElement::WaitForSourceChange() {
@@ -2030,8 +2035,6 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
       jumped = true;
     }
 
-    web_media_player_->SetAutoplayInitiated(true);
-
     UpdateLayoutObject();
   }
 
@@ -2077,6 +2080,8 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     ScheduleEvent(event_type_names::kCanplaythrough);
   }
 
+  web_media_player_->SetAutoplayInitiated(
+      autoplay_policy_->WasAutoplayInitiated());
   UpdatePlayState();
 }
 
@@ -2943,7 +2948,7 @@ double HTMLMediaElement::EffectiveMediaVolume() const {
 // The spec says to fire periodic timeupdate events (those sent while playing)
 // every "15 to 250ms", we choose the slowest frequency
 static const base::TimeDelta kMaxTimeupdateEventFrequency =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 void HTMLMediaElement::StartPlaybackProgressTimer() {
   if (playback_progress_timer_.IsActive())
@@ -3217,9 +3222,9 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   return text_track;
 }
 
-std::vector<TextTrackMetadata> HTMLMediaElement::GetTextTrackMetadata() {
+Vector<TextTrackMetadata> HTMLMediaElement::GetTextTrackMetadata() {
   TextTrackList* tracks = textTracks();
-  std::vector<TextTrackMetadata> result;
+  Vector<TextTrackMetadata> result;
   for (unsigned i = 0; i < tracks->length(); i++) {
     TextTrack* track = tracks->AnonymousIndexedGetter(i);
     result.emplace_back(track->language().GetString().Utf8(),
@@ -4567,8 +4572,7 @@ void HTMLMediaElement::DidBufferUnderflow() {
 void HTMLMediaElement::DidSeek() {
   // Send the seek updates to the browser process only once per second.
   if (last_seek_update_time_.is_null() ||
-      (base::TimeTicks::Now() - last_seek_update_time_ >=
-       base::TimeDelta::FromSeconds(1))) {
+      (base::TimeTicks::Now() - last_seek_update_time_ >= base::Seconds(1))) {
     last_seek_update_time_ = base::TimeTicks::Now();
     for (auto& observer : media_player_observer_remote_set_->Value())
       observer->OnSeek();

@@ -247,6 +247,14 @@ class POLICY_EXPORT PolicyMap {
   // Returns a copy of |this|.
   PolicyMap Clone() const;
 
+  // Helper method used to merge entries corresponding to the same policy.
+  // Setting |using_default_precedence| to true results in external factors,
+  // such as the value of precedence metapolicies and user affiliation, to be
+  // considered during the priority check.
+  void MergePolicy(const std::string& policy_name,
+                   const PolicyMap& other,
+                   bool using_default_precedence);
+
   // Merges policies from |other| into |this|. Existing policies are only
   // overridden by those in |other| if they have a higher priority, as defined
   // by EntryHasHigherPriority(). If a policy is contained in both maps with the
@@ -266,9 +274,18 @@ class POLICY_EXPORT PolicyMap {
 
   // Returns true if |lhs| has higher priority than |rhs|. The priority of the
   // fields are |level| > |PolicyPriority| for browser and |level| > |scope| >
-  // |source| for OS.
+  // |source| for OS. External factors such as metapolicy values are considered
+  // by default for browser policies.
   bool EntryHasHigherPriority(const PolicyMap::Entry& lhs,
                               const PolicyMap::Entry& rhs) const;
+
+  // Returns true if |lhs| has higher priority than |rhs|. The priority of the
+  // fields are |level| > |PolicyPriority| for browser and |level| > |scope| >
+  // |source| for OS. External factors such as metapolicy values and user
+  // affiliation are optionally considered.
+  bool EntryHasHigherPriority(const PolicyMap::Entry& lhs,
+                              const PolicyMap::Entry& rhs,
+                              bool using_default_precedence) const;
 
   // Returns True if at least one shared ID is found in the user and device
   // affiliation ID sets.
@@ -315,14 +332,18 @@ class POLICY_EXPORT PolicyMap {
       const base::RepeatingCallback<bool(const const_iterator)>& filter,
       bool deletion_value);
 
-  // Updates the stored state of metapolicy CloudPolicyOverridesPlatformPolicy.
-  void UpdateCloudPolicyOverridesPlatformPolicy();
+  // Updates the stored state of computed metapolicies.
+  void UpdateStoredComputedMetapolicies();
+
+  // Updates the stored state of user affiliation.
+  void UpdateStoredUserAffiliation();
 
   PolicyMapType map_;
 
   // Affiliation
   bool is_user_affiliated_ = false;
   bool cloud_policy_overrides_platform_policy_ = false;
+  bool cloud_user_policy_overrides_cloud_machine_policy_ = false;
   base::flat_set<std::string> user_affiliation_ids_;
   base::flat_set<std::string> device_affiliation_ids_;
 };

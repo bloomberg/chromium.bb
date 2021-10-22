@@ -45,12 +45,13 @@ import {KeyboardShortcut} from './KeyboardShortcut.js';
 import type {Panel} from './Panel.js';
 import {SplitWidget} from './SplitWidget.js';
 import {Events as TabbedPaneEvents} from './TabbedPane.js';
-import type {TabbedPane, TabbedPaneTabDelegate} from './TabbedPane.js';
+import type {EventData, TabbedPane, TabbedPaneTabDelegate} from './TabbedPane.js';
 import {ToolbarButton} from './Toolbar.js';
 import type {TabbedViewLocation, View, ViewLocation, ViewLocationResolver} from './View.js';
 import {ViewManager} from './ViewManager.js';
 import type {Widget} from './Widget.js';
 import {VBox, WidgetFocusRestorer} from './Widget.js';
+import * as ARIAUtils from './ARIAUtils.js';
 
 const UIStrings = {
   /**
@@ -97,6 +98,14 @@ const UIStrings = {
    * @example {German} PH1
    */
   setToSpecificLanguage: 'Switch DevTools to {PH1}',
+  /**
+  *@description The aria label for main toolbar
+  */
+  mainToolbar: 'Main toolbar',
+  /**
+  *@description The aria label for the drawer.
+  */
+  drawer: 'Tool drawer',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/InspectorView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -142,6 +151,10 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
     this.drawerTabbedPane.setTabDelegate(this.tabDelegate);
 
+    const drawerElement = this.drawerTabbedPane.element;
+    ARIAUtils.markAsComplementary(drawerElement);
+    ARIAUtils.setAccessibleName(drawerElement, i18nString(UIStrings.drawer));
+
     this.drawerSplitWidget.installResizer(this.drawerTabbedPane.headerElement());
     this.drawerSplitWidget.setSidebarWidget(this.drawerTabbedPane);
     this.drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
@@ -159,6 +172,10 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     this.tabbedPane.setAccessibleName(i18nString(UIStrings.panels));
     this.tabbedPane.setTabDelegate(this.tabDelegate);
 
+    const mainHeaderElement = this.tabbedPane.headerElement();
+    ARIAUtils.markAsNavigation(mainHeaderElement);
+    ARIAUtils.setAccessibleName(mainHeaderElement, i18nString(UIStrings.mainToolbar));
+
     // Store the initial selected panel for use in launch histograms
     Host.userMetrics.setLaunchPanel(this.tabbedPane.selectedTabId);
 
@@ -171,8 +188,7 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(
         Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
 
-    function showPanel(this: InspectorView, event: Common.EventTarget.EventTargetEvent): void {
-      const panelName = (event.data as string);
+    function showPanel(this: InspectorView, {data: panelName}: Common.EventTarget.EventTargetEvent<string>): void {
       this.showPanel(panelName);
     }
 
@@ -364,8 +380,8 @@ export class InspectorView extends VBox implements ViewLocationResolver {
     this.tabbedPane.headerResized();
   }
 
-  private tabSelected(event: Common.EventTarget.EventTargetEvent): void {
-    const tabId = (event.data['tabId'] as string);
+  private tabSelected(event: Common.EventTarget.EventTargetEvent<EventData>): void {
+    const {tabId} = event.data;
     Host.userMetrics.panelShown(tabId);
   }
 

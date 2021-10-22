@@ -263,10 +263,9 @@ class QUIC_EXPORT_PRIVATE QuicConnectionDebugVisitor
                             const QuicFrames& /*nonretransmittable_frames*/,
                             QuicTime /*sent_time*/) {}
 
-  // Called when a coalesced packet has been sent.
+  // Called when a coalesced packet is successfully serialized.
   virtual void OnCoalescedPacketSent(
-      const QuicCoalescedPacket& /*coalesced_packet*/,
-      size_t /*length*/) {}
+      const QuicCoalescedPacket& /*coalesced_packet*/, size_t /*length*/) {}
 
   // Called when a PING frame has been sent.
   virtual void OnPingSent() {}
@@ -1244,10 +1243,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   bool connection_migration_use_new_cid() const {
     return connection_migration_use_new_cid_;
-  }
-
-  bool use_active_cid_for_session_lookup() const {
-    return use_active_cid_for_session_lookup_;
   }
 
   bool count_bytes_on_alternative_path_separately() const {
@@ -2286,11 +2281,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   const bool add_missing_update_ack_timeout_ =
       GetQuicReloadableFlag(quic_add_missing_update_ack_timeout);
-
-  const bool ack_cid_frames_ = GetQuicReloadableFlag(quic_ack_cid_frames);
-
-  const bool use_active_cid_for_session_lookup_ =
-      GetQuicReloadableFlag(quic_use_active_cid_for_session_lookup);
 };
 
 }  // namespace quic

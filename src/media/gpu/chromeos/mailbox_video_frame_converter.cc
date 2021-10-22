@@ -5,7 +5,6 @@
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -43,6 +42,10 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
 
   ScopedSharedImage(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner)
       : destruction_task_runner_(std::move(gpu_task_runner)) {}
+
+  ScopedSharedImage(const ScopedSharedImage&) = delete;
+  ScopedSharedImage& operator=(const ScopedSharedImage&) = delete;
+
   ~ScopedSharedImage() { Destroy(); }
 
   void Reset(const gpu::Mailbox& mailbox,
@@ -76,8 +79,6 @@ class MailboxVideoFrameConverter::ScopedSharedImage {
   gfx::Size size_;
   DestroySharedImageCB destroy_shared_image_cb_;
   const scoped_refptr<base::SequencedTaskRunner> destruction_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSharedImage);
 };
 
 // static
@@ -430,8 +431,8 @@ void MailboxVideoFrameConverter::WaitOnSyncTokenAndReleaseFrameOnGPUThread(
   gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
   DCHECK(shared_image_stub);
 
-  auto keep_video_frame_alive = base::BindOnce(
-      base::DoNothing::Once<scoped_refptr<VideoFrame>>(), std::move(frame));
+  auto keep_video_frame_alive =
+      base::BindOnce([](scoped_refptr<VideoFrame>) {}, std::move(frame));
   auto* scheduler = gpu_channel_->scheduler();
   DCHECK(scheduler);
   scheduler->ScheduleTask(gpu::Scheduler::Task(

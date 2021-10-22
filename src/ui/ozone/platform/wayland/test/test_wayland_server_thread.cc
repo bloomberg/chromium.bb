@@ -66,6 +66,8 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
     return false;
   if (!viewporter_.Initialize(display_.get()))
     return false;
+  if (!alpha_compositing_.Initialize(display_.get()))
+    return false;
   if (!output_.Initialize(display_.get()))
     return false;
   SetupOutputs();
@@ -84,11 +86,15 @@ bool TestWaylandServerThread::Start(const ServerConfig& config) {
     if (!xdg_shell_.Initialize(display_.get()))
       return false;
   }
+  if (!zcr_text_input_extension_v1_.Initialize(display_.get()))
+    return false;
   if (!zwp_text_input_manager_v1_.Initialize(display_.get()))
     return false;
   if (!zwp_linux_explicit_synchronization_v1_.Initialize(display_.get()))
     return false;
   if (!zwp_linux_dmabuf_v1_.Initialize(display_.get()))
+    return false;
+  if (!overlay_prioritizer_.Initialize(display_.get()))
     return false;
 
   client_ = wl_client_create(display_.get(), server_fd.release());

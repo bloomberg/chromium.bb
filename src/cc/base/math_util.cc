@@ -19,10 +19,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
-#include "ui/gfx/rrect_f.h"
-#include "ui/gfx/transform.h"
 
 namespace cc {
 
@@ -913,15 +913,6 @@ void MathUtil::AddToTracedValue(const char* name,
 
 void MathUtil::AddToTracedValue(const char* name,
                                 const gfx::Vector2dF& v,
-                                base::trace_event::TracedValue* res) {
-  res->BeginArray(name);
-  res->AppendDouble(v.x());
-  res->AppendDouble(v.y());
-  res->EndArray();
-}
-
-void MathUtil::AddToTracedValue(const char* name,
-                                const gfx::ScrollOffset& v,
                                 base::trace_event::TracedValue* res) {
   res->BeginArray(name);
   res->AppendDouble(v.x());

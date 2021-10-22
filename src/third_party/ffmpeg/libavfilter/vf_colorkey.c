@@ -135,10 +135,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *frame)
     ColorkeyContext *ctx = avctx->priv;
     int res;
 
-    if (res = av_frame_make_writable(frame))
-        return res;
-
-    if (res = avctx->internal->execute(avctx, ctx->do_slice, frame, NULL, FFMIN(frame->height, ff_filter_get_nb_threads(avctx))))
+    if (res = ff_filter_execute(avctx, ctx->do_slice, frame, NULL,
+                                FFMIN(frame->height, ff_filter_get_nb_threads(avctx))))
         return res;
 
     return ff_filter_frame(avctx->outputs[0], frame);
@@ -171,22 +169,16 @@ static av_cold int query_formats(AVFilterContext *avctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *formats = NULL;
-
-    formats = ff_make_format_list(pixel_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-
-    return ff_set_common_formats(avctx, formats);
+    return ff_set_common_formats_from_list(avctx, pixel_fmts);
 }
 
 static const AVFilterPad colorkey_inputs[] = {
     {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
+        .flags        = AVFILTERPAD_FLAG_NEEDS_WRITABLE,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad colorkey_outputs[] = {
@@ -195,7 +187,6 @@ static const AVFilterPad colorkey_outputs[] = {
         .type = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 #define OFFSET(x) offsetof(ColorkeyContext, x)
@@ -219,8 +210,8 @@ const AVFilter ff_vf_colorkey = {
     .priv_class    = &colorkey_class,
     .query_formats = query_formats,
     .init          = init_filter,
-    .inputs        = colorkey_inputs,
-    .outputs       = colorkey_outputs,
+    FILTER_INPUTS(colorkey_inputs),
+    FILTER_OUTPUTS(colorkey_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };
@@ -244,8 +235,8 @@ const AVFilter ff_vf_colorhold = {
     .priv_class    = &colorhold_class,
     .query_formats = query_formats,
     .init          = init_filter,
-    .inputs        = colorkey_inputs,
-    .outputs       = colorkey_outputs,
+    FILTER_INPUTS(colorkey_inputs),
+    FILTER_OUTPUTS(colorkey_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
     .process_command = ff_filter_process_command,
 };

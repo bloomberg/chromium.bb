@@ -90,6 +90,11 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         compression_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
+  SubresourceRedirectBrowserTest(const SubresourceRedirectBrowserTest&) =
+      delete;
+  SubresourceRedirectBrowserTest& operator=(
+      const SubresourceRedirectBrowserTest&) = delete;
+
   void SetUp() override {
     // |http_server| setup.
     http_server_.ServeFilesFromSourceDirectory("chrome/test/data");
@@ -362,7 +367,7 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     } else if (compression_server_failure_mode_ ==
                CompressionServerFailureMode::TIMEOUT) {
       return std::make_unique<net::test_server::DelayedHttpResponse>(
-          base::TimeDelta::FromSeconds(10));
+          base::Seconds(10));
     }
 
     // For the purpose of this browsertest, a redirect to the compression server
@@ -424,8 +429,6 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
   bool https_server_image_fail_ = false;
   CompressionServerFailureMode compression_server_failure_mode_ =
       CompressionServerFailureMode::NONE;
-
-  DISALLOW_COPY_AND_ASSIGN(SubresourceRedirectBrowserTest);
 };
 
 class RedirectDisabledSubresourceRedirectBrowserTest
@@ -541,7 +544,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 
   // The third navigation should attempt subresource redirect, once the bypass
   // is cleared.
-  VerifyAndClearBypassTimeout(base::TimeDelta::FromSeconds(4));
+  VerifyAndClearBypassTimeout(base::Seconds(4));
   url = HttpsURLWithPath("/load_image/image_delayed_load.html?third");
   SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
   base::RunLoop().RunUntilIdle();
@@ -1298,7 +1301,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 
   // The third navigation should attempt subresource redirect, once the bypass
   // is cleared.
-  VerifyAndClearBypassTimeout(base::TimeDelta::FromSeconds(4));
+  VerifyAndClearBypassTimeout(base::Seconds(4));
   url = HttpsURLWithPath("/load_image/image_delayed_load.html?third");
   SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
   base::RunLoop().RunUntilIdle();
@@ -1538,8 +1541,10 @@ class SubresourceRedirectWithHintsServerBrowserTest
         optimization_guide::proto::OptimizationType::COMPRESS_PUBLIC_IMAGES);
     auto* public_image_metadata = optimization->mutable_public_image_metadata();
 
-    for (const auto& url : public_image_paths)
-      public_image_metadata->add_url(HttpsURLWithPath(url).spec());
+    for (const auto& public_image_path : public_image_paths) {
+      public_image_metadata->add_url(
+          HttpsURLWithPath(public_image_path).spec());
+    }
 
     base::AutoLock lock(lock_);
     get_hints_response.SerializeToString(&get_hints_response_);
@@ -1551,7 +1556,7 @@ class SubresourceRedirectWithHintsServerBrowserTest
     switch (hint_fetch_mode_) {
       case HintFetchMode::HINT_FETCH_AFTER_IMAGES_LOADED: {
         auto response = std::make_unique<net::test_server::DelayedHttpResponse>(
-            base::TimeDelta::FromSeconds(3));
+            base::Seconds(3));
         response->set_content(get_hints_response_);
         response->set_code(net::HTTP_OK);
         return std::move(response);

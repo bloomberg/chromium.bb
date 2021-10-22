@@ -101,6 +101,10 @@ class OptimizationGuideStore {
   explicit OptimizationGuideStore(
       std::unique_ptr<StoreEntryProtoDatabase> database,
       scoped_refptr<base::SequencedTaskRunner> store_task_runner);
+
+  OptimizationGuideStore(const OptimizationGuideStore&) = delete;
+  OptimizationGuideStore& operator=(const OptimizationGuideStore&) = delete;
+
   virtual ~OptimizationGuideStore();
 
   // Initializes the store. If |purge_existing_data| is set to true,
@@ -326,6 +330,11 @@ class OptimizationGuideStore {
   // Returns prefix of the key of every host model features entry: "5_".
   static EntryKeyPrefix GetHostModelFeaturesEntryKeyPrefix();
 
+  // Returns the OptimizationTarget from |prediction_model_entry_key|.
+  static proto::OptimizationTarget
+  GetOptimizationTargetFromPredictionModelEntryKey(
+      const EntryKey& prediction_model_entry_key);
+
   // Updates the status of the store to the specified value, validates the
   // transition, and destroys the database in the case where the status
   // transitions to Status::kFailed.
@@ -512,8 +521,6 @@ class OptimizationGuideStore {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<OptimizationGuideStore> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(OptimizationGuideStore);
 };
 
 }  // namespace optimization_guide

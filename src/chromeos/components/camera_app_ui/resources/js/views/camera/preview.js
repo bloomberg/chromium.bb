@@ -148,18 +148,18 @@ export class Preview {
   }
 
   /**
-   * @return {!HTMLVideoElement}
-   */
-  get video() {
-    return this.video_;
-  }
-
-  /**
    * Current active stream.
    * @return {!MediaStream}
    */
   get stream() {
     return assertInstanceof(this.stream_, MediaStream);
+  }
+
+  /**
+   * @return {!HTMLVideoElement}
+   */
+  getVideoElement() {
+    return this.video_;
   }
 
   /**
@@ -188,7 +188,7 @@ export class Preview {
   /**
    * @return {!StreamConstraints}
    */
-  getConstraits() {
+  getConstraints() {
     assert(this.constraints_ !== null);
     return this.constraints_;
   }

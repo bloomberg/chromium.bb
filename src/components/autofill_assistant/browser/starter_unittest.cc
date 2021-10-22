@@ -37,6 +37,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace autofill_assistant {
 
@@ -61,21 +62,7 @@ const char kExampleDeeplink[] = "https://www.example.com";
 
 class StarterTest : public testing::Test {
  public:
-  StarterTest() = default;
-
-  void SetUp() override {
-    web_contents_ = content::WebContentsTester::CreateTestWebContents(
-        &browser_context_, nullptr);
-    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
-    SimulateNavigateToUrl(GURL(kExampleDeeplink));
-    PrepareTriggerScriptUiDelegate();
-    PrepareTriggerScriptRequestSender();
-    fake_platform_delegate_.website_login_manager_ =
-        &mock_website_login_manager_;
-    ON_CALL(mock_website_login_manager_, GetLoginsForUrl)
-        .WillByDefault(
-            RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>()));
-
+  StarterTest() {
     // Must be initialized before |starter_| is instantiated to take effect.
     enable_fake_heuristic_ = std::make_unique<base::test::ScopedFeatureList>();
     enable_fake_heuristic_->InitAndEnableFeatureWithParameters(
@@ -92,6 +79,20 @@ class StarterTest : public testing::Test {
             ]
           }
           )"}});
+  }
+
+  void SetUp() override {
+    web_contents_ = content::WebContentsTester::CreateTestWebContents(
+        &browser_context_, nullptr);
+    ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+    SimulateNavigateToUrl(GURL(kExampleDeeplink));
+    PrepareTriggerScriptUiDelegate();
+    PrepareTriggerScriptRequestSender();
+    fake_platform_delegate_.website_login_manager_ =
+        &mock_website_login_manager_;
+    ON_CALL(mock_website_login_manager_, GetLoginsForUrl)
+        .WillByDefault(
+            RunOnceCallback<1>(std::vector<WebsiteLoginManager::Login>()));
 
     starter_ = std::make_unique<Starter>(
         web_contents(), &fake_platform_delegate_, &ukm_recorder_,
@@ -855,8 +856,7 @@ TEST_F(StarterTest, RegularStartupFailsIfNavigationDuringOnboarding) {
   SetupPlatformDelegateForFirstTimeUser();
   fake_platform_delegate_.feature_module_installed_ = true;
   // Empty callback to keep the onboarding open indefinitely.
-  fake_platform_delegate_.on_show_onboarding_callback_ =
-      base::DoNothing::Once<base::OnceCallback<void(bool, OnboardingResult)>>();
+  fake_platform_delegate_.on_show_onboarding_callback_ = base::DoNothing();
 
   EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
   std::map<std::string, std::string> script_parameters = {
@@ -886,8 +886,7 @@ TEST_F(StarterTest, TriggerScriptStartupFailsIfNavigationDuringOnboarding) {
   fake_platform_delegate_.trigger_script_request_sender_for_test_ = nullptr;
   mock_trigger_script_service_request_sender_ = nullptr;
   // Empty callback to keep the onboarding open indefinitely.
-  fake_platform_delegate_.on_show_onboarding_callback_ =
-      base::DoNothing::Once<base::OnceCallback<void(bool, OnboardingResult)>>();
+  fake_platform_delegate_.on_show_onboarding_callback_ = base::DoNothing();
 
   std::map<std::string, std::string> script_parameters = {
       {"ENABLED", "true"},
@@ -936,8 +935,7 @@ TEST_F(StarterTest, RegularStartupAllowsCertainNavigationsDuringOnboarding) {
   SetupPlatformDelegateForFirstTimeUser();
   fake_platform_delegate_.feature_module_installed_ = true;
   // Empty callback to keep the onboarding open indefinitely.
-  fake_platform_delegate_.on_show_onboarding_callback_ =
-      base::DoNothing::Once<base::OnceCallback<void(bool, OnboardingResult)>>();
+  fake_platform_delegate_.on_show_onboarding_callback_ = base::DoNothing();
 
   std::map<std::string, std::string> script_parameters = {
       {"ENABLED", "true"},
@@ -997,8 +995,7 @@ TEST_F(StarterTest, RegularStartupIgnoresLastCommittedUrl) {
   SetupPlatformDelegateForFirstTimeUser();
   fake_platform_delegate_.feature_module_installed_ = true;
   // Empty callback to keep the onboarding open indefinitely.
-  fake_platform_delegate_.on_show_onboarding_callback_ =
-      base::DoNothing::Once<base::OnceCallback<void(bool, OnboardingResult)>>();
+  fake_platform_delegate_.on_show_onboarding_callback_ = base::DoNothing();
 
   // Note: the starter does not actually care about the last committed URL at
   // the time of startup. All that matters is that it has received the startup
@@ -1102,6 +1099,21 @@ TEST_F(StarterTest, DoNotStartImplicitlyIfSettingDisabled) {
   scoped_feature_list->InitAndEnableFeature(
       features::kAutofillAssistantInCCTTriggering);
   fake_platform_delegate_.proactive_help_enabled_ = false;
+  starter_->CheckSettings();
+
+  EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
+      .Times(0);
+  SimulateNavigateToUrl(GURL("https://www.some-website.com/cart"));
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(GetUkmInChromeTriggering(ukm_recorder_), IsEmpty());
+}
+
+TEST_F(StarterTest, DoNotStartImplicitlyForNonAgaCct) {
+  SetupPlatformDelegateForReturningUser();
+  fake_platform_delegate_.is_tab_created_by_gsa_ = false;
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(
+      features::kAutofillAssistantInCCTTriggering);
   starter_->CheckSettings();
 
   EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
@@ -1622,7 +1634,7 @@ TEST_F(StarterTest, FailedTriggerFetchesCacheEntriesExpire) {
 
   EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
       .WillOnce(RunOnceCallback<2>(net::HTTP_OK, std::string()));
-  task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
+  task_environment()->FastForwardBy(base::Hours(1));
   SimulateNavigateToUrl(GURL("https://www.example.com/cart"));
   task_environment()->RunUntilIdle();
 
@@ -1670,7 +1682,7 @@ TEST_F(StarterTest, UserDenylistedCacheUpdateAndExpire) {
         trigger_script_coordinator_->PerformTriggerScriptAction(
             TriggerScriptProto::CANCEL_SESSION);
       });
-  task_environment()->FastForwardBy(base::TimeDelta::FromHours(1));
+  task_environment()->FastForwardBy(base::Hours(1));
   SimulateNavigateToUrl(GURL("https://www.example.com/cart"));
   task_environment()->RunUntilIdle();
 
@@ -1840,7 +1852,7 @@ TEST_F(StarterTest, StaleCacheEntriesAreRemovedOnInsertingNewEntries) {
   GetFailedTriggerFetchesCacheForTest()->Put("failed-t0.com", t0);
   GetUserDenylistedCacheForTest()->Put("denylisted-t0.com", t0);
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  task_environment()->FastForwardBy(base::Minutes(30));
   base::TimeTicks t1 = task_environment()->GetMockTickClock()->NowTicks();
   EXPECT_THAT(*GetFailedTriggerFetchesCacheForTest(),
               UnorderedElementsAre(Pair("failed-t0.com", t0)));
@@ -1849,7 +1861,7 @@ TEST_F(StarterTest, StaleCacheEntriesAreRemovedOnInsertingNewEntries) {
   GetFailedTriggerFetchesCacheForTest()->Put("failed-t1.com", t1);
   GetUserDenylistedCacheForTest()->Put("denylisted-t1.com", t1);
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(30));
+  task_environment()->FastForwardBy(base::Minutes(30));
   base::TimeTicks t2 = task_environment()->GetMockTickClock()->NowTicks();
   EXPECT_CALL(*mock_trigger_script_service_request_sender_, OnSendRequest)
       .WillOnce(RunOnceCallback<2>(net::HTTP_OK, std::string()));
@@ -2020,6 +2032,62 @@ TEST(MultipleIntentStarterTest, ImplicitTriggeringSendsAllMatchingIntents) {
   content::WebContentsTester::For(web_contents.get())
       ->NavigateAndCommit(GURL("https://example.com/intent_a/intent_b"));
   task_environment.RunUntilIdle();
+}
+
+class StarterPrerenderTest : public StarterTest {
+ public:
+  StarterPrerenderTest() {
+    feature_list_.InitWithFeatures(
+        {blink::features::kPrerender2},
+        // Disable the memory requirement of Prerender2 so the test can run on
+        // any bot.
+        {blink::features::kPrerender2MemoryControls});
+  }
+  ~StarterPrerenderTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(StarterPrerenderTest, DoNotAffectRecordUkmDuringPrendering) {
+  SetupPlatformDelegateForFirstTimeUser();
+
+  fake_platform_delegate_.feature_module_installed_ = true;
+  // Empty callback to keep the onboarding open indefinitely.
+  fake_platform_delegate_.on_show_onboarding_callback_ = base::DoNothing();
+
+  EXPECT_CALL(mock_start_regular_script_callback_, Run).Times(0);
+
+  TriggerContext::Options options;
+  options.initial_url = kExampleDeeplink;
+  std::map<std::string, std::string> script_parameters = {
+      {"ENABLED", "true"},
+      {"START_IMMEDIATELY", "false"},
+      {"REQUEST_TRIGGER_SCRIPT", "true"},
+      {"ORIGINAL_DEEPLINK", kExampleDeeplink}};
+
+  SimulateNavigateToUrl(GURL("https://www.different.com"));
+
+  // Trigger scripts wait for navigation to the deeplink domain.
+  starter_->Start(std::make_unique<TriggerContext>(
+      std::make_unique<ScriptParameters>(script_parameters), options));
+
+  // Start prerendering a page.
+  const GURL prerendering_url("https://www.different.com/prerendering");
+  auto* prerender_rfh = content::WebContentsTester::For(web_contents())
+                            ->AddPrerenderAndCommitNavigation(prerendering_url);
+  ASSERT_TRUE(prerender_rfh);
+
+  // Prerendering should not affect any trigger script's behaviour and not
+  // record anything.
+  EXPECT_THAT(GetUkmTriggerScriptStarted(ukm_recorder_), IsEmpty());
+  EXPECT_THAT(GetUkmTriggerScriptFinished(ukm_recorder_), IsEmpty());
+  EXPECT_THAT(GetUkmTriggerScriptOnboarding(ukm_recorder_), IsEmpty());
+  histogram_tester_.ExpectUniqueSample(
+      "Android.AutofillAssistant.FeatureModuleInstallation",
+      Metrics::FeatureModuleInstallation::DFM_ALREADY_INSTALLED, 0u);
+  histogram_tester_.ExpectTotalCount("Android.AutofillAssistant.OnBoarding",
+                                     0u);
 }
 
 }  // namespace autofill_assistant

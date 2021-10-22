@@ -12,7 +12,7 @@
 #include "base/types/pass_key.h"
 #include "content/browser/file_system_access/mock_file_system_access_permission_context.h"
 #include "content/public/test/browser_task_environment.h"
-#include "content/test/fake_mojo_message_dispatch_context.h"
+#include "mojo/public/cpp/test_support/fake_message_dispatch_context.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -145,7 +145,7 @@ TEST_F(FileSystemAccessCapacityAllocationHostImplTest,
 TEST_F(FileSystemAccessCapacityAllocationHostImplTest,
        RequestCapacityChange_IllegalNegativeCapacity) {
   mojo::test::BadMessageObserver bad_message_observer;
-  FakeMojoMessageDispatchContext fake_dispatch_context;
+  mojo::FakeMessageDispatchContext fake_dispatch_context;
   const int64_t negative_requested_capacity = -50;
   int64_t granted_capacity = RequestCapacityChangeSync(
       allocation_host_.get(), negative_requested_capacity);

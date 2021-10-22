@@ -22,6 +22,7 @@
 #include "google_apis/google_api_keys.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/browser_list.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
 #include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
@@ -52,6 +53,10 @@ const int kPackageNameLimitRatePerMille = 100;
 class PageLoadMetricsProvider : public metrics::MetricsProvider {
  public:
   PageLoadMetricsProvider() = default;
+
+  PageLoadMetricsProvider(const PageLoadMetricsProvider&) = delete;
+  PageLoadMetricsProvider& operator=(const PageLoadMetricsProvider&) = delete;
+
   ~PageLoadMetricsProvider() override = default;
 
   // metrics:MetricsProvider implementation:
@@ -65,9 +70,6 @@ class PageLoadMetricsProvider : public metrics::MetricsProvider {
         observer->FlushMetricsOnAppEnterBackground();
     }
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsProvider);
 };
 
 }  // namespace
@@ -137,6 +139,11 @@ std::string WebLayerMetricsServiceClient::GetUploadSigningKey() {
   std::string decoded_key;
   base::Base64Decode(google_apis::GetMetricsKey(), &decoded_key);
   return decoded_key;
+}
+
+const network_time::NetworkTimeTracker*
+WebLayerMetricsServiceClient::GetNetworkTimeTracker() {
+  return BrowserProcess::GetInstance()->GetNetworkTimeTracker();
 }
 
 int WebLayerMetricsServiceClient::GetSampleRatePerMille() const {

@@ -22,8 +22,8 @@
 #include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/ash/lock_screen_apps/fake_lock_screen_profile_creator.h"
 #include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/chrome_constants.h"
@@ -65,6 +65,10 @@ class LockScreenEventRouter : public extensions::TestEventRouter {
  public:
   explicit LockScreenEventRouter(content::BrowserContext* context)
       : extensions::TestEventRouter(context) {}
+
+  LockScreenEventRouter(const LockScreenEventRouter&) = delete;
+  LockScreenEventRouter& operator=(const LockScreenEventRouter&) = delete;
+
   ~LockScreenEventRouter() override = default;
 
   // extensions::EventRouter:
@@ -72,9 +76,6 @@ class LockScreenEventRouter : public extensions::TestEventRouter {
                                  const std::string& event_name) const override {
     return event_name == extensions::api::app_runtime::OnLaunched::kEventName;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LockScreenEventRouter);
 };
 
 class LockScreenEventObserver
@@ -82,6 +83,10 @@ class LockScreenEventObserver
  public:
   explicit LockScreenEventObserver(content::BrowserContext* context)
       : context_(context) {}
+
+  LockScreenEventObserver(const LockScreenEventObserver&) = delete;
+  LockScreenEventObserver& operator=(const LockScreenEventObserver&) = delete;
+
   ~LockScreenEventObserver() override = default;
 
   // extensions::TestEventRouter::EventObserver:
@@ -129,8 +134,6 @@ class LockScreenEventObserver
   std::vector<std::string> launched_apps_;
   content::BrowserContext* context_;
   bool expect_restore_action_state_ = true;
-
-  DISALLOW_COPY_AND_ASSIGN(LockScreenEventObserver);
 };
 
 enum class TestAppLocation { kUnpacked, kInternal };
@@ -140,6 +143,10 @@ class LockScreenAppManagerImplTest
  public:
   LockScreenAppManagerImplTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+
+  LockScreenAppManagerImplTest(const LockScreenAppManagerImplTest&) = delete;
+  LockScreenAppManagerImplTest& operator=(const LockScreenAppManagerImplTest&) =
+      delete;
 
   ~LockScreenAppManagerImplTest() override = default;
 
@@ -470,8 +477,6 @@ class LockScreenAppManagerImplTest
 
   bool needs_lock_screen_event_router_ = false;
   int note_taking_changed_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(LockScreenAppManagerImplTest);
 };
 
 }  // namespace

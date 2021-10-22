@@ -49,6 +49,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "components/power_scheduler/power_mode_arbiter.h"
@@ -230,15 +231,26 @@ void LoadV8SnapshotFile() {
 
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 }
+
+bool ShouldLoadV8Snapshot(const base::CommandLine& command_line,
+                          const std::string& process_type) {
+  // The gpu does not need v8, and the browser only needs v8 when in single
+  // process mode.
+  if (process_type == switches::kGpuProcess ||
+      (process_type.empty() &&
+       !command_line.HasSwitch(switches::kSingleProcess))) {
+    return false;
+  }
+  return true;
+}
+
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
-void InitializeV8IfNeeded(const base::CommandLine& command_line,
-                          const std::string& process_type) {
-  if (process_type == switches::kGpuProcess)
-    return;
-
+void LoadV8SnapshotIfNeeded(const base::CommandLine& command_line,
+                            const std::string& process_type) {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  LoadV8SnapshotFile();
+  if (ShouldLoadV8Snapshot(command_line, process_type))
+    LoadV8SnapshotFile();
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 }
 
@@ -428,7 +440,7 @@ BOOL WINAPI BrowserConsoleControlHandler(DWORD control_type) {
                                 control_type));
 
   // Block the control thread while waiting for SessionEnding to be handled.
-  base::PlatformThread::Sleep(base::TimeDelta::FromHours(1));
+  base::PlatformThread::Sleep(base::Hours(1));
 
   // This should never be hit. The process will be terminated either by
   // ContentBrowserClient::SessionEnding or by Windows, if the former takes too
@@ -440,7 +452,7 @@ BOOL WINAPI BrowserConsoleControlHandler(DWORD control_type) {
 // control thread. The event will be handled by the browser process.
 BOOL WINAPI OtherConsoleControlHandler(DWORD control_type) {
   // Block the control thread while waiting for the browser process.
-  base::PlatformThread::Sleep(base::TimeDelta::FromHours(1));
+  base::PlatformThread::Sleep(base::Hours(1));
 
   // This should never be hit. The process will be terminated by the browser
   // process or by Windows, if the former takes too long.
@@ -854,7 +866,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     return TerminateForFatalInitializationError();
 #endif  // OS_ANDROID && (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
 
-  InitializeV8IfNeeded(command_line, process_type);
+  LoadV8SnapshotIfNeeded(command_line, process_type);
 
   blink::TrialTokenValidator::SetOriginTrialPolicyGetter(
       base::BindRepeating([]() -> blink::OriginTrialPolicy* {

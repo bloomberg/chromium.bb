@@ -17,6 +17,7 @@
 
 #include "dawn_native/CachedObject.h"
 #include "dawn_native/Forward.h"
+#include "dawn_native/ObjectBase.h"
 #include "dawn_native/PerStage.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/ShaderModule.h"
@@ -31,24 +32,30 @@ namespace dawn_native {
     MaybeError ValidateProgrammableStage(DeviceBase* device,
                                          const ShaderModuleBase* module,
                                          const std::string& entryPoint,
+                                         uint32_t constantCount,
+                                         const ConstantEntry* constants,
                                          const PipelineLayoutBase* layout,
                                          SingleShaderStage stage);
 
+    using PipelineConstantEntry = std::pair<std::string, double>;
     struct ProgrammableStage {
         Ref<ShaderModuleBase> module;
         std::string entryPoint;
 
         // The metadata lives as long as module, that's ref-ed in the same structure.
         const EntryPointMetadata* metadata = nullptr;
+
+        std::vector<PipelineConstantEntry> constants;
     };
 
-    class PipelineBase : public CachedObject {
+    class PipelineBase : public ApiObjectBase, public CachedObject {
       public:
         PipelineLayoutBase* GetLayout();
         const PipelineLayoutBase* GetLayout() const;
         const RequiredBufferSizes& GetMinBufferSizes() const;
         const ProgrammableStage& GetStage(SingleShaderStage stage) const;
         const PerStage<ProgrammableStage>& GetAllStages() const;
+        wgpu::ShaderStage GetStageMask() const;
 
         ResultOrError<Ref<BindGroupLayoutBase>> GetBindGroupLayout(uint32_t groupIndex);
 

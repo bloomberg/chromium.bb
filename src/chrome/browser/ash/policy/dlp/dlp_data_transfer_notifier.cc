@@ -24,8 +24,7 @@ namespace {
 // The name of the bubble.
 constexpr char kBubbleName[] = "ClipboardDlpBubble";
 
-constexpr base::TimeDelta kBubbleBoundsAnimationTime =
-    base::TimeDelta::FromMilliseconds(250);
+constexpr base::TimeDelta kBubbleBoundsAnimationTime = base::Milliseconds(250);
 
 bool IsRectContainedByAnyDisplay(const gfx::Rect& rect) {
   const std::vector<display::Display>& displays =
@@ -65,9 +64,10 @@ void CalculateAndSetWidgetBounds(views::Widget* widget,
         display::Screen::GetScreen()->GetCursorScreenPoint());
   }
 
-  const gfx::Rect widget_bounds =
+  gfx::Rect widget_bounds =
       gfx::Rect(caret_bounds.x(), caret_bounds.y(), bubble_size.width(),
                 bubble_size.height());
+  widget_bounds.AdjustToFit(display.work_area());
 
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
   if (widget->GetWindowBoundsInScreen().size() != gfx::Size()) {
@@ -168,7 +168,7 @@ void DlpDataTransferNotifier::ResizeAndShowWidget(const gfx::Size& bubble_size,
   widget_->Show();
 
   widget_closing_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(timeout_duration_ms),
+      FROM_HERE, base::Milliseconds(timeout_duration_ms),
       base::BindOnce(&DlpDataTransferNotifier::CloseWidget,
                      base::Unretained(this),
                      widget_.get(),  // Safe as DlpClipboardNotificationHelper

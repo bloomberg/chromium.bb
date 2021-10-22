@@ -29,6 +29,10 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
     : public AnimatedContainerView {
  public:
   explicit UiElementContainerView(AssistantViewDelegate* delegate);
+
+  UiElementContainerView(const UiElementContainerView&) = delete;
+  UiElementContainerView& operator=(const UiElementContainerView&) = delete;
+
   ~UiElementContainerView() override;
 
   void OnOverflowIndicatorVisibilityChanged(bool is_visible);
@@ -50,6 +54,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
  private:
   void InitLayout();
 
+  SkColor GetOverflowIndicatorBackgroundColor() const;
+
   // AnimatedContainerView:
   std::unique_ptr<ElementAnimator> HandleUiElement(
       const AssistantUiElement* ui_element) override;
@@ -60,7 +66,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) UiElementContainerView
   // Factory instance used to construct views for modeled UI elements.
   std::unique_ptr<AssistantUiElementViewFactory> view_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(UiElementContainerView);
+  // Whether to use dark/light mode colors, which default to dark.
+  const bool use_dark_light_mode_colors_;
 };
 
 }  // namespace ash

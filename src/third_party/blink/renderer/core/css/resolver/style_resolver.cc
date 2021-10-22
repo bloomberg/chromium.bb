@@ -519,7 +519,8 @@ static void MatchElementScopeRules(const Element& element,
     // Inline style is immutable as long as there is no CSSOM wrapper.
     bool is_inline_style_cacheable = !element.InlineStyle()->IsMutable();
     collector.AddElementStyleProperties(element.InlineStyle(),
-                                        is_inline_style_cacheable);
+                                        is_inline_style_cacheable,
+                                        true /* is_inline_style */);
   }
 
   collector.FinishAddingAuthorRulesForTreeScope(
@@ -780,8 +781,6 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
     return nullptr;
   }
 
-  DCHECK(!style_request.IsPseudoStyleRequest() ||
-         style_request.parent_override);
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
 
@@ -861,11 +860,22 @@ static bool AllowsInheritance(const StyleRequest& style_request,
   return parent_style && style_request.pseudo_id != kPseudoIdBackdrop;
 }
 
-void StyleResolver::InitStyleAndApplyInheritance(
-    Element& element,
-    const StyleRequest& style_request,
-    StyleResolverState& state) {
-  if (AllowsInheritance(style_request, state.ParentStyle())) {
+void StyleResolver::ApplyInheritance(Element& element,
+                                     const StyleRequest& style_request,
+                                     StyleResolverState& state) {
+  if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
+      IsHighlightPseudoElement(style_request.pseudo_id)) {
+    // When resolving highlight styles for children, we need to default all
+    // properties (whether or not defined as inherited) to parent values.
+
+    // Sadly, ComputedStyle creation is unavoidable until ElementRuleCollector
+    // and friends stop relying on ComputedStyle mutation. The good news is that
+    // if the element has no rules for this highlight pseudo, we skip resolution
+    // entirely (leaving the scoped_refptr untouched). The bad news is that if
+    // the element has rules but no matched properties, we currently clone.
+
+    state.SetStyle(ComputedStyle::Clone(*state.ParentStyle()));
+  } else {
     scoped_refptr<ComputedStyle> style = CreateComputedStyle();
     style->InheritFrom(
         *state.ParentStyle(),
@@ -882,6 +892,15 @@ void StyleResolver::InitStyleAndApplyInheritance(
           state.Style()->SetUserModify(shadow_host_style->UserModify());
       }
     }
+  }
+}
+
+void StyleResolver::InitStyleAndApplyInheritance(
+    Element& element,
+    const StyleRequest& style_request,
+    StyleResolverState& state) {
+  if (AllowsInheritance(style_request, state.ParentStyle())) {
+    ApplyInheritance(element, style_request, state);
   } else {
     state.SetStyle(InitialStyleForElement());
     state.SetParentStyle(ComputedStyle::Clone(*state.Style()));
@@ -1102,7 +1121,8 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
                               cascade.MutableMatchResult());
 
   collector.MatchPageRules(
-      CSSDefaultStyleSheets::Instance().DefaultPrintStyle());
+      CSSDefaultStyleSheets::Instance().DefaultPrintStyle(),
+      nullptr /* layer_map */);
 
   if (ScopedStyleResolver* scoped_resolver =
           GetDocument().GetScopedStyleResolver())
@@ -1133,6 +1153,12 @@ scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement() const {
       frame && !GetDocument().Printing() ? frame->PageZoomFactor() : 1);
   initial_style->SetEffectiveZoom(initial_style->Zoom());
   initial_style->SetInForcedColorsMode(GetDocument().InForcedColorsMode());
+  if (auto* settings = GetDocument().GetSettings()) {
+    if (settings->GetForceDarkModeEnabled()) {
+      initial_style->SetDarkColorScheme(true);
+      initial_style->SetColorSchemeForced(true);
+    }
+  }
   initial_style->SetTapHighlightColor(
       ComputedStyleInitialValues::InitialTapHighlightColor());
 
@@ -1751,7 +1777,18 @@ StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
     const ComputedStyle& layout_parent_style) {
   if (parent_style.InheritedEqual(layout_parent_style))
     return nullptr;
-  return CreateAnonymousStyleWithDisplay(parent_style, EDisplay::kInline);
+  scoped_refptr<ComputedStyle> text_style =
+      CreateAnonymousStyleWithDisplay(parent_style, EDisplay::kInline);
+  // If the parent with display:contents has its own text-decoration,
+  // remove it from AppliedTextDecorations.
+  wtf_size_t parent_decorations = parent_style.AppliedTextDecorations().size();
+  if (parent_decorations >
+      layout_parent_style.AppliedTextDecorations().size()) {
+    text_style->ClearAppliedTextDecorations();
+    if (parent_decorations > 1u)
+      text_style->RestoreParentTextDecorations(layout_parent_style);
+  }
+  return text_style;
 }
 
 #define PROPAGATE_FROM(source, getter, setter, initial) \
@@ -1995,6 +2032,8 @@ void StyleResolver::PropagateStyleToViewport() {
                    mojom::blink::ScrollBehavior::kAuto);
     PROPAGATE_FROM(document_element_style, DarkColorScheme, SetDarkColorScheme,
                    false);
+    PROPAGATE_FROM(document_element_style, ColorSchemeForced,
+                   SetColorSchemeForced, false);
     PROPAGATE_FROM(document_element_style, ScrollbarGutter, SetScrollbarGutter,
                    kScrollbarGutterAuto);
     PROPAGATE_FROM(document_element_style, ForcedColorAdjust,

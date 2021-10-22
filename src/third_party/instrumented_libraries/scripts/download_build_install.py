@@ -54,10 +54,9 @@ class InstrumentedPackageBuilder(object):
     self._extra_configure_flags = unescape_flags(args.extra_configure_flags)
     self._libdir = args.libdir
     self._package = args.package
-    self._patch = real_path(args.patch) if args.patch else None
+    self._patches = [real_path(patch) for patch in (args.patch or [])]
     self._pre_build = \
         real_path(args.pre_build) if args.pre_build else None
-    self._sanitizer = args.sanitizer
     self._verbose = args.verbose
     self._clobber = clobber
     self._working_dir = os.path.join(
@@ -65,7 +64,7 @@ class InstrumentedPackageBuilder(object):
 
     product_dir = real_path(args.product_dir)
     self._destdir = os.path.join(
-        product_dir, 'instrumented_libraries', self._sanitizer)
+        product_dir, 'instrumented_libraries')
     self._source_archives_dir = os.path.join(
         product_dir, 'instrumented_libraries', 'sources', self._package)
 
@@ -95,14 +94,6 @@ class InstrumentedPackageBuilder(object):
     # libappindicator1 needs this.
     self._build_env['CSC'] = '/usr/bin/mono-csc'
 
-    self.set_asan_options()
-
-  def set_asan_options(self):
-    if self._sanitizer == 'asan':
-      # Do not report leaks during the build process.
-      self._build_env['ASAN_OPTIONS'] = \
-          '%s:detect_leaks=0' % self._build_env.get('ASAN_OPTIONS', '')
-
   def shell_call(self, command, env=None, cwd=None, ignore_ret_code=False):
     """Wrapper around subprocess.Popen().
 
@@ -112,7 +103,7 @@ class InstrumentedPackageBuilder(object):
     child = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         env=env, shell=True, cwd=cwd)
-    stdout, stderr = child.communicate()
+    stdout = child.communicate()[0].decode('utf-8')
     if ignore_ret_code:
       if self._verbose:
         print(stdout)
@@ -159,8 +150,8 @@ class InstrumentedPackageBuilder(object):
     return get_fresh_source
 
   def patch_source(self):
-    if self._patch:
-      self.shell_call('patch -p1 -i %s' % self._patch, cwd=self._source_dir)
+    for patch in self._patches:
+      self.shell_call('patch -p1 -i %s' % patch, cwd=self._source_dir)
     if self._pre_build:
       self.shell_call(self._pre_build, cwd=self._source_dir)
 
@@ -174,8 +165,8 @@ class InstrumentedPackageBuilder(object):
     os.makedirs(self._source_archives_dir)
     for filename in self._source_archives:
       shutil.copy(filename, self._source_archives_dir)
-    if self._patch:
-      shutil.copy(self._patch, self._source_archives_dir)
+    for patch in self._patches:
+      shutil.copy(patch, self._source_archives_dir)
 
   def download_build_install(self):
     got_fresh_source = self.maybe_download_source()
@@ -289,9 +280,8 @@ class DebianBuilder(InstrumentedPackageBuilder):
     self._build_env['DEB_CFLAGS_APPEND'] = self._cflags
     self._build_env['DEB_CXXFLAGS_APPEND'] = self._cflags
     self._build_env['DEB_LDFLAGS_APPEND'] = self._ldflags
-    self._build_env['DEB_BUILD_OPTIONS'] = 'nocheck notest nodoc nostrip'
-
-    self.set_asan_options()
+    self._build_env['DEB_BUILD_OPTIONS'] = \
+      'nocheck notest nodoc nostrip parallel=%d' % os.cpu_count()
 
   def build_and_install(self):
     self.build_debian_packages()
@@ -306,8 +296,12 @@ class DebianBuilder(InstrumentedPackageBuilder):
       self.shell_call("dpkg-deb -x %s %s" % (deb_file, self.temp_dir()))
 
     dpkg_arch = self.shell_call("dpkg-architecture -qDEB_HOST_MULTIARCH").strip()
-    lib_dir = "usr/lib/%s" % dpkg_arch
-    lib_paths = glob.glob(os.path.join(self.temp_dir(), lib_dir, "*.so.*"))
+    lib_dirs = [
+      "usr/lib/%s" % dpkg_arch,
+      "lib/%s" % dpkg_arch,
+    ]
+    lib_paths = [path for lib_dir in lib_dirs for path in
+                 glob.glob(os.path.join(self.temp_dir(), lib_dir, "*.so.*"))]
     for lib_path in lib_paths:
       dest_path = os.path.join(self.dest_libdir(), os.path.basename(lib_path))
       try:
@@ -401,9 +395,9 @@ class Libpci3Builder(InstrumentedPackageBuilder):
         'SBINDIR=/usr/bin',
         'IDSDIR=/usr/share/misc',
         'SHARED=yes',
-        # pciutils-3.2.1 (Trusty) fails to build due to unresolved libkmod
-        # symbols. The binary package has no dependencies on libkmod, so it
-        # looks like it was actually built without libkmod support.
+        # pciutils fails to build due to unresolved libkmod symbols. The binary
+        # package has no dependencies on libkmod, so it looks like it was
+        # actually built without libkmod support.
        'LIBKMOD=no',
     ]
     self.make(make_args)
@@ -494,14 +488,12 @@ def main():
   parser.add_argument('--extra-configure-flags', default='')
   parser.add_argument('--cflags', default='')
   parser.add_argument('--ldflags', default='')
-  parser.add_argument('-s', '--sanitizer', required=True,
-                               choices=['asan', 'msan', 'tsan'])
   parser.add_argument('-v', '--verbose', action='store_true')
   parser.add_argument('--cc')
   parser.add_argument('--cxx')
-  parser.add_argument('--patch', default='')
+  parser.add_argument('--patch', nargs='*')
   # This should be a shell script to run before building specific libraries.
-  # This will be run after applying the patch above.
+  # This will be run after applying the patches above.
   parser.add_argument('--pre-build', default='')
   parser.add_argument('--build-method', default='destdir')
   parser.add_argument('--sanitizer-blacklist', default='')

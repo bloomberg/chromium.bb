@@ -31,10 +31,11 @@ const char kURL1[] = "data:text/html,<html><title>Test</title></html>";
 class TwoClientPollingSyncTest : public SyncTest {
  public:
   TwoClientPollingSyncTest() : SyncTest(TWO_CLIENT) {}
-  ~TwoClientPollingSyncTest() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(TwoClientPollingSyncTest);
+  TwoClientPollingSyncTest(const TwoClientPollingSyncTest&) = delete;
+  TwoClientPollingSyncTest& operator=(const TwoClientPollingSyncTest&) = delete;
+
+  ~TwoClientPollingSyncTest() override = default;
 };
 
 class SessionCountMatchChecker : public SingleClientStatusChangeChecker {
@@ -121,11 +122,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, DISABLED_ShouldPollOnStartup) {
   // Note: SyncSchedulerImpl delays a poll on startup by up to 1% of the poll
   // interval. 1% of 4 hours (the default poll interval) is still a while, so
   // set a shorter poll interval here.
-  base::TimeDelta poll_interval = base::TimeDelta::FromMinutes(2);
+  base::TimeDelta poll_interval = base::Minutes(2);
   remote_transport_data_prefs.SetPollInterval(poll_interval);
   base::Time remote_start = base::Time::Now();
   base::Time new_last_poll_time =
-      remote_start - poll_interval - base::TimeDelta::FromMilliseconds(100);
+      remote_start - poll_interval - base::Milliseconds(100);
   remote_transport_data_prefs.SetLastPollTime(new_last_poll_time);
   ASSERT_TRUE(GetClient(1)->StartSyncService()) << "SetupSync() failed.";
   GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));

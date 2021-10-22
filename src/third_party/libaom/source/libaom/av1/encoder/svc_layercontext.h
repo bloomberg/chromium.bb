@@ -49,11 +49,6 @@ typedef struct {
    */
   int8_t *map;
   /*!
-   * Segmentation map for last coded quantization paramters.
-   */
-  uint8_t *last_coded_q_map;
-
-  /*!
    * Number of blocks on segment 1
    */
   int actual_num_seg1_blocks;
@@ -99,7 +94,7 @@ typedef struct SVC {
   int non_reference_frame;
   int use_flexible_mode;
   int ksvc_fixed_mode;
-  int use_comp_pred;
+  int ref_frame_comp[3];
   /*!\endcond */
 
   /*!
@@ -110,6 +105,7 @@ typedef struct SVC {
   /*!\cond */
   int ref_idx[INTER_REFS_PER_FRAME];
   int refresh[REF_FRAMES];
+  int gld_idx_1layer;
   double base_framerate;
   unsigned int current_superframe;
   unsigned int buffer_time_index[REF_FRAMES];

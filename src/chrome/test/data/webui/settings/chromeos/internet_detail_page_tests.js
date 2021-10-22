@@ -42,13 +42,21 @@ suite('InternetDetailPage', function() {
         },
       },
     },
-    // Added use_shared_proxies because triggering a change in prefs_ without
-    // it will fail a "Pref is missing" assertion in the network-proxy-section
+    // Added use_shared_proxies and lacros_proxy_controlling_extension because
+    // triggering a change in prefs_ without it will fail a "Pref is missing"
+    // assertion in the network-proxy-section
     'settings': {
       'use_shared_proxies': {
         key: 'use_shared_proxies',
         type: chrome.settingsPrivate.PrefType.BOOLEAN,
         value: true,
+      },
+    },
+    'ash': {
+      'lacros_proxy_controlling_extension': {
+        key: 'ash.lacros_proxy_controlling_extension',
+        type: chrome.settingsPrivate.PrefType.DICTIONARY,
+        value: {},
       },
     },
   };
@@ -152,6 +160,8 @@ suite('InternetDetailPage', function() {
 
     browserProxy = new TestInternetPageBrowserProxy();
     settings.InternetPageBrowserProxyImpl.instance_ = browserProxy;
+
+    return flushAsync();
   });
 
   teardown(function() {
@@ -390,7 +400,7 @@ suite('InternetDetailPage', function() {
 
       const deepLinkElement = internetDetailPage.$$('network-proxy-section')
                                   .$$('#allowShared')
-                                  .$$('#control');
+                                  .shadowRoot.querySelector('#control');
       await test_util.waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
@@ -414,6 +424,32 @@ suite('InternetDetailPage', function() {
       internetDetailPage.init('vpn1_guid', 'VPN', 'vpn1');
     }
 
+    function initWireGuard() {
+      init();
+      const mojom = chromeos.networkConfig.mojom;
+      const wg1 = OncMojo.getDefaultManagedProperties(
+          chromeos.networkConfig.mojom.NetworkType.kVPN, 'wg1_guid', 'wg1');
+      wg1.typeProperties.vpn.type =
+          chromeos.networkConfig.mojom.VpnType.kWireGuard;
+      wg1.typeProperties.vpn.wireguard = {
+        peers: {
+          activeValue: [{
+            publicKey: 'KFhwdv4+jKpSXMW6xEUVtOe4Mo8l/xOvGmshmjiHx1Y=',
+            endpoint: '192.168.66.66:32000',
+            allowedIps: '0.0.0.0/0',
+          }]
+        }
+      };
+      wg1.staticIpConfig = {ipAddress: {activeValue: '10.10.0.1'}};
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kVPN, true);
+      mojoApi_.resetForTest();
+      mojoApi_.addNetworksForTest([
+        OncMojo.managedPropertiesToNetworkState(wg1),
+      ]);
+      mojoApi_.setManagedPropertiesForTest(wg1);
+      internetDetailPage.init('wg1_guid', 'VPN', 'wg1');
+    }
+
     test('VPN config allowed', function() {
       initVpn();
       prefs_.vpn_config_allowed.value = true;
@@ -421,7 +457,8 @@ suite('InternetDetailPage', function() {
       return flushAsync().then(() => {
         const disconnectButton = getButton('connectDisconnect');
         assertFalse(disconnectButton.hasAttribute('enforced_'));
-        assertFalse(!!disconnectButton.$$('cr-policy-pref-indicator'));
+        assertFalse(!!disconnectButton.shadowRoot.querySelector(
+            'cr-policy-pref-indicator'));
       });
     });
 
@@ -432,7 +469,8 @@ suite('InternetDetailPage', function() {
       return flushAsync().then(() => {
         const disconnectButton = getButton('connectDisconnect');
         assertTrue(disconnectButton.hasAttribute('enforced_'));
-        assertTrue(!!disconnectButton.$$('cr-policy-pref-indicator'));
+        assertTrue(!!disconnectButton.shadowRoot.querySelector(
+            'cr-policy-pref-indicator'));
       });
     });
 
@@ -444,6 +482,21 @@ suite('InternetDetailPage', function() {
       initVpn(/*opt_doNotProvidePrefs=*/ true);
       return flushAsync();
     });
+
+    test('OpenVPN does not show public key field', function() {
+      initVpn();
+      return flushAsync().then(() => {
+        assertFalse(!!internetDetailPage.$$('#wgPublicKeyField'));
+      });
+    });
+
+    test('WireGuard does show public key field', function() {
+      initWireGuard();
+      return flushAsync().then(() => {
+        assertTrue(!!internetDetailPage.$$('#wgPublicKeyField'));
+      });
+    });
+
   });
 
   suite('DetailsPageCellular', function() {
@@ -600,7 +653,8 @@ suite('InternetDetailPage', function() {
 
       await flushAsync();
 
-      const deepLinkElement = getButton('connectDisconnect').$$('cr-button');
+      const deepLinkElement =
+          getButton('connectDisconnect').shadowRoot.querySelector('cr-button');
       await test_util.waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
@@ -1110,7 +1164,8 @@ suite('InternetDetailPage', function() {
 
       await flushAsync();
 
-      const deepLinkElement = getButton('connectDisconnect').$$('cr-button');
+      const deepLinkElement =
+          getButton('connectDisconnect').shadowRoot.querySelector('cr-button');
       await test_util.waitAfterNextRender(deepLinkElement);
       assertEquals(
           deepLinkElement, getDeepActiveElement(),

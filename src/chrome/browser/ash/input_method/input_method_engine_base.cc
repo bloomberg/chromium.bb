@@ -19,8 +19,8 @@
 #include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_keymap.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_keymap.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -90,7 +90,7 @@ void InputMethodEngineBase::OnInputMethodOptionsChanged() {
   const base::DictionaryValue& old_settings =
       base::Value::AsDictionaryValue(input_method_settings_snapshot_);
   for (const auto it : new_settings->DictItems()) {
-    if (old_settings.HasKey(it.first)) {
+    if (old_settings.FindKey(it.first)) {
       if (*(old_settings.FindPath(it.first)) !=
           *(new_settings->FindPath(it.first))) {
         observer_->OnInputMethodOptionsChanged(it.first);
@@ -472,6 +472,21 @@ gfx::Rect InputMethodEngineBase::GetAutocorrectCharacterBounds(
   return GetAutocorrectCharacterBounds();
 }
 
+gfx::Rect InputMethodEngineBase::GetTextFieldBounds(int context_id,
+                                                    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return gfx::Rect();
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
+    return gfx::Rect();
+  }
+  return GetTextFieldBounds();
+}
+
 bool InputMethodEngineBase::SetAutocorrectRange(int context_id,
                                                 const gfx::Range& range,
                                                 std::string* error) {
@@ -552,6 +567,13 @@ std::string InputMethodEngineBase::AddPendingKeyEvent(
       request_id, PendingKeyEvent(component_id, std::move(callback)));
 
   return request_id;
+}
+
+void InputMethodEngineBase::CancelPendingKeyEvents() {
+  for (auto& event : pending_key_events_) {
+    std::move(event.second.callback).Run(false);
+  }
+  pending_key_events_.clear();
 }
 
 InputMethodEngineBase::PendingKeyEvent::PendingKeyEvent(

@@ -22,7 +22,7 @@ MovePasswordToAccountStoreHelper::MovePasswordToAccountStoreHelper(
       client_(client),
       trigger_(trigger),
       done_callback_(std::move(done_callback)),
-      form_fetcher_(FormFetcherImpl::CreateFormFetcherImpl(
+      form_fetcher_(std::make_unique<FormFetcherImpl>(
           PasswordFormDigest(form),
           client,
           /*should_migrate_http_passwords=*/true)) {
@@ -35,8 +35,7 @@ MovePasswordToAccountStoreHelper::~MovePasswordToAccountStoreHelper() {
 }
 
 void MovePasswordToAccountStoreHelper::OnFetchCompleted() {
-  std::unique_ptr<PasswordSaveManagerImpl> save_manager =
-      PasswordSaveManagerImpl::CreatePasswordSaveManagerImpl(client_);
+  auto save_manager = std::make_unique<PasswordSaveManagerImpl>(client_);
   save_manager->Init(client_, form_fetcher_.get(), /*metrics_recorder=*/nullptr,
                      /*votes_uploader=*/nullptr);
   save_manager->CreatePendingCredentials(form_, {}, {}, /*is_http_auth=*/false,

@@ -22,9 +22,9 @@
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/accessibility/accessibility_features.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 
 using ::testing::Contains;
 using ::testing::Not;
@@ -158,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaInstalledNotification) {
   AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
       "dictation-locale-menu-subtitle-changed",
-      "French (France) is processed locally and works offline."));
+      "French (France) is processed locally and works offline"));
 }
 
 // Verifies that the correct string is sent to the JavaScript end of the web UI.
@@ -277,6 +277,29 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, DictationLocalesCalculation) {
         EXPECT_THAT(testcase.expected_recommended_prefixes,
                     Not(Contains(language_code)));
       }
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest,
+                       DictationLocalesOfflineAndInstalled) {
+  speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
+  MaybeAddDictationLocales();
+  const base::ListValue* argument;
+  ASSERT_TRUE(
+      GetWebUIListenerArgumentListValue("dictation-locales-set", &argument));
+
+  for (auto& it : argument->GetList()) {
+    const base::DictionaryValue* dict = &base::Value::AsDictionaryValue(it);
+    const std::string locale = *(dict->FindStringPath("value"));
+    bool works_offline = dict->FindBoolKey("worksOffline").value();
+    bool installed = dict->FindBoolKey("installed").value();
+    if (locale == speech::kUsEnglishLocale) {
+      ASSERT_TRUE(works_offline);
+      ASSERT_TRUE(installed);
+    } else {
+      ASSERT_FALSE(works_offline);
+      ASSERT_FALSE(installed);
     }
   }
 }

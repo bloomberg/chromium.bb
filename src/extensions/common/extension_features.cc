@@ -11,13 +11,13 @@ namespace extensions_features {
 // by the Omaha attribute.
 const base::Feature kDisablePolicyViolationExtensionsRemotely{
     "DisablePolicyViolationExtensionsRemotely",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we disable extensions that are marked as potentially
 // unwanted by the Omaha attribute.
 const base::Feature kDisablePotentiallyUwsExtensionsRemotely{
     "DisablePotentiallyUwsExtensionsRemotely",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we show an install friction dialog when an Enhanced Safe
 // Browsing user tries to install an extension that is not included in the
@@ -74,4 +74,12 @@ const base::Feature kAllowSharedArrayBuffersUnconditionally{
 const base::Feature kU2FSecurityKeyAPI{"U2FSecurityKeyAPI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Allows Manifest V3 (and greater) extensions to use web assembly. Note that
+// this allows extensions to use remotely hosted web assembly which we don't
+// want. This feature is intended for local development (by extension
+// developers) only, and should never be flipped to ENABLED. This should be
+// removed once web assembly support for manifest V3 is added. See
+// crbug.com/1173354.
+const base::Feature kAllowWasmInMV3{"AllowWasmInMV3",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace extensions_features

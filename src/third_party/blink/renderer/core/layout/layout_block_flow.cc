@@ -3164,6 +3164,10 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
   }
 }
 
+bool LayoutBlockFlow::CreatesAnonymousWrapper() const {
+  return IsLayoutFlowThread() && Parent()->IsLayoutNGObject();
+}
+
 void LayoutBlockFlow::MoveAllChildrenIncludingFloatsTo(
     LayoutBlock* to_block,
     bool full_remove_insert) {
@@ -4643,7 +4647,7 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
 
   // TODO(crbug.com/1144203): This code path should be switch to
   // |RecalcFragmentsVisualOverflow|.
-  if (PhysicalFragmentCount()) {
+  if (CanUseFragmentsForVisualOverflow()) {
     for (const NGPhysicalBoxFragment& fragment : PhysicalFragments()) {
       if (const NGFragmentItems* items = fragment.Items()) {
         NGInlineCursor cursor(fragment, *items);

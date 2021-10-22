@@ -137,6 +137,10 @@ class RuleBasedPacFileFetcher : public PacFileFetcher {
 class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
  public:
   MockDhcpPacFileFetcher();
+
+  MockDhcpPacFileFetcher(const MockDhcpPacFileFetcher&) = delete;
+  MockDhcpPacFileFetcher& operator=(const MockDhcpPacFileFetcher&) = delete;
+
   ~MockDhcpPacFileFetcher() override;
 
   int Fetch(std::u16string* utf16_text,
@@ -155,7 +159,6 @@ class MockDhcpPacFileFetcher : public DhcpPacFileFetcher {
   CompletionOnceCallback callback_;
   std::u16string* utf16_text_;
   GURL gurl_;
-  DISALLOW_COPY_AND_ASSIGN(MockDhcpPacFileFetcher);
 };
 
 MockDhcpPacFileFetcher::MockDhcpPacFileFetcher() = default;
@@ -654,11 +657,10 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithPositiveDelay) {
   TestCompletionCallback callback;
   RecordingTestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_THAT(
-      decider.Start(
-          ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
-          base::TimeDelta::FromMilliseconds(1), true, callback.callback()),
-      IsError(ERR_IO_PENDING));
+  EXPECT_THAT(decider.Start(ProxyConfigWithAnnotation(
+                                config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                            base::Milliseconds(1), true, callback.callback()),
+              IsError(ERR_IO_PENDING));
 
   EXPECT_THAT(callback.WaitForResult(), IsError(kFailedDownloading));
   EXPECT_FALSE(decider.script_data().data);
@@ -697,11 +699,10 @@ TEST(PacFileDeciderTest, CustomPacFails1_WithNegativeDelay) {
   TestCompletionCallback callback;
   RecordingTestNetLog log;
   PacFileDecider decider(&fetcher, &dhcp_fetcher, &log);
-  EXPECT_THAT(
-      decider.Start(
-          ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS),
-          base::TimeDelta::FromSeconds(-5), true, callback.callback()),
-      IsError(kFailedDownloading));
+  EXPECT_THAT(decider.Start(ProxyConfigWithAnnotation(
+                                config, TRAFFIC_ANNOTATION_FOR_TESTS),
+                            base::Seconds(-5), true, callback.callback()),
+              IsError(kFailedDownloading));
   EXPECT_FALSE(decider.script_data().data);
 
   // Check the NetLog was filled correctly.
@@ -723,6 +724,10 @@ class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
   explicit SynchronousSuccessDhcpFetcher(const std::u16string& expected_text)
       : gurl_("http://dhcppac/"), expected_text_(expected_text) {}
 
+  SynchronousSuccessDhcpFetcher(const SynchronousSuccessDhcpFetcher&) = delete;
+  SynchronousSuccessDhcpFetcher& operator=(
+      const SynchronousSuccessDhcpFetcher&) = delete;
+
   int Fetch(std::u16string* utf16_text,
             CompletionOnceCallback callback,
             const NetLogWithSource& net_log,
@@ -742,8 +747,6 @@ class SynchronousSuccessDhcpFetcher : public DhcpPacFileFetcher {
  private:
   GURL gurl_;
   std::u16string expected_text_;
-
-  DISALLOW_COPY_AND_ASSIGN(SynchronousSuccessDhcpFetcher);
 };
 
 // All of the tests above that use PacFileDecider have tested

@@ -50,6 +50,8 @@ target_sources(dawn_native PRIVATE
     "BuddyMemoryAllocator.h"
     "Buffer.cpp"
     "Buffer.h"
+    "BufferLocation.cpp"
+    "BufferLocation.h"
     "CachedObject.cpp"
     "CachedObject.h"
     "CallbackTaskManager.cpp"
@@ -92,10 +94,14 @@ target_sources(dawn_native PRIVATE
     "ErrorInjector.h"
     "ErrorScope.cpp"
     "ErrorScope.h"
-    "Extensions.cpp"
-    "Extensions.h"
+    "Features.cpp"
+    "Features.h"
     "ExternalTexture.cpp"
     "ExternalTexture.h"
+    "IndirectDrawMetadata.cpp"
+    "IndirectDrawMetadata.h"
+    "IndirectDrawValidationEncoder.cpp"
+    "IndirectDrawValidationEncoder.h"
     "ObjectContentHasher.cpp"
     "ObjectContentHasher.h"
     "Format.cpp"
@@ -103,8 +109,11 @@ target_sources(dawn_native PRIVATE
     "Forward.h"
     "Instance.cpp"
     "Instance.h"
+    "InternalPipelineStore.cpp"
     "InternalPipelineStore.h"
     "IntegerTypes.h"
+    "Limits.cpp"
+    "Limits.h"
     "ObjectBase.cpp"
     "ObjectBase.h"
     "PassResourceUsage.h"
@@ -146,6 +155,8 @@ target_sources(dawn_native PRIVATE
     "RingBufferAllocator.h"
     "Sampler.cpp"
     "Sampler.h"
+    "ScratchBuffer.cpp"
+    "ScratchBuffer.h"
     "ShaderModule.cpp"
     "ShaderModule.h"
     "StagingBuffer.cpp"
@@ -174,12 +185,19 @@ target_link_libraries(dawn_native
             dawn_platform
             dawn_internal_config
             libtint
-            spirv-cross-core
-            spirv-cross-glsl
-            spirv-cross-hlsl
-            spirv-cross-msl
             SPIRV-Tools-opt
+            absl_strings
+            absl_str_format_internal
 )
+
+if (DAWN_REQUIRES_SPIRV_CROSS)
+    target_link_libraries(dawn_native PRIVATE spirv-cross-core)
+    if (DAWN_ENABLE_OPENGL)
+        target_link_libraries(dawn_native PRIVATE spirv-cross-glsl)
+    endif()
+endif()
+
+target_include_directories(dawn_native PRIVATE ${DAWN_ABSEIL_DIR})
 
 if (DAWN_USE_X11)
     find_package(X11 REQUIRED)

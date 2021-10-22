@@ -86,7 +86,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    return ff_set_common_formats(ctx, ff_make_format_list(s->inplace ? alpha_pix_fmts : no_alpha_pix_fmts));
+    return ff_set_common_formats_from_list(ctx, s->inplace ? alpha_pix_fmts : no_alpha_pix_fmts);
 }
 
 static void premultiply8(const uint8_t *msrc, const uint8_t *asrc,
@@ -635,8 +635,8 @@ static int filter_frame(AVFilterContext *ctx,
         td.d = *out;
         td.a = alpha;
         td.m = base;
-        ctx->internal->execute(ctx, premultiply_slice, &td, NULL, FFMIN(s->height[0],
-                                                                        ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, premultiply_slice, &td, NULL,
+                          FFMIN(s->height[0], ff_filter_get_nb_threads(ctx)));
     }
 
     return 0;
@@ -790,7 +790,7 @@ static av_cold int init(AVFilterContext *ctx)
     pad.name         = "main";
     pad.config_props = config_input;
 
-    if ((ret = ff_insert_inpad(ctx, 0, &pad)) < 0)
+    if ((ret = ff_append_inpad(ctx, &pad)) < 0)
         return ret;
 
     if (!s->inplace) {
@@ -798,7 +798,7 @@ static av_cold int init(AVFilterContext *ctx)
         pad.name         = "alpha";
         pad.config_props = NULL;
 
-        if ((ret = ff_insert_inpad(ctx, 1, &pad)) < 0)
+        if ((ret = ff_append_inpad(ctx, &pad)) < 0)
             return ret;
     }
 
@@ -819,7 +819,6 @@ static const AVFilterPad premultiply_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 #if CONFIG_PREMULTIPLY_FILTER
@@ -833,7 +832,7 @@ const AVFilter ff_vf_premultiply = {
     .query_formats = query_formats,
     .activate      = activate,
     .inputs        = NULL,
-    .outputs       = premultiply_outputs,
+    FILTER_OUTPUTS(premultiply_outputs),
     .priv_class    = &premultiply_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
                      AVFILTER_FLAG_DYNAMIC_INPUTS |
@@ -856,7 +855,7 @@ const AVFilter ff_vf_unpremultiply = {
     .query_formats = query_formats,
     .activate      = activate,
     .inputs        = NULL,
-    .outputs       = premultiply_outputs,
+    FILTER_OUTPUTS(premultiply_outputs),
     .priv_class    = &unpremultiply_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
                      AVFILTER_FLAG_DYNAMIC_INPUTS |

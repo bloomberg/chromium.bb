@@ -77,6 +77,9 @@ class TestWebApkInstaller : public WebApkInstaller {
                                SpaceStatus status)
       : WebApkInstaller(browser_context), test_space_status_(status) {}
 
+  TestWebApkInstaller(const TestWebApkInstaller&) = delete;
+  TestWebApkInstaller& operator=(const TestWebApkInstaller&) = delete;
+
   void InstallOrUpdateWebApk(const std::string& package_name,
                              const std::string& token) override {
     PostTaskToRunSuccessCallback();
@@ -97,14 +100,15 @@ class TestWebApkInstaller : public WebApkInstaller {
 
   // The space status used in tests.
   SpaceStatus test_space_status_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWebApkInstaller);
 };
 
 // Runs the WebApkInstaller installation process/update and blocks till done.
 class WebApkInstallerRunner {
  public:
   WebApkInstallerRunner() {}
+
+  WebApkInstallerRunner(const WebApkInstallerRunner&) = delete;
+  WebApkInstallerRunner& operator=(const WebApkInstallerRunner&) = delete;
 
   ~WebApkInstallerRunner() {}
 
@@ -151,8 +155,6 @@ class WebApkInstallerRunner {
 
   // The result of the installation process.
   WebApkInstallResult result_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebApkInstallerRunner);
 };
 
 // Helper class for calling WebApkInstaller::StoreUpdateRequestToFile()
@@ -160,6 +162,9 @@ class WebApkInstallerRunner {
 class UpdateRequestStorer {
  public:
   UpdateRequestStorer() {}
+
+  UpdateRequestStorer(const UpdateRequestStorer&) = delete;
+  UpdateRequestStorer& operator=(const UpdateRequestStorer&) = delete;
 
   void StoreSync(const base::FilePath& update_request_path) {
     base::RunLoop run_loop;
@@ -178,8 +183,6 @@ class UpdateRequestStorer {
   void OnComplete(bool success) { std::move(quit_closure_).Run(); }
 
   base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateRequestStorer);
 };
 
 // Builds a webapk::WebApkResponse with |token| as the token from the WebAPK
@@ -204,6 +207,10 @@ std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
 class BuildProtoRunner {
  public:
   BuildProtoRunner() {}
+
+  BuildProtoRunner(const BuildProtoRunner&) = delete;
+  BuildProtoRunner& operator=(const BuildProtoRunner&) = delete;
+
   ~BuildProtoRunner() {}
 
   void BuildSync(const GURL& best_primary_icon_url,
@@ -256,13 +263,14 @@ class BuildProtoRunner {
 
   // Called after the |webapk_request_| is built.
   base::OnceClosure on_completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(BuildProtoRunner);
 };
 
 class ScopedTempFile {
  public:
   ScopedTempFile() { CHECK(base::CreateTemporaryFile(&file_path_)); }
+
+  ScopedTempFile(const ScopedTempFile&) = delete;
+  ScopedTempFile& operator=(const ScopedTempFile&) = delete;
 
   ~ScopedTempFile() { base::DeleteFile(file_path_); }
 
@@ -270,8 +278,6 @@ class ScopedTempFile {
 
  private:
   base::FilePath file_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTempFile);
 };
 
 }  // anonymous namespace
@@ -284,6 +290,10 @@ class WebApkInstallerTest : public ::testing::Test {
 
   WebApkInstallerTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
+
+  WebApkInstallerTest(const WebApkInstallerTest&) = delete;
+  WebApkInstallerTest& operator=(const WebApkInstallerTest&) = delete;
+
   ~WebApkInstallerTest() override {}
 
   void SetUp() override {
@@ -359,8 +369,6 @@ class WebApkInstallerTest : public ::testing::Test {
 
   // Builds response to the WebAPK creation request.
   WebApkResponseBuilder webapk_response_builder_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebApkInstallerTest);
 };
 
 // Test installation succeeding.

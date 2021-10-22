@@ -47,6 +47,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                DisplayResourceProviderSkia* resource_provider,
                OverlayProcessorInterface* overlay_processor,
                SkiaOutputSurface* skia_output_surface);
+
+  SkiaRenderer(const SkiaRenderer&) = delete;
+  SkiaRenderer& operator=(const SkiaRenderer&) = delete;
+
   ~SkiaRenderer() override;
 
   void SwapBuffers(SwapFrameData swap_frame_data) override;
@@ -192,6 +196,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                        SkPaint* paint,
                        DrawQuadParams* params);
 
+  void DrawPaintOpBuffer(const cc::PaintOpBuffer* buffer,
+                         const absl::optional<SkColor>& clear_color,
+                         const TileDrawQuad* quad,
+                         const DrawRPDQParams* rpdq_params,
+                         const DrawQuadParams* params);
+
   // RPDQ, DebugBorder and picture quads cannot be batched. They
   // either are not textures (debug, picture), or it's very likely
   // the texture will have advanced paint effects (rpdq). Additionally, they do
@@ -332,7 +342,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
       std::vector<DisplayResourceProviderSkia::ScopedReadLockSharedImage>>
       read_lock_release_fence_overlay_locks_;
 
-#if defined(OS_APPLE)
+#if defined(OS_APPLE) || defined(USE_OZONE)
   class ScopedReadLockComparator {
    public:
     using is_transparent = void;
@@ -353,7 +363,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   base::flat_set<DisplayResourceProviderSkia::ScopedReadLockSharedImage,
                  ScopedReadLockComparator>
       awaiting_release_overlay_locks_;
-#endif  // defined(OS_APPLE)
+#endif  // defined(OS_APPLE) || defined(USE_OZONE)
 
   base::flat_map<gfx::ColorSpace,
                  base::flat_map<gfx::ColorSpace, sk_sp<SkRuntimeEffect>>>
@@ -361,8 +371,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
 
   bool UsingSkiaForDelegatedInk() const;
   uint32_t debug_tint_modulate_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SkiaRenderer);
 };
 
 }  // namespace viz

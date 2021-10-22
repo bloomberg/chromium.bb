@@ -5,14 +5,15 @@
 #include "content/browser/renderer_host/page_lifecycle_state_manager.h"
 
 #include "base/callback_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/frame/event_page_show_persisted.h"
 
 namespace {
-constexpr base::TimeDelta kBackForwardCacheTimeoutInSeconds =
-    base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kBackForwardCacheTimeoutInSeconds = base::Seconds(3);
 }
 
 namespace content {
@@ -80,12 +81,10 @@ void PageLifecycleStateManager::SetIsInBackForwardCache(
     // When a page is put into BackForwardCache, the page can run a busy loop.
     // Set a timeout monitor to check that the transition finishes within the
     // time limit.
-    back_forward_cache_timeout_monitor_ =
-        std::make_unique<OneShotTimeoutMonitor>(
-            base::BindOnce(
-                &PageLifecycleStateManager::OnBackForwardCacheTimeout,
-                weak_ptr_factory_.GetWeakPtr()),
-            kBackForwardCacheTimeoutInSeconds);
+    back_forward_cache_timeout_monitor_.Start(
+        FROM_HERE, kBackForwardCacheTimeoutInSeconds,
+        base::BindOnce(&PageLifecycleStateManager::OnBackForwardCacheTimeout,
+                       weak_ptr_factory_.GetWeakPtr()));
     pagehide_dispatch_ = blink::mojom::PagehideDispatch::kDispatchedPersisted;
   } else {
     DCHECK(page_restore_params);
@@ -164,6 +163,22 @@ void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
     // has not.
   }
 
+  if (last_state_sent_to_renderer_) {
+    // This logic detects whether the page is being restored from back-forward
+    // cache or not, and is the same as
+    //   * WebViewImpl::SetPageLifecycleStateInternal and
+    //   * Page::DispatchedPagehidePersistedAndStillHidden
+    // in Blink.
+    bool old_state_shown = last_state_sent_to_renderer_->pagehide_dispatch ==
+                           blink::mojom::PagehideDispatch::kNotDispatched;
+    bool new_state_shown = new_state->pagehide_dispatch ==
+                           blink::mojom::PagehideDispatch::kNotDispatched;
+    if (!old_state_shown && new_state_shown) {
+      blink::RecordUMAEventPageShowPersisted(
+          blink::EventPageShowPersisted::kYesInBrowser);
+    }
+  }
+
   last_state_sent_to_renderer_ = new_state.Clone();
   auto state = new_state.Clone();
 
@@ -223,7 +238,7 @@ void PageLifecycleStateManager::OnPageLifecycleChangedAck(
   render_view_host_impl_->EnforceBackForwardCacheSizeLimit();
 
   if (last_acknowledged_state_->is_in_back_forward_cache) {
-    back_forward_cache_timeout_monitor_.reset(nullptr);
+    back_forward_cache_timeout_monitor_.Stop();
   }
 
   if (test_delegate_) {
@@ -237,7 +252,7 @@ void PageLifecycleStateManager::OnPageLifecycleChangedAck(
 void PageLifecycleStateManager::OnBackForwardCacheTimeout() {
   DCHECK(!last_acknowledged_state_->is_in_back_forward_cache);
   render_view_host_impl_->OnBackForwardCacheTimeout();
-  back_forward_cache_timeout_monitor_.reset(nullptr);
+  back_forward_cache_timeout_monitor_.Stop();
 }
 
 void PageLifecycleStateManager::SetDelegateForTesting(

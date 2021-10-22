@@ -36,6 +36,12 @@ constexpr char kFakeSecondaryGaiaId[] = "fake-secondary-gaia-id";
 class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
  public:
   AccountManagerPolicyControllerTest() = default;
+
+  AccountManagerPolicyControllerTest(
+      const AccountManagerPolicyControllerTest&) = delete;
+  AccountManagerPolicyControllerTest& operator=(
+      const AccountManagerPolicyControllerTest&) = delete;
+
   ~AccountManagerPolicyControllerTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -125,7 +131,6 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
       identity_test_environment_adaptor_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   AccountId primary_account_id_;
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerPolicyControllerTest);
 };
 
 IN_PROC_BROWSER_TEST_F(AccountManagerPolicyControllerTest,
@@ -178,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
                 .GetGaiaId(),
-            accounts[0].key.id);
+            accounts[0].key.id());
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -211,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(
                 ->GetUserByProfile(profile())
                 ->GetAccountId()
                 .GetGaiaId(),
-            accounts[0].key.id);
+            accounts[0].key.id());
 }
 
 }  // namespace ash

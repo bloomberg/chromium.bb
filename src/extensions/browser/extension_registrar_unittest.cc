@@ -16,7 +16,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -37,8 +36,10 @@ using LoadErrorBehavior = ExtensionRegistrar::LoadErrorBehavior;
 class TestExtensionSystem : public MockExtensionSystem {
  public:
   explicit TestExtensionSystem(content::BrowserContext* context)
-      : MockExtensionSystem(context),
-        runtime_data_(ExtensionRegistry::Get(context)) {}
+      : MockExtensionSystem(context) {}
+
+  TestExtensionSystem(const TestExtensionSystem&) = delete;
+  TestExtensionSystem& operator=(const TestExtensionSystem&) = delete;
 
   ~TestExtensionSystem() override {}
 
@@ -49,16 +50,17 @@ class TestExtensionSystem : public MockExtensionSystem {
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                      std::move(callback));
   }
-  RuntimeData* runtime_data() override { return &runtime_data_; }
-
- private:
-  RuntimeData runtime_data_;
-  DISALLOW_COPY_AND_ASSIGN(TestExtensionSystem);
 };
 
 class TestExtensionRegistrarDelegate : public ExtensionRegistrar::Delegate {
  public:
   TestExtensionRegistrarDelegate() = default;
+
+  TestExtensionRegistrarDelegate(const TestExtensionRegistrarDelegate&) =
+      delete;
+  TestExtensionRegistrarDelegate& operator=(
+      const TestExtensionRegistrarDelegate&) = delete;
+
   ~TestExtensionRegistrarDelegate() override = default;
 
   // ExtensionRegistrar::Delegate:
@@ -76,9 +78,6 @@ class TestExtensionRegistrarDelegate : public ExtensionRegistrar::Delegate {
   MOCK_METHOD1(CanEnableExtension, bool(const Extension* extension));
   MOCK_METHOD1(CanDisableExtension, bool(const Extension* extension));
   MOCK_METHOD1(ShouldBlockExtension, bool(const Extension* extension));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestExtensionRegistrarDelegate);
 };
 
 }  // namespace
@@ -86,6 +85,10 @@ class TestExtensionRegistrarDelegate : public ExtensionRegistrar::Delegate {
 class ExtensionRegistrarTest : public ExtensionsTest {
  public:
   ExtensionRegistrarTest() = default;
+
+  ExtensionRegistrarTest(const ExtensionRegistrarTest&) = delete;
+  ExtensionRegistrarTest& operator=(const ExtensionRegistrarTest&) = delete;
+
   ~ExtensionRegistrarTest() override = default;
 
   void SetUp() override {
@@ -395,8 +398,6 @@ class ExtensionRegistrarTest : public ExtensionsTest {
 
   // Initialized in SetUp().
   absl::optional<ExtensionRegistrar> registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionRegistrarTest);
 };
 
 TEST_F(ExtensionRegistrarTest, Basic) {

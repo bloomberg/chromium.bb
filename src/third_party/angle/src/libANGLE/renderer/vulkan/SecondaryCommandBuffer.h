@@ -17,8 +17,13 @@
 
 namespace rx
 {
+class ContextVk;
+
 namespace vk
 {
+class Context;
+class RenderPassDesc;
+
 namespace priv
 {
 
@@ -477,6 +482,22 @@ class SecondaryCommandBuffer final : angle::NonCopyable
     // buffer.
     static constexpr bool ExecutesInline() { return true; }
 
+    static angle::Result InitializeCommandPool(Context *context,
+                                               CommandPool *pool,
+                                               uint32_t queueFamilyIndex,
+                                               bool hasProtectedContent)
+    {
+        return angle::Result::Continue;
+    }
+    static angle::Result InitializeRenderPassInheritanceInfo(
+        ContextVk *contextVk,
+        const Framebuffer &framebuffer,
+        const RenderPassDesc &renderPassDesc,
+        VkCommandBufferInheritanceInfo *inheritanceInfoOut)
+    {
+        return angle::Result::Continue;
+    }
+
     // Add commands
     void beginDebugUtilsLabelEXT(const VkDebugUtilsLabelEXT &label);
 
@@ -678,7 +699,7 @@ class SecondaryCommandBuffer final : angle::NonCopyable
     VkResult end() { return VK_SUCCESS; }
 
     // Parse the cmds in this cmd buffer into given primary cmd buffer for execution
-    void executeCommands(VkCommandBuffer cmdBuffer);
+    void executeCommands(PrimaryCommandBuffer *primary);
 
     // Calculate memory usage of this command buffer for diagnostics.
     void getMemoryUsageStats(size_t *usedMemoryOut, size_t *allocatedMemoryOut) const;
@@ -693,7 +714,10 @@ class SecondaryCommandBuffer final : angle::NonCopyable
     static_assert((kBlockSize % 4) == 0, "Check kBlockSize alignment");
 
     // Initialize the SecondaryCommandBuffer by setting the allocator it will use
-    void initialize(angle::PoolAllocator *allocator)
+    angle::Result initialize(vk::Context *context,
+                             vk::CommandPool *pool,
+                             bool isRenderPassCommandBuffer,
+                             angle::PoolAllocator *allocator)
     {
         ASSERT(allocator);
         ASSERT(mCommands.empty());
@@ -701,7 +725,15 @@ class SecondaryCommandBuffer final : angle::NonCopyable
         allocateNewBlock();
         // Set first command to Invalid to start
         reinterpret_cast<CommandHeader *>(mCurrentWritePointer)->id = CommandID::Invalid;
+
+        return angle::Result::Continue;
     }
+
+    angle::Result begin(Context *context, const VkCommandBufferInheritanceInfo &inheritanceInfo)
+    {
+        return angle::Result::Continue;
+    }
+    angle::Result end(Context *context) { return angle::Result::Continue; }
 
     void open() { mIsOpen = true; }
     void close() { mIsOpen = false; }
@@ -709,7 +741,8 @@ class SecondaryCommandBuffer final : angle::NonCopyable
     void reset()
     {
         mCommands.clear();
-        initialize(mAllocator);
+        mCurrentWritePointer   = nullptr;
+        mCurrentBytesRemaining = 0;
     }
 
     // This will cause the SecondaryCommandBuffer to become invalid by clearing its allocator
@@ -717,7 +750,6 @@ class SecondaryCommandBuffer final : angle::NonCopyable
     // The SecondaryCommandBuffer is valid if it's been initialized
     bool valid() const { return mAllocator != nullptr; }
 
-    static bool CanKnowIfEmpty() { return true; }
     bool empty() const { return mCommands.size() == 0 || mCommands[0]->id == CommandID::Invalid; }
     // The following is used to give the size of the command buffer in bytes
     uint32_t getCommandSize() const

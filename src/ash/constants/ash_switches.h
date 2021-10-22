@@ -131,7 +131,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEnableExtensionAssetsSharing[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableHoudini[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableHoudini64[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableHoudiniDlc[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableNdkTranslation[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kEnableNdkTranslation64[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -257,6 +256,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kTimeBeforeOnboardingSurveyInSecondsForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kTouchscreenUsableWhileScreenOff[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTpmIsDynamic[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUnfilteredBluetoothDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUpdateRequiredAueForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -301,6 +301,9 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGaiaServicesDisabled();
 
 // Returns true if |kDisableArcCpuRestriction| is true.
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsArcCpuRestrictionDisabled();
+
+// Returns true if |kTpmIsDynamic| is true.
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsTpmDynamic();
 
 // Returns true if all Bluetooth devices in UI (System Tray/Settings Page.)
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsUnfilteredBluetoothDevicesEnabled();

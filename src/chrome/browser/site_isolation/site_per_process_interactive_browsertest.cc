@@ -85,6 +85,12 @@ void WaitForRenderWidgetHostCount(size_t target_count) {
 class SitePerProcessInteractiveBrowserTest : public InProcessBrowserTest {
  public:
   SitePerProcessInteractiveBrowserTest() {}
+
+  SitePerProcessInteractiveBrowserTest(
+      const SitePerProcessInteractiveBrowserTest&) = delete;
+  SitePerProcessInteractiveBrowserTest& operator=(
+      const SitePerProcessInteractiveBrowserTest&) = delete;
+
   ~SitePerProcessInteractiveBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -115,9 +121,6 @@ class SitePerProcessInteractiveBrowserTest : public InProcessBrowserTest {
   };
 
   void FullscreenElementInABA(FullscreenExitMethod exit_method);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessInteractiveBrowserTest);
 };
 
 // Check that document.hasFocus() works properly with out-of-process iframes.
@@ -867,10 +870,10 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   std::set<std::string> expected_events = {"main_frame", "child", "grandchild"};
   {
     content::DOMMessageQueue queue;
-    FullscreenNotificationObserver observer(browser());
+    FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_TRUE(ExecuteScript(grandchild, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    fullscreen_observer.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -897,7 +900,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   AddResizeListener(grandchild, original_grandchild_size);
   {
     content::DOMMessageQueue queue;
-    FullscreenNotificationObserver observer(browser());
+    FullscreenNotificationObserver fullscreen_observer(browser());
     switch (exit_method) {
       case FullscreenExitMethod::JS_CALL:
         EXPECT_TRUE(ExecuteScript(grandchild, "exitFullscreen()"));
@@ -910,7 +913,7 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
         NOTREACHED();
     }
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    fullscreen_observer.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1028,10 +1031,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // browser finishes the fullscreen transition.
   {
     content::DOMMessageQueue queue;
-    FullscreenNotificationObserver observer(browser());
+    FullscreenNotificationObserver fullscreen_observer(browser());
     EXPECT_TRUE(ExecuteScript(c_middle, "activateFullscreen()"));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    fullscreen_observer.Wait();
   }
 
   // Verify that the browser has entered fullscreen for the current tab.
@@ -1068,11 +1071,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   AddResizeListener(c_middle, c_middle_original_size);
   {
     content::DOMMessageQueue queue;
-    FullscreenNotificationObserver observer(browser());
+    FullscreenNotificationObserver fullscreen_observer(browser());
     ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE,
                                                 false, false, false, false));
     WaitForMultipleFullscreenEvents(expected_events, queue);
-    observer.Wait();
+    fullscreen_observer.Wait();
   }
 
   EXPECT_FALSE(browser()->window()->IsFullscreen());
@@ -1134,6 +1137,12 @@ class SitePerProcessInteractivePDFTest
     : public SitePerProcessInteractiveBrowserTest {
  public:
   SitePerProcessInteractivePDFTest() : test_guest_view_manager_(nullptr) {}
+
+  SitePerProcessInteractivePDFTest(const SitePerProcessInteractivePDFTest&) =
+      delete;
+  SitePerProcessInteractivePDFTest& operator=(
+      const SitePerProcessInteractivePDFTest&) = delete;
+
   ~SitePerProcessInteractivePDFTest() override {}
 
   void SetUpOnMainThread() override {
@@ -1154,8 +1163,6 @@ class SitePerProcessInteractivePDFTest
  private:
   guest_view::TestGuestViewManagerFactory factory_;
   guest_view::TestGuestViewManager* test_guest_view_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessInteractivePDFTest);
 };
 
 // This class observes a WebContents for a navigation to an extension scheme to
@@ -1167,6 +1174,11 @@ class NavigationToExtensionSchemeObserver
       : content::WebContentsObserver(contents),
         extension_loaded_(contents->GetLastCommittedURL().SchemeIs(
             extensions::kExtensionScheme)) {}
+
+  NavigationToExtensionSchemeObserver(
+      const NavigationToExtensionSchemeObserver&) = delete;
+  NavigationToExtensionSchemeObserver& operator=(
+      const NavigationToExtensionSchemeObserver&) = delete;
 
   void Wait() {
     if (extension_loaded_)
@@ -1186,8 +1198,6 @@ class NavigationToExtensionSchemeObserver
 
   bool extension_loaded_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(NavigationToExtensionSchemeObserver);
 };
 
 // This test loads a PDF inside an OOPIF and then verifies that context menu
@@ -1356,12 +1366,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
 class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
  public:
   SitePerProcessAutofillTest() : SitePerProcessInteractiveBrowserTest() {}
+
+  SitePerProcessAutofillTest(const SitePerProcessAutofillTest&) = delete;
+  SitePerProcessAutofillTest& operator=(const SitePerProcessAutofillTest&) =
+      delete;
+
   ~SitePerProcessAutofillTest() override {}
 
  protected:
   class TestAutofillClient : public autofill::TestAutofillClient {
    public:
     TestAutofillClient() : popup_shown_(false) {}
+
+    TestAutofillClient(const TestAutofillClient&) = delete;
+    TestAutofillClient& operator=(const TestAutofillClient&) = delete;
+
     ~TestAutofillClient() override {}
 
     void WaitForNextPopup() {
@@ -1386,8 +1405,6 @@ class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
     gfx::RectF element_bounds_;
     bool popup_shown_;
     scoped_refptr<content::MessageLoopRunner> loop_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestAutofillClient);
   };
 
   const int kIframeTopDisplacement = 150;
@@ -1422,8 +1439,6 @@ class SitePerProcessAutofillTest : public SitePerProcessInteractiveBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   TestAutofillClient test_autofill_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(SitePerProcessAutofillTest);
 };
 
 // Waits until transforming |sample_point| from |render_frame_host| coordinates
@@ -1559,8 +1574,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   content::WebContents* old_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   ASSERT_TRUE(NavigateIframeToURL(old_contents, "test", subframe_url));
-  EXPECT_LE(2u, old_contents->GetAllFrames().size());
-  content::RenderFrameHost* subframe = old_contents->GetAllFrames()[1];
+  content::RenderFrameHost* subframe = ChildFrameAt(old_contents, 0);
+  ASSERT_TRUE(subframe);
   EXPECT_EQ(subframe_url, subframe->GetLastCommittedURL());
 
   // Simulate the ctrl-return to open the anchor's link in a new background tab.

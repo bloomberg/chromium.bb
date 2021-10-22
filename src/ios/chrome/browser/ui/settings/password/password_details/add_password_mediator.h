@@ -10,16 +10,22 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 
+@protocol AddPasswordDetailsConsumer;
+@protocol AddPasswordMediatorDelegate;
 class IOSChromePasswordCheckManager;
 
 // This mediator stores logic for adding new password credentials.
 @interface AddPasswordMediator
     : NSObject <PasswordDetailsTableViewControllerDelegate>
 
-- (instancetype)initWithPasswordCheckManager:
-    (IOSChromePasswordCheckManager*)manager NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDelegate:(id<AddPasswordMediatorDelegate>)delegate
+            passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+// Consumer of this mediator.
+@property(nonatomic, weak) id<AddPasswordDetailsConsumer> consumer;
 
 @end
 

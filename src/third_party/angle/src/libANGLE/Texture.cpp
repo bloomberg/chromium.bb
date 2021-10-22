@@ -358,7 +358,7 @@ bool TextureState::computeSamplerCompleteness(const SamplerState &samplerState,
     {
         return false;
     }
-    bool npotSupport = state.getExtensions().textureNPOTOES || state.getClientMajorVersion() >= 3;
+    bool npotSupport = state.getExtensions().textureNpotOES || state.getClientMajorVersion() >= 3;
     if (!npotSupport)
     {
         if ((samplerState.getWrapS() != GL_CLAMP_TO_EDGE &&
@@ -405,7 +405,7 @@ bool TextureState::computeSamplerCompleteness(const SamplerState &samplerState,
     // completeness.
     if (mType == TextureType::External)
     {
-        if (!state.getExtensions().eglImageExternalWrapModesEXT)
+        if (!state.getExtensions().EGLImageExternalWrapModesEXT)
         {
             if (samplerState.getWrapS() != GL_CLAMP_TO_EDGE ||
                 samplerState.getWrapT() != GL_CLAMP_TO_EDGE)
@@ -2244,14 +2244,7 @@ void Texture::onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMess
     switch (message)
     {
         case angle::SubjectMessage::ContentsChanged:
-            if (index == kBufferSubjectIndex)
-            {
-                // If the contents of the buffer attached to a texture buffer has changed, mark the
-                // texture dirty.
-                signalDirtyState(DIRTY_BIT_IMPLEMENTATION);
-                onStateChange(angle::SubjectMessage::ContentsChanged);
-            }
-            else
+            if (index != kBufferSubjectIndex)
             {
                 // ContentsChange originates from TextureStorage11::resolveAndReleaseTexture
                 // which resolves the underlying multisampled texture if it exists and so
@@ -2308,12 +2301,16 @@ void Texture::onSubjectStateChange(angle::SubjectIndex index, angle::SubjectMess
         case angle::SubjectMessage::BindingChanged:
             ASSERT(index == kBufferSubjectIndex);
             break;
-
         case angle::SubjectMessage::InitializationComplete:
             ASSERT(index == rx::kTextureImageImplObserverMessageIndex);
             setInitState(InitState::Initialized);
             break;
-
+        case angle::SubjectMessage::InternalMemoryAllocationChanged:
+            // Need to mark the texture dirty to give the back end a chance to handle the new
+            // buffer. For example, the Vulkan back end needs to create a new buffer view that
+            // points to the newly allocated buffer and update the texture descriptor set.
+            signalDirtyState(DIRTY_BIT_IMPLEMENTATION);
+            break;
         default:
             UNREACHABLE();
             break;
@@ -2347,6 +2344,22 @@ angle::Result Texture::getTexImage(const Context *context,
 
     return mTexture->getTexImage(context, packState, packBuffer, target, level, format, type,
                                  pixels);
+}
+
+angle::Result Texture::getCompressedTexImage(const Context *context,
+                                             const PixelPackState &packState,
+                                             Buffer *packBuffer,
+                                             TextureTarget target,
+                                             GLint level,
+                                             void *pixels)
+{
+    // No-op if the image level is empty.
+    if (getExtents(target, level).empty())
+    {
+        return angle::Result::Continue;
+    }
+
+    return mTexture->getCompressedTexImage(context, packState, packBuffer, target, level, pixels);
 }
 
 void Texture::onBindAsImageTexture()

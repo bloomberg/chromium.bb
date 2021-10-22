@@ -41,7 +41,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
@@ -364,7 +366,7 @@ void LaunchCrostiniAppImpl(
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&AddSpinner, restart_id, app_id, profile),
-      base::TimeDelta::FromMilliseconds(kDelayBeforeSpinnerMs));
+      base::Milliseconds(kDelayBeforeSpinnerMs));
 }
 
 void LaunchCrostiniApp(Profile* profile,
@@ -523,12 +525,40 @@ void UpdateContainerPref(Profile* profile,
   }
 }
 
+bool IsContainerVersionExpired(Profile* profile,
+                               const ContainerId& container_id) {
+  auto* value = GetContainerPrefValue(profile, container_id,
+                                      prefs::kContainerOsVersionKey);
+  if (!value)
+    return false;
+
+  auto version = static_cast<ContainerOsVersion>(value->GetInt());
+  return version == ContainerOsVersion::kDebianStretch;
+}
+
+bool ShouldWarnAboutExpiredVersion(Profile* profile,
+                                   const ContainerId& container_id) {
+  if (!CrostiniFeatures::Get()->IsContainerUpgradeUIAllowed(profile)) {
+    return false;
+  }
+  if (container_id != ContainerId::GetDefault()) {
+    return false;
+  }
+  // If the warning dialog is already open we can add more callbacks to it, but
+  // if we've moved to the upgrade dialog proper we should run them now as they
+  // may be part of the upgrade process.
+  if (chromeos::SystemWebDialogDelegate::FindInstance(
+          GURL{chrome::kChromeUICrostiniUpgraderUrl}.spec())) {
+    return false;
+  }
+  return IsContainerVersionExpired(profile, container_id);
+}
+
 std::u16string GetTimeRemainingMessage(base::TimeTicks start, int percent) {
   // Only estimate once we've spent at least 3 seconds OR gotten 10% of the way
   // through.
-  constexpr base::TimeDelta kMinTimeForEstimate =
-      base::TimeDelta::FromSeconds(3);
-  constexpr base::TimeDelta kTimeDeltaZero = base::TimeDelta::FromSeconds(0);
+  constexpr base::TimeDelta kMinTimeForEstimate = base::Seconds(3);
+  constexpr base::TimeDelta kTimeDeltaZero = base::Seconds(0);
   constexpr int kMinPercentForEstimate = 10;
   base::TimeDelta elapsed = base::TimeTicks::Now() - start;
   if ((elapsed >= kMinTimeForEstimate && percent > 0) ||

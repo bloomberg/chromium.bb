@@ -194,25 +194,20 @@ PasswordForm UpdateFormPreservingDifferentFieldsAcrossStores(
 
 }  // namespace
 
-// static
-std::unique_ptr<PasswordSaveManagerImpl>
-PasswordSaveManagerImpl::CreatePasswordSaveManagerImpl(
-    const PasswordManagerClient* client) {
-  PasswordStoreInterface* profile_store =
-      client->GetProfilePasswordStoreInterface();
-  PasswordStoreInterface* account_store =
-      client->GetAccountPasswordStoreInterface();
-
-  return std::make_unique<PasswordSaveManagerImpl>(
-      std::make_unique<FormSaverImpl>(profile_store),
-      account_store ? std::make_unique<FormSaverImpl>(account_store) : nullptr);
-}
-
 PasswordSaveManagerImpl::PasswordSaveManagerImpl(
     std::unique_ptr<FormSaver> profile_form_saver,
     std::unique_ptr<FormSaver> account_form_saver)
     : profile_store_form_saver_(std::move(profile_form_saver)),
       account_store_form_saver_(std::move(account_form_saver)) {}
+
+PasswordSaveManagerImpl::PasswordSaveManagerImpl(
+    const PasswordManagerClient* client)
+    : PasswordSaveManagerImpl(
+          std::make_unique<FormSaverImpl>(client->GetProfilePasswordStore()),
+          client->GetAccountPasswordStore()
+              ? std::make_unique<FormSaverImpl>(
+                    client->GetAccountPasswordStore())
+              : nullptr) {}
 
 PasswordSaveManagerImpl::~PasswordSaveManagerImpl() = default;
 
@@ -305,7 +300,7 @@ void PasswordSaveManagerImpl::Save(const FormData* observed_form,
       !HasGeneratedPassword()) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_OVERRIDDEN);
-    pending_credentials_.type = PasswordForm::Type::kManual;
+    pending_credentials_.type = PasswordForm::Type::kFormSubmission;
   }
 
   if (IsNewLogin()) {

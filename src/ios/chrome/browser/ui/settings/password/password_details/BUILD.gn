@@ -10,6 +10,7 @@ source_set("password_details") {
     "add_password_coordinator_delegate.h",
     "add_password_mediator.h",
     "add_password_mediator.mm",
+    "add_password_mediator_delegate.h",
     "password_details_coordinator.h",
     "password_details_coordinator.mm",
     "password_details_coordinator_delegate.h",
@@ -44,6 +45,7 @@ source_set("password_details") {
 source_set("password_details_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "add_password_details_consumer.h",
     "add_password_handler.h",
     "password_details.h",
     "password_details.mm",

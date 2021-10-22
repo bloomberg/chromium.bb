@@ -20,6 +20,10 @@ class ResourceCoordinatorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<ResourceCoordinatorTabHelper> {
  public:
+  ResourceCoordinatorTabHelper(const ResourceCoordinatorTabHelper&) = delete;
+  ResourceCoordinatorTabHelper& operator=(const ResourceCoordinatorTabHelper&) =
+      delete;
+
   ~ResourceCoordinatorTabHelper() override;
 
   // Helper function to check if a given WebContents is loaded. Returns true by
@@ -27,12 +31,10 @@ class ResourceCoordinatorTabHelper
   static bool IsLoaded(content::WebContents* contents);
 
   // WebContentsObserver overrides.
-  void DidReceiveResponse() override;
   void DidStopLoading() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
+  void PrimaryPageChanged(content::Page& page) override;
 
   void UpdateUkmRecorder(int64_t navigation_id);
   ukm::SourceId ukm_source_id() const { return ukm_source_id_; }
@@ -47,8 +49,6 @@ class ResourceCoordinatorTabHelper
   friend class content::WebContentsUserData<ResourceCoordinatorTabHelper>;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceCoordinatorTabHelper);
 };
 
 }  // namespace resource_coordinator

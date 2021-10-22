@@ -33,6 +33,9 @@ class MojoFileAccessor : public zip::FileAccessor {
       mojo::PendingRemote<filesystem::mojom::Directory> src_dir)
       : src_dir_(std::move(src_dir)) {}
 
+  MojoFileAccessor(const MojoFileAccessor&) = delete;
+  MojoFileAccessor& operator=(const MojoFileAccessor&) = delete;
+
   ~MojoFileAccessor() override = default;
 
   bool Open(const zip::Paths paths,
@@ -135,8 +138,6 @@ class MojoFileAccessor : public zip::FileAccessor {
  private:
   // Interface ptr to the source directory.
   const mojo::Remote<filesystem::mojom::Directory> src_dir_;
-
-  DISALLOW_COPY_AND_ASSIGN(MojoFileAccessor);
 };
 
 }  // namespace
@@ -186,7 +187,7 @@ void ZipFileCreator::WriteZipFile(
       .src_files = relative_paths,
       .progress_callback = base::BindRepeating(&ZipFileCreator::OnProgress,
                                                this, std::cref(listener)),
-      .progress_period = base::TimeDelta::FromMilliseconds(1000),
+      .progress_period = base::Milliseconds(1000),
       .recursive = true,
   });
 

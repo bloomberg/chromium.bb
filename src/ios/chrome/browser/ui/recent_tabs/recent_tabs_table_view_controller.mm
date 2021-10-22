@@ -158,9 +158,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 #pragma mark - Public Interface
 
 - (instancetype)init {
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? ChromeTableViewStyle()
-                               : UITableViewStylePlain;
+  UITableViewStyle style = ChromeTableViewStyle();
   self = [super initWithStyle:style];
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
@@ -277,13 +275,11 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 - (void)loadModel {
   [super loadModel];
 
-  if (@available(iOS 13, *)) {
-    if (self.session) {
-      // Replace mediator to store collapsed keys in scene session.
-      self.tableViewModel.collapsableMediator =
-          [[ListModelCollapsedSceneSessionMediator alloc]
-              initWithSession:self.session];
-    }
+  if (self.session) {
+    // Replace mediator to store collapsed keys in scene session.
+    self.tableViewModel.collapsableMediator =
+        [[ListModelCollapsedSceneSessionMediator alloc]
+            initWithSession:self.session];
   }
 
   [self addRecentlyClosedSection];
@@ -870,13 +866,11 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // If SigninPromo will be shown, |self.signinPromoViewMediator| must know.
   if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
     [self.signinPromoViewMediator signinPromoViewIsVisible];
-      TableViewSigninPromoCell* signinPromoCell =
-          base::mac::ObjCCastStrict<TableViewSigninPromoCell>(cell);
-      signinPromoCell.signinPromoView.imageView.hidden = YES;
-      signinPromoCell.signinPromoView.textLabel.hidden = YES;
-      if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
-        signinPromoCell.backgroundColor = nil;
-      }
+    TableViewSigninPromoCell* signinPromoCell =
+        base::mac::ObjCCastStrict<TableViewSigninPromoCell>(cell);
+    signinPromoCell.signinPromoView.imageView.hidden = YES;
+    signinPromoCell.signinPromoView.textLabel.hidden = YES;
+    signinPromoCell.backgroundColor = nil;
   }
   // Retrieve favicons for closed tabs and remote sessions.
   if (itemTypeSelected == ItemTypeRecentlyClosed ||

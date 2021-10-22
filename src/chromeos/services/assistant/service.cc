@@ -52,10 +52,8 @@ namespace {
 constexpr char kScopeAssistant[] =
     "https://www.googleapis.com/auth/assistant-sdk-prototype";
 
-constexpr base::TimeDelta kMinTokenRefreshDelay =
-    base::TimeDelta::FromMilliseconds(1000);
-constexpr base::TimeDelta kMaxTokenRefreshDelay =
-    base::TimeDelta::FromMilliseconds(60 * 1000);
+constexpr base::TimeDelta kMinTokenRefreshDelay = base::Milliseconds(1000);
+constexpr base::TimeDelta kMaxTokenRefreshDelay = base::Milliseconds(60 * 1000);
 
 // Testing override for the URI used to contact the s3 server.
 const char* g_s3_server_uri_override = nullptr;
@@ -130,6 +128,10 @@ class ScopedAshSessionObserver {
 class Service::Context : public ServiceContext {
  public:
   explicit Context(Service* parent) : parent_(parent) {}
+
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
+
   ~Context() override = default;
 
   // ServiceContext:
@@ -176,8 +178,6 @@ class Service::Context : public ServiceContext {
 
  private:
   Service* const parent_;  // |this| is owned by |parent_|.
-
-  DISALLOW_COPY_AND_ASSIGN(Context);
 };
 
 Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>

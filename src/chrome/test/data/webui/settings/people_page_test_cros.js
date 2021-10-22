@@ -98,10 +98,10 @@ suite('Chrome OS', function() {
     SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
-    ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
+    ProfileInfoBrowserProxyImpl.setInstance(profileInfoBrowserProxy);
 
     accountManagerBrowserProxy = new TestAccountManagerBrowserProxy();
-    AccountManagerBrowserProxyImpl.instance_ = accountManagerBrowserProxy;
+    AccountManagerBrowserProxyImpl.setInstance(accountManagerBrowserProxy);
 
     PolymerTest.clearBody();
     peoplePage = document.createElement('settings-people-page');
@@ -159,7 +159,7 @@ suite('Chrome OS with account manager disabled', function() {
     SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
-    ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
+    ProfileInfoBrowserProxyImpl.setInstance(profileInfoBrowserProxy);
 
     PolymerTest.clearBody();
     peoplePage = document.createElement('settings-people-page');
@@ -203,7 +203,6 @@ suite('Chrome OS with account manager disabled', function() {
 suite('Chrome OS with UseBrowserSyncConsent', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
-      splitSettingsSyncEnabled: true,
       useBrowserSyncConsent: true,
     });
   });
@@ -213,7 +212,7 @@ suite('Chrome OS with UseBrowserSyncConsent', function() {
     SyncBrowserProxyImpl.setInstance(syncBrowserProxy);
 
     profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
-    ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
+    ProfileInfoBrowserProxyImpl.setInstance(profileInfoBrowserProxy);
 
     PolymerTest.clearBody();
     peoplePage = document.createElement('settings-people-page');

@@ -21,22 +21,27 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrShaderUtils.h"
+#include "src/gpu/GrThreadSafePipelineBuilder.h"
 #include "src/gpu/SurfaceContext.h"
 #include "src/gpu/effects/GrSkSLFP.h"
-#include "src/gpu/gl/GrGLGpu.h"
 #include "src/gpu/mock/GrMockGpu.h"
 #include "src/gpu/text/GrAtlasManager.h"
 #include "src/gpu/text/GrStrikeCache.h"
 #include "src/image/SkImage_GpuBase.h"
 #if SK_GPU_V1
-#include "src/gpu/ops/GrSmallPathAtlasMgr.h"
+#include "src/gpu/ops/SmallPathAtlasMgr.h"
 #else
 // A vestigial definition for v2 that will never be instantiated
-class GrSmallPathAtlasMgr {
+namespace skgpu::v1 {
+class SmallPathAtlasMgr {
 public:
-    GrSmallPathAtlasMgr() { SkASSERT(0); }
+    SmallPathAtlasMgr() { SkASSERT(0); }
     void reset() { SkASSERT(0); }
 };
+}
+#endif
+#ifdef SK_GL
+#include "src/gpu/gl/GrGLGpu.h"
 #endif
 #ifdef SK_METAL
 #include "include/gpu/mtl/GrMtlBackendContext.h"
@@ -374,10 +379,10 @@ bool GrDirectContext::wait(int numSemaphores, const GrBackendSemaphore waitSemap
     return true;
 }
 
-GrSmallPathAtlasMgr* GrDirectContext::onGetSmallPathAtlasMgr() {
+skgpu::v1::SmallPathAtlasMgr* GrDirectContext::onGetSmallPathAtlasMgr() {
 #if SK_GPU_V1
     if (!fSmallPathAtlasMgr) {
-        fSmallPathAtlasMgr = std::make_unique<GrSmallPathAtlasMgr>();
+        fSmallPathAtlasMgr = std::make_unique<skgpu::v1::SmallPathAtlasMgr>();
 
         this->priv().addOnFlushCallbackObject(fSmallPathAtlasMgr.get());
     }

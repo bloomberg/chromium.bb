@@ -17,7 +17,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
@@ -126,8 +125,7 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform() &&
-      ui::OzonePlatform::GetInstance()
+  if (ui::OzonePlatform::GetInstance()
           ->GetPlatformProperties()
           .set_parent_for_non_top_level_windows) {
     // If context has been set, use that as the parent_widget so that Wayland
@@ -144,6 +142,11 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
         properties.parent_widget = host->GetAcceleratedWidget();
     }
   }
+#endif
+
+#if defined(OS_FUCHSIA)
+  properties.enable_keyboard = true;
+  properties.enable_virtual_keyboard = true;
 #endif
 
   return properties;
@@ -303,8 +306,7 @@ void DesktopWindowTreeHostPlatform::CloseNow() {
     return;
 
 #if defined(USE_OZONE)
-  if (features::IsUsingOzonePlatform())
-    SetWmDropHandler(platform_window(), nullptr);
+  SetWmDropHandler(platform_window(), nullptr);
 #endif
 
   platform_window()->PrepareForShutdown();
@@ -729,6 +731,8 @@ gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
   // the display where it is shown.
   if (platform_window())
     display = GetDisplayNearestRootWindow();
+  else if (window_parent_)
+    display = window_parent_->GetDisplayNearestRootWindow();
 
   float scale = display.device_scale_factor();
   gfx::Transform transform;
@@ -851,6 +855,14 @@ gfx::Rect DesktopWindowTreeHostPlatform::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
+Widget* DesktopWindowTreeHostPlatform::GetWidget() {
+  return native_widget_delegate_->AsWidget();
+}
+
+const Widget* DesktopWindowTreeHostPlatform::GetWidget() const {
+  return native_widget_delegate_->AsWidget();
+}
+
 void DesktopWindowTreeHostPlatform::ScheduleRelayout() {
   Widget* widget = native_widget_delegate_->AsWidget();
   NonClientView* non_client_view = widget->non_client_view();
@@ -866,14 +878,6 @@ void DesktopWindowTreeHostPlatform::ScheduleRelayout() {
     GetContentWindow()->SetFillsBoundsCompletely(
         GetWindowMaskForClipping().isEmpty());
   }
-}
-
-Widget* DesktopWindowTreeHostPlatform::GetWidget() {
-  return native_widget_delegate_->AsWidget();
-}
-
-const Widget* DesktopWindowTreeHostPlatform::GetWidget() const {
-  return native_widget_delegate_->AsWidget();
 }
 
 void DesktopWindowTreeHostPlatform::SetVisible(bool visible) {

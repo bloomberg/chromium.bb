@@ -40,6 +40,10 @@ class FakePageTimingSender : public PageTimingSender {
   class PageTimingValidator {
    public:
     PageTimingValidator();
+
+    PageTimingValidator(const PageTimingValidator&) = delete;
+    PageTimingValidator& operator=(const PageTimingValidator&) = delete;
+
     ~PageTimingValidator();
     // PageLoadTimings that are expected to be sent through SendTiming() should
     // be passed to ExpectPageLoadTiming.
@@ -119,11 +123,15 @@ class FakePageTimingSender : public PageTimingSender {
     mojom::InputTimingPtr actual_input_timing;
     blink::MobileFriendliness expected_mobile_friendliness;
     blink::MobileFriendliness actual_mobile_friendliness;
-    DISALLOW_COPY_AND_ASSIGN(PageTimingValidator);
   };
 
   explicit FakePageTimingSender(PageTimingValidator* validator);
+
+  FakePageTimingSender(const FakePageTimingSender&) = delete;
+  FakePageTimingSender& operator=(const FakePageTimingSender&) = delete;
+
   ~FakePageTimingSender() override;
+
   void SendTiming(
       const mojom::PageLoadTimingPtr& timing,
       const mojom::FrameMetadataPtr& metadata,
@@ -140,7 +148,6 @@ class FakePageTimingSender : public PageTimingSender {
 
  private:
   PageTimingValidator* const validator_;
-  DISALLOW_COPY_AND_ASSIGN(FakePageTimingSender);
 };
 
 }  // namespace page_load_metrics

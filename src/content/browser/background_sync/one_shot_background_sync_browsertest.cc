@@ -34,6 +34,12 @@ namespace content {
 class OneShotBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
  public:
   OneShotBackgroundSyncBrowserTest() {}
+
+  OneShotBackgroundSyncBrowserTest(const OneShotBackgroundSyncBrowserTest&) =
+      delete;
+  OneShotBackgroundSyncBrowserTest& operator=(
+      const OneShotBackgroundSyncBrowserTest&) = delete;
+
   ~OneShotBackgroundSyncBrowserTest() override {}
 
   bool Register(const std::string& tag);
@@ -47,9 +53,6 @@ class OneShotBackgroundSyncBrowserTest : public BackgroundSyncBaseBrowserTest {
   bool GetTags(const std::vector<std::string>& expected_tags);
   bool GetTagsFromServiceWorker(const std::vector<std::string>& expected_tags);
   bool RejectDelayedSyncEvent();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(OneShotBackgroundSyncBrowserTest);
 };
 
 bool OneShotBackgroundSyncBrowserTest::Register(const std::string& tag) {
@@ -82,8 +85,7 @@ void OneShotBackgroundSyncBrowserTest::WaitForTagRemoval(const std::string& tag,
   while (HasTag(tag)) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(pauses_ms));
+        FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(pauses_ms));
     run_loop.Run();
   }
 }

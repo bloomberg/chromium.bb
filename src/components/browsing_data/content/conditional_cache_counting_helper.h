@@ -22,6 +22,11 @@ class ConditionalCacheCountingHelper {
   // selected range.
   typedef base::OnceCallback<void(bool, int64_t)> CacheCountCallback;
 
+  ConditionalCacheCountingHelper(const ConditionalCacheCountingHelper&) =
+      delete;
+  ConditionalCacheCountingHelper& operator=(
+      const ConditionalCacheCountingHelper&) = delete;
+
   // Counts the cache entries according to the specified time range.
   // Must be called on the UI thread.
   //
@@ -30,10 +35,6 @@ class ConditionalCacheCountingHelper {
                     base::Time begin_time,
                     base::Time end_time,
                     CacheCountCallback result_callback);
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(ConditionalCacheCountingHelper);
 };
 
 }  // namespace browsing_data

@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "content/browser/media/capture/frame_test_util.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_frame_receiver.h"
@@ -33,6 +32,10 @@ class FakeVideoCaptureStack::Receiver final : public media::VideoFrameReceiver {
  public:
   explicit Receiver(FakeVideoCaptureStack* capture_stack)
       : capture_stack_(capture_stack) {}
+
+  Receiver(const Receiver&) = delete;
+  Receiver& operator=(const Receiver&) = delete;
+
   ~Receiver() override = default;
 
  private:
@@ -72,8 +75,7 @@ class FakeVideoCaptureStack::Receiver final : public media::VideoFrameReceiver {
     // This destruction observer will unmap the shared memory when the
     // VideoFrame goes out-of-scope.
     video_frame->AddDestructionObserver(base::BindOnce(
-        base::DoNothing::Once<base::ReadOnlySharedMemoryMapping>(),
-        std::move(mapping)));
+        [](base::ReadOnlySharedMemoryMapping) {}, std::move(mapping)));
     // This destruction observer will notify the video capture device once all
     // downstream code is done using the VideoFrame.
     video_frame->AddDestructionObserver(base::BindOnce(
@@ -108,8 +110,6 @@ class FakeVideoCaptureStack::Receiver final : public media::VideoFrameReceiver {
 
   FakeVideoCaptureStack* const capture_stack_;
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
-
-  DISALLOW_COPY_AND_ASSIGN(Receiver);
 };
 
 std::unique_ptr<media::VideoFrameReceiver>

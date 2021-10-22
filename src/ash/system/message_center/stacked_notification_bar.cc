@@ -7,6 +7,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/element_style.h"
+#include "ash/system/message_center/message_center_constants.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -14,6 +16,8 @@
 #include "ash/system/unified/rounded_label_button.h"
 #include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -28,6 +32,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -43,7 +48,6 @@ class StackingBarLabelButton : public views::LabelButton {
                          UnifiedMessageCenterView* message_center_view)
       : views::LabelButton(std::move(callback), text),
         message_center_view_(message_center_view) {
-    SetEnabledTextColors(message_center_style::kUnifiedMenuButtonColorActive);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
     SetBorder(views::CreateEmptyBorder(gfx::Insets()));
     label()->SetSubpixelRenderingEnabled(false);
@@ -52,34 +56,44 @@ class StackingBarLabelButton : public views::LabelButton {
     TrayPopupUtils::ConfigureTrayPopupButton(
         this, TrayPopupInkDropStyle::FILL_BOUNDS, /*highlight_on_hover=*/true,
         /*highlight_on_focus=*/true);
-    // SetCreateHighlightCallback and SetCreateRippleCallback are
-    // explicitly called after ConfigureTrayPopupButton as
-    // ConfigureTrayPopupButton configures the InkDrop and these callbacks
-    // override that behavior.
-    views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
-        [](Button* host) {
-          auto highlight = std::make_unique<views::InkDropHighlight>(
-              gfx::SizeF(host->size()), message_center_style::kInkRippleColor);
-          highlight->set_visible_opacity(
-              message_center_style::kInkRippleOpacity);
-          return highlight;
-        },
-        this));
-    views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
-        [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
-          return std::make_unique<views::FloodFillInkDropRipple>(
-              host->size(),
-              views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
-              message_center_style::kInkRippleColor,
-              message_center_style::kInkRippleOpacity);
-        },
-        this));
+
     if (features::IsNotificationsRefreshEnabled()) {
       // Need a textured layer here since the parent uses a solid color layer.
       SetPaintToLayer();
       layer()->SetFillsBoundsOpaquely(false);
+
+      views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                    kTrayItemSize / 2.f);
+    } else {
+      SetEnabledTextColors(message_center_style::kUnifiedMenuButtonColorActive);
+      // SetCreateHighlightCallback and SetCreateRippleCallback are
+      // explicitly called after ConfigureTrayPopupButton as
+      // ConfigureTrayPopupButton configures the InkDrop and these callbacks
+      // override that behavior.
+      views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
+          [](Button* host) {
+            auto highlight = std::make_unique<views::InkDropHighlight>(
+                gfx::SizeF(host->size()),
+                message_center_style::kInkRippleColor);
+            highlight->set_visible_opacity(
+                message_center_style::kInkRippleOpacity);
+            return highlight;
+          },
+          this));
+      views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
+          [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
+            return std::make_unique<views::FloodFillInkDropRipple>(
+                host->size(),
+                views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
+                message_center_style::kInkRippleColor,
+                message_center_style::kInkRippleOpacity);
+          },
+          this));
     }
   }
+
+  StackingBarLabelButton(const StackingBarLabelButton&) = delete;
+  StackingBarLabelButton& operator=(const StackingBarLabelButton&) = delete;
 
   ~StackingBarLabelButton() override = default;
 
@@ -107,9 +121,18 @@ class StackingBarLabelButton : public views::LabelButton {
     views::LabelButton::PaintButtonContents(canvas);
   }
 
+  void OnThemeChanged() override {
+    views::LabelButton::OnThemeChanged();
+    if (features::IsNotificationsRefreshEnabled()) {
+      views::FocusRing::Get(this)->SetColor(
+          AshColorProvider::Get()->GetControlsLayerColor(
+              AshColorProvider::ControlsLayerType::kFocusRingColor));
+      element_style::DecorateIconlessFloatingPillButton(this);
+    }
+  }
+
  private:
   UnifiedMessageCenterView* message_center_view_;
-  DISALLOW_COPY_AND_ASSIGN(StackingBarLabelButton);
 };
 
 }  // namespace
@@ -118,9 +141,8 @@ class StackedNotificationBar::StackedNotificationBarIcon
     : public views::ImageView,
       public ui::LayerAnimationObserver {
  public:
-  StackedNotificationBarIcon(StackedNotificationBar* notification_bar,
-                             const std::string& id)
-      : views::ImageView(), notification_bar_(notification_bar), id_(id) {
+  explicit StackedNotificationBarIcon(const std::string& id)
+      : views::ImageView(), id_(id) {
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
   }
@@ -134,18 +156,21 @@ class StackedNotificationBar::StackedNotificationBarIcon
   void OnThemeChanged() override {
     views::ImageView::OnThemeChanged();
 
-    auto* theme = GetNativeTheme();
+    const auto* color_provider = GetColorProvider();
 
     auto* notification =
         message_center::MessageCenter::Get()->FindVisibleNotificationById(id_);
-    SkColor accent_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_NotificationDefaultAccentColor);
+    // The notification icon could be waiting to be cleaned up after the
+    // notification removal animation completes.
+    if (!notification)
+      return;
+
+    SkColor accent_color =
+        color_provider->GetColor(ui::kColorNotificationHeaderForeground);
     gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
         kStackedNotificationIconSize, accent_color,
-        theme->GetSystemColor(
-            ui::NativeTheme::kColorId_MessageCenterSmallImageMaskBackground),
-        theme->GetSystemColor(
-            ui::NativeTheme::kColorId_MessageCenterSmallImageMaskForeground));
+        color_provider->GetColor(ui::kColorNotificationIconBackground),
+        color_provider->GetColor(ui::kColorNotificationIconForeground));
 
     if (masked_small_icon.IsEmpty()) {
       SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
@@ -176,8 +201,7 @@ class StackedNotificationBar::StackedNotificationBarIcon
     std::unique_ptr<ui::LayerAnimationElement> scale_and_move_up =
         ui::LayerAnimationElement::CreateInterpolatedTransformElement(
             std::move(scale_about_pivot),
-            base::TimeDelta::FromMilliseconds(
-                kNotificationIconAnimationUpDurationMs));
+            base::Milliseconds(kNotificationIconAnimationUpDurationMs));
     scale_and_move_up->set_tween_type(gfx::Tween::EASE_IN);
 
     std::unique_ptr<ui::LayerAnimationElement> move_down =
@@ -185,8 +209,7 @@ class StackedNotificationBar::StackedNotificationBarIcon
             std::make_unique<ui::InterpolatedTranslation>(
                 gfx::PointF(0, kNotificationIconAnimationHighPosition),
                 gfx::PointF(0, 0)),
-            base::TimeDelta::FromMilliseconds(
-                kNotificationIconAnimationDownDurationMs));
+            base::Milliseconds(kNotificationIconAnimationDownDurationMs));
 
     std::unique_ptr<ui::LayerAnimationSequence> sequence =
         std::make_unique<ui::LayerAnimationSequence>();
@@ -196,7 +219,13 @@ class StackedNotificationBar::StackedNotificationBarIcon
     layer()->GetAnimator()->StartAnimation(sequence.release());
   }
 
-  void AnimateOut() {
+  using AnimationCompleteCallback = base::OnceCallback<void(views::View*)>;
+
+  void AnimateOut(AnimationCompleteCallback animation_complete_callback) {
+    DCHECK(animation_complete_callback_.is_null());
+
+    animation_complete_callback_ = std::move(animation_complete_callback);
+
     layer()->GetAnimator()->StopAnimating();
 
     std::unique_ptr<ui::InterpolatedTransform> scale =
@@ -216,8 +245,7 @@ class StackedNotificationBar::StackedNotificationBarIcon
     std::unique_ptr<ui::LayerAnimationElement> scale_and_move_down =
         ui::LayerAnimationElement::CreateInterpolatedTransformElement(
             std::move(scale_about_pivot),
-            base::TimeDelta::FromMilliseconds(
-                kNotificationIconAnimationOutDurationMs));
+            base::Milliseconds(kNotificationIconAnimationOutDurationMs));
     scale_and_move_down->set_tween_type(gfx::Tween::EASE_IN);
 
     std::unique_ptr<ui::LayerAnimationSequence> sequence =
@@ -233,7 +261,7 @@ class StackedNotificationBar::StackedNotificationBarIcon
   // ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
     set_animating_out(false);
-    notification_bar_->OnIconAnimatedOut(this);
+    std::move(animation_complete_callback_).Run(this);
     // Note |this| is deleted after this point.
   }
 
@@ -247,57 +275,62 @@ class StackedNotificationBar::StackedNotificationBarIcon
   void set_animating_out(bool animating_out) { animating_out_ = animating_out; }
 
  private:
-  StackedNotificationBar* notification_bar_;
   std::string id_;
   bool animating_out_ = false;
+
+  // Used to notify the parent of animation completion. This is deleted after
+  // the callback is run.
+  // Registered in `AnimateOut()`.
+  AnimationCompleteCallback animation_complete_callback_;
 };
 
 StackedNotificationBar::StackedNotificationBar(
     UnifiedMessageCenterView* message_center_view)
     : message_center_view_(message_center_view),
-      count_label_(new views::Label),
-      clear_all_button_(new StackingBarLabelButton(
+      notification_icons_container_(
+          AddChildView(std::make_unique<views::View>())),
+      count_label_(AddChildView(std::make_unique<views::Label>())),
+      spacer_(AddChildView(std::make_unique<views::View>())),
+      clear_all_button_(AddChildView(std::make_unique<StackingBarLabelButton>(
           base::BindRepeating(&UnifiedMessageCenterView::ClearAllNotifications,
                               base::Unretained(message_center_view_)),
           l10n_util::GetStringUTF16(
               IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_LABEL),
-          message_center_view)),
-      expand_all_button_(new StackingBarLabelButton(
+          message_center_view))),
+      expand_all_button_(AddChildView(std::make_unique<StackingBarLabelButton>(
           base::BindRepeating(&UnifiedMessageCenterView::ExpandMessageCenter,
                               base::Unretained(message_center_view_)),
           l10n_util::GetStringUTF16(
               IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL),
-          message_center_view)) {
+          message_center_view))) {
   SetVisible(false);
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal));
+      views::BoxLayout::Orientation::kHorizontal,
+      features::IsNotificationsRefreshEnabled()
+          ? gfx::Insets(kNotificationBarVerticalPadding,
+                        kNotificationBarHorizontalPadding)
+          : gfx::Insets()));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  notification_icons_container_ = new views::View();
   notification_icons_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           kStackedNotificationIconsContainerPadding,
           kStackedNotificationBarIconSpacing));
-  AddChildView(notification_icons_container_);
+
   message_center::MessageCenter::Get()->AddObserver(this);
 
   count_label_->SetEnabledColor(message_center_style::kCountLabelColor);
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-  AddChildView(count_label_);
 
-  views::View* spacer = new views::View;
-  AddChildView(spacer);
-  layout->SetFlexForView(spacer, 1);
+  layout->SetFlexForView(spacer_, 1);
 
   clear_all_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
-  AddChildView(clear_all_button_);
 
   expand_all_button_->SetVisible(false);
-  AddChildView(expand_all_button_);
 
   if (!features::IsNotificationsRefreshEnabled())
     SetPaintToLayer();
@@ -358,32 +391,42 @@ void StackedNotificationBar::SetExpanded() {
 void StackedNotificationBar::AddNotificationIcon(
     message_center::Notification* notification,
     bool at_front) {
-  views::ImageView* icon_view =
-      new StackedNotificationBarIcon(this, notification->id());
   if (at_front)
-    notification_icons_container_->AddChildViewAt(icon_view, 0);
+    notification_icons_container_->AddChildViewAt(
+        std::make_unique<StackedNotificationBarIcon>(notification->id()), 0);
   else
-    notification_icons_container_->AddChildView(icon_view);
+    notification_icons_container_->AddChildView(
+        std::make_unique<StackedNotificationBarIcon>(notification->id()));
 }
 
-void StackedNotificationBar::OnIconAnimatedOut(views::View* icon) {
+void StackedNotificationBar::OnIconAnimatedOut(
+    message_center::Notification* notification,
+    views::View* icon) {
   delete icon;
+
+  // This is only called when icons animate out, so never add icons to the
+  // front.
+  if (notification)
+    AddNotificationIcon(notification, /*at_front=*/false);
+
   Layout();
 }
 
 StackedNotificationBar::StackedNotificationBarIcon*
-StackedNotificationBar::GetFrontIcon() {
+StackedNotificationBar::GetFrontIcon(bool animating_out) {
   const auto i = std::find_if(
       notification_icons_container_->children().cbegin(),
-      notification_icons_container_->children().cend(), [](const auto* v) {
-        return !static_cast<const StackedNotificationBarIcon*>(v)
-                    ->is_animating_out();
+      notification_icons_container_->children().cend(), [&](const auto* v) {
+        return animating_out ==
+               static_cast<const StackedNotificationBarIcon*>(v)
+                   ->is_animating_out();
       });
 
   return (i == notification_icons_container_->children().cend()
               ? nullptr
               : static_cast<StackedNotificationBarIcon*>(*i));
 }
+
 const StackedNotificationBar::StackedNotificationBarIcon*
 StackedNotificationBar::GetIconFromId(const std::string& id) const {
   for (auto* v : notification_icons_container_->children()) {
@@ -397,35 +440,57 @@ StackedNotificationBar::GetIconFromId(const std::string& id) const {
 
 void StackedNotificationBar::ShiftIconsLeft(
     std::vector<message_center::Notification*> stacked_notifications) {
+  auto* front_animating_out_icon = GetFrontIcon(/*animating_out=*/true);
+  bool is_already_animating_a_left_shift = front_animating_out_icon != nullptr;
+  // If we need to animate a second icon, the scroll is faster than the icon can
+  // animate out (this is possible with a very fast scroll), so immediately
+  // finish that animation before starting a new one.
+  if (is_already_animating_a_left_shift) {
+    front_animating_out_icon->layer()->GetAnimator()->StopAnimating();
+    // `front_animating_out_icon` is now deleted, and StackedNotificationBar has
+    // been reloaded with another icon in the back.
+  }
+
   int stacked_notification_count = stacked_notifications.size();
   int removed_icons_count =
       std::min(stacked_notification_count_ - stacked_notification_count,
                kStackedNotificationBarMaxIcons);
 
+  stacked_notification_count_ = stacked_notification_count;
+
   // Remove required number of icons from the front.
   // Only animate if we're removing one icon.
-  if (removed_icons_count == 1) {
-    StackedNotificationBarIcon* icon = GetFrontIcon();
-    if (icon) {
-      icon->AnimateOut();
-    }
-  } else {
-    for (int i = 0; i < removed_icons_count; i++) {
-      StackedNotificationBarIcon* icon = GetFrontIcon();
-      if (icon) {
-        delete icon;
-      }
-    }
-  }
-  // Add icons to the back if there was a backfill.
   int backfill_start = kStackedNotificationBarMaxIcons - removed_icons_count;
   int backfill_end =
       std::min(kStackedNotificationBarMaxIcons, stacked_notification_count);
-  for (int i = backfill_start; i < backfill_end; i++) {
-    AddNotificationIcon(stacked_notifications[i], false /*at_front*/);
+  const bool will_animate = removed_icons_count == 1;
+  if (will_animate) {
+    auto* icon = GetFrontIcon(/*animating_out=*/false);
+    if (icon) {
+      // If there are notifications to backfill, do not add the
+      // icon until the animation completes, this avoids a jumping overflow
+      // label/icons and having more than 3 icons in the stack.
+      message_center::Notification* notification_icon_to_show_on_completion =
+          backfill_start < backfill_end ? stacked_notifications[backfill_start]
+                                        : nullptr;
+      icon->AnimateOut(
+          base::BindOnce(&StackedNotificationBar::OnIconAnimatedOut,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         notification_icon_to_show_on_completion));
+    }
+    return;
   }
 
-  stacked_notification_count_ = stacked_notification_count;
+  // No animation.
+  for (int i = 0; i < removed_icons_count; i++) {
+    auto* icon = GetFrontIcon(/*animating_out=*/false);
+    if (icon) {
+      delete icon;
+    }
+  }
+
+  for (int i = backfill_start; i < backfill_end; i++)
+    AddNotificationIcon(stacked_notifications[i], false /*at_front*/);
 }
 
 void StackedNotificationBar::ShiftIconsRight(
@@ -444,9 +509,9 @@ void StackedNotificationBar::ShiftIconsRight(
     ++stacked_notification_count_;
   }
   // Animate in the first stacked notification icon.
-  StackedNotificationBarIcon* icon = GetFrontIcon();
+  auto* icon = GetFrontIcon(/*animating_out=*/false);
   if (icon)
-    GetFrontIcon()->AnimateIn();
+    icon->AnimateIn();
 }
 
 void StackedNotificationBar::UpdateStackedNotifications(
@@ -498,6 +563,14 @@ const char* StackedNotificationBar::GetClassName() const {
 }
 
 void StackedNotificationBar::UpdateVisibility() {
+  // In the refreshed message center view the notification bar is always
+  // visible.
+  if (features::IsNotificationsRefreshEnabled()) {
+    if (!GetVisible())
+      SetVisible(true);
+    return;
+  }
+
   int unpinned_count = total_notification_count_ - pinned_notification_count_;
 
   // In expanded state, clear all button should be visible when (rule is subject

@@ -11,7 +11,7 @@
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/service/display/program_binding.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/mask_filter_info.h"
+#include "ui/gfx/geometry/mask_filter_info.h"
 
 namespace viz {
 
@@ -30,6 +30,10 @@ struct Float16 {
 // that only differ by transform may be coalesced into a single draw call.
 struct TexturedQuadDrawCache {
   TexturedQuadDrawCache();
+
+  TexturedQuadDrawCache(const TexturedQuadDrawCache&) = delete;
+  TexturedQuadDrawCache& operator=(const TexturedQuadDrawCache&) = delete;
+
   ~TexturedQuadDrawCache();
 
   bool is_empty = true;
@@ -52,9 +56,6 @@ struct TexturedQuadDrawCache {
 
   // Video frames need special white level adjustment.
   bool is_video_frame = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TexturedQuadDrawCache);
 };
 
 }  // namespace viz

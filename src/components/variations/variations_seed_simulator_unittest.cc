@@ -73,6 +73,10 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
  public:
   VariationsSeedSimulatorTest() {}
 
+  VariationsSeedSimulatorTest(const VariationsSeedSimulatorTest&) = delete;
+  VariationsSeedSimulatorTest& operator=(const VariationsSeedSimulatorTest&) =
+      delete;
+
   ~VariationsSeedSimulatorTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
     // process singletons.
@@ -128,9 +132,6 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
                               result.kill_best_effort_group_change_count,
                               result.kill_critical_group_change_count);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VariationsSeedSimulatorTest);
 };
 
 TEST_F(VariationsSeedSimulatorTest, PermanentNoChanges) {
@@ -401,8 +402,7 @@ TEST_F(VariationsSeedSimulatorTest, NoDefaultGroup) {
   Study study;
   study.set_consistency(Study::PERMANENT);
   study.set_name("Study1");
-  const base::Time year_ago =
-      base::Time::Now() - base::TimeDelta::FromDays(365);
+  const base::Time year_ago = base::Time::Now() - base::Days(365);
   study.set_expiry_date(TimeToProtoTime(year_ago));
   auto* exp1 = AddExperiment("A", 1, &study);
   study.clear_default_experiment_name();

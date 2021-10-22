@@ -135,7 +135,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            absl::nullopt, base::DoNothing());
+                            absl::nullopt, {}, base::DoNothing());
   run_loop.Run();
 }
 
@@ -150,6 +150,8 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_ProtocolWebPrefix) {
   apps::AppLaunchParams expected_results =
       CreateLaunchParams(command_line, std::vector<base::FilePath>(),
                          absl::nullopt, protocol_handler_launch_url);
+  expected_results.source =
+      apps::mojom::AppLaunchSource::kSourceProtocolHandler;
 
   testing::StrictMock<MockWebAppLaunchManager> manager(profile());
   EXPECT_CALL(manager, LaunchWebApplication(testing::_, testing::_))
@@ -165,7 +167,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_ProtocolWebPrefix) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            protocol_handler_launch_url, base::DoNothing());
+                            protocol_handler_launch_url, {}, base::DoNothing());
   run_loop.Run();
 }
 
@@ -180,6 +182,8 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_ProtocolMailTo) {
   apps::AppLaunchParams expected_results =
       CreateLaunchParams(command_line, std::vector<base::FilePath>(),
                          absl::nullopt, protocol_handler_launch_url);
+  expected_results.source =
+      apps::mojom::AppLaunchSource::kSourceProtocolHandler;
 
   testing::StrictMock<MockWebAppLaunchManager> manager(profile());
   EXPECT_CALL(manager, LaunchWebApplication(testing::_, testing::_))
@@ -195,7 +199,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_ProtocolMailTo) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            protocol_handler_launch_url, base::DoNothing());
+                            protocol_handler_launch_url, {}, base::DoNothing());
   run_loop.Run();
 }
 
@@ -232,7 +236,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_ProtocolFile) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            absl::nullopt, base::DoNothing());
+                            absl::nullopt, {}, base::DoNothing());
   run_loop.Run();
 }
 
@@ -269,7 +273,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_ProtocolDisallowed) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            absl::nullopt, base::DoNothing());
+                            absl::nullopt, {}, base::DoNothing());
   run_loop.Run();
 }
 
@@ -305,7 +309,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_FileFullPath) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            absl::nullopt, base::DoNothing());
+                            absl::nullopt, {}, base::DoNothing());
   run_loop.Run();
 }
 
@@ -341,7 +345,7 @@ TEST_F(WebAppLaunchManagerUnitTest, LaunchApplication_FileRelativePath) {
 
   manager.LaunchApplication(kTestAppId, command_line,
                             base::FilePath(kCurrentDirectory), absl::nullopt,
-                            absl::nullopt, base::DoNothing());
+                            absl::nullopt, {}, base::DoNothing());
   run_loop.Run();
 }
 

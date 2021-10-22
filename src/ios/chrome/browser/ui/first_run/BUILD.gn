@@ -5,12 +5,12 @@
 source_set("field_trial") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "default_browser_promo_field_trial.cc",
+    "default_browser_promo_field_trial.h",
     "fre_field_trial.cc",
     "fre_field_trial.h",
     "ios_first_run_field_trials.cc",
     "ios_first_run_field_trials.h",
-    "location_permissions_field_trial.cc",
-    "location_permissions_field_trial.h",
   ]
   deps = [
     "//base",
@@ -44,7 +44,6 @@ source_set("first_run") {
     ":constants",
     ":field_trial",
     ":first_run_provider",
-    ":first_run_ui",
     ":screen_delegate",
     ":static_file_ui",
     ":utils",
@@ -67,6 +66,7 @@ source_set("first_run") {
     "//ios/chrome/browser/geolocation",
     "//ios/chrome/browser/main",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication/signin",
@@ -92,6 +92,7 @@ source_set("first_run") {
     "//ios/chrome/common",
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/common/ui/promo_style",
     "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
@@ -109,6 +110,7 @@ source_set("first_run_provider") {
     "first_run_screen_provider.mm",
   ]
   deps = [
+    ":field_trial",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/screen:screen_provider",
     "//ios/chrome/browser/ui/screen:screen_provider_protected",
@@ -150,27 +152,6 @@ source_set("constants") {
 source_set("screen_delegate") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "first_run_screen_delegate.h" ]
-}
-
-source_set("first_run_ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "first_run_screen_view_controller.h",
-    "first_run_screen_view_controller.mm",
-    "first_run_screen_view_controller_delegate.h",
-    "highlighted_button.h",
-    "highlighted_button.mm",
-  ]
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/ui/colors",
-    "//ios/chrome/common/ui/util",
-    "//ios/chrome/common/ui/util:dynamic_type_util",
-    "//ui/base",
-  ]
 }
 
 source_set("static_file_ui") {
@@ -273,6 +254,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/app:first_run_app_state_agent",
     "//ios/chrome/browser",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/main:scene",
     "//ios/chrome/browser/ui/main:scene_testing",
     "//ios/chrome/test/app:test_support",

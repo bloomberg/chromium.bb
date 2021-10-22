@@ -24,6 +24,10 @@ class VIEWS_EXPORT TouchSelectionMenuRunnerViews
   class VIEWS_EXPORT TestApi {
    public:
     explicit TestApi(TouchSelectionMenuRunnerViews* menu_runner);
+
+    TestApi(const TestApi&) = delete;
+    TestApi& operator=(const TestApi&) = delete;
+
     ~TestApi();
 
     gfx::Rect GetAnchorRect() const;
@@ -35,11 +39,14 @@ class VIEWS_EXPORT TouchSelectionMenuRunnerViews
 
    private:
     TouchSelectionMenuRunnerViews* menu_runner_;
-
-    DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
   TouchSelectionMenuRunnerViews();
+
+  TouchSelectionMenuRunnerViews(const TouchSelectionMenuRunnerViews&) = delete;
+  TouchSelectionMenuRunnerViews& operator=(
+      const TouchSelectionMenuRunnerViews&) = delete;
+
   ~TouchSelectionMenuRunnerViews() override;
 
  protected:
@@ -64,8 +71,6 @@ class VIEWS_EXPORT TouchSelectionMenuRunnerViews
   // A pointer to the currently running menu, or |nullptr| if no menu is
   // running. The menu manages its own lifetime and deletes itself when closed.
   TouchSelectionMenuViews* menu_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchSelectionMenuRunnerViews);
 };
 
 }  // namespace views

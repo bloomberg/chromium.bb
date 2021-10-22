@@ -33,8 +33,12 @@ void TpmErrorScreen::OnViewDestroyed(TpmErrorView* view) {
 }
 
 void TpmErrorScreen::ShowImpl() {
-  if (view_)
-    view_->Show();
+  if (!view_)
+    return;
+  if (context()->tpm_owned_error)
+    view_->SetIsBrandedBuild(context()->is_branded_build);
+  view_->SetTPMOwnedErrorStep(context()->tpm_owned_error);
+  view_->Show();
 }
 
 void TpmErrorScreen::HideImpl() {}

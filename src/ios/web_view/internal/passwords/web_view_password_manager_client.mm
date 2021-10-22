@@ -51,12 +51,11 @@ WebViewPasswordManagerClient::Create(web::WebState* web_state,
   auto log_manager =
       autofill::LogManager::Create(logRouter, base::RepeatingClosure());
   scoped_refptr<password_manager::PasswordStoreInterface> profile_store =
-      ios_web_view::WebViewPasswordStoreFactory::GetInterfaceForBrowserState(
+      ios_web_view::WebViewPasswordStoreFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   scoped_refptr<password_manager::PasswordStoreInterface> account_store =
-      ios_web_view::WebViewAccountPasswordStoreFactory::
-          GetInterfaceForBrowserState(browser_state,
-                                      ServiceAccessType::EXPLICIT_ACCESS);
+      ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
+          browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   password_manager::PasswordReuseManager* reuse_manager =
       ios_web_view::WebViewPasswordReuseManagerFactory::GetForBrowserState(
           browser_state);
@@ -182,21 +181,13 @@ PrefService* WebViewPasswordManagerClient::GetPrefs() const {
   return pref_service_;
 }
 
-PasswordStore* WebViewPasswordManagerClient::GetProfilePasswordStore() const {
-  return static_cast<password_manager::PasswordStore*>(profile_store_);
-}
-
-PasswordStore* WebViewPasswordManagerClient::GetAccountPasswordStore() const {
-  return static_cast<password_manager::PasswordStore*>(account_store_);
-}
-
-PasswordStoreInterface*
-WebViewPasswordManagerClient::GetProfilePasswordStoreInterface() const {
+PasswordStoreInterface* WebViewPasswordManagerClient::GetProfilePasswordStore()
+    const {
   return profile_store_;
 }
 
-PasswordStoreInterface*
-WebViewPasswordManagerClient::GetAccountPasswordStoreInterface() const {
+PasswordStoreInterface* WebViewPasswordManagerClient::GetAccountPasswordStore()
+    const {
   return account_store_;
 }
 

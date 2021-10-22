@@ -19,6 +19,7 @@
 
 #include "dawn_native/AttachmentState.h"
 #include "dawn_native/BindingInfo.h"
+#include "dawn_native/BufferLocation.h"
 #include "dawn_native/Texture.h"
 
 #include "dawn_native/dawn_platform.h"
@@ -62,7 +63,9 @@ namespace dawn_native {
         SetBlendConstant,
         SetBindGroup,
         SetIndexBuffer,
+        SetValidatedBufferLocationsInternal,
         SetVertexBuffer,
+        WriteBuffer,
         WriteTimestamp,
     };
 
@@ -176,8 +179,7 @@ namespace dawn_native {
     };
 
     struct DrawIndexedIndirectCmd {
-        Ref<BufferBase> indirectBuffer;
-        uint64_t indirectOffset;
+        Ref<BufferLocation> indirectBufferLocation;
     };
 
     struct EndComputePassCmd {};
@@ -223,6 +225,16 @@ namespace dawn_native {
         uint32_t reference;
     };
 
+    struct DeferredBufferLocationUpdate {
+        Ref<BufferLocation> location;
+        Ref<BufferBase> buffer;
+        uint64_t offset;
+    };
+
+    struct SetValidatedBufferLocationsInternalCmd {
+        std::vector<DeferredBufferLocationUpdate> updates;
+    };
+
     struct SetViewportCmd {
         float x, y, width, height, minDepth, maxDepth;
     };
@@ -250,6 +262,12 @@ namespace dawn_native {
 
     struct SetVertexBufferCmd {
         VertexBufferSlot slot;
+        Ref<BufferBase> buffer;
+        uint64_t offset;
+        uint64_t size;
+    };
+
+    struct WriteBufferCmd {
         Ref<BufferBase> buffer;
         uint64_t offset;
         uint64_t size;

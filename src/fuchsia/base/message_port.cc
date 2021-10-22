@@ -4,10 +4,12 @@
 
 #include "fuchsia/base/message_port.h"
 
-#include <stdint.h>
-
+#include <fuchsia/mem/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/fit/function.h>
+#include <lib/fpromise/result.h>
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -17,9 +19,10 @@
 #include "base/check.h"
 #include "base/containers/circular_deque.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/mem_buffer_util.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
-#include "fuchsia/base/mem_buffer_util.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace cr_fuchsia {
 namespace {
@@ -36,11 +39,12 @@ absl::optional<fuchsia::web::FrameError> BlinkMessageFromFidl(
     return fuchsia::web::FrameError::NO_DATA_IN_MESSAGE;
   }
 
-  std::u16string data_utf16;
-  if (!cr_fuchsia::ReadUTF8FromVMOAsUTF16(fidl_message.data(), &data_utf16)) {
+  absl::optional<std::u16string> data_utf16 =
+      base::ReadUTF8FromVMOAsUTF16(fidl_message.data());
+  if (!data_utf16) {
     return fuchsia::web::FrameError::BUFFER_NOT_UTF8;
   }
-  blink_message->data = data_utf16;
+  blink_message->data = std::move(*data_utf16);
 
   if (fidl_message.has_outgoing_transfer() &&
       fidl_message.has_incoming_transfer()) {
@@ -272,9 +276,7 @@ class FidlMessagePortServerAdapter : public fuchsia::web::MessagePort,
     }
 
     SendBlinkMessage(std::move(blink_message));
-    fuchsia::web::MessagePort_PostMessage_Result result;
-    result.set_response(fuchsia::web::MessagePort_PostMessage_Response());
-    callback(std::move(result));
+    callback(fpromise::ok());
   }
 
   void ReceiveMessage(ReceiveMessageCallback callback) override {
@@ -369,7 +371,7 @@ absl::optional<fuchsia::web::WebMessage> FidlWebMessageFromBlink(
 
   constexpr char kBufferVmoName[] = "cr-web-message-from-blink";
   fuchsia::mem::Buffer data_buffer =
-      cr_fuchsia::MemBufferFromString(data_utf8, kBufferVmoName);
+      base::MemBufferFromString(data_utf8, kBufferVmoName);
   if (!data_buffer.vmo)
     return absl::nullopt;
 

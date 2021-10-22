@@ -19,6 +19,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
+namespace ash {
+namespace enterprise_user_session_metrics {
 namespace {
 
 // Returns true if the device is enterprise managed, false otherwise.
@@ -38,9 +40,6 @@ int GetMinutesToReport(base::TimeDelta duration,
 }
 
 }  // namespace
-
-namespace chromeos {
-namespace enterprise_user_session_metrics {
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kLastSessionType, 0);
@@ -124,17 +123,16 @@ void RecordStoredSessionLength() {
   // (i.e. every 10 minute). Note that sparse histogram is used here. It is
   // important to limit the number of buckets to something reasonable.
   base::UmaHistogramSparse(
-      metric_name,
-      GetMinutesToReport(session_length, 10, base::TimeDelta::FromHours(24)));
+      metric_name, GetMinutesToReport(session_length, 10, base::Hours(24)));
 
   if (DemoSession::IsDeviceInDemoMode()) {
     // Demo mode sessions will have shorter durations. Report session length
     // rounded down to the nearest minute, up to two hours.
     base::UmaHistogramSparse(
         "DemoMode.SessionLength",
-        GetMinutesToReport(session_length, 1, base::TimeDelta::FromHours(2)));
+        GetMinutesToReport(session_length, 1, base::Hours(2)));
   }
 }
 
 }  // namespace enterprise_user_session_metrics
-}  // namespace chromeos
+}  // namespace ash

@@ -293,7 +293,7 @@ class TestImporter(object):
                 'CQ appears to have passed; sending to the sheriff for '
                 'CR+1 and commit. The sheriff has one hour to respond.')
             self.git_cl.run([
-                'upload', '-f', '--send-mail', '--enable-auto-submit'
+                'upload', '-f', '--send-mail', '--enable-auto-submit',
                 '--reviewers', self.sheriff_email()
             ])
             timeout = 3600
@@ -603,17 +603,7 @@ class TestImporter(object):
         # Move any No-Export tag to the end of the description.
         description = description.replace('No-Export: true', '')
         description = description.replace('\n\n\n\n', '\n\n')
-        description += 'No-Export: true\n'
-
-        # Add the wptrunner MVP tryjobs as blocking trybots, to catch any test
-        # changes or infrastructure changes from upstream.
-        #
-        # If this starts blocking the importer unnecessarily, revert
-        # https://chromium-review.googlesource.com/c/chromium/src/+/2451504
-        description += (
-            'Cq-Include-Trybots: luci.chromium.try:linux-wpt-identity-fyi-rel,'
-            'linux-wpt-input-fyi-rel')
-
+        description += 'No-Export: true'
         return description
 
     @staticmethod
@@ -663,6 +653,12 @@ class TestImporter(object):
         _log.info('Adding test expectations lines to TestExpectations.')
         self.rebaselined_tests, self.new_test_expectations = (
             self._expectations_updater.update_expectations())
+
+        _log.info('Adding test expectations lines for composite-after-paint')
+        self._expectations_updater.update_expectations_for_flag_specific('composite-after-paint')
+
+        _log.info('Adding test expectations lines for disable-layout-ng')
+        self._expectations_updater.update_expectations_for_flag_specific('disable-layout-ng')
 
     def fetch_wpt_override_expectations(self):
         """Modifies WPT Override expectations based on try job results.

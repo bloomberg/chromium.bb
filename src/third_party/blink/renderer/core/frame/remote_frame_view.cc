@@ -7,7 +7,7 @@
 #include "base/cxx17_backports.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/geometry/transform_util.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
 // nogncheck because dependency on //printing is conditional upon
@@ -46,10 +46,8 @@ LocalFrameView* RemoteFrameView::ParentFrameView() const {
     return nullptr;
 
   HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
-  if (owner &&
-      (owner->OwnerType() == mojom::blink::FrameOwnerElementType::kPortal ||
-       owner->OwnerType() ==
-           mojom::blink::FrameOwnerElementType::kFencedframe)) {
+  if (owner && (owner->OwnerType() == FrameOwnerElementType::kPortal ||
+                owner->OwnerType() == FrameOwnerElementType::kFencedframe)) {
     return owner->GetDocument().GetFrame()->View();
   }
 
@@ -67,9 +65,10 @@ LocalFrameView* RemoteFrameView::ParentLocalRootFrameView() const {
     return nullptr;
 
   HTMLFrameOwnerElement* owner = remote_frame_->DeprecatedLocalOwner();
-  if (owner &&
-      owner->OwnerType() == mojom::blink::FrameOwnerElementType::kPortal)
+  if (owner && (owner->OwnerType() == FrameOwnerElementType::kPortal ||
+                owner->OwnerType() == FrameOwnerElementType::kFencedframe)) {
     return owner->GetDocument().GetFrame()->LocalFrameRoot().View();
+  }
 
   // |is_attached_| is only set from AttachToLayout(), which ensures that the
   // parent is a local frame.

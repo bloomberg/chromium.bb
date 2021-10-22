@@ -4,7 +4,11 @@
 
 #include "services/network/cors/preflight_result.h"
 
+#include <string>
+#include <vector>
+
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -12,6 +16,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/cors/cors_util.h"
@@ -27,12 +32,12 @@ namespace {
 
 // Default cache expiry time for an entry that does not have
 // Access-Control-Max-Age header in its CORS-preflight response.
-constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kDefaultTimeout = base::Seconds(5);
 
 // Maximum cache expiry time. Even if a CORS-preflight response contains
 // Access-Control-Max-Age header that specifies a longer expiry time, this
 // maximum time is applied.
-constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromHours(2);
+constexpr base::TimeDelta kMaxTimeout = base::Hours(2);
 
 // Holds TickClock instance to overwrite TimeTicks::Now() for testing.
 const base::TickClock* tick_clock_for_testing = nullptr;
@@ -64,14 +69,13 @@ base::TimeDelta ParseAccessControlMaxAge(
   }
   // To avoid integer overflow, we compare seconds instead of comparing
   // TimeDeltas.
-  static_assert(
-      kMaxTimeout == base::TimeDelta::FromSeconds(kMaxTimeout.InSeconds()),
-      "`kMaxTimeout` must be a multiple of one second.");
+  static_assert(kMaxTimeout == base::Seconds(kMaxTimeout.InSeconds()),
+                "`kMaxTimeout` must be a multiple of one second.");
   if (seconds >= kMaxTimeout.InSeconds()) {
     return kMaxTimeout;
   }
 
-  return base::TimeDelta::FromSeconds(seconds);
+  return base::Seconds(seconds);
 }
 
 // Parses |string| as a Access-Control-Allow-* header value, storing the result
@@ -136,8 +140,29 @@ absl::optional<CorsErrorStatus> PreflightResult::EnsureAllowedCrossOriginMethod(
   // case-sensitive way, that means access control header should provide an
   // upper case method list.
   const std::string normalized_method = base::ToUpperASCII(method);
-  if (methods_.find(normalized_method) != methods_.end() ||
-      IsCorsSafelistedMethod(normalized_method)) {
+  const bool normalized_method_allowed =
+      methods_.find(normalized_method) != methods_.end() ||
+      IsCorsSafelistedMethod(normalized_method);
+  const bool method_allowed =
+      methods_.find(method) != methods_.end() || IsCorsSafelistedMethod(method);
+
+  // This should be consistent with `NetworkServiceCorsPreflightMethodAllowed`
+  // in `tools/metrics/histograms/enums.xml`.
+  enum CorsPreflightMethodAllowed {
+    kBothDisallowed = 0,
+    kNormalizedMethodAllowed = 1,
+    kMethodAllowed = 2,
+    kBothAllowed = 3,
+    kMaxValue = kBothAllowed
+  };
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "NetworkService.CorsPreflightMethodAllowed",
+      normalized_method_allowed
+          ? (method_allowed ? kBothAllowed : kNormalizedMethodAllowed)
+          : (method_allowed ? kMethodAllowed : kBothDisallowed));
+
+  if (normalized_method_allowed) {
     return absl::nullopt;
   }
 
@@ -244,6 +269,17 @@ bool PreflightResult::HasAuthorizationCoveredByWildcard(
 
   return has_wildcard && headers.HasHeader(kAuthorization) &&
          !headers_.contains(kAuthorization);
+}
+
+base::Value PreflightResult::NetLogParams() {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  std::vector<std::string> methods(methods_.begin(), methods_.end());
+  std::vector<std::string> headers(headers_.begin(), headers_.end());
+  dict.SetStringKey("access-control-allow-methods",
+                    base::JoinString(methods, ","));
+  dict.SetStringKey("access-control-allow-headers",
+                    base::JoinString(headers, ","));
+  return dict;
 }
 
 }  // namespace cors

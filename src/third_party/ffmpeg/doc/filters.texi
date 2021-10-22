@@ -745,6 +745,20 @@ Select overlap-save method. Not interpolated samples remain unchanged.
 Default value is @code{a}.
 @end table
 
+@section adecorrelate
+Apply decorrelation to input audio stream.
+
+The filter accepts the following options:
+
+@table @option
+@item stages
+Set decorrelation stages of filtering. Allowed
+range is from 1 to 16. Default value is 6.
+
+@item seed
+Set random seed used for setting delay in samples across channels.
+@end table
+
 @section adelay
 
 Delay one or more audio channels.
@@ -1487,6 +1501,10 @@ Default value is 0.0.
 @item level
 Set output gain applied to final output. Allowed range is from 0.0 to 1.0.
 Default value is 1.0.
+
+@item order
+Set filter order used for filtering. Allowed range is from 1 to 16.
+Default value is 8.
 @end table
 
 @subsection Commands
@@ -2335,6 +2353,46 @@ Default value is 0.0.
 @item level
 Set output gain applied to final output. Allowed range is from 0.0 to 1.0.
 Default value is 1.0.
+
+@item order
+Set filter order used for filtering. Allowed range is from 1 to 16.
+Default value is 8.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
+
+@section apsyclip
+Apply Psychoacoustic clipper to input audio stream.
+
+The filter accepts the following options:
+
+@table @option
+@item level_in
+Set input gain. By default it is 1. Range is [0.015625 - 64].
+
+@item level_out
+Set output gain. By default it is 1. Range is [0.015625 - 64].
+
+@item clip
+Set the clipping start value. Default value is 0dBFS or 1.
+
+@item diff
+Output only difference samples, useful to hear introduced distortions.
+By default is disabled.
+
+@item adaptive
+Set strenght of adaptive distortion applied. Default value is 0.5.
+Allowed range is from 0 to 1.
+
+@item iterations
+Set number of iterations of psychoacoustic clipper.
+Allowed range is from 1 to 20. Default value is 10.
+
+@item level
+Auto level output signal. Default is disabled.
+This normalizes audio back to 0dBFS if enabled.
 @end table
 
 @subsection Commands
@@ -2647,7 +2705,7 @@ It accepts the following option:
 @table @option
 @item length
 Short window length in seconds, used for peak and trough RMS measurement.
-Default is @code{0.05} (50 milliseconds). Allowed range is @code{[0.01 - 10]}.
+Default is @code{0.05} (50 milliseconds). Allowed range is @code{[0 - 10]}.
 
 @item metadata
 
@@ -2671,6 +2729,7 @@ Flat_factor
 Peak_count
 Noise_floor
 Noise_floor_count
+Entropy
 Bit_depth
 Dynamic_range
 Zero_crossings
@@ -2695,6 +2754,7 @@ Flat_factor
 Peak_count
 Noise_floor
 Noise_floor_count
+Entropy
 Bit_depth
 Number_of_samples
 Number_of_NaNs
@@ -2772,6 +2832,9 @@ Minimum local peak measured in dBFS over a short window.
 @item Noise floor count
 Number of occasions (not the number of samples) that the signal attained
 @var{Noise floor}.
+
+@item Entropy
+Entropy measured across whole audio. Entropy of value near 1.0 is typically measured for white noise.
 
 @item Bit depth
 Overall bit depth of audio. Number of bits used for each sample.
@@ -2966,6 +3029,35 @@ This filter supports the following commands:
 Change filter tempo scale factor.
 Syntax for the command is : "@var{tempo}"
 @end table
+
+@section atilt
+Apply spectral tilt filter to audio stream.
+
+This filter apply any spectral roll-off slope over any specified frequency band.
+
+The filter accepts the following options:
+
+@table @option
+@item freq
+Set central frequency of tilt in Hz. Default is 10000 Hz.
+
+@item slope
+Set slope direction of tilt. Default is 0. Allowed range is from -1 to 1.
+
+@item width
+Set width of tilt. Default is 1000. Allowed range is from 100 to 10000.
+
+@item order
+Set order of tilt filter.
+
+@item level
+Set input volume level. Allowed range is from 0 to 4.
+Defalt is 1.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section atrim
 
@@ -8224,6 +8316,19 @@ Default value is 0.
 @item saturation
 Set the amount of saturation. Allowed range is from -3.0 to 3.0.
 Default value is 1.
+
+@item analyze
+If set to anything other than @code{manual} it will analyze every frame and use derived
+parameters for filtering output frame.
+
+Possible values are:
+@table @samp
+@item manual
+@item average
+@item minmax
+@item median
+@end table
+Default value is @code{manual}.
 @end table
 
 @subsection Commands
@@ -9969,7 +10074,7 @@ Note that different backends use different file formats. TensorFlow and native
 backend can load files for only its format.
 @end table
 
-It can also be finished with @ref{dnn_processing} filter.
+To get full functionality (such as async execution), please use the @ref{dnn_processing} filter.
 
 @section deshake
 
@@ -10270,11 +10375,8 @@ and the second line is the name of label id 1, etc.
 The label id is considered as name if the label file is not provided.
 
 @item backend_configs
-Set the configs to be passed into backend
-
-@item async
-use DNN async execution if set (default: set),
-roll back to sync execution if the backend does not support async.
+Set the configs to be passed into backend. To use async execution, set async (default: set).
+Roll back to sync execution if the backend does not support async.
 
 @end table
 
@@ -10326,14 +10428,11 @@ Set the input name of the dnn network.
 Set the output name of the dnn network.
 
 @item backend_configs
-Set the configs to be passed into backend
+Set the configs to be passed into backend. To use async execution, set async (default: set).
+Roll back to sync execution if the backend does not support async.
 
 For tensorflow backend, you can set its configs with @option{sess_config} options,
 please use tools/python/tf_sess_config.py to get the configs of TensorFlow backend for your system.
-
-@item async
-use DNN async execution if set (default: set),
-roll back to sync execution if the backend does not support async.
 
 @end table
 
@@ -13020,12 +13119,30 @@ Display video frame rate or sample rate in case of audio used by filter link.
 
 @item eof
 Display link output status.
+
+@item sample_count_in
+Display number of samples taken from filter.
+
+@item sample_count_out
+Display number of samples given out from filter.
 @end table
 
 @item rate, r
 Set upper limit for video rate of output stream, Default value is @var{25}.
 This guarantee that output video frame rate will not be higher than this value.
 @end table
+
+@section grayworld
+A color constancy filter that applies color correction based on the grayworld assumption
+
+See: @url{https://www.researchgate.net/publication/275213614_A_New_Color_Correction_Method_for_Underwater_Imaging}
+
+The algorithm  uses linear light, so input
+data should be linearized beforehand (and possibly correctly tagged).
+
+@example
+ffmpeg -i INPUT -vf zscale=transfer=linear,grayworld,zscale=transfer=bt709,format=yuv420p OUTPUT
+@end example
 
 @section greyedge
 A color constancy variation filter which estimates scene illumination via grey edge algorithm
@@ -13498,6 +13615,82 @@ Set number of input streams. Default is 2.
 @item shortest
 If set to 1, force the output to terminate when the shortest input
 terminates. Default value is 0.
+@end table
+
+@section hsvhold
+Turns a certain HSV range into gray values.
+
+This filter measures color difference between set HSV color in options
+and ones measured in video stream. Depending on options, output
+colors can be changed to be gray or not.
+
+The filter accepts the following options:
+
+@table @option
+@item hue
+Set the hue value which will be used if color difference calculation.
+Allowed range is from -360 to 360. Default value is 0.
+
+@item sat
+Set the saturation value which will be used if color difference calculation.
+Allowed range is from -1 to 1. Default value is 0.
+
+@item val
+Set the value which will be used if color difference calculation.
+Allowed range is from -1 to 1. Default value is 0.
+
+@item similarity
+Set similarity percentage with the key color.
+Allowed range is from 0 to 1. Default value is 0.01.
+
+0.00001 matches only the exact key color, while 1.0 matches everything.
+
+@item blend
+Blend percentage.
+Allowed range is from 0 to 1. Default value is 0.
+
+0.0 makes pixels either fully gray, or not gray at all.
+
+Higher values result in more gray pixels, with a higher gray pixel
+the more similar the pixels color is to the key color.
+@end table
+
+@section hsvkey
+Turns a certain HSV range into transparency.
+
+This filter measures color difference between set HSV color in options
+and ones measured in video stream. Depending on options, output
+colors can be changed to transparent by adding alpha channel.
+
+The filter accepts the following options:
+
+@table @option
+@item hue
+Set the hue value which will be used if color difference calculation.
+Allowed range is from -360 to 360. Default value is 0.
+
+@item sat
+Set the saturation value which will be used if color difference calculation.
+Allowed range is from -1 to 1. Default value is 0.
+
+@item val
+Set the value which will be used if color difference calculation.
+Allowed range is from -1 to 1. Default value is 0.
+
+@item similarity
+Set similarity percentage with the key color.
+Allowed range is from 0 to 1. Default value is 0.01.
+
+0.00001 matches only the exact key color, while 1.0 matches everything.
+
+@item blend
+Blend percentage.
+Allowed range is from 0 to 1. Default value is 0.
+
+0.0 makes pixels either fully transparent, or not transparent at all.
+
+Higher values result in semi-transparent pixels, with a higher transparency
+the more similar the pixels color is to the key color.
 @end table
 
 @section hue
@@ -17155,7 +17348,7 @@ This filter supports the all above options as @ref{commands}.
 @item
 Output a csv with presentation time and the first two lines of identified EIA-608 captioning data.
 @example
-ffprobe -f lavfi -i movie=captioned_video.mov,readeia608 -show_entries frame=pkt_pts_time:frame_tags=lavfi.readeia608.0.cc,lavfi.readeia608.1.cc -of csv
+ffprobe -f lavfi -i movie=captioned_video.mov,readeia608 -show_entries frame=pts_time:frame_tags=lavfi.readeia608.0.cc,lavfi.readeia608.1.cc -of csv
 @end example
 @end itemize
 
@@ -18196,6 +18389,27 @@ The command accepts the same syntax of the corresponding option.
 If the specified expression is not valid, it is kept at its current
 value.
 @end table
+
+@section scharr
+Apply scharr operator to input video stream.
+
+The filter accepts the following option:
+
+@table @option
+@item planes
+Set which planes will be processed, unprocessed planes will be copied.
+By default value 0xf, all planes will be processed.
+
+@item scale
+Set value which will be multiplied with filtered result.
+
+@item delta
+Set value which will be added to filtered result.
+@end table
+
+@subsection Commands
+
+This filter supports the all above options as @ref{commands}.
 
 @section scroll
 Scroll input video horizontally and/or vertically by constant speed.
@@ -19258,7 +19472,7 @@ Default value is @code{2}. Scale factor is necessary for SRCNN model, because it
 input upscaled using bicubic upscaling with proper scale factor.
 @end table
 
-This feature can also be finished with @ref{dnn_processing} filter.
+To get full functionality (such as async execution), please use the @ref{dnn_processing} filter.
 
 @section ssim
 
@@ -22104,6 +22318,19 @@ Set background opacity.
 Set tint for output.
 Only used with lowpass filter and when display is not overlay and input
 pixel formats are not RGB.
+
+@item fitmode, fm
+Set sample aspect ratio of video output frames.
+Can be used to configure waveform so it is not
+streched too much in one of directions.
+
+@table @samp
+@item none
+Set sample aspect ration to 1/1.
+@item size
+Set sample aspect ratio to match input size of video
+@end table
+Default is @samp{none}.
 @end table
 
 @section weave, doubleweave
@@ -22213,6 +22440,7 @@ Set one of available transition effects:
 @item wipebr
 @item squeezeh
 @item squeezev
+@item zoomin
 @end table
 Default transition effect is fade.
 
@@ -25659,6 +25887,43 @@ A processing speed faster than what is possible without these filters cannot
 be achieved.
 @end table
 
+@section segment, asegment
+
+Split single input stream into multiple streams.
+
+This filter does opposite of concat filters.
+
+@code{segment} works on video frames, @code{asegment} on audio samples.
+
+This filter accepts the following options:
+
+@table @option
+@item timestamps
+Timestamps of output segments separated by '|'. The first segment will run
+from the beginning of the input stream. The last segment will run until
+the end of the input stream
+
+@item frames, samples
+Exact frame/sample count to split the segments.
+@end table
+
+In all cases, prefixing an each segment with '+' will make it relative to the
+previous segment.
+
+@subsection Examples
+
+@itemize
+
+@item
+Split input audio stream into three output audio streams, starting at start of input audio stream
+and storing that in 1st output audio stream, then following at 60th second and storing than in 2nd
+output audio stream, and last after 150th second of input audio stream store in 3rd output audio stream:
+@example
+asegment=timestamps="60|150"
+@end example
+
+@end itemize
+
 @anchor{select}
 @section select, aselect
 
@@ -26749,6 +27014,8 @@ the samples scroll from right to left
 frames are only produced when the samples reach the right
 @item rscroll
 the samples scroll from left to right
+@item lreplace
+the samples start again on the right when they reach the left
 @end table
 
 Default value is @code{replace}.
@@ -26889,7 +27156,8 @@ Set scale gain for calculating intensity color values.
 Default value is @code{1}.
 
 @item data
-Set which data to display. Can be @code{magnitude}, default or @code{phase}.
+Set which data to display. Can be @code{magnitude}, default or @code{phase},
+or unwrapped phase: @code{uphase}.
 
 @item rotation
 Set color rotation, must be in [-1.0, 1.0] range.
@@ -26906,6 +27174,14 @@ Set upper frame rate limit. Default is @code{auto}, unlimited.
 
 @item legend
 Draw time and frequency axes and legends. Default is disabled.
+
+@item drange
+Set dynamic range used to calculate intensity color values. Default is 120 dBFS.
+Allowed range is from 10 to 200.
+
+@item limit
+Set upper limit of input audio samples volume in dBFS. Default is 0 dBFS.
+Allowed range is from -100 to 100.
 @end table
 
 The usage is very similar to the showwaves filter; see the examples in that
@@ -27079,6 +27355,14 @@ Set start frequency from which to display spectrogram. Default is @code{0}.
 
 @item stop
 Set stop frequency to which to display spectrogram. Default is @code{0}.
+
+@item drange
+Set dynamic range used to calculate intensity color values. Default is 120 dBFS.
+Allowed range is from 10 to 200.
+
+@item limit
+Set upper limit of input audio samples volume in dBFS. Default is 0 dBFS.
+Allowed range is from -100 to 100.
 @end table
 
 @subsection Examples

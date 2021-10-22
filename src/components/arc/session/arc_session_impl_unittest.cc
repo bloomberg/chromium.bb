@@ -134,6 +134,9 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
  public:
   FakeDelegate() = default;
 
+  FakeDelegate(const FakeDelegate&) = delete;
+  FakeDelegate& operator=(const FakeDelegate&) = delete;
+
   // Emulates to fail Mojo connection establishing. |callback| passed to
   // ConnectMojo will be called with nullptr.
   void EmulateMojoConnectionFailure() { success_ = false; }
@@ -200,8 +203,6 @@ class FakeDelegate : public ArcSessionImpl::Delegate {
   bool suspend_ = false;
   int64_t free_disk_space_ = kMinimumFreeDiskSpaceBytes * 2;
   ConnectMojoCallback pending_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDelegate);
 };
 
 class TestArcSessionObserver : public ArcSession::Observer {
@@ -220,6 +221,9 @@ class TestArcSessionObserver : public ArcSession::Observer {
       : arc_session_(arc_session), run_loop_(run_loop) {
     arc_session_->AddObserver(this);
   }
+
+  TestArcSessionObserver(const TestArcSessionObserver&) = delete;
+  TestArcSessionObserver& operator=(const TestArcSessionObserver&) = delete;
 
   ~TestArcSessionObserver() override { arc_session_->RemoveObserver(this); }
 
@@ -241,8 +245,6 @@ class TestArcSessionObserver : public ArcSession::Observer {
   ArcSession* const arc_session_;            // Not owned.
   base::RunLoop* const run_loop_ = nullptr;  // Not owned.
   absl::optional<OnSessionStoppedArgs> on_session_stopped_args_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestArcSessionObserver);
 };
 
 // Custom deleter for ArcSession testing.
@@ -259,6 +261,12 @@ class FakeSchedulerConfigurationManager
     : public chromeos::SchedulerConfigurationManagerBase {
  public:
   FakeSchedulerConfigurationManager() = default;
+
+  FakeSchedulerConfigurationManager(const FakeSchedulerConfigurationManager&) =
+      delete;
+  FakeSchedulerConfigurationManager& operator=(
+      const FakeSchedulerConfigurationManager&) = delete;
+
   ~FakeSchedulerConfigurationManager() override = default;
 
   void SetLastReply(size_t num_cores_disabled) {
@@ -273,8 +281,6 @@ class FakeSchedulerConfigurationManager
 
  private:
   absl::optional<std::pair<bool, size_t>> reply_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSchedulerConfigurationManager);
 };
 
 class FakeAdbSideloadingAvailabilityDelegate
@@ -300,6 +306,10 @@ class FakeAdbSideloadingAvailabilityDelegate
 class ArcSessionImplTest : public testing::Test {
  public:
   ArcSessionImplTest() = default;
+
+  ArcSessionImplTest(const ArcSessionImplTest&) = delete;
+  ArcSessionImplTest& operator=(const ArcSessionImplTest&) = delete;
+
   ~ArcSessionImplTest() override = default;
 
   std::unique_ptr<ArcSessionImpl, ArcSessionDeleter> CreateArcSession(
@@ -354,8 +364,6 @@ class ArcSessionImplTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcSessionImplTest);
 };
 
 // Starting mini container success case.

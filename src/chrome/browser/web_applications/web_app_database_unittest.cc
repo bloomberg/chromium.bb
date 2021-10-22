@@ -15,8 +15,8 @@
 #include "base/test/bind.h"
 #include "base/time/time.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
-#include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
-#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -44,9 +44,9 @@ class WebAppDatabaseTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    test_registry_controller_ =
-        std::make_unique<TestWebAppRegistryController>();
-    test_registry_controller_->SetUp(profile());
+    fake_registry_controller_ =
+        std::make_unique<FakeWebAppRegistryController>();
+    fake_registry_controller_->SetUp(profile());
   }
 
   bool IsDatabaseRegistryEqualToRegistrar() {
@@ -92,11 +92,11 @@ class WebAppDatabaseTest : public WebAppTest {
   }
 
  protected:
-  TestWebAppRegistryController& controller() {
-    return *test_registry_controller_;
+  FakeWebAppRegistryController& controller() {
+    return *fake_registry_controller_;
   }
 
-  TestWebAppDatabaseFactory& database_factory() {
+  FakeWebAppDatabaseFactory& database_factory() {
     return controller().database_factory();
   }
 
@@ -109,7 +109,7 @@ class WebAppDatabaseTest : public WebAppTest {
   WebAppSyncBridge& sync_bridge() { return controller().sync_bridge(); }
 
  private:
-  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
+  std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
 };
 
 TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
@@ -301,7 +301,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_FALSE(app->background_color().has_value());
-  EXPECT_TRUE(app->icon_infos().empty());
+  EXPECT_FALSE(app->dark_mode_theme_color().has_value());
+  EXPECT_TRUE(app->manifest_icons().empty());
   EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::ANY).empty());
   EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
   EXPECT_TRUE(app->downloaded_icon_sizes(IconPurpose::MONOCHROME).empty());
@@ -315,7 +316,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->share_target().has_value());
   EXPECT_TRUE(app->additional_search_terms().empty());
   EXPECT_TRUE(app->protocol_handlers().empty());
-  EXPECT_TRUE(app->approved_launch_protocols().empty());
+  EXPECT_TRUE(app->allowed_launch_protocols().empty());
+  EXPECT_TRUE(app->disallowed_launch_protocols().empty());
   EXPECT_TRUE(app->url_handlers().empty());
   EXPECT_TRUE(app->last_badging_time().is_null());
   EXPECT_TRUE(app->last_launch_time().is_null());
@@ -364,10 +366,11 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_FALSE(app_copy->background_color().has_value());
+  EXPECT_FALSE(app_copy->dark_mode_theme_color().has_value());
   EXPECT_TRUE(app_copy->last_badging_time().is_null());
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
   EXPECT_TRUE(app_copy->install_time().is_null());
-  EXPECT_TRUE(app_copy->icon_infos().empty());
+  EXPECT_TRUE(app_copy->manifest_icons().empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::ANY).empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::MASKABLE).empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes(IconPurpose::MONOCHROME).empty());
@@ -380,7 +383,8 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->file_handlers().empty());
   EXPECT_FALSE(app_copy->share_target().has_value());
   EXPECT_TRUE(app_copy->additional_search_terms().empty());
-  EXPECT_TRUE(app_copy->approved_launch_protocols().empty());
+  EXPECT_TRUE(app_copy->allowed_launch_protocols().empty());
+  EXPECT_TRUE(app_copy->disallowed_launch_protocols().empty());
   EXPECT_TRUE(app_copy->url_handlers().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
@@ -418,7 +422,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
     app->SetDownloadedIconSizes(purpose, std::move(sizes));
   }
 
-  app->SetIconInfos(std::move(icons));
+  app->SetManifestIcons(std::move(icons));
   app->SetIsGeneratedIcon(false);
 
   controller().RegisterApp(std::move(app));
@@ -428,10 +432,11 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
   EXPECT_EQ(static_cast<unsigned>(num_icons * kIconPurposes.size()),
-            app_copy->icon_infos().size());
+            app_copy->manifest_icons().size());
   for (int i = 1; i <= num_icons; ++i) {
     const int icon_size_in_px = i * i;
-    EXPECT_EQ(icon_size_in_px, app_copy->icon_infos()[i - 1].square_size_px);
+    EXPECT_EQ(icon_size_in_px,
+              app_copy->manifest_icons()[i - 1].square_size_px);
   }
   EXPECT_FALSE(app_copy->is_generated_icon());
 }

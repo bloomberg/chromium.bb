@@ -38,7 +38,7 @@ PASS ServiceWorker interface: existence and properties of interface prototype ob
 PASS ServiceWorker interface: attribute scriptURL
 PASS ServiceWorker interface: attribute state
 PASS ServiceWorker interface: operation postMessage(any, sequence<object>)
-PASS ServiceWorker interface: operation postMessage(any, optional PostMessageOptions)
+PASS ServiceWorker interface: operation postMessage(any, optional StructuredSerializeOptions)
 PASS ServiceWorker interface: attribute onstatechange
 PASS ServiceWorker must be primary interface of serviceWorker
 PASS Stringification of serviceWorker
@@ -46,8 +46,8 @@ PASS ServiceWorker interface: serviceWorker must inherit property "scriptURL" wi
 PASS ServiceWorker interface: serviceWorker must inherit property "state" with the proper type
 PASS ServiceWorker interface: serviceWorker must inherit property "postMessage(any, sequence<object>)" with the proper type
 PASS ServiceWorker interface: calling postMessage(any, sequence<object>) on serviceWorker with too few arguments must throw TypeError
-PASS ServiceWorker interface: serviceWorker must inherit property "postMessage(any, optional PostMessageOptions)" with the proper type
-PASS ServiceWorker interface: calling postMessage(any, optional PostMessageOptions) on serviceWorker with too few arguments must throw TypeError
+PASS ServiceWorker interface: serviceWorker must inherit property "postMessage(any, optional StructuredSerializeOptions)" with the proper type
+PASS ServiceWorker interface: calling postMessage(any, optional StructuredSerializeOptions) on serviceWorker with too few arguments must throw TypeError
 PASS ServiceWorker interface: serviceWorker must inherit property "onstatechange" with the proper type
 PASS ServiceWorkerRegistration interface: existence and properties of interface object
 PASS ServiceWorkerRegistration interface object length
@@ -163,7 +163,7 @@ PASS Client interface: attribute frameType
 PASS Client interface: attribute id
 PASS Client interface: attribute type
 PASS Client interface: operation postMessage(any, sequence<object>)
-PASS Client interface: operation postMessage(any, optional PostMessageOptions)
+PASS Client interface: operation postMessage(any, optional StructuredSerializeOptions)
 PASS WindowClient interface: existence and properties of interface object
 PASS WindowClient interface object length
 PASS WindowClient interface object name

@@ -92,6 +92,10 @@ class DriveWebContentsManager : public content::WebContentsObserver,
                           const std::string& app_id,
                           const std::string& endpoint_url,
                           CompletionCallback completion_callback);
+
+  DriveWebContentsManager(const DriveWebContentsManager&) = delete;
+  DriveWebContentsManager& operator=(const DriveWebContentsManager&) = delete;
+
   ~DriveWebContentsManager() override;
 
   // Start loading the WebContents for the endpoint in the context of the Drive
@@ -147,8 +151,6 @@ class DriveWebContentsManager : public content::WebContentsObserver,
   bool started_ = false;
   CompletionCallback completion_callback_;
   base::WeakPtrFactory<DriveWebContentsManager> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DriveWebContentsManager);
 };
 
 DriveWebContentsManager::DriveWebContentsManager(
@@ -213,9 +215,6 @@ void DriveWebContentsManager::RunCompletionCallback(
 
 void DriveWebContentsManager::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (navigation_handle->IsInPrimaryMainFrame() &&
       navigation_handle->IsErrorPage()) {
     LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
@@ -228,7 +227,7 @@ void DriveWebContentsManager::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
     int error_code) {
-  if (!render_frame_host->GetParent()) {
+  if (!render_frame_host->GetParentOrOuterDocument()) {
     LOG(WARNING) << "Failed to load WebContents to enable offline mode.";
     OnOfflineInit(false,
                   DriveFirstRunController::OUTCOME_WEB_CONTENTS_LOAD_FAILED);
@@ -309,11 +308,9 @@ DriveFirstRunController::~DriveFirstRunController() {
 void DriveFirstRunController::EnableOfflineMode() {
   if (!started_) {
     started_ = true;
-    initial_delay_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(initial_delay_secs_),
-      this,
-      &DriveFirstRunController::EnableOfflineMode);
+    initial_delay_timer_.Start(FROM_HERE, base::Seconds(initial_delay_secs_),
+                               this,
+                               &DriveFirstRunController::EnableOfflineMode);
     return;
   }
 
@@ -347,11 +344,9 @@ void DriveFirstRunController::EnableOfflineMode() {
       base::BindOnce(&DriveFirstRunController::OnOfflineInit,
                      base::Unretained(this)));
   web_contents_manager_->StartLoad();
-  web_contents_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(web_contents_timeout_secs_),
-      this,
-      &DriveFirstRunController::OnWebContentsTimedOut);
+  web_contents_timer_.Start(FROM_HERE,
+                            base::Seconds(web_contents_timeout_secs_), this,
+                            &DriveFirstRunController::OnWebContentsTimedOut);
 }
 
 void DriveFirstRunController::AddObserver(Observer* observer) {

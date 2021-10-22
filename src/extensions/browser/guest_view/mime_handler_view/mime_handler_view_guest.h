@@ -35,6 +35,10 @@ class StreamContainer {
                   const std::string& extension_id,
                   blink::mojom::TransferrableURLLoaderPtr transferrable_loader,
                   const GURL& original_url);
+
+  StreamContainer(const StreamContainer&) = delete;
+  StreamContainer& operator=(const StreamContainer&) = delete;
+
   ~StreamContainer();
 
   base::WeakPtr<StreamContainer> GetWeakPtr();
@@ -75,13 +79,14 @@ class StreamContainer {
   mime_handler::PdfPluginAttributesPtr pdf_plugin_attributes_;
 
   base::WeakPtrFactory<StreamContainer> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(StreamContainer);
 };
 
 class MimeHandlerViewGuest
     : public guest_view::GuestView<MimeHandlerViewGuest> {
  public:
+  MimeHandlerViewGuest(const MimeHandlerViewGuest&) = delete;
+  MimeHandlerViewGuest& operator=(const MimeHandlerViewGuest&) = delete;
+
   static guest_view::GuestViewBase* Create(
       content::WebContents* owner_web_contents);
 
@@ -212,8 +217,6 @@ class MimeHandlerViewGuest
       pending_before_unload_control_;
 
   base::WeakPtrFactory<MimeHandlerViewGuest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };
 
 }  // namespace extensions

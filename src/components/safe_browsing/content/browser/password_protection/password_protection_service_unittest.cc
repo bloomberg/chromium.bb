@@ -184,7 +184,8 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
                                       std::move(token_fetcher),
                                       is_off_the_record,
                                       identity_manager,
-                                      try_token_fetch),
+                                      try_token_fetch,
+                                      nullptr),
         cache_manager_(
             std::make_unique<VerdictCacheManager>(nullptr,
                                                   content_setting_map.get())) {
@@ -1051,7 +1052,8 @@ TEST_P(PasswordProtectionServiceBaseTest,
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestWithTokenHistogram, 0);
   SetEnhancedProtectionPrefForTests(&test_pref_service_, true);
   SetFeatures(
-      /*enable_features*/ {kPasswordProtectionWithToken},
+      /*enable_features*/ {kPasswordProtectionWithToken,
+                           kSafeBrowsingRemoveCookiesInAuthRequests},
       /*disable_features*/ {});
   std::string access_token = "fake access token";
   test_url_loader_factory_.SetInterceptor(
@@ -1059,7 +1061,10 @@ TEST_P(PasswordProtectionServiceBaseTest,
         std::string out;
         EXPECT_TRUE(request.headers.GetHeader(
             net::HttpRequestHeaders::kAuthorization, &out));
-        EXPECT_EQ(out, kAuthHeaderBearer + access_token);
+        EXPECT_EQ(out, "Bearer " + access_token);
+        // Cookies should be removed when token is set.
+        EXPECT_EQ(request.credentials_mode,
+                  network::mojom::CredentialsMode::kOmit);
       }));
   // Set up mock call to token fetcher.
   SafeBrowsingTokenFetcher::Callback cb;
@@ -1091,6 +1096,9 @@ TEST_P(PasswordProtectionServiceBaseTest,
         std::string out;
         EXPECT_FALSE(request.headers.GetHeader(
             net::HttpRequestHeaders::kAuthorization, &out));
+        // Cookies should be attached when token is empty.
+        EXPECT_EQ(request.credentials_mode,
+                  network::mojom::CredentialsMode::kInclude);
       }));
 
   // Never call token fetcher

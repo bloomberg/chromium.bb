@@ -106,6 +106,11 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
         std::make_unique<MockPlatformNotificationService>(&browser_context_));
   }
 
+  BlinkNotificationServiceImplTest(const BlinkNotificationServiceImplTest&) =
+      delete;
+  BlinkNotificationServiceImplTest& operator=(
+      const BlinkNotificationServiceImplTest&) = delete;
+
   ~BlinkNotificationServiceImplTest() override = default;
 
   // ::testing::Test overrides.
@@ -437,8 +442,6 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   absl::optional<blink::NotificationResources> get_notification_resources_;
 
   bool read_notification_data_callback_result_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(BlinkNotificationServiceImplTest);
 };
 
 TEST_F(BlinkNotificationServiceImplTest, GetPermissionStatus) {
@@ -775,7 +778,7 @@ TEST_F(BlinkNotificationServiceImplTest, GetTriggeredNotificationsWithFilter) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   RegisterServiceWorker(&registration);
 
-  base::Time timestamp = base::Time::Now() + base::TimeDelta::FromSeconds(10);
+  base::Time timestamp = base::Time::Now() + base::Seconds(10);
   blink::PlatformNotificationData platform_notification_data;
   platform_notification_data.tag = "tagA";
   platform_notification_data.show_trigger_timestamp = timestamp;
@@ -815,7 +818,7 @@ TEST_F(BlinkNotificationServiceImplTest, ResourcesStoredForTriggered) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   RegisterServiceWorker(&registration);
 
-  base::Time timestamp = base::Time::Now() + base::TimeDelta::FromSeconds(10);
+  base::Time timestamp = base::Time::Now() + base::Seconds(10);
   blink::PlatformNotificationData scheduled_notification_data;
   scheduled_notification_data.tag = "tagA";
   scheduled_notification_data.show_trigger_timestamp = timestamp;
@@ -866,7 +869,7 @@ TEST_F(BlinkNotificationServiceImplTest, NotCallingDisplayForTriggered) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   RegisterServiceWorker(&registration);
 
-  base::Time timestamp = base::Time::Now() + base::TimeDelta::FromSeconds(10);
+  base::Time timestamp = base::Time::Now() + base::Seconds(10);
   blink::PlatformNotificationData scheduled_notification_data;
   scheduled_notification_data.show_trigger_timestamp = timestamp;
   blink::NotificationResources resources;
@@ -893,7 +896,7 @@ TEST_F(BlinkNotificationServiceImplTest, RejectsTriggerTimestampOverAYear) {
 
   base::Time timestamp = base::Time::Now() +
                          blink::kMaxNotificationShowTriggerDelay +
-                         base::TimeDelta::FromDays(1);
+                         base::Days(1);
 
   blink::PlatformNotificationData scheduled_notification_data;
   scheduled_notification_data.show_trigger_timestamp = timestamp;

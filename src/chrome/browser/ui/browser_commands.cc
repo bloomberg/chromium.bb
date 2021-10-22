@@ -14,7 +14,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -452,7 +454,7 @@ void NewEmptyWindow(Profile* profile, bool should_trigger_session_restore) {
   PrefService* prefs = profile->GetPrefs();
   if (off_the_record) {
     if (IncognitoModePrefs::GetAvailability(prefs) ==
-        IncognitoModePrefs::DISABLED) {
+        IncognitoModePrefs::Availability::kDisabled) {
       off_the_record = false;
     }
   } else if (profile->IsGuestSession() ||
@@ -627,17 +629,18 @@ void Home(Browser* browser, WindowOpenDisposition disposition) {
   browser->OpenURL(params);
 }
 
-void OpenCurrentURL(Browser* browser) {
+base::WeakPtr<content::NavigationHandle> OpenCurrentURL(Browser* browser) {
   base::RecordAction(UserMetricsAction("LoadURL"));
   LocationBar* location_bar = browser->window()->GetLocationBar();
   if (!location_bar)
-    return;
+    return nullptr;
 
   GURL url(location_bar->GetDestinationURL());
+  TRACE_EVENT1("navigation", "chrome::OpenCurrentURL", "url", url);
 
   if (ShouldInterceptChromeURLNavigationInIncognito(browser, url)) {
     ProcessInterceptedChromeURLNavigationInIncognito(browser, url);
-    return;
+    return nullptr;
   }
 
   NavigateParams params(browser, url, location_bar->GetPageTransition());
@@ -651,7 +654,7 @@ void OpenCurrentURL(Browser* browser) {
   params.input_start = location_bar->GetMatchSelectionTimestamp();
   params.is_using_https_as_default_scheme =
       location_bar->IsInputTypedUrlWithoutScheme();
-  Navigate(&params);
+  auto result = Navigate(&params);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK(extensions::ExtensionSystem::Get(browser->profile())
@@ -665,6 +668,7 @@ void OpenCurrentURL(Browser* browser) {
                                     extension->GetType());
   }
 #endif
+  return result;
 }
 
 void Stop(Browser* browser) {
@@ -932,14 +936,14 @@ WebContents* DuplicateTabAt(Browser* browser, int index) {
     // If this is a tabbed browser, just create a duplicate tab inside the same
     // window next to the tab being duplicated.
     TabStripModel* tab_strip_model = browser->tab_strip_model();
-    const int index = tab_strip_model->GetIndexOfWebContents(contents);
-    pinned = tab_strip_model->IsTabPinned(index);
+    const int contents_index = tab_strip_model->GetIndexOfWebContents(contents);
+    pinned = tab_strip_model->IsTabPinned(contents_index);
     int add_types = TabStripModel::ADD_ACTIVE |
                     TabStripModel::ADD_INHERIT_OPENER |
                     (pinned ? TabStripModel::ADD_PINNED : 0);
-    const auto old_group = tab_strip_model->GetTabGroupForTab(index);
-    tab_strip_model->InsertWebContentsAt(index + 1, std::move(contents_dupe),
-                                         add_types, old_group);
+    const auto old_group = tab_strip_model->GetTabGroupForTab(contents_index);
+    tab_strip_model->InsertWebContentsAt(
+        contents_index + 1, std::move(contents_dupe), add_types, old_group);
   } else {
     CreateAndShowNewWindowWithContents(std::move(contents_dupe), browser);
   }

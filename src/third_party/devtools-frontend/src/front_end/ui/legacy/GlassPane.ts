@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Utils from './utils/utils.js';
 
@@ -12,7 +11,7 @@ import {deepElementFromEvent} from './UIUtils.js';
 import type {WidgetElement} from './Widget.js';
 import {Widget} from './Widget.js';
 
-export class GlassPane extends Common.ObjectWrapper.ObjectWrapper {
+export class GlassPane {
   private readonly widgetInternal: Widget;
   element: WidgetElement;
   contentElement: HTMLDivElement;
@@ -28,7 +27,6 @@ export class GlassPane extends Common.ObjectWrapper.ObjectWrapper {
   private marginBehavior: MarginBehavior;
 
   constructor() {
-    super();
     this.widgetInternal = new Widget(true);
     this.widgetInternal.markAsRoot();
     this.element = this.widgetInternal.element;
@@ -344,34 +342,26 @@ export class GlassPane extends Common.ObjectWrapper.ObjectWrapper {
   }
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum PointerEventsBehavior {
+export const enum PointerEventsBehavior {
   BlockedByGlassPane = 'BlockedByGlassPane',
   PierceGlassPane = 'PierceGlassPane',
   PierceContents = 'PierceContents',
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum AnchorBehavior {
+export const enum AnchorBehavior {
   PreferTop = 'PreferTop',
   PreferBottom = 'PreferBottom',
   PreferLeft = 'PreferLeft',
   PreferRight = 'PreferRight',
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum SizeBehavior {
+export const enum SizeBehavior {
   SetExactSize = 'SetExactSize',
   SetExactWidthMaxHeight = 'SetExactWidthMaxHeight',
   MeasureContent = 'MeasureContent',
 }
 
-// TODO(crbug.com/1167717): Make this a const enum again
-// eslint-disable-next-line rulesdir/const_enum
-export enum MarginBehavior {
+export const enum MarginBehavior {
   Arrow = 'Arrow',
   DefaultMargin = 'DefaultMargin',
   NoMargin = 'NoMargin',

@@ -95,6 +95,10 @@ class DownloadRequestLimiter
     // download status.
     TabDownloadState(DownloadRequestLimiter* host,
                      content::WebContents* web_contents);
+
+    TabDownloadState(const TabDownloadState&) = delete;
+    TabDownloadState& operator=(const TabDownloadState&) = delete;
+
     ~TabDownloadState() override;
 
     // Sets the current limiter state and the underlying automatic downloads
@@ -186,9 +190,6 @@ class DownloadRequestLimiter
 
     DownloadRequestLimiter* host_;
 
-    // Host of the first page the download started on. This may be empty.
-    std::string initial_page_host_;
-
     // Current tab status and UI status. Renderer initiated navigations will
     // not change these values if the current tab state is restricted.
     DownloadStatus status_;
@@ -221,11 +222,12 @@ class DownloadRequestLimiter
     // becomes moot.
     base::WeakPtrFactory<DownloadRequestLimiter::TabDownloadState> factory_{
         this};
-
-    DISALLOW_COPY_AND_ASSIGN(TabDownloadState);
   };
 
   DownloadRequestLimiter();
+
+  DownloadRequestLimiter(const DownloadRequestLimiter&) = delete;
+  DownloadRequestLimiter& operator=(const DownloadRequestLimiter&) = delete;
 
   // Returns the download status for a page. This does not change the state in
   // anyway.
@@ -329,8 +331,6 @@ class DownloadRequestLimiter
   // Weak ptr factory used when |CanDownload| asks the delegate asynchronously
   // about the download.
   base::WeakPtrFactory<DownloadRequestLimiter> factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadRequestLimiter);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_REQUEST_LIMITER_H_

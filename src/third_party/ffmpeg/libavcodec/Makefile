@@ -367,7 +367,7 @@ OBJS-$(CONFIG_H264_DECODER)            += h264dec.o h264_cabac.o h264_cavlc.o \
                                           h264_direct.o h264_loopfilter.o  \
                                           h264_mb.o h264_picture.o \
                                           h264_refs.o h264_sei.o \
-                                          h264_slice.o h264data.o
+                                          h264_slice.o h264data.o h274.o
 OBJS-$(CONFIG_H264_AMF_ENCODER)        += amfenc_h264.o
 OBJS-$(CONFIG_H264_CUVID_DECODER)      += cuviddec.o
 OBJS-$(CONFIG_H264_MEDIACODEC_DECODER) += mediacodecdec.o
@@ -508,6 +508,7 @@ OBJS-$(CONFIG_MSMPEG4V2_DECODER)       += msmpeg4dec.o msmpeg4.o msmpeg4data.o
 OBJS-$(CONFIG_MSMPEG4V2_ENCODER)       += msmpeg4enc.o msmpeg4.o msmpeg4data.o
 OBJS-$(CONFIG_MSMPEG4V3_DECODER)       += msmpeg4dec.o msmpeg4.o msmpeg4data.o
 OBJS-$(CONFIG_MSMPEG4V3_ENCODER)       += msmpeg4enc.o msmpeg4.o msmpeg4data.o
+OBJS-$(CONFIG_MSNSIREN_DECODER)        += siren.o
 OBJS-$(CONFIG_MSP2_DECODER)            += msp2dec.o
 OBJS-$(CONFIG_MSRLE_DECODER)           += msrle.o msrledec.o
 OBJS-$(CONFIG_MSS1_DECODER)            += mss1.o mss12.o
@@ -621,6 +622,7 @@ OBJS-$(CONFIG_SIMBIOSIS_IMX_DECODER)   += imx.o
 OBJS-$(CONFIG_SMACKAUD_DECODER)        += smacker.o
 OBJS-$(CONFIG_SMACKER_DECODER)         += smacker.o
 OBJS-$(CONFIG_SMC_DECODER)             += smc.o
+OBJS-$(CONFIG_SMC_ENCODER)             += smcenc.o
 OBJS-$(CONFIG_SNOW_DECODER)            += snowdec.o snow.o snow_dwt.o
 OBJS-$(CONFIG_SNOW_ENCODER)            += snowenc.o snow.o snow_dwt.o             \
                                           h263.o h263data.o ituh263enc.o
@@ -1181,7 +1183,6 @@ SLIBOBJS-$(HAVE_GNU_WINDRES)           += avcodecres.o
 
 SKIPHEADERS                            += %_tablegen.h                  \
                                           %_tables.h                    \
-                                          fft-internal.h                \
                                           tableprint.h                  \
                                           tableprint_vlc.h              \
                                           aaccoder_twoloop.h            \

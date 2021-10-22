@@ -13,9 +13,11 @@ extern const char kChromeUIProjectorAppHost[];
 extern const char kChromeUIUntrustedProjectorAppUrl[];
 extern const char kChromeUIUntrustedProjectorPwaUrl[];
 
+extern const char kChromeUITrustedProjectorUrl[];
 extern const char kChromeUITrustedProjectorAppUrl[];
 extern const char kChromeUITrustedProjectorSelfieCamUrl[];
-extern const char kChromeUITrustedAnnotatorURL[];
+extern const char kChromeUITrustedAnnotatorUrl[];
+extern const char kChromeUITrustedProjectorSwaAppId[];
 
 }  // namespace chromeos
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1113173431709655881">કૅમેરા મોડ</translation>
 <translation id="1175958423215084756">લિંકની જાણકારી મળી. <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ગૅલેરી છબીઓ</translation>
 <translation id="1300209025925956156">તમારા દસ્તાવેજને સ્કૅન કરો</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> અનપ્લગ કરેલું છે.</translation>
 <translation id="1473110567575736769">3 સેકન્ડનું ટાઇમર</translation>
 <translation id="1545749641540134597">QR કોડ સ્કેન કરો</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">સામાન્ય</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">કંઈ રેકોર્ડ થયું નથી</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">સ્કૅન કરો</translation>
 <translation id="2549985041256363841">રેકોર્ડિંગ શરૂ કરો</translation>
 <translation id="2599796128805996109">પાછળનો કૅમેરા</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" /> સેકન્ડ</translation>
+<translation id="2761536921376153655">સ્કૅનનો પ્રકાર</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> પ્લગ-ઇન કરેલું છે.</translation>
 <translation id="2968794441791257519">કૅમેરા વડે લીધેલા ફોટા અને વીડિયો ડાઉનલોડ ફોલ્ડરમાં ખસેડવામાં આવશે. તમે તેઓને ફાઇલોમાં ઍક્સેસ કરી શકશો.
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">ગૅલેરી પર જાઓ</translation>
 <translation id="520537883758714667">દસ્તાવેજ સ્કૅન કરવાની સુવિધા હવે ઉપલબ્ધ છે</translation>
 <translation id="5268823927180092501">બધા કૅમેરામાં 'દસ્તાવેજ મોડ' ચાલુ કરો</translation>
+<translation id="5317780077021120954">સાચવો</translation>
 <translation id="5444515100983837161">દસ્તાવેજના બધા ખૂણાઓને ફ્રેમની અંદર રાખો. જો દસ્તાવેજ અને બૅકગ્રાઉન્ડ અલગ-અલગ રંગોના હોય, તો સ્કૅન શ્રેષ્ઠ રીતે કામ કરે છે.</translation>
 <translation id="5671277269877808209">ચોરસ</translation>
 <translation id="5746169159649715125">PDF તરીકે સાચવો</translation>
@@ -86,6 +92,7 @@
 
 જો તમારો પ્રતિસાદ કોઈ છબી અથવા વીડિયો ક્વૉલિટી વિશે હોય, તો કૃપા કરીને ફોટો અથવા વીડિયોનો કોઈ નમૂનો શામેલ કરો અને સમસ્યાનું વર્ણન કરો. (ઉદાહરણ તરીકે, ફોટો ઘણા ઓછા પ્રકાશમાં લેવામાં આવ્યો છે અથવા તે ફોકસમાં નથી.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> મેગાપિક્સેલ</translation>
+<translation id="6527303717912515753">શેર કરો</translation>
 <translation id="667999046851023355">દસ્તાવેજ</translation>
 <translation id="6681668084120808868">ફોટો લો</translation>
 <translation id="6778482348691154169">ફોટો લઈ શકાતો નથી</translation>
@@ -94,15 +101,19 @@
 <translation id="698156982839284926">3 સેકન્ડ</translation>
 <translation id="712848772518857951">શું તમે ખરેખર <ph name="COUNT" /> આઇટમ કાઢી નાખવા માગો છો?</translation>
 <translation id="7134221860976209830">10 સેકન્ડનું ટાઇમર</translation>
+<translation id="7191890674911603392">રેકોર્ડનો પ્રકાર</translation>
 <translation id="7243947652761655814">વીડિયો રિઝોલ્યુશન</translation>
 <translation id="7337660886763914220">ફાઇલ સિસ્ટમની ભૂલો.</translation>
 <translation id="7450541714075000668">ટેક્સ્ટ કૉપિ કરી</translation>
+<translation id="7476762461674917065">GIF રેકોર્ડ કરવાનો વિકલ્પ બતાવો</translation>
+<translation id="7488619942230388918">GIF વીડિયો રેકોર્ડ કરો</translation>
 <translation id="7557677699350329807">આગલા કૅમેરા પર સ્વિચ કરો</translation>
 <translation id="7607002721634913082">થોભાવેલું</translation>
 <translation id="7608223098072244877">4 બાય 4</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7670511624014457267">60 FPS</translation>
+<translation id="7726641833034062494">સામાન્ય વીડિયો રેકોર્ડ કરો</translation>
 <translation id="7983668134180549431">ટેક્સ્ટની જાણકારી મળી.</translation>
 <translation id="8067883171444229417">વીડિયો ચલાવો</translation>
 <translation id="8120146556401698679">ફેરવો ટિલ્ટ કરો નાનું-મોટું કરો</translation>

@@ -17,7 +17,8 @@ class CPWL_ListBox;
 
 class CFFL_ListBox final : public CFFL_TextObject {
  public:
-  CFFL_ListBox(CPDFSDK_FormFillEnvironment* pApp, CPDFSDK_Widget* pWidget);
+  CFFL_ListBox(CFFL_InteractiveFormFiller* pFormFiller,
+               CPDFSDK_Widget* pWidget);
   ~CFFL_ListBox() override;
 
   // CFFL_TextObject:
@@ -26,14 +27,14 @@ class CFFL_ListBox final : public CFFL_TextObject {
       const CPWL_Wnd::CreateParams& cp,
       std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
       override;
-  bool OnChar(CPDFSDK_Annot* pAnnot,
+  bool OnChar(CPDFSDK_Widget* pWidget,
               uint32_t nChar,
               Mask<FWL_EVENTFLAG> nFlags) override;
   bool IsDataChanged(const CPDFSDK_PageView* pPageView) override;
   void SaveData(const CPDFSDK_PageView* pPageView) override;
   void GetActionData(const CPDFSDK_PageView* pPageView,
                      CPDF_AAction::AActionType type,
-                     CPDFSDK_FieldAction& fa) override;
+                     CFFL_FieldAction& fa) override;
   void SavePWLWindowState(const CPDFSDK_PageView* pPageView) override;
   void RecreatePWLWindowFromSavedState(
       const CPDFSDK_PageView* pPageView) override;
@@ -41,8 +42,8 @@ class CFFL_ListBox final : public CFFL_TextObject {
   bool IsIndexSelected(int index) override;
 
  private:
-  CPWL_ListBox* GetListBox(const CPDFSDK_PageView* pPageView) const;
-  CPWL_ListBox* CreateOrUpdateListBox(const CPDFSDK_PageView* pPageView);
+  CPWL_ListBox* GetPWLListBox(const CPDFSDK_PageView* pPageView) const;
+  CPWL_ListBox* CreateOrUpdatePWLListBox(const CPDFSDK_PageView* pPageView);
 
   std::set<int> m_OriginSelections;
   std::vector<int> m_State;

@@ -17,11 +17,10 @@
 #include "core/fxcrt/fx_codepage_forward.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
+#include "fpdfsdk/pwl/ipwl_systemhandler.h"
 
-class CFFL_FormField;
 class CFX_RenderDevice;
 class CPWL_Edit;
-class IPWL_SystemHandler;
 
 class CPWL_EditImpl {
  public:
@@ -42,18 +41,17 @@ class CPWL_EditImpl {
     UnownedPtr<CPVT_VariableText::Iterator> m_pVTIterator;
   };
 
-  static void DrawEdit(CFX_RenderDevice* pDevice,
-                       const CFX_Matrix& mtUser2Device,
-                       CPWL_EditImpl* pEdit,
-                       FX_COLORREF crTextFill,
-                       const CFX_FloatRect& rcClip,
-                       const CFX_PointF& ptOffset,
-                       const CPVT_WordRange* pRange,
-                       IPWL_SystemHandler* pSystemHandler,
-                       CFFL_FormField* pFFLData);
-
   CPWL_EditImpl();
   ~CPWL_EditImpl();
+
+  void DrawEdit(CFX_RenderDevice* pDevice,
+                const CFX_Matrix& mtUser2Device,
+                FX_COLORREF crTextFill,
+                const CFX_FloatRect& rcClip,
+                const CFX_PointF& ptOffset,
+                const CPVT_WordRange* pRange,
+                IPWL_SystemHandler* pSystemHandler,
+                IPWL_SystemHandler::PerWindowData* pSystemData);
 
   void SetFontMap(IPVT_FontMap* pFontMap);
   void SetNotify(CPWL_Edit* pNotify);
@@ -79,7 +77,6 @@ class CPWL_EditImpl {
   // Set the maximum number of words in the text.
   void SetLimitChar(int32_t nLimitChar);
   void SetCharArray(int32_t nCharArray);
-  void SetCharSpace(float fCharSpace);
   void SetMultiLine(bool bMultiLine);
   void SetAutoReturn(bool bAuto);
   void SetAutoFontSize(bool bAuto);
@@ -116,7 +113,6 @@ class CPWL_EditImpl {
   int32_t GetCharArray() const;
   CFX_FloatRect GetContentRect() const;
   WideString GetRangeText(const CPVT_WordRange& range) const;
-  float GetCharSpace() const;
   void SetSelection(int32_t nStartChar, int32_t nEndChar);
   std::pair<int32_t, int32_t> GetSelection() const;
   void SelectAll();

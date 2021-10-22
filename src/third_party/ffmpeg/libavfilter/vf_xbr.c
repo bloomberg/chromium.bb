@@ -346,10 +346,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_0RGB32, AV_PIX_FMT_NONE,
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
@@ -370,7 +367,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     td.in = in;
     td.out = out;
     td.rgbtoyuv = s->rgbtoyuv;
-    ctx->internal->execute(ctx, s->func, &td, NULL, FFMIN(inlink->h, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, s->func, &td, NULL,
+                      FFMIN(inlink->h, ff_filter_get_nb_threads(ctx)));
 
     out->width  = outlink->w;
     out->height = outlink->h;
@@ -412,7 +410,6 @@ static const AVFilterPad xbr_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad xbr_outputs[] = {
@@ -421,14 +418,13 @@ static const AVFilterPad xbr_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_xbr = {
     .name          = "xbr",
     .description   = NULL_IF_CONFIG_SMALL("Scale the input using xBR algorithm."),
-    .inputs        = xbr_inputs,
-    .outputs       = xbr_outputs,
+    FILTER_INPUTS(xbr_inputs),
+    FILTER_OUTPUTS(xbr_outputs),
     .query_formats = query_formats,
     .priv_size     = sizeof(XBRContext),
     .priv_class    = &xbr_class,

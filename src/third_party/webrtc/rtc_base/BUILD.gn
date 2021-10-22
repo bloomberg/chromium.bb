@@ -136,6 +136,7 @@ rtc_library("rtc_base_approved") {
     "rate_statistics.h",
     "rate_tracker.cc",
     "rate_tracker.h",
+    "strong_alias.h",
     "swap_queue.h",
     "timestamp_aligner.cc",
     "timestamp_aligner.h",
@@ -693,7 +694,10 @@ rtc_library("net_helpers") {
     deps += [ ":ifaddrs_android" ]
   }
   if (is_win) {
-    deps += [ ":win32" ]
+    deps += [
+      ":rtc_base_approved",
+      ":win32",
+    ]
   }
 }
 
@@ -1371,6 +1375,7 @@ if (rtc_include_tests) {
         "string_utils_unittest.cc",
         "strings/string_builder_unittest.cc",
         "strings/string_format_unittest.cc",
+        "strong_alias_unittest.cc",
         "swap_queue_unittest.cc",
         "thread_annotations_unittest.cc",
         "time_utils_unittest.cc",
@@ -1413,6 +1418,7 @@ if (rtc_include_tests) {
         "../test:fileutils",
         "../test:test_main",
         "../test:test_support",
+        "containers:flat_map",
         "containers:unittests",
         "memory:unittests",
         "synchronization:mutex",

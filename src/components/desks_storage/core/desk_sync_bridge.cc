@@ -18,9 +18,9 @@
 #include "base/time/time.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/account_id/account_id.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/window_info.h"
 #include "components/desks_storage/core/desk_model_observer.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/window_info.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/sync/model/entity_change.h"
@@ -50,10 +50,12 @@ namespace {
 
 using syncer::ModelTypeStore;
 
+// The maximum number of templates the local storage can hold.
+constexpr std::size_t kMaxTemplateCount = 6u;
+
 // Converts a time field from sync protobufs to a time object.
 base::Time ProtoTimeToTime(int64_t proto_t) {
-  return base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(proto_t));
+  return base::Time::FromDeltaSinceWindowsEpoch(base::Microseconds(proto_t));
 }
 
 // Converts a time object to the format used in sync protobufs
@@ -135,8 +137,8 @@ std::string GetAppId(const sync_pb::WorkspaceDeskSpecifics_App& app) {
   }
 }
 
-// Convert App proto to |full_restore::AppLaunchInfo|.
-std::unique_ptr<full_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
+// Convert App proto to |app_restore::AppLaunchInfo|.
+std::unique_ptr<app_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
     const sync_pb::WorkspaceDeskSpecifics_App& app) {
   const int32_t window_id = app.window_id();
   const std::string app_id = GetAppId(app);
@@ -144,8 +146,8 @@ std::unique_ptr<full_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
   if (app_id.empty())
     return nullptr;
 
-  std::unique_ptr<full_restore::AppLaunchInfo> app_launch_info =
-      std::make_unique<full_restore::AppLaunchInfo>(app_id, window_id);
+  std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info =
+      std::make_unique<app_restore::AppLaunchInfo>(app_id, window_id);
 
   if (app.has_display_id())
     app_launch_info->display_id = app.display_id();
@@ -181,7 +183,7 @@ std::unique_ptr<full_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
 }
 
 // Convert Sync proto WindowState |state| to ui::WindowShowState used by
-// the full_restore::WindowInfo struct.
+// the app_restore::WindowInfo struct.
 ui::WindowShowState ToUiWindowState(WindowState state) {
   switch (state) {
     case WindowState::WorkspaceDeskSpecifics_WindowState_UNKNOWN_WINDOW_STATE:
@@ -204,7 +206,7 @@ ui::WindowShowState ToUiWindowState(WindowState state) {
 }
 
 // Convert Sync proto WindowState |state| to chromeos::WindowStateType used by
-// the full_restore::WindowInfo struct.
+// the app_restore::WindowInfo struct.
 chromeos::WindowStateType ToChromeOsWindowState(WindowState state) {
   switch (state) {
     case WindowState::WorkspaceDeskSpecifics_WindowState_UNKNOWN_WINDOW_STATE:
@@ -235,7 +237,6 @@ WindowState FromChromeOsWindowState(chromeos::WindowStateType state) {
     case chromeos::WindowStateType::kAutoPositioned:
     case chromeos::WindowStateType::kPinned:
     case chromeos::WindowStateType::kTrustedPinned:
-    case chromeos::WindowStateType::kFloating:
     case chromeos::WindowStateType::kPip:
       return WindowState::WorkspaceDeskSpecifics_WindowState_NORMAL;
     case chromeos::WindowStateType::kMinimized:
@@ -288,9 +289,8 @@ void FillBrowserAppTabs(BrowserAppWindow* out_browser_app_window,
 
 // Fill |out_browser_app_window| with urls and tab information from
 // |app_restore_data|.
-void FillBrowserAppWindow(
-    BrowserAppWindow* out_browser_app_window,
-    const full_restore::AppRestoreData* app_restore_data) {
+void FillBrowserAppWindow(BrowserAppWindow* out_browser_app_window,
+                          const app_restore::AppRestoreData* app_restore_data) {
   if (app_restore_data->urls.has_value())
     FillBrowserAppTabs(out_browser_app_window, app_restore_data->urls.value());
 
@@ -310,7 +310,7 @@ void FillWindowBound(WindowBound* out_window_bound, const gfx::Rect& bound) {
 
 // Fill |out_app| with information from |window_info|.
 void FillAppWithWindowInfo(WorkspaceDeskSpecifics_App* out_app,
-                           const full_restore::WindowInfo* window_info) {
+                           const app_restore::WindowInfo* window_info) {
   if (window_info->activation_index.has_value())
     out_app->set_z_index(window_info->activation_index.value());
 
@@ -334,9 +334,8 @@ void FillAppWithWindowInfo(WorkspaceDeskSpecifics_App* out_app,
 }
 
 //  Fill |out_app| with |display_id| from |app_restore_data|.
-void FillAppWithDisplayId(
-    WorkspaceDeskSpecifics_App* out_app,
-    const full_restore::AppRestoreData* app_restore_data) {
+void FillAppWithDisplayId(WorkspaceDeskSpecifics_App* out_app,
+                          const app_restore::AppRestoreData* app_restore_data) {
   if (app_restore_data->display_id.has_value())
     out_app->set_display_id(app_restore_data->display_id.value());
 }
@@ -345,7 +344,7 @@ void FillAppWithDisplayId(
 void FillApp(WorkspaceDeskSpecifics_App* out_app,
              const std::string& app_id,
              const apps::mojom::AppType app_type,
-             const full_restore::AppRestoreData* app_restore_data) {
+             const app_restore::AppRestoreData* app_restore_data) {
   FillAppWithWindowInfo(out_app, app_restore_data->GetWindowInfo().get());
 
   // AppRestoreData.GetWindowInfo does not include |display_id| in the returned
@@ -397,7 +396,7 @@ void FillApp(WorkspaceDeskSpecifics_App* out_app,
 }
 
 // Fill |out_window_info| with information from Sync proto |app|.
-void FillWindowInfoFromProto(full_restore::WindowInfo* out_window_info,
+void FillWindowInfoFromProto(app_restore::WindowInfo* out_window_info,
                              sync_pb::WorkspaceDeskSpecifics_App& app) {
   if (app.has_window_state() &&
       sync_pb::WorkspaceDeskSpecifics_WindowState_IsValid(app.window_state())) {
@@ -424,14 +423,14 @@ void FillWindowInfoFromProto(full_restore::WindowInfo* out_window_info,
   }
 }
 
-// Convert a desk template to |full_restore::RestoreData|.
-std::unique_ptr<full_restore::RestoreData> ConvertToRestoreData(
+// Convert a desk template to |app_restore::RestoreData|.
+std::unique_ptr<app_restore::RestoreData> ConvertToRestoreData(
     const sync_pb::WorkspaceDeskSpecifics& entry_proto) {
-  std::unique_ptr<full_restore::RestoreData> restore_data =
-      std::make_unique<full_restore::RestoreData>();
+  std::unique_ptr<app_restore::RestoreData> restore_data =
+      std::make_unique<app_restore::RestoreData>();
 
   for (auto app_proto : entry_proto.desk().apps()) {
-    std::unique_ptr<full_restore::AppLaunchInfo> app_launch_info =
+    std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info =
         ConvertToAppLaunchInfo(app_proto);
     if (!app_launch_info) {
       // Skip unsupported app.
@@ -441,7 +440,7 @@ std::unique_ptr<full_restore::RestoreData> ConvertToRestoreData(
     const std::string app_id = app_launch_info->app_id;
     restore_data->AddAppLaunchInfo(std::move(app_launch_info));
 
-    full_restore::WindowInfo app_window_info;
+    app_restore::WindowInfo app_window_info;
     FillWindowInfoFromProto(&app_window_info, app_proto);
 
     restore_data->ModifyWindowInfo(app_id, app_proto.window_id(),
@@ -456,7 +455,7 @@ std::unique_ptr<full_restore::RestoreData> ConvertToRestoreData(
 void FillWorkspaceDeskSpecifics(
     sync_pb::WorkspaceDeskSpecifics* out_entry_proto,
     apps::AppRegistryCache* apps_cache,
-    const full_restore::RestoreData* restore_data) {
+    const app_restore::RestoreData* restore_data) {
   DCHECK(apps_cache);
 
   for (auto const& app_id_to_launch_list :
@@ -465,7 +464,7 @@ void FillWorkspaceDeskSpecifics(
 
     for (auto const& window_id_to_launch_info : app_id_to_launch_list.second) {
       const int window_id = window_id_to_launch_info.first;
-      const full_restore::AppRestoreData* app_restore_data =
+      const app_restore::AppRestoreData* app_restore_data =
           window_id_to_launch_info.second.get();
       const apps::mojom::AppType app_type = apps_cache->GetAppType(app_id);
 
@@ -654,7 +653,7 @@ void DeskSyncBridge::GetEntryByUUID(const std::string& uuid_str,
   }
 
   const base::GUID uuid = base::GUID::ParseCaseInsensitive(uuid_str);
-  if (uuid.is_valid()) {
+  if (!uuid.is_valid()) {
     std::move(callback).Run(GetEntryByUuidStatus::kInvalidUuid,
                             std::unique_ptr<DeskTemplate>());
     return;
@@ -685,11 +684,9 @@ void DeskSyncBridge::AddOrUpdateEntry(std::unique_ptr<DeskTemplate> new_entry,
     return;
   }
 
-  std::string trimmed_name = base::UTF16ToUTF8(
+  auto entry = new_entry->Clone();
+  entry->set_template_name(
       base::CollapseWhitespace(new_entry->template_name(), true));
-
-  auto entry = std::make_unique<DeskTemplate>(
-      uuid.AsLowercaseString(), trimmed_name, new_entry->created_time());
 
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
@@ -753,15 +750,44 @@ void DeskSyncBridge::DeleteAllEntries(DeleteEntryCallback callback) {
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_->CreateWriteBatch();
 
-  std::vector<std::string> all_uuids = GetAllUuids();
+  std::vector<base::GUID> all_uuids = GetAllEntryUuids();
 
   for (const auto& uuid : all_uuids) {
-    change_processor()->Delete(uuid, batch->GetMetadataChangeList());
-    batch->DeleteData(uuid);
+    change_processor()->Delete(uuid.AsLowercaseString(),
+                               batch->GetMetadataChangeList());
+    batch->DeleteData(uuid.AsLowercaseString());
   }
   entries_.clear();
 
   std::move(callback).Run(DeleteEntryStatus::kOk);
+}
+
+std::size_t DeskSyncBridge::GetEntryCount() const {
+  return entries_.size();
+}
+
+std::size_t DeskSyncBridge::GetMaxEntryCount() const {
+  return kMaxTemplateCount;
+}
+
+std::vector<base::GUID> DeskSyncBridge::GetAllEntryUuids() const {
+  std::vector<base::GUID> keys;
+  for (const auto& it : entries_) {
+    DCHECK_EQ(it.first, it.second->uuid());
+    keys.emplace_back(it.first);
+  }
+  return keys;
+}
+
+bool DeskSyncBridge::IsReady() const {
+  if (is_ready_) {
+    DCHECK(store_);
+  }
+  return is_ready_;
+}
+
+bool DeskSyncBridge::IsSyncing() const {
+  return change_processor()->IsTrackingMetadata();
 }
 
 sync_pb::WorkspaceDeskSpecifics DeskSyncBridge::ToSyncProto(
@@ -784,32 +810,18 @@ sync_pb::WorkspaceDeskSpecifics DeskSyncBridge::ToSyncProto(
   return pb_entry;
 }
 
-bool DeskSyncBridge::IsReady() const {
-  if (is_ready_) {
-    DCHECK(store_);
-  }
-  return is_ready_;
-}
-
-bool DeskSyncBridge::IsSyncing() const {
-  return change_processor()->IsTrackingMetadata();
-}
-
-std::vector<std::string> DeskSyncBridge::GetAllUuids() const {
-  std::vector<std::string> keys;
-  for (const auto& it : entries_) {
-    DCHECK_EQ(it.first, it.second->uuid());
-    keys.push_back(it.first.AsLowercaseString());
-  }
-  return keys;
-}
-
 const DeskTemplate* DeskSyncBridge::GetEntryByUUID(
     const base::GUID& uuid) const {
   auto it = entries_.find(uuid);
   if (it == entries_.end())
     return nullptr;
   return it->second.get();
+}
+
+void DeskSyncBridge::NotifyDeskModelLoaded() {
+  for (DeskModelObserver& observer : observers_) {
+    observer.DeskModelLoaded();
+  }
 }
 
 void DeskSyncBridge::NotifyRemoteDeskTemplateAddedOrUpdated(
@@ -880,6 +892,7 @@ void DeskSyncBridge::OnReadAllMetadata(
 
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
   is_ready_ = true;
+  NotifyDeskModelLoaded();
 }
 
 void DeskSyncBridge::OnCommit(const absl::optional<syncer::ModelError>& error) {

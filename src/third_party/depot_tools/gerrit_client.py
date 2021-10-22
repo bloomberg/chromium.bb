@@ -284,6 +284,22 @@ def CMDsetbotcommit(parser, args):
   write_result(result, opt)
 
 
+@subcommand.usage('[args ...]')
+def CMDsetlabel(parser, args):
+  """Sets a label to a specific value on a given change."""
+  parser.add_option('-c', '--change', type=int, help='change number')
+  parser.add_option('-l',
+                    '--label',
+                    nargs=2,
+                    metavar=('label_name', 'label_value'))
+  (opt, args) = parser.parse_args(args)
+  result = gerrit_util.SetReview(urlparse.urlparse(opt.host).netloc,
+                                 opt.change,
+                                 labels={opt.label[0]: opt.label[1]})
+  logging.info(result)
+  write_result(result, opt)
+
+
 @subcommand.usage('')
 def CMDabandon(parser, args):
   """Abandons a Gerrit change."""

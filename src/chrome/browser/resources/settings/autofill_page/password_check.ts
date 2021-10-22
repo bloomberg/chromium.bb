@@ -25,16 +25,16 @@ import '../controls/password_prompt_dialog.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {I18nMixin, I18nMixinInterface} from 'chrome://resources/js/i18n_mixin.js';
 // <if expr="chromeos">
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // </if>
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUIListenerMixin, WebUIListenerMixinInterface} from 'chrome://resources/js/web_ui_listener_mixin.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 import {StoredAccount, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.js';
-import {PrefsBehavior, PrefsBehaviorInterface} from '../prefs/prefs_behavior.js';
+import {PrefsMixin, PrefsMixinInterface} from '../prefs/prefs_mixin.js';
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 
@@ -56,12 +56,11 @@ interface SettingsPasswordCheckElement {
 }
 
 const SettingsPasswordCheckElementBase =
-    mixinBehaviors(
-        [I18nBehavior, PrefsBehavior, WebUIListenerBehavior],
-        RouteObserverMixin(PasswordCheckMixin((PolymerElement)))) as {
-      new (): PolymerElement & I18nBehavior & WebUIListenerBehavior &
-      PrefsBehaviorInterface & PasswordCheckMixinInterface &
-      RouteObserverMixinInterface
+    RouteObserverMixin(WebUIListenerMixin(
+        I18nMixin(PrefsMixin(PasswordCheckMixin((PolymerElement)))))) as {
+      new (): PolymerElement & I18nMixinInterface &
+      WebUIListenerMixinInterface & PrefsMixinInterface &
+      PasswordCheckMixinInterface & RouteObserverMixinInterface
     };
 
 class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
@@ -178,7 +177,7 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
 
   private activeDialogAnchorStack_: Array<HTMLElement>|null;
   private activeListItem_: PasswordCheckListItemElement|null;
-  private startCheckAutomaticallySucceeded: boolean = false;
+  startCheckAutomaticallySucceeded: boolean = false;
   private setSavedPasswordsListener_: SavedPasswordListChangedListener|null;
 
   constructor() {
@@ -470,9 +469,7 @@ class SettingsPasswordCheckElement extends SettingsPasswordCheckElementBase {
   private computeTitle_(): string {
     switch (this.status.state) {
       case CheckState.IDLE:
-        return this.waitsForFirstCheck_() ?
-            this.i18n('checkPasswordsDescription') :
-            this.i18n('checkedPasswords');
+        return this.waitsForFirstCheck_() ? '' : this.i18n('checkedPasswords');
       case CheckState.CANCELED:
         return this.i18n('checkPasswordsCanceled');
       case CheckState.RUNNING:

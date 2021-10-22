@@ -45,8 +45,7 @@ void RunBenchmark(RasterSource* raster_source,
   for (size_t i = 0; i < repeat_count; ++i) {
     // Run for a minimum amount of time to avoid problems with timer
     // quantization when the layer is very small.
-    base::LapTimer timer(kWarmupRuns,
-                         base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+    base::LapTimer timer(kWarmupRuns, base::Milliseconds(kTimeLimitMillis),
                          kTimeCheckInterval);
     SkColor color = SK_ColorTRANSPARENT;
     gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
@@ -130,8 +129,8 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->ScrollInteractionInProgress();
   }
 
-  bool CurrentScrollDidCheckerboardLargeArea() const override {
-    return base_client_->CurrentScrollDidCheckerboardLargeArea();
+  bool CurrentScrollCheckerboardsDueToNoRecording() const override {
+    return base_client_->CurrentScrollCheckerboardsDueToNoRecording();
   }
 
  private:

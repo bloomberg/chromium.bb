@@ -28,6 +28,11 @@ class AccountConsistencyModeManager : public KeyedService {
   static AccountConsistencyModeManager* GetForProfile(Profile* profile);
 
   explicit AccountConsistencyModeManager(Profile* profile);
+
+  AccountConsistencyModeManager(const AccountConsistencyModeManager&) = delete;
+  AccountConsistencyModeManager& operator=(
+      const AccountConsistencyModeManager&) = delete;
+
   ~AccountConsistencyModeManager() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -38,10 +43,6 @@ class AccountConsistencyModeManager : public KeyedService {
   static signin::AccountConsistencyMethod GetMethodForProfile(Profile* profile);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  // Sets migration to Dice as completed.
-  void SetDiceMigrationCompleted();
-  // Returns true if migration to Dice is completed.
-  static bool IsDiceMigrationCompleted(Profile* profile);
   // This is a pre-requisite of IsDiceEnabledForProfile(), independent of
   // particular profile type or profile prefs.
   static bool IsDiceSignInAllowed();
@@ -77,7 +78,7 @@ class AccountConsistencyModeManager : public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            AllowBrowserSigninSwitch);
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
-                           ForceDiceMigration);
+                           DiceEnabledForNewProfiles);
 
   // Returns the account consistency method for the current profile.
   signin::AccountConsistencyMethod GetAccountConsistencyMethod();
@@ -91,8 +92,6 @@ class AccountConsistencyModeManager : public KeyedService {
   Profile* profile_;
   signin::AccountConsistencyMethod account_consistency_;
   bool account_consistency_initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountConsistencyModeManager);
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_ACCOUNT_CONSISTENCY_MODE_MANAGER_H_

@@ -38,6 +38,9 @@ class PdfPrinterHandler : public PrinterHandler,
                     content::WebContents* preview_web_contents,
                     PrintPreviewStickySettings* sticky_settings);
 
+  PdfPrinterHandler(const PdfPrinterHandler&) = delete;
+  PdfPrinterHandler& operator=(const PdfPrinterHandler&) = delete;
+
   ~PdfPrinterHandler() override;
 
   // PrinterHandler implementation
@@ -133,8 +136,6 @@ class PdfPrinterHandler : public PrinterHandler,
 #endif
 
   base::WeakPtrFactory<PdfPrinterHandler> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PdfPrinterHandler);
 };
 
 }  // namespace printing

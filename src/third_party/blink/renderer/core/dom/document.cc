@@ -247,7 +247,6 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
-#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/cookie_jar.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
@@ -345,7 +344,7 @@
 
 #ifndef NDEBUG
 using WeakDocumentSet = blink::HeapHashSet<blink::WeakMember<blink::Document>>;
-static WeakDocumentSet& liveDocumentSet();
+static WeakDocumentSet& LiveDocumentSet();
 #endif
 
 namespace blink {
@@ -425,7 +424,7 @@ static const unsigned kCMaxWriteRecursionDepth = 21;
 // FIXME: For faster machines this value can really be lowered to 200.  250 is
 // adequate, but a little high for dual G5s. :)
 static const base::TimeDelta kCLayoutScheduleThreshold =
-    base::TimeDelta::FromMilliseconds(250);
+    base::Milliseconds(250);
 
 // DOM Level 2 says (letters added):
 //
@@ -826,7 +825,7 @@ Document::Document(const DocumentInit& initializer,
          !ParentDocument()->domWindow()->IsContextPaused());
 
 #ifndef NDEBUG
-  liveDocumentSet().insert(this);
+  LiveDocumentSet().insert(this);
 #endif
 }
 
@@ -2271,7 +2270,8 @@ void Document::UpdateStyleAndLayoutTreeForNode(const Node* node) {
   if (!NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node))
     return;
 
-  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
+      node, DisplayLockContext::ForcedPhase::kStyleAndLayoutTree);
   UpdateStyleAndLayoutTree();
 }
 
@@ -2286,7 +2286,8 @@ void Document::UpdateStyleAndLayoutTreeForSubtree(const Node* node) {
 
   if (NeedsLayoutTreeUpdateForNodeIncludingDisplayLocked(*node) ||
       node->ChildNeedsStyleRecalc() || node->ChildNeedsStyleInvalidation()) {
-    DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
+    DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
+        node, DisplayLockContext::ForcedPhase::kStyleAndLayoutTree);
     UpdateStyleAndLayoutTree();
   }
 }
@@ -2297,7 +2298,8 @@ void Document::UpdateStyleAndLayoutForNode(const Node* node,
   if (!node->InActiveDocument())
     return;
 
-  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
+      node, DisplayLockContext::ForcedPhase::kLayout);
   UpdateStyleAndLayout(reason);
 }
 
@@ -2528,14 +2530,11 @@ void Document::ClearFocusedElementTimerFired(TimerBase*) {
 }
 
 scoped_refptr<const ComputedStyle> Document::StyleForPage(uint32_t page_index) {
-  UpdateDistributionForUnknownReasons();
-
   AtomicString page_name;
   if (const LayoutView* layout_view = GetLayoutView()) {
     if (const NamedPagesMapper* mapper = layout_view->GetNamedPagesMapper())
       page_name = mapper->NamedPageAtIndex(page_index);
   }
-
   GetStyleEngine().UpdateActiveStyle();
   return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
                                                           page_name);
@@ -2548,7 +2547,8 @@ void Document::EnsurePaintLocationDataValidForNode(
   if (!node->InActiveDocument())
     return;
 
-  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(node);
+  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
+      node, DisplayLockContext::ForcedPhase::kLayout);
 
   // For all nodes we must have up-to-date style and have performed layout to do
   // any location-based calculation.
@@ -3458,7 +3458,6 @@ void Document::ImplicitClose() {
 
   if (GetFrame()) {
     GetFrame()->Client()->DispatchDidHandleOnloadEvents();
-    Loader()->GetApplicationCacheHost()->StopDeferringEvents();
   }
 
   if (!GetFrame()) {
@@ -4333,16 +4332,6 @@ MouseEventWithHitTestResults Document::PerformMouseEventHitTest(
   if (!request.ReadOnly()) {
     UpdateHoverActiveState(request.Active(), !request.Move(),
                            result.InnerElement());
-  }
-
-  if (auto* canvas = DynamicTo<HTMLCanvasElement>(result.InnerNode())) {
-    HitTestCanvasResult* hit_test_canvas_result =
-        canvas->GetControlAndIdIfHitRegionExists(
-            result.PointInInnerNodeFrame());
-    if (hit_test_canvas_result->GetControl()) {
-      result.SetInnerNode(hit_test_canvas_result->GetControl());
-    }
-    result.SetCanvasRegionId(hit_test_canvas_result->GetId());
   }
 
   return MouseEventWithHitTestResults(event, location, result);
@@ -6587,6 +6576,9 @@ void Document::FinishedParsing() {
     if (frame->GetFrameScheduler())
       frame->GetFrameScheduler()->OnDomContentLoaded();
 
+    if (frame->IsMainFrame() && ShouldMarkFontPerformance())
+      FontPerformance::MarkDomContentLoaded();
+
     DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
         "MarkDOMContent", inspector_mark_load_event::Data, frame);
     probe::DomContentLoadedEventFired(frame);
@@ -6599,8 +6591,7 @@ void Document::FinishedParsing() {
   // on cache access since that could lead to huge caches being kept alive
   // indefinitely by something innocuous like JS setting .innerHTML repeatedly
   // on a timer.
-  element_data_cache_clear_timer_.StartOneShot(base::TimeDelta::FromSeconds(10),
-                                               FROM_HERE);
+  element_data_cache_clear_timer_.StartOneShot(base::Seconds(10), FROM_HERE);
 
   // Parser should have picked up all preloads by now
   fetcher_->ClearPreloads(ResourceFetcher::kClearSpeculativeMarkupPreloads);
@@ -7415,8 +7406,8 @@ void Document::DidAssociateFormControl(Element* element) {
 
   // We add a slight delay because this could be called rapidly.
   if (!did_associate_form_controls_timer_.IsActive()) {
-    did_associate_form_controls_timer_.StartOneShot(
-        base::TimeDelta::FromMilliseconds(300), FROM_HERE);
+    did_associate_form_controls_timer_.StartOneShot(base::Milliseconds(300),
+                                                    FROM_HERE);
   }
 }
 
@@ -8212,14 +8203,14 @@ template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 
 }  // namespace blink
 #ifndef NDEBUG
-static WeakDocumentSet& liveDocumentSet() {
+static WeakDocumentSet& LiveDocumentSet() {
   DEFINE_STATIC_LOCAL(blink::Persistent<WeakDocumentSet>, set,
                       (blink::MakeGarbageCollected<WeakDocumentSet>()));
   return *set;
 }
 
-void showLiveDocumentInstances() {
-  WeakDocumentSet& set = liveDocumentSet();
+void ShowLiveDocumentInstances() {
+  WeakDocumentSet& set = LiveDocumentSet();
   fprintf(stderr, "There are %u documents currently alive:\n", set.size());
   for (blink::Document* document : set) {
     fprintf(stderr, "- Document %p URL: %s\n", document,

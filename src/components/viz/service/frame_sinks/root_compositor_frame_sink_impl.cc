@@ -187,6 +187,17 @@ RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
       begin_frame_source());
 }
 
+void RootCompositorFrameSinkImpl::DidEvictSurface(const SurfaceId& surface_id) {
+  if (display_->CurrentSurfaceId() != surface_id)
+    return;
+
+  display_->InvalidateCurrentSurfaceId();
+}
+
+const SurfaceId& RootCompositorFrameSinkImpl::CurrentSurfaceId() const {
+  return display_->CurrentSurfaceId();
+}
+
 void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
   display_->SetVisible(visible);
 }
@@ -278,7 +289,7 @@ void RootCompositorFrameSinkImpl::UpdateVSyncParameters() {
           : display_frame_interval_;
 
   // Throttle rendering to 30hz.
-  constexpr base::TimeDelta kThrottledInterval = base::TimeDelta::FromHz(30);
+  constexpr base::TimeDelta kThrottledInterval = base::Hertz(30);
 
   // Only throttle if the frame interval is smaller than |kThrottledInterval|
   // meaning the refresh rate is higher than the target of 30hz.
@@ -319,7 +330,7 @@ void RootCompositorFrameSinkImpl::SetSupportedRefreshRates(
       supported_refresh_rates.size());
   for (size_t i = 0; i < supported_refresh_rates.size(); ++i) {
     supported_frame_intervals[i] =
-        base::TimeDelta::FromSecondsD(1 / supported_refresh_rates[i]);
+        base::Seconds(1 / supported_refresh_rates[i]);
   }
 
   display_->SetSupportedFrameIntervals(supported_frame_intervals);

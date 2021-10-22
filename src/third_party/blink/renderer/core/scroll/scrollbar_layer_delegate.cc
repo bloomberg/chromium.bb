@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace blink {
 
@@ -24,15 +24,15 @@ class ScopedScrollbarPainter {
  public:
   ScopedScrollbarPainter(cc::PaintCanvas& canvas, float device_scale_factor)
       : canvas_(canvas) {
-    builder_.Context().SetDeviceScaleFactor(device_scale_factor);
+    builder_->Context().SetDeviceScaleFactor(device_scale_factor);
   }
-  ~ScopedScrollbarPainter() { canvas_.drawPicture(builder_.EndRecording()); }
+  ~ScopedScrollbarPainter() { canvas_.drawPicture(builder_->EndRecording()); }
 
-  GraphicsContext& Context() { return builder_.Context(); }
+  GraphicsContext& Context() { return builder_->Context(); }
 
  private:
   cc::PaintCanvas& canvas_;
-  PaintRecordBuilder builder_;
+  PaintRecordBuilder* builder_ = MakeGarbageCollected<PaintRecordBuilder>();
 };
 
 }  // namespace

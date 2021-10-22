@@ -497,6 +497,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
+    "java/src/org/chromium/android_webview/AwDarkMode.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
@@ -550,6 +551,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwContentsLifecycleNotifier.java",
     "java/src/org/chromium/android_webview/AwContentsStatics.java",
     "java/src/org/chromium/android_webview/AwCookieManager.java",
+    "java/src/org/chromium/android_webview/AwDarkMode.java",
     "java/src/org/chromium/android_webview/AwDataDirLock.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
@@ -618,6 +620,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/gfx/JavaBrowserViewRendererHelper.java",
     "java/src/org/chromium/android_webview/gfx/RectUtils.java",
     "java/src/org/chromium/android_webview/gfx/RootBeginFrameSourceWebView.java",
+    "java/src/org/chromium/android_webview/metrics/AwMetricsLogUploader.java",
     "java/src/org/chromium/android_webview/metrics/AwMetricsServiceClient.java",
     "java/src/org/chromium/android_webview/metrics/AwNonembeddedUmaReplayer.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
@@ -789,7 +792,6 @@ android_library("common_java") {
     "//services/network/public:features_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/blink/public/common:common_java",
-    "//ui/android:ui_features_java",
   ]
   srcjar_deps = [
     ":common_java_features_srcjar",

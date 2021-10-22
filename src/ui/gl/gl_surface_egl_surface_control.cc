@@ -307,15 +307,9 @@ bool GLSurfaceEGLSurfaceControl::OnMakeCurrent(GLContext* context) {
 }
 
 bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
-    int z_order,
-    gfx::OverlayTransform transform,
     GLImage* image,
-    const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect,
-    bool enable_blend,
-    const gfx::Rect& damage_rect,
-    float opacity,
-    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+    std::unique_ptr<gfx::GpuFence> gpu_fence,
+    const gfx::OverlayPlaneData& overlay_plane_data) {
   if (surface_lost_) {
     LOG(ERROR) << "ScheduleOverlayPlane failed because surface is lost";
     return false;
@@ -344,9 +338,10 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     surface_state.visibility = true;
   }
 
-  if (uninitialized || surface_state.z_order != z_order) {
-    surface_state.z_order = z_order;
-    pending_transaction_->SetZOrder(*surface_state.surface, z_order);
+  if (uninitialized || surface_state.z_order != overlay_plane_data.z_order) {
+    surface_state.z_order = overlay_plane_data.z_order;
+    pending_transaction_->SetZOrder(*surface_state.surface,
+                                    overlay_plane_data.z_order);
   }
 
   AHardwareBuffer* hardware_buffer = nullptr;
@@ -401,9 +396,10 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   if (hardware_buffer) {
     gfx::Size buffer_size = GetBufferSize(hardware_buffer);
     gfx::RectF scaled_rect =
-        gfx::ScaleRect(crop_rect, buffer_size.width(), buffer_size.height());
+        gfx::ScaleRect(overlay_plane_data.crop_rect, buffer_size.width(),
+                       buffer_size.height());
 
-    gfx::Rect dst = bounds_rect;
+    gfx::Rect dst = overlay_plane_data.display_bounds;
     gfx::Rect src = gfx::ToEnclosedRect(scaled_rect);
 
     // When the video is being scrolled offscreen DisplayCompositor will crop it
@@ -432,16 +428,16 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
     src.Intersect(gfx::Rect(buffer_size));
 
     if (uninitialized || surface_state.src != src || surface_state.dst != dst ||
-        surface_state.transform != transform) {
+        surface_state.transform != overlay_plane_data.plane_transform) {
       surface_state.src = src;
       surface_state.dst = dst;
-      surface_state.transform = transform;
+      surface_state.transform = overlay_plane_data.plane_transform;
       pending_transaction_->SetGeometry(*surface_state.surface, src, dst,
-                                        transform);
+                                        overlay_plane_data.plane_transform);
     }
   }
 
-  bool opaque = !enable_blend;
+  bool opaque = !overlay_plane_data.enable_blend;
   if (uninitialized || surface_state.opaque != opaque) {
     surface_state.opaque = opaque;
     pending_transaction_->SetOpaque(*surface_state.surface, opaque);
@@ -611,7 +607,7 @@ void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
         weak_factory_.GetWeakPtr()));
     gpu_task_runner_->PostDelayedTask(
         FROM_HERE, check_pending_presentation_callback_queue_task_.callback(),
-        base::TimeDelta::FromSeconds(1) / 60);
+        base::Seconds(1) / 60);
   }
 }
 
@@ -721,9 +717,8 @@ void GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
       base::BindOnce(&GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::
                          OnTransactionTimeout,
                      base::Unretained(this), current_transaction_id_));
-  gpu_task_runner_->PostDelayedTask(
-      FROM_HERE, hang_detection_cb_.callback(),
-      base::TimeDelta::FromSeconds(kIdleDelaySeconds));
+  gpu_task_runner_->PostDelayedTask(FROM_HERE, hang_detection_cb_.callback(),
+                                    base::Seconds(kIdleDelaySeconds));
 }
 
 void GLSurfaceEGLSurfaceControl::TransactionAckTimeoutManager::

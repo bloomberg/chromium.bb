@@ -166,13 +166,13 @@ ParsedCookie::ParsedCookie(const std::string& cookie_line,
   if (status_out == nullptr) {
     status_out = &blank_status;
   }
+  *status_out = CookieInclusionStatus();
 
   if ((!base::FeatureList::IsEnabled(features::kExtraCookieValidityChecks)) &&
       cookie_line.size() > kMaxCookieSize) {
     DVLOG(1) << "Not parsing cookie, too large: " << cookie_line.size();
-    // TODO(crbug.com/1228815): Apply more specific exclusion reasons.
     status_out->AddExclusionReason(
-        CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE);
+        CookieInclusionStatus::EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE);
     return;
   }
 
@@ -563,9 +563,8 @@ bool ParsedCookie::IsValidCookieNameValuePair(
   if (!name_value_pair_size.IsValid() ||
       (name_value_pair_size.ValueOrDie() > kMaxCookieNamePlusValueSize)) {
     if (status_out != nullptr) {
-      // TODO(crbug.com/1228815): Apply more specific exclusion reasons.
       status_out->AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE);
+          CookieInclusionStatus::EXCLUDE_NAME_VALUE_PAIR_EXCEEDS_MAX_SIZE);
     }
     return false;
   }
@@ -596,6 +595,26 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line,
   // TODO(erikwright): Make sure we're stripping \r\n in the network code.
   // Then we can log any unexpected terminators.
   std::string::const_iterator end = FindFirstTerminator(cookie_line);
+
+  // For metrics on truncating character presence in the cookie line.
+  if (end < cookie_line.end()) {
+    switch (*end) {
+      case '\0':
+        truncating_char_in_cookie_string_type_ =
+            TruncatingCharacterInCookieStringType::kTruncatingCharNull;
+        break;
+      case '\r':
+        truncating_char_in_cookie_string_type_ =
+            TruncatingCharacterInCookieStringType::kTruncatingCharNewline;
+        break;
+      case '\n':
+        truncating_char_in_cookie_string_type_ =
+            TruncatingCharacterInCookieStringType::kTruncatingCharLineFeed;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
 
   // Exit early for an empty cookie string.
   if (it == end) {
@@ -683,9 +702,8 @@ void ParsedCookie::ParseTokenValuePairs(const std::string& cookie_line,
         if (!CookieAttributeValueHasValidSize(pair.second)) {
           // If the attribute value is too large, it should be ignored.
           ignore_pair = true;
-          // TODO(crbug.com/1243783): Warn the user that the attribute was
-          // ignored by creating a new WarningReason and adding it to
-          // `status_out`.
+          status_out.AddWarningReason(
+              CookieInclusionStatus::WARN_ATTRIBUTE_VALUE_EXCEEDS_MAX_SIZE);
         }
       }
 

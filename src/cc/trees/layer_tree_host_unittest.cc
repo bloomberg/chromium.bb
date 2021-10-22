@@ -161,8 +161,8 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
   enum MainOrder : int {
     MAIN_START = 1,
     MAIN_LAYOUT,
-    MAIN_COMMIT_COMPLETE,
     MAIN_DID_BEGIN_FRAME,
+    MAIN_COMMIT_COMPLETE,
     MAIN_END,
   };
 
@@ -230,6 +230,34 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFrameOrdering);
+
+// This tests that the frame ordering is the same for an update-layers-only
+// frame as for a fully committed frame.
+class LayerTreeHostTestUpdateLayersFrameOrdering
+    : public LayerTreeHostTestFrameOrdering {
+  void DidCommit() override {
+    EXPECT_TRUE(CheckStep(MAIN_COMMIT_COMPLETE, &main_));
+    if (main_iteration_++ == 0) {
+      main_ = MAIN_START;
+    } else {
+      EndTest();
+    }
+  }
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    EXPECT_TRUE(CheckStep(IMPL_DRAW, &impl_));
+    impl_ = IMPL_START;
+    if (impl_iteration_++ == 0) {
+      PostSetNeedsUpdateLayersToMainThread();
+    }
+  }
+  void AfterTest() override { EXPECT_TRUE(CheckStep(MAIN_END, &main_)); }
+
+ private:
+  int main_iteration_ = 0;
+  int impl_iteration_ = 0;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestUpdateLayersFrameOrdering);
 
 class LayerTreeHostTestRequestedMainFrame : public LayerTreeHostTest {
  public:
@@ -3475,7 +3503,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 
     scroll_layer_->SetBounds(gfx::Size(2 * root_layer->bounds().width(),
                                        2 * root_layer->bounds().height()));
-    scroll_layer_->SetScrollOffset(gfx::ScrollOffset());
+    scroll_layer_->SetScrollOffset(gfx::Vector2dF());
 
     SetupViewport(root_layer, scroll_layer_, root_layer->bounds());
 
@@ -3486,7 +3514,7 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
-    gfx::ScrollOffset offset = CurrentScrollOffset(scroll_layer_.get());
+    gfx::Vector2dF offset = CurrentScrollOffset(scroll_layer_.get());
     SetScrollOffset(scroll_layer_.get(), offset + args.inner_delta);
     layer_tree_host()->SetPageScaleFactorAndLimits(args.page_scale_delta, 0.5f,
                                                    2.f);
@@ -3561,18 +3589,18 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
     EXPECT_TRUE(sent_gesture_);
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), args.inner_delta);
+    EXPECT_EQ(gfx::Vector2dF(50, 50), args.inner_delta);
     EXPECT_EQ(2, args.page_scale_delta);
 
     auto* scroll_layer =
         layer_tree_host()->InnerViewportScrollLayerForTesting();
     EXPECT_EQ(scroll_layer->element_id(), last_scrolled_element_id_);
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), last_scrolled_offset_);
+    EXPECT_EQ(gfx::Vector2dF(50, 50), last_scrolled_offset_);
     // The scroll offset in the scroll tree is typically updated from blink
     // which doesn't exist in this test. Because we preemptively apply the
     // scroll offset in LayerTreeHost::UpdateScrollOffsetFromImpl, the current
     // scroll offset will still be updated.
-    EXPECT_EQ(gfx::ScrollOffset(50, 50), CurrentScrollOffset(scroll_layer));
+    EXPECT_EQ(gfx::Vector2dF(50, 50), CurrentScrollOffset(scroll_layer));
     EndTest();
   }
 
@@ -3580,7 +3608,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
 
   // ScrollCallbacks
   void DidCompositorScroll(ElementId element_id,
-                           const gfx::ScrollOffset& scroll_offset,
+                           const gfx::Vector2dF& scroll_offset,
                            const absl::optional<TargetSnapAreaElementIds>&
                                snap_target_ids) override {
     last_scrolled_element_id_ = element_id;
@@ -3591,7 +3619,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest,
  private:
   bool sent_gesture_;
   ElementId last_scrolled_element_id_;
-  gfx::ScrollOffset last_scrolled_offset_;
+  gfx::Vector2dF last_scrolled_offset_;
   base::WeakPtrFactory<ViewportDeltasAppliedDuringPinch> weak_ptr_factory_{
       this};
 };
@@ -3887,7 +3915,7 @@ class LayerTreeHostTestDeferMainFrameUpdateInsideBeginMainFrame
         FROM_HERE,
         // Unretained because the test doesn't end before this runs.
         base::BindOnce(&LayerTreeTest::EndTest, base::Unretained(this)),
-        base::TimeDelta::FromMilliseconds(100));
+        base::Milliseconds(100));
   }
 
   void DidCommit() override { ++commit_count_; }
@@ -3932,7 +3960,7 @@ class LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter
             &LayerTreeHostTestDeferInsideBeginMainFrameWithCommitAfter::
                 AllowCommits,
             base::Unretained(this)),
-        base::TimeDelta::FromMilliseconds(100));
+        base::Milliseconds(100));
   }
 
   void AllowCommits() {
@@ -4240,8 +4268,10 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
     }
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* host_impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     commit_abort_count_++;
     // Initiate another abortable commit.
     host_impl->SetNeedsCommit();
@@ -6157,8 +6187,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
   }
 
   void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
-    // Safe to check frame number here because main thread is blocked.
-    if (layer_tree_host()->SourceFrameNumber() == 0) {
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
       host_impl->BlockNotifyReadyToActivateForTesting(true);
     } else {
       NOTREACHED();
@@ -6172,8 +6201,10 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
                        base::Unretained(this)));
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* host_impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     base::AutoLock lock(swap_promise_result_.lock);
     EXPECT_FALSE(swap_promise_result_.did_not_swap_called);
     EXPECT_FALSE(swap_promise_result_.did_activate_called);
@@ -6279,8 +6310,10 @@ class LayerTreeHostTestDeferSwapPromiseForVisibility
     }
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* host_impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::BindOnce(&LayerTreeHostTestDeferSwapPromiseForVisibility::
@@ -7225,7 +7258,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         // Use a delay to allow raster/upload to happen in between frames. This
         // should cause flakiness if we fail to block raster/upload when
         // desired.
-        base::TimeDelta::FromMilliseconds(16 * 4));
+        base::Milliseconds(16 * 4));
   }
 
   void Next(LayerTreeHostImpl* host_impl) {
@@ -8451,10 +8484,9 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
     gfx::Size layer_size(1000, 500);
     content_layer_client_.set_bounds(layer_size);
     content_layer_client_.set_fill_with_nonsolid_color(true);
-    std::vector<FrameMetadata> frames = {
-        FrameMetadata(true, base::TimeDelta::FromSeconds(1)),
-        FrameMetadata(true, base::TimeDelta::FromSeconds(1)),
-        FrameMetadata(true, base::TimeDelta::FromSeconds(1))};
+    std::vector<FrameMetadata> frames = {FrameMetadata(true, base::Seconds(1)),
+                                         FrameMetadata(true, base::Seconds(1)),
+                                         FrameMetadata(true, base::Seconds(1))};
     generator_ = sk_make_sp<FakePaintImageGenerator>(
         SkImageInfo::MakeN32Premul(500, 500, SkColorSpace::MakeSRGB()), frames);
     PaintImage image =
@@ -9263,23 +9295,24 @@ class LayerTreeHostTestEventsMetrics : public LayerTreeHostTest {
  private:
   void SimulateEventOnMain() {
     base::SimpleTestTickClock tick_clock;
-    tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+    tick_clock.Advance(base::Microseconds(10));
     base::TimeTicks event_time = tick_clock.NowTicks();
-    tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+    tick_clock.Advance(base::Microseconds(10));
     std::unique_ptr<EventMetrics> metrics = EventMetrics::CreateForTesting(
         ui::ET_GESTURE_SCROLL_UPDATE,
-        EventMetrics::ScrollParams(ui::ScrollInputType::kWheel, false,
-                                   EventMetrics::ScrollUpdateType::kContinued),
+        EventMetrics::GestureParams(ui::ScrollInputType::kWheel,
+                                    /*scroll_is_inertial=*/false,
+                                    EventMetrics::ScrollUpdateType::kContinued),
         event_time, &tick_clock);
     DCHECK_NE(metrics, nullptr);
     {
-      tick_clock.Advance(base::TimeDelta::FromMicroseconds(10));
+      tick_clock.Advance(base::Microseconds(10));
       metrics->SetDispatchStageTimestamp(
           EventMetrics::DispatchStage::kRendererCompositorStarted);
       auto done_callback = base::BindOnce(
           [](std::unique_ptr<EventMetrics> metrics,
              base::SimpleTestTickClock* tick_clock, bool handled) {
-            tick_clock->Advance(base::TimeDelta::FromMicroseconds(10));
+            tick_clock->Advance(base::Microseconds(10));
             metrics->SetDispatchStageTimestamp(
                 EventMetrics::DispatchStage::kRendererCompositorFinished);
             std::unique_ptr<EventMetrics> result =
@@ -9328,8 +9361,10 @@ class LayerTreeHostTestKeepEventsMetricsForVisibility
     PostSetLayerTreeHostVisible(false);
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_NOT_VISIBLE);
 
     // Since the main frame is aborted due to invisibility, events metrics
@@ -9395,8 +9430,10 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredMainFrameUpdate
     PostDeferMainFrameUpdate();
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_DEFERRED_MAIN_FRAME_UPDATE);
 
     // Since the main frame is aborted due to deferred main frame updates,
@@ -9476,8 +9513,10 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
     PostDeferCommit();
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::ABORTED_DEFERRED_COMMIT);
 
     // Since the main frame is aborted due to deferred commits, events metrics
@@ -9501,8 +9540,7 @@ class LayerTreeHostTestKeepEventsMetricsForDeferredCommit
  private:
   void DeferCommitOnMain() {
     layer_tree_host()->StartDeferringCommits(
-        base::TimeDelta::FromDays(1),
-        PaintHoldingReason::kFirstContentfulPaint);
+        base::Days(1), PaintHoldingReason::kFirstContentfulPaint);
   }
 
   void PostDeferCommit() {
@@ -9554,8 +9592,10 @@ class LayerTreeHostTestIgnoreEventsMetricsForNoUpdate
     PostSimulateEvent();
   }
 
-  void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* impl,
-                                     CommitEarlyOutReason reason) override {
+  void BeginMainFrameAbortedOnThread(
+      LayerTreeHostImpl* impl,
+      CommitEarlyOutReason reason,
+      bool /* did_sync_scroll_and_viewport */) override {
     EXPECT_EQ(reason, CommitEarlyOutReason::FINISHED_NO_UPDATES);
 
     // We should reach here only for the second frame.

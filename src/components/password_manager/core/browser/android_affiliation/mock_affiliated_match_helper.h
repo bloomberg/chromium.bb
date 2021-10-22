@@ -17,19 +17,16 @@
 
 namespace password_manager {
 
-struct PasswordForm;
-
 class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
  public:
-  // This struct mirrors the corresponding affiliation and branding information
-  // related fields from PasswordForm.
-  struct AffiliationAndBrandingInformation {
-    std::string affiliated_web_realm;
-    std::string app_display_name;
-    GURL app_icon_url;
-  };
-
   MockAffiliatedMatchHelper();
+  MockAffiliatedMatchHelper(PasswordStoreInterface* password_store,
+                            AffiliationService* affiliation_service);
+
+  MockAffiliatedMatchHelper(const MockAffiliatedMatchHelper&) = delete;
+  MockAffiliatedMatchHelper& operator=(const MockAffiliatedMatchHelper&) =
+      delete;
+
   ~MockAffiliatedMatchHelper() override;
 
   // Expects GetAffiliatedAndroidAndWebRealms() to be called with the
@@ -39,27 +36,14 @@ class MockAffiliatedMatchHelper : public AffiliatedMatchHelper {
       const PasswordFormDigest& expected_observed_form,
       const std::vector<std::string>& results_to_return);
 
-  void ExpectCallToInjectAffiliationAndBrandingInformation(
-      const std::vector<AffiliationAndBrandingInformation>& results_to_inject);
-
  private:
   MOCK_METHOD(std::vector<std::string>,
               OnGetAffiliatedAndroidRealmsCalled,
               (const PasswordFormDigest&));
-  MOCK_METHOD(std::vector<AffiliationAndBrandingInformation>,
-              OnInjectAffiliationAndBrandingInformationCalled,
-              ());
 
   void GetAffiliatedAndroidAndWebRealms(
       const PasswordFormDigest& observed_form,
       AffiliatedRealmsCallback result_callback) override;
-
-  void InjectAffiliationAndBrandingInformation(
-      std::vector<std::unique_ptr<PasswordForm>> forms,
-      AffiliationService::StrategyOnCacheMiss strategy_on_cache_miss,
-      PasswordFormsCallback result_callback) override;
-
-  DISALLOW_COPY_AND_ASSIGN(MockAffiliatedMatchHelper);
 };
 
 }  // namespace password_manager

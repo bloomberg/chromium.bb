@@ -28,8 +28,8 @@ CompositorElementId ScrollElementId() {
 }
 
 scoped_refptr<TransformPaintPropertyNode> CreateScrollTranslation() {
-  ScrollPaintPropertyNode::State state{IntRect(0, 0, 100, 100),
-                                       IntSize(1000, 1000)};
+  ScrollPaintPropertyNode::State state{gfx::Rect(0, 0, 100, 100),
+                                       gfx::Size(1000, 1000)};
   state.compositor_element_id = ScrollElementId();
   auto scroll = ScrollPaintPropertyNode::Create(ScrollPaintPropertyNode::Root(),
                                                 std::move(state));
@@ -44,8 +44,9 @@ TEST(ScrollbarDisplayItemTest, HorizontalSolidColorScrollbar) {
   scrollbar->set_track_rect(gfx::Rect(2, 90, 96, 10));
   scrollbar->set_thumb_size(gfx::Size(30, 7));
 
-  FakeDisplayItemClient client;
-  IntRect scrollbar_rect(0, 90, 100, 10);
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
+  gfx::Rect scrollbar_rect(0, 90, 100, 10);
   auto scroll_translation = CreateScrollTranslation();
   auto element_id = ScrollbarElementId(*scrollbar);
   ScrollbarDisplayItem display_item(
@@ -77,8 +78,9 @@ TEST(ScrollbarDisplayItemTest, VerticalSolidColorScrollbar) {
   scrollbar->set_track_rect(gfx::Rect(90, 2, 10, 96));
   scrollbar->set_thumb_size(gfx::Size(7, 30));
 
-  FakeDisplayItemClient client;
-  IntRect scrollbar_rect(90, 0, 10, 100);
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
+  gfx::Rect scrollbar_rect(90, 0, 10, 100);
   auto scroll_translation = CreateScrollTranslation();
   auto element_id = ScrollbarElementId(*scrollbar);
   ScrollbarDisplayItem display_item(
@@ -104,8 +106,9 @@ TEST(ScrollbarDisplayItemTest, VerticalSolidColorScrollbar) {
 TEST(ScrollbarDisplayItemTest, PaintedScrollbar) {
   auto scrollbar = base::MakeRefCounted<cc::FakeScrollbar>();
 
-  FakeDisplayItemClient client;
-  IntRect scrollbar_rect(0, 90, 100, 10);
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
+  gfx::Rect scrollbar_rect(0, 90, 100, 10);
   auto scroll_translation = CreateScrollTranslation();
   auto element_id = ScrollbarElementId(*scrollbar);
   ScrollbarDisplayItem display_item(
@@ -124,8 +127,9 @@ TEST(ScrollbarDisplayItemTest, PaintedScrollbarOverlayNonNinePatch) {
   scrollbar->set_has_thumb(true);
   scrollbar->set_is_overlay(true);
 
-  FakeDisplayItemClient client;
-  IntRect scrollbar_rect(0, 90, 100, 10);
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
+  gfx::Rect scrollbar_rect(0, 90, 100, 10);
   auto scroll_translation = CreateScrollTranslation();
   auto element_id = ScrollbarElementId(*scrollbar);
   ScrollbarDisplayItem display_item(
@@ -147,8 +151,9 @@ TEST(ScrollbarDisplayItemTest, PaintedScrollbarOverlayNinePatch) {
   scrollbar->set_is_overlay(true);
   scrollbar->set_uses_nine_patch_thumb_resource(true);
 
-  FakeDisplayItemClient client;
-  IntRect scrollbar_rect(0, 90, 100, 10);
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
+  gfx::Rect scrollbar_rect(0, 90, 100, 10);
   auto scroll_translation = CreateScrollTranslation();
   auto element_id = ScrollbarElementId(*scrollbar);
   ScrollbarDisplayItem display_item(
@@ -166,8 +171,9 @@ TEST(ScrollbarDisplayItemTest, PaintedScrollbarOverlayNinePatch) {
 TEST(ScrollbarDisplayItemTest, CreateOrReuseLayer) {
   auto scrollbar1 = base::MakeRefCounted<cc::FakeScrollbar>();
 
-  FakeDisplayItemClient client;
-  IntRect scrollbar_rect(0, 90, 100, 10);
+  FakeDisplayItemClient& client =
+      *MakeGarbageCollected<FakeDisplayItemClient>();
+  gfx::Rect scrollbar_rect(0, 90, 100, 10);
   auto scroll_translation = CreateScrollTranslation();
   auto element_id = ScrollbarElementId(*scrollbar1);
   ScrollbarDisplayItem display_item1a(

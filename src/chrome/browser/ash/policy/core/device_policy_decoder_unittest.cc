@@ -58,14 +58,15 @@ constexpr char kInvalidBluetoothServiceUUIDList[] = "[\"wrong-uuid\"]";
 class DevicePolicyDecoderTest : public testing::Test {
  public:
   DevicePolicyDecoderTest() = default;
+
+  DevicePolicyDecoderTest(const DevicePolicyDecoderTest&) = delete;
+  DevicePolicyDecoderTest& operator=(const DevicePolicyDecoderTest&) = delete;
+
   ~DevicePolicyDecoderTest() override = default;
 
  protected:
   std::unique_ptr<base::Value> GetWallpaperDict() const;
   std::unique_ptr<base::Value> GetBluetoothServiceAllowedList() const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DevicePolicyDecoderTest);
 };
 
 std::unique_ptr<base::Value> DevicePolicyDecoderTest::GetWallpaperDict() const {
@@ -186,12 +187,25 @@ TEST_F(DevicePolicyDecoderTest, ReportDeviceLoginLogout) {
       policies.GetValue(key::kReportDeviceLoginLogout);
   ASSERT_NE(report_device_login_logout_value, nullptr);
   ASSERT_TRUE(report_device_login_logout_value->is_bool());
+  EXPECT_TRUE(report_device_login_logout_value->GetBool());
+}
 
-  bool report_device_login_logout_bool = false;
-  report_device_login_logout_value->GetAsBoolean(
-      &report_device_login_logout_bool);
+TEST_F(DevicePolicyDecoderTest, EnableDeviceGranularReporting) {
+  PolicyBundle bundle;
+  PolicyMap& policies = bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
 
-  EXPECT_TRUE(report_device_login_logout_bool);
+  base::WeakPtr<ExternalDataManager> external_data_manager;
+
+  em::ChromeDeviceSettingsProto device_policy;
+  device_policy.mutable_device_reporting()->set_enable_granular_reporting(true);
+
+  DecodeDevicePolicy(device_policy, external_data_manager, &policies);
+
+  const base::Value* enable_granular_reporting_value =
+      policies.GetValue(key::kEnableDeviceGranularReporting);
+  ASSERT_NE(enable_granular_reporting_value, nullptr);
+  ASSERT_TRUE(enable_granular_reporting_value->is_bool());
+  EXPECT_TRUE(enable_granular_reporting_value->GetBool());
 }
 
 TEST_F(DevicePolicyDecoderTest, ReportDeviceAudioStatus) {
@@ -209,12 +223,25 @@ TEST_F(DevicePolicyDecoderTest, ReportDeviceAudioStatus) {
       policies.GetValue(key::kReportDeviceAudioStatus);
   ASSERT_NE(report_device_audio_status_value, nullptr);
   ASSERT_TRUE(report_device_audio_status_value->is_bool());
+  EXPECT_TRUE(report_device_audio_status_value->GetBool());
+}
 
-  bool report_device_audio_status_bool = false;
-  report_device_audio_status_value->GetAsBoolean(
-      &report_device_audio_status_bool);
+TEST_F(DevicePolicyDecoderTest, ReportDeviceSecurityStatus) {
+  PolicyBundle bundle;
+  PolicyMap& policies = bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
 
-  EXPECT_TRUE(report_device_audio_status_bool);
+  base::WeakPtr<ExternalDataManager> external_data_manager;
+
+  em::ChromeDeviceSettingsProto device_policy;
+  device_policy.mutable_device_reporting()->set_report_security_status(true);
+
+  DecodeDevicePolicy(device_policy, external_data_manager, &policies);
+
+  const base::Value* report_device_security_status_value =
+      policies.GetValue(key::kReportDeviceSecurityStatus);
+  ASSERT_NE(report_device_security_status_value, nullptr);
+  ASSERT_TRUE(report_device_security_status_value->is_bool());
+  EXPECT_TRUE(report_device_security_status_value->GetBool());
 }
 
 TEST_F(DevicePolicyDecoderTest, ReportDeviceNetworkConfiguration) {
@@ -233,12 +260,7 @@ TEST_F(DevicePolicyDecoderTest, ReportDeviceNetworkConfiguration) {
       policies.GetValue(key::kReportDeviceNetworkConfiguration);
   ASSERT_NE(report_device_network_configuration_value, nullptr);
   ASSERT_TRUE(report_device_network_configuration_value->is_bool());
-
-  bool report_device_network_configuration_bool = false;
-  report_device_network_configuration_value->GetAsBoolean(
-      &report_device_network_configuration_bool);
-
-  EXPECT_TRUE(report_device_network_configuration_bool);
+  EXPECT_TRUE(report_device_network_configuration_value->GetBool());
 }
 
 TEST_F(DevicePolicyDecoderTest, ReportDeviceNetworkStatus) {
@@ -256,12 +278,7 @@ TEST_F(DevicePolicyDecoderTest, ReportDeviceNetworkStatus) {
       policies.GetValue(key::kReportDeviceNetworkStatus);
   ASSERT_NE(report_device_network_status_value, nullptr);
   ASSERT_TRUE(report_device_network_status_value->is_bool());
-
-  bool report_device_network_status_bool = false;
-  report_device_network_status_value->GetAsBoolean(
-      &report_device_network_status_bool);
-
-  EXPECT_TRUE(report_device_network_status_bool);
+  EXPECT_TRUE(report_device_network_status_value->GetBool());
 }
 
 TEST_F(DevicePolicyDecoderTest, kReportDeviceOsUpdateStatus) {
@@ -279,12 +296,7 @@ TEST_F(DevicePolicyDecoderTest, kReportDeviceOsUpdateStatus) {
       policies.GetValue(key::kReportDeviceOsUpdateStatus);
   ASSERT_NE(report_device_os_update_status_value, nullptr);
   ASSERT_TRUE(report_device_os_update_status_value->is_bool());
-
-  bool report_device_os_update_status_bool = false;
-  report_device_os_update_status_value->GetAsBoolean(
-      &report_device_os_update_status_bool);
-
-  EXPECT_TRUE(report_device_os_update_status_bool);
+  EXPECT_TRUE(report_device_os_update_status_value->GetBool());
 }
 
 TEST_F(DevicePolicyDecoderTest, DecodeServiceUUIDListSuccess) {
@@ -304,6 +316,22 @@ TEST_F(DevicePolicyDecoderTest, DecodeServiceUUIDListError) {
   EXPECT_FALSE(decoded_json.has_value());
   EXPECT_EQ("Invalid policy value: Invalid value for string (at items[0])",
             error);
+}
+
+TEST_F(DevicePolicyDecoderTest,
+       DecodeLoginScreenPromptOnMultipleMatchingCertificates) {
+  em::ChromeDeviceSettingsProto device_policy;
+  device_policy.mutable_login_screen_prompt_on_multiple_matching_certificates()
+      ->set_value(true);
+
+  PolicyMap policies;
+  DecodeDevicePolicy(device_policy, /*external_data_manager=*/{}, &policies);
+
+  const base::Value* policy_value = policies.GetValue(
+      key::kDeviceLoginScreenPromptOnMultipleMatchingCertificates);
+  ASSERT_NE(policy_value, nullptr);
+  ASSERT_TRUE(policy_value->is_bool());
+  EXPECT_TRUE(policy_value->GetBool());
 }
 
 }  // namespace policy

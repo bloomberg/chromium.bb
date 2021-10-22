@@ -76,6 +76,11 @@ class FileManagerPrivateGrantAccessFunction : public ExtensionFunction {
  public:
   FileManagerPrivateGrantAccessFunction();
 
+  FileManagerPrivateGrantAccessFunction(
+      const FileManagerPrivateGrantAccessFunction&) = delete;
+  FileManagerPrivateGrantAccessFunction& operator=(
+      const FileManagerPrivateGrantAccessFunction&) = delete;
+
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.grantAccess",
                              FILEMANAGERPRIVATE_GRANTACCESS)
 
@@ -84,7 +89,6 @@ class FileManagerPrivateGrantAccessFunction : public ExtensionFunction {
 
  private:
   ExtensionFunction::ResponseAction Run() override;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGrantAccessFunction);
 };
 
 // Base class for FileManagerPrivateInternalAddFileWatchFunction and
@@ -408,6 +412,20 @@ class FileManagerPrivateInternalGetDirectorySizeFunction
   ~FileManagerPrivateInternalGetDirectorySizeFunction() override = default;
 
   void OnDirectorySizeRetrieved(int64_t size);
+
+  // ExtensionFunction overrides
+  ResponseAction Run() override;
+};
+
+// Implements the chrome.fileManagerPrivate.startIOTask method.
+class FileManagerPrivateInternalStartIOTaskFunction
+    : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.startIOTask",
+                             FILEMANAGERPRIVATEINTERNAL_STARTIOTASK)
+
+ protected:
+  ~FileManagerPrivateInternalStartIOTaskFunction() override = default;
 
   // ExtensionFunction overrides
   ResponseAction Run() override;

@@ -34,6 +34,9 @@ class SharedEngineState {
   SharedEngineState()
       : default_user_agent_(cronet::CreateDefaultUserAgent(CRONET_VERSION)) {}
 
+  SharedEngineState(const SharedEngineState&) = delete;
+  SharedEngineState& operator=(const SharedEngineState&) = delete;
+
   // Marks |storage_path| in use, so multiple engines would not use it at the
   // same time. Returns |true| if marked successfully, |false| if it is in use
   // by another engine.
@@ -63,8 +66,6 @@ class SharedEngineState {
   // Protecting shared state.
   base::Lock lock_;
   std::unordered_set<std::string> in_use_storage_paths_ GUARDED_BY(lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(SharedEngineState);
 };
 
 SharedEngineState* SharedEngineState::GetInstance() {
@@ -370,6 +371,10 @@ class Cronet_EngineImpl::StreamEngineImpl : public stream_engine {
 class Cronet_EngineImpl::Callback : public CronetURLRequestContext::Callback {
  public:
   explicit Callback(Cronet_EngineImpl* engine);
+
+  Callback(const Callback&) = delete;
+  Callback& operator=(const Callback&) = delete;
+
   ~Callback() override;
 
   // CronetURLRequestContext::Callback implementation:
@@ -396,7 +401,6 @@ class Cronet_EngineImpl::Callback : public CronetURLRequestContext::Callback {
 
   // All methods are invoked on the network thread.
   THREAD_CHECKER(network_thread_checker_);
-  DISALLOW_COPY_AND_ASSIGN(Callback);
 };
 
 Cronet_EngineImpl::Callback::Callback(Cronet_EngineImpl* engine)

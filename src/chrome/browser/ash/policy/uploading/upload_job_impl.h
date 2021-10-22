@@ -43,12 +43,11 @@ class UploadJobImpl : public UploadJob,
   // mark the boundaries between data segments.
   class MimeBoundaryGenerator {
    public:
+    MimeBoundaryGenerator& operator=(const MimeBoundaryGenerator&) = delete;
+
     virtual ~MimeBoundaryGenerator();
 
     virtual std::string GenerateBoundary() const = 0;
-
-   private:
-    DISALLOW_ASSIGN(MimeBoundaryGenerator);
   };
 
   // An implemenation of the MimeBoundaryGenerator which uses random
@@ -71,6 +70,10 @@ class UploadJobImpl : public UploadJob,
       std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
       net::NetworkTrafficAnnotationTag traffic_annotation,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  UploadJobImpl(const UploadJobImpl&) = delete;
+  UploadJobImpl& operator=(const UploadJobImpl&) = delete;
+
   ~UploadJobImpl() override;
 
   // UploadJob:
@@ -189,8 +192,6 @@ class UploadJobImpl : public UploadJob,
   // Should remain the last member so it will be destroyed first and
   // invalidate all weak pointers.
   base::WeakPtrFactory<UploadJobImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UploadJobImpl);
 };
 
 }  // namespace policy

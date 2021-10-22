@@ -17,6 +17,7 @@
 
 #include "absl/strings/string_view.h"
 #include "api/array_view.h"
+#include "api/sequence_checker.h"
 #include "net/dcsctp/packet/chunk/abort_chunk.h"
 #include "net/dcsctp/packet/chunk/chunk.h"
 #include "net/dcsctp/packet/chunk/cookie_ack_chunk.h"
@@ -85,6 +86,7 @@ class DcSctpSocket : public DcSctpSocketInterface {
   void ReceivePacket(rtc::ArrayView<const uint8_t> data) override;
   void HandleTimeout(TimeoutID timeout_id) override;
   void Connect() override;
+  void RestoreFromState(const DcSctpSocketHandoverState& state) override;
   void Shutdown() override;
   void Close() override;
   SendStatus Send(DcSctpMessage message,
@@ -98,7 +100,11 @@ class DcSctpSocket : public DcSctpSocketInterface {
   size_t buffered_amount_low_threshold(StreamID stream_id) const override;
   void SetBufferedAmountLowThreshold(StreamID stream_id, size_t bytes) override;
   Metrics GetMetrics() const override;
-
+  HandoverReadinessStatus GetHandoverReadiness() const override;
+  absl::optional<DcSctpSocketHandoverState> GetHandoverStateAndClose() override;
+  SctpImplementation peer_implementation() const override {
+    return peer_implementation_;
+  }
   // Returns this socket's verification tag, or zero if not yet connected.
   VerificationTag verification_tag() const {
     return tcb_ != nullptr ? tcb_->my_verification_tag() : VerificationTag(0);
@@ -248,6 +254,7 @@ class DcSctpSocket : public DcSctpSocketInterface {
 
   const std::string log_prefix_;
   const std::unique_ptr<PacketObserver> packet_observer_;
+  RTC_NO_UNIQUE_ADDRESS webrtc::SequenceChecker thread_checker_;
   Metrics metrics_;
   DcSctpOptions options_;
 
@@ -273,6 +280,8 @@ class DcSctpSocket : public DcSctpSocketInterface {
   State state_ = State::kClosed;
   // If the connection is established, contains a transmission control block.
   std::unique_ptr<TransmissionControlBlock> tcb_;
+
+  SctpImplementation peer_implementation_ = SctpImplementation::kUnknown;
 };
 }  // namespace dcsctp
 

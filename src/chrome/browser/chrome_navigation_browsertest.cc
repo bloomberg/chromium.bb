@@ -81,6 +81,11 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
   ChromeNavigationBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
   }
+
+  ChromeNavigationBrowserTest(const ChromeNavigationBrowserTest&) = delete;
+  ChromeNavigationBrowserTest& operator=(const ChromeNavigationBrowserTest&) =
+      delete;
+
   ~ChromeNavigationBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -114,19 +119,7 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
  private:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeNavigationBrowserTest);
 };
-
-#if defined(OS_LINUX) || defined(OS_CHROMEOS)
-// Fails on chromium.memory/Linux Chromium OS ASan LSan:
-// https://crbug.com/897879
-#define MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial \
-  DISABLED_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial
-#else
-#define MAYBE_TransientEntryPreservedOnMultipleNavigationsDuringInterstitial \
-  TransientEntryPreservedOnMultipleNavigationsDuringInterstitial
-#endif
 
 // Tests that viewing frame source on a local file:// page with an iframe
 // with a remote URL shows the correct tab title.
@@ -912,9 +905,9 @@ IN_PROC_BROWSER_TEST_F(
   }
 
   // 3. Find the cross-site subframes in the popup.
-  EXPECT_EQ(3u, popup->GetAllFrames().size());
   content::RenderFrameHost* popup_root = popup->GetMainFrame();
-  content::RenderFrameHost* cross_site_subframe = popup->GetAllFrames()[1];
+  content::RenderFrameHost* cross_site_subframe = ChildFrameAt(popup_root, 0);
+  ASSERT_TRUE(cross_site_subframe);
   EXPECT_NE(cross_site_subframe->GetLastCommittedOrigin(),
             popup_root->GetLastCommittedOrigin());
   EXPECT_NE(cross_site_subframe->GetLastCommittedOrigin(),
@@ -1022,6 +1015,11 @@ class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
  public:
   SignInIsolationBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  SignInIsolationBrowserTest(const SignInIsolationBrowserTest&) = delete;
+  SignInIsolationBrowserTest& operator=(const SignInIsolationBrowserTest&) =
+      delete;
+
   ~SignInIsolationBrowserTest() override {}
 
   void SetUp() override {
@@ -1054,8 +1052,6 @@ class SignInIsolationBrowserTest : public ChromeNavigationBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(SignInIsolationBrowserTest);
 };
 
 // This test ensures that the sign-in origin requires a dedicated process.  It
@@ -1086,6 +1082,11 @@ class WebstoreIsolationBrowserTest : public ChromeNavigationBrowserTest {
  public:
   WebstoreIsolationBrowserTest()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  WebstoreIsolationBrowserTest(const WebstoreIsolationBrowserTest&) = delete;
+  WebstoreIsolationBrowserTest& operator=(const WebstoreIsolationBrowserTest&) =
+      delete;
+
   ~WebstoreIsolationBrowserTest() override {}
 
   void SetUp() override {
@@ -1117,8 +1118,6 @@ class WebstoreIsolationBrowserTest : public ChromeNavigationBrowserTest {
 
  private:
   net::EmbeddedTestServer https_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebstoreIsolationBrowserTest);
 };
 
 // Make sure that Chrome Web Store origins are isolated from the rest of their

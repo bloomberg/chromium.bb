@@ -277,7 +277,6 @@ void QuerierImpl::StopQuery(const std::string& service, Callback* callback) {
   if (callbacks.empty()) {
     callback_map_.erase(callbacks_it);
 
-    ServiceKey key(service, kLocalDomain);
     DomainName domain = key.GetName();
 
     std::function<void(const DomainName&)> stop_mdns_query(

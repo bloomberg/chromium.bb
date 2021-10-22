@@ -14,17 +14,19 @@
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-forward.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
-#include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-forward.h"
@@ -246,6 +248,28 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // current RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
 
+  // Returns the document owning the frame this RenderFrameHost is located
+  // in, which will either be a parent (for <iframe>s) or outer document (for
+  // <fencedframe> and <portal>). This will return the outer document in cases
+  // of fenced frames and portals but will not cross a browsing session boundary
+  // (ie. it will not escape a GuestView). See
+  // `RenderFrameHostImpl::GetParentOrOuterDocumentOrEmbedder` for the
+  // version of this API that will cross a browsing session boundary.
+  // This method typically will be used for permissions and policy decisions
+  // based on checking origins.
+  // Example:
+  //  A
+  //   B (iframe)
+  //   C (fenced frame - placeholder frame)
+  //    C* (main frame in fenced frame).
+  //
+  //  C* GetParent returns null.
+  //  C* GetParentOrOuterDocument returns A.
+  //  C GetParent & GetParentOrOuterDocument returns A.
+  //  B GetParent & GetParentOrOuterDocument returns A.
+  //  A GetParent & GetParentOrOuterDocument returns nullptr.
+  virtual RenderFrameHost* GetParentOrOuterDocument() = 0;
+
   // Returns the eldest parent of this RenderFrameHost.
   // Always non-null, but might be equal to |this|.
   // The result may be in a different process that the current RenderFrameHost.
@@ -256,21 +280,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // almost all of the cases. See RenderFrameHost::IsActive for the details.
   virtual RenderFrameHost* GetMainFrame() = 0;
 
-  // Returns a vector of all RenderFrameHosts in the subtree rooted at |this|.
-  // The results may be in different processes.
-  // Does not consider inner frame trees.
-  // TODO(https://crbug.com/1013740): Consider exposing a way for the browser
-  // process to run a function across a subtree in all renderers rather than
-  // exposing the RenderFrameHosts of the frames here.
-  virtual std::vector<RenderFrameHost*> GetFramesInSubtree() = 0;
-
-  // Returns whether or not this RenderFrameHost is a descendant of |ancestor|.
-  // This is equivalent to check that |ancestor| is reached by iterating on
-  // GetParent().
-  // This is a strict relationship, a RenderFrameHost is never an ancestor of
-  // itself.
-  // This does not consider inner frame trees.
-  virtual bool IsDescendantOf(RenderFrameHost* ancestor) = 0;
+  // Returns true if `this` is the main document of the primary `Page` of the
+  // associated WebContents. See the description of
+  // `WebContents::GetPrimaryPage` for details. It is therefore also current in
+  // the primary main frame.
+  virtual bool IsInPrimaryMainFrame() = 0;
 
   // Fenced frames (meta-bug https://crbug.com/1111084):
   // Returns true if this document is the root of a fenced frame tree.
@@ -538,6 +552,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       const std::u16string& javascript,
       int32_t world_id = ISOLATED_WORLD_ID_GLOBAL) = 0;
 
+  // Tells the renderer to perform a given action on the plugin located at a
+  // given location in its local view coordinate space.
+  virtual void ExecutePluginActionAtLocalLocation(
+      const gfx::Point& local_location,
+      blink::mojom::PluginActionType plugin_action) = 0;
+
   // Send a message to the RenderFrame to trigger an action on an
   // accessibility object.
   virtual void AccessibilityPerformAction(const ui::AXActionData& data) = 0;
@@ -695,26 +715,32 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // or can't be deferred until the RenderFrameHost becomes active again.
   // Callers that only want to check whether a RenderFrameHost is active or not
   // should use IsActive() instead.
-
+  //
   // Additionally, this method has a side effect for back-forward cache and
   // prerendering, where the document is prevented from ever becoming active
   // after calling this method. This allows to safely ignore the event as the
   // RenderFrameHost will never be shown to the user again.
-
+  //
   // For BackForwardCache: it evicts the document from the cache and triggers
   // deletion.
   // For Prerendering: it cancels prerendering and triggers deletion.
-
+  //
   // This should not be called for speculative and pending commit
   // RenderFrameHosts as disallowing activation is not supported. In that case
   // |IsInactiveAndDisallowActivation()| returns false along with terminating
   // the renderer process.
-
+  //
   // The return value of IsInactiveAndDisallowActivation() is the opposite of
   // IsActive() except in some uncommon cases:
   // - The "small window" referred to in the IsActive() documentation.
   // - For speculative and pending commit RenderFrameHosts, as mentioned above.
-  virtual bool IsInactiveAndDisallowActivation() = 0;
+  //
+  // |reason| will be logged via UMA and UKM. It is recommended to provide
+  // a unique value for each caller.
+  //
+  // Embedders should use a value equal to or greater than
+  // DisallowActivationReasonId.kMinEmbedderDisallowActivationReason.
+  virtual bool IsInactiveAndDisallowActivation(uint64_t reason) = 0;
 
   // Get the number of proxies to this frame, in all processes. Exposed for
   // use by resource metrics.
@@ -869,9 +895,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the type of frame owner element for the FrameTreeNode associated
   // with this RenderFrameHost (e.g., <iframe>, <object>, etc). Note that it
-  // returns blink::mojom::FrameOwnerElementType::kNone if the RenderFrameHost
+  // returns blink::FrameOwnerElementType::kNone if the RenderFrameHost
   // is a main frame.
-  virtual blink::mojom::FrameOwnerElementType GetFrameOwnerElementType() = 0;
+  virtual blink::FrameOwnerElementType GetFrameOwnerElementType() = 0;
 
   // Returns the transient bit of the User Activation v2 state of the
   // FrameTreeNode associated with this RenderFrameHost.
@@ -974,6 +1000,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // trustworthy.
   virtual void GetCanonicalUrl(
       base::OnceCallback<void(const absl::optional<GURL>&)> callback) = 0;
+
+  // Returns true if the last navigation in this RenderFrameHost has committed
+  // an error document that is a placeholder document installed when the
+  // navigation failed or was blocked, containing an error message like "This
+  // site can’t be reached".
+  // This can't be called for pending commit RFH because the value is set
+  // during call to RenderFrameHostImpl::DidNavigate which happens after commit.
+  virtual bool IsErrorDocument() = 0;
 
  private:
   // This interface should only be implemented inside content.

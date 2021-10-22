@@ -188,10 +188,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int do_search_boundary(int pos, int plane_boundary, int search_range, int search_step)
@@ -766,7 +763,7 @@ static int filter_frame(AVFilterContext *ctx, AVFrame **out, AVFrame *in, AVFram
         td.ref = ref->data[p];
         td.ref_linesize = ref->linesize[p];
         td.plane = p;
-        ctx->internal->execute(ctx, filter_slice, &td, NULL, nb_jobs);
+        ff_filter_execute(ctx, filter_slice, &td, NULL, nb_jobs);
 
         s->do_output(s, (*out)->data[p], (*out)->linesize[p], p, nb_jobs);
     }
@@ -944,7 +941,7 @@ static av_cold int init(AVFilterContext *ctx)
     pad.name         = "source";
     pad.config_props = config_input;
 
-    if ((ret = ff_insert_inpad(ctx, 0, &pad)) < 0)
+    if ((ret = ff_append_inpad(ctx, &pad)) < 0)
         return ret;
 
     if (s->ref) {
@@ -952,7 +949,7 @@ static av_cold int init(AVFilterContext *ctx)
         pad.name         = "reference";
         pad.config_props = NULL;
 
-        if ((ret = ff_insert_inpad(ctx, 1, &pad)) < 0)
+        if ((ret = ff_append_inpad(ctx, &pad)) < 0)
             return ret;
     }
 
@@ -1051,7 +1048,6 @@ static const AVFilterPad bm3d_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_bm3d = {
@@ -1063,7 +1059,7 @@ const AVFilter ff_vf_bm3d = {
     .activate      = activate,
     .query_formats = query_formats,
     .inputs        = NULL,
-    .outputs       = bm3d_outputs,
+    FILTER_OUTPUTS(bm3d_outputs),
     .priv_class    = &bm3d_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
                      AVFILTER_FLAG_DYNAMIC_INPUTS |

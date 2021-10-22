@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "extensions/browser/api/declarative_net_request/index_helper.h"
+#include "extensions/browser/api/declarative_net_request/install_index_helper.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_install_pref.h"
 #include "extensions/browser/content_verifier/content_verifier_key.h"
 #include "extensions/browser/crx_file_info.h"
@@ -157,6 +157,9 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
       const scoped_refptr<base::SequencedTaskRunner>& unpacker_io_task_runner,
       SandboxedUnpackerClient* client);
 
+  SandboxedUnpacker(const SandboxedUnpacker&) = delete;
+  SandboxedUnpacker& operator=(const SandboxedUnpacker&) = delete;
+
   // Start processing the extension, either from a CRX file or already unzipped
   // in a directory. The client is called with the results. The directory form
   // requires the id and base64-encoded public key (for insertion into the
@@ -248,7 +251,7 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   void IndexAndPersistJSONRulesetsIfNeeded();
 
   void OnJSONRulesetsIndexed(
-      declarative_net_request::IndexHelper::Result result);
+      declarative_net_request::InstallIndexHelper::Result result);
 
   // Computed hashes: if requested (via ShouldComputeHashes callback in
   // SandbloxedUnpackerClient), calculate hashes of all extensions' resources
@@ -337,8 +340,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Used during the message catalog rewriting phase to sanitize the extension
   // provided message catalogs.
   std::unique_ptr<JsonFileSanitizer> json_file_sanitizer_;
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxedUnpacker);
 };
 
 }  // namespace extensions

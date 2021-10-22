@@ -223,6 +223,10 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
                    list_controller_.CanMakeDefault(template_url));
   dict->SetBoolean("default", is_default);
   dict->SetBoolean("canBeEdited", list_controller_.CanEdit(template_url));
+  dict->SetBoolean("canBeActivated",
+                   list_controller_.CanActivate(template_url));
+  dict->SetBoolean("canBeDeactivated",
+                   list_controller_.CanDeactivate(template_url));
   TemplateURL::Type type = template_url->type();
   dict->SetBoolean("isOmniboxExtension",
                    type == TemplateURL::OMNIBOX_API_EXTENSION);
@@ -264,6 +268,7 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
   if (index < 0 || index >= list_controller_.table_model()->RowCount())
     return;
 
+  list_controller_.SetIsActiveTemplateURL(index, true);
   list_controller_.MakeDefaultTemplateURL(index);
 
   base::RecordAction(base::UserMetricsAction("Options_SearchEngineSetDefault"));

@@ -35,6 +35,10 @@ namespace {
 class MockObserver : public AvatarMenuObserver {
  public:
   MockObserver() : count_(0) {}
+
+  MockObserver(const MockObserver&) = delete;
+  MockObserver& operator=(const MockObserver&) = delete;
+
   ~MockObserver() override {}
 
   void OnAvatarMenuChanged(AvatarMenu* avatar_menu) override { ++count_; }
@@ -43,8 +47,6 @@ class MockObserver : public AvatarMenuObserver {
 
  private:
   int count_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
 class ProfileListDesktopTest : public testing::Test {
@@ -52,6 +54,9 @@ class ProfileListDesktopTest : public testing::Test {
   ProfileListDesktopTest()
       : manager_(TestingBrowserProcess::GetGlobal()) {
   }
+
+  ProfileListDesktopTest(const ProfileListDesktopTest&) = delete;
+  ProfileListDesktopTest& operator=(const ProfileListDesktopTest&) = delete;
 
   void SetUp() override {
     ASSERT_TRUE(manager_.SetUp());
@@ -92,8 +97,6 @@ class ProfileListDesktopTest : public testing::Test {
   TestingProfileManager manager_;
   std::unique_ptr<MockObserver> mock_observer_;
   std::unique_ptr<AvatarMenu> avatar_menu_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopTest);
 };
 
 TEST_F(ProfileListDesktopTest, InitialCreation) {

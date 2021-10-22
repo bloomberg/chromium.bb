@@ -542,6 +542,11 @@ INSTANTIATE_TEST_SUITE_P(NEON, FilterIntraPredTest8bpp,
 #if LIBGAV1_MAX_BITDEPTH >= 10
 INSTANTIATE_TEST_SUITE_P(C, FilterIntraPredTest10bpp,
                          testing::ValuesIn(kTransformSizesSmallerThan32x32));
+
+#if LIBGAV1_ENABLE_NEON
+INSTANTIATE_TEST_SUITE_P(NEON, FilterIntraPredTest10bpp,
+                         testing::ValuesIn(kTransformSizesSmallerThan32x32));
+#endif  // LIBGAV1_ENABLE_NEON
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
 }  // namespace

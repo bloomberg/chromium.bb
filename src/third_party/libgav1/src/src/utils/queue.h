@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <memory>
 #include <new>
+#include <utility>
 
 #include "src/utils/compiler_attributes.h"
 

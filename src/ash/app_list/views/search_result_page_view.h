@@ -42,6 +42,10 @@ class ASH_EXPORT SearchResultPageView
       public SearchBoxModelObserver {
  public:
   explicit SearchResultPageView(SearchModel* search_model);
+
+  SearchResultPageView(const SearchResultPageView&) = delete;
+  SearchResultPageView& operator=(const SearchResultPageView&) = delete;
+
   ~SearchResultPageView() override;
 
   void InitializeContainers(AppListViewDelegate* view_delegate,
@@ -60,6 +64,7 @@ class ASH_EXPORT SearchResultPageView
   gfx::Size CalculatePreferredSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnThemeChanged() override;
 
   // AppListPage overrides:
   void OnWillBeHidden() override;
@@ -84,10 +89,6 @@ class ASH_EXPORT SearchResultPageView
                           AppListState from_state,
                           AppListState to_state) override;
   gfx::Size GetPreferredSearchBoxSize() const override;
-  absl::optional<int> GetSearchBoxTop(
-      AppListViewState view_state) const override;
-  views::View* GetFirstFocusableView() override;
-  views::View* GetLastFocusableView() override;
 
   // Overridden from SearchResultContainerView::Delegate:
   void OnSearchResultContainerResultsChanging() override;
@@ -119,7 +120,7 @@ class ASH_EXPORT SearchResultPageView
   // Returns background color for the given state.
   SkColor GetBackgroundColorForState(AppListState state) const;
 
-  // Hide zero state search result view when AppListBubble is enabled.
+  // Hide zero state search result view when ProductivityLauncher is enabled.
   bool ShouldShowSearchResultView() const;
 
   PrivacyContainerView* GetPrivacyContainerViewForTest();
@@ -224,8 +225,6 @@ class ASH_EXPORT SearchResultPageView
 
   base::ScopedObservation<SearchBoxModel, SearchBoxModelObserver>
       search_box_observation_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };
 
 }  // namespace ash

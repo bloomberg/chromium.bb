@@ -17,15 +17,17 @@
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rrect_f.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
-#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/view.h"
 
@@ -69,37 +71,39 @@ gfx::Point RightCenter(const gfx::Rect& rect) {
   return gfx::Point(rect.right(), rect.CenterPoint().y());
 }
 
-SkColor GetKeyShadowColor(int elevation, const ui::NativeTheme* theme) {
+SkColor GetKeyShadowColor(int elevation,
+                          const ui::ColorProvider* color_provider) {
   switch (elevation) {
     case 3: {
-      return theme->GetSystemColor(
-          ui::NativeTheme::kColorId_ShadowValueKeyShadowElevationThree);
+      return color_provider->GetColor(
+          ui::kColorShadowValueKeyShadowElevationThree);
     }
     case 16: {
-      return theme->GetSystemColor(
-          ui::NativeTheme::kColorId_ShadowValueKeyShadowElevationSixteen);
+      return color_provider->GetColor(
+          ui::kColorShadowValueKeyShadowElevationSixteen);
     }
     default:
       // This surface has not been updated for Refresh. Fall back to the
       // deprecated style.
-      return theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase);
+      return color_provider->GetColor(ui::kColorShadowBase);
   }
 }
 
-SkColor GetAmbientShadowColor(int elevation, const ui::NativeTheme* theme) {
+SkColor GetAmbientShadowColor(int elevation,
+                              const ui::ColorProvider* color_provider) {
   switch (elevation) {
     case 3: {
-      return theme->GetSystemColor(
-          ui::NativeTheme::kColorId_ShadowValueAmbientShadowElevationThree);
+      return color_provider->GetColor(
+          ui::kColorShadowValueAmbientShadowElevationThree);
     }
     case 16: {
-      return theme->GetSystemColor(
-          ui::NativeTheme::kColorId_ShadowValueAmbientShadowElevationSixteen);
+      return color_provider->GetColor(
+          ui::kColorShadowValueAmbientShadowElevationSixteen);
     }
     default:
       // This surface has not been updated for Refresh. Fall back to the
       // deprecated style.
-      return theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase);
+      return color_provider->GetColor(ui::kColorShadowBase);
   }
 }
 
@@ -172,15 +176,16 @@ SkPath GetVisibleArrowPath(BubbleBorder::Arrow arrow,
   return SkPath::Polygon(points, kNumPoints, part == BubbleArrowPart::kFill);
 }
 
-const gfx::ShadowValues& GetShadowValues(const ui::NativeTheme* theme,
-                                         absl::optional<int> elevation) {
-  // If the theme does not exist the shadow values are being created in
+const gfx::ShadowValues& GetShadowValues(
+    const ui::ColorProvider* color_provider,
+    absl::optional<int> elevation) {
+  // If the color provider does not exist the shadow values are being created in
   // order to calculate Insets. In that case the color plays no role so always
   // set those colors to gfx::kPlaceholderColor.
 
-  SkColor color =
-      theme ? theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase)
-            : gfx::kPlaceholderColor;
+  SkColor color = color_provider
+                      ? color_provider->GetColor(ui::kColorShadowBase)
+                      : gfx::kPlaceholderColor;
 
   // The shadows are always the same for any elevation and color combination, so
   // construct them once and cache.
@@ -194,25 +199,26 @@ const gfx::ShadowValues& GetShadowValues(const ui::NativeTheme* theme,
   gfx::ShadowValues shadows;
   if (elevation.has_value()) {
     DCHECK_GE(elevation.value(), 0);
-    SkColor key_shadow_color = theme
-                                   ? GetKeyShadowColor(elevation.value(), theme)
-                                   : gfx::kPlaceholderColor;
+    SkColor key_shadow_color =
+        color_provider ? GetKeyShadowColor(elevation.value(), color_provider)
+                       : gfx::kPlaceholderColor;
     SkColor ambient_shadow_color =
-        theme ? GetAmbientShadowColor(elevation.value(), theme)
-              : gfx::kPlaceholderColor;
+        color_provider
+            ? GetAmbientShadowColor(elevation.value(), color_provider)
+            : gfx::kPlaceholderColor;
     shadows = gfx::ShadowValue::MakeShadowValues(
         elevation.value(), key_shadow_color, ambient_shadow_color);
   } else {
     constexpr int kSmallShadowVerticalOffset = 2;
     constexpr int kSmallShadowBlur = 4;
     SkColor kSmallShadowColor =
-        theme ? theme->GetSystemColor(
-                    ui::NativeTheme::kColorId_BubbleBorderShadowSmall)
-              : gfx::kPlaceholderColor;
+        color_provider
+            ? color_provider->GetColor(ui::kColorBubbleBorderShadowSmall)
+            : gfx::kPlaceholderColor;
     SkColor kLargeShadowColor =
-        theme ? theme->GetSystemColor(
-                    ui::NativeTheme::kColorId_BubbleBorderShadowLarge)
-              : gfx::kPlaceholderColor;
+        color_provider
+            ? color_provider->GetColor(ui::kColorBubbleBorderShadowLarge)
+            : gfx::kPlaceholderColor;
     // gfx::ShadowValue counts blur pixels both inside and outside the shape,
     // whereas these blur values only describe the outside portion, hence they
     // must be doubled.
@@ -228,24 +234,24 @@ const gfx::ShadowValues& GetShadowValues(const ui::NativeTheme* theme,
   return shadow_map->find(key)->second;
 }
 
-const cc::PaintFlags& GetBorderAndShadowFlags(const ui::NativeTheme* theme,
-                                              absl::optional<int> elevation) {
+const cc::PaintFlags& GetBorderAndShadowFlags(
+    const ui::ColorProvider* color_provider,
+    absl::optional<int> elevation) {
   // The flags are always the same for any elevation and color combination, so
   // construct them once and cache.
   static base::NoDestructor<std::map<ShadowCacheKey, cc::PaintFlags>> flag_map;
-  ShadowCacheKey key(
-      elevation.value_or(-1),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ShadowBase));
+  ShadowCacheKey key(elevation.value_or(-1),
+                     color_provider->GetColor(ui::kColorShadowBase));
 
   if (flag_map->find(key) != flag_map->end())
     return flag_map->find(key)->second;
 
   cc::PaintFlags flags;
-  flags.setColor(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_BubbleBorderWhenShadowPresent));
+  flags.setColor(
+      color_provider->GetColor(ui::kColorBubbleBorderWhenShadowPresent));
   flags.setAntiAlias(true);
   flags.setLooper(
-      gfx::CreateShadowDrawLooper(GetShadowValues(theme, elevation)));
+      gfx::CreateShadowDrawLooper(GetShadowValues(color_provider, elevation)));
   flag_map->insert({key, flags});
   return flag_map->find(key)->second;
 }
@@ -255,7 +261,7 @@ void DrawBorderAndShadowImpl(
     T rect,
     void (cc::PaintCanvas::*draw)(const T&, const cc::PaintFlags&),
     gfx::Canvas* canvas,
-    const ui::NativeTheme* theme,
+    const ui::ColorProvider* color_provider,
     absl::optional<int> shadow_elevation = absl::nullopt) {
   // Borders with custom shadow elevations do not draw the 1px border.
   if (!shadow_elevation.has_value()) {
@@ -267,7 +273,7 @@ void DrawBorderAndShadowImpl(
   }
 
   (canvas->sk_canvas()->*draw)(
-      rect, GetBorderAndShadowFlags(theme, shadow_elevation));
+      rect, GetBorderAndShadowFlags(color_provider, shadow_elevation));
 }
 
 }  // namespace
@@ -310,227 +316,210 @@ void BubbleBorder::SetCornerRadius(int corner_radius) {
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
-  // In MD, there are no arrows, so positioning logic is significantly simpler.
-  if (has_arrow(arrow_)) {
-    gfx::Rect contents_bounds(contents_size);
-    // Always apply the border part of the inset before calculating coordinates,
-    // that ensures the bubble's border is aligned with the anchor's border.
-    // For the purposes of positioning, the border is rounded up to a dip, which
-    // may cause misalignment in scale factors greater than 1.
-    // TODO(estade): when it becomes possible to provide px bounds instead of
-    // dip bounds, fix this.
-    // Borders with custom shadow elevations do not draw the 1px border.
-    const gfx::Insets border_insets =
-        shadow_ == NO_SHADOW || md_shadow_elevation_.has_value()
-            ? gfx::Insets()
-            : gfx::Insets(kBorderThicknessDip);
-    const gfx::Insets insets = GetInsets();
-    const gfx::Insets shadow_insets = insets - border_insets;
-    // TODO(dfried): Collapse border into visible arrow where applicable.
-    contents_bounds.Inset(-border_insets);
-    DCHECK(!avoid_shadow_overlap_ || !visible_arrow_);
-
-    // If |avoid_shadow_overlap_| is true, the shadow part of the inset is also
-    // applied now, to ensure that the shadow itself doesn't overlap the anchor.
-    if (avoid_shadow_overlap_)
-      contents_bounds.Inset(-shadow_insets);
-
-    // Adjust the contents to align with the arrow. The `anchor_point` is the
-    // point on `anchor_rect` to offset from; it is also used as part of the
-    // visible arrow calculation if present.
-    gfx::Point anchor_point;
-    switch (arrow_) {
-      case TOP_LEFT:
-        anchor_point = anchor_rect.bottom_left();
-        contents_bounds += anchor_point - contents_bounds.origin();
-        break;
-      case TOP_RIGHT:
-        anchor_point = anchor_rect.bottom_right();
-        contents_bounds += anchor_point - contents_bounds.top_right();
-        break;
-      case BOTTOM_LEFT:
-        anchor_point = anchor_rect.origin();
-        contents_bounds += anchor_point - contents_bounds.bottom_left();
-        break;
-      case BOTTOM_RIGHT:
-        anchor_point = anchor_rect.top_right();
-        contents_bounds += anchor_point - contents_bounds.bottom_right();
-        break;
-      case LEFT_TOP:
-        anchor_point = anchor_rect.top_right();
-        contents_bounds += anchor_point - contents_bounds.origin();
-        break;
-      case RIGHT_TOP:
-        anchor_point = anchor_rect.origin();
-        contents_bounds += anchor_point - contents_bounds.top_right();
-        break;
-      case LEFT_BOTTOM:
-        anchor_point = anchor_rect.bottom_right();
-        contents_bounds += anchor_point - contents_bounds.bottom_left();
-        break;
-      case RIGHT_BOTTOM:
-        anchor_point = anchor_rect.bottom_left();
-        contents_bounds += anchor_point - contents_bounds.bottom_right();
-        break;
-      case TOP_CENTER:
-        anchor_point = CenterBottom(anchor_rect);
-        contents_bounds += anchor_point - CenterTop(contents_bounds);
-        break;
-      case BOTTOM_CENTER:
-        anchor_point = CenterTop(anchor_rect);
-        contents_bounds += anchor_point - CenterBottom(contents_bounds);
-        break;
-      case LEFT_CENTER:
-        anchor_point = RightCenter(anchor_rect);
-        contents_bounds += anchor_point - LeftCenter(contents_bounds);
-        break;
-      case RIGHT_CENTER:
-        anchor_point = LeftCenter(anchor_rect);
-        contents_bounds += anchor_point - RightCenter(contents_bounds);
-        break;
-      default:
-        NOTREACHED();
-    }
-    // With NO_SHADOW, there should be further insets, but the same logic is
-    // used to position the bubble origin according to |anchor_rect|.
-    DCHECK((shadow_ != NO_SHADOW && shadow_ != NO_SHADOW_LEGACY) ||
-           insets_.has_value() || shadow_insets.IsEmpty() || visible_arrow_);
-    if (!avoid_shadow_overlap_)
-      contents_bounds.Inset(-shadow_insets);
-
-    // |arrow_offset_| is used to adjust bubbles that would normally be
-    // partially offscreen.
-    if (is_arrow_on_horizontal(arrow_))
-      contents_bounds += gfx::Vector2d(-arrow_offset_, 0);
-    else
-      contents_bounds += gfx::Vector2d(0, -arrow_offset_);
-
-    // Finally, adjust for a visible arrow; this is done after all other
-    // adjustments because we don't want the positioning to be altered
-    // otherwise. Since we've already accounted for the size of the insets in
-    // the size of `contents_bounds` we merely offset by the size of the inset
-    // on each side (only one side will be nonzero).
-    if (visible_arrow_) {
-      const gfx::Insets visible_arrow_insets =
-          GetVisibleArrowInsets(arrow_, true);
-      contents_bounds += gfx::Vector2d(
-          visible_arrow_insets.left() - visible_arrow_insets.right(),
-          visible_arrow_insets.top() - visible_arrow_insets.bottom());
-
-      // We have an anchor point which is appropriate for the arrow type, but
-      // when anchoring to a small view it looks better to track from the middle
-      // of the view rather than a corner. We may still adjust this point if
-      // it's too close to the edge of the bubble (in this case by adjusting the
-      // bubble by a few pixels rather than the anchor point).
-      const bool is_vertical_arrow = visible_arrow_insets.height();
-      const gfx::Point anchor_center = anchor_rect.CenterPoint();
-      const gfx::Point contents_center = contents_bounds.CenterPoint();
-      if (is_vertical_arrow) {
-        const int right_bound =
-            contents_bounds.right() -
-            (kVisibleArrowBuffer + kVisibleArrowRadius + shadow_insets.right());
-        const int left_bound = contents_bounds.x() + kVisibleArrowBuffer +
-                               kVisibleArrowRadius + shadow_insets.left();
-        if (anchor_point.x() > anchor_center.x() &&
-            anchor_center.x() > contents_center.x()) {
-          anchor_point.set_x(anchor_center.x());
-        } else if (anchor_point.x() > right_bound) {
-          anchor_point.set_x(std::max(anchor_rect.x(), right_bound));
-        } else if (anchor_point.x() < anchor_center.x() &&
-                   anchor_center.x() < contents_center.x()) {
-          anchor_point.set_x(anchor_center.x());
-        } else if (anchor_point.x() < left_bound) {
-          anchor_point.set_x(std::min(anchor_rect.right(), left_bound));
-        }
-        if (anchor_point.x() < left_bound) {
-          contents_bounds -= gfx::Vector2d(left_bound - anchor_point.x(), 0);
-        } else if (anchor_point.x() > right_bound) {
-          contents_bounds += gfx::Vector2d(anchor_point.x() - right_bound, 0);
-        }
-      } else {
-        const int bottom_bound = contents_bounds.bottom() -
-                                 (kVisibleArrowBuffer + kVisibleArrowRadius +
-                                  shadow_insets.bottom());
-        const int top_bound = contents_bounds.y() + kVisibleArrowBuffer +
-                              kVisibleArrowRadius + shadow_insets.top();
-        if (anchor_point.y() > anchor_center.y() &&
-            anchor_center.y() > contents_center.y()) {
-          anchor_point.set_y(anchor_center.y());
-        } else if (anchor_point.y() > bottom_bound) {
-          anchor_point.set_y(std::max(anchor_rect.y(), bottom_bound));
-        } else if (anchor_point.y() < anchor_center.y() &&
-                   anchor_center.y() < contents_center.y()) {
-          anchor_point.set_y(anchor_center.y());
-        } else if (anchor_point.y() < top_bound) {
-          anchor_point.set_y(std::min(anchor_rect.bottom(), top_bound));
-        }
-        if (anchor_point.y() < top_bound) {
-          contents_bounds -= gfx::Vector2d(0, top_bound - anchor_point.y());
-        } else if (anchor_point.y() > bottom_bound) {
-          contents_bounds += gfx::Vector2d(0, anchor_point.y() - bottom_bound);
-        }
-      }
-
-      // Also calculate the arrow bounds so that the arrow can be rendered.
-      constexpr int kVisibleArrowDiameter = 2 * kVisibleArrowRadius;
-      if (visible_arrow_insets.top()) {
-        visible_arrow_rect_ =
-            gfx::Rect(anchor_point.x() - kVisibleArrowRadius + 1,
-                      contents_bounds.y() + insets.top() - kVisibleArrowLength,
-                      kVisibleArrowDiameter, kVisibleArrowLength);
-      } else if (visible_arrow_insets.bottom()) {
-        visible_arrow_rect_ =
-            gfx::Rect(anchor_point.x() - kVisibleArrowRadius + 1,
-                      contents_bounds.bottom() - insets.bottom(),
-                      kVisibleArrowDiameter, kVisibleArrowLength);
-      } else if (visible_arrow_insets.left()) {
-        visible_arrow_rect_ =
-            gfx::Rect(contents_bounds.x() + insets.left() - kVisibleArrowLength,
-                      anchor_point.y() - kVisibleArrowRadius + 1,
-                      kVisibleArrowLength, kVisibleArrowDiameter);
-      } else if (visible_arrow_insets.right()) {
-        visible_arrow_rect_ =
-            gfx::Rect(contents_bounds.right() - insets.right(),
-                      anchor_point.y() - kVisibleArrowRadius + 1,
-                      kVisibleArrowLength, kVisibleArrowDiameter);
-      }
-    }
-
-    return contents_bounds;
-  }
-
-  int x = anchor_rect.x();
-  int y = anchor_rect.y();
-  int w = anchor_rect.width();
-  int h = anchor_rect.height();
   const gfx::Size size(GetSizeForContentsSize(contents_size));
-  const int stroke_width = shadow_ == NO_SHADOW ? 0 : kStroke;
-
-  // Calculate the bubble coordinates based on the border and arrow settings.
-  if (is_arrow_on_horizontal(arrow_)) {
-    if (is_arrow_on_left(arrow_)) {
-      x += stroke_width;
-    } else if (is_arrow_at_center(arrow_)) {
-      x += w / 2;
-    } else {
-      x += w - size.width() - stroke_width;
-    }
-    y += is_arrow_on_top(arrow_) ? h : -size.height();
-  } else if (has_arrow(arrow_)) {
-    x += is_arrow_on_left(arrow_) ? w : -size.width();
-    if (is_arrow_on_top(arrow_)) {
-      y += stroke_width;
-    } else if (is_arrow_at_center(arrow_)) {
-      y += h / 2;
-    } else {
-      y += h - size.height() - stroke_width;
-    }
-  } else {
-    x += (w - size.width()) / 2;
-    y += (arrow_ == NONE) ? h : (h - size.height()) / 2;
+  // In floating mode, the bounds of the bubble border and the |anchor_rect|
+  // have coinciding central points.
+  if (arrow_ == FLOAT) {
+    gfx::Rect rect(anchor_rect.CenterPoint(), size);
+    rect.Offset(gfx::Vector2d(-size.width() / 2, -size.height() / 2));
+    return rect;
   }
 
-  return gfx::Rect(x, y, size.width(), size.height());
+  // If no arrow is used, in the vertical direction, the bubble is placed below
+  // the |anchor_rect| while they have coinciding horizontal centers.
+  if (arrow_ == NONE) {
+    gfx::Rect rect(anchor_rect.bottom_center(), size);
+    rect.Offset(gfx::Vector2d(-size.width() / 2, 0));
+    return rect;
+  }
+
+  // In all other cases, the used arrow determines the placement of the bubble
+  // with respect to the |anchor_rect|.
+  gfx::Rect contents_bounds(contents_size);
+  // Always apply the border part of the inset before calculating coordinates,
+  // that ensures the bubble's border is aligned with the anchor's border.
+  // For the purposes of positioning, the border is rounded up to a dip, which
+  // may cause misalignment in scale factors greater than 1.
+  // TODO(estade): when it becomes possible to provide px bounds instead of
+  // dip bounds, fix this.
+  // Borders with custom shadow elevations do not draw the 1px border.
+  const gfx::Insets border_insets =
+      shadow_ == NO_SHADOW || md_shadow_elevation_.has_value()
+          ? gfx::Insets()
+          : gfx::Insets(kBorderThicknessDip);
+  const gfx::Insets insets = GetInsets();
+  const gfx::Insets shadow_insets = insets - border_insets;
+  // TODO(dfried): Collapse border into visible arrow where applicable.
+  contents_bounds.Inset(-border_insets);
+  DCHECK(!avoid_shadow_overlap_ || !visible_arrow_);
+
+  // If |avoid_shadow_overlap_| is true, the shadow part of the inset is also
+  // applied now, to ensure that the shadow itself doesn't overlap the anchor.
+  if (avoid_shadow_overlap_)
+    contents_bounds.Inset(-shadow_insets);
+
+  // Adjust the contents to align with the arrow. The `anchor_point` is the
+  // point on `anchor_rect` to offset from; it is also used as part of the
+  // visible arrow calculation if present.
+  gfx::Point anchor_point;
+  switch (arrow_) {
+    case TOP_LEFT:
+      anchor_point = anchor_rect.bottom_left();
+      contents_bounds += anchor_point - contents_bounds.origin();
+      break;
+    case TOP_RIGHT:
+      anchor_point = anchor_rect.bottom_right();
+      contents_bounds += anchor_point - contents_bounds.top_right();
+      break;
+    case BOTTOM_LEFT:
+      anchor_point = anchor_rect.origin();
+      contents_bounds += anchor_point - contents_bounds.bottom_left();
+      break;
+    case BOTTOM_RIGHT:
+      anchor_point = anchor_rect.top_right();
+      contents_bounds += anchor_point - contents_bounds.bottom_right();
+      break;
+    case LEFT_TOP:
+      anchor_point = anchor_rect.top_right();
+      contents_bounds += anchor_point - contents_bounds.origin();
+      break;
+    case RIGHT_TOP:
+      anchor_point = anchor_rect.origin();
+      contents_bounds += anchor_point - contents_bounds.top_right();
+      break;
+    case LEFT_BOTTOM:
+      anchor_point = anchor_rect.bottom_right();
+      contents_bounds += anchor_point - contents_bounds.bottom_left();
+      break;
+    case RIGHT_BOTTOM:
+      anchor_point = anchor_rect.bottom_left();
+      contents_bounds += anchor_point - contents_bounds.bottom_right();
+      break;
+    case TOP_CENTER:
+      anchor_point = CenterBottom(anchor_rect);
+      contents_bounds += anchor_point - CenterTop(contents_bounds);
+      break;
+    case BOTTOM_CENTER:
+      anchor_point = CenterTop(anchor_rect);
+      contents_bounds += anchor_point - CenterBottom(contents_bounds);
+      break;
+    case LEFT_CENTER:
+      anchor_point = RightCenter(anchor_rect);
+      contents_bounds += anchor_point - LeftCenter(contents_bounds);
+      break;
+    case RIGHT_CENTER:
+      anchor_point = LeftCenter(anchor_rect);
+      contents_bounds += anchor_point - RightCenter(contents_bounds);
+      break;
+    default:
+      NOTREACHED();
+  }
+  // With NO_SHADOW, there should be further insets, but the same logic is
+  // used to position the bubble origin according to |anchor_rect|.
+  DCHECK((shadow_ != NO_SHADOW && shadow_ != NO_SHADOW_LEGACY) ||
+         insets_.has_value() || shadow_insets.IsEmpty() || visible_arrow_);
+  if (!avoid_shadow_overlap_)
+    contents_bounds.Inset(-shadow_insets);
+
+  // |arrow_offset_| is used to adjust bubbles that would normally be
+  // partially offscreen.
+  if (is_arrow_on_horizontal(arrow_))
+    contents_bounds += gfx::Vector2d(-arrow_offset_, 0);
+  else
+    contents_bounds += gfx::Vector2d(0, -arrow_offset_);
+
+  // Finally, adjust for a visible arrow; this is done after all other
+  // adjustments because we don't want the positioning to be altered
+  // otherwise. Since we've already accounted for the size of the insets in
+  // the size of `contents_bounds` we merely offset by the size of the inset
+  // on each side (only one side will be nonzero).
+  if (visible_arrow_) {
+    const gfx::Insets visible_arrow_insets =
+        GetVisibleArrowInsets(arrow_, true);
+    contents_bounds += gfx::Vector2d(
+        visible_arrow_insets.left() - visible_arrow_insets.right(),
+        visible_arrow_insets.top() - visible_arrow_insets.bottom());
+
+    // We have an anchor point which is appropriate for the arrow type, but
+    // when anchoring to a small view it looks better to track from the middle
+    // of the view rather than a corner. We may still adjust this point if
+    // it's too close to the edge of the bubble (in this case by adjusting the
+    // bubble by a few pixels rather than the anchor point).
+    const bool is_vertical_arrow = visible_arrow_insets.height();
+    const gfx::Point anchor_center = anchor_rect.CenterPoint();
+    const gfx::Point contents_center = contents_bounds.CenterPoint();
+    if (is_vertical_arrow) {
+      const int right_bound =
+          contents_bounds.right() -
+          (kVisibleArrowBuffer + kVisibleArrowRadius + shadow_insets.right());
+      const int left_bound = contents_bounds.x() + kVisibleArrowBuffer +
+                             kVisibleArrowRadius + shadow_insets.left();
+      if (anchor_point.x() > anchor_center.x() &&
+          anchor_center.x() > contents_center.x()) {
+        anchor_point.set_x(anchor_center.x());
+      } else if (anchor_point.x() > right_bound) {
+        anchor_point.set_x(std::max(anchor_rect.x(), right_bound));
+      } else if (anchor_point.x() < anchor_center.x() &&
+                 anchor_center.x() < contents_center.x()) {
+        anchor_point.set_x(anchor_center.x());
+      } else if (anchor_point.x() < left_bound) {
+        anchor_point.set_x(std::min(anchor_rect.right(), left_bound));
+      }
+      if (anchor_point.x() < left_bound) {
+        contents_bounds -= gfx::Vector2d(left_bound - anchor_point.x(), 0);
+      } else if (anchor_point.x() > right_bound) {
+        contents_bounds += gfx::Vector2d(anchor_point.x() - right_bound, 0);
+      }
+    } else {
+      const int bottom_bound =
+          contents_bounds.bottom() -
+          (kVisibleArrowBuffer + kVisibleArrowRadius + shadow_insets.bottom());
+      const int top_bound = contents_bounds.y() + kVisibleArrowBuffer +
+                            kVisibleArrowRadius + shadow_insets.top();
+      if (anchor_point.y() > anchor_center.y() &&
+          anchor_center.y() > contents_center.y()) {
+        anchor_point.set_y(anchor_center.y());
+      } else if (anchor_point.y() > bottom_bound) {
+        anchor_point.set_y(std::max(anchor_rect.y(), bottom_bound));
+      } else if (anchor_point.y() < anchor_center.y() &&
+                 anchor_center.y() < contents_center.y()) {
+        anchor_point.set_y(anchor_center.y());
+      } else if (anchor_point.y() < top_bound) {
+        anchor_point.set_y(std::min(anchor_rect.bottom(), top_bound));
+      }
+      if (anchor_point.y() < top_bound) {
+        contents_bounds -= gfx::Vector2d(0, top_bound - anchor_point.y());
+      } else if (anchor_point.y() > bottom_bound) {
+        contents_bounds += gfx::Vector2d(0, anchor_point.y() - bottom_bound);
+      }
+    }
+
+    // Also calculate the arrow bounds so that the arrow can be rendered.
+    constexpr int kVisibleArrowDiameter = 2 * kVisibleArrowRadius;
+    if (visible_arrow_insets.top()) {
+      visible_arrow_rect_ =
+          gfx::Rect(anchor_point.x() - kVisibleArrowRadius + 1,
+                    contents_bounds.y() + insets.top() - kVisibleArrowLength,
+                    kVisibleArrowDiameter, kVisibleArrowLength);
+    } else if (visible_arrow_insets.bottom()) {
+      visible_arrow_rect_ =
+          gfx::Rect(anchor_point.x() - kVisibleArrowRadius + 1,
+                    contents_bounds.bottom() - insets.bottom(),
+                    kVisibleArrowDiameter, kVisibleArrowLength);
+    } else if (visible_arrow_insets.left()) {
+      visible_arrow_rect_ =
+          gfx::Rect(contents_bounds.x() + insets.left() - kVisibleArrowLength,
+                    anchor_point.y() - kVisibleArrowRadius + 1,
+                    kVisibleArrowLength, kVisibleArrowDiameter);
+    } else if (visible_arrow_insets.right()) {
+      visible_arrow_rect_ =
+          gfx::Rect(contents_bounds.right() - insets.right(),
+                    anchor_point.y() - kVisibleArrowRadius + 1,
+                    kVisibleArrowLength, kVisibleArrowDiameter);
+    }
+  }
+
+  return contents_bounds;
 }
 
 void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
@@ -547,7 +536,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
     canvas->sk_canvas()->clipRRect(r_rect, SkClipOp::kDifference,
                                    true /*doAntiAlias*/);
     DrawBorderAndShadowImpl(r_rect, &cc::PaintCanvas::drawRRect, canvas,
-                            view.GetNativeTheme(), md_shadow_elevation_);
+                            view.GetColorProvider(), md_shadow_elevation_);
   }
 
   if (visible_arrow_)
@@ -555,10 +544,12 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 // static
-void BubbleBorder::DrawBorderAndShadow(SkRect rect,
-                                       gfx::Canvas* canvas,
-                                       const ui::NativeTheme* theme) {
-  DrawBorderAndShadowImpl(rect, &cc::PaintCanvas::drawRect, canvas, theme);
+void BubbleBorder::DrawBorderAndShadow(
+    SkRect rect,
+    gfx::Canvas* canvas,
+    const ui::ColorProvider* color_provider) {
+  DrawBorderAndShadowImpl(rect, &cc::PaintCanvas::drawRect, canvas,
+                          color_provider);
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
@@ -615,8 +606,8 @@ void BubbleBorder::PaintNoShadowLegacy(const View& view, gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(kBorderThicknessDip);
-  SkColor kBorderColor = view.GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_BubbleBorder);
+  SkColor kBorderColor =
+      view.GetColorProvider()->GetColor(ui::kColorBubbleBorder);
   flags.setColor(kBorderColor);
   canvas->DrawRoundRect(bounds, corner_radius(), flags);
 }
@@ -640,8 +631,8 @@ void BubbleBorder::PaintVisibleArrow(const View& view, gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
 
-  flags.setColor(view.GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_BubbleBorderWhenShadowPresent));
+  flags.setColor(view.GetColorProvider()->GetColor(
+      ui::kColorBubbleBorderWhenShadowPresent));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(1.2);
   flags.setAntiAlias(true);

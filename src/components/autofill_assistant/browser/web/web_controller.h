@@ -48,7 +48,6 @@ struct FormFieldData;
 
 namespace content {
 class WebContents;
-class RenderFrameHost;
 }  // namespace content
 
 namespace autofill_assistant {
@@ -74,6 +73,10 @@ class WebController {
   WebController(content::WebContents* web_contents,
                 std::unique_ptr<DevtoolsClient> devtools_client,
                 const UserData* user_data);
+
+  WebController(const WebController&) = delete;
+  WebController& operator=(const WebController&) = delete;
+
   virtual ~WebController();
 
   // Load |url| in the current tab. Returns immediately, before the new page has
@@ -361,31 +364,6 @@ class WebController {
  private:
   friend class WebControllerBrowserTest;
 
-  // RAII object that sets the action state to "running" when the object is
-  // allocated and to "not running" when it gets deallocated.
-  class ScopedAssistantActionStateRunning
-      : private content::WebContentsObserver {
-   public:
-    explicit ScopedAssistantActionStateRunning(
-        content::WebContents* web_contents,
-        content::RenderFrameHost* render_frame_host);
-    ~ScopedAssistantActionStateRunning() override;
-
-    ScopedAssistantActionStateRunning(
-        const ScopedAssistantActionStateRunning&) = delete;
-    ScopedAssistantActionStateRunning& operator=(
-        const ScopedAssistantActionStateRunning&) = delete;
-
-   private:
-    void SetAssistantActionState(bool running);
-
-    // Overrides content::WebContentsObserver:
-    void RenderFrameDeleted(
-        content::RenderFrameHost* render_frame_host) override;
-
-    content::RenderFrameHost* render_frame_host_;
-  };
-
   void OnJavaScriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,
       const DevtoolsClient::ReplyStatus& reply_status,
@@ -506,14 +484,9 @@ class WebController {
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   // Handling a JS result for a "SelectOption" action. This expects the JS
-  // result to contain an integer and returns the following status:
-  // * -1 -> INVALID_TARGET
-  // *  0 -> OPTION_ELEMENT_NOT_FOUND
-  // *  1 -> ACTION_APPLIED
-  // *  n -> TOO_MANY_OPTION_VALUES_FOUND
+  // result to contain an integer mapped to a ClientStatus.
   void OnSelectOptionJavascriptResult(
       base::OnceCallback<void(const ClientStatus&)> callback,
-      ProcessedActionStatusProto status_if_zero,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void SendKeyEvents(WebControllerErrorInfoProto::WebAction web_action,
@@ -544,32 +517,17 @@ class WebController {
                          const DevtoolsClient::ReplyStatus& reply_status,
                          std::unique_ptr<runtime::EvaluateResult> result) const;
 
-  // Wrapper for calling the |callback| after re-enabling the keyboard by
-  // setting the assistant action state to "not running".
-  void RetainAssistantActionRunningStateAndExecuteCallback(
-      std::unique_ptr<ScopedAssistantActionStateRunning> scoped_state,
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& client_status);
-  // Disables the keyboard by setting the assistant action state to "running"
-  // and wraps the |callback| such that the keyboard is re-enabled before
-  // calling it. Uses the |RenderFrameHost| of the |ElementFinder::Result| to
-  // extract the appropriate |ContentAutofillDriver|.
-  base::OnceCallback<void(const ClientStatus&)>
-  GetAssistantActionRunningStateRetainingCallback(
-      const ElementFinder::Result& element_result,
-      base::OnceCallback<void(const ClientStatus&)> callback);
-
   // Weak pointer is fine here since it must outlive this web controller, which
   // is guaranteed by the owner of this object.
   content::WebContents* const web_contents_;
   std::unique_ptr<DevtoolsClient> devtools_client_;
+  // Must not be |nullptr| and outlive this web controller.
   const UserData* const user_data_;
 
   // Currently running workers.
   std::vector<std::unique_ptr<WebControllerWorker>> pending_workers_;
 
   base::WeakPtrFactory<WebController> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(WebController);
 };
 }  // namespace autofill_assistant
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_WEB_WEB_CONTROLLER_H_

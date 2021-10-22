@@ -116,14 +116,17 @@ class AdTaggingPageLoadMetricsTestWaiter
 class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
  public:
   AdTaggingBrowserTest() : SubresourceFilterBrowserTest() {}
+
+  AdTaggingBrowserTest(const AdTaggingBrowserTest&) = delete;
+  AdTaggingBrowserTest& operator=(const AdTaggingBrowserTest&) = delete;
+
   ~AdTaggingBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     SubresourceFilterBrowserTest::SetUpOnMainThread();
-    // Allowlist rules are only checked if there is a matching blocklist rule.
+    // For subdocument resources, allowlist rules are always checked.
     SetRulesetWithRules({CreateSuffixRule("ad_script.js"),
                          CreateSuffixRule("ad=true"),
-                         CreateSuffixRule("allowed=true"),
                          CreateAllowlistSuffixRule("allowed=true")});
   }
 
@@ -204,8 +207,6 @@ class AdTaggingBrowserTest : public SubresourceFilterBrowserTest {
   content::RenderFrameHost* CreateFrameWithWindowStopAbortedLoadImpl(
       const content::ToRenderFrameHost& adapter,
       bool ad_script);
-
-  DISALLOW_COPY_AND_ASSIGN(AdTaggingBrowserTest);
 };
 
 content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(

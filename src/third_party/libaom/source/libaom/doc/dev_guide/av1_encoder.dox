@@ -656,7 +656,7 @@ reflect any undershoot or overshoot on previous frames to give
 As well as \ref RATE_CONTROL.active_worst_quality, the two pass code also
 maintains a record of the actual Q value used to encode previous frames
 at each level in the current pyramid hierarchy
-(\ref RATE_CONTROL.active_best_quality). The function
+(\ref PRIMARY_RATE_CONTROL.active_best_quality). The function
 \ref rc_pick_q_and_bounds(), uses these values to set a permitted Q range
 for each frame.
 
@@ -740,7 +740,7 @@ There are two main fixed Q cases:
 -# Fixed Q with adaptive qp offsets: same qp offset for each pyramid level
    in a given video, but these offsets are adaptive based on video content.
 -# Fixed Q with fixed qp offsets: content-independent fixed qp offsets for
-   each pyramid level. (see \ref get_q_using_fixed_offsets()).
+   each pyramid level.
 
 The reader is also refered to the following functions:
 - \ref av1_rc_pick_q_and_bounds()

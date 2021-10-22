@@ -686,13 +686,15 @@ void ScrollableArea::MainThreadScrollingDidChange() {
 void ScrollableArea::ServiceScrollAnimations(double monotonic_time) {
   bool requires_animation_service = false;
   if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator()) {
-    scroll_animator->TickAnimation(monotonic_time);
+    scroll_animator->TickAnimation(base::Seconds(monotonic_time) +
+                                   base::TimeTicks());
     if (scroll_animator->HasAnimationThatRequiresService())
       requires_animation_service = true;
   }
   if (ProgrammaticScrollAnimator* programmatic_scroll_animator =
           ExistingProgrammaticScrollAnimator()) {
-    programmatic_scroll_animator->TickAnimation(monotonic_time);
+    programmatic_scroll_animator->TickAnimation(base::Seconds(monotonic_time) +
+                                                base::TimeTicks());
     if (programmatic_scroll_animator->HasAnimationThatRequiresService())
       requires_animation_service = true;
   }
@@ -957,7 +959,7 @@ bool ScrollableArea::SnapForEndPosition(const FloatPoint& end_position,
   DCHECK(IsRootFrameViewport() || !GetLayoutBox()->IsGlobalRootScroller());
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndPosition(
-          gfx::ScrollOffset(end_position), scrolled_x, scrolled_y);
+          gfx::Vector2dF(end_position), scrolled_x, scrolled_y);
   return PerformSnapping(*strategy, mojom::blink::ScrollBehavior::kSmooth,
                          std::move(on_finish));
 }
@@ -968,8 +970,8 @@ bool ScrollableArea::SnapForDirection(const ScrollOffset& delta,
   FloatPoint current_position = ScrollPosition();
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForDirection(
-          gfx::ScrollOffset(current_position),
-          gfx::ScrollOffset(delta.Width(), delta.Height()),
+          gfx::Vector2dF(current_position),
+          gfx::Vector2dF(delta.Width(), delta.Height()),
           RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   return PerformSnapping(*strategy, mojom::blink::ScrollBehavior::kSmooth,
                          std::move(on_finish));
@@ -980,8 +982,8 @@ bool ScrollableArea::SnapForEndAndDirection(const ScrollOffset& delta) {
   FloatPoint current_position = ScrollPosition();
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForEndAndDirection(
-          gfx::ScrollOffset(current_position),
-          gfx::ScrollOffset(delta.Width(), delta.Height()),
+          gfx::Vector2dF(current_position),
+          gfx::Vector2dF(delta.Width(), delta.Height()),
           RuntimeEnabledFeatures::FractionalScrollOffsetsEnabled());
   return PerformSnapping(*strategy);
 }
@@ -994,7 +996,7 @@ void ScrollableArea::SnapAfterLayout() {
   FloatPoint current_position = ScrollPosition();
   std::unique_ptr<cc::SnapSelectionStrategy> strategy =
       cc::SnapSelectionStrategy::CreateForTargetElement(
-          gfx::ScrollOffset(current_position));
+          gfx::Vector2dF(current_position));
 
   PerformSnapping(*strategy, mojom::blink::ScrollBehavior::kInstant);
 }

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/gfx/geometry/size.h"
@@ -30,6 +31,9 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   recording::RecordingServiceTestApi* recording_service() const {
     return recording_service_.get();
   }
+  void set_on_recording_started_callback(base::OnceClosure callback) {
+    on_recording_started_callback_ = std::move(callback);
+  }
 
   // Gets the current frame sink id being captured by the service.
   viz::FrameSinkId GetCurrentFrameSinkId() const;
@@ -49,7 +53,7 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
   void RequestAndWaitForVideoFrame();
 
   // CaptureModeDelegate:
-  base::FilePath GetScreenCaptureDir() const override;
+  base::FilePath GetUserDefaultDownloadsFolder() const override;
   void ShowScreenCaptureItemInFolder(const base::FilePath& file_path) override;
   void OpenScreenshotInImageEditor(const base::FilePath& file_path) override;
   bool Uses24HourFormat() const override;
@@ -70,10 +74,13 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
       override;
   void OnSessionStateChanged(bool started) override;
   void OnServiceRemoteReset() override;
+  std::unique_ptr<RecordingOverlayView> CreateRecordingOverlayView()
+      const override;
 
  private:
   std::unique_ptr<recording::RecordingServiceTestApi> recording_service_;
   base::FilePath fake_downloads_dir_;
+  base::OnceClosure on_recording_started_callback_;
 };
 
 }  // namespace ash

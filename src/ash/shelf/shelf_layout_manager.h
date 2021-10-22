@@ -91,11 +91,15 @@ class ASH_EXPORT ShelfLayoutManager
    public:
     // |manager| is the ShelfLayoutManager whose visibility update is suspended.
     explicit ScopedSuspendWorkAreaUpdate(ShelfLayoutManager* manager);
+
+    ScopedSuspendWorkAreaUpdate(const ScopedSuspendWorkAreaUpdate&) = delete;
+    ScopedSuspendWorkAreaUpdate& operator=(const ScopedSuspendWorkAreaUpdate&) =
+        delete;
+
     ~ScopedSuspendWorkAreaUpdate();
 
    private:
     ShelfLayoutManager* const manager_;
-    DISALLOW_COPY_AND_ASSIGN(ScopedSuspendWorkAreaUpdate);
   };
 
   // Used to maintain a lock for the shelf visibility state. If locked, then we
@@ -110,6 +114,10 @@ class ASH_EXPORT ShelfLayoutManager
   };
 
   ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf);
+
+  ShelfLayoutManager(const ShelfLayoutManager&) = delete;
+  ShelfLayoutManager& operator=(const ShelfLayoutManager&) = delete;
+
   ~ShelfLayoutManager() override;
 
   // Initializes observers.
@@ -630,8 +638,8 @@ class ASH_EXPORT ShelfLayoutManager
   // Whether background blur is enabled.
   const bool is_background_blur_enabled_;
 
-  // Whether the AppListBubble is enabled.
-  const bool is_app_list_bubble_enabled_;
+  // Whether the feature ProductivityLauncher is enabled.
+  const bool is_productivity_launcher_enabled_;
 
   // Pretarget handler responsible for hiding the hotseat.
   std::unique_ptr<ui::EventHandler> hotseat_event_handler_;
@@ -726,8 +734,6 @@ class ASH_EXPORT ShelfLayoutManager
   std::unique_ptr<PresentationTimeRecorder> hotseat_presentation_time_recorder_;
 
   base::WeakPtrFactory<ShelfLayoutManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };
 
 }  // namespace ash

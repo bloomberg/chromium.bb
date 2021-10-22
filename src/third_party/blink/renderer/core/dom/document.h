@@ -1349,6 +1349,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
+  bool ShouldMarkFontPerformance() const {
+    return !IsInitialEmptyDocument() && !IsXMLDocument();
+  }
+
   int RequestAnimationFrame(FrameCallback*);
   void CancelAnimationFrame(int id);
   void ServiceScriptedAnimations(base::TimeTicks monotonic_animation_start_time,
@@ -2373,7 +2377,7 @@ struct DowncastTraits<Document> {
 
 #ifndef NDEBUG
 // Outside the blink namespace for ease of invocation from gdb.
-CORE_EXPORT void showLiveDocumentInstances();
+CORE_EXPORT void ShowLiveDocumentInstances();
 #endif
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_

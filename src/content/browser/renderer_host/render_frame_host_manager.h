@@ -137,9 +137,9 @@ class CONTENT_EXPORT RenderFrameHostManager
         const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
     virtual void CancelModalDialogsForRenderManager() = 0;
-    virtual void NotifySwappedFromRenderManager(RenderFrameHostImpl* old_frame,
-                                                RenderFrameHostImpl* new_frame,
-                                                bool is_main_frame) = 0;
+    virtual void NotifySwappedFromRenderManager(
+        RenderFrameHostImpl* old_frame,
+        RenderFrameHostImpl* new_frame) = 0;
     // TODO(nasko): This should be removed once extensions no longer use
     // NotificationService. See https://crbug.com/462682.
     virtual void NotifyMainFrameSwappedFromRenderManager(
@@ -213,6 +213,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // inner WebContents in the outer WebContents's SiteInstance. Returns nullptr
   // if this WebContents isn't part of inner/outer relationship.
   RenderFrameProxyHost* GetProxyToOuterDelegate();
+
+  // If this is a main frame for an inner delegate, return the
+  // GetProxyToOuterDelegate, otherwise return GetProxyToParent.
+  RenderFrameProxyHost* GetProxyToParentOrOuterDelegate();
 
   // If this is a RenderFrameHostManager for a main frame, removes the
   // FrameTreeNode in the outer WebContents that represents this FrameTreeNode.
@@ -456,8 +460,8 @@ class CONTENT_EXPORT RenderFrameHostManager
                               RenderFrameProxyHost* proxy);
 
   // Sets the child RenderWidgetHostView for this frame, which must be part of
-  // an inner WebContents.
-  void SetRWHViewForInnerContents(RenderWidgetHostViewChildFrame* child_rwhv);
+  // an inner FrameTree.
+  void SetRWHViewForInnerFrameTree(RenderWidgetHostViewChildFrame* child_rwhv);
 
   // Returns the number of RenderFrameProxyHosts for this frame.
   size_t GetProxyCount();

@@ -80,6 +80,18 @@ source_set("app_url_handling") {
   deps = [ "//url" ]
 }
 
+if (is_chromeos) {
+  source_set("browser_app_instance_registry_update") {
+    sources = [
+      "browser_app_instance_update.cc",
+      "browser_app_instance_update.h",
+      "browser_window_instance_update.h",
+    ]
+
+    deps = [ "//base" ]
+  }
+}
+
 if (is_chromeos_ash) {
   source_set("instance_update") {
     sources = [
@@ -124,6 +136,8 @@ source_set("icon_loader_test_support") {
 
 source_set("intents") {
   sources = [
+    "intent_constants.cc",
+    "intent_constants.h",
     "intent_filter_util.cc",
     "intent_filter_util.h",
     "intent_util.cc",
@@ -133,6 +147,7 @@ source_set("intents") {
   deps = [
     "//base",
     "//components/services/app_service/public/mojom",
+    "//third_party/blink/public/common",
     "//url",
   ]
 }

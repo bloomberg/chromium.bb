@@ -36,6 +36,10 @@ using ::chromeos::kFrameInactiveColorKey;
 class HeaderView::HeaderContentView : public views::View {
  public:
   HeaderContentView(HeaderView* header_view) : header_view_(header_view) {}
+
+  HeaderContentView(const HeaderContentView&) = delete;
+  HeaderContentView& operator=(const HeaderContentView&) = delete;
+
   ~HeaderContentView() override = default;
 
   // views::View:
@@ -54,7 +58,6 @@ class HeaderView::HeaderContentView : public views::View {
   HeaderView* header_view_;
   views::PaintInfo::ScaleType scale_type_ =
       views::PaintInfo::ScaleType::kScaleWithEdgeSnapping;
-  DISALLOW_COPY_AND_ASSIGN(HeaderContentView);
 };
 
 HeaderView::HeaderView(views::Widget* target_widget,
@@ -220,6 +223,14 @@ void HeaderView::OnWindowDestroying(aura::Window* window) {
   window_observation_.Reset();
   // A HeaderView may outlive the target widget.
   target_widget_ = nullptr;
+}
+
+void HeaderView::OnDisplayMetricsChanged(const display::Display& display,
+                                         uint32_t changed_metrics) {
+  if ((changed_metrics & chromeos::TabletState::DISPLAY_METRIC_ROTATION) &&
+      frame_header_) {
+    frame_header_->LayoutHeader();
+  }
 }
 
 views::View* HeaderView::avatar_icon() const {

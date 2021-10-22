@@ -29,8 +29,8 @@
 // load time data.
 extern const char kManagementLogUploadEnabled[];
 extern const char kManagementReportActivityTimes[];
-extern const char kManagementReportHardwareStatus[];
-extern const char kManagementReportNetworkInterfaces[];
+extern const char kManagementReportNetworkData[];
+extern const char kManagementReportHardwareData[];
 extern const char kManagementReportUsers[];
 extern const char kManagementReportCrashReports[];
 extern const char kManagementReportAppInfoAndActivity[];
@@ -111,6 +111,10 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
                             public BitmapFetcherDelegate {
  public:
   ManagementUIHandler();
+
+  ManagementUIHandler(const ManagementUIHandler&) = delete;
+  ManagementUIHandler& operator=(const ManagementUIHandler&) = delete;
+
   ~ManagementUIHandler() override;
 
   static void Initialize(content::WebUI* web_ui,
@@ -121,15 +125,6 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
 
   void SetAccountManagedForTesting(bool managed) { account_managed_ = managed; }
   void SetDeviceManagedForTesting(bool managed) { device_managed_ = managed; }
-
-  // This returns the entity that manages this |profile|. For standard dasher
-  // domains, this will be a domain name (ie foo.com). For FlexOrgs, this will
-  // be the email address of the admin of the FlexOrg (ie user@foo.com). If
-  // DMServer does not provide this information, this method defaults to
-  // |GetAccountDomain|. If unmanaged, an empty string is returned.
-  // TODO(crbug.com/1188594): Remove this function and replace all call sites
-  // with chrome::GetAccountManagerIdentity().
-  static std::string GetAccountManager(Profile* profile);
 
   void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
@@ -225,8 +220,6 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   GURL logo_url_;
   std::string fetched_image_;
   std::unique_ptr<BitmapFetcher> icon_fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(ManagementUIHandler);
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_MANAGEMENT_MANAGEMENT_UI_HANDLER_H_

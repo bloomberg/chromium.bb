@@ -14,7 +14,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 
-namespace chromeos {
+namespace ash {
 
 // Waits for a dialog window to open and become visible.
 //
@@ -29,6 +29,9 @@ class DialogWindowWaiter : public aura::EnvObserver,
  public:
   // Starts listening for a dialog window to open with title `dialog_title`.
   explicit DialogWindowWaiter(const std::u16string& dialog_title);
+
+  DialogWindowWaiter(const DialogWindowWaiter&) = delete;
+  DialogWindowWaiter& operator=(const DialogWindowWaiter&) = delete;
 
   ~DialogWindowWaiter() override;
 
@@ -53,10 +56,14 @@ class DialogWindowWaiter : public aura::EnvObserver,
   std::set<aura::Window*> dialog_windows_;
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       window_observations_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DialogWindowWaiter);
 };
 
-}  // namespace chromeos
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace chromeos {
+using ::ash::DialogWindowWaiter;
+}
 
 #endif  // CHROME_BROWSER_ASH_LOGIN_TEST_DIALOG_WINDOW_WAITER_H_

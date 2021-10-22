@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_SESSION_NOTIFICATION_PRODUCER_H_
 #define CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_SESSION_NOTIFICATION_PRODUCER_H_
 
-#include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_container_observer_set.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_producer.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_service_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_session_notification_item.h"
-#include "chrome/browser/ui/global_media_controls/overlay_media_notification.h"
-#include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager_impl.h"
+#include "components/global_media_controls/public/media_item_manager_observer.h"
+#include "components/global_media_controls/public/media_item_producer.h"
+#include "components/global_media_controls/public/media_item_ui_observer.h"
+#include "components/global_media_controls/public/media_item_ui_observer_set.h"
 #include "components/media_router/browser/presentation/web_contents_presentation_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
@@ -23,13 +21,16 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace global_media_controls {
+class MediaItemManager;
+class MediaItemUI;
+}  // namespace global_media_controls
+
 namespace media_router {
 class CastDialogController;
 class StartPresentationContext;
 }  // namespace media_router
 
-class MediaNotificationContainerImpl;
-class MediaNotificationService;
 class Profile;
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -43,22 +44,25 @@ enum class GlobalMediaControlsDismissReason {
 };
 
 class MediaSessionNotificationProducer
-    : public MediaNotificationProducer,
+    : public global_media_controls::MediaItemProducer,
       public MediaSessionNotificationItem::Delegate,
       public media_session::mojom::AudioFocusObserver,
-      public MediaNotificationContainerObserver {
+      public global_media_controls::MediaItemUIObserver {
  public:
-  MediaSessionNotificationProducer(MediaNotificationService* service,
-                                   Profile* profile,
-                                   bool show_from_all_profiles);
+  MediaSessionNotificationProducer(
+      global_media_controls::MediaItemManager* item_manager,
+      Profile* profile,
+      bool show_from_all_profiles);
   ~MediaSessionNotificationProducer() override;
 
-  // MediaNotificationProducer:
-  base::WeakPtr<media_message_center::MediaNotificationItem>
-  GetNotificationItem(const std::string& id) override;
-  std::set<std::string> GetActiveControllableNotificationIds() const override;
+  // global_media_controls::MediaItemProducer:
+  base::WeakPtr<media_message_center::MediaNotificationItem> GetMediaItem(
+      const std::string& id) override;
+  std::set<std::string> GetActiveControllableItemIds() override;
+  bool HasFrozenItems() override;
   void OnItemShown(const std::string& id,
-                   MediaNotificationContainerImpl* container) override;
+                   global_media_controls::MediaItemUI* item_ui) override;
+  bool IsItemActivelyPlaying(const std::string& id) override;
 
   // MediaSessionNotificationItem::Delegate:
   void ActivateItem(const std::string& id) override;
@@ -75,18 +79,13 @@ class MediaSessionNotificationProducer
       media_session::mojom::AudioFocusRequestStatePtr session) override;
   void OnRequestIdReleased(const base::UnguessableToken& request_id) override;
 
-  // MediaNotificationContainerObserver implementation.
-  void OnContainerClicked(const std::string& id) override;
-  void OnContainerDismissed(const std::string& id) override;
-  void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override;
+  // global_media_controls::MediaItemUIObserver implementation.
+  void OnMediaItemUIClicked(const std::string& id) override;
+  void OnMediaItemUIDismissed(const std::string& id) override;
   void OnAudioSinkChosen(const std::string& id,
                          const std::string& sink_id) override;
 
   bool HasSession(const std::string& id) const;
-  bool IsSessionPlaying(const std::string& id) const;
-  // Returns whether there still exists a session for |id|.
-  bool OnOverlayNotificationClosed(const std::string& id);
-  bool HasFrozenNotifications() const;
   std::unique_ptr<media_router::CastDialogController>
   CreateCastDialogControllerForSession(const std::string& id);
   bool HasActiveControllableSessionForWebContents(
@@ -117,7 +116,7 @@ class MediaSessionNotificationProducer
 
  private:
   friend class MediaNotificationServiceTest;
-  friend class MediaToolbarButtonControllerTest;
+  friend class MediaSessionNotificationProducerTest;
 
   class Session
       : public media_session::mojom::MediaControllerObserver,
@@ -168,10 +167,6 @@ class MediaSessionNotificationProducer
     // Called when a session is interacted with (to reset |inactive_timer_|).
     void OnSessionInteractedWith();
 
-    // Called when the notification associated with this session is pulled out
-    // into an overlay or it's overlay is closed.
-    void OnSessionOverlayStateChanged(bool is_in_overlay);
-
     bool IsPlaying() const;
 
     void SetAudioSinkId(const std::string& id);
@@ -214,9 +209,6 @@ class MediaSessionNotificationProducer
 
     // True if we're currently marked inactive.
     bool is_marked_inactive_ = false;
-
-    // True if we're in an overlay notification.
-    bool is_in_overlay_ = false;
 
     // True if the audio output device can be switched.
     bool is_audio_device_switching_supported_ = true;
@@ -262,11 +254,6 @@ class MediaSessionNotificationProducer
   // again (e.g. by playing the session).
   std::set<std::string> inactive_session_ids_;
 
-  // Tracks the sessions that are currently dragged out of the dialog. These
-  // should not be shown in the dialog and will be ignored for showing the
-  // toolbar icon.
-  std::set<std::string> dragged_out_session_ids_;
-
   // Connections with the media session service to listen for audio focus
   // updates and control media sessions.
   mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote_;
@@ -275,12 +262,10 @@ class MediaSessionNotificationProducer
   mojo::Receiver<media_session::mojom::AudioFocusObserver>
       audio_focus_observer_receiver_{this};
 
-  MediaNotificationService* const service_;
+  global_media_controls::MediaItemManager* const item_manager_;
 
-  // Keeps track of all the containers we're currently observing.
-  MediaNotificationContainerObserverSet container_observer_set_;
-
-  OverlayMediaNotificationsManagerImpl overlay_media_notifications_manager_;
+  // Keeps track of all the items we're currently observing.
+  global_media_controls::MediaItemUIObserverSet item_ui_observer_set_;
 
   // Stores a Session for each media session keyed by its |request_id| in string
   // format.

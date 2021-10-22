@@ -50,17 +50,17 @@ class ChromeMetricsServiceClientTest : public testing::Test {
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
         enabled_state_provider_(false /* consent */, false /* enabled */) {}
 
+  ChromeMetricsServiceClientTest(const ChromeMetricsServiceClientTest&) =
+      delete;
+  ChromeMetricsServiceClientTest& operator=(
+      const ChromeMetricsServiceClientTest&) = delete;
+
   void SetUp() override {
     testing::Test::SetUp();
     metrics::MetricsService::RegisterPrefs(prefs_.registry());
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
-        &prefs_, &enabled_state_provider_, std::wstring(), base::FilePath(),
-        base::BindRepeating(
-            &ChromeMetricsServiceClientTest::FakeStoreClientInfoBackup,
-            base::Unretained(this)),
-        base::BindRepeating(
-            &ChromeMetricsServiceClientTest::LoadFakeClientInfoBackup,
-            base::Unretained(this)));
+        &prefs_, &enabled_state_provider_, std::wstring(), base::FilePath());
+    metrics_state_manager_->InstantiateFieldTrialList();
     ASSERT_TRUE(profile_manager_.SetUp());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     scoped_feature_list_.InitAndEnableFeature(features::kUmaStorageDimensions);
@@ -83,12 +83,6 @@ class ChromeMetricsServiceClientTest : public testing::Test {
   }
 
  protected:
-  void FakeStoreClientInfoBackup(const metrics::ClientInfo& client_info) {}
-
-  std::unique_ptr<metrics::ClientInfo> LoadFakeClientInfoBackup() {
-    return std::make_unique<metrics::ClientInfo>();
-  }
-
   content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   TestingProfileManager profile_manager_;
@@ -96,9 +90,6 @@ class ChromeMetricsServiceClientTest : public testing::Test {
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
   metrics::TestEnabledStateProvider enabled_state_provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ChromeMetricsServiceClientTest);
 };
 
 namespace {

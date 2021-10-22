@@ -16,9 +16,10 @@
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
-#import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
+#import "ios/chrome/browser/ui/authentication/enterprise/user_policy_signout/user_policy_signout_coordinator.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_policy_signout_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
@@ -65,10 +66,6 @@
     UserPolicySignoutCoordinator* policySignoutPromptCoordinator;
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
-
-// YES if it is in forced signin mode.
-// TODO(crbug.com/1242418): Handle the policy dynamic changes.
-@property(nonatomic, assign) BOOL forcedSignin;
 
 @end
 
@@ -118,7 +115,8 @@
 
   self.viewController = [[SigninScreenViewController alloc] init];
   self.viewController.delegate = self;
-  self.viewController.forcedSignin = self.forcedSignin;
+  self.viewController.enterpriseSignInRestrictions =
+      GetEnterpriseSignInRestrictions();
 
   self.accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(
@@ -136,9 +134,7 @@
   BOOL animated = self.baseNavigationController.topViewController != nil;
   [self.baseNavigationController setViewControllers:@[ self.viewController ]
                                            animated:animated];
-  if (@available(iOS 13, *)) {
-    self.viewController.modalInPresentation = YES;
-  }
+  self.viewController.modalInPresentation = YES;
 
   base::UmaHistogramEnumeration("FirstRun.Stage",
                                 first_run::kSignInScreenStart);

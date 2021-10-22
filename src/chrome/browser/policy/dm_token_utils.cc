@@ -16,6 +16,9 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "components/user_manager/user.h"
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#include "components/policy/core/common/policy_loader_lacros.h"
 #else
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -35,7 +38,7 @@ DMToken* GetTestingDMTokenStorage() {
 
 }  // namespace
 
-DMToken GetDMToken(Profile* const profile, bool only_affiliated) {
+DMToken GetDMToken(Profile* const profile) {
   DMToken dm_token = *GetTestingDMTokenStorage();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -59,12 +62,31 @@ DMToken GetDMToken(Profile* const profile, bool only_affiliated) {
     policy_manager = profile->GetUserCloudPolicyManagerAsh();
   }
 
-  if (dm_token.is_empty() && (user->IsAffiliated() || !only_affiliated) &&
-      policy_manager && policy_manager->IsClientRegistered()) {
+  if (dm_token.is_empty() && policy_manager &&
+      policy_manager->IsClientRegistered()) {
     dm_token = DMToken(DMToken::Status::kValid,
                        policy_manager->core()->client()->dm_token());
   }
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (!profile)
+    return dm_token;
 
+  if (profile->IsMainProfile()) {
+    const enterprise_management::PolicyData* policy =
+        policy::PolicyLoaderLacros::main_user_policy_data();
+    if (dm_token.is_empty() && policy && policy->has_request_token() &&
+        !policy->request_token().empty()) {
+      dm_token = DMToken(DMToken::Status::kValid, policy->request_token());
+    }
+  } else {
+    UserCloudPolicyManager* policy_manager =
+        profile->GetUserCloudPolicyManager();
+    if (dm_token.is_empty() && policy_manager &&
+        policy_manager->IsClientRegistered()) {
+      dm_token = DMToken(DMToken::Status::kValid,
+                         policy_manager->core()->client()->dm_token());
+    }
+  }
 #elif !defined(OS_ANDROID)
   if (dm_token.is_empty() &&
       ChromeBrowserCloudManagementController::IsEnabled()) {

@@ -22,6 +22,7 @@
 #include "base/threading/platform_thread_internal_posix.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_id_name_manager.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
 #if !defined(OS_APPLE) && !defined(OS_FUCHSIA) && !defined(OS_NACL)
@@ -69,7 +70,7 @@ void* ThreadFunc(void* params) {
 
     delegate = thread_params->delegate;
     if (!thread_params->joinable)
-      base::ThreadRestrictions::SetSingletonAllowed(false);
+      base::DisallowSingleton();
 
 #if !defined(OS_NACL)
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -250,7 +251,7 @@ void PlatformThread::Sleep(TimeDelta duration) {
   // NOTE: TimeDelta's microseconds are int64s while timespec's
   // nanoseconds are longs, so this unpacking must prevent overflow.
   sleep_time.tv_sec = duration.InSeconds();
-  duration -= TimeDelta::FromSeconds(sleep_time.tv_sec);
+  duration -= Seconds(sleep_time.tv_sec);
   sleep_time.tv_nsec = duration.InMicroseconds() * 1000;  // nanoseconds
 
   while (nanosleep(&sleep_time, &remaining) == -1 && errno == EINTR)

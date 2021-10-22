@@ -133,6 +133,10 @@ void ReportPartitionAllocStats(ProcessMemoryDump* pmd,
   auto& nonscannable_allocator = internal::NonScannableAllocator::Instance();
   if (auto* root = nonscannable_allocator.root())
     root->DumpStats("nonscannable", is_light_dump, &partition_stats_dumper);
+  auto& nonquarantinable_allocator =
+      internal::NonQuarantinableAllocator::Instance();
+  if (auto* root = nonquarantinable_allocator.root())
+    root->DumpStats("nonquarantinable", is_light_dump, &partition_stats_dumper);
 
   *total_virtual_size += partition_stats_dumper.total_resident_bytes();
   *resident_size += partition_stats_dumper.total_resident_bytes();
@@ -312,6 +316,18 @@ void MemoryDumpPartitionStatsDumper::PartitionDumpTotals(
                             memory_stats->total_decommittable_bytes);
   allocator_dump->AddScalar("discardable_size", "bytes",
                             memory_stats->total_discardable_bytes);
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  allocator_dump->AddScalar("brp_quarantined_size", "bytes",
+                            memory_stats->total_brp_quarantined_bytes);
+  allocator_dump->AddScalar("brp_quarantined_count", "count",
+                            memory_stats->total_brp_quarantined_count);
+#endif
+
+  allocator_dump->AddScalar("syscall_count", "count",
+                            memory_stats->syscall_count);
+  allocator_dump->AddScalar("syscall_total_time_ms", "ms",
+                            memory_stats->syscall_total_time_ns / 1e6);
+
   if (memory_stats->has_thread_cache) {
     const auto& thread_cache_stats = memory_stats->current_thread_cache_stats;
     auto* thread_cache_dump = memory_dump_->CreateAllocatorDump(
@@ -337,7 +353,8 @@ void MemoryDumpPartitionStatsDumper::PartitionsDumpBucketStats(
   if (memory_stats->is_direct_map) {
     dump_name.append(base::StringPrintf("/buckets/directMap_%" PRIu64, ++uid_));
   } else {
-    dump_name.append(base::StringPrintf("/buckets/bucket_%" PRIu32,
+    // Normal buckets go up to ~1MiB, 7 digits.
+    dump_name.append(base::StringPrintf("/buckets/bucket_%07" PRIu32,
                                         memory_stats->bucket_slot_size));
   }
 
@@ -406,8 +423,10 @@ void ReportPartitionAllocThreadCacheStats(ProcessMemoryDump* pmd,
         size_t bucket_size = lookup.bucket_sizes()[i];
         if (bucket_size == kInvalidBucketSize)
           continue;
-        std::string dump_name = base::StringPrintf(
-            "%s/buckets_alloc/%d", name.c_str(), static_cast<int>(bucket_size));
+        // Covers all normal buckets, that is up to ~1MiB, so 7 digits.
+        std::string dump_name =
+            base::StringPrintf("%s/buckets_alloc/%07d", name.c_str(),
+                               static_cast<int>(bucket_size));
         auto* buckets_alloc_dump = pmd->CreateAllocatorDump(dump_name);
         buckets_alloc_dump->AddScalar("count", "objects",
                                       stats.allocs_per_bucket_[i]);

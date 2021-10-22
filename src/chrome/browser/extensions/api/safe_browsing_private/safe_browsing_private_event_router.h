@@ -88,6 +88,7 @@ class SafeBrowsingPrivateEventRouter
   static const char kKeyScanId[];
   static const char kKeyIsFederated[];
   static const char kKeyFederatedOrigin[];
+  static const char kKeyLoginUserName[];
   static const char kKeyPasswordBreachIdentities[];
   static const char kKeyPasswordBreachIdentitiesUrl[];
   static const char kKeyPasswordBreachIdentitiesUsername[];
@@ -111,6 +112,11 @@ class SafeBrowsingPrivateEventRouter
   static const char kTriggerWebContentUpload[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
+
+  SafeBrowsingPrivateEventRouter(const SafeBrowsingPrivateEventRouter&) =
+      delete;
+  SafeBrowsingPrivateEventRouter& operator=(
+      const SafeBrowsingPrivateEventRouter&) = delete;
 
   ~SafeBrowsingPrivateEventRouter() override;
 
@@ -224,11 +230,12 @@ class SafeBrowsingPrivateEventRouter
 
   void OnLoginEvent(const GURL& url,
                     bool is_federated,
-                    const url::Origin& federated_origin);
+                    const url::Origin& federated_origin,
+                    const std::u16string& username);
 
   void OnPasswordBreach(
       const std::string& trigger,
-      const std::vector<std::pair<GURL, std::string>>& identities);
+      const std::vector<std::pair<GURL, std::u16string>>& identities);
 
   // Returns true if enterprise real-time reporting should be initialized,
   // checking both the feature flag. This function is public so that it can
@@ -358,7 +365,6 @@ class SafeBrowsingPrivateEventRouter
       rejected_dm_token_timers_;
 
   base::WeakPtrFactory<SafeBrowsingPrivateEventRouter> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);
 };
 
 }  // namespace extensions

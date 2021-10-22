@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -23,6 +24,7 @@
 #include "third_party/blink/renderer/modules/storage/testing/fake_area_source.h"
 #include "third_party/blink/renderer/modules/storage/testing/mock_storage_area.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -36,14 +38,16 @@ class MockDomStorage : public mojom::blink::DomStorage {
  public:
   // mojom::blink::DomStorage implementation:
   void OpenLocalStorage(
-      const scoped_refptr<const SecurityOrigin>& origin,
+      const blink::BlinkStorageKey& storage_key,
+      const blink::LocalFrameToken& local_frame_token,
       mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
   void BindSessionStorageNamespace(
       const String& namespace_id,
       mojo::PendingReceiver<mojom::blink::SessionStorageNamespace> receiver)
       override {}
   void BindSessionStorageArea(
-      const scoped_refptr<const SecurityOrigin>& origin,
+      const blink::BlinkStorageKey& storage_key,
+      const blink::LocalFrameToken& local_frame_token,
       const String& namespace_id,
       mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {
     session_storage_opens++;

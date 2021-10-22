@@ -91,10 +91,11 @@ const char kUkmEnabled[] = "weblayer.ukm_enabled";
 class ResourceContextImpl : public content::ResourceContext {
  public:
   ResourceContextImpl() = default;
-  ~ResourceContextImpl() override = default;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ResourceContextImpl);
+  ResourceContextImpl(const ResourceContextImpl&) = delete;
+  ResourceContextImpl& operator=(const ResourceContextImpl&) = delete;
+
+  ~ResourceContextImpl() override = default;
 };
 
 BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
@@ -152,12 +153,10 @@ base::FilePath BrowserContextImpl::GetDefaultDownloadDirectory() {
   return download_dir;
 }
 
-#if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 BrowserContextImpl::CreateZoomLevelDelegate(const base::FilePath&) {
   return nullptr;
 }
-#endif  // !defined(OS_ANDROID)
 
 base::FilePath BrowserContextImpl::GetPath() {
   return path_;

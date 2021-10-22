@@ -44,7 +44,6 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
@@ -100,12 +99,10 @@ constexpr uint32_t ResourceFetcher::kKeepaliveInflightBytesQuota;
 
 namespace {
 
-constexpr base::TimeDelta kKeepaliveLoadersTimeout =
-    base::TimeDelta::FromSeconds(30);
+constexpr base::TimeDelta kKeepaliveLoadersTimeout = base::Seconds(30);
 
 // Timeout for link preloads to be used after window.onload
-static constexpr base::TimeDelta kUnusedPreloadTimeout =
-    base::TimeDelta::FromSeconds(3);
+static constexpr base::TimeDelta kUnusedPreloadTimeout = base::Seconds(3);
 
 #define RESOURCE_HISTOGRAM_PREFIX "Blink.MemoryCache.RevalidationPolicy."
 
@@ -210,30 +207,23 @@ ResourceLoadPriority AdjustPriorityWithPriorityHint(
     case mojom::FetchImportanceMode::kImportanceAuto:
       break;
     case mojom::FetchImportanceMode::kImportanceHigh:
-      // Boost priority of
-      // - Late and async scripts
-      // - Images
-      // - Prefetch
-      if ((type == ResourceType::kScript &&
-           (FetchParameters::kLazyLoad == defer_option)) ||
-          type == ResourceType::kImage || type == ResourceType::kLinkPrefetch) {
+      // Boost priority of any request type that supports priority hints.
+      if (new_priority < ResourceLoadPriority::kHigh) {
         new_priority = ResourceLoadPriority::kHigh;
       }
-
       DCHECK_LE(priority_so_far, new_priority);
       break;
     case mojom::FetchImportanceMode::kImportanceLow:
-      // Demote priority of:
-      // - Images
-      //     Note: this will only have a real effect on in-viewport images since
-      //     out-of-viewport images already have priority set to kLow
-      // - Link preloads
-      //     For this initial implementation we do a blanket demotion regardless
-      //     of `as` value/type.
-      if (type == ResourceType::kImage ||
-          resource_request.GetRequestContext() ==
-              mojom::blink::RequestContextType::FETCH ||
-          is_link_preload) {
+      // Demote priority of any request type that supports priority hints.
+      // Most content types go to kLow. The one exception is early
+      // render-blocking CSS which defaults to the highest priority but
+      // can be lowered to match the "high" priority of everything else
+      // to allow for ordering if necessary without causing too much of a
+      // foot-gun.
+      if (type == ResourceType::kCSSStyleSheet &&
+          new_priority == ResourceLoadPriority::kVeryHigh) {
+        new_priority = ResourceLoadPriority::kHigh;
+      } else if (new_priority > ResourceLoadPriority::kLow) {
         new_priority = ResourceLoadPriority::kLow;
       }
 
@@ -1017,7 +1007,7 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER_THREAD_SAFE(
       "Blink.Fetch.RequestResourceTime");
   TRACE_EVENT1("blink,blink.resource", "ResourceFetcher::requestResource",
-               "url", params.Url().GetString().Utf8());
+               "url", params.Url().ElidedString().Utf8());
 
   // |resource_request|'s origin can be null here, corresponding to the "client"
   // value in the spec. In that case client's origin is used.
@@ -1152,7 +1142,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
         PriorityObservers()->Contains(resource_url)) {
       // Resolve the promise.
       std::move(PriorityObservers()->Take(resource_url))
-          .Run(static_cast<int>(resource->GetResourceRequest().Priority()));
+          .Run(static_cast<int>(
+              resource->GetResourceRequest().InitialPriority()));
     }
   }
 

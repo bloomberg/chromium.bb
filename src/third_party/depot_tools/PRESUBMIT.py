@@ -91,14 +91,15 @@ def CommonChecks(input_api, output_api, tests_to_skip_list):
   test_to_run_list = [r'.*test\.py$']
   if input_api.platform.startswith(('cygwin', 'win32')):
     print('Warning: skipping most unit tests on Windows')
-    tests_to_skip_list = [
+    tests_to_skip_list.extend([
         r'.*auth_test\.py$',
         r'.*git_common_test\.py$',
         r'.*git_hyper_blame_test\.py$',
         r'.*git_map_test\.py$',
         r'.*ninjalog_uploader_test\.py$',
         r'.*recipes_test\.py$',
-    ]
+    ])
+  tests_to_skip_list.append(r'.*my_activity_test\.py')
 
   # TODO(maruel): Make sure at least one file is modified first.
   # TODO(maruel): If only tests are modified, only run them.
@@ -110,6 +111,13 @@ def CommonChecks(input_api, output_api, tests_to_skip_list):
       files_to_check=test_to_run_list,
       files_to_skip=tests_to_skip_list,
       run_on_python3=False))
+
+  tests.extend(input_api.canned_checks.GetUnitTestsInDirectory(
+      input_api,
+      output_api,
+      'tests',
+      files_to_check=[r'.*my_activity_test\.py'],
+      run_on_python3=True))
 
   # Validate CIPD manifests.
   root = input_api.os_path.normpath(

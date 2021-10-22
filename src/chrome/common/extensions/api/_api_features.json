@@ -228,6 +228,7 @@
       "chrome://mobilesetup/*",
       "chrome://oobe/*",
       "chrome://os-settings/*",
+      "chrome://parent-access/*",
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
@@ -666,7 +667,12 @@
   }],
   "permissions": {
     "channel": "stable",
-    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "extension_types": [
+      "extension",
+      "legacy_packaged_app",
+      "platform_app",
+      "chromeos_system_extension"
+    ],
     "contexts": ["blessed_extension"]
   },
   "platformKeys": {
@@ -742,22 +748,6 @@
     "dependencies": ["permission:scripting"],
     "contexts": ["blessed_extension"]
   },
-  "scripting.registerContentScripts": {
-    "channel": "trunk",
-    "min_manifest_version": 3
-  },
-  "scripting.getRegisteredContentScripts": {
-    "channel": "trunk",
-    "min_manifest_version": 3
-  },
-  "scripting.unregisterContentScripts": {
-    "channel": "trunk",
-    "min_manifest_version": 3
-  },
-  "scripting.updateContentScripts": {
-    "channel": "trunk",
-    "min_manifest_version": 3
-  },
   "search": {
     "dependencies": ["permission:search"],
     "contexts": ["blessed_extension"]
@@ -779,6 +769,10 @@
   }],
   "signedInDevices": {
     "dependencies": ["permission:signedInDevices"],
+    "contexts": ["blessed_extension"]
+  },
+  "speechRecognitionPrivate": {
+    "dependencies": ["permission:speechRecognitionPrivate"],
     "contexts": ["blessed_extension"]
   },
   "systemIndicator": {

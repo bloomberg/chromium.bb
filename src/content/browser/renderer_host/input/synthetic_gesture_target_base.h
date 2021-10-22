@@ -31,6 +31,11 @@ class CONTENT_EXPORT SyntheticGestureTargetBase :
     public SyntheticGestureTarget {
  public:
   explicit SyntheticGestureTargetBase(RenderWidgetHostImpl* host);
+
+  SyntheticGestureTargetBase(const SyntheticGestureTargetBase&) = delete;
+  SyntheticGestureTargetBase& operator=(const SyntheticGestureTargetBase&) =
+      delete;
+
   ~SyntheticGestureTargetBase() override;
 
   virtual void DispatchWebTouchEventToPlatform(
@@ -69,8 +74,6 @@ class CONTENT_EXPORT SyntheticGestureTargetBase :
   bool PointIsWithinContents(gfx::PointF point) const;
 
   RenderWidgetHostImpl* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetBase);
 };
 
 }  // namespace content

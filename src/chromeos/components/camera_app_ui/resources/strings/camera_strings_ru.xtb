@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1113173431709655881">Режим камеры</translation>
 <translation id="1175958423215084756">Обнаружена ссылка <ph name="HOSTNAME" />.</translation>
 <translation id="1276998909102132017">Изображения в галерее</translation>
 <translation id="1300209025925956156">Сканирование документа</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244">Отключено устройство <ph name="CAMERA" />.</translation>
 <translation id="1473110567575736769">Таймер на 3 сек.</translation>
 <translation id="1545749641540134597">Сканирование QR-кода</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">Обычный</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Ничего не записано.</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">Искать</translation>
 <translation id="2549985041256363841">Начать запись</translation>
 <translation id="2599796128805996109">Основная камера</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" />/<ph name="MAXIMAL" /> сек.</translation>
+<translation id="2761536921376153655">Тип сканирования</translation>
 <translation id="2879583609344924966">Подключено устройство <ph name="CAMERA" />.</translation>
 <translation id="2968794441791257519">Фотографии и видео, полученные с камеры, будут перемещены в папку скачанных файлов. Вы также сможете найти их в папке "Файлы".
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">Перейти в галерею</translation>
 <translation id="520537883758714667">Доступно сканирование документов.</translation>
 <translation id="5268823927180092501">Включить режим документа на всех камерах</translation>
+<translation id="5317780077021120954">Сохранить</translation>
 <translation id="5444515100983837161">Расположите документ внутри рамки. Для повышения качества отсканированного изображения цвета документа и фона должны различаться.</translation>
 <translation id="5671277269877808209">Квадрат</translation>
 <translation id="5746169159649715125">Сохранить как PDF</translation>
@@ -86,6 +92,7 @@
 
 Если ваш отзыв касается качества фото или видео, прикрепите файл с примером проблемы (например, слишком темный или размытый снимок).</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> Мп</translation>
+<translation id="6527303717912515753">Поделиться</translation>
 <translation id="667999046851023355">Документ</translation>
 <translation id="6681668084120808868">Сфотографировать</translation>
 <translation id="6778482348691154169">Не удалось сделать снимок</translation>
@@ -94,15 +101,19 @@
 <translation id="698156982839284926">3 секунды</translation>
 <translation id="712848772518857951">Удалить выбранные файлы (<ph name="COUNT" />)?</translation>
 <translation id="7134221860976209830">Таймер на 10 сек.</translation>
+<translation id="7191890674911603392">Тип записи</translation>
 <translation id="7243947652761655814">Разрешение видео</translation>
 <translation id="7337660886763914220">Ошибки файловой системы.</translation>
 <translation id="7450541714075000668">Текст скопирован.</translation>
+<translation id="7476762461674917065">Показывать функцию записи в формате GIF</translation>
+<translation id="7488619942230388918">Записать видео в формате GIF</translation>
 <translation id="7557677699350329807">Переключиться на следующую камеру</translation>
 <translation id="7607002721634913082">Приостановлен</translation>
 <translation id="7608223098072244877">4 на 4</translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7670511624014457267">60 кадров/с</translation>
+<translation id="7726641833034062494">Записать обычное видео</translation>
 <translation id="7983668134180549431">Обнаружен текст.</translation>
 <translation id="8067883171444229417">Смотреть видео</translation>
 <translation id="8120146556401698679">Панорамирование, изменение ракурса, масштабирование</translation>

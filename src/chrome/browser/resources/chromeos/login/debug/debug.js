@@ -206,6 +206,20 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'os-install',
       kind: ScreenKind.OTHER,
+      handledSteps: 'success',
+      states: [
+        {
+          id: 'success',
+          trigger: (screen) => {
+            screen.updateCountdownString('60 seconds');
+            screen.showStep('success');
+          },
+        },
+      ],
+    },
+    {
+      id: 'os-trial',
+      kind: ScreenKind.OTHER,
     },
     {
       id: 'debugging',
@@ -874,6 +888,123 @@ cr.define('cr.ui.login.debug', function() {
       }]
     },
     {
+      id: 'consolidated-consent',
+      kind: ScreenKind.NORMAL,
+      handledSteps: 'loaded,loading,error,eula,additional,arc,privacy',
+      // TODO(crbug.com/1247174): Use localized URLs for eulaUrl and
+      // additionalTosUrl.
+      states: [
+        {
+          id: 'regular',
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            eulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            additionalTosUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'child',
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: true,
+            eulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            additionalTosUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'demo-mode',
+          data: {
+            isArcEnabled: true,
+            isDemo: true,
+            isChildAccount: false,
+            eulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            additionalTosUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'arc-disabled',
+          data: {
+            isArcEnabled: false,
+            isDemo: false,
+            isChildAccount: false,
+            eulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            additionalTosUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.setUIStep('error');
+          },
+          data: {
+            isArcEnabled: true,
+            isDemo: false,
+            isChildAccount: false,
+            eulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            additionalTosUrl: 'https://www.google.com/intl/en/chrome/terms/',
+            countryCode: 'us',
+          },
+        },
+
+      ]
+    },
+    {
+      id: 'guest-tos',
+      kind: ScreenKind.NORMAL,
+      handledSteps: 'loading,loaded,google-eula,cros-eula',
+      // TODO(crbug.com/1247174): Use localized URLs for googleEulaURL and
+      // crosEulaURL.
+      states: [
+        {
+          id: 'loaded',
+          trigger: (screen) => {
+            screen.setUIStep('loaded');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+        {
+          id: 'loading',
+          trigger: (screen) => {
+            screen.setUIStep('loading');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+        {
+          id: 'google-eula',
+          trigger: (screen) => {
+            screen.setUIStep('google-eula');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+        {
+          id: 'cros-eula',
+          trigger: (screen) => {
+            screen.setUIStep('cros-eula');
+          },
+          data: {
+            googleEulaUrl: 'https://policies.google.com/terms/embedded?hl=en',
+            crosEulaUrl: 'https://www.google.com/intl/en/chrome/terms/',
+          },
+        },
+      ]
+    },
+    {
       id: 'fingerprint-setup',
       kind: ScreenKind.NORMAL,
       defaultState: 'default',
@@ -977,20 +1108,6 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'app-downloading',
       kind: ScreenKind.NORMAL,
-      states: [
-        {
-          id: 'single-app',
-          data: {
-            numOfApps: 1,
-          },
-        },
-        {
-          id: 'multiple-apps',
-          data: {
-            numOfApps: 2,
-          },
-        },
-      ],
     },
     {
       id: 'assistant-optin-flow',

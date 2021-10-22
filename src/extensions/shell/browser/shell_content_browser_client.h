@@ -45,6 +45,11 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
   explicit ShellContentBrowserClient(
       ShellBrowserMainDelegate* browser_main_delegate);
+
+  ShellContentBrowserClient(const ShellContentBrowserClient&) = delete;
+  ShellContentBrowserClient& operator=(const ShellContentBrowserClient&) =
+      delete;
+
   ~ShellContentBrowserClient() override;
 
   // Returns the single instance.
@@ -120,6 +125,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       int frame_tree_node_id,
       content::NavigationUIData* navigation_data,
       bool is_main_frame,
+      network::mojom::WebSandboxFlags sandbox_flags,
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const absl::optional<url::Origin>& initiating_origin,
@@ -151,8 +157,6 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
   // Owned by ShellBrowserMainParts.
   ShellBrowserMainDelegate* browser_main_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);
 };
 
 }  // namespace extensions

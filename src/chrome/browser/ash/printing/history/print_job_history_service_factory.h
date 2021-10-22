@@ -17,7 +17,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace chromeos {
+namespace ash {
 
 class PrintJobHistoryService;
 
@@ -32,6 +32,10 @@ class PrintJobHistoryServiceFactory : public BrowserContextKeyedServiceFactory {
 
   static PrintJobHistoryServiceFactory* GetInstance();
 
+  PrintJobHistoryServiceFactory(const PrintJobHistoryServiceFactory&) = delete;
+  PrintJobHistoryServiceFactory& operator=(
+      const PrintJobHistoryServiceFactory&) = delete;
+
  private:
   friend struct base::DefaultSingletonTraits<PrintJobHistoryServiceFactory>;
 
@@ -43,10 +47,13 @@ class PrintJobHistoryServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintJobHistoryServiceFactory);
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove when ChromeOS code migration is done.
+namespace chromeos {
+using ::ash::PrintJobHistoryServiceFactory;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_HISTORY_PRINT_JOB_HISTORY_SERVICE_FACTORY_H_

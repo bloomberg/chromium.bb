@@ -1043,7 +1043,6 @@ bool GLESImageApi::RenderReadPixelsRenderbuffer::invokeGLES (GLESImageApi& api, 
 		default:
 			// Skip, not in the list of allowed render buffer formats for GLES.
 			throw tcu::NotSupportedError("Image format not allowed for glReadPixels.");
-			break;
 	}
 
 	const glw::Functions&	gl				= api.m_gl;
@@ -1318,6 +1317,12 @@ void ImageFormatCase::init (void)
 	try
 	{
 		m_display	= eglu::getAndInitDisplay(m_eglTestCtx.getNativeDisplay());
+
+		if (m_spec.contexts[0] == TestSpec::API_GLES3 && eglu::getVersion(egl, m_display) < eglu::Version(1, 5))
+		{
+			TCU_THROW(NotSupportedError, "EGL 1.5 or higher is required for tests using GLES3");
+		}
+
 		m_config	= getConfig();
 		m_window	= windowFactory.createWindow(&m_eglTestCtx.getNativeDisplay(), m_display, m_config, DE_NULL, eglu::WindowParams(480, 480, eglu::parseWindowVisibility(m_testCtx.getCommandLine())));
 		m_surface	= eglu::createWindowSurface(m_eglTestCtx.getNativeDisplay(), *m_window, m_display, m_config, DE_NULL);
@@ -1792,7 +1797,7 @@ bool isCompatibleFormats (GLenum createFormat, GLenum modifyFormat, GLenum modif
 				default:
 					DE_FATAL("Unknown modify type");
 					return false;
-			};
+			}
 
 		default:
 			DE_FATAL("Unknown modify format");

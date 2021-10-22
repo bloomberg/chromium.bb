@@ -26,6 +26,7 @@ class ScopedWindowTargeter;
 
 namespace ui {
 class DeskExtension;
+class PinnedModeExtension;
 class X11Extension;
 class WaylandExtension;
 }  // namespace ui
@@ -42,6 +43,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   DesktopWindowTreeHostLinux(
       internal::NativeWidgetDelegate* native_widget_delegate,
       DesktopNativeWidgetAura* desktop_native_widget_aura);
+
+  DesktopWindowTreeHostLinux(const DesktopWindowTreeHostLinux&) = delete;
+  DesktopWindowTreeHostLinux& operator=(const DesktopWindowTreeHostLinux&) =
+      delete;
+
   ~DesktopWindowTreeHostLinux() override;
 
   // Get all open top-level windows. This includes windows that may not be
@@ -78,13 +84,15 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   ui::DeskExtension* GetDeskExtension();
   const ui::DeskExtension* GetDeskExtension() const;
 
+  ui::PinnedModeExtension* GetPinnedModeExtension();
+  const ui::PinnedModeExtension* GetPinnedModeExtension() const;
+
   void set_screen_bounds(const gfx::Rect& bounds) { screen_bounds_ = bounds; }
 
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
-  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void InitModalType(ui::ModalType modal_type) override;
   Widget::MoveLoopResult RunMoveLoop(
       const gfx::Vector2d& drag_offset,
@@ -153,8 +161,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostLinux> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };
 
 }  // namespace views

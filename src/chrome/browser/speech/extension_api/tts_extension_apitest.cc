@@ -11,20 +11,23 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -198,7 +201,7 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
           base::BindOnce(&MockTtsPlatformImpl::SendEvent,
                          ptr_factory_.GetWeakPtr(), true, utterance_id,
                          event_type, char_index, length, message),
-          base::TimeDelta::FromMilliseconds(100));
+          base::Milliseconds(100));
       return;
     }
 
@@ -219,6 +222,11 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
 class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {
  public:
   explicit FakeNetworkOnlineStateForTest(bool online) : online_(online) {}
+
+  FakeNetworkOnlineStateForTest(const FakeNetworkOnlineStateForTest&) = delete;
+  FakeNetworkOnlineStateForTest& operator=(
+      const FakeNetworkOnlineStateForTest&) = delete;
+
   ~FakeNetworkOnlineStateForTest() override {}
 
   ConnectionType GetCurrentConnectionType() const override {
@@ -229,7 +237,6 @@ class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {
 
  private:
   bool online_;
-  DISALLOW_COPY_AND_ASSIGN(FakeNetworkOnlineStateForTest);
 };
 
 class EventRouterAddListenerWaiter : public EventRouter::Observer {
@@ -239,6 +246,10 @@ class EventRouterAddListenerWaiter : public EventRouter::Observer {
     DCHECK(profile);
     event_router_->RegisterObserver(this, event_name);
   }
+
+  EventRouterAddListenerWaiter(const EventRouterAddListenerWaiter&) = delete;
+  EventRouterAddListenerWaiter& operator=(const EventRouterAddListenerWaiter&) =
+      delete;
 
   ~EventRouterAddListenerWaiter() override {
     event_router_->UnregisterObserver(this);
@@ -254,14 +265,13 @@ class EventRouterAddListenerWaiter : public EventRouter::Observer {
  private:
   EventRouter* const event_router_;
   base::RunLoop loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventRouterAddListenerWaiter);
 };
 
 class TtsApiTest : public ExtensionApiTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    content::TtsController::SkipAddNetworkChangeObserverForTests(true);
     content::TtsController* tts_controller =
         content::TtsController::GetInstance();
     tts_controller->SetTtsPlatform(&mock_platform_impl_);
@@ -270,15 +280,15 @@ class TtsApiTest : public ExtensionApiTest {
   }
 
   void AddNetworkSpeechSynthesisExtension() {
-    content::WindowedNotificationObserver observer(
-        NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
-        content::NotificationService::AllSources());
+    ExtensionHostTestHelper host_helper(profile());
+    host_helper.RestrictToType(mojom::ViewType::kExtensionBackgroundPage);
     ExtensionService* service =
         extensions::ExtensionSystem::Get(profile())->extension_service();
     service->component_loader()->AddNetworkSpeechSynthesisExtension();
-    observer.Wait();
+    const ExtensionHost* extension_host =
+        host_helper.WaitForDocumentElementAvailable();
     ASSERT_EQ(mojom::ManifestLocation::kComponent,
-              content::Source<const Extension>(observer.source())->location());
+              extension_host->extension()->location());
   }
 
  protected:

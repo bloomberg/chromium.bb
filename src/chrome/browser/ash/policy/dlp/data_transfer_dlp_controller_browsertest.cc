@@ -306,12 +306,9 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, BlockDestination) {
   EXPECT_EQ(std::u16string(), result3);
   ASSERT_TRUE(dlp_controller.ObserveWidget());
 
-  EXPECT_CALL(dlp_controller, OnWidgetClosing);
-
   SetClipboardText(kClipboardText116,
                    std::make_unique<ui::DataTransferEndpoint>(
                        url::Origin::Create(GURL(kExampleUrl))));
-  testing::Mock::VerifyAndClearExpectations(&helper);
 
   ui::DataTransferEndpoint data_dst4(url::Origin::Create(GURL(kMailUrl)));
   std::u16string result4;
@@ -459,11 +456,6 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBrowserTest, MAYBE_WarnDestination) {
 
   EXPECT_EQ(std::u16string(), result);
   ASSERT_TRUE(dlp_controller.ObserveWidget());
-
-  EXPECT_CALL(dlp_controller, OnWidgetClosing);
-  SetClipboardText(kClipboardText2, std::make_unique<ui::DataTransferEndpoint>(
-                                        url::Origin::Create(GURL(kDocsUrl))));
-  testing::Mock::VerifyAndClearExpectations(&dlp_controller);
 
   FlushMessageLoop();
 }
@@ -822,10 +814,13 @@ IN_PROC_BROWSER_TEST_F(DataTransferDlpBlinkBrowserTest, MAYBE_Reporting) {
               IsDlpPolicyEvent(CreateDlpPolicyEvent(
                   kMailUrl, "*", DlpRulesManager::Restriction::kClipboard,
                   DlpRulesManager::Level::kReport)));
+  // The histogram sum may not have any samples when the time difference is very
+  // small (almost 0), because UmaHistogramTimes requires the time difference to
+  // be >= 1.
   EXPECT_GE(
       histogram_tester.GetTotalSum(GetDlpHistogramPrefix() +
                                    dlp::kDataTransferReportingTimeDiffUMA),
-      1);
+      0);
 }
 
 }  // namespace policy

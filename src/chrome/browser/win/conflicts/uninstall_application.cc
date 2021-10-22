@@ -66,6 +66,9 @@ bool FindSearchBoxElement(IUIAutomation* automation,
 
 class UninstallAppController {
  public:
+  UninstallAppController(const UninstallAppController&) = delete;
+  UninstallAppController& operator=(const UninstallAppController&) = delete;
+
   // Launches the Apps & Features page, ensuring the |application_name| is
   // written into the search box.
   static void Launch(const std::wstring& application_name);
@@ -85,8 +88,6 @@ class UninstallAppController {
   std::unique_ptr<AutomationController> automation_controller_;
 
   base::WeakPtrFactory<UninstallAppController> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(UninstallAppController);
 };
 
 // static
@@ -134,6 +135,11 @@ class UninstallAppController::AutomationControllerDelegate
       scoped_refptr<base::SequencedTaskRunner> controller_runner,
       base::OnceClosure on_automation_finished,
       const std::wstring& application_name);
+
+  AutomationControllerDelegate(const AutomationControllerDelegate&) = delete;
+  AutomationControllerDelegate& operator=(const AutomationControllerDelegate&) =
+      delete;
+
   ~AutomationControllerDelegate() override;
 
   // AutomationController::Delegate:
@@ -157,8 +163,6 @@ class UninstallAppController::AutomationControllerDelegate
   mutable base::OnceClosure on_automation_finished_;
 
   const std::wstring application_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutomationControllerDelegate);
 };
 
 UninstallAppController::AutomationControllerDelegate::

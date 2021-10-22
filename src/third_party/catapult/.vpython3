@@ -31,7 +31,7 @@ python_version: "3.8"
 # //telemetry/telemetry/internal/util/external_modules.py
 wheel: <
   name: "infra/python/wheels/numpy/${vpython_platform}"
-  version: "version:1.19.5"
+  version: "version:1.20.3"
 >
 
 # Used by:
@@ -166,8 +166,8 @@ wheel: <
   version: "version:1.4.0"
 >
 wheel: <
-  name: "infra/python/wheels/pillow/linux-amd64_cp38_cp38"
-  version: "version:8.1.2"
+  name: "infra/python/wheels/pillow/${vpython_platform}"
+  version: "version:8.3.1"
 >
 
 # Used by:

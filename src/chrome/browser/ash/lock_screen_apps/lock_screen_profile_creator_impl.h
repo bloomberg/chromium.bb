@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/lock_screen_apps/lock_screen_profile_creator.h"
-#include "chrome/browser/chromeos/note_taking_helper.h"
+#include "chrome/browser/ash/note_taking_helper.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace base {
@@ -31,6 +31,11 @@ class LockScreenProfileCreatorImpl
   //     used to determine lock screen note taking availability.
   LockScreenProfileCreatorImpl(Profile* primary_profile,
                                const base::TickClock* tick_clock);
+
+  LockScreenProfileCreatorImpl(const LockScreenProfileCreatorImpl&) = delete;
+  LockScreenProfileCreatorImpl& operator=(const LockScreenProfileCreatorImpl&) =
+      delete;
+
   ~LockScreenProfileCreatorImpl() override;
 
   // chromeos::NoteTakingHelper::Observer:
@@ -65,8 +70,6 @@ class LockScreenProfileCreatorImpl
       note_taking_helper_observation_{this};
 
   base::WeakPtrFactory<LockScreenProfileCreatorImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LockScreenProfileCreatorImpl);
 };
 
 }  // namespace lock_screen_apps

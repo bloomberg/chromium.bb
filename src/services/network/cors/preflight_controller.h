@@ -23,6 +23,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+namespace net {
+class NetLogWithSource;
+}  // namespace net
+
 namespace network {
 
 class NetworkService;
@@ -59,8 +63,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       const absl::optional<std::string>& allow_credentials_header,
       mojom::CredentialsMode actual_credentials_mode,
       const url::Origin& origin);
+  // Checks errors for the currently experimental
+  // "Access-Control-Allow-External" header for testing.
+  static absl::optional<CorsErrorStatus> CheckExternalPreflightForTesting(
+      const absl::optional<std::string>& allow_external);
 
   explicit PreflightController(NetworkService* network_service);
+
+  PreflightController(const PreflightController&) = delete;
+  PreflightController& operator=(const PreflightController&) = delete;
+
   ~PreflightController();
 
   // Determines if a CORS-preflight request is needed, and checks the cache, or
@@ -76,7 +88,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory,
       const net::IsolationInfo& isolation_info,
-      mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer);
+      mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
+      const net::NetLogWithSource& net_log);
 
  private:
   class PreflightLoader;
@@ -94,8 +107,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       loaders_;
 
   NetworkService* const network_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreflightController);
 };
 
 }  // namespace cors

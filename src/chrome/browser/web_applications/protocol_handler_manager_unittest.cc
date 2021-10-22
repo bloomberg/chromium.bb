@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/web_applications/test/fake_web_app_protocol_handler_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
+#include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "content/public/common/custom_handlers/protocol_handler.h"
@@ -19,9 +20,9 @@ class ProtocolHandlerManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    test_registry_controller_ =
-        std::make_unique<TestWebAppRegistryController>();
-    test_registry_controller_->SetUp(profile());
+    fake_registry_controller_ =
+        std::make_unique<FakeWebAppRegistryController>();
+    fake_registry_controller_->SetUp(profile());
     protocol_handler_manager_ =
         std::make_unique<FakeWebAppProtocolHandlerManager>(profile());
 
@@ -30,37 +31,23 @@ class ProtocolHandlerManagerTest : public WebAppTest {
     controller().Init();
   }
 
-  std::unique_ptr<WebApp> CreateWebApp() {
-    const GURL app_url = GURL("https://example.com/path");
-    const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, app_url);
-
-    auto web_app = std::make_unique<WebApp>(app_id);
-    web_app->AddSource(Source::kSync);
-    web_app->SetDisplayMode(DisplayMode::kStandalone);
-    web_app->SetUserDisplayMode(DisplayMode::kStandalone);
-    web_app->SetName("Name");
-    web_app->SetStartUrl(app_url);
-
-    return web_app;
-  }
-
   FakeWebAppProtocolHandlerManager& protocol_handler_manager() {
     return *protocol_handler_manager_.get();
   }
 
-  TestWebAppRegistryController& controller() {
-    return *test_registry_controller_;
+  FakeWebAppRegistryController& controller() {
+    return *fake_registry_controller_;
   }
 
   WebAppRegistrar& app_registrar() { return controller().registrar(); }
 
  private:
-  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
+  std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
   std::unique_ptr<FakeWebAppProtocolHandlerManager> protocol_handler_manager_;
 };
 
 TEST_F(ProtocolHandlerManagerTest, TestGetHandlersFor) {
-  auto web_app = CreateWebApp();
+  auto web_app = test::CreateWebApp();
   const AppId app_id = web_app->app_id();
 
   controller().RegisterApp(std::move(web_app));

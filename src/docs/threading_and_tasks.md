@@ -546,13 +546,13 @@ To post a task that must run once after a delay expires, use
 ```cpp
 base::ThreadPool::PostDelayedTask(
   FROM_HERE, {base::TaskPriority::BEST_EFFORT}, base::BindOnce(&Task),
-  base::TimeDelta::FromHours(1));
+  base::Hours(1));
 
 scoped_refptr<base::SequencedTaskRunner> task_runner =
     base::ThreadPool::CreateSequencedTaskRunner(
         {base::TaskPriority::BEST_EFFORT});
 task_runner->PostDelayedTask(
-    FROM_HERE, base::BindOnce(&Task), base::TimeDelta::FromHours(1));
+    FROM_HERE, base::BindOnce(&Task), base::Hours(1));
 ```
 
 *** note
@@ -572,7 +572,7 @@ class A {
     // The timer is stopped automatically when it is deleted.
   }
   void StartDoingStuff() {
-    timer_.Start(FROM_HERE, TimeDelta::FromSeconds(1),
+    timer_.Start(FROM_HERE, Seconds(1),
                  this, &A::DoStuff);
   }
   void StopDoingStuff() {

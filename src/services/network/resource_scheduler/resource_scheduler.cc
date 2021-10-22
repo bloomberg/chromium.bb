@@ -141,17 +141,16 @@ base::TimeDelta GetQueuedRequestsDispatchPeriodicity() {
   // dispatch of the request by a significant amount.
   if (!base::FeatureList::IsEnabled(
           features::kProactivelyThrottleLowPriorityRequests)) {
-    return base::TimeDelta::FromSeconds(5);
+    return base::Seconds(5);
   }
 
   // Choosing 100 milliseconds as the checking interval ensurs that the
   // queue is not checked too frequently. The interval is also not too long, so
   // we do not expect too many requests to go on the network at the
   // same time.
-  return base::TimeDelta::FromMilliseconds(
-      base::GetFieldTrialParamByFeatureAsInt(
-          features::kProactivelyThrottleLowPriorityRequests,
-          "queued_requests_dispatch_periodicity_ms", 100));
+  return base::Milliseconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kProactivelyThrottleLowPriorityRequests,
+      "queued_requests_dispatch_periodicity_ms", 100));
 }
 
 struct ResourceScheduler::RequestPriorityParams {
@@ -259,6 +258,10 @@ class ResourceScheduler::ScheduledResourceRequestImpl
     DCHECK(!request_->GetUserData(kUserDataKey));
     request_->SetUserData(kUserDataKey, std::make_unique<UnownedPointer>(this));
   }
+
+  ScheduledResourceRequestImpl(const ScheduledResourceRequestImpl&) = delete;
+  ScheduledResourceRequestImpl& operator=(const ScheduledResourceRequestImpl&) =
+      delete;
 
   ~ScheduledResourceRequestImpl() override {
     if ((attributes_ & kAttributeLayoutBlocking) == kAttributeLayoutBlocking) {
@@ -371,8 +374,6 @@ class ResourceScheduler::ScheduledResourceRequestImpl
 
   base::WeakPtrFactory<ResourceScheduler::ScheduledResourceRequestImpl>
       weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ScheduledResourceRequestImpl);
 };
 
 const void* const
@@ -836,8 +837,7 @@ class ResourceScheduler::Client
               "ResourceScheduler.NonDelayableLastEndToNonDelayableStart."
               "NonDelayableNotInFlight",
               ticks_now - last_non_delayable_request_end_.value(),
-              base::TimeDelta::FromMilliseconds(10),
-              base::TimeDelta::FromMinutes(3), 50);
+              base::Milliseconds(10), base::Minutes(3), 50);
         }
       }
 
@@ -853,8 +853,7 @@ class ResourceScheduler::Client
         LOCAL_HISTOGRAM_CUSTOM_TIMES(
             "ResourceScheduler.NonDelayableLastEndToNonDelayableStart",
             ticks_now - last_non_delayable_request_end_.value(),
-            base::TimeDelta::FromMilliseconds(10),
-            base::TimeDelta::FromMinutes(3), 50);
+            base::Milliseconds(10), base::Minutes(3), 50);
       }
 
       // Record time since last non-delayable request start or end, whichever
@@ -1407,8 +1406,7 @@ class ResourceScheduler::Client
     LOCAL_HISTOGRAM_CUSTOM_TIMES(
         "ResourceScheduler.DelayableRequests."
         "WaitTimeToAvoidContentionWithNonDelayableRequest",
-        ideal_duration_to_wait, base::TimeDelta::FromMilliseconds(10),
-        base::TimeDelta::FromMinutes(3), 50);
+        ideal_duration_to_wait, base::Milliseconds(10), base::Minutes(3), 50);
   }
 
   RequestQueue pending_requests_;

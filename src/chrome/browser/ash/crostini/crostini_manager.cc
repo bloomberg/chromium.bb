@@ -44,13 +44,14 @@
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
+#include "chrome/browser/ash/scheduler_configuration_manager.h"
 #include "chrome/browser/ash/usb/cros_usb_detector.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/crostini/crostini_expired_container_warning_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -177,9 +178,8 @@ void EmitTimeInStageHistogram(base::TimeDelta duration,
       NOTREACHED();
       return;
   }
-  base::UmaHistogramCustomTimes(name, duration,
-                                base::TimeDelta::FromMilliseconds(10),
-                                base::TimeDelta::FromHours(6), 50);
+  base::UmaHistogramCustomTimes(name, duration, base::Milliseconds(10),
+                                base::Hours(6), 50);
 }
 
 }  // namespace
@@ -441,25 +441,22 @@ class CrostiniManager::CrostiniRestarter
 
   // TODO(crbug/1153210): Better numbers for timeouts once we have data.
   std::map<mojom::InstallerState, base::TimeDelta> stage_timeouts_ = {
-      {mojom::InstallerState::kStart, base::TimeDelta::FromMinutes(5)},
+      {mojom::InstallerState::kStart, base::Minutes(5)},
       {mojom::InstallerState::kInstallImageLoader,
-       base::TimeDelta::FromHours(6)},  // May need to download DLC or component
-      {mojom::InstallerState::kCreateDiskImage,
-       base::TimeDelta::FromMinutes(5)},
-      {mojom::InstallerState::kStartTerminaVm, base::TimeDelta::FromMinutes(5)},
-      {mojom::InstallerState::kStartLxd, base::TimeDelta::FromMinutes(5)},
+       base::Hours(6)},  // May need to download DLC or component
+      {mojom::InstallerState::kCreateDiskImage, base::Minutes(5)},
+      {mojom::InstallerState::kStartTerminaVm, base::Minutes(5)},
+      {mojom::InstallerState::kStartLxd, base::Minutes(5)},
       // While CreateContainer may need to download a file, we get progress
       // messages that reset the countdown.
-      {mojom::InstallerState::kCreateContainer,
-       base::TimeDelta::FromMinutes(5)},
-      {mojom::InstallerState::kSetupContainer, base::TimeDelta::FromMinutes(5)},
+      {mojom::InstallerState::kCreateContainer, base::Minutes(5)},
+      {mojom::InstallerState::kSetupContainer, base::Minutes(5)},
       // StartContainer might need to do a UID remapping, which in the worst
       // case can take a very long time.
-      {mojom::InstallerState::kStartContainer, base::TimeDelta::FromDays(5)},
+      {mojom::InstallerState::kStartContainer, base::Days(5)},
       // ConfigureContainer is special, it's not part of the restarter flow, so
       // it doesn't have a timeout.
-      {mojom::InstallerState::kConfigureContainer,
-       base::TimeDelta::FromHours(0)},
+      {mojom::InstallerState::kConfigureContainer, base::Hours(0)},
   };
 
   void StartStage(mojom::InstallerState stage) {
@@ -585,7 +582,7 @@ class CrostiniManager::CrostiniRestarter
     if (options_.start_vm_only) {
       Abort(base::BindOnce(&CrostiniManager::OnAbortRestartCrostini,
                            crostini_manager_->weak_ptr_factory_.GetWeakPtr(),
-                           restart_id_, base::DoNothing::Once()),
+                           restart_id_, base::DoNothing()),
             CrostiniResult::SUCCESS);
     }
     if (ReturnEarlyIfAborted()) {
@@ -3159,16 +3156,33 @@ void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
                                     CrostiniResult result) {
   auto range = restarters_by_container_.equal_range(restarter->container_id());
   std::vector<std::unique_ptr<CrostiniRestarter>> pending_restarters;
-  // Erase first, because restarter->RunCallback() may modify our maps.
+
+  // Erase first, because restarter->RunCallback() may modify our maps, and
+  // because the upgrade process will want to run more restarters.
   for (auto it = range.first; it != range.second; ++it) {
     CrostiniManager::RestartId restart_id = it->second;
     pending_restarters.emplace_back(std::move(restarters_by_id_[restart_id]));
     restarters_by_id_.erase(restart_id);
   }
   restarters_by_container_.erase(range.first, range.second);
-  for (const auto& pending_restarter : pending_restarters) {
-    pending_restarter->result_ = result;
-    pending_restarter->RunCallback(result);
+
+  std::vector<base::OnceClosure> callbacks;
+  for (auto&& restarter : pending_restarters) {
+    callbacks.push_back(base::BindOnce(
+        [](std::unique_ptr<CrostiniRestarter> restarter,
+           CrostiniResult result) {
+          restarter->result_ = result;
+          restarter->RunCallback(result);
+        },
+        std::move(restarter), result));
+  }
+
+  if (ShouldWarnAboutExpiredVersion(profile_, restarter->container_id())) {
+    CrostiniExpiredContainerWarningView::Show(profile_, std::move(callbacks));
+  } else {
+    for (auto&& callback : callbacks) {
+      std::move(callback).Run();
+    }
   }
 }
 
@@ -3431,10 +3445,12 @@ void CrostiniManager::OnUpgradeContainer(
     case vm_tools::cicerone::UpgradeContainerResponse::UNKNOWN:
     case vm_tools::cicerone::UpgradeContainerResponse::FAILED:
     default:
-      LOG(ERROR) << "Upgrade container failed. Failure reason "
-                 << response->failure_reason();
       result = CrostiniResult::UPGRADE_CONTAINER_FAILED;
       break;
+  }
+  if (!response->failure_reason().empty()) {
+    LOG(ERROR) << "Upgrade container failed. Failure reason: "
+               << response->failure_reason();
   }
   std::move(callback).Run(result);
 }
@@ -3548,8 +3564,7 @@ void CrostiniManager::DeallocateForwardedPortsCallback(
 }
 
 void CrostiniManager::EmitVmDiskTypeMetric(const std::string vm_name) {
-  if ((time_of_last_disk_type_metric_ + base::TimeDelta::FromHours(12)) >
-      base::Time::Now()) {
+  if ((time_of_last_disk_type_metric_ + base::Hours(12)) > base::Time::Now()) {
     // Only bother doing this once every 12 hours. We care about the number of
     // users in each histogram bucket, not the number of times restarted. We
     // do this 12-hourly instead of only at first launch since Crostini can

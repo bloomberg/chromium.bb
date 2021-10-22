@@ -34,8 +34,6 @@ std::ostream& operator<<(std::ostream& stream, WindowStateType state) {
       return stream << "kTrustedPinned";
     case WindowStateType::kPip:
       return stream << "kPip";
-    case WindowStateType::kFloating:
-      return stream << "kFloating";
   }
 
   NOTREACHED();
@@ -71,7 +69,6 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
     case WindowStateType::kPrimarySnapped:
     case WindowStateType::kAutoPositioned:
     case WindowStateType::kPip:
-    case WindowStateType::kFloating:
       return ui::SHOW_STATE_NORMAL;
 
     case WindowStateType::kMinimized:
@@ -89,14 +86,15 @@ ui::WindowShowState ToWindowShowState(WindowStateType type) {
   return ui::SHOW_STATE_DEFAULT;
 }
 
+bool IsPinnedWindowStateType(WindowStateType type) {
+  return type == WindowStateType::kPinned ||
+         type == WindowStateType::kTrustedPinned;
+}
+
 bool IsFullscreenOrPinnedWindowStateType(WindowStateType type) {
   return type == WindowStateType::kFullscreen ||
          type == WindowStateType::kPinned ||
          type == WindowStateType::kTrustedPinned;
-}
-
-bool IsFloatingStateType(WindowStateType type) {
-  return type == WindowStateType::kFloating;
 }
 
 bool IsMaximizedOrFullscreenOrPinnedWindowStateType(WindowStateType type) {
@@ -124,8 +122,7 @@ bool IsValidWindowStateType(int64_t value) {
          value == int64_t(WindowStateType::kAutoPositioned) ||
          value == int64_t(WindowStateType::kPinned) ||
          value == int64_t(WindowStateType::kTrustedPinned) ||
-         value == int64_t(WindowStateType::kPip) ||
-         value == int64_t(WindowStateType::kFloating);
+         value == int64_t(WindowStateType::kPip);
 }
 
 }  // namespace chromeos

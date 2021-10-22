@@ -579,6 +579,14 @@ private:
     int fPageIndex;
 };
 
+class GraphiteSink : public Sink {
+public:
+    GraphiteSink();
+
+    Result draw(const Src&, SkBitmap*, SkWStream*, SkString*) const override;
+    const char* fileExtension() const override { return "png"; }
+    SinkFlags flags() const override { return SinkFlags{ SinkFlags::kGPU, SinkFlags::kDirect }; }
+};
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 

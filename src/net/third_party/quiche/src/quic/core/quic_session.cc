@@ -12,6 +12,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/frames/quic_window_update_frame.h"
 #include "quic/core/quic_connection.h"
 #include "quic/core/quic_connection_context.h"
 #include "quic/core/quic_error_codes.h"
@@ -59,22 +60,14 @@ class ClosedStreamsCleanUpDelegate : public QuicAlarm::Delegate {
   (perspective() == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
 QuicSession::QuicSession(
-    QuicConnection* connection,
-    Visitor* owner,
-    const QuicConfig& config,
+    QuicConnection* connection, Visitor* owner, const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
     QuicStreamCount num_expected_unidirectional_static_streams)
-    : QuicSession(connection,
-                  owner,
-                  config,
-                  supported_versions,
-                  num_expected_unidirectional_static_streams,
-                  nullptr) {}
+    : QuicSession(connection, owner, config, supported_versions,
+                  num_expected_unidirectional_static_streams, nullptr) {}
 
 QuicSession::QuicSession(
-    QuicConnection* connection,
-    Visitor* owner,
-    const QuicConfig& config,
+    QuicConnection* connection, Visitor* owner, const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
     QuicStreamCount num_expected_unidirectional_static_streams,
     std::unique_ptr<QuicDatagramQueue::Observer> datagram_observer)
@@ -83,14 +76,10 @@ QuicSession::QuicSession(
       visitor_(owner),
       write_blocked_streams_(connection->transport_version()),
       config_(config),
-      stream_id_manager_(perspective(),
-                         connection->transport_version(),
+      stream_id_manager_(perspective(), connection->transport_version(),
                          kDefaultMaxStreamsPerConnection,
                          config_.GetMaxBidirectionalStreamsToSend()),
-      ietf_streamid_manager_(perspective(),
-                             connection->version(),
-                             this,
-                             0,
+      ietf_streamid_manager_(perspective(), connection->version(), this, 0,
                              num_expected_unidirectional_static_streams,
                              config_.GetMaxBidirectionalStreamsToSend(),
                              config_.GetMaxUnidirectionalStreamsToSend() +
@@ -100,15 +89,13 @@ QuicSession::QuicSession(
       num_static_streams_(0),
       num_zombie_streams_(0),
       flow_controller_(
-          this,
-          QuicUtils::GetInvalidStreamId(connection->transport_version()),
+          this, QuicUtils::GetInvalidStreamId(connection->transport_version()),
           /*is_connection_flow_controller*/ true,
           connection->version().AllowsLowFlowControlLimits()
               ? 0
               : kMinimumFlowControlSendWindow,
           config_.GetInitialSessionFlowControlWindowToSend(),
-          kSessionReceiveWindowLimit,
-          perspective() == Perspective::IS_SERVER,
+          kSessionReceiveWindowLimit, perspective() == Perspective::IS_SERVER,
           nullptr),
       currently_writing_stream_id_(0),
       transport_goaway_sent_(false),
@@ -173,13 +160,13 @@ void QuicSession::Initialize() {
 }
 
 QuicSession::~QuicSession() {
-  if (GetQuicRestartFlag(quic_alarm_add_permanent_cancel) &&
-      closed_streams_clean_up_alarm_ != nullptr) {
+  if (closed_streams_clean_up_alarm_ != nullptr) {
     closed_streams_clean_up_alarm_->PermanentCancel();
   }
 }
 
-void QuicSession::PendingStreamOnStreamFrame(const QuicStreamFrame& frame) {
+PendingStream* QuicSession::PendingStreamOnStreamFrame(
+    const QuicStreamFrame& frame) {
   QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
   QuicStreamId stream_id = frame.stream_id;
 
@@ -190,24 +177,60 @@ void QuicSession::PendingStreamOnStreamFrame(const QuicStreamFrame& frame) {
       QuicStreamOffset final_byte_offset = frame.offset + frame.data_length;
       OnFinalByteOffsetReceived(stream_id, final_byte_offset);
     }
-    return;
+    return nullptr;
   }
 
   pending->OnStreamFrame(frame);
   if (!connection()->connected()) {
-    return;
+    return nullptr;
   }
+  return pending;
+}
+
+void QuicSession::MaybeProcessPendingStream(PendingStream* pending) {
+  QUICHE_DCHECK(pending != nullptr);
+  QuicStreamId stream_id = pending->id();
+  absl::optional<QuicResetStreamError> stop_sending_error_code =
+      pending->GetStopSendingErrorCode();
   QuicStream* stream = ProcessPendingStream(pending);
   if (stream != nullptr) {
     // The pending stream should now be in the scope of normal streams.
     QUICHE_DCHECK(IsClosedStream(stream_id) || IsOpenStream(stream_id))
         << "Stream " << stream_id << " not created";
     pending_stream_map_.erase(stream_id);
+    if (stop_sending_error_code) {
+      stream->OnStopSending(*stop_sending_error_code);
+      if (!connection()->connected()) {
+        return;
+      }
+    }
     stream->OnStreamCreatedFromPendingStream();
     return;
   }
+  // At this point, none of the bytes has been successfully consumed by the
+  // application layer. We should close the pending stream even if it is
+  // bidirectionl as no application will be able to write in a bidirectional
+  // stream with zero byte as input.
   if (pending->sequencer()->IsClosed()) {
     ClosePendingStream(stream_id);
+  }
+}
+
+void QuicSession::PendingStreamOnWindowUpdateFrame(
+    const QuicWindowUpdateFrame& frame) {
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  PendingStream* pending = GetOrCreatePendingStream(frame.stream_id);
+  if (pending) {
+    pending->OnWindowUpdateFrame(frame);
+  }
+}
+
+void QuicSession::PendingStreamOnStopSendingFrame(
+    const QuicStopSendingFrame& frame) {
+  QUICHE_DCHECK(VersionUsesHttp3(transport_version()));
+  PendingStream* pending = GetOrCreatePendingStream(frame.stream_id);
+  if (pending) {
+    pending->OnStopSending(frame.error());
   }
 }
 
@@ -220,12 +243,11 @@ void QuicSession::OnStreamFrame(const QuicStreamFrame& frame) {
     return;
   }
 
-  if (UsesPendingStreams() &&
-      QuicUtils::GetStreamType(stream_id, perspective(),
-                               IsIncomingStream(stream_id),
-                               version()) == READ_UNIDIRECTIONAL &&
-      stream_map_.find(stream_id) == stream_map_.end()) {
-    PendingStreamOnStreamFrame(frame);
+  if (ShouldProcessFrameByPendingStream(STREAM_FRAME, stream_id)) {
+    PendingStream* pending = PendingStreamOnStreamFrame(frame);
+    if (pending != nullptr && ShouldProcessPendingStreamImmediately()) {
+      MaybeProcessPendingStream(pending);
+    }
     return;
   }
 
@@ -284,6 +306,10 @@ void QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
   if (visitor_) {
     visitor_->OnStopSendingReceived(frame);
   }
+  if (ShouldProcessFrameByPendingStream(STOP_SENDING_FRAME, stream_id)) {
+    PendingStreamOnStopSendingFrame(frame);
+    return;
+  }
 
   QuicStream* stream = GetOrCreateStream(stream_id);
   if (!stream) {
@@ -291,7 +317,7 @@ void QuicSession::OnStopSendingFrame(const QuicStopSendingFrame& frame) {
     return;
   }
 
-  stream->OnStopSending(frame.error_code);
+  stream->OnStopSending(frame.error());
 }
 
 void QuicSession::OnPacketDecrypted(EncryptionLevel level) {
@@ -331,11 +357,10 @@ void QuicSession::PendingStreamOnRstStream(const QuicRstStreamFrame& frame) {
   }
 
   pending->OnRstStreamFrame(frame);
-  // Pending stream is currently read only. We can safely close the stream.
-  QUICHE_DCHECK_EQ(
-      READ_UNIDIRECTIONAL,
-      QuicUtils::GetStreamType(pending->id(), perspective(),
-                               /*peer_initiated = */ true, version()));
+  // At this point, none of the bytes has been consumed by the application
+  // layer. It is safe to close the pending stream even if it is bidirectionl as
+  // no application will be able to write in a bidirectional stream with zero
+  // byte as input.
   ClosePendingStream(stream_id);
 }
 
@@ -362,11 +387,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
     visitor_->OnRstStreamReceived(frame);
   }
 
-  if (UsesPendingStreams() &&
-      QuicUtils::GetStreamType(stream_id, perspective(),
-                               IsIncomingStream(stream_id),
-                               version()) == READ_UNIDIRECTIONAL &&
-      stream_map_.find(stream_id) == stream_map_.end()) {
+  if (ShouldProcessFrameByPendingStream(RST_STREAM_FRAME, stream_id)) {
     PendingStreamOnRstStream(frame);
     return;
   }
@@ -489,9 +510,7 @@ void QuicSession::OnPathDegrading() {}
 
 void QuicSession::OnForwardProgressMadeAfterPathDegrading() {}
 
-bool QuicSession::AllowSelfAddressChange() const {
-  return false;
-}
+bool QuicSession::AllowSelfAddressChange() const { return false; }
 
 void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
@@ -516,6 +535,11 @@ void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
         QUIC_WINDOW_UPDATE_RECEIVED_ON_READ_UNIDIRECTIONAL_STREAM,
         "WindowUpdateFrame received on READ_UNIDIRECTIONAL stream.",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+    return;
+  }
+
+  if (ShouldProcessFrameByPendingStream(WINDOW_UPDATE_FRAME, stream_id)) {
+    PendingStreamOnWindowUpdateFrame(frame);
     return;
   }
 
@@ -814,8 +838,7 @@ QuicConsumedData QuicSession::WritevData(QuicStreamId id, size_t write_length,
   return data;
 }
 
-size_t QuicSession::SendCryptoData(EncryptionLevel level,
-                                   size_t write_length,
+size_t QuicSession::SendCryptoData(EncryptionLevel level, size_t write_length,
                                    QuicStreamOffset offset,
                                    TransmissionType type) {
   QUICHE_DCHECK(QuicVersionUsesCryptoFrames(transport_version()));
@@ -872,12 +895,12 @@ void QuicSession::ResetStream(QuicStreamId id, QuicRstStreamErrorCode error) {
   }
 
   QuicConnection::ScopedPacketFlusher flusher(connection());
-  MaybeSendStopSendingFrame(id, error);
-  MaybeSendRstStreamFrame(id, error, 0);
+  MaybeSendStopSendingFrame(id, QuicResetStreamError::FromInternal(error));
+  MaybeSendRstStreamFrame(id, QuicResetStreamError::FromInternal(error), 0);
 }
 
 void QuicSession::MaybeSendRstStreamFrame(QuicStreamId id,
-                                          QuicRstStreamErrorCode error,
+                                          QuicResetStreamError error,
                                           QuicStreamOffset bytes_written) {
   if (!connection()->connected()) {
     return;
@@ -888,11 +911,11 @@ void QuicSession::MaybeSendRstStreamFrame(QuicStreamId id,
     control_frame_manager_.WriteOrBufferRstStream(id, error, bytes_written);
   }
 
-  connection_->OnStreamReset(id, error);
+  connection_->OnStreamReset(id, error.internal_code());
 }
 
 void QuicSession::MaybeSendStopSendingFrame(QuicStreamId id,
-                                            QuicRstStreamErrorCode error) {
+                                            QuicResetStreamError error) {
   if (!connection()->connected()) {
     return;
   }
@@ -962,8 +985,7 @@ void QuicSession::SendMaxStreams(QuicStreamCount stream_count,
 }
 
 void QuicSession::InsertLocallyClosedStreamsHighestOffset(
-    const QuicStreamId id,
-    QuicStreamOffset offset) {
+    const QuicStreamId id, QuicStreamOffset offset) {
   locally_closed_streams_highest_offset_[id] = offset;
 }
 
@@ -1051,9 +1073,14 @@ void QuicSession::ClosePendingStream(QuicStreamId stream_id) {
   }
 }
 
+bool QuicSession::ShouldProcessFrameByPendingStream(QuicFrameType type,
+                                                    QuicStreamId id) const {
+  return UsesPendingStreamForFrame(type, id) &&
+         stream_map_.find(id) == stream_map_.end();
+}
+
 void QuicSession::OnFinalByteOffsetReceived(
-    QuicStreamId stream_id,
-    QuicStreamOffset final_byte_offset) {
+    QuicStreamId stream_id, QuicStreamOffset final_byte_offset) {
   auto it = locally_closed_streams_highest_offset_.find(stream_id);
   if (it == locally_closed_streams_highest_offset_.end()) {
     return;
@@ -1314,8 +1341,7 @@ void QuicSession::OnConfigNegotiated() {
 }
 
 absl::optional<std::string> QuicSession::OnAlpsData(
-    const uint8_t* /*alps_data*/,
-    size_t /*alps_length*/) {
+    const uint8_t* /*alps_data*/, size_t /*alps_length*/) {
   return absl::nullopt;
 }
 
@@ -1543,10 +1569,8 @@ void QuicSession::OnNewSessionFlowControlWindow(QuicStreamOffset new_window) {
 }
 
 bool QuicSession::OnNewDecryptionKeyAvailable(
-    EncryptionLevel level,
-    std::unique_ptr<QuicDecrypter> decrypter,
-    bool set_alternative_decrypter,
-    bool latch_once_used) {
+    EncryptionLevel level, std::unique_ptr<QuicDecrypter> decrypter,
+    bool set_alternative_decrypter, bool latch_once_used) {
   if (connection_->version().handshake_protocol == PROTOCOL_TLS1_3 &&
       !connection()->framer().HasEncrypterOfEncryptionLevel(
           QuicUtils::GetEncryptionLevel(
@@ -1569,8 +1593,7 @@ bool QuicSession::OnNewDecryptionKeyAvailable(
 }
 
 void QuicSession::OnNewEncryptionKeyAvailable(
-    EncryptionLevel level,
-    std::unique_ptr<QuicEncrypter> encrypter) {
+    EncryptionLevel level, std::unique_ptr<QuicEncrypter> encrypter) {
   connection()->SetEncrypter(level, std::move(encrypter));
   if (connection_->version().handshake_protocol != PROTOCOL_TLS1_3) {
     return;
@@ -1737,8 +1760,7 @@ bool QuicSession::FillTransportParameters(TransportParameters* params) {
 }
 
 QuicErrorCode QuicSession::ProcessTransportParameters(
-    const TransportParameters& params,
-    bool is_resumption,
+    const TransportParameters& params, bool is_resumption,
     std::string* error_details) {
   return config_.ProcessTransportParameters(params, is_resumption,
                                             error_details);
@@ -1766,8 +1788,7 @@ void QuicSession::OnCryptoHandshakeMessageReceived(
     const CryptoHandshakeMessage& /*message*/) {}
 
 void QuicSession::RegisterStreamPriority(
-    QuicStreamId id,
-    bool is_static,
+    QuicStreamId id, bool is_static,
     const spdy::SpdyStreamPrecedence& precedence) {
   write_blocked_streams()->RegisterStream(id, is_static, precedence);
 }
@@ -1777,14 +1798,11 @@ void QuicSession::UnregisterStreamPriority(QuicStreamId id, bool is_static) {
 }
 
 void QuicSession::UpdateStreamPriority(
-    QuicStreamId id,
-    const spdy::SpdyStreamPrecedence& new_precedence) {
+    QuicStreamId id, const spdy::SpdyStreamPrecedence& new_precedence) {
   write_blocked_streams()->UpdateStreamPriority(id, new_precedence);
 }
 
-QuicConfig* QuicSession::config() {
-  return &config_;
-}
+QuicConfig* QuicSession::config() { return &config_; }
 
 void QuicSession::ActivateStream(std::unique_ptr<QuicStream> stream) {
   QuicStreamId stream_id = stream->id();
@@ -1995,8 +2013,7 @@ void QuicSession::DeleteConnection() {
 }
 
 bool QuicSession::MaybeSetStreamPriority(
-    QuicStreamId stream_id,
-    const spdy::SpdyStreamPrecedence& precedence) {
+    QuicStreamId stream_id, const spdy::SpdyStreamPrecedence& precedence) {
   auto active_stream = stream_map_.find(stream_id);
   if (active_stream != stream_map_.end()) {
     active_stream->second->SetPriority(precedence);
@@ -2095,13 +2112,17 @@ void QuicSession::SendRetireConnectionId(uint64_t sequence_number) {
 
 void QuicSession::OnServerConnectionIdIssued(
     const QuicConnectionId& server_connection_id) {
-  visitor_->OnNewConnectionIdSent(connection_->GetOneActiveServerConnectionId(),
-                                  server_connection_id);
+  if (visitor_) {
+    visitor_->OnNewConnectionIdSent(
+        connection_->GetOneActiveServerConnectionId(), server_connection_id);
+  }
 }
 
 void QuicSession::OnServerConnectionIdRetired(
     const QuicConnectionId& server_connection_id) {
-  visitor_->OnConnectionIdRetired(server_connection_id);
+  if (visitor_) {
+    visitor_->OnConnectionIdRetired(server_connection_id);
+  }
 }
 
 bool QuicSession::IsConnectionFlowControlBlocked() const {
@@ -2474,9 +2495,7 @@ void QuicSession::OnMessageLost(QuicMessageId message_id) {
                 << " is considered lost";
 }
 
-void QuicSession::CleanUpClosedStreams() {
-  closed_streams_.clear();
-}
+void QuicSession::CleanUpClosedStreams() { closed_streams_.clear(); }
 
 QuicPacketLength QuicSession::GetCurrentLargestMessagePayload() const {
   return connection_->GetCurrentLargestMessagePayload();
@@ -2585,6 +2604,21 @@ EncryptionLevel QuicSession::GetEncryptionLevelToSendApplicationData() const {
   return connection_->framer().GetEncryptionLevelToSendApplicationData();
 }
 
+void QuicSession::ProcessAllPendingStreams() {
+  std::vector<PendingStream*> pending_streams;
+  pending_streams.reserve(pending_stream_map_.size());
+  for (auto it = pending_stream_map_.cbegin(); it != pending_stream_map_.cend();
+       ++it) {
+    pending_streams.push_back(it->second.get());
+  }
+  for (auto* pending_stream : pending_streams) {
+    MaybeProcessPendingStream(pending_stream);
+    if (!connection()->connected()) {
+      return;
+    }
+  }
+}
+
 void QuicSession::ValidatePath(
     std::unique_ptr<QuicPathValidationContext> context,
     std::unique_ptr<QuicPathValidator::ResultDelegate> result_delegate) {
@@ -2597,8 +2631,7 @@ bool QuicSession::HasPendingPathValidation() const {
 
 bool QuicSession::MigratePath(const QuicSocketAddress& self_address,
                               const QuicSocketAddress& peer_address,
-                              QuicPacketWriter* writer,
-                              bool owns_writer) {
+                              QuicPacketWriter* writer, bool owns_writer) {
   return connection_->MigratePath(self_address, peer_address, writer,
                                   owns_writer);
 }

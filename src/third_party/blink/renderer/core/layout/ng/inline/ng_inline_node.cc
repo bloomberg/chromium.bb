@@ -745,7 +745,8 @@ class NGInlineNodeDataEditor final {
     DCHECK_LE(end_offset, item.end_offset_);
     const unsigned safe_end_offset = GetLastSafeToReuse(item, end_offset);
     const unsigned start_offset = item.start_offset_;
-    if (start_offset == safe_end_offset)
+    // Nothing to reuse if no characters are safe to reuse.
+    if (safe_end_offset <= start_offset)
       return NGInlineItem(item, start_offset, end_offset, nullptr);
     // To handle kerning, e.g. "AV", we should not reuse last glyph.
     // See http://crbug.com/1129710
@@ -1043,12 +1044,26 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   if (block->IsNGSVGText()) {
     // SVG <text> doesn't support reusing the previous result now.
     previous_data = nullptr;
-    chunk_offsets = FindSvgTextChunks(*block, *data);
+    data->svg_node_data_ = nullptr;
+    // We don't need to find text chunks if the IFC has only 0-1 character
+    // because of no Bidi reordering and no ligatures.
+    // This is an optimization for perf_tests/svg/France.html.
+    const auto* layout_text = DynamicTo<LayoutText>(block->FirstChild());
+    bool empty_or_one_char =
+        !block->FirstChild() || (layout_text && !layout_text->NextSibling() &&
+                                 layout_text->TextLength() <= 1);
+    if (!empty_or_one_char)
+      chunk_offsets = FindSvgTextChunks(*block, *data);
   }
 
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(block, &data->items, chunk_offsets);
   CollectInlinesInternal(&builder, previous_data);
+  if (block->IsNGSVGText() && !data->svg_node_data_) {
+    NGSvgTextLayoutAttributesBuilder svg_attr_builder(*this);
+    svg_attr_builder.Build(builder.ToString(), data->items);
+    data->svg_node_data_ = svg_attr_builder.CreateSvgInlineNodeData();
+  }
   builder.DidFinishCollectInlines(data);
 
   if (UNLIKELY(builder.HasUnicodeBidiPlainText()))
@@ -1074,14 +1089,7 @@ const SvgTextChunkOffsets* NGInlineNode::FindSvgTextChunks(
 
   NGSvgTextLayoutAttributesBuilder svg_attr_builder(*this);
   svg_attr_builder.Build(ifc_text_content, items);
-
-  data.svg_node_data_ = MakeGarbageCollected<SvgInlineNodeData>();
-  data.svg_node_data_->character_data_list =
-      svg_attr_builder.CharacterDataList();
-  data.svg_node_data_->text_length_range_list =
-      svg_attr_builder.TextLengthRangeList();
-  data.svg_node_data_->text_path_range_list =
-      svg_attr_builder.TextPathRangeList();
+  data.svg_node_data_ = svg_attr_builder.CreateSvgInlineNodeData();
 
   // Compute DOM offsets of text chunks.
   mapping_builder.SetDestinationString(ifc_text_content);

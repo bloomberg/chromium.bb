@@ -325,7 +325,7 @@ def _ValidateChangesForTry(arguments):
       patch=base_patch,
       label='base',
       args=base_extra_args or None,
-  )
+      variant=0)
   exp_extra_args = _ParseExtraArgs(arguments.get('experiment_extra_args', ''))
   logging.debug('Experiment extra args: %s', exp_extra_args)
   change_2 = change.Change(
@@ -333,7 +333,7 @@ def _ValidateChangesForTry(arguments):
       patch=exp_patch,
       label='exp',
       args=exp_extra_args or None,
-  )
+      variant=1)
   return change_1, change_2
 
 
@@ -438,12 +438,11 @@ def _GenerateQuests(arguments):
       quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
                        quest_module.ReadValue)
     elif target in REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS:
-      if ('fallback_targets' not in arguments
-          and 'fallback_target' not in arguments):
-        fallback_targets = REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS[target]
-        logging.debug('Adding "fallback_targets" to params with value %s',
-                      fallback_targets)
-        arguments['fallback_targets'] = fallback_targets
+      if 'fallback_target' not in arguments:
+        fallback_target = REGULAR_TELEMETRY_TESTS_WITH_FALLBACKS[target]
+        logging.debug('Adding "fallback_target" to params with value %s',
+                      fallback_target)
+        arguments['fallback_target'] = fallback_target
       quest_classes = (quest_module.FindIsolate, quest_module.RunTelemetryTest,
                        quest_module.ReadValue)
     elif 'performance_test_suite_eve' in target:

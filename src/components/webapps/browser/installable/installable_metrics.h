@@ -89,6 +89,9 @@ enum class WebappInstallSource {
   // Create shortcut item in menu
   MENU_CREATE_SHORTCUT = 17,
 
+  // Installed via the SubApps API.
+  SUB_APP = 18,
+
   // Add any new values above this one.
   COUNT,
 };
@@ -142,8 +145,11 @@ enum class WebappUninstallSource {
   // Externally managed Arc apps.
   kArc = 14,
 
+  // SubApp API.
+  kSubApp = 15,
+
   // Add any new values above this one.
-  kMaxValue = kArc,
+  kMaxValue = kSubApp,
 };
 
 // This is the result of the promotability check that is recorded in the
@@ -163,6 +169,10 @@ enum class ServiceWorkerOfflineCapability {
 
 class InstallableMetrics {
  public:
+  InstallableMetrics() = delete;
+  InstallableMetrics(const InstallableMetrics&) = delete;
+  InstallableMetrics& operator=(const InstallableMetrics&) = delete;
+
   // Records |source| in the Webapp.Install.InstallEvent histogram.
   // IsReportableInstallSource(|source|) must be true.
   static void TrackInstallEvent(WebappInstallSource source);
@@ -197,9 +207,6 @@ class InstallableMetrics {
 
   // Records |source| in the Webapp.Install.UninstallEvent histogram.
   static void TrackUninstallEvent(WebappUninstallSource source);
-
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(InstallableMetrics);
 };
 
 }  // namespace webapps

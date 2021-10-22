@@ -15,8 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/ash/ime_engine_handler_interface.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/events/event.h"
 #include "url/gurl.h"
@@ -205,6 +205,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
   gfx::Range GetAutocorrectRange(int context_id, std::string* error);
 
   gfx::Rect GetAutocorrectCharacterBounds(int context_id, std::string* error);
+  gfx::Rect GetTextFieldBounds(int context_id, std::string* error);
 
   bool SetAutocorrectRange(int context_id,
                            const gfx::Range& range,
@@ -225,6 +226,9 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
   std::string AddPendingKeyEvent(
       const std::string& component_id,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback);
+
+  // Resolves all the pending key event callbacks as not handled.
+  void CancelPendingKeyEvents();
 
   virtual void OnInputMethodOptionsChanged();
 
@@ -248,13 +252,14 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
         const std::string& component_id,
         ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback);
     PendingKeyEvent(PendingKeyEvent&& other);
+
+    PendingKeyEvent(const PendingKeyEvent&) = delete;
+    PendingKeyEvent& operator=(const PendingKeyEvent&) = delete;
+
     ~PendingKeyEvent();
 
     std::string component_id;
     ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(PendingKeyEvent);
   };
 
   // Returns true if this IME is active, false if not.
@@ -279,6 +284,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface,
   virtual gfx::Range GetAutocorrectRange() = 0;
 
   virtual gfx::Rect GetAutocorrectCharacterBounds() = 0;
+  virtual gfx::Rect GetTextFieldBounds() = 0;
 
   // Notifies the InputContextHandler that the autocorrect range should
   // be updated and the autocorrect text has updated.

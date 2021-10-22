@@ -36,6 +36,10 @@ class CrOSActionRecorder {
   using CrOSAction = std::tuple<CrOSActionName>;
 
   CrOSActionRecorder();
+
+  CrOSActionRecorder(const CrOSActionRecorder&) = delete;
+  CrOSActionRecorder& operator=(const CrOSActionRecorder&) = delete;
+
   ~CrOSActionRecorder();
   // Get the pointer of the singleton.
   static CrOSActionRecorder* GetCrosActionRecorder();
@@ -65,8 +69,7 @@ class CrOSActionRecorder {
   friend class CrOSActionRecorderTabTrackerTest;
 
   // kSaveInternal controls how often we save the action history to disk.
-  static constexpr base::TimeDelta kSaveInternal =
-      base::TimeDelta::FromHours(1);
+  static constexpr base::TimeDelta kSaveInternal = base::Hours(1);
 
   // Private constructor used for testing purpose. Which basically calls the
   // Init function.
@@ -110,8 +113,6 @@ class CrOSActionRecorder {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(CrOSActionRecorder);
 };
 
 }  // namespace app_list

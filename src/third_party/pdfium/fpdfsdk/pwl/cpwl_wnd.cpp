@@ -63,9 +63,6 @@ class CPWL_MsgControl final : public Observable {
 
   void SetFocus(CPWL_Wnd* pWnd) {
     m_KeyboardPaths.clear();
-    if (!pWnd)
-      return;
-
     m_pMainKeyboardWnd = pWnd;
     CPWL_Wnd* pParent = pWnd;
     while (pParent) {
@@ -99,8 +96,6 @@ class CPWL_MsgControl final : public Observable {
   }
 
   void ReleaseCapture() { m_MousePaths.clear(); }
-
-  const CPWL_Wnd* GetFocusedWindow() const { return m_pMainKeyboardWnd.Get(); }
 
  private:
   std::vector<UnownedPtr<CPWL_Wnd>> m_MousePaths;
@@ -466,10 +461,6 @@ CFX_Color CPWL_Wnd::GetBackgroundColor() const {
   return m_CreationParams.sBackgroundColor;
 }
 
-void CPWL_Wnd::SetBackgroundColor(const CFX_Color& color) {
-  m_CreationParams.sBackgroundColor = color;
-}
-
 CFX_Color CPWL_Wnd::GetTextColor() const {
   return m_CreationParams.sTextColor;
 }
@@ -722,9 +713,4 @@ CFX_Matrix CPWL_Wnd::GetWindowMatrix() const {
 CFX_FloatRect CPWL_Wnd::PWLtoWnd(const CFX_FloatRect& rect) const {
   CFX_Matrix mt = GetWindowMatrix();
   return mt.TransformRect(rect);
-}
-
-const CPWL_Wnd* CPWL_Wnd::GetFocused() const {
-  CPWL_MsgControl* pMsgCtrl = GetMsgControl();
-  return pMsgCtrl ? pMsgCtrl->GetFocusedWindow() : nullptr;
 }

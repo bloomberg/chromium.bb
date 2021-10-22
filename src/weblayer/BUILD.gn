@@ -84,6 +84,7 @@ if (is_android) {
     output_locales = locales
     source_patterns = [
       "${root_gen_dir}/components/strings/components_locale_settings_",
+      "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_",
       "${root_gen_dir}/weblayer/components_chromium_strings_",
       "${root_gen_dir}/weblayer/components_strings_",
     ]
@@ -91,6 +92,7 @@ if (is_android) {
       ":generate_components_chromium_strings",
       ":generate_components_strings",
       "//components/strings:components_locale_settings",
+      "//device/bluetooth/strings",
     ]
     output_dir = "$root_out_dir/weblayer/locales"
   }
@@ -325,6 +327,8 @@ source_set("weblayer_lib_base") {
     "browser/weblayer_speech_recognition_manager_delegate.h",
     "browser/weblayer_variations_service_client.cc",
     "browser/weblayer_variations_service_client.h",
+    "browser/webui/net_export_ui.cc",
+    "browser/webui/net_export_ui.h",
     "browser/webui/web_ui_controller_factory.cc",
     "browser/webui/web_ui_controller_factory.h",
     "browser/webui/weblayer_internals_ui.cc",
@@ -438,6 +442,7 @@ source_set("weblayer_lib_base") {
     "//components/language/core/browser",
     "//components/leveldb_proto",
     "//components/metrics",
+    "//components/net_log",
     "//components/network_time",
     "//components/no_state_prefetch/browser",
     "//components/no_state_prefetch/common",
@@ -462,6 +467,7 @@ source_set("weblayer_lib_base") {
     "//components/safe_browsing/content/common:interfaces",
     "//components/safe_browsing/content/renderer:throttles",
     "//components/safe_browsing/content/renderer/phishing_classifier",
+    "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
     "//components/safe_browsing/core/browser/db:database_manager",
     "//components/safe_browsing/core/common",
     "//components/security_interstitials/content:security_interstitial_page",
@@ -666,6 +672,8 @@ source_set("weblayer_lib_base") {
       "browser/safe_browsing/weblayer_ui_manager_delegate.h",
       "browser/safe_browsing/weblayer_user_population_helper.cc",
       "browser/safe_browsing/weblayer_user_population_helper.h",
+      "browser/site_engagement/site_engagement_service_factory.cc",
+      "browser/site_engagement/site_engagement_service_factory.h",
       "browser/tab_callback_proxy.cc",
       "browser/tab_callback_proxy.h",
       "browser/translate_compact_infobar.cc",
@@ -700,6 +708,7 @@ source_set("weblayer_lib_base") {
       "//components/browser_ui/client_certificate/android",
       "//components/browser_ui/contacts_picker/android",
       "//components/browser_ui/photo_picker/android",
+      "//components/browser_ui/share/android",
       "//components/browser_ui/site_settings/android",
       "//components/browser_ui/sms/android",
       "//components/cdm/browser",
@@ -728,7 +737,7 @@ source_set("weblayer_lib_base") {
       "//components/resources:android_resources",
       "//components/safe_browsing/android:remote_database_manager",
       "//components/safe_browsing/android:safe_browsing_api_handler",
-      "//components/safe_browsing/content/browser:client_side_model_loader",
+      "//components/safe_browsing/content/browser/triggers",
       "//components/safe_browsing/core/browser",
       "//components/safe_browsing/core/browser:token_fetcher",
       "//components/safe_browsing/core/browser:verdict_cache_manager",
@@ -743,6 +752,7 @@ source_set("weblayer_lib_base") {
       "//components/security_interstitials/core:unsafe_resource",
       "//components/security_interstitials/core/",
       "//components/security_state/content/android",
+      "//components/site_engagement/content",
       "//components/subresource_filter/android",
       "//components/translate/content/android",
       "//components/version_info/android:channel_getter",

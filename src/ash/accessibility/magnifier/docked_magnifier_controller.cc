@@ -224,7 +224,7 @@ void DockedMagnifierController::CenterOnPoint(
   // point of interest due to input caret bounds changes ... etc.).
   ui::ScopedLayerAnimationSettings settings(
       viewport_magnifier_layer_->GetAnimator());
-  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(0));
+  settings.SetTransitionDuration(base::Milliseconds(0));
   settings.SetTweenType(gfx::Tween::ZERO);
   settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   viewport_magnifier_layer_->SetTransform(transform);
@@ -339,6 +339,22 @@ int DockedMagnifierController::GetTotalMagnifierHeight() const {
     return separator_layer_->bounds().bottom();
 
   return 0;
+}
+
+gfx::Rect DockedMagnifierController::GetTotalMagnifierBoundsForRoot(
+    aura::Window* root) const {
+  DCHECK(root);
+  DCHECK(root->IsRootWindow());
+
+  if (viewport_widget_ && current_source_root_window_ == root) {
+    gfx::Rect bounds =
+        viewport_widget_->GetNativeWindow()->GetActualBoundsInRootWindow();
+    DCHECK(separator_layer_);
+    bounds.set_height(separator_layer_->bounds().bottom());
+    return bounds;
+  }
+
+  return gfx::Rect();
 }
 
 const views::Widget*

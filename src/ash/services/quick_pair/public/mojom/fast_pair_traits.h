@@ -9,22 +9,31 @@
 #include <cstdint>
 #include <vector>
 
+#include "ash/services/quick_pair/public/cpp/battery_notification.h"
 #include "ash/services/quick_pair/public/cpp/decrypted_passkey.h"
 #include "ash/services/quick_pair/public/cpp/decrypted_response.h"
 #include "ash/services/quick_pair/public/cpp/fast_pair_message_type.h"
+#include "ash/services/quick_pair/public/cpp/not_discoverable_advertisement.h"
 #include "ash/services/quick_pair/public/mojom/fast_pair_data_parser.mojom-shared.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 
 namespace {
+using ash::quick_pair::BatteryInfo;
+using ash::quick_pair::BatteryNotification;
 using ash::quick_pair::DecryptedPasskey;
 using ash::quick_pair::DecryptedResponse;
 using ash::quick_pair::FastPairMessageType;
+using ash::quick_pair::NotDiscoverableAdvertisement;
+using ash::quick_pair::mojom::BatteryInfoDataView;
+using ash::quick_pair::mojom::BatteryNotificationDataView;
 using ash::quick_pair::mojom::DecryptedPasskeyDataView;
 using ash::quick_pair::mojom::DecryptedResponseDataView;
 using ash::quick_pair::mojom::MessageType;
+using ash::quick_pair::mojom::NotDiscoverableAdvertisementDataView;
 }  // namespace
 
 template <>
@@ -68,6 +77,62 @@ class StructTraits<DecryptedPasskeyDataView, DecryptedPasskey> {
   }
 
   static bool Read(DecryptedPasskeyDataView data, DecryptedPasskey* out);
+};
+
+template <>
+class StructTraits<BatteryInfoDataView, BatteryInfo> {
+ public:
+  static bool is_charging(const BatteryInfo& r) { return r.is_charging; }
+
+  static int8_t percentage(const BatteryInfo& r) {
+    return r.percentage.value_or(-1);
+  }
+
+  static bool Read(BatteryInfoDataView data, BatteryInfo* out);
+};
+
+template <>
+class StructTraits<BatteryNotificationDataView, BatteryNotification> {
+ public:
+  static bool show_ui(const BatteryNotification& r) { return r.show_ui; }
+
+  static BatteryInfo left_bud_info(const BatteryNotification& r) {
+    return r.left_bud_info;
+  }
+
+  static BatteryInfo right_bud_info(const BatteryNotification& r) {
+    return r.right_bud_info;
+  }
+
+  static BatteryInfo case_info(const BatteryNotification& r) {
+    return r.case_info;
+  }
+
+  static bool Read(BatteryNotificationDataView data, BatteryNotification* out);
+};
+
+template <>
+class StructTraits<NotDiscoverableAdvertisementDataView,
+                   NotDiscoverableAdvertisement> {
+ public:
+  static std::vector<uint8_t> account_key_filter(
+      const NotDiscoverableAdvertisement& r) {
+    return r.account_key_filter;
+  }
+
+  static bool show_ui(const NotDiscoverableAdvertisement& r) {
+    return r.show_ui;
+  }
+
+  static uint8_t salt(const NotDiscoverableAdvertisement& r) { return r.salt; }
+
+  static absl::optional<BatteryNotification> battery_notification(
+      const NotDiscoverableAdvertisement& r) {
+    return r.battery_notification;
+  }
+
+  static bool Read(NotDiscoverableAdvertisementDataView data,
+                   NotDiscoverableAdvertisement* out);
 };
 
 }  // namespace mojo

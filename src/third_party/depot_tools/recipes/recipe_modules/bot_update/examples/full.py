@@ -263,6 +263,14 @@ def GenTests(api):
   )
 
   yield (
+      api.test('revision_specifying_ref') +
+      ci_build() +
+      api.properties(
+          revisions={'src': 'refs/branch-heads/4000'},
+      )
+  )
+
+  yield (
       api.test('add_blamelists') +
       ci_build() +
       api.properties(

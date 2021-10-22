@@ -69,11 +69,7 @@ enum class StartServiceWorkerForNavigationHintResult {
 // of ServiceWorkerContext and ServiceWorkerContextWrapper (the
 // primary implementation of this abstract class).
 //
-// All methods are basically expected to be called on the UI thread.
-// Currently, only two methods are allowed to be called on any threads but it's
-// discouraged.
-// TODO(https://crbug.com/1161153): Disallow methods to be called on any
-// threads.
+// All methods must be called on the UI thread.
 class CONTENT_EXPORT ServiceWorkerContext {
  public:
   using ResultCallback = base::OnceCallback<void(bool success)>;
@@ -99,10 +95,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
 
   using StartWorkerCallback = base::OnceCallback<
       void(int64_t version_id, int process_id, int thread_id)>;
-
-  // Returns BrowserThread::UI always.
-  // TODO(https://crbug.com/1138155): Remove this.
-  static content::BrowserThread::ID GetCoreThreadId();
 
   // Returns true if |url| is within the service worker |scope|.
   static bool ScopeMatches(const GURL& scope, const GURL& url);
@@ -177,8 +169,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // Deletes all registrations for `key` and clears all service workers
   // belonging to the registrations. All clients controlled by those service
   // workers will lose their controllers immediately after this operation.
-  // This function can be called from any thread, and the callback is called on
-  // that thread.
   virtual void DeleteForStorageKey(const blink::StorageKey& key,
                                    ResultCallback callback) = 0;
 
@@ -224,8 +214,6 @@ class CONTENT_EXPORT ServiceWorkerContext {
   // `key` and dispatches the given `message` to the service worker.
   // `result_callback` is passed a success boolean indicating whether the
   // message was dispatched successfully.
-  //
-  // May be called on any thread, and the callback is called on that thread.
   virtual void StartServiceWorkerAndDispatchMessage(
       const GURL& scope,
       const blink::StorageKey& key,

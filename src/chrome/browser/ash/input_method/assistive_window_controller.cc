@@ -15,7 +15,7 @@
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
+#include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -229,9 +229,11 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
       if (!undo_window_)
         InitUndoWindow();
       if (window.visible) {
-        undo_window_->SetAnchorRect(bounds_.autocorrect.IsEmpty()
-                                        ? bounds_.caret
-                                        : bounds_.autocorrect);
+        // Apply 4px padding to move the window away from the cursor.
+        gfx::Rect anchor_rect =
+            bounds_.autocorrect.IsEmpty() ? bounds_.caret : bounds_.autocorrect;
+        anchor_rect.Inset(-4, -4);
+        undo_window_->SetAnchorRect(anchor_rect);
         undo_window_->Show();
       } else {
         undo_window_->Hide();

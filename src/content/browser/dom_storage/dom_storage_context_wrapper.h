@@ -25,6 +25,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/quota/storage_policy_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
@@ -100,17 +102,21 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   void OpenLocalStorage(
       const blink::StorageKey& storage_key,
-      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
+      absl::optional<blink::LocalFrameToken> local_frame_token,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver,
+      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
+      mojo::ReportBadMessageCallback bad_message_callback);
   void BindNamespace(
       const std::string& namespace_id,
       mojo::ReportBadMessageCallback bad_message_callback,
       mojo::PendingReceiver<blink::mojom::SessionStorageNamespace> receiver);
   void BindStorageArea(
-      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
       const blink::StorageKey& storage_key,
+      absl::optional<blink::LocalFrameToken> local_frame_token,
       const std::string& namespace_id,
-      mojo::ReportBadMessageCallback bad_message_callback,
-      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver,
+      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
+      mojo::ReportBadMessageCallback bad_message_callback);
 
   // Pushes information about known Session Storage namespaces down to the
   // Storage Service instance after a crash. This in turn allows renderer
@@ -146,6 +152,17 @@ class CONTENT_EXPORT DOMStorageContextWrapper
       std::vector<storage::mojom::StorageUsageInfoPtr> usage);
   void ApplyPolicyUpdates(
       std::vector<storage::mojom::StoragePolicyUpdatePtr> policy_updates);
+
+  enum class StorageType {
+    kLocalStorage,
+    kSessionStorage,
+  };
+  bool IsRequestValid(
+      const StorageType type,
+      const blink::StorageKey& storage_key,
+      absl::optional<blink::LocalFrameToken> local_frame_token,
+      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
+      mojo::ReportBadMessageCallback bad_message_callback);
 
   // Since the tab restore code keeps a reference to the session namespaces
   // of recently closed tabs (see sessions::ContentPlatformSpecificTabData and

@@ -14,8 +14,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "components/value_store/value_store.h"
 #include "extensions/browser/api/storage/settings_observer.h"
-#include "extensions/browser/value_store/value_store.h"
 
 namespace policy {
 class PolicyMap;
@@ -33,6 +33,10 @@ class PolicyValueStore : public value_store::ValueStore {
   PolicyValueStore(const std::string& extension_id,
                    scoped_refptr<SettingsObserverList> observers,
                    std::unique_ptr<value_store::ValueStore> delegate);
+
+  PolicyValueStore(const PolicyValueStore&) = delete;
+  PolicyValueStore& operator=(const PolicyValueStore&) = delete;
+
   ~PolicyValueStore() override;
 
   // Stores |policy| in the persistent database represented by the |delegate_|
@@ -65,8 +69,6 @@ class PolicyValueStore : public value_store::ValueStore {
   std::string extension_id_;
   scoped_refptr<SettingsObserverList> observers_;
   std::unique_ptr<value_store::ValueStore> delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(PolicyValueStore);
 };
 
 }  // namespace extensions

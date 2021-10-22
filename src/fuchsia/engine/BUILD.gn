@@ -94,6 +94,7 @@ foreach(locale, locales_with_pseudolocales) {
 
 component("web_engine_core") {
   deps = [
+    ":audio_device_factory",
     ":fidl",
     ":mojom",
     ":switches",
@@ -136,6 +137,7 @@ component("web_engine_core") {
     "//media",
     "//media/fuchsia/cdm/service",
     "//media/fuchsia/mojom",
+    "//media/fuchsia/mojom:cdm_provider",
     "//media/mojo/common",
     "//media/mojo/services",
     "//mojo/public/cpp/bindings",
@@ -150,8 +152,10 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.feedback",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.math",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.sessions2",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.settings",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.gfx",
+    "//third_party/fuchsia-sdk/sdk/pkg/fit-promise",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
@@ -196,6 +200,8 @@ component("web_engine_core") {
     "browser/accessibility_bridge.h",
     "browser/ax_tree_converter.cc",
     "browser/ax_tree_converter.h",
+    "browser/cdm_provider_service.cc",
+    "browser/cdm_provider_service.h",
     "browser/content_directory_loader_factory.cc",
     "browser/content_directory_loader_factory.h",
     "browser/context_impl.cc",
@@ -212,10 +218,10 @@ component("web_engine_core") {
     "browser/frame_permission_controller.h",
     "browser/frame_window_tree_host.cc",
     "browser/frame_window_tree_host.h",
+    "browser/fuchsia_media_resource_provider_impl.cc",
+    "browser/fuchsia_media_resource_provider_impl.h",
     "browser/media_player_impl.cc",
     "browser/media_player_impl.h",
-    "browser/media_resource_provider_service.cc",
-    "browser/media_resource_provider_service.h",
     "browser/navigation_controller_impl.cc",
     "browser/navigation_controller_impl.h",
     "browser/navigation_policy_handler.cc",
@@ -272,6 +278,26 @@ component("web_engine_core") {
     "web_engine_main_delegate.cc",
     "web_engine_main_delegate.h",
   ]
+  visibility = [ ":*" ]
+}
+
+source_set("audio_device_factory") {
+  sources = [
+    "renderer/web_engine_audio_device_factory.cc",
+    "renderer/web_engine_audio_device_factory.h",
+  ]
+
+  deps = [
+    "//base",
+    "//content/public/renderer",
+    "//media",
+    "//media/fuchsia/mojom",
+    "//mojo/public/cpp/bindings",
+    "//third_party/blink/public:blink",
+  ]
+
+  public_deps = [ "//third_party/blink/public/common" ]
+
   visibility = [ ":*" ]
 }
 
@@ -479,6 +505,7 @@ test("web_engine_browsertests") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.input.virtualkeyboard",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//ui/gfx",
@@ -595,6 +622,7 @@ test("web_engine_integration_tests") {
     "//media/fuchsia/audio:test_support",
     "//media/fuchsia/camera:test_support",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]

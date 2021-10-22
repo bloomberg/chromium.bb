@@ -160,9 +160,8 @@ enum class ReportingType {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kManagementLogUploadEnabled[] = "managementLogUploadEnabled";
 const char kManagementReportActivityTimes[] = "managementReportActivityTimes";
-const char kManagementReportHardwareStatus[] = "managementReportHardwareStatus";
-const char kManagementReportNetworkInterfaces[] =
-    "managementReportNetworkInterfaces";
+const char kManagementReportNetworkData[] = "managementReportNetworkData";
+const char kManagementReportHardwareData[] = "managementReportHardwareData";
 const char kManagementReportUsers[] = "managementReportUsers";
 const char kManagementReportCrashReports[] = "managementReportCrashReports";
 const char kManagementReportAppInfoAndActivity[] =
@@ -344,13 +343,11 @@ void AddThreatProtectionPermission(const char* title,
   info->Append(std::move(value));
 }
 
-}  // namespace
-
-std::string ManagementUIHandler::GetAccountManager(Profile* profile) {
-  absl::optional<std::string> account_manager =
-      chrome::GetAccountManagerIdentity(profile);
-  return account_manager ? *account_manager : std::string();
+std::string GetAccountManager(Profile* profile) {
+  return chrome::GetAccountManagerIdentity(profile).value_or(std::string());
 }
+
+}  // namespace
 
 ManagementUIHandler::ManagementUIHandler() {
   reporting_extension_ids_ = {kOnPremReportingExtensionStableId,
@@ -549,29 +546,28 @@ void ManagementUIHandler::AddDeviceReportingInfo(
     return;
 
   // Elements appear on the page in the order they are added.
-  if (collector->ShouldReportActivityTimes()) {
+  if (collector->IsReportingActivityTimes()) {
     AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
                               DeviceReportingType::kDeviceActivity);
   } else {
-    if (collector->ShouldReportUsers()) {
+    if (collector->IsReportingUsers()) {
       AddDeviceReportingElement(report_sources, kManagementReportUsers,
                                 DeviceReportingType::kSupervisedUser);
     }
   }
-  if (collector->ShouldReportHardwareStatus()) {
-    AddDeviceReportingElement(report_sources, kManagementReportHardwareStatus,
-                              DeviceReportingType::kDeviceStatistics);
-  }
-  if (collector->ShouldReportNetworkInterfaces()) {
-    AddDeviceReportingElement(report_sources,
-                              kManagementReportNetworkInterfaces,
+  if (collector->IsReportingNetworkData()) {
+    AddDeviceReportingElement(report_sources, kManagementReportNetworkData,
                               DeviceReportingType::kDevice);
   }
-  if (collector->ShouldReportCrashReportInfo()) {
+  if (collector->IsReportingHardwareData()) {
+    AddDeviceReportingElement(report_sources, kManagementReportHardwareData,
+                              DeviceReportingType::kDeviceStatistics);
+  }
+  if (collector->IsReportingCrashReportInfo()) {
     AddDeviceReportingElement(report_sources, kManagementReportCrashReports,
                               DeviceReportingType::kCrashReport);
   }
-  if (collector->ShouldReportAppInfoAndActivity()) {
+  if (collector->IsReportingAppInfoAndActivity()) {
     AddDeviceReportingElement(report_sources,
                               kManagementReportAppInfoAndActivity,
                               DeviceReportingType::kAppInfoAndActivity);
@@ -815,13 +811,8 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(Profile* profile) {
                                   kManagementOnPageVisitedVisibleData, &info);
   }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::string enterprise_manager = GetDeviceManager();
-  if (enterprise_manager.empty())
-    enterprise_manager = GetAccountManager(profile);
-#else
-  std::string enterprise_manager = connectors_service->GetManagementDomain();
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  const std::string enterprise_manager =
+      connectors_service->GetManagementDomain();
 
   base::Value result(base::Value::Type::DICTIONARY);
   result.SetStringKey("description",

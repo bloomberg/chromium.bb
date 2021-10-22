@@ -33,9 +33,9 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "content/test/fake_mojo_message_dispatch_context.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/test_support/fake_message_dispatch_context.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -93,6 +93,11 @@ class BackgroundFetchServiceTest
       public DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   BackgroundFetchServiceTest() = default;
+
+  BackgroundFetchServiceTest(const BackgroundFetchServiceTest&) = delete;
+  BackgroundFetchServiceTest& operator=(const BackgroundFetchServiceTest&) =
+      delete;
+
   ~BackgroundFetchServiceTest() override = default;
 
   class ScopedCustomBackgroundFetchService {
@@ -438,8 +443,6 @@ class BackgroundFetchServiceTest
   std::unique_ptr<content::WebContents> web_contents_;
 
   std::unique_ptr<BackgroundFetchServiceImpl> service_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceTest);
 };
 
 TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
@@ -450,7 +453,7 @@ TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
 
   // The |developer_id| must be a non-empty string.
   {
-    FakeMojoMessageDispatchContext fake_dispatch_context;
+    mojo::FakeMessageDispatchContext fake_dispatch_context;
     mojo::test::BadMessageObserver bad_message_observer;
     std::vector<blink::mojom::FetchAPIRequestPtr> requests;
     requests.push_back(CreateDefaultRequest());
@@ -467,7 +470,7 @@ TEST_F(BackgroundFetchServiceTest, FetchInvalidArguments) {
 
   // At least a single blink::mojom::FetchAPIRequestPtr must be given.
   {
-    FakeMojoMessageDispatchContext fake_dispatch_context;
+    mojo::FakeMessageDispatchContext fake_dispatch_context;
     mojo::test::BadMessageObserver bad_message_observer;
     std::vector<blink::mojom::FetchAPIRequestPtr> requests;
     // |requests| has deliberately been left empty.

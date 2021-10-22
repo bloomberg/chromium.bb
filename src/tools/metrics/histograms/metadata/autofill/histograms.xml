@@ -47,12 +47,18 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       summary="CVC fallback from FIDO authentication"/>
   <variant name="CvcThenFido" summary="CVC followed by FIDO authentication"/>
   <variant name="Fido" summary="FIDO authentication only"/>
+  <variant name="Otp" summary="OTP auth only"/>
+  <variant name="OtpFallbackFromFido"
+      summary="OTP fallback from FIDO authentication"/>
 </variants>
 
 <variants name="Autofill.OfferNotification.Type">
   <variant name="CardLinkedOffer"
       summary="The bubble/infobar for an offer that is linked to a credit
                card."/>
+  <variant name="FreeListingCouponOffer"
+      summary="The bubble/infobar for a merchant promo code offer sourced
+               from the FreeListingCouponService."/>
 </variants>
 
 <variants name="Autofill.PaymentBubble.Show">
@@ -261,7 +267,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Autofill.AddressTokenVerificationStatusAtProfileUsage.{AddressType}"
-    enum="AufofillStructuredTokenVerificationStatus" expires_after="M96">
+    enum="AufofillStructuredTokenVerificationStatus" expires_after="M100">
   <owner>koerber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -698,7 +704,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.CardUploadDecisionMetric"
-    enum="AutofillCardUploadDecisionMetric" expires_after="2021-12-05">
+    enum="AutofillCardUploadDecisionMetric" expires_after="2022-04-10">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -936,6 +942,30 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     The number of times the expiration date fix flow prompt is shown.
+  </summary>
+</histogram>
+
+<histogram
+    name="Autofill.ExtractNewForms.ShallowEqualityDiffersFromDeepEquality"
+    enum="FormDataEquality" expires_after="2022-09-30">
+  <owner>evih@google.com</owner>
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    In UpdateFormCache(), we compare FormData structs to re-extract changed
+    ones. This metric records:
+
+    - the number of times the shallow comparison is enough to identify a
+    difference between the forms;
+
+    - the number of times the deep comparison finds a difference between the
+    forms, but the shallow does not;
+
+    - the number of times none of the comparisons find a difference, i.e. the
+    forms are equal.
+
+    The metric takes into account every comparison of FormData structs in
+    UpdateFormCache().
   </summary>
 </histogram>
 
@@ -1215,7 +1245,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.FormSubmission.PerProfileType"
-    enum="BrowserProfileType" expires_after="2022-02-02">
+    enum="BrowserProfileType" expires_after="2022-04-10">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -1620,7 +1650,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Autofill.LocalCardMigrationBubbleOffer{AutofillLocalCardMigrationBubbleShow}"
-    enum="AutofillLocalCardMigrationBubbleOffer" expires_after="2021-11-07">
+    enum="AutofillLocalCardMigrationBubbleOffer" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -1635,7 +1665,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Autofill.LocalCardMigrationBubbleResult{AutofillLocalCardMigrationBubbleShow}"
-    enum="AutofillLocalCardMigrationBubbleResult" expires_after="2022-03-01">
+    enum="AutofillLocalCardMigrationBubbleResult" expires_after="2022-10-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -1710,7 +1740,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.LocalCardMigrationDialogUserSelectionPercentage"
-    units="%" expires_after="2022-03-01">
+    units="%" expires_after="2022-05-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <summary>
@@ -1764,7 +1794,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.NameTokenVerificationStatusAtProfileUsage.{NameType}"
-    enum="AufofillStructuredTokenVerificationStatus" expires_after="M96">
+    enum="AufofillStructuredTokenVerificationStatus" expires_after="M100">
   <owner>koerber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1784,7 +1814,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Autofill.NumberOfAutofilledFieldsAtSubmission.{AcceptanceStatus}"
-    units="fields" expires_after="M96">
+    units="fields" expires_after="M100">
   <owner>koerber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -1851,7 +1881,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.Offer.StoredOfferCount" units="offers"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1861,7 +1891,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.Offer.StoredOfferRelatedCardCount" units="cards"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1871,7 +1901,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.Offer.StoredOfferRelatedMerchantCount"
-    units="merchants" expires_after="2022-02-06">
+    units="merchants" expires_after="2022-04-10">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1893,7 +1923,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.Offer.SuggestedCardsHaveOffer"
-    enum="AutofillCreditCardOfferSuggestion" expires_after="2022-02-20">
+    enum="AutofillCreditCardOfferSuggestion" expires_after="2022-04-24">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1904,7 +1934,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.Offer.SyncedOfferDataBeingValid" units="offers"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -1916,6 +1946,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histogram name="Autofill.OfferNotificationBubbleOffer.{BubbleType}"
     enum="BooleanPreviouslyShown" expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     Records whether the offer notification bubble is the first such offer that
@@ -1926,9 +1957,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram
+    name="Autofill.OfferNotificationBubblePromoCodeButtonClicked.{BubbleType}"
+    enum="BooleanClicked" expires_after="2022-04-01">
+  <owner>jsaul@google.com</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records when the copy promo code button for an offer notification bubble is
+    clicked by the user. The subhistogram is the type of offer shown, such as
+    GPay promo code offer or free-listing coupon offer.
+  </summary>
+  <token key="BubbleType" variants="Autofill.OfferNotification.Type"/>
+</histogram>
+
+<histogram
     name="Autofill.OfferNotificationBubbleResult.{BubbleType}.{ShowType}"
     enum="AutofillOfferNotificationBubbleResult" expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
     Records the reason for closing the offer notification bubble. Recorded when
@@ -1973,7 +2019,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.PerfectFilling.{FormType}" enum="Boolean"
-    expires_after="M96">
+    expires_after="M100">
   <owner>koerber@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -2002,7 +2048,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="M96">
+    enum="AutofillProfileImportDecision" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2013,7 +2059,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileEditedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="M96">
+    enum="AutofillSettingsVisibleTypes" expires_after="M100">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2025,7 +2071,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileNumberOfEditedFields"
-    units="fields" expires_after="M96">
+    units="fields" expires_after="M100">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2035,7 +2081,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.ProfileImportType"
-    enum="AutofillProfileImportType" expires_after="M96">
+    enum="AutofillProfileImportType" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2057,7 +2103,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileAffectedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="M96">
+    enum="AutofillSettingsVisibleTypes" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2068,8 +2114,51 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Autofill.ProfileImport.UpdateProfileAffectedType.{Decision}"
+    enum="AutofillSettingsVisibleTypes" expires_after="M98">
+  <owner>koerber@google.com</owner>
+  <owner>src/components/autofill/OWNERS</owner>
+  <summary>
+    Logs that a specific type would have changed in a profile update process
+    that received a specific {Decision}. The update was shown to the user
+    because a profile similar to an already existing profile was observed in a
+    form submission. Note that this metric collects the changed types before the
+    user potentially applies additional edits. The metric is recorded on form
+    submission once the user decision is final.
+  </summary>
+  <token key="Decision">
+    <variant name="Accepted"
+        summary="The user accepted the update flow from the initial prompt."/>
+    <variant name="Any" summary="Any decision."/>
+    <variant name="AutoDeclined"
+        summary="The prompt is suppressed most likely because there is
+                 already another prompt shown on the same tab."/>
+    <variant name="Declined"
+        summary="The user declined the update flow from the initial prompt."/>
+    <variant name="EditAccepted"
+        summary="The user accepted the update flow from the edit dialog."/>
+    <variant name="EditDeclined"
+        summary="The user declined the update flow from the edit dialog."/>
+    <variant name="Ignored" summary="The user ignored the prompt."/>
+    <variant name="MessageDeclined"
+        summary="The user swipes away the update Message. This is only
+                 relevant on mobile."/>
+    <variant name="MessageTimeout"
+        summary="The update message timed out before the user interacted.
+                 This is only relevant on mobile."/>
+    <variant name="Never"
+        summary="The user selected to never save a new profile on a given
+                 domain or update a specific profile (currently not
+                 supported)."/>
+    <variant name="Undefined" summary="Undefined"/>
+    <variant name="UserNotAsked"
+        summary="No prompt is shown and no decision is needed to proceed with
+                 the process."/>
+  </token>
+</histogram>
+
 <histogram name="Autofill.ProfileImport.UpdateProfileDecision"
-    enum="AutofillProfileImportDecision" expires_after="M96">
+    enum="AutofillProfileImportDecision" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2081,7 +2170,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileEditedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="M96">
+    enum="AutofillSettingsVisibleTypes" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2093,7 +2182,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields"
-    units="fields" expires_after="M96">
+    units="fields" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2104,8 +2193,50 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram
+    name="Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields.{Decision}"
+    units="fields" expires_after="M98">
+  <owner>koerber@google.com</owner>
+  <owner>src/components/autofill/OWNERS</owner>
+  <summary>
+    Logs the number of fields that would be changed by an accepted update for
+    any possible Decision. Note that this metric collects the number of changed
+    fields before the user potentially applies additional edits. The metric is
+    recorded on form submission once the user decision is final.
+  </summary>
+  <token key="Decision">
+    <variant name="Accepted"
+        summary="The user accepted the update flow from the initial prompt."/>
+    <variant name="Any" summary="Any decision."/>
+    <variant name="AutoDeclined"
+        summary="The prompt is suppressed most likely because there is
+                 already another prompt shown on the same tab."/>
+    <variant name="Declined"
+        summary="The user declined the update flow from the initial prompt."/>
+    <variant name="EditAccepted"
+        summary="The user accepted the update flow from the edit dialog."/>
+    <variant name="EditDeclined"
+        summary="The user declined the update flow from the edit dialog."/>
+    <variant name="Ignored" summary="The user ignored the prompt."/>
+    <variant name="MessageDeclined"
+        summary="The user swipes away the update Message. This is only
+                 relevant on mobile."/>
+    <variant name="MessageTimeout"
+        summary="The update message timed out before the user interacted.
+                 This is only relevant on mobile."/>
+    <variant name="Never"
+        summary="The user selected to never save a new profile on a given
+                 domain or update a specific profile (currently not
+                 supported)."/>
+    <variant name="Undefined" summary="Undefined"/>
+    <variant name="UserNotAsked"
+        summary="No prompt is shown and no decision is needed to proceed with
+                 the process."/>
+  </token>
+</histogram>
+
 <histogram name="Autofill.ProfileImport.UpdateProfileNumberOfEditedFields"
-    units="fields" expires_after="M96">
+    units="fields" expires_after="2022-04-17">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2380,7 +2511,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata"
-    units="units" expires_after="M98">
+    units="units" expires_after="2022-04-10">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2492,7 +2623,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.StrikeDatabase.StrikesPresentWhenLocalCardSaved"
-    units="strikes" expires_after="2021-12-20">
+    units="strikes" expires_after="2022-04-24">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2502,7 +2633,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.StrikeDatabase.StrikesPresentWhenServerCardSaved"
-    units="strikes" expires_after="2021-12-20">
+    units="strikes" expires_after="2022-05-01">
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2563,7 +2694,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.SuggestionAccepted.OffTheRecord" units="units"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -2603,7 +2734,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.SuggestionShown.OffTheRecord" units="units"
-    expires_after="2022-02-06">
+    expires_after="2022-05-01">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-privacy-core@google.com</owner>
   <summary>
@@ -2665,7 +2796,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.Events" enum="AutofillUnmaskPromptEvent"
-    expires_after="2021-12-12">
+    expires_after="2022-05-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>

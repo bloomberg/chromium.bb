@@ -32,21 +32,21 @@ bool IsChromeApp(const extensions::Extension* extension) {
   return extension->is_platform_app();
 }
 
-apps::mojom::InstallSource GetInstallSource(
+apps::mojom::InstallReason GetInstallReason(
     const extensions::Extension* extension) {
   if (extensions::Manifest::IsComponentLocation(extension->location()))
-    return apps::mojom::InstallSource::kSystem;
+    return apps::mojom::InstallReason::kSystem;
 
   if (extensions::Manifest::IsPolicyLocation(extension->location()))
-    return apps::mojom::InstallSource::kPolicy;
+    return apps::mojom::InstallReason::kPolicy;
 
   if (extension->was_installed_by_oem())
-    return apps::mojom::InstallSource::kOem;
+    return apps::mojom::InstallReason::kOem;
 
   if (extension->was_installed_by_default())
-    return apps::mojom::InstallSource::kDefault;
+    return apps::mojom::InstallReason::kDefault;
 
-  return apps::mojom::InstallSource::kUser;
+  return apps::mojom::InstallReason::kUser;
 }
 
 }  // namespace
@@ -255,6 +255,13 @@ class LacrosExtensionAppsPublisher::ProfileTracker
     app->name = extension->name();
     app->short_name = extension->short_name();
 
+    // We always use an empty icon key since we currently do not support
+    // dynamically changing icons or modifying the appearance of icons.
+    // This bug is tracked at https://crbug.com/1248499, but given that Chrome
+    // Apps is deprecated, it's unclear if we'll ever get around to implementing
+    // this functionality.
+    app->icon_key = apps::mojom::IconKey::New();
+
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
     if (prefs) {
       app->last_launch_time = prefs->GetLastLaunchTime(extension->id());
@@ -264,7 +271,7 @@ class LacrosExtensionAppsPublisher::ProfileTracker
       app->install_time = base::Time();
     }
 
-    app->install_source = GetInstallSource(extension);
+    app->install_reason = GetInstallReason(extension);
     app->recommendable = apps::mojom::OptionalBool::kTrue;
     app->searchable = apps::mojom::OptionalBool::kTrue;
     app->paused = apps::mojom::OptionalBool::kFalse;
@@ -314,6 +321,11 @@ void LacrosExtensionAppsPublisher::Initialize() {
   profile_manager_observation_.Observe(g_browser_process->profile_manager());
   auto profiles = g_browser_process->profile_manager()->GetLoadedProfiles();
   for (auto* profile : profiles) {
+    // TODO(https://crbug.com/1254894): The app id is not stable for secondary
+    // profiles and cannot be stored in sync. Thus, the app cannot be published
+    // at all.
+    if (!profile->IsMainProfile())
+      continue;
     profile_trackers_[profile] =
         std::make_unique<ProfileTracker>(profile, this);
   }
@@ -365,6 +377,11 @@ void LacrosExtensionAppsPublisher::OnAppWindowRemoved(
 }
 
 void LacrosExtensionAppsPublisher::OnProfileAdded(Profile* profile) {
+  // TODO(https://crbug.com/1254894): The app id is not stable for secondary
+  // profiles and cannot be stored in sync. Thus, the app cannot be published
+  // at all.
+  if (!profile->IsMainProfile())
+    return;
   profile_trackers_[profile] = std::make_unique<ProfileTracker>(profile, this);
 }
 

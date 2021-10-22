@@ -110,11 +110,15 @@ const PixelProcessor::State PixelProcessor::update(const vk::GraphicsState &pipe
 		state.backStencil = pipelineState.getBackStencil();
 	}
 
-	if(pipelineState.depthBufferActive(attachments))
+	state.depthFormat = attachments.depthFormat();
+	state.depthBoundsTestActive = pipelineState.depthBoundsTestActive(attachments);
+	state.minDepthBounds = pipelineState.getMinDepthBounds();
+	state.maxDepthBounds = pipelineState.getMaxDepthBounds();
+
+	if(pipelineState.depthTestActive(attachments))
 	{
 		state.depthTestActive = true;
 		state.depthCompareMode = pipelineState.getDepthCompareMode();
-		state.depthFormat = attachments.depthBuffer->getFormat();
 
 		state.depthBias = (pipelineState.getConstantDepthBias() != 0.0f) || (pipelineState.getSlopeDepthBias() != 0.0f);
 
@@ -136,17 +140,13 @@ const PixelProcessor::State PixelProcessor::update(const vk::GraphicsState &pipe
 		}
 	}
 
-	state.depthBoundsTestActive = pipelineState.depthBoundsTestActive();
-	state.minDepthBounds = pipelineState.getMinDepthBounds();
-	state.maxDepthBounds = pipelineState.getMaxDepthBounds();
-
 	state.occlusionEnabled = occlusionEnabled;
 
 	bool fragmentContainsKill = (fragmentShader && fragmentShader->getAnalysis().ContainsKill);
-	for(int i = 0; i < RENDERTARGETS; i++)
+	for(int i = 0; i < MAX_COLOR_BUFFERS; i++)
 	{
 		state.colorWriteMask |= pipelineState.colorWriteActive(i, attachments) << (4 * i);
-		state.targetFormat[i] = attachments.renderTargetInternalFormat(i);
+		state.colorFormat[i] = attachments.colorFormat(i);
 		state.blendState[i] = pipelineState.getBlendState(i, attachments, fragmentContainsKill);
 	}
 

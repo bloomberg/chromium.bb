@@ -34,6 +34,10 @@ class CONTENT_EXPORT MediaSessionController
  public:
   MediaSessionController(const MediaPlayerId& id,
                          WebContentsImpl* web_contents);
+
+  MediaSessionController(const MediaSessionController&) = delete;
+  MediaSessionController& operator=(const MediaSessionController&) = delete;
+
   ~MediaSessionController() override;
 
   // Must be called when media player metadata changes.
@@ -69,6 +73,8 @@ class CONTENT_EXPORT MediaSessionController
   bool HasVideo(int player_id) const override;
   std::string GetAudioOutputSinkId(int player_id) const override;
   bool SupportsAudioOutputDeviceSwitching(int player_id) const override;
+  media::MediaContentType GetMediaContentType() const override;
+
   // Test helpers.
   int get_player_id_for_testing() const { return player_id_; }
 
@@ -126,8 +132,6 @@ class CONTENT_EXPORT MediaSessionController
   bool supports_audio_output_device_switching_ = true;
   media::MediaContentType media_content_type_ =
       media::MediaContentType::Persistent;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaSessionController);
 };
 
 }  // namespace content

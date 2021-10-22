@@ -83,14 +83,18 @@ void SetWebAppManifestFields(const WebApplicationInfo& web_app_info,
          SkColorGetA(*web_app_info.background_color) == SK_AlphaOPAQUE);
   web_app.SetBackgroundColor(web_app_info.background_color);
 
+  DCHECK(!web_app_info.dark_mode_theme_color.has_value() ||
+         SkColorGetA(*web_app_info.dark_mode_theme_color) == SK_AlphaOPAQUE);
+  web_app.SetDarkModeThemeColor(web_app_info.dark_mode_theme_color);
+
   WebApp::SyncFallbackData sync_fallback_data;
   sync_fallback_data.name = base::UTF16ToUTF8(web_app_info.title);
   sync_fallback_data.theme_color = web_app_info.theme_color;
   sync_fallback_data.scope = web_app_info.scope;
-  sync_fallback_data.icon_infos = web_app_info.icon_infos;
+  sync_fallback_data.icon_infos = web_app_info.manifest_icons;
   web_app.SetSyncFallbackData(std::move(sync_fallback_data));
 
-  web_app.SetIconInfos(web_app_info.icon_infos);
+  web_app.SetManifestIcons(web_app_info.manifest_icons);
   web_app.SetDownloadedIconSizes(
       IconPurpose::ANY, GetSquareSizePxs(web_app_info.icon_bitmaps.any));
   web_app.SetDownloadedIconSizes(

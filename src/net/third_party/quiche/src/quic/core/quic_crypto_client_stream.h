@@ -25,6 +25,8 @@ namespace test {
 class QuicCryptoClientStreamPeer;
 }  // namespace test
 
+class TlsClientHandshaker;
+
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
  public:
   explicit QuicCryptoClientStreamBase(QuicSession* session);
@@ -63,6 +65,14 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStreamBase : public QuicCryptoStream {
   // client.  Does not count update messages that were received prior
   // to handshake confirmation.
   virtual int num_scup_messages_received() const = 0;
+
+  bool ExportKeyingMaterial(absl::string_view /*label*/,
+                            absl::string_view /*context*/,
+                            size_t /*result_len*/,
+                            std::string* /*result*/) override {
+    QUICHE_NOTREACHED();
+    return false;
+  }
 };
 
 class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
@@ -185,6 +195,13 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
     // Called when application state is received.
     virtual void SetServerApplicationStateForResumption(
         std::unique_ptr<ApplicationState> application_state) = 0;
+
+    // Called to obtain keying material export of length |result_len| with the
+    // given |label| and |context|. Returns false on failure.
+    virtual bool ExportKeyingMaterial(absl::string_view label,
+                                      absl::string_view context,
+                                      size_t result_len,
+                                      std::string* result) = 0;
   };
 
   // ProofHandler is an interface that handles callbacks from the crypto
@@ -250,7 +267,9 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
   std::unique_ptr<QuicDecrypter> AdvanceKeysAndCreateCurrentOneRttDecrypter()
       override;
   std::unique_ptr<QuicEncrypter> CreateCurrentOneRttEncrypter() override;
-
+  SSL* GetSsl() const override;
+  bool ExportKeyingMaterial(absl::string_view label, absl::string_view context,
+                            size_t result_len, std::string* result) override;
   std::string chlo_hash() const;
 
  protected:
@@ -261,6 +280,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientStream
  private:
   friend class test::QuicCryptoClientStreamPeer;
   std::unique_ptr<HandshakerInterface> handshaker_;
+  // Points to |handshaker_| if it uses TLS1.3. Otherwise, nullptr.
+  // TODO(danzh) change the type of |handshaker_| to TlsClientHandshaker after
+  // deprecating Google QUIC.
+  TlsClientHandshaker* tls_handshaker_{nullptr};
 };
 
 }  // namespace quic

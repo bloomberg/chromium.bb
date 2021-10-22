@@ -32,21 +32,9 @@
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-// TODO(crbug.com/1218413) Delete this method once the migration to
-// PasswordStoreInterface is complete and change the name of the
-// method below to GetForBrowserState.
-// static
-scoped_refptr<password_manager::PasswordStore>
-IOSChromePasswordStoreFactory::GetForBrowserState(
-    ChromeBrowserState* browser_state,
-    ServiceAccessType access_type) {
-  return base::WrapRefCounted(static_cast<password_manager::PasswordStore*>(
-      GetInterfaceForBrowserState(browser_state, access_type).get()));
-}
-
 // static
 scoped_refptr<password_manager::PasswordStoreInterface>
-IOSChromePasswordStoreFactory::GetInterfaceForBrowserState(
+IOSChromePasswordStoreFactory::GetForBrowserState(
     ChromeBrowserState* browser_state,
     ServiceAccessType access_type) {
   // |profile| gets always redirected to a non-Incognito profile below, so
@@ -95,7 +83,9 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
   scoped_refptr<password_manager::PasswordStore> store =
-      new password_manager::PasswordStoreImpl(std::move(login_db));
+      base::MakeRefCounted<password_manager::PasswordStore>(
+          std::make_unique<password_manager::PasswordStoreImpl>(
+              std::move(login_db)));
   if (!store->Init(ChromeBrowserState::FromBrowserState(context)->GetPrefs())) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.
@@ -106,7 +96,7 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
   password_manager_util::RemoveUselessCredentials(
       CredentialsCleanerRunnerFactory::GetForBrowserState(context), store,
       ChromeBrowserState::FromBrowserState(context)->GetPrefs(),
-      base::TimeDelta::FromSeconds(60), base::NullCallback());
+      base::Seconds(60), base::NullCallback());
 
   password_manager::AffiliationService* affiliation_service =
       IOSChromeAffiliationServiceFactory::GetForBrowserState(context);

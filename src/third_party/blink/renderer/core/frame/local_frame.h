@@ -56,6 +56,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/link_to_text/link_to_text.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -78,7 +79,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -358,7 +359,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void MediaQueryAffectingValueChangedForLocalSubtree(MediaValueChange);
 
   void WindowSegmentsChanged(const WebVector<gfx::Rect>& window_segments);
-  void UpdateCSSFoldEnvironmentVariables(
+  void UpdateViewportSegmentCSSEnvironmentVariables(
       const WebVector<gfx::Rect>& window_segments);
 
   device::mojom::blink::DevicePostureType GetDevicePosture();
@@ -663,6 +664,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Return true if the frame has a transient affordance to enter fullscreen.
   bool IsTransientAllowFullscreenActive() const;
+
+  // Activate the transient affordance to enter fullscreen.
+  void ActivateTransientAllowFullscreen() {
+    transient_allow_fullscreen_.Activate();
+  }
 
   // Returns the state of the |PaymentRequestToken| in the current |Frame|.
   bool IsPaymentRequestTokenActive() const;

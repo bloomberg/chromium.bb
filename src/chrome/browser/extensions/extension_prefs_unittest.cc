@@ -41,7 +41,6 @@
 #include "extensions/common/permissions/permissions_info.h"
 
 using base::Time;
-using base::TimeDelta;
 using extensions::mojom::APIPermissionID;
 using extensions::mojom::ManifestLocation;
 
@@ -87,8 +86,8 @@ void ExtensionPrefsTest::TearDown() {
 class ExtensionPrefsLastPingDay : public ExtensionPrefsTest {
  public:
   ExtensionPrefsLastPingDay()
-      : extension_time_(Time::Now() - TimeDelta::FromHours(4)),
-        blocklist_time_(Time::Now() - TimeDelta::FromHours(2)) {}
+      : extension_time_(Time::Now() - base::Hours(4)),
+        blocklist_time_(Time::Now() - base::Hours(2)) {}
 
   void Initialize() override {
     extension_id_ = prefs_.AddExtensionAndReturnId("last_ping_day");
@@ -933,6 +932,12 @@ TEST_F(ExtensionPrefsComponentExtension, ExtensionPrefsComponentExtension) {
 class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
  public:
   ExtensionPrefsRuntimeGrantedPermissions() = default;
+
+  ExtensionPrefsRuntimeGrantedPermissions(
+      const ExtensionPrefsRuntimeGrantedPermissions&) = delete;
+  ExtensionPrefsRuntimeGrantedPermissions& operator=(
+      const ExtensionPrefsRuntimeGrantedPermissions&) = delete;
+
   ~ExtensionPrefsRuntimeGrantedPermissions() override {}
 
   void Initialize() override {
@@ -1011,8 +1016,6 @@ class ExtensionPrefsRuntimeGrantedPermissions : public ExtensionPrefsTest {
  private:
   scoped_refptr<const Extension> extension_a_;
   scoped_refptr<const Extension> extension_b_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsRuntimeGrantedPermissions);
 };
 TEST_F(ExtensionPrefsRuntimeGrantedPermissions,
        ExtensionPrefsRuntimeGrantedPermissions) {}
@@ -1021,6 +1024,12 @@ TEST_F(ExtensionPrefsRuntimeGrantedPermissions,
 class ExtensionPrefsObsoletePrefRemoval : public ExtensionPrefsTest {
  public:
   ExtensionPrefsObsoletePrefRemoval() = default;
+
+  ExtensionPrefsObsoletePrefRemoval(const ExtensionPrefsObsoletePrefRemoval&) =
+      delete;
+  ExtensionPrefsObsoletePrefRemoval& operator=(
+      const ExtensionPrefsObsoletePrefRemoval&) = delete;
+
   ~ExtensionPrefsObsoletePrefRemoval() override = default;
 
   void Initialize() override {
@@ -1047,8 +1056,6 @@ class ExtensionPrefsObsoletePrefRemoval : public ExtensionPrefsTest {
 
  private:
   scoped_refptr<const Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsObsoletePrefRemoval);
 };
 
 TEST_F(ExtensionPrefsObsoletePrefRemoval, ExtensionPrefsObsoletePrefRemoval) {}
@@ -1057,6 +1064,11 @@ TEST_F(ExtensionPrefsObsoletePrefRemoval, ExtensionPrefsObsoletePrefRemoval) {}
 class ExtensionPrefsMigratedPref : public ExtensionPrefsTest {
  public:
   ExtensionPrefsMigratedPref() = default;
+
+  ExtensionPrefsMigratedPref(const ExtensionPrefsMigratedPref&) = delete;
+  ExtensionPrefsMigratedPref& operator=(const ExtensionPrefsMigratedPref&) =
+      delete;
+
   ~ExtensionPrefsMigratedPref() override = default;
 
   void Initialize() override {
@@ -1086,8 +1098,6 @@ class ExtensionPrefsMigratedPref : public ExtensionPrefsTest {
 
  private:
   scoped_refptr<const Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsMigratedPref);
 };
 
 TEST_F(ExtensionPrefsMigratedPref, ExtensionPrefsMigratedPref) {}
@@ -1096,8 +1106,15 @@ TEST_F(ExtensionPrefsMigratedPref, ExtensionPrefsMigratedPref) {}
 class ExtensionPrefsMigrateOldBlocklistPrefs : public ExtensionPrefsTest {
  public:
   static constexpr char kLegacyBlocklistPref[] = "blacklist";
+  static constexpr char kLegacyBlocklistAcknowledgedPref[] = "ack_blacklist";
 
   ExtensionPrefsMigrateOldBlocklistPrefs() = default;
+
+  ExtensionPrefsMigrateOldBlocklistPrefs(
+      const ExtensionPrefsMigrateOldBlocklistPrefs&) = delete;
+  ExtensionPrefsMigrateOldBlocklistPrefs& operator=(
+      const ExtensionPrefsMigrateOldBlocklistPrefs&) = delete;
+
   ~ExtensionPrefsMigrateOldBlocklistPrefs() override = default;
 
   void Initialize() override {
@@ -1112,6 +1129,17 @@ class ExtensionPrefsMigrateOldBlocklistPrefs : public ExtensionPrefsTest {
     EXPECT_FALSE(
         blocklist_prefs::IsExtensionBlocklisted(extension_->id(), prefs()));
 
+    prefs()->UpdateExtensionPref(extension_->id(),
+                                 kLegacyBlocklistAcknowledgedPref,
+                                 std::make_unique<base::Value>(true));
+    bool is_blocklist_acknowledged_pref = false;
+    prefs()->ReadPrefAsBoolean(extension_->id(),
+                               kLegacyBlocklistAcknowledgedPref,
+                               &is_blocklist_acknowledged_pref);
+    EXPECT_TRUE(is_blocklist_acknowledged_pref);
+    // The pref is not migrated to the new pref yet.
+    EXPECT_FALSE(prefs()->IsBlocklistedExtensionAcknowledged(extension_->id()));
+
     prefs()->MigrateOldBlocklistPrefs();
   }
 
@@ -1123,16 +1151,24 @@ class ExtensionPrefsMigrateOldBlocklistPrefs : public ExtensionPrefsTest {
     EXPECT_FALSE(is_blocklisted_pref);
     EXPECT_TRUE(
         blocklist_prefs::IsExtensionBlocklisted(extension_->id(), prefs()));
+
+    bool is_blocklist_acknowledged_pref = false;
+    prefs()->ReadPrefAsBoolean(extension_->id(),
+                               kLegacyBlocklistAcknowledgedPref,
+                               &is_blocklist_acknowledged_pref);
+    // The old pref should be cleared.
+    EXPECT_FALSE(is_blocklist_acknowledged_pref);
+    EXPECT_TRUE(prefs()->IsBlocklistedExtensionAcknowledged(extension_->id()));
   }
 
  private:
   scoped_refptr<const Extension> extension_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionPrefsMigrateOldBlocklistPrefs);
 };
 
 // static
 constexpr char ExtensionPrefsMigrateOldBlocklistPrefs::kLegacyBlocklistPref[];
+constexpr char
+    ExtensionPrefsMigrateOldBlocklistPrefs::kLegacyBlocklistAcknowledgedPref[];
 
 TEST_F(ExtensionPrefsMigrateOldBlocklistPrefs,
        ExtensionPrefsMigrateOldBlocklistPrefs) {}

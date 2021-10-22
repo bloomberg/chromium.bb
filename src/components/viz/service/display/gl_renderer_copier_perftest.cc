@@ -62,8 +62,8 @@ class GLRendererCopierPerfTest : public testing::Test {
  public:
   GLRendererCopierPerfTest() {
     context_provider_ = base::MakeRefCounted<TestInProcessContextProvider>(
-        /*enable_gpu_rasterization=*/false,
-        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+        /*enable_gles2_interface=*/true, /*support_locking=*/false,
+        RasterInterfaceType::None);
     gpu::ContextResult result = context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = context_provider_->ContextGL();
@@ -72,6 +72,9 @@ class GLRendererCopierPerfTest : public testing::Test {
     copier_ = std::make_unique<GLRendererCopier>(context_provider_.get(),
                                                  texture_deleter_.get());
   }
+
+  GLRendererCopierPerfTest(const GLRendererCopierPerfTest&) = delete;
+  GLRendererCopierPerfTest& operator=(const GLRendererCopierPerfTest&) = delete;
 
   void TearDown() override {
     DeleteSourceFramebuffer();
@@ -269,8 +272,6 @@ class GLRendererCopierPerfTest : public testing::Test {
   GLuint source_texture_ = 0;
   GLuint source_framebuffer_ = 0;
   base::LapTimer timer_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLRendererCopierPerfTest);
 };
 
 // Fast-Path: If no transformation is necessary and no new textures need to be

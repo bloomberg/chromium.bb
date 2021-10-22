@@ -69,9 +69,9 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -236,7 +236,7 @@ Tab::Tab(TabController* controller)
   tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
       this, close_button_, controller_);
 
-  title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
+  title_animation_.SetDuration(base::Milliseconds(100));
 
   // Enable keyboard focus.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);

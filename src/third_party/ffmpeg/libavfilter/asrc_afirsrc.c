@@ -24,6 +24,7 @@
 #include "libavutil/tx.h"
 #include "audio.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "internal.h"
 #include "window_func.h"
 
@@ -134,29 +135,15 @@ static av_cold int query_formats(AVFilterContext *ctx)
         AV_SAMPLE_FMT_FLT,
         AV_SAMPLE_FMT_NONE
     };
-
-    AVFilterFormats *formats;
-    AVFilterChannelLayouts *layouts;
-    int ret;
-
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats (ctx, formats);
+    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    layouts = ff_make_format64_list(chlayouts);
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    ret = ff_set_common_channel_layouts_from_list(ctx, chlayouts);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_rates);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_samplerates_from_list(ctx, sample_rates);
 }
 
 static int parse_string(char *str, float **items, int *nb_items, int *items_size)
@@ -287,16 +274,21 @@ static av_cold int config_output(AVFilterLink *outlink)
     return 0;
 }
 
-static int request_frame(AVFilterLink *outlink)
+static int activate(AVFilterContext *ctx)
 {
-    AVFilterContext *ctx = outlink->src;
+    AVFilterLink *outlink = ctx->outputs[0];
     AudioFIRSourceContext *s = ctx->priv;
     AVFrame *frame;
     int nb_samples;
 
+    if (!ff_outlink_frame_wanted(outlink))
+        return FFERROR_NOT_READY;
+
     nb_samples = FFMIN(s->nb_samples, s->nb_taps - s->pts);
-    if (!nb_samples)
-        return AVERROR_EOF;
+    if (nb_samples <= 0) {
+        ff_outlink_set_status(outlink, AVERROR_EOF, s->pts);
+        return 0;
+    }
 
     if (!(frame = ff_get_audio_buffer(outlink, nb_samples)))
         return AVERROR(ENOMEM);
@@ -312,10 +304,8 @@ static const AVFilterPad afirsrc_outputs[] = {
     {
         .name          = "default",
         .type          = AVMEDIA_TYPE_AUDIO,
-        .request_frame = request_frame,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_asrc_afirsrc = {
@@ -324,8 +314,9 @@ const AVFilter ff_asrc_afirsrc = {
     .query_formats = query_formats,
     .init          = init,
     .uninit        = uninit,
+    .activate      = activate,
     .priv_size     = sizeof(AudioFIRSourceContext),
     .inputs        = NULL,
-    .outputs       = afirsrc_outputs,
+    FILTER_OUTPUTS(afirsrc_outputs),
     .priv_class    = &afirsrc_class,
 };

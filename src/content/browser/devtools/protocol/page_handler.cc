@@ -818,7 +818,7 @@ void PageHandler::CaptureScreenshot(
   absl::optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
   if (capture_beyond_viewport.fromMaybe(false)) {
     blink::web_pref::WebPreferences original_web_prefs =
-        host_->GetRenderViewHost()->GetDelegate()->GetOrCreateWebPreferences();
+        host_->render_view_host()->GetDelegate()->GetOrCreateWebPreferences();
     maybe_original_web_prefs = original_web_prefs;
 
     blink::web_pref::WebPreferences modified_web_prefs = original_web_prefs;
@@ -826,7 +826,7 @@ void PageHandler::CaptureScreenshot(
     // screenshot. Details: https://crbug.com/1003629.
     modified_web_prefs.hide_scrollbars = true;
     modified_web_prefs.record_whole_document = true;
-    host_->GetRenderViewHost()->GetDelegate()->SetWebPreferences(
+    host_->render_view_host()->GetDelegate()->SetWebPreferences(
         modified_web_prefs);
 
     {
@@ -1123,7 +1123,7 @@ void PageHandler::ScreencastFrameCaptured(
           FROM_HERE,
           base::BindOnce(&PageHandler::InnerSwapCompositorFrame,
                          weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kFrameRetryDelayMs));
+          base::Milliseconds(kFrameRetryDelayMs));
     }
     --frames_in_flight_;
     return;
@@ -1164,7 +1164,7 @@ void PageHandler::ScreenshotCaptured(
   }
 
   if (maybe_original_web_prefs) {
-    host_->GetRenderViewHost()->GetDelegate()->SetWebPreferences(
+    host_->render_view_host()->GetDelegate()->SetWebPreferences(
         maybe_original_web_prefs.value());
   }
 
@@ -1266,7 +1266,8 @@ void PageHandler::GetManifestIcons(
 void PageHandler::GetAppId(std::unique_ptr<GetAppIdCallback> callback) {
   // TODO: Use InstallableManager once it moves into content/.
   // Until then, this code is only used to return no image data in the tests.
-  callback->sendSuccess(protocol::Maybe<protocol::String>());
+  callback->sendSuccess(protocol::Maybe<protocol::String>(),
+                        protocol::Maybe<protocol::String>());
 }
 
 Response PageHandler::SetBypassCSP(bool enabled) {
@@ -1574,6 +1575,8 @@ DisableForRenderFrameHostReasonToProtocol(
         case BackForwardCacheDisable::DisabledReasonId::kMediaSessionService:
           return Page::BackForwardCacheNotRestoredReasonEnum::
               ContentMediaSessionService;
+        case BackForwardCacheDisable::DisabledReasonId::kMediaPlay:
+          return Page::BackForwardCacheNotRestoredReasonEnum::ContentMediaPlay;
       }
     case BackForwardCache::DisabledSource::kEmbedder:
       switch (static_cast<back_forward_cache::DisabledReasonId>(reason.id)) {

@@ -23,6 +23,12 @@ namespace chromeos {
 class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
  public:
   AddSupervisionMetricsRecorderTest() = default;
+
+  AddSupervisionMetricsRecorderTest(const AddSupervisionMetricsRecorderTest&) =
+      delete;
+  AddSupervisionMetricsRecorderTest& operator=(
+      const AddSupervisionMetricsRecorderTest&) = delete;
+
   ~AddSupervisionMetricsRecorderTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -64,8 +70,6 @@ class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AddSupervisionMetricsRecorderTest);
-
   std::unique_ptr<signin::IdentityTestEnvironment> identity_test_env_;
   content::TestWebUI test_web_ui_;
 };
@@ -229,11 +233,11 @@ IN_PROC_BROWSER_TEST_P(AddSupervisionMetricsRecorderTimeTest, UserTimingTest) {
       base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   AddSupervisionMetricsRecorder::GetInstance()->SetClockForTesting(
       task_runner_->GetMockTickClock());
-  base::TimeDelta duration(base::TimeDelta::FromSeconds(GetParam()));
+  base::TimeDelta duration(base::Seconds(GetParam()));
 
   // We need to start at some non-zero point in time or else
   // DCHECK(!start_time_.is_null()) throws.
-  task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_runner_->FastForwardBy(base::Seconds(1));
   ShowAddSupervisionDialog();
   task_runner_->FastForwardBy(duration);
   CloseAddSupervisionDialog();

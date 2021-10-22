@@ -26,15 +26,15 @@ class Profile;
 class ChromeOmniboxClient : public OmniboxClient {
  public:
   ChromeOmniboxClient(OmniboxEditController* controller, Profile* profile);
+
+  ChromeOmniboxClient(const ChromeOmniboxClient&) = delete;
+  ChromeOmniboxClient& operator=(const ChromeOmniboxClient&) = delete;
+
   ~ChromeOmniboxClient() override;
 
   // OmniboxClient.
   std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
       override;
-  std::unique_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
-      const std::u16string& text,
-      const AutocompleteMatch& match,
-      const AutocompleteMatch& alternate_nav_match) override;
   bool CurrentPageExists() const override;
   const GURL& GetURL() const override;
   const std::u16string& GetTitle() const override;
@@ -55,10 +55,10 @@ class ChromeOmniboxClient : public OmniboxClient {
   gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
                           SkColor vector_icon_color) const override;
   gfx::Image GetSizedIcon(const gfx::Image& icon) const override;
-  bool ProcessExtensionKeyword(const TemplateURL* template_url,
+  bool ProcessExtensionKeyword(const std::u16string& text,
+                               const TemplateURL* template_url,
                                const AutocompleteMatch& match,
-                               WindowOpenDisposition disposition,
-                               OmniboxNavigationObserver* observer) override;
+                               WindowOpenDisposition disposition) override;
   void OnInputStateChanged() override;
   void OnFocusChanged(OmniboxFocusState state,
                       OmniboxFocusChangeReason reason) override;
@@ -84,12 +84,10 @@ class ChromeOmniboxClient : public OmniboxClient {
   void DiscardNonCommittedNavigations() override;
   void OpenUpdateChromeDialog() override;
 
-  // OmniboxAction::Client:
-  void OpenSharingHub() override;
-  void NewIncognitoWindow() override;
-  void OpenIncognitoClearBrowsingDataDialog() override;
-  void CloseIncognitoWindows() override;
-  void PromptPageTranslation() override;
+  // Update shortcuts when a navigation succeeds.
+  static void OnSuccessfulNavigation(Profile* profile,
+                                     const std::u16string& text,
+                                     const AutocompleteMatch& match);
 
  private:
   // Performs prerendering for |match|.
@@ -111,8 +109,6 @@ class ChromeOmniboxClient : public OmniboxClient {
   FaviconCache favicon_cache_;
 
   base::WeakPtrFactory<ChromeOmniboxClient> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeOmniboxClient);
 };
 
 #endif  // CHROME_BROWSER_UI_OMNIBOX_CHROME_OMNIBOX_CLIENT_H_

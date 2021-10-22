@@ -117,14 +117,17 @@ class AccountReconcilorLockWrapper
         std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
   }
 
+  AccountReconcilorLockWrapper(const AccountReconcilorLockWrapper&) = delete;
+  AccountReconcilorLockWrapper& operator=(const AccountReconcilorLockWrapper&) =
+      delete;
+
   void DestroyAfterDelay() {
+    // TODO(dcheng): Should ReleaseSoon() support this use case?
     content::GetUIThreadTaskRunner({})->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(base::DoNothing::Once<
-                           scoped_refptr<AccountReconcilorLockWrapper>>(),
+        base::BindOnce([](scoped_refptr<AccountReconcilorLockWrapper>) {},
                        base::RetainedRef(this)),
-        base::TimeDelta::FromMilliseconds(
-            g_dice_account_reconcilor_blocked_delay_ms));
+        base::Milliseconds(g_dice_account_reconcilor_blocked_delay_ms));
   }
 
  private:
@@ -134,8 +137,6 @@ class AccountReconcilorLockWrapper
   }
 
   std::unique_ptr<AccountReconcilor::Lock> account_reconcilor_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountReconcilorLockWrapper);
 };
 
 // Returns true if the account reconcilor needs be be blocked while a Gaia
@@ -162,12 +163,15 @@ class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
   explicit RequestDestructionObserverUserData(base::OnceClosure closure)
       : closure_(std::move(closure)) {}
 
+  RequestDestructionObserverUserData(
+      const RequestDestructionObserverUserData&) = delete;
+  RequestDestructionObserverUserData& operator=(
+      const RequestDestructionObserverUserData&) = delete;
+
   ~RequestDestructionObserverUserData() override { std::move(closure_).Run(); }
 
  private:
   base::OnceClosure closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestDestructionObserverUserData);
 };
 
 // This user data is used as a marker that a Mirror header was found on the
@@ -273,8 +277,7 @@ void ProcessMirrorHeader(
         gaia::AreEmailsSame(primary_account.email,
                             manage_accounts_params.email)) {
       identity_manager->GetAccountsCookieMutator()->LogOutAllAccounts(
-          gaia::GaiaSource::kChromeOS,
-          base::DoNothing::Once<const GoogleServiceAuthError&>());
+          gaia::GaiaSource::kChromeOS, base::DoNothing());
       return;
     }
 
@@ -592,7 +595,8 @@ void FixAccountConsistencyRequestHeader(
     return;  // Account consistency is disabled in incognito.
 
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
-  if (incognito_availibility == IncognitoModePrefs::DISABLED ||
+  if (incognito_availibility ==
+          static_cast<int>(IncognitoModePrefs::Availability::kDisabled) ||
       IncognitoModePrefs::ArePlatformParentalControlsEnabled()) {
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }

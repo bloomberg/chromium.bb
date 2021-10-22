@@ -317,10 +317,8 @@ enum class AttestationErasureOption {
 base::TimeDelta AdjustTimeout(absl::optional<base::TimeDelta> timeout,
                               RenderFrameHost* render_frame_host) {
   // Time to wait for an authenticator to successfully complete an operation.
-  static constexpr base::TimeDelta kAdjustedTimeoutLower =
-      base::TimeDelta::FromSeconds(10);
-  static constexpr base::TimeDelta kAdjustedTimeoutUpper =
-      base::TimeDelta::FromMinutes(10);
+  static constexpr base::TimeDelta kAdjustedTimeoutLower = base::Seconds(10);
+  static constexpr base::TimeDelta kAdjustedTimeoutUpper = base::Minutes(10);
 
   if (!timeout) {
     return kAdjustedTimeoutUpper;
@@ -335,210 +333,6 @@ base::TimeDelta AdjustTimeout(absl::optional<base::TimeDelta> timeout,
   }
   return std::max(kAdjustedTimeoutLower,
                   std::min(kAdjustedTimeoutUpper, *timeout));
-}
-
-blink::mojom::MakeCredentialAuthenticatorResponsePtr
-CreateMakeCredentialResponse(
-    const std::string& client_data_json,
-    device::AuthenticatorMakeCredentialResponse response_data,
-    AttestationErasureOption attestation_erasure,
-    const base::flat_set<RequestExtension>& requested_extensions) {
-  auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
-  auto common_info = blink::mojom::CommonCredentialInfo::New();
-  common_info->client_data_json.assign(client_data_json.begin(),
-                                       client_data_json.end());
-  common_info->authenticator_data = response_data.attestation_object()
-                                        .authenticator_data()
-                                        .SerializeToByteArray();
-  common_info->raw_id = response_data.attestation_object().GetCredentialId();
-  common_info->id = Base64UrlEncode(common_info->raw_id);
-  response->info = std::move(common_info);
-
-  // The transport list must not contain duplicates but the order doesn't matter
-  // because Blink will sort the resulting strings before returning them.
-  std::vector<device::FidoTransportProtocol> transports;
-  if (response_data.transport_used()) {
-    transports.push_back(*response_data.transport_used());
-  }
-  // If the attestation certificate specifies that the token supports any other
-  // transports, include them in the list.
-  absl::optional<base::span<const uint8_t>> leaf_cert =
-      response_data.attestation_object()
-          .attestation_statement()
-          .GetLeafCertificate();
-  if (leaf_cert) {
-    AppendUniqueTransportsFromCertificate(*leaf_cert, &transports);
-  }
-
-  response->transports = std::move(transports);
-
-  bool did_create_hmac_secret = false;
-  bool did_store_cred_blob = false;
-  const absl::optional<cbor::Value>& maybe_extensions =
-      response_data.attestation_object().authenticator_data().extensions();
-  if (maybe_extensions) {
-    DCHECK(maybe_extensions->is_map());
-    const cbor::Value::MapValue& extensions = maybe_extensions->GetMap();
-
-    const auto hmac_secret_it =
-        extensions.find(cbor::Value(device::kExtensionHmacSecret));
-    if (hmac_secret_it != extensions.end() &&
-        hmac_secret_it->second.is_bool() && hmac_secret_it->second.GetBool()) {
-      did_create_hmac_secret = true;
-    }
-
-    const auto cred_blob_it =
-        extensions.find(cbor::Value(device::kExtensionCredBlob));
-    if (cred_blob_it != extensions.end() && cred_blob_it->second.is_bool() &&
-        cred_blob_it->second.GetBool()) {
-      did_store_cred_blob = true;
-    }
-  }
-
-  for (const RequestExtension ext : requested_extensions) {
-    switch (ext) {
-      case RequestExtension::kPRF:
-        response->echo_prf = true;
-        response->prf = did_create_hmac_secret;
-        break;
-      case RequestExtension::kHMACSecret:
-        response->echo_hmac_create_secret = true;
-        response->hmac_create_secret = did_create_hmac_secret;
-        break;
-      case RequestExtension::kCredProps:
-        response->echo_cred_props = true;
-        if (response_data.is_resident_key) {
-          response->has_cred_props_rk = true;
-          response->cred_props_rk = *response_data.is_resident_key;
-        }
-        break;
-      case RequestExtension::kLargeBlobEnable:
-        response->echo_large_blob = true;
-        response->supports_large_blob =
-            response_data.large_blob_key().has_value();
-        break;
-      case RequestExtension::kCredBlob:
-        response->echo_cred_blob = true;
-        response->cred_blob = did_store_cred_blob;
-        break;
-      case RequestExtension::kAppID:
-      case RequestExtension::kLargeBlobRead:
-      case RequestExtension::kLargeBlobWrite:
-      case RequestExtension::kGetCredBlob:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  switch (attestation_erasure) {
-    case AttestationErasureOption::kIncludeAttestation:
-      break;
-    case AttestationErasureOption::kEraseAttestationButIncludeAaguid:
-      response_data.EraseAttestationStatement(
-          device::AttestationObject::AAGUID::kInclude);
-      break;
-    case AttestationErasureOption::kEraseAttestationAndAaguid:
-      response_data.EraseAttestationStatement(
-          device::AttestationObject::AAGUID::kErase);
-      break;
-  }
-  response->attestation_object =
-      response_data.GetCBOREncodedAttestationObject();
-
-  const device::PublicKey* public_key = response_data.attestation_object()
-                                            .authenticator_data()
-                                            .attested_data()
-                                            ->public_key();
-  response->public_key_algo = public_key->algorithm;
-  const absl::optional<std::vector<uint8_t>>& public_key_der =
-      public_key->der_bytes;
-  if (public_key_der) {
-    response->public_key_der.emplace(public_key_der.value());
-  }
-
-  return response;
-}
-
-blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
-    const std::string& client_data_json,
-    device::AuthenticatorGetAssertionResponse response_data,
-    const absl::optional<std::string>& app_id,
-    const base::flat_set<RequestExtension>& requested_extensions) {
-  auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
-  auto common_info = blink::mojom::CommonCredentialInfo::New();
-  common_info->client_data_json.assign(client_data_json.begin(),
-                                       client_data_json.end());
-  common_info->raw_id = response_data.credential->id();
-  common_info->id = Base64UrlEncode(common_info->raw_id);
-  response->info = std::move(common_info);
-  response->info->authenticator_data =
-      response_data.authenticator_data.SerializeToByteArray();
-  response->signature = response_data.signature;
-  response_data.user_entity
-      ? response->user_handle.emplace(response_data.user_entity->id)
-      : response->user_handle.emplace();
-
-  for (RequestExtension ext : requested_extensions) {
-    switch (ext) {
-      case RequestExtension::kAppID:
-        DCHECK(app_id);
-        response->echo_appid_extension = true;
-        if (response_data.authenticator_data.application_parameter() ==
-            CreateApplicationParameter(*app_id)) {
-          response->appid_extension = true;
-        }
-        break;
-      case RequestExtension::kPRF: {
-        response->echo_prf = true;
-        absl::optional<base::span<const uint8_t>> hmac_secret =
-            response_data.hmac_secret;
-        if (hmac_secret) {
-          auto prf_values = blink::mojom::PRFValues::New();
-          DCHECK(hmac_secret->size() == 32 || hmac_secret->size() == 64);
-          prf_values->first = device::fido_parsing_utils::Materialize(
-              hmac_secret->subspan(0, 32));
-          if (hmac_secret->size() == 64) {
-            prf_values->second = device::fido_parsing_utils::Materialize(
-                hmac_secret->subspan(32, 32));
-          }
-          response->prf_results = std::move(prf_values);
-        } else {
-          response->prf_not_evaluated = response_data.hmac_secret_not_evaluated;
-        }
-        break;
-      }
-      case RequestExtension::kLargeBlobRead:
-        response->echo_large_blob = true;
-        response->large_blob = response_data.large_blob;
-        break;
-      case RequestExtension::kLargeBlobWrite:
-        response->echo_large_blob = true;
-        response->echo_large_blob_written = true;
-        response->large_blob_written = response_data.large_blob_written;
-        break;
-      case RequestExtension::kGetCredBlob: {
-        response->echo_get_cred_blob = true;
-        const absl::optional<cbor::Value>& extensions =
-            response_data.authenticator_data.extensions();
-        if (extensions) {
-          const cbor::Value::MapValue& map = extensions->GetMap();
-          const auto& it = map.find(cbor::Value(device::kExtensionCredBlob));
-          if (it != map.end() && it->second.is_bytestring()) {
-            response->get_cred_blob = it->second.GetBytestring();
-          }
-        }
-        break;
-      }
-      case RequestExtension::kHMACSecret:
-      case RequestExtension::kCredProps:
-      case RequestExtension::kLargeBlobEnable:
-      case RequestExtension::kCredBlob:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  return response;
 }
 
 bool UsesDiscoverableCreds(const device::MakeCredentialOptions& options) {
@@ -814,10 +608,8 @@ void AuthenticatorCommon::OnLargeBlobUncompressed(
     data_decoder::DataDecoder::ResultOrError<mojo_base::BigBuffer> result) {
   response.large_blob =
       device::fido_parsing_utils::MaterializeOrNull(result.value);
-  CompleteGetAssertionRequest(
-      blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateGetAssertionResponse(client_data_json_, std::move(response),
-                                 app_id_, requested_extensions_));
+  CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
+                              CreateGetAssertionResponse(std::move(response)));
 }
 
 // mojom::Authenticator
@@ -854,6 +646,14 @@ void AuthenticatorCommon::MakeCredential(
                                                  &is_cross_origin);
   if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
     CompleteMakeCredentialRequest(status);
+    return;
+  }
+
+  if (!security_checker_->DeduplicateCredentialDescriptorListAndValidateLength(
+          &options->exclude_credentials)) {
+    mojo::ReportBadMessage("invalid exclude_credentials length");
+    CompleteMakeCredentialRequest(
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
     return;
   }
 
@@ -1134,6 +934,14 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
+  if (!security_checker_->DeduplicateCredentialDescriptorListAndValidateLength(
+          &options->allow_credentials)) {
+    mojo::ReportBadMessage("invalid allow_credentials length");
+    CompleteGetAssertionRequest(
+        blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+    return;
+  }
+
   request_delegate_ = MaybeCreateRequestDelegate();
   if (!request_delegate_) {
     CompleteGetAssertionRequest(
@@ -1247,9 +1055,12 @@ void AuthenticatorCommon::GetAssertion(
     requested_extensions_.insert(RequestExtension::kLargeBlobWrite);
   }
 
-  timer_->Start(
-      FROM_HERE, AdjustTimeout(options->timeout, GetRenderFrameHost()),
-      base::BindOnce(&AuthenticatorCommon::OnTimeout, base::Unretained(this)));
+  if (!options->is_conditional) {
+    timer_->Start(FROM_HERE,
+                  AdjustTimeout(options->timeout, GetRenderFrameHost()),
+                  base::BindOnce(&AuthenticatorCommon::OnTimeout,
+                                 base::Unretained(this)));
+  }
 
   ctap_get_assertion_request_ =
       CreateCtapGetAssertionRequest(client_data_json_, options, app_id_,
@@ -1381,14 +1192,32 @@ void AuthenticatorCommon::OnRegisterResponse(
 
   switch (status_code) {
     case device::MakeCredentialStatus::kUserConsentButCredentialExcluded:
+    case device::MakeCredentialStatus::kWinInvalidStateError:
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
-      // |exclude_credentials|.
-      SignalFailureToRequestDelegate(
-          authenticator,
-          AuthenticatorRequestClientDelegate::InterestingFailureReason::
-              kKeyAlreadyRegistered,
-          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
+      // |exclude_credentials|. If the request specified that only a platform
+      // authenticator was acceptable then we don't show an error message
+      // because there's no other authenticator that could be used for this
+      // request. Instead the RP learns of the result via the distinctive
+      // InvalidStateError result. This tells them that the platform
+      // authenticator is already registered with one of the credential IDs that
+      // they already know about.
+      //
+      // Windows already behaves like this and so its representation of
+      // InvalidStateError is handled this way too.
+      if (make_credential_options_->authenticator_attachment ==
+              device::AuthenticatorAttachment::kPlatform ||
+          status_code == device::MakeCredentialStatus::kWinInvalidStateError) {
+        CompleteMakeCredentialRequest(
+            blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
+            Focus::kDoCheck);
+      } else {
+        SignalFailureToRequestDelegate(
+            authenticator,
+            AuthenticatorRequestClientDelegate::InterestingFailureReason::
+                kKeyAlreadyRegistered,
+            blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED);
+      }
       return;
     case device::MakeCredentialStatus::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -1459,11 +1288,6 @@ void AuthenticatorCommon::OnRegisterResponse(
               kStorageFull,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
-    case device::MakeCredentialStatus::kWinInvalidStateError:
-      CompleteMakeCredentialRequest(
-          blink::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr,
-          Focus::kDoCheck);
-      return;
     case device::MakeCredentialStatus::kWinNotAllowedError:
       SignalFailureToRequestDelegate(
           authenticator,
@@ -1475,15 +1299,14 @@ void AuthenticatorCommon::OnRegisterResponse(
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
 
-      const absl::optional<device::FidoTransportProtocol> transport_used =
-          authenticator->AuthenticatorTransport();
+      transport_ = authenticator->AuthenticatorTransport();
       bool is_transport_used_internal = false;
       bool is_transport_used_cable = false;
-      if (transport_used) {
+      if (transport_) {
         is_transport_used_internal =
-            *transport_used == device::FidoTransportProtocol::kInternal;
+            *transport_ == device::FidoTransportProtocol::kInternal;
         is_transport_used_cable =
-            *transport_used ==
+            *transport_ ==
             device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy;
       }
 
@@ -1558,9 +1381,8 @@ void AuthenticatorCommon::OnRegisterResponse(
       if (attestation_erasure.has_value()) {
         CompleteMakeCredentialRequest(
             blink::mojom::AuthenticatorStatus::SUCCESS,
-            CreateMakeCredentialResponse(
-                client_data_json_, std::move(*response_data),
-                *attestation_erasure, requested_extensions_),
+            CreateMakeCredentialResponse(std::move(*response_data),
+                                         *attestation_erasure),
             Focus::kDoCheck);
       }
 
@@ -1608,8 +1430,8 @@ void AuthenticatorCommon::OnRegisterResponseAttestationDecided(
 
   CompleteMakeCredentialRequest(
       blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateMakeCredentialResponse(client_data_json_, std::move(response_data),
-                                   attestation_erasure, requested_extensions_),
+      CreateMakeCredentialResponse(std::move(response_data),
+                                   attestation_erasure),
       Focus::kDoCheck);
 }
 
@@ -1692,6 +1514,7 @@ void AuthenticatorCommon::OnSignResponse(
     case device::GetAssertionStatus::kSuccess:
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
+      transport_ = authenticator->AuthenticatorTransport();
 
       // Show an account picker for requests with empty allow lists.
       // Authenticators may omit the identifying information in the user entity
@@ -1730,10 +1553,8 @@ void AuthenticatorCommon::OnAccountSelected(
                              weak_factory_.GetWeakPtr(), std::move(response)));
     return;
   }
-  CompleteGetAssertionRequest(
-      blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateGetAssertionResponse(client_data_json_, std::move(response),
-                                 app_id_, requested_extensions_));
+  CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
+                              CreateGetAssertionResponse(std::move(response)));
   return;
 }
 
@@ -1787,6 +1608,129 @@ void AuthenticatorCommon::OnCancelFromUI() {
   CancelWithStatus(error_awaiting_user_acknowledgement_);
 }
 
+blink::mojom::MakeCredentialAuthenticatorResponsePtr
+AuthenticatorCommon::CreateMakeCredentialResponse(
+    device::AuthenticatorMakeCredentialResponse response_data,
+    AttestationErasureOption attestation_erasure) {
+  auto response = blink::mojom::MakeCredentialAuthenticatorResponse::New();
+  auto common_info = blink::mojom::CommonCredentialInfo::New();
+  common_info->client_data_json.assign(client_data_json_.begin(),
+                                       client_data_json_.end());
+  common_info->authenticator_data = response_data.attestation_object()
+                                        .authenticator_data()
+                                        .SerializeToByteArray();
+  common_info->raw_id = response_data.attestation_object().GetCredentialId();
+  common_info->id = Base64UrlEncode(common_info->raw_id);
+  response->info = std::move(common_info);
+
+  // The transport list must not contain duplicates but the order doesn't matter
+  // because Blink will sort the resulting strings before returning them.
+  std::vector<device::FidoTransportProtocol> transports;
+  if (response_data.transport_used()) {
+    transports.push_back(*response_data.transport_used());
+  }
+  // If the attestation certificate specifies that the token supports any other
+  // transports, include them in the list.
+  absl::optional<base::span<const uint8_t>> leaf_cert =
+      response_data.attestation_object()
+          .attestation_statement()
+          .GetLeafCertificate();
+  if (leaf_cert) {
+    AppendUniqueTransportsFromCertificate(*leaf_cert, &transports);
+  }
+
+  response->transports = std::move(transports);
+  response->has_transport = transport_.has_value();
+  if (response->has_transport)
+    response->transport = *transport_;
+
+  bool did_create_hmac_secret = false;
+  bool did_store_cred_blob = false;
+  const absl::optional<cbor::Value>& maybe_extensions =
+      response_data.attestation_object().authenticator_data().extensions();
+  if (maybe_extensions) {
+    DCHECK(maybe_extensions->is_map());
+    const cbor::Value::MapValue& extensions = maybe_extensions->GetMap();
+
+    const auto hmac_secret_it =
+        extensions.find(cbor::Value(device::kExtensionHmacSecret));
+    if (hmac_secret_it != extensions.end() &&
+        hmac_secret_it->second.is_bool() && hmac_secret_it->second.GetBool()) {
+      did_create_hmac_secret = true;
+    }
+
+    const auto cred_blob_it =
+        extensions.find(cbor::Value(device::kExtensionCredBlob));
+    if (cred_blob_it != extensions.end() && cred_blob_it->second.is_bool() &&
+        cred_blob_it->second.GetBool()) {
+      did_store_cred_blob = true;
+    }
+  }
+
+  for (const RequestExtension ext : requested_extensions_) {
+    switch (ext) {
+      case RequestExtension::kPRF:
+        response->echo_prf = true;
+        response->prf = did_create_hmac_secret;
+        break;
+      case RequestExtension::kHMACSecret:
+        response->echo_hmac_create_secret = true;
+        response->hmac_create_secret = did_create_hmac_secret;
+        break;
+      case RequestExtension::kCredProps:
+        response->echo_cred_props = true;
+        if (response_data.is_resident_key) {
+          response->has_cred_props_rk = true;
+          response->cred_props_rk = *response_data.is_resident_key;
+        }
+        break;
+      case RequestExtension::kLargeBlobEnable:
+        response->echo_large_blob = true;
+        response->supports_large_blob =
+            response_data.large_blob_key().has_value();
+        break;
+      case RequestExtension::kCredBlob:
+        response->echo_cred_blob = true;
+        response->cred_blob = did_store_cred_blob;
+        break;
+      case RequestExtension::kAppID:
+      case RequestExtension::kLargeBlobRead:
+      case RequestExtension::kLargeBlobWrite:
+      case RequestExtension::kGetCredBlob:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  switch (attestation_erasure) {
+    case AttestationErasureOption::kIncludeAttestation:
+      break;
+    case AttestationErasureOption::kEraseAttestationButIncludeAaguid:
+      response_data.EraseAttestationStatement(
+          device::AttestationObject::AAGUID::kInclude);
+      break;
+    case AttestationErasureOption::kEraseAttestationAndAaguid:
+      response_data.EraseAttestationStatement(
+          device::AttestationObject::AAGUID::kErase);
+      break;
+  }
+  response->attestation_object =
+      response_data.GetCBOREncodedAttestationObject();
+
+  const device::PublicKey* public_key = response_data.attestation_object()
+                                            .authenticator_data()
+                                            .attested_data()
+                                            ->public_key();
+  response->public_key_algo = public_key->algorithm;
+  const absl::optional<std::vector<uint8_t>>& public_key_der =
+      public_key->der_bytes;
+  if (public_key_der) {
+    response->public_key_der.emplace(public_key_der.value());
+  }
+
+  return response;
+}
+
 void AuthenticatorCommon::CompleteMakeCredentialRequest(
     blink::mojom::AuthenticatorStatus status,
     blink::mojom::MakeCredentialAuthenticatorResponsePtr response,
@@ -1801,6 +1745,89 @@ void AuthenticatorCommon::CompleteMakeCredentialRequest(
   }
 
   Cleanup();
+}
+
+blink::mojom::GetAssertionAuthenticatorResponsePtr
+AuthenticatorCommon::CreateGetAssertionResponse(
+    device::AuthenticatorGetAssertionResponse response_data) {
+  auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
+  auto common_info = blink::mojom::CommonCredentialInfo::New();
+  common_info->client_data_json.assign(client_data_json_.begin(),
+                                       client_data_json_.end());
+  common_info->raw_id = response_data.credential->id();
+  common_info->id = Base64UrlEncode(common_info->raw_id);
+  response->info = std::move(common_info);
+  response->info->authenticator_data =
+      response_data.authenticator_data.SerializeToByteArray();
+  response->signature = response_data.signature;
+  response->has_transport = transport_.has_value();
+  if (response->has_transport)
+    response->transport = *transport_;
+  response_data.user_entity
+      ? response->user_handle.emplace(response_data.user_entity->id)
+      : response->user_handle.emplace();
+
+  for (RequestExtension ext : requested_extensions_) {
+    switch (ext) {
+      case RequestExtension::kAppID:
+        DCHECK(app_id_);
+        response->echo_appid_extension = true;
+        if (response_data.authenticator_data.application_parameter() ==
+            CreateApplicationParameter(*app_id_)) {
+          response->appid_extension = true;
+        }
+        break;
+      case RequestExtension::kPRF: {
+        response->echo_prf = true;
+        absl::optional<base::span<const uint8_t>> hmac_secret =
+            response_data.hmac_secret;
+        if (hmac_secret) {
+          auto prf_values = blink::mojom::PRFValues::New();
+          DCHECK(hmac_secret->size() == 32 || hmac_secret->size() == 64);
+          prf_values->first = device::fido_parsing_utils::Materialize(
+              hmac_secret->subspan(0, 32));
+          if (hmac_secret->size() == 64) {
+            prf_values->second = device::fido_parsing_utils::Materialize(
+                hmac_secret->subspan(32, 32));
+          }
+          response->prf_results = std::move(prf_values);
+        } else {
+          response->prf_not_evaluated = response_data.hmac_secret_not_evaluated;
+        }
+        break;
+      }
+      case RequestExtension::kLargeBlobRead:
+        response->echo_large_blob = true;
+        response->large_blob = response_data.large_blob;
+        break;
+      case RequestExtension::kLargeBlobWrite:
+        response->echo_large_blob = true;
+        response->echo_large_blob_written = true;
+        response->large_blob_written = response_data.large_blob_written;
+        break;
+      case RequestExtension::kGetCredBlob: {
+        response->echo_get_cred_blob = true;
+        const absl::optional<cbor::Value>& extensions =
+            response_data.authenticator_data.extensions();
+        if (extensions) {
+          const cbor::Value::MapValue& map = extensions->GetMap();
+          const auto& it = map.find(cbor::Value(device::kExtensionCredBlob));
+          if (it != map.end() && it->second.is_bytestring()) {
+            response->get_cred_blob = it->second.GetBytestring();
+          }
+        }
+        break;
+      }
+      case RequestExtension::kHMACSecret:
+      case RequestExtension::kCredProps:
+      case RequestExtension::kLargeBlobEnable:
+      case RequestExtension::kCredBlob:
+        NOTREACHED();
+        break;
+    }
+  }
+
+  return response;
 }
 
 void AuthenticatorCommon::CompleteGetAssertionRequest(

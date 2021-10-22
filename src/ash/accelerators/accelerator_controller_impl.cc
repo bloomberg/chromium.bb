@@ -88,6 +88,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/ui/base/display_util.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
@@ -125,9 +126,9 @@ const char kAccelWindowSnap[] = "Ash.Accelerators.WindowSnap";
 
 namespace {
 
-using base::UserMetricsAction;
-using chromeos::WindowStateType;
-using chromeos::input_method::InputMethodManager;
+using ::base::UserMetricsAction;
+using ::chromeos::WindowStateType;
+using input_method::InputMethodManager;
 
 // Toast id and duration for Assistant shortcuts.
 constexpr char kAssistantErrorToastId[] = "assistant_error";
@@ -140,8 +141,7 @@ constexpr char kSideVolumeButtonLocationFilePath[] =
     "/usr/share/chromeos-assets/side_volume_button/location.json";
 
 // The interval between two volume control actions within one volume adjust.
-constexpr base::TimeDelta kVolumeAdjustTimeout =
-    base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kVolumeAdjustTimeout = base::Seconds(2);
 
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
@@ -479,23 +479,23 @@ display::Display::Rotation GetNextRotationInTabletMode(
     return GetNextRotationInClamshell(current);
   }
 
-  const OrientationLockType app_requested_lock =
+  const chromeos::OrientationType app_requested_lock =
       shell->screen_orientation_controller()
           ->GetCurrentAppRequestedOrientationLock();
 
   bool add_180_degrees = false;
   switch (app_requested_lock) {
-    case OrientationLockType::kCurrent:
-    case OrientationLockType::kLandscapePrimary:
-    case OrientationLockType::kLandscapeSecondary:
-    case OrientationLockType::kPortraitPrimary:
-    case OrientationLockType::kPortraitSecondary:
-    case OrientationLockType::kNatural:
+    case chromeos::OrientationType::kCurrent:
+    case chromeos::OrientationType::kLandscapePrimary:
+    case chromeos::OrientationType::kLandscapeSecondary:
+    case chromeos::OrientationType::kPortraitPrimary:
+    case chromeos::OrientationType::kPortraitSecondary:
+    case chromeos::OrientationType::kNatural:
       // Do not change the current orientation.
       return current;
 
-    case OrientationLockType::kLandscape:
-    case OrientationLockType::kPortrait:
+    case chromeos::OrientationType::kLandscape:
+    case chromeos::OrientationType::kPortrait:
       // App allows both primary and secondary orientations in either landscape
       // or portrait, therefore switch to the next one by adding 180 degrees.
       add_180_degrees = true;
@@ -1780,6 +1780,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case DESKS_NEW_DESK:
     case DESKS_REMOVE_CURRENT_DESK:
       return true;
+    case DEBUG_MICROPHONE_MUTE_TOGGLE:
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
     case DEBUG_PRINT_WINDOW_HIERARCHY:
@@ -1998,6 +1999,10 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case DESKS_REMOVE_CURRENT_DESK:
       HandleRemoveCurrentDesk();
+      break;
+    case DEBUG_MICROPHONE_MUTE_TOGGLE:
+      base::RecordAction(base::UserMetricsAction("Accel_Microphone_Mute"));
+      accelerators::MicrophoneMuteToggle();
       break;
     case DEBUG_PRINT_LAYER_HIERARCHY:
     case DEBUG_PRINT_VIEW_HIERARCHY:
@@ -2528,22 +2533,22 @@ bool AcceleratorControllerImpl::ShouldSwapSideVolumeButtons(
   if (!IsValidSideVolumeButtonLocation())
     return false;
 
-  OrientationLockType screen_orientation =
+  chromeos::OrientationType screen_orientation =
       Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
   const std::string side = side_volume_button_location_.side;
   const bool is_landscape_secondary_or_portrait_primary =
-      screen_orientation == OrientationLockType::kLandscapeSecondary ||
-      screen_orientation == OrientationLockType::kPortraitPrimary;
+      screen_orientation == chromeos::OrientationType::kLandscapeSecondary ||
+      screen_orientation == chromeos::OrientationType::kPortraitPrimary;
 
   if (side_volume_button_location_.region == kVolumeButtonRegionKeyboard) {
     if (side == kVolumeButtonSideLeft || side == kVolumeButtonSideRight)
-      return IsPrimaryOrientation(screen_orientation);
+      return chromeos::IsPrimaryOrientation(screen_orientation);
     return is_landscape_secondary_or_portrait_primary;
   }
 
   DCHECK_EQ(kVolumeButtonRegionScreen, side_volume_button_location_.region);
   if (side == kVolumeButtonSideLeft || side == kVolumeButtonSideRight)
-    return !IsPrimaryOrientation(screen_orientation);
+    return !chromeos::IsPrimaryOrientation(screen_orientation);
   return is_landscape_secondary_or_portrait_primary;
 }
 

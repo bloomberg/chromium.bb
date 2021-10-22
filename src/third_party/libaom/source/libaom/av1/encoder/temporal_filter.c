@@ -861,13 +861,13 @@ void av1_tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td, int mb_row) {
       }
     }
     tf_normalize_filtered_frame(mbd, block_size, mb_row, mb_col, num_planes,
-                                accum, count, &cpi->ppi->alt_ref_buffer);
+                                accum, count, tf_ctx->output_frame);
 
     if (check_show_existing) {
       const int y_height = mb_height >> mbd->plane[0].subsampling_y;
       const int y_width = mb_width >> mbd->plane[0].subsampling_x;
       const int source_y_stride = frame_to_filter->y_stride;
-      const int filter_y_stride = cpi->ppi->alt_ref_buffer.y_stride;
+      const int filter_y_stride = tf_ctx->output_frame->y_stride;
       const int source_offset =
           mb_row * y_height * source_y_stride + mb_col * y_width;
       const int filter_offset =
@@ -875,7 +875,7 @@ void av1_tf_do_filtering_row(AV1_COMP *cpi, ThreadData *td, int mb_row) {
       unsigned int sse = 0;
       cpi->ppi->fn_ptr[block_size].vf(
           frame_to_filter->y_buffer + source_offset, source_y_stride,
-          cpi->ppi->alt_ref_buffer.y_buffer + filter_offset, filter_y_stride,
+          tf_ctx->output_frame->y_buffer + filter_offset, filter_y_stride,
           &sse);
       diff->sum += sse;
       diff->sse += sse * (int64_t)sse;
@@ -1130,12 +1130,14 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
 //   Nothing will be returned. But the contents of cpi->tf_ctx will be modified.
 static void init_tf_ctx(AV1_COMP *cpi, int filter_frame_lookahead_idx,
                         int is_second_arf, FRAME_UPDATE_TYPE update_type,
-                        int is_forward_keyframe) {
+                        int is_forward_keyframe,
+                        YV12_BUFFER_CONFIG *output_frame) {
   TemporalFilterCtx *tf_ctx = &cpi->tf_ctx;
   // Setup frame buffer for filtering.
   YV12_BUFFER_CONFIG **frames = tf_ctx->frames;
   tf_ctx->num_frames = 0;
   tf_ctx->filter_frame_idx = -1;
+  tf_ctx->output_frame = output_frame;
   tf_setup_filtering_buffer(cpi, filter_frame_lookahead_idx, is_second_arf,
                             update_type, is_forward_keyframe);
   assert(tf_ctx->num_frames > 0);
@@ -1184,7 +1186,8 @@ static void init_tf_ctx(AV1_COMP *cpi, int filter_frame_lookahead_idx,
 
 int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
                         FRAME_UPDATE_TYPE update_type, int is_forward_keyframe,
-                        int *show_existing_arf) {
+                        int *show_existing_arf,
+                        YV12_BUFFER_CONFIG *output_frame) {
   MultiThreadInfo *const mt_info = &cpi->mt_info;
   // Basic informaton of the current frame.
   const GF_GROUP *const gf_group = &cpi->ppi->gf_group;
@@ -1193,9 +1196,10 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
   TemporalFilterData *tf_data = &cpi->td.tf_data;
   // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).
   // This frame is ALWAYS a show existing frame.
-  const int is_second_arf = (update_type == INTNL_ARF_UPDATE) &&
-                            (filter_frame_lookahead_idx >= 7) &&
-                            cpi->sf.hl_sf.second_alt_ref_filtering;
+  const int is_second_arf =
+      (update_type == INTNL_ARF_UPDATE) &&
+      (filter_frame_lookahead_idx >= TF_LOOKAHEAD_IDX_THR) &&
+      cpi->sf.hl_sf.second_alt_ref_filtering;
   // TODO(anyone): Currently, we enforce the filtering strength on internal
   // ARFs except the second ARF to be zero. We should investigate in which case
   // it is more beneficial to use non-zero strength filtering.
@@ -1203,9 +1207,14 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
     return 0;
   }
 
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  // Only parallel level 0 frames go through temporal filtering.
+  assert(gf_group->frame_parallel_level[group_idx] == 0);
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
+
   // Initialize temporal filter context structure.
   init_tf_ctx(cpi, filter_frame_lookahead_idx, is_second_arf, update_type,
-              is_forward_keyframe);
+              is_forward_keyframe, output_frame);
 
   // Set showable frame.
   if (is_forward_keyframe == 0 && update_type != KF_UPDATE) {

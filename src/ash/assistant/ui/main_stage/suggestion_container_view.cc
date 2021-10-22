@@ -38,13 +38,15 @@ using assistant::util::CreateOpacityElement;
 using assistant::util::StartLayerAnimationSequence;
 
 // Animation.
-constexpr base::TimeDelta kChipFadeInDuration =
-    base::TimeDelta::FromMilliseconds(250);
-constexpr base::TimeDelta kChipFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr base::TimeDelta kChipFadeInDuration = base::Milliseconds(250);
+constexpr base::TimeDelta kChipFadeOutDuration = base::Milliseconds(200);
 
 // Appearance.
 constexpr int kPreferredHeightDip = 48;
+
+// Metrics.
+constexpr char kAssistantSuggestionChipHistogram[] =
+    "Ash.Assistant.AnimationSmoothness.SuggestionChip";
 
 }  // namespace
 
@@ -55,22 +57,24 @@ class SuggestionChipAnimator : public ElementAnimator {
   SuggestionChipAnimator(SuggestionChipView* chip,
                          const SuggestionContainerView* parent)
       : ElementAnimator(chip), parent_(parent) {}
+
+  SuggestionChipAnimator(const SuggestionChipAnimator&) = delete;
+  SuggestionChipAnimator& operator=(const SuggestionChipAnimator&) = delete;
+
   ~SuggestionChipAnimator() override = default;
 
   void AnimateIn(ui::CallbackLayerAnimationObserver* observer) override {
     StartLayerAnimationSequence(
         layer()->GetAnimator(), CreateAnimateInAnimation(), observer,
         base::BindRepeating<void(const std::string&, int)>(
-            base::UmaHistogramPercentageObsoleteDoNotUse,
-            assistant::ui::kAssistantSuggestionChipHistogram));
+            base::UmaHistogramPercentage, kAssistantSuggestionChipHistogram));
   }
 
   void AnimateOut(ui::CallbackLayerAnimationObserver* observer) override {
     StartLayerAnimationSequence(
         layer()->GetAnimator(), CreateAnimateOutAnimation(), observer,
         base::BindRepeating<void(const std::string&, int)>(
-            base::UmaHistogramPercentageObsoleteDoNotUse,
-            assistant::ui::kAssistantSuggestionChipHistogram));
+            base::UmaHistogramPercentage, kAssistantSuggestionChipHistogram));
   }
 
   void FadeOut(ui::CallbackLayerAnimationObserver* observer) override {
@@ -93,8 +97,6 @@ class SuggestionChipAnimator : public ElementAnimator {
   }
 
   const SuggestionContainerView* const parent_;  // |parent_| owns |this|.
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionChipAnimator);
 };
 
 // SuggestionContainerView -----------------------------------------------------

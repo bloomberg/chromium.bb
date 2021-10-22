@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
+#include "device/fido/public_key_credential_descriptor.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
 
 class GURL;
@@ -74,8 +75,12 @@ class CONTENT_EXPORT WebAuthRequestSecurityChecker
   blink::mojom::AuthenticatorStatus ValidateAPrioriAuthenticatedUrl(
       const GURL& url);
 
+  bool DeduplicateCredentialDescriptorListAndValidateLength(
+      std::vector<device::PublicKeyCredentialDescriptor>* list)
+      WARN_UNUSED_RESULT;
+
  protected:
-  friend class RefCounted<WebAuthRequestSecurityChecker>;
+  friend class base::RefCounted<WebAuthRequestSecurityChecker>;
   virtual ~WebAuthRequestSecurityChecker();
 
  private:

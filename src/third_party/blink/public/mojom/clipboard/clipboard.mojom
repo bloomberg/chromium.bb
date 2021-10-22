@@ -17,7 +17,6 @@ enum ClipboardFormat {
   kHtml,
   kSmartPaste,
   kBookmark,
-  kRtf,
 };
 
 enum ClipboardBuffer {
@@ -108,10 +107,6 @@ interface ClipboardHost {
   // there is an image, or an empty buffer otherwise.
   [Sync]
   ReadPng(ClipboardBuffer buffer) => (mojo_base.mojom.BigBuffer png);
-
-  // TODO(crbug.com/1223849): Transition call sites to ReadPng, then remove.
-  [Sync]
-  ReadImage(ClipboardBuffer buffer) => (skia.mojom.BitmapN32? image);
 
   // Read Files from clipboard. Called on paste event to provide
   // clipboardData.files.

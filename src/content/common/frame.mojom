@@ -31,7 +31,6 @@ import "third_party/blink/public/mojom/conversions/conversions.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom";
 import "third_party/blink/public/mojom/frame/frame.mojom";
-import "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom";
 import "third_party/blink/public/mojom/frame/frame_owner_properties.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/frame/frame_replication_state.mojom";
@@ -45,6 +44,7 @@ import "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
 import "third_party/blink/public/mojom/navigation/navigation_params.mojom";
 import "third_party/blink/public/mojom/page/page.mojom";
+import "third_party/blink/public/mojom/widget/platform_widget.mojom";
 import "third_party/blink/public/mojom/page/widget.mojom";
 import "third_party/blink/public/mojom/portal/portal.mojom";
 import "third_party/blink/public/mojom/renderer_preferences.mojom";
@@ -71,7 +71,24 @@ enum ViewWidgetType {
   // A GuestView used to render contents inside a <webview> element.
   kGuestView,
   // A view used to render contents inside a <portal> element.
-  kPortal
+  kPortal,
+  // A view used to render contents inside a <fencedframe> element.
+  kFencedFrame
+};
+
+// The type of the frame owner element for a child frame. In cross-process
+// frames, this would be the type of the HTMLFrameOwnerElement for the remote
+// child frame in the parent process. Note that only HTMLFrameOwnerElements for
+// which CreateChildFrame is used are included here. Other
+// HTMLFrameOwnerElements such as portals do not use this.
+enum ChildFrameOwnerElementType {
+  kIframe,
+  kObject,
+  kEmbed,
+  kFrame,
+  // Note that only Fenced Frames based on Shadow DOM may create child frames.
+  // See crbug.com/1123606.
+  kFencedframe
 };
 
 struct CreateViewParams {
@@ -678,7 +695,7 @@ interface FrameHost {
                    bool is_created_by_script,
                    blink.mojom.FramePolicy frame_policy,
                    blink.mojom.FrameOwnerProperties frame_owner_properties,
-                   blink.mojom.FrameOwnerElementType frame_owner_element_type);
+                   ChildFrameOwnerElementType child_frame_owner_element_type);
 
   // Sent by the renderer when a navigation commits in the frame.
 

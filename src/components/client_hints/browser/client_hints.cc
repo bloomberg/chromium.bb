@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "components/client_hints/common/client_hints.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,14 +24,17 @@ ClientHints::ClientHints(
     content::BrowserContext* context,
     network::NetworkQualityTracker* network_quality_tracker,
     HostContentSettingsMap* settings_map,
+    scoped_refptr<content_settings::CookieSettings> cookie_settings,
     const blink::UserAgentMetadata& user_agent_metadata)
     : context_(context),
       network_quality_tracker_(network_quality_tracker),
       settings_map_(settings_map),
+      cookie_settings_(cookie_settings),
       user_agent_metadata_(user_agent_metadata) {
   DCHECK(context_);
   DCHECK(network_quality_tracker_);
   DCHECK(settings_map_);
+  DCHECK(cookie_settings_);
 }
 
 ClientHints::~ClientHints() = default;
@@ -55,6 +59,12 @@ bool ClientHints::IsJavaScriptAllowed(const GURL& url) {
   return settings_map_->GetContentSetting(url, url,
                                           ContentSettingsType::JAVASCRIPT) !=
          CONTENT_SETTING_BLOCK;
+}
+
+bool ClientHints::AreThirdPartyCookiesBlocked(const GURL& url) {
+  return settings_map_->GetContentSetting(
+             url, url, ContentSettingsType::COOKIES) == CONTENT_SETTING_BLOCK ||
+         cookie_settings_->ShouldBlockThirdPartyCookies();
 }
 
 blink::UserAgentMetadata ClientHints::GetUserAgentMetadata() {
@@ -91,7 +101,7 @@ void ClientHints::PersistClientHints(
     return;
   }
 
-  if (expiration_duration <= base::TimeDelta::FromSeconds(0))
+  if (expiration_duration <= base::Seconds(0))
     return;
 
   base::Value::ListStorage expiration_times_list;
@@ -119,15 +129,13 @@ void ClientHints::PersistClientHints(
 
   UMA_HISTOGRAM_EXACT_LINEAR("ClientHints.UpdateEventCount", 1, 2);
   UMA_HISTOGRAM_CUSTOM_TIMES(
-      "ClientHints.PersistDuration", expiration_duration,
-      base::TimeDelta::FromSeconds(1),
+      "ClientHints.PersistDuration", expiration_duration, base::Seconds(1),
       // TODO(crbug.com/949034): Rename and fix this histogram to have some
       // intended max value. We throw away the 32 most-significant bits of the
       // 64-bit time delta in milliseconds. Before it happened silently in
       // histogram.cc, now it is explicit here. The previous value of 365 days
       // effectively turns into roughly 17 days when getting cast to int.
-      base::TimeDelta::FromMilliseconds(
-          static_cast<int>(base::TimeDelta::FromDays(365).InMilliseconds())),
+      base::Milliseconds(static_cast<int>(base::Days(365).InMilliseconds())),
       100);
 
   UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", client_hints.size());

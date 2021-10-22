@@ -46,7 +46,6 @@
 #include "services/network/public/mojom/cookie_manager.mojom-blink.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-blink.h"
@@ -361,60 +360,11 @@ ServiceWorkerGlobalScope::GetInstalledScriptsManager() {
   return installed_scripts_manager_.get();
 }
 
-void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
-                                                 size_t cached_metadata_size) {
-  DCHECK_EQ(GetScriptType(), mojom::blink::ScriptType::kClassic);
-  base::UmaHistogramCustomCounts(
-      "ServiceWorker.ScriptSize",
-      base::saturated_cast<base::Histogram::Sample>(script_size), 1000, 5000000,
-      50);
-
-  if (cached_metadata_size) {
-    base::UmaHistogramCustomCounts(
-        "ServiceWorker.ScriptCachedMetadataSize",
-        base::saturated_cast<base::Histogram::Sample>(cached_metadata_size),
-        1000, 50000000, 50);
-  }
-
-  CountScriptInternal(script_size, cached_metadata_size);
-}
-
-void ServiceWorkerGlobalScope::CountImportedScript(
-    size_t script_size,
-    size_t cached_metadata_size) {
-  DCHECK_EQ(GetScriptType(), mojom::blink::ScriptType::kClassic);
-  CountScriptInternal(script_size, cached_metadata_size);
-}
-
 void ServiceWorkerGlobalScope::DidEvaluateScript() {
   DCHECK(!did_evaluate_script_);
   did_evaluate_script_ = true;
 
   event_queue_->Start();
-
-  // Skip recording UMAs for module scripts because there're no ways to get the
-  // number of static-imported scripts and the total size of the imported
-  // scripts.
-  if (GetScriptType() == mojom::blink::ScriptType::kModule) {
-    return;
-  }
-
-  // TODO(asamidoi,nhiroki): Record the UMAs for module scripts, or remove them
-  // if they're no longer used.
-  base::UmaHistogramCounts1000(
-      "ServiceWorker.ScriptCount",
-      base::saturated_cast<base::Histogram::Sample>(script_count_));
-  base::UmaHistogramCustomCounts(
-      "ServiceWorker.ScriptTotalSize",
-      base::saturated_cast<base::Histogram::Sample>(script_total_size_), 1000,
-      5000000, 50);
-  if (script_cached_metadata_total_size_) {
-    base::UmaHistogramCustomCounts(
-        "ServiceWorker.ScriptCachedMetadataTotalSize",
-        base::saturated_cast<base::Histogram::Sample>(
-            script_cached_metadata_total_size_),
-        1000, 50000000, 50);
-  }
 }
 
 void ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript(
@@ -489,8 +439,7 @@ void ServiceWorkerGlobalScope::Initialize(
     network::mojom::ReferrerPolicy response_referrer_policy,
     network::mojom::IPAddressSpace response_address_space,
     Vector<network::mojom::blink::ContentSecurityPolicyPtr> response_csp,
-    const Vector<String>* response_origin_trial_tokens,
-    int64_t appcache_id) {
+    const Vector<String>* response_origin_trial_tokens) {
   // Step 4.5. "Set workerGlobalScope's url to serviceWorker's script url."
   InitializeURL(response_url);
 
@@ -529,9 +478,6 @@ void ServiceWorkerGlobalScope::Initialize(
   // This should be called after OriginTrialContext::AddTokens() to install
   // origin trial features in JavaScript's global object.
   ScriptController()->PrepareForEvaluation();
-
-  // Service Workers don't use application cache.
-  DCHECK_EQ(appcache_id, mojom::blink::kAppCacheNoCacheId);
 }
 
 void ServiceWorkerGlobalScope::LoadAndRunInstalledClassicScript(
@@ -581,22 +527,13 @@ void ServiceWorkerGlobalScope::RunClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   // Step 4.5-4.11 are implemented in Initialize().
   Initialize(response_url, response_referrer_policy, response_address_space,
-             std::move(response_csp), response_origin_trial_tokens,
-             mojom::blink::kAppCacheNoCacheId);
+             std::move(response_csp), response_origin_trial_tokens);
 
   // Step 4.12. "Let evaluationStatus be the result of running the classic
   // script script if script is a classic script, otherwise, the result of
   // running the module script script if script is a module script."
   EvaluateClassicScript(response_url, source_code, std::move(cached_meta_data),
                         stack_id);
-}
-
-void ServiceWorkerGlobalScope::CountScriptInternal(
-    size_t script_size,
-    size_t cached_metadata_size) {
-  ++script_count_;
-  script_total_size_ += script_size;
-  script_cached_metadata_total_size_ += cached_metadata_size;
 }
 
 ServiceWorkerClients* ServiceWorkerGlobalScope::clients() {
@@ -1994,7 +1931,7 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForMainResource(
                   /*corp_checker=*/nullptr, absl::nullopt),
         WTF::Bind(&ServiceWorkerGlobalScope::AbortCallbackForFetchEvent,
                   WrapWeakPersistent(this)),
-        base::TimeDelta::FromSeconds(kCustomTimeoutForOfflineEvent.Get()));
+        base::Seconds(kCustomTimeoutForOfflineEvent.Get()));
   } else {
     event_queue_->EnqueueNormal(
         event_id,
@@ -2105,7 +2042,7 @@ void ServiceWorkerGlobalScope::DispatchPushEvent(
       WTF::Bind(&ServiceWorkerGlobalScope::StartPushEvent,
                 WrapWeakPersistent(this), std::move(payload)),
       CreateAbortCallback(&push_event_callbacks_),
-      base::TimeDelta::FromSeconds(mojom::blink::kPushEventTimeoutSeconds));
+      base::Seconds(mojom::blink::kPushEventTimeoutSeconds));
 }
 
 void ServiceWorkerGlobalScope::StartPushEvent(
@@ -2139,7 +2076,7 @@ void ServiceWorkerGlobalScope::DispatchPushSubscriptionChangeEvent(
                 WrapWeakPersistent(this), std::move(old_subscription),
                 std::move(new_subscription)),
       CreateAbortCallback(&push_subscription_change_event_callbacks_),
-      base::TimeDelta::FromSeconds(mojom::blink::kPushEventTimeoutSeconds));
+      base::Seconds(mojom::blink::kPushEventTimeoutSeconds));
 }
 
 void ServiceWorkerGlobalScope::StartPushSubscriptionChangeEvent(

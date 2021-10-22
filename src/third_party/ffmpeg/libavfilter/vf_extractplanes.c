@@ -352,21 +352,11 @@ static av_cold int init(AVFilterContext *ctx)
         pad.type = AVMEDIA_TYPE_VIDEO;
         pad.config_props = config_output;
 
-        if ((ret = ff_insert_outpad(ctx, ctx->nb_outputs, &pad)) < 0) {
-            av_freep(&pad.name);
+        if ((ret = ff_append_outpad_free_name(ctx, &pad)) < 0)
             return ret;
-        }
     }
 
     return 0;
-}
-
-static av_cold void uninit(AVFilterContext *ctx)
-{
-    int i;
-
-    for (i = 0; i < ctx->nb_outputs; i++)
-        av_freep(&ctx->output_pads[i].name);
 }
 
 static const AVFilterPad extractplanes_inputs[] = {
@@ -376,7 +366,6 @@ static const AVFilterPad extractplanes_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_extractplanes = {
@@ -385,9 +374,8 @@ const AVFilter ff_vf_extractplanes = {
     .priv_size     = sizeof(ExtractPlanesContext),
     .priv_class    = &extractplanes_class,
     .init          = init,
-    .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = extractplanes_inputs,
+    FILTER_INPUTS(extractplanes_inputs),
     .outputs       = NULL,
     .flags         = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
 };
@@ -399,9 +387,18 @@ static av_cold int init_alphaextract(AVFilterContext *ctx)
     ExtractPlanesContext *s = ctx->priv;
 
     s->requested_planes = PLANE_A;
+    s->map[0] = 3;
 
-    return init(ctx);
+    return 0;
 }
+
+static const AVFilterPad alphaextract_outputs[] = {
+    {
+        .name         = "default",
+        .type         = AVMEDIA_TYPE_VIDEO,
+        .config_props = config_output,
+    },
+};
 
 const AVFilter ff_vf_alphaextract = {
     .name           = "alphaextract",
@@ -409,10 +406,8 @@ const AVFilter ff_vf_alphaextract = {
                       "grayscale image component."),
     .priv_size      = sizeof(ExtractPlanesContext),
     .init           = init_alphaextract,
-    .uninit         = uninit,
     .query_formats  = query_formats,
-    .inputs         = extractplanes_inputs,
-    .outputs        = NULL,
-    .flags          = AVFILTER_FLAG_DYNAMIC_OUTPUTS,
+    FILTER_INPUTS(extractplanes_inputs),
+    FILTER_OUTPUTS(alphaextract_outputs),
 };
 #endif  /* CONFIG_ALPHAEXTRACT_FILTER */

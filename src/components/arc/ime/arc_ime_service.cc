@@ -23,8 +23,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -68,6 +68,9 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
  public:
   explicit ArcWindowDelegateImpl(ArcImeService* ime_service)
       : ime_service_(ime_service) {}
+
+  ArcWindowDelegateImpl(const ArcWindowDelegateImpl&) = delete;
+  ArcWindowDelegateImpl& operator=(const ArcWindowDelegateImpl&) = delete;
 
   ~ArcWindowDelegateImpl() override = default;
 
@@ -130,8 +133,6 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
 
  private:
   ArcImeService* const ime_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcWindowDelegateImpl);
 };
 
 // Singleton factory for ArcImeService.
@@ -648,10 +649,9 @@ bool ArcImeService::SetAutocorrectRange(const gfx::Range& range) {
     base::UmaHistogramEnumeration("InputMethod.Assistive.Autocorrect.Count",
                                   TextInputClient::SubClass::kArcImeService);
 
-    auto* input_method_manager =
-        chromeos::input_method::InputMethodManager::Get();
+    auto* input_method_manager = ash::input_method::InputMethodManager::Get();
     if (input_method_manager &&
-        chromeos::extension_ime_util::IsExperimentalMultilingual(
+        ash::extension_ime_util::IsExperimentalMultilingual(
             input_method_manager->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id())) {
@@ -694,7 +694,7 @@ void ArcImeService::OnDispatchingKeyEventPostIME(ui::KeyEvent* event) {
 
   // Do not forward the key event from virtual keyboard if it's sent via
   // InsertChar(). By the special logic in
-  // ui::InputMethodChromeOS::DispatchKeyEvent, both of InsertChar() and
+  // `ui::InputMethodAsh::DispatchKeyEvent`, both of InsertChar() and
   // DispatchKeyEventPostIME() are called for a key event injected by the
   // virtual keyboard. The below logic stops key event propagation through
   // DispatchKeyEventPostIME() to prevent from inputting two characters.

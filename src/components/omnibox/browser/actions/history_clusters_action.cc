@@ -9,12 +9,16 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/core/memories_features.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/autocomplete_result.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/escape.h"
+
+namespace history_clusters {
 
 namespace {
 
@@ -23,10 +27,18 @@ class HistoryClustersAction : public OmniboxAction {
   explicit HistoryClustersAction(const std::string& query)
       : OmniboxAction(
             OmniboxAction::LabelStrings(
-                IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
-                IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
-                IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
-                IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
+                kAlternateOmniboxActionText.Get()
+                    ? IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT_ALTERNATE
+                    : IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_HINT,
+                kAlternateOmniboxActionText.Get()
+                    ? IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS_ALTERNATE
+                    : IDS_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUGGESTION_CONTENTS,
+                kAlternateOmniboxActionText.Get()
+                    ? IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX_ALTERNATE
+                    : IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_SUFFIX,
+                kAlternateOmniboxActionText.Get()
+                    ? IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH_ALTERNATE
+                    : IDS_ACC_OMNIBOX_ACTION_HISTORY_CLUSTERS_SEARCH),
             GURL(base::StringPrintf(
                 "chrome://history/journeys?q=%s",
                 net::EscapeQueryParamValue(query, /*use_plus=*/false)
@@ -52,6 +64,7 @@ class HistoryClustersAction : public OmniboxAction {
 
 void AttachHistoryClustersActions(
     history_clusters::HistoryClustersService* service,
+    PrefService* prefs,
     AutocompleteResult& result) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // Compile out this method for Mobile, which doesn't omnibox actions yet.
@@ -62,8 +75,13 @@ void AttachHistoryClustersActions(
     return;
 
   // Both features must be enabled to ever attach the action chip.
-  if (!base::FeatureList::IsEnabled(history_clusters::kMemories) ||
-      !base::FeatureList::IsEnabled(history_clusters::kMemoriesOmniboxAction)) {
+  if (!base::FeatureList::IsEnabled(history_clusters::kJourneys) ||
+      !base::FeatureList::IsEnabled(history_clusters::kOmniboxAction)) {
+    return;
+  }
+
+  // History Clusters must be visible to the user to attach the action chip.
+  if (!prefs->GetBoolean(history_clusters::prefs::kVisible)) {
     return;
   }
 
@@ -86,3 +104,5 @@ void AttachHistoryClustersActions(
   }
 #endif
 }
+
+}  // namespace history_clusters

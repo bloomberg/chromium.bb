@@ -42,23 +42,6 @@ class ScriptExecutor : public ActionDelegate,
                        public ScriptExecutorDelegate::NavigationListener,
                        public ScriptExecutorDelegate::Listener {
  public:
-  // States a script can end up in.
-  enum class ScriptStatus {
-    // Never explicitly set. Reading this value means the enum field is either
-    // not set or set to a value not listed here.
-    UNKNOWN,
-    // The script finished successfully.
-    SUCCESS,
-    // The script failed.
-    FAILURE,
-    // The user cancelled the script.
-    CANCELLED,
-    // The script is currently running.
-    RUNNING,
-    // The script was not run.
-    NOT_RUN,
-  };
-
   // Listens to events on ScriptExecutor.
   // TODO(b/806868): Make global_payload a part of callback instead of the
   // listener.
@@ -85,9 +68,12 @@ class ScriptExecutor : public ActionDelegate,
                  const std::string& global_payload,
                  const std::string& script_payload,
                  ScriptExecutor::Listener* listener,
-                 std::map<std::string, ScriptStatus>* scripts_state,
                  const std::vector<std::unique_ptr<Script>>* ordered_interrupts,
                  ScriptExecutorDelegate* delegate);
+
+  ScriptExecutor(const ScriptExecutor&) = delete;
+  ScriptExecutor& operator=(const ScriptExecutor&) = delete;
+
   ~ScriptExecutor() override;
 
   // What should happen after the script has run.
@@ -221,7 +207,6 @@ class ScriptExecutor : public ActionDelegate,
   ElementStore* GetElementStore() const override;
   WebController* GetWebController() const override;
   std::string GetEmailAddressForAccessTokenAccount() const override;
-  std::string GetLocale() const override;
   void SetDetails(std::unique_ptr<Details> details,
                   base::TimeDelta delay) override;
   void AppendDetails(std::unique_ptr<Details> details,
@@ -299,6 +284,10 @@ class ScriptExecutor : public ActionDelegate,
             void(BatchElementChecker*,
                  base::OnceCallback<void(const ClientStatus&)>)> check_elements,
         WaitForDomOperation::Callback callback);
+
+    WaitForDomOperation(const WaitForDomOperation&) = delete;
+    WaitForDomOperation& operator=(const WaitForDomOperation&) = delete;
+
     ~WaitForDomOperation() override;
 
     void Run();
@@ -391,8 +380,6 @@ class ScriptExecutor : public ActionDelegate,
     RetryTimer retry_timer_;
 
     base::WeakPtrFactory<WaitForDomOperation> weak_ptr_factory_{this};
-
-    DISALLOW_COPY_AND_ASSIGN(WaitForDomOperation);
   };
 
   void OnGetActions(base::TimeTicks start_time,
@@ -472,7 +459,6 @@ class ScriptExecutor : public ActionDelegate,
   // change while the script is running, as a result of OnScriptListChanged
   // being called.
   const std::vector<std::unique_ptr<Script>>* const ordered_interrupts_;
-  std::map<std::string, ScriptStatus>* const scripts_state_;
   std::unique_ptr<ElementStore> element_store_;
   RunScriptCallback callback_;
   std::vector<std::unique_ptr<Action>> actions_;
@@ -540,7 +526,6 @@ class ScriptExecutor : public ActionDelegate,
   int consecutive_slow_roundtrip_counter_ = 0;
 
   base::WeakPtrFactory<ScriptExecutor> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(ScriptExecutor);
 };
 }  // namespace autofill_assistant
 

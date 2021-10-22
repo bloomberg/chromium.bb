@@ -95,6 +95,11 @@ class MockContentSettingsAgentDelegate
 class MockContentSettingsAgentImpl : public ContentSettingsAgentImpl {
  public:
   MockContentSettingsAgentImpl(content::RenderFrame* render_frame);
+
+  MockContentSettingsAgentImpl(const MockContentSettingsAgentImpl&) = delete;
+  MockContentSettingsAgentImpl& operator=(const MockContentSettingsAgentImpl&) =
+      delete;
+
   ~MockContentSettingsAgentImpl() override {}
 
   const GURL& image_url() const { return image_url_; }
@@ -116,8 +121,6 @@ class MockContentSettingsAgentImpl : public ContentSettingsAgentImpl {
   MockContentSettingsManagerImpl::Log log_;
   const GURL image_url_;
   const std::string image_origin_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockContentSettingsAgentImpl);
 };
 
 MockContentSettingsAgentImpl::MockContentSettingsAgentImpl(
@@ -150,6 +153,10 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
         predicate_(predicate),
         expectation_(expectation) {}
 
+  CommitTimeConditionChecker(const CommitTimeConditionChecker&) = delete;
+  CommitTimeConditionChecker& operator=(const CommitTimeConditionChecker&) =
+      delete;
+
  protected:
   // RenderFrameObserver:
   void OnDestruct() override {}
@@ -160,8 +167,6 @@ class CommitTimeConditionChecker : public content::RenderFrameObserver {
  private:
   const Predicate predicate_;
   const bool expectation_;
-
-  DISALLOW_COPY_AND_ASSIGN(CommitTimeConditionChecker);
 };
 
 }  // namespace
@@ -595,6 +600,62 @@ TEST_F(ContentSettingsAgentImplBrowserTest, MixedAutoupgradesDisabledByRules) {
           std::string(), false));
 
   EXPECT_FALSE(agent->ShouldAutoupgradeMixedContent());
+}
+
+TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsAllowedAutoDark) {
+  MockContentSettingsAgentImpl mock_agent(GetMainRenderFrame());
+
+  // Load some HTML.
+  LoadHTMLWithUrlOverride("<html></html>", "https://example.com/");
+
+  // Set the default auto dark mode setting.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& auto_dark_content_rules =
+      content_setting_rules.auto_dark_content_rules;
+  auto_dark_content_rules.push_back(ContentSettingPatternSource(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(
+          content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      std::string(), false));
+
+  ContentSettingsAgentImpl* agent =
+      ContentSettingsAgentImpl::Get(GetMainRenderFrame());
+  agent->SetContentSettingRules(&content_setting_rules);
+  EXPECT_TRUE(agent->AllowAutoDarkWebContent(true));
+
+  // Create an exception which blocked the auto dark.
+  auto_dark_content_rules.insert(
+      auto_dark_content_rules.begin(),
+      ContentSettingPatternSource(
+          ContentSettingsPattern::FromString("https://example.com/"),
+          ContentSettingsPattern::Wildcard(),
+          base::Value::FromUniquePtrValue(
+              content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+          std::string(), false));
+
+  EXPECT_FALSE(agent->AllowAutoDarkWebContent(true));
+}
+
+TEST_F(ContentSettingsAgentImplBrowserTest, ContentSettingsDisabledAutoDark) {
+  MockContentSettingsAgentImpl mock_agent(GetMainRenderFrame());
+
+  // Load some HTML.
+  LoadHTMLWithUrlOverride("<html></html>", "https://example.com/");
+
+  // Set the default auto dark mode setting.
+  RendererContentSettingRules content_setting_rules;
+  ContentSettingsForOneType& auto_dark_content_rules =
+      content_setting_rules.auto_dark_content_rules;
+  auto_dark_content_rules.push_back(ContentSettingPatternSource(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      base::Value::FromUniquePtrValue(
+          content_settings::ContentSettingToValue(CONTENT_SETTING_BLOCK)),
+      std::string(), false));
+
+  ContentSettingsAgentImpl* agent =
+      ContentSettingsAgentImpl::Get(GetMainRenderFrame());
+  agent->SetContentSettingRules(&content_setting_rules);
+  EXPECT_FALSE(agent->AllowAutoDarkWebContent(true));
 }
 
 }  // namespace content_settings

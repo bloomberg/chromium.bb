@@ -11,7 +11,7 @@
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLExpression.h"
-#include "src/sksl/ir/SkSLFloatLiteral.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 
 #include <memory>
 
@@ -27,18 +27,18 @@ class ConstructorMatrixResize final : public SingleArgumentConstructor {
 public:
     static constexpr Kind kExpressionKind = Kind::kConstructorMatrixResize;
 
-    ConstructorMatrixResize(int offset, const Type& type, std::unique_ptr<Expression> arg)
-            : INHERITED(offset, kExpressionKind, &type, std::move(arg))
-            , fZeroLiteral(offset, /*value=*/0.0f, &type.componentType())
-            , fOneLiteral(offset, /*value=*/1.0f, &type.componentType()) {}
+    ConstructorMatrixResize(int line, const Type& type, std::unique_ptr<Expression> arg)
+            : INHERITED(line, kExpressionKind, &type, std::move(arg))
+            , fZeroLiteral(line, /*value=*/0.0, &type.componentType())
+            , fOneLiteral(line, /*value=*/1.0, &type.componentType()) {}
 
     static std::unique_ptr<Expression> Make(const Context& context,
-                                            int offset,
+                                            int line,
                                             const Type& type,
                                             std::unique_ptr<Expression> arg);
 
     std::unique_ptr<Expression> clone() const override {
-        return std::make_unique<ConstructorMatrixResize>(fOffset, this->type(),
+        return std::make_unique<ConstructorMatrixResize>(fLine, this->type(),
                                                          argument()->clone());
     }
 
@@ -47,8 +47,8 @@ public:
 
 private:
     using INHERITED = SingleArgumentConstructor;
-    const FloatLiteral fZeroLiteral;
-    const FloatLiteral fOneLiteral;
+    const Literal fZeroLiteral;
+    const Literal fOneLiteral;
 };
 
 }  // namespace SkSL

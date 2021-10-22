@@ -54,14 +54,14 @@ const float kNormalFrameTimeoutInFrameIntervals = 25.0f;
 
 // Min delta time between two frames allowed without being dropped if a max
 // frame rate is specified.
-const double kMinTimeInMsBetweenFrames = 5;
+constexpr base::TimeDelta kMinTimeInMsBetweenFrames = base::Milliseconds(5);
 // If the delta between two frames is bigger than this, we will consider it to
 // be invalid and reset the fps calculation.
-const double kMaxTimeInMsBetweenFrames = 1000;
+constexpr base::TimeDelta kMaxTimeInMsBetweenFrames = base::Milliseconds(1000);
 
-const double kFrameRateChangeIntervalInSeconds = 1;
+constexpr base::TimeDelta kFrameRateChangeIntervalInSeconds = base::Seconds(1);
 const double kFrameRateChangeRate = 0.01;
-const double kFrameRateUpdateIntervalInSeconds = 5;
+constexpr base::TimeDelta kFrameRateUpdateIntervalInSeconds = base::Seconds(5);
 
 struct ComputedSettings {
   gfx::Size frame_size;
@@ -102,7 +102,7 @@ bool MaybeUpdateFrameRate(ComputedSettings* settings) {
   // reported value.
   if (std::abs(settings->frame_rate - settings->last_updated_frame_rate) >
       settings->last_updated_frame_rate * kFrameRateChangeRate) {
-    if ((now - settings->new_frame_rate_timestamp).InSecondsF() >
+    if (now - settings->new_frame_rate_timestamp >
         kFrameRateChangeIntervalInSeconds) {
       settings->new_frame_rate_timestamp = now;
       settings->last_update_timestamp = now;
@@ -115,7 +115,7 @@ bool MaybeUpdateFrameRate(ComputedSettings* settings) {
 
   // Update frame rate if it hasn't been updated in the last
   // kFrameRateUpdateIntervalInSeconds seconds.
-  if ((now - settings->last_update_timestamp).InSecondsF() >
+  if (now - settings->last_update_timestamp >
       kFrameRateUpdateIntervalInSeconds) {
     settings->last_update_timestamp = now;
     settings->last_updated_frame_rate = settings->frame_rate;
@@ -144,6 +144,10 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
       scoped_refptr<base::SingleThreadTaskRunner> render_message_loop,
       const VideoTrackAdapterSettings& settings,
       base::WeakPtr<MediaStreamVideoSource> media_stream_video_source);
+
+  VideoFrameResolutionAdapter(const VideoFrameResolutionAdapter&) = delete;
+  VideoFrameResolutionAdapter& operator=(const VideoFrameResolutionAdapter&) =
+      delete;
 
   // Add |frame_callback|, |encoded_frame_callback| to receive video frames on
   // the IO-thread and |settings_callback| to set track settings on the main
@@ -230,8 +234,6 @@ class VideoTrackAdapter::VideoFrameResolutionAdapter
   ComputedSettings source_format_settings_;
 
   base::flat_map<const MediaStreamVideoTrack*, VideoTrackCallbacks> callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameResolutionAdapter);
 };
 
 VideoTrackAdapter::VideoFrameResolutionAdapter::VideoFrameResolutionAdapter(
@@ -447,11 +449,10 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     return false;
   }
 
-  const double delta_ms =
-      (frame.timestamp() - last_time_stamp_).InMillisecondsF();
+  const base::TimeDelta delta_ms = (frame.timestamp() - last_time_stamp_);
 
   // Check if the time since the last frame is completely off.
-  if (delta_ms < 0 || delta_ms > kMaxTimeInMsBetweenFrames) {
+  if (delta_ms < base::TimeDelta() || delta_ms > kMaxTimeInMsBetweenFrames) {
     // Reset |last_time_stamp_| and fps calculation.
     last_time_stamp_ = frame.timestamp();
     frame_rate_ = MediaStreamVideoSource::kDefaultFrameRate;
@@ -469,7 +470,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
     // Most likely the back to back problem is caused by software and not the
     // actual camera.
     DVLOG(3) << "Drop frame since delta time since previous frame is "
-             << delta_ms << "ms.";
+             << delta_ms.InMillisecondsF() << "ms.";
     *reason = media::VideoCaptureFrameDropReason::
         kResolutionAdapterTimestampTooCloseToPrevious;
     return true;
@@ -477,7 +478,7 @@ bool VideoTrackAdapter::VideoFrameResolutionAdapter::MaybeDropFrame(
   last_time_stamp_ = frame.timestamp();
   // Calculate the frame rate using a simple AR filter.
   // Use a simple filter with 0.1 weight of the current sample.
-  frame_rate_ = 100 / delta_ms + 0.9 * frame_rate_;
+  frame_rate_ = 100 / delta_ms.InMillisecondsF() + 0.9 * frame_rate_;
 
   // Prefer to not drop frames.
   if (settings_.max_frame_rate() + 0.5f > frame_rate_)
@@ -734,8 +735,7 @@ void VideoTrackAdapter::StartFrameMonitoringOnIO(
       CrossThreadBindOnce(&VideoTrackAdapter::CheckFramesReceivedOnIO,
                           WrapRefCounted(this), std::move(on_muted_callback),
                           frame_counter_),
-      base::TimeDelta::FromSecondsD(kFirstFrameTimeoutInFrameIntervals /
-                                    source_frame_rate_));
+      base::Seconds(kFirstFrameTimeoutInFrameIntervals / source_frame_rate_));
 }
 
 void VideoTrackAdapter::StopFrameMonitoringOnIO() {
@@ -854,8 +854,7 @@ void VideoTrackAdapter::CheckFramesReceivedOnIO(
       CrossThreadBindOnce(&VideoTrackAdapter::CheckFramesReceivedOnIO,
                           WrapRefCounted(this),
                           std::move(set_muted_state_callback), frame_counter_),
-      base::TimeDelta::FromSecondsD(kNormalFrameTimeoutInFrameIntervals /
-                                    source_frame_rate_));
+      base::Seconds(kNormalFrameTimeoutInFrameIntervals / source_frame_rate_));
 }
 
 }  // namespace blink

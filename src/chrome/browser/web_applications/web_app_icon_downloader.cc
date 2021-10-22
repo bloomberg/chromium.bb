@@ -39,8 +39,8 @@ void WebAppIconDownloader::FailAllIfAnyFail() {
 }
 
 void WebAppIconDownloader::Start() {
-  // Favicons are not supported in extension WebContents.
-  if (IsValidExtensionUrl(web_contents()->GetLastCommittedURL()))
+  // Favicons are supported only in HTTP or HTTPS WebContents.
+  if (!web_contents()->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
     SkipPageFavicons();
 
   // If the candidates aren't loaded, icons will be fetched when
@@ -59,12 +59,14 @@ void WebAppIconDownloader::Start() {
 }
 
 int WebAppIconDownloader::DownloadImage(const GURL& url) {
+  // If |is_favicon| is true, the cookies are not sent and not accepted during
+  // download.
   return web_contents()->DownloadImage(
       url,
-      true,   // is_favicon
-      0,      // no preferred size
-      0,      // no max size
-      false,  // normal cache policy
+      true,         // is_favicon
+      gfx::Size(),  // no preferred size
+      0,            // no max size
+      false,        // normal cache policy
       base::BindOnce(&WebAppIconDownloader::DidDownloadFavicon,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -143,15 +145,7 @@ void WebAppIconDownloader::DidDownloadFavicon(
 }
 
 // content::WebContentsObserver overrides:
-void WebAppIconDownloader::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      !navigation_handle->HasCommitted() || navigation_handle->IsSameDocument())
-    return;
-
+void WebAppIconDownloader::PrimaryPageChanged(content::Page& page) {
   CancelDownloads();
 }
 

@@ -72,8 +72,9 @@ class AnimationEffectStackTest : public PageTestBase {
   InertEffect* MakeInertEffect(KeyframeEffectModelBase* effect) {
     Timing timing;
     timing.fill_mode = Timing::FillMode::BOTH;
-    return MakeGarbageCollected<InertEffect>(
-        effect, timing, false, AnimationTimeDelta(), absl::nullopt, 1.0);
+    return MakeGarbageCollected<InertEffect>(effect, timing, false,
+                                             AnimationTimeDelta(),
+                                             absl::nullopt, absl::nullopt, 1.0);
   }
 
   KeyframeEffect* MakeKeyframeEffect(KeyframeEffectModelBase* effect,
@@ -190,7 +191,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   // to keep the ActiveInterpolationsMap in a Persistent.
   Persistent<ActiveInterpolationsMap> interpolations;
 
-  UpdateTimeline(base::TimeDelta::FromSeconds(11));
+  UpdateTimeline(base::Seconds(11));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
@@ -200,7 +201,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
-  UpdateTimeline(base::TimeDelta::FromSeconds(13));
+  UpdateTimeline(base::Seconds(13));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
@@ -210,7 +211,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
 
-  UpdateTimeline(base::TimeDelta::FromSeconds(15));
+  UpdateTimeline(base::Seconds(15));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(
@@ -220,7 +221,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   EXPECT_EQ(GetFontSizeValue(*interpolations), 3);
   EXPECT_EQ(2u, SampledEffectCount());
 
-  UpdateTimeline(base::TimeDelta::FromSeconds(17));
+  UpdateTimeline(base::Seconds(17));
   ThreadState::Current()->CollectAllGarbageForTesting();
   interpolations = MakeGarbageCollected<ActiveInterpolationsMap>(
       EffectStack::ActiveInterpolations(

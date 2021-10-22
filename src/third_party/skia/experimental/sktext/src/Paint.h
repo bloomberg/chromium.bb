@@ -29,9 +29,10 @@ namespace text {
             SkASSERT(index == 0);
             return fTypeface;
         }
-        float size() const override { return fSize; }
-
+        float fontSize() const override { return fSize; }
+        SkString locale() const override { return SkString("en"); }
         sk_sp<SkTypeface> getTypeface() const { return fTypeface; }
+        bool empty() const { return fTypeface == nullptr; }
 
     private:
         sk_sp<SkTypeface> fTypeface;
@@ -39,9 +40,36 @@ namespace text {
         SkFontStyle fFontStyle;
     };
 
-    class Paint : public FormattedText::Visitor {
+    class MultipleFontChain : public FontChain {
     public:
-        void paint(SkCanvas* canvas, SkPoint xy, FormattedText* formattedText, SkSpan<DecoratedBlock> decoratedBlocks);
+        MultipleFontChain(std::vector<const char*> ffs, SkScalar size, SkFontStyle fontStyle)
+                : fSize(size)
+                , fFontStyle(fontStyle) {
+            for (auto& ff  : ffs) {
+                auto typeface = SkFontMgr::RefDefault()->matchFamilyStyle(ff, SkFontStyle::Normal());
+                if (typeface != nullptr) {
+                    fTypefaces.emplace_back(typeface);
+                }
+            }
+        }
+        size_t count() const override { return fTypefaces.size(); }
+        sk_sp<SkTypeface> operator[](size_t index) const  override {
+            SkASSERT(index < fTypefaces.size());
+            return fTypefaces[index];
+        }
+        float fontSize() const override { return fSize; }
+        SkString locale() const override { return SkString("en"); }
+        bool empty() const { return fTypefaces.empty(); }
+
+    private:
+        std::vector<sk_sp<SkTypeface>> fTypefaces;
+        SkScalar fSize;
+        SkFontStyle fFontStyle;
+    };
+
+    class Paint : public Visitor {
+    public:
+        void paint(SkCanvas* canvas, SkPoint xy, UnicodeText* unicodeText, WrappedText* wrappedText, SkSpan<DecoratedBlock> decoratedBlocks);
         // Simplification (using default font manager, default font family and default everything possible)
         static bool drawText(std::u16string text, SkCanvas* canvas, SkScalar x, SkScalar y);
         static bool drawText(std::u16string text, SkCanvas* canvas, SkScalar width);
@@ -57,21 +85,19 @@ namespace text {
                              SkSize reqSize, SkScalar x, SkScalar y);
 
     private:
-        static sk_sp<FormattedText> layout(std::u16string text,
-                                           TextDirection textDirection, TextAlign textAlign,
-                                           SkSize reqSize,
-                                           SkSpan<FontBlock> fontBlocks);
+        static std::unique_ptr<WrappedText> layout(std::u16string text,
+                                                   TextDirection textDirection, TextAlign textAlign,
+                                                   SkSize reqSize,
+                                                   SkSpan<FontBlock> fontBlocks);
 
-        void onBeginLine(TextRange lineText) override;
-        void onEndLine(TextRange) override;
         void onGlyphRun(const SkFont& font,
                         TextRange textRange,
                         SkRect boundingRect,
+                        int trailingSpacesStart,
                         int glyphCount,
                         const uint16_t glyphs[],
-                        const SkPoint  positions[],
-                        const SkPoint offsets[]) override;
-        void onPlaceholder(TextRange, const SkRect& bounds) override;
+                        const SkPoint positions[],
+                        const TextIndex clusters[]) override;
 
         // We guarantee that the text range will be inside one of the decorated blocks
         DecoratedBlock findDecoratedBlock(TextRange textRange);

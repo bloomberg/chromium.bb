@@ -6,6 +6,8 @@ module network.mojom;
 
 enum WebClientHintsType {
   // Enumerator values are logged in UMA histograms and must not be changed.
+  // Hints may be removed from this list, so if you need the total count call
+  // network::GetClientHintToNameMap().size() and don't use kMaxValue.
 
   // Warning: The list of client hints to be persisted for a given origin are
   // sent by the renderer process to the browser process. This makes it possible
@@ -23,7 +25,7 @@ enum WebClientHintsType {
   kRtt_DEPRECATED = 4,
   kDownlink_DEPRECATED = 5,
   kEct_DEPRECATED = 6,
-  kLang = 7,
+  // kLang = 7, Removed in M96
   kUA = 8,
   kUAArch = 9,
   kUAPlatform = 10,
@@ -37,6 +39,10 @@ enum WebClientHintsType {
   // header contains the reduced user agent string.
   kUAReduced = 17,
   kViewportHeight = 18,
+  kDeviceMemory = 19, // The `sec-ch-` variant of kDeviceMemory_DEPRECATED
+  kDpr = 20, // The `sec-ch-` variant of kDpr_DEPRECATED
+  kResourceWidth = 21, // The `sec-ch-` variant of kResourceWidth_DEPRECATED
+  kViewportWidth = 22, // The `sec-ch-` variant of kViewportWidth_DEPRECATED
 
   // Warning: Before adding a new client hint, read the warning at the top.
 };

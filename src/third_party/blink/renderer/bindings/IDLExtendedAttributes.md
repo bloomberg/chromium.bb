@@ -376,7 +376,7 @@ The semantics are the same as `[Constructor]`, except that the name changes: Jav
 
 Whether you should allow an interface to have a named constructor or not depends on the spec of each interface.
 
-### [NamedConstructor_CallWith] _(i)_
+### [NamedConstructor_CallWith=Document] _(i)_
 
 Summary: The same as `[CallWith]` but applied to the named constructors.
 
@@ -651,7 +651,7 @@ Usage:
 
 For methods all calls are logged, and by default for attributes all access (calls to getter or setter) are logged, but this can be restricted to just read (getter) or just write (setter).
 
-### [CallWith] _(m, a)_, [GetterCallWith] _(a)_, [SetterCallWith] _(a)_, [ConstructorCallWith] _(i)_
+### [CallWith] _(m, a)_, [GetterCallWith] _(a)_, [SetterCallWith] _(a)
 
 Summary: `[CallWith]` indicates that the bindings code calls the Blink implementation with additional information.
 
@@ -756,37 +756,6 @@ bool Example::func(ScriptValue thisValue, bool a, bool b);
 *** note
 `[CallWith=...]` arguments are added at the _head_ of `XXX::Create(...)'s` arguments, and ` [RaisesException]`'s `ExceptionState` argument is added at the _tail_ of `XXX::Create(...)`'s arguments.
 ***
-
-#### [ConstructorCallWith] _(i)_
-
-Analogous to `[CallWith]`, but applied to interfaces with constructors, and takes different values.
-
-If `[Constructor]` is specified on an interface, `[ConstructorCallWith]` can be also specified to refine the arguments passed to the callback:
-
-```webidl
-[
-    Constructor(float x, float y, DOMString str),
-    ConstructorCallWith=ExecutionContext
-]
-interface XXX {
-    ...
-};
-```
-
-Then XXX::Create(...) can have the following signature
-
-```c++
-XXX* XXX::Create(ExecutionContext* context, float x, float y, const String& str) {
-  ...;
-}
-```
-
-Be careful when you use `[ConstructorCallWith=ScriptState]`.
-You should not store the passed-in ScriptState on a DOM object.
-This is because if the stored ScriptState is used by some method called by a different
-world (note that the DOM object is shared among multiple worlds), it leaks the ScriptState
-to the world. ScriptState must be carefully maintained in a way that doesn't leak
-to another world.
 
 ### [ContextEnabled] _(i)_
 
@@ -1656,6 +1625,9 @@ Usage: The method must adhere to the following requirements:
 
 Those requirements lead to the specific inability to throw JS exceptions and to log warnings to the console, as logging uses `MakeGarbageCollected<ConsoleMessage>`. If any such error reporting needs to happen, the method marked with `[NoAllocDirectCall]` should expect a last parameter `bool* has_error`, in which it might store `true` to signal V8. V8 will in turn re-execute the "default" callback, giving the possibility of the exception/error to be reported. This mechanism also implies that the "fast" callback is idempotent up to the point of reporting the error.
 
+Note: if `[NoAllocDirectCall]` is applied to a method, then the corresponding implementation C++ class must **also** derive from the [`NoAllocDirectCallHost` class](https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/platform/bindings/no_alloc_direct_call_host.h).
+
+Note: the [NoAllocDirectCall] extended attribute can only be applied to methods, and not attributes. An attribute getter's V8 return value constitutes a V8 allocation, and setters likely allocate on the Blink side.
 
 ### [IsCodeLike] _(t)_
 

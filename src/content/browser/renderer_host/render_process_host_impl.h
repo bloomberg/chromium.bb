@@ -245,8 +245,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetLastInitTime() override;
   bool IsProcessBackgrounded() override;
-  void IncrementKeepAliveRefCount() override;
-  void DecrementKeepAliveRefCount() override;
+  void IncrementKeepAliveRefCount(uint64_t handle_id_) override;
+  void DecrementKeepAliveRefCount(uint64_t handle_id_) override;
+  std::string GetKeepAliveDurations() const override;
+  size_t GetShutdownDelayRefCount() const override;
+  void IncrementRfhCount() override;
+  void DecrementRfhCount() override;
+  int GetRfhCount() const override;
   void IncrementWorkerRefCount() override;
   void DecrementWorkerRefCount() override;
   void DisableRefCounts() override;
@@ -568,10 +573,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Binds |receiver| to the RestrictedCookieManager instance owned by
   // |storage_partition_impl_|, and is used by a service worker via
-  // BrowserInterfaceBroker. |receiver| belongs to the service worker at
-  // |origin| hosted by this process,
+  // BrowserInterfaceBroker. |receiver| belongs to the service worker that use
+  // |storage_key| hosted by this process,
   void BindRestrictedCookieManagerForServiceWorker(
-      const url::Origin& origin,
+      const blink::StorageKey& storage_key,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver)
       override;
 
@@ -860,22 +865,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderProcessHostUnitTest,
                            GuestsAreNotSuitableHosts);
 
-  // Returns an existing RenderProcessHost that has not yet been used and is
-  // suitable for the given |site_instance|, or null if no such process host
-  // exists.
-  //
-  // This function is used when finding a process for a service worker. The
-  // idea is to choose the process that will be chosen by a navigation that will
-  // use the service worker. While navigations typically try to choose the
-  // process with the relevant service worker (using
-  // UnmatchedServiceWorkerProcessTracker), navigations out of the Android New
-  // Tab Page use a SiteInstance with an empty URL by design in order to choose
-  // the NTP process, and do not go through the typical matching algorithm. The
-  // goal of this function is to return the NTP process so the service worker
-  // can also use it.
-  static RenderProcessHost* GetUnusedProcessHostForServiceWorker(
-      SiteInstanceImpl* site_instance);
-
   // Returns a RenderProcessHost that is rendering a URL corresponding to
   // |site_instance| in one of its frames, or that is expecting a navigation to
   // that SiteInstance.
@@ -959,6 +948,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   size_t keep_alive_ref_count_;
   size_t worker_ref_count_;
   size_t shutdown_delay_ref_count_;
+  // We track the start-time for each |handle_id|, for crashkey reporting.
+  base::flat_map<uint64_t, base::Time> keep_alive_start_times_;
+
+  // Diagnostic code for https://crbug/1148542. This will be removed prior to
+  // resolving that issue.
+  int render_frame_host_count_;
 
   // Set in DisableRefCounts(). When true, |keep_alive_ref_count_| and
   // |worker_ref_count_|, and |shutdown_delay_ref_count_| must no longer be
@@ -1110,9 +1105,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<FileSystemManagerImpl, BrowserThread::DeleteOnIOThread>
       file_system_manager_impl_;
-  std::unique_ptr<viz::GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;
-  std::unique_ptr<PushMessagingManager, base::OnTaskRunnerDeleter>
-      push_messaging_manager_;
+  std::unique_ptr<viz::GpuClient> gpu_client_;
+  std::unique_ptr<PushMessagingManager> push_messaging_manager_;
 
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> embedded_frame_sink_provider_;
   std::unique_ptr<PluginRegistryImpl> plugin_registry_;

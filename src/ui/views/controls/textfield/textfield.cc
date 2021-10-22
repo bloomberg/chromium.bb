@@ -33,6 +33,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -45,7 +47,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/selection_bound.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -76,10 +77,6 @@
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/base/x/x11_util.h"  // nogncheck
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/aura/window.h"
 #include "ui/wm/core/ime_util_chromeos.h"
@@ -97,8 +94,8 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 #endif
 
 namespace views {
@@ -158,7 +155,7 @@ base::TimeDelta GetPasswordRevealDuration(const ui::KeyEvent& event) {
     uint8_t is_mirroring =
         fromVKPropertyArray[ui::kPropertyFromVKIsMirroringIndex];
     if (!is_mirroring)
-      return base::TimeDelta::FromSeconds(1);
+      return base::Seconds(1);
   }
   return base::TimeDelta();
 }
@@ -182,16 +179,10 @@ bool IsValidCharToInsert(const char16_t& ch) {
 
 bool CanUseTransparentBackgroundForDragImage() {
 #if defined(USE_OZONE)
-  if (::features::IsUsingOzonePlatform()) {
     const auto* const egl_utility =
         ui::OzonePlatform::GetInstance()->GetPlatformGLEGLUtility();
     return egl_utility ? egl_utility->IsTransparentBackgroundSupported()
                        : false;
-  }
-#endif
-#if defined(USE_X11)
-  // Fallback on the background color if the system doesn't support compositing.
-  return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 #else
   // Other platforms allow this.
   return true;
@@ -205,16 +196,15 @@ base::TimeDelta Textfield::GetCaretBlinkInterval() {
 #if defined(OS_WIN)
   static const size_t system_value = ::GetCaretBlinkTime();
   if (system_value != 0) {
-    return (system_value == INFINITE)
-               ? base::TimeDelta()
-               : base::TimeDelta::FromMilliseconds(system_value);
+    return (system_value == INFINITE) ? base::TimeDelta()
+                                      : base::Milliseconds(system_value);
   }
 #elif defined(OS_MAC)
   base::TimeDelta system_value;
   if (ui::TextInsertionCaretBlinkPeriod(&system_value))
     return system_value;
 #endif
-  return base::TimeDelta::FromMilliseconds(500);
+  return base::Milliseconds(500);
 }
 
 // static
@@ -404,10 +394,9 @@ void Textfield::SetTextColor(SkColor color) {
 }
 
 SkColor Textfield::GetBackgroundColor() const {
-  return background_color_.value_or(GetNativeTheme()->GetSystemColor(
-      GetReadOnly() || !GetEnabled()
-          ? ui::NativeTheme::kColorId_TextfieldReadOnlyBackground
-          : ui::NativeTheme::kColorId_TextfieldDefaultBackground));
+  return background_color_.value_or(GetColorProvider()->GetColor(
+      GetReadOnly() || !GetEnabled() ? ui::kColorTextfieldBackgroundDisabled
+                                     : ui::kColorTextfieldBackground));
 }
 
 void Textfield::SetBackgroundColor(SkColor color) {
@@ -417,8 +406,8 @@ void Textfield::SetBackgroundColor(SkColor color) {
 }
 
 SkColor Textfield::GetSelectionTextColor() const {
-  return selection_text_color_.value_or(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionColor));
+  return selection_text_color_.value_or(
+      GetColorProvider()->GetColor(ui::kColorTextfieldSelectionForeground));
 }
 
 void Textfield::SetSelectionTextColor(SkColor color) {
@@ -427,8 +416,8 @@ void Textfield::SetSelectionTextColor(SkColor color) {
 }
 
 SkColor Textfield::GetSelectionBackgroundColor() const {
-  return selection_background_color_.value_or(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused));
+  return selection_background_color_.value_or(
+      GetColorProvider()->GetColor(ui::kColorTextfieldSelectionBackground));
 }
 
 void Textfield::SetSelectionBackgroundColor(SkColor color) {
@@ -1732,7 +1721,7 @@ bool Textfield::ShouldDoLearning() {
   return false;
 }
 
-#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 // TODO(https://crbug.com/952355): Implement this method to support Korean IME
 // reconversion feature on native text fields (e.g. find bar).
 bool Textfield::SetCompositionFromExistingText(
@@ -1773,10 +1762,9 @@ bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
                                   TextInputClient::SubClass::kTextField);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    auto* input_method_manager =
-        chromeos::input_method::InputMethodManager::Get();
+    auto* input_method_manager = ash::input_method::InputMethodManager::Get();
     if (input_method_manager &&
-        chromeos::extension_ime_util::IsExperimentalMultilingual(
+        ash::extension_ime_util::IsExperimentalMultilingual(
             input_method_manager->GetActiveIMEState()
                 ->GetCurrentInputMethod()
                 .id())) {
@@ -1790,7 +1778,7 @@ bool Textfield::SetAutocorrectRange(const gfx::Range& range) {
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 void Textfield::GetActiveTextInputControlLayoutBounds(
     absl::optional<gfx::Rect>* control_bounds,
     absl::optional<gfx::Rect>* selection_bounds) {
@@ -1798,7 +1786,9 @@ void Textfield::GetActiveTextInputControlLayoutBounds(
   ConvertRectToScreen(this, &origin);
   *control_bounds = origin;
 }
+#endif
 
+#if defined(OS_WIN)
 // TODO(https://crbug.com/952355): Implement this method once TSF supports
 // reconversion features on native text fields.
 void Textfield::SetActiveCompositionForAccessibility(
@@ -2365,7 +2355,7 @@ void Textfield::UpdateBorder() {
       extra_insets_.right() + provider->GetDistanceMetric(
                                   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
   if (invalid_)
-    border->SetColorId(ui::NativeTheme::kColorId_AlertSeverityHigh);
+    border->SetColorId(ui::kColorAlertHighSeverity);
   View::SetBorder(std::move(border));
 }
 

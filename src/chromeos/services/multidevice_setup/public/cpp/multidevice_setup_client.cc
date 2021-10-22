@@ -28,6 +28,8 @@ MultiDeviceSetupClient::GenerateDefaultFeatureStatesMap() {
       {mojom::Feature::kPhoneHub, mojom::FeatureState::kProhibitedByPolicy},
       {mojom::Feature::kPhoneHubNotifications,
        mojom::FeatureState::kProhibitedByPolicy},
+      {mojom::Feature::kPhoneHubCameraRoll,
+       mojom::FeatureState::kProhibitedByPolicy},
       {mojom::Feature::kPhoneHubTaskContinuation,
        mojom::FeatureState::kProhibitedByPolicy},
       {mojom::Feature::kWifiSync, mojom::FeatureState::kProhibitedByPolicy},
@@ -61,6 +63,16 @@ void MultiDeviceSetupClient::NotifyFeatureStateChanged(
     const FeatureStatesMap& feature_states_map) {
   for (auto& observer : observer_list_)
     observer.OnFeatureStatesChanged(feature_states_map);
+}
+
+std::string FeatureStatesMapToString(
+    const MultiDeviceSetupClient::FeatureStatesMap& map) {
+  std::ostringstream stream;
+  stream << "{" << std::endl;
+  for (const auto& item : map)
+    stream << "  " << item.first << ": " << item.second << "," << std::endl;
+  stream << "}";
+  return stream.str();
 }
 
 }  // namespace multidevice_setup

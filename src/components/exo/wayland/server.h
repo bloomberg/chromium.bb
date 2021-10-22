@@ -30,6 +30,7 @@ struct WaylandDataDeviceManager;
 class WaylandDisplayOutput;
 struct WaylandKeyboardExtension;
 struct WaylandSeat;
+struct WaylandTextInputExtension;
 struct WaylandTextInputManager;
 struct WaylandXdgShell;
 struct WaylandZxdgShell;
@@ -41,11 +42,17 @@ struct WestonTestState;
 class Server : public display::DisplayObserver {
  public:
   explicit Server(Display* display);
+
+  Server(const Server&) = delete;
+  Server& operator=(const Server&) = delete;
+
   ~Server() override;
 
   // Creates a Wayland display server that clients can connect to using the
   // default socket name.
   static std::unique_ptr<Server> Create(Display* display);
+
+  void Initialize();
 
   // This adds a Unix socket to the Wayland display server which can be used
   // by clients to connect to the display server.
@@ -71,6 +78,11 @@ class Server : public display::DisplayObserver {
 
   Display* GetDisplay() { return display_; }
 
+ protected:
+  void AddWaylandOutput(int64_t id,
+                        std::unique_ptr<WaylandDisplayOutput> output);
+  wl_display* GetWaylandDisplay() const { return wl_display_.get(); }
+
  private:
   Display* const display_;
   // Deleting wl_display depends on SerialTracker.
@@ -84,6 +96,7 @@ class Server : public display::DisplayObserver {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::unique_ptr<WaylandKeyboardExtension> zcr_keyboard_extension_data_;
   std::unique_ptr<WaylandTextInputManager> zwp_text_manager_data_;
+  std::unique_ptr<WaylandTextInputExtension> zcr_text_input_extension_data_;
   std::unique_ptr<WaylandZxdgShell> zxdg_shell_data_;
   std::unique_ptr<WaylandXdgShell> xdg_shell_data_;
   std::unique_ptr<WaylandRemoteShellData> remote_shell_data_;
@@ -91,8 +104,6 @@ class Server : public display::DisplayObserver {
   std::unique_ptr<WestonTestState> weston_test_data_;
 #endif
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(Server);
 };
 
 }  // namespace wayland

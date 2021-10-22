@@ -7,7 +7,6 @@
 #include <set>
 #include <vector>
 
-#include "base/base_switches.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -169,19 +168,8 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
   browser_field_trials_ =
       std::make_unique<ChromeBrowserFieldTrials>(local_state_.get());
 
-  // Initialize FieldTrialList to support FieldTrials. If an instance already
-  // exists, this is likely a test scenario with a ScopedFeatureList active,
-  // so use that one to apply any overrides.
-  if (!base::FieldTrialList::GetInstance()) {
-    // Note: This is intentionally leaked since it needs to live for the
-    // duration of the browser process and there's no benefit in cleaning it up
-    // at exit.
-    base::FieldTrialList* leaked_field_trial_list = new base::FieldTrialList(
-        metrics_services_manager_->CreateEntropyProvider());
-    ANNOTATE_LEAKING_OBJECT_PTR(leaked_field_trial_list);
-    ignore_result(leaked_field_trial_list);
-  }
-
+  metrics_services_manager_->InstantiateFieldTrialList(
+      cc::switches::kEnableGpuBenchmarking);
   auto feature_list = std::make_unique<base::FeatureList>();
 
   // Associate parameters chosen in about:flags and create trial/group for them.
@@ -193,8 +181,7 @@ void ChromeFeatureListCreator::SetupFieldTrials() {
   variations::VariationsService* variations_service =
       metrics_services_manager_->GetVariationsService();
   variations_service->SetupFieldTrials(
-      cc::switches::kEnableGpuBenchmarking, switches::kEnableFeatures,
-      switches::kDisableFeatures, variation_ids,
+      variation_ids,
       content::GetSwitchDependentFeatureOverrides(
           *base::CommandLine::ForCurrentProcess()),
       std::move(feature_list), browser_field_trials_.get());

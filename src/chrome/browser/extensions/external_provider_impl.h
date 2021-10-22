@@ -45,6 +45,9 @@ class ExternalProviderImpl : public ExternalProviderInterface {
                        mojom::ManifestLocation download_location,
                        int creation_flags);
 
+  ExternalProviderImpl(const ExternalProviderImpl&) = delete;
+  ExternalProviderImpl& operator=(const ExternalProviderImpl&) = delete;
+
   ~ExternalProviderImpl() override;
 
   // Populates a list with providers for all known sources.
@@ -71,6 +74,7 @@ class ExternalProviderImpl : public ExternalProviderInterface {
       std::unique_ptr<base::Version>* version) const override;
 
   bool IsReady() const override;
+  void TriggerOnExternalExtensionFound() override;
 
   static const char kExternalCrx[];
   static const char kExternalVersion[];
@@ -110,6 +114,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   void RetrieveExtensionsFromPrefs(
       std::vector<ExternalInstallInfoUpdateUrl>* external_update_url_extensions,
       std::vector<ExternalInstallInfoFile>* external_file_extensions);
+
+  // Retrieves the extensions from prefs and notifies the extension service for
+  // each extension file/update URL found.
+  void NotifyServiceOnExternalExtensionsFound(bool is_initial_load);
 
   // Location for external extensions that are provided by this provider from
   // local crx files.
@@ -151,8 +159,6 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   // Whether the provider should be allowed to update the set of external
   // extensions it provides.
   bool allow_updates_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalProviderImpl);
 };
 
 }  // namespace extensions

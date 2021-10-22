@@ -110,6 +110,11 @@ class PaintCanvasVideoRendererTest : public testing::Test {
   };
 
   PaintCanvasVideoRendererTest();
+
+  PaintCanvasVideoRendererTest(const PaintCanvasVideoRendererTest&) = delete;
+  PaintCanvasVideoRendererTest& operator=(const PaintCanvasVideoRendererTest&) =
+      delete;
+
   ~PaintCanvasVideoRendererTest() override;
 
   // Paints to |canvas| using |renderer_| without any frame data.
@@ -150,8 +155,6 @@ class PaintCanvasVideoRendererTest : public testing::Test {
   SkBitmap bitmap_;
   cc::SkiaPaintCanvas target_canvas_;
   base::test::TaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRendererTest);
 };
 
 static SkBitmap AllocBitmap(int width, int height) {
@@ -164,7 +167,7 @@ static SkBitmap AllocBitmap(int width, int height) {
 static scoped_refptr<VideoFrame> CreateCroppedFrame() {
   scoped_refptr<VideoFrame> cropped_frame = VideoFrame::CreateFrame(
       PIXEL_FORMAT_I420, gfx::Size(16, 16), gfx::Rect(6, 6, 8, 6),
-      gfx::Size(8, 6), base::TimeDelta::FromMilliseconds(4));
+      gfx::Size(8, 6), base::Milliseconds(4));
   // Make sure the cropped video frame's aspect ratio matches the output device.
   // Update cropped_frame_'s crop dimensions if this is not the case.
   EXPECT_EQ(cropped_frame->visible_rect().width() * kHeight,
@@ -256,9 +259,9 @@ PaintCanvasVideoRendererTest::PaintCanvasVideoRendererTest()
       bitmap_(AllocBitmap(kWidth, kHeight)),
       target_canvas_(bitmap_) {
   // Give each frame a unique timestamp.
-  natural_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(1));
-  larger_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(2));
-  smaller_frame_->set_timestamp(base::TimeDelta::FromMilliseconds(3));
+  natural_frame_->set_timestamp(base::Milliseconds(1));
+  larger_frame_->set_timestamp(base::Milliseconds(2));
+  smaller_frame_->set_timestamp(base::Milliseconds(3));
 }
 
 PaintCanvasVideoRendererTest::~PaintCanvasVideoRendererTest() = default;
@@ -829,8 +832,7 @@ TEST_F(PaintCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
 
   auto video_frame = media::VideoFrame::WrapExternalData(
       media::PIXEL_FORMAT_Y16, coded_size, gfx::Rect(visible_size),
-      visible_size, &memory[0], fWidth * fHeight * 2,
-      base::TimeDelta::FromMilliseconds(4));
+      visible_size, &memory[0], fWidth * fHeight * 2, base::Milliseconds(4));
 
   gfx::RectF visible_rect(visible_size.width(), visible_size.height());
   cc::PaintFlags flags;
@@ -944,21 +946,23 @@ class PaintCanvasVideoRendererWithGLTest : public testing::TestWithParam<bool> {
     gl::GLSurfaceTestSupport::InitializeOneOff();
     enable_pixels_.emplace();
     media_context_ = base::MakeRefCounted<viz::TestInProcessContextProvider>(
-        /*enable_gpu_rasterization=*/false,
-        /*enable_oop_rasterization=*/GetParam(), /*support_locking=*/false);
+        /*enable_gles2_interface=*/false,
+        /*support_locking=*/false,
+        GetParam() ? viz::RasterInterfaceType::OOPR
+                   : viz::RasterInterfaceType::GPU);
     gpu::ContextResult result = media_context_->BindToCurrentThread();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
 
     gles2_context_ = base::MakeRefCounted<viz::TestInProcessContextProvider>(
-        /*enable_gpu_rasterization=*/false,
-        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+        /*enable_gles2_interface=*/true, /*support_locking=*/false,
+        viz::RasterInterfaceType::None);
     result = gles2_context_->BindToCurrentThread();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
 
     destination_context_ =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gpu_rasterization=*/false,
-            /*enable_oop_rasterization=*/false, /*support_locking=*/false);
+            /*enable_gles2_interface=*/true, /*support_locking=*/false,
+            viz::RasterInterfaceType::None);
     result = destination_context_->BindToCurrentThread();
     ASSERT_EQ(result, gpu::ContextResult::kSuccess);
     cropped_frame_ = CreateCroppedFrame();

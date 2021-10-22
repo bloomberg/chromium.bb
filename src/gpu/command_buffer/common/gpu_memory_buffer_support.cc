@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gpu {
 
@@ -27,9 +28,8 @@ bool IsImageFromGpuMemoryBufferFormatSupported(
 }
 
 bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
-                                              gfx::BufferFormat format,
-                                              gfx::BufferPlane plane) {
-  switch (GetPlaneBufferFormat(plane, format)) {
+                                              gfx::BufferFormat format) {
+  switch (format) {
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::R_16:
     case gfx::BufferFormat::RG_88:
@@ -119,6 +119,18 @@ gfx::BufferFormat GetPlaneBufferFormat(gfx::BufferPlane plane,
 
   NOTREACHED();
   return format;
+}
+
+gfx::Size GetPlaneSize(gfx::BufferPlane plane, const gfx::Size& size) {
+  switch (plane) {
+    case gfx::BufferPlane::DEFAULT:
+    case gfx::BufferPlane::Y:
+      return size;
+    case gfx::BufferPlane::U:
+    case gfx::BufferPlane::V:
+    case gfx::BufferPlane::UV:
+      return gfx::ScaleToCeiledSize(size, 0.5);
+  }
 }
 
 uint32_t GetPlatformSpecificTextureTarget() {

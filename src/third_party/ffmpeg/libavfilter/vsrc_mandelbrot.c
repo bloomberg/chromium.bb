@@ -153,10 +153,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_props(AVFilterLink *inlink)
@@ -416,7 +413,6 @@ static const AVFilterPad mandelbrot_outputs[] = {
         .request_frame = request_frame,
         .config_props  = config_props,
     },
-    { NULL }
 };
 
 const AVFilter ff_vsrc_mandelbrot = {
@@ -428,5 +424,5 @@ const AVFilter ff_vsrc_mandelbrot = {
     .uninit        = uninit,
     .query_formats = query_formats,
     .inputs        = NULL,
-    .outputs       = mandelbrot_outputs,
+    FILTER_OUTPUTS(mandelbrot_outputs),
 };

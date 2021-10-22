@@ -413,8 +413,7 @@ static int config_audio_input(AVFilterLink *inlink)
      * filter_frame()). */
     if (ebur128->metadata || (ebur128->peak_mode & PEAK_MODE_TRUE_PEAKS))
         inlink->min_samples =
-        inlink->max_samples =
-        inlink->partial_buf_size = inlink->sample_rate / 10;
+        inlink->max_samples = inlink->sample_rate / 10;
     return 0;
 }
 
@@ -553,7 +552,7 @@ static av_cold int init(AVFilterContext *ctx)
             .type         = AVMEDIA_TYPE_VIDEO,
             .config_props = config_video_output,
         };
-        ret = ff_insert_outpad(ctx, 0, &pad);
+        ret = ff_append_outpad(ctx, &pad);
         if (ret < 0)
             return ret;
     }
@@ -562,7 +561,7 @@ static av_cold int init(AVFilterContext *ctx)
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_audio_output,
     };
-    ret = ff_insert_outpad(ctx, ebur128->do_video, &pad);
+    ret = ff_append_outpad(ctx, &pad);
     if (ret < 0)
         return ret;
 
@@ -1018,7 +1017,6 @@ static const AVFilterPad ebur128_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_audio_input,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_ebur128 = {
@@ -1028,7 +1026,7 @@ const AVFilter ff_af_ebur128 = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = ebur128_inputs,
+    FILTER_INPUTS(ebur128_inputs),
     .outputs       = NULL,
     .priv_class    = &ebur128_class,
     .flags         = AVFILTER_FLAG_DYNAMIC_OUTPUTS,

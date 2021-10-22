@@ -18,8 +18,6 @@ const char kActionDefaultPopup[] = "default_popup";
 const char kActionDefaultState[] = "default_state";
 const char kActionDefaultTitle[] = "default_title";
 const char kApp[] = "app";
-const char kAppIconColor[] = "app.icon_color";
-const char kAppThemeColor[] = "app.theme_color";
 const char kAutomation[] = "automation";
 const char kBackground[] = "background";
 const char kBackgroundAllowJsAccess[] = "background.allow_js_access";
@@ -268,13 +266,10 @@ const char kChromeStyleInvalidForManifestV3[] =
     "The chrome_style option cannot be used with manifest version 3.";
 const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
-
-// TODO(crbug.com/1034407): Include the declarativeNetRequestWithHostAccess
-// permission here once it lands on Stable.
 const char kDeclarativeNetRequestPermissionNeeded[] =
-    "The extension requires the 'declarativeNetRequest' permission for the '*' "
-    "manifest key.";
-
+    "The extension requires the 'declarativeNetRequest' or the "
+    "'declarativeNetRequestWithHostAccess' permission for the '*' manifest "
+    "key.";
 const char kDefaultStateShouldNotBeSet[] =
     "The default_state key cannot be set for browser_action or page_action "
     "keys.";
@@ -291,8 +286,6 @@ const char kInvalidActionDefaultIcon[] = "Invalid value for 'default_icon'.";
 const char kInvalidActionDefaultPopup[] = "Invalid type for 'default_popup'.";
 const char kInvalidActionDefaultState[] = "Invalid value for 'default_state'.";
 const char kInvalidActionDefaultTitle[] = "Invalid value for 'default_title'.";
-const char kInvalidAppIconColor[] = "Invalid value for app.icon_color.";
-const char kInvalidAppThemeColor[] = "Invalid value for app.theme_color.";
 const char kInvalidBackground[] =
     "Invalid value for 'background_page'.";
 const char kInvalidBackgroundAllowJsAccess[] =
@@ -557,8 +550,6 @@ const char kInvalidTheme[] =
     "Invalid value for 'theme'.";
 const char kInvalidThemeColors[] =
     "Invalid value for theme colors - colors must be integers";
-const char kInvalidThemeColorAppType[] =
-    "Only bookmark apps are allowed to use app.theme_color";
 const char kInvalidThemeImages[] =
     "Invalid value for theme images - images must be strings.";
 const char kInvalidThemeImagesMissing[] =
@@ -671,8 +662,6 @@ const char kPermissionCannotBeOptional[] =
 const char kPermissionMarkedOptionalAndRequired[] =
     "Optional permission '*' is redundant with the required permissions;"
     "this permission will be omitted.";
-const char kPermissionMustBeOptional[] =
-    "Permission '*' must be specified in the optional section of the manifest.";
 const char kPermissionNotAllowed[] =
     "Access to permission '*' denied.";
 const char kPermissionNotAllowedInManifest[] =
@@ -703,8 +692,6 @@ const char kTtsGenderIsDeprecated[] =
 const char kUnrecognizedManifestKey[] = "Unrecognized manifest key '*'.";
 const char kUnrecognizedManifestProperty[] =
     "Unrecognized property '*' of manifest key '*'.";
-const char kUrlHandlersInHostedApps[] =
-    "'url_handlers' cannot be used in Hosted Apps.";
 const char kWebRequestConflictsWithLazyBackground[] =
     "The 'webRequest' API cannot be used with event pages.";
 #if BUILDFLAG(IS_CHROMEOS_ASH)

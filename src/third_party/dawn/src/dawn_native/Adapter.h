@@ -18,7 +18,8 @@
 #include "dawn_native/DawnNative.h"
 
 #include "dawn_native/Error.h"
-#include "dawn_native/Extensions.h"
+#include "dawn_native/Features.h"
+#include "dawn_native/Limits.h"
 #include "dawn_native/dawn_platform.h"
 
 #include <string>
@@ -40,12 +41,19 @@ namespace dawn_native {
 
         DeviceBase* CreateDevice(const DeviceDescriptor* descriptor = nullptr);
 
+        void RequestDevice(const DeviceDescriptor* descriptor,
+                           WGPURequestDeviceCallback callback,
+                           void* userdata);
+
         void ResetInternalDeviceForTesting();
 
-        ExtensionsSet GetSupportedExtensions() const;
-        bool SupportsAllRequestedExtensions(
-            const std::vector<const char*>& requestedExtensions) const;
+        FeaturesSet GetSupportedFeatures() const;
+        bool SupportsAllRequestedFeatures(const std::vector<const char*>& requestedFeatures) const;
         WGPUDeviceProperties GetAdapterProperties() const;
+
+        bool GetLimits(SupportedLimits* limits) const;
+
+        void SetUseTieredLimits(bool useTieredLimits);
 
         virtual bool SupportsExternalImages() const = 0;
 
@@ -53,7 +61,7 @@ namespace dawn_native {
         PCIInfo mPCIInfo = {};
         wgpu::AdapterType mAdapterType = wgpu::AdapterType::Unknown;
         std::string mDriverDescription;
-        ExtensionsSet mSupportedExtensions;
+        FeaturesSet mSupportedFeatures;
 
       private:
         virtual ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) = 0;
@@ -63,6 +71,8 @@ namespace dawn_native {
         virtual MaybeError ResetInternalDeviceForTestingImpl();
         InstanceBase* mInstance = nullptr;
         wgpu::BackendType mBackend;
+        CombinedLimits mLimits;
+        bool mUseTieredLimits = false;
     };
 
 }  // namespace dawn_native

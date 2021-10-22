@@ -56,6 +56,11 @@ class SlowWindowCapturerChromeOS final
       public aura::WindowObserver {
  public:
   explicit SlowWindowCapturerChromeOS(aura::Window* target);
+
+  SlowWindowCapturerChromeOS(const SlowWindowCapturerChromeOS&) = delete;
+  SlowWindowCapturerChromeOS& operator=(const SlowWindowCapturerChromeOS&) =
+      delete;
+
   ~SlowWindowCapturerChromeOS() final;
 
   // viz::mojom::FrameSinkVideoCapturer implementation.
@@ -144,12 +149,10 @@ class SlowWindowCapturerChromeOS final
   // Enforce a very low maximum frame rate (5 FPS), due to the lack of
   // design optimizations. See top-level class comments.
   static constexpr base::TimeDelta kAbsoluteMinCapturePeriod =
-      base::TimeDelta::FromMilliseconds(200);
+      base::Milliseconds(200);
 
   // The maximum number of frames in-flight at any one time.
   static constexpr int kMaxFramesInFlight = 3;
-
-  DISALLOW_COPY_AND_ASSIGN(SlowWindowCapturerChromeOS);
 };
 
 }  // namespace content

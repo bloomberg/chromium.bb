@@ -11,9 +11,15 @@
 #include "base/strings/string_piece.h"
 #include "base/unguessable_token.h"
 #include "net/base/schemeful_site.h"
+#include "net/cookies/site_for_cookies.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
+#include "url/gurl.h"
 #include "url/origin.h"
+
+namespace net {
+class IsolationInfo;
+}
 
 namespace blink {
 
@@ -61,6 +67,10 @@ class BLINK_COMMON_EXPORT StorageKey {
 
   ~StorageKey() = default;
 
+  // Constructs a StorageKey from a `net::IsolationInfo`.
+  static StorageKey FromNetIsolationInfo(
+      const net::IsolationInfo& isolation_info);
+
   // Returns a newly constructed StorageKey from, a previously serialized, `in`.
   // If `in` is invalid then the return value will be nullopt. If this returns a
   // non-nullopt value, it will be a valid, non-opaque StorageKey. A
@@ -70,6 +80,14 @@ class BLINK_COMMON_EXPORT StorageKey {
   // Can be called on the output of either Serialize() or
   // SerializeForLocalStorage(), as it can handle both formats.
   static absl::optional<StorageKey> Deserialize(base::StringPiece in);
+
+  // Returns a newly constructed StorageKey from, a previously serialized, `in`
+  // (which was created using SerializeForServiceWorker()). If `in` is invalid
+  // then the return value will be nullopt. If this returns a non-nullopt value,
+  // it will be a valid, non-opaque StorageKey. A deserialized StorageKey will
+  // be equivalent to the StorageKey that was initially serialized.
+  static absl::optional<StorageKey> DeserializeForServiceWorker(
+      base::StringPiece in);
 
   // Transforms a string into a StorageKey if possible (and an opaque StorageKey
   // if not). Currently calls Deserialize, but this may change in future.
@@ -89,6 +107,23 @@ class BLINK_COMMON_EXPORT StorageKey {
   // not call if `this` is opaque.
   std::string SerializeForLocalStorage() const;
 
+  // Serializes the `StorageKey` into the format used for ServiceWorkerDatabase.
+  // Do not call if `this` is opaque.
+  std::string SerializeForServiceWorker() const;
+
+  // `IsThirdPartyContext` returns true if the StorageKey is for a context that
+  // is "third-party", i.e. the StorageKey's top-level site and origin have
+  // different schemes and/or domains.
+  //
+  // `IsThirdPartyContext` returns true if the StorageKey was created with a
+  // nonce.
+  //
+  // If storage partitioning is disabled, this always returns false.
+  bool IsThirdPartyContext() const {
+    return nonce_ || net::SchemefulSite(origin_) != top_level_site_;
+  }
+  bool IsFirstPartyContext() const { return !IsThirdPartyContext(); }
+
   const url::Origin& origin() const { return origin_; }
 
   const net::SchemefulSite& top_level_site() const { return top_level_site_; }
@@ -100,6 +135,14 @@ class BLINK_COMMON_EXPORT StorageKey {
   // Provides a concise string representation suitable for memory dumps.
   // Limits the length to `max_length` chars and strips special characters.
   std::string GetMemoryDumpString(size_t max_length) const;
+
+  // Return the "site for cookies" for the StorageKey's frame (or worker).
+  //
+  // Right now this "site for cookies" is not entirely accurate. For example
+  // consider if A.com embeds B.com which embeds A.com in a child frame. The
+  // site for cookies according to this method will be A.com, but according to
+  // the spec it should be an opaque origin.
+  const net::SiteForCookies ToNetSiteForCookies() const;
 
  private:
   StorageKey(const url::Origin& origin,

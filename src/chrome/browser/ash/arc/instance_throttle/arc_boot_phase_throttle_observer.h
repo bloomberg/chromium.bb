@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ash/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/ash/arc/session/arc_session_manager_observer.h"
-#include "chrome/browser/chromeos/throttle_observer.h"
+#include "chrome/browser/ash/throttle_observer.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 
 namespace content {
@@ -25,6 +25,11 @@ class ArcBootPhaseThrottleObserver : public chromeos::ThrottleObserver,
                                      public SessionRestoreObserver {
  public:
   ArcBootPhaseThrottleObserver();
+
+  ArcBootPhaseThrottleObserver(const ArcBootPhaseThrottleObserver&) = delete;
+  ArcBootPhaseThrottleObserver& operator=(const ArcBootPhaseThrottleObserver&) =
+      delete;
+
   ~ArcBootPhaseThrottleObserver() override = default;
 
   // chromeos::ThrottleObserver:
@@ -53,8 +58,6 @@ class ArcBootPhaseThrottleObserver : public chromeos::ThrottleObserver,
   ArcBootPhaseMonitorBridge* boot_phase_monitor_ = nullptr;
   bool session_restore_loading_ = false;
   bool arc_is_booting_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcBootPhaseThrottleObserver);
 };
 
 }  // namespace arc

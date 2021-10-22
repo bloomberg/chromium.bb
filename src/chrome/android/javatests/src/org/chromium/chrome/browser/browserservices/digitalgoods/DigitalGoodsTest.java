@@ -168,35 +168,37 @@ public class DigitalGoodsTest {
     }
 
     /**
-     * Tests that acknowledge works correctly.
+     * Tests that consume works correctly.
      */
     @Test
     @MediumTest
-    public void acknowledge() throws TimeoutException {
+    public void consume() throws TimeoutException {
         DigitalGoodsFactoryImpl.setDigitalGoodsForTesting(createFixedDigitalGoods());
 
+        // Consume JS method currently results in a mojo call to Acknowledge.
         setTwaServiceResponse(RESPONSE_ACKNOWLEDGE, AcknowledgeConverter.createResponseBundle(0));
 
         exec("populateDigitalGoodsService()");
         waitForNonNull("digitalGoodsService");
-        exec("callAcknowledge('sku', 'onetime')");
-        waitForNonNull("acknowledgeFlag");
+        exec("callConsume('sku')");
+        waitForNonNull("consumeFlag");
     }
 
     /**
-     * Tests that acknowledge throws when given a non-zero response code.
+     * Tests that consume throws when acknowledge gives a non-zero response code.
      */
     @Test
     @MediumTest
-    public void acknowledge_failsOnNonZeroResponse() throws TimeoutException {
+    public void consume_failsOnNonZeroResponse() throws TimeoutException {
         DigitalGoodsFactoryImpl.setDigitalGoodsForTesting(createFixedDigitalGoods());
 
+        // Consume JS method currently results in a mojo call to Acknowledge.
         setTwaServiceResponse(RESPONSE_ACKNOWLEDGE, AcknowledgeConverter.createResponseBundle(1));
 
         exec("populateDigitalGoodsService()");
         waitForNonNull("digitalGoodsService");
-        exec("callAcknowledge('sku', 'onetime')");
-        waitForNonNull("acknowledgeError");
+        exec("callConsume('sku')");
+        waitForNonNull("consumeError");
     }
 
     private DigitalGoodsImpl createFixedDigitalGoods() {

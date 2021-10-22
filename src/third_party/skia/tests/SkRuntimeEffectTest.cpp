@@ -22,6 +22,8 @@
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrFragmentProcessor.h"
+#include "src/gpu/GrImageInfo.h"
+#include "src/gpu/SurfaceFillContext.h"
 #include "src/gpu/effects/GrSkSLFP.h"
 #include "tests/Test.h"
 
@@ -439,14 +441,14 @@ static void test_RuntimeEffect_Shaders(skiatest::Reporter* r, GrRecordingContext
     effect.uniform("gColor") = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
     effect.test(0xFFBF4000);
     effect.uniform("gColor") = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
-    effect.test(0x7F00007F);  // Tests that we clamp to valid premul
+    effect.test(0x7F0000FF);  // Tests that we don't clamp to valid premul
 
     // Same, with integer uniforms
     effect.build("uniform int4 gColor; half4 main(float2 p) { return half4(gColor) / 255.0; }");
     effect.uniform("gColor") = int4{ 0x00, 0x40, 0xBF, 0xFF };
     effect.test(0xFFBF4000);
     effect.uniform("gColor") = int4{ 0xFF, 0x00, 0x00, 0x7F };
-    effect.test(0x7F00007F);  // Tests that we clamp to valid premul
+    effect.test(0x7F0000FF);  // Tests that we don't clamp to valid premul
 
     // Test sk_FragCoord (device coords). Rotate the canvas to be sure we're seeing device coords.
     // Since the surface is 2x2, we should see (0,0), (1,0), (0,1), (1,1). Multiply by 0.498 to
@@ -540,7 +542,7 @@ static void test_RuntimeEffect_Blenders(skiatest::Reporter* r, GrRecordingContex
     effect.uniform("gColor") = float4{ 0.0f, 0.25f, 0.75f, 1.0f };
     effect.test(0xFFBF4000);
     effect.uniform("gColor") = float4{ 1.0f, 0.0f, 0.0f, 0.498f };
-    effect.test(0x7F0000FF);  // Unlike SkShaders, we don't clamp here
+    effect.test(0x7F0000FF);  // We don't clamp here either
 
     // Same, with integer uniforms
     effect.build("uniform int4 gColor;"
@@ -548,7 +550,7 @@ static void test_RuntimeEffect_Blenders(skiatest::Reporter* r, GrRecordingContex
     effect.uniform("gColor") = int4{ 0x00, 0x40, 0xBF, 0xFF };
     effect.test(0xFFBF4000);
     effect.uniform("gColor") = int4{ 0xFF, 0x00, 0x00, 0x7F };
-    effect.test(0x7F0000FF);  // Unlike SkShaders, we don't clamp here
+    effect.test(0x7F0000FF);  // We don't clamp here either
 
     // Verify that mutating the source and destination colors is allowed
     effect.build("half4 main(half4 s, half4 d) { s += d; d += s; return half4(1); }");
@@ -904,4 +906,49 @@ DEF_GPUTEST_FOR_ALL_CONTEXTS(GrSkSLFP_Specialized, r, ctxInfo) {
     SkASSERT(sRed.key != uRed.key);
     SkASSERT(sGreen.key != uRed.key);
     SkASSERT(sRed.key != sGreen.key);
+}
+
+DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrSkSLFP_UniformArray, r, ctxInfo) {
+    // Make a fill-context to draw into.
+    GrDirectContext* directContext = ctxInfo.directContext();
+    SkImageInfo info = SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    std::unique_ptr<skgpu::SurfaceFillContext> testCtx =
+            directContext->priv().makeSFC(info, SkBackingFit::kExact);
+
+    // Make an effect that takes a uniform array as input.
+    static constexpr std::array<float, 4> kRed  {1.0f, 0.0f, 0.0f, 1.0f};
+    static constexpr std::array<float, 4> kGreen{0.0f, 1.0f, 0.0f, 1.0f};
+    static constexpr std::array<float, 4> kBlue {0.0f, 0.0f, 1.0f, 1.0f};
+    static constexpr std::array<float, 4> kGray {0.499f, 0.499f, 0.499f, 1.0f};
+
+    for (const auto& colorArray : {kRed, kGreen, kBlue, kGray}) {
+        // Compile our runtime effect.
+        auto effect = SkMakeRuntimeEffect(SkRuntimeEffect::MakeForShader, R"(
+            uniform half color[4];
+            half4 main(float2 xy) { return half4(color[0], color[1], color[2], color[3]); }
+        )");
+        // Render our shader into the fill-context with our various input colors.
+        testCtx->fillWithFP(GrSkSLFP::Make(std::move(effect), "test_fp",
+                                           /*inputFP=*/nullptr,
+                                           GrSkSLFP::OptFlags::kNone,
+                                           "color", SkMakeSpan(colorArray)));
+        // Read our color back and ensure it matches.
+        GrColor actual;
+        GrPixmap pixmap(info, &actual, sizeof(GrColor));
+        if (!testCtx->readPixels(directContext, pixmap, /*srcPt=*/{0, 0})) {
+            REPORT_FAILURE(r, "readPixels", SkString("readPixels failed"));
+            break;
+        }
+        if (actual != GrColorPackRGBA(255 * colorArray[0], 255 * colorArray[1],
+                                      255 * colorArray[2], 255 * colorArray[3])) {
+            REPORT_FAILURE(r, "Uniform array didn't match expectations",
+                           SkStringPrintf("\n"
+                                          "Expected: [ %g %g %g %g ]\n"
+                                          "Got     : [ %08x ]\n",
+                                          colorArray[0], colorArray[1],
+                                          colorArray[2], colorArray[3],
+                                          actual));
+            break;
+        }
+    }
 }

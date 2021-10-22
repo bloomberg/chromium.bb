@@ -83,7 +83,7 @@ OffscreenCanvas* OffscreenCanvas::Create(ExecutionContext* context,
                                          unsigned height) {
   UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.NewOffscreenCanvas", true);
   return MakeGarbageCollected<OffscreenCanvas>(
-      context, IntSize(clampTo<int>(width), clampTo<int>(height)));
+      context, IntSize(ClampTo<int>(width), ClampTo<int>(height)));
 }
 
 OffscreenCanvas::~OffscreenCanvas() {
@@ -146,13 +146,13 @@ void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
 
 void OffscreenCanvas::setWidth(unsigned width) {
   IntSize new_size = size_;
-  new_size.SetWidth(clampTo<int>(width));
+  new_size.SetWidth(ClampTo<int>(width));
   SetSize(new_size);
 }
 
 void OffscreenCanvas::setHeight(unsigned height) {
   IntSize new_size = size_;
-  new_size.SetHeight(clampTo<int>(height));
+  new_size.SetHeight(ClampTo<int>(height));
   SetSize(new_size);
 }
 
@@ -234,7 +234,7 @@ void OffscreenCanvas::RecordIdentifiabilityMetric(
   if (!IdentifiabilityStudySettings::Get()->ShouldSample(surface))
     return;
   blink::IdentifiabilityMetricBuilder(GetExecutionContext()->UkmSourceID())
-      .Set(surface, token)
+      .Add(surface, token)
       .Record(GetExecutionContext()->UkmRecorder());
 }
 
@@ -260,7 +260,8 @@ scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
 
   *status = image ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
 
-  // If the alpha_disposition is already correct, this is a no-op.
+  // If the alpha_disposition is already correct, or the image is opaque, this
+  // is a no-op.
   return GetImageWithAlphaDisposition(std::move(image), alpha_disposition);
 }
 
@@ -292,24 +293,12 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
     const String& id,
     const CanvasContextCreationAttributesCore& attributes) {
   DCHECK_EQ(execution_context, GetTopExecutionContext());
-  CanvasRenderingContext::ContextType context_type =
-      CanvasRenderingContext::ContextTypeFromId(id, execution_context);
+  CanvasRenderingContext::CanvasRenderingAPI rendering_api =
+      CanvasRenderingContext::RenderingAPIFromId(id, execution_context);
 
   // Unknown type.
-  if (context_type == CanvasRenderingContext::kContextTypeUnknown ||
-      (context_type == CanvasRenderingContext::kContextXRPresent &&
-       !RuntimeEnabledFeatures::WebXREnabled(execution_context))) {
+  if (rendering_api == CanvasRenderingContext::CanvasRenderingAPI::kUnknown)
     return nullptr;
-  }
-
-  // TODO(crbug.com/1229274): Remove 'gpupresent' type after deprecation period.
-  if (id == "gpupresent") {
-    auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kRendering,
-        mojom::blink::ConsoleMessageLevel::kWarning,
-        "The context type 'gpupresent' is deprecated. Use 'webgpu' instead.");
-    execution_context->AddConsoleMessage(console_message);
-  }
 
   if (auto* window = DynamicTo<LocalDOMWindow>(GetExecutionContext())) {
     if (attributes.color_space != kSRGBCanvasColorSpaceName ||
@@ -321,19 +310,13 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       UseCounter::Count(window->document(), WebFeature::kNewCanvas2DAPI);
   }
 
-  // Log the aliased context type used.
-  if (!context_) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.OffscreenCanvas.ContextType",
-                              context_type);
-  }
-
   CanvasRenderingContextFactory* factory =
-      GetRenderingContextFactory(context_type);
+      GetRenderingContextFactory(static_cast<int>(rendering_api));
   if (!factory)
     return nullptr;
 
   if (context_) {
-    if (context_->GetContextType() != context_type) {
+    if (context_->GetRenderingAPI() != rendering_api) {
       factory->OnError(
           this, "OffscreenCanvas has an existing context of a different type");
       return nullptr;
@@ -344,8 +327,10 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
       recomputed_attributes.power_preference = "low-power";
 
     context_ = factory->Create(this, recomputed_attributes);
-    if (context_)
+    if (context_) {
       context_->RecordUKMCanvasRenderingAPI();
+      context_->RecordUMACanvasRenderingAPI();
+    }
   }
 
   return context_.Get();
@@ -353,24 +338,29 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
 
 OffscreenCanvas::ContextFactoryVector&
 OffscreenCanvas::RenderingContextFactories() {
-  DEFINE_STATIC_LOCAL(ContextFactoryVector, context_factories,
-                      (CanvasRenderingContext::kMaxValue));
+  DEFINE_STATIC_LOCAL(
+      ContextFactoryVector, context_factories,
+      (static_cast<int>(CanvasRenderingContext::CanvasRenderingAPI::kMaxValue) +
+       1));
   return context_factories;
 }
 
 CanvasRenderingContextFactory* OffscreenCanvas::GetRenderingContextFactory(
     int type) {
-  DCHECK_LE(type, CanvasRenderingContext::kMaxValue);
+  DCHECK_LE(type, static_cast<int>(
+                      CanvasRenderingContext::CanvasRenderingAPI::kMaxValue));
   return RenderingContextFactories()[type].get();
 }
 
 void OffscreenCanvas::RegisterRenderingContextFactory(
     std::unique_ptr<CanvasRenderingContextFactory> rendering_context_factory) {
-  CanvasRenderingContext::ContextType type =
-      rendering_context_factory->GetContextType();
-  DCHECK_LE(type, CanvasRenderingContext::kMaxValue);
-  DCHECK(!RenderingContextFactories()[type]);
-  RenderingContextFactories()[type] = std::move(rendering_context_factory);
+  CanvasRenderingContext::CanvasRenderingAPI rendering_api =
+      rendering_context_factory->GetRenderingAPI();
+  DCHECK_LE(rendering_api,
+            CanvasRenderingContext::CanvasRenderingAPI::kMaxValue);
+  DCHECK(!RenderingContextFactories()[static_cast<int>(rendering_api)]);
+  RenderingContextFactories()[static_cast<int>(rendering_api)] =
+      std::move(rendering_context_factory);
 }
 
 bool OffscreenCanvas::OriginClean() const {

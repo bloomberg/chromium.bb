@@ -38,7 +38,10 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_service.h"
@@ -48,9 +51,12 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -77,6 +83,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #else
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
@@ -184,7 +191,7 @@ class AutocompleteClientWebContentsUserData
 AutocompleteClientWebContentsUserData::AutocompleteClientWebContentsUserData(
     content::WebContents*) {}
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(AutocompleteClientWebContentsUserData)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(AutocompleteClientWebContentsUserData);
 
 }  // namespace
 
@@ -412,7 +419,7 @@ bool ChromeAutocompleteProviderClient::IsAuthenticated() const {
   const auto* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   return identity_manager &&
-         identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin);
+         !identity_manager->GetAccountsInCookieJar().signed_in_accounts.empty();
 }
 
 bool ChromeAutocompleteProviderClient::IsSyncActive() const {
@@ -512,7 +519,7 @@ bool ChromeAutocompleteProviderClient::IsIncognitoModeAvailable() const {
     return false;
   }
   return IncognitoModePrefs::GetAvailability(profile_->GetPrefs()) !=
-         IncognitoModePrefs::DISABLED;
+         IncognitoModePrefs::Availability::kDisabled;
 }
 
 bool ChromeAutocompleteProviderClient::IsSharingHubAvailable() const {
@@ -568,6 +575,62 @@ bool ChromeAutocompleteProviderClient::IsStrippedURLEqualToWebContentsURL(
         web_contents->GetLastCommittedURL(), GetTemplateURLService());
   }
   return stripped_url == user_data->GetLastCommittedStrippedURL();
+}
+
+void ChromeAutocompleteProviderClient::OpenSharingHub() {
+#if !defined(OS_ANDROID)
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  if (browser) {
+    browser->command_controller()->ExecuteCommand(IDC_SHARING_HUB);
+  }
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromeAutocompleteProviderClient::NewIncognitoWindow() {
+#if !defined(OS_ANDROID)
+  chrome::NewIncognitoWindow(profile_);
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromeAutocompleteProviderClient::OpenIncognitoClearBrowsingDataDialog() {
+#if !defined(OS_ANDROID)
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  if (browser) {
+    if (!base::FeatureList::IsEnabled(
+            features::kIncognitoClearBrowsingDataDialogForDesktop)) {
+      chrome::ShowClearBrowsingDataDialog(browser);
+    } else {
+      chrome::ShowIncognitoClearBrowsingDataDialog(browser);
+    }
+  }
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromeAutocompleteProviderClient::CloseIncognitoWindows() {
+#if !defined(OS_ANDROID)
+  if (profile_->IsIncognitoProfile()) {
+    BrowserList::CloseAllBrowsersWithIncognitoProfile(
+        profile_, base::DoNothing(), base::DoNothing(), true);
+  }
+#endif  // !defined(OS_ANDROID)
+}
+
+void ChromeAutocompleteProviderClient::PromptPageTranslation() {
+#if !defined(OS_ANDROID)
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  content::WebContents* contents = nullptr;
+  if (browser)
+    contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (contents) {
+    ChromeTranslateClient* translate_client =
+        ChromeTranslateClient::FromWebContents(contents);
+    if (translate_client) {
+      DCHECK_NE(nullptr, translate_client->GetTranslateManager());
+      translate_client->GetTranslateManager()->ShowTranslateUI(
+          /*auto_translate=*/true, /*triggered_from_menu=*/true);
+    }
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)

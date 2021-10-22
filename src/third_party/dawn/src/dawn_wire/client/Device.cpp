@@ -35,7 +35,7 @@ namespace dawn_wire { namespace client {
             }
         };
 
-        mDeviceLostCallback = [](char const*, void*) {
+        mDeviceLostCallback = [](WGPUDeviceLostReason, char const*, void*) {
             static bool calledOnce = false;
             if (!calledOnce) {
                 calledOnce = true;
@@ -80,10 +80,10 @@ namespace dawn_wire { namespace client {
         }
     }
 
-    void Device::HandleDeviceLost(const char* message) {
+    void Device::HandleDeviceLost(WGPUDeviceLostReason reason, const char* message) {
         if (mDeviceLostCallback && !mDidRunLostCallback) {
             mDidRunLostCallback = true;
-            mDeviceLostCallback(message, mDeviceLostUserdata);
+            mDeviceLostCallback(reason, message, mDeviceLostUserdata);
         }
     }
 
@@ -196,6 +196,12 @@ namespace dawn_wire { namespace client {
         return Buffer::CreateError(this);
     }
 
+    bool Device::GetLimits(WGPUSupportedLimits* limits) {
+        // Not implemented in the wire.
+        UNREACHABLE();
+        return false;
+    }
+
     WGPUQueue Device::GetQueue() {
         // The queue is lazily created because if a Device is created by
         // Reserve/Inject, we cannot send the GetQueue message until
@@ -217,52 +223,12 @@ namespace dawn_wire { namespace client {
         return ToAPI(mQueue);
     }
 
-    // TODO(dawn:800): Once the deprecated computeStage field is removed this method will no longer
-    // be needed and DeviceCreateComputePipeline can be removed from client_handwritten_commands in
-    // dawn_wire.json
-    WGPUComputePipeline Device::CreateComputePipeline(
-        WGPUComputePipelineDescriptor const* descriptor) {
-        DeviceCreateComputePipelineCmd cmd;
-        cmd.self = ToAPI(this);
-
-        auto* allocation = client->ComputePipelineAllocator().New(client);
-        cmd.result = ObjectHandle{allocation->object->id, allocation->generation};
-
-        // Copy compute to the deprecated computeStage or visa-versa, depending on which one is
-        // populated, so that serialization doesn't fail.
-        WGPUComputePipelineDescriptor localDescriptor = *descriptor;
-        if (localDescriptor.computeStage.module == nullptr) {
-            localDescriptor.computeStage.module = localDescriptor.compute.module;
-            localDescriptor.computeStage.entryPoint = localDescriptor.compute.entryPoint;
-        } else if (localDescriptor.compute.module == nullptr) {
-            localDescriptor.compute.module = localDescriptor.computeStage.module;
-            localDescriptor.compute.entryPoint = localDescriptor.computeStage.entryPoint;
-        }
-
-        cmd.descriptor = &localDescriptor;
-        client->SerializeCommand(cmd);
-
-        return ToAPI(allocation->object.get());
-    }
-
     void Device::CreateComputePipelineAsync(WGPUComputePipelineDescriptor const* descriptor,
                                             WGPUCreateComputePipelineAsyncCallback callback,
                                             void* userdata) {
         if (client->IsDisconnected()) {
             return callback(WGPUCreatePipelineAsyncStatus_DeviceLost, nullptr,
                             "GPU device disconnected", userdata);
-        }
-
-        // Copy compute to the deprecated computeStage or visa-versa, depending on which one is
-        // populated, so that serialization doesn't fail.
-        // TODO(dawn:800): Remove once computeStage is removed.
-        WGPUComputePipelineDescriptor localDescriptor = *descriptor;
-        if (localDescriptor.computeStage.module == nullptr) {
-            localDescriptor.computeStage.module = localDescriptor.compute.module;
-            localDescriptor.computeStage.entryPoint = localDescriptor.compute.entryPoint;
-        } else if (localDescriptor.compute.module == nullptr) {
-            localDescriptor.compute.module = localDescriptor.computeStage.module;
-            localDescriptor.compute.entryPoint = localDescriptor.computeStage.entryPoint;
         }
 
         auto* allocation = client->ComputePipelineAllocator().New(client);
@@ -276,7 +242,7 @@ namespace dawn_wire { namespace client {
 
         DeviceCreateComputePipelineAsyncCmd cmd;
         cmd.deviceId = this->id;
-        cmd.descriptor = &localDescriptor;
+        cmd.descriptor = descriptor;
         cmd.requestSerial = serial;
         cmd.pipelineObjectHandle = ObjectHandle{allocation->object->id, allocation->generation};
 

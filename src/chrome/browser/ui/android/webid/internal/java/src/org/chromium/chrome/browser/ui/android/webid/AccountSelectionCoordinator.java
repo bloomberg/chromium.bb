@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
+import org.chromium.chrome.browser.ui.android.webid.data.ClientIdMetadata;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
@@ -90,15 +91,15 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
         adapter.registerType(AccountSelectionProperties.ItemType.ACCOUNT,
                 AccountSelectionCoordinator::buildAccountView,
                 AccountSelectionViewBinder::bindAccountView);
-        adapter.registerType(AccountSelectionProperties.ItemType.DATA_SHARING_CONSENT,
-                AccountSelectionCoordinator::buildDataSharingConsentView,
-                AccountSelectionViewBinder::bindDataSharingConsentView);
         adapter.registerType(AccountSelectionProperties.ItemType.CONTINUE_BUTTON,
                 AccountSelectionCoordinator::buildContinueButtonView,
                 AccountSelectionViewBinder::bindContinueButtonView);
         adapter.registerType(AccountSelectionProperties.ItemType.AUTO_SIGN_IN_CANCEL_BUTTON,
                 AccountSelectionCoordinator::buildAutoSignInCancelButtonView,
                 AccountSelectionViewBinder::bindAutoSignInCancelButtonView);
+        adapter.registerType(AccountSelectionProperties.ItemType.DATA_SHARING_CONSENT,
+                AccountSelectionCoordinator::buildDataSharingConsentView,
+                AccountSelectionViewBinder::bindDataSharingConsentView);
         sheetItemListView.setAdapter(adapter);
 
         return contentView;
@@ -130,7 +131,8 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
     }
 
     @Override
-    public void showAccounts(String url, List<Account> accounts, boolean isAutoSignIn) {
-        mMediator.showAccounts(url, accounts, isAutoSignIn);
+    public void showAccounts(
+            String url, List<Account> accounts, ClientIdMetadata metadata, boolean isAutoSignIn) {
+        mMediator.showAccounts(url, accounts, metadata, isAutoSignIn);
     }
 }

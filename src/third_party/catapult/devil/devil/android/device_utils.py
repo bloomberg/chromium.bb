@@ -190,6 +190,7 @@ _CURRENT_FOCUS_CRASH_RE = re.compile(
 _GETPROP_RE = re.compile(r'\[(.*?)\]: \[(.*?)\]')
 _VERSION_CODE_SDK_RE = re.compile(
     r'\s*versionCode=(\d+).*minSdk=(\d+).*targetSdk=(.*)\s*')
+_USER_ID_RE = re.compile(r'.*userId=')
 
 # Regex to parse the long (-l) output of 'ls' command, c.f.
 # https://github.com/landley/toybox/blob/master/toys/posix/ls.c#L446
@@ -439,7 +440,8 @@ class DeviceUtils(object):
 
   _MAX_ADB_COMMAND_LENGTH = 512
   _MAX_ADB_OUTPUT_LENGTH = 32768
-  _LAUNCHER_FOCUSED_RE = re.compile(r'\s*mCurrentFocus.*(Launcher|launcher).*')
+  _RESUMED_LAUNCHER_ACTIVITY_RE = re.compile(
+      r'\s*mResumedActivity.*(Launcher|launcher).*')
   _VALID_SHELL_VARIABLE = re.compile('^[a-zA-Z_][a-zA-Z0-9_]*$')
 
   LOCAL_PROPERTIES_PATH = posixpath.join('/', 'data', 'local.prop')
@@ -1155,7 +1157,7 @@ class DeviceUtils(object):
         self.EnableRoot()
 
   INSTALL_DEFAULT_TIMEOUT = _FILE_TRANSFER_TIMEOUT
-  MODULES_SRC_DIRECTORY_PATH = '/data/local/tmp/modules'
+  MODULES_TMP_DIRECTORY_PATH = '/data/local/tmp/modules'
   MODULES_LOCAL_TESTING_PATH_TEMPLATE = (
       '/sdcard/Android/data/{}/files/local_testing')
 
@@ -1190,7 +1192,7 @@ class DeviceUtils(object):
       modules: An iterable containing specific bundle modules to install.
           Error if set and |apk| points to an APK instead of a bundle.
       fake_modules: An iterable containing specific bundle modules that should
-          have their apks copied to |MODULES_SRC_DIRECTORY_PATH| subdirectory
+          have their apks copied to |MODULES_LOCAL_TESTING_PATH_TEMPLATE|
           rather than installed. Thus the app can emulate SplitCompat while
           running. This should not have any overlap with |modules|.
       additional_locales: An iterable with additional locales to install for a
@@ -1237,15 +1239,11 @@ class DeviceUtils(object):
 
   def _FakeInstall(self, fake_apk_paths, fake_modules, package_name):
     with tempfile_ext.NamedTemporaryDirectory() as modules_dir:
-      device_dir = posixpath.join(self.MODULES_SRC_DIRECTORY_PATH, package_name)
+      tmp_dir = posixpath.join(self.MODULES_TMP_DIRECTORY_PATH, package_name)
       dest_dir = self.MODULES_LOCAL_TESTING_PATH_TEMPLATE.format(package_name)
       if not fake_modules:
-        # Temporarily support both options until upstream switches to using
-        # local testing path only. Then support for src directory path can be
-        # removed.
-        # TODO(crbug.com/1220662): Remove push empty dir and just use rm -rf.
-        # Push empty module dir to clear device dir and update the cache.
-        self.PushChangedFiles([(modules_dir, device_dir)],
+        # Push empty module dir to clear tmp dir. Remove any previous apks.
+        self.PushChangedFiles([(modules_dir, tmp_dir)],
                               delete_device_stale=True)
         self.RunShellCommand(['rm', '-rf', dest_dir], as_root=True)
         return
@@ -1268,16 +1266,15 @@ class DeviceUtils(object):
 
       assert not still_need_master, (
           'Missing master apk file for %s' % still_need_master)
-      self.PushChangedFiles([(modules_dir, device_dir)],
-                            delete_device_stale=True)
+      self.PushChangedFiles([(modules_dir, tmp_dir)], delete_device_stale=True)
       # Create new directories until the parent of our destination since we
       # want to copy that directory over from the temporary location. This
       # indirection is necessary on Android 11 emulator as there is a permission
       # issue for the files under /sdcard/Android/data.
       self.RunShellCommand(
           ['mkdir', '-p', posixpath.dirname(dest_dir)], as_root=True)
-      # TODO(crbug.com/1220662): Use mv when compatibility is no longer needed.
-      self.RunShellCommand(['cp', '-a', device_dir, dest_dir], as_root=True)
+      # Use cp instead of mv in case destinations are on different disks.
+      self.RunShellCommand(['cp', '-a', tmp_dir, dest_dir], as_root=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance(
       min_default_timeout=INSTALL_DEFAULT_TIMEOUT)
@@ -1829,10 +1826,10 @@ class DeviceUtils(object):
     """
 
     def is_launcher_focused():
-      output = self.RunShellCommand(['dumpsys', 'window', 'windows'],
+      output = self.RunShellCommand(['dumpsys', 'activity', 'activities'],
                                     check_return=True,
                                     large_output=True)
-      return any(self._LAUNCHER_FOCUSED_RE.match(l) for l in output)
+      return any(self._RESUMED_LAUNCHER_ACTIVITY_RE.match(l) for l in output)
 
     def dismiss_popups():
       # There is a dialog present; attempt to get rid of it.
@@ -3195,6 +3192,31 @@ class DeviceUtils(object):
         return []
       else:
         raise
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
+  def GetUidForPackage(self, package_name, timeout=None, retries=None):
+    """Get user id for package name on device
+
+    Args:
+      package_name: Package name installed on device
+
+    Returns:
+      A string containing the package UID, and if the package
+      is not installed then None
+
+    Raises:
+      CommandFailedError if dumpsys does not return any output
+    """
+    dumpsys_output = self._GetDumpsysOutput(
+        ['package', package_name], 'userId=')
+
+    if not dumpsys_output:
+      raise device_errors.CommandFailedError(
+          'No output was received from dumpsys')
+
+    user_id = _USER_ID_RE.sub('', dumpsys_output[0])
+    if user_id:
+      return user_id
 
   # TODO(#4103): Remove after migrating clients to ListProcesses.
   @decorators.WithTimeoutAndRetriesFromInstance()

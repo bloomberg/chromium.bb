@@ -84,6 +84,9 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
                             public ProfileManagerObserver,
                             public ProfileObserver {
  public:
+  SafeBrowsingService(const SafeBrowsingService&) = delete;
+  SafeBrowsingService& operator=(const SafeBrowsingService&) = delete;
+
   static base::FilePath GetCookieFilePathForTesting();
 
   static base::FilePath GetBaseFilename();
@@ -305,6 +308,11 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   // Accessed on UI thread.
   std::map<PrefService*, std::unique_ptr<PrefChangeRegistrar>> prefs_map_;
 
+  // Tracks existing PrefServices. This is used to clear the cached user
+  // population whenever a relevant pref is changed.
+  std::map<PrefService*, std::unique_ptr<PrefChangeRegistrar>>
+      user_population_prefs_;
+
   // Callbacks when SafeBrowsing state might have changed.
   // Should only be accessed on the UI thread.
   base::RepeatingClosureList state_callback_list_;
@@ -317,8 +325,6 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
       observed_profiles_{this};
 
   std::unique_ptr<TriggerManager> trigger_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };
 
 SafeBrowsingServiceFactory* GetSafeBrowsingServiceFactory();

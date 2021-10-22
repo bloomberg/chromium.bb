@@ -64,6 +64,10 @@ class TestProfileWriter : public ProfileWriter {
 class ProfileWriterTest : public testing::Test {
  public:
   ProfileWriterTest() {}
+
+  ProfileWriterTest(const ProfileWriterTest&) = delete;
+  ProfileWriterTest& operator=(const ProfileWriterTest&) = delete;
+
   ~ProfileWriterTest() override {}
 
   void SetUp() override {
@@ -112,7 +116,7 @@ class ProfileWriterTest : public testing::Test {
     row.set_visit_count(visit_count);
     row.set_typed_count(typed_count);
     row.set_last_visit(base::Time::NowFromSystemTime() -
-                       base::TimeDelta::FromDays(days_since_last_visit));
+                       base::Days(days_since_last_visit));
     return row;
   }
 
@@ -187,8 +191,6 @@ class ProfileWriterTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestingProfile> second_profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileWriterTest);
 };
 
 // Add bookmarks via ProfileWriter to profile1 when profile2 also exists.

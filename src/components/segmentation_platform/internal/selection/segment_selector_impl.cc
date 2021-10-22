@@ -4,6 +4,7 @@
 
 #include "components/segmentation_platform/internal/selection/segment_selector_impl.h"
 
+#include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "components/segmentation_platform/internal/constants.h"
@@ -22,14 +23,13 @@ SegmentSelectorImpl::SegmentSelectorImpl(
     SegmentInfoDatabase* segment_database,
     SignalStorageConfig* signal_storage_config,
     SegmentationResultPrefs* result_prefs,
-    Config* config,
+    const Config* config,
     base::Clock* clock)
     : segment_database_(segment_database),
       signal_storage_config_(signal_storage_config),
       result_prefs_(result_prefs),
       config_(config),
-      clock_(clock),
-      initialized_(false) {
+      clock_(clock) {
   // Read selected segment from prefs.
   const auto& selected_segment =
       result_prefs_->ReadSegmentationResultFromPref(config_->segmentation_key);
@@ -41,14 +41,6 @@ SegmentSelectorImpl::SegmentSelectorImpl(
 
 SegmentSelectorImpl::~SegmentSelectorImpl() = default;
 
-void SegmentSelectorImpl::Initialize(base::OnceClosure callback) {
-  // Read model results from DB.
-  segment_database_->GetSegmentInfoForSegments(
-      config_->segment_ids,
-      base::BindOnce(&SegmentSelectorImpl::ReadScoresFromLastSession,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void SegmentSelectorImpl::GetSelectedSegment(
     SegmentSelectionCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -56,27 +48,12 @@ void SegmentSelectorImpl::GetSelectedSegment(
       base::BindOnce(std::move(callback), selected_segment_last_session_));
 }
 
-void SegmentSelectorImpl::GetSegmentScore(
-    OptimizationTarget segment_id,
-    SingleSegmentResultCallback callback) {
-  DCHECK(initialized_);
-
-  absl::optional<float> score;
-  auto iter = segment_score_last_session_.find(segment_id);
-  if (iter != segment_score_last_session_.end())
-    score = iter->second;
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), score));
-}
-
-void SegmentSelectorImpl::OnSegmentUsed(OptimizationTarget segment_id) {
-  DCHECK(initialized_);
-  // TODO(shaktisahu): Implement this.
-}
-
 void SegmentSelectorImpl::OnModelExecutionCompleted(
     OptimizationTarget segment_id) {
+  // If the |segment_id| is not in config, then skip any updates early.
+  if (!base::Contains(config_->segment_ids, segment_id))
+    return;
+
   segment_database_->GetSegmentInfoForSegments(
       config_->segment_ids,
       base::BindOnce(&SegmentSelectorImpl::RunSegmentSelection,
@@ -114,10 +91,14 @@ bool SegmentSelectorImpl::CanComputeSegmentSelection(
   // Don't compute results if segment selection TTL hasn't expired.
   const auto& previous_selection =
       result_prefs_->ReadSegmentationResultFromPref(config_->segmentation_key);
-  if (previous_selection.has_value() &&
-      previous_selection->selection_time + config_->segment_selection_ttl >
-          clock_->Now()) {
-    return false;
+  if (previous_selection.has_value()) {
+    bool was_unknown_selected = previous_selection->segment_id ==
+                                OptimizationTarget::OPTIMIZATION_TARGET_UNKNOWN;
+    base::TimeDelta ttl_to_use = was_unknown_selected
+                                     ? config_->unknown_selection_ttl
+                                     : config_->segment_selection_ttl;
+    if (previous_selection->selection_time + ttl_to_use > clock_->Now())
+      return false;
   }
 
   return true;
@@ -134,9 +115,9 @@ OptimizationTarget SegmentSelectorImpl::FindBestSegment(
   for (const auto& pair : all_segments) {
     OptimizationTarget id = pair.first;
     const proto::SegmentInfo& info = pair.second;
-    int score = ConvertToDiscreteScore(id, config_->segmentation_key,
-                                       info.prediction_result().result(),
-                                       info.model_metadata());
+    int score = metadata_utils::ConvertToDiscreteScore(
+        config_->segmentation_key, info.prediction_result().result(),
+        info.model_metadata());
     if (score > max_score) {
       max_score = score;
       max_score_id = id;
@@ -155,19 +136,22 @@ void SegmentSelectorImpl::UpdateSelectedSegment(
 
   // Auto-extend the results, if
   // (1) segment selection hasn't changed.
-  // (2) or the new segment is UNKNOWN, and the previous one was a valid one.
+  // (2) or, UNKNOWN selection TTL = 0 and the new segment is UNKNOWN, and the
+  //     previous one was a valid one.
   bool skip_updating_prefs = false;
   if (previous_selection.has_value()) {
-    skip_updating_prefs =
-        new_selection == previous_selection->segment_id ||
+    skip_updating_prefs = new_selection == previous_selection->segment_id;
+    skip_updating_prefs |=
+        config_->unknown_selection_ttl == base::TimeDelta() &&
         new_selection == OptimizationTarget::OPTIMIZATION_TARGET_UNKNOWN;
     // TODO(shaktisahu): Use segment selection inertia.
   }
 
   stats::RecordSegmentSelectionComputed(
-      new_selection, previous_selection.has_value()
-                         ? absl::make_optional(previous_selection->segment_id)
-                         : absl::nullopt);
+      config_->segmentation_key, new_selection,
+      previous_selection.has_value()
+          ? absl::make_optional(previous_selection->segment_id)
+          : absl::nullopt);
 
   if (skip_updating_prefs)
     return;
@@ -178,57 +162,6 @@ void SegmentSelectorImpl::UpdateSelectedSegment(
 
   result_prefs_->SaveSegmentationResultToPref(config_->segmentation_key,
                                               updated_selection);
-}
-
-void SegmentSelectorImpl::ReadScoresFromLastSession(
-    base::OnceClosure callback,
-    std::vector<std::pair<OptimizationTarget, proto::SegmentInfo>>
-        all_segments) {
-  // Read results from last session to memory.
-  for (const auto& pair : all_segments) {
-    OptimizationTarget id = pair.first;
-    const proto::SegmentInfo& info = pair.second;
-    if (!info.has_prediction_result())
-      continue;
-
-    float result = info.prediction_result().result();
-    segment_score_last_session_.emplace(std::make_pair(id, result));
-  }
-
-  initialized_ = true;
-  std::move(callback).Run();
-}
-
-int SegmentSelectorImpl::ConvertToDiscreteScore(
-    OptimizationTarget segment_id,
-    const std::string& mapping_key,
-    float input_score,
-    const proto::SegmentationModelMetadata& metadata) {
-  auto iter = metadata.discrete_mappings().find(mapping_key);
-  if (iter == metadata.discrete_mappings().end()) {
-    iter =
-        metadata.discrete_mappings().find(metadata.default_discrete_mapping());
-    if (iter == metadata.discrete_mappings().end())
-      return 0;
-  }
-  DCHECK(iter != metadata.discrete_mappings().end());
-
-  const auto& mapping = iter->second;
-
-  // Iterate over the entries and find the largest entry whose min result is
-  // equal to or less than the input.
-  int discrete_result = 0;
-  float largest_score_below_input_score = std::numeric_limits<float>::min();
-  for (int i = 0; i < mapping.entries_size(); i++) {
-    const auto& entry = mapping.entries(i);
-    if (entry.min_result() <= input_score &&
-        entry.min_result() > largest_score_below_input_score) {
-      largest_score_below_input_score = entry.min_result();
-      discrete_result = entry.rank();
-    }
-  }
-
-  return discrete_result;
 }
 
 }  // namespace segmentation_platform

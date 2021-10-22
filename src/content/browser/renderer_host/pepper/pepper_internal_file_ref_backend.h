@@ -31,6 +31,11 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
       int render_process_id,
       base::WeakPtr<PepperFileSystemBrowserHost> fs_host,
       const std::string& path);
+
+  PepperInternalFileRefBackend(const PepperInternalFileRefBackend&) = delete;
+  PepperInternalFileRefBackend& operator=(const PepperInternalFileRefBackend&) =
+      delete;
+
   ~PepperInternalFileRefBackend() override;
 
   // PepperFileRefBackend overrides.
@@ -60,8 +65,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
                  const IPC::Message& msg,
                  base::File::Error error);
 
-  // Helper methods called on IO thread when the PpapiHost runs on the UI
-  // thread.
+  // Helper methods called on IO thread.
   static void DidFinishOnIOThread(
       base::WeakPtr<PepperInternalFileRefBackend> weak_ptr,
       ppapi::host::ReplyMessageContext reply_context,
@@ -102,8 +106,6 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
   mutable storage::FileSystemURL fs_url_;
 
   base::WeakPtrFactory<PepperInternalFileRefBackend> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PepperInternalFileRefBackend);
 };
 
 }  // namespace content

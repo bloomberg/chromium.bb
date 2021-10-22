@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/cxx17_backports.h"
+#include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/paint_record.h"
@@ -29,8 +30,8 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
@@ -292,8 +293,8 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
   } else if (path_type == PathType::kHighlight) {
     // The path is a round rect inset by the focus ring thickness. The
     // radius is also adjusted by the inset.
-    const float inset =
-        views::FocusRing::kHaloThickness + views::FocusRing::kHaloInset;
+    const float inset = views::FocusRing::kDefaultHaloThickness +
+                        views::FocusRing::kDefaultHaloInset;
     SkRRect rrect = SkRRect::MakeRectXY(
         SkRect::MakeLTRB(tab_left + inset, tab_top + inset, tab_right - inset,
                          tab_bottom - inset),

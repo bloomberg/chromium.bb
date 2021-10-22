@@ -115,7 +115,7 @@
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "extensions/browser/event_router_factory.h"
@@ -130,9 +130,9 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/account_manager/account_manager_factory.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
+#include "chrome/browser/ash/net/delay_network_call.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
-#include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #endif
 
@@ -185,7 +185,7 @@ const char TestingProfile::kDefaultProfileUserName[] = "testing_profile";
 // static
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Must be kept in sync with
-// ChromeBrowserMainPartsChromeos::PreEarlyInitialization.
+// `ChromeBrowserMainPartsAsh::PreEarlyInitialization`.
 const char TestingProfile::kTestUserProfileDir[] = "test-user";
 #else
 const char TestingProfile::kTestUserProfileDir[] = "Default";
@@ -407,7 +407,7 @@ void TestingProfile::Init() {
       this, BrowserContextKeyedServiceFactory::TestingFactory());
 
   web_app::WebAppProviderFactory::GetInstance()->SetTestingFactory(
-      this, base::BindRepeating(&web_app::TestWebAppProvider::BuildDefault));
+      this, base::BindRepeating(&web_app::FakeWebAppProvider::BuildDefault));
 #endif
 
   // Prefs for incognito profiles are set in CreateIncognitoPrefService().
@@ -588,14 +588,12 @@ base::Time TestingProfile::GetCreationTime() const {
   return start_time_;
 }
 
-#if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 TestingProfile::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
   return std::make_unique<ChromeZoomLevelPrefs>(
       GetPrefs(), GetPath(), partition_path,
       zoom::ZoomEventManager::GetForBrowserContext(this)->GetWeakPtr());
 }
-#endif  // !defined(OS_ANDROID)
 
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
@@ -811,12 +809,10 @@ const PrefService* TestingProfile::GetPrefs() const {
   return prefs_.get();
 }
 
-#if !defined(OS_ANDROID)
 ChromeZoomLevelPrefs* TestingProfile::GetZoomLevelPrefs() {
   return static_cast<ChromeZoomLevelPrefs*>(
       GetDefaultStoragePartition()->GetZoomLevelDelegate());
 }
-#endif  // !defined(OS_ANDROID)
 
 DownloadManagerDelegate* TestingProfile::GetDownloadManagerDelegate() {
   return nullptr;
@@ -998,10 +994,6 @@ bool TestingProfile::IsGuestSession() const {
 
 bool TestingProfile::IsNewProfile() const {
   return is_new_profile_;
-}
-
-Profile::ExitType TestingProfile::GetLastSessionExitType() const {
-  return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 
 TestingProfile::Builder::Builder() = default;

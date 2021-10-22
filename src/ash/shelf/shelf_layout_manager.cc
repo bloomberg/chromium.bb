@@ -265,6 +265,10 @@ class HotseatEventHandler : public ui::EventHandler,
     shelf_layout_manager_->AddObserver(this);
     Shell::Get()->AddPreTargetHandler(this);
   }
+
+  HotseatEventHandler(const HotseatEventHandler&) = delete;
+  HotseatEventHandler& operator=(const HotseatEventHandler&) = delete;
+
   ~HotseatEventHandler() override {
     shelf_layout_manager_->RemoveObserver(this);
     Shell::Get()->RemovePreTargetHandler(this);
@@ -288,7 +292,6 @@ class HotseatEventHandler : public ui::EventHandler,
   // Whether events should get forwarded to ShelfLayoutManager.
   bool should_forward_event_ = false;
   ShelfLayoutManager* const shelf_layout_manager_;  // unowned.
-  DISALLOW_COPY_AND_ASSIGN(HotseatEventHandler);
 };
 
 }  // namespace
@@ -369,7 +372,8 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
     : shelf_widget_(shelf_widget),
       shelf_(shelf),
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
-      is_app_list_bubble_enabled_(features::IsAppListBubbleEnabled()) {
+      is_productivity_launcher_enabled_(
+          features::IsProductivityLauncherEnabled()) {
   DCHECK(shelf_widget_);
   DCHECK(shelf_);
 }
@@ -891,9 +895,9 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   const bool app_list_is_visible =
       Shell::Get()->app_list_controller() &&
       Shell::Get()->app_list_controller()->IsVisible(display_.id());
-  // If the AppListBubble is enabled, the AppList is just another bubble, the
+  // If ProductivityLauncher is enabled, the AppList is just another bubble, the
   // shelf does not need to react to it in clamshell mode.
-  if (!is_app_list_bubble_enabled_ && app_list_is_visible) {
+  if (!is_productivity_launcher_enabled_ && app_list_is_visible) {
     // When auto-hide shelf is enabled, shelf cannot be considered maximized.
     if (maximized && state_.visibility_state != SHELF_AUTO_HIDE)
       return ShelfBackgroundType::kMaximizedWithAppList;
@@ -1847,9 +1851,8 @@ void ShelfLayoutManager::UpdateAutoHideStateNow() {
 }
 
 void ShelfLayoutManager::StartAutoHideTimer() {
-  auto_hide_timer_.Start(FROM_HERE,
-                         base::TimeDelta::FromMilliseconds(kAutoHideDelayMS),
-                         this, &ShelfLayoutManager::UpdateAutoHideStateNow);
+  auto_hide_timer_.Start(FROM_HERE, base::Milliseconds(kAutoHideDelayMS), this,
+                         &ShelfLayoutManager::UpdateAutoHideStateNow);
 }
 
 void ShelfLayoutManager::StopAutoHideTimer() {

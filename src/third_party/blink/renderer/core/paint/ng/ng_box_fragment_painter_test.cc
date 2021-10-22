@@ -90,7 +90,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
                 1, 1,
                 PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
                 scroller.FirstFragment().LocalBorderBoxProperties(),
-                &scroll_hit_test, IntRect(0, 0, 40, 40)),
+                &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
             IsPaintChunk(1, 2)));
   } else {
     EXPECT_THAT(
@@ -101,7 +101,7 @@ TEST_P(NGBoxFragmentPainterTest, ScrollHitTestOrder) {
                 1, 1,
                 PaintChunk::Id(root_fragment.Id(), DisplayItem::kScrollHitTest),
                 scroller.FirstFragment().LocalBorderBoxProperties(),
-                &scroll_hit_test, IntRect(0, 0, 40, 40)),
+                &scroll_hit_test, gfx::Rect(0, 0, 40, 40)),
             IsPaintChunk(1, 2)));
   }
 }
@@ -130,16 +130,16 @@ TEST_P(NGBoxFragmentPainterTest, AddUrlRects) {
 
   paint_preview::PaintPreviewTracker tracker(base::UnguessableToken::Create(),
                                              absl::nullopt, true);
-  PaintRecordBuilder builder;
-  builder.Context().SetPaintPreviewTracker(&tracker);
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
+  builder->Context().SetPaintPreviewTracker(&tracker);
 
   GetDocument().View()->PaintContentsOutsideOfLifecycle(
-      builder.Context(),
+      builder->Context(),
       kGlobalPaintNormalPhase | kGlobalPaintAddUrlMetadata |
           kGlobalPaintFlattenCompositingLayers,
       CullRect::Infinite());
 
-  auto record = builder.EndRecording();
+  auto record = builder->EndRecording();
   std::vector<GURL> links;
   ExtractLinks(record.get(), &links);
   ASSERT_EQ(links.size(), 2U);
@@ -191,13 +191,13 @@ TEST_P(NGBoxFragmentPainterTest, SelectionTablePainting) {
   GetDocument().View()->GetFrame().Selection().SelectAll();
   GetDocument().GetLayoutView()->CommitPendingSelection();
   UpdateAllLifecyclePhasesForTest();
-  PaintRecordBuilder builder;
+  auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
   GetDocument().View()->PaintContentsOutsideOfLifecycle(
-      builder.Context(),
+      builder->Context(),
       kGlobalPaintSelectionDragImageOnly | kGlobalPaintFlattenCompositingLayers,
       CullRect::Infinite());
 
-  auto record = builder.EndRecording();
+  auto record = builder->EndRecording();
 }
 
 TEST_P(NGBoxFragmentPainterTest, ClippedText) {

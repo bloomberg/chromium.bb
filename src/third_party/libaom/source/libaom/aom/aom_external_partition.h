@@ -16,7 +16,7 @@
  *
  * @{
  */
-#include "./aom_integer.h"
+#include <stdint.h>
 
 /*!\file
  * \brief Provides function pointer definitions for the external partition.
@@ -30,7 +30,7 @@
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures.
  */
-#define AOM_EXT_PART_ABI_VERSION (2)
+#define AOM_EXT_PART_ABI_VERSION 3
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,50 +43,63 @@ typedef void *aom_ext_part_model_t;
 /*!\brief Number of features to determine whether to skip partition none and
  * do partition split directly. The same as "FEATURE_SIZE_SMS_SPLIT".
  */
-#define SIZE_DIRECT_SPLIT 17
+#define AOM_EXT_PART_SIZE_DIRECT_SPLIT 17
 
 /*!\brief Number of features to use simple motion search to prune out
  * rectangular partition in some direction. The same as
  * "FEATURE_SIZE_SMS_PRUNE_PART".
  */
-#define SIZE_PRUNE_PART 25
+#define AOM_EXT_PART_SIZE_PRUNE_PART 25
 
 /*!\brief Number of features to prune split and rectangular partition
  * after PARTITION_NONE.
  */
-#define SIZE_PRUNE_NONE 4
+#define AOM_EXT_PART_SIZE_PRUNE_NONE 4
 
 /*!\brief Number of features to terminates partition after partition none using
  * simple_motion_search features and the rate, distortion, and rdcost of
  * PARTITION_NONE. The same as "FEATURE_SIZE_SMS_TERM_NONE".
  */
-#define SIZE_TERM_NONE 28
+#define AOM_EXT_PART_SIZE_TERM_NONE 28
 
 /*!\brief Number of features to terminates partition after partition split.
  */
-#define SIZE_TERM_SPLIT 31
+#define AOM_EXT_PART_SIZE_TERM_SPLIT 31
 
 /*!\brief Number of features to prune rectangular partition using stats
  * collected after partition split.
  */
-#define SIZE_PRUNE_RECT 9
+#define AOM_EXT_PART_SIZE_PRUNE_RECT 9
 
 /*!\brief Number of features to prune AB partition using stats
  * collected after rectangular partition..
  */
-#define SIZE_PRUNE_AB 10
+#define AOM_EXT_PART_SIZE_PRUNE_AB 10
 
 /*!\brief Number of features to prune 4-way partition using stats
  * collected after AB partition.
  */
-#define SIZE_PRUNE_4_WAY 18
+#define AOM_EXT_PART_SIZE_PRUNE_4_WAY 18
+
+/*!\brief Decision mode of the external partition model.
+ * AOM_EXT_PART_WHOLE_TREE: the external partition model should provide the
+ * whole partition tree for the superblock.
+ *
+ * AOM_EXT_PART_RECURSIVE: the external partition model provides the partition
+ * decision of the current block only. The decision process starts from
+ * the superblock size, down to the smallest block size (4x4) recursively.
+ */
+typedef enum aom_ext_part_decision_mode {
+  AOM_EXT_PART_WHOLE_TREE = 0,
+  AOM_EXT_PART_RECURSIVE = 1,
+} aom_ext_part_decision_mode_t;
 
 /*!\brief Config information sent to the external partition model.
  *
  * For example, the maximum superblock size determined by the sequence header.
  */
 typedef struct aom_ext_part_config {
-  int superblock_size; /**< super block size (either 64x64 or 128x128) */
+  int superblock_size;  ///< super block size (either 64x64 or 128x128)
 } aom_ext_part_config_t;
 
 /*!\brief Features pass to the external model to make partition decisions.
@@ -98,37 +111,38 @@ typedef struct aom_ext_part_config {
  * prune_horz, prune_vert.
  */
 typedef struct aom_partition_features_before_none {
-  float f[SIZE_DIRECT_SPLIT]; /**< features to determine whether skip partition
-                                 none and do split directly */
-  float f_part2[SIZE_PRUNE_PART]; /**< features to determine whether to prune
-                                     rectangular partition */
+  /*! features to determine whether skip partition none and do split directly */
+  float f[AOM_EXT_PART_SIZE_DIRECT_SPLIT];
+  /*! features to determine whether to prune rectangular partition */
+  float f_part2[AOM_EXT_PART_SIZE_PRUNE_PART];
 } aom_partition_features_before_none_t;
 
 /*!\brief Features pass to the external model to make partition decisions.
  * Specifically, features collected after NONE partition.
  */
 typedef struct aom_partition_features_none {
-  float f[SIZE_PRUNE_NONE]; /**< features to prune split and rectangular
-                               partition*/
-  float f_terminate[SIZE_TERM_NONE]; /**< features to determine termination of
-                                        partition */
+  /*! features to prune split and rectangular partition */
+  float f[AOM_EXT_PART_SIZE_PRUNE_NONE];
+  /*! features to determine termination of partition */
+  float f_terminate[AOM_EXT_PART_SIZE_TERM_NONE];
 } aom_partition_features_none_t;
 
 /*!\brief Features pass to the external model to make partition decisions.
  * Specifically, features collected after SPLIT partition.
  */
 typedef struct aom_partition_features_split {
-  float f_terminate[SIZE_TERM_SPLIT];  /**< features to determine termination of
-                                          partition */
-  float f_prune_rect[SIZE_PRUNE_RECT]; /**< features to determine pruning rect
-                                          partition */
+  /*! features to determine termination of  partition */
+  float f_terminate[AOM_EXT_PART_SIZE_TERM_SPLIT];
+  /*! features to determine pruning rect partition */
+  float f_prune_rect[AOM_EXT_PART_SIZE_PRUNE_RECT];
 } aom_partition_features_split_t;
 
 /*!\brief Features pass to the external model to make partition decisions.
  * Specifically, features collected after RECTANGULAR partition.
  */
 typedef struct aom_partition_features_rect {
-  float f[SIZE_PRUNE_AB]; /**< features to determine pruning AB partition */
+  /*! features to determine pruning AB partition */
+  float f[AOM_EXT_PART_SIZE_PRUNE_AB];
 } aom_partition_features_rect_t;
 
 /*!\brief Features pass to the external model to make partition decisions.
@@ -136,23 +150,23 @@ typedef struct aom_partition_features_rect {
  * VERT_B.
  */
 typedef struct aom_partition_features_ab {
-  float
-      f[SIZE_PRUNE_4_WAY]; /**< features to determine pruning 4-way partition */
+  /*! features to determine pruning 4-way partition */
+  float f[AOM_EXT_PART_SIZE_PRUNE_4_WAY];
 } aom_partition_features_ab_t;
 
 /*!\brief Feature id to tell the external model the current stage in partition
  * pruning and what features to use to make decisions accordingly.
  */
 typedef enum {
-  FEATURE_BEFORE_PART_NONE,
-  FEATURE_BEFORE_PART_NONE_PART2,
-  FEATURE_AFTER_PART_NONE,
-  FEATURE_AFTER_PART_NONE_PART2,
-  FEATURE_AFTER_PART_SPLIT,
-  FEATURE_AFTER_PART_SPLIT_PART2,
-  FEATURE_AFTER_PART_RECT,
-  FEATURE_AFTER_PART_AB
-} PART_FEATURE_ID;
+  AOM_EXT_PART_FEATURE_BEFORE_NONE,
+  AOM_EXT_PART_FEATURE_BEFORE_NONE_PART2,
+  AOM_EXT_PART_FEATURE_AFTER_NONE,
+  AOM_EXT_PART_FEATURE_AFTER_NONE_PART2,
+  AOM_EXT_PART_FEATURE_AFTER_SPLIT,
+  AOM_EXT_PART_FEATURE_AFTER_SPLIT_PART2,
+  AOM_EXT_PART_FEATURE_AFTER_RECT,
+  AOM_EXT_PART_FEATURE_AFTER_AB
+} AOM_EXT_PART_FEATURE_ID;
 
 /*!\brief Features collected from the tpl process.
  *
@@ -163,11 +177,12 @@ typedef enum {
  * 128x128 / (16x16) = 64. Change it if the tpl process changes.
  */
 typedef struct aom_sb_tpl_features {
-  int tpl_unit_length; /**< The block length of tpl process */
-  int num_units;       /**< The number of units inside the current superblock */
-  int64_t intra_cost[64];  /**< The intra cost of each unit */
-  int64_t inter_cost[64];  /**< The inter cost of each unit */
-  int64_t mc_dep_cost[64]; /**< The motion compensated dependecy cost */
+  int available;        ///< If tpl stats are available
+  int tpl_unit_length;  ///< The block length of tpl process
+  int num_units;        ///< The number of units inside the current superblock
+  int64_t intra_cost[64];   ///< The intra cost of each unit
+  int64_t inter_cost[64];   ///< The inter cost of each unit
+  int64_t mc_dep_cost[64];  ///< The motion compensated dependency cost
 } aom_sb_tpl_features_t;
 
 /*!\brief Features collected from the simple motion process.
@@ -178,10 +193,10 @@ typedef struct aom_sb_tpl_features {
  * comments and the array size here.
  */
 typedef struct aom_sb_simple_motion_features {
-  int unit_length;   /**< The block length of the simple motion process */
-  int num_units;     /**< The number of units inside the current superblock */
-  int block_sse[64]; /**< Sum of squared error of each unit */
-  int block_var[64]; /**< Variance of each unit */
+  int unit_length;    ///< The block length of the simple motion process
+  int num_units;      ///< The number of units inside the current superblock
+  int block_sse[64];  ///< Sum of squared error of each unit
+  int block_var[64];  ///< Variance of each unit
 } aom_sb_simple_motion_features_t;
 
 /*!\brief Features of each super block.
@@ -189,9 +204,10 @@ typedef struct aom_sb_simple_motion_features {
  * Features collected for each super block before partition search.
  */
 typedef struct aom_sb_features {
-  aom_sb_simple_motion_features_t
-      motion_features;                /**< Features from motion search*/
-  aom_sb_tpl_features_t tpl_features; /**< Features from tpl process */
+  /*! Features from motion search */
+  aom_sb_simple_motion_features_t motion_features;
+  /*! Features from tpl process */
+  aom_sb_tpl_features_t tpl_features;
 } aom_sb_features_t;
 
 /*!\brief Features pass to the external model to make partition decisions.
@@ -204,20 +220,26 @@ typedef struct aom_sb_features {
  */
 typedef struct aom_partition_features {
   // Features for the current supervised multi-stage ML model.
-  PART_FEATURE_ID id; /**< Feature ID to indicate active features */
-  aom_partition_features_before_none_t
-      before_part_none; /**< Features collected before NONE partition */
-  aom_partition_features_none_t
-      after_part_none; /**< Features collected after NONE partition */
-  aom_partition_features_split_t
-      after_part_split; /**< Features collected after SPLIT partition */
-  aom_partition_features_rect_t
-      after_part_rect; /**< Features collected after RECTANGULAR partition */
-  aom_partition_features_ab_t
-      after_part_ab; /**< Features collected after AB partition */
+  /*! Feature ID to indicate active features */
+  AOM_EXT_PART_FEATURE_ID id;
+  /*! Features collected before NONE partition */
+  aom_partition_features_before_none_t before_part_none;
+  /*! Features collected after NONE partition */
+  aom_partition_features_none_t after_part_none;
+  /*! Features collected after SPLIT partition */
+  aom_partition_features_split_t after_part_split;
+  /*! Features collected after RECTANGULAR partition */
+  aom_partition_features_rect_t after_part_rect;
+  /*! Features collected after AB partition */
+  aom_partition_features_ab_t after_part_ab;
 
   // Features for a new ML model.
-  aom_sb_features_t sb_features; /**< Features collected for the super block */
+  aom_sb_features_t sb_features;  ///< Features collected for the super block
+  int mi_row;                     ///< Mi_row position of the block
+  int mi_col;                     ///< Mi_col position of the block
+  int frame_width;                ///< Frame width
+  int frame_height;               ///< Frame height
+  int block_size;                 ///< As "BLOCK_SIZE" in av1/common/enums.h
 } aom_partition_features_t;
 
 /*!\brief Partition decisions received from the external model.
@@ -231,22 +253,24 @@ typedef struct aom_partition_features {
  */
 typedef struct aom_partition_decision {
   // Decisions for directly set partition types
-  int is_final_decision;       /**< The flag whether it is the final decision */
-  int partition_decision[256]; /**< Partition decisions */
+  int is_final_decision;         ///< The flag whether it's the final decision
+  int num_nodes;                 ///< The number of leaf nodes
+  int partition_decision[2048];  ///< Partition decisions
+  int current_decision;          ///< Partition decision for the current block
 
   // Decisions for partition type pruning
-  int terminate_partition_search; /**< Terminate further partition search */
-  int partition_none_allowed;     /**< Allow partition none type */
-  int partition_rect_allowed[2];  /**< Allow rectangular partitions */
-  int do_rectangular_split;       /**< Try rectangular split partition */
-  int do_square_split;            /**< Try square split partition */
-  int prune_rect_part[2];         /**< Prune rectangular partition */
-  int horza_partition_allowed;    /**< Allow HORZ_A partitioin */
-  int horzb_partition_allowed;    /**< Allow HORZ_B partitioin */
-  int verta_partition_allowed;    /**< Allow VERT_A partitioin */
-  int vertb_partition_allowed;    /**< Allow VERT_B partitioin */
-  int partition_horz4_allowed;    /**< Allow HORZ4 partition */
-  int partition_vert4_allowed;    /**< Allow VERT4 partition */
+  int terminate_partition_search;  ///< Terminate further partition search
+  int partition_none_allowed;      ///< Allow partition none type
+  int partition_rect_allowed[2];   ///< Allow rectangular partitions
+  int do_rectangular_split;        ///< Try rectangular split partition
+  int do_square_split;             ///< Try square split partition
+  int prune_rect_part[2];          ///< Prune rectangular partition
+  int horza_partition_allowed;     ///< Allow HORZ_A partitioin
+  int horzb_partition_allowed;     ///< Allow HORZ_B partitioin
+  int verta_partition_allowed;     ///< Allow VERT_A partitioin
+  int vertb_partition_allowed;     ///< Allow VERT_B partitioin
+  int partition_horz4_allowed;     ///< Allow HORZ4 partition
+  int partition_vert4_allowed;     ///< Allow VERT4 partition
 } aom_partition_decision_t;
 
 /*!\brief Encoding stats for the given partition decision.
@@ -257,17 +281,17 @@ typedef struct aom_partition_decision {
  * or inference though "func()" defined in ....
  */
 typedef struct aom_partition_stats {
-  int rate;       /**< Rate cost of the block */
-  int64_t dist;   /**< Distortion of the block */
-  int64_t rdcost; /**< Rate-distortion cost of the block */
+  int rate;        ///< Rate cost of the block
+  int64_t dist;    ///< Distortion of the block
+  int64_t rdcost;  ///< Rate-distortion cost of the block
 } aom_partition_stats_t;
 
 /*!\brief Enum for return status.
  */
 typedef enum aom_ext_part_status {
-  AOM_EXT_PART_OK = 0,    /**< Status of success */
-  AOM_EXT_PART_ERROR = 1, /**< Status of failure */
-  AOM_EXT_PART_TEST = 2,  /**< Status used for tests */
+  AOM_EXT_PART_OK = 0,     ///< Status of success
+  AOM_EXT_PART_ERROR = 1,  ///< Status of failure
+  AOM_EXT_PART_TEST = 2,   ///< Status used for tests
 } aom_ext_part_status_t;
 
 /*!\brief Callback of creating an external partition model.
@@ -360,6 +384,11 @@ typedef struct aom_ext_part_funcs {
    * Delete the external partition model.
    */
   aom_ext_part_delete_model_fn_t delete_model;
+
+  /*!
+   * The decision mode of the model.
+   */
+  aom_ext_part_decision_mode_t decision_mode;
 
   /*!
    * Private data for the external partition model.

@@ -20,8 +20,8 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/native_pixmap.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
@@ -110,6 +110,9 @@ class FileGLSurface : public GLSurfaceEglReadback {
   explicit FileGLSurface(const base::FilePath& location)
       : location_(location) {}
 
+  FileGLSurface(const FileGLSurface&) = delete;
+  FileGLSurface& operator=(const FileGLSurface&) = delete;
+
  private:
   ~FileGLSurface() override = default;
 
@@ -135,13 +138,14 @@ class FileGLSurface : public GLSurfaceEglReadback {
   }
 
   base::FilePath location_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileGLSurface);
 };
 
 class TestPixmap : public gfx::NativePixmap {
  public:
   explicit TestPixmap(gfx::BufferFormat format) : format_(format) {}
+
+  TestPixmap(const TestPixmap&) = delete;
+  TestPixmap& operator=(const TestPixmap&) = delete;
 
   bool AreDmaBufFdsValid() const override { return false; }
   int GetDmaBufFd(size_t plane) const override { return -1; }
@@ -157,13 +161,7 @@ class TestPixmap : public gfx::NativePixmap {
   uint32_t GetUniqueId() const override { return 0; }
   bool ScheduleOverlayPlane(
       gfx::AcceleratedWidget widget,
-      int plane_z_order,
-      gfx::OverlayTransform plane_transform,
-      const gfx::Rect& display_bounds,
-      const gfx::RectF& crop_rect,
-      bool enable_blend,
-      const gfx::Rect& damage_rect,
-      float opacity,
+      const gfx::OverlayPlaneData& overlay_plane_data,
       std::vector<gfx::GpuFence> acquire_fences,
       std::vector<gfx::GpuFence> release_fences) override {
     return true;
@@ -176,13 +174,15 @@ class TestPixmap : public gfx::NativePixmap {
   ~TestPixmap() override {}
 
   gfx::BufferFormat format_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestPixmap);
 };
 
 class GLOzoneEGLHeadless : public GLOzoneEGL {
  public:
   GLOzoneEGLHeadless(const base::FilePath& base_path) : base_path_(base_path) {}
+
+  GLOzoneEGLHeadless(const GLOzoneEGLHeadless&) = delete;
+  GLOzoneEGLHeadless& operator=(const GLOzoneEGLHeadless&) = delete;
+
   ~GLOzoneEGLHeadless() override = default;
 
   // GLOzone:
@@ -211,8 +211,6 @@ class GLOzoneEGLHeadless : public GLOzoneEGL {
 
  private:
   base::FilePath base_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLHeadless);
 };
 
 }  // namespace

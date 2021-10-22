@@ -32,6 +32,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
+#include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
 #include "chrome/browser/ash/customization/customization_document.h"
 #include "chrome/browser/ash/login/auth/chrome_login_performer.h"
@@ -62,7 +63,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -73,13 +73,13 @@
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
-#include "chrome/browser/ui/webui/management/management_ui_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -127,12 +127,11 @@
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/views/widget/widget.h"
 
-using RebootOnSignOutPolicy =
-    enterprise_management::DeviceRebootOnUserSignoutProto;
-
-namespace chromeos {
-
+namespace ash {
 namespace {
+
+using RebootOnSignOutPolicy =
+    ::enterprise_management::DeviceRebootOnUserSignoutProto;
 
 const char kAutoLaunchNotificationId[] =
     "chrome://managed_guest_session/auto_launch";
@@ -517,7 +516,7 @@ void ExistingUserController::Observe(
   VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
-      base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
+      base::Milliseconds(kAuthCacheTransferDelayMs));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -832,7 +831,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
         base::BindOnce(&SessionTerminationManager::StopSession,
                        base::Unretained(SessionTerminationManager::Get()),
                        login_manager::SessionStopReason::OWNER_REQUIRED),
-        base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
+        base::Milliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();
   } else if (failure.reason() == AuthFailure::TPM_UPDATE_REQUIRED) {
@@ -973,7 +972,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
             ->GetBrokerForUser(user_id);
     bool privacy_warnings_enabled =
         g_browser_process->local_state()->GetBoolean(
-            ash::prefs::kManagedGuestSessionPrivacyWarningsEnabled);
+            prefs::kManagedGuestSessionPrivacyWarningsEnabled);
     if (ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker) &&
         privacy_warnings_enabled) {
       ShowAutoLaunchManagedGuestSessionNotification();
@@ -1004,7 +1003,7 @@ void ExistingUserController::ShowAutoLaunchManagedGuestSessionNotification() {
             SystemTrayClientImpl::Get()->ShowEnterpriseInfo();
           }));
   std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
+      CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kAutoLaunchNotificationId,
           title, message, std::u16string(), GURL(),
           message_center::NotifierId(
@@ -1025,7 +1024,7 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   profile_prepared_ = true;
 
   chromeos::UserContext user_context =
-      UserContext(*chromeos::ProfileHelper::Get()->GetUserByProfile(profile));
+      UserContext(*ProfileHelper::Get()->GetUserByProfile(profile));
   auto* profile_connector = profile->GetProfilePolicyConnector();
   bool is_enterprise_managed =
       profile_connector->IsManaged() &&
@@ -1034,10 +1033,11 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
                                                    is_enterprise_managed);
 
   if (is_enterprise_managed) {
-    std::string manager = ManagementUIHandler::GetAccountManager(profile);
-    if (!manager.empty()) {
+    absl::optional<std::string> manager =
+        chrome::GetAccountManagerIdentity(profile);
+    if (manager) {
       user_manager::known_user::SetAccountManager(user_context.GetAccountId(),
-                                                  manager);
+                                                  *manager);
     }
   }
 
@@ -1180,8 +1180,8 @@ bool ExistingUserController::password_changed() const {
 user_manager::UserList ExistingUserController::ExtractLoginUsers(
     const user_manager::UserList& users) {
   bool show_users_on_signin;
-  chromeos::CrosSettings::Get()->GetBoolean(
-      chromeos::kAccountsPrefShowUserNamesOnSignIn, &show_users_on_signin);
+  CrosSettings::Get()->GetBoolean(chromeos::kAccountsPrefShowUserNamesOnSignIn,
+                                  &show_users_on_signin);
   user_manager::UserList filtered_users;
   for (auto* user : users) {
     // Skip kiosk apps for login screen user list. Kiosk apps as pods (aka new
@@ -1461,7 +1461,7 @@ void ExistingUserController::StartAutoLoginTimer() {
   VLOG(2) << "Public session autologin will be fired in " << auto_login_delay_
           << "ms";
   auto_login_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
+      FROM_HERE, base::Milliseconds(auto_login_delay_),
       base::BindOnce(&ExistingUserController::OnPublicSessionAutoLoginTimerFire,
                      weak_factory_.GetWeakPtr()));
 }
@@ -1725,4 +1725,4 @@ AccountId ExistingUserController::GetLastLoginAttemptAccountId() const {
   return last_login_attempt_account_id_;
 }
 
-}  // namespace chromeos
+}  // namespace ash

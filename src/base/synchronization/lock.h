@@ -8,7 +8,6 @@
 #include "base/base_export.h"
 #include "base/check_op.h"
 #include "base/dcheck_is_on.h"
-#include "base/macros.h"
 #include "base/synchronization/lock_impl.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
@@ -27,6 +26,10 @@ class LOCKABLE BASE_EXPORT Lock {
 #if !DCHECK_IS_ON()
   // Optimized wrapper implementation
   Lock() : lock_() {}
+
+  Lock(const Lock&) = delete;
+  Lock& operator=(const Lock&) = delete;
+
   ~Lock() {}
 
   void Acquire() EXCLUSIVE_LOCK_FUNCTION() { lock_.Lock(); }
@@ -106,8 +109,6 @@ class LOCKABLE BASE_EXPORT Lock {
 
   // Platform specific underlying lock implementation.
   internal::LockImpl lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(Lock);
 };
 
 // A helper class that acquires the given Lock while the AutoLock is in scope.

@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/screen_util.h"
@@ -62,7 +63,7 @@ constexpr float kItemMinOpacity = 0.4f;
 // Amount of time we wait to unpause the occlusion tracker after a overview item
 // is finished dragging. Waits a bit longer than the overview item animation.
 constexpr base::TimeDelta kOcclusionPauseDurationForDrag =
-    base::TimeDelta::FromMilliseconds(300);
+    base::Milliseconds(300);
 
 // The UMA histogram that records presentation time for window dragging
 // operation in overview mode.
@@ -78,14 +79,14 @@ void UnpauseOcclusionTracker() {
 
 bool GetVirtualDesksBarEnabled(OverviewItem* item) {
   return desks_util::ShouldDesksBarBeCreated() &&
-         item->overview_grid()->IsDesksBarViewActive();
+         item->overview_grid()->desks_bar_view();
 }
 
 // Returns whether |item|'s window is visible on all desks.
 bool DraggedItemIsVisibleOnAllDesks(OverviewItem* item) {
   aura::Window* const dragged_window = item->GetWindow();
   return dragged_window &&
-         dragged_window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey);
+         desks_util::IsWindowVisibleOnAllWorkspaces(dragged_window);
 }
 
 // Returns the scaled-down size of the dragged item that should be used when
@@ -126,12 +127,13 @@ class AtScopeExitRunner {
     DCHECK(!callback_.is_null());
   }
 
+  AtScopeExitRunner(const AtScopeExitRunner&) = delete;
+  AtScopeExitRunner& operator=(const AtScopeExitRunner&) = delete;
+
   ~AtScopeExitRunner() { std::move(callback_).Run(); }
 
  private:
   base::OnceClosure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(AtScopeExitRunner);
 };
 
 // Helps with handling the workflow where you drag an overview item from one
@@ -297,6 +299,9 @@ void OverviewWindowDragController::StartNormalDragMode(
       OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW);
   original_scaled_size_ = item_->target_bounds().size();
   auto* overview_grid = item_->overview_grid();
+  // We need to transform desks bar view to expanded state if it's at zero state
+  // when dragging starts.
+  overview_grid->MaybeExpandDesksBarView();
   overview_grid->AddDropTargetForDraggingFromThisGrid(item_);
 
   if (should_allow_split_view_) {
@@ -641,8 +646,8 @@ OverviewWindowDragController::CompleteNormalDrag(
     item_->SetOpacity(original_opacity_);
 
     // Attempt to move a window to a different desk.
-    if (current_grid->MaybeDropItemOnDeskMiniView(rounded_screen_point,
-                                                  item_)) {
+    if (current_grid->MaybeDropItemOnDeskMiniViewOrNewDeskButton(
+            rounded_screen_point, item_)) {
       // Window was successfully moved to another desk, and |item_| was
       // removed from the grid. It may never be accessed after this.
       item_ = nullptr;

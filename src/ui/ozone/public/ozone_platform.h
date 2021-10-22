@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/native_widget_types.h"
@@ -70,6 +71,10 @@ struct PlatformWindowInitProperties;
 class COMPONENT_EXPORT(OZONE) OzonePlatform {
  public:
   OzonePlatform();
+
+  OzonePlatform(const OzonePlatform&) = delete;
+  OzonePlatform& operator=(const OzonePlatform&) = delete;
+
   virtual ~OzonePlatform();
 
   // Additional initialization params for the platform. Platforms must not
@@ -154,6 +159,15 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     // Determines whether buffer formats should be fetched on GPU and passed
     // back via gpu extra info.
     bool fetch_buffer_formats_for_gmb_on_gpu = false;
+
+#if defined(OS_LINUX)
+    // TODO(crbug.com/1116701): add vaapi support for other Ozone platforms on
+    // Linux. At the moment, VA-API Linux implementation supports only X11
+    // backend. This implementation must be refactored to support Ozone
+    // properly. As a temporary solution, VA-API on Linux checks if vaapi is
+    // supported (which implicitly means that it is Ozone/X11).
+    bool supports_vaapi = false;
+#endif
   };
 
   // Groups platform properties that can only be known at run time.
@@ -336,8 +350,6 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // modifications to |single_process_| visible by other threads. Mutex is not
   // needed since it's set before other threads are started.
   volatile bool single_process_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(OzonePlatform);
 };
 
 }  // namespace ui

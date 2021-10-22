@@ -10,7 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "v8/include/v8.h"
+#include "v8/include/v8-forward.h"
+#include "v8/include/v8-persistent-handle.h"
 
 namespace extensions {
 
@@ -32,6 +33,9 @@ class GCCallback {
              const v8::Local<v8::Object>& object,
              base::OnceClosure callback,
              base::OnceClosure fallback);
+
+  GCCallback(const GCCallback&) = delete;
+  GCCallback& operator=(const GCCallback&) = delete;
 
  private:
   GCCallback(ScriptContext* context,
@@ -64,8 +68,6 @@ class GCCallback {
   base::OnceClosure fallback_;
 
   base::WeakPtrFactory<GCCallback> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(GCCallback);
 };
 
 }  // namespace extensions

@@ -30,6 +30,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
@@ -39,6 +40,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "extensions/common/switches.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -113,6 +115,10 @@ class ExtensionInstallErrorObserver final {
                 &ExtensionInstallErrorObserver::IsNotificationRelevant,
                 base::Unretained(this))) {}
 
+  ExtensionInstallErrorObserver(const ExtensionInstallErrorObserver&) = delete;
+  ExtensionInstallErrorObserver& operator=(
+      const ExtensionInstallErrorObserver&) = delete;
+
   void Wait() { notification_observer_.Wait(); }
 
  private:
@@ -130,8 +136,6 @@ class ExtensionInstallErrorObserver final {
   const Profile* const profile_;
   const std::string extension_id_;
   content::WindowedNotificationObserver notification_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallErrorObserver);
 };
 
 // Observer that allows waiting until the specified version of the given
@@ -187,6 +191,12 @@ class ExtensionUpdateAvailabilityObserver final
 // Class for testing sign-in profile apps/extensions.
 class SigninProfileExtensionsPolicyTest
     : public SigninProfileExtensionsPolicyTestBase {
+ public:
+  SigninProfileExtensionsPolicyTest(const SigninProfileExtensionsPolicyTest&) =
+      delete;
+  SigninProfileExtensionsPolicyTest& operator=(
+      const SigninProfileExtensionsPolicyTest&) = delete;
+
  protected:
   SigninProfileExtensionsPolicyTest()
       : SigninProfileExtensionsPolicyTestBase(version_info::Channel::STABLE) {}
@@ -199,9 +209,6 @@ class SigninProfileExtensionsPolicyTest
   }
 
   ExtensionForceInstallMixin extension_force_install_mixin_{&mixin_host_};
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyTest);
 };
 
 }  // namespace
@@ -286,9 +293,7 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
           .AppendASCII(kWhitelistedAppCrxPath),
-      ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
-  EXPECT_TRUE(extension_force_install_mixin_.IsExtensionBackgroundPageReady(
-      kWhitelistedAppId));
+      ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
 }
 
 // Tests installation of multiple sign-in profile apps/extensions.
@@ -318,11 +323,11 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
           .AppendASCII(kWhitelistedAppCrxPath),
-      ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
+      ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
   EXPECT_TRUE(extension_force_install_mixin_.ForceInstallFromCrx(
       base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
           .AppendASCII(kWhitelistedExtensionCrxPath),
-      ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady));
+      ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad));
 
   content::StoragePartition* storage_partition_for_app =
       extensions::util::GetStoragePartitionForExtensionId(

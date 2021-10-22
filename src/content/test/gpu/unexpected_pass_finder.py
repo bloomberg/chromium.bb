@@ -102,7 +102,7 @@ def ParseArgs():
                       required=True,
                       help='The billing project to use for BigQuery queries. '
                       'Must have access to the ResultDB BQ tables, e.g. '
-                      '"luci-resultdb.chromium.gpu_ci_test_results".')
+                      '"chrome-luci-data.chromium.gpu_ci_test_results".')
   parser.add_argument('--num-samples',
                       type=int,
                       default=100,
@@ -206,7 +206,7 @@ def main():
   stale_message = ''
   if args.remove_stale_expectations:
     stale_expectations = []
-    for _, expectation_map in stale.iteritems():
+    for _, expectation_map in stale.items():
       stale_expectations.extend(expectation_map.keys())
     stale_expectations.extend(unused_expectations)
     affected_urls |= expectations_instance.RemoveExpectationsFromFile(

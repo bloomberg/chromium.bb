@@ -19,12 +19,14 @@
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "components/messages/android/messages_feature.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/channel.h"
 #include "components/version_info/version_info.h"
 #include "components/webapps/browser/android/add_to_homescreen_coordinator.h"
 #include "components/webapps/browser/android/add_to_homescreen_params.h"
 #include "components/webapps/browser/android/features.h"
+#include "components/webapps/browser/android/installable/installable_ambient_badge_infobar_delegate.h"
 #include "components/webapps/browser/android/shortcut_info.h"
 #include "components/webapps/browser/android/webapps_icon_utils.h"
 #include "components/webapps/browser/android/webapps_jni_headers/AppBannerManager_jni.h"
@@ -60,7 +62,7 @@ bool gIgnoreChromeChannelForTesting = false;
 
 AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
-    : AppBannerManager(web_contents) {
+    : AppBannerManager(web_contents), message_controller_(this) {
   CreateJavaBannerManager(web_contents);
 }
 
@@ -507,11 +509,14 @@ void AppBannerManagerAndroid::MaybeShowAmbientBadge() {
       InstallableAmbientBadgeInfoBarDelegate::GetVisibleAmbientBadgeInfoBar(
           infobar_manager);
 
-  if (!infobar_visible)
-    ShowAmbientBadge();
+  if (infobar_visible || message_controller_.IsMessageEnqueued())
+    return;
+
+  ShowAmbientBadge();
 }
 
 void AppBannerManagerAndroid::HideAmbientBadge() {
+  message_controller_.DismissMessage();
   infobars::ContentInfoBarManager* infobar_manager =
       webapps::WebappsClient::Get()->GetInfoBarManagerForWebContents(
           web_contents());
@@ -549,9 +554,15 @@ bool AppBannerManagerAndroid::IsWebAppConsideredInstalled() const {
 }
 
 void AppBannerManagerAndroid::ShowAmbientBadge() {
-  InstallableAmbientBadgeInfoBarDelegate::Create(
-      web_contents(), weak_factory_.GetWeakPtr(), GetAppName(), primary_icon_,
-      has_maskable_primary_icon_, manifest().start_url);
+  if (base::FeatureList::IsEnabled(features::kInstallableAmbientBadgeMessage) &&
+      base::FeatureList::IsEnabled(
+          messages::kMessagesForAndroidInfrastructure)) {
+    message_controller_.EnqueueMessage(web_contents(), GetAppName());
+  } else {
+    InstallableAmbientBadgeInfoBarDelegate::Create(
+        web_contents(), weak_factory_.GetWeakPtr(), GetAppName(), primary_icon_,
+        has_maskable_primary_icon_, manifest().start_url);
+  }
 }
 
 void AppBannerManagerAndroid::RecordExtraMetricsForInstallEvent(

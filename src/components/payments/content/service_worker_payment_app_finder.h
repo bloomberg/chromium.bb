@@ -49,6 +49,10 @@ class ServiceWorkerPaymentAppFinder
                               InstallablePaymentApps,
                               const std::string& error_message)>;
 
+  ServiceWorkerPaymentAppFinder(const ServiceWorkerPaymentAppFinder&) = delete;
+  ServiceWorkerPaymentAppFinder& operator=(
+      const ServiceWorkerPaymentAppFinder&) = delete;
+
   ~ServiceWorkerPaymentAppFinder() override;
 
   // Retrieves all service worker payment apps that can handle payments for
@@ -107,13 +111,8 @@ class ServiceWorkerPaymentAppFinder
 
   RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
 
-  // The identifier of the frame that owns this ServiceWorkerPaymentAppFinder.
-  content::GlobalRenderFrameHostId frame_routing_id_;
-
   std::set<std::string> ignored_methods_;
   std::unique_ptr<PaymentManifestDownloader> test_downloader_;
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentAppFinder);
 };
 
 }  // namespace payments

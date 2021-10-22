@@ -10,7 +10,7 @@
 #include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
@@ -45,7 +45,7 @@ void WaitUntilReady(WebAppProvider* provider) {
 void AwaitStartWebAppProviderAndSubsystems(Profile* profile) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePreinstalledApps);
-  TestWebAppProvider* provider = TestWebAppProvider::Get(profile);
+  FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile);
   DCHECK(provider);
   provider->SetRunSubsystemStartupTasks(true);
   // Use a TestSystemWebAppManager to skip system web apps being auto-installed
@@ -53,10 +53,7 @@ void AwaitStartWebAppProviderAndSubsystems(Profile* profile) {
   provider->SetSystemWebAppManager(
       std::make_unique<web_app::TestSystemWebAppManager>(profile));
   provider->Start();
-  // Await registry ready.
-  base::RunLoop run_loop;
-  provider->on_registry_ready().Post(FROM_HERE, run_loop.QuitClosure());
-  run_loop.Run();
+  WaitUntilReady(provider);
 }
 
 AppId InstallDummyWebApp(Profile* profile,
@@ -87,7 +84,8 @@ AppId InstallDummyWebApp(Profile* profile,
             run_loop.Quit();
           }));
   run_loop.Run();
-
+  // Allow updates to be published to App Service listeners.
+  base::RunLoop().RunUntilIdle();
   return app_id;
 }
 
@@ -115,6 +113,8 @@ AppId InstallWebApp(Profile* profile,
           }));
 
   run_loop.Run();
+  // Allow updates to be published to App Service listeners.
+  base::RunLoop().RunUntilIdle();
   return app_id;
 }
 
@@ -145,6 +145,8 @@ AppId InstallWebAppWithUrlHandlers(
         run_loop.Quit();
       }));
   run_loop.Run();
+  // Allow updates to be published to App Service listeners.
+  base::RunLoop().RunUntilIdle();
   return app_id;
 }
 #endif
@@ -162,6 +164,8 @@ void UninstallWebApp(Profile* profile, const AppId& app_id) {
       }));
 
   run_loop.Run();
+  // Allow updates to be published to App Service listeners.
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace test

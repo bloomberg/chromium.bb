@@ -121,6 +121,7 @@ enum MediaStatusState;
 
 // This defines a mojo transport format for media::EncryptionPattern
 // See media/base/encryption_pattern.h for description.
+[Stable]
 struct EncryptionPattern {
   uint32 crypt_byte_block;
   uint32 skip_byte_block;
@@ -188,6 +189,7 @@ struct AudioDecoderConfig {
   AudioCodecProfile profile;
   ChannelLayout target_output_channel_layout;
   bool should_discard_decoder_delay;
+  array<uint8> aac_extra_data;
 };
 
 // This defines a mojo transport format for media::VideoDecoderConfig.
@@ -489,12 +491,17 @@ struct VideoPipelineInfo {
 };
 
 // See media/base/status.h for descriptions.
-struct Status {
-  StatusCode code;
-  string? message;
+struct StatusData {
+  string group;
+  uint16 code;
+  string message;
   array<mojo_base.mojom.Value> frames;
-  array<media.mojom.Status> causes;
-  mojo_base.mojom.Value? data;
+  array<StatusData> causes;
+  mojo_base.mojom.Value data;
+};
+
+struct Status {
+  StatusData? internal;
 };
 
 // Types of media stream, categorised by the media stream's source.

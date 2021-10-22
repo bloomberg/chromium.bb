@@ -12,13 +12,17 @@
 #include "base/macros.h"
 #include "chrome/browser/ash/input_method/input_method_engine.h"
 #include "chrome/browser/profiles/profile.h"
-#include "ui/base/ime/chromeos/ime_engine_handler_interface.h"
+#include "ui/base/ime/ash/ime_engine_handler_interface.h"
 
 namespace extensions {
 
 class InputImeEventRouterBase {
  public:
   explicit InputImeEventRouterBase(Profile* profile);
+
+  InputImeEventRouterBase(const InputImeEventRouterBase&) = delete;
+  InputImeEventRouterBase& operator=(const InputImeEventRouterBase&) = delete;
+
   virtual ~InputImeEventRouterBase();
 
   // Gets the input method engine if the extension is active.
@@ -30,8 +34,6 @@ class InputImeEventRouterBase {
 
  private:
   Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputImeEventRouterBase);
 };
 
 }  // namespace extensions

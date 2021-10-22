@@ -28,6 +28,7 @@
 #include "base/metrics/user_metrics.h"
 #include "components/prefs/pref_service.h"
 #include "components/soda/soda_installer.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -56,6 +57,7 @@ enum AccessibilityState {
   A11Y_DOCKED_MAGNIFIER = 1 << 12,
   A11Y_DICTATION = 1 << 13,
   A11Y_SWITCH_ACCESS = 1 << 14,
+  A11Y_LIVE_CAPTION = 1 << 15,
 };
 
 void LogUserAccessibilityEvent(UserSettingsEvent::Event::AccessibilityId id,
@@ -97,8 +99,15 @@ AccessibilityDetailedView::AccessibilityDetailedView(
 }
 
 AccessibilityDetailedView::~AccessibilityDetailedView() {
-  if (features::IsDictationOfflineAvailableAndEnabled())
-    speech::SodaInstaller::GetInstance()->RemoveObserver(this);
+  if (!features::IsDictationOfflineAvailableAndEnabled())
+    return;
+
+  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
+  if (soda_installer) {
+    // `soda_installer` is not guaranteed to be valid, since it's possible for
+    // this class to out-live it.
+    soda_installer->RemoveObserver(this);
+  }
 }
 
 void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
@@ -165,6 +174,12 @@ void AccessibilityDetailedView::OnAccessibilityStatusChanged() {
     switch_access_enabled_ = controller->switch_access().enabled();
     TrayPopupUtils::UpdateCheckMarkVisibility(switch_access_view_,
                                               switch_access_enabled_);
+  }
+
+  if (live_caption_view_ && controller->IsLiveCaptionSettingVisibleInTray()) {
+    live_caption_enabled_ = controller->live_caption().enabled();
+    TrayPopupUtils::UpdateCheckMarkVisibility(live_caption_view_,
+                                              live_caption_enabled_);
   }
 
   if (large_cursor_view_ && controller->IsLargeCursorSettingVisibleInTray()) {
@@ -288,7 +303,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   if (controller->IsVirtualKeyboardSettingVisibleInTray()) {
     virtual_keyboard_enabled_ = controller->virtual_keyboard().enabled();
     virtual_keyboard_view_ = AddScrollListCheckableItem(
-        kSystemMenuKeyboardIcon,
+        kSystemMenuKeyboardLegacyIcon,
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD),
         virtual_keyboard_enabled_,
@@ -308,8 +323,18 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
         controller->IsEnterpriseIconVisibleForSwitchAccess());
   }
 
+  if (controller->IsLiveCaptionSettingVisibleInTray()) {
+    live_caption_enabled_ = controller->live_caption().enabled();
+    live_caption_view_ = AddScrollListCheckableItem(
+        vector_icons::kLiveCaptionOnIcon,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LIVE_CAPTION),
+        live_caption_enabled_,
+        controller->IsEnterpriseIconVisibleForLiveCaption());
+  }
+
   if (controller->IsAdditionalSettingsSeparatorVisibleInTray())
-    scroll_content()->AddChildView(CreateListSubHeaderSeparator());
+    scroll_content()->AddChildView(
+        TrayPopupUtils::CreateListSubHeaderSeparator());
 
   if (controller->IsAdditionalSettingsViewVisibleInTray()) {
     AddScrollListSubHeader(
@@ -470,6 +495,14 @@ void AccessibilityDetailedView::HandleViewClicked(views::View* view) {
     LogUserAccessibilityEvent(UserSettingsEvent::Event::SWITCH_ACCESS,
                               new_state);
     controller->switch_access().SetEnabled(new_state);
+  } else if (live_caption_view_ && view == live_caption_view_) {
+    bool new_state = !controller->live_caption().enabled();
+    RecordAction(new_state
+                     ? UserMetricsAction("StatusArea_LiveCaptionEnabled")
+                     : UserMetricsAction("StatusArea_LiveCaptionDisabled"));
+    LogUserAccessibilityEvent(UserSettingsEvent::Event::LIVE_CAPTION,
+                              new_state);
+    controller->live_caption().SetEnabled(new_state);
   } else if (caret_highlight_view_ && view == caret_highlight_view_ &&
              !controller->IsEnterpriseIconVisibleForCaretHighlight()) {
     bool new_state = !controller->caret_highlight().enabled();
@@ -553,16 +586,19 @@ void AccessibilityDetailedView::UpdateSodaInstallerObserverStatus() {
   if (!features::IsDictationOfflineAvailableAndEnabled())
     return;
 
+  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
+  if (!soda_installer)
+    return;
+
   bool dictation_enabled =
       Shell::Get()->accessibility_controller()->dictation().enabled();
-  speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
-  if (!dictation_enabled)
+  if (!dictation_enabled) {
     soda_installer->RemoveObserver(this);
+    return;
+  }
 
-  if (dictation_enabled &&
-      !soda_installer->IsSodaInstalled(GetDictationLocale())) {
-    // Make sure this view observes SODA installation. We only want to update
-    // the user of the installation status if dictation is enabled.
+  if (!soda_installer->IsSodaInstalled(GetDictationLocale())) {
+    // Make sure this view observes SODA installation.
     soda_installer->AddObserver(this);
   }
 }

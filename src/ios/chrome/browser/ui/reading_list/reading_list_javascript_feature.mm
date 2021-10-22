@@ -117,7 +117,7 @@ void ReadingListJavaScriptFeature::ScriptMessageReceived(
   absl::optional<double> time = message.body()->FindDoubleKey("time");
   if (time.has_value()) {
     UMA_HISTOGRAM_TIMES("IOS.ReadingList.Javascript.ExecutionTime",
-                        base::TimeDelta::FromMillisecondsD(time.value()));
+                        base::Milliseconds(time.value()));
   }
 
   std::vector<double> result = dom_distiller::CalculateDerivedFeatures(
@@ -159,16 +159,18 @@ void ReadingListJavaScriptFeature::ScriptMessageReceived(
 
   ReadingListModel* model = ReadingListModelFactory::GetForBrowserState(
       ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()));
-  const ReadingListEntry* entry = model->GetEntryByURL(url.value());
-  if (entry) {
-    // Update an existing Reading List entry with the estimated time to read.
-    // Either way, return early to not show a Messages banner for an existing
-    // Reading List entry.
-    if (entry->EstimatedReadTime().is_zero()) {
-      model->SetEstimatedReadTime(
-          url.value(), base::TimeDelta::FromMinutes(estimated_read_time));
+  if (model->loaded()) {
+    const ReadingListEntry* entry = model->GetEntryByURL(url.value());
+    if (entry) {
+      // Update an existing Reading List entry with the estimated time to read.
+      // Either way, return early to not show a Messages banner for an existing
+      // Reading List entry.
+      if (entry->EstimatedReadTime().is_zero()) {
+        model->SetEstimatedReadTime(url.value(),
+                                    base::Minutes(estimated_read_time));
+      }
+      return;
     }
-    return;
   }
   if (!web_state->IsVisible()) {
     // Do not show the Messages banner if the WebState is not visible, but delay

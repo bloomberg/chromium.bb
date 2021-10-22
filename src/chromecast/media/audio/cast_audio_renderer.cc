@@ -248,7 +248,7 @@ void CastAudioRenderer::SetPlaybackRate(double playback_rate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(output_connection_);
 
-  playback_rate = base::ClampToRange(playback_rate, 0.0, 2.0);
+  playback_rate = base::ranges::clamp(playback_rate, 0.0, 2.0);
   {
     base::AutoLock lock(timeline_lock_);
     if (playback_rate == 0.0) {
@@ -508,7 +508,7 @@ void CastAudioRenderer::UpdateMediaTime(
   }
   reference_time_ =
       base::TimeTicks::FromInternalValue(reference_timestamp_microseconds);
-  media_pos_ = base::TimeDelta::FromMicroseconds(media_timestamp_microseconds);
+  media_pos_ = base::Microseconds(media_timestamp_microseconds);
   RUN_ON_MAIN_THREAD(ScheduleFetchNextBuffer);
 }
 

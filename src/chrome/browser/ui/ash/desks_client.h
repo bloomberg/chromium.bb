@@ -21,6 +21,7 @@ class DesksController;
 }  // namespace ash
 
 namespace desks_storage {
+class DeskModel;
 class LocalDeskDataManager;
 }
 
@@ -91,6 +92,10 @@ class DesksClient : public ash::SessionObserver {
   void LaunchDeskTemplate(const std::string& template_uuid,
                           LaunchDeskTemplateCallback callback);
 
+  // Returns either the local desk storage backend or Chrome sync desk storage
+  // backend depending on the feature flag DeskTemplateSync.
+  desks_storage::DeskModel* GetDeskModel();
+
  private:
   friend class DesksClientTest;
   friend class ScopedDeskClientAppLaunchHandlerSetter;
@@ -159,7 +164,7 @@ class DesksClient : public ash::SessionObserver {
   // A test only template for testing `LaunchDeskTemplate`.
   std::unique_ptr<ash::DeskTemplate> launch_template_for_test_;
 
-  // object responsible for desks storage
+  // Local desks storage backend.
   std::unique_ptr<desks_storage::LocalDeskDataManager> storage_manager_;
 
   base::WeakPtrFactory<DesksClient> weak_ptr_factory_{this};

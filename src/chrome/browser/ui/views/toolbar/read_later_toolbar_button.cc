@@ -50,11 +50,13 @@ class ReadLaterSidePanelWebView : public views::WebView,
             browser->profile(),
             IDS_READ_LATER_TITLE,
             /*enable_extension_apis=*/true,
-            /*webui_resizes_host=*/false)) {
+            /*webui_resizes_host=*/false,
+            /*esc_closes_ui=*/false)) {
     SetVisible(false);
     contents_wrapper_->SetHost(weak_factory_.GetWeakPtr());
     contents_wrapper_->ReloadWebContents();
     SetWebContents(contents_wrapper_->web_contents());
+    set_allow_accelerators(true);
 
     if (base::FeatureList::IsEnabled(features::kSidePanelDragAndDrop)) {
       extensions::BookmarkManagerPrivateDragEventRouter::CreateForWebContents(

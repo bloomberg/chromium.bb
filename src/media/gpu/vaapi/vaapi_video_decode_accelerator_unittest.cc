@@ -17,7 +17,6 @@
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_features.h"
 
 using base::test::RunClosure;
 using ::testing::_;
@@ -192,6 +191,12 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
 
     vda_.state_ = VaapiVideoDecodeAccelerator::kIdle;
   }
+
+  VaapiVideoDecodeAcceleratorTest(const VaapiVideoDecodeAcceleratorTest&) =
+      delete;
+  VaapiVideoDecodeAcceleratorTest& operator=(
+      const VaapiVideoDecodeAcceleratorTest&) = delete;
+
   ~VaapiVideoDecodeAcceleratorTest() {}
 
   void SetUp() override {
@@ -403,8 +408,6 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
 
  private:
   base::WeakPtrFactory<VaapiVideoDecodeAcceleratorTest> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAcceleratorTest);
 };
 
 // Verify that it is possible to select DRM(egl) and TFP(glx) at runtime.
@@ -416,12 +419,10 @@ TEST_P(VaapiVideoDecodeAcceleratorTest, SupportedPlatforms) {
             mock_vaapi_picture_factory_->GetVaapiImplementation(
                 gl::kGLImplementationEGLGLES2));
 
-#if defined(USE_X11)
-  if (!features::IsUsingOzonePlatform()) {
-    EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
-              mock_vaapi_picture_factory_->GetVaapiImplementation(
-                  gl::kGLImplementationDesktopGL));
-  }
+#if BUILDFLAG(USE_VAAPI_X11)
+  EXPECT_EQ(VaapiPictureFactory::kVaapiImplementationX11,
+            mock_vaapi_picture_factory_->GetVaapiImplementation(
+                gl::kGLImplementationDesktopGL));
 #endif
 }
 

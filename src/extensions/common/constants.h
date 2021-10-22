@@ -102,6 +102,10 @@ extern const base::FilePath::CharType kStateStoreName[];
 // rules are stored.
 extern const base::FilePath::CharType kRulesStoreName[];
 
+// The name of the database inside the profile where persistent dynamic user
+// script metadata is stored.
+extern const base::FilePath::CharType kScriptsStoreName[];
+
 // Statistics are logged to UMA with these strings as part of histogram name.
 // They can all be found under Extensions.Database.Open.<client>. Changing this
 // needs to synchronize with histograms.xml, AND will also become incompatible
@@ -109,6 +113,7 @@ extern const base::FilePath::CharType kRulesStoreName[];
 extern const char kSettingsDatabaseUMAClientName[];
 extern const char kRulesDatabaseUMAClientName[];
 extern const char kStateDatabaseUMAClientName[];
+extern const char kScriptsDatabaseUMAClientName[];
 
 // The URL query parameter key corresponding to multi-login user index.
 extern const char kAuthUserQueryKey[];
@@ -123,6 +128,9 @@ extern const char kWebStoreAppId[];
 // The key used for signing some pieces of data from the webstore.
 extern const uint8_t kWebstoreSignaturesPublicKey[];
 extern const size_t kWebstoreSignaturesPublicKeySize;
+
+// A preference for storing the extension's update URL data.
+extern const char kUpdateURLData[];
 
 // Thread identifier for the main renderer thread (as opposed to a service
 // worker thread).
@@ -294,6 +302,14 @@ extern const char kGuestModeTestExtensionId[];
 // for example the file manager.
 bool IsSystemUIApp(base::StringPiece extension_id);
 #endif
+
+// Returns if the app is managed by extension default apps. This is a hardcoded
+// list of default apps for Windows/Linux/MacOS platforms that should be
+// migrated from extension to web app.
+// TODO(https://crbug.com/1257275): remove after deault app migration is done.
+// This function is copied from
+// chrome/browser/web_applications/extension_status_utils.h.
+bool IsPreinstalledAppId(const std::string& app_id);
 
 // The extension id for the production version of Hangouts.
 extern const char kProdHangoutsExtensionId[];

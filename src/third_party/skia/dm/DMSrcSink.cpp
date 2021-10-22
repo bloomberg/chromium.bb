@@ -79,6 +79,13 @@
     #include "src/xml/SkXMLWriter.h"
 #endif
 
+#ifdef SK_GRAPHITE_ENABLED
+#include "experimental/graphite/include/Context.h"
+#include "experimental/graphite/include/SkStuff.h"
+#include "tools/graphite/ContextFactory.h"
+#include "tools/graphite/GraphiteTestContext.h"
+#endif
+
 #if defined(SK_ENABLE_ANDROID_UTILS)
     #include "client_utils/android/BitmapRegionDecoder.h"
 #endif
@@ -2107,6 +2114,46 @@ Result RasterSink::draw(const Src& src, SkBitmap* dst, SkWStream*, SkString*) co
     SkCanvas canvas(*dst, SkSurfaceProps(0, kRGB_H_SkPixelGeometry));
     return src.draw(nullptr, &canvas);
 }
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+GraphiteSink::GraphiteSink() {}
+
+#ifdef SK_GRAPHITE_ENABLED
+
+Result GraphiteSink::draw(const Src& src,
+                          SkBitmap* dst,
+                          SkWStream* dstStream,
+                          SkString* log) const {
+    using ContextType = sk_graphite_test::ContextFactory::ContextType;
+
+    SkImageInfo ii = SkImageInfo::Make(src.size(), kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+
+    sk_graphite_test::ContextFactory factory;
+    auto [_, context] = factory.getContextInfo(ContextType::kMetal);
+
+    sk_sp<SkSurface> surface = MakeGraphite(std::move(context), ii);
+    if (!surface) {
+        return Result::Fatal("Could not create a surface.");
+    }
+    Result result = src.draw(/* dContext */ nullptr, surface->getCanvas());
+    if (!result.isOk()) {
+        return result;
+    }
+    surface->flushAndSubmit();
+
+    dst->allocPixels(surface->imageInfo());
+    if (!surface->readPixels(*dst, 0, 0)) {
+        return Result::Fatal("Could not readback from surface.");
+    }
+
+    return Result::Ok();
+}
+#else
+Result GraphiteSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const {
+    return Result::Fatal("Graphite not enabled.");
+}
+#endif
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 

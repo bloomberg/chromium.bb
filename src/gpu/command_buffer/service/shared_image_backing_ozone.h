@@ -47,11 +47,15 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       scoped_refptr<gfx::NativePixmap> pixmap,
       scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs);
 
+  SharedImageBackingOzone(const SharedImageBackingOzone&) = delete;
+  SharedImageBackingOzone& operator=(const SharedImageBackingOzone&) = delete;
+
   ~SharedImageBackingOzone() override;
 
   // gpu::SharedImageBacking:
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
   bool WritePixels(base::span<const uint8_t> pixel_data,
                    SharedContextState* const shared_context_state,
                    viz::ResourceFormat format,
@@ -84,7 +88,7 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
       VaapiDependenciesFactory* dep_factory) override;
 
  private:
-  friend class SharedImageRepresentationGLOzone;
+  friend class SharedImageRepresentationGLOzoneShared;
   friend class SharedImageRepresentationDawnOzone;
   class SharedImageRepresentationVaapiOzone;
   class SharedImageRepresentationOverlayOzone;
@@ -110,8 +114,6 @@ class SharedImageBackingOzone final : public ClearTrackingSharedImageBacking {
   // Set for shared memory GMB.
   SharedMemoryRegionWrapper shared_memory_wrapper_;
   scoped_refptr<SharedContextState> context_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedImageBackingOzone);
 };
 
 }  // namespace gpu

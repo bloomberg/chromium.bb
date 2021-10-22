@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_session_plugin_handler.h"
@@ -35,7 +36,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -89,10 +89,8 @@ void StartFloatingAccessibilityMenu() {
 
 // Sends a SIGFPE signal to plugin subprocesses that matches |child_ids|
 // to trigger a dump.
-void DumpPluginProcessOnProcessThread(const std::set<int>& child_ids) {
-  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                          ? content::BrowserThread::UI
-                          : content::BrowserThread::IO);
+void DumpPluginProcess(const std::set<int>& child_ids) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   bool dump_requested = false;
 
@@ -118,7 +116,7 @@ void DumpPluginProcessOnProcessThread(const std::set<int>& child_ids) {
   const int kDumpWaitSeconds = 10;
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE, base::BindOnce(&RebootDevice),
-      base::TimeDelta::FromSeconds(dump_requested ? kDumpWaitSeconds : 0));
+      base::Seconds(dump_requested ? kDumpWaitSeconds : 0));
 }
 
 }  // namespace
@@ -251,6 +249,8 @@ class AppSession::BrowserWindowHandler : public BrowserListObserver {
 
 AppSession::AppSession()
     : attempt_user_exit_(base::BindOnce(chrome::AttemptUserExit)) {}
+AppSession::AppSession(base::OnceClosure attempt_user_exit)
+    : attempt_user_exit_(std::move(attempt_user_exit)) {}
 AppSession::~AppSession() {}
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -338,9 +338,8 @@ void AppSession::OnLastAppWindowClosed() {
 }
 
 bool AppSession::ShouldHandlePlugin(const base::FilePath& plugin_path) const {
-  // Note that BrowserChildProcessHostIterator in
-  // DumpPluginProcessOnProcessThread also needs to be updated when adding more
-  // plugin types here.
+  // Note that BrowserChildProcessHostIterator in DumpPluginProcess also needs
+  // to be updated when adding more plugin types here.
   return IsPepperPlugin(plugin_path);
 }
 
@@ -359,12 +358,7 @@ void AppSession::OnPluginHung(const std::set<int>& hung_plugins) {
   is_shutting_down_ = true;
 
   LOG(ERROR) << "Plugin hung detected. Dump and reboot.";
-  auto task_runner = base::FeatureList::IsEnabled(features::kProcessHostOnUI)
-                         ? content::GetUIThreadTaskRunner({})
-                         : content::GetIOThreadTaskRunner({});
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&DumpPluginProcessOnProcessThread, hung_plugins));
+  DumpPluginProcess(hung_plugins);
 }
 
 }  // namespace chromeos

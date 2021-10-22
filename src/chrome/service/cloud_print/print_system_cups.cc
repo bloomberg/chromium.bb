@@ -51,11 +51,10 @@ const char kCUPSDefaultSupportedTypes[] =
     "application/pdf,application/postscript,image/jpeg,image/png,image/gif";
 
 // Time interval to check for printer's updates.
-constexpr base::TimeDelta kCheckForPrinterUpdatesTime =
-    base::TimeDelta::FromMinutes(5);
+constexpr base::TimeDelta kCheckForPrinterUpdatesTime = base::Minutes(5);
 
 // Job update timeout
-constexpr base::TimeDelta kJobUpdateTimeout = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kJobUpdateTimeout = base::Seconds(5);
 
 // Job id for dry run (it should not affect CUPS job ids, since 0 job-id is
 // invalid in CUPS.
@@ -187,6 +186,9 @@ class PrintServerWatcherCUPS
   explicit PrintServerWatcherCUPS(PrintSystemCUPS* print_system)
       : print_system_(print_system) {}
 
+  PrintServerWatcherCUPS(const PrintServerWatcherCUPS&) = delete;
+  PrintServerWatcherCUPS& operator=(const PrintServerWatcherCUPS&) = delete;
+
   // PrintSystem::PrintServerWatcher implementation.
   bool StartWatching(
       PrintSystem::PrintServerWatcher::Delegate* delegate) override {
@@ -243,8 +245,6 @@ class PrintServerWatcherCUPS
   scoped_refptr<PrintSystemCUPS> print_system_;
   PrintSystem::PrintServerWatcher::Delegate* delegate_ = nullptr;
   std::string printers_hash_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrintServerWatcherCUPS);
 };
 
 class PrinterWatcherCUPS
@@ -255,6 +255,9 @@ class PrinterWatcherCUPS
       : printer_name_(printer_name),
         print_system_(print_system) {
   }
+
+  PrinterWatcherCUPS(const PrinterWatcherCUPS&) = delete;
+  PrinterWatcherCUPS& operator=(const PrinterWatcherCUPS&) = delete;
 
   // PrintSystem::PrinterWatcher implementation.
   bool StartWatching(PrintSystem::PrinterWatcher::Delegate* delegate) override {
@@ -360,8 +363,6 @@ class PrinterWatcherCUPS
   PrintSystem::PrinterWatcher::Delegate* delegate_ = nullptr;
   scoped_refptr<PrintSystemCUPS> print_system_;
   std::string settings_hash_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrinterWatcherCUPS);
 };
 
 class JobSpoolerCUPS : public PrintSystem::JobSpooler {
@@ -370,6 +371,9 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
       : print_system_(print_system) {
     DCHECK(print_system_.get());
   }
+
+  JobSpoolerCUPS(const JobSpoolerCUPS&) = delete;
+  JobSpoolerCUPS& operator=(const JobSpoolerCUPS&) = delete;
 
   // PrintSystem::JobSpooler implementation.
   bool Spool(const std::string& print_ticket,
@@ -404,8 +408,6 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
 
  private:
   scoped_refptr<PrintSystemCUPS> print_system_;
-
-  DISALLOW_COPY_AND_ASSIGN(JobSpoolerCUPS);
 };
 
 PrintSystemCUPS::PrintSystemCUPS(
@@ -413,7 +415,7 @@ PrintSystemCUPS::PrintSystemCUPS(
   if (print_system_settings) {
     int timeout;
     if (print_system_settings->GetInteger(kCUPSUpdateTimeoutMs, &timeout))
-      update_timeout_ = base::TimeDelta::FromMilliseconds(timeout);
+      update_timeout_ = base::Milliseconds(timeout);
 
     int encryption;
     if (print_system_settings->GetInteger(kCUPSEncryption, &encryption))

@@ -111,6 +111,10 @@ bool ComparePortAssociations(
 }  // namespace
 
 class DisplayPrefsTest : public AshTestBase {
+ public:
+  DisplayPrefsTest(const DisplayPrefsTest&) = delete;
+  DisplayPrefsTest& operator=(const DisplayPrefsTest&) = delete;
+
  protected:
   DisplayPrefsTest() = default;
   ~DisplayPrefsTest() override = default;
@@ -240,16 +244,14 @@ class DisplayPrefsTest : public AshTestBase {
  private:
   std::unique_ptr<WindowTreeHostManager::Observer> observer_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayPrefsTest);
 };
 
 class DisplayPrefsTestGuest : public DisplayPrefsTest {
  public:
   DisplayPrefsTestGuest() { set_start_session(false); }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(DisplayPrefsTestGuest);
+  DisplayPrefsTestGuest(const DisplayPrefsTestGuest&) = delete;
+  DisplayPrefsTestGuest& operator=(const DisplayPrefsTestGuest&) = delete;
 };
 
 TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
@@ -411,9 +413,10 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_EQ(1, rotation);
 
-  double display_zoom_1;
-  EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_1));
-  EXPECT_NEAR(display_zoom_1, zoom_factor_1, 0.0001);
+  absl::optional<double> display_zoom_1 =
+      property->FindDoubleKey("display_zoom_factor");
+  ASSERT_TRUE(display_zoom_1);
+  EXPECT_NEAR(*display_zoom_1, zoom_factor_1, 0.0001);
 
   // Internal display never registered the resolution.
   int width = 0, height = 0;
@@ -459,9 +462,10 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_EQ(0, rotation);
 
-  double display_zoom_2;
-  EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_2));
-  EXPECT_NEAR(display_zoom_2, zoom_factor_2, 0.0001);
+  absl::optional<double> display_zoom_2 =
+      property->FindDoubleKey("display_zoom_factor");
+  ASSERT_TRUE(display_zoom_2);
+  EXPECT_NEAR(*display_zoom_2, zoom_factor_2, 0.0001);
 
   EXPECT_FALSE(property->GetInteger("insets_top", &top));
   EXPECT_FALSE(property->GetInteger("insets_left", &left));

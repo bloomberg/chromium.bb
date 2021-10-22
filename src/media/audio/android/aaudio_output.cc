@@ -5,7 +5,6 @@
 #include "media/audio/android/aaudio_output.h"
 
 #include "base/android/build_info.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -73,9 +72,15 @@ static aaudio_data_callback_result_t OnAudioDataRequestedCallback(
 static void OnStreamErrorCallback(AAudioStream* stream,
                                   void* user_data,
                                   aaudio_result_t error) {
-  AAudioOutputStream* output_stream =
-      reinterpret_cast<AAudioOutputStream*>(user_data);
-  output_stream->OnStreamError(error);
+  AAudioDestructionHelper* destruction_helper =
+      reinterpret_cast<AAudioDestructionHelper*>(user_data);
+
+  AAudioOutputStream* output_stream = destruction_helper->GetAndLockStream();
+
+  if (output_stream)
+    output_stream->OnStreamError(error);
+
+  destruction_helper->UnlockStream();
 }
 
 AAudioOutputStream::AAudioOutputStream(AudioManagerAndroid* manager,
@@ -131,10 +136,9 @@ AAudioOutputStream::~AAudioOutputStream() {
   // bound to the callback stays valid, until the callbacks stop.
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(
-          base::DoNothing::Once<std::unique_ptr<AAudioDestructionHelper>>(),
-          std::move(destruction_helper_)),
-      base::TimeDelta::FromSeconds(1));
+      base::BindOnce([](std::unique_ptr<AAudioDestructionHelper>) {},
+                     std::move(destruction_helper_)),
+      base::Seconds(1));
 }
 
 void AAudioOutputStream::Flush() {}
@@ -160,7 +164,8 @@ bool AAudioOutputStream::Open() {
   // Callbacks
   AAudioStreamBuilder_setDataCallback(builder, OnAudioDataRequestedCallback,
                                       destruction_helper_.get());
-  AAudioStreamBuilder_setErrorCallback(builder, OnStreamErrorCallback, this);
+  AAudioStreamBuilder_setErrorCallback(builder, OnStreamErrorCallback,
+                                       destruction_helper_.get());
 
   result = AAudioStreamBuilder_openStream(builder, &aaudio_stream_);
 
@@ -283,8 +288,8 @@ base::TimeDelta AAudioOutputStream::GetDelay(base::TimeTicks delay_timestamp) {
       AAudioStream_getFramesWritten(aaudio_stream_) - existing_frame_index;
 
   // Calculate the time which the next frame will be presented.
-  const base::TimeDelta next_frame_pts = base::TimeDelta::FromNanosecondsD(
-      existing_frame_pts + frame_index_delta * ns_per_frame_);
+  const base::TimeDelta next_frame_pts =
+      base::Nanoseconds(existing_frame_pts + frame_index_delta * ns_per_frame_);
 
   // Calculate the latency between write time and presentation time. At startup
   // we may end up with negative values here.

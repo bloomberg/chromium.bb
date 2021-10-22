@@ -28,6 +28,11 @@ class CardNameFixFlowControllerImplGenericTest {
  public:
   CardNameFixFlowControllerImplGenericTest() {}
 
+  CardNameFixFlowControllerImplGenericTest(
+      const CardNameFixFlowControllerImplGenericTest&) = delete;
+  CardNameFixFlowControllerImplGenericTest& operator=(
+      const CardNameFixFlowControllerImplGenericTest&) = delete;
+
   void ShowPromptWithInferredName() {
     inferred_name_ = u"John Doe";
     ShowPrompt();
@@ -60,8 +65,6 @@ class CardNameFixFlowControllerImplGenericTest {
             &CardNameFixFlowControllerImplGenericTest::OnNameAccepted,
             weak_ptr_factory_.GetWeakPtr()));
   }
-
-  DISALLOW_COPY_AND_ASSIGN(CardNameFixFlowControllerImplGenericTest);
 };
 
 class CardNameFixFlowControllerImplTest
@@ -69,15 +72,18 @@ class CardNameFixFlowControllerImplTest
       public testing::Test {
  public:
   CardNameFixFlowControllerImplTest() {}
+
+  CardNameFixFlowControllerImplTest(const CardNameFixFlowControllerImplTest&) =
+      delete;
+  CardNameFixFlowControllerImplTest& operator=(
+      const CardNameFixFlowControllerImplTest&) = delete;
+
   ~CardNameFixFlowControllerImplTest() override {}
 
   void SetUp() override {
     test_card_name_fix_flow_view_ = std::make_unique<TestCardNameFixFlowView>();
     controller_ = std::make_unique<CardNameFixFlowControllerImpl>();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CardNameFixFlowControllerImplTest);
 };
 
 TEST_F(CardNameFixFlowControllerImplTest, LogShown) {

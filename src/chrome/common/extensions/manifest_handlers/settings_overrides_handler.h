@@ -25,6 +25,10 @@ enum SettingsApiOverrideType {
 // homepage and append a startup page to the list.
 struct SettingsOverrides : public Extension::ManifestData {
   SettingsOverrides();
+
+  SettingsOverrides(const SettingsOverrides&) = delete;
+  SettingsOverrides& operator=(const SettingsOverrides&) = delete;
+
   ~SettingsOverrides() override;
 
   static const SettingsOverrides* Get(const Extension* extension);
@@ -33,22 +37,21 @@ struct SettingsOverrides : public Extension::ManifestData {
       search_engine;
   std::unique_ptr<GURL> homepage;
   std::vector<GURL> startup_pages;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverrides);
 };
 
 class SettingsOverridesHandler : public ManifestHandler {
  public:
   SettingsOverridesHandler();
+
+  SettingsOverridesHandler(const SettingsOverridesHandler&) = delete;
+  SettingsOverridesHandler& operator=(const SettingsOverridesHandler&) = delete;
+
   ~SettingsOverridesHandler() override;
 
   bool Parse(Extension* extension, std::u16string* error) override;
 
  private:
   base::span<const char* const> Keys() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsOverridesHandler);
 };
 
 }  // namespace extensions

@@ -84,6 +84,10 @@ class VIZ_SERVICE_EXPORT Surface final {
    public:
     PresentationHelper(base::WeakPtr<SurfaceClient> surface_client,
                        uint32_t frame_token);
+
+    PresentationHelper(const PresentationHelper&) = delete;
+    PresentationHelper& operator=(const PresentationHelper&) = delete;
+
     ~PresentationHelper();
 
     void DidPresent(base::TimeTicks draw_start_timestamp,
@@ -93,8 +97,6 @@ class VIZ_SERVICE_EXPORT Surface final {
    private:
     base::WeakPtr<SurfaceClient> surface_client_;
     const uint32_t frame_token_;
-
-    DISALLOW_COPY_AND_ASSIGN(PresentationHelper);
   };
 
   using PresentedCallback =
@@ -105,6 +107,10 @@ class VIZ_SERVICE_EXPORT Surface final {
           SurfaceManager* surface_manager,
           SurfaceAllocationGroup* allocation_group,
           base::WeakPtr<SurfaceClient> surface_client);
+
+  Surface(const Surface&) = delete;
+  Surface& operator=(const Surface&) = delete;
+
   ~Surface();
 
   void SetDependencyDeadline(
@@ -116,6 +122,9 @@ class VIZ_SERVICE_EXPORT Surface final {
   }
   const gfx::Size& size_in_pixels() const {
     return surface_info_.size_in_pixels();
+  }
+  float device_scale_factor() const {
+    return surface_info_.device_scale_factor();
   }
 
   base::WeakPtr<SurfaceClient> client() { return surface_client_; }
@@ -392,8 +401,6 @@ class VIZ_SERVICE_EXPORT Surface final {
   bool has_damage_from_interpolated_frame_ = false;
 
   base::WeakPtrFactory<Surface> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 
 }  // namespace viz

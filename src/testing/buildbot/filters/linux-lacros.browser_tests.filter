@@ -9,7 +9,6 @@
 -All/HostedAppProcessModelTest.BackgroundPageWithAppCoveringDifferentSites/0
 -All/HostedOrWebAppTest.CtrlClickLink/HostedApp
 -All/HostedOrWebAppTest.CtrlClickLink/WebApp
--All/HostedOrWebAppTest.OpenLinkInNewTab*
 -All/IntentPickerBubbleViewBrowserTest.NavigationInAppWindowToInScopeLinkDoesNotShowIntentPicker*
 -All/MultiActionAPITest.PopupCreation/1
 -All/MultiActionAPITest.SessionStorageDoesNotPersistBetweenOpenings/1
@@ -184,11 +183,6 @@
 -TranslateLanguageBrowserTest.TranslateAndRevert
 -TranslateLanguageBrowserTestWithTranslateRecentTarget.RecentTargetLanguage
 -TranslateManagerBrowserTest.PageTranslationTimeoutError
--WebAppBrowserTest.CopyURL
--WebAppBrowserTest.InScopePWAPopupsHaveCorrectSize
--WebAppBrowserTest.OffScopePWAPopupsHaveCorrectSize
--WebAppEngagementBrowserTest.CommandLineWindow
--WebAppLinkCapturingBrowserTest.AboutBlankNavigationReparented
 -WebRtcDesktopCaptureBrowserTest.RunsScreenshareFromOneTabToAnother
 -WebViewTest.SelectShowHide
 -WebViewTest.Shim_TestDisplayNoneWebviewRemoveChild
@@ -207,27 +201,8 @@
 # Following tests fail when Mirror is enabled on Lacros. They try to update
 # credentials in Ash Account Manager, which is currently not possible in
 # browser_tests because of lack of crosapi.
--PasswordBubbleBrowserTest.InvokeUi_MoveToAccountStoreBubble*
--BookmarkBubble*
--BrowsingDataCounterUtilsBrowserTest.ShouldShowCookieException
--ComponentCloudPolicyTest.SignOutAndBackIn
--CommerceHintAgentTest.MultipleProfiles
--CommerceHintAgentTest.NonSignInUser
--ChromePasswordProtectionServiceSyncBrowserTest.GSuitePasswordAlertMode
 -DiceBrowserTest.*
 -DiceBrowsingDataRemoverBrowserTest.*
 -ExtensionBrowsingDataTest.*
--InlineLoginUIBrowserTest.CanOfferProfileConnected
--LocalCardMigrationBrowserTest*
--MetricsServiceUserDemographicsBrowserTest.*
--NetworkOnOrOff/ProfileMenuViewSignoutTestWithNetwork.Signout*
--PasswordManagerBrowserTestWithSigninInterception.*
--ProfileMenuViewSignoutTest.OpenLogoutTab
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.*
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.*
--SaveCardBubbleViewsSyncTransportFullFormBrowserTest.*
--UkmBrowserTest*
--UkmConsentParamBrowserTests*
--UserPolicySigninServiceTest.BasicSignin
 -UserPolicySigninServiceTest.*
 -UserPolicySigninServiceSyncNotRequiredTest.AcceptManagementDeclineSync

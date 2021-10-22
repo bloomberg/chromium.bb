@@ -404,10 +404,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pixel_fmts_fftfilt);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pixel_fmts_fftfilt);
 }
 
 static const AVFilterPad fftfilt_inputs[] = {
@@ -417,7 +414,6 @@ static const AVFilterPad fftfilt_inputs[] = {
         .config_props = config_props,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad fftfilt_outputs[] = {
@@ -425,7 +421,6 @@ static const AVFilterPad fftfilt_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_fftfilt = {
@@ -433,8 +428,8 @@ const AVFilter ff_vf_fftfilt = {
     .description     = NULL_IF_CONFIG_SMALL("Apply arbitrary expressions to pixels in frequency domain."),
     .priv_size       = sizeof(FFTFILTContext),
     .priv_class      = &fftfilt_class,
-    .inputs          = fftfilt_inputs,
-    .outputs         = fftfilt_outputs,
+    FILTER_INPUTS(fftfilt_inputs),
+    FILTER_OUTPUTS(fftfilt_outputs),
     .query_formats   = query_formats,
     .init            = initialize,
     .uninit          = uninit,

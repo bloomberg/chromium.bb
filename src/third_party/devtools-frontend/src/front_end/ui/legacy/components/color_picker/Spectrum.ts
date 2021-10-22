@@ -125,7 +125,7 @@ const colorElementToMutable = new WeakMap<HTMLElement, boolean>();
 
 const colorElementToColor = new WeakMap<HTMLElement, string>();
 
-export class Spectrum extends UI.Widget.VBox {
+export class Spectrum extends Common.ObjectWrapper.eventMixin<EventTypes, typeof UI.Widget.VBox>(UI.Widget.VBox) {
   private colorElement: HTMLElement;
   private colorDragElement: HTMLElement;
   private dragX: number;
@@ -156,7 +156,8 @@ export class Spectrum extends UI.Widget.VBox {
   private readonly deleteIconToolbar: UI.Toolbar.Toolbar;
   private readonly deleteButton: UI.Toolbar.ToolbarButton;
   private readonly addColorToolbar: UI.Toolbar.Toolbar;
-  private readonly colorPickedBound: (event: Common.EventTarget.EventTargetEvent) => void;
+  private readonly colorPickedBound:
+      (event: Common.EventTarget.EventTargetEvent<Host.InspectorFrontendHostAPI.EyeDropperPickedColorEvent>) => void;
   private hsv!: number[];
   private hueAlphaWidth!: number;
   dragWidth!: number;
@@ -1163,7 +1164,7 @@ export class Spectrum extends UI.Widget.VBox {
     }
   }
 
-  private toggleColorPicker(enabled?: boolean, _event?: Common.EventTarget.EventTargetEvent): void {
+  private toggleColorPicker(enabled?: boolean): void {
     if (enabled === undefined) {
       enabled = !this.colorPickerButton.toggled();
     }
@@ -1185,13 +1186,9 @@ export class Spectrum extends UI.Widget.VBox {
     }
   }
 
-  private colorPicked(event: Common.EventTarget.EventTargetEvent): void {
-    const rgbColor = event.data as {
-      r: number,
-      g: number,
-      b: number,
-      a: number,
-    };
+  private colorPicked({
+    data: rgbColor,
+  }: Common.EventTarget.EventTargetEvent<Host.InspectorFrontendHostAPI.EyeDropperPickedColorEvent>): void {
     const rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
     const color = Common.Color.Color.fromRGBA(rgba);
     this.innerSetColor(color.hsva(), '', undefined /* colorName */, undefined, ChangeSource.Other);
@@ -1211,6 +1208,11 @@ export enum Events {
   ColorChanged = 'ColorChanged',
   SizeChanged = 'SizeChanged',
 }
+
+export type EventTypes = {
+  [Events.ColorChanged]: string,
+  [Events.SizeChanged]: void,
+};
 
 const COLOR_CHIP_SIZE = 24;
 const ITEMS_PER_PALETTE_ROW = 8;

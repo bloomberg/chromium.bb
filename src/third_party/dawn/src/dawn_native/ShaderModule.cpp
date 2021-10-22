@@ -14,6 +14,7 @@
 
 #include "dawn_native/ShaderModule.h"
 
+#include "absl/strings/str_format.h"
 #include "common/Constants.h"
 #include "common/HashUtils.h"
 #include "dawn_native/BindGroupLayout.h"
@@ -32,13 +33,27 @@
 
 namespace dawn_native {
 
+    EntryPointMetadata::OverridableConstant::Type GetDawnOverridableConstantType(
+        tint::inspector::OverridableConstant::Type type) {
+        switch (type) {
+            case tint::inspector::OverridableConstant::Type::kBool:
+                return EntryPointMetadata::OverridableConstant::Type::Boolean;
+            case tint::inspector::OverridableConstant::Type::kFloat32:
+                return EntryPointMetadata::OverridableConstant::Type::Float32;
+            case tint::inspector::OverridableConstant::Type::kInt32:
+                return EntryPointMetadata::OverridableConstant::Type::Int32;
+            case tint::inspector::OverridableConstant::Type::kUint32:
+                return EntryPointMetadata::OverridableConstant::Type::Uint32;
+            default:
+                UNREACHABLE();
+        }
+    }
+
     namespace {
 
         std::string GetShaderDeclarationString(BindGroupIndex group, BindingNumber binding) {
-            std::ostringstream ostream;
-            ostream << "the shader module declaration at set " << static_cast<uint32_t>(group)
-                    << " binding " << static_cast<uint32_t>(binding);
-            return ostream.str();
+            return absl::StrFormat("the shader module declaration at set %u, binding %u",
+                                   static_cast<uint32_t>(group), static_cast<uint32_t>(binding));
         }
 
         tint::transform::VertexFormat ToTintVertexFormat(wgpu::VertexFormat format) {
@@ -117,6 +132,7 @@ namespace dawn_native {
                 case wgpu::VertexStepMode::Instance:
                     return tint::transform::VertexStepMode::kInstance;
             }
+            UNREACHABLE();
         }
 
         ResultOrError<SingleShaderStage> TintPipelineStageToShaderStage(
@@ -129,8 +145,9 @@ namespace dawn_native {
                 case tint::ast::PipelineStage::kCompute:
                     return SingleShaderStage::Compute;
                 case tint::ast::PipelineStage::kNone:
-                    UNREACHABLE();
+                    break;
             }
+            UNREACHABLE();
         }
 
         BindingInfoType TintResourceTypeToBindingInfoType(
@@ -148,7 +165,6 @@ namespace dawn_native {
                 case tint::inspector::ResourceBinding::ResourceType::kDepthTexture:
                 case tint::inspector::ResourceBinding::ResourceType::kDepthMultisampledTexture:
                     return BindingInfoType::Texture;
-                case tint::inspector::ResourceBinding::ResourceType::kReadOnlyStorageTexture:
                 case tint::inspector::ResourceBinding::ResourceType::kWriteOnlyStorageTexture:
                     return BindingInfoType::StorageTexture;
                 case tint::inspector::ResourceBinding::ResourceType::kExternalTexture:
@@ -236,6 +252,7 @@ namespace dawn_native {
                 case tint::inspector::ResourceBinding::ImageFormat::kNone:
                     return wgpu::TextureFormat::Undefined;
             }
+            UNREACHABLE();
         }
 
         wgpu::TextureViewDimension TintTextureDimensionToTextureViewDimension(
@@ -256,6 +273,7 @@ namespace dawn_native {
                 case tint::inspector::ResourceBinding::TextureDimension::kNone:
                     return wgpu::TextureViewDimension::Undefined;
             }
+            UNREACHABLE();
         }
 
         SampleTypeBit TintSampledKindToSampleTypeBit(
@@ -270,6 +288,7 @@ namespace dawn_native {
                 case tint::inspector::ResourceBinding::SampledKind::kUnknown:
                     return SampleTypeBit::None;
             }
+            UNREACHABLE();
         }
 
         ResultOrError<wgpu::TextureComponentType> TintComponentTypeToTextureComponentType(
@@ -285,6 +304,7 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "Attempted to convert 'Unknown' component type from Tint");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<VertexFormatBaseType> TintComponentTypeToVertexFormatBaseType(
@@ -300,6 +320,7 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "Attempted to convert 'Unknown' component type from Tint");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<wgpu::BufferBindingType> TintResourceTypeToBufferBindingType(
@@ -314,19 +335,19 @@ namespace dawn_native {
                 default:
                     return DAWN_VALIDATION_ERROR("Attempted to convert non-buffer resource type");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<wgpu::StorageTextureAccess> TintResourceTypeToStorageTextureAccess(
             tint::inspector::ResourceBinding::ResourceType resource_type) {
             switch (resource_type) {
-                case tint::inspector::ResourceBinding::ResourceType::kReadOnlyStorageTexture:
-                    return wgpu::StorageTextureAccess::ReadOnly;
                 case tint::inspector::ResourceBinding::ResourceType::kWriteOnlyStorageTexture:
                     return wgpu::StorageTextureAccess::WriteOnly;
                 default:
                     return DAWN_VALIDATION_ERROR(
                         "Attempted to convert non-storage texture resource type");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<InterStageComponentType> TintComponentTypeToInterStageComponentType(
@@ -342,6 +363,7 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "Attempted to convert 'Unknown' component type from Tint");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<uint32_t> TintCompositionTypeToInterStageComponentCount(
@@ -359,6 +381,7 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "Attempt to convert 'Unknown' composition type from Tint");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<InterpolationType> TintInterpolationTypeToInterpolationType(
@@ -374,6 +397,7 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "Attempted to convert 'Unknown' interpolation type from Tint");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<InterpolationSampling> TintInterpolationSamplingToInterpolationSamplingType(
@@ -391,6 +415,7 @@ namespace dawn_native {
                     return DAWN_VALIDATION_ERROR(
                         "Attempted to convert 'Unknown' interpolation sampling type from Tint");
             }
+            UNREACHABLE();
         }
 
         ResultOrError<tint::Program> ParseWGSL(const tint::Source::File* file,
@@ -619,12 +644,21 @@ namespace dawn_native {
             for (auto& entryPoint : entryPoints) {
                 ASSERT(result.count(entryPoint.name) == 0);
 
-                if (!entryPoint.overridable_constants.empty()) {
-                    return DAWN_VALIDATION_ERROR(
-                        "Pipeline overridable constants are not implemented yet");
-                }
-
                 auto metadata = std::make_unique<EntryPointMetadata>();
+
+                if (!entryPoint.overridable_constants.empty()) {
+                    const auto& name2Id = inspector.GetConstantNameToIdMap();
+
+                    for (auto& c : entryPoint.overridable_constants) {
+                        EntryPointMetadata::OverridableConstant constant = {
+                            name2Id.at(c.name), GetDawnOverridableConstantType(c.type)};
+                        metadata->overridableConstants[c.name] = constant;
+                        // TODO(tint:1155) tint needs ways to differentiate whether a pipeline
+                        // constant id is specified explicitly. Now we just store numeric id and
+                        // variable name in the index at the same time
+                        metadata->overridableConstants[std::to_string(constant.id)] = constant;
+                    }
+                }
 
                 DAWN_TRY_ASSIGN(metadata->stage, TintPipelineStageToShaderStage(entryPoint.stage));
 
@@ -1036,31 +1070,36 @@ namespace dawn_native {
         return std::move(output.program);
     }
 
-    void AddVertexPullingTransformConfig(const VertexState& vertexState,
+    void AddVertexPullingTransformConfig(const RenderPipelineBase& renderPipeline,
                                          const std::string& entryPoint,
                                          BindGroupIndex pullingBufferBindingSet,
                                          tint::transform::DataMap* transformInputs) {
         tint::transform::VertexPulling::Config cfg;
         cfg.entry_point_name = entryPoint;
         cfg.pulling_group = static_cast<uint32_t>(pullingBufferBindingSet);
-        for (uint32_t i = 0; i < vertexState.bufferCount; ++i) {
-            const auto& vertexBuffer = vertexState.buffers[i];
-            tint::transform::VertexBufferLayoutDescriptor layout;
-            layout.array_stride = vertexBuffer.arrayStride;
-            layout.step_mode = ToTintVertexStepMode(vertexBuffer.stepMode);
 
-            for (uint32_t j = 0; j < vertexBuffer.attributeCount; ++j) {
-                const auto& attribute = vertexBuffer.attributes[j];
-                tint::transform::VertexAttributeDescriptor attr;
-                attr.format = ToTintVertexFormat(attribute.format);
-                attr.offset = attribute.offset;
-                attr.shader_location = attribute.shaderLocation;
+        cfg.vertex_state.resize(renderPipeline.GetVertexBufferCount());
+        for (VertexBufferSlot slot : IterateBitSet(renderPipeline.GetVertexBufferSlotsUsed())) {
+            const VertexBufferInfo& dawnInfo = renderPipeline.GetVertexBuffer(slot);
+            tint::transform::VertexBufferLayoutDescriptor* tintInfo =
+                &cfg.vertex_state[static_cast<uint8_t>(slot)];
 
-                layout.attributes.push_back(std::move(attr));
-            }
-
-            cfg.vertex_state.push_back(std::move(layout));
+            tintInfo->array_stride = dawnInfo.arrayStride;
+            tintInfo->step_mode = ToTintVertexStepMode(dawnInfo.stepMode);
         }
+
+        for (VertexAttributeLocation location :
+             IterateBitSet(renderPipeline.GetAttributeLocationsUsed())) {
+            const VertexAttributeInfo& dawnInfo = renderPipeline.GetAttribute(location);
+            tint::transform::VertexAttributeDescriptor tintInfo;
+            tintInfo.format = ToTintVertexFormat(dawnInfo.format);
+            tintInfo.offset = dawnInfo.offset;
+            tintInfo.shader_location = static_cast<uint32_t>(static_cast<uint8_t>(location));
+
+            uint8_t vertexBufferSlot = static_cast<uint8_t>(dawnInfo.vertexBufferSlot);
+            cfg.vertex_state[vertexBufferSlot].attributes.push_back(tintInfo);
+        }
+
         transformInputs->Add<tint::transform::VertexPulling::Config>(cfg);
     }
 
@@ -1124,7 +1163,7 @@ namespace dawn_native {
     // ShaderModuleBase
 
     ShaderModuleBase::ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor)
-        : CachedObject(device, descriptor->label), mType(Type::Undefined) {
+        : ApiObjectBase(device, descriptor->label), mType(Type::Undefined) {
         ASSERT(descriptor->nextInChain != nullptr);
         const ShaderModuleSPIRVDescriptor* spirvDesc = nullptr;
         FindInChain(descriptor->nextInChain, &spirvDesc);
@@ -1142,7 +1181,7 @@ namespace dawn_native {
     }
 
     ShaderModuleBase::ShaderModuleBase(DeviceBase* device, ObjectBase::ErrorTag tag)
-        : CachedObject(device, tag), mType(Type::Undefined) {
+        : ApiObjectBase(device, tag), mType(Type::Undefined) {
     }
 
     ShaderModuleBase::~ShaderModuleBase() {
@@ -1154,6 +1193,10 @@ namespace dawn_native {
     // static
     Ref<ShaderModuleBase> ShaderModuleBase::MakeError(DeviceBase* device) {
         return AcquireRef(new ShaderModuleBase(device, ObjectBase::kError));
+    }
+
+    ObjectType ShaderModuleBase::GetType() const {
+        return ObjectType::ShaderModule;
     }
 
     bool ShaderModuleBase::HasEntryPoint(const std::string& entryPoint) const {

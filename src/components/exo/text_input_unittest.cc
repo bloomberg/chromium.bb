@@ -30,6 +30,9 @@ class MockTextInputDelegate : public TextInput::Delegate {
  public:
   MockTextInputDelegate() = default;
 
+  MockTextInputDelegate(const MockTextInputDelegate&) = delete;
+  MockTextInputDelegate& operator=(const MockTextInputDelegate&) = delete;
+
   // TextInput::Delegate:
   MOCK_METHOD0(Activated, void());
   MOCK_METHOD0(Deactivated, void());
@@ -43,9 +46,11 @@ class MockTextInputDelegate : public TextInput::Delegate {
   MOCK_METHOD1(OnLanguageChanged, void(const std::string&));
   MOCK_METHOD1(OnTextDirectionChanged,
                void(base::i18n::TextDirection direction));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockTextInputDelegate);
+  MOCK_METHOD4(SetCompositionFromExistingText,
+               void(base::StringPiece16,
+                    const gfx::Range&,
+                    const gfx::Range&,
+                    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans));
 };
 
 class TestingInputMethodObserver : public ui::InputMethodObserver {
@@ -54,6 +59,10 @@ class TestingInputMethodObserver : public ui::InputMethodObserver {
       : input_method_(input_method) {
     input_method_->AddObserver(this);
   }
+
+  TestingInputMethodObserver(const TestingInputMethodObserver&) = delete;
+  TestingInputMethodObserver& operator=(const TestingInputMethodObserver&) =
+      delete;
 
   ~TestingInputMethodObserver() override {
     input_method_->RemoveObserver(this);
@@ -69,13 +78,14 @@ class TestingInputMethodObserver : public ui::InputMethodObserver {
 
  private:
   ui::InputMethod* input_method_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TestingInputMethodObserver);
 };
 
 class TextInputTest : public test::ExoTestBase {
  public:
   TextInputTest() = default;
+
+  TextInputTest(const TextInputTest&) = delete;
+  TextInputTest& operator=(const TextInputTest&) = delete;
 
   void SetUp() override {
     test::ExoTestBase::SetUp();
@@ -138,8 +148,6 @@ class TextInputTest : public test::ExoTestBase {
   std::unique_ptr<Buffer> buffer_;
   std::unique_ptr<Surface> surface_;
   std::unique_ptr<ShellSurface> shell_surface_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextInputTest);
 };
 
 TEST_F(TextInputTest, Activate) {
@@ -371,6 +379,53 @@ TEST_F(TextInputTest, GetTextRange) {
         << c.range.ToString();
     EXPECT_EQ(c.expected, result) << c.range.ToString();
   }
+}
+
+TEST_F(TextInputTest, SetCompositionFromExistingText) {
+  // Try invalid cases fist. No delegate invocation is expected.
+  EXPECT_CALL(*delegate(), SetCompositionFromExistingText(_, _, _, _)).Times(0);
+
+  // Not set up surrounding text yet, so any request should fail.
+  EXPECT_FALSE(text_input()->SetCompositionFromExistingText(
+      gfx::Range::InvalidRange(), {}));
+  EXPECT_FALSE(
+      text_input()->SetCompositionFromExistingText(gfx::Range(0, 1), {}));
+
+  text_input()->SetSurroundingText(u"surrounding text", gfx::Range(5, 5));
+
+  // Invalid range.
+  EXPECT_FALSE(text_input()->SetCompositionFromExistingText(
+      gfx::Range::InvalidRange(), {}));
+  // Outside of surrounding text.
+  EXPECT_FALSE(
+      text_input()->SetCompositionFromExistingText(gfx::Range(100, 200), {}));
+  // Crossing the boundary of surrounding text.
+  EXPECT_FALSE(
+      text_input()->SetCompositionFromExistingText(gfx::Range(5, 100), {}));
+  // Span has the range outside of the new composition.
+  EXPECT_FALSE(text_input()->SetCompositionFromExistingText(
+      gfx::Range(3, 10),
+      {ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 7, 10)}));
+  // Span has the range crossing the composition boundary.
+  EXPECT_FALSE(text_input()->SetCompositionFromExistingText(
+      gfx::Range(3, 10),
+      {ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 2, 10)}));
+
+  // Verify mock behavior. No delegate call is expected until now.
+  testing::Mock::VerifyAndClearExpectations(delegate());
+
+  // Checking a simple valid case.
+  EXPECT_CALL(*delegate(), SetCompositionFromExistingText(_, _, _, _)).Times(1);
+  EXPECT_TRUE(
+      text_input()->SetCompositionFromExistingText(gfx::Range(3, 10), {}));
+  testing::Mock::VerifyAndClearExpectations(delegate());
+
+  // Anothe valid case with span.
+  EXPECT_CALL(*delegate(), SetCompositionFromExistingText(_, _, _, _)).Times(1);
+  EXPECT_TRUE(text_input()->SetCompositionFromExistingText(
+      gfx::Range(3, 10),
+      {ui::ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 1, 5)}));
+  testing::Mock::VerifyAndClearExpectations(delegate());
 }
 
 }  // anonymous namespace

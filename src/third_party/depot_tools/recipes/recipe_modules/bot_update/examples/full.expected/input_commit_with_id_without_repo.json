@@ -32,6 +32,17 @@
       ]
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": ":"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "bot_update",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
@@ -143,6 +154,17 @@
       ]
     },
     "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": ":"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "bot_update (without patch)",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",

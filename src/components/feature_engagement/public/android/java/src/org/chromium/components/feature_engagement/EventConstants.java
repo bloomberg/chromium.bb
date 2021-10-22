@@ -183,6 +183,9 @@ public final class EventConstants {
     /** User has used Ephemeral Tab i.e. opened and browsed the content. */
     public static final String EPHEMERAL_TAB_USED = "ephemeral_tab_used";
 
+    /** 'Manage windows' menu for multi-instance support feature was tapped. */
+    public static final String INSTANCE_SWITCHER_IPH_USED = "instance_switcher_iph_used";
+
     /** HomepagePromo has been accepted. */
     public static final String NTP_SHOWN = "ntp_shown";
     public static final String NTP_HOME_BUTTON_CLICKED = "ntp_homebutton_clicked";
@@ -229,6 +232,10 @@ public final class EventConstants {
     /** PageInfo events. */
     public static final String PAGE_INFO_OPENED = "page_info_opened";
 
+    /** PageInfoStoreInfo events. */
+    public static final String PAGE_INFO_STORE_INFO_ROW_CLICKED =
+            "page_info_store_info_row_clicked";
+
     /** Permission events. */
     public static final String PERMISSION_REQUEST_SHOWN = "permission_request_shown";
 
@@ -263,6 +270,16 @@ public final class EventConstants {
     /** Shared Highlighting button event */
     public static final String IPH_SHARED_HIGHLIGHTING_BUTTON_CLICKED =
             "iph_shared_highlighting_button_clicked";
+
+    /** Webnotes Stylize feature used from Sharing Hub */
+    public static final String SHARING_HUB_WEBNOTES_STYLIZE_USED =
+            "sharing_hub_webnotes_stylize_used";
+
+    /** AutoDark disabled from app menu events. */
+    public static final String AUTO_DARK_DISABLED_IN_APP_MENU = "auto_dark_disabled_in_app_menu";
+
+    /** AutoDark theme settings opened while feature enabled. */
+    public static final String AUTO_DARK_SETTINGS_OPENED = "auto_dark_settings_opened";
 
     /**
      * Do not instantiate.

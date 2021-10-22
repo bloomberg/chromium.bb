@@ -131,9 +131,11 @@ class MainPartitionConstructor {
     constexpr base::PartitionOptions::ThreadCache thread_cache =
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-        // With USE_BACKUP_REF_PTR, this partition is only temporary until a
-        // BRP-enabled partition is created later. Leave the ability to have
-        // a thread cache to that partition.
+        // With USE_BACKUP_REF_PTR, a BRP-enabled partition may be created
+        // later. Since only one partition can have thread cache enabled, leave
+        // this ability to that partition. If BRP-enabled partition isn't
+        // needed, the thread cache will be then turned on in this one. See
+        // ConfigurePartitionBackupRefPtrSupport().
         base::PartitionOptions::ThreadCache::kDisabled;
 #else
         base::PartitionOptions::ThreadCache::kEnabled;
@@ -148,7 +150,8 @@ class MainPartitionConstructor {
         thread_cache,
         base::PartitionOptions::Quarantine::kAllowed,
         base::PartitionOptions::Cookie::kAllowed,
-        base::PartitionOptions::RefCount::kDisallowed,
+        base::PartitionOptions::BackupRefPtr::kDisabled,
+        base::PartitionOptions::UseConfigurablePool::kNo,
     });
 
     return new_root;
@@ -161,7 +164,8 @@ base::ThreadSafePartitionRoot* Allocator() {
   return g_root.Get();
 }
 
-// Original g_root_ if it was replaced by ConfigurePartitionRefCountSupport().
+// Original g_root_ if it was replaced by
+// ConfigurePartitionBackupRefPtrSupport().
 std::atomic<base::ThreadSafePartitionRoot*> g_original_root(nullptr);
 
 class AlignedPartitionConstructor {
@@ -358,7 +362,10 @@ void PartitionFree(const AllocatorDispatch*, void* address, void* context) {
 size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
                                 void* address,
                                 void* context) {
-  PA_DCHECK(address);
+  // This is used to implement malloc_usable_size(3). Per its man page, "if ptr
+  // is NULL, 0 is returned".
+  if (!address)
+    return 0;
 
 #if defined(OS_APPLE)
   if (!base::IsManagedByPartitionAlloc(address)) {
@@ -443,31 +450,37 @@ alignas(base::ThreadSafePartitionRoot) uint8_t
         base::ThreadSafePartitionRoot)];
 #endif
 
-void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
+void ConfigurePartitionBackupRefPtrSupport(bool enable_brp) {
   auto* current_root = g_root.Get();
   // Call Get() to ensure g_aligned_root gets initialized. In some cases it is
   // initialized with g_root, and we want to make sure it is the pre-swap
   // value (unless explicitly overwritten below).
   auto* current_aligned_root = g_aligned_root.Get();
 
+  // When enable_brp is false, simply enable thread
+  // cache in the existing root instead of creating a new one -- the only
+  // difference between the current and new partition is the thread cache
+  // setting.
+  if (!enable_brp) {
+    PA_DCHECK(!current_root->with_thread_cache);
+    current_root->EnableThreadCacheIfSupported();
+    return;
+  }
+
   current_root->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
                             PartitionPurgeDiscardUnusedSystemPages);
 
   const bool allow_aligned_alloc_in_main_root =
 #if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP)
-      // If ref-count is to be enabled, this partition can't support
-      // AlignedAlloc. Instead, a new one is created below. Otherwise,
-      // no separate AlignedAlloc partition is created, so this one must
-      // support it.
-      !enable_ref_count;
+      // This partition can't support AlignedAlloc. Instead, a new one is
+      // created below.
+      false;
 #else
       // No separate AlignedAlloc partition is created, so this one must
       // support it.
       true;
 #endif
-  // TODO(bartekn): When enable_ref_count is false, simply enable thread cache
-  // in the existing root instead of creating a new one -- the only difference
-  // between the current and new partition is the thread cache setting.
+
   auto* new_root = new (g_allocator_buffer_for_ref_count_config)
       base::ThreadSafePartitionRoot({
           allow_aligned_alloc_in_main_root
@@ -476,8 +489,8 @@ void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
           base::PartitionOptions::ThreadCache::kEnabled,
           base::PartitionOptions::Quarantine::kAllowed,
           base::PartitionOptions::Cookie::kAllowed,
-          enable_ref_count ? base::PartitionOptions::RefCount::kAllowed
-                           : base::PartitionOptions::RefCount::kDisallowed,
+          base::PartitionOptions::BackupRefPtr::kEnabled,
+          base::PartitionOptions::UseConfigurablePool::kNo,
       });
   g_root.Replace(new_root);
   // g_original_root has to be set after g_root, because other code doesn't
@@ -489,22 +502,21 @@ void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
 
   base::ThreadSafePartitionRoot* new_aligned_root =
 #if BUILDFLAG(USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP)
-      enable_ref_count
-          // If BRP is getting enabled, we need to create a new AlignedAlloc
-          // partition now.
-          // TODO(bartekn): Use the original root instead of creating a new one.
-          // It'd result in one less partition, but come at a cost of
-          // commingling types.
-          ? new (g_allocator_buffer_for_aligned_alloc_partition)
-                base::ThreadSafePartitionRoot({
-                    base::PartitionOptions::AlignedAlloc::kAllowed,
-                    base::PartitionOptions::ThreadCache::kDisabled,
-                    base::PartitionOptions::Quarantine::kAllowed,
-                    base::PartitionOptions::Cookie::kAllowed,
-                    base::PartitionOptions::RefCount::kDisallowed,
-                })
-          // Otherwise, the new main root can also support AlignedAlloc.
-          : g_root.Get();
+      // If BRP is getting enabled, we need to create a new AlignedAlloc
+      // partition now.
+      // TODO(bartekn): Use the original root instead of creating a new one.
+      // It'd result in one less partition, but come at a cost of
+      // commingling types.
+      new (g_allocator_buffer_for_aligned_alloc_partition)
+          base::ThreadSafePartitionRoot({
+              base::PartitionOptions::AlignedAlloc::kAllowed,
+              base::PartitionOptions::ThreadCache::kDisabled,
+              base::PartitionOptions::Quarantine::kAllowed,
+              base::PartitionOptions::Cookie::kAllowed,
+              base::PartitionOptions::BackupRefPtr::kDisabled,
+              base::PartitionOptions::UseConfigurablePool::kNo,
+          });
+  PA_DCHECK(!allow_aligned_alloc_in_main_root);
   PA_CHECK(current_aligned_root == g_original_root);
 #else   // USE_DEDICATED_PARTITION_FOR_ALIGNED_ALLOC_UPON_ENABLING_BRP
       // The new main root can also support AlignedAlloc.
@@ -518,14 +530,15 @@ void ConfigurePartitionRefCountSupport(bool enable_ref_count) {
 #endif  // BUILDFLAG(USE_BACKUP_REF_PTR)
 
 #if defined(PA_ALLOW_PCSCAN)
-void EnablePCScan(bool dcscan) {
-  internal::PCScan::Initialize(
-      dcscan ? internal::PCScan::WantedWriteProtectionMode::kEnabled
-             : internal::PCScan::WantedWriteProtectionMode::kDisabled);
+void EnablePCScan(base::internal::PCScan::InitConfig config) {
+  internal::PCScan::Initialize(config);
+
   internal::PCScan::RegisterScannableRoot(Allocator());
   if (Allocator() != AlignedAllocator())
     internal::PCScan::RegisterScannableRoot(AlignedAllocator());
-  internal::NonScannableAllocator::Instance().EnablePCScan();
+
+  internal::NonScannableAllocator::Instance().NotifyPCScanEnabled();
+  internal::NonQuarantinableAllocator::Instance().NotifyPCScanEnabled();
 }
 #endif  // defined(PA_ALLOW_PCSCAN)
 
@@ -587,13 +600,19 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
                                   &aligned_allocator_dumper);
   }
 
-  // Dump stats for nonscannable allocators.
+  // Dump stats for nonscannable and nonquarantinable allocators.
   auto& nonscannable_allocator =
       base::internal::NonScannableAllocator::Instance();
   base::SimplePartitionStatsDumper nonscannable_allocator_dumper;
   if (auto* nonscannable_root = nonscannable_allocator.root())
     nonscannable_root->DumpStats("malloc", true,
                                  &nonscannable_allocator_dumper);
+  auto& nonquarantinable_allocator =
+      base::internal::NonQuarantinableAllocator::Instance();
+  base::SimplePartitionStatsDumper nonquarantinable_allocator_dumper;
+  if (auto* nonquarantinable_root = nonquarantinable_allocator.root())
+    nonquarantinable_root->DumpStats("malloc", true,
+                                     &nonquarantinable_allocator_dumper);
 
   struct mallinfo info = {0};
   info.arena = 0;  // Memory *not* allocated with mmap().
@@ -601,15 +620,18 @@ SHIM_ALWAYS_EXPORT struct mallinfo mallinfo(void) __THROW {
   // Memory allocated with mmap(), aka virtual size.
   info.hblks = allocator_dumper.stats().total_mmapped_bytes +
                aligned_allocator_dumper.stats().total_mmapped_bytes +
-               nonscannable_allocator_dumper.stats().total_mmapped_bytes;
+               nonscannable_allocator_dumper.stats().total_mmapped_bytes +
+               nonquarantinable_allocator_dumper.stats().total_mmapped_bytes;
   // Resident bytes.
   info.hblkhd = allocator_dumper.stats().total_resident_bytes +
                 aligned_allocator_dumper.stats().total_resident_bytes +
-                nonscannable_allocator_dumper.stats().total_resident_bytes;
+                nonscannable_allocator_dumper.stats().total_resident_bytes +
+                nonquarantinable_allocator_dumper.stats().total_resident_bytes;
   // Allocated bytes.
   info.uordblks = allocator_dumper.stats().total_active_bytes +
                   aligned_allocator_dumper.stats().total_active_bytes +
-                  nonscannable_allocator_dumper.stats().total_active_bytes;
+                  nonscannable_allocator_dumper.stats().total_active_bytes +
+                  nonquarantinable_allocator_dumper.stats().total_active_bytes;
 
   return info;
 }

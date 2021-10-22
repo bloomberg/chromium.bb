@@ -19,6 +19,10 @@ config("swiftshader_config") {
   defines = []
   asmflags = []
 
+  if (is_clang) {
+    cflags += [ "-Wno-shadow" ]
+  }
+
   if (!is_debug) {
     defines += [ "ANGLE_DISABLE_TRACE" ]
   }
@@ -47,6 +51,7 @@ config("swiftshader_config") {
     cflags_cc = [ "/std:c++17" ]
   } else {
     cflags_cc = [ "-std=c++17" ]
+    cflags_objcc = [ "-std=c++17" ]
 
     if (!is_debug) {
       cflags += [ "-Os" ]
@@ -68,19 +73,6 @@ config("swiftshader_config") {
       }
     }
   }
-}
-
-source_set("vertex_routine_fuzzer") {
-  sources = [ "tests/fuzzers/VertexRoutineFuzzer.cpp" ]
-  if (is_win) {
-    cflags = [
-      "/wd4201",  # nameless struct/union
-      "/wd4065",  # switch statement contains 'default' but no 'case' labels
-      "/wd5030",  # attribute is not recognized
-    ]
-  }
-  include_dirs = [ "src/" ]
-  deps = [ "src/OpenGL/libGLESv2:swiftshader_libGLESv2_static" ]
 }
 
 group("swiftshader") {

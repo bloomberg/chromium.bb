@@ -155,9 +155,6 @@ void GLSLCodeGenerator::writeExpression(const Expression& expr, Precedence paren
         case Expression::Kind::kBinary:
             this->writeBinaryExpression(expr.as<BinaryExpression>(), parentPrecedence);
             break;
-        case Expression::Kind::kBoolLiteral:
-            this->writeBoolLiteral(expr.as<BoolLiteral>());
-            break;
         case Expression::Kind::kConstructorDiagonalMatrix:
             this->writeConstructorDiagonalMatrix(expr.as<ConstructorDiagonalMatrix>(),
                                                  parentPrecedence);
@@ -176,17 +173,14 @@ void GLSLCodeGenerator::writeExpression(const Expression& expr, Precedence paren
         case Expression::Kind::kConstructorCompoundCast:
             this->writeCastConstructor(expr.asAnyConstructor(), parentPrecedence);
             break;
-        case Expression::Kind::kIntLiteral:
-            this->writeIntLiteral(expr.as<IntLiteral>());
-            break;
         case Expression::Kind::kFieldAccess:
             this->writeFieldAccess(expr.as<FieldAccess>());
             break;
-        case Expression::Kind::kFloatLiteral:
-            this->writeFloatLiteral(expr.as<FloatLiteral>());
-            break;
         case Expression::Kind::kFunctionCall:
             this->writeFunctionCall(expr.as<FunctionCall>());
+            break;
+        case Expression::Kind::kLiteral:
+            this->writeLiteral(expr.as<Literal>());
             break;
         case Expression::Kind::kPrefix:
             this->writePrefixExpression(expr.as<PrefixExpression>(), parentPrecedence);
@@ -783,10 +777,16 @@ void GLSLCodeGenerator::writeVariableReference(const VariableReference& ref) {
             this->write("gl_InstanceID");
             break;
         case SK_LASTFRAGCOLOR_BUILTIN:
-            this->write(this->caps().fbFetchColorName());
+            if (this->caps().fbFetchSupport()) {
+                this->write(this->caps().fbFetchColorName());
+            } else {
+                fContext.fErrors->error(ref.fLine,
+                                        "sk_LastFragColor requires framebuffer fetch support");
+            }
             break;
         default:
             this->write(ref.variable()->name());
+            break;
     }
 }
 
@@ -909,13 +909,13 @@ void GLSLCodeGenerator::writeShortCircuitWorkaroundExpression(const BinaryExpres
     if (b.getOperator().kind() == Token::Kind::TK_LOGICALAND) {
         this->writeExpression(*b.right(), Precedence::kTernary);
     } else {
-        BoolLiteral boolTrue(/*offset=*/-1, /*value=*/true, fContext.fTypes.fBool.get());
-        this->writeBoolLiteral(boolTrue);
+        Literal boolTrue(/*line=*/-1, /*value=*/1, fContext.fTypes.fBool.get());
+        this->writeLiteral(boolTrue);
     }
     this->write(" : ");
     if (b.getOperator().kind() == Token::Kind::TK_LOGICALAND) {
-        BoolLiteral boolFalse(/*offset=*/-1, /*value=*/false, fContext.fTypes.fBool.get());
-        this->writeBoolLiteral(boolFalse);
+        Literal boolFalse(/*line=*/-1, /*value=*/0, fContext.fTypes.fBool.get());
+        this->writeLiteral(boolFalse);
     } else {
         this->writeExpression(*b.right(), Precedence::kTernary);
     }
@@ -963,23 +963,24 @@ void GLSLCodeGenerator::writePostfixExpression(const PostfixExpression& p,
     }
 }
 
-void GLSLCodeGenerator::writeBoolLiteral(const BoolLiteral& b) {
-    this->write(b.value() ? "true" : "false");
-}
-
-void GLSLCodeGenerator::writeIntLiteral(const IntLiteral& i) {
-    const Type& type = i.type();
-    if (type == *fContext.fTypes.fUInt) {
-        this->write(to_string(i.value() & 0xffffffff) + "u");
-    } else if (type == *fContext.fTypes.fUShort) {
-        this->write(to_string(i.value() & 0xffff) + "u");
-    } else {
-        this->write(to_string(i.value()));
+void GLSLCodeGenerator::writeLiteral(const Literal& l) {
+    const Type& type = l.type();
+    if (type.isFloat()) {
+        this->write(to_string(l.floatValue()));
+        return;
     }
-}
-
-void GLSLCodeGenerator::writeFloatLiteral(const FloatLiteral& f) {
-    this->write(to_string(f.value()));
+    if (type.isInteger()) {
+        if (type == *fContext.fTypes.fUInt) {
+            this->write(to_string(l.intValue() & 0xffffffff) + "u");
+        } else if (type == *fContext.fTypes.fUShort) {
+            this->write(to_string(l.intValue() & 0xffff) + "u");
+        } else {
+            this->write(to_string(l.intValue()));
+        }
+        return;
+    }
+    SkASSERT(type.isBoolean());
+    this->write(l.boolValue() ? "true" : "false");
 }
 
 void GLSLCodeGenerator::writeSetting(const Setting& s) {
@@ -1051,15 +1052,24 @@ void GLSLCodeGenerator::writeFunctionPrototype(const FunctionPrototype& f) {
 
 void GLSLCodeGenerator::writeModifiers(const Modifiers& modifiers,
                                        bool globalContext) {
+    String layout = modifiers.fLayout.description();
+    if (layout.size()) {
+        this->write(layout + " ");
+    }
+
+    // For GLSL 4.1 and below, qualifier-order matters! These are written out in Modifier-bit order.
     if (modifiers.fFlags & Modifiers::kFlat_Flag) {
         this->write("flat ");
     }
     if (modifiers.fFlags & Modifiers::kNoPerspective_Flag) {
         this->write("noperspective ");
     }
-    String layout = modifiers.fLayout.description();
-    if (layout.size()) {
-        this->write(layout + " ");
+
+    if (modifiers.fFlags & Modifiers::kConst_Flag) {
+        this->write("const ");
+    }
+    if (modifiers.fFlags & Modifiers::kUniform_Flag) {
+        this->write("uniform ");
     }
     if ((modifiers.fFlags & Modifiers::kIn_Flag) &&
         (modifiers.fFlags & Modifiers::kOut_Flag)) {
@@ -1080,12 +1090,7 @@ void GLSLCodeGenerator::writeModifiers(const Modifiers& modifiers,
             this->write("out ");
         }
     }
-    if (modifiers.fFlags & Modifiers::kUniform_Flag) {
-        this->write("uniform ");
-    }
-    if (modifiers.fFlags & Modifiers::kConst_Flag) {
-        this->write("const ");
-    }
+
 }
 
 void GLSLCodeGenerator::writeInterfaceBlock(const InterfaceBlock& intf) {
@@ -1283,8 +1288,8 @@ void GLSLCodeGenerator::writeForStatement(const ForStatement& f) {
     if (f.test()) {
         if (this->caps().addAndTrueToLoopCondition()) {
             std::unique_ptr<Expression> and_true(new BinaryExpression(
-                    /*offset=*/-1, f.test()->clone(), Token::Kind::TK_LOGICALAND,
-                    BoolLiteral::Make(fContext, /*offset=*/-1, /*value=*/true),
+                    /*line=*/-1, f.test()->clone(), Token::Kind::TK_LOGICALAND,
+                    Literal::MakeBool(fContext, /*line=*/-1, /*value=*/true),
                     fContext.fTypes.fBool.get()));
             this->writeExpression(*and_true, Precedence::kTopLevel);
         } else {
@@ -1353,10 +1358,79 @@ void GLSLCodeGenerator::writeDoStatement(const DoStatement& d) {
 }
 
 void GLSLCodeGenerator::writeSwitchStatement(const SwitchStatement& s) {
+    if (this->caps().rewriteSwitchStatements()) {
+        String fallthroughVar = "_tmpSwitchFallthrough" + to_string(fVarCount++);
+        String valueVar = "_tmpSwitchValue" + to_string(fVarCount++);
+        String loopVar = "_tmpSwitchLoop" + to_string(fVarCount++);
+        this->write("int ");
+        this->write(valueVar);
+        this->write(" = ");
+        this->writeExpression(*s.value(), Precedence::kAssignment);
+        this->write(", ");
+        this->write(fallthroughVar);
+        this->writeLine(" = 0;");
+        this->write("for (int ");
+        this->write(loopVar);
+        this->write(" = 0; ");
+        this->write(loopVar);
+        this->write(" < 1; ");
+        this->write(loopVar);
+        this->writeLine("++) {");
+        fIndentation++;
+
+        bool firstCase = true;
+        for (const std::unique_ptr<Statement>& stmt : s.cases()) {
+            const SwitchCase& c = stmt->as<SwitchCase>();
+            if (c.value()) {
+                this->write("if ((");
+                if (firstCase) {
+                    firstCase = false;
+                } else {
+                    this->write(fallthroughVar);
+                    this->write(" > 0) || (");
+                }
+                this->write(valueVar);
+                this->write(" == ");
+                this->writeExpression(*c.value(), Precedence::kEquality);
+                this->writeLine(")) {");
+                fIndentation++;
+
+                // We write the entire case-block statement here, and then set `switchFallthrough`
+                // to 1. If the case-block had a break statement in it, we break out of the outer
+                // for-loop entirely, meaning the `switchFallthrough` assignment never occurs, nor
+                // does any code after it inside the switch. We've forbidden `continue` statements
+                // inside switch case-blocks entirely, so we don't need to consider their effect on
+                // control flow; see the Finalizer in FunctionDefinition::Convert.
+                this->writeStatement(*c.statement());
+                this->finishLine();
+                this->write(fallthroughVar);
+                this->write(" = 1;");
+                this->writeLine();
+
+                fIndentation--;
+                this->writeLine("}");
+            } else {
+                // This is the default case. Since it's always last, we can just dump in the code.
+                this->writeStatement(*c.statement());
+                this->finishLine();
+            }
+        }
+
+        fIndentation--;
+        this->writeLine("}");
+        return;
+    }
+
     this->write("switch (");
     this->writeExpression(*s.value(), Precedence::kTopLevel);
     this->writeLine(") {");
     fIndentation++;
+    // If a switch contains only a `default` case and nothing else, this confuses some drivers and
+    // can lead to a crash. Adding a real case before the default seems to work around the bug,
+    // and doesn't change the meaning of the switch. (skia:12465)
+    if (s.cases().size() == 1 && !s.cases().front()->as<SwitchCase>().value()) {
+        this->writeLine("case 0:");
+    }
     for (const std::unique_ptr<Statement>& stmt : s.cases()) {
         const SwitchCase& c = stmt->as<SwitchCase>();
         if (c.value()) {

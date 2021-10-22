@@ -100,6 +100,12 @@ public:
         fTrackedGpuBuffers.push_back(std::move(buffer));
     }
 
+    // Add ref-counted resource that will be tracked and released when this command buffer finishes
+    // execution. When it is released, it will signal that the resource can be recycled for reuse.
+    void addRecycledResource(sk_sp<GrRecycledResource> resource) {
+        fTrackedRecycledResources.push_back(std::move(resource));
+    }
+
     void releaseResources();
 
     bool hasWork() const { return fHasWork; }
@@ -118,12 +124,6 @@ protected:
     void addResource(sk_sp<GrManagedResource> resource) {
         SkASSERT(resource);
         fTrackedResources.push_back(std::move(resource));
-    }
-
-    // Add ref-counted resource that will be tracked and released when this command buffer finishes
-    // execution. When it is released, it will signal that the resource can be recycled for reuse.
-    void addRecycledResource(sk_sp<GrRecycledResource> resource) {
-        fTrackedRecycledResources.push_back(std::move(resource));
     }
 
     void addingWork();
@@ -154,7 +154,7 @@ private:
 
 class GrD3DDirectCommandList : public GrD3DCommandList {
 public:
-    static std::unique_ptr<GrD3DDirectCommandList> Make(ID3D12Device* device);
+    static std::unique_ptr<GrD3DDirectCommandList> Make(GrD3DGpu* gpu);
 
     ~GrD3DDirectCommandList() override = default;
 
@@ -201,16 +201,15 @@ public:
                                           D3D12_GPU_VIRTUAL_ADDRESS bufferLocation);
     void setComputeRootDescriptorTable(unsigned int rootParameterIndex,
                                        D3D12_GPU_DESCRIPTOR_HANDLE bufferLocation);
-    void setDescriptorHeaps(sk_sp<GrRecycledResource> srvCrvHeapResource,
-                            ID3D12DescriptorHeap* srvDescriptorHeap,
-                            sk_sp<GrRecycledResource> samplerHeapResource,
+    void setDescriptorHeaps(ID3D12DescriptorHeap* srvDescriptorHeap,
                             ID3D12DescriptorHeap* samplerDescriptorHeap);
 
     void addSampledTextureRef(GrD3DTexture*);
 
 private:
     GrD3DDirectCommandList(gr_cp<ID3D12CommandAllocator> allocator,
-                           gr_cp<ID3D12GraphicsCommandList> commandList);
+                           gr_cp<ID3D12GraphicsCommandList> commandList,
+                           bool resolveSubregionSupported);
 
     void onReset() override;
 
@@ -229,11 +228,13 @@ private:
     D3D12_GPU_DESCRIPTOR_HANDLE fCurrentComputeRootDescTable[GrD3DRootSignature::kParamIndexCount];
     const ID3D12DescriptorHeap* fCurrentSRVCRVDescriptorHeap = nullptr;
     const ID3D12DescriptorHeap* fCurrentSamplerDescriptorHeap = nullptr;
+
+    bool fResolveSubregionSupported;
 };
 
 class GrD3DCopyCommandList : public GrD3DCommandList {
 public:
-    static std::unique_ptr<GrD3DCopyCommandList> Make(ID3D12Device* device);
+    static std::unique_ptr<GrD3DCopyCommandList> Make(GrD3DGpu* gpu);
 
 private:
     GrD3DCopyCommandList(gr_cp<ID3D12CommandAllocator> allocator,

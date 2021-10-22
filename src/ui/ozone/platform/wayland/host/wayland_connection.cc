@@ -30,6 +30,7 @@
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device_manager.h"
 #include "ui/ozone/platform/wayland/host/gtk_shell1.h"
 #include "ui/ozone/platform/wayland/host/org_kde_kwin_idle.h"
+#include "ui/ozone/platform/wayland/host/overlay_prioritizer.h"
 #include "ui/ozone/platform/wayland/host/proxy/wayland_proxy_impl.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_clipboard.h"
@@ -79,7 +80,9 @@ constexpr uint32_t kMaxZXdgShellVersion = 1;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxWpViewporterVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
+constexpr uint32_t kMaxTextInputExtensionVersion = 1;
 constexpr uint32_t kMaxExplicitSyncVersion = 2;
+constexpr uint32_t kMaxAlphaCompositingVersion = 1;
 constexpr uint32_t kMaxXdgDecorationVersion = 1;
 constexpr uint32_t kMaxExtendedDragVersion = 1;
 constexpr uint32_t kMaxXdgOutputManagerVersion = 3;
@@ -155,22 +158,42 @@ bool WaylandConnection::Initialize() {
 
   // Register factories for classes that implement wl::GlobalObjectRegistrar<T>.
   // Keep alphabetical order for convenience.
-  GtkPrimarySelectionDeviceManager::Register(this);
-  GtkShell1::Register(this);
-  OrgKdeKwinIdle::Register(this);
-  WaylandDataDeviceManager::Register(this);
-  WaylandDrm::Register(this);
-  WaylandOutput::Register(this);
-  WaylandShm::Register(this);
-  WaylandZAuraShell::Register(this);
-  WaylandZcrCursorShapes::Register(this);
-  WaylandZwpLinuxDmabuf::Register(this);
-  WaylandZwpPointerConstraints::Register(this);
-  WaylandZwpPointerGestures::Register(this);
-  WaylandZwpRelativePointerManager::Register(this);
-  XdgForeignWrapper::Register(this);
-  ZwpIdleInhibitManager::Register(this);
-  ZwpPrimarySelectionDeviceManager::Register(this);
+  RegisterGlobalObjectFactory(GtkPrimarySelectionDeviceManager::kInterfaceName,
+                              &GtkPrimarySelectionDeviceManager::Instantiate);
+  RegisterGlobalObjectFactory(GtkShell1::kInterfaceName,
+                              &GtkShell1::Instantiate);
+  RegisterGlobalObjectFactory(OrgKdeKwinIdle::kInterfaceName,
+                              &OrgKdeKwinIdle::Instantiate);
+  RegisterGlobalObjectFactory(OverlayPrioritizer::kInterfaceName,
+                              &OverlayPrioritizer::Instantiate);
+  RegisterGlobalObjectFactory(WaylandDataDeviceManager::kInterfaceName,
+                              &WaylandDataDeviceManager::Instantiate);
+  RegisterGlobalObjectFactory(WaylandDrm::kInterfaceName,
+                              &WaylandDrm::Instantiate);
+  RegisterGlobalObjectFactory(WaylandOutput::kInterfaceName,
+                              &WaylandOutput::Instantiate);
+  RegisterGlobalObjectFactory(WaylandShm::kInterfaceName,
+                              &WaylandShm::Instantiate);
+  RegisterGlobalObjectFactory(WaylandZAuraShell::kInterfaceName,
+                              &WaylandZAuraShell::Instantiate);
+  RegisterGlobalObjectFactory(WaylandZcrCursorShapes::kInterfaceName,
+                              &WaylandZcrCursorShapes::Instantiate);
+  RegisterGlobalObjectFactory(WaylandZwpLinuxDmabuf::kInterfaceName,
+                              &WaylandZwpLinuxDmabuf::Instantiate);
+  RegisterGlobalObjectFactory(WaylandZwpPointerConstraints::kInterfaceName,
+                              &WaylandZwpPointerConstraints::Instantiate);
+  RegisterGlobalObjectFactory(WaylandZwpPointerGestures::kInterfaceName,
+                              &WaylandZwpPointerGestures::Instantiate);
+  RegisterGlobalObjectFactory(WaylandZwpRelativePointerManager::kInterfaceName,
+                              &WaylandZwpRelativePointerManager::Instantiate);
+  RegisterGlobalObjectFactory(XdgForeignWrapper::kInterfaceNameV1,
+                              &XdgForeignWrapper::Instantiate);
+  RegisterGlobalObjectFactory(XdgForeignWrapper::kInterfaceNameV2,
+                              &XdgForeignWrapper::Instantiate);
+  RegisterGlobalObjectFactory(ZwpIdleInhibitManager::kInterfaceName,
+                              &ZwpIdleInhibitManager::Instantiate);
+  RegisterGlobalObjectFactory(ZwpPrimarySelectionDeviceManager::kInterfaceName,
+                              &ZwpPrimarySelectionDeviceManager::Instantiate);
 
   static constexpr wl_registry_listener registry_listener = {
       &Global,
@@ -443,7 +466,7 @@ void WaylandConnection::Global(void* data,
 
   auto factory_it = connection->global_object_factories_.find(interface);
   if (factory_it != connection->global_object_factories_.end()) {
-    (*factory_it->second)(connection, registry, name, version);
+    (*factory_it->second)(connection, registry, name, interface, version);
   } else if (!connection->compositor_ &&
              strcmp(interface, "wl_compositor") == 0) {
     connection->compositor_ = wl::Bind<wl_compositor>(
@@ -491,6 +514,14 @@ void WaylandConnection::Global(void* data,
     xdg_wm_base_add_listener(connection->shell_.get(), &shell_listener,
                              connection);
     ReportShellUMA(UMALinuxWaylandShell::kXdgWmBase);
+  } else if (!connection->alpha_compositing_ &&
+             (strcmp(interface, "zcr_alpha_compositing_v1") == 0)) {
+    connection->alpha_compositing_ = wl::Bind<zcr_alpha_compositing_v1>(
+        registry, name, std::min(version, kMaxAlphaCompositingVersion));
+    if (!connection->alpha_compositing_) {
+      LOG(ERROR) << "Failed to bind zcr_alpha_compositing_v1";
+      return;
+    }
   } else if (!connection->linux_explicit_synchronization_ &&
              (strcmp(interface, "zwp_linux_explicit_synchronization_v1") ==
               0)) {
@@ -538,6 +569,11 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to zwp_text_input_manager_v1 global";
       return;
     }
+  } else if (!connection->text_input_extension_v1_ &&
+             strcmp(interface, "zcr_text_input_extension_v1") == 0) {
+    connection->text_input_extension_v1_ =
+        wl::Bind<zcr_text_input_extension_v1>(
+            registry, name, std::min(version, kMaxTextInputExtensionVersion));
   } else if (!connection->xdg_decoration_manager_ &&
              strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
     connection->xdg_decoration_manager_ =
@@ -589,9 +625,8 @@ base::TimeTicks WaylandConnection::ConvertPresentationTime(uint32_t tv_sec_hi,
   // base::TimeTicks::Now() uses CLOCK_MONOTONIC, no need to convert clock
   // domain if wp_presentation also uses it.
   if (presentation_clk_id_ == CLOCK_MONOTONIC) {
-    return base::TimeTicks() +
-           base::TimeDelta::FromMicroseconds(
-               ConvertTimespecResultToMicros(tv_sec_hi, tv_sec_lo, tv_nsec));
+    return base::TimeTicks() + base::Microseconds(ConvertTimespecResultToMicros(
+                                   tv_sec_hi, tv_sec_lo, tv_nsec));
   }
 
   struct timespec presentation_now;
@@ -611,7 +646,7 @@ base::TimeTicks WaylandConnection::ConvertPresentationTime(uint32_t tv_sec_hi,
       ConvertTimespecResultToMicros(tv_sec_hi, tv_sec_lo, tv_nsec) -
       ConvertTimespecToMicros(presentation_now);
 
-  return now + base::TimeDelta::FromMicroseconds(delta_us);
+  return now + base::Microseconds(delta_us);
 }
 
 // static

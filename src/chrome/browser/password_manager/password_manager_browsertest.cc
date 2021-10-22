@@ -203,6 +203,9 @@ class ObservingAutofillClient
     : public autofill::TestAutofillClient,
       public content::WebContentsUserData<ObservingAutofillClient> {
  public:
+  ObservingAutofillClient(const ObservingAutofillClient&) = delete;
+  ObservingAutofillClient& operator=(const ObservingAutofillClient&) = delete;
+
   // Wait until the autofill popup is shown.
   void WaitForAutofillPopup() {
     base::RunLoop run_loop;
@@ -230,11 +233,9 @@ class ObservingAutofillClient
   bool popup_shown_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(ObservingAutofillClient);
 };
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(ObservingAutofillClient)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(ObservingAutofillClient);
 
 void TestPromptNotShown(const char* failure_message,
                         content::WebContents* web_contents) {
@@ -3236,7 +3237,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, ReattachWebContents) {
   observer.Wait();
   // Ensure that there is at least one more frame created than just the main
   // frame.
-  EXPECT_LT(1u, detached_web_contents->GetAllFrames().size());
+  EXPECT_LT(1u,
+            CollectAllRenderFrameHosts(detached_web_contents->GetPrimaryPage())
+                .size());
 
   auto* tab_strip_model = browser()->tab_strip_model();
   // Check that the autofill and password manager driver factories are notified
@@ -3287,6 +3290,11 @@ class PasswordManagerDialogBrowserTest
  public:
   PasswordManagerDialogBrowserTest() = default;
 
+  PasswordManagerDialogBrowserTest(const PasswordManagerDialogBrowserTest&) =
+      delete;
+  PasswordManagerDialogBrowserTest& operator=(
+      const PasswordManagerDialogBrowserTest&) = delete;
+
   void ShowUi(const std::string& name) override {
     // Note regarding flakiness: LocationBarBubbleDelegateView::ShowForReason()
     // uses ShowInactive() unless the bubble is invoked with reason ==
@@ -3309,9 +3317,6 @@ class PasswordManagerDialogBrowserTest
     ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
     observer.Wait();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PasswordManagerDialogBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerDialogBrowserTest, InvokeUi_normal) {
@@ -4029,7 +4034,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer.IsSavePromptAvailable());
 }
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 // This test suite only applies to Gaia signin page, and checks that the
 // signin interception bubble and the password bubbles never conflict.
 class PasswordManagerBrowserTestWithSigninInterception
@@ -4202,7 +4207,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWithSigninInterception,
   FillAndSubmitGaiaPassword();
   EXPECT_FALSE(prompt_observer.IsSavePromptShownAutomatically());
 }
-#endif  // ENABLE_DICE_SUPPORT
+#endif  // ENABLE_DICE_SUPPORT && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
 class TestPasswordManagerClient : public ChromePasswordManagerClient {
  public:

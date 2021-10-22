@@ -28,7 +28,7 @@ const char kEventEndpoint[] = "event";
 // plenty of time. Since sync is off when this request is started, we don't
 // want anything sync-related hanging around for very long from a human
 // perspective either. This seems like a good compromise.
-constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kRequestTimeout = base::Seconds(10);
 
 }  // namespace
 
@@ -48,7 +48,7 @@ SyncStoppedReporter::SyncStoppedReporter(
   DCHECK(url_loader_factory_);
 }
 
-SyncStoppedReporter::~SyncStoppedReporter() {}
+SyncStoppedReporter::~SyncStoppedReporter() = default;
 
 void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
                                             const std::string& cache_guid,

@@ -1648,8 +1648,7 @@ static int query_formats(AVFilterContext *ctx)
     if (ret < 0)
         return ret;
 
-    return
-        ff_set_common_samplerates(ctx, ff_make_format_list(sample_rates) );
+    return ff_set_common_samplerates_from_list(ctx, sample_rates);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -1762,7 +1761,6 @@ static const AVFilterPad avfilter_af_hdcd_inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_af_hdcd_outputs[] = {
@@ -1770,7 +1768,6 @@ static const AVFilterPad avfilter_af_hdcd_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_hdcd = {
@@ -1781,6 +1778,6 @@ const AVFilter ff_af_hdcd = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = avfilter_af_hdcd_inputs,
-    .outputs       = avfilter_af_hdcd_outputs,
+    FILTER_INPUTS(avfilter_af_hdcd_inputs),
+    FILTER_OUTPUTS(avfilter_af_hdcd_outputs),
 };

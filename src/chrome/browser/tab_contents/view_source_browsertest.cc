@@ -54,19 +54,24 @@ class ViewSourceTest : public InProcessBrowserTest {
  public:
   ViewSourceTest() {}
 
+  ViewSourceTest(const ViewSourceTest&) = delete;
+  ViewSourceTest& operator=(const ViewSourceTest&) = delete;
+
  protected:
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewSourceTest);
 };
 
 class ViewSourcePermissionsPolicyTest : public ViewSourceTest {
  public:
   ViewSourcePermissionsPolicyTest() : ViewSourceTest() {}
+
+  ViewSourcePermissionsPolicyTest(const ViewSourcePermissionsPolicyTest&) =
+      delete;
+  ViewSourcePermissionsPolicyTest& operator=(
+      const ViewSourcePermissionsPolicyTest&) = delete;
 
  protected:
   void SetUpOnMainThread() override {
@@ -78,9 +83,6 @@ class ViewSourcePermissionsPolicyTest : public ViewSourceTest {
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewSourcePermissionsPolicyTest);
 };
 
 // This test renders a page in view-source and then checks to see if the title
@@ -258,9 +260,9 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, CrossSiteSubframe) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* original_main_frame =
       original_contents->GetMainFrame();
-  ASSERT_LE(2u, original_contents->GetAllFrames().size());
   content::RenderFrameHost* original_child_frame =
-      original_contents->GetAllFrames()[1];
+      ChildFrameAt(original_main_frame, 0);
+  ASSERT_TRUE(original_child_frame);
 
   // Do a sanity check that in this particular test page the main frame and the
   // subframe are cross-site.
@@ -520,9 +522,9 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheTest, HttpPostInSubframe) {
       "b.com", "/form_that_posts_to_echoall.html"));
   EXPECT_TRUE(
       content::NavigateIframeToURL(original_contents, "frame1", form_url));
-  EXPECT_LE(2u, original_contents->GetAllFrames().size());
   content::RenderFrameHost* original_child_frame =
-      original_contents->GetAllFrames()[1];
+      ChildFrameAt(original_contents, 0);
+  ASSERT_TRUE(original_child_frame);
 
   // Submit the form and verify that we arrived at the expected location.
   content::TestNavigationObserver form_post_observer(original_contents, 1);
@@ -643,7 +645,7 @@ IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
 
   // 3. View-source the subframe
   content::WebContentsAddedObserver view_source_contents_observer;
-  original_contents->GetAllFrames()[1]->ViewSource();
+  ChildFrameAt(original_contents, 0)->ViewSource();
   content::WebContents* view_source_contents =
       view_source_contents_observer.GetWebContents();
   EXPECT_TRUE(WaitForLoadStop(view_source_contents));

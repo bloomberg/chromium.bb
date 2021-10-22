@@ -10,17 +10,17 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
 
-namespace ash {
-class CrosSettings;
-}  // namespace ash
+namespace chromeos {
+class Printer;
+}  // namespace chromeos
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
+}  // namespace user_prefs
 
-namespace chromeos {
+namespace ash {
 
-class Printer;
+class CrosSettings;
 
 // Uses classes BulkPrintersCalculator and CalculatorsPoliciesBinder to track
 // device settings & user profile modifications and to calculates resultant
@@ -37,16 +37,22 @@ class EnterprisePrintersProvider {
     // printers is being calculated. |printers| contains the current unordered
     // list of available printers: the map is indexed by printers ids. This
     // notification is called when value of any of these two parameters changes.
-    virtual void OnPrintersChanged(bool complete,
-                                   const std::vector<Printer>& printers) = 0;
+    virtual void OnPrintersChanged(
+        bool complete,
+        const std::vector<chromeos::Printer>& printers) = 0;
   };
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // |settings| is the source of device policies. |profile| is a user profile.
   static std::unique_ptr<EnterprisePrintersProvider> Create(
-      ash::CrosSettings* settings,
+      CrosSettings* settings,
       Profile* profile);
+
+  EnterprisePrintersProvider(const EnterprisePrintersProvider&) = delete;
+  EnterprisePrintersProvider& operator=(const EnterprisePrintersProvider&) =
+      delete;
+
   virtual ~EnterprisePrintersProvider() = default;
 
   // This method also directly calls OnPrintersChanged(...) from |observer|.
@@ -55,11 +61,8 @@ class EnterprisePrintersProvider {
 
  protected:
   EnterprisePrintersProvider() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnterprisePrintersProvider);
 };
 
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_ASH_PRINTING_ENTERPRISE_PRINTERS_PROVIDER_H_

@@ -10,6 +10,7 @@
 #include "base/process/process.h"
 #include "base/task/current_thread.h"
 #include "ui/gfx/linux/drm_util_linux.h"
+#include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/mojom/wayland/wayland_overlay_config.mojom.h"
 #include "ui/ozone/public/overlay_plane.h"
@@ -21,16 +22,19 @@ TypeConverter<ui::ozone::mojom::WaylandOverlayConfigPtr,
               ui::OverlayPlane>::Convert(const ui::OverlayPlane& input) {
   ui::ozone::mojom::WaylandOverlayConfigPtr wayland_overlay_config{
       ui::ozone::mojom::WaylandOverlayConfig::New()};
-  wayland_overlay_config->z_order = input.z_order;
-  wayland_overlay_config->transform = input.plane_transform;
-  wayland_overlay_config->bounds_rect = input.display_bounds;
-  wayland_overlay_config->crop_rect = input.crop_rect;
-  wayland_overlay_config->enable_blend = input.enable_blend;
-  wayland_overlay_config->damage_region = input.damage_rect;
+  wayland_overlay_config->z_order = input.overlay_plane_data.z_order;
+  wayland_overlay_config->transform = input.overlay_plane_data.plane_transform;
+  wayland_overlay_config->bounds_rect = input.overlay_plane_data.display_bounds;
+  wayland_overlay_config->crop_rect = input.overlay_plane_data.crop_rect;
+  wayland_overlay_config->enable_blend = input.overlay_plane_data.enable_blend;
+  wayland_overlay_config->opacity = input.overlay_plane_data.opacity;
+  wayland_overlay_config->damage_region = input.overlay_plane_data.damage_rect;
   wayland_overlay_config->access_fence_handle =
       !input.gpu_fence || input.gpu_fence->GetGpuFenceHandle().is_null()
           ? gfx::GpuFenceHandle()
           : input.gpu_fence->GetGpuFenceHandle().Clone();
+  wayland_overlay_config->priority_hint =
+      input.overlay_plane_data.priority_hint;
 
   return wayland_overlay_config;
 }
@@ -196,7 +200,8 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
   overlay_configs.push_back(ui::ozone::mojom::WaylandOverlayConfig::New(
       INT32_MIN, gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE, buffer_id,
       surface_scale_factor, bounds_rect, gfx::RectF(1.f, 1.f) /* no crop */,
-      damage_region, false, gfx::GpuFenceHandle()));
+      damage_region, false, 1.0f /*opacity*/, gfx::GpuFenceHandle(),
+      gfx::OverlayPriorityHint::kNone));
 
   CommitOverlays(widget, std::move(overlay_configs));
 }

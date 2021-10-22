@@ -20,17 +20,17 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
-
-using chromeos::extension_ime_util::GetInputMethodIDByEngineID;
-using chromeos::input_method::InputMethodDescriptor;
-using chromeos::input_method::InputMethodManager;
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 
 namespace {
+
+using ::ash::extension_ime_util::GetInputMethodIDByEngineID;
+using ::ash::input_method::InputMethodDescriptor;
+using ::ash::input_method::InputMethodManager;
 
 const char kLoginScreenUILanguage[] = "fr";
 const char kInitialInputMethodOnLoginScreen[] = "xkb:us::eng";
@@ -50,6 +50,11 @@ const InputMethodDescriptor CreateInputMethodDescriptor(
 class ExtensionInputMethodApiTest : public extensions::ExtensionApiTest {
  public:
   ExtensionInputMethodApiTest() {}
+
+  ExtensionInputMethodApiTest(const ExtensionInputMethodApiTest&) = delete;
+  ExtensionInputMethodApiTest& operator=(const ExtensionInputMethodApiTest&) =
+      delete;
+
   ~ExtensionInputMethodApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -61,8 +66,6 @@ class ExtensionInputMethodApiTest : public extensions::ExtensionApiTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInputMethodApiTest);
 };
 
 }  // namespace
@@ -150,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, ImeMenuAPITest) {
   extension_ime_ids.push_back(kTestIMEID2);
   InputMethodManager::Get()->GetActiveIMEState()->SetEnabledExtensionImes(
       &extension_ime_ids);
-  chromeos::input_method::InputMethodDescriptors extension_imes;
+  ash::input_method::InputMethodDescriptors extension_imes;
   InputMethodManager::Get()->GetActiveIMEState()->GetInputMethodExtensions(
       &extension_imes);
   InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(

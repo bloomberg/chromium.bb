@@ -29,6 +29,10 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   class SubMenuDelegate : public ui::SimpleMenuModel::Delegate {
    public:
     explicit SubMenuDelegate(ClickToCallContextMenuObserver* parent);
+
+    SubMenuDelegate(const SubMenuDelegate&) = delete;
+    SubMenuDelegate& operator=(const SubMenuDelegate&) = delete;
+
     ~SubMenuDelegate() override;
 
     bool IsCommandIdEnabled(int command_id) const override;
@@ -36,11 +40,15 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
 
    private:
     ClickToCallContextMenuObserver* const parent_;
-
-    DISALLOW_COPY_AND_ASSIGN(SubMenuDelegate);
   };
 
   explicit ClickToCallContextMenuObserver(RenderViewContextMenuProxy* proxy);
+
+  ClickToCallContextMenuObserver(const ClickToCallContextMenuObserver&) =
+      delete;
+  ClickToCallContextMenuObserver& operator=(
+      const ClickToCallContextMenuObserver&) = delete;
+
   ~ClickToCallContextMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
@@ -77,8 +85,6 @@ class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
   absl::optional<SharingClickToCallEntryPoint> entry_point_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClickToCallContextMenuObserver);
 };
 
 #endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_CLICK_TO_CALL_CONTEXT_MENU_OBSERVER_H_

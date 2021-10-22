@@ -71,6 +71,7 @@
 #include "components/safe_browsing/core/browser/db/fake_database_manager.h"
 #include "components/safe_browsing/core/browser/db/util.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
+#include "components/safe_browsing/core/browser/safe_browsing_metrics_collector.h"
 #include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -257,6 +258,10 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
       std::unique_ptr<SafeBrowsingBlockingPageFactory> blocking_page_factory)
       : TestSafeBrowsingUIManager(std::move(blocking_page_factory)) {}
 
+  FakeSafeBrowsingUIManager(const FakeSafeBrowsingUIManager&) = delete;
+  FakeSafeBrowsingUIManager& operator=(const FakeSafeBrowsingUIManager&) =
+      delete;
+
   // Overrides SafeBrowsingUIManager
   void SendSerializedThreatDetails(content::BrowserContext* browser_context,
                                    const std::string& serialized) override {
@@ -307,8 +312,6 @@ class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
   base::OnceClosure threat_details_done_callback_;
   bool threat_details_done_ = false;
   bool hit_report_sent_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingUIManager);
 };
 
 class TestThreatDetailsFactory : public ThreatDetailsFactory {
@@ -464,6 +467,11 @@ class SafeBrowsingBlockingPageBrowserTest
         safe_browsing::kThreatDomDetailsTagAndAttributeFeature, parameters);
     scoped_feature_list_.InitWithFeaturesAndParameters({tag_and_attribute}, {});
   }
+
+  SafeBrowsingBlockingPageBrowserTest(
+      const SafeBrowsingBlockingPageBrowserTest&) = delete;
+  SafeBrowsingBlockingPageBrowserTest& operator=(
+      const SafeBrowsingBlockingPageBrowserTest&) = delete;
 
   ~SafeBrowsingBlockingPageBrowserTest() override {}
 
@@ -809,8 +817,6 @@ class SafeBrowsingBlockingPageBrowserTest
   TestSafeBrowsingServiceFactory factory_;
   TestSafeBrowsingBlockingPageFactory* raw_blocking_page_factory_;
   net::EmbeddedTestServer https_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, HardcodedUrls) {
@@ -1267,6 +1273,15 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, MAYBE_LearnMore) {
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        Histograms_DontProceed) {
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  SafeBrowsingMetricsCollector* metrics_collector =
+      SafeBrowsingMetricsCollectorFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  EXPECT_EQ(absl::nullopt,
+            metrics_collector->GetLatestEventTimestamp(
+                SafeBrowsingMetricsCollector::EventType::
+                    SECURITY_SENSITIVE_SAFE_BROWSING_INTERSTITIAL));
   base::HistogramTester histograms;
   std::string prefix;
   SBThreatType threat_type = GetThreatType();
@@ -1300,6 +1315,12 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   histograms.ExpectBucketCount(
       interaction_histogram,
       security_interstitials::MetricsHelper::SHOW_ENHANCED_PROTECTION, 1);
+
+  // Check if security sensitive event is added to prefs.
+  EXPECT_NE(absl::nullopt,
+            metrics_collector->GetLatestEventTimestamp(
+                SafeBrowsingMetricsCollector::EventType::
+                    SECURITY_SENSITIVE_SAFE_BROWSING_INTERSTITIAL));
 
   // Decision should be recorded.
   EXPECT_TRUE(ClickAndWaitForDetach("primary-button"));
@@ -1491,6 +1512,10 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
         latest_security_style_(blink::SecurityStyle::kUnknown),
         latest_security_style_explanations_() {}
 
+  SecurityStyleTestObserver(const SecurityStyleTestObserver&) = delete;
+  SecurityStyleTestObserver& operator=(const SecurityStyleTestObserver&) =
+      delete;
+
   blink::SecurityStyle latest_security_style() const {
     return latest_security_style_;
   }
@@ -1509,7 +1534,6 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
  private:
   blink::SecurityStyle latest_security_style_;
   content::SecurityStyleExplanations latest_security_style_explanations_;
-  DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
 
 }  // namespace
@@ -1816,6 +1840,11 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
  public:
   SafeBrowsingBlockingPageDelayedWarningBrowserTest() = default;
 
+  SafeBrowsingBlockingPageDelayedWarningBrowserTest(
+      const SafeBrowsingBlockingPageDelayedWarningBrowserTest&) = delete;
+  SafeBrowsingBlockingPageDelayedWarningBrowserTest& operator=(
+      const SafeBrowsingBlockingPageDelayedWarningBrowserTest&) = delete;
+
   void SetUp() override {
     std::vector<FeatureAndParams> enabled_features{
         FeatureAndParams(blink::features::kPortals, {}),
@@ -2015,8 +2044,6 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
  private:
   TestSafeBrowsingServiceFactory factory_;
   TestThreatDetailsFactory details_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageDelayedWarningBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
@@ -2084,7 +2111,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   ASSERT_TRUE(observer);
   clock.SetNow(observer->GetCreationTimeForTesting());
   observer->SetClockForTesting(&clock);
-  clock.Advance(base::TimeDelta::FromSeconds(kTimeOnPage));
+  clock.Advance(base::Seconds(kTimeOnPage));
 
   // Type something. An interstitial should be shown.
   EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
@@ -2100,8 +2127,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectBucketCount(kDelayedWarningsHistogram,
                                DelayedWarningEvent::kWarningShownOnKeypress, 1);
   histograms.ExpectUniqueTimeSample(kDelayedWarningsTimeOnPageHistogram,
-                                    base::TimeDelta::FromSeconds(kTimeOnPage),
-                                    1);
+                                    base::Seconds(kTimeOnPage), 1);
 }
 
 // Same as KeyPress_WarningShown, but user disabled URL elision by enabling
@@ -2125,7 +2151,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   ASSERT_TRUE(observer);
   clock.SetNow(observer->GetCreationTimeForTesting());
   observer->SetClockForTesting(&clock);
-  clock.Advance(base::TimeDelta::FromSeconds(kTimeOnPage));
+  clock.Advance(base::Seconds(kTimeOnPage));
 
   // Type something. An interstitial should be shown.
   EXPECT_TRUE(TypeAndWaitForInterstitial(browser()));
@@ -2142,7 +2168,7 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
                                DelayedWarningEvent::kWarningShownOnKeypress, 1);
   histograms.ExpectUniqueTimeSample(
       kDelayedWarningsTimeOnPageWithElisionDisabledHistogram,
-      base::TimeDelta::FromSeconds(kTimeOnPage), 1);
+      base::Seconds(kTimeOnPage), 1);
 }
 
 // Same as KeyPress_WarningShown_UrlElisionDisabled, but user disabled URL
@@ -2775,8 +2801,6 @@ class SafeBrowsingBlockingPageIDNTest
     resource.url = request_url;
     resource.is_subresource = is_subresource;
     resource.threat_type = testing::get<1>(GetParam());
-    resource.web_contents_getter =
-        security_interstitials::GetWebContentsGetter(primary_main_frame_id);
     resource.render_process_id = primary_main_frame_id.child_id;
     resource.render_frame_id = primary_main_frame_id.frame_routing_id;
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER4;
@@ -2860,6 +2884,11 @@ class SafeBrowsingBlockingPageEnhancedProtectionMessageTest
  public:
   SafeBrowsingBlockingPageEnhancedProtectionMessageTest() = default;
 
+  SafeBrowsingBlockingPageEnhancedProtectionMessageTest(
+      const SafeBrowsingBlockingPageEnhancedProtectionMessageTest&) = delete;
+  SafeBrowsingBlockingPageEnhancedProtectionMessageTest& operator=(
+      const SafeBrowsingBlockingPageEnhancedProtectionMessageTest&) = delete;
+
   void SetUp() override {
     InProcessBrowserTest::SetUp();
   }
@@ -2900,9 +2929,6 @@ class SafeBrowsingBlockingPageEnhancedProtectionMessageTest
   TestSafeBrowsingServiceFactory factory_;
   TestThreatDetailsFactory details_factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(
-      SafeBrowsingBlockingPageEnhancedProtectionMessageTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageEnhancedProtectionMessageTest,
@@ -2999,6 +3025,11 @@ class SafeBrowsingBlockingPageRealTimeUrlCheckTest
  public:
   SafeBrowsingBlockingPageRealTimeUrlCheckTest() = default;
 
+  SafeBrowsingBlockingPageRealTimeUrlCheckTest(
+      const SafeBrowsingBlockingPageRealTimeUrlCheckTest&) = delete;
+  SafeBrowsingBlockingPageRealTimeUrlCheckTest& operator=(
+      const SafeBrowsingBlockingPageRealTimeUrlCheckTest&) = delete;
+
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/{},
@@ -3037,8 +3068,6 @@ class SafeBrowsingBlockingPageRealTimeUrlCheckTest
  private:
   TestSafeBrowsingServiceFactory factory_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPageRealTimeUrlCheckTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageRealTimeUrlCheckTest,
@@ -3301,4 +3330,72 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingThreatDetailsPrerenderBrowserTest,
   }
 }
 
+class SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest
+    : public SafeBrowsingBlockingPageDelayedWarningBrowserTest {
+ public:
+  SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest() = default;
+  ~SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest() override =
+      default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SafeBrowsingBlockingPageDelayedWarningBrowserTest::SetUpCommandLine(
+        command_line);
+    // |prerender_helper_| has a ScopedFeatureList so we needed to delay its
+    // creation until now because
+    // SafeBrowsingBlockingPageDelayedWarningBrowserTest also uses a
+    // ScopedFeatureList and initialization order matters.
+    prerender_helper_ = std::make_unique<content::test::PrerenderTestHelper>(
+        base::BindRepeating(
+            &SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest::
+                GetWebContents,
+            base::Unretained(this)));
+  }
+
+  void SetUpOnMainThread() override {
+    prerender_helper_->SetUp(embedded_test_server());
+    SafeBrowsingBlockingPageDelayedWarningBrowserTest::SetUpOnMainThread();
+  }
+
+  content::test::PrerenderTestHelper& prerender_helper() {
+    return *prerender_helper_;
+  }
+
+  content::WebContents* GetWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+ private:
+  std::unique_ptr<content::test::PrerenderTestHelper> prerender_helper_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest,
+    testing::Combine(testing::Bool(), /* IsolateAllSitesForTesting */
+                     testing::Bool() /* Show warning on mouse click */));
+
+// This test loads a page in the prerender to ensure that the prerendering
+// navigation is skipped at DidFinishNavigation() from
+// SafeBrowsingUserInteractionObserver.
+IN_PROC_BROWSER_TEST_P(
+    SafeBrowsingBlockingPageDelayedWarningPrerenderingBrowserTest,
+    DoNotRecordMetricsInPrerendering) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Load a page in the prerender.
+  GURL prerender_url = embedded_test_server()->GetURL("/simple.html");
+  prerender_helper().AddPrerender(prerender_url);
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 1);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+
+  // Activating the prerendered page causes "flush" metrics.
+  prerender_helper().NavigatePrimaryPage(prerender_url);
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kWarningNotShown, 1);
+}
 }  // namespace safe_browsing

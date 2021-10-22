@@ -148,9 +148,7 @@ static int nppscale_query_formats(AVFilterContext *ctx)
     static const enum AVPixelFormat pixel_formats[] = {
         AV_PIX_FMT_CUDA, AV_PIX_FMT_NONE,
     };
-    AVFilterFormats *pix_fmts = ff_make_format_list(pixel_formats);
-
-    return ff_set_common_formats(ctx, pix_fmts);
+    return ff_set_common_formats_from_list(ctx, pixel_formats);
 }
 
 static int init_stage(NPPScaleStageContext *stage, AVBufferRef *device_ctx)
@@ -579,7 +577,6 @@ static const AVFilterPad nppscale_inputs[] = {
         .type        = AVMEDIA_TYPE_VIDEO,
         .filter_frame = nppscale_filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad nppscale_outputs[] = {
@@ -588,7 +585,6 @@ static const AVFilterPad nppscale_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = nppscale_config_props,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_scale_npp = {
@@ -603,8 +599,8 @@ const AVFilter ff_vf_scale_npp = {
     .priv_size = sizeof(NPPScaleContext),
     .priv_class = &nppscale_class,
 
-    .inputs    = nppscale_inputs,
-    .outputs   = nppscale_outputs,
+    FILTER_INPUTS(nppscale_inputs),
+    FILTER_OUTPUTS(nppscale_outputs),
 
     .flags_internal = FF_FILTER_FLAG_HWFRAME_AWARE,
 };

@@ -95,31 +95,19 @@ AVFILTER_DEFINE_CLASS(anlmdn);
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *formats = NULL;
-    AVFilterChannelLayouts *layouts = NULL;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_FLTP,
         AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    int ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static float compute_distance_ssd_c(const float *f1, const float *f2, ptrdiff_t K)
@@ -321,7 +309,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         if (ret < 0)
             break;
 
-        ctx->internal->execute(ctx, filter_channel, out, NULL, inlink->channels);
+        ff_filter_execute(ctx, filter_channel, out, NULL, inlink->channels);
 
         av_audio_fifo_drain(s->fifo, s->H);
 
@@ -400,7 +388,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -410,7 +397,6 @@ static const AVFilterPad outputs[] = {
         .config_props  = config_output,
         .request_frame = request_frame,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_anlmdn = {
@@ -420,8 +406,8 @@ const AVFilter ff_af_anlmdn = {
     .priv_size     = sizeof(AudioNLMeansContext),
     .priv_class    = &anlmdn_class,
     .uninit        = uninit,
-    .inputs        = inputs,
-    .outputs       = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .process_command = process_command,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
                      AVFILTER_FLAG_SLICE_THREADS,

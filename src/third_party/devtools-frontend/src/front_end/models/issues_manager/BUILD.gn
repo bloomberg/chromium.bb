@@ -16,6 +16,7 @@ devtools_module("issues_manager") {
     "CorsIssue.ts",
     "CrossOriginEmbedderPolicyIssue.ts",
     "DeprecationIssue.ts",
+    "GenericIssue.ts",
     "HeavyAdIssue.ts",
     "Issue.ts",
     "IssueResolver.ts",
@@ -51,6 +52,7 @@ devtools_module("issues_manager") {
 }
 
 devtools_issue_description_files = [
+  "arAttributionEventSourceTriggerDataTooLarge.md",
   "arAttributionSourceUntrustworthyFrameOrigin.md",
   "arAttributionSourceUntrustworthyOrigin.md",
   "arAttributionTriggerDataTooLarge.md",
@@ -85,6 +87,7 @@ devtools_issue_description_files = [
   "cspTrustedTypesSinkViolation.md",
   "cspURLViolation.md",
   "deprecationNavigatorUserAgent.md",
+  "genericCrossOriginPortalPostMessageError.md",
   "heavyAd.md",
   "LowTextContrast.md",
   "mixedContent.md",

@@ -115,10 +115,10 @@ void SetDiscardPadding(AVPacket* packet,
           packet, AV_PKT_DATA_SKIP_SAMPLES, &skip_samples_size));
   if (skip_samples_size < 4)
     return;
-  buffer->set_discard_padding(std::make_pair(
-      base::TimeDelta::FromSecondsD(base::ByteSwapToLE32(*skip_samples_ptr) /
-                                    samples_per_second),
-      base::TimeDelta()));
+  buffer->set_discard_padding(
+      std::make_pair(base::Seconds(base::ByteSwapToLE32(*skip_samples_ptr) /
+                                   samples_per_second),
+                     base::TimeDelta()));
 }
 
 }  // namespace
@@ -145,6 +145,9 @@ class AudioDecoderTest
 #endif
     }
   }
+
+  AudioDecoderTest(const AudioDecoderTest&) = delete;
+  AudioDecoderTest& operator=(const AudioDecoderTest&) = delete;
 
   virtual ~AudioDecoderTest() {
     EXPECT_FALSE(pending_decode_);
@@ -414,8 +417,6 @@ class AudioDecoderTest
 
   base::circular_deque<scoped_refptr<AudioBuffer>> decoded_audio_;
   base::TimeDelta start_timestamp_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderTest);
 };
 
 const DecodedBufferExpectations kBearOpusExpectations[] = {

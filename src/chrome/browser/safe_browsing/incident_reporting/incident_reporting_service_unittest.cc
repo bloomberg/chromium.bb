@@ -76,9 +76,7 @@ class IncidentReportingServiceTest : public testing::Test {
         const CollectEnvironmentCallback& collect_environment_callback,
         const CreateDownloadFinderCallback& create_download_finder_callback,
         const StartUploadCallback& start_upload_callback)
-        : IncidentReportingService(nullptr,
-                                   base::TimeDelta::FromMilliseconds(5),
-                                   task_runner),
+        : IncidentReportingService(nullptr, base::Milliseconds(5), task_runner),
           pre_profile_add_callback_(pre_profile_add_callback),
           collect_environment_callback_(collect_environment_callback),
           create_download_finder_callback_(create_download_finder_callback),
@@ -378,6 +376,10 @@ class IncidentReportingServiceTest : public testing::Test {
           FROM_HERE,
           base::BindOnce(&FakeUploader::FinishUpload, base::Unretained(this)));
     }
+
+    FakeUploader(const FakeUploader&) = delete;
+    FakeUploader& operator=(const FakeUploader&) = delete;
+
     ~FakeUploader() override { std::move(on_deleted_).Run(); }
 
    private:
@@ -390,8 +392,6 @@ class IncidentReportingServiceTest : public testing::Test {
 
     base::OnceClosure on_deleted_;
     safe_browsing::IncidentReportUploader::Result result_;
-
-    DISALLOW_COPY_AND_ASSIGN(FakeUploader);
   };
 
   class FakeDownloadFinder : public safe_browsing::LastDownloadFinder {
@@ -413,6 +413,9 @@ class IncidentReportingServiceTest : public testing::Test {
           new FakeDownloadFinder(std::move(on_deleted)));
     }
 
+    FakeDownloadFinder(const FakeDownloadFinder&) = delete;
+    FakeDownloadFinder& operator=(const FakeDownloadFinder&) = delete;
+
     ~FakeDownloadFinder() override { std::move(on_deleted_).Run(); }
 
    private:
@@ -420,8 +423,6 @@ class IncidentReportingServiceTest : public testing::Test {
         : on_deleted_(std::move(on_deleted)) {}
 
     base::OnceClosure on_deleted_;
-
-    DISALLOW_COPY_AND_ASSIGN(FakeDownloadFinder);
   };
 
   // Confirms that the test incident(s) was/were uploaded by the service, then

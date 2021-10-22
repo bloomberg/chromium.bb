@@ -5,27 +5,17 @@
 
 """Runs telemetry benchmarks and gtest perf tests.
 
-This script attempts to emulate the contract of gtest-style tests
-invoked via recipes. The main contract is that the caller passes the
-argument:
+If optional argument --isolated-script-test-output=[FILENAME] is passed
+to the script, json is written to that file in the format detailed in
+//docs/testing/json-test-results-format.md.
 
-  --isolated-script-test-output=[FILENAME]
-
-json is written to that file in the format detailed here:
-https://www.chromium.org/developers/the-json-test-results-format
-
-Optional argument:
-
-  --isolated-script-test-filter=[TEST_NAMES]
-
-is a double-colon-separated ("::") list of test names, to run just that subset
-of tests. This list is forwarded to the run_telemetry_benchmark_as_googletest
-script.
+If optional argument --isolated-script-test-filter=[TEST_NAMES] is passed to
+the script, it should be a  double-colon-separated ("::") list of test names,
+to run just that subset of tests.
 
 This script is intended to be the base command invoked by the isolate,
 followed by a subsequent Python script. It could be generalized to
 invoke an arbitrary executable.
-
 It currently runs several benchmarks. The benchmarks it will execute are
 based on the shard it is running on and the sharding_map_path.
 
@@ -33,20 +23,19 @@ If this is executed with a gtest perf test, the flag --non-telemetry
 has to be passed in to the script so the script knows it is running
 an executable and not the run_benchmark command.
 
-This script obeys the --isolated-script-test-output flag and merges test results
-from all the benchmarks into the one output.json file. The test results and perf
-results are also put in separate directories per
-benchmark. Two files will be present in each directory; perf_results.json, which
-is the perf specific results (with unenforced format, could be histogram or
-graph json), and test_results.json, which is a JSON test results
-format file
-https://chromium.googlesource.com/chromium/src/+/main/docs/testing/json_test_results_format.md
+This script merges test results from all the benchmarks into the one
+output.json file. The test results and perf results are also put in separate
+directories per benchmark. Two files will be present in each directory;
+perf_results.json, which is the perf specific results (with unenforced format,
+could be histogram or graph json), and test_results.json.
 
 TESTING:
 To test changes to this script, please run
 cd tools/perf
 ./run_tests ScriptsSmokeTest.testRunPerformanceTests
 """
+
+from __future__ import print_function
 
 import argparse
 import json
@@ -96,7 +85,7 @@ SHARD_MAPS_DIRECTORY = os.path.join(
 GTEST_CONVERSION_WHITELIST = [
   'angle_perftests',
   'base_perftests',
-  'blink_heap_unittests',
+  'blink_heap_perftests',
   'blink_platform_perftests',
   'cc_perftests',
   'components_perftests',
@@ -160,7 +149,7 @@ class OutputFilePaths(object):
 
 
 def print_duration(step, start):
-  print 'Duration of %s: %d seconds' % (step, time.time() - start)
+  print('Duration of %s: %d seconds' % (step, time.time() - start))
 
 
 def IsWindows():
@@ -552,9 +541,9 @@ def execute_telemetry_benchmark(
     if os.path.isfile(csv_file_path):
       shutil.move(csv_file_path, output_paths.csv_perf_results)
   except Exception:
-    print ('The following exception may have prevented the code from '
-           'outputing structured test results and perf results output:')
-    print traceback.format_exc()
+    print('The following exception may have prevented the code from '
+          'outputing structured test results and perf results output:')
+    print(traceback.format_exc())
   finally:
     # On swarming bots, don't remove output directory, since Result Sink might
     # still be uploading files to Result DB. Also, swarming bots automatically
@@ -573,8 +562,8 @@ def execute_telemetry_benchmark(
   # TODO(crbug.com/1019139): Make 111 be the exit code that means
   # "no stories were run.".
   if return_code in (111, -1, 255):
-    print ('Exit code %s indicates that no stories were run, so we are marking '
-           'this as a success.' % return_code)
+    print('Exit code %s indicates that no stories were run, so we are marking '
+          'this as a success.' % return_code)
     return 0
   if return_code:
     return return_code
@@ -717,9 +706,9 @@ def main(sys_args):
         overall_return_code = return_code or overall_return_code
         test_results_files.append(output_paths.test_results)
       if options.run_ref_build:
-        print ('Not running reference build. --run-ref-build argument is only '
-               'supported for sharded benchmarks. It is simple to support '
-               'this for unsharded --benchmarks if needed.')
+        print('Not running reference build. --run-ref-build argument is only '
+              'supported for sharded benchmarks. It is simple to support '
+              'this for unsharded --benchmarks if needed.')
     elif options.test_shard_map_filename:
       # First determine what shard we are running on to know how to
       # index into the bot map to get list of telemetry benchmarks to run.
@@ -774,8 +763,7 @@ def _run_benchmarks_on_shardmap(
       'with it.')
   if 'benchmarks' in shard_configuration:
     benchmarks_and_configs = shard_configuration['benchmarks']
-    for (benchmark, story_selection_config
-         ) in benchmarks_and_configs.iteritems():
+    for (benchmark, story_selection_config) in benchmarks_and_configs.items():
       # Need to run the benchmark on both latest browser and reference
       # build.
       output_paths = OutputFilePaths(isolated_out_dir, benchmark).SetUp()
@@ -804,8 +792,7 @@ def _run_benchmarks_on_shardmap(
             options.xvfb)
   if 'executables' in shard_configuration:
     names_and_configs = shard_configuration['executables']
-    for (name, configuration
-         ) in names_and_configs.iteritems():
+    for (name, configuration) in names_and_configs.items():
       additional_flags = []
       if 'arguments' in configuration:
         additional_flags = configuration['arguments']

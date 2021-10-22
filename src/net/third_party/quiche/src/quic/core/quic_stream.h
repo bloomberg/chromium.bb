@@ -25,6 +25,8 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "quic/core/frames/quic_rst_stream_frame.h"
+#include "quic/core/quic_error_codes.h"
 #include "quic/core/quic_flow_controller.h"
 #include "quic/core/quic_packets.h"
 #include "quic/core/quic_stream_send_buffer.h"
@@ -59,7 +61,7 @@ class QUIC_EXPORT_PRIVATE PendingStream
   void OnDataAvailable() override;
   void OnFinRead() override;
   void AddBytesConsumed(QuicByteCount bytes) override;
-  void Reset(QuicRstStreamErrorCode error) override;
+  void ResetWithError(QuicResetStreamError error) override;
   void OnUnrecoverableError(QuicErrorCode error,
                             const std::string& details) override;
   void OnUnrecoverableError(QuicErrorCode error,
@@ -72,9 +74,20 @@ class QUIC_EXPORT_PRIVATE PendingStream
   // If the data violates flow control, the connection will be closed.
   void OnStreamFrame(const QuicStreamFrame& frame);
 
+  bool is_bidirectional() const { return is_bidirectional_; }
+
   // Stores the final byte offset from |frame|.
   // If the final offset violates flow control, the connection will be closed.
   void OnRstStreamFrame(const QuicRstStreamFrame& frame);
+
+  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
+
+  void OnStopSending(QuicResetStreamError stop_sending_error_code);
+
+  // The error code received from QuicStopSendingFrame (if any).
+  const absl::optional<QuicResetStreamError>& GetStopSendingErrorCode() const {
+    return stop_sending_error_code_;
+  }
 
   // Returns the number of bytes read on this stream.
   uint64_t stream_bytes_read() { return stream_bytes_read_; }
@@ -108,12 +121,17 @@ class QUIC_EXPORT_PRIVATE PendingStream
   // True if a frame containing a fin has been received.
   bool fin_received_;
 
+  // True if this pending stream is backing a bidirectional stream.
+  bool is_bidirectional_;
+
   // Connection-level flow controller. Owned by the session.
   QuicFlowController* connection_flow_controller_;
   // Stream-level flow controller.
   QuicFlowController flow_controller_;
   // Stores the buffered frames.
   QuicStreamSequencer sequencer_;
+  // The error code received from QuicStopSendingFrame (if any).
+  absl::optional<QuicResetStreamError> stop_sending_error_code_;
 };
 
 class QUIC_EXPORT_PRIVATE QuicStream
@@ -135,14 +153,9 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // |type| indicates whether the stream is bidirectional, read unidirectional
   // or write unidirectional.
   // TODO(fayang): Remove |type| when IETF stream ID numbering fully kicks in.
-  QuicStream(QuicStreamId id,
-             QuicSession* session,
-             bool is_static,
+  QuicStream(QuicStreamId id, QuicSession* session, bool is_static,
              StreamType type);
-  QuicStream(PendingStream* pending,
-             QuicSession* session,
-             StreamType type,
-             bool is_static);
+  QuicStream(PendingStream* pending, QuicSession* session, bool is_static);
   QuicStream(const QuicStream&) = delete;
   QuicStream& operator=(const QuicStream&) = delete;
 
@@ -161,7 +174,16 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   // Called by the subclass or the sequencer to reset the stream from this
   // end.
-  void Reset(QuicRstStreamErrorCode error) override;
+  void ResetWithError(QuicResetStreamError error) override;
+  // Convenience wrapper for the method above.
+  // TODO(b/200606367): switch all calls to using QuicResetStreamError
+  // interface.
+  void Reset(QuicRstStreamErrorCode error);
+
+  // Reset() sends both RESET_STREAM and STOP_SENDING; the two methods below
+  // allow to send only one of those.
+  void ResetWriteSide(QuicResetStreamError error);
+  void SendStopSending(QuicResetStreamError error);
 
   // Called by the subclass or the sequencer to close the entire connection from
   // this end.
@@ -209,7 +231,9 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // Number of bytes available to read.
   QuicByteCount ReadableBytes() const;
 
-  QuicRstStreamErrorCode stream_error() const { return stream_error_; }
+  QuicRstStreamErrorCode stream_error() const {
+    return stream_error_.internal_code();
+  }
   QuicErrorCode connection_error() const { return connection_error_; }
 
   bool reading_stopped() const {
@@ -291,31 +315,26 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // session, write_side_closed() becomes true, otherwise fin_buffered_ becomes
   // true.
   void WriteOrBufferData(
-      absl::string_view data,
-      bool fin,
+      absl::string_view data, bool fin,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Sends |data| to connection with specified |level|.
   void WriteOrBufferDataAtLevel(
-      absl::string_view data,
-      bool fin,
-      EncryptionLevel level,
+      absl::string_view data, bool fin, EncryptionLevel level,
       QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Adds random padding after the fin is consumed for this stream.
   void AddRandomPaddingAfterFin();
 
   // Write |data_length| of data starts at |offset| from send buffer.
-  bool WriteStreamData(QuicStreamOffset offset,
-                       QuicByteCount data_length,
+  bool WriteStreamData(QuicStreamOffset offset, QuicByteCount data_length,
                        QuicDataWriter* writer);
 
   // Called when data [offset, offset + data_length) is acked. |fin_acked|
   // indicates whether the fin is acked. Returns true and updates
   // |newly_acked_length| if any new stream data (including fin) gets acked.
   virtual bool OnStreamFrameAcked(QuicStreamOffset offset,
-                                  QuicByteCount data_length,
-                                  bool fin_acked,
+                                  QuicByteCount data_length, bool fin_acked,
                                   QuicTime::Delta ack_delay_time,
                                   QuicTime receive_timestamp,
                                   QuicByteCount* newly_acked_length);
@@ -329,15 +348,13 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // Called when data [offset, offset + data_length) is considered as lost.
   // |fin_lost| indicates whether the fin is considered as lost.
   virtual void OnStreamFrameLost(QuicStreamOffset offset,
-                                 QuicByteCount data_length,
-                                 bool fin_lost);
+                                 QuicByteCount data_length, bool fin_lost);
 
   // Called to retransmit outstanding portion in data [offset, offset +
   // data_length) and |fin| with Transmission |type|.
   // Returns true if all data gets retransmitted.
   virtual bool RetransmitStreamData(QuicStreamOffset offset,
-                                    QuicByteCount data_length,
-                                    bool fin,
+                                    QuicByteCount data_length, bool fin,
                                     TransmissionType type);
 
   // Sets deadline of this stream to be now + |ttl|, returns true if the setting
@@ -359,14 +376,13 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // outstanding or fin is outstanding (if |fin| is true). Returns false
   // otherwise.
   bool IsStreamFrameOutstanding(QuicStreamOffset offset,
-                                QuicByteCount data_length,
-                                bool fin) const;
+                                QuicByteCount data_length, bool fin) const;
 
   StreamType type() const { return type_; }
 
   // Handle received StopSending frame. Returns true if the processing finishes
   // gracefully.
-  virtual bool OnStopSending(QuicRstStreamErrorCode code);
+  virtual bool OnStopSending(QuicResetStreamError error);
 
   // Returns true if the stream is static.
   bool is_static() const { return is_static_; }
@@ -391,8 +407,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // Called when data of [offset, offset + data_length] is buffered in send
   // buffer.
   virtual void OnDataBuffered(
-      QuicStreamOffset /*offset*/,
-      QuicByteCount /*data_length*/,
+      QuicStreamOffset /*offset*/, QuicByteCount /*data_length*/,
       const QuicReferenceCountedPointer<QuicAckListenerInterface>&
       /*ack_listener*/) {}
 
@@ -429,10 +444,18 @@ class QUIC_EXPORT_PRIVATE QuicStream
   void SetFinSent();
 
   // Send STOP_SENDING if it hasn't been sent yet.
-  void MaybeSendStopSending(QuicRstStreamErrorCode error);
+  void MaybeSendStopSending(QuicResetStreamError error);
 
   // Send RESET_STREAM if it hasn't been sent yet.
-  void MaybeSendRstStream(QuicRstStreamErrorCode error);
+  void MaybeSendRstStream(QuicResetStreamError error);
+
+  // Convenience warppers for two methods above.
+  void MaybeSendRstStream(QuicRstStreamErrorCode error) {
+    MaybeSendRstStream(QuicResetStreamError::FromInternal(error));
+  }
+  void MaybeSendStopSending(QuicRstStreamErrorCode error) {
+    MaybeSendStopSending(QuicResetStreamError::FromInternal(error));
+  }
 
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
@@ -440,7 +463,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
   virtual void CloseWriteSide();
 
   void set_rst_received(bool rst_received) { rst_received_ = rst_received; }
-  void set_stream_error(QuicRstStreamErrorCode error) { stream_error_ = error; }
+  void set_stream_error(QuicResetStreamError error) { stream_error_ = error; }
 
   StreamDelegateInterface* stream_delegate() { return stream_delegate_; }
 
@@ -460,6 +483,11 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   QuicStreamSendBuffer& send_buffer() { return send_buffer_; }
 
+  // Called when the write side of the stream is closed, and all of the outgoing
+  // data has been acknowledged.  This corresponds to the "Data Recvd" state of
+  // RFC 9000.
+  virtual void OnWriteSideInDataRecvdState() {}
+
   // Return the current flow control send window in bytes.
   absl::optional<QuicByteCount> GetSendWindow() const;
   absl::optional<QuicByteCount> GetReceiveWindow() const;
@@ -468,13 +496,9 @@ class QUIC_EXPORT_PRIVATE QuicStream
   friend class test::QuicStreamPeer;
   friend class QuicStreamUtils;
 
-  QuicStream(QuicStreamId id,
-             QuicSession* session,
-             QuicStreamSequencer sequencer,
-             bool is_static,
-             StreamType type,
-             uint64_t stream_bytes_read,
-             bool fin_received,
+  QuicStream(QuicStreamId id, QuicSession* session,
+             QuicStreamSequencer sequencer, bool is_static, StreamType type,
+             uint64_t stream_bytes_read, bool fin_received,
              absl::optional<QuicFlowController> flow_controller,
              QuicFlowController* connection_flow_controller);
 
@@ -510,7 +534,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
 
   // Stream error code received from a RstStreamFrame or error code sent by the
   // visitor or sequencer in the RstStreamFrame.
-  QuicRstStreamErrorCode stream_error_;
+  QuicResetStreamError stream_error_;
   // Connection error code due to which the stream was closed. |stream_error_|
   // is set to |QUIC_STREAM_CONNECTION_ERROR| when this happens and consumers
   // should check |connection_error_|.
@@ -520,6 +544,9 @@ class QUIC_EXPORT_PRIVATE QuicStream
   bool read_side_closed_;
   // True if the write side is closed, and further writes should fail.
   bool write_side_closed_;
+
+  // True if OnWriteSideInDataRecvdState() has already been called.
+  bool write_side_data_recvd_state_notified_;
 
   // True if the subclass has written a FIN with WriteOrBufferData, but it was
   // buffered in queued_data_ rather than being sent to the session.

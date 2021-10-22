@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
+<translation id="1113173431709655881">क्यामेरा मोड</translation>
 <translation id="1175958423215084756">लिंक भेट्टियो। <ph name="HOSTNAME" /></translation>
 <translation id="1276998909102132017">ग्यालेरीका फोटो</translation>
 <translation id="1300209025925956156">डकुमेन्ट स्क्यान गर्नुहोस्</translation>
@@ -9,6 +10,8 @@
 <translation id="1467231725790366244"><ph name="CAMERA" /> निकालिएको छ।</translation>
 <translation id="1473110567575736769">३ सेकेन्डको टाइमर</translation>
 <translation id="1545749641540134597">QR कोड स्क्यान गर्नुहोस्</translation>
+<translation id="1560052704389894104">GIF</translation>
+<translation id="1588438908519853928">सामान्य</translation>
 <translation id="1620510694547887537">क्यामेरा</translation>
 <translation id="1627744224761163218">४ x ४</translation>
 <translation id="1664224225747386870">केही पनि रेकर्ड गरिएन</translation>
@@ -31,6 +34,8 @@
 <translation id="2517472476991765520">स्क्यान गर्नुहोस्</translation>
 <translation id="2549985041256363841">रेकर्डिङ सुरु गर्नुहोस्</translation>
 <translation id="2599796128805996109">पछाडिको क्यामेरा</translation>
+<translation id="2759905922487820242"><ph name="CURRENT" /> / <ph name="MAXIMAL" />सेकेन्ड</translation>
+<translation id="2761536921376153655">स्क्यानको प्रकार</translation>
 <translation id="2879583609344924966"><ph name="CAMERA" /> जोडिएको छ।</translation>
 <translation id="2968794441791257519">क्यामेरामार्फत खिचिएका तस्बिर र भिडियोहरू डाउनलोडहरू नामक फोल्डरमा सारिने छ। तपाईं फाइलहरू नामक फोल्डरमा गई तिनीहरूमाथि पहुँच राख्न सक्नुहुन्छ।
 
@@ -69,6 +74,7 @@
 <translation id="5152121255775685072">ग्यालेरीमा जानुहोस्</translation>
 <translation id="520537883758714667">तपाईं अब डकुमेन्ट स्क्यान गर्न सक्नुहुन्छ</translation>
 <translation id="5268823927180092501">सबै क्यामेराहरूमा डकुमेन्ट मोड अन गरियोस्</translation>
+<translation id="5317780077021120954">बचत गर्नुहोस्</translation>
 <translation id="5444515100983837161">डकुमेन्टका सबै किनारा फ्रेमभित्र पार्नुहोस्। डकुमेन्ट र पृष्ठभूमि बेग्लाबेग्लै रङका भएका खण्डमा स्क्यान गर्ने सुविधाले सबैभन्दा राम्ररी काम गर्छ।</translation>
 <translation id="5671277269877808209">वर्गाकार</translation>
 <translation id="5746169159649715125">पीडीएपको रूपमा बचत गर्नुहोस्</translation>
@@ -86,6 +92,7 @@
 
 तपाईंको प्रतिक्रिया फोटो वा भिडियोको गुणस्तरका सम्बन्धमा हो भने कृपया फोटो वा भिडियोको एउटा नमुना एट्याच गर्नुहोस् र उक्त फोटो वा भिडियोमा के समस्या छ भन्ने कुरा बताउनुहोस्। (उदाहरणका लागि, फोटो ज्यादै अँध्यारो छ वा जुन कुराको फोटो खिच्नु पर्ने हो त्यो कुरा फोकसबाहिर छ।)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> मेगा पिक्सेल</translation>
+<translation id="6527303717912515753">साझा गर्नुहोस्</translation>
 <translation id="667999046851023355">कागजात</translation>
 <translation id="6681668084120808868">तस्बिर खिच्नुहोस्</translation>
 <translation id="6778482348691154169">तस्बिर खिच्न सकिएन</translation>
@@ -94,15 +101,19 @@
 <translation id="698156982839284926">३ सेकेन्ड</translation>
 <translation id="712848772518857951">तपाईंले <ph name="COUNT" /> वस्तुहरू हटाउन खोज्नुभएकै हो त?</translation>
 <translation id="7134221860976209830">१० सेकेन्डको टाइमर</translation>
+<translation id="7191890674911603392">रेकर्डको प्रकार</translation>
 <translation id="7243947652761655814">भिडियोको रिजोल्युसन</translation>
 <translation id="7337660886763914220">फाइल प्रणालीसम्बन्धी त्रुटिहरू।</translation>
 <translation id="7450541714075000668">टेक्स्ट कपी गरियो</translation>
+<translation id="7476762461674917065">GIF रेकर्ड गर्ने विकल्प देखाइयोस्</translation>
+<translation id="7488619942230388918">GIF भिडियो रेकर्ड गर्नुहोस्</translation>
 <translation id="7557677699350329807">अर्को क्यामेरा प्रयोग गर्नुहोस्</translation>
 <translation id="7607002721634913082">रोकिएको छ</translation>
 <translation id="7608223098072244877">४ गुणा ४</translation>
 <translation id="7649070708921625228">मद्दत</translation>
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
 <translation id="7670511624014457267">६० FPS</translation>
+<translation id="7726641833034062494">सामान्य भिडियो रेकर्ड गर्नुहोस्</translation>
 <translation id="7983668134180549431">टेक्स्ट भेट्टियो।</translation>
 <translation id="8067883171444229417">भिडियो प्ले गर्नुहोस्</translation>
 <translation id="8120146556401698679">प्यान गर्नुहोस्, ढल्काउनुहोस्, जुम गर्नुहोस्</translation>

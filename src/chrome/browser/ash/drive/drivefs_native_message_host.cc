@@ -58,6 +58,9 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
       drivefs::mojom::DriveFs* drivefs_for_testing)
       : drivefs_for_testing_(drivefs_for_testing) {}
 
+  DriveFsNativeMessageHost(const DriveFsNativeMessageHost&) = delete;
+  DriveFsNativeMessageHost& operator=(const DriveFsNativeMessageHost&) = delete;
+
   ~DriveFsNativeMessageHost() override = default;
 
   void OnMessage(const std::string& message) override {
@@ -90,9 +93,17 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
       // The session was initiated by the extension.
       mojo::PendingRemote<drivefs::mojom::NativeMessagingPort> extension_port;
       pending_receiver_ = extension_port.InitWithNewPipeAndPassReceiver();
-      drivefs::mojom::DriveFs* drivefs =
-          drivefs_for_testing_ ? drivefs_for_testing_
-                               : drive_service_->GetDriveFsInterface();
+
+      drivefs::mojom::DriveFs* drivefs;
+      if (drivefs_for_testing_) {
+        drivefs = drivefs_for_testing_;
+      } else if (!drive_service_ || !drive_service_->GetDriveFsInterface()) {
+        OnDriveFsResponse(FILE_ERROR_SERVICE_UNAVAILABLE, "");
+        return;
+      } else {
+        drivefs = drive_service_->GetDriveFsInterface();
+      }
+
       drivefs->CreateNativeHostSession(
           drivefs::mojom::ExtensionConnectionParams::New(
               GURL(kDriveFsNativeMessageHostOrigins[0]).host()),
@@ -148,8 +159,6 @@ class DriveFsNativeMessageHost : public extensions::NativeMessageHost,
       base::ThreadTaskRunnerHandle::Get();
 
   base::WeakPtrFactory<DriveFsNativeMessageHost> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DriveFsNativeMessageHost);
 };
 
 std::unique_ptr<extensions::NativeMessageHost> CreateDriveFsNativeMessageHost(

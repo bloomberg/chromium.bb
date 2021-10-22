@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/history_clusters/history_clusters_metrics_logger.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -105,7 +106,7 @@ base::TimeDelta TimeElapsedBetweenVisits(const history::VisitRow& visit1,
                                          const history::VisitRow& visit2) {
   base::TimeDelta delta = visit2.visit_time - visit1.visit_time;
   // Clamp to 30 days maximum to match the UKM retention period.
-  const base::TimeDelta kMaxDurationClamp = base::TimeDelta::FromDays(30);
+  const base::TimeDelta kMaxDurationClamp = base::Days(30);
   return delta < kMaxDurationClamp ? delta : kMaxDurationClamp;
 }
 
@@ -231,6 +232,7 @@ void HistoryClustersTabHelper::TagNavigationAsExpectingUkmNavigationComplete(
 history::VisitContextAnnotations
 HistoryClustersTabHelper::OnUkmNavigationComplete(
     int64_t navigation_id,
+    base::TimeDelta total_foreground_duration,
     const page_load_metrics::PageEndReason page_end_reason) {
   auto* history_clusters_service = GetHistoryClustersService();
   if (!history_clusters_service)
@@ -241,6 +243,8 @@ HistoryClustersTabHelper::OnUkmNavigationComplete(
           navigation_id);
   incomplete_visit_context_annotations.context_annotations.page_end_reason =
       page_end_reason;
+  incomplete_visit_context_annotations.context_annotations
+      .total_foreground_duration = total_foreground_duration;
   // `RecordPageEndMetricsIfNeeded()` will fail to complete the
   // `IncompleteVisitContextAnnotations` as `ukm_page_end_signals` hasn't been
   // set yet, but it will record metrics if needed (i.e. not already recorded)
@@ -258,6 +262,118 @@ HistoryClustersTabHelper::OnUkmNavigationComplete(
   history_clusters_service->CompleteVisitContextAnnotationsIfReady(
       navigation_id);
   return context_annotations_copy;
+}
+
+void HistoryClustersTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Will detect:
+  // 1) When the history clusters page was toggled to the basic history page.
+  // 2) A link was followed in the same web contents from the history clusters
+  //    page.
+  // And will update this page's associated `HistoryClustersMetricsLogger`.
+
+  if (!navigation_handle->IsInPrimaryMainFrame()) {
+    return;
+  }
+
+  // We only care if the previously committed navigation was on the
+  // HistoryClusters UI.
+  if (!IsHistoryPage(navigation_handle->GetWebContents()->GetLastCommittedURL(),
+                     GURL(chrome::kChromeUIHistoryClustersURL))) {
+    return;
+  }
+
+  if (navigation_handle->IsSameDocument()) {
+    if (IsHistoryPage(navigation_handle->GetURL(),
+                      GURL(chrome::kChromeUIHistoryURL))) {
+      history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+          navigation_handle->GetWebContents()->GetPrimaryPage())
+          ->increment_toggles_to_basic_history();
+    }
+    return;
+  }
+
+  if (!IsHistoryPage(navigation_handle->GetURL(),
+                     GURL(chrome::kChromeUIHistoryClustersURL)) &&
+      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                               ui::PAGE_TRANSITION_LINK)) {
+    // If the previously committed navigation was on the history clusters page,
+    // the current navigation is not on the history clusters UI and the
+    // transition type is a link click, then we know the user clicked on a
+    // result on the clusters page.
+    auto* logger =
+        history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+            navigation_handle->GetWebContents()->GetPrimaryPage());
+    logger->set_final_state(
+        history_clusters::HistoryClustersFinalState::kLinkClick);
+    if (CanAddURLToHistory(navigation_handle->GetURL()))
+      logger->IncrementLinksOpenedCount();
+  }
+}
+
+void HistoryClustersTabHelper::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Will detect when the history clusters page was navigated to, either
+  // directly (e.g., through the omnibox, by page refresh, or by page
+  // back/forward), or indirectly (e.g. through the side bar on the history
+  // page). And will update this page's associated
+  // `HistoryClustersMetricsLogger`.
+
+  if (!navigation_handle->IsInPrimaryMainFrame()) {
+    return;
+  }
+
+  if (!IsHistoryPage(navigation_handle->GetURL(),
+                     GURL(chrome::kChromeUIHistoryClustersURL))) {
+    return;
+  }
+
+  auto* logger =
+      history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+          navigation_handle->GetWebContents()->GetPrimaryPage());
+  logger->set_navigation_id(navigation_handle->GetNavigationId());
+
+  // If the transition type is typed (meaning directly entered into the
+  // address bar), PAGE_TRANSITION_TYPED, or is partially typed and selected
+  // from the omnibox history, which results in PAGE_TRANSITION_RELOADS, this
+  // usage of the history clusters UI is considered a "direct" navigation.
+  auto initial_state =
+      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                               ui::PAGE_TRANSITION_TYPED) ||
+              PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
+                                       ui::PAGE_TRANSITION_RELOAD)
+          ? history_clusters::HistoryClustersInitialState::kDirectNavigation
+          : history_clusters::HistoryClustersInitialState::kIndirectNavigation;
+  logger->set_initial_state(initial_state);
+}
+
+void HistoryClustersTabHelper::DidOpenRequestedURL(
+    content::WebContents* new_contents,
+    content::RenderFrameHost* source_render_frame_host,
+    const GURL& url,
+    const content::Referrer& referrer,
+    WindowOpenDisposition disposition,
+    ui::PageTransition transition,
+    bool started_from_context_menu,
+    bool renderer_initiated) {
+  // Will detect when a link was followed from the history clusters page in a
+  // new web contents (e.g. new tab or window).
+  // And will update this page's associated `HistoryClustersMetricsLogger`.
+  if (IsHistoryPage(web_contents()->GetLastCommittedURL(),
+                    GURL(chrome::kChromeUIHistoryClustersURL)) &&
+      CanAddURLToHistory(url)) {
+    auto* logger =
+        history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
+            web_contents()->GetPrimaryPage());
+    logger->IncrementLinksOpenedCount();
+  }
+}
+
+void HistoryClustersTabHelper::WebContentsDestroyed() {
+  // Complete any incomplete visits associated with navigations made in this
+  // tab.
+  for (auto navigation_id : navigation_ids_)
+    RecordPageEndMetricsIfNeeded(navigation_id);
 }
 
 void HistoryClustersTabHelper::StartNewNavigationIfNeeded(
@@ -327,11 +443,6 @@ void HistoryClustersTabHelper::RecordPageEndMetricsIfNeeded(
       navigation_id);
 }
 
-void HistoryClustersTabHelper::WebContentsDestroyed() {
-  for (auto navigation_id : navigation_ids_)
-    RecordPageEndMetricsIfNeeded(navigation_id);
-}
-
 history_clusters::HistoryClustersService*
 HistoryClustersTabHelper::GetHistoryClustersService() {
   if (!web_contents()) {
@@ -353,72 +464,4 @@ history::HistoryService* HistoryClustersTabHelper::GetHistoryService() {
       profile, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
-void HistoryClustersTabHelper::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInPrimaryMainFrame()) {
-    return;
-  }
-
-  // We only care if the previously committed navigation was on the
-  // HistoryClusters UI.
-  if (!IsHistoryPage(navigation_handle->GetWebContents()->GetLastCommittedURL(),
-                     GURL(chrome::kChromeUIHistoryClustersURL))) {
-    return;
-  }
-
-  if (navigation_handle->IsSameDocument()) {
-    if (IsHistoryPage(navigation_handle->GetURL(),
-                      GURL(chrome::kChromeUIHistoryURL))) {
-      history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
-          navigation_handle->GetWebContents()->GetPrimaryPage())
-          ->increment_toggles_to_basic_history();
-    }
-    return;
-  }
-
-  if (!IsHistoryPage(navigation_handle->GetURL(),
-                     GURL(chrome::kChromeUIHistoryClustersURL)) &&
-      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
-                               ui::PAGE_TRANSITION_LINK)) {
-    // If the previously committed navigation was on the history clusters page,
-    // the current navigation is not on the history clusters UI and the
-    // transition type is a link click, then we know the user clicked on a
-    // result on the clusters page.
-    history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
-        navigation_handle->GetWebContents()->GetPrimaryPage())
-        ->set_final_state(
-            history_clusters::HistoryClustersFinalState::kLinkClick);
-  }
-}
-
-void HistoryClustersTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInPrimaryMainFrame()) {
-    return;
-  }
-  if (navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  if (!IsHistoryPage(navigation_handle->GetURL(),
-                     GURL(chrome::kChromeUIHistoryClustersURL))) {
-    return;
-  }
-  // If the transition type is typed (meaning directly entered into the
-  // address bar), PAGE_TRANSITION_TYPED, or is partially typed and selected
-  // from the omnibox history, which results in PAGE_TRANSITION_RELOADS, this
-  // usage of the history clusters UI is considered a "direct" navigation.
-  if (PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
-                               ui::PAGE_TRANSITION_TYPED) ||
-      PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
-                               ui::PAGE_TRANSITION_RELOAD)) {
-    auto* logger =
-        history_clusters::HistoryClustersMetricsLogger::GetOrCreateForPage(
-            navigation_handle->GetWebContents()->GetPrimaryPage());
-    logger->set_navigation_id(navigation_handle->GetNavigationId());
-    logger->set_initial_state(
-        history_clusters::HistoryClustersInitialState::kDirectNavigation);
-  }
-}
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryClustersTabHelper)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(HistoryClustersTabHelper);

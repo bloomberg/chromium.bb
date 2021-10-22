@@ -92,6 +92,21 @@ For additional options see:
     options. Note: tools like [FFmpeg](https://ffmpeg.org) can be used to
     convert other container formats to IVF.
 
+*   Unit tests are built when `LIBGAV1_ENABLE_TESTS` is set to `1`. The binaries
+    can be invoked directly or with
+    [`ctest`](https://cmake.org/cmake/help/latest/manual/ctest.1.html).
+
+    *   The test input location can be given by setting the
+        `LIBGAV1_TEST_DATA_PATH` environment variable; it defaults to
+        `<libgav1_src>/tests/data`, where `<libgav1_src>` is `/data/local/tmp`
+        on Android platforms or the source directory configured with cmake
+        otherwise.
+
+    *   Output is written to the value of the `TMPDIR` or `TEMP` environment
+        variables in that order if set, otherwise `/data/local/tmp` on Android
+        platforms, the value of `LIBGAV1_FLAGS_TMPDIR` if defined during
+        compilation or the current directory if not.
+
 ## Development
 
 ### Contributing

@@ -143,6 +143,10 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
         {});
   }
 
+  PageLoadMetricsBrowserTest(const PageLoadMetricsBrowserTest&) = delete;
+  PageLoadMetricsBrowserTest& operator=(const PageLoadMetricsBrowserTest&) =
+      delete;
+
   ~PageLoadMetricsBrowserTest() override {}
 
  protected:
@@ -360,166 +364,6 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
     }
   }
 
-  enum class EarlyHintsPolicy {
-    // Navigation will receive no early hints response.
-    NoHints,
-
-    // Navigation will receive one early hints response.
-    OneHint,
-
-    // Navigation will receive multiple early hints responses.
-    MultipleHints,
-  };
-
-  content::NavigationHandleTiming NavigateWithEarlyHints(
-      EarlyHintsPolicy policy) {
-    auto response =
-        std::make_unique<net::test_server::ControllableHttpResponse>(
-            embedded_test_server(), "/mock_page.html",
-            /*relative_url_is_prefix=*/true);
-
-    EXPECT_TRUE(embedded_test_server()->Start());
-
-    GURL url = embedded_test_server()->GetURL("/mock_page.html");
-
-    content::NavigationHandleObserver observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), url);
-
-    browser()->OpenURL(content::OpenURLParams(
-        url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-        ui::PAGE_TRANSITION_TYPED, false));
-    response->WaitForRequest();
-
-    // Serve the Early Hints responses.
-    const char kHttpResponseHeader[] =
-        "HTTP/1.1 103 Early Hints\r\n"
-        "\r\n";
-    switch (policy) {
-      case EarlyHintsPolicy::NoHints:
-        break;
-      case EarlyHintsPolicy::OneHint:
-        response->Send(kHttpResponseHeader);
-        break;
-      case EarlyHintsPolicy::MultipleHints:
-        response->Send(kHttpResponseHeader);
-        response->Send(kHttpResponseHeader);
-        response->Send(kHttpResponseHeader);
-        break;
-    }
-
-    // Serve the main response.
-    const char kMainHttpResponseHeader[] =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=utf-8\r\n"
-        "\r\n";
-    response->Send(kMainHttpResponseHeader);
-    response->Done();
-
-    // Wait until the navigation completes.
-    auto waiter = CreatePageLoadMetricsTestWaiter();
-    waiter->AddMinimumCompleteResourcesExpectation(1);
-    waiter->Wait();
-    EXPECT_TRUE(observer.has_committed());
-
-    // Force navigation to another page, which should force logging of
-    // histograms persisted at the end of the page load lifetime.
-    NavigateToUntrackedUrl();
-
-    VerifyNavigationMetrics({url});
-
-    return observer.navigation_handle_timing();
-  }
-
-  content::NavigationHandleTiming RedirectWithEarlyHints(
-      EarlyHintsPolicy policy_for_first_request,
-      EarlyHintsPolicy policy_for_final_request) {
-    auto response1 =
-        std::make_unique<net::test_server::ControllableHttpResponse>(
-            embedded_test_server(), "/mock_page1.html",
-            /*relative_url_is_prefix=*/true);
-    auto response2 =
-        std::make_unique<net::test_server::ControllableHttpResponse>(
-            embedded_test_server(), "/mock_page2.html",
-            /*relative_url_is_prefix=*/true);
-
-    EXPECT_TRUE(embedded_test_server()->Start());
-
-    GURL url1 = embedded_test_server()->GetURL("/mock_page1.html");
-    GURL url2 = embedded_test_server()->GetURL("/mock_page2.html");
-
-    content::NavigationHandleObserver observer(
-        browser()->tab_strip_model()->GetActiveWebContents(), url1);
-
-    browser()->OpenURL(content::OpenURLParams(
-        url1, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-        ui::PAGE_TRANSITION_TYPED, false));
-    response1->WaitForRequest();
-
-    // Serve the Early Hints responses for the first request.
-    const char kHttpResponseHeader[] =
-        "HTTP/1.1 103 Early Hints\r\n"
-        "\r\n";
-    switch (policy_for_first_request) {
-      case EarlyHintsPolicy::NoHints:
-        break;
-      case EarlyHintsPolicy::OneHint:
-        response1->Send(kHttpResponseHeader);
-        break;
-      case EarlyHintsPolicy::MultipleHints:
-        response1->Send(kHttpResponseHeader);
-        response1->Send(kHttpResponseHeader);
-        response1->Send(kHttpResponseHeader);
-        break;
-    }
-
-    // Serve the redirection response.
-    const char kHttpRedirectResponseHeader[] =
-        "HTTP/1.1 307 Temporary Redirect\r\n"
-        "Location: /mock_page2.html\r\n"
-        "\r\n";
-    response1->Send(kHttpRedirectResponseHeader);
-
-    // Wait for the redirected request.
-    response1->Done();
-    response2->WaitForRequest();
-
-    // Serve the Early Hints responses for the redirected request.
-    switch (policy_for_final_request) {
-      case EarlyHintsPolicy::NoHints:
-        break;
-      case EarlyHintsPolicy::OneHint:
-        response2->Send(kHttpResponseHeader);
-        break;
-      case EarlyHintsPolicy::MultipleHints:
-        response2->Send(kHttpResponseHeader);
-        response2->Send(kHttpResponseHeader);
-        response2->Send(kHttpResponseHeader);
-        break;
-    }
-
-    // Serve the main response.
-    const char kMainHttpResponseHeader[] =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html; charset=utf-8\r\n"
-        "\r\n";
-    response2->Send(kMainHttpResponseHeader);
-    response2->Done();
-
-    // Wait until the navigation completes.
-    auto waiter = CreatePageLoadMetricsTestWaiter();
-    waiter->AddMinimumCompleteResourcesExpectation(1);
-    waiter->Wait();
-    EXPECT_TRUE(observer.has_committed());
-
-    // Force navigation to another page, which should force logging of
-    // histograms persisted at the end of the page load lifetime.
-    NavigateToUntrackedUrl();
-
-    VerifyNavigationMetrics({url2});
-
-    return observer.navigation_handle_timing();
-  }
-
   content::WebContents* web_contents() const {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -530,9 +374,6 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoNavigation) {
@@ -663,7 +504,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CachedPage) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   NavigateToUntrackedUrl();
 
-  using PageLoad = ukm::builders::PageLoad;
   auto entries =
       test_ukm_recorder_->GetMergedEntriesByName(PageLoad::kEntryName);
   EXPECT_EQ(1u, entries.size());
@@ -1437,16 +1277,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       static_cast<int32_t>(WebFeature::kNavigatorVibrate), 1);
   histogram_tester_->ExpectBucketCount(
       internal::kFeaturesHistogramName,
-      static_cast<int32_t>(
-          WebFeature::kApplicationCacheManifestSelectSecureOrigin),
-      1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramMainFrameName,
-      static_cast<int32_t>(
-          WebFeature::kApplicationCacheManifestSelectSecureOrigin),
-      1);
-  histogram_tester_->ExpectBucketCount(
-      internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
   histogram_tester_->ExpectBucketCount(
       internal::kFeaturesHistogramMainFrameName,
@@ -1677,7 +1507,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Blink_UseCounter::kEntryName);
-  EXPECT_THAT(entries, SizeIs(4));
+  EXPECT_THAT(entries, SizeIs(3));
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
@@ -1688,14 +1518,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
     DCHECK(metric);
     ukm_features.push_back(*metric);
   }
-  EXPECT_THAT(
-      ukm_features,
-      UnorderedElementsAre(
-          static_cast<int64_t>(WebFeature::kPageVisits),
-          static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
-          static_cast<int64_t>(WebFeature::kNavigatorVibrate),
-          static_cast<int64_t>(
-              WebFeature::kApplicationCacheManifestSelectSecureOrigin)));
+  EXPECT_THAT(ukm_features,
+              UnorderedElementsAre(
+                  static_cast<int64_t>(WebFeature::kPageVisits),
+                  static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
+                  static_cast<int64_t>(WebFeature::kNavigatorVibrate)));
 }
 
 // Test UseCounter UKM mixed content features observed.
@@ -1728,7 +1555,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
 
   const auto& entries = test_ukm_recorder_->GetEntriesByName(
       ukm::builders::Blink_UseCounter::kEntryName);
-  EXPECT_THAT(entries, SizeIs(7));
+  EXPECT_THAT(entries, SizeIs(6));
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
@@ -1744,8 +1571,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAutoupgradesDisabled,
                   static_cast<int64_t>(WebFeature::kPageVisits),
                   static_cast<int64_t>(WebFeature::kFullscreenSecureOrigin),
                   static_cast<int64_t>(WebFeature::kNavigatorVibrate),
-                  static_cast<int64_t>(
-                      WebFeature::kApplicationCacheManifestSelectSecureOrigin),
                   static_cast<int64_t>(WebFeature::kMixedContentImage),
                   static_cast<int64_t>(WebFeature::kMixedContentAudio),
                   static_cast<int64_t>(WebFeature::kMixedContentVideo)));
@@ -2053,6 +1878,11 @@ class SessionRestorePageLoadMetricsBrowserTest
  public:
   SessionRestorePageLoadMetricsBrowserTest() {}
 
+  SessionRestorePageLoadMetricsBrowserTest(
+      const SessionRestorePageLoadMetricsBrowserTest&) = delete;
+  SessionRestorePageLoadMetricsBrowserTest& operator=(
+      const SessionRestorePageLoadMetricsBrowserTest&) = delete;
+
   // PageLoadMetricsBrowserTest:
   void SetUpOnMainThread() override {
     PageLoadMetricsBrowserTest::SetUpOnMainThread();
@@ -2112,14 +1942,16 @@ class SessionRestorePageLoadMetricsBrowserTest
         internal::kHistogramSessionRestoreForegroundTabFirstMeaningfulPaint,
         expected_total_count);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SessionRestorePageLoadMetricsBrowserTest);
 };
 
 class SessionRestorePaintWaiter : public SessionRestoreObserver {
  public:
   SessionRestorePaintWaiter() { SessionRestore::AddObserver(this); }
+
+  SessionRestorePaintWaiter(const SessionRestorePaintWaiter&) = delete;
+  SessionRestorePaintWaiter& operator=(const SessionRestorePaintWaiter&) =
+      delete;
+
   ~SessionRestorePaintWaiter() { SessionRestore::RemoveObserver(this); }
 
   // SessionRestoreObserver implementation:
@@ -2148,8 +1980,6 @@ class SessionRestorePaintWaiter : public SessionRestoreObserver {
   std::unordered_map<content::WebContents*,
                      std::unique_ptr<PageLoadMetricsTestWaiter>>
       waiters_;
-
-  DISALLOW_COPY_AND_ASSIGN(SessionRestorePaintWaiter);
 };
 
 IN_PROC_BROWSER_TEST_F(SessionRestorePageLoadMetricsBrowserTest,
@@ -3343,262 +3173,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
       internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, EarlyHints) {
-  content::NavigationHandleTiming timing =
-      NavigateWithEarlyHints(EarlyHintsPolicy::OneHint);
-
-  // There were no redirections, so the first request should be the same as the
-  // final request.
-  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
-  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
-  EXPECT_EQ(timing.early_hints_for_first_request_time,
-            timing.early_hints_for_final_request_time);
-
-  // The Early Hints response (informational response) start time should be
-  // equal to the response start time.
-  EXPECT_FALSE(timing.first_response_start_time.is_null());
-  EXPECT_FALSE(timing.final_response_start_time.is_null());
-  EXPECT_EQ(timing.first_response_start_time,
-            timing.early_hints_for_first_request_time);
-  EXPECT_EQ(timing.final_response_start_time,
-            timing.early_hints_for_first_request_time);
-  // The non-informational response start time should be recorded separately.
-  EXPECT_FALSE(timing.final_non_informational_response_start_time.is_null());
-  EXPECT_LE(timing.final_response_start_time,
-            timing.final_non_informational_response_start_time);
-
-  // The timings of the Early Hints response should be recorded.
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
-
-  using NavigationTiming = ukm::builders::NavigationTiming;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(NavigationTiming::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(
-        kv.second.get(), embedded_test_server()->GetURL("/mock_page.html"));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFirstRequestName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFinalRequestName));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, EarlyHints_NoHints) {
-  content::NavigationHandleTiming timing =
-      NavigateWithEarlyHints(EarlyHintsPolicy::NoHints);
-
-  // No Early Hints responses were received.
-  EXPECT_TRUE(timing.early_hints_for_first_request_time.is_null());
-  EXPECT_TRUE(timing.early_hints_for_final_request_time.is_null());
-  // There were no informational responses, so the final response start time
-  // should be equal to the final non-informational response start time.
-  EXPECT_FALSE(timing.final_response_start_time.is_null());
-  EXPECT_FALSE(timing.final_non_informational_response_start_time.is_null());
-  EXPECT_EQ(timing.final_response_start_time,
-            timing.final_non_informational_response_start_time);
-
-  // The timings of the Early Hints response should not be recorded.
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 0);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 0);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 0);
-
-  using NavigationTiming = ukm::builders::NavigationTiming;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(NavigationTiming::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(
-        kv.second.get(), embedded_test_server()->GetURL("/mock_page.html"));
-    EXPECT_FALSE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFirstRequestName));
-    EXPECT_FALSE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFinalRequestName));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, EarlyHints_MultipleHints) {
-  content::NavigationHandleTiming timing =
-      NavigateWithEarlyHints(EarlyHintsPolicy::MultipleHints);
-
-  // There were no redirections, so the first request should be the same as the
-  // final request.
-  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
-  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
-  EXPECT_EQ(timing.early_hints_for_first_request_time,
-            timing.early_hints_for_final_request_time);
-
-  // The Early Hints response (informational response) start time should be
-  // equal to the response start time.
-  EXPECT_FALSE(timing.first_response_start_time.is_null());
-  EXPECT_FALSE(timing.final_response_start_time.is_null());
-  EXPECT_EQ(timing.first_response_start_time,
-            timing.early_hints_for_first_request_time);
-  EXPECT_EQ(timing.final_response_start_time,
-            timing.early_hints_for_first_request_time);
-  // The non-informational response start time should be recorded separately.
-  EXPECT_FALSE(timing.final_non_informational_response_start_time.is_null());
-  EXPECT_LT(timing.final_response_start_time,
-            timing.final_non_informational_response_start_time);
-
-  // The timings of the Early Hints responses should be recorded only one time.
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
-
-  using NavigationTiming = ukm::builders::NavigationTiming;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(NavigationTiming::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(
-        kv.second.get(), embedded_test_server()->GetURL("/mock_page.html"));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFirstRequestName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFinalRequestName));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       EarlyHints_HintsBeforeRedirection) {
-  content::NavigationHandleTiming timing = RedirectWithEarlyHints(
-      EarlyHintsPolicy::MultipleHints, EarlyHintsPolicy::NoHints);
-
-  // The early hints were served for the first request, but not for the
-  // redirected request.
-  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
-  EXPECT_TRUE(timing.early_hints_for_final_request_time.is_null());
-
-  // There were no informational responses for the redirected request, so the
-  // final response start time should be equal to the final non-informational
-  // response start time.
-  EXPECT_FALSE(timing.final_response_start_time.is_null());
-  EXPECT_FALSE(timing.final_non_informational_response_start_time.is_null());
-  EXPECT_EQ(timing.final_response_start_time,
-            timing.final_non_informational_response_start_time);
-
-  // The timings of the Early Hints response should be recorded only for the
-  // first request.
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 0);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 0);
-
-  using NavigationTiming = ukm::builders::NavigationTiming;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(NavigationTiming::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(
-        kv.second.get(), embedded_test_server()->GetURL("/mock_page2.html"));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFirstRequestName));
-    EXPECT_FALSE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFinalRequestName));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       EarlyHints_HintsAfterRedirection) {
-  content::NavigationHandleTiming timing = RedirectWithEarlyHints(
-      EarlyHintsPolicy::NoHints, EarlyHintsPolicy::MultipleHints);
-
-  // The early hints were served for the redirected request, but not for the
-  // first request.
-  EXPECT_TRUE(timing.early_hints_for_first_request_time.is_null());
-  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
-
-  // The Early Hints response (informational response) start time should be
-  // equal to the final response start time.
-  EXPECT_FALSE(timing.final_response_start_time.is_null());
-  EXPECT_EQ(timing.final_response_start_time,
-            timing.early_hints_for_final_request_time);
-  // The non-informational response start time should be recorded separately.
-  EXPECT_FALSE(timing.final_non_informational_response_start_time.is_null());
-  EXPECT_LT(timing.final_response_start_time,
-            timing.final_non_informational_response_start_time);
-
-  // The timings of the Early Hints response should be recorded only for the
-  // redirected request.
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 0);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
-
-  using NavigationTiming = ukm::builders::NavigationTiming;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(NavigationTiming::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(
-        kv.second.get(), embedded_test_server()->GetURL("/mock_page2.html"));
-    EXPECT_FALSE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFirstRequestName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFinalRequestName));
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       EarlyHints_HintsBeforeAndAfterRedirection) {
-  content::NavigationHandleTiming timing = RedirectWithEarlyHints(
-      EarlyHintsPolicy::MultipleHints, EarlyHintsPolicy::MultipleHints);
-
-  // The early hints were served for both the first request and the redirected
-  // request.
-  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
-  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
-  EXPECT_LT(timing.early_hints_for_first_request_time,
-            timing.early_hints_for_final_request_time);
-
-  // The Early Hints response (informational response) start time should be
-  // equal to the final response start time.
-  EXPECT_FALSE(timing.final_response_start_time.is_null());
-  EXPECT_EQ(timing.final_response_start_time,
-            timing.early_hints_for_final_request_time);
-  // The non-informational response start time should be recorded separately.
-  EXPECT_FALSE(timing.final_non_informational_response_start_time.is_null());
-  EXPECT_LT(timing.final_response_start_time,
-            timing.final_non_informational_response_start_time);
-
-  // The timings of the Early Hints response should be recorded.
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
-  histogram_tester_->ExpectTotalCount(
-      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
-
-  using NavigationTiming = ukm::builders::NavigationTiming;
-  const auto& entries =
-      test_ukm_recorder_->GetMergedEntriesByName(NavigationTiming::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  for (const auto& kv : entries) {
-    test_ukm_recorder_->ExpectEntrySourceHasUrl(
-        kv.second.get(), embedded_test_server()->GetURL("/mock_page2.html"));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFirstRequestName));
-    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
-        kv.second.get(), NavigationTiming::kEarlyHintsForFinalRequestName));
-  }
-}
-
 class NavigationPageLoadMetricsBrowserTest
     : public PageLoadMetricsBrowserTest,
       public ::testing::WithParamInterface<std::string> {
@@ -3815,8 +3389,15 @@ class PageLoadMetricsBackForwardCacheBrowserTest
   void VerifyPageEndReasons(const std::vector<PageEndReason>& reasons,
                             const GURL& url,
                             bool is_bfcache_enabled);
+  int64_t CountForMetricForURL(base::StringPiece entry_name,
+                               base::StringPiece metric_name,
+                               const GURL& url);
+  void ExpectNewForegroundDuration(const GURL& url, bool expect_bfcache);
 
  private:
+  int64_t expected_page_load_foreground_durations_ = 0;
+  int64_t expected_bfcache_foreground_durations_ = 0;
+
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -3872,6 +3453,22 @@ void PageLoadMetricsBackForwardCacheBrowserTest::VerifyPageEndReasons(
   EXPECT_EQ(reason_index, reasons.size());
 }
 
+int64_t PageLoadMetricsBackForwardCacheBrowserTest::CountForMetricForURL(
+    base::StringPiece entry_name,
+    base::StringPiece metric_name,
+    const GURL& url) {
+  int64_t count = 0;
+  for (auto* entry : test_ukm_recorder_->GetEntriesByName(entry_name)) {
+    auto* source = test_ukm_recorder_->GetSourceForSourceId(entry->source_id);
+    if (source->url() != url)
+      continue;
+    if (test_ukm_recorder_->EntryHasMetric(entry, metric_name)) {
+      count++;
+    }
+  }
+  return count;
+}
+
 IN_PROC_BROWSER_TEST_P(PageLoadMetricsBackForwardCacheBrowserTest,
                        LogsPageEndReasons) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -3881,7 +3478,7 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBackForwardCacheBrowserTest,
   bool back_forward_cache_enabled = GetParam() == kEnabled;
   // Navigate to A.
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
-  content::RenderFrameHost* rfh_a = web_contents()->GetMainFrame();
+  content::RenderFrameHostWrapper rfh_a(web_contents()->GetMainFrame());
 
   // Navigate to B.
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
@@ -3914,6 +3511,153 @@ IN_PROC_BROWSER_TEST_P(PageLoadMetricsBackForwardCacheBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(web_contents()));
   expected_reasons_a.push_back(page_load_metrics::END_FORWARD_BACK);
   VerifyPageEndReasons(expected_reasons_a, url_a, back_forward_cache_enabled);
+}
+
+void PageLoadMetricsBackForwardCacheBrowserTest::ExpectNewForegroundDuration(
+    const GURL& url,
+    bool expect_bfcache) {
+  if (expect_bfcache) {
+    expected_bfcache_foreground_durations_++;
+  } else {
+    expected_page_load_foreground_durations_++;
+  }
+  int64_t bf_count = CountForMetricForURL(
+      HistoryNavigation::kEntryName,
+      HistoryNavigation::kForegroundDurationAfterBackForwardCacheRestoreName,
+      url);
+  int64_t pl_count = CountForMetricForURL(
+      PageLoad::kEntryName, PageLoad::kPageTiming_ForegroundDurationName, url);
+  EXPECT_EQ(bf_count, expected_bfcache_foreground_durations_);
+  EXPECT_EQ(pl_count, expected_page_load_foreground_durations_);
+}
+
+IN_PROC_BROWSER_TEST_P(PageLoadMetricsBackForwardCacheBrowserTest,
+                       LogsBasicPageForegroundDuration) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  bool back_forward_cache_enabled = GetParam() == kEnabled;
+  // Navigate to A.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  content::RenderFrameHostWrapper rfh_a(web_contents()->GetMainFrame());
+
+  // Navigate to B.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  if (back_forward_cache_enabled) {
+    ASSERT_EQ(rfh_a->GetLifecycleState(),
+              content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+  }
+
+  // Verify a new foreground duration - this one shouldn't be logged by the
+  // bfcache metrics regardless of bfcache being enabled or not.
+  ExpectNewForegroundDuration(url_a, /*expect_bfcache=*/false);
+
+  // Go back to A, restoring it from the back-forward cache (if enabled)
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Navigate to B again - this should trigger the
+  // BackForwardCachePageLoadMetricsObserver for A (if enabled)
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+
+  ExpectNewForegroundDuration(url_a, back_forward_cache_enabled);
+
+  // Go back to A, restoring it from the back-forward cache (again)
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  web_contents()->GetController().GoForward();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Verify another foreground duration was logged.
+  ExpectNewForegroundDuration(url_a, back_forward_cache_enabled);
+}
+
+IN_PROC_BROWSER_TEST_P(PageLoadMetricsBackForwardCacheBrowserTest,
+                       LogsPageForegroundDurationOnHide) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  bool back_forward_cache_enabled = GetParam() == kEnabled;
+  // Navigate to A.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  content::RenderFrameHostWrapper rfh_a(web_contents()->GetMainFrame());
+
+  // Navigate to B.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  if (back_forward_cache_enabled) {
+    ASSERT_EQ(rfh_a->GetLifecycleState(),
+              content::RenderFrameHost::LifecycleState::kInBackForwardCache);
+  }
+
+  // Verify a new foreground duration - this one shouldn't be logged by the
+  // bfcache metrics regardless of bfcache being enabled or not.
+  ExpectNewForegroundDuration(url_a, /*expect_bfcache=*/false);
+
+  // Go back to A, restoring it from the back-forward cache (if enabled)
+  web_contents()->GetController().GoBack();
+  ASSERT_TRUE(WaitForLoadStop(web_contents()));
+
+  // Open and move to a new tab. This hides A, which should log a foreground
+  // duration.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url_b, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  // The new tab opening should cause a foreground duration for the original
+  // tab, since it's been hidden.
+  ExpectNewForegroundDuration(url_a, back_forward_cache_enabled);
+
+  // From this point no more foreground durations are expected to be logged, so
+  // stash the current counts.
+  int64_t bf_count = CountForMetricForURL(
+      HistoryNavigation::kEntryName,
+      HistoryNavigation::kForegroundDurationAfterBackForwardCacheRestoreName,
+      url_a);
+  int64_t pl_count =
+      CountForMetricForURL(PageLoad::kEntryName,
+                           PageLoad::kPageTiming_ForegroundDurationName, url_a);
+
+  // Switch back to the tab for url_a.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url_a, WindowOpenDisposition::SWITCH_TO_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  // And then switch back to url_b's tab. This should call OnHidden for the
+  // url_a tab again, but no new foreground duration should be logged.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url_b, WindowOpenDisposition::SWITCH_TO_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+
+  int64_t bf_count_after_switch = CountForMetricForURL(
+      HistoryNavigation::kEntryName,
+      HistoryNavigation::kForegroundDurationAfterBackForwardCacheRestoreName,
+      url_a);
+  int64_t pl_count_after_switch =
+      CountForMetricForURL(PageLoad::kEntryName,
+                           PageLoad::kPageTiming_ForegroundDurationName, url_a);
+  EXPECT_EQ(bf_count, bf_count_after_switch);
+  EXPECT_EQ(pl_count, pl_count_after_switch);
+
+  // Switch back to the tab for url_a, then close the browser. This should cause
+  // OnComplete to be called on the BFCache observer, but this should not cause
+  // a new foreground duration to be logged.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url_a, WindowOpenDisposition::SWITCH_TO_TAB,
+      ui_test_utils::BROWSER_TEST_NONE);
+  CloseBrowserSynchronously(browser());
+
+  // Neither of the metrics for url_a should have moved.
+  int64_t bf_count_after_close = CountForMetricForURL(
+      HistoryNavigation::kEntryName,
+      HistoryNavigation::kForegroundDurationAfterBackForwardCacheRestoreName,
+      url_a);
+  int64_t pl_count_after_close =
+      CountForMetricForURL(PageLoad::kEntryName,
+                           PageLoad::kPageTiming_ForegroundDurationName, url_a);
+  EXPECT_EQ(bf_count, bf_count_after_close);
+  EXPECT_EQ(pl_count, pl_count_after_close);
 }
 
 INSTANTIATE_TEST_SUITE_P(

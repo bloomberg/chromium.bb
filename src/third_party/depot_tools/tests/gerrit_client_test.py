@@ -105,6 +105,22 @@ class TestGerritClient(unittest.TestCase):
     ])
     util_mock.assert_called_once_with('example.org', 1, 'bar')
 
+  @mock.patch('gerrit_util.SetReview', return_value='')
+  def test_setlabel(self, util_mock):
+    gerrit_client.main([
+        'setlabel',
+        '--host',
+        'https://example.org/foo',
+        '-c',
+        '1',
+        '-l',
+        'some-label',
+        '-2',
+    ])
+    util_mock.assert_called_once_with('example.org',
+                                      1,
+                                      labels={'some-label': '-2'})
+
 
 if __name__ == '__main__':
   logging.basicConfig(

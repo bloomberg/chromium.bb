@@ -108,6 +108,10 @@ base::Value GenerateSimSlotInfosWithEid(const std::string& eid) {
 class TestObserver final : public chromeos::NetworkStateHandlerObserver {
  public:
   explicit TestObserver(NetworkStateHandler* handler) : handler_(handler) {}
+
+  TestObserver(const TestObserver&) = delete;
+  TestObserver& operator=(const TestObserver&) = delete;
+
   ~TestObserver() override = default;
 
   void DeviceListChanged() override {
@@ -295,13 +299,15 @@ class TestObserver final : public chromeos::NetworkStateHandlerObserver {
   absl::optional<base::RunLoop> run_loop_scan_started_;
   absl::optional<base::RunLoop> run_loop_scan_completed_;
   std::vector<std::pair<std::string, std::string>> service_path_transitions_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 class TestTetherSortDelegate : public NetworkStateHandler::TetherSortDelegate {
  public:
   TestTetherSortDelegate() = default;
+
+  TestTetherSortDelegate(const TestTetherSortDelegate&) = delete;
+  TestTetherSortDelegate& operator=(const TestTetherSortDelegate&) = delete;
+
   ~TestTetherSortDelegate() = default;
 
   // NetworkStateHandler::TetherSortDelegate:
@@ -319,9 +325,6 @@ class TestTetherSortDelegate : public NetworkStateHandler::TetherSortDelegate {
                 return first_network->guid() >= second_network->guid();
               });
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestTetherSortDelegate);
 };
 
 }  // namespace
@@ -335,6 +338,10 @@ class NetworkStateHandlerTest : public testing::Test {
         manager_test_(nullptr),
         profile_test_(nullptr),
         service_test_(nullptr) {}
+
+  NetworkStateHandlerTest(const NetworkStateHandlerTest&) = delete;
+  NetworkStateHandlerTest& operator=(const NetworkStateHandlerTest&) = delete;
+
   ~NetworkStateHandlerTest() override = default;
 
   void SetUp() override {
@@ -453,9 +460,6 @@ class NetworkStateHandlerTest : public testing::Test {
   ShillManagerClient::TestInterface* manager_test_;
   ShillProfileClient::TestInterface* profile_test_;
   ShillServiceClient::TestInterface* service_test_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NetworkStateHandlerTest);
 };
 
 TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
@@ -2301,7 +2305,7 @@ TEST_F(NetworkStateHandlerTest, SyncStubCellularNetworks_SimInfoChange) {
   EXPECT_EQ(1u, test_observer_->network_list_changed_count());
 }
 
-TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlocked) {
+TEST_F(NetworkStateHandlerTest, BlockedWifiByPolicyBlocked) {
   NetworkState* wifi1 = network_state_handler_->GetModifiableNetworkState(
       kShillManagerClientStubDefaultWifi);
   NetworkState* wifi2 = network_state_handler_->GetModifiableNetworkState(
@@ -2338,7 +2342,7 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyBlocked) {
   EXPECT_FALSE(wifi2->blocked_by_policy());
 }
 
-TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged) {
+TEST_F(NetworkStateHandlerTest, BlockedWifiByPolicyOnlyManaged) {
   NetworkState* wifi1 = network_state_handler_->GetModifiableNetworkState(
       kShillManagerClientStubDefaultWifi);
   NetworkState* wifi2 = network_state_handler_->GetModifiableNetworkState(
@@ -2372,7 +2376,44 @@ TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManaged) {
   EXPECT_TRUE(wifi2->blocked_by_policy());
 }
 
-TEST_F(NetworkStateHandlerTest, BlockedByPolicyOnlyManagedIfAvailable) {
+TEST_F(NetworkStateHandlerTest, BlockedCellularByPolicyOnlyManaged) {
+  const char kTestCellularServicePath2[] = "test_cellular_service_path2";
+  const char kTestCellularServiceGuid2[] = "test_cellular_guid2";
+  const char kTestCellularServiceName2[] = "test_cellular2";
+  AddService(kTestCellularServicePath2, kTestCellularServiceGuid2,
+             kTestCellularServiceName2, shill::kTypeCellular,
+             shill::kStateIdle);
+  base::RunLoop().RunUntilIdle();
+
+  NetworkState* cellular1 = network_state_handler_->GetModifiableNetworkState(
+      kShillManagerClientStubCellular);
+  NetworkState* cellular2 = network_state_handler_->GetModifiableNetworkState(
+      kTestCellularServicePath2);
+  EXPECT_FALSE(cellular1->IsManagedByPolicy());
+  EXPECT_FALSE(cellular1->blocked_by_policy());
+  EXPECT_FALSE(cellular2->IsManagedByPolicy());
+  EXPECT_FALSE(cellular2->blocked_by_policy());
+
+  network_state_handler_->UpdateBlockedCellularNetworks(true);
+
+  EXPECT_TRUE(cellular1->blocked_by_policy());
+  EXPECT_TRUE(cellular2->blocked_by_policy());
+
+  // Emulate 'cellular1' being a managed network.
+  std::unique_ptr<NetworkUIData> ui_data =
+      NetworkUIData::CreateFromONC(::onc::ONCSource::ONC_SOURCE_DEVICE_POLICY);
+  base::Value properties(base::Value::Type::DICTIONARY);
+  properties.SetKey(shill::kProfileProperty, base::Value(kProfilePath));
+  properties.SetKey(shill::kUIDataProperty, base::Value(ui_data->GetAsJson()));
+  SetProperties(cellular1, properties);
+
+  EXPECT_TRUE(cellular1->IsManagedByPolicy());
+  EXPECT_FALSE(cellular1->blocked_by_policy());
+  EXPECT_FALSE(cellular2->IsManagedByPolicy());
+  EXPECT_TRUE(cellular2->blocked_by_policy());
+}
+
+TEST_F(NetworkStateHandlerTest, BlockedWifiByPolicyOnlyManagedIfAvailable) {
   NetworkState* wifi1 = network_state_handler_->GetModifiableNetworkState(
       kShillManagerClientStubDefaultWifi);
   NetworkState* wifi2 = network_state_handler_->GetModifiableNetworkState(

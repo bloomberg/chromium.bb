@@ -5,14 +5,18 @@
 #include "content/browser/fenced_frame/fenced_frame.h"
 
 #include "base/notreached.h"
+#include "content/browser/renderer_host/render_frame_proxy_host.h"
+#include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "url/gurl.h"
 
 namespace content {
 
-FencedFrame::FencedFrame(RenderFrameHostImpl& owner_render_frame_host)
+FencedFrame::FencedFrame(
+    base::SafeRef<RenderFrameHostImpl> owner_render_frame_host)
     : web_contents_(static_cast<WebContentsImpl*>(
-          WebContents::FromRenderFrameHost(&owner_render_frame_host))),
+          WebContents::FromRenderFrameHost(&*owner_render_frame_host))),
       owner_render_frame_host_(owner_render_frame_host),
       frame_tree_(std::make_unique<FrameTree>(
           web_contents_->GetBrowserContext(),
@@ -42,8 +46,7 @@ FencedFrame::FencedFrame(RenderFrameHostImpl& owner_render_frame_host)
   // TODO(crbug.com/1199679): This should be moved to FrameTree::Init.
   web_contents_->NotifySwappedFromRenderManager(
       /*old_frame=*/nullptr,
-      frame_tree_->root()->render_manager()->current_frame_host(),
-      /*is_main_frame=*/true);
+      frame_tree_->root()->render_manager()->current_frame_host());
 
   CreateProxyAndAttachToOuterFrameTree();
 }
@@ -52,8 +55,6 @@ FencedFrame::~FencedFrame() {
   DCHECK(frame_tree_);
   frame_tree_->Shutdown();
   frame_tree_.reset();
-  if (on_destroyed_callback_for_testing_)
-    std::move(on_destroyed_callback_for_testing_).Run();
 }
 
 void FencedFrame::Navigate(const GURL& url) {
@@ -70,12 +71,12 @@ void FencedFrame::Navigate(const GURL& url) {
   // the navigation even though this wouldn't be reflected here. See that bug
   // for more discussion and plans for an eventual resolution.
   const blink::LocalFrameToken initiator_frame_token =
-      owner_render_frame_host_.GetFrameToken();
+      owner_render_frame_host_->GetFrameToken();
   inner_root->navigator().NavigateFromFrameProxy(
       inner_root->current_frame_host(), url, &initiator_frame_token,
-      owner_render_frame_host_.GetProcess()->GetID(),
-      owner_render_frame_host_.GetLastCommittedOrigin(),
-      owner_render_frame_host_.GetSiteInstance(), content::Referrer(),
+      owner_render_frame_host_->GetProcess()->GetID(),
+      owner_render_frame_host_->GetLastCommittedOrigin(),
+      owner_render_frame_host_->GetSiteInstance(), content::Referrer(),
       ui::PAGE_TRANSITION_LINK,
       /*should_replace_current_entry=*/false, download_policy, "GET",
       /*post_body=*/nullptr, /*extra_headers=*/"",
@@ -106,7 +107,7 @@ RenderFrameProxyHost* FencedFrame::GetProxyToInnerMainFrame() {
 void FencedFrame::OnFrameTreeNodeDestroyed(
     FrameTreeNode* outer_delegate_frame_tree_node) {
   DCHECK_EQ(outer_delegate_frame_tree_node_, outer_delegate_frame_tree_node);
-  owner_render_frame_host_.DestroyFencedFrame(*this);
+  owner_render_frame_host_->DestroyFencedFrame(*this);
   // Don't use `this` after this point, as it is destroyed.
 }
 
@@ -115,18 +116,18 @@ void FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
   DCHECK(!outer_delegate_frame_tree_node_);
 
   outer_delegate_frame_tree_node_ =
-      owner_render_frame_host_.frame_tree()->AddFrame(
-          &owner_render_frame_host_,
-          owner_render_frame_host_.GetProcess()->GetID(),
-          owner_render_frame_host_.GetProcess()->GetNextRoutingID(),
+      owner_render_frame_host_->frame_tree()->AddFrame(
+          &*owner_render_frame_host_,
+          owner_render_frame_host_->GetProcess()->GetID(),
+          owner_render_frame_host_->GetProcess()->GetNextRoutingID(),
           /*frame_remote=*/mojo::NullAssociatedRemote(),
-          mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
-              .InitWithNewPipeAndPassReceiver(),
+          /*browser_interface_broker_receiver=*/mojo::NullReceiver(),
           /*policy_container_bind_params=*/nullptr,
           blink::mojom::TreeScopeType::kDocument, "", "", true,
           blink::LocalFrameToken(), base::UnguessableToken::Create(),
           blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
-          blink::mojom::FrameOwnerElementType::kFencedframe);
+          blink::FrameOwnerElementType::kFencedframe,
+          /*is_dummy_frame_for_inner_tree=*/true);
 
   // Connect the outer delegate RenderFrameHost with the inner main
   // FrameTreeNode. This allows us to traverse from the outer delegate RFH
@@ -143,9 +144,31 @@ void FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
   FrameTreeNode* inner_root = frame_tree_->root();
   proxy_to_inner_main_frame_ =
       inner_root->render_manager()->CreateOuterDelegateProxy(
-          owner_render_frame_host_.GetSiteInstance());
+          owner_render_frame_host_->GetSiteInstance());
 
   inner_root->current_frame_host()->PropagateEmbeddingTokenToParentFrame();
+
+  RenderFrameHostManager* inner_render_manager = inner_root->render_manager();
+
+  // For the newly minted FrameTree (in the constructor) we will have a new
+  // RenderViewHost that does not yet have a RenderWidgetHostView for it.
+  // Create a RenderWidgetHostViewChildFrame as this won't be a top-level
+  // view. Set the associated view for the inner frame tree after it has
+  // been created.
+  RenderViewHost* rvh =
+      inner_render_manager->current_frame_host()->GetRenderViewHost();
+  if (!inner_render_manager->InitRenderView(
+          inner_render_manager->current_frame_host()->GetSiteInstance(),
+          static_cast<RenderViewHostImpl*>(rvh), nullptr)) {
+    return;
+  }
+
+  RenderWidgetHostViewBase* child_rwhv =
+      inner_render_manager->GetRenderWidgetHostView();
+  CHECK(child_rwhv);
+  CHECK(child_rwhv->IsRenderWidgetHostViewChildFrame());
+  inner_render_manager->SetRWHViewForInnerFrameTree(
+      static_cast<RenderWidgetHostViewChildFrame*>(child_rwhv));
 }
 
 const base::UnguessableToken& FencedFrame::GetDevToolsFrameToken() const {
@@ -160,11 +183,6 @@ void FencedFrame::WaitForDidStopLoadingForTesting() {
   base::RunLoop run_loop;
   on_did_finish_loading_callback_for_testing_ = run_loop.QuitClosure();
   run_loop.Run();
-}
-
-void FencedFrame::SetOnDestroyedCallbackForTesting(base::OnceClosure cb) {
-  DCHECK(!on_destroyed_callback_for_testing_);
-  on_destroyed_callback_for_testing_ = std::move(cb);
 }
 
 }  // namespace content

@@ -45,6 +45,10 @@ class AuthenticationService : public KeyedService,
                         ChromeAccountManagerService* account_manager_service,
                         signin::IdentityManager* identity_manager,
                         syncer::SyncService* sync_service);
+
+  AuthenticationService(const AuthenticationService&) = delete;
+  AuthenticationService& operator=(const AuthenticationService&) = delete;
+
   ~AuthenticationService() override;
 
   // Registers the preferences used by AuthenticationService;
@@ -221,6 +225,10 @@ class AuthenticationService : public KeyedService,
   // to avoid an infinite reloading loop.
   bool is_reloading_credentials_ = false;
 
+  // Whether the primary account was logged out because it became restricted.
+  // It is used to respond to late observers.
+  bool primary_account_was_restricted_ = false;
+
   // Map between account IDs and their associated MDM error.
   mutable std::map<CoreAccountId, NSDictionary*> cached_mdm_infos_;
 
@@ -237,8 +245,6 @@ class AuthenticationService : public KeyedService,
       account_manager_service_observation_{this};
 
   base::WeakPtrFactory<AuthenticationService> weak_pointer_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(AuthenticationService);
 };
 
 #endif  // IOS_CHROME_BROWSER_SIGNIN_AUTHENTICATION_SERVICE_H_

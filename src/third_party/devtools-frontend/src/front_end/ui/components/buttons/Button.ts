@@ -19,9 +19,15 @@ export const enum Variant {
   SECONDARY = 'secondary',
 }
 
-export interface ButtonData {
+export const enum Size {
+  SMALL = 'SMALL',
+  MEDIUM = 'MEDIUM',
+}
+
+interface ButtonData {
   iconUrl?: string;
   variant?: Variant;
+  size?: Size;
 }
 
 export interface ButtonDataWithVariant extends ButtonData {
@@ -30,9 +36,12 @@ export interface ButtonDataWithVariant extends ButtonData {
 
 export class Button extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-button`;
-  private readonly shadow = this.attachShadow({mode: 'open'});
+  private readonly shadow = this.attachShadow({mode: 'open', delegatesFocus: true});
   private readonly boundRender = this.render.bind(this);
-  private readonly props: ButtonData = {};
+  private readonly props: ButtonData = {
+    size: Size.MEDIUM,
+  };
+  private isEmpty = true;
 
   constructor() {
     super();
@@ -46,6 +55,7 @@ export class Button extends HTMLElement {
   set data(data: ButtonDataWithVariant) {
     this.props.variant = data.variant;
     this.props.iconUrl = data.iconUrl;
+    this.props.size = data.size || Size.MEDIUM;
     ComponentHelpers.ScheduledRender.scheduleRender(this, this.boundRender);
   }
 
@@ -59,8 +69,24 @@ export class Button extends HTMLElement {
     ComponentHelpers.ScheduledRender.scheduleRender(this, this.boundRender);
   }
 
+  set size(size: Size) {
+    this.props.size = size;
+    ComponentHelpers.ScheduledRender.scheduleRender(this, this.boundRender);
+  }
+
+  focus(): void {
+    this.shadow.querySelector('button')?.focus();
+  }
+
   connectedCallback(): void {
     this.shadow.adoptedStyleSheets = [buttonStyles];
+    ComponentHelpers.ScheduledRender.scheduleRender(this, this.boundRender);
+  }
+
+  private onSlotChange(event: Event): void {
+    const slot = event.target as HTMLSlotElement | undefined;
+    const nodes = slot?.assignedNodes();
+    this.isEmpty = !nodes || !Boolean(nodes.length);
     ComponentHelpers.ScheduledRender.scheduleRender(this, this.boundRender);
   }
 
@@ -71,7 +97,9 @@ export class Button extends HTMLElement {
     const classes = {
       primary: this.props.variant === Variant.PRIMARY,
       secondary: this.props.variant === Variant.SECONDARY,
-      'with-icon': Boolean(this.props.iconUrl),
+      'text-with-icon': Boolean(this.props.iconUrl) && !this.isEmpty,
+      'only-icon': Boolean(this.props.iconUrl) && this.isEmpty,
+      small: Boolean(this.props.size === Size.SMALL),
     };
     // clang-format off
     LitHtml.render(
@@ -84,7 +112,7 @@ export class Button extends HTMLElement {
             } as IconButton.Icon.IconData}
           >
           </${IconButton.Icon.Icon.litTagName}>` : ''}
-          <slot></slot>
+          <slot @slotchange=${this.onSlotChange}></slot>
         </button>
       `, this.shadow, {host: this});
     // clang-format on

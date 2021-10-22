@@ -233,7 +233,7 @@ void HTMLPlugInElement::AttachLayoutTree(AttachContext& context) {
     // add our layout object to the frame view's update list. This is typically
     // done during layout, but if we're blocking layout, we will never update
     // the plugin and thus delay the load event indefinitely.
-    if (DisplayLockUtilities::NearestLockedExclusiveAncestor(*this)) {
+    if (DisplayLockUtilities::LockedAncestorPreventingLayout(*this)) {
       auto* embedded_object = GetLayoutEmbeddedObject();
       if (auto* frame_view = embedded_object->GetFrameView())
         frame_view->AddPartToUpdate(*embedded_object);

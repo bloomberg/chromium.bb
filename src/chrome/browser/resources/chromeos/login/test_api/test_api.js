@@ -71,7 +71,7 @@ class PolymerElementApi extends TestElementApi {
   /** @override */
   element() {
     assert(this.parent.element());
-    return this.parent.element().$$(this.query);
+    return this.parent.element().shadowRoot.querySelector(this.query);
   }
 
   /**
@@ -123,14 +123,7 @@ class WelcomeScreen extends ScreenElementApi {
   clickNext() {
     if (!this.nextButton) {
       let mainStep = new PolymerElementApi(this, '#welcomeScreen');
-      const newLayout = loadTimeData.valueExists('newLayoutEnabled') &&
-          loadTimeData.getBoolean('newLayoutEnabled');
-
-      if (newLayout) {
-        this.nextButton = new PolymerElementApi(mainStep, '#getStarted');
-      } else {
-        this.nextButton = new PolymerElementApi(mainStep, '#welcomeNextButton');
-      }
+      this.nextButton = new PolymerElementApi(mainStep, '#getStarted');
     }
 
     assert(this.nextButton);
@@ -180,6 +173,18 @@ class UserCreationScreen extends ScreenElementApi {
 class GaiaScreen extends ScreenElementApi {
   constructor() {
     super('gaia-signin');
+    this.signinFrame = new PolymerElementApi(this, '#signin-frame-dialog');
+    this.gaiaDialog = new PolymerElementApi(this.signinFrame, '#gaiaDialog');
+    this.gaiaLoading = new PolymerElementApi(this, '#gaia-loading');
+  }
+
+  /**
+   * Returns if the Gaia Screen is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && !this.gaiaLoading.isVisible() &&
+        this.signinFrame.isVisible() && this.gaiaDialog.isVisible();
   }
 }
 
@@ -240,6 +245,101 @@ class PinSetupScreen extends ScreenElementApi {
   }
 }
 
+class EnrollmentSignInStep extends PolymerElementApi {
+  constructor(parent) {
+    super(parent, '#step-signin');
+    this.signInFrame = new PolymerElementApi(this, '#signin-frame');
+    this.nextButton = new PolymerElementApi(this, '#primary-action-button');
+  }
+
+  /**
+   * Returns if the Enrollment Signing step is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.signInFrame.isVisible() &&
+        this.nextButton.isVisible();
+  }
+}
+
+class EnrollmentSuccessStep extends PolymerElementApi {
+  constructor(parent) {
+    super(parent, '#step-success');
+    this.nextButton = new PolymerElementApi(parent, '#successDoneButton');
+  }
+
+  /**
+   * Returns if the Enrollment Success step is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.nextButton.isVisible();
+  }
+
+  clickNext() {
+    this.nextButton.click();
+  }
+}
+
+class EnrollmentErrorStep extends PolymerElementApi {
+  constructor(parent) {
+    super(parent, '#step-error');
+    this.retryButton = new PolymerElementApi(parent, '#errorRetryButton');
+    this.errorMsgContainer = new PolymerElementApi(parent, '#errorMsg');
+  }
+
+  /**
+   * Returns if the Enrollment Error step is ready for test interaction.
+   * @return {boolean}
+   */
+  isReadyForTesting() {
+    return this.isVisible() && this.errorMsgContainer.isVisible();
+  }
+
+  /**
+   * Returns if enterprise enrollment can be retried.
+   * @return {boolean}
+   */
+  canRetryEnrollment() {
+    return this.retryButton.isVisible() && this.retryButton.isEnabled();
+  }
+
+  /**
+   * Click the Retry button on the enrollment error screen.
+   */
+  clickRetryButton() {
+    assert(this.canRetryEnrollment());
+    this.retryButton.click();
+  }
+
+  /**
+   * Returns the error text shown on the enrollment error screen.
+   * @return {string}
+   */
+  getErrorMsg() {
+    assert(this.isReadyForTesting());
+    return this.errorMsgContainer.element().innerText;
+  }
+}
+
+class EnterpriseEnrollmentScreen extends ScreenElementApi {
+  constructor() {
+    super('enterprise-enrollment');
+    this.signInStep = new EnrollmentSignInStep(this);
+    this.successStep = new EnrollmentSuccessStep(this);
+    this.errorStep = new EnrollmentErrorStep(this);
+    this.enrollmentInProgressDlg = new PolymerElementApi(this, '#step-working');
+  }
+
+  /**
+   * Returns if enrollment is in progress.
+   * @return {boolean}
+   */
+  isEnrollmentInProgress() {
+    return this.enrollmentInProgressDlg.isVisible();
+  }
+}
+
 class OobeApiProvider {
   constructor() {
     this.screens = {
@@ -253,6 +353,10 @@ class OobeApiProvider {
       GaiaScreen: new GaiaScreen(),
       ConfirmSamlPasswordScreen: new ConfirmSamlPasswordScreen(),
       PinSetupScreen: new PinSetupScreen(),
+      EnterpriseEnrollmentScreen: new EnterpriseEnrollmentScreen(),
+    };
+    this.loginWithPin = function(username, pin) {
+      chrome.send('OobeTestApi.loginWithPin', [username, pin]);
     };
   }
 }

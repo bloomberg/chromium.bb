@@ -97,13 +97,15 @@ class PdfToEmfConverterClientImpl : public mojom::PdfToEmfConverterClient {
 class PostScriptMetaFile : public Emf {
  public:
   PostScriptMetaFile() {}
+
+  PostScriptMetaFile(const PostScriptMetaFile&) = delete;
+  PostScriptMetaFile& operator=(const PostScriptMetaFile&) = delete;
+
   ~PostScriptMetaFile() override {}
 
  private:
   // Emf:
   bool SafePlayback(HDC hdc) const override;
-
-  DISALLOW_COPY_AND_ASSIGN(PostScriptMetaFile);
 };
 
 // Class for converting PDF to another format for printing (Emf, Postscript).
@@ -121,6 +123,10 @@ class PdfConverterImpl : public PdfConverter {
   PdfConverterImpl(scoped_refptr<base::RefCountedMemory> data,
                    const PdfRenderSettings& conversion_settings,
                    StartCallback start_callback);
+
+  PdfConverterImpl(const PdfConverterImpl&) = delete;
+  PdfConverterImpl& operator=(const PdfConverterImpl&) = delete;
+
   ~PdfConverterImpl() override;
 
   static void set_fail_when_initializing_conversion_for_tests(bool fail) {
@@ -137,6 +143,9 @@ class PdfConverterImpl : public PdfConverter {
     GetPageCallbackData(uint32_t page_number,
                         PdfConverter::GetPageCallback callback)
         : page_number_(page_number), callback_(callback) {}
+
+    GetPageCallbackData(const GetPageCallbackData&) = delete;
+    GetPageCallbackData& operator=(const GetPageCallbackData&) = delete;
 
     GetPageCallbackData(GetPageCallbackData&& other) {
       *this = std::move(other);
@@ -156,8 +165,6 @@ class PdfConverterImpl : public PdfConverter {
     uint32_t page_number_;
 
     PdfConverter::GetPageCallback callback_;
-
-    DISALLOW_COPY_AND_ASSIGN(GetPageCallbackData);
   };
 
   void Initialize(scoped_refptr<base::RefCountedMemory> data);
@@ -205,8 +212,6 @@ class PdfConverterImpl : public PdfConverter {
   base::WeakPtrFactory<PdfConverterImpl> weak_ptr_factory_{this};
 
   static bool simulate_failure_initializing_conversion_;
-
-  DISALLOW_COPY_AND_ASSIGN(PdfConverterImpl);
 };
 
 // static

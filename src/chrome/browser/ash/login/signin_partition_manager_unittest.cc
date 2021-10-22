@@ -38,10 +38,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace chromeos {
+namespace ash {
 namespace login {
-
 namespace {
+
 constexpr char kEmbedderUrl[] = "http://www.whatever.com/";
 
 void StorePartitionNameAndQuitLoop(base::RunLoop* loop,
@@ -77,6 +77,11 @@ void IsEntryInHttpAuthCache(network::NetworkContext* network_context,
 }  // namespace
 
 class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
+ public:
+  SigninPartitionManagerTest(const SigninPartitionManagerTest&) = delete;
+  SigninPartitionManagerTest& operator=(const SigninPartitionManagerTest&) =
+      delete;
+
  protected:
   SigninPartitionManagerTest() {}
   ~SigninPartitionManagerTest() override {}
@@ -223,8 +228,6 @@ class SigninPartitionManagerTest : public ChromeRenderViewHostTestHarness {
 
   std::vector<std::pair<content::StoragePartition*, base::OnceClosure>>
       pending_clear_tasks_;
-
-  DISALLOW_COPY_AND_ASSIGN(SigninPartitionManagerTest);
 };
 
 TEST_F(SigninPartitionManagerTest, TestSubsequentAttempts) {
@@ -295,4 +298,4 @@ TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
 }
 
 }  // namespace login
-}  // namespace chromeos
+}  // namespace ash

@@ -40,7 +40,8 @@ class CPDFSDK_BAAnnotHandlerTest : public EmbedderTest {
     CPDFSDK_AnnotHandlerMgr* pAnnotHandlerMgr =
         m_pFormFillEnv->GetAnnotHandlerMgr();
     ASSERT_TRUE(pAnnotHandlerMgr);
-    m_pBAAnnotHandler = pAnnotHandlerMgr->m_pBAAnnotHandler.get();
+    m_pBAAnnotHandler = static_cast<CPDFSDK_BAAnnotHandler*>(
+        pAnnotHandlerMgr->m_pBAAnnotHandler.get());
     ASSERT_TRUE(m_pBAAnnotHandler);
   }
 
@@ -85,8 +86,8 @@ TEST_F(CPDFSDK_BAAnnotHandlerTest, TabToLinkOrHighlightAnnot) {
   EXPECT_EQ(pAnnot->GetAnnotSubtype(), CPDF_Annot::Subtype::LINK);
 
   ObservedPtr<CPDFSDK_Annot> pLinkAnnot(pAnnot);
-  EXPECT_TRUE(GetBAAnnotHandler()->OnSetFocus(&pLinkAnnot, {}));
-  EXPECT_TRUE(GetBAAnnotHandler()->OnKillFocus(&pLinkAnnot, {}));
+  EXPECT_TRUE(GetBAAnnotHandler()->OnSetFocus(pLinkAnnot, {}));
+  EXPECT_TRUE(GetBAAnnotHandler()->OnKillFocus(pLinkAnnot, {}));
 
   // Get highlight annot.
   pAnnot = GetNthFocusableAnnot(4);
@@ -94,6 +95,6 @@ TEST_F(CPDFSDK_BAAnnotHandlerTest, TabToLinkOrHighlightAnnot) {
   EXPECT_EQ(pAnnot->GetAnnotSubtype(), CPDF_Annot::Subtype::HIGHLIGHT);
 
   ObservedPtr<CPDFSDK_Annot> pHighlightAnnot(pAnnot);
-  EXPECT_TRUE(GetBAAnnotHandler()->OnSetFocus(&pHighlightAnnot, {}));
-  EXPECT_TRUE(GetBAAnnotHandler()->OnKillFocus(&pHighlightAnnot, {}));
+  EXPECT_TRUE(GetBAAnnotHandler()->OnSetFocus(pHighlightAnnot, {}));
+  EXPECT_TRUE(GetBAAnnotHandler()->OnKillFocus(pHighlightAnnot, {}));
 }

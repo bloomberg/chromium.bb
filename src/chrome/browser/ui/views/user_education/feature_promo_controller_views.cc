@@ -13,12 +13,12 @@
 #include "base/token.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/user_education/feature_promo_snooze_service.h"
 #include "chrome/browser/ui/user_education/feature_promo_text_replacements.h"
 #include "chrome/browser/ui/views/chrome_view_class_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_owner.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_bubble_params.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/user_education/feature_promo_registry.h"
 #include "chrome/grit/generated_resources.h"
@@ -26,8 +26,48 @@
 #include "components/feature_engagement/public/tracker.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view.h"
+
+namespace {
+
+views::BubbleBorder::Arrow MapToBubbleBorderArrow(
+    FeaturePromoBubbleParams::Arrow arrow) {
+  using Arrow = FeaturePromoBubbleParams::Arrow;
+  switch (arrow) {
+    case Arrow::TOP_LEFT:
+      return views::BubbleBorder::Arrow::TOP_LEFT;
+    case Arrow::TOP_RIGHT:
+      return views::BubbleBorder::Arrow::TOP_RIGHT;
+    case Arrow::BOTTOM_LEFT:
+      return views::BubbleBorder::Arrow::BOTTOM_LEFT;
+    case Arrow::BOTTOM_RIGHT:
+      return views::BubbleBorder::Arrow::BOTTOM_RIGHT;
+    case Arrow::LEFT_TOP:
+      return views::BubbleBorder::Arrow::LEFT_TOP;
+    case Arrow::RIGHT_TOP:
+      return views::BubbleBorder::Arrow::RIGHT_TOP;
+    case Arrow::LEFT_BOTTOM:
+      return views::BubbleBorder::Arrow::LEFT_BOTTOM;
+    case Arrow::RIGHT_BOTTOM:
+      return views::BubbleBorder::Arrow::RIGHT_BOTTOM;
+    case Arrow::TOP_CENTER:
+      return views::BubbleBorder::Arrow::TOP_CENTER;
+    case Arrow::BOTTOM_CENTER:
+      return views::BubbleBorder::Arrow::BOTTOM_CENTER;
+    case Arrow::LEFT_CENTER:
+      return views::BubbleBorder::Arrow::LEFT_CENTER;
+    case Arrow::RIGHT_CENTER:
+      return views::BubbleBorder::Arrow::RIGHT_CENTER;
+  }
+}
+
+}  // namespace
+
+// static
+bool FeaturePromoControllerViews::active_window_check_blocked_for_testing =
+    false;
 
 FeaturePromoControllerViews::FeaturePromoControllerViews(
     BrowserView* browser_view,
@@ -69,12 +109,15 @@ FeaturePromoControllerViews* FeaturePromoControllerViews::GetForView(
 bool FeaturePromoControllerViews::MaybeShowPromoWithParams(
     const base::Feature& iph_feature,
     const FeaturePromoBubbleParams& params,
+    views::View* anchor_view,
     BubbleCloseCallback close_callback) {
-  return MaybeShowPromoImpl(iph_feature, params, std::move(close_callback));
+  return MaybeShowPromoImpl(iph_feature, params, anchor_view,
+                            std::move(close_callback));
 }
 
 absl::optional<base::Token> FeaturePromoControllerViews::ShowCriticalPromo(
-    const FeaturePromoBubbleParams& params) {
+    const FeaturePromoBubbleParams& params,
+    views::View* anchor_view) {
   if (promos_blocked_for_testing_)
     return absl::nullopt;
 
@@ -94,7 +137,7 @@ absl::optional<base::Token> FeaturePromoControllerViews::ShowCriticalPromo(
   DCHECK(!bubble_id_);
 
   current_critical_promo_ = base::Token::CreateRandom();
-  ShowPromoBubbleImpl(params);
+  ShowPromoBubbleImpl(params, anchor_view);
 
   return current_critical_promo_;
 }
@@ -113,6 +156,22 @@ bool FeaturePromoControllerViews::CriticalPromoIsShowing(
   return bubble_id_ && (current_critical_promo_ == critical_promo_id);
 }
 
+bool FeaturePromoControllerViews::DismissNonCriticalBubbleInRegion(
+    const gfx::Rect& screen_bounds) {
+  if (!bubble_id_ || current_critical_promo_ ||
+      !bubble_owner_->BubbleIsShowing(bubble_id_.value())) {
+    return false;
+  }
+
+  if (!screen_bounds.Intersects(
+          bubble_owner_->GetBubbleBoundsInScreen(bubble_id_.value()))) {
+    return false;
+  }
+
+  bubble_owner_->CloseBubble(bubble_id_.value());
+  return true;
+}
+
 bool FeaturePromoControllerViews::MaybeShowPromo(
     const base::Feature& iph_feature,
     BubbleCloseCallback close_callback) {
@@ -124,18 +183,19 @@ bool FeaturePromoControllerViews::MaybeShowPromoWithTextReplacements(
     const base::Feature& iph_feature,
     FeaturePromoTextReplacements text_replacements,
     BubbleCloseCallback close_callback) {
-  absl::optional<FeaturePromoBubbleParams> params =
+  absl::optional<std::pair<FeaturePromoBubbleParams, views::View*>> params =
       FeaturePromoRegistry::GetInstance()->GetParamsForFeature(iph_feature,
                                                                browser_view_);
   if (!params)
     return false;
 
-  DCHECK_GT(params->body_string_specifier, -1);
-  params->body_text_raw =
-      text_replacements.ApplyTo(params->body_string_specifier);
-  params->body_string_specifier = -1;
+  DCHECK_GT(params->first.body_string_specifier, -1);
+  params->first.body_text_raw =
+      text_replacements.ApplyTo(params->first.body_string_specifier);
+  params->first.body_string_specifier = -1;
 
-  return MaybeShowPromoImpl(iph_feature, *params, std::move(close_callback));
+  return MaybeShowPromoImpl(iph_feature, params->first, params->second,
+                            std::move(close_callback));
 }
 
 void FeaturePromoControllerViews::OnUserSnooze(
@@ -190,6 +250,16 @@ FeaturePromoControllerViews::CloseBubbleAndContinuePromo(
   return PromoHandle(weak_ptr_factory_.GetWeakPtr());
 }
 
+// static
+void FeaturePromoControllerViews::BlockActiveWindowCheckForTesting() {
+  active_window_check_blocked_for_testing = true;
+}
+
+// static
+bool FeaturePromoControllerViews::IsActiveWindowCheckBlockedForTesting() {
+  return active_window_check_blocked_for_testing;
+}
+
 void FeaturePromoControllerViews::BlockPromosForTesting() {
   promos_blocked_for_testing_ = true;
 
@@ -201,6 +271,7 @@ void FeaturePromoControllerViews::BlockPromosForTesting() {
 bool FeaturePromoControllerViews::MaybeShowPromoImpl(
     const base::Feature& iph_feature,
     const FeaturePromoBubbleParams& params,
+    views::View* anchor_view,
     BubbleCloseCallback close_callback) {
   if (promos_blocked_for_testing_)
     return false;
@@ -214,6 +285,11 @@ bool FeaturePromoControllerViews::MaybeShowPromoImpl(
   // the IPH backend ignores incognito and writes to the parent profile.
   // See https://bugs.chromium.org/p/chromium/issues/detail?id=1128728#c30
   if (browser_view_->GetProfile()->IsIncognitoProfile())
+    return false;
+
+  // Don't show IPH if the anchor view is in an inactive window
+  if (!active_window_check_blocked_for_testing &&
+      !anchor_view->GetWidget()->ShouldPaintAsActive())
     return false;
 
   // Some checks should not be done in demo mode, because we absolutely want to
@@ -237,7 +313,7 @@ bool FeaturePromoControllerViews::MaybeShowPromoImpl(
   DCHECK(!current_iph_feature_);
   current_iph_feature_ = &iph_feature;
 
-  if (!ShowPromoBubbleImpl(params)) {
+  if (!ShowPromoBubbleImpl(params, anchor_view)) {
     // `current_iph_feature_` is needed in the call. If it fails, we must reset
     // it and also notify the backend.
     current_iph_feature_ = nullptr;
@@ -266,10 +342,11 @@ void FeaturePromoControllerViews::FinishContinuedPromo() {
 
 FeaturePromoBubbleView::CreateParams
 FeaturePromoControllerViews::GetBaseCreateParams(
-    const FeaturePromoBubbleParams& params) {
+    const FeaturePromoBubbleParams& params,
+    views::View* anchor_view) {
   // Map |params| to the bubble's create params, fetching needed strings.
   FeaturePromoBubbleView::CreateParams create_params;
-  create_params.anchor_view = params.anchor_view;
+  create_params.anchor_view = anchor_view;
   create_params.body_text =
       params.body_string_specifier != -1
           ? l10n_util::GetStringUTF16(params.body_string_specifier)
@@ -292,7 +369,7 @@ FeaturePromoControllerViews::GetBaseCreateParams(
   create_params.focus_on_create = params.focus_on_create;
   create_params.persist_on_blur = params.persist_on_blur;
 
-  create_params.arrow = params.arrow;
+  create_params.arrow = MapToBubbleBorderArrow(params.arrow);
   create_params.preferred_width = params.preferred_width;
 
   if (params.allow_snooze) {
@@ -312,9 +389,10 @@ FeaturePromoControllerViews::GetBaseCreateParams(
 }
 
 bool FeaturePromoControllerViews::ShowPromoBubbleImpl(
-    const FeaturePromoBubbleParams& params) {
+    const FeaturePromoBubbleParams& params,
+    views::View* anchor_view) {
   FeaturePromoBubbleView::CreateParams create_params =
-      GetBaseCreateParams(params);
+      GetBaseCreateParams(params, anchor_view);
 
   if (params.allow_snooze) {
     FeaturePromoBubbleView::ButtonParams snooze_button;
@@ -356,8 +434,8 @@ bool FeaturePromoControllerViews::ShowPromoBubbleImpl(
   if (!bubble_id_)
     return false;
 
-  params.anchor_view->SetProperty(kHasInProductHelpPromoKey, true);
-  anchor_view_tracker_.SetView(params.anchor_view);
+  anchor_view->SetProperty(kHasInProductHelpPromoKey, true);
+  anchor_view_tracker_.SetView(anchor_view);
   return true;
 }
 

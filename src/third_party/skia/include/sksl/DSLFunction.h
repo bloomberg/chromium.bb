@@ -66,14 +66,14 @@ public:
         this->define(std::move(block));
     }
 
-    void define(DSLBlock block);
+    void define(DSLBlock block, PositionInfo pos = PositionInfo::Capture());
 
     /**
      * Invokes the function with the given arguments.
      */
     template<class... Args>
     DSLExpression operator()(Args&&... args) {
-        SkTArray<DSLWrapper<DSLExpression>> argArray;
+        ExpressionArray argArray;
         argArray.reserve_back(sizeof...(args));
         this->collectArgs(argArray, std::forward<Args>(args)...);
         return this->call(std::move(argArray));
@@ -82,22 +82,23 @@ public:
     /**
      * Invokes the function with the given arguments.
      */
-    DSLExpression call(SkTArray<DSLWrapper<DSLExpression>> args);
+    DSLExpression call(SkTArray<DSLWrapper<DSLExpression>> args,
+            PositionInfo pos = PositionInfo::Capture());
+
+    DSLExpression call(ExpressionArray args, PositionInfo pos = PositionInfo::Capture());
 
 private:
-    void collectArgs(SkTArray<DSLWrapper<DSLExpression>>& args) {}
+    void collectArgs(ExpressionArray& args) {}
 
     template<class... RemainingArgs>
-    void collectArgs(SkTArray<DSLWrapper<DSLExpression>>& args, DSLVar& var,
-                     RemainingArgs&&... remaining) {
-        args.push_back(DSLWrapper<DSLExpression>(var));
+    void collectArgs(ExpressionArray& args, DSLVar& var, RemainingArgs&&... remaining) {
+        args.push_back(DSLExpression(var).release());
         collectArgs(args, std::forward<RemainingArgs>(remaining)...);
     }
 
     template<class... RemainingArgs>
-    void collectArgs(SkTArray<DSLWrapper<DSLExpression>>& args, DSLExpression expr,
-                     RemainingArgs&&... remaining) {
-        args.push_back(DSLWrapper<DSLExpression>(std::move(expr)));
+    void collectArgs(ExpressionArray& args, DSLExpression expr, RemainingArgs&&... remaining) {
+        args.push_back(expr.release());
         collectArgs(args, std::forward<RemainingArgs>(remaining)...);
     }
 

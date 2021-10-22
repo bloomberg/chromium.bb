@@ -197,10 +197,8 @@ class CPWL_Wnd : public Observable {
                       const CFX_Matrix& mtUser2Device);
 
   CFX_Color GetBackgroundColor() const;
-  void SetBackgroundColor(const CFX_Color& color);
   CFX_Color GetBorderColor() const;
   CFX_Color GetTextColor() const;
-  void SetTextColor(const CFX_Color& color);
   CFX_Color GetBorderLeftTopColor(BorderStyle nBorderStyle) const;
   CFX_Color GetBorderRightBottomColor(BorderStyle nBorderStyle) const;
   BorderStyle GetBorderStyle() const;
@@ -220,7 +218,7 @@ class CPWL_Wnd : public Observable {
   const CFX_FloatRect& GetClipRect() const;
 
   CPWL_Wnd* GetParentWindow() const { return m_pParent.Get(); }
-  const IPWL_SystemHandler::PerWindowData* GetAttachedData() const {
+  IPWL_SystemHandler::PerWindowData* GetAttachedData() const {
     return m_pAttachedData.get();
   }
   std::unique_ptr<IPWL_SystemHandler::PerWindowData> CloneAttachedData() const;
@@ -229,7 +227,6 @@ class CPWL_Wnd : public Observable {
   bool ClientHitTest(const CFX_PointF& point) const;
   bool IsCaptureMouse() const;
 
-  const CPWL_Wnd* GetFocused() const;
   bool IsFocused() const;
   bool IsReadOnly() const;
   CPWL_ScrollBar* GetVScrollBar() const;
@@ -262,7 +259,6 @@ class CPWL_Wnd : public Observable {
   virtual void OnCreated();
   virtual void OnDestroy();
 
-  bool IsNotifying() const { return m_bNotifying; }
   bool IsValid() const { return m_bCreated; }
   CreateParams* GetCreationParams() { return &m_CreationParams; }
   CFX_Timer::HandlerIface* GetTimerHandler() const {
@@ -303,7 +299,6 @@ class CPWL_Wnd : public Observable {
   CFX_FloatRect m_rcClip;
   bool m_bCreated = false;
   bool m_bVisible = false;
-  bool m_bNotifying = false;
 };
 
 #endif  // FPDFSDK_PWL_CPWL_WND_H_

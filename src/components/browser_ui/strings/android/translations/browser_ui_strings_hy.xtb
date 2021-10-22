@@ -51,6 +51,7 @@
 <translation id="2289270750774289114">Հարցնել, երբ որևէ կայք ուզում է հայտնաբերել մոտակա Bluetooth սարքերը (խորհուրդ է տրվում)</translation>
 <translation id="2315043854645842844">Տվյալ օպերացիոն համակարգը չի աջակցում սպասառուի կողմից վկայագրի ընտրությունը:</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
+<translation id="2379925928934107488">Կայքերում հնարավորինս կիրառել մուգ թեման, երբ Chrome-ն օգտագործում է այն</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> ՄԲ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Թույլատրված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}one{Թույլատրված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}other{Թույլատրված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}}</translation>
 <translation id="2434158240863470628">Ներբեռնումն ավարտված է՝ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
@@ -63,6 +64,7 @@
 <translation id="2570922361219980984">Այս սարքի տեղորոշումը նույնպես անջատված է: Միացրեք այն <ph name="BEGIN_LINK" />Android-ի կարգավորումներում<ph name="END_LINK" />:</translation>
 <translation id="257931822824936280">Ընդարձակված - կոծկելու համար սեղմեք:</translation>
 <translation id="2586657967955657006">Սեղմատախտակ</translation>
+<translation id="2597457036804169544">Կայքերում չկիրառել մուգ թեման</translation>
 <translation id="2621115761605608342">Թույլատրել JavaScript-ը նշված կայքի համար:</translation>
 <translation id="2653659639078652383">Ուղարկել</translation>
 <translation id="2677748264148917807">Դուրս գալ էջից</translation>
@@ -101,6 +103,7 @@
 <translation id="3600792891314830896">Անջատել կայքերի ձայնը</translation>
 <translation id="3744111561329211289">Ֆոնային համաժամացում</translation>
 <translation id="3763247130972274048">10 վ առաջ/հետ անցնելու համար կրկնակի հպեք տեսանյութի աջ/ձախ մասում</translation>
+<translation id="3797520601150691162">Չկիրառել մուգ թեման որոշակի կայքում</translation>
 <translation id="381841723434055211">Հեռախոսահամարներ</translation>
 <translation id="3835233591525155343">Սարքի օգտագործում</translation>
 <translation id="385051799172605136">Հետ</translation>
@@ -113,6 +116,7 @@
 <translation id="4008040567710660924">Թույլատրել քուքիները կոնկրետ կայքի համար:</translation>
 <translation id="4046123991198612571">Հաջորդը</translation>
 <translation id="4165986682804962316">Կայքի կարգավորումներ</translation>
+<translation id="4176463684765177261">Անջատված է</translation>
 <translation id="4200726100658658164">Բացել տեղադրության կարգավորումները</translation>
 <translation id="4226663524361240545">Ծանուցումների ժամանակ սարքը կթրթռա</translation>
 <translation id="4259722352634471385">Նավիգացիան արգելափակված է՝ <ph name="URL" /></translation>
@@ -166,6 +170,7 @@
 <translation id="5505264765875738116">Կայքերը չեն կարող խնդրել ծանուցումներ ուղարկել</translation>
 <translation id="5516455585884385570">Բացել ծանուցումների կարգավորումները</translation>
 <translation id="5527111080432883924">Հարցնել, նախքան կայքերին սեղմատախտակի տեքստերն ու պատկերները հասանելի դարձնելը (խորհուրդ է տրվում)</translation>
+<translation id="5553374991681107062">Վերջինները</translation>
 <translation id="5556459405103347317">Վերաբեռնել</translation>
 <translation id="5596627076506792578">Լրացուցիչ ընտրանքներ</translation>
 <translation id="5649053991847567735">Ավտոմատ ներբեռնումներ</translation>
@@ -180,6 +185,7 @@
 <translation id="5876056640971328065">Դադարեցնել</translation>
 <translation id="5887687176710214216">Վերջին այցելությունը՝ երեկ</translation>
 <translation id="5916664084637901428">Միացնել</translation>
+<translation id="59174027418879706">Միացված</translation>
 <translation id="5922853908706496913">Էկրանը ցուցադրվում է</translation>
 <translation id="5939518447894949180">Վերակայել</translation>
 <translation id="5975083100439434680">Փոքրացնել</translation>
@@ -196,6 +202,7 @@
 <translation id="6196640612572343990">Արգելափակել երրորդ կողմի քուքիները</translation>
 <translation id="6216432067784365534">Ընտրանքներ՝ <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Ապատեղադրե՞լ <ph name="APP_NAME" /> հավելվածը</translation>
+<translation id="6233545266937675277">Պահանջել կայքերի համակարգչի դիտակերպը</translation>
 <translation id="6262279340360821358">Արգելափակված են՝ «<ph name="PERMISSION_1" />» և «<ph name="PERMISSION_2" />»</translation>
 <translation id="6270391203985052864">Կայքերը կարող են խնդրել ծանուցումներ ուղարկել</translation>
 <translation id="6295158916970320988">Բոլոր կայքերը</translation>
@@ -209,6 +216,7 @@
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{Արգելափակված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}one{Արգելափակված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}other{Արգելափակված են՝ «<ph name="PERMISSION_1" />», «<ph name="PERMISSION_2" />» ու ևս <ph name="NUM_MORE" /> թույլտվություն}}</translation>
 <translation id="6554732001434021288">Վերջին այցելությունը՝ <ph name="NUM_DAYS" /> օր առաջ</translation>
 <translation id="6561560012278703671">Օգտագործել ավելի հանգիստ հաղորդագրություններ (արգելափակում է շեղող ծանուցումները)</translation>
+<translation id="6593061639179217415">Համակարգչային տարբերակ</translation>
 <translation id="6608650720463149374"><ph name="GIGABYTES" /> ԳԲ</translation>
 <translation id="6612358246767739896">Պաշտպանված բովանդակություն</translation>
 <translation id="662080504995468778">Մնալ կայքում</translation>
@@ -240,6 +248,7 @@
 <translation id="7302486331832100261">Դուք սովորաբար արգելափակում եք ծանուցումները։ Թույլատրելու համար սեղմեք «Մանրամասներ»։</translation>
 <translation id="7423098979219808738">Նախ հարցնել</translation>
 <translation id="7423538860840206698">Սեղմատախտակի հասանելիությունն արգելափակված է</translation>
+<translation id="7425915948813553151">Կայքերի մուգ թեմա</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7554752735887601236">Կայքն օգտագործում է ձեր խոսափողը</translation>
 <translation id="7561196759112975576">Միշտ</translation>
@@ -263,6 +272,7 @@
 <translation id="7999064672810608036">Համոզվա՞ծ եք, որ ուզում եք մաքրել բոլոր տեղային տվյալները, այդ թվում նաև քուքիները, և զրոյացնել այս կայքի թույլտվությունները:</translation>
 <translation id="8007176423574883786">Անջատված է այս սարքի համար</translation>
 <translation id="802154636333426148">Ներբեռնումը ձախողվեց</translation>
+<translation id="8042586301629853791">Դասավորել ըստ՝</translation>
 <translation id="8067883171444229417">Նվագարկել տեսանյութը</translation>
 <translation id="8068648041423924542">Չի հաջողվում ընտրել վկայագիրը:</translation>
 <translation id="8087000398470557479">Այս բովանդակությունը <ph name="DOMAIN_NAME" />-ից է, մատուցվում է Google-ի կողմից:</translation>
@@ -276,6 +286,7 @@
 <translation id="8211406090763984747">Կապն անվտանգ է</translation>
 <translation id="8249310407154411074">Տեղափոխել ցանկի սկիզբ</translation>
 <translation id="8261506727792406068">Ջնջել</translation>
+<translation id="8267092878336850213">Պահանջել կայքերի բջջային դիտակերպը</translation>
 <translation id="8300705686683892304">Հավելվածի կողմից կառավարվող</translation>
 <translation id="8324158725704657629">Նորից չհարցնել</translation>
 <translation id="8372893542064058268">Թույլատրել ֆոնային համաժամացումը նշված կայքում:</translation>

@@ -80,7 +80,7 @@ public class SiteSettings
                 checked =
                         WebsitePreferenceBridge.areAllLocationSettingsEnabled(browserContextHandle);
             } else if (requiresTriStateSetting) {
-                setting = WebsitePreferenceBridge.getContentSetting(
+                setting = WebsitePreferenceBridge.getDefaultContentSetting(
                         browserContextHandle, contentType);
             } else {
                 checked = WebsitePreferenceBridge.isCategoryEnabled(
@@ -112,6 +112,10 @@ public class SiteSettings
                 p.setSummary(ContentSettingsResources.getAdsBlockedListSummary());
             } else if (Type.SOUND == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getSoundBlockedListSummary());
+            } else if (Type.REQUEST_DESKTOP_SITE == prefCategory) {
+                p.setSummary(ContentSettingsResources.getDesktopSiteListSummary(checked));
+            } else if (Type.AUTO_DARK_WEB_CONTENT == prefCategory) {
+                p.setSummary(ContentSettingsResources.getAutoDarkWebContentListSummary(checked));
             } else if (requiresTriStateSetting) {
                 p.setSummary(ContentSettingsResources.getCategorySummary(setting));
             } else {

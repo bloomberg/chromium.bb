@@ -43,8 +43,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
-
+namespace ash {
 namespace {
 
 // Use consumer.example.com to keep policy code out of the tests.
@@ -110,6 +109,11 @@ class UserSessionRestoreObserver : public UserSessionStateObserver {
     if (!user_sessions_restored_)
       UserSessionManager::GetInstance()->AddSessionStateObserver(this);
   }
+
+  UserSessionRestoreObserver(const UserSessionRestoreObserver&) = delete;
+  UserSessionRestoreObserver& operator=(const UserSessionRestoreObserver&) =
+      delete;
+
   ~UserSessionRestoreObserver() override {}
 
   void PendingUserSessionsRestoreFinished() override {
@@ -138,8 +142,6 @@ class UserSessionRestoreObserver : public UserSessionStateObserver {
   bool running_loop_;
   bool user_sessions_restored_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserSessionRestoreObserver);
 };
 
 class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
@@ -221,7 +223,8 @@ class CrashRestoreComplexTest : public CrashRestoreSimpleTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
+// TODO(crbug.com/1249033): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, DISABLED_RestoreSessionForThreeUsers) {
   {
     UserSessionRestoreObserver restore_observer;
     restore_observer.Wait();
@@ -296,4 +299,4 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreChildUserTest, SessionRestore) {
   // Verify that there is no crash on chrome restart.
 }
 
-}  // namespace chromeos
+}  // namespace ash

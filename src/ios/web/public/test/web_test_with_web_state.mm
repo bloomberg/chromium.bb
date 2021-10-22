@@ -10,11 +10,13 @@
 #include "base/task/current_thread.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/common/features.h"
+#import "ios/web/js_messaging/java_script_feature_manager.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/deprecated/url_verification_constants.h"
 #import "ios/web/public/test/js_test_util.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_client.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -197,8 +199,7 @@ void WebTestWithWebState::WaitForBackgroundTasks() {
 }
 
 void WebTestWithWebState::WaitForCondition(ConditionBlock condition) {
-  base::test::ios::WaitUntilCondition(condition, true,
-                                      base::TimeDelta::FromSeconds(1000));
+  base::test::ios::WaitUntilCondition(condition, true, base::Seconds(1000));
 }
 
 bool WebTestWithWebState::WaitUntilLoaded() {
@@ -206,6 +207,31 @@ bool WebTestWithWebState::WaitUntilLoaded() {
     WaitForBackgroundTasks();
     return !web_state()->IsLoading();
   });
+}
+
+std::unique_ptr<base::Value> WebTestWithWebState::CallJavaScriptFunction(
+    const std::string& function,
+    const std::vector<base::Value>& parameters) {
+  return web::test::CallJavaScriptFunction(web_state(), function, parameters);
+}
+
+std::unique_ptr<base::Value>
+WebTestWithWebState::CallJavaScriptFunctionForFeature(
+    const std::string& function,
+    const std::vector<base::Value>& parameters,
+    JavaScriptFeature* feature) {
+  return web::test::CallJavaScriptFunctionForFeature(web_state(), function,
+                                                     parameters, feature);
+}
+
+id WebTestWithWebState::ExecuteJavaScriptForFeature(
+    NSString* script,
+    JavaScriptFeature* feature) {
+  JavaScriptFeatureManager* feature_manager =
+      JavaScriptFeatureManager::FromBrowserState(GetBrowserState());
+  JavaScriptContentWorld* world =
+      feature_manager->GetContentWorldForFeature(feature);
+  return ExecuteJavaScript(world->GetWKContentWorld(), script);
 }
 
 id WebTestWithWebState::ExecuteJavaScript(NSString* script) {

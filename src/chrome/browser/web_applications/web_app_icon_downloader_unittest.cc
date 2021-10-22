@@ -9,10 +9,13 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -34,17 +37,41 @@ std::vector<SkBitmap> CreateTestBitmaps(const std::vector<gfx::Size>& sizes) {
   return bitmaps;
 }
 
-class WebAppIconDownloaderTest : public ChromeRenderViewHostTestHarness {
+class WebAppIconDownloaderTest : public WebAppTest {
  public:
   WebAppIconDownloaderTest(const WebAppIconDownloaderTest&) = delete;
   WebAppIconDownloaderTest& operator=(const WebAppIconDownloaderTest&) = delete;
 
- protected:
-  WebAppIconDownloaderTest() {}
-  ~WebAppIconDownloaderTest() override {}
+  WebAppIconDownloaderTest() = default;
+  ~WebAppIconDownloaderTest() override = default;
+
+  void SetUp() override {
+    WebAppTest::SetUp();
+
+    // Specifies HTTPS for web_contents()->GetLastCommittedURL().
+    web_contents_tester()->NavigateAndCommit(GURL("https://www.example.com"));
+  }
 
  protected:
+  content::WebContentsTester* web_contents_tester() {
+    return content::WebContentsTester::For(web_contents());
+  }
+
   base::HistogramTester histogram_tester_;
+};
+
+class WebAppIconDownloaderPrerenderTest : public WebAppIconDownloaderTest {
+ public:
+  WebAppIconDownloaderPrerenderTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {blink::features::kPrerender2},
+        // This feature is to run test on any bot.
+        {blink::features::kPrerender2MemoryControls});
+  }
+  ~WebAppIconDownloaderPrerenderTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 const char* kHistogramForCreateName = "WebApp.Icon.HttpStatusCodeClassOnCreate";
@@ -64,7 +91,7 @@ class TestWebAppIconDownloader : public WebAppIconDownloader {
         id_counter_(0) {}
   TestWebAppIconDownloader(const TestWebAppIconDownloader&) = delete;
   TestWebAppIconDownloader& operator=(const TestWebAppIconDownloader&) = delete;
-  ~TestWebAppIconDownloader() override {}
+  ~TestWebAppIconDownloader() override = default;
 
   int DownloadImage(const GURL& url) override { return id_counter_++; }
 
@@ -347,6 +374,44 @@ TEST_F(WebAppIconDownloaderTest, PageNavigatesSameDocument) {
   EXPECT_EQ(1u, downloader.favicon_map()[favicon_url].size());
   EXPECT_TRUE(downloader.downloads_succeeded());
   histogram_tester_.ExpectUniqueSample(kHistogramForCreateName, 2, 1);
+}
+
+TEST_F(WebAppIconDownloaderPrerenderTest, PrerenderedPageNavigates) {
+  // Navigate to an initial page.
+  NavigateAndCommit(GURL("http://foo.example"));
+
+  const GURL favicon_url("http://www.google.com/favicon.ico");
+  TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      favicon_url, blink::mojom::FaviconIconType::kFavicon,
+      std::vector<gfx::Size>()));
+  downloader.set_initial_favicon_urls(favicon_urls);
+  EXPECT_EQ(0u, downloader.pending_requests());
+
+  downloader.Start();
+  EXPECT_EQ(1u, downloader.pending_requests());
+
+  // Start a prerender and navigate the test page.
+  const GURL& prerender_url = GURL("http://foo.example/bar");
+  content::RenderFrameHost* prerender_frame =
+      content::WebContentsTester::For(web_contents())
+          ->AddPrerenderAndCommitNavigation(prerender_url);
+  ASSERT_EQ(prerender_frame->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kPrerendering);
+
+  // Ensure prerender navigation doesn't cancel pending download requests.
+  EXPECT_EQ(1u, downloader.pending_requests());
+
+  // Activate the prerendered page.
+  content::NavigationSimulator::CreateRendererInitiated(
+      prerender_url, web_contents()->GetMainFrame())
+      ->Commit();
+
+  // Ensure prerender activation cancel pending download requests.
+  EXPECT_EQ(0u, downloader.pending_requests());
+  EXPECT_TRUE(downloader.favicon_map().empty());
+  EXPECT_FALSE(downloader.downloads_succeeded());
 }
 
 }  // namespace web_app

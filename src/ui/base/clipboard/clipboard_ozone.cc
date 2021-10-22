@@ -36,7 +36,7 @@ namespace ui {
 namespace {
 
 // The amount of time to wait for a request to complete before aborting it.
-constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kRequestTimeout = base::Seconds(1);
 
 // Depending on the backend, the platform clipboard may or may not be
 // available.  Should it be absent, we provide a dummy one.  It always calls
@@ -354,8 +354,24 @@ std::vector<std::u16string> ClipboardOzone::GetStandardFormats(
     const DataTransferEndpoint* data_dst) const {
   std::vector<std::u16string> types;
   auto available_types = async_clipboard_ozone_->RequestMimeTypes(buffer);
-  for (auto& mime_type : available_types)
-    types.push_back(base::UTF8ToUTF16(mime_type));
+  for (const auto& mime_type : available_types) {
+    if (mime_type == ClipboardFormatType::HtmlType().GetName() ||
+        mime_type == ClipboardFormatType::SvgType().GetName() ||
+        mime_type == ClipboardFormatType::RtfType().GetName() ||
+        mime_type == ClipboardFormatType::BitmapType().GetName() ||
+        mime_type == ClipboardFormatType::FilenamesType().GetName()) {
+      types.push_back(base::UTF8ToUTF16(mime_type));
+    }
+    // `WriteText` uses the following mime types for text, so if those types are
+    // available, we add kMimeTypeText to the list.
+    if ((mime_type == ClipboardFormatType::PlainTextType().GetName() ||
+         mime_type == kMimeTypeLinuxText || mime_type == kMimeTypeLinuxString ||
+         mime_type == kMimeTypeTextUtf8 ||
+         mime_type == kMimeTypeLinuxUtf8String) &&
+        !base::Contains(types, base::UTF8ToUTF16(kMimeTypeText))) {
+      types.push_back(base::UTF8ToUTF16(kMimeTypeText));
+    }
+  }
   return types;
 }
 
@@ -369,36 +385,18 @@ void ClipboardOzone::ReadAvailableTypes(
 
   types->clear();
 
-  std::u16string web_custom_data_type =
-      base::UTF8ToUTF16(ClipboardFormatType::WebCustomDataType().GetName());
-  for (auto& mime_type : GetStandardFormats(buffer, data_dst)) {
-    // Special handling for chromium/x-web-custom-data.
-    // We must read the data and deserialize it to find the list
-    // of mime types to report.
-    if (mime_type == web_custom_data_type) {
-      auto data = async_clipboard_ozone_->ReadClipboardDataAndWait(
-          buffer, ClipboardFormatType::WebCustomDataType().GetName());
-      ReadCustomDataTypes(data.data(), data.size(), types);
-    } else {
-      types->push_back(mime_type);
-    }
+  for (const auto& mime_type : GetStandardFormats(buffer, data_dst)) {
+    types->push_back(mime_type);
   }
-}
-
-// TODO(crbug.com/1103194): |data_dst| should be supported.
-std::vector<std::u16string>
-ClipboardOzone::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer,
-    const DataTransferEndpoint* data_dst) const {
-  DCHECK(CalledOnValidThread());
-
-  std::vector<std::string> mime_types =
-      async_clipboard_ozone_->RequestMimeTypes(buffer);
-  std::vector<std::u16string> types;
-  types.reserve(mime_types.size());
-  for (auto& mime_type : mime_types)
-    types.push_back(base::UTF8ToUTF16(mime_type));
-  return types;
+  // Special handling for chromium/x-web-custom-data.
+  // We must read the data and deserialize it to find the list
+  // of mime types to report.
+  if (IsFormatAvailable(ClipboardFormatType::WebCustomDataType(), buffer,
+                        data_dst)) {
+    auto data = async_clipboard_ozone_->ReadClipboardDataAndWait(
+        buffer, ClipboardFormatType::WebCustomDataType().GetName());
+    ReadCustomDataTypes(data.data(), data.size(), types);
+  }
 }
 
 // TODO(crbug.com/1103194): |data_dst| should be supported.
@@ -481,17 +479,6 @@ void ClipboardOzone::ReadPng(ClipboardBuffer buffer,
                              ReadPngCallback callback) const {
   RecordRead(ClipboardFormatMetric::kPng);
   std::move(callback).Run(ReadPngInternal(buffer));
-}
-
-// TODO(crbug.com/1103194): |data_dst| should be supported.
-void ClipboardOzone::ReadImage(ClipboardBuffer buffer,
-                               const DataTransferEndpoint* data_dst,
-                               ReadImageCallback callback) const {
-  RecordRead(ClipboardFormatMetric::kImage);
-  auto png_data = ReadPngInternal(buffer);
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(png_data.data(), png_data.size(), &bitmap);
-  std::move(callback).Run(bitmap);
 }
 
 // TODO(crbug.com/1103194): |data_dst| should be supported.

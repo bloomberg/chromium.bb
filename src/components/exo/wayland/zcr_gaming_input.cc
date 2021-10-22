@@ -118,6 +118,9 @@ class WaylandGamepadDelegate : public GamepadDelegate {
   explicit WaylandGamepadDelegate(wl_resource* gamepad_resource)
       : gamepad_resource_(gamepad_resource) {}
 
+  WaylandGamepadDelegate(const WaylandGamepadDelegate&) = delete;
+  WaylandGamepadDelegate& operator=(const WaylandGamepadDelegate&) = delete;
+
   ~WaylandGamepadDelegate() override = default;
 
   // If gamepad_resource_ is destroyed first, ResetGamepadResource will
@@ -204,8 +207,6 @@ class WaylandGamepadDelegate : public GamepadDelegate {
 
   // The gamepad resource associated with the gamepad.
   wl_resource* gamepad_resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandGamepadDelegate);
 };
 
 void gamepad_destroy(wl_client* client, wl_resource* resource) {
@@ -220,6 +221,10 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
  public:
   explicit WaylandGamingSeatDelegate(wl_resource* gaming_seat_resource)
       : gaming_seat_resource_{gaming_seat_resource} {}
+
+  WaylandGamingSeatDelegate(const WaylandGamingSeatDelegate&) = delete;
+  WaylandGamingSeatDelegate& operator=(const WaylandGamingSeatDelegate&) =
+      delete;
 
   // Override from GamingSeatDelegate:
   void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
@@ -256,8 +261,6 @@ class WaylandGamingSeatDelegate : public GamingSeatDelegate {
  private:
   // The gaming seat resource associated with the gaming seat.
   wl_resource* const gaming_seat_resource_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandGamingSeatDelegate);
 };
 
 void gaming_seat_destroy(wl_client* client, wl_resource* resource) {

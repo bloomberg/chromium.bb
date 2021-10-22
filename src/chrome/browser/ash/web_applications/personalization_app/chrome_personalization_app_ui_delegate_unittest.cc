@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/wallpaper/local_image_info.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_client.h"
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
@@ -253,7 +252,7 @@ TEST_F(ChromePersonalizationAppUiDelegateTest, ObserveWallpaperFiresWhenBound) {
   chromeos::personalization_app::mojom::CurrentWallpaper* current =
       current_wallpaper();
 
-  EXPECT_EQ(ash::WallpaperType::ONLINE, current->type);
+  EXPECT_EQ(ash::WallpaperType::kOnline, current->type);
   EXPECT_EQ(ash::WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
             current->layout);
   // Data url of a solid black image scaled up to 256x256.

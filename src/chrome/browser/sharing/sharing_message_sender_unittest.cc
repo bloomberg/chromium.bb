@@ -37,7 +37,7 @@ const char kSenderSenderIdFcmToken[] = "sender_sender_id_fcm_token";
 const char kSenderSenderIdP256dh[] = "sender_sender_id_p256dh";
 const char kSenderSenderIdAuthSecret[] = "sender_sender_id_auth_secret";
 const char kSenderMessageID[] = "sender_message_id";
-constexpr base::TimeDelta kTimeToLive = base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kTimeToLive = base::Seconds(10);
 
 namespace {
 
@@ -113,6 +113,10 @@ class SharingMessageSenderTest : public testing::Test {
         SharingMessageSender::DelegateType::kFCM,
         std::move(mock_sharing_fcm_sender));
   }
+
+  SharingMessageSenderTest(const SharingMessageSenderTest&) = delete;
+  SharingMessageSenderTest& operator=(const SharingMessageSenderTest&) = delete;
+
   ~SharingMessageSenderTest() override = default;
 
   std::unique_ptr<syncer::DeviceInfo> SetupDevice() {
@@ -140,8 +144,6 @@ class SharingMessageSenderTest : public testing::Test {
   SharingMessageSender sharing_message_sender_{
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()};
   MockSharingFCMSender* mock_sharing_fcm_sender_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharingMessageSenderTest);
 };
 
 MATCHER_P(ProtoEquals, message, "") {

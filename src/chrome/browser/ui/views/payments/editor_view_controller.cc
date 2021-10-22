@@ -21,8 +21,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -67,8 +68,8 @@ class ErrorLabelView : public views::View {
   // views::View:
   void OnThemeChanged() override {
     View::OnThemeChanged();
-    error_label_->SetEnabledColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_AlertSeverityHigh));
+    error_label_->SetEnabledColor(
+        GetColorProvider()->GetColor(ui::kColorAlertHighSeverity));
   }
 
  private:
@@ -439,11 +440,11 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       break;
     }
     case EditorField::ControlType::READONLY_LABEL: {
-      std::unique_ptr<views::Label> label =
+      std::unique_ptr<views::Label> readonly_label =
           std::make_unique<views::Label>(GetInitialValueForType(field.type));
-      label->SetID(GetInputFieldViewId(field.type));
-      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      layout->AddView(std::move(label), 1, 1, views::GridLayout::FILL,
+      readonly_label->SetID(GetInputFieldViewId(field.type));
+      readonly_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      layout->AddView(std::move(readonly_label), 1, 1, views::GridLayout::FILL,
                       views::GridLayout::FILL, 0, kInputFieldHeight);
       break;
     }

@@ -23,7 +23,7 @@
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
@@ -82,6 +82,9 @@ class PageIndicatorView::PageIndicatorButton : public views::Button {
         },
         this));
   }
+
+  PageIndicatorButton(const PageIndicatorButton&) = delete;
+  PageIndicatorButton& operator=(const PageIndicatorButton&) = delete;
 
   ~PageIndicatorButton() override {}
 
@@ -146,8 +149,6 @@ class PageIndicatorView::PageIndicatorButton : public views::Button {
   SkColor ripple_base_color_ = gfx::kPlaceholderColor;
   float highlight_opacity_ = 0.f;
   float inkdrop_opacity_ = 0.f;
-
-  DISALLOW_COPY_AND_ASSIGN(PageIndicatorButton);
 };
 
 PageIndicatorView::PageIndicatorView(UnifiedSystemTrayController* controller,

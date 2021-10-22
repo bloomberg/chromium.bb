@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#include "chrome/browser/language/translate_frame_binder.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/translate/translate_frame_binder.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/draggable_region_host_impl.h"
 #include "chrome/browser/ui/web_applications/sub_apps_renderer_host.h"
@@ -93,6 +93,12 @@
 #include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/webui/connectors_internals/connectors_internals.mojom.h"
+#include "chrome/browser/ui/webui/connectors_internals/connectors_internals_ui.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/contextualsearch/contextual_search_observer.h"
@@ -191,6 +197,7 @@
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_ui.h"
 #include "chrome/browser/ui/webui/chromeos/audio/audio.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/audio/audio_ui.h"
+#include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_upgrader/crostini_upgrader.mojom.h"
@@ -207,6 +214,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
+#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.h"
+#include "chrome/browser/ui/webui/chromeos/parent_access/parent_access_ui.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/vm/vm_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share.mojom.h"
@@ -563,7 +572,7 @@ void PopulateChromeFrameBinders(
   }
 
   map->Add<translate::mojom::ContentTranslateDriver>(
-      base::BindRepeating(&language::BindContentTranslateDriver));
+      base::BindRepeating(&translate::BindContentTranslateDriver));
 
   map->Add<blink::mojom::CredentialManager>(
       base::BindRepeating(&ChromePasswordManagerClient::BindCredentialManager));
@@ -681,6 +690,13 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<federated_learning::mojom::PageHandler,
                                          FlocInternalsUI>(map);
 
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS_ASH)
+  RegisterWebUIControllerInterfaceBinder<
+      connectors_internals::mojom::PageHandler,
+      enterprise_connectors::ConnectorsInternalsUI>(map);
+#endif
+
 #if defined(OS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<
       explore_sites_internals::mojom::PageHandler,
@@ -700,7 +716,7 @@ void PopulateChromeWebUIFrameBinders(
       most_visited::mojom::MostVisitedPageHandlerFactory, NewTabPageUI,
       NewTabPageThirdPartyUI>(map);
 
-  if (base::FeatureList::IsEnabled(history_clusters::kMemories)) {
+  if (base::FeatureList::IsEnabled(history_clusters::kJourneys)) {
     RegisterWebUIControllerInterfaceBinder<history_clusters::mojom::PageHandler,
                                            HistoryUI>(map);
   }
@@ -824,6 +840,10 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::multidevice_setup::MultiDeviceSetupDialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
+      parent_access_ui::mojom::ParentAccessUIHandler, chromeos::ParentAccessUI>(
+      map);
+
+  RegisterWebUIControllerInterfaceBinder<
       chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
       chromeos::OobeUI>(map);
 
@@ -837,8 +857,8 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::LockScreenNetworkUI, ash::ShimlessRMADialogUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
-      chromeos::printing::printing_manager::mojom::PrintingMetadataProvider,
-      chromeos::printing::printing_manager::PrintManagementUI>(map);
+      ash::printing::printing_manager::mojom::PrintingMetadataProvider,
+      ash::printing::printing_manager::PrintManagementUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<cros::mojom::CameraAppDeviceProvider,
                                          chromeos::CameraAppUI>(map);
@@ -936,7 +956,8 @@ void PopulateChromeWebUIFrameBinders(
   if (ash::features::IsBluetoothRevampEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
         chromeos::bluetooth_config::mojom::CrosBluetoothConfig,
-        chromeos::settings::OSSettingsUI>(map);
+        chromeos::BluetoothPairingDialogUI, chromeos::settings::OSSettingsUI>(
+        map);
   }
 
   RegisterWebUIControllerInterfaceBinder<audio::mojom::PageHandlerFactory,

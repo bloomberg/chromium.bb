@@ -65,6 +65,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   explicit WebStateImpl(const CreateParams& params);
   // Constructor for WebStatesImpls created for deserialized sessions
   WebStateImpl(const CreateParams& params, CRWSessionStorage* session_storage);
+
+  WebStateImpl(const WebStateImpl&) = delete;
+  WebStateImpl& operator=(const WebStateImpl&) = delete;
+
   ~WebStateImpl() override;
 
   // Gets/Sets the CRWWebController that backs this object.
@@ -143,7 +147,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // the first PolicyDecision::CancelAndDisplayError() result that was received.
   void ShouldAllowRequest(
       NSURLRequest* request,
-      const WebStatePolicyDecider::RequestInfo& request_info,
+      WebStatePolicyDecider::RequestInfo request_info,
       WebStatePolicyDecider::PolicyDecisionCallback callback);
 
   // Decides whether the navigation corresponding to |response| should
@@ -163,7 +167,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // the first PolicyDecision::CancelAndDisplayError() result that was received.
   void ShouldAllowResponse(
       NSURLResponse* response,
-      bool for_main_frame,
+      WebStatePolicyDecider::ResponseInfo response_info,
       WebStatePolicyDecider::PolicyDecisionCallback callback);
 
   // Returns the UIView used to contain the WebView for sizing purposes. Can be
@@ -408,8 +412,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   UserAgentType user_agent_type_;
 
   base::WeakPtrFactory<WebStateImpl> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };
 
 }  // namespace web

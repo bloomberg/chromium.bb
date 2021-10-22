@@ -11,19 +11,21 @@
 #include "content/public/test/browser_test.h"
 
 class RelaunchRecommendedBubbleViewDialogTest : public DialogBrowserTest {
+ public:
+  RelaunchRecommendedBubbleViewDialogTest(
+      const RelaunchRecommendedBubbleViewDialogTest&) = delete;
+  RelaunchRecommendedBubbleViewDialogTest& operator=(
+      const RelaunchRecommendedBubbleViewDialogTest&) = delete;
+
  protected:
   RelaunchRecommendedBubbleViewDialogTest() = default;
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    base::Time detection_time =
-        base::Time::Now() - base::TimeDelta::FromDays(3);
+    base::Time detection_time = base::Time::Now() - base::Days(3);
     RelaunchRecommendedBubbleView::ShowBubble(browser(), detection_time,
                                               base::DoNothing());
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RelaunchRecommendedBubbleViewDialogTest);
 };
 
 IN_PROC_BROWSER_TEST_F(RelaunchRecommendedBubbleViewDialogTest,

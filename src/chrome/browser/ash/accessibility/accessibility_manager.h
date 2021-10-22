@@ -37,7 +37,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 class Browser;
 
@@ -62,6 +62,7 @@ enum class AccessibilityNotificationType {
   kManagerShutdown,
   kToggleHighContrastMode,
   kToggleLargeCursor,
+  kToggleLiveCaption,
   kToggleStickyKeys,
   kToggleScreenMagnifier,
   kToggleSpokenFeedback,
@@ -110,11 +111,14 @@ class AccessibilityManager
       public extensions::api::braille_display_private::BrailleObserver,
       public extensions::ExtensionRegistryObserver,
       public user_manager::UserManager::UserSessionStateObserver,
-      public chromeos::input_method::InputMethodManager::Observer,
+      public input_method::InputMethodManager::Observer,
       public CrasAudioHandler::AudioObserver,
       public ProfileObserver,
       public speech::SodaInstaller::Observer {
  public:
+  AccessibilityManager(const AccessibilityManager&) = delete;
+  AccessibilityManager& operator=(const AccessibilityManager&) = delete;
+
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
   static void Initialize();
@@ -136,6 +140,12 @@ class AccessibilityManager
 
   // Returns true if the large cursor is enabled, or false if not.
   bool IsLargeCursorEnabled() const;
+
+  // Enables or disables Live Caption.
+  void EnableLiveCaption(bool enabled);
+
+  // Returns true if Live Caption is enabled, or false if not.
+  bool IsLiveCaptionEnabled() const;
 
   // Enables or disable Sticky Keys.
   void EnableStickyKeys(bool enabled);
@@ -404,6 +414,7 @@ class AccessibilityManager
 
   void UpdateAlwaysShowMenuFromPref();
   void OnLargeCursorChanged();
+  void OnLiveCaptionChanged();
   void OnStickyKeysChanged();
   void OnSpokenFeedbackChanged();
   void OnHighContrastChanged();
@@ -466,7 +477,7 @@ class AccessibilityManager
   void OnShutdown(extensions::ExtensionRegistry* registry) override;
 
   // InputMethodManager::Observer
-  void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,
+  void InputMethodChanged(input_method::InputMethodManager* manager,
                           Profile* profile,
                           bool show_message) override;
 
@@ -592,8 +603,6 @@ class AccessibilityManager
   friend class AccessibilityManagerSodaTest;
   friend class AccessibilityManagerDictationDialogTest;
   friend class AccessibilityManagerNoOnDeviceSpeechRecognitionTest;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };
 
 }  // namespace ash

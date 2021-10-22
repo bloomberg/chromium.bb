@@ -29,7 +29,7 @@ namespace libassistant {
 namespace {
 
 // Desired time between consecutive heartbeats.
-constexpr base::TimeDelta kHeartbeatInterval = base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kHeartbeatInterval = base::Seconds(2);
 
 }  // namespace
 
@@ -86,8 +86,11 @@ GrpcLibassistantClient& GrpcServicesInitializer::GrpcLibassistantClient() {
 
 void GrpcServicesInitializer::InitDrivers(grpc::ServerBuilder* server_builder) {
   // Inits heartbeat driver.
-  service_drivers_.emplace_back(
-      std::make_unique<HeartbeatEventHandlerDriver>(&server_builder_));
+  auto heartbeat_driver =
+      std::make_unique<HeartbeatEventHandlerDriver>(&server_builder_);
+  heartbeat_event_observation_.Observe(heartbeat_driver.get());
+
+  service_drivers_.emplace_back(std::move(heartbeat_driver));
 }
 
 void GrpcServicesInitializer::InitLibassistGrpcClient() {

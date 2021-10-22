@@ -22,10 +22,10 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/reset/metrics.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/tpm_firmware_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -256,7 +256,7 @@ void ResetScreen::ShowImpl() {
     tpm_firmware_update_checker_.Run(
         base::BindOnce(&ResetScreen::OnTPMFirmwareUpdateAvailableCheck,
                        weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(10));
+        base::Seconds(10));
   }
 
   if (view_) {
@@ -347,7 +347,7 @@ void ResetScreen::OnPowerwash() {
     tpm_firmware_update_checker_.Run(
         base::BindOnce(&StartTPMFirmwareUpdate,
                        view_->GetTpmFirmwareUpdateMode()),
-        base::TimeDelta::FromSeconds(10));
+        base::Seconds(10));
   } else {
     VLOG(1) << "Starting Powerwash";
     SessionManagerClient::Get()->StartDeviceWipe();

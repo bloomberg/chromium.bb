@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
@@ -40,6 +41,7 @@ struct IntentLaunchInfo {
   std::string app_id;
   std::string activity_name;
   std::string activity_label;
+  bool is_generic_file_handler;
   bool is_file_extension_match;
 };
 
@@ -56,8 +58,7 @@ struct IntentLaunchInfo {
 // See components/services/app_service/README.md.
 class AppServiceProxyBase : public KeyedService,
                             public apps::IconLoader,
-                            public apps::mojom::Subscriber,
-                            public apps::AppRegistryCache::Observer {
+                            public apps::mojom::Subscriber {
  public:
   explicit AppServiceProxyBase(Profile* profile);
   AppServiceProxyBase(const AppServiceProxyBase&) = delete;
@@ -204,16 +205,25 @@ class AppServiceProxyBase : public KeyedService,
       bool exclude_browser_tab_apps = true);
 
   // Returns a list of apps (represented by their ids) and activities (if
-  // applied) which can handle |filesystem_urls| and |mime_types|.
+  // applied) which can handle |files|.
   std::vector<IntentLaunchInfo> GetAppsForFiles(
-      const std::vector<GURL>& filesystem_urls,
-      const std::vector<std::string>& mime_types);
+      std::vector<apps::mojom::IntentFilePtr> files);
 
   // Adds a preferred app for |url|.
   void AddPreferredApp(const std::string& app_id, const GURL& url);
   // Adds a preferred app for |intent|.
   void AddPreferredApp(const std::string& app_id,
                        const apps::mojom::IntentPtr& intent);
+
+  // Sets |app_id| as the preferred app for all of its supported links ('view'
+  // intent filters with a scheme and host). Any existing preferred apps for
+  // those links will have all their supported links unset, as if
+  // RemoveSupportedLinksPreference was called for that app.
+  void SetSupportedLinksPreference(const std::string& app_id);
+
+  // Removes all supported link filters from the preferred app list for
+  // |app_id|.
+  void RemoveSupportedLinksPreference(const std::string& app_id);
 
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode);
@@ -305,13 +315,10 @@ class AppServiceProxyBase : public KeyedService,
   void OnPreferredAppRemoved(
       const std::string& app_id,
       apps::mojom::IntentFilterPtr intent_filter) override;
+  void OnPreferredAppsChanged(
+      apps::mojom::PreferredAppChangesPtr changes) override;
   void InitializePreferredApps(
       PreferredAppsList::PreferredApps preferred_apps) override;
-
-  // apps::AppRegistryCache::Observer overrides:
-  void OnAppUpdate(const apps::AppUpdate& update) override;
-  void OnAppRegistryCacheWillBeDestroyed(
-      apps::AppRegistryCache* cache) override;
 
   apps::mojom::IntentFilterPtr FindBestMatchingFilter(
       const apps::mojom::IntentPtr& intent);
@@ -358,6 +365,9 @@ class AppServiceProxyBase : public KeyedService,
 
   bool is_using_testing_profile_ = false;
   base::OnceClosure dialog_created_callback_;
+
+  // For test access to OnApps.
+  friend class AppServiceProxyPreferredAppsTest;
 };
 
 }  // namespace apps

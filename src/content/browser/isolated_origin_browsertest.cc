@@ -56,6 +56,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/broadcastchannel/broadcast_channel.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/dom_storage.mojom-test-utils.h"
@@ -467,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderCommandLineTest,
       https_server()->GetURL("non_isolated.foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_base_origin_url));
   // The .html main frame has two iframes, this test only uses the first one.
-  EXPECT_EQ(3u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(3u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
@@ -581,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationPrerenderOptInHeaderTest,
                                        "foo.com(foo.com)"));
   // Navigate primary tab to a non-isolated origin.
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
 
@@ -652,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationPrerenderOptInHeaderTest,
                                        "/cross_site_iframe_factory.html?"
                                        "foo.com(foo.com)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
   // Navigate child frame to a non-isolated origin "a.foo.com".
@@ -736,7 +738,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
       false /* does_site_request_dedicated_process_for_coop */,
       false /* is_jit_disabled */, false /* is_pdf */));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
@@ -793,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(SameProcessOriginIsolationOptInHeaderTest,
   EXPECT_FALSE(
       SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled());
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
@@ -848,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(
       SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled());
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
@@ -981,7 +983,7 @@ IN_PROC_BROWSER_TEST_F(SameProcessNoWebSecurityOriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
@@ -1013,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node = root->child_at(0);
@@ -1038,7 +1040,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
                                        "/cross_site_iframe_factory.html?"
                                        "foo.com(foo.com)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child = root->child_at(0);
@@ -1167,7 +1169,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(3u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(3u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node0 = root->child_at(0);
@@ -1241,7 +1243,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(3u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(3u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node0 = root->child_at(0);
@@ -1304,7 +1306,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node0 = root->child_at(0);
@@ -1359,7 +1361,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
   GURL isolated_suborigin_url(
       https_server()->GetURL("isolated.foo.com", "/isolate_origin"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node0 = root->child_at(0);
@@ -1588,7 +1590,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest, IsolatedBaseOrigin) {
   GURL non_isolated_sub_origin2(
       https_server()->GetURL("non_isolated2.foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(3u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(3u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node1 = root->child_at(0);
@@ -1710,7 +1712,7 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
 
   // Load the isolated base url.
   EXPECT_TRUE(NavigateToURL(shell(), isolated_base_origin_url));
-  EXPECT_EQ(3u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(3u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
   FrameTreeNode* child_frame_node1 = root->child_at(0);
@@ -2098,7 +2100,17 @@ IN_PROC_BROWSER_TEST_F(OriginIsolationOptInHeaderTest,
 
   InjectIsolationRequestingNavigation injector(this, web_contents(), tab2,
                                                isolated_origin_url);
-  EXPECT_TRUE(NavigateToURL(shell(), isolated_origin_url));
+  {
+    TestNavigationObserver tab1_navigation_observer(shell()->web_contents(), 1);
+    tab1_navigation_observer.set_expected_initial_url(isolated_origin_url);
+    shell()->LoadURL(isolated_origin_url);
+
+    // Waiting for DidNavigationFinished is sufficient to ensure that
+    // `injector.was_called()`.  We can't waiting for DidStopLoading, because
+    // running a nested message loop in the injector confuses
+    // TestNavigationObserver by changing the order of notifications.
+    tab1_navigation_observer.WaitForNavigationFinished();
+  }
   EXPECT_TRUE(injector.was_called());
 
   SiteInstanceImpl* tab1_site_instance =
@@ -2170,7 +2182,7 @@ IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, SubframesAreIsolated) {
       "/cross_site_iframe_factory.html?"
       "foo.com(mail.foo.com,bar.foo.com(foo.com),foo.com)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
-  EXPECT_EQ(5u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(5u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   // Make sure we have three separate processes.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
@@ -2222,7 +2234,7 @@ IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, MainframesAreIsolated) {
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   const auto expected_foo_lock = GetStrictProcessLock(foo_url);
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
-  EXPECT_EQ(1u, web_contents()->GetAllFrames().size());
+  EXPECT_EQ(1u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
 
   auto foo_process_id = web_contents()->GetMainFrame()->GetProcess()->GetID();
@@ -3266,8 +3278,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
   }
 }
 
-// This class allows intercepting the OpenLocalStorage method and changing
-// the parameters to the real implementation of it.
+// This class allows intercepting the BindStorageArea and OpenLocalStorage
+// methods in order to test what happens when parameters are changed.
 class StoragePartitonInterceptor
     : public blink::mojom::DomStorageInterceptorForTesting,
       public RenderProcessHostObserver {
@@ -3275,8 +3287,12 @@ class StoragePartitonInterceptor
   StoragePartitonInterceptor(
       RenderProcessHostImpl* rph,
       mojo::PendingReceiver<blink::mojom::DomStorage> receiver,
-      const url::Origin& origin_to_inject)
-      : origin_to_inject_(origin_to_inject) {
+      absl::optional<blink::StorageKey> storage_key_to_inject,
+      absl::optional<blink::LocalFrameToken> local_frame_token_to_inject,
+      bool inject_first_local_frame_token)
+      : storage_key_to_inject_(storage_key_to_inject),
+        local_frame_token_to_inject_(local_frame_token_to_inject),
+        save_first_local_frame_token_(inject_first_local_frame_token) {
     StoragePartitionImpl* storage_partition =
         static_cast<StoragePartitionImpl*>(rph->GetStoragePartition());
 
@@ -3314,31 +3330,248 @@ class StoragePartitonInterceptor
     return dom_storage_;
   }
 
-  // Override this method to allow changing the origin. It simulates a
+  // Override this method to allow changing the `storage_key` or
+  // `local_frame_token`. It simulates a renderer process sending incorrect
+  // data to the browser process, so security checks can be tested.
+  void OpenLocalStorage(
+      const blink::StorageKey& storage_key,
+      const blink::LocalFrameToken& local_frame_token,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override {
+    if (save_first_local_frame_token_ && !saved_first_local_frame_token_)
+      saved_first_local_frame_token_ = local_frame_token;
+    if (saved_first_local_frame_token_ && !local_frame_token_to_inject_)
+      local_frame_token_to_inject_ = saved_first_local_frame_token_;
+    GetForwardingInterface()->OpenLocalStorage(
+        storage_key_to_inject_ ? *storage_key_to_inject_ : storage_key,
+        local_frame_token_to_inject_ ? *local_frame_token_to_inject_
+                                     : local_frame_token,
+        std::move(receiver));
+  }
+
+  // Override this method to allow changing the `storage_key`. It simulates a
   // renderer process sending incorrect data to the browser process, so
   // security checks can be tested.
-  void OpenLocalStorage(
-      const url::Origin& origin,
+  void BindSessionStorageArea(
+      const blink::StorageKey& storage_key,
+      const blink::LocalFrameToken& local_frame_token,
+      const std::string& namespace_id,
       mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override {
-    GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
-                                               std::move(receiver));
+    if (save_first_local_frame_token_ && !saved_first_local_frame_token_)
+      saved_first_local_frame_token_ = local_frame_token;
+    if (saved_first_local_frame_token_ && !local_frame_token_to_inject_)
+      local_frame_token_to_inject_ = saved_first_local_frame_token_;
+    GetForwardingInterface()->BindSessionStorageArea(
+        storage_key_to_inject_ ? *storage_key_to_inject_ : storage_key,
+        local_frame_token_to_inject_ ? *local_frame_token_to_inject_
+                                     : local_frame_token,
+        namespace_id, std::move(receiver));
   }
 
  private:
+  static absl::optional<blink::LocalFrameToken> saved_first_local_frame_token_;
   // Keep a pointer to the original implementation of the service, so all
   // calls can be forwarded to it.
   blink::mojom::DomStorage* dom_storage_;
-
-  url::Origin origin_to_inject_;
+  absl::optional<blink::StorageKey> storage_key_to_inject_;
+  absl::optional<blink::LocalFrameToken> local_frame_token_to_inject_;
+  bool save_first_local_frame_token_;
 };
 
-void CreateTestDomStorageBackend(
-    const url::Origin& origin_to_inject,
+absl::optional<blink::LocalFrameToken>
+    StoragePartitonInterceptor::saved_first_local_frame_token_ = absl::nullopt;
+
+// Save the first LocalFrameToken seen and inject it into future calls.
+void CreateTestDomStorageBackendToSaveFirstFrame(
     RenderProcessHostImpl* rph,
     mojo::PendingReceiver<blink::mojom::DomStorage> receiver) {
   // This object will register as RenderProcessHostObserver, so it will
   // clean itself automatically on process exit.
-  new StoragePartitonInterceptor(rph, std::move(receiver), origin_to_inject);
+  new StoragePartitonInterceptor(rph, std::move(receiver), absl::nullopt,
+                                 absl::nullopt,
+                                 /* save_first_local_frame_token_ */ true);
+}
+
+// Inject (or not if null) a StorageKey and LocalFrameToken.
+void CreateTestDomStorageBackendToInjectValues(
+    absl::optional<blink::StorageKey> storage_key_to_inject,
+    absl::optional<blink::LocalFrameToken> local_frame_token_to_inject,
+    RenderProcessHostImpl* rph,
+    mojo::PendingReceiver<blink::mojom::DomStorage> receiver) {
+  // This object will register as RenderProcessHostObserver, so it will
+  // clean itself automatically on process exit.
+  new StoragePartitonInterceptor(rph, std::move(receiver),
+                                 storage_key_to_inject,
+                                 local_frame_token_to_inject,
+                                 /* save_first_local_frame_token_ */ false);
+}
+
+// Verify that a renderer process cannot read sessionStorage of another origin.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, SessionStorage_WrongOrigin) {
+  auto mismatched_storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://bar.com");
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackendToInjectValues,
+                          mismatched_storage_key, absl::nullopt));
+
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
+      web_contents()->GetMainFrame()->GetProcess());
+  // Use ignore_result here, since on Android the renderer process is
+  // terminated, but ExecuteScript still returns true. It properly returns
+  // false on all other platforms.
+  ignore_result(
+      ExecJs(web_contents()->GetMainFrame(), "sessionStorage.length;"));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+}
+
+// Verify not fatal if the renderer reads sessionStorage from an empty
+// LocalFrameToken.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       SessionStorage_EmptyLocalFrameToken) {
+  // This sets up some initial sessionStorage state for the subsequent test.
+  GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  EXPECT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+                     "sessionStorage.setItem('key', 'value');"));
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
+
+  // Set up the IPC injection and crash the renderer process so that it's used.
+  // Without crashing the renderer, the default IPC will be used.
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackendToInjectValues,
+                          absl::nullopt, blink::LocalFrameToken()));
+  RenderProcessHost* renderer_process =
+      web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Re-do tests now that injection is in place
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  EXPECT_EQ(0, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
+}
+
+// Verify fatal error if the renderer reads sessionStorage from the wrong
+// LocalFrameToken.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       SessionStorage_WrongLocalFrameToken) {
+  // This sets up some initial sessionStorage state for the subsequent test.
+  GURL isolated_url(embedded_test_server()->GetURL(
+      "isolated.foo.com",
+      "/cross_site_iframe_factory.html?isolated.foo.com(bar.com)"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  EXPECT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+                     "sessionStorage.setItem('key', 'value');"));
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
+  EXPECT_TRUE(ExecJs(ChildFrameAt(shell(), 0),
+                     "sessionStorage.setItem('key', 'value');"));
+  EXPECT_EQ(1, EvalJs(ChildFrameAt(shell(), 0), "sessionStorage.length"));
+
+  // Set up the IPC injection and crash the renderer process so that it's used.
+  // Without crashing the renderer, the default IPC will be used.
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackendToSaveFirstFrame));
+  RenderProcessHost* renderer_process_iframe =
+      ChildFrameAt(shell(), 0)->GetProcess();
+  RenderProcessHostWatcher crash_observer_iframe(
+      renderer_process_iframe,
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process_iframe->Shutdown(0);
+  crash_observer_iframe.Wait();
+  RenderProcessHost* renderer_process_root =
+      web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer_root(
+      renderer_process_root, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process_root->Shutdown(0);
+  crash_observer_root.Wait();
+
+  // Re-do tests now that injection is in place
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
+      ChildFrameAt(shell(), 0)->GetProcess());
+  ignore_result(ExecJs(ChildFrameAt(shell(), 0), "sessionStorage.length"));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+  // The subframe has crashed, but the main frame should still be alive and
+  // working.
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "sessionStorage.length"));
+}
+
+// Verify not fatal if the renderer reads localStorage from an empty
+// LocalFrameToken.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorage_EmptyLocalFrameToken) {
+  // This sets up some initial localStorage state for the subsequent test.
+  GURL page_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  EXPECT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+                     "localStorage.setItem('key', 'value');"));
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
+
+  // Set up the IPC injection and crash the renderer process so that it's used.
+  // Without crashing the renderer, the default IPC will be used.
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackendToInjectValues,
+                          absl::nullopt, blink::LocalFrameToken()));
+  RenderProcessHost* renderer_process =
+      web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0);
+  crash_observer.Wait();
+
+  // Re-do tests now that injection is in place
+  EXPECT_TRUE(NavigateToURL(shell(), page_url));
+  EXPECT_EQ(0, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
+}
+
+// Verify fatal error if the renderer reads localStorage from the wrong
+// LocalFrameToken.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorage_WrongLocalFrameToken) {
+  // This sets up some initial localStorage state for the subsequent test.
+  GURL isolated_url(embedded_test_server()->GetURL(
+      "isolated.foo.com",
+      "/cross_site_iframe_factory.html?isolated.foo.com(bar.com)"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  EXPECT_TRUE(ExecJs(web_contents()->GetMainFrame(),
+                     "localStorage.setItem('key', 'value');"));
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
+  EXPECT_TRUE(ExecJs(ChildFrameAt(shell(), 0),
+                     "localStorage.setItem('key', 'value');"));
+  EXPECT_EQ(1, EvalJs(ChildFrameAt(shell(), 0), "localStorage.length"));
+
+  // Set up the IPC injection and crash the renderer process so that it's used.
+  // Without crashing the renderer, the default IPC will be used.
+  RenderProcessHostImpl::SetDomStorageBinderForTesting(
+      base::BindRepeating(&CreateTestDomStorageBackendToSaveFirstFrame));
+  RenderProcessHost* renderer_process_iframe =
+      ChildFrameAt(shell(), 0)->GetProcess();
+  RenderProcessHostWatcher crash_observer_iframe(
+      renderer_process_iframe,
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process_iframe->Shutdown(0);
+  crash_observer_iframe.Wait();
+  RenderProcessHost* renderer_process_root =
+      web_contents()->GetMainFrame()->GetProcess();
+  RenderProcessHostWatcher crash_observer_root(
+      renderer_process_root, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process_root->Shutdown(0);
+  crash_observer_root.Wait();
+
+  // Re-do tests now that injection is in place
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
+  content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
+      ChildFrameAt(shell(), 0)->GetProcess());
+  ignore_result(ExecJs(ChildFrameAt(shell(), 0), "localStorage.length"));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+  // The subframe has crashed, but the main frame should still be alive and
+  // working.
+  EXPECT_EQ(1, EvalJs(web_contents()->GetMainFrame(), "localStorage.length"));
 }
 
 // Verify that an isolated renderer process cannot read localStorage of an
@@ -3346,10 +3579,12 @@ void CreateTestDomStorageBackend(
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     LocalStorageOriginEnforcement_IsolatedAccessingNonIsolated) {
-  auto mismatched_origin = url::Origin::Create(GURL("http://abc.foo.com"));
-  EXPECT_FALSE(IsIsolatedOrigin(mismatched_origin));
+  auto mismatched_storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://abc.foo.com");
+  EXPECT_FALSE(IsIsolatedOrigin(mismatched_storage_key.origin()));
   RenderProcessHostImpl::SetDomStorageBinderForTesting(
-      base::BindRepeating(&CreateTestDomStorageBackend, mismatched_origin));
+      base::BindRepeating(&CreateTestDomStorageBackendToInjectValues,
+                          mismatched_storage_key, absl::nullopt));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
@@ -3385,15 +3620,17 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated) {
-  auto isolated_origin = url::Origin::Create(GURL("http://isolated.foo.com"));
-  EXPECT_TRUE(IsIsolatedOrigin(isolated_origin));
+  auto isolated_storage_key =
+      blink::StorageKey::CreateFromStringForTesting("http://isolated.foo.com");
+  EXPECT_TRUE(IsIsolatedOrigin(isolated_storage_key.origin()));
 
   GURL nonisolated_url(
       embedded_test_server()->GetURL("non-isolated.com", "/title1.html"));
   EXPECT_FALSE(IsIsolatedOrigin(url::Origin::Create(nonisolated_url)));
 
   RenderProcessHostImpl::SetDomStorageBinderForTesting(
-      base::BindRepeating(&CreateTestDomStorageBackend, isolated_origin));
+      base::BindRepeating(&CreateTestDomStorageBackendToInjectValues,
+                          isolated_storage_key, absl::nullopt));
   EXPECT_TRUE(NavigateToURL(shell(), nonisolated_url));
 
   content::RenderProcessHostBadIpcMessageWaiter kill_waiter(
@@ -3412,9 +3649,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
                        LocalStorageOriginEnforcement_OpaqueOrigin) {
   url::Origin precursor_origin =
       url::Origin::Create(GURL("https://non-isolated.com"));
-  url::Origin opaque_origin = precursor_origin.DeriveNewOpaqueOrigin();
+  blink::StorageKey opaque_storage_key =
+      blink::StorageKey(precursor_origin.DeriveNewOpaqueOrigin());
   RenderProcessHostImpl::SetDomStorageBinderForTesting(
-      base::BindRepeating(&CreateTestDomStorageBackend, opaque_origin));
+      base::BindRepeating(&CreateTestDomStorageBackendToInjectValues,
+                          opaque_storage_key, absl::nullopt));
 
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
@@ -3529,11 +3768,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginLongListTest, Test) {
       "bar1.com(isolated.foo.com,foo999.com,bar2.com)"));
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
 
-  EXPECT_EQ(4u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(4u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
   RenderFrameHost* main_frame = shell()->web_contents()->GetMainFrame();
-  RenderFrameHost* subframe1 = shell()->web_contents()->GetAllFrames()[1];
-  RenderFrameHost* subframe2 = shell()->web_contents()->GetAllFrames()[2];
-  RenderFrameHost* subframe3 = shell()->web_contents()->GetAllFrames()[3];
+  RenderFrameHost* subframe1 = ChildFrameAt(main_frame, 0);
+  RenderFrameHost* subframe2 = ChildFrameAt(main_frame, 1);
+  RenderFrameHost* subframe3 = ChildFrameAt(main_frame, 2);
   EXPECT_EQ("bar1.com", main_frame->GetLastCommittedOrigin().GetURL().host());
   EXPECT_EQ("isolated.foo.com",
             subframe1->GetLastCommittedOrigin().GetURL().host());
@@ -5978,7 +6217,7 @@ IN_PROC_BROWSER_TEST_F(JITIsolationTest, SubFrameTest) {
       "foo.com", "/cross_site_iframe_factory.html?foo.com(jit-disabled.com)"));
 
   EXPECT_TRUE(NavigateToURL(shell(), default_embeds_disabled));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u, CollectAllRenderFrameHosts(shell()->web_contents()).size());
 
   // Top frame 'foo.com' should have JIT enabled as that's the default.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
@@ -5994,7 +6233,9 @@ IN_PROC_BROWSER_TEST_F(JITIsolationTest, SubFrameTest) {
       "/cross_site_iframe_factory.html?jit-disabled.com(foo.com)"));
 
   EXPECT_TRUE(NavigateToURL(shell(), disabled_embeds_default));
-  EXPECT_EQ(2u, shell()->web_contents()->GetAllFrames().size());
+  EXPECT_EQ(2u,
+            CollectAllRenderFrameHosts(shell()->web_contents()->GetMainFrame())
+                .size());
 
   // Top frame 'jit-disabled.com' should have JIT disabled.
   root = web_contents()->GetFrameTree()->root();

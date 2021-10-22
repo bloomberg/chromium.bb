@@ -3,7 +3,11 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
+import {Resolution} from '../type.js';
+
+// eslint-disable-next-line no-unused-vars
 import {VideoSaver} from './video_saver.js';
+
 
 /**
  * Handles captured result photos and video.
@@ -14,9 +18,17 @@ export class ResultSaver {
    * Saves photo capture result.
    * @param {!Blob} blob Data of the photo to be added.
    * @param {string} name Name of the photo to be saved.
-   * @return {!Promise} Promise for the operation.
+   * @return {!Promise}
    */
   async savePhoto(blob, name) {}
+
+  /**
+   * Saves gif capture result.
+   * @param {!Blob} blob Data of the gif to be added.
+   * @param {string} name Name of the gif to be saved.
+   * @return {!Promise}
+   */
+  async saveGif(blob, name) {}
 
   /**
    * Returns a video saver to save captured result video.

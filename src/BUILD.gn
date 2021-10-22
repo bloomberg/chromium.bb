@@ -32,7 +32,6 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/gl/features.gni")
-import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
 
 if (is_android) {
@@ -41,6 +40,10 @@ if (is_android) {
 
 if (is_linux) {
   import("build/config/linux/gtk/gtk.gni")
+}
+
+if (!is_ios) {
+  import("//v8/gni/snapshot_toolchain.gni")
 }
 
 declare_args() {
@@ -90,7 +93,6 @@ group("gn_all") {
     "//third_party/angle/src/tests:angle_end2end_tests",
     "//third_party/angle/src/tests:angle_unittests",
     "//third_party/angle/src/tests:angle_white_box_tests",
-    "//third_party/distributed_point_functions",
     "//third_party/flatbuffers:flatbuffers_unittests",
     "//third_party/liburlpattern:liburlpattern_unittests",
     "//tools/binary_size:binary_size_trybot_py",
@@ -348,15 +350,15 @@ group("gn_all") {
     deps += [ "//chrome/browser/browser_switcher/bho:browser_switcher_dlls" ]
   }
 
-  if (is_win || is_linux || is_chromeos) {
-    deps += [
-      "//tools/traffic_annotation/auditor:traffic_annotation_auditor",
-      "//tools/traffic_annotation/auditor:traffic_annotation_auditor_unittests",
-    ]
+  if (is_win || is_linux) {
+    deps += [ "//tools/traffic_annotation/auditor:traffic_annotation_auditor" ]
   }
 
   if (is_mac) {
-    deps += [ "//chrome/installer/gcapi_mac:gcapi_example" ]
+    deps += [
+      "//chrome/installer/gcapi_mac:gcapi_example",
+      "//tools/mac/power:all",
+    ]
   }
 
   # Allow building md5sum tool for other OSes (android is added below).
@@ -884,6 +886,7 @@ group("gn_all") {
 }
 
 group("rust_build_tests") {
+  testonly = true
   deps = [ "//build/rust/tests" ]
 }
 
@@ -1249,7 +1252,7 @@ if (!is_ios) {
       "//third_party/blink/perf_tests/",
       "//third_party/blink/web_tests/SmokeTests",
       "//third_party/blink/web_tests/VirtualTestSuites",
-      
+
       # List all test expectations here
       "//third_party/blink/web_tests/ASANExpectations",
       "//third_party/blink/web_tests/LeakExpectations",
@@ -1260,7 +1263,7 @@ if (!is_ios) {
       "//third_party/blink/web_tests/TestExpectations",
       "//third_party/blink/web_tests/WebDriverExpectations",
       "//third_party/blink/web_tests/WebGPUExpectations",
-      
+
       # === List Test Cases folders here ===
       "//third_party/blink/web_tests/accessibility/",
       "//third_party/blink/web_tests/android/",
@@ -1282,6 +1285,7 @@ if (!is_ios) {
       "//third_party/blink/web_tests/editing/",
       "//third_party/blink/web_tests/external/",
       "//third_party/blink/web_tests/fast/",
+      "//third_party/blink/web_tests/fenced_frame/",
       "//third_party/blink/web_tests/fonts/",
       "//third_party/blink/web_tests/fragmentation/",
       "//third_party/blink/web_tests/fullscreen/",
@@ -1346,7 +1350,7 @@ if (!is_ios) {
       "//third_party/blink/web_tests/webgpu/",
       "//third_party/blink/web_tests/wpt_internal/",
       "//third_party/blink/web_tests/xmlviewer/",
-      
+
       # === Test Case Folders Ends ===
     ]
 
@@ -1558,7 +1562,6 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
       "//chrome:chrome",
       "//content/shell:content_shell",
       "//third_party/blink/public/mojom:mojom_modules_js",
-      "//third_party/dawn/third_party/tint/fuzzers:tint_black_box_fuzz_target",
       "//v8:d8",
     ]
     if (!is_win) {
@@ -1580,6 +1583,10 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
         "//third_party/webrtc/rtc_tools:rtp_generator",
         "//third_party/webrtc/rtc_tools:video_replay",
       ]
+    }
+
+    if (build_dawn_tests) {
+      deps += [ "//third_party/dawn/third_party/tint/fuzzers:fuzzers" ]
     }
   }
 }

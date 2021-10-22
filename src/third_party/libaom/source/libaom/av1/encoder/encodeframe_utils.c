@@ -15,6 +15,7 @@
 #include "av1/encoder/encodeframe_utils.h"
 #include "av1/encoder/partition_strategy.h"
 #include "av1/encoder/rdopt.h"
+#include "av1/encoder/aq_variance.h"
 
 void av1_set_ssim_rdmult(const AV1_COMP *const cpi, int *errorperbit,
                          const BLOCK_SIZE bsize, const int mi_row,
@@ -159,9 +160,16 @@ static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
   } else if (tx_mode != TX_MODE_SELECT) {
     mbmi->tx_size = tx_size_from_tx_mode(mbmi->bsize, tx_mode);
   } else {
-    BLOCK_SIZE bsize = mbmi->bsize;
-    TX_SIZE min_tx_size = depth_to_tx_size(MAX_TX_DEPTH, bsize);
-    mbmi->tx_size = (TX_SIZE)TXSIZEMAX(mbmi->tx_size, min_tx_size);
+    const BLOCK_SIZE bsize = mbmi->bsize;
+    const TX_SIZE min_tx_size = depth_to_tx_size(MAX_TX_DEPTH, bsize);
+    if (tx_size_wide[min_tx_size] > tx_size_wide[mbmi->tx_size] ||
+        tx_size_high[min_tx_size] > tx_size_high[mbmi->tx_size])
+      mbmi->tx_size = min_tx_size;
+
+    const TX_SIZE max_tx_size = get_vartx_max_txsize(xd, bsize, 0);
+    if (tx_size_wide[max_tx_size] < tx_size_wide[mbmi->tx_size] ||
+        tx_size_high[max_tx_size] < tx_size_high[mbmi->tx_size])
+      mbmi->tx_size = max_tx_size;
   }
   if (is_inter_block(mbmi)) {
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
@@ -949,6 +957,49 @@ int av1_get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   qindex = AOMMAX(qindex, MINQ);
 
   return qindex;
+}
+
+#if !DISABLE_HDR_LUMA_DELTAQ
+// offset table defined in Table3 of T-REC-H.Sup15 document.
+static const int hdr_thres[HDR_QP_LEVELS + 1] = { 0,   301, 367, 434, 501, 567,
+                                                  634, 701, 767, 834, 1024 };
+
+static const int hdr10_qp_offset[HDR_QP_LEVELS] = { 3,  2,  1,  0,  -1,
+                                                    -2, -3, -4, -5, -6 };
+#endif
+
+int av1_get_q_for_hdr(AV1_COMP *const cpi, MACROBLOCK *const x,
+                      BLOCK_SIZE bsize, int mi_row, int mi_col) {
+  AV1_COMMON *const cm = &cpi->common;
+  assert(cm->seq_params->bit_depth == AOM_BITS_10);
+
+#if DISABLE_HDR_LUMA_DELTAQ
+  (void)x;
+  (void)bsize;
+  (void)mi_row;
+  (void)mi_col;
+  return cm->quant_params.base_qindex;
+#else
+  // calculate pixel average
+  const int block_luma_avg = av1_log_block_avg(cpi, x, bsize, mi_row, mi_col);
+  // adjust offset based on average of the pixel block
+  int offset = 0;
+  for (int i = 0; i < HDR_QP_LEVELS; i++) {
+    if (block_luma_avg >= hdr_thres[i] && block_luma_avg < hdr_thres[i + 1]) {
+      offset = (int)(hdr10_qp_offset[i] * QP_SCALE_FACTOR);
+      break;
+    }
+  }
+
+  const DeltaQInfo *const delta_q_info = &cm->delta_q_info;
+  offset = AOMMIN(offset, delta_q_info->delta_q_res * 9 - 1);
+  offset = AOMMAX(offset, -delta_q_info->delta_q_res * 9 + 1);
+  int qindex = cm->quant_params.base_qindex + offset;
+  qindex = AOMMIN(qindex, MAXQ);
+  qindex = AOMMAX(qindex, MINQ);
+
+  return qindex;
+#endif
 }
 #endif  // !CONFIG_REALTIME_ONLY
 

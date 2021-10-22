@@ -21,7 +21,6 @@
 #include "platform/base/exception.h"
 #include "platform/base/input_stream.h"
 #include "platform/base/output_stream.h"
-
 #include "platform/impl/windows/generated/winrt/Windows.Devices.Bluetooth.h"
 #include "platform/impl/windows/generated/winrt/Windows.Devices.Enumeration.h"
 #include "platform/impl/windows/generated/winrt/base.h"
@@ -51,6 +50,8 @@ using winrt::Windows::Devices::Bluetooth::BluetoothCacheMode;
 // https://developer.android.com/reference/android/bluetooth/BluetoothDevice.html.
 class BluetoothDevice : public api::BluetoothDevice {
  public:
+  BluetoothDevice(std::string mac_address)
+      : windows_bluetooth_device_(nullptr), mac_address_(mac_address) {}
   BluetoothDevice(const winrt::Windows::Devices::Bluetooth::BluetoothDevice&
                       bluetoothDevice);
 
@@ -59,11 +60,9 @@ class BluetoothDevice : public api::BluetoothDevice {
   BluetoothDevice& operator=(BluetoothDevice&&) = default;
 
   // https://developer.android.com/reference/android/bluetooth/BluetoothDevice.html#getName()
-  // TODO(b/184975123): replace with real implementation.
   std::string GetName() const override;
 
   // Returns BT MAC address assigned to this device.
-  // TODO(b/184975123): replace with real implementation.
   std::string GetMacAddress() const override;
 
   std::string GetId() { return id_; }

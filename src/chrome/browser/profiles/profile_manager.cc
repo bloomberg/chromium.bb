@@ -41,6 +41,8 @@
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -84,6 +86,7 @@
 #include "components/account_id/account_id.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/prefs/pref_service.h"
@@ -132,8 +135,6 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/accessibility/live_caption_controller_factory.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_lifetime_manager_factory.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -164,6 +165,11 @@
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/signin_util_win.h"
 #endif  // defined(OS_WIN) && BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
+#include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
+#endif
 
 using base::UserMetricsAction;
 using content::BrowserThread;
@@ -318,7 +324,7 @@ void NukeProfileFromDiskImpl(const base::FilePath& profile_path,
   // LockTable, and/or fire events when locks are released. That way we could
   // wait for all the locks in |profile_path| to be released, rather than having
   // this retry logic.
-  const base::TimeDelta kRetryDelay = base::TimeDelta::FromSeconds(1);
+  const base::TimeDelta kRetryDelay = base::Seconds(1);
 
   // Delete both the profile directory and its corresponding cache.
   base::FilePath cache_path;
@@ -482,7 +488,7 @@ base::FilePath GetLastUsedProfileBaseName() {
     return last_used_profile_base_name;
   }
 
-  return base::FilePath::FromUTF8Unsafe(chrome::kInitialProfile);
+  return base::FilePath::FromASCII(chrome::kInitialProfile);
 }
 
 }  // namespace
@@ -614,10 +620,9 @@ Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
 
 // static
 bool ProfileManager::IsOffTheRecordModeForced(Profile* profile) {
-  return profile->IsGuestSession() ||
-         profile->IsSystemProfile() ||
+  return profile->IsGuestSession() || profile->IsSystemProfile() ||
          IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-             IncognitoModePrefs::FORCED;
+             IncognitoModePrefs::Availability::kForced;
 }
 
 // static
@@ -1011,6 +1016,17 @@ ProfileAttributesStorage& ProfileManager::GetProfileAttributesStorage() {
 ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {
   return profile_shortcut_manager_.get();
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+AccountProfileMapper* ProfileManager::GetAccountProfileMapper() {
+  if (!account_profile_mapper_) {
+    account_profile_mapper_ = std::make_unique<AccountProfileMapper>(
+        GetAccountManagerFacade(/*profile_path=*/std::string()),
+        &GetProfileAttributesStorage());
+  }
+  return account_profile_mapper_.get();
+}
+#endif
 
 #if !defined(OS_ANDROID)
 void ProfileManager::MaybeScheduleProfileForDeletion(
@@ -1473,8 +1489,10 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   // The caret browsing command-line switch toggles caret browsing on
   // initially, but the user can still toggle it from there.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableCaretBrowsing))
+          switches::kEnableCaretBrowsing)) {
     profile->GetPrefs()->SetBoolean(prefs::kCaretBrowsingEnabled, true);
+  }
+#endif  // !defined(OS_ANDROID)
 
   // Delete browsing data specified by the ClearBrowsingDataOnExitList policy
   // if they were not properly deleted on the last browser shutdown.
@@ -1486,7 +1504,6 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
     browsing_data_lifetime_manager->ClearBrowsingDataForOnExitPolicy(
         /*keep_browser_alive=*/false);
   }
-#endif
 }
 
 void ProfileManager::DoFinalInitForServices(Profile* profile,
@@ -1591,7 +1608,7 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ProfileSizeTask, profile->GetPath(), enabled_app_count),
-      base::TimeDelta::FromSeconds(112));
+      base::Seconds(112));
 }
 
 ProfileManager::ProfileInfo::ProfileInfo() {
@@ -1925,14 +1942,10 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
       sync_service->StopAndClear();
     }
 
-    ProfileAttributesEntry* entry =
-        storage.GetProfileAttributesWithPath(profile_dir);
-    DCHECK(entry);
-    ProfileMetrics::LogProfileDelete(entry->IsAuthenticated());
     // Some platforms store passwords in keychains. They should be removed.
     scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-        PasswordStoreFactory::GetInterfaceForProfile(
-            profile, ServiceAccessType::EXPLICIT_ACCESS)
+        PasswordStoreFactory::GetForProfile(profile,
+                                            ServiceAccessType::EXPLICIT_ACCESS)
             .get();
     if (password_store.get()) {
       password_store->RemoveLoginsCreatedBetween(
@@ -2248,9 +2261,9 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
 
   if (profile->IsGuestSession()) {
     auto duration = base::Time::Now() - profile->GetCreationTime();
-    base::UmaHistogramCustomCounts(
-        "Profile.Guest.OTR.Lifetime", duration.InMinutes(), 1,
-        base::TimeDelta::FromDays(28).InMinutes(), 100);
+    base::UmaHistogramCustomCounts("Profile.Guest.OTR.Lifetime",
+                                   duration.InMinutes(), 1,
+                                   base::Days(28).InMinutes(), 100);
 
     CleanUpGuestProfile();
   }
@@ -2268,7 +2281,6 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
     // Delete if the profile is an ephemeral profile.
     ScheduleForcedEphemeralProfileForDeletion(path);
   } else if (!profile->IsOffTheRecord()) {
-#if !defined(OS_ANDROID)
     auto* browsing_data_lifetime_manager =
         ChromeBrowsingDataLifetimeManagerFactory::GetForProfile(
             original_profile);
@@ -2277,7 +2289,6 @@ void ProfileManager::OnBrowserClosed(Browser* browser) {
       browsing_data_lifetime_manager->ClearBrowsingDataForOnExitPolicy(
           /*keep_browser_alive=*/true);
     }
-#endif
   }
 }
 

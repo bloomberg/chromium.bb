@@ -54,6 +54,11 @@ class UkmPageLoadMetricsObserver
 
   explicit UkmPageLoadMetricsObserver(
       network::NetworkQualityTracker* network_quality_tracker);
+
+  UkmPageLoadMetricsObserver(const UkmPageLoadMetricsObserver&) = delete;
+  UkmPageLoadMetricsObserver& operator=(const UkmPageLoadMetricsObserver&) =
+      delete;
+
   ~UkmPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
@@ -104,9 +109,6 @@ class UkmPageLoadMetricsObserver
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::CpuTiming& timing) override;
 
-  void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
-                                 int behavior_flags) override;
-
   void DidActivatePortal(base::TimeTicks activation_time) override;
 
   void OnFirstContentfulPaintInPage(
@@ -145,8 +147,6 @@ class UkmPageLoadMetricsObserver
   void ReportMainResourceTimingMetrics(ukm::builders::PageLoad& builder);
 
   void ReportLayoutStability();
-
-  void ReportPerfectHeuristicsMetrics();
 
   void RecordAbortMetrics(
       const page_load_metrics::mojom::PageLoadTiming& timing,
@@ -295,10 +295,6 @@ class UkmPageLoadMetricsObserver
   // Unique across the lifetime of the browser process.
   int main_document_sequence_number_ = -1;
 
-  // These are to capture observed LoadingBehaviorFlags.
-  bool delay_async_script_execution_before_finished_parsing_seen_ = false;
-  bool delay_competing_low_priority_requests_seen_ = false;
-
   bool currently_in_foreground_ = false;
   // The last time the page became foregrounded, or navigation start if the page
   // started in the foreground and has not been backgrounded.
@@ -311,8 +307,6 @@ class UkmPageLoadMetricsObserver
   base::ReadOnlySharedMemoryMapping ukm_smoothness_data_;
 
   base::WeakPtrFactory<UkmPageLoadMetricsObserver> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_CORE_UKM_PAGE_LOAD_METRICS_OBSERVER_H_

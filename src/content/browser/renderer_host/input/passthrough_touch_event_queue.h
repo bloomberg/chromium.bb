@@ -61,10 +61,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
  public:
   struct CONTENT_EXPORT Config {
     Config()
-        : desktop_touch_ack_timeout_delay(
-              base::TimeDelta::FromMilliseconds(200)),
-          mobile_touch_ack_timeout_delay(
-              base::TimeDelta::FromMilliseconds(1000)),
+        : desktop_touch_ack_timeout_delay(base::Milliseconds(200)),
+          mobile_touch_ack_timeout_delay(base::Milliseconds(1000)),
           touch_ack_timeout_supported(false),
           skip_touch_filter(base::FeatureList::IsEnabled(
               blink::features::kSkipTouchEventFilter)),
@@ -90,6 +88,10 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
 
   PassthroughTouchEventQueue(PassthroughTouchEventQueueClient* client,
                              const Config& config);
+
+  PassthroughTouchEventQueue(const PassthroughTouchEventQueue&) = delete;
+  PassthroughTouchEventQueue& operator=(const PassthroughTouchEventQueue&) =
+      delete;
 
   ~PassthroughTouchEventQueue();
 
@@ -272,8 +274,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // What events types are allowed to bypass the filter.
   const std::string events_to_always_forward_;
   static const base::FeatureParam<std::string> kSkipTouchEventFilterType;
-
-  DISALLOW_COPY_AND_ASSIGN(PassthroughTouchEventQueue);
 };
 
 }  // namespace content

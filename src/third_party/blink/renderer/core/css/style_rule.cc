@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/css/style_rule.h"
 
+#include "third_party/blink/renderer/core/css/cascade_layer.h"
 #include "third_party/blink/renderer/core/css/css_container_rule.h"
 #include "third_party/blink/renderer/core/css/css_counter_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_font_face_rule.h"
@@ -369,6 +370,7 @@ MutableCSSPropertyValueSet& StyleRulePage::MutableProperties() {
 
 void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
+  visitor->Trace(layer_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
@@ -403,6 +405,7 @@ const CSSValue* StyleRuleProperty::GetInitialValue() const {
 
 void StyleRuleProperty::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
+  visitor->Trace(layer_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
@@ -421,6 +424,7 @@ MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
 
 void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) const {
   visitor->Trace(properties_);
+  visitor->Trace(layer_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
 
@@ -433,8 +437,7 @@ StyleRuleScrollTimeline::StyleRuleScrollTimeline(
       orientation_(
           properties->GetPropertyCSSValue(CSSPropertyID::kOrientation)),
       start_(properties->GetPropertyCSSValue(CSSPropertyID::kStart)),
-      end_(properties->GetPropertyCSSValue(CSSPropertyID::kEnd)),
-      time_range_(properties->GetPropertyCSSValue(CSSPropertyID::kTimeRange)) {}
+      end_(properties->GetPropertyCSSValue(CSSPropertyID::kEnd)) {}
 
 StyleRuleScrollTimeline::~StyleRuleScrollTimeline() = default;
 
@@ -444,7 +447,7 @@ void StyleRuleScrollTimeline::TraceAfterDispatch(
   visitor->Trace(orientation_);
   visitor->Trace(start_);
   visitor->Trace(end_);
-  visitor->Trace(time_range_);
+  visitor->Trace(layer_);
 
   StyleRuleBase::TraceAfterDispatch(visitor);
 }

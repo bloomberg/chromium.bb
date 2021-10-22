@@ -8,10 +8,11 @@
 
 #include "core/fpdfapi/page/cpdf_page.h"
 #include "core/fpdfdoc/cpdf_bafontmap.h"
+#include "fpdfsdk/cpdfsdk_widget.h"
 
-CFFL_TextObject::CFFL_TextObject(CPDFSDK_FormFillEnvironment* pApp,
+CFFL_TextObject::CFFL_TextObject(CFFL_InteractiveFormFiller* pFormFiller,
                                  CPDFSDK_Widget* pWidget)
-    : CFFL_FormField(pApp, pWidget) {}
+    : CFFL_FormField(pFormFiller, pWidget) {}
 
 CFFL_TextObject::~CFFL_TextObject() {
   // Destroy view classes before this object's members are destroyed since

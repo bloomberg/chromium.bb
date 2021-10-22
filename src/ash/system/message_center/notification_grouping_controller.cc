@@ -133,14 +133,16 @@ void NotificationGroupingController::PopulateGroupParent(
       GetActiveNotificationViewController()->GetMessageViewForNotificationId(
           notification_id);
 
+  std::vector<const Notification*> notifications;
   for (const auto* notification : MessageCenter::Get()->GetNotifications()) {
     if (notification->notifier_id() == parent_view->notifier_id() &&
         notification->id() != parent_view->notification_id()) {
       grouped_notification_list_->AddGroupedNotification(notification->id(),
                                                          notification_id);
-      parent_view->AddGroupNotification(*notification, /*newest_first=*/true);
+      notifications.push_back(notification);
     }
   }
+  parent_view->PopulateGroupNotifications(notifications);
 }
 
 const std::string& NotificationGroupingController::GetParentIdForChildForTest(
@@ -182,9 +184,13 @@ void NotificationGroupingController::SetupParentNotification(
   auto* parent_view =
       GetActiveNotificationViewController()->GetMessageViewForNotificationId(
           new_parent_id);
-  if (parent_view)
+  if (parent_view) {
+    parent_view->UpdateWithNotification(*new_parent_notification);
+    // Grouped notifications should start off in the collapsed state.
+    parent_view->SetExpanded(false);
     parent_view->AddGroupNotification(*parent_notification,
                                       /*newest_first=*/false);
+  }
 }
 
 void NotificationGroupingController::
@@ -229,7 +235,7 @@ NotificationGroupingController::CreateCopyForParentNotification(
       parent_notification.notifier_id(), message_center::RichNotificationData(),
       /*delegate=*/nullptr);
   child_copy->set_timestamp(parent_notification.timestamp() -
-                            base::TimeDelta::FromMilliseconds(1));
+                            base::Milliseconds(1));
   child_copy->SetGroupChild();
 
   return child_copy;

@@ -26,10 +26,15 @@
 class PrefService;
 
 namespace base {
+class Clock;
 class HistogramFlattener;
 class HistogramSamples;
 class HistogramSnapshotManager;
 }  // namespace base
+
+namespace network_time {
+class NetworkTimeTracker;
+}  // namespace network_time
 
 namespace metrics {
 
@@ -79,6 +84,11 @@ class MetricsLog {
   class IndependentMetricsLoader {
    public:
     explicit IndependentMetricsLoader(std::unique_ptr<MetricsLog> log);
+
+    IndependentMetricsLoader(const IndependentMetricsLoader&) = delete;
+    IndependentMetricsLoader& operator=(const IndependentMetricsLoader&) =
+        delete;
+
     ~IndependentMetricsLoader();
 
     // Call ProvideIndependentMetrics (which may execute on a background thread)
@@ -96,8 +106,6 @@ class MetricsLog {
     std::unique_ptr<MetricsLog> log_;
     std::unique_ptr<base::HistogramFlattener> flattener_;
     std::unique_ptr<base::HistogramSnapshotManager> snapshot_manager_;
-
-    DISALLOW_COPY_AND_ASSIGN(IndependentMetricsLoader);
   };
 
   // Creates a new metrics log of the specified type.
@@ -112,6 +120,18 @@ class MetricsLog {
              int session_id,
              LogType log_type,
              MetricsServiceClient* client);
+  // As above, just with a |clock| and |network_clock_for_testing| and
+  // to use with Now() calls.  As with |client|, the caller must ensure both
+  // remain valid for the lifetime of this class.
+  MetricsLog(const std::string& client_id,
+             int session_id,
+             LogType log_type,
+             base::Clock* clock,
+             network_time::NetworkTimeTracker* network_clock_for_testing,
+             MetricsServiceClient* client);
+
+  MetricsLog(const MetricsLog&) = delete;
+  MetricsLog& operator=(const MetricsLog&) = delete;
   virtual ~MetricsLog();
 
   // Registers local state prefs used by this class.
@@ -243,7 +263,12 @@ class MetricsLog {
   // Optional metadata associated with the log.
   LogMetadata log_metadata_;
 
-  DISALLOW_COPY_AND_ASSIGN(MetricsLog);
+  // The clock used to vend Time::Now().  Note that this is not used for
+  // the static function MetricsLog::GetCurrentTime().
+  base::Clock* clock_;
+
+  // If provided, the NetworkTimeTracker used.  Used for tests.
+  network_time::NetworkTimeTracker* network_clock_for_testing_;
 };
 
 }  // namespace metrics

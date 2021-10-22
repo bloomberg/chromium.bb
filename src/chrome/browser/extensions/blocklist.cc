@@ -79,6 +79,9 @@ class SafeBrowsingClientImpl
   using OnResultCallback =
       base::OnceCallback<void(const std::set<std::string>&)>;
 
+  SafeBrowsingClientImpl(const SafeBrowsingClientImpl&) = delete;
+  SafeBrowsingClientImpl& operator=(const SafeBrowsingClientImpl&) = delete;
+
   // Constructs a client to query the database manager for |extension_ids| and
   // run |callback| with the IDs of those which have been blocklisted.
   static void Start(const std::set<std::string>& extension_ids,
@@ -128,8 +131,6 @@ class SafeBrowsingClientImpl
 
   scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner_;
   OnResultCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingClientImpl);
 };
 
 void CheckOneExtensionState(Blocklist::IsBlocklistedCallback callback,
@@ -301,8 +302,8 @@ void Blocklist::OnBlocklistStateReceived(const std::string& id,
     const std::vector<std::string>& ids = requests_it->first;
 
     bool have_all_in_cache = true;
-    for (const auto& id : ids) {
-      if (!base::Contains(blocklist_state_cache_, id)) {
+    for (const auto& id_str : ids) {
+      if (!base::Contains(blocklist_state_cache_, id_str)) {
         have_all_in_cache = false;
         break;
       }

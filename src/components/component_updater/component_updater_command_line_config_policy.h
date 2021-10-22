@@ -15,12 +15,19 @@ class CommandLine;
 
 namespace component_updater {
 
+extern const char kSwitchTestRequestParam[];
+
 // Component updater config policy implementation.
 class ComponentUpdaterCommandLineConfigPolicy final
     : public update_client::CommandLineConfigPolicy {
  public:
   explicit ComponentUpdaterCommandLineConfigPolicy(
       const base::CommandLine* cmdline);
+
+  ComponentUpdaterCommandLineConfigPolicy(
+      const ComponentUpdaterCommandLineConfigPolicy&) = delete;
+  ComponentUpdaterCommandLineConfigPolicy& operator=(
+      const ComponentUpdaterCommandLineConfigPolicy&) = delete;
 
   // update_client::CommandLineConfigPolicy overrides.
   bool BackgroundDownloadsEnabled() const override;
@@ -43,8 +50,6 @@ class ComponentUpdaterCommandLineConfigPolicy final
   double initial_delay_ = 0;
 
   GURL url_source_override_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComponentUpdaterCommandLineConfigPolicy);
 };
 
 }  // namespace component_updater

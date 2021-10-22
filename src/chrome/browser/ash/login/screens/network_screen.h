@@ -27,7 +27,14 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
  public:
   using TView = NetworkScreenView;
 
-  enum class Result { CONNECTED, OFFLINE_DEMO_SETUP, BACK };
+  enum class Result {
+    CONNECTED_REGULAR,
+    CONNECTED_DEMO,
+    OFFLINE_DEMO_SETUP,
+    BACK_REGULAR,
+    BACK_DEMO,
+    BACK_OS_INSTALL
+  };
 
   static std::string GetResultString(Result result);
 
@@ -35,6 +42,10 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
 
   NetworkScreen(NetworkScreenView* view,
                 const ScreenExitCallback& exit_callback);
+
+  NetworkScreen(const NetworkScreen&) = delete;
+  NetworkScreen& operator=(const NetworkScreen&) = delete;
+
   ~NetworkScreen() override;
 
   // Called when `view` has been destroyed. If this instance is destroyed before
@@ -83,7 +94,7 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   void UnsubscribeNetworkNotification();
 
   // Notifies wizard on successful connection.
-  inline void NotifyOnConnection() { exit_callback_.Run(Result::CONNECTED); }
+  void NotifyOnConnection();
 
   // Called by `connection_timer_` when connection to the network timed out.
   void OnConnectionTimeout();
@@ -133,8 +144,6 @@ class NetworkScreen : public BaseScreen, public NetworkStateHandlerObserver {
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   base::WeakPtrFactory<NetworkScreen> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };
 
 }  // namespace ash

@@ -52,7 +52,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
-#include "ui/base/ime/chromeos/input_method_chromeos.h"
+#include "ui/base/ime/ash/input_method_ash.h"
 #else
 #include "ui/base/dragdrop/os_exchange_data_provider_x11.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
@@ -75,6 +75,9 @@ class OzonePlatformX11 : public OzonePlatform,
                          public OSExchangeDataProviderFactoryOzone {
  public:
   OzonePlatformX11() { SetInstance(this); }
+
+  OzonePlatformX11(const OzonePlatformX11&) = delete;
+  OzonePlatformX11& operator=(const OzonePlatformX11&) = delete;
 
   ~OzonePlatformX11() override = default;
 
@@ -139,7 +142,7 @@ class OzonePlatformX11 : public OzonePlatform,
       internal::InputMethodDelegate* delegate,
       gfx::AcceleratedWidget) override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    return std::make_unique<InputMethodChromeOS>(delegate);
+    return std::make_unique<InputMethodAsh>(delegate);
 #else
     // This method is used by upper layer components (e.g: GtkUi) to determine
     // if the LinuxInputMethodContextFactory instance is provided by the Ozone
@@ -208,6 +211,9 @@ class OzonePlatformX11 : public OzonePlatform,
       properties->supports_global_application_menus = true;
       properties->app_modal_dialogs_use_event_blocker = true;
       properties->fetch_buffer_formats_for_gmb_on_gpu = true;
+#if defined(OS_LINUX)
+      properties->supports_vaapi = true;
+#endif
 
       initialised = true;
     }
@@ -333,8 +339,6 @@ class OzonePlatformX11 : public OzonePlatform,
 #if BUILDFLAG(USE_GTK)
   std::unique_ptr<LinuxUiDelegate> linux_ui_delegate_;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(OzonePlatformX11);
 };
 
 }  // namespace

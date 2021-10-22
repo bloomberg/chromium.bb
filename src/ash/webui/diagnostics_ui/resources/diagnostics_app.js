@@ -5,6 +5,7 @@
 import 'chrome://resources/ash/common/navigation_view_panel.js';
 import 'chrome://resources/ash/common/page_toolbar.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
+import './diagnostics_sticky_banner.js';
 import './input_list.js';
 import './network_list.js';
 import './strings.m.js';
@@ -15,7 +16,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {DiagnosticsBrowserProxy, DiagnosticsBrowserProxyImpl} from './diagnostics_browser_proxy.js';
-import {getNavigationIcon} from './diagnostics_utils.js';
+import {getDiagnosticsIcon, getNavigationIcon} from './diagnostics_utils.js';
 
 /**
  * @fileoverview
@@ -34,6 +35,17 @@ Polymer({
   browserProxy_: null,
 
   properties: {
+    /**
+     * Used in navigation-view-panel to set show-banner when banner is expected
+     * to be shown.
+     * @protected
+     * @type {string}
+     */
+    bannerMessage_: {
+      type: Boolean,
+      value: '',
+    },
+
     /** @private {boolean} */
     showNavPanel_: {
       type: Boolean,
@@ -77,8 +89,8 @@ Polymer({
       // Note: When adding a new page, update the DiagnosticsPage enum located
       // in chrome/browser/ui/webui/chromeos/diagnostics_dialog.h.
       const pages = [navPanel.createSelectorItem(
-          loadTimeData.getString('overviewText'), 'system-page',
-          getNavigationIcon('laptop-chromebook'), 'overview')];
+          loadTimeData.getString('systemText'), 'system-page',
+          getNavigationIcon('laptop-chromebook'), 'system')];
 
       if (this.isNetworkingEnabled_) {
         pages.push(navPanel.createSelectorItem(
@@ -88,7 +100,7 @@ Polymer({
 
       if (this.isInputEnabled_) {
         pages.push(navPanel.createSelectorItem(
-            'Input', 'input-list', /*icon=*/ '', 'input'));
+            'Input', 'input-list', getDiagnosticsIcon('keyboard'), 'input'));
       }
       navPanel.addSelectors(pages);
     }

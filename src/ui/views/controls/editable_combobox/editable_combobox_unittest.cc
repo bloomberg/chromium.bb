@@ -52,6 +52,11 @@ using views::test::WaitForMenuClosureAnimation;
 class TestContextMenuController : public ContextMenuController {
  public:
   TestContextMenuController() = default;
+
+  TestContextMenuController(const TestContextMenuController&) = delete;
+  TestContextMenuController& operator=(const TestContextMenuController&) =
+      delete;
+
   ~TestContextMenuController() override = default;
 
   // ContextMenuController:
@@ -65,13 +70,14 @@ class TestContextMenuController : public ContextMenuController {
 
  private:
   bool opened_menu_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContextMenuController);
 };
 
 class EditableComboboxTest : public ViewsTestBase {
  public:
   EditableComboboxTest() { views::test::DisableMenuClosureAnimations(); }
+
+  EditableComboboxTest(const EditableComboboxTest&) = delete;
+  EditableComboboxTest& operator=(const EditableComboboxTest&) = delete;
 
   void SetUp() override;
   void TearDown() override;
@@ -130,9 +136,6 @@ class EditableComboboxTest : public ViewsTestBase {
   int change_count_ = 0;
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EditableComboboxTest);
 };
 
 void EditableComboboxTest::SetUp() {

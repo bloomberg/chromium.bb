@@ -37,7 +37,7 @@
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/events/blink/did_overscroll_params.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 
 namespace content {
 
@@ -313,12 +313,12 @@ class ScopedSetSkCanvas {
     SynchronousCompositorSetSkCanvas(canvas);
   }
 
+  ScopedSetSkCanvas(const ScopedSetSkCanvas&) = delete;
+  ScopedSetSkCanvas& operator=(const ScopedSetSkCanvas&) = delete;
+
   ~ScopedSetSkCanvas() {
     SynchronousCompositorSetSkCanvas(nullptr);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedSetSkCanvas);
 };
 
 }
@@ -349,12 +349,14 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
 class SynchronousCompositorHost::ScopedSendZeroMemory {
  public:
   ScopedSendZeroMemory(SynchronousCompositorHost* host) : host_(host) {}
+
+  ScopedSendZeroMemory(const ScopedSendZeroMemory&) = delete;
+  ScopedSendZeroMemory& operator=(const ScopedSendZeroMemory&) = delete;
+
   ~ScopedSendZeroMemory() { host_->SendZeroMemory(); }
 
  private:
   SynchronousCompositorHost* const host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedSendZeroMemory);
 };
 
 struct SynchronousCompositorHost::SharedMemoryWithSize {
@@ -529,7 +531,7 @@ void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
 }
 
 void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
-    const gfx::ScrollOffset& root_offset) {
+    const gfx::Vector2dF& root_offset) {
   if (root_scroll_offset_ == root_offset)
     return;
   root_scroll_offset_ = root_offset;
@@ -640,8 +642,7 @@ void SynchronousCompositorHost::UpdateRootLayerStateOnClient() {
   // for that case here.
   if (page_scale_factor_) {
     client_->UpdateRootLayerState(
-        this, gfx::ScrollOffsetToVector2dF(root_scroll_offset_),
-        gfx::ScrollOffsetToVector2dF(max_scroll_offset_), scrollable_size_,
+        this, root_scroll_offset_, max_scroll_offset_, scrollable_size_,
         page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);
   }
 }

@@ -39,6 +39,9 @@ class NET_EXPORT TestRootCerts {
   // Obtains the Singleton instance to the trusted certificates.
   static TestRootCerts* GetInstance();
 
+  TestRootCerts(const TestRootCerts&) = delete;
+  TestRootCerts& operator=(const TestRootCerts&) = delete;
+
   // Returns true if an instance exists, without forcing an initialization.
   static bool HasInstance();
 
@@ -95,8 +98,6 @@ class NET_EXPORT TestRootCerts {
 #endif
 
   TrustStoreInMemory test_trust_store_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestRootCerts);
 };
 
 // Scoped helper for unittests to handle safely managing trusted roots.
@@ -111,6 +112,10 @@ class NET_EXPORT_PRIVATE ScopedTestRoot {
   // TestRootCerts store (if there were existing roots they are
   // cleared).
   explicit ScopedTestRoot(CertificateList certs);
+
+  ScopedTestRoot(const ScopedTestRoot&) = delete;
+  ScopedTestRoot& operator=(const ScopedTestRoot&) = delete;
+
   ~ScopedTestRoot();
 
   // Assigns |certs| to be the new test root certs. If |certs| is empty, undoes
@@ -122,8 +127,6 @@ class NET_EXPORT_PRIVATE ScopedTestRoot {
 
  private:
   CertificateList certs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestRoot);
 };
 
 }  // namespace net

@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2020 Google LLC
  *
@@ -103,6 +104,9 @@ public:
                            const GrProgramInfo&,
                            ProgramDescOverrideFlags) const override;
 
+    bool resolveSubresourceRegionSupport() const { return fResolveSubresourceRegionSupport; }
+    bool standardSwizzleLayoutSupport() const { return fStandardSwizzleLayoutSupport; }
+
 #if GR_TEST_UTILS
     std::vector<TestFormatColorTypeCombination> getTestingCombinations() const override;
 #endif
@@ -205,6 +209,9 @@ private:
     int fMaxPerStageUnorderedAccessViews;
 
     DXGI_FORMAT fPreferredStencilFormat;
+
+    bool fResolveSubresourceRegionSupport : 1;
+    bool fStandardSwizzleLayoutSupport : 1;
 
     using INHERITED = GrCaps;
 };

@@ -86,8 +86,7 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     // Otherwise query the helper to asynchronously determine the
     // |CredentialLeakType|.
     helper_ = std::make_unique<LeakDetectionDelegateHelper>(
-        client_->GetProfilePasswordStoreInterface(),
-        client_->GetAccountPasswordStoreInterface(),
+        client_->GetProfilePasswordStore(), client_->GetAccountPasswordStore(),
         base::BindOnce(&LeakDetectionDelegate::OnShowLeakDetectionNotification,
                        base::Unretained(this)));
     helper_->ProcessLeakedPassword(std::move(url), std::move(username),
@@ -99,7 +98,14 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
     IsSaved is_saved,
     IsReused is_reused,
     GURL url,
-    std::u16string username) {
+    std::u16string username,
+    std::vector<GURL> all_urls_with_leaked_credentials) {
+  std::vector<std::pair<GURL, std::u16string>> identities;
+  for (const auto& u : all_urls_with_leaked_credentials) {
+    identities.emplace_back(u, username);
+  }
+  client_->MaybeReportEnterprisePasswordBreachEvent(identities);
+
   bool force_dialog_for_testing = base::GetFieldTrialParamByFeatureAsBool(
       password_manager::features::kPasswordChange,
       password_manager::features::

@@ -31,6 +31,11 @@ namespace dawn_native {
 
     MaybeError ValidateTimestampQuery(QuerySetBase* querySet, uint32_t queryIndex);
 
+    MaybeError ValidateWriteBuffer(const DeviceBase* device,
+                                   const BufferBase* buffer,
+                                   uint64_t bufferOffset,
+                                   uint64_t size);
+
     ResultOrError<uint64_t> ComputeRequiredBytesInCopy(const TexelBlockInfo& blockInfo,
                                                        const Extent3D& copySize,
                                                        uint32_t bytesPerRow,
@@ -61,13 +66,12 @@ namespace dawn_native {
 
     bool IsRangeOverlapped(uint32_t startA, uint32_t startB, uint32_t length);
 
+    MaybeError ValidateTextureToTextureCopyCommonRestrictions(const ImageCopyTexture& src,
+                                                              const ImageCopyTexture& dst,
+                                                              const Extent3D& copySize);
     MaybeError ValidateTextureToTextureCopyRestrictions(const ImageCopyTexture& src,
                                                         const ImageCopyTexture& dst,
                                                         const Extent3D& copySize);
-
-    MaybeError ValidateCopyTextureForBrowserRestrictions(const ImageCopyTexture& src,
-                                                         const ImageCopyTexture& dst,
-                                                         const Extent3D& copySize);
 
     MaybeError ValidateCanUseAs(const TextureBase* texture, wgpu::TextureUsage usage);
 

@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
@@ -50,8 +51,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/full_restore_utils.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -478,7 +479,7 @@ void LaunchPlatformAppWithFileHandler(
     const std::string& handler_id,
     const std::vector<base::FilePath>& entry_paths) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  auto launch_info = std::make_unique<full_restore::AppLaunchInfo>(
+  auto launch_info = std::make_unique<app_restore::AppLaunchInfo>(
       app->id(), handler_id, entry_paths);
   full_restore::SaveAppLaunchInfo(context->GetPath(), std::move(launch_info));
 #endif

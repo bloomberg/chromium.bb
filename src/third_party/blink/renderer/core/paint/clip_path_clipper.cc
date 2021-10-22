@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
@@ -96,15 +97,17 @@ static void PaintWorkletBasedClip(GraphicsContext& context,
   scoped_refptr<Image> paint_worklet_image =
       generator->Paint(zoom, reference_box, *clip_path_owner.GetNode());
 
-  // TODO(crbug.com/1223975): Fix bounding box. It should enclose affected area
+  // TODO(crbug.com/1248610): Fix bounding box. It should enclose affected area
   // of the animation.
   absl::optional<FloatRect> bounding_box =
       ClipPathClipper::LocalClipPathBoundingBox(clip_path_owner);
   DCHECK(bounding_box);
   FloatRect src_rect(bounding_box.value());
-  context.DrawImage(paint_worklet_image.get(), Image::kSyncDecode, src_rect,
-                    &src_rect, clip_path_owner.StyleRef().DisableForceDark(),
-                    SkBlendMode::kSrcOver, kRespectImageOrientation);
+  context.DrawImage(paint_worklet_image.get(), Image::kSyncDecode,
+                    PaintAutoDarkMode(clip_path_owner.StyleRef(),
+                                      DarkModeFilter::ElementRole::kBackground),
+                    src_rect, &src_rect, SkBlendMode::kSrcOver,
+                    kRespectImageOrientation);
 }
 
 FloatRect ClipPathClipper::LocalReferenceBox(const LayoutObject& object) {
@@ -218,11 +221,11 @@ void ClipPathClipper::PaintClipPathAsMaskImage(
                                                   DisplayItem::kSVGClip))
     return;
 
-  // TODO(crbug.com/1223975): Fix paint rectangle for
+  // TODO(crbug.com/1248610): Fix paint rectangle for
   // CompositeClipPathAnimation.
   DrawingRecorder recorder(
       context, display_item_client, DisplayItem::kSVGClip,
-      EnclosingIntRect(properties->MaskClip()->UnsnappedClipRect().Rect()));
+      EnclosingIntRect(properties->MaskClip()->PaintClipRect().Rect()));
   context.Save();
   context.Translate(paint_offset.left, paint_offset.top);
 
@@ -297,7 +300,7 @@ bool ClipPathClipper::ShouldUseMaskBasedClip(const LayoutObject& object) {
 
 absl::optional<Path> ClipPathClipper::PathBasedClip(
     const LayoutObject& clip_path_owner) {
-  // TODO(crbug.com/1223975): Currently HasCompositeClipPathAnimation is called
+  // TODO(crbug.com/1248622): Currently HasCompositeClipPathAnimation is called
   // multiple times, which is not efficient. Cache
   // HasCompositeClipPathAnimation value as part of fragment_data, similarly to
   // FragmentData::ClipPathPath().

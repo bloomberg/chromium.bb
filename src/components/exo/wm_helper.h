@@ -81,6 +81,10 @@ class WMHelper : public aura::client::DragDropDelegate {
     };
 
     LifetimeManager();
+
+    LifetimeManager(const LifetimeManager&) = delete;
+    LifetimeManager& operator=(const LifetimeManager&) = delete;
+
     ~LifetimeManager();
 
     void AddObserver(Observer* observer);
@@ -88,8 +92,6 @@ class WMHelper : public aura::client::DragDropDelegate {
 
    private:
     base::ObserverList<Observer> observers_;
-
-    DISALLOW_COPY_AND_ASSIGN(LifetimeManager);
   };
 
   // Used to resolve the properties to be set to the window
@@ -108,7 +110,17 @@ class WMHelper : public aura::client::DragDropDelegate {
         ui::PropertyHandler& out_properties_container) = 0;
   };
 
+  class ExoWindowObserver : public base::CheckedObserver {
+   public:
+    // Called every time exo creates a new window but before it is shown.
+    virtual void OnExoWindowCreated(aura::Window* window) {}
+  };
+
   WMHelper();
+
+  WMHelper(const WMHelper&) = delete;
+  WMHelper& operator=(const WMHelper&) = delete;
+
   ~WMHelper() override;
 
   static WMHelper* GetInstance();
@@ -122,6 +134,8 @@ class WMHelper : public aura::client::DragDropDelegate {
       aura::client::FocusChangeObserver* observer) = 0;
   virtual void RemoveFocusObserver(
       aura::client::FocusChangeObserver* observer) = 0;
+  void AddExoWindowObserver(ExoWindowObserver* observer);
+  void RemoveExoWindowObserver(ExoWindowObserver* observer);
 
   virtual void AddDragDropObserver(DragDropObserver* observer) = 0;
   virtual void RemoveDragDropObserver(DragDropObserver* observer) = 0;
@@ -180,10 +194,14 @@ class WMHelper : public aura::client::DragDropDelegate {
   void PopulateAppProperties(const AppPropertyResolver::Params& params,
                              ui::PropertyHandler& out_properties_container);
 
- protected:
-  std::vector<std::unique_ptr<AppPropertyResolver>> resolver_list_;
+  // Notifies observers that |window| has been created by exo and is ready for
+  // to receive content.
+  void NotifyExoWindowCreated(aura::Window* window);
 
-  DISALLOW_COPY_AND_ASSIGN(WMHelper);
+ protected:
+  base::ObserverList<ExoWindowObserver> exo_window_observers_;
+
+  std::vector<std::unique_ptr<AppPropertyResolver>> resolver_list_;
 };
 
 }  // namespace exo

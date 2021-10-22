@@ -12,8 +12,9 @@
 <div id="container">
   <div id="title">[[title]]</div>
   <div id="rowList">
-    <template is="dom-repeat" items="[[acceleratorContainer]]">
+    <template id="list" is="dom-repeat" items="[[acceleratorContainer]]">
       <accelerator-row class="acceleratorRow" description="[[item.description]]"
+          action="[[item.action]]"
           source="[[item.source]]"
           accelerator-infos="[[item.acceleratorInfos]]">
       </accelerator-row>

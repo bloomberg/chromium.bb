@@ -1,5 +1,5 @@
 <style include="settings-shared">
-  os-settings-bluetooth-device-battery-info {
+  bluetooth-device-battery-info {
     padding-top: 3px;
   }
 </style>
@@ -12,14 +12,14 @@
       aria-label="[[getAriaLabel_(device, itemIndex, listSize)]]"
       on-keydown="onKeydown_"
       on-click="onSelected_">
-    <bluetooth-icon device="[[device]]"></bluetooth-icon>
+    <bluetooth-icon device="[[device.deviceProperties]]"></bluetooth-icon>
     <div class="middle" aria-hidden="true">
       <div id="deviceName">[[getDeviceName_(device)]]</div>
       <template is="dom-if"
           if="[[shouldShowBatteryInfo_(device)]]" restamp>
-        <os-settings-bluetooth-device-battery-info
-            device="[[device]]">
-        </os-settings-bluetooth-device-battery-info>
+        <bluetooth-device-battery-info
+            device="[[device.deviceProperties]]">
+        </bluetooth-device-battery-info>
       </template>
     </div>
     <div>

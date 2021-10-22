@@ -33,13 +33,10 @@ class BrowserShortcutShelfItemController;
 class BrowserStatusMonitor;
 class ChromeShelfControllerUserSwitchObserver;
 class ChromeShelfItemFactory;
+class ChromeShelfPrefs;
 class Profile;
 class ShelfControllerHelper;
 class ShelfSpinnerController;
-
-namespace apps {
-class BrowserAppInstanceTracker;
-}
 
 namespace ash {
 class ShelfModel;
@@ -59,6 +56,8 @@ namespace ui {
 class BaseWindow;
 }
 
+class BrowserAppShelfController;
+
 // ChromeShelfController helps manage Ash's shelf for Chrome prefs and apps.
 // It helps synchronize shelf state with profile preferences and app content.
 class ChromeShelfController
@@ -77,6 +76,10 @@ class ChromeShelfController
   ChromeShelfController(Profile* profile,
                         ash::ShelfModel* model,
                         ChromeShelfItemFactory* shelf_item_factory);
+
+  ChromeShelfController(const ChromeShelfController&) = delete;
+  ChromeShelfController& operator=(const ChromeShelfController&) = delete;
+
   ~ChromeShelfController() override;
 
   Profile* profile() const { return profile_; }
@@ -309,8 +312,11 @@ class ChromeShelfController
       ash::ShelfItemType shelf_item_type,
       const std::u16string& title = std::u16string());
 
+  // Returns the shelf prefs owned by this instance.
+  ChromeShelfPrefs* shelf_prefs() { return shelf_prefs_.get(); }
+
  private:
-  friend class ChromeShelfControllerTest;
+  friend class ChromeShelfControllerTestBase;
   friend class ShelfAppBrowserTest;
   friend class ShelfPlatformAppBrowserTest;
   friend class TestChromeShelfController;
@@ -396,6 +402,14 @@ class ChromeShelfController
   void SetItemStatusOrRemove(const ash::ShelfID& id,
                              ash::ShelfItemStatus status);
 
+  // Returns whether the pin position of the item should be synced, taking into
+  // account re-entrancy limitations.
+  bool ShouldSyncItemWithReentrancy(const ash::ShelfItem& item);
+
+  // Returns whether the pin position of the item should be synced, ignoring
+  // re-entrancy limitations.
+  bool ShouldSyncItem(const ash::ShelfItem& item);
+
   // Resolves the app icon image loader for the app.
   AppIconLoader* GetAppIconLoaderForApp(const std::string& app_id);
 
@@ -454,14 +468,17 @@ class ChromeShelfController
   // The owned browser status monitor.
   std::unique_ptr<BrowserStatusMonitor> browser_status_monitor_;
 
-  // The browser app instance tracker for the current profile.
-  apps::BrowserAppInstanceTracker* browser_app_instance_tracker_{nullptr};
-
   // A special observer class to detect user switches.
   std::unique_ptr<ChromeShelfControllerUserSwitchObserver>
       user_switch_observer_;
 
   std::unique_ptr<ShelfSpinnerController> shelf_spinner_controller_;
+
+  // Responsible for bridging between the shelf and sync/prefs.
+  std::unique_ptr<ChromeShelfPrefs> shelf_prefs_;
+
+  // Manages shelf item for browser-based apps and Lacros.
+  std::unique_ptr<BrowserAppShelfController> browser_app_shelf_controller_;
 
   // The list of running & un-pinned applications for different users on hidden
   // desktops.
@@ -474,8 +491,6 @@ class ChromeShelfController
   scoped_refptr<base::SequencedTaskRunner> standard_icon_task_runner_;
 
   base::WeakPtrFactory<ChromeShelfController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ChromeShelfController);
 };
 
 #endif  // CHROME_BROWSER_UI_ASH_SHELF_CHROME_SHELF_CONTROLLER_H_

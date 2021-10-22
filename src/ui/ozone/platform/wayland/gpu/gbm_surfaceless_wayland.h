@@ -33,18 +33,16 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   GbmSurfacelessWayland(WaylandBufferManagerGpu* buffer_manager,
                         gfx::AcceleratedWidget widget);
 
+  GbmSurfacelessWayland(const GbmSurfacelessWayland&) = delete;
+  GbmSurfacelessWayland& operator=(const GbmSurfacelessWayland&) = delete;
+
   void QueueOverlayPlane(OverlayPlane plane, BufferId buffer_id);
 
   // gl::GLSurface:
-  bool ScheduleOverlayPlane(int z_order,
-                            gfx::OverlayTransform transform,
-                            gl::GLImage* image,
-                            const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect,
-                            bool enable_blend,
-                            const gfx::Rect& damage_rect,
-                            float opacity,
-                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
+  bool ScheduleOverlayPlane(
+      gl::GLImage* image,
+      std::unique_ptr<gfx::GpuFence> gpu_fence,
+      const gfx::OverlayPlaneData& overlay_plane_data) override;
   bool IsOffscreen() override;
   bool SupportsAsyncSwap() override;
   bool SupportsPostSubBuffer() override;
@@ -152,8 +150,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   float surface_scale_factor_ = 1.f;
 
   base::WeakPtrFactory<GbmSurfacelessWayland> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(GbmSurfacelessWayland);
 };
 
 }  // namespace ui

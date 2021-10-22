@@ -16,36 +16,26 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-// TODO(https://crbug.com/1164001): move KioskAppType to forward declaration
-// when moved to chrome/browser/ash/.
-#include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chrome/browser/ash/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/screen_manager.h"
 #include "chrome/browser/ash/login/screens/active_directory_login_screen.h"
 #include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chrome/browser/ash/login/screens/base_screen.h"
+#include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
 #include "chrome/browser/ash/login/screens/edu_coexistence_login_screen.h"
 #include "chrome/browser/ash/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/ash/login/screens/eula_screen.h"
-// TODO(https://crbug.com/1164001): move to forward declaration
-#include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/gesture_navigation_screen.h"
+#include "chrome/browser/ash/login/screens/guest_tos_screen.h"
 #include "chrome/browser/ash/login/screens/hid_detection_screen.h"
 #include "chrome/browser/ash/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
@@ -54,6 +44,7 @@
 #include "chrome/browser/ash/login/screens/network_screen.h"
 #include "chrome/browser/ash/login/screens/offline_login_screen.h"
 #include "chrome/browser/ash/login/screens/os_install_screen.h"
+#include "chrome/browser/ash/login/screens/os_trial_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
 #include "chrome/browser/ash/login/screens/parental_handoff_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
@@ -65,6 +56,7 @@
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chromeos/geolocation/geoposition.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -78,7 +70,14 @@
 class PrefService;
 
 namespace ash {
+class BaseScreen;
+class DemoSetupController;
 class ErrorScreen;
+enum class KioskAppType;
+
+namespace login {
+class NetworkStateHelper;
+}
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.
@@ -97,6 +96,10 @@ class WizardController {
   enum class ScreenShownStatus { kSkipped = 0, kShown = 1, kMaxValue = kShown };
 
   explicit WizardController(WizardContext* wizard_context);
+
+  WizardController(const WizardController&) = delete;
+  WizardController& operator=(const WizardController&) = delete;
+
   ~WizardController();
 
   // Returns the default wizard controller if it has been created. This is a
@@ -123,17 +126,9 @@ class WizardController {
   // Skips any enrollment prompts that may be normally shown.
   static void SkipEnrollmentPromptsForTesting();
 
-  // Forces screens that should only appear in chrome branded builds to show.
-  static std::unique_ptr<base::AutoReset<bool>> ForceBrandedBuildForTesting(
-      bool value);
-
   // Returns true if OOBE is operating under the
   // Zero-Touch Hands-Off Enrollment Flow.
   static bool UsingHandsOffEnrollment();
-
-  // Returns true if this is a branded build, value could be overwritten by
-  // `ForceBrandedBuildForTesting`.
-  static bool IsBrandedBuild() { return is_branded_build_; }
 
   bool is_initialized() { return is_initialized_; }
 
@@ -151,7 +146,7 @@ class WizardController {
 
   // Returns `true` if accelerator `action` was handled by current screen
   // or WizardController itself.
-  bool HandleAccelerator(ash::LoginAcceleratorAction action);
+  bool HandleAccelerator(LoginAcceleratorAction action);
 
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
@@ -277,7 +272,10 @@ class WizardController {
   void ShowEduCoexistenceLoginScreen();
   void ShowParentalHandoffScreen();
   void ShowOsInstallScreen();
+  void ShowOsTrialScreen();
   void ShowLacrosDataMigrationScreen();
+  void ShowConsolidatedConsentScreen();
+  void ShowGuestTosScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -323,7 +321,6 @@ class WizardController {
   void OnSyncConsentScreenExit(SyncConsentScreen::Result result);
   void OnPinSetupScreenExit(PinSetupScreen::Result result);
   void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
-  void OnArcTermsOfServiceAccepted();
   void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
   void OnAppDownloadingScreenExit();
   void OnAssistantOptInFlowScreenExit(AssistantOptInFlowScreen::Result result);
@@ -348,6 +345,10 @@ class WizardController {
   void OnParentalHandoffScreenExit(ParentalHandoffScreen::Result result);
   void OnOfflineLoginScreenExit(OfflineLoginScreen::Result result);
   void OnOsInstallScreenExit();
+  void OnOsTrialScreenExit(OsTrialScreen::Result result);
+  void OnConsolidatedConsentScreenExit(
+      ConsolidatedConsentScreen::Result result);
+  void OnGuestTosScreenExit(GuestTosScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -449,9 +450,6 @@ class WizardController {
   // Screen that was active before, or nullptr for login screen.
   BaseScreen* previous_screen_ = nullptr;
 
-  // True if this is a branded build (i.e. Google Chrome).
-  static bool is_branded_build_;
-
   // True if full OOBE flow should be shown.
   bool is_out_of_box_ = false;
 
@@ -518,8 +516,6 @@ class WizardController {
   base::ObserverList<ScreenObserver> screen_observers_;
 
   base::WeakPtrFactory<WizardController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(WizardController);
 };
 
 }  // namespace ash

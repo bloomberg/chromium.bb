@@ -188,10 +188,7 @@ static int query_formats(AVFilterContext *ctx)
     if (ret)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -1589,7 +1586,7 @@ static int filter_frame(AVFilterLink *inlink)
     if (ret < 0)
         return ret;
 
-    ctx->internal->execute(ctx, fft_channel, NULL, NULL, inlink->channels);
+    ff_filter_execute(ctx, fft_channel, NULL, NULL, inlink->channels);
 
     s->filter(ctx);
 
@@ -1597,7 +1594,7 @@ static int filter_frame(AVFilterLink *inlink)
     if (!out)
         return AVERROR(ENOMEM);
 
-    ctx->internal->execute(ctx, ifft_channel, out, NULL, outlink->channels);
+    ff_filter_execute(ctx, ifft_channel, out, NULL, outlink->channels);
 
     out->pts = s->pts;
     if (s->pts != AV_NOPTS_VALUE)
@@ -1773,7 +1770,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_AUDIO,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -1782,7 +1778,6 @@ static const AVFilterPad outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_surround = {
@@ -1794,7 +1789,7 @@ const AVFilter ff_af_surround = {
     .init           = init,
     .uninit         = uninit,
     .activate       = activate,
-    .inputs         = inputs,
-    .outputs        = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .flags          = AVFILTER_FLAG_SLICE_THREADS,
 };

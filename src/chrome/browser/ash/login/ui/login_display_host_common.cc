@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
+#include "chrome/browser/ash/language_preferences.h"
 #include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/lock_screen_utils.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/diagnostics_dialog.h"
@@ -47,8 +47,8 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/features/feature_session_type.h"
 #include "extensions/common/mojom/feature_session_type.mojom.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
+#include "ui/base/ime/ash/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 
@@ -70,13 +70,13 @@ void ScheduleCompletionCallbacks(std::vector<base::OnceClosure>&& callbacks) {
   }
 }
 
-void PushFrontImIfNotExists(const std::string& input_method,
-                            std::vector<std::string>* input_methods) {
-  if (input_method.empty())
+void PushFrontImIfNotExists(const std::string& input_method_id,
+                            std::vector<std::string>* input_method_ids) {
+  if (input_method_id.empty())
     return;
 
-  if (!base::Contains(*input_methods, input_method))
-    input_methods->insert(input_methods->begin(), input_method);
+  if (!base::Contains(*input_method_ids, input_method_id))
+    input_method_ids->insert(input_method_ids->begin(), input_method_id);
 }
 
 void SetGaiaInputMethods(const AccountId& account_id) {
@@ -94,28 +94,32 @@ void SetGaiaInputMethods(const AccountId& account_id) {
                                           true /*honor_device_policy*/);
   } else {
     lock_screen_utils::EnforceDevicePolicyInputMethods(std::string());
-    std::vector<std::string> input_methods;
-    if (gaia_ime_state->GetAllowedInputMethods().empty()) {
-      input_methods =
+    std::vector<std::string> input_method_ids;
+    if (gaia_ime_state->GetAllowedInputMethodIds().empty()) {
+      input_method_ids =
           imm->GetInputMethodUtil()->GetHardwareLoginInputMethodIds();
     } else {
-      input_methods = gaia_ime_state->GetAllowedInputMethods();
+      input_method_ids = gaia_ime_state->GetAllowedInputMethodIds();
     }
-    const std::string owner_im = lock_screen_utils::GetUserLastInputMethod(
-        user_manager::UserManager::Get()->GetOwnerAccountId());
-    const std::string system_im = g_browser_process->local_state()->GetString(
-        language_prefs::kPreferredKeyboardLayout);
+    const std::string owner_input_method_id =
+        lock_screen_utils::GetUserLastInputMethod(
+            user_manager::UserManager::Get()->GetOwnerAccountId());
+    const std::string system_input_method_id =
+        g_browser_process->local_state()->GetString(
+            language_prefs::kPreferredKeyboardLayout);
 
-    PushFrontImIfNotExists(owner_im, &input_methods);
-    PushFrontImIfNotExists(system_im, &input_methods);
+    PushFrontImIfNotExists(owner_input_method_id, &input_method_ids);
+    PushFrontImIfNotExists(system_input_method_id, &input_method_ids);
 
     gaia_ime_state->EnableLoginLayouts(
-        g_browser_process->GetApplicationLocale(), input_methods);
+        g_browser_process->GetApplicationLocale(), input_method_ids);
 
-    if (!system_im.empty()) {
-      gaia_ime_state->ChangeInputMethod(system_im, false /* show_message */);
-    } else if (!owner_im.empty()) {
-      gaia_ime_state->ChangeInputMethod(owner_im, false /* show_message */);
+    if (!system_input_method_id.empty()) {
+      gaia_ime_state->ChangeInputMethod(system_input_method_id,
+                                        false /* show_message */);
+    } else if (!owner_input_method_id.empty()) {
+      gaia_ime_state->ChangeInputMethod(owner_input_method_id,
+                                        false /* show_message */);
     }
   }
 }
@@ -488,9 +492,9 @@ void LoginDisplayHostCommon::ShowSigninError(SigninError error,
   if (IsAuthError(error)) {
     input_method::InputMethodManager* ime_manager =
         input_method::InputMethodManager::Get();
-    // Display a hint to switch keyboards if there are other active input
+    // Display a hint to switch keyboards if there are other enabled input
     // methods.
-    if (ime_manager->GetActiveIMEState()->GetNumActiveInputMethods() > 1) {
+    if (ime_manager->GetActiveIMEState()->GetNumEnabledInputMethods() > 1) {
       keyboard_hint =
           l10n_util::GetStringUTF8(IDS_LOGIN_ERROR_KEYBOARD_SWITCH_HINT);
     }
@@ -504,7 +508,7 @@ void LoginDisplayHostCommon::ShowSigninError(SigninError error,
 }
 
 WizardContext* LoginDisplayHostCommon::GetWizardContextForTesting() {
-  return wizard_context();
+  return GetWizardContext();
 }
 
 void LoginDisplayHostCommon::OnBrowserAdded(Browser* browser) {
@@ -527,6 +531,10 @@ void LoginDisplayHostCommon::Observe(
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_APP_TERMINATING)
     ShutdownDisplayHost();
+}
+
+WizardContext* LoginDisplayHostCommon::GetWizardContext() {
+  return wizard_context_.get();
 }
 
 void LoginDisplayHostCommon::OnCancelPasswordChangedFlow() {

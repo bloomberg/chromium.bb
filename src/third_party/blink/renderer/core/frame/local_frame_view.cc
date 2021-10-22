@@ -80,6 +80,8 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/highlight/highlight_registry.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/document_fenced_frames.h"
+#include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
@@ -211,6 +213,13 @@ void LogCursorSizeCounter(LocalFrame* frame, const ui::Cursor& cursor) {
   }
 }
 
+FloatQuad GetQuadForTimelinePaintEvent(const scoped_refptr<cc::Layer>& layer) {
+  gfx::RectF rect(layer->update_rect());
+  if (layer->transform_tree_index() != -1)
+    layer->ScreenSpaceTransform().TransformRect(&rect);
+  return FloatQuad(FloatRect(rect));
+}
+
 // Default value for how long we want to delay the
 // compositor commit beyond the start of document lifecycle updates to avoid
 // flash between navigations. The delay should be small enough so that it won't
@@ -337,6 +346,13 @@ void LocalFrameView::ForAllChildViewsAndPlugins(const Function& function) {
       if (Frame* frame = portal->GetFrame())
         function(*frame->View());
     }
+    if (features::IsFencedFramesMPArchBased()) {
+      for (HTMLFencedFrameElement* fenced_frame :
+           DocumentFencedFrames::From(*document).GetFencedFrames()) {
+        if (Frame* frame = fenced_frame->ContentFrame())
+          function(*frame->View());
+      }
+    }
   }
 }
 
@@ -407,6 +423,14 @@ void LocalFrameView::ForAllRemoteFrameViews(const Function& function) {
     for (PortalContents* portal :
          DocumentPortals::From(*document).GetPortals()) {
       if (RemoteFrame* frame = portal->GetFrame()) {
+        if (RemoteFrameView* view = frame->View())
+          function(*view);
+      }
+    }
+    if (features::IsFencedFramesMPArchBased()) {
+      for (HTMLFencedFrameElement* fenced_frame :
+           DocumentFencedFrames::From(*document).GetFencedFrames()) {
+        RemoteFrame* frame = To<RemoteFrame>(fenced_frame->ContentFrame());
         if (RemoteFrameView* view = frame->View())
           function(*view);
       }
@@ -1122,7 +1146,7 @@ void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
   // part to update during layout tree attachment (which is a part of style
   // recalc).
   DCHECK(IsInPerformLayout() ||
-         (DisplayLockUtilities::NearestLockedExclusiveAncestor(object) &&
+         (DisplayLockUtilities::LockedAncestorPreventingLayout(object) &&
           frame_->GetDocument()->InStyleRecalc()));
 
   // Tell the DOM element that it needs a Plugin update.
@@ -2049,12 +2073,9 @@ Color LocalFrameView::DocumentBackgroundColor() {
 
   Color doc_bg =
       background_source->ResolveColor(GetCSSPropertyBackgroundColor());
-  if (Settings* settings = frame_->GetSettings()) {
-    if (settings->GetForceDarkModeEnabled() &&
-        !background_source->StyleRef().DarkColorScheme()) {
-      doc_bg = EnsureDarkModeFilter().InvertColorIfNeeded(
-          doc_bg.Rgb(), DarkModeFilter::ElementRole::kBackground);
-    }
+  if (background_source->StyleRef().ColorSchemeForced()) {
+    doc_bg = EnsureDarkModeFilter().InvertColorIfNeeded(
+        doc_bg.Rgb(), DarkModeFilter::ElementRole::kBackground);
   }
   if (blend_with_base)
     return result.Blend(doc_bg);
@@ -2960,12 +2981,6 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode,
         visual_viewport_or_overlay_needs_repaint_) {
       GraphicsContext graphics_context(*paint_controller_);
 
-      if (Settings* settings = frame_->GetSettings()) {
-        graphics_context.SetDarkModeEnabled(
-            settings->GetForceDarkModeEnabled() &&
-            !GetLayoutView()->StyleRef().DarkColorScheme());
-      }
-
       bool painted_full_screen_overlay = false;
       if (frame_->IsMainFrame()) {
         PaintLayer* full_screen_layer = GetFullScreenOverlayLayer();
@@ -3080,6 +3095,22 @@ const cc::Layer* LocalFrameView::RootCcLayer() const {
                                     : nullptr;
 }
 
+void LocalFrameView::CreatePaintTimelineEvents() {
+  // For pre-CAP, this is done in CompositedLayerMapping::PaintContents()
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+  if (const cc::Layer* root_layer = paint_artifact_compositor_->RootLayer()) {
+    for (const auto& layer : root_layer->children()) {
+      if (!layer->update_rect().IsEmpty()) {
+        DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
+            "devtools.timeline,rail", "Paint", inspector_paint_event::Data,
+            &GetFrame(), /*layout_object=*/nullptr,
+            GetQuadForTimelinePaintEvent(layer), layer->id());
+      }
+    }
+  }
+}
+
 void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
   if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled()) {
@@ -3110,8 +3141,10 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   // Skip updating property trees, pushing cc::Layers, and issuing raster
   // invalidations if possible.
   if (!paint_artifact_compositor_->NeedsUpdate()) {
-    if (repainted)
+    if (repainted) {
       paint_artifact_compositor_->UpdateRepaintedLayers(pre_composited_layers_);
+      CreatePaintTimelineEvents();
+    }
     // TODO(pdr): Should we clear the property tree state change bits (
     // |PaintArtifactCompositor::ClearPropertyTreeChangedState|)?
     return;
@@ -3164,6 +3197,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
       pre_composited_layers_, viewport_properties, scroll_translation_nodes,
       std::move(document_transition_requests));
 
+  CreatePaintTimelineEvents();
   probe::LayerTreePainted(&GetFrame());
 }
 
@@ -4175,7 +4209,8 @@ void LocalFrameView::PaintContentsForTest(const CullRect& cull_rect) {
   } else {
     GraphicsLayer* graphics_layer =
         GetLayoutView()->Layer()->GraphicsLayerBacking();
-    graphics_layer->PaintForTesting(cull_rect.Rect(), PaintDebugInfoEnabled());
+    graphics_layer->PaintForTesting(IntRect(cull_rect.Rect()),
+                                    PaintDebugInfoEnabled());
   }
   Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
 }
@@ -4401,6 +4436,16 @@ bool LocalFrameView::UpdateViewportIntersectionsForSubtree(
     }
   }
 
+  if (features::IsFencedFramesMPArchBased()) {
+    for (HTMLFencedFrameElement* fenced_frame :
+         DocumentFencedFrames::From(*frame_->GetDocument()).GetFencedFrames()) {
+      if (Frame* frame = fenced_frame->ContentFrame()) {
+        needs_occlusion_tracking |=
+            frame->View()->UpdateViewportIntersectionsForSubtree(
+                flags, monotonic_time);
+      }
+    }
+  }
   return needs_occlusion_tracking;
 }
 
@@ -4674,7 +4719,7 @@ void LocalFrameView::BeginLifecycleUpdates() {
   if (WillDoPaintHoldingForFCP()) {
     have_deferred_commits_ = true;
     chrome_client.StartDeferringCommits(
-        GetFrame(), base::TimeDelta::FromMilliseconds(kCommitDelayDefaultInMs),
+        GetFrame(), base::Milliseconds(kCommitDelayDefaultInMs),
         cc::PaintHoldingReason::kFirstContentfulPaint);
   }
 
@@ -4817,15 +4862,8 @@ void LocalFrameView::OnFirstContentfulPaint() {
   GetPage()->GetChromeClient().StopDeferringCommits(
       *frame_, cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
   const bool is_main_frame = frame_->IsMainFrame();
-  if (is_main_frame) {
-    UMA_HISTOGRAM_TIMES("Renderer.Font.PrimaryFont.FCP",
-                        FontPerformance::PrimaryFontTime());
-    UMA_HISTOGRAM_TIMES("Renderer.Font.PrimaryFont.FCP.Style",
-                        FontPerformance::PrimaryFontTimeInStyle());
-    UMA_HISTOGRAM_TIMES("Renderer.Font.SystemFallback.FCP",
-                        FontPerformance::SystemFallbackFontTime());
-    FontPerformance::DidReachFirstContentfulPaint();
-  }
+  if (is_main_frame && frame_->GetDocument()->ShouldMarkFontPerformance())
+    FontPerformance::MarkFirstContentfulPaint();
   EnsureUkmAggregator().DidReachFirstContentfulPaint(is_main_frame);
 }
 
@@ -5013,7 +5051,7 @@ void LocalFrameView::RunPaintBenchmark(int repeat_count,
   auto run_benchmark = [&](PaintBenchmarkMode mode) -> double {
     constexpr int kTimeCheckInterval = 1;
     constexpr int kWarmupRuns = 0;
-    constexpr base::TimeDelta kTimeLimit = base::TimeDelta::FromMilliseconds(1);
+    constexpr base::TimeDelta kTimeLimit = base::Milliseconds(1);
 
     base::TimeDelta min_time = base::TimeDelta::Max();
     for (int i = 0; i < repeat_count; i++) {

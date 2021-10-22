@@ -46,8 +46,7 @@ namespace {
 constexpr char kDefaultDeviceId[] = "";
 constexpr char kNonDefaultDeviceId[] = "valid-nondefault-device-id";
 constexpr char kUnauthorizedDeviceId[] = "unauthorized-device-id";
-constexpr base::TimeDelta kAuthTimeout =
-    base::TimeDelta::FromMilliseconds(10000);
+constexpr base::TimeDelta kAuthTimeout = base::Milliseconds(10000);
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
@@ -88,6 +87,10 @@ class MockAudioOutputIPC : public AudioOutputIPC {
 class AudioOutputDeviceTest : public testing::Test {
  public:
   AudioOutputDeviceTest();
+
+  AudioOutputDeviceTest(const AudioOutputDeviceTest&) = delete;
+  AudioOutputDeviceTest& operator=(const AudioOutputDeviceTest&) = delete;
+
   ~AudioOutputDeviceTest() override;
 
   void ReceiveAuthorization(OutputDeviceStatus device_status);
@@ -117,8 +120,6 @@ class AudioOutputDeviceTest : public testing::Test {
   WritableSharedMemoryMapping shared_memory_mapping_;
   CancelableSyncSocket browser_socket_;
   CancelableSyncSocket renderer_socket_;
-
-  DISALLOW_COPY_AND_ASSIGN(AudioOutputDeviceTest);
 };
 
 AudioOutputDeviceTest::AudioOutputDeviceTest()

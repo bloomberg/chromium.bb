@@ -16,6 +16,10 @@
 #include "components/soda/constants.h"
 #include "components/soda/soda_installer.h"
 
+namespace views {
+class WebView;
+}  // namespace views
+
 class OnDeviceSpeechRecognizer;
 
 // The client implementation for the ProjectorController in ash/. This client is
@@ -24,7 +28,10 @@ class ProjectorClientImpl : public ash::ProjectorClient,
                             public SpeechRecognizerDelegate,
                             public speech::SodaInstaller::Observer {
  public:
-  // Used by unittests and browsertests to set projector controller.
+  // RecordingOverlayViewImpl calls this function to initialize the annotator
+  // tool.
+  static void InitForProjectorAnnotator(views::WebView* web_view);
+
   explicit ProjectorClientImpl(ash::ProjectorController* controller);
 
   ProjectorClientImpl();
@@ -38,6 +45,9 @@ class ProjectorClientImpl : public ash::ProjectorClient,
   void ShowSelfieCam() override;
   void CloseSelfieCam() override;
   bool IsSelfieCamVisible() const override;
+  bool GetDriveFsMountPointPath(base::FilePath* result) const override;
+  bool IsDriveFsMounted() const override;
+  void OpenProjectorApp() const override;
 
   // SpeechRecognizerDelegate:
   void OnSpeechResult(

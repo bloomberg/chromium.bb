@@ -36,8 +36,8 @@ class RmadObserver : chromeos::RmadClient::Observer {
   void Error(rmad::RmadErrorCode error) override {}
 
   // Called when calibration progress is updated.
-  void CalibrationProgress(rmad::RmadComponent component,
-                           double progress) override {}
+  void CalibrationProgress(
+      const rmad::CalibrationComponentStatus& componentStatus) override {}
 
   // Called when provisioning progress is updated.
   void ProvisioningProgress(rmad::ProvisionDeviceState::ProvisioningStep step,
@@ -53,7 +53,6 @@ class RmadObserver : chromeos::RmadClient::Observer {
 }  // namespace
 
 ShimlessRmaService::ShimlessRmaService() {
-  // TODO(gavindodd): Is there a guarantee that rmad client exists at this time?
   chromeos::RmadClient::Get()->AddObserver(this);
   GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
@@ -63,7 +62,6 @@ ShimlessRmaService::ShimlessRmaService() {
 }
 
 ShimlessRmaService::~ShimlessRmaService() {
-  // TODO(gavindodd): Is there a guarantee that rmad client exists at this time?
   chromeos::RmadClient::Get()->RemoveObserver(this);
 }
 
@@ -80,6 +78,7 @@ void ShimlessRmaService::TransitionNextState(
   TransitionNextStateGeneric(std::move(callback));
 }
 
+// TODO(gavindodd): Handle transition back from wifi connect and os update pages
 void ShimlessRmaService::TransitionPreviousState(
     TransitionPreviousStateCallback callback) {
   chromeos::RmadClient::Get()->TransitionPreviousState(base::BindOnce(
@@ -98,6 +97,7 @@ void ShimlessRmaService::BeginFinalization(BeginFinalizationCallback callback) {
     LOG(ERROR) << "FinalizeRepair called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -117,10 +117,11 @@ void ShimlessRmaService::NetworkSelectionComplete(
     LOG(ERROR) << "NetworkSelectionComplete called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  std::move(callback).Run(mojom::RmaState::kUpdateOs,
+  std::move(callback).Run(mojom::RmaState::kUpdateOs, can_abort_, can_go_back_,
                           rmad::RmadErrorCode::RMAD_ERROR_OK);
 }
 
@@ -159,6 +160,7 @@ void ShimlessRmaService::UpdateOsSkipped(UpdateOsSkippedCallback callback) {
     LOG(ERROR) << "UpdateOsSkipped called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -166,7 +168,8 @@ void ShimlessRmaService::UpdateOsSkipped(UpdateOsSkippedCallback callback) {
     LOG(ERROR) << "UpdateOsSkipped called while UpdateEngine active";
     // Override the rmad state (kWelcome) with the mojo sub-state for OS
     // updates.
-    std::move(callback).Run(mojom::RmaState::kUpdateOs,
+    std::move(callback).Run(mojom::RmaState::kUpdateOs, can_abort_,
+                            can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -178,6 +181,7 @@ void ShimlessRmaService::SetSameOwner(SetSameOwnerCallback callback) {
     LOG(ERROR) << "SetSameOwner called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -191,6 +195,7 @@ void ShimlessRmaService::SetDifferentOwner(SetDifferentOwnerCallback callback) {
     LOG(ERROR) << "SetDifferentOwner called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -206,6 +211,7 @@ void ShimlessRmaService::ChooseManuallyDisableWriteProtect(
         << "ChooseManuallyDisableWriteProtect called from incorrect state "
         << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -220,6 +226,7 @@ void ShimlessRmaService::ChooseRsuDisableWriteProtect(
     LOG(ERROR) << "ChooseRsuDisableWriteProtect called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -240,14 +247,31 @@ void ShimlessRmaService::GetRsuDisableWriteProtectChallenge(
   std::move(callback).Run(state_proto_.wp_disable_rsu().challenge_code());
 }
 
+void ShimlessRmaService::GetRsuDisableWriteProtectHwid(
+    GetRsuDisableWriteProtectHwidCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kWpDisableRsu) {
+    LOG(ERROR) << "GetRsuDisableWriteProtectHwid called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run("");
+    return;
+  }
+  std::move(callback).Run(state_proto_.wp_disable_rsu().hwid());
+}
+
 void ShimlessRmaService::GetRsuDisableWriteProtectChallengeQrCode(
     GetRsuDisableWriteProtectChallengeQrCodeCallback callback) {
-  // TODO(gavindodd): Get URL from proto when available.
-  std::string challenge_url_string = "https://www.google.com";
+  if (state_proto_.state_case() != rmad::RmadState::kWpDisableRsu) {
+    LOG(ERROR) << "GetRsuDisableWriteProtectChallengeQrCode called from "
+                  "incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(nullptr);
+    return;
+  }
   QRCodeGenerator qr_generator;
   absl::optional<QRCodeGenerator::GeneratedCode> qr_data =
       qr_generator.Generate(base::as_bytes(base::make_span(
-          challenge_url_string.data(), challenge_url_string.size())));
+          state_proto_.wp_disable_rsu().challenge_url().data(),
+          state_proto_.wp_disable_rsu().challenge_url().size())));
   if (!qr_data || qr_data->data.data() == nullptr ||
       qr_data->data.size() == 0) {
     std::move(callback).Run(nullptr);
@@ -276,6 +300,7 @@ void ShimlessRmaService::SetRsuDisableWriteProtectCode(
     LOG(ERROR) << "SetRsuDisableWriteProtectCode called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -290,11 +315,8 @@ void ShimlessRmaService::GetComponentList(GetComponentListCallback callback) {
                << state_proto_.state_case();
   } else {
     components.reserve(state_proto_.components_repair().components_size());
-    for (auto component : state_proto_.components_repair().components()) {
-      int component_id = component.component();
-      LOG(ERROR) << "Component: " << component_id;
-      components.push_back(component);
-    }
+    components.assign(state_proto_.components_repair().components().begin(),
+                      state_proto_.components_repair().components().end());
   }
   std::move(callback).Run(std::move(components));
 }
@@ -307,9 +329,11 @@ void ShimlessRmaService::SetComponentList(
     LOG(ERROR) << "SetComponentList called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
+  state_proto_.mutable_components_repair()->set_mainboard_rework(false);
   state_proto_.mutable_components_repair()->clear_components();
   state_proto_.mutable_components_repair()->mutable_components()->Reserve(
       component_list.size());
@@ -327,11 +351,11 @@ void ShimlessRmaService::ReworkMainboard(ReworkMainboardCallback callback) {
     LOG(ERROR) << "ReworkMainboard called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  // TODO(gavindodd): set mainboard_rework flag when new rmad.proto is in
-  // third_party
+  state_proto_.mutable_components_repair()->set_mainboard_rework(true);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -350,6 +374,7 @@ void ShimlessRmaService::ReimageSkipped(ReimageSkippedCallback callback) {
     LOG(ERROR) << "ReimageSkipped called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -357,6 +382,7 @@ void ShimlessRmaService::ReimageSkipped(ReimageSkippedCallback callback) {
   if (!state_proto_.update_ro_firmware().optional()) {
     LOG(ERROR) << "ReimageSkipped called when reimage required.";
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -371,6 +397,7 @@ void ShimlessRmaService::ReimageFromDownload(
     LOG(ERROR) << "ReimageFromDownload called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -384,6 +411,7 @@ void ShimlessRmaService::ReimageFromUsb(ReimageFromUsbCallback callback) {
     LOG(ERROR) << "ReimageFromUsb called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -398,6 +426,7 @@ void ShimlessRmaService::ShutdownForRestock(
     LOG(ERROR) << "ShutdownForRestock called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -412,6 +441,7 @@ void ShimlessRmaService::ContinueFinalizationAfterRestock(
         << "ContinueFinalizationAfterRestock called from incorrect state "
         << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -466,6 +496,7 @@ void ShimlessRmaService::SetDeviceInformation(
     LOG(ERROR) << "SetDeviceInformation called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -475,43 +506,139 @@ void ShimlessRmaService::SetDeviceInformation(
   TransitionNextStateGeneric(std::move(callback));
 }
 
-void ShimlessRmaService::FinalizeAndReboot(FinalizeAndRebootCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kFinalize) {
-    LOG(ERROR) << "FinalizeAndReboot called from incorrect state "
+void ShimlessRmaService::GetCalibrationComponentList(
+    GetCalibrationComponentListCallback callback) {
+  std::vector<::rmad::CalibrationComponentStatus> components;
+  if (state_proto_.state_case() != rmad::RmadState::kCheckCalibration) {
+    LOG(ERROR) << "GetCalibrationComponentList called from incorrect state "
+               << state_proto_.state_case();
+  } else {
+    components.reserve(state_proto_.check_calibration().components_size());
+    components.assign(state_proto_.check_calibration().components().begin(),
+                      state_proto_.check_calibration().components().end());
+  }
+  std::move(callback).Run(std::move(components));
+}
+
+void ShimlessRmaService::GetCalibrationSetupInstructions(
+    GetCalibrationSetupInstructionsCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kSetupCalibration) {
+    LOG(ERROR) << "GetCalibrationSetupInstructions called from incorrect state "
+               << state_proto_.state_case();
+    // TODO(gavindodd): Is RMAD_CALIBRATION_INSTRUCTION_UNKNOWN the correct
+    // error value? Confirm with rmad team that this is not overloaded.
+    std::move(callback).Run(rmad::CalibrationSetupInstruction::
+                                RMAD_CALIBRATION_INSTRUCTION_UNKNOWN);
+    return;
+  }
+  std::move(callback).Run(state_proto_.setup_calibration().instruction());
+}
+
+void ShimlessRmaService::StartCalibration(
+    const std::vector<::rmad::CalibrationComponentStatus>& components,
+    StartCalibrationCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kCheckCalibration) {
+    LOG(ERROR) << "StartCalibration called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  state_proto_.mutable_finalize()->set_shutdown(
-      rmad::FinalizeState::RMAD_FINALIZE_REBOOT);
+  state_proto_.mutable_check_calibration()->clear_components();
+  state_proto_.mutable_check_calibration()->mutable_components()->Reserve(
+      components.size());
+  for (auto& component : components) {
+    rmad::CalibrationComponentStatus* proto_component =
+        state_proto_.mutable_check_calibration()->add_components();
+    proto_component->set_component(component.component());
+    // rmad only cares if the status is set to skip or not.
+    proto_component->set_status(component.status());
+    // Progress is not relevant when sending to rmad.
+    proto_component->set_progress(0.0);
+  }
   TransitionNextStateGeneric(std::move(callback));
 }
 
-void ShimlessRmaService::FinalizeAndShutdown(
-    FinalizeAndShutdownCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kFinalize) {
-    LOG(ERROR) << "FinalizeAndShutdown called from incorrect state "
+void ShimlessRmaService::RunCalibrationStep(
+    RunCalibrationStepCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kSetupCalibration) {
+    LOG(ERROR) << "RunCalibrationStep called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  state_proto_.mutable_finalize()->set_shutdown(
-      rmad::FinalizeState::RMAD_FINALIZE_SHUTDOWN);
   TransitionNextStateGeneric(std::move(callback));
 }
 
-void ShimlessRmaService::CutoffBattery(CutoffBatteryCallback callback) {
-  if (state_proto_.state_case() != rmad::RmadState::kFinalize) {
-    LOG(ERROR) << "CutoffBattery called from incorrect state "
+void ShimlessRmaService::ContinueCalibration(
+    ContinueCalibrationCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRunCalibration) {
+    LOG(ERROR) << "ContinueCalibration called from incorrect state "
                << state_proto_.state_case();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
-  state_proto_.mutable_finalize()->set_shutdown(
-      rmad::FinalizeState::RMAD_FINALIZE_BATERY_CUTOFF);
+  TransitionNextStateGeneric(std::move(callback));
+}
+
+void ShimlessRmaService::CalibrationComplete(
+    CalibrationCompleteCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRunCalibration) {
+    LOG(ERROR) << "CalibrationComplete called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  TransitionNextStateGeneric(std::move(callback));
+}
+
+void ShimlessRmaService::EndRmaAndReboot(EndRmaAndRebootCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
+    LOG(ERROR) << "EndRmaAndReboot called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_repair_complete()->set_shutdown(
+      rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_REBOOT);
+  TransitionNextStateGeneric(std::move(callback));
+}
+
+void ShimlessRmaService::EndRmaAndShutdown(EndRmaAndShutdownCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
+    LOG(ERROR) << "EndRmaAndShutdown called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_repair_complete()->set_shutdown(
+      rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_SHUTDOWN);
+  TransitionNextStateGeneric(std::move(callback));
+}
+
+void ShimlessRmaService::EndRmaAndCutoffBattery(
+    EndRmaAndCutoffBatteryCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kRepairComplete) {
+    LOG(ERROR) << "EndRmaAndCutoffBattery called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_repair_complete()->set_shutdown(
+      rmad::RepairCompleteState::RMAD_REPAIR_COMPLETE_BATTERY_CUTOFF);
   TransitionNextStateGeneric(std::move(callback));
 }
 
@@ -530,10 +657,17 @@ void ShimlessRmaService::OsUpdateProgress(update_engine::Operation operation,
   }
 }
 
-void ShimlessRmaService::CalibrationProgress(rmad::RmadComponent component,
-                                             double progress) {
+void ShimlessRmaService::CalibrationProgress(
+    const rmad::CalibrationComponentStatus& component_status) {
   if (calibration_observer_.is_bound()) {
-    calibration_observer_->OnCalibrationUpdated(component, progress);
+    calibration_observer_->OnCalibrationUpdated(component_status);
+  }
+}
+
+void ShimlessRmaService::CalibrationOverallProgress(
+    rmad::CalibrationOverallStatus status) {
+  if (calibration_observer_.is_bound()) {
+    calibration_observer_->OnCalibrationStepComplete(status);
   }
 }
 
@@ -554,6 +688,15 @@ void ShimlessRmaService::HardwareWriteProtectionState(bool enabled) {
 void ShimlessRmaService::PowerCableState(bool plugged_in) {
   if (power_cable_observer_.is_bound()) {
     power_cable_observer_->OnPowerCableStateChanged(plugged_in);
+  }
+}
+
+void ShimlessRmaService::HardwareVerificationResult(
+    const rmad::HardwareVerificationResult& hardware_verification_result) {
+  if (finalization_observer_.is_bound()) {
+    finalization_observer_->OnHardwareVerificationResult(
+        hardware_verification_result.is_compliant(),
+        hardware_verification_result.error_str());
   }
 }
 
@@ -588,6 +731,11 @@ void ShimlessRmaService::ObservePowerCableState(
   power_cable_observer_.Bind(std::move(observer));
 }
 
+void ShimlessRmaService::ObserveFinalizationStatus(
+    ::mojo::PendingRemote<mojom::FinalizationObserver> observer) {
+  finalization_observer_.Bind(std::move(observer));
+}
+
 ////////////////////////////////
 // Mojom binding.
 void ShimlessRmaService::BindInterface(
@@ -613,7 +761,7 @@ void ShimlessRmaService::OnGetStateResponse(
     LOG(ERROR) << "Failed to call rmadClient";
     // TODO(gavindodd): This needs better handling. Maybe display an error and
     // force a chrome update?
-    std::move(callback).Run(mojom::RmaState::kUnknown,
+    std::move(callback).Run(mojom::RmaState::kUnknown, false, false,
                             rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
     return;
   }
@@ -621,13 +769,16 @@ void ShimlessRmaService::OnGetStateResponse(
   // there needs to be a way to detect an unexpected state and switch to update
   // Chrome screen.
   state_proto_ = response->state();
+  can_abort_ = response->can_abort();
+  can_go_back_ = response->can_go_back();
   if (response->error() != rmad::RMAD_ERROR_OK) {
     LOG(ERROR) << "rmadClient returned error " << response->error();
     std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
-                            response->error());
+                            can_abort_, can_go_back_, response->error());
     return;
   }
   std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                          can_abort_, can_go_back_,
                           rmad::RmadErrorCode::RMAD_ERROR_OK);
 }
 
@@ -650,7 +801,8 @@ void ShimlessRmaService::OnNetworkListResponse(
       switch (network->type) {
         case NetworkType::kWiFi:
         case NetworkType::kEthernet:
-          std::move(callback).Run(mojom::RmaState::kUpdateOs,
+          std::move(callback).Run(mojom::RmaState::kUpdateOs, can_abort_,
+                                  can_go_back_,
                                   rmad::RmadErrorCode::RMAD_ERROR_OK);
           return;
         case NetworkType::kAll:  // filter-only type
@@ -664,8 +816,8 @@ void ShimlessRmaService::OnNetworkListResponse(
     }
   }
 
-  std::move(callback).Run(mojom::RmaState::kConfigureNetwork,
-                          rmad::RmadErrorCode::RMAD_ERROR_OK);
+  std::move(callback).Run(mojom::RmaState::kConfigureNetwork, can_abort_,
+                          can_go_back_, rmad::RmadErrorCode::RMAD_ERROR_OK);
 }
 
 void ShimlessRmaService::OnOsUpdateStatusCallback(

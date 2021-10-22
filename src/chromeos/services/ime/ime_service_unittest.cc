@@ -74,8 +74,9 @@ class TestDecoderState : public mojom::InputMethod {
 
  private:
   // mojom::InputMethod:
-  void OnFocus(
-      chromeos::ime::mojom::InputFieldInfoPtr input_field_info) override {}
+  void OnFocus(chromeos::ime::mojom::InputFieldInfoPtr input_field_info,
+               chromeos::ime::mojom::InputMethodSettingsPtr settings) override {
+  }
   void OnBlur() override {}
   void OnSurroundingTextChanged(
       const std::string& text,
@@ -135,6 +136,8 @@ struct MockInputMethodHost : public mojom::InputMethodHost {
       const std::vector<TextSuggestion>& suggestions) override {}
   void UpdateCandidatesWindow(mojom::CandidatesWindowPtr window) override {}
   void RecordUkm(mojom::UkmEntryPtr entry) override {}
+  void ReportKoreanAction(mojom::KoreanAction action) override {}
+  void ReportKoreanSettings(mojom::KoreanSettingsPtr settings) override {}
 
   std::u16string last_commit;
   std::u16string last_composition;
@@ -143,6 +146,10 @@ struct MockInputMethodHost : public mojom::InputMethodHost {
 class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
  public:
   ImeServiceTest() : service_(remote_service_.BindNewPipeAndPassReceiver()) {}
+
+  ImeServiceTest(const ImeServiceTest&) = delete;
+  ImeServiceTest& operator=(const ImeServiceTest&) = delete;
+
   ~ImeServiceTest() override = default;
 
   void CommitText(const std::u16string& text,
@@ -160,6 +167,8 @@ class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
                               suggestions) override {}
   void UpdateCandidatesWindow(mojom::CandidatesWindowPtr window) override {}
   void RecordUkm(mojom::UkmEntryPtr entry) override {}
+  void ReportKoreanAction(mojom::KoreanAction action) override {}
+  void ReportKoreanSettings(mojom::KoreanSettingsPtr settings) override {}
 
  protected:
   void SetUp() override {
@@ -181,8 +190,6 @@ class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
   base::test::ScopedFeatureList feature_list_;
   ImeService service_;
   TestDecoderState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImeServiceTest);
 };
 
 }  // namespace

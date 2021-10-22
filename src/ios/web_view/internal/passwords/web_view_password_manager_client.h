@@ -51,6 +51,10 @@ class WebViewPasswordManagerClient
       password_manager::PasswordReuseManager* reuse_manager,
       password_manager::PasswordRequirementsService* requirements_service);
 
+  WebViewPasswordManagerClient(const WebViewPasswordManagerClient&) = delete;
+  WebViewPasswordManagerClient& operator=(const WebViewPasswordManagerClient&) =
+      delete;
+
   ~WebViewPasswordManagerClient() override;
 
   // password_manager::PasswordManagerClient implementation.
@@ -83,13 +87,9 @@ class WebViewPasswordManagerClient
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
   PrefService* GetPrefs() const override;
-  // TODO(crbug.com/1218413): Remove the following two methods once migration
-  // from PasswordStore to PasswordStoreInterface is complete.
-  password_manager::PasswordStore* GetProfilePasswordStore() const override;
-  password_manager::PasswordStore* GetAccountPasswordStore() const override;
-  password_manager::PasswordStoreInterface* GetProfilePasswordStoreInterface()
+  password_manager::PasswordStoreInterface* GetProfilePasswordStore()
       const override;
-  password_manager::PasswordStoreInterface* GetAccountPasswordStoreInterface()
+  password_manager::PasswordStoreInterface* GetAccountPasswordStore()
       const override;
   password_manager::PasswordReuseManager* GetPasswordReuseManager()
       const override;
@@ -163,8 +163,6 @@ class WebViewPasswordManagerClient
   // Helper for performing logic that is common between
   // ChromePasswordManagerClient and IOSChromePasswordManagerClient.
   password_manager::PasswordManagerClientHelper helper_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebViewPasswordManagerClient);
 };
 }  // namespace ios_web_view
 

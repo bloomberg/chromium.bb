@@ -14,7 +14,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -27,16 +26,9 @@
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/installable/installable_params.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 namespace web_app {
-
-// static
-void ExternallyManagedAppInstallTask::CreateTabHelpers(
-    content::WebContents* web_contents) {
-  webapps::InstallableManager::CreateForWebContents(web_contents);
-  SecurityStateTabHelper::CreateForWebContents(web_contents);
-  favicon::CreateContentFaviconDriverForWebContents(web_contents);
-}
 
 ExternallyManagedAppInstallTask::ExternallyManagedAppInstallTask(
     Profile* profile,
@@ -242,9 +234,11 @@ void ExternallyManagedAppInstallTask::InstallPlaceholder(
 
   WebApplicationInfo web_app_info;
   web_app_info.title =
-      install_options_.fallback_app_name
-          ? base::UTF8ToUTF16(install_options_.fallback_app_name.value())
-          : base::UTF8ToUTF16(install_options_.install_url.spec());
+      install_options_.placeholder_name
+          ? base::UTF8ToUTF16(install_options_.placeholder_name.value())
+          : install_options_.fallback_app_name
+                ? base::UTF8ToUTF16(install_options_.fallback_app_name.value())
+                : base::UTF8ToUTF16(install_options_.install_url.spec());
   web_app_info.start_url = install_options_.install_url;
 
   web_app_info.user_display_mode = install_options_.user_display_mode;
@@ -292,6 +286,7 @@ void ExternallyManagedAppInstallTask::OnWebAppInstalled(
           .did_uninstall_and_replace = uninstall_and_replace_triggered}));
 
   if (!is_placeholder) {
+    registrar_->NotifyWebAppInstalledWithOsHooks(app_id);
     return;
   }
   InstallOsHooksOptions options;

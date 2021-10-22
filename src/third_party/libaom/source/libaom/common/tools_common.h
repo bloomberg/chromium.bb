@@ -125,6 +125,8 @@ extern "C" {
 
 #if defined(__GNUC__)
 #define AOM_NO_RETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define AOM_NO_RETURN __declspec(noreturn)
 #else
 #define AOM_NO_RETURN
 #endif
@@ -132,14 +134,14 @@ extern "C" {
 /* Sets a stdio stream into binary mode */
 FILE *set_binary_mode(FILE *stream);
 
-void die(const char *fmt, ...) AOM_NO_RETURN;
-void fatal(const char *fmt, ...) AOM_NO_RETURN;
-void warn(const char *fmt, ...);
+AOM_NO_RETURN void die(const char *fmt, ...);
+AOM_NO_RETURN void fatal(const char *fmt, ...);
+void aom_tools_warn(const char *fmt, ...);
 
-void die_codec(aom_codec_ctx_t *ctx, const char *s) AOM_NO_RETURN;
+AOM_NO_RETURN void die_codec(aom_codec_ctx_t *ctx, const char *s);
 
 /* The tool including this file must define usage_exit() */
-void usage_exit(void) AOM_NO_RETURN;
+AOM_NO_RETURN void usage_exit(void);
 
 #undef AOM_NO_RETURN
 

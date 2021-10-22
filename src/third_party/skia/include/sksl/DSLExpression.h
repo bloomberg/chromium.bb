@@ -17,6 +17,12 @@
 #include <cstdint>
 #include <memory>
 
+#if defined(__has_cpp_attribute) && __has_cpp_attribute(clang::reinitializes)
+#define SK_CLANG_REINITIALIZES [[clang::reinitializes]]
+#else
+#define SK_CLANG_REINITIALIZES
+#endif
+
 namespace SkSL {
 
 class Expression;
@@ -122,6 +128,9 @@ public:
     DSLPossibleExpression operator()(SkTArray<DSLWrapper<DSLExpression>> args,
                                      PositionInfo pos = PositionInfo::Capture());
 
+    DSLPossibleExpression operator()(ExpressionArray args,
+                                     PositionInfo pos = PositionInfo::Capture());
+
     /**
      * Returns true if this object contains an expression. DSLExpressions which were created with
      * the empty constructor or which have already been release()ed do not have a value.
@@ -136,7 +145,7 @@ public:
      */
     bool isValid() const;
 
-    void swap(DSLExpression& other);
+    SK_CLANG_REINITIALIZES void swap(DSLExpression& other);
 
     /**
      * Invalidates this object and returns the SkSL expression it represents. It is an error to call
@@ -150,12 +159,6 @@ private:
      */
     std::unique_ptr<SkSL::Expression> releaseIfPossible();
 
-    /**
-     * Invalidates this object and returns the SkSL expression it represents coerced to the
-     * specified type. If the expression cannot be coerced, reports an error and returns null.
-     */
-    std::unique_ptr<SkSL::Expression> coerceAndRelease(const SkSL::Type& type);
-
     std::unique_ptr<SkSL::Expression> fExpression;
 
     friend DSLExpression SampleChild(int index, DSLExpression coords);
@@ -163,6 +166,7 @@ private:
     friend class DSLCore;
     friend class DSLFunction;
     friend class DSLPossibleExpression;
+    friend class DSLType;
     friend class DSLVarBase;
     friend class DSLWriter;
     template<typename T> friend class DSLWrapper;
@@ -267,6 +271,9 @@ public:
     DSLPossibleExpression operator[](DSLExpression index);
 
     DSLPossibleExpression operator()(SkTArray<DSLWrapper<DSLExpression>> args,
+                                     PositionInfo pos = PositionInfo::Capture());
+
+    DSLPossibleExpression operator()(ExpressionArray args,
                                      PositionInfo pos = PositionInfo::Capture());
 
     DSLPossibleExpression operator++();

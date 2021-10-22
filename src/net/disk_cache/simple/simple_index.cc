@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/files/file_util.h"
 #include "base/numerics/safe_conversions.h"
@@ -87,7 +86,7 @@ base::Time EntryMetadata::GetLastUsedTime() const {
     return base::Time();
 
   return base::Time::UnixEpoch() +
-      base::TimeDelta::FromSeconds(last_used_time_seconds_since_epoch_);
+         base::Seconds(last_used_time_seconds_since_epoch_);
 }
 
 void EntryMetadata::SetLastUsedTime(const base::Time& last_used_time) {
@@ -520,8 +519,8 @@ void SimpleIndex::PostponeWritingToDisk() {
   const int delay = app_on_background_ ? kWriteToDiskOnBackgroundDelayMSecs
                                        : kWriteToDiskDelayMSecs;
   // If the timer is already active, Start() will just Reset it, postponing it.
-  write_to_disk_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(delay), write_to_disk_cb_);
+  write_to_disk_timer_.Start(FROM_HERE, base::Milliseconds(delay),
+                             write_to_disk_cb_);
 }
 
 bool SimpleIndex::UpdateEntryIteratorSize(
@@ -623,9 +622,8 @@ void SimpleIndex::WriteToDisk(IndexWriteToDiskReason reason) {
   if (cleanup_tracker_) {
     // Make anyone synchronizing with our cleanup wait for the index to be
     // written back.
-    after_write = base::BindOnce(
-        base::DoNothing::Once<scoped_refptr<BackendCleanupTracker>>(),
-        cleanup_tracker_);
+    after_write = base::BindOnce([](scoped_refptr<BackendCleanupTracker>) {},
+                                 cleanup_tracker_);
   }
 
   index_file_->WriteToDisk(cache_type_, reason, entries_set_, cache_size_,

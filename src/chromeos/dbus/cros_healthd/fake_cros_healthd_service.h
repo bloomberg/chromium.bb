@@ -48,6 +48,10 @@ class FakeCrosHealthdService final
   };
 
   FakeCrosHealthdService();
+
+  FakeCrosHealthdService(const FakeCrosHealthdService&) = delete;
+  FakeCrosHealthdService& operator=(const FakeCrosHealthdService&) = delete;
+
   ~FakeCrosHealthdService() override;
 
   // CrosHealthdServiceFactory overrides:
@@ -136,6 +140,8 @@ class FakeCrosHealthdService final
       RunVideoConferencingRoutineCallback callback) override;
   void RunArcHttpRoutine(RunArcHttpRoutineCallback callback) override;
   void RunArcPingRoutine(RunArcPingRoutineCallback callback) override;
+  void RunArcDnsResolutionRoutine(
+      RunArcDnsResolutionRoutineCallback callback) override;
 
   // CrosHealthdEventService overrides:
   void AddBluetoothObserver(
@@ -312,8 +318,6 @@ class FakeCrosHealthdService final
       network_diagnostics_routines_;
 
   base::TimeDelta callback_delay_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCrosHealthdService);
 };
 
 }  // namespace cros_healthd

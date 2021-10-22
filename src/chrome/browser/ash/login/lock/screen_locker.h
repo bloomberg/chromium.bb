@@ -20,7 +20,7 @@
 #include "base/timer/wall_clock_timer.h"
 #include "chrome/browser/ash/login/challenge_response_auth_keys_loader.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
-#include "chrome/browser/ash/login/security_token_pin_dialog_host_ash_impl.h"
+#include "chrome/browser/ash/login/security_token_pin_dialog_host_impl.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -35,7 +35,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/fingerprint.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/base/ime/ash/input_method_manager.h"
 
 namespace ash {
 class ViewsScreenLocker;
@@ -52,6 +52,10 @@ class ScreenLocker
   class Delegate {
    public:
     Delegate();
+
+    Delegate(const Delegate&) = delete;
+    Delegate& operator=(const Delegate&) = delete;
+
     virtual ~Delegate();
 
     // Show the given error message.
@@ -63,14 +67,14 @@ class ScreenLocker
 
     // Called by ScreenLocker to notify that ash lock animation finishes.
     virtual void OnAshLockAnimationFinished() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
   using AuthenticateCallback = base::OnceCallback<void(bool auth_success)>;
 
   explicit ScreenLocker(const user_manager::UserList& users);
+
+  ScreenLocker(const ScreenLocker&) = delete;
+  ScreenLocker& operator=(const ScreenLocker&) = delete;
 
   // Returns the default instance if it has been created.
   static ScreenLocker* default_screen_locker() { return screen_locker_; }
@@ -319,11 +323,9 @@ class ScreenLocker
 
   ChallengeResponseAuthKeysLoader challenge_response_auth_keys_loader_;
 
-  SecurityTokenPinDialogHostAshImpl security_token_pin_dialog_host_ash_impl_;
+  SecurityTokenPinDialogHostImpl security_token_pin_dialog_host_impl_;
 
   base::WeakPtrFactory<ScreenLocker> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ScreenLocker);
 };
 
 }  // namespace ash

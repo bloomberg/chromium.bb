@@ -467,8 +467,8 @@ class FaxDecoder final : public ScanlineDecoder {
   ~FaxDecoder() override;
 
   // ScanlineDecoder:
-  bool v_Rewind() override;
-  uint8_t* v_GetNextLine() override;
+  bool Rewind() override;
+  pdfium::span<uint8_t> GetNextLine() override;
   uint32_t GetSrcOffset() override;
 
  private:
@@ -506,19 +506,22 @@ FaxDecoder::FaxDecoder(pdfium::span<const uint8_t> src_span,
       m_ScanlineBuf(m_Pitch),
       m_RefBuf(m_Pitch) {}
 
-FaxDecoder::~FaxDecoder() = default;
+FaxDecoder::~FaxDecoder() {
+  // Span in superclass can't outlive our buffer.
+  m_pLastScanline = pdfium::span<uint8_t>();
+}
 
-bool FaxDecoder::v_Rewind() {
+bool FaxDecoder::Rewind() {
   memset(m_RefBuf.data(), 0xff, m_RefBuf.size());
   m_bitpos = 0;
   return true;
 }
 
-uint8_t* FaxDecoder::v_GetNextLine() {
+pdfium::span<uint8_t> FaxDecoder::GetNextLine() {
   int bitsize = m_SrcSpan.size() * 8;
   FaxSkipEOL(m_SrcSpan.data(), bitsize, &m_bitpos);
   if (m_bitpos >= bitsize)
-    return nullptr;
+    return pdfium::span<uint8_t>();
 
   memset(m_ScanlineBuf.data(), 0xff, m_ScanlineBuf.size());
   if (m_Encoding < 0) {
@@ -556,7 +559,7 @@ uint8_t* FaxDecoder::v_GetNextLine() {
   }
   if (m_bBlack)
     InvertBuffer();
-  return m_ScanlineBuf.data();
+  return m_ScanlineBuf;
 }
 
 uint32_t FaxDecoder::GetSrcOffset() {

@@ -46,7 +46,6 @@
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_shader_quads_tessellation.* = FAIL
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_shader_triangles_tessellation.identical_triangles = FAIL
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_shader_triangles_tessellation.inner_tessellation_level_rounding = FAIL
-5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_invariance.invariance_rule* = SKIP
 // Crash on assert in libcpp. CTS passes to a function '&vector[0], size', where vector is empty.
 5557 VULKAN WIN : KHR-GLES32.core.tessellation_shader.tessellation_shader_point_mode.points_verification = SKIP
 
@@ -117,6 +116,9 @@
 
 // New failures with latest dEQP roll (2021-03-05)
 5722 VULKAN : KHR-GLES32.core.framebuffer_completeness.rbo_and_texture_expect_zero_numsamples = FAIL
+
+// Newly-added dEQP tests that are failing (2021-09-27)
+6441 VULKAN : KHR-GLES32.core.compressed* = SKIP
 
 // Android failures
 

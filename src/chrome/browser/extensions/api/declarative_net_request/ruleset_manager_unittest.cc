@@ -47,6 +47,9 @@ class RulesetManagerTest : public DNRTestBase {
  public:
   RulesetManagerTest() {}
 
+  RulesetManagerTest(const RulesetManagerTest&) = delete;
+  RulesetManagerTest& operator=(const RulesetManagerTest&) = delete;
+
   void SetUp() override {
     DNRTestBase::SetUp();
     manager_ = std::make_unique<RulesetManager>(browser_context());
@@ -100,7 +103,8 @@ class RulesetManagerTest : public DNRTestBase {
         LoadRulesetResult::kSuccess,
         sources[0].CreateVerifiedMatcher(expected_checksum, &matchers[0]));
 
-    *matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
+    *matcher = std::make_unique<CompositeMatcher>(
+        std::move(matchers), HostPermissionsAlwaysRequired::kFalse);
   }
 
   void SetIncognitoEnabled(const Extension* extension, bool incognito_enabled) {
@@ -150,8 +154,6 @@ class RulesetManagerTest : public DNRTestBase {
  private:
   scoped_refptr<const Extension> last_loaded_extension_;
   std::unique_ptr<RulesetManager> manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(RulesetManagerTest);
 };
 
 // Tests that the RulesetManager handles multiple rulesets correctly.

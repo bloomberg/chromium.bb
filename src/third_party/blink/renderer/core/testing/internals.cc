@@ -880,9 +880,9 @@ bool Internals::isLoadingFromMemoryCache(const String& url) {
   return resource && resource->GetStatus() == ResourceStatus::kCached;
 }
 
-ScriptPromise Internals::getResourcePriority(ScriptState* script_state,
-                                             const String& url,
-                                             Document* document) {
+ScriptPromise Internals::getInitialResourcePriority(ScriptState* script_state,
+                                                    const String& url,
+                                                    Document* document) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -3671,8 +3671,8 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
     ExceptionState& exception_state) {
   return document_->Loader()
       ->GetTiming()
-      .MonotonicTimeToZeroBasedDocumentTime(
-          base::TimeTicks() + base::TimeDelta::FromSecondsD(platform_time))
+      .MonotonicTimeToZeroBasedDocumentTime(base::TimeTicks() +
+                                            base::Seconds(platform_time))
       .InSecondsF();
 }
 

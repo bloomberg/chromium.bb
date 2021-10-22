@@ -6,11 +6,11 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "clipboard.mojom",
+    "desktop_session.mojom",
     "remote_support.mojom",
     "remote_url_opener.mojom",
     "testing.mojom",
-    "url_forwarder_configurator.mojom",
+    "webauthn_proxy.mojom",
   ]
 
   deps = [

@@ -57,7 +57,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Overrides to avoid establishing Mojo connection with renderer process.
   int DownloadImage(const GURL& url,
                     bool is_favicon,
-                    uint32_t preferred_size,
+                    const gfx::Size& preferred_size,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
                     ImageDownloadCallback callback) override;
@@ -146,6 +146,8 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   int AddPrerender(const GURL& url) override;
   TestRenderFrameHost* AddPrerenderAndCommitNavigation(
+      const GURL& url) override;
+  std::unique_ptr<NavigationSimulator> AddPrerenderAndStartNavigation(
       const GURL& url) override;
 
  protected:

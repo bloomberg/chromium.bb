@@ -243,6 +243,9 @@ class ScopedAudioInputStream {
  public:
   explicit ScopedAudioInputStream(AudioInputStream* stream) : stream_(stream) {}
 
+  ScopedAudioInputStream(const ScopedAudioInputStream&) = delete;
+  ScopedAudioInputStream& operator=(const ScopedAudioInputStream&) = delete;
+
   ~ScopedAudioInputStream() {
     if (stream_)
       stream_->Close();
@@ -265,8 +268,6 @@ class ScopedAudioInputStream {
 
  private:
   AudioInputStream* stream_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedAudioInputStream);
 };
 
 class WinAudioInputTest : public ::testing::Test,
@@ -414,10 +415,6 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamHistograms) {
   ais->Stop();
   ais.Close();
   histogram_tester.ExpectTotalCount("Media.Audio.Capture.Win.Glitches", 1);
-  histogram_tester.ExpectTotalCount("Media.Audio.Capture.Win.TimestampErrors",
-                                    1);
-  histogram_tester.ExpectTotalCount(
-      "Media.Audio.Capture.Win.TimeUntilFirstTimestampError", 0);
 }
 
 // Test some additional calling sequences.

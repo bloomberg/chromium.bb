@@ -26,6 +26,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/test/extension_background_page_waiter.h"
 #include "extensions/test/result_catcher.h"
 
 namespace extensions {
@@ -99,40 +100,6 @@ IN_PROC_BROWSER_TEST_P(NativeMessagingApiTest,
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-class TestProcessManagerObserver : public ProcessManagerObserver {
- public:
-  TestProcessManagerObserver() = default;
-  ~TestProcessManagerObserver() override = default;
-
-  void WaitForProcessShutdown(ProcessManager* process_manager,
-                              const std::string& extension_id) {
-    DCHECK(!quit_);
-    extension_id_ = extension_id;
-    base::RunLoop run_loop;
-    quit_ = run_loop.QuitClosure();
-
-    observation_.Observe(process_manager);
-    run_loop.Run();
-  }
-
- private:
-  void OnBackgroundHostClose(const std::string& extension_id) override {
-    if (extension_id != extension_id_) {
-      return;
-    }
-    observation_.Reset();
-    extension_id_.clear();
-    std::move(quit_).Run();
-  }
-
-  std::string extension_id_;
-  base::ScopedObservation<ProcessManager, ProcessManagerObserver> observation_{
-      this};
-  base::OnceClosure quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProcessManagerObserver);
-};
-
 base::CommandLine CreateNativeMessagingConnectCommandLine(
     const std::string& connect_id,
     const std::string& extension_id =
@@ -173,9 +140,8 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, MAYBE_Success) {
 
   auto* extension =
       LoadExtension(test_data_dir_.AppendASCII("native_messaging_launch"));
-  TestProcessManagerObserver observer;
-  observer.WaitForProcessShutdown(ProcessManager::Get(profile()),
-                                  extension->id());
+  ExtensionBackgroundPageWaiter(profile(), *extension)
+      .WaitForBackgroundClosed();
 
   ResultCatcher catcher;
 
@@ -210,9 +176,8 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, UnsupportedByNativeHost) {
 
   auto* extension = LoadExtension(
       test_data_dir_.AppendASCII("native_messaging_launch_unsupported"));
-  TestProcessManagerObserver observer;
-  observer.WaitForProcessShutdown(ProcessManager::Get(profile()),
-                                  extension->id());
+  ExtensionBackgroundPageWaiter(profile(), *extension)
+      .WaitForBackgroundClosed();
 
   ResultCatcher catcher;
 
@@ -240,6 +205,10 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
  public:
   TestKeepAliveStateObserver() = default;
 
+  TestKeepAliveStateObserver(const TestKeepAliveStateObserver&) = delete;
+  TestKeepAliveStateObserver& operator=(const TestKeepAliveStateObserver&) =
+      delete;
+
   void WaitForNoKeepAlive() {
     ASSERT_TRUE(KeepAliveRegistry::GetInstance()->IsKeepingAlive());
     base::ScopedObservation<KeepAliveRegistry, KeepAliveStateObserver> observer(
@@ -251,7 +220,7 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
     // has been released; poll for changes instead.
 #if defined(OS_MAC)
     polling_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(100),
+        FROM_HERE, base::Milliseconds(100),
         base::BindRepeating(&TestKeepAliveStateObserver::PollKeepAlive,
                             base::Unretained(this)));
 #endif
@@ -281,14 +250,12 @@ class TestKeepAliveStateObserver : public KeepAliveStateObserver {
 #endif
 
   base::OnceClosure quit_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestKeepAliveStateObserver);
 };
 
 IN_PROC_BROWSER_TEST_F(NativeMessagingLaunchApiTest, Error) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
   ScopedNativeMessagingErrorTimeoutOverrideForTest error_timeout_override(
-      base::TimeDelta::FromSeconds(2));
+      base::Seconds(2));
   StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
       CreateNativeMessagingConnectCommandLine("test-connect-id"), {},
       profile()->GetPath());

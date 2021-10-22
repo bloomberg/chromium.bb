@@ -266,7 +266,8 @@ get_prediction_mode_idx(PREDICTION_MODE this_mode, MV_REFERENCE_FRAME ref_frame,
     return single_inter_to_mode_idx[this_mode - SINGLE_INTER_MODE_START]
                                    [ref_frame];
   }
-  if (this_mode >= COMP_INTER_MODE_START && this_mode < COMP_INTER_MODE_END) {
+  if (this_mode >= COMP_INTER_MODE_START && this_mode < COMP_INTER_MODE_END &&
+      second_ref_frame != NONE_FRAME) {
     assert((ref_frame > INTRA_FRAME) && (ref_frame <= ALTREF_FRAME));
     assert((second_ref_frame > INTRA_FRAME) &&
            (second_ref_frame <= ALTREF_FRAME));
@@ -386,7 +387,7 @@ static INLINE int is_winner_mode_processing_enabled(
   // TODO(any): Move block independent condition checks to frame level
   if (is_inter_block(mbmi)) {
     if (is_inter_mode(best_mode) &&
-        (sf->tx_sf.tx_type_search.fast_inter_tx_type_search != 0) &&
+        (sf->tx_sf.tx_type_search.fast_inter_tx_type_prob_thresh != INT_MAX) &&
         !cpi->oxcf.txfm_cfg.use_inter_dct_only)
       return 1;
   } else {
@@ -477,7 +478,7 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
   switch (mode_eval_type) {
     case DEFAULT_EVAL:
-      txfm_params->use_default_inter_tx_type = 0;
+      txfm_params->default_inter_tx_type_prob_thresh = INT_MAX;
       txfm_params->use_default_intra_tx_type = 0;
       txfm_params->skip_txfm_level =
           winner_mode_params->skip_txfm_level[DEFAULT_EVAL];
@@ -499,8 +500,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       txfm_params->use_default_intra_tx_type =
           (cpi->sf.tx_sf.tx_type_search.fast_intra_tx_type_search ||
            cpi->oxcf.txfm_cfg.use_intra_default_tx_only);
-      txfm_params->use_default_inter_tx_type =
-          cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_search;
+      txfm_params->default_inter_tx_type_prob_thresh =
+          cpi->sf.tx_sf.tx_type_search.fast_inter_tx_type_prob_thresh;
       txfm_params->skip_txfm_level =
           winner_mode_params->skip_txfm_level[MODE_EVAL];
       txfm_params->predict_dc_level =
@@ -526,7 +527,7 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
                         0);
       break;
     case WINNER_MODE_EVAL:
-      txfm_params->use_default_inter_tx_type = 0;
+      txfm_params->default_inter_tx_type_prob_thresh = INT_MAX;
       txfm_params->use_default_intra_tx_type = 0;
       txfm_params->skip_txfm_level =
           winner_mode_params->skip_txfm_level[WINNER_MODE_EVAL];
@@ -552,14 +553,7 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       set_tx_type_prune(sf, txfm_params,
                         sf->tx_sf.tx_type_search.winner_mode_tx_type_pruning,
                         1);
-
-      // Reset hash state for winner mode processing. Winner mode and subsequent
-      // transform/mode evaluations (palette/IntraBC) cann't reuse old data as
-      // the decisions would have been sub-optimal
-      // TODO(any): Move the evaluation of palette/IntraBC modes before winner
-      // mode is processed and clean-up the code below
-      reset_hash_records(txfm_info, cpi->sf.tx_sf.use_inter_txb_hash);
-
+      reset_hash_records(txfm_info);
       break;
     default: assert(0);
   }

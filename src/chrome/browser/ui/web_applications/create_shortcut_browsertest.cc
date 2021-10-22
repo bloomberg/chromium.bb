@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/extension.h"
@@ -89,15 +88,16 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, InstallSourceRecorded) {
 
   // LatestWebAppInstallSource should be correctly set and reported to UMA for
   // both installable and non-installable sites.
-  for (const GURL& url : {GetInstallableAppURL(),
-                          embedded_test_server()->GetURL(
-                              "/web_apps/theme_color_only_manifest.html")}) {
+  for (const GURL& url :
+       {GetInstallableAppURL(),
+        embedded_test_server()->GetURL(
+            "/web_apps/get_manifest.html?theme_color_only.json")}) {
     base::HistogramTester histogram_tester;
     NavigateToURLAndWait(browser(), url);
     AppId app_id = InstallShortcutAppForCurrentUrl();
 
-    absl::optional<int> install_source = GetIntWebAppPref(
-        profile()->GetPrefs(), app_id, kLatestWebAppInstallSource);
+    absl::optional<int> install_source =
+        GetWebAppInstallSource(profile()->GetPrefs(), app_id);
     EXPECT_TRUE(install_source.has_value());
     EXPECT_EQ(static_cast<webapps::WebappInstallSource>(*install_source),
               webapps::WebappInstallSource::MENU_CREATE_SHORTCUT);
@@ -143,6 +143,8 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest,
 // This simulates a case where the user has manually navigated to a page hosted
 // within an extension, then added it as a shortcut app.
 // Regression test for https://crbug.com/828233.
+//
+// TODO(crbug.com/1253234): Remove chrome-extension scheme for web apps.
 IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest,
                        ShouldShowCustomTabBarForExtensionPage) {
   // This involves the creation of a regular (non-app) extension with a popup
@@ -163,6 +165,10 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest,
   const GURL popup_url("chrome-extension://" + extension_id + "/popup.html");
 
   NavigateToURLAndWait(browser(), popup_url);
+
+  // TODO(crbug.com/1253234): IDC_CREATE_SHORTCUT command must become disabled.
+  ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_CREATE_SHORTCUT));
+
   const AppId app_id = InstallShortcutAppForCurrentUrl();
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
   CHECK(app_browser);
@@ -201,9 +207,9 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, WorksAfterDelayedIFrameLoad) {
 IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest,
                        UseNonPromotableManifestData) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURLAndWait(browser(),
-                       embedded_test_server()->GetURL(
-                           "/web_apps/theme_color_only_manifest.html"));
+  NavigateToURLAndWait(
+      browser(), embedded_test_server()->GetURL(
+                     "/web_apps/get_manifest.html?theme_color_only.json"));
   AppId app_id = InstallShortcutAppForCurrentUrl();
   EXPECT_EQ(registrar().GetAppThemeColor(app_id),
             SkColorSetRGB(0x12, 0x34, 0x56));
@@ -213,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest,
 IN_PROC_BROWSER_TEST_F(CreateShortcutBrowserTest, IgnoreInvalidManifestData) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url = embedded_test_server()->GetURL(
-      "/web_apps/invalid_start_url_manifest.html");
+      "/web_apps/get_manifest.html?invalid_start_url.json");
   NavigateToURLAndWait(browser(), url);
   AppId app_id = InstallShortcutAppForCurrentUrl();
   EXPECT_EQ(registrar().GetAppStartUrl(app_id), url);

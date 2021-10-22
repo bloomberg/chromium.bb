@@ -476,7 +476,8 @@ void DumpSymbols::ReadDwarf(google_breakpad::Module* module,
     DwarfCUToModule::WarningReporter reporter(selected_object_name_,
                                               offset);
     DwarfCUToModule root_handler(&file_context, &line_to_module,
-                                 &ranges_handler, &reporter);
+                                 &ranges_handler, &reporter,
+                                 symbol_data_ & INLINES);
     // Make a Dwarf2Handler that drives our DIEHandler.
     DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.

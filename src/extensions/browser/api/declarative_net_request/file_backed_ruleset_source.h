@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_FILE_BACKED_RULESET_SOURCE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_FILE_BACKED_RULESET_SOURCE_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -58,7 +59,14 @@ struct IndexAndPersistJSONRulesetResult {
   static IndexAndPersistJSONRulesetResult CreateIgnoreResult(
       std::vector<InstallWarning> warnings);
   static IndexAndPersistJSONRulesetResult CreateErrorResult(std::string error);
+
+  IndexAndPersistJSONRulesetResult(const IndexAndPersistJSONRulesetResult&) =
+      delete;
+  IndexAndPersistJSONRulesetResult& operator=(
+      const IndexAndPersistJSONRulesetResult&) = delete;
+
   ~IndexAndPersistJSONRulesetResult();
+
   IndexAndPersistJSONRulesetResult(IndexAndPersistJSONRulesetResult&&);
   IndexAndPersistJSONRulesetResult& operator=(
       IndexAndPersistJSONRulesetResult&&);
@@ -89,7 +97,6 @@ struct IndexAndPersistJSONRulesetResult {
 
  private:
   IndexAndPersistJSONRulesetResult();
-  DISALLOW_COPY_AND_ASSIGN(IndexAndPersistJSONRulesetResult);
 };
 
 struct ReadJSONRulesResult {
@@ -115,9 +122,13 @@ struct ReadJSONRulesResult {
                                                std::string error);
 
   ReadJSONRulesResult();
-  ~ReadJSONRulesResult();
+  ReadJSONRulesResult(const ReadJSONRulesResult&) = delete;
   ReadJSONRulesResult(ReadJSONRulesResult&&);
+
+  ReadJSONRulesResult& operator=(const ReadJSONRulesResult&) = delete;
   ReadJSONRulesResult& operator=(ReadJSONRulesResult&&);
+
+  ~ReadJSONRulesResult();
 
   Status status = Status::kSuccess;
 
@@ -129,9 +140,6 @@ struct ReadJSONRulesResult {
 
   // Populated on error.
   std::string error;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ReadJSONRulesResult);
 };
 
 // A Ruleset source which is backed on disk. The indexed version of such a
@@ -190,8 +198,7 @@ class FileBackedRulesetSource : public RulesetSource {
   // JSON rules file is parsed in-process. Note: This must be called on a
   // sequence where file IO is allowed.
   IndexAndPersistJSONRulesetResult IndexAndPersistJSONRulesetUnsafe(
-      RulesetSource::InvalidRuleParseBehavior invalid_rule_parse_behavior)
-      const;
+      uint8_t parse_flags) const;
 
   using IndexAndPersistJSONRulesetCallback =
       base::OnceCallback<void(IndexAndPersistJSONRulesetResult)>;
@@ -202,7 +209,7 @@ class FileBackedRulesetSource : public RulesetSource {
   // NOTE: This must be called on a sequence where file IO is allowed.
   void IndexAndPersistJSONRuleset(
       data_decoder::DataDecoder* decoder,
-      RulesetSource::InvalidRuleParseBehavior invalid_rule_parse_behavior,
+      uint8_t parse_flags,
       IndexAndPersistJSONRulesetCallback callback) const;
 
   // Reads JSON rules synchronously. Callers should only use this if the JSON is

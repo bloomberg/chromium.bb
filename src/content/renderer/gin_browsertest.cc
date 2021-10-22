@@ -14,6 +14,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "v8/include/v8-context.h"
 
 namespace content {
 
@@ -41,6 +42,10 @@ gin::WrapperInfo TestGinObject::kWrapperInfo = { gin::kEmbedderNativeGin };
 class GinBrowserTest : public RenderViewTest {
  public:
   GinBrowserTest() {}
+
+  GinBrowserTest(const GinBrowserTest&) = delete;
+  GinBrowserTest& operator=(const GinBrowserTest&) = delete;
+
   ~GinBrowserTest() override {}
 
   void SetUp() override {
@@ -49,10 +54,6 @@ class GinBrowserTest : public RenderViewTest {
 
     RenderViewTest::SetUp();
   }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(GinBrowserTest);
 };
 
 // Test that garbage collection doesn't crash if a gin-wrapped object is

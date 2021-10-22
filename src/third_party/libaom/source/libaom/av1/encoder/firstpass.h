@@ -29,6 +29,7 @@ extern "C" {
 #define MIN_MV_IN_OUT 0.4
 
 #define VLOW_MOTION_THRESHOLD 950
+struct ThreadData;
 
 /*!
  * \brief The stucture of acummulated frame stats in the first pass.
@@ -175,17 +176,17 @@ typedef struct {
  */
 typedef struct {
   /*!
-   * An static buffer that will be used when no ext_stats_buf is assigned.
-   * The ext_stats_buf is assigned through av1_firstpass_info_init() when
-   * user already has an pre-existing firstpass stats that store in an
-   * external buffer. The ext_stats_buf is usually use in two pass mode.
-   * When using one pass mode, we generate "firstpass" stats and
-   * encode the video in the same pass. In this scenario, the stats will
-   * be pushed and popped from static_stats_buf.
+   * A static buffer that will be used when no ext_stats_buf is assigned. The
+   * ext_stats_buf is assigned through av1_firstpass_info_init() when the user
+   * already has a pre-existing firstpass stats that is stored in an external
+   * buffer. The ext_stats_buf is usually used in two pass mode. When using one
+   * pass mode, we generate "firstpass" stats and encode the video in the same
+   * pass. In this scenario, the stats will be pushed and popped from
+   * static_stats_buf.
    */
   FIRSTPASS_STATS static_stats_buf[FIRSTPASS_INFO_STATIC_BUF_SIZE];
   /*!
-   * A pointer point to first pass stats.
+   * A pointer to first pass stats.
    * Note that this buffer will be used as ring buffer.
    */
   FIRSTPASS_STATS *stats_buf;
@@ -300,7 +301,7 @@ const FIRSTPASS_STATS *av1_firstpass_info_peek(
 /*!\brief Count the future stats from the target in firstpass_info
  * Note that the target stats will be counted as well.
  * The target index is as follows.
- * (cur_index + offset_from_curr) % firstpass_info->stats_buf_size
+ * (cur_index + offset_from_cur) % firstpass_info->stats_buf_size
  *
  * \ingroup rate_control
  * \param[in]  firstpass_info    struct of firstpass_info.

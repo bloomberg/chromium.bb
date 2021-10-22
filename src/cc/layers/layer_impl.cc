@@ -40,8 +40,8 @@
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
-#include "ui/gfx/transform_util.h"
 
 namespace cc {
 LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
@@ -603,7 +603,7 @@ gfx::Rect LayerImpl::GetDamageRect() const {
   return gfx::Rect();
 }
 
-void LayerImpl::SetCurrentScrollOffset(const gfx::ScrollOffset& scroll_offset) {
+void LayerImpl::SetCurrentScrollOffset(const gfx::Vector2dF& scroll_offset) {
   DCHECK(IsActive());
   if (GetScrollTree().SetScrollOffset(element_id(), scroll_offset))
     layer_tree_impl()->DidUpdateScrollOffset(element_id());

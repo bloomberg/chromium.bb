@@ -4,11 +4,13 @@
 
 from __future__ import print_function
 
+import collections
 import logging
 import re
 import sys
 import time
 
+from telemetry.internal.results import artifact_compatibility_wrapper as acw
 from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
 from typ import json_results
@@ -17,6 +19,7 @@ from gpu_tests import common_browser_args as cba
 from gpu_tests import gpu_helper
 
 _START_BROWSER_RETRIES = 3
+_MAX_TEST_TRIES = 3
 
 ResultType = json_results.ResultType
 
@@ -55,6 +58,25 @@ class GpuIntegrationTest(
   # to relaunch it, if a new pixel test requires a different set of
   # arguments.
   _last_launched_browser_args = set()
+
+  # Keeps track of flaky tests that we're retrying.
+  # TODO(crbug.com/1248602): Remove this in favor of a method that doesn't rely
+  # on assumptions about retries, etc. if possible.
+  _flaky_test_tries = collections.Counter()
+
+  def __init__(self, *args, **kwargs):
+    super(GpuIntegrationTest, self).__init__(*args, **kwargs)
+    if self.artifacts is None:
+      self.set_artifacts(None)
+
+  def set_artifacts(self, artifacts):
+    # Instead of using the default logging artifact implementation, use the
+    # full logging one. This ensures we get debugging information if something
+    # goes wrong before typ can set the actual artifact implementation, such
+    # as during initial browser startup.
+    if artifacts is None:
+      artifacts = acw.FullLoggingArtifactImpl()
+    super(GpuIntegrationTest, self).set_artifacts(artifacts)
 
   @classmethod
   def SetUpProcess(cls):
@@ -255,12 +277,35 @@ class GpuIntegrationTest(
     # by a bad combination of command-line arguments. So reset to the original
     # options in attempt to successfully launch a browser.
     if cls.browser is None:
+      cls._RestartTsProxyServerIfNecessary()
       cls.SetBrowserOptions(cls.GetOriginalFinderOptions())
       cls.StartBrowser()
     else:
       cls.StopBrowser()
+      cls._RestartTsProxyServerIfNecessary()
       cls.SetBrowserOptions(cls._finder_options)
       cls.StartBrowser()
+
+  @classmethod
+  def _RestartTsProxyServerIfNecessary(cls):
+    """Restarts the TsProxyServer on remote platforms.
+
+    If something goes wrong with the connection to the remote device (SSH, adb,
+    etc.), then the forwarder between the device and the host will potentially
+    break, breaking all further network connectivity. So, restart the server
+    and its forwarder.
+    """
+    # TODO(crbug.com/1245346): Move this into Telemetry itself once it is
+    # shown to work.
+    os_name = cls.platform.GetOSName()
+    if os_name == 'android' or os_name == 'chromeos':
+      logging.warning(
+          'Restarting TsProxyServer due to being on a remote platform')
+      network_controller_backend = (
+          cls.platform._platform_backend.network_controller_backend)
+      wpr_mode = network_controller_backend._wpr_mode
+      network_controller_backend.Close()
+      network_controller_backend.Open(wpr_mode)
 
   def _RunGpuTest(self, url, test_name, *args):
     expected_results, should_retry_on_failure = (
@@ -286,6 +331,15 @@ class GpuIntegrationTest(
         self._ClearExpectedCrashes(expected_crashes)
         if should_retry_on_failure:
           logging.exception('Exception while running flaky test %s', test_name)
+          # Perform the same data collection as we do for an unexpected failure
+          # but only if this was the last try for a flaky test so we don't
+          # waste time symbolizing minidumps for expected flaky crashes.
+          # TODO(crbug.com/1248602): Replace this with a different method of
+          # tracking retries if possible.
+          self._flaky_test_tries[test_name] += 1
+          if self._flaky_test_tries[test_name] == _MAX_TEST_TRIES:
+            if self.browser is not None:
+              self.browser.CollectDebugData(logging.ERROR)
           # For robustness, shut down the browser and restart it
           # between flaky test failures, to make sure any state
           # doesn't propagate to the next iteration.

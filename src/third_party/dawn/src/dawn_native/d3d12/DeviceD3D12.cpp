@@ -73,7 +73,7 @@ namespace dawn_native { namespace d3d12 {
             CheckHRESULT(mD3d12Device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)),
                          "D3D12 create command queue"));
 
-        if (IsExtensionEnabled(Extension::TimestampQuery)) {
+        if (IsFeatureEnabled(Feature::TimestampQuery)) {
             // Get GPU timestamp counter frequency (in ticks/second). This fails if the specified
             // command queue doesn't support timestamps. D3D12_COMMAND_LIST_TYPE_DIRECT queues
             // always support timestamps except where there are bugs in Windows container and vGPU
@@ -203,7 +203,7 @@ namespace dawn_native { namespace d3d12 {
     MaybeError Device::ApplyUseDxcToggle() {
         if (!ToBackend(GetAdapter())->GetBackend()->GetFunctions()->IsDXCAvailable()) {
             ForceSetToggle(Toggle::UseDXC, false);
-        } else if (IsExtensionEnabled(Extension::ShaderFloat16)) {
+        } else if (IsFeatureEnabled(Feature::ShaderFloat16)) {
             // Currently we can only use DXC to compile HLSL shaders using float16.
             ForceSetToggle(Toggle::UseDXC, true);
         }
@@ -346,9 +346,9 @@ namespace dawn_native { namespace d3d12 {
         const QuerySetDescriptor* descriptor) {
         return QuerySet::Create(this, descriptor);
     }
-    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+    Ref<RenderPipelineBase> Device::CreateUninitializedRenderPipelineImpl(
         const RenderPipelineDescriptor* descriptor) {
-        return RenderPipeline::Create(this, descriptor);
+        return RenderPipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
         return Sampler::Create(this, descriptor);
@@ -376,13 +376,16 @@ namespace dawn_native { namespace d3d12 {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
-    void Device::CreateComputePipelineAsyncImpl(
-        std::unique_ptr<FlatComputePipelineDescriptor> descriptor,
-        size_t blueprintHash,
-        WGPUCreateComputePipelineAsyncCallback callback,
-        void* userdata) {
-        ComputePipeline::CreateAsync(this, std::move(descriptor), blueprintHash, callback,
-                                     userdata);
+    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
+                                                size_t blueprintHash,
+                                                WGPUCreateComputePipelineAsyncCallback callback,
+                                                void* userdata) {
+        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
+    }
+    void Device::InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
+                                                   WGPUCreateRenderPipelineAsyncCallback callback,
+                                                   void* userdata) {
+        RenderPipeline::InitializeAsync(renderPipeline, callback, userdata);
     }
 
     ResultOrError<std::unique_ptr<StagingBufferBase>> Device::CreateStagingBuffer(size_t size) {
@@ -530,9 +533,14 @@ namespace dawn_native { namespace d3d12 {
         if (gpu_info::IsIntel(pciInfo.vendorId) &&
             (gpu_info::IsSkylake(pciInfo.deviceId) || gpu_info::IsKabylake(pciInfo.deviceId) ||
              gpu_info::IsCoffeelake(pciInfo.deviceId))) {
-            SetToggle(
-                Toggle::UseTempBufferInSmallFormatTextureToTextureCopyFromGreaterToLessMipLevel,
-                true);
+            constexpr gpu_info::D3DDriverVersion kFirstDriverVersionWithFix = {30, 0, 100, 9864};
+            if (gpu_info::CompareD3DDriverVersion(pciInfo.vendorId,
+                                                  ToBackend(GetAdapter())->GetDriverVersion(),
+                                                  kFirstDriverVersionWithFix) < 0) {
+                SetToggle(
+                    Toggle::UseTempBufferInSmallFormatTextureToTextureCopyFromGreaterToLessMipLevel,
+                    true);
+            }
         }
     }
 

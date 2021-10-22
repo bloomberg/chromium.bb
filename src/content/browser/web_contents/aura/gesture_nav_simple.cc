@@ -59,8 +59,7 @@ constexpr SkColor kRippleColor = SkColorSetA(gfx::kGoogleBlue600, 0x4C);  // 30%
 constexpr int kMaxRippleBurstRadius = 48;
 constexpr gfx::Tween::Type kBurstAnimationTweenType =
     gfx::Tween::FAST_OUT_SLOW_IN;
-constexpr auto kRippleBurstAnimationDuration =
-    base::TimeDelta::FromMilliseconds(200);
+constexpr auto kRippleBurstAnimationDuration = base::Milliseconds(200);
 
 // Offset of the affordance when it is at the activation threshold. Since the
 // affordance is initially out of content bounds, this is the offset of the
@@ -80,7 +79,7 @@ constexpr float kExtraAffordanceRatio =
 // Parameters defining animation when the affordance is aborted.
 constexpr gfx::Tween::Type kAbortAnimationTweenType =
     gfx::Tween::FAST_OUT_SLOW_IN;
-constexpr auto kAbortAnimationDuration = base::TimeDelta::FromMilliseconds(300);
+constexpr auto kAbortAnimationDuration = base::Milliseconds(300);
 
 bool ShouldNavigateForward(NavigationController* controller,
                            OverscrollMode mode) {
@@ -133,6 +132,10 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
              OverscrollMode mode,
              const gfx::Rect& content_bounds,
              float max_drag_progress);
+
+  Affordance(const Affordance&) = delete;
+  Affordance& operator=(const Affordance&) = delete;
+
   ~Affordance() override;
 
   // Sets drag progress. 0 means no progress. 1 means full progress. Values more
@@ -206,8 +209,6 @@ class Affordance : public ui::LayerDelegate, public gfx::AnimationDelegate {
   float complete_progress_ = 0.f;
 
   std::unique_ptr<gfx::LinearAnimation> animation_;
-
-  DISALLOW_COPY_AND_ASSIGN(Affordance);
 };
 
 Affordance::Affordance(GestureNavSimple* owner,

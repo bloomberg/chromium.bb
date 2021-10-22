@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
-#include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -98,7 +98,6 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
   // when provided a filename to open. Likewise, the feedback extension needs
   // context when launching. Pinning these creates an item that does nothing.
   const char* kNoPinAppIds[] = {
-      file_manager::kVideoPlayerAppId,
       file_manager::kAudioPlayerAppId,
       extension_misc::kFeedbackExtensionId,
   };
@@ -123,7 +122,7 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
       return AppListControllerDelegate::PIN_EDITABLE;
 
     const std::string* policy_entry =
-        policy_dict_entry.FindStringKey(kPinnedAppsPrefAppIDKey);
+        policy_dict_entry.FindStringKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey);
     if (!policy_entry)
       return AppListControllerDelegate::PIN_EDITABLE;
 
@@ -171,4 +170,20 @@ void PinAppWithIDToShelf(const std::string& app_id) {
 void UnpinAppWithIDFromShelf(const std::string& app_id) {
   auto* shelf_controller = ChromeShelfController::instance();
   shelf_controller->shelf_model()->UnpinAppWithID(app_id);
+}
+
+apps::mojom::LaunchSource ShelfLaunchSourceToAppsLaunchSource(
+    ash::ShelfLaunchSource source) {
+  switch (source) {
+    case ash::LAUNCH_FROM_UNKNOWN:
+      return apps::mojom::LaunchSource::kUnknown;
+    case ash::LAUNCH_FROM_APP_LIST:
+      return apps::mojom::LaunchSource::kFromAppListGrid;
+    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
+      return apps::mojom::LaunchSource::kFromAppListQuery;
+    case ash::LAUNCH_FROM_APP_LIST_RECOMMENDATION:
+      return apps::mojom::LaunchSource::kFromAppListRecommendation;
+    case ash::LAUNCH_FROM_SHELF:
+      return apps::mojom::LaunchSource::kFromShelf;
+  }
 }

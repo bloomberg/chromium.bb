@@ -10,8 +10,8 @@
 
 #include "base/callback_helpers.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/web_applications/test/test_web_app_file_handler_manager.h"
-#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/fake_web_app_file_handler_manager.h"
+#include "chrome/browser/web_applications/test/fake_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
@@ -21,6 +21,30 @@
 #include "url/gurl.h"
 
 namespace web_app {
+
+TEST(FileHandlerUtilsTest, GetFileExtensionsFromFileHandler) {
+  apps::FileHandler file_handler;
+  file_handler.action = GURL("https://app.site/open-foo");
+  {
+    apps::FileHandler::AcceptEntry accept_entry;
+    accept_entry.mime_type = "application/foo";
+    accept_entry.file_extensions.insert(".foo");
+    file_handler.accept.push_back(accept_entry);
+  }
+  {
+    apps::FileHandler::AcceptEntry accept_entry;
+    accept_entry.mime_type = "application/foobar";
+    accept_entry.file_extensions.insert(".foobar");
+    file_handler.accept.push_back(accept_entry);
+  }
+
+  std::set<std::string> file_extensions =
+      GetFileExtensionsFromFileHandler(file_handler);
+
+  EXPECT_EQ(2u, file_extensions.size());
+  EXPECT_THAT(file_extensions,
+              testing::UnorderedElementsAre(".foo", ".foobar"));
+}
 
 TEST(FileHandlerUtilsTest, GetFileExtensionsFromFileHandlers) {
   apps::FileHandlers file_handlers;
@@ -62,6 +86,28 @@ TEST(FileHandlerUtilsTest, GetFileExtensionsFromFileHandlers) {
   EXPECT_EQ(4u, file_extensions.size());
   EXPECT_THAT(file_extensions,
               testing::UnorderedElementsAre(".foo", ".foobar", ".bar", ".baz"));
+}
+
+TEST(FileHandlerUtilsTest, GetMimeTypesFromFileHandler) {
+  apps::FileHandler file_handler;
+  file_handler.action = GURL("https://app.site/open-foo");
+  {
+    apps::FileHandler::AcceptEntry accept_entry;
+    accept_entry.mime_type = "application/foo";
+    accept_entry.file_extensions.insert(".foo");
+    file_handler.accept.push_back(accept_entry);
+  }
+  {
+    apps::FileHandler::AcceptEntry accept_entry;
+    accept_entry.mime_type = "application/foobar";
+    accept_entry.file_extensions.insert(".foobar");
+    file_handler.accept.push_back(accept_entry);
+  }
+  std::set<std::string> mime_types = GetMimeTypesFromFileHandler(file_handler);
+
+  EXPECT_EQ(2u, mime_types.size());
+  EXPECT_THAT(mime_types, testing::UnorderedElementsAre("application/foo",
+                                                        "application/foobar"));
 }
 
 TEST(FileHandlerUtilsTest, GetMimeTypesFromFileHandlers) {
@@ -119,30 +165,30 @@ class WebAppFileHandlerManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    test_registry_controller_ =
-        std::make_unique<TestWebAppRegistryController>();
-    test_registry_controller_->SetUp(profile());
+    fake_registry_controller_ =
+        std::make_unique<FakeWebAppRegistryController>();
+    fake_registry_controller_->SetUp(profile());
 
     file_handler_manager_ =
-        std::make_unique<TestWebAppFileHandlerManager>(profile());
+        std::make_unique<FakeWebAppFileHandlerManager>(profile());
     file_handler_manager_->SetSubsystems(&app_registrar());
 
     controller().Init();
   }
 
-  TestWebAppFileHandlerManager& file_handler_manager() {
+  FakeWebAppFileHandlerManager& file_handler_manager() {
     return *file_handler_manager_.get();
   }
 
-  TestWebAppRegistryController& controller() {
-    return *test_registry_controller_;
+  FakeWebAppRegistryController& controller() {
+    return *fake_registry_controller_;
   }
 
   WebAppRegistrar& app_registrar() { return controller().registrar(); }
 
  private:
-  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
-  std::unique_ptr<TestWebAppFileHandlerManager> file_handler_manager_;
+  std::unique_ptr<FakeWebAppRegistryController> fake_registry_controller_;
+  std::unique_ptr<FakeWebAppFileHandlerManager> file_handler_manager_;
 
   base::test::ScopedFeatureList features_;
 };
@@ -176,8 +222,8 @@ TEST_F(WebAppFileHandlerManagerTest, FileHandlersAreNotAvailableUnlessEnabled) {
   }
 
   // Ensure they can be disabled.
-  file_handler_manager().DisableAndUnregisterOsFileHandlers(
-      app_id, base::DoNothing::Once<bool>());
+  file_handler_manager().DisableAndUnregisterOsFileHandlers(app_id,
+                                                            base::DoNothing());
 
   {
     const auto* handlers =

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 
 namespace views {
+class Button;
 class ToggleButton;
 class View;
 }  // namespace views
@@ -43,6 +44,9 @@ class ASH_EXPORT BluetoothDetailedViewImpl : public BluetoothDetailedView,
   enum class BluetoothDetailedViewChildId {
     kToggleButton = 1,
     kDisabledView = 2,
+    kSettingsButton = 3,
+    kPairNewDeviceView = 4,
+    kPairNewDeviceButton = 5,
   };
 
   // BluetoothDetailedView:
@@ -54,19 +58,34 @@ class ASH_EXPORT BluetoothDetailedViewImpl : public BluetoothDetailedView,
   void NotifyDeviceListChanged() override;
   views::View* device_list() override;
 
+  // TrayDetailedView:
+  void HandleViewClicked(views::View* view) override;
+
   // views::View:
   const char* GetClassName() const override;
-
-  // Creates and configures the Bluetooth toggle button and the settings button.
-  void CreateTitleRowButtons();
 
   // Creates and configures the Bluetooth disabled view.
   void CreateDisabledView();
 
+  // Creates and configures the pair new device view containing the button and
+  // the following separator line.
+  void CreatePairNewDeviceView();
+
+  // Creates and configures the Bluetooth toggle button and the settings button.
+  void CreateTitleRowButtons();
+
+  // Propagates user interaction with the "pair new device" button.
+  void OnPairNewDeviceRequested();
+
+  // Attempts to close the quick settings and open the Bluetooth settings.
+  void OnSettingsClicked();
+
   // Propagates user interaction with the Bluetooth toggle button.
   void OnToggleClicked();
 
-  views::ToggleButton* toggle_ = nullptr;
+  views::Button* settings_button_ = nullptr;
+  views::ToggleButton* toggle_button_ = nullptr;
+  views::View* pair_new_device_view_ = nullptr;
   BluetoothDisabledDetailedView* disabled_view_ = nullptr;
 
   base::WeakPtrFactory<BluetoothDetailedViewImpl> weak_factory_{this};

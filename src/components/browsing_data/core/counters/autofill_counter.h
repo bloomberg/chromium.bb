@@ -29,6 +29,10 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
                    ResultInt num_credit_cards,
                    ResultInt num_addresses,
                    bool autofill_sync_enabled_);
+
+    AutofillResult(const AutofillResult&) = delete;
+    AutofillResult& operator=(const AutofillResult&) = delete;
+
     ~AutofillResult() override;
 
     ResultInt num_credit_cards() const { return num_credit_cards_; }
@@ -37,13 +41,15 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
    private:
     ResultInt num_credit_cards_;
     ResultInt num_addresses_;
-
-    DISALLOW_COPY_AND_ASSIGN(AutofillResult);
   };
 
   explicit AutofillCounter(
       scoped_refptr<autofill::AutofillWebDataService> web_data_service,
       syncer::SyncService* sync_service);
+
+  AutofillCounter(const AutofillCounter&) = delete;
+  AutofillCounter& operator=(const AutofillCounter&) = delete;
+
   ~AutofillCounter() override;
 
   // BrowsingDataCounter implementation.
@@ -88,8 +94,6 @@ class AutofillCounter : public browsing_data::BrowsingDataCounter,
 
   base::Time period_start_for_testing_;
   base::Time period_end_for_testing_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutofillCounter);
 };
 
 }  // namespace browsing_data

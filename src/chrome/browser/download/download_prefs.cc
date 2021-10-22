@@ -105,6 +105,9 @@ base::FilePath::StringType StringToFilePathString(const std::string& src) {
 
 class DefaultDownloadDirectory {
  public:
+  DefaultDownloadDirectory(const DefaultDownloadDirectory&) = delete;
+  DefaultDownloadDirectory& operator=(const DefaultDownloadDirectory&) = delete;
+
   const base::FilePath& path() const { return path_; }
 
   void Initialize() {
@@ -126,8 +129,6 @@ class DefaultDownloadDirectory {
   DefaultDownloadDirectory() { Initialize(); }
 
   base::FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(DefaultDownloadDirectory);
 };
 
 DefaultDownloadDirectory& GetDefaultDownloadDirectorySingleton() {

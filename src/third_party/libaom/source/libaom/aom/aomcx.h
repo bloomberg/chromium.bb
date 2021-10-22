@@ -1115,6 +1115,7 @@ enum aome_enc_control_id {
    * - 1 = use modulation to maximize objective quality (default)
    * - 2 = use modulation for local test
    * - 3 = use modulation for key frame perceptual quality optimization
+   * - 4 = use modulation for user rating based perceptual quality optimization
    */
   AV1E_SET_DELTAQ_MODE = 107,
 
@@ -1326,7 +1327,7 @@ enum aome_enc_control_id {
   /*!\brief Codec control function to turn on / off D45 to D203 intra mode
    * usage, int parameter
    *
-   * This will enable or disable usage of D45 to D203 intra modes, whic hare a
+   * This will enable or disable usage of D45 to D203 intra modes, which are a
    * subset of directional modes. This control has no effect if directional
    * modes are disabled (AV1E_SET_ENABLE_DIRECTIONAL_INTRA set to 0).
    *
@@ -1370,6 +1371,11 @@ enum aome_enc_control_id {
    * - 1 = enable, search for the best transform size for each block (default)
    */
   AV1E_SET_ENABLE_TX_SIZE_SEARCH = 146,
+
+  /*!\brief Codec control function to set reference frame compound prediction.
+   * aom_svc_ref_frame_comp_pred_t* parameter
+   */
+  AV1E_SET_SVC_REF_FRAME_COMP_PRED = 147,
 
   // Any new encoder control IDs should be added above.
   // Maximum allowed encoder control ID is 229.
@@ -1502,9 +1508,15 @@ typedef struct aom_svc_ref_frame_config {
   int reference[7]; /**< Reference flag for each of the 7 references. */
   /*! Buffer slot index for each of 7 references. */
   int ref_idx[7];
-  int refresh[8];    /**< Refresh flag for each of the 8 slots. */
-  int use_comp_pred; /**< Use compound prediction. */
+  int refresh[8]; /**< Refresh flag for each of the 8 slots. */
 } aom_svc_ref_frame_config_t;
+
+/*!brief Parameters for setting ref frame compound prediction */
+typedef struct aom_svc_ref_frame_comp_pred {
+  // Use compound prediction for the ref_frame pairs GOLDEN_LAST (0),
+  // LAST2_LAST (1), and ALTREF_LAST (2).
+  int use_comp_pred[3]; /**<Compound reference flag. */
+} aom_svc_ref_frame_comp_pred_t;
 
 /*!\cond */
 /*!\brief Encoder control function parameter type
@@ -1919,6 +1931,10 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIRECTIONAL_INTRA, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TX_SIZE_SEARCH, int)
 #define AOM_CTRL_AV1E_SET_ENABLE_TX_SIZE_SEARCH
+
+AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_COMP_PRED,
+                  aom_svc_ref_frame_comp_pred_t *)
+#define AOME_CTRL_AV1E_SET_SVC_REF_FRAME_COMP_PRED
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

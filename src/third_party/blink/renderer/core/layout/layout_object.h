@@ -300,26 +300,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   friend class VisualRectMappingTest;
 
  public:
-#if !BUILDFLAG(USE_V8_OILPAN)
-  // Use a type specific arena for LayoutObject
-  template <typename T>
-  static void* AllocateObject(size_t size) {
-    ThreadState* state =
-        ThreadStateFor<ThreadingTrait<LayoutObject>::kAffinity>::GetState();
-    const char* type_name = "blink::LayoutObject";
-    return state->Heap().AllocateOnArenaIndex(
-        state, size, BlinkGC::kLayoutObjectArenaIndex,
-        GCInfoTrait<GCInfoFoldedType<LayoutObject>>::Index(), type_name);
-  }
-#endif  // !BUILDFLAG(USE_V8_OILPAN)
-
   // Anonymous objects should pass the document as their node, and they will
   // then automatically be marked as anonymous in the constructor.
   explicit LayoutObject(Node*);
   LayoutObject(const LayoutObject&) = delete;
   LayoutObject& operator=(const LayoutObject&) = delete;
   ~LayoutObject() override;
-  virtual void Trace(Visitor*) const;
+  void Trace(Visitor*) const override;
 
 // Should be added at the beginning of every method to ensure we are not
 // accessing a LayoutObject after the Desroy() call.
@@ -1806,6 +1793,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   scoped_refptr<ComputedStyle> GetUncachedPseudoElementStyle(
       const StyleRequest&) const;
 
+  // Returns the ::selection style, which may be stored in StyleCachedData (old
+  // impl) or StyleHighlightData (new impl).
+  // TODO(crbug.com/1024156): inline and remove on shipping HighlightInheritance
+  const ComputedStyle* GetSelectionStyle() const;
+
   LayoutView* View() const {
     NOT_DESTROYED();
     return GetDocument().GetLayoutView();
@@ -2021,7 +2013,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   // Returns false when certain font changes (e.g., font-face rule changes, web
   // font loaded, etc) have occurred, in which case |this| needs relayout.
-  bool IsFontFallbackValid() const;
+  virtual bool IsFontFallbackValid() const;
 
   // Traverses subtree, and marks all layout objects as need relayout, repaint
   // and preferred width recalc. Also invalidates shaping on all text nodes.
@@ -2755,7 +2747,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // destruction and don't waste time doing unnecessary work.
   bool DocumentBeingDestroyed() const;
 
-  void DestroyAndCleanupAnonymousWrappers();
+  void DestroyAndCleanupAnonymousWrappers(bool performing_reattach);
 
   void Destroy();
 
@@ -4617,17 +4609,16 @@ CORE_EXPORT bool IsListBox(const LayoutObject* object);
 
 #if DCHECK_IS_ON()
 // Outside the blink namespace for ease of invocation from gdb.
-CORE_EXPORT void showTree(const blink::LayoutObject*);
-CORE_EXPORT void showLineTree(const blink::LayoutObject*);
-CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1);
+CORE_EXPORT void ShowTree(const blink::LayoutObject*);
+CORE_EXPORT void ShowLineTree(const blink::LayoutObject*);
+CORE_EXPORT void ShowLayoutTree(const blink::LayoutObject* object1);
 // We don't make object2 an optional parameter so that showLayoutTree
 // can be called from gdb easily.
-CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1,
+CORE_EXPORT void ShowLayoutTree(const blink::LayoutObject* object1,
                                 const blink::LayoutObject* object2);
 
 #endif
 
-#if BUILDFLAG(USE_V8_OILPAN)
 namespace cppgc {
 // Assign LayoutObject to be allocated on custom LayoutObjectSpace.
 template <typename T>
@@ -4637,6 +4628,5 @@ struct SpaceTrait<
   using Space = blink::LayoutObjectSpace;
 };
 }  // namespace cppgc
-#endif  // USE_V8_OILPAN
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_

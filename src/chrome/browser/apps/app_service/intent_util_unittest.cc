@@ -15,10 +15,30 @@
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/arc/intent_helper/intent_constants.h"
+#include "components/arc/intent_helper/intent_filter.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
+#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "base/strings/strcat.h"
+#include "chrome/browser/apps/app_service/file_utils.h"
+#include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/browser_task_environment.h"
+#include "extensions/common/extension.h"
+#include "net/base/filename_util.h"
+#include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/file_system_url.h"
+#include "storage/common/file_system/file_system_util.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
+#endif
 
 using apps::mojom::Condition;
 using apps::mojom::ConditionType;
@@ -168,25 +188,14 @@ TEST_F(IntentUtilsTest, CreateShareIntentFromText) {
             apps_util::CreateLaunchIntent("com.android.vending", intent));
 }
 
-TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_ShortcutApp_NoUrlFilter) {
-  auto web_app = web_app::test::CreateMinimalWebApp();
-  // Ensure scope is empty, as in a "Create Shortcut" app.
-  web_app->SetScope(GURL());
-
-  std::vector<IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(*web_app.get());
-
-  EXPECT_EQ(filters.size(), 0);
-}
-
 TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_WebApp_HasUrlFilter) {
-  auto web_app = web_app::test::CreateMinimalWebApp();
+  auto web_app = web_app::test::CreateWebApp();
   DCHECK(web_app->start_url().is_valid());
   GURL scope = web_app->start_url().GetWithoutFilename();
   web_app->SetScope(scope);
 
   std::vector<IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(*web_app.get());
+      apps_util::CreateWebAppIntentFilters(*web_app.get(), scope);
 
   ASSERT_EQ(filters.size(), 1);
   IntentFilterPtr& filter = filters[0];
@@ -239,7 +248,7 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_WebApp_HasUrlFilter) {
 }
 
 TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_FileHandlers) {
-  auto web_app = web_app::test::CreateMinimalWebApp();
+  auto web_app = web_app::test::CreateWebApp();
   DCHECK(web_app->start_url().is_valid());
   GURL scope = web_app->start_url().GetWithoutFilename();
   web_app->SetScope(scope);
@@ -255,48 +264,34 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_FileHandlers) {
   web_app->SetFileHandlers(file_handlers);
 
   std::vector<IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(*web_app.get());
+      apps_util::CreateWebAppIntentFilters(*web_app.get(), scope);
 
-  ASSERT_EQ(filters.size(), 3);
+  ASSERT_EQ(filters.size(), 2);
   // 1st filter is URL filter.
 
-  // Mime type filter - View action
-  const IntentFilterPtr& mime_filter = filters[1];
-  ASSERT_EQ(mime_filter->conditions.size(), 2);
-  const Condition& view_cond = *mime_filter->conditions[0];
+  // File filter - View action
+  const IntentFilterPtr& file_filter = filters[1];
+  ASSERT_EQ(file_filter->conditions.size(), 2);
+  const Condition& view_cond = *file_filter->conditions[0];
   EXPECT_EQ(view_cond.condition_type, ConditionType::kAction);
   ASSERT_EQ(view_cond.condition_values.size(), 1);
   EXPECT_EQ(view_cond.condition_values[0]->value, apps_util::kIntentActionView);
 
-  // Mime type filter - mime type match
-  const Condition& mime_cond = *mime_filter->conditions[1];
-  EXPECT_EQ(mime_cond.condition_type, ConditionType::kMimeType);
-  ASSERT_EQ(mime_cond.condition_values.size(), 1);
-  EXPECT_EQ(mime_cond.condition_values[0]->match_type,
+  // File filter - mime & file extension match
+  const Condition& file_cond = *file_filter->conditions[1];
+  EXPECT_EQ(file_cond.condition_type, ConditionType::kFile);
+  ASSERT_EQ(file_cond.condition_values.size(), 2);
+  EXPECT_EQ(file_cond.condition_values[0]->match_type,
             PatternMatchType::kMimeType);
-  EXPECT_EQ(mime_cond.condition_values[0]->value, "text/plain");
-
-  // File extension filter - View action
-  const IntentFilterPtr& file_ext_filter = filters[2];
-  ASSERT_EQ(file_ext_filter->conditions.size(), 2);
-  const Condition& view_cond2 = *file_ext_filter->conditions[0];
-  EXPECT_EQ(view_cond2.condition_type, ConditionType::kAction);
-  ASSERT_EQ(view_cond2.condition_values.size(), 1);
-  EXPECT_EQ(view_cond2.condition_values[0]->value,
-            apps_util::kIntentActionView);
-
-  // File extension filter - file extension match
-  const Condition& file_ext_cond = *file_ext_filter->conditions[1];
-  EXPECT_EQ(file_ext_cond.condition_type, ConditionType::kFileExtension);
-  ASSERT_EQ(file_ext_cond.condition_values.size(), 1);
-  EXPECT_EQ(file_ext_cond.condition_values[0]->match_type,
+  EXPECT_EQ(file_cond.condition_values[0]->value, "text/plain");
+  EXPECT_EQ(file_cond.condition_values[1]->match_type,
             PatternMatchType::kFileExtension);
-  EXPECT_EQ(file_ext_cond.condition_values[0]->value, ".txt");
+  EXPECT_EQ(file_cond.condition_values[1]->value, ".txt");
 }
 
 TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_NoteTakingApp) {
   base::test::ScopedFeatureList features{blink::features::kWebAppNoteTaking};
-  auto web_app = web_app::test::CreateMinimalWebApp();
+  auto web_app = web_app::test::CreateWebApp();
   DCHECK(web_app->start_url().is_valid());
   GURL scope = web_app->start_url().GetWithoutFilename();
   web_app->SetScope(scope);
@@ -304,7 +299,7 @@ TEST_F(IntentUtilsTest, CreateWebAppIntentFilters_NoteTakingApp) {
   web_app->SetNoteTakingNewNoteUrl(new_note_url);
 
   std::vector<IntentFilterPtr> filters =
-      apps_util::CreateWebAppIntentFilters(*web_app.get());
+      apps_util::CreateWebAppIntentFilters(*web_app.get(), scope);
 
   ASSERT_EQ(filters.size(), 2);
 
@@ -359,3 +354,264 @@ TEST_F(IntentUtilsTest, CreateShareIntentFromFiles_GetFileUrls) {
             apps_util::CreateLaunchIntent("com.android.vending",
                                           intent_with_text_and_title));
 }
+
+TEST_F(IntentUtilsTest, CreateChromeAppIntentFilters_FileHandlers) {
+  // Foo app provides file handler for text/plain and all file types.
+  extensions::ExtensionBuilder foo_app;
+  foo_app.SetManifest(
+      extensions::DictionaryBuilder()
+          .Set("name", "Foo")
+          .Set("version", "1.0.0")
+          .Set("manifest_version", 2)
+          .Set("app", extensions::DictionaryBuilder()
+                          .Set("background",
+                               extensions::DictionaryBuilder()
+                                   .Set("scripts", extensions::ListBuilder()
+                                                       .Append("background.js")
+                                                       .Build())
+                                   .Build())
+                          .Build())
+          .Set(
+              "file_handlers",
+              extensions::DictionaryBuilder()
+                  .Set("any",
+                       extensions::DictionaryBuilder()
+                           .Set("types",
+                                extensions::ListBuilder().Append("*/*").Build())
+                           .Build())
+                  .Set("text",
+                       extensions::DictionaryBuilder()
+                           .Set("types", extensions::ListBuilder()
+                                             .Append("text/plain")
+                                             .Build())
+                           .Set("extensions",
+                                extensions::ListBuilder().Append("txt").Build())
+                           .Set("verb", "open_with")
+                           .Build())
+                  .Build())
+          .Build());
+  foo_app.SetID("abcdzxcv");
+  scoped_refptr<const extensions::Extension> foo = foo_app.Build();
+
+  std::vector<IntentFilterPtr> filters =
+      apps_util::CreateChromeAppIntentFilters(foo.get());
+
+  ASSERT_EQ(filters.size(), 2);
+
+  // "any" filter - View action
+  const IntentFilterPtr& mime_filter = filters[0];
+  ASSERT_EQ(mime_filter->conditions.size(), 2);
+  const Condition& view_cond = *mime_filter->conditions[0];
+  EXPECT_EQ(view_cond.condition_type, ConditionType::kAction);
+  ASSERT_EQ(view_cond.condition_values.size(), 1);
+  EXPECT_EQ(view_cond.condition_values[0]->value, apps_util::kIntentActionView);
+
+  // "any" filter - mime type match
+  const Condition& file_cond = *mime_filter->conditions[1];
+  EXPECT_EQ(file_cond.condition_type, ConditionType::kFile);
+  ASSERT_EQ(file_cond.condition_values.size(), 1);
+  EXPECT_EQ(file_cond.condition_values[0]->match_type,
+            PatternMatchType::kMimeType);
+  EXPECT_EQ(file_cond.condition_values[0]->value, "*/*");
+
+  // Text filter - View action
+  const IntentFilterPtr& mime_filter2 = filters[1];
+  ASSERT_EQ(mime_filter2->conditions.size(), 2);
+  const Condition& view_cond2 = *mime_filter2->conditions[0];
+  EXPECT_EQ(view_cond2.condition_type, ConditionType::kAction);
+  ASSERT_EQ(view_cond2.condition_values.size(), 1);
+  EXPECT_EQ(view_cond2.condition_values[0]->value,
+            apps_util::kIntentActionView);
+
+  // Text filter - mime type match
+  const Condition& file_cond2 = *mime_filter2->conditions[1];
+  EXPECT_EQ(file_cond2.condition_type, ConditionType::kFile);
+  ASSERT_EQ(file_cond2.condition_values.size(), 2);
+  EXPECT_EQ(file_cond2.condition_values[0]->match_type,
+            PatternMatchType::kMimeType);
+  EXPECT_EQ(file_cond2.condition_values[0]->value, "text/plain");
+  // Text filter - file extension match
+  EXPECT_EQ(file_cond2.condition_values[1]->match_type,
+            PatternMatchType::kFileExtension);
+  EXPECT_EQ(file_cond2.condition_values[1]->value, "txt");
+}
+
+// Converting an Arc Intent filter for a URL view intent filter should add a
+// condition covering every possible path.
+TEST_F(IntentUtilsTest, ConvertArcIntentFilter_AddsMissingPath) {
+  const char* kPackageName = "com.foo.bar";
+  const char* kHost = "www.google.com";
+  const char* kPath = "/";
+  const char* kScheme = "https";
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities1;
+  authorities1.emplace_back(kHost, 0);
+  std::vector<arc::IntentFilter::PatternMatcher> patterns;
+  patterns.emplace_back(kPath, arc::mojom::PatternType::PATTERN_PREFIX);
+
+  arc::IntentFilter filter_with_path(kPackageName, {arc::kIntentActionView},
+                                     std::move(authorities1),
+                                     std::move(patterns), {kScheme}, {});
+
+  IntentFilterPtr app_service_filter1 =
+      apps_util::ConvertArcToAppServiceIntentFilter(filter_with_path);
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities2;
+  authorities2.emplace_back(kHost, 0);
+  arc::IntentFilter filter_without_path(kPackageName, {arc::kIntentActionView},
+                                        std::move(authorities2), {}, {kScheme},
+                                        {});
+
+  IntentFilterPtr app_service_filter2 =
+      apps_util::ConvertArcToAppServiceIntentFilter(filter_without_path);
+
+  ASSERT_EQ(app_service_filter1, app_service_filter2);
+}
+
+TEST_F(IntentUtilsTest, ConvertArcIntentFilter_ConvertsSimpleGlobToPrefix) {
+  const char* kPackageName = "com.foo.bar";
+  const char* kHost = "www.google.com";
+  const char* kScheme = "https";
+
+  std::vector<arc::IntentFilter::AuthorityEntry> authorities;
+  authorities.emplace_back(kHost, 0);
+
+  std::vector<arc::IntentFilter::PatternMatcher> patterns;
+
+  patterns.emplace_back("/foo.*", arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+  patterns.emplace_back(".*", arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+  patterns.emplace_back("/foo/.*/bar",
+                        arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+  patterns.emplace_back("/..*", arc::mojom::PatternType::PATTERN_SIMPLE_GLOB);
+
+  arc::IntentFilter filter_with_path(kPackageName, {arc::kIntentActionView},
+                                     std::move(authorities),
+                                     std::move(patterns), {kScheme}, {});
+
+  IntentFilterPtr app_service_filter =
+      apps_util::ConvertArcToAppServiceIntentFilter(filter_with_path);
+
+  for (auto& condition : app_service_filter->conditions) {
+    if (condition->condition_type == apps::mojom::ConditionType::kPattern) {
+      EXPECT_EQ(4u, condition->condition_values.size());
+      EXPECT_EQ(apps_util::MakeConditionValue(
+                    "/foo", apps::mojom::PatternMatchType::kPrefix),
+                condition->condition_values[0]);
+      EXPECT_EQ(apps_util::MakeConditionValue(
+                    std::string(), apps::mojom::PatternMatchType::kPrefix),
+                condition->condition_values[1]);
+      EXPECT_EQ(apps_util::MakeConditionValue(
+                    "/foo/.*/bar", apps::mojom::PatternMatchType::kGlob),
+                condition->condition_values[2]);
+      EXPECT_EQ(apps_util::MakeConditionValue(
+                    "/..*", apps::mojom::PatternMatchType::kGlob),
+                condition->condition_values[3]);
+    }
+  }
+}
+
+#if defined(OS_CHROMEOS)
+TEST_F(IntentUtilsTest, CrosapiIntentConversion) {
+  apps::mojom::IntentPtr original_intent =
+      apps_util::CreateIntentFromUrl(GURL("www.google.com"));
+  auto crosapi_intent = apps_util::ConvertAppServiceToCrosapiIntent(
+      original_intent, absl::nullopt);
+  auto converted_intent = apps_util::ConvertCrosapiToAppServiceIntent(
+      crosapi_intent, absl::nullopt);
+  EXPECT_EQ(original_intent, converted_intent);
+
+  original_intent = apps_util::CreateShareIntentFromText("text", "title");
+  crosapi_intent = apps_util::ConvertAppServiceToCrosapiIntent(original_intent,
+                                                               absl::nullopt);
+  converted_intent = apps_util::ConvertCrosapiToAppServiceIntent(crosapi_intent,
+                                                                 absl::nullopt);
+  EXPECT_EQ(original_intent, converted_intent);
+}
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class IntentUtilsFileTest : public ::testing::Test {
+ public:
+  void SetUp() override {
+    testing::Test::SetUp();
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
+    profile_ = profile_manager_->CreateTestingProfile("testing_profile");
+    ASSERT_TRUE(
+        storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+            mount_name_, storage::FileSystemType::kFileSystemTypeExternal,
+            storage::FileSystemMountOption(), base::FilePath(fs_root_)));
+  }
+
+  void TearDown() override {
+    ASSERT_TRUE(
+        storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+            mount_name_));
+    profile_manager_->DeleteAllTestingProfiles();
+    profile_ = nullptr;
+    profile_manager_.reset();
+  }
+
+  TestingProfile* GetProfile() { return profile_; }
+
+  // FileUtils explicitly relies on ChromeOS Files.app for files manipulation.
+  const url::Origin GetFileManagerOrigin() {
+    return url::Origin::Create(extensions::Extension::GetBaseURLFromExtensionId(
+        file_manager::kFileManagerAppId));
+  }
+
+  // For a given |root| converts the given virtual |path| to a GURL.
+  GURL ToGURL(const base::FilePath& root, const std::string& path) {
+    const std::string abs_path = root.Append(path).value();
+    return GURL(base::StrCat({url::kFileSystemScheme, ":",
+                              GetFileManagerOrigin().Serialize(), abs_path}));
+  }
+
+ protected:
+  const std::string mount_name_ = "TestMountName";
+  const std::string fs_root_ = "/path/to/test/filesystemroot";
+
+ private:
+  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  TestingProfile* profile_;
+};
+
+TEST_F(IntentUtilsFileTest, AppServiceIntentToCrosapi) {
+  auto app_service_intent = apps::mojom::Intent::New();
+  app_service_intent->action = "action";
+  app_service_intent->mime_type = "mime_type";
+  const std::string path = "Documents/foo.txt";
+  auto url = ToGURL(base::FilePath(storage::kTestDir), path);
+  app_service_intent->files = std::vector<apps::mojom::IntentFilePtr>{};
+  auto file = apps::mojom::IntentFile::New();
+  file->url = url;
+  app_service_intent->files->push_back(std::move(file));
+  auto crosapi_intent = apps_util::ConvertAppServiceToCrosapiIntent(
+      app_service_intent, GetProfile());
+  EXPECT_EQ(app_service_intent->action, crosapi_intent->action);
+  EXPECT_EQ(app_service_intent->mime_type, crosapi_intent->mime_type);
+  ASSERT_TRUE(crosapi_intent->files.has_value());
+  ASSERT_EQ(crosapi_intent->files.value().size(), 1U);
+  EXPECT_EQ(crosapi_intent->files.value()[0]->file_path, base::FilePath(path));
+}
+
+TEST_F(IntentUtilsFileTest, CrosapiIntentToAppService) {
+  const std::string path = "Documents/foo.txt";
+  auto file_path = base::FilePath(fs_root_).Append(path);
+  auto file_paths = apps::mojom::FilePaths::New();
+  file_paths->file_paths.push_back(file_path);
+  auto crosapi_intent = apps_util::CreateCrosapiIntentForViewFiles(file_paths);
+
+  auto app_service_intent =
+      apps_util::ConvertCrosapiToAppServiceIntent(crosapi_intent, GetProfile());
+  EXPECT_EQ(app_service_intent->action, crosapi_intent->action);
+  EXPECT_EQ(app_service_intent->mime_type, crosapi_intent->mime_type);
+  ASSERT_TRUE(crosapi_intent->files.has_value());
+  ASSERT_EQ(crosapi_intent->files.value().size(), 1U);
+  EXPECT_EQ(
+      app_service_intent->files.value()[0]->url,
+      ToGURL(base::FilePath(storage::kExternalDir).Append(mount_name_), path));
+}
+#endif

@@ -6,7 +6,6 @@
 
 #include "base/one_shot_event.h"
 #include "build/build_config.h"
-#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/preinstalled_apps.h"
 #include "chrome/browser/profiles/profile.h"
@@ -110,12 +109,12 @@ void OnExtensionSystemReady(content::BrowserContext* context,
 }
 
 bool DidPreinstalledAppsPerformNewInstallation(Profile* profile) {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !defined(OS_CHROMEOS)
   return preinstalled_apps::Provider::DidPerformNewInstallationForProfile(
       profile);
 #else
   return false;
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // defined(OS_CHROMEOS)
 }
 
 bool IsPreinstalledAppId(const std::string& app_id) {
@@ -123,9 +122,11 @@ bool IsPreinstalledAppId(const std::string& app_id) {
       app_id == g_preinstalled_app_for_testing)
     return true;
 
-  return app_id == extension_misc::kGmailAppId ||
+  // Also update the duplicated function in extensions/common/constants.cc when
+  // changing the logic here.
+  return app_id == extension_misc::kGMailAppId ||
          app_id == extension_misc::kGoogleDocAppId ||
-         app_id == extension_misc::kDriveHostedAppId ||
+         app_id == extension_misc::kGoogleDriveAppId ||
          app_id == extension_misc::kGoogleSheetsAppId ||
          app_id == extension_misc::kGoogleSlidesAppId ||
          app_id == extension_misc::kYoutubeAppId;

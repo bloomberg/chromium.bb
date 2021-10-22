@@ -35,7 +35,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_installation.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -149,16 +149,12 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest,
   // In scope, the toolbar should not be visible.
   EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
 
-  // Because the first part of the url is on a different origin (settings vs.
-  // foo) a toolbar would normally be shown. However, because settings is a
-  // SystemWebApp and foo is served via chrome:// it is okay not to show the
-  // toolbar.
-  GURL out_of_scope_chrome_page(content::kChromeUIScheme +
-                                std::string("://foo"));
+  // Out of scope chrome:// URL.
+  GURL out_of_scope_chrome_page("chrome://foo");
   content::NavigateToURLBlockUntilNavigationsComplete(
       app_browser->tab_strip_model()->GetActiveWebContents(),
       out_of_scope_chrome_page, 1);
-  EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
+  EXPECT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
 
   // Even though the url is secure it is not being served over chrome:// so a
   // toolbar should be shown.
@@ -1571,7 +1567,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
 
   auto& tasks = GetManager().GetBackgroundTasksForTesting();
   auto* timer = tasks[0]->get_timer_for_testing();
-  EXPECT_EQ(base::TimeDelta::FromSeconds(120), timer->GetCurrentDelay());
+  EXPECT_EQ(base::Seconds(120), timer->GetCurrentDelay());
   EXPECT_EQ(SystemAppBackgroundTask::INITIAL_WAIT,
             tasks[0]->get_state_for_testing());
   // The "Immediate" timer waits for 2 minutes, and it's really hard to mock
@@ -1583,11 +1579,11 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBackgroundTaskTest, TimerFires) {
   EXPECT_TRUE(timer->IsRunning());
   EXPECT_EQ(1u, tasks.size());
   EXPECT_TRUE(tasks[0]->open_immediately_for_testing());
-  EXPECT_EQ(base::TimeDelta::FromDays(1), tasks[0]->period_for_testing());
+  EXPECT_EQ(base::Days(1), tasks[0]->period_for_testing());
   EXPECT_EQ(1u, tasks[0]->timer_activated_count_for_testing());
   EXPECT_EQ(SystemAppBackgroundTask::WAIT_PERIOD,
             tasks[0]->get_state_for_testing());
-  EXPECT_EQ(base::TimeDelta::FromDays(1), timer->GetCurrentDelay());
+  EXPECT_EQ(base::Days(1), timer->GetCurrentDelay());
 
   histograms.ExpectTotalCount("Webapp.SystemApps.BackgroundTaskStartDelay", 1);
   histograms.ExpectUniqueSample("Webapp.SystemApps.BackgroundTaskStartDelay", 0,

@@ -21,6 +21,10 @@ const Feature kPartitionAllocPCScan{"PartitionAllocPCScan",
 const Feature kPartitionAllocPCScanBrowserOnly{
     "PartitionAllocPCScanBrowserOnly", FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, PCScan is turned on only for the renderer's malloc partition.
+const Feature kPartitionAllocPCScanRendererOnly{
+    "PartitionAllocPCScanRendererOnly", FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, this instance belongs to the Control group of the BackupRefPtr
 // binary experiment.
 const Feature kPartitionAllocBackupRefPtrControl{
@@ -28,7 +32,22 @@ const Feature kPartitionAllocBackupRefPtrControl{
 
 // Use a larger maximum thread cache cacheable bucket size.
 const Feature kPartitionAllocLargeThreadCacheSize{
-    "PartitionAllocLargeThreadCacheSize", FEATURE_DISABLED_BY_DEFAULT};
+    "PartitionAllocLargeThreadCacheSize", FEATURE_ENABLED_BY_DEFAULT};
+
+const Feature kPartitionAllocBackupRefPtr{"PartitionAllocBackupRefPtr",
+                                          FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
+    kBackupRefPtrEnabledProcessesOptions[] = {
+        {BackupRefPtrEnabledProcesses::kBrowserOnly, "browser-only"},
+        {BackupRefPtrEnabledProcesses::kBrowserAndRenderer,
+         "browser-and-renderer"}};
+
+const base::FeatureParam<BackupRefPtrEnabledProcesses>
+    kBackupRefPtrEnabledProcessesParam{
+        &kPartitionAllocBackupRefPtr, "enabled-processes",
+        BackupRefPtrEnabledProcesses::kBrowserOnly,
+        &kBackupRefPtrEnabledProcessesOptions};
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 

@@ -61,8 +61,7 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 // The amount of time to wait before destroying the signal strategy.  This delay
 // ensures there is time for the session-terminate message to be sent.
-constexpr base::TimeDelta kDestroySignalingDelay =
-    base::TimeDelta::FromSeconds(2);
+constexpr base::TimeDelta kDestroySignalingDelay = base::Seconds(2);
 
 }  // namespace
 
@@ -163,7 +162,7 @@ void It2MeHost::ConnectOnNetworkThread(
     // isn't anything we need to do in this case since a new token will be
     // generated for the next connection.
     ftl_signaling_connector_ = std::make_unique<FtlSignalingConnector>(
-        signal_strategy_.get(), base::DoNothing::Once());
+        signal_strategy_.get(), base::DoNothing());
     ftl_signaling_connector_->Start();
   }
 

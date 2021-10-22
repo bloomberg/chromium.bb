@@ -75,6 +75,10 @@ class CORE_EXPORT ScriptStreamer final
       mojo::ScopedDataPipeConsumerHandle data_pipe,
       ResponseBodyLoaderClient* response_body_loader_client,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);
+
+  ScriptStreamer(const ScriptStreamer&) = delete;
+  ScriptStreamer& operator=(const ScriptStreamer&) = delete;
+
   ~ScriptStreamer();
   void Trace(Visitor*) const;
 
@@ -123,10 +127,6 @@ class CORE_EXPORT ScriptStreamer final
     return script_resource_identifier_;
   }
 
-  static void SetSmallScriptThresholdForTesting(size_t threshold) {
-    small_script_threshold_ = threshold;
-  }
-
  private:
   friend class SourceStream;
 
@@ -155,8 +155,8 @@ class CORE_EXPORT ScriptStreamer final
   }
 
   // Scripts whose first data chunk is smaller than this constant won't be
-  // streamed. Non-const for testing.
-  static size_t small_script_threshold_;
+  // streamed, unless small script streaming is enabled.
+  static constexpr size_t kSmallScriptThreshold = 30 * 1024;
   // Maximum size of the BOM marker.
   static constexpr size_t kMaximumLengthOfBOM = 4;
 
@@ -238,8 +238,6 @@ class CORE_EXPORT ScriptStreamer final
   v8::ScriptType script_type_;
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScriptStreamer);
 };
 
 }  // namespace blink

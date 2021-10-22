@@ -44,6 +44,10 @@ class CONTENT_EXPORT ContentMainRunnerImpl : public ContentMainRunner {
   static std::unique_ptr<ContentMainRunnerImpl> Create();
 
   ContentMainRunnerImpl();
+
+  ContentMainRunnerImpl(const ContentMainRunnerImpl&) = delete;
+  ContentMainRunnerImpl& operator=(const ContentMainRunnerImpl&) = delete;
+
   ~ContentMainRunnerImpl() override;
 
   int TerminateForFatalInitializationError();
@@ -97,8 +101,6 @@ class CONTENT_EXPORT ContentMainRunnerImpl : public ContentMainRunner {
   base::OnceClosure* ui_task_ = nullptr;
 
   CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };
 
 // The BrowserTestBase on Android does not call ContentMain(). It tries instead

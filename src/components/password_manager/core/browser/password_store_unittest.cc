@@ -15,14 +15,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/os_crypt/os_crypt_mocker.h"
-#include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
 #include "components/password_manager/core/browser/fake_password_store_backend.h"
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
@@ -36,6 +34,8 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_impl.h"
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
+#include "components/password_manager/core/browser/site_affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -94,6 +94,10 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
   MockPasswordStoreConsumer() = default;
 
+  MockPasswordStoreConsumer(const MockPasswordStoreConsumer&) = delete;
+  MockPasswordStoreConsumer& operator=(const MockPasswordStoreConsumer&) =
+      delete;
+
   MOCK_METHOD1(OnGetPasswordStoreResultsConstRef,
                void(const std::vector<std::unique_ptr<PasswordForm>>&));
   MOCK_METHOD1(OnGetAllFieldInfo, void(const std::vector<FieldInfo>));
@@ -103,9 +107,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
       std::vector<std::unique_ptr<PasswordForm>> results) override {
     OnGetPasswordStoreResultsConstRef(results);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordStoreConsumer);
 };
 
 class MockPasswordStoreSigninNotifier : public PasswordStoreSigninNotifier {
@@ -152,18 +153,17 @@ class MockMetadataStore : public PasswordStoreSync::MetadataStore {
   }
 };
 
-class PasswordStoreWithMockedMetadataStore : public PasswordStoreImpl {
+class BackendImplWithMockedMetadataStore : public PasswordStoreImpl {
  public:
-  using PasswordStoreImpl::PasswordStoreImpl;
+  explicit BackendImplWithMockedMetadataStore(
+      std::unique_ptr<LoginDatabase> login_database)
+      : PasswordStoreImpl(std::move(login_database)) {}
 
   PasswordStoreSync::MetadataStore* GetMetadataStore() override {
     return &metadata_store_;
   }
 
-  MockMetadataStore& GetMockedMetadataStore() { return metadata_store_; }
-
  private:
-  ~PasswordStoreWithMockedMetadataStore() override = default;
   MockMetadataStore metadata_store_;
 };
 
@@ -199,6 +199,10 @@ PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
 }  // namespace
 
 class PasswordStoreTest : public testing::Test {
+ public:
+  PasswordStoreTest(const PasswordStoreTest&) = delete;
+  PasswordStoreTest& operator=(const PasswordStoreTest&) = delete;
+
  protected:
   PasswordStoreTest() = default;
 
@@ -222,17 +226,19 @@ class PasswordStoreTest : public testing::Test {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
-  scoped_refptr<PasswordStoreImpl> CreatePasswordStore() {
-    return new PasswordStoreImpl(std::make_unique<LoginDatabase>(
-        test_login_db_file_path(), password_manager::IsAccountStore(false)));
+  scoped_refptr<PasswordStore> CreatePasswordStore() {
+    return new PasswordStore(
+        std::make_unique<PasswordStoreImpl>(std::make_unique<LoginDatabase>(
+            test_login_db_file_path(),
+            password_manager::IsAccountStore(false))));
   }
 
-  scoped_refptr<PasswordStoreWithMockedMetadataStore>
-  CreatePasswordStoreWithMockedMetaData() {
-    return base::MakeRefCounted<PasswordStoreWithMockedMetadataStore>(
-        std::make_unique<LoginDatabase>(
-            test_login_db_file_path(),
-            password_manager::IsAccountStore(false)));
+  scoped_refptr<PasswordStore> CreatePasswordStoreWithMockedMetaData() {
+    return base::MakeRefCounted<PasswordStore>(
+        std::make_unique<BackendImplWithMockedMetadataStore>(
+            std::make_unique<LoginDatabase>(
+                test_login_db_file_path(),
+                password_manager::IsAccountStore(false))));
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
@@ -246,8 +252,6 @@ class PasswordStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   TestingPrefServiceSimple pref_service_;
   base::test::ScopedFeatureList feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
 
 absl::optional<PasswordHashData> GetPasswordFromPref(
@@ -279,7 +283,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
        u"", kTestLastUsageTime, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::unique_ptr<PasswordForm> old_form(
@@ -337,7 +341,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
        u"", kTestLastUsageTime, 1};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::unique_ptr<PasswordForm> test_form(
@@ -363,7 +367,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
 // Verify that when a login password is updated that the corresponding row is
 // removed from the insecure credentials table.
 TEST_F(PasswordStoreTest, InsecureCredentialsObserverOnLoginUpdated) {
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   /* clang-format off */
@@ -408,7 +412,7 @@ TEST_F(PasswordStoreTest, InsecureCredentialsObserverOnLoginAdded) {
   InsecureCredential insecure_credential(kTestWebRealm1, u"username_value_1",
                                          base::Time::FromTimeT(1),
                                          InsecureType::kLeaked, IsMuted(false));
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   /* clang-format off */
@@ -459,7 +463,7 @@ TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialAdded) {
                                                  u"password",
                                                  kTestLastUsageTime,
                                                  1};
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
   std::unique_ptr<PasswordForm> test_form(
       FillPasswordFormWithData(kTestCredentials));
@@ -499,7 +503,7 @@ TEST_F(PasswordStoreTest, InsecurePasswordObserverOnInsecureCredentialRemoved) {
                                          base::Time::FromTimeT(1),
                                          InsecureType::kLeaked, IsMuted(false));
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
   std::unique_ptr<PasswordForm> test_form(
       FillPasswordFormWithData(kTestCredentials));
@@ -557,7 +561,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithPSL) {
           false,
       }};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -602,7 +606,7 @@ TEST_F(PasswordStoreTest, GetLoginsPSLDisabled) {
        "https://some.other.google.com/path", "", u"", u"", u"", u"username_2",
        u"123456"}};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -653,7 +657,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
        u"", kTestLastUsageTime, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -676,7 +680,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   }
 
   std::vector<std::string> no_affiliated_android_realms;
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       observed_form, no_affiliated_android_realms);
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
@@ -752,7 +758,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
           false,
       }};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -792,7 +798,9 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
   affiliated_android_realms.push_back(kTestAndroidRealm2);
   affiliated_android_realms.push_back(kTestAndroidRealm3);
 
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(
       observed_form, affiliated_android_realms);
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
@@ -808,7 +816,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
 }
 
 TEST_F(PasswordStoreTest, GetLoginsWithBrandingInformationForExactMatch) {
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
   PasswordFormData form_data = {PasswordForm::Scheme::kHtml,
                                 kTestWebRealm1,
@@ -831,11 +839,13 @@ TEST_F(PasswordStoreTest, GetLoginsWithBrandingInformationForExactMatch) {
   std::vector<std::unique_ptr<PasswordForm>> expected_results;
   expected_results.push_back(std::make_unique<PasswordForm>(*credential));
 
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
-  std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
+  std::vector<MockAffiliationService::AffiliationAndBrandingInformation>
       affiliation_info_for_results = {
           {kTestWebRealm1, kTestAndroidName1, GURL(kTestAndroidIconURL1)}};
-  mock_helper->ExpectCallToInjectAffiliationAndBrandingInformation(
+  mock_affiliation_service->ExpectCallToInjectAffiliationAndBrandingInformation(
       affiliation_info_for_results);
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
 
@@ -854,7 +864,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithBrandingInformationForExactMatch) {
 }
 
 TEST_F(PasswordStoreTest, GetLoginsWithBrandingInformationForAffiliatedLogins) {
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
   PasswordFormData form_data = {PasswordForm::Scheme::kHtml,
                                 kTestAndroidRealm1,
@@ -878,13 +888,15 @@ TEST_F(PasswordStoreTest, GetLoginsWithBrandingInformationForAffiliatedLogins) {
   expected_results.push_back(std::make_unique<PasswordForm>(*credential));
   expected_results[0]->is_affiliation_based_match = true;
 
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(observed_form,
                                                       {kTestAndroidRealm1});
-  std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
+  std::vector<MockAffiliationService::AffiliationAndBrandingInformation>
       affiliation_info_for_results = {
           {kTestWebRealm1, kTestAndroidName1, GURL(kTestAndroidIconURL1)}};
-  mock_helper->ExpectCallToInjectAffiliationAndBrandingInformation(
+  mock_affiliation_service->ExpectCallToInjectAffiliationAndBrandingInformation(
       affiliation_info_for_results);
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
 
@@ -938,7 +950,7 @@ TEST_P(PasswordStoreFederationTest, GetLoginsWithWebAffiliations) {
        kTestUnrelatedWebOrigin2, "", u"", u"", u"", u"username_6",
        u"password2"}};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -970,7 +982,9 @@ TEST_P(PasswordStoreFederationTest, GetLoginsWithWebAffiliations) {
   std::vector<std::string> affiliated_realms = {kTestWebRealm1, kTestWebRealm2,
                                                 kTestAffiliatedRealm};
 
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(observed_form,
                                                       affiliated_realms);
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
@@ -1040,7 +1054,7 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
       {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", u"",
        u"", u"", nullptr, u"", kTestLastUsageTime, 1}};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -1098,7 +1112,7 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   for (const auto& credential : all_credentials)
     expected_results.push_back(std::make_unique<PasswordForm>(*credential));
 
-  std::vector<MockAffiliatedMatchHelper::AffiliationAndBrandingInformation>
+  std::vector<MockAffiliationService::AffiliationAndBrandingInformation>
       affiliation_info_for_results = {
           {kTestWebRealm1, kTestAndroidName1, GURL(kTestAndroidIconURL1)},
           {kTestWebRealm2, kTestAndroidName2, GURL(kTestAndroidIconURL2)},
@@ -1107,8 +1121,10 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
           {/* Pretend affiliation or branding info is unavailable. */},
           {/* Pretend affiliation or branding info is unavailable. */}};
 
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
-  mock_helper->ExpectCallToInjectAffiliationAndBrandingInformation(
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
+  mock_affiliation_service->ExpectCallToInjectAffiliationAndBrandingInformation(
       affiliation_info_for_results);
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
   for (size_t i = 0; i < expected_results.size(); ++i) {
@@ -1168,7 +1184,7 @@ TEST_F(PasswordStoreTest, Unblocklisting) {
        kTestUnrelatedWebOrigin2, "", u"", u"", u"", u"username", u"",
        kTestLastUsageTime, 1}};
 
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -1209,7 +1225,7 @@ TEST_F(PasswordStoreTest, Unblocklisting) {
 // Test that updating a password in the store deletes the corresponding
 // insecure credential synchronously.
 TEST_F(PasswordStoreTest, RemoveInsecureCredentialsSyncOnUpdate) {
-  scoped_refptr<PasswordStoreImpl> store = CreatePasswordStore();
+  scoped_refptr<PasswordStore> store = CreatePasswordStore();
   store->Init(nullptr);
 
   constexpr PasswordFormData kTestCredential = {PasswordForm::Scheme::kHtml,
@@ -1318,8 +1334,7 @@ TEST_F(PasswordStoreTest, RemoveFieldInfo) {
 #endif  // !defined(OS_ANDROID)
 
 TEST_F(PasswordStoreTest, TestGetLoginRequestCancelable) {
-  scoped_refptr<PasswordStoreWithMockedMetadataStore> store =
-      CreatePasswordStoreWithMockedMetaData();
+  scoped_refptr<PasswordStore> store = CreatePasswordStoreWithMockedMetaData();
   store->Init(nullptr);
   WaitForPasswordStore();
 
@@ -1330,7 +1345,9 @@ TEST_F(PasswordStoreTest, TestGetLoginRequestCancelable) {
                                       kTestWebRealm1, GURL(kTestWebRealm1)};
 
   // Add affiliated android form corresponding to a 'observed_form'.
-  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>();
+  auto mock_affiliation_service = std::make_unique<MockAffiliationService>();
+  auto mock_helper = std::make_unique<MockAffiliatedMatchHelper>(
+      store.get(), mock_affiliation_service.get());
   mock_helper->ExpectCallToGetAffiliatedAndroidRealms(observed_form,
                                                       {kTestAndroidRealm1});
   store->SetAffiliatedMatchHelper(std::move(mock_helper));
@@ -1345,8 +1362,7 @@ TEST_F(PasswordStoreTest, TestGetLoginRequestCancelable) {
 }
 
 TEST_F(PasswordStoreTest, TestUnblockListEmptyStore) {
-  scoped_refptr<PasswordStoreWithMockedMetadataStore> store =
-      CreatePasswordStoreWithMockedMetaData();
+  scoped_refptr<PasswordStore> store = CreatePasswordStoreWithMockedMetaData();
   store->Init(nullptr);
   WaitForPasswordStore();
 
@@ -1378,12 +1394,13 @@ class PasswordStoreOriginTest : public PasswordStoreTest {
   void TearDown() override {
     PasswordStoreTest::TearDown();
     store_->ShutdownOnUIThread();
+    WaitForPasswordStore();
   }
 
   PasswordStore* store() { return store_.get(); }
 
  private:
-  scoped_refptr<PasswordStoreImpl> store_;
+  scoped_refptr<PasswordStore> store_;
 };
 
 TEST_F(PasswordStoreOriginTest,
@@ -1478,8 +1495,7 @@ TEST_F(PasswordStoreOriginTest,
   const GURL origin = GURL(origin_url);
   base::RepeatingCallback<bool(const GURL&)> filter =
       base::BindRepeating(&MatchesOrigin, origin);
-  base::Time time_after_creation_date =
-      form->date_created + base::TimeDelta::FromDays(1);
+  base::Time time_after_creation_date = form->date_created + base::Days(1);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged).Times(0);
   store()->RemoveLoginsByURLAndTime(filter, time_after_creation_date,
@@ -1487,32 +1503,6 @@ TEST_F(PasswordStoreOriginTest,
   run_loop.Run();
 
   store()->RemoveObserver(&observer);
-}
-
-// Tests the PasswordManager.PasswordStore.GetAllLoginsAsync metric.
-TEST_F(PasswordStoreTest, GetAllLoginsAsyncMetrics) {
-  scoped_refptr<PasswordStore> store =
-      new PasswordStore(std::make_unique<MockPasswordStoreBackend>());
-  auto* mock_backend =
-      static_cast<MockPasswordStoreBackend*>(store->GetBackendForTesting());
-  store->Init(nullptr);
-  constexpr auto delta = base::TimeDelta::FromMilliseconds(123u);
-
-  base::HistogramTester histogram_tester;
-  EXPECT_CALL(*mock_backend, GetAllLoginsAsync(_))
-      .WillOnce(WithArg<0>([&](LoginsReply cb) {
-        task_environment_.FastForwardBy(delta);
-        std::move(cb).Run({});
-      }));
-  MockPasswordStoreConsumer mock_consumer;
-  store->GetAllLogins(&mock_consumer);
-  WaitForPasswordStore();
-  store->ShutdownOnUIThread();
-
-  histogram_tester.ExpectTotalCount(
-      "PasswordManager.PasswordStore.GetAllLoginsAsync", 1);
-  histogram_tester.ExpectTimeBucketCount(
-      "PasswordManager.PasswordStore.GetAllLoginsAsync", delta, 1);
 }
 
 }  // namespace password_manager

@@ -55,6 +55,8 @@ static_library("metrics") {
     "log_decoder.h",
     "log_store.h",
     "machine_id_provider.h",
+    "metrics_data_validation.cc",
+    "metrics_data_validation.h",
     "metrics_log.cc",
     "metrics_log.h",
     "metrics_log_manager.cc",
@@ -128,6 +130,7 @@ static_library("metrics") {
     "//components/version_info:version_info",
     "//crypto",
     "//extensions/buildflags",
+    "//third_party/icu",
     "//url",
   ]
 
@@ -442,6 +445,7 @@ source_set("unit_tests") {
     "histogram_encoder_unittest.cc",
     "library_support/histogram_manager_unittest.cc",
     "log_decoder_unittest.cc",
+    "metrics_data_validation_unittest.cc",
     "metrics_log_manager_unittest.cc",
     "metrics_log_store_unittest.cc",
     "metrics_log_unittest.cc",
@@ -474,6 +478,7 @@ source_set("unit_tests") {
     "//build:chromeos_buildflags",
     "//components/component_updater:test_support",
     "//components/encrypted_messages:encrypted_message_proto",
+    "//components/network_time:network_time_test_support",
     "//components/prefs:test_support",
     "//components/sync/base",
     "//components/sync/driver:test_support",

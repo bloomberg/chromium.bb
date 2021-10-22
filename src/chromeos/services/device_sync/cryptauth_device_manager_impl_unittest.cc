@@ -400,6 +400,10 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManagerImpl {
     SetSyncSchedulerForTest(base::WrapUnique(scoped_sync_scheduler_));
   }
 
+  TestCryptAuthDeviceManager(const TestCryptAuthDeviceManager&) = delete;
+  TestCryptAuthDeviceManager& operator=(const TestCryptAuthDeviceManager&) =
+      delete;
+
   ~TestCryptAuthDeviceManager() override {}
 
   base::WeakPtr<MockSyncScheduler> GetSyncScheduler() {
@@ -416,8 +420,6 @@ class TestCryptAuthDeviceManager : public CryptAuthDeviceManagerImpl {
   // This should be safe because the life-time this SyncScheduler will always be
   // within the life of the TestCryptAuthDeviceManager object.
   base::WeakPtrFactory<MockSyncScheduler> weak_sync_scheduler_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestCryptAuthDeviceManager);
 };
 
 }  // namespace
@@ -643,7 +645,7 @@ TEST_F(DeviceSyncCryptAuthDeviceManagerImplTest, GetSyncState) {
       .WillByDefault(Return(SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
   EXPECT_TRUE(device_manager_->IsRecoveringFromFailure());
 
-  base::TimeDelta time_to_next_sync = base::TimeDelta::FromMinutes(60);
+  base::TimeDelta time_to_next_sync = base::Minutes(60);
   ON_CALL(*sync_scheduler(), GetTimeToNextSync())
       .WillByDefault(Return(time_to_next_sync));
   EXPECT_EQ(time_to_next_sync, device_manager_->GetTimeToNextAttempt());

@@ -61,12 +61,23 @@ class BuildConfigGenerator extends DefaultTask {
     ]
 
     /**
-     * Prefixes of androidx dependencies which are allowed to use non-SNAPSHOT versions.
+     * Prefixes of androidx dependencies which are allowed to use non-SNAPSHOT
+     * versions. These are the legacy androidx targets that are no longer being
+     * released regularly (thus are not part of the snapshots) but are still
+     * required by chromium.
+     *
+     * If an assert fails pointing at a dep which *does* exist in the androidx
+     * snapshot then adding it here will only silence the sanity check rather
+     * than fix the underlying issue (which is we should always use the snapshot
+     * versions of androidx deps when possible). A better solution could be to
+     * add it in //third_party/androidx/build.gradle.template
      */
     static final Set<String> ALLOWED_ANDROIDX_NON_SNAPSHOT_DEPS_PREFIXES = [
       'androidx_constraintlayout',
+      'androidx_documentfile',
       'androidx_legacy',
       'androidx_multidex_multidex',
+      'androidx_print',
       'androidx_test',
     ]
 
@@ -626,7 +637,6 @@ class BuildConfigGenerator extends DefaultTask {
                 |  ]
                 |
                 |  proguard_configs = ["androidx_fragment.flags"]
-                |  use_classic_desugar = true
                 |
                 |  bytecode_rewriter_target = "//build/android/bytecode:fragment_activity_replacer"
                 |'''.stripMargin())
@@ -749,6 +759,7 @@ class BuildConfigGenerator extends DefaultTask {
             case 'com_google_j2objc_j2objc_annotations':
             case 'com_google_guava_listenablefuture':
             case 'com_googlecode_java_diff_utils_diffutils':
+            case 'org_checkerframework_checker_qual':
             case 'org_codehaus_mojo_animal_sniffer_annotations':
                 sb.append('\n')
                 sb.append('  # Needed to break dependency cycle for errorprone_plugin_java.\n')
@@ -984,7 +995,7 @@ class BuildConfigGenerator extends DefaultTask {
                 }
                 if (!hasAllowedDep) {
                     String errorMsg = ("${dependency.fileName} uses non-SNAPSHOT version."
-                          + 'If this is expected, add the library to '
+                          + "If this is expected, add ${dependency.id} to "
                           + '|ALLOWED_ANDROIDX_NON_SNAPSHOT_DEPS_PREFIXES| list.')
                     throw new IllegalStateException(errorMsg)
                 }

@@ -109,7 +109,7 @@ void RecoveryComponentActionHandler::RunCommand(
 
 void RecoveryComponentActionHandler::WaitForCommand(base::Process process) {
   int exit_code = 0;
-  const base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(600);
+  const base::TimeDelta kMaxWaitTime = base::Seconds(600);
   const bool succeeded =
       process.WaitForExitWithTimeout(kMaxWaitTime, &exit_code);
   base::DeletePathRecursively(unpack_path_);
@@ -135,7 +135,7 @@ bool RecoveryImprovedInstallerPolicy::RequiresNetworkEncryption() const {
 
 update_client::CrxInstaller::Result
 RecoveryImprovedInstallerPolicy::OnCustomInstall(
-    const base::DictionaryValue& manifest,
+    const base::Value& manifest,
     const base::FilePath& install_dir) {
   return update_client::CrxInstaller::Result(0);
 }
@@ -145,13 +145,13 @@ void RecoveryImprovedInstallerPolicy::OnCustomUninstall() {}
 void RecoveryImprovedInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& install_dir,
-    std::unique_ptr<base::DictionaryValue> manifest) {
+    base::Value manifest) {
   DVLOG(1) << "RecoveryImproved component is ready.";
 }
 
 // Called during startup and installation before ComponentReady().
 bool RecoveryImprovedInstallerPolicy::VerifyInstallation(
-    const base::DictionaryValue& manifest,
+    const base::Value& manifest,
     const base::FilePath& install_dir) const {
   return true;
 }

@@ -19,6 +19,8 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -27,11 +29,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
@@ -79,7 +81,7 @@ bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
 
 int GetSpaceThicknessForFocusRing() {
   static const int kSpaceThicknessForFocusRing =
-      FocusRing::kHaloThickness - FocusRing::kHaloInset;
+      FocusRing::kDefaultHaloThickness - FocusRing::kDefaultHaloInset;
   return kSpaceThicknessForFocusRing;
 }
 
@@ -732,8 +734,7 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void TreeView::OnPaint(gfx::Canvas* canvas) {
   // Don't invoke View::OnPaint so that we can render our own focus border.
-  canvas->DrawColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TreeBackground));
+  canvas->DrawColor(GetColorProvider()->GetColor(ui::kColorTreeBackground));
 
   int min_y, max_y;
   {

@@ -16,6 +16,7 @@ generate_grd("build_grd") {
   out_grd = "$target_gen_dir/${grd_prefix}_resources.grd"
 
   deps = [
+    ":build_ts_grdp",
     "css:build_grdp",
     "html:build_grdp",
     "images:build_grdp",
@@ -29,6 +30,7 @@ generate_grd("build_grd") {
     "$target_gen_dir/images/resources.grdp",
     "$target_gen_dir/js/cr/ui/resources.grdp",
     "$target_gen_dir/js/resources.grdp",
+    "$target_gen_dir/resources_ts.grdp",
     "$root_gen_dir/third_party/jstemplate/resources.grdp",
   ]
 
@@ -133,6 +135,13 @@ group("modulize") {
 
 preprocessed_folder = "$target_gen_dir/preprocessed"
 
+generate_grd("build_ts_grdp") {
+  grd_prefix = "webui"
+  out_grd = "$target_gen_dir/resources_ts.grdp"
+  deps = [ ":library" ]
+  manifest_files = [ "$target_gen_dir/tsconfig.manifest" ]
+}
+
 checked_in_dts_files = [
   "cr_components/managed_footnote/managed_footnote.d.ts",
   "cr_elements/cr_action_menu/cr_action_menu.d.ts",
@@ -142,6 +151,7 @@ checked_in_dts_files = [
   "cr_elements/cr_dialog/cr_dialog.m.d.ts",
   "cr_elements/cr_drawer/cr_drawer.d.ts",
   "cr_elements/cr_expand_button/cr_expand_button.m.d.ts",
+  "cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.d.ts",
   "cr_elements/cr_icon_button/cr_icon_button.m.d.ts",
   "cr_elements/cr_input/cr_input.m.d.ts",
   "cr_elements/cr_lazy_render/cr_lazy_render.m.d.ts",
@@ -151,6 +161,7 @@ checked_in_dts_files = [
   "cr_elements/cr_scrollable_behavior.m.d.ts",
   "cr_elements/cr_search_field/cr_search_field_behavior.d.ts",
   "cr_elements/cr_search_field/cr_search_field.d.ts",
+  "cr_elements/cr_slider/cr_slider.d.ts",
   "cr_elements/cr_toast/cr_toast_manager.d.ts",
   "cr_elements/cr_toast/cr_toast.d.ts",
   "cr_elements/cr_toggle/cr_toggle.m.d.ts",
@@ -159,6 +170,7 @@ checked_in_dts_files = [
   "cr_elements/find_shortcut_behavior.d.ts",
   "cr_elements/policy/cr_policy_indicator_behavior.m.d.ts",
   "cr_elements/policy/cr_policy_indicator.m.d.ts",
+  "cr_elements/policy/cr_policy_pref_indicator.m.d.ts",
   "cr_elements/policy/cr_tooltip_icon.m.d.ts",
   "js/cr/ui/focus_row_behavior.m.d.ts",
   "js/i18n_behavior.m.d.ts",
@@ -184,6 +196,12 @@ ts_library("library") {
   root_dir = preprocessed_folder
   out_dir = preprocessed_folder
   composite = true
+
+  in_files = [
+    "cr_elements/cr_nav_menu_item_style.ts",
+    "js/i18n_mixin.ts",
+    "js/web_ui_listener_mixin.ts",
+  ]
 
   definitions = []
 
@@ -211,7 +229,6 @@ ts_library("library") {
     "$root_dir/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.d.ts",
     "$root_dir/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.d.ts",
     "$root_dir/cr_elements/cr_radio_button/cr_radio_button_style_css.m.d.ts",
-    "$root_dir/cr_elements/cr_slider/cr_slider.d.ts",
     "$root_dir/cr_elements/cr_splitter/cr_splitter.d.ts",
     "$root_dir/cr_elements/cr_toolbar/cr_toolbar.d.ts",
     "$root_dir/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.d.ts",
@@ -221,8 +238,6 @@ ts_library("library") {
     "$root_dir/cr_elements/mouse_hoverable_mixin.d.ts",
     "$root_dir/cr_elements/mwb_shared_style.d.ts",
     "$root_dir/cr_elements/mwb_shared_vars.d.ts",
-    "$root_dir/cr_elements/policy/cr_policy_pref_behavior.m.d.ts",
-    "$root_dir/cr_elements/policy/cr_policy_pref_indicator.m.d.ts",
     "$root_dir/cr_elements/search_highlight_style_css.d.ts",
     "$root_dir/cr_elements/shared_style_css.m.d.ts",
     "$root_dir/cr_elements/shared_vars_css.m.d.ts",
@@ -261,6 +276,7 @@ ts_library("library") {
   extra_deps = [
     ":copy_checked_in_dts_files",
     ":generate_definitions",
+    ":preprocess",
   ]
 }
 
@@ -273,7 +289,6 @@ ts_definitions("generate_definitions") {
     "cr_elements/cr_a11y_announcer/cr_a11y_announcer.js",
     "cr_elements/cr_actionable_row_style.m.js",
     "cr_elements/cr_fingerprint/cr_fingerprint_icon.m.js",
-    "cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js",
     "cr_elements/cr_grid/cr_grid.js",
     "cr_elements/cr_icons_css.m.js",
     "cr_elements/cr_auto_img/cr_auto_img.js",
@@ -286,7 +301,6 @@ ts_definitions("generate_definitions") {
     "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js",
     "cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.js",
     "cr_elements/cr_radio_button/cr_radio_button_style_css.m.js",
-    "cr_elements/cr_slider/cr_slider.js",
     "cr_elements/cr_splitter/cr_splitter.js",
     "cr_elements/cr_tabs/cr_tabs.js",
     "cr_elements/cr_toolbar/cr_toolbar.js",
@@ -298,8 +312,6 @@ ts_definitions("generate_definitions") {
     "cr_elements/mwb_element_shared_style.js",
     "cr_elements/mwb_shared_style.js",
     "cr_elements/mwb_shared_vars.js",
-    "cr_elements/policy/cr_policy_pref_behavior.m.js",
-    "cr_elements/policy/cr_policy_pref_indicator.m.js",
     "cr_elements/search_highlight_style_css.js",
     "cr_elements/shared_style_css.m.js",
     "cr_elements/shared_vars_css.m.js",

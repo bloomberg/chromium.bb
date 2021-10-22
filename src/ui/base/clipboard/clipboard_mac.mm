@@ -208,24 +208,6 @@ void ClipboardMac::ReadAvailableTypes(
 
 // |data_dst| is not used. It's only passed to be consistent with other
 // platforms.
-std::vector<std::u16string>
-ClipboardMac::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer,
-    const DataTransferEndpoint* data_dst) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  NSArray* types = [GetPasteboard() types];
-
-  std::vector<std::u16string> type_names;
-  type_names.reserve([types count]);
-  for (NSString* type in types)
-    type_names.push_back(base::SysNSStringToUTF16(type));
-  return type_names;
-}
-
-// |data_dst| is not used. It's only passed to be consistent with other
-// platforms.
 void ClipboardMac::ReadText(ClipboardBuffer buffer,
                             const DataTransferEndpoint* data_dst,
                             std::u16string* result) const {
@@ -318,15 +300,6 @@ void ClipboardMac::ReadPng(ClipboardBuffer buffer,
                            ReadPngCallback callback) const {
   RecordRead(ClipboardFormatMetric::kPng);
   std::move(callback).Run(ReadPngInternal(buffer, GetPasteboard()));
-}
-
-// |data_dst| is not used. It's only passed to be consistent with other
-// platforms.
-void ClipboardMac::ReadImage(ClipboardBuffer buffer,
-                             const DataTransferEndpoint* data_dst,
-                             ReadImageCallback callback) const {
-  RecordRead(ClipboardFormatMetric::kImage);
-  std::move(callback).Run(ReadImageInternal(buffer, GetPasteboard()));
 }
 
 // |data_dst| is not used. It's only passed to be consistent with other
@@ -506,36 +479,13 @@ std::vector<uint8_t> ClipboardMac::ReadPngInternal(
   if (!image)
     return std::vector<uint8_t>();
 
-  scoped_refptr<base::RefCountedMemory> mem = gfx::Image(image).As1xPNGBytes();
+  auto gfx_image = gfx::Image(image);
+  if (gfx_image.IsEmpty())
+    return std::vector<uint8_t>();
+
+  scoped_refptr<base::RefCountedMemory> mem = gfx_image.As1xPNGBytes();
   std::vector<uint8_t> image_data(mem->data(), mem->data() + mem->size());
   return image_data;
-}
-
-SkBitmap ClipboardMac::ReadImageInternal(ClipboardBuffer buffer,
-                                         NSPasteboard* pasteboard) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);
-
-  base::scoped_nsobject<NSImage> image = GetNSImage(pasteboard);
-  if (!image)
-    return SkBitmap();
-
-  // This logic prevents loss of pixels from retina images, where size != pixel
-  // size. In an ideal world, the concept of "retina-ness" would be plumbed all
-  // the way through to the web, but the clipboard API doesn't support the
-  // additional metainformation.
-  if ([[image representations] count] == 1u) {
-    NSImageRep* rep = [image representations][0];
-    NSInteger width = [rep pixelsWide];
-    NSInteger height = [rep pixelsHigh];
-    if (width != 0 && height != 0) {
-      return skia::NSImageRepToSkBitmapWithColorSpace(
-          rep, NSMakeSize(width, height), /*is_opaque=*/false,
-          base::mac::GetSystemColorSpace());
-    }
-  }
-  return skia::NSImageToSkBitmapWithColorSpace(
-      image.get(), /*is_opaque=*/false, base::mac::GetSystemColorSpace());
 }
 
 }  // namespace ui

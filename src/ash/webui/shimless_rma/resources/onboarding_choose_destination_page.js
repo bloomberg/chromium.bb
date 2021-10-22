@@ -29,23 +29,17 @@ export class OnboardingChooseDestinationPageElement extends PolymerElement {
 
   static get properties() {
     return {
-      /** @private {ShimlessRmaServiceInterface} */
-      shimlessRmaService_: {
-        type: Object,
-        value: {},
-      },
-
-      /** @private {string} */
+      /** @private */
       destinationOwner_: {
         type: String,
-        value: "",
+        value: '',
       },
     };
   }
 
-  /** @override */
-  ready() {
-    super.ready();
+  constructor() {
+    super();
+    /** @private {ShimlessRmaServiceInterface} */
     this.shimlessRmaService_ = getShimlessRmaService();
   }
 
@@ -55,6 +49,11 @@ export class OnboardingChooseDestinationPageElement extends PolymerElement {
    */
   onDestinationSelectionChanged_(event) {
     this.destinationOwner_ = event.detail.value;
+    let disabled = !this.destinationOwner_;
+    this.dispatchEvent(new CustomEvent(
+        'disable-next-button',
+        {bubbles: true, composed: true, detail: disabled},
+        ));
   }
 
   /** @return {!Promise<!StateResult>} */

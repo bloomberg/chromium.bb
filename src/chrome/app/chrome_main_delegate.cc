@@ -124,9 +124,9 @@
 #include "ash/constants/ash_paths.h"
 #include "ash/constants/ash_switches.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ash/boot_times_recorder.h"
 #include "chrome/browser/ash/dbus/ash_dbus_helper.h"
-#include "chrome/browser/chromeos/boot_times_recorder.h"
-#include "chrome/browser/chromeos/startup_settings_cache.h"
+#include "chrome/browser/ash/startup_settings_cache.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
 #include "chromeos/memory/kstaled.h"
 #include "chromeos/memory/memory.h"
@@ -586,6 +586,10 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
           case crosapi::mojom::BuildFlag::kUseChromeosProtectedMedia:
             base::CommandLine::ForCurrentProcess()->AppendSwitch(
                 switches::kLacrosUseChromeosProtectedMedia);
+            break;
+          case crosapi::mojom::BuildFlag::kUseChromeosProtectedAv1:
+            base::CommandLine::ForCurrentProcess()->AppendSwitch(
+                switches::kLacrosUseChromeosProtectedAv1);
             break;
         }
       }

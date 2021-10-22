@@ -171,7 +171,7 @@ public class AccountsReloadingTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug/1254405")
+    @DisabledTest(message = "http://crbug.com/1254405")
     public void testRefreshTokenUpdateWhenSignedInUserAddsNewAccount() {
         final CoreAccountInfo account1 = mAccountManagerTestRule.addTestAccountThenSignin();
         CriteriaHelper.pollUiThread(() -> mObserver.mCallCount == 1);
@@ -191,7 +191,7 @@ public class AccountsReloadingTest {
 
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug/1254427")
+    @DisabledTest(message = "http://crbug.com/1254427")
     public void testRefreshTokenUpdateWhenSignedInAndSyncUserAddsNewAccount() {
         final CoreAccountInfo account1 =
                 mAccountManagerTestRule.addTestAccountThenSigninAndEnableSync();

@@ -33,7 +33,6 @@ namespace history {
 namespace {
 
 using base::Time;
-using base::TimeDelta;
 using sync_pb::TypedUrlSpecifics;
 using syncer::DataBatch;
 using syncer::EntityChange;
@@ -99,7 +98,7 @@ MATCHER(IsValidStorageKey, "") {
 
 Time SinceEpoch(int64_t microseconds_since_epoch) {
   return Time::FromDeltaSinceWindowsEpoch(
-      TimeDelta::FromMicroseconds(microseconds_since_epoch));
+      base::Microseconds(microseconds_since_epoch));
 }
 
 bool URLsEqual(const URLRow& row, const sync_pb::TypedUrlSpecifics& specifics) {
@@ -257,6 +256,10 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
  public:
   TestHistoryBackendDelegate() {}
 
+  TestHistoryBackendDelegate(const TestHistoryBackendDelegate&) = delete;
+  TestHistoryBackendDelegate& operator=(const TestHistoryBackendDelegate&) =
+      delete;
+
   void NotifyProfileError(sql::InitStatus init_status,
                           const std::string& diagnostics) override {}
   void SetInMemoryBackend(
@@ -274,9 +277,6 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
                                       const std::u16string& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
   void DBLoaded() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestHistoryBackendDelegate);
 };
 
 class TestHistoryBackendForSync : public HistoryBackend {
@@ -354,9 +354,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
     fake_history_backend_->SetTypedURLSyncBridgeForTest(std::move(bridge));
   }
 
-  void TearDown() override {
-    fake_history_backend_->Closing();
-  }
+  void TearDown() override { fake_history_backend_->Closing(); }
 
   // Starts sync for `typed_url_sync_bridge_` with `initial_data` as the
   // initial sync data.
@@ -1303,8 +1301,8 @@ TEST_F(TypedURLSyncBridgeTest, MaxVisitLocalTypedUrl) {
   int num_typed_visits_synced = 0;
   int num_other_visits_synced = 0;
   int r = url_specifics.visits_size() - 1;
-  for (int i = 0; i < url_specifics.visits_size(); ++i, --r) {
-    if (url_specifics.visit_transitions(i) ==
+  for (int j = 0; j < url_specifics.visits_size(); ++j, --r) {
+    if (url_specifics.visit_transitions(j) ==
         static_cast<int32_t>(ui::PAGE_TRANSITION_TYPED)) {
       ++num_typed_visits_synced;
     } else {

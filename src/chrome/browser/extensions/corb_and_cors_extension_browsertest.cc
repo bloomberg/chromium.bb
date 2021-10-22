@@ -174,6 +174,11 @@ class CorbAndCorsExtensionBrowserTest : public CorbAndCorsExtensionTestBase {
  public:
   CorbAndCorsExtensionBrowserTest() = default;
 
+  CorbAndCorsExtensionBrowserTest(const CorbAndCorsExtensionBrowserTest&) =
+      delete;
+  CorbAndCorsExtensionBrowserTest& operator=(
+      const CorbAndCorsExtensionBrowserTest&) = delete;
+
   void SetUpInProcessBrowserTestFixture() override {
     policy_provider_.SetDefaultReturns(
         /*is_initialization_complete_return=*/true,
@@ -354,7 +359,7 @@ class CorbAndCorsExtensionBrowserTest : public CorbAndCorsExtensionTestBase {
   bool RegisterServiceWorkerForExtension(
       const std::string& service_worker_script) {
     const char kServiceWorkerPath[] = "service_worker.js";
-    dir_.WriteFile(base::FilePath::FromUTF8Unsafe(kServiceWorkerPath).value(),
+    dir_.WriteFile(base::FilePath::FromASCII(kServiceWorkerPath).value(),
                    service_worker_script);
 
     const char kRegistrationScript[] = R"(
@@ -535,8 +540,6 @@ class CorbAndCorsExtensionBrowserTest : public CorbAndCorsExtensionTestBase {
   }
 
   const Extension* extension_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CorbAndCorsExtensionBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
@@ -1361,6 +1364,38 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
 }
 
 // Test that requests from an extension background page use relaxed CORB
+// processing in `no-cors` mode.  See also https://crbug.com/1252173.
+IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
+                       FromBackgroundPage_NoSniffXml_NoCors) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(InstallExtension());
+
+  // This test covers the default incognito mode (spanning mode) where there is
+  // only a single background page (i.e. no separate incognito background page).
+  EXPECT_FALSE(IncognitoInfo::IsSplitMode(extension()));
+
+  // Performs a cross-origin fetch from the background page in "no-cors" mode.
+  GURL cross_site_resource(
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
+  base::Value request_init(base::Value::Type::DICTIONARY);
+  request_init.SetStringPath("mode", "no-cors");
+  std::string script =
+      CreateFetchScript(cross_site_resource, std::move(request_init));
+  content::WebContents* background_web_contents =
+      ProcessManager::Get(browser()->profile())
+          ->GetBackgroundHostForExtension(extension()->id())
+          ->host_contents();
+  content::DOMMessageQueue message_queue;
+  content::ExecuteScriptAsync(background_web_contents, script);
+  std::string fetch_result = PopString(&message_queue);
+
+  // Verify that no blocking occurred (this is a bit unusual, as "no-cors"
+  // responses are normally "opaque" - their body is normally not exposed to
+  // Javascript).  See also https://crbug.com/1252173.
+  EXPECT_EQ("nosniff.xml - body\n", fetch_result);
+}
+
+// Test that requests from an extension background page use relaxed CORB
 // processing.  This test covers split-mode extensions - see:
 // https://developer.chrome.com/docs/extensions/mv2/manifest/incognito/#split)
 IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
@@ -1784,6 +1819,9 @@ class ReadyToCommitWaiter : public content::WebContentsObserver {
   explicit ReadyToCommitWaiter(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents) {}
 
+  ReadyToCommitWaiter(const ReadyToCommitWaiter&) = delete;
+  ReadyToCommitWaiter& operator=(const ReadyToCommitWaiter&) = delete;
+
   ~ReadyToCommitWaiter() override {}
 
   void Wait() { run_loop_.Run(); }
@@ -1795,8 +1833,6 @@ class ReadyToCommitWaiter : public content::WebContentsObserver {
 
  private:
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReadyToCommitWaiter);
 };
 
 IN_PROC_BROWSER_TEST_F(CorbAndCorsExtensionBrowserTest,
@@ -1974,20 +2010,12 @@ IN_PROC_BROWSER_TEST_F(CorbAndCorsAppBrowserTest, WebViewContentScript) {
   std::string web_view_navigation_script =
       content::JsReplace(kWebViewNavigationScriptTemplate, guest_url);
   {
-    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    base::HistogramTester histograms;
-
     content::DOMMessageQueue queue;
     content::ExecuteScriptAsync(app_contents, web_view_navigation_script);
     std::string fetch_result = PopString(&queue);
 
     // Verify that no CORB or CORS blocking occurred.
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
-
-    // Verify UMA histograms.
-    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    histograms.ExpectBucketCount(
-        "NetworkService.CorsForcedOffForIsolatedWorldOrigin", true, 1);
   }
 }
 

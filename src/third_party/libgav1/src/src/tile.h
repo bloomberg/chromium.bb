@@ -65,7 +65,9 @@ enum ProcessingMode {
   kProcessingModeParseAndDecode,
 };
 
-class Tile : public Allocable {
+// The alignment requirement is due to the SymbolDecoderContext member
+// symbol_decoder_context_.
+class Tile : public MaxAlignedAllocable {
  public:
   static std::unique_ptr<Tile> Create(
       int tile_number, const uint8_t* const data, size_t size,

@@ -69,7 +69,7 @@ constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
 const char kTerminaKernelVersion[] =
     "4.19.56-05556-gca219a5b1086 #3 SMP PREEMPT Mon Jul 1 14:36:38 CEST 2019";
 const char kCrostiniCorruptionHistogram[] = "Crostini.FilesystemCorruption";
-constexpr auto kLongTime = base::TimeDelta::FromDays(10);
+constexpr auto kLongTime = base::Days(10);
 
 void ExpectFailure(base::OnceClosure closure, bool success) {
   EXPECT_FALSE(success);
@@ -202,6 +202,9 @@ class CrostiniManagerTest : public testing::Test {
             chromeos::DBusThreadManager::Get()->GetAnomalyDetectorClient());
   }
 
+  CrostiniManagerTest(const CrostiniManagerTest&) = delete;
+  CrostiniManagerTest& operator=(const CrostiniManagerTest&) = delete;
+
   ~CrostiniManagerTest() override {
     chromeos::SeneschalClient::Shutdown();
     chromeos::ConciergeClient::Shutdown();
@@ -291,8 +294,6 @@ class CrostiniManagerTest : public testing::Test {
   std::unique_ptr<ScopedTestingLocalState> local_state_;
   scoped_refptr<component_updater::FakeCrOSComponentManager> component_manager_;
   BrowserProcessPlatformPartTestApi browser_part_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrostiniManagerTest);
 };
 
 TEST_F(CrostiniManagerTest, CreateDiskImageEmptyNameError) {
@@ -765,8 +766,7 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
   }
 
   void Abort() {
-    crostini_manager()->AbortRestartCrostini(restart_id_,
-                                             base::DoNothing::Once());
+    crostini_manager()->AbortRestartCrostini(restart_id_, base::DoNothing());
     run_loop()->Quit();
   }
 
@@ -1137,12 +1137,12 @@ TEST_F(CrostiniManagerRestartTest, HeartbeatKeepsCreateContainerFromTimingOut) {
                      base::Unretained(this), run_loop()->QuitClosure()),
       this);
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(4));
+  task_environment_.FastForwardBy(base::Minutes(4));
   crostini_manager_->OnLxdContainerDownloading(signal);
-  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(4));
+  task_environment_.FastForwardBy(base::Minutes(4));
   ASSERT_EQ(0, restart_crostini_callback_count_);
 
-  task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(6));
+  task_environment_.FastForwardBy(base::Minutes(6));
   ASSERT_EQ(1, restart_crostini_callback_count_);
 
   EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
@@ -1247,7 +1247,7 @@ TEST_F(CrostiniManagerRestartTest, AbortThenStopVm) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()),
+                     base::Unretained(this), base::DoNothing()),
       this);
   run_loop()->Run();
   EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
@@ -1275,7 +1275,7 @@ TEST_F(CrostiniManagerRestartTest, DoubleAbortIsSafe) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()),
+                     base::Unretained(this), base::DoNothing()),
       this);
 
   // When abort is called multiple times, the callback set for each abort should
@@ -1392,7 +1392,7 @@ TEST_F(CrostiniManagerRestartTest, RestartThenUninstall) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()));
+                     base::Unretained(this), base::DoNothing()));
 
   EXPECT_TRUE(crostini_manager()->IsRestartPending(restart_id_));
 
@@ -1418,15 +1418,15 @@ TEST_F(CrostiniManagerRestartTest, RestartMultipleThenUninstall) {
   id1 = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()));
+                     base::Unretained(this), base::DoNothing()));
   id2 = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()));
+                     base::Unretained(this), base::DoNothing()));
   id3 = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()));
+                     base::Unretained(this), base::DoNothing()));
 
   EXPECT_TRUE(crostini_manager()->IsRestartPending(id1));
   EXPECT_TRUE(crostini_manager()->IsRestartPending(id2));
@@ -1469,7 +1469,7 @@ TEST_F(CrostiniManagerRestartTest, UninstallThenRestart) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()));
+                     base::Unretained(this), base::DoNothing()));
 
   EXPECT_EQ(uninitialized_id_, restart_id_);
 
@@ -1561,7 +1561,7 @@ TEST_F(CrostiniManagerRestartTest, ComponentUpdateInProgress) {
           &CrostiniManager::set_component_manager_load_error_for_testing,
           base::Unretained(crostini_manager()),
           component_updater::CrOSComponentManager::Error::NONE),
-      base::TimeDelta::FromSeconds(3));
+      base::Seconds(3));
 
   run_loop()->Run();
 
@@ -1589,7 +1589,7 @@ TEST_F(CrostiniManagerRestartTest, AllObservers) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()),
+                     base::Unretained(this), base::DoNothing()),
       this);
   run_loop()->Run();
   EXPECT_EQ(2, restart_crostini_callback_count_);
@@ -1625,7 +1625,7 @@ TEST_F(CrostiniManagerRestartTest, StartVmOnlyThenFullRestart) {
   restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
       container_id(), std::move(options),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()),
+                     base::Unretained(this), base::DoNothing()),
       &observer1);
   crostini_manager()->RestartCrostini(
       container_id(),
@@ -1662,7 +1662,7 @@ TEST_F(CrostiniManagerRestartTest, FullRestartThenStartVmOnly) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()),
+                     base::Unretained(this), base::DoNothing()),
       &observer1);
   CrostiniManager::RestartOptions options;
   options.start_vm_only = true;
@@ -1703,7 +1703,7 @@ TEST_F(CrostiniManagerRestartTest, StartVmOnlyTwice) {
   restart_id_ = crostini_manager()->RestartCrostiniWithOptions(
       container_id(), std::move(options1),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
-                     base::Unretained(this), base::DoNothing::Once()),
+                     base::Unretained(this), base::DoNothing()),
       &observer1);
   CrostiniManager::RestartOptions options2;
   options2.start_vm_only = true;
@@ -1842,7 +1842,7 @@ TEST_F(CrostiniManagerTest, ExportContainerFailInProgress) {
   // 2nd call fails since 1st call is in progress.
   crostini_manager()->ExportLxdContainer(
       container_id(), base::FilePath("export_path"),
-      base::BindOnce(&ExpectCrostiniExportResult, base::DoNothing::Once(),
+      base::BindOnce(&ExpectCrostiniExportResult, base::DoNothing(),
                      CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED, 0, 0));
 
   // Send signal to indicate 1st call is done.
@@ -1928,7 +1928,7 @@ TEST_F(CrostiniManagerTest, ImportContainerFailInProgress) {
   // 2nd call fails since 1st call is in progress.
   crostini_manager()->ImportLxdContainer(
       container_id(), base::FilePath("import_path"),
-      base::BindOnce(ExpectCrostiniResult, base::DoNothing::Once(),
+      base::BindOnce(ExpectCrostiniResult, base::DoNothing(),
                      CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED));
 
   // Send signal to indicate 1st call is done.

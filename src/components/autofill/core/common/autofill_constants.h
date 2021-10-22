@@ -74,14 +74,14 @@ constexpr int kCrossFrameFill = -2;
 // Options bitmask values for AutofillHostMsg_ShowPasswordSuggestions IPC
 enum ShowPasswordSuggestionsOptions {
   SHOW_ALL = 1 << 0 /* show all credentials, not just ones matching username */,
-  IS_PASSWORD_FIELD = 1 << 1 /* input field is a password field */
+  IS_PASSWORD_FIELD = 1 << 1 /* input field is a password field */,
+  ACCEPTS_WEBAUTHN_CREDENTIALS =
+      1 << 2 /* input field is marked to accept webauthn credentials */,
 };
 
 // Constants for the soft/hard deletion of Autofill data.
-constexpr base::TimeDelta kDisusedDataModelTimeDelta =
-    base::TimeDelta::FromDays(180);
-constexpr base::TimeDelta kDisusedDataModelDeletionTimeDelta =
-    base::TimeDelta::FromDays(395);
+constexpr base::TimeDelta kDisusedDataModelTimeDelta = base::Days(180);
+constexpr base::TimeDelta kDisusedDataModelDeletionTimeDelta = base::Days(395);
 
 // Returns if the entry with the given |use_date| is deletable? (i.e. has not
 // been used for a long time).

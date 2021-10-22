@@ -144,9 +144,10 @@ TEST_F(NotificationGroupingControllerTest,
   AddNotificationWithNotifierId("tmp");
   EXPECT_FALSE(GetPopupView(parent_id));
 
-  AnimateUntilIdle();
-
   AddNotificationWithNotifierId(group_id);
+
+  // Move down or fade in animation might happen before showing the popup.
+  AnimateUntilIdle();
 
   EXPECT_TRUE(GetPopupView(parent_id));
 }
@@ -216,6 +217,8 @@ TEST_F(NotificationGroupingControllerTest,
   GetPrimaryUnifiedSystemTray()->CloseBubble();
 
   id4 = AddNotificationWithNotifierId(group_id);
+
+  AnimateUntilIdle();
 
   message_center->RemoveNotification(id0, true);
   message_center->RemoveNotification(id1, true);

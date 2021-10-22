@@ -287,6 +287,7 @@ bool LoadDwarf(const string& dwarf_filename,
                const typename ElfClass::Ehdr* elf_header,
                const bool big_endian,
                bool handle_inter_cu_refs,
+               bool handle_inline,
                Module* module) {
   typedef typename ElfClass::Shdr Shdr;
 
@@ -333,7 +334,7 @@ bool LoadDwarf(const string& dwarf_filename,
     // data that was found.
     DwarfCUToModule::WarningReporter reporter(dwarf_filename, offset);
     DwarfCUToModule root_handler(&file_context, &line_to_module,
-                                 &ranges_handler, &reporter);
+                                 &ranges_handler, &reporter, handle_inline);
     // Make a Dwarf2Handler that drives the DIEHandler.
     google_breakpad::DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.
@@ -786,7 +787,8 @@ bool LoadSymbols(const string& obj_file,
       found_usable_info = true;
       info->LoadedSection(".debug_info");
       if (!LoadDwarf<ElfClass>(obj_file, elf_header, big_endian,
-                               options.handle_inter_cu_refs, module)) {
+                               options.handle_inter_cu_refs,
+                               options.symbol_data & INLINES, module)) {
         fprintf(stderr, "%s: \".debug_info\" section found, but failed to load "
                 "DWARF debugging information\n", obj_file.c_str());
       }

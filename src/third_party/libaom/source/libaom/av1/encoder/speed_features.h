@@ -160,6 +160,7 @@ typedef enum {
   CDEF_FAST_SEARCH_LVL3, /**< Search reduced subset of secondary filters than
                               Level 2. */
   CDEF_FAST_SEARCH_LVL4, /**< Search reduced subset of filters than Level 3. */
+  CDEF_FAST_SEARCH_LVL5, /**< Search reduced subset of filters than Level 4. */
   CDEF_PICK_FROM_Q,      /**< Estimate filter strength based on quantizer. */
   CDEF_PICK_METHODS
 } CDEF_PICK_METHOD;
@@ -221,14 +222,24 @@ enum {
   MULTI_WINNER_MODE_DEFAULT = 2,
 } UENUM1BYTE(MULTI_WINNER_MODE_TYPE);
 
+enum {
+  PRUNE_NEARMV_OFF = 0,     // Turn off nearmv pruning
+  PRUNE_NEARMV_LEVEL1 = 1,  // Prune nearmv for qindex (0-85)
+  PRUNE_NEARMV_LEVEL2 = 2,  // Prune nearmv for qindex (0-170)
+  PRUNE_NEARMV_LEVEL3 = 3,  // Prune nearmv more aggressively for qindex (0-170)
+  PRUNE_NEARMV_MAX = PRUNE_NEARMV_LEVEL3,
+} UENUM1BYTE(PRUNE_NEARMV_LEVEL);
+
 typedef struct {
   TX_TYPE_PRUNE_MODE prune_2d_txfm_mode;
   int fast_intra_tx_type_search;
 
-  // 1: Force tx type based on probability of the tx type, during mode search.
-  // 2: Force tx type to be DCT_DCT unconditionally, during mode search. (More
-  // aggressive).
-  int fast_inter_tx_type_search;
+  // INT_MAX: Disable fast search.
+  // 1 - 1024: Probability threshold used for conditionally forcing tx type,
+  // during mode search.
+  // 0: Force tx type to be DCT_DCT unconditionally, during
+  // mode search.
+  int fast_inter_tx_type_prob_thresh;
 
   // Prune less likely chosen transforms for each intra mode. The speed
   // feature ranges from 0 to 2, for different speed / compression trade offs.
@@ -489,8 +500,9 @@ typedef struct PARTITION_SPEED_FEATURES {
 
   // Sets level of adjustment of variance-based partitioning during
   // rd_use_partition 0 - no partition adjustment, 1 - try to merge partitions
-  // for small blocks and high QP, 2 - always try to merge leaf partitions, 3 -
-  // try to merge and split leaf partitions
+  // for small blocks and high QP, 2 - try to merge partitions, 3 - always try
+  // to merge leaf partitions for small blocks, 4 - try to merge and split leaf
+  // partitions and 0 - 4 decreasing aggressiveness in order.
   int adjust_var_based_rd_partitioning;
 
   // Partition search early breakout thresholds.
@@ -550,6 +562,9 @@ typedef struct PARTITION_SPEED_FEATURES {
   int prune_ext_part_using_split_info;
 
   // Prunt rectangular, AB and 4-way partition based on q index and block size
+  // 0 : no pruning
+  // 1 : prune sub_8x8 at very low quantizers
+  // 2 : prune all block size based on qindex
   int prune_rectangular_split_based_on_qidx;
 
   // Terminate partition search for child partition,
@@ -618,6 +633,14 @@ typedef struct PARTITION_SPEED_FEATURES {
   // If disabling it, at speed 0, 30 frames, we could get
   // about -0.25% quality gain (psnr, ssim, vmaf), with about 13% slowdown.
   int use_best_rd_for_pruning;
+
+  // Skip evaluation of non-square partitions based on the corresponding NONE
+  // partition.
+  // 0: no pruning
+  // 1: prune extended partitions if NONE is skippable
+  // 2: on top of 1, prune rectangular partitions if NONE is inter, not a newmv
+  // mode and skippable
+  int skip_non_sq_part_based_on_none;
 } PARTITION_SPEED_FEATURES;
 
 typedef struct MV_SPEED_FEATURES {
@@ -771,12 +794,6 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // same single inter mode as a group.
   int prune_comp_search_by_single_result;
 
-  // If 1 we iterate finding a best reference for 2 ref frames together - via
-  // a log search that iterates 4 times (check around mv for last for best
-  // error of combined predictor then check around mv for alt). If 0 we
-  // we just use the best motion vector found for each frame by itself.
-  BLOCK_SIZE comp_inter_joint_search_thresh;
-
   // Instead of performing a full MV search, do a simple translation first
   // and only perform a full MV search on the motion vectors that performed
   // well.
@@ -805,6 +822,9 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 1 : prune extended compound mode (less aggressiveness)
   // 2 : prune extended compound mode (high aggressiveness)
   int prune_comp_using_best_single_mode_ref;
+
+  // Skip NEARESTMV and NEARMV using weight computed in ref mv list population
+  int prune_nearest_near_mv_using_refmv_weight;
 
   // Based on previous ref_mv_idx search result, prune the following search.
   int prune_ref_mv_idx_search;
@@ -853,7 +873,7 @@ typedef struct INTER_MODE_SPEED_FEATURES {
 
   // Skip NEARMV and NEAR_NEARMV modes using ref frames of above and left
   // neighbor blocks and qindex.
-  int prune_nearmv_using_neighbors;
+  PRUNE_NEARMV_LEVEL prune_nearmv_using_neighbors;
 
   // Model based breakout after interpolation filter search
   // 0: no breakout
@@ -885,6 +905,13 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 0: no pruning
   // 1 to 3 indicate increasing order of aggressiveness
   int limit_inter_mode_cands;
+
+  // Cap the no. of txfm searches for a given prediction mode.
+  // 0: no cap, 1: cap beyond first 4 searches, 2: cap beyond first 3 searches.
+  int limit_txfm_eval_per_mode;
+
+  // Prune warped motion search based on block size.
+  int extra_prune_warped;
 } INTER_MODE_SPEED_FEATURES;
 
 typedef struct INTERP_FILTER_SPEED_FEATURES {
@@ -1007,6 +1034,10 @@ typedef struct INTRA_MODE_SPEED_FEATURES {
   // 0.85%, 1.05%, 1.45%, 1.66% and 1.95% for speed 0 to 6 on a typical image
   // dataset with no quality drop.
   int early_term_chroma_palette_size_search;
+
+  // Skips the evaluation of filter intra modes in inter frames if rd evaluation
+  // of luma intra dc mode results in invalid rd stats.
+  int skip_filter_intra_in_inter_frames;
 } INTRA_MODE_SPEED_FEATURES;
 
 typedef struct TX_SPEED_FEATURES {
@@ -1038,16 +1069,6 @@ typedef struct TX_SPEED_FEATURES {
   // 0: no pruning
   // 1-2: progressively increasing aggressiveness of pruning
   int model_based_prune_tx_search_level;
-
-  // Use hash table to store intra(keyframe only) txb transform search results
-  // to avoid repeated search on the same residue signal. This is currently not
-  // compatible with multi-winner mode as the hash states are reset during
-  // winner mode processing.
-  int use_intra_txb_hash;
-
-  // Use hash table to store inter txb transform search results
-  // to avoid repeated search on the same residue signal.
-  int use_inter_txb_hash;
 
   // Refine TX type after fast TX search.
   int refine_fast_tx_search_results;
@@ -1141,6 +1162,9 @@ typedef struct LOOP_FILTER_SPEED_FEATURES {
   // Disable loop restoration for Chroma plane
   int disable_loop_restoration_chroma;
 
+  // Disable loop restoration for luma plane
+  int disable_loop_restoration_luma;
+
   // Prune RESTORE_WIENER evaluation based on source variance
   // 0 : no pruning
   // 1 : conservative pruning
@@ -1197,15 +1221,12 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Use ALTREF frame in non-RD mode decision.
   int use_nonrd_altref_frame;
 
-  // Use GOLDEN frame in pickmode decision.
-  int use_golden_frame;
-
   // Use compound reference for non-RD mode.
   int use_comp_ref_nonrd;
 
   // Reference frames for compound prediction for nonrd pickmode:
-  // LAST_GOLDEN (0, default), LAST_LAST2 (1), or LAST_ALTREF (2).
-  int ref_frame_comp_nonrd;
+  // LAST_GOLDEN (0), LAST_LAST2 (1), or LAST_ALTREF (2).
+  int ref_frame_comp_nonrd[3];
 
   // use reduced ref set for real-time mode
   int use_real_time_ref_set;
@@ -1281,6 +1302,9 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Forces larger partition blocks in variance based partitioning for intra
   // frames
   int force_large_partition_blocks_intra;
+
+  // Skip evaluation of no split in tx size selection for merge partition
+  int skip_tx_no_split_var_based_partition;
 } REAL_TIME_SPEED_FEATURES;
 
 /*!\endcond */

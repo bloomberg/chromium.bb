@@ -48,6 +48,12 @@ class CountingAXTreeObserver : public ui::AXTreeObserver {
 class BrowserAccessibilityManagerTest : public testing::Test {
  public:
   BrowserAccessibilityManagerTest() = default;
+
+  BrowserAccessibilityManagerTest(const BrowserAccessibilityManagerTest&) =
+      delete;
+  BrowserAccessibilityManagerTest& operator=(
+      const BrowserAccessibilityManagerTest&) = delete;
+
   ~BrowserAccessibilityManagerTest() override = default;
 
  protected:
@@ -57,8 +63,6 @@ class BrowserAccessibilityManagerTest : public testing::Test {
 
  private:
   void SetUp() override;
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerTest);
 };
 
 void BrowserAccessibilityManagerTest::SetUp() {
@@ -1388,13 +1392,13 @@ TEST_F(BrowserAccessibilityManagerTest, TestHitTestScaled) {
   // start from the parent_manager or the child_manager.
   auto* hittest1 = parent_manager->CachingAsyncHitTest(gfx::Point(75, 75));
   ASSERT_NE(nullptr, hittest1);
-  ASSERT_EQ("parent_child", hittest1->GetData().GetStringAttribute(
-                                ax::mojom::StringAttribute::kName));
+  ASSERT_EQ("parent_child",
+            hittest1->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   auto* hittest2 = child_manager->CachingAsyncHitTest(gfx::Point(75, 75));
   ASSERT_NE(nullptr, hittest2);
-  ASSERT_EQ("parent_child", hittest2->GetData().GetStringAttribute(
-                                ax::mojom::StringAttribute::kName));
+  ASSERT_EQ("parent_child",
+            hittest2->GetStringAttribute(ax::mojom::StringAttribute::kName));
 }
 
 TEST_F(BrowserAccessibilityManagerTest, TestShouldFireEventForNode) {

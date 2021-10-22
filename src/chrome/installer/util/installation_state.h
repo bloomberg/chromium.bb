@@ -29,6 +29,10 @@ class InstallationState;
 class ProductState {
  public:
   ProductState();
+
+  ProductState(const ProductState&) = delete;
+  ProductState& operator=(const ProductState&) = delete;
+
   ~ProductState();
 
   // Returns true if the product is installed (i.e., the product's Clients key
@@ -105,8 +109,6 @@ class ProductState {
 
  private:
   friend class InstallationState;
-
-  DISALLOW_COPY_AND_ASSIGN(ProductState);
 };  // class ProductState
 
 // Encapsulates the state of all products on the system.
@@ -114,6 +116,9 @@ class ProductState {
 class InstallationState {
  public:
   InstallationState();
+
+  InstallationState(const InstallationState&) = delete;
+  InstallationState& operator=(const InstallationState&) = delete;
 
   // Initializes this object with the machine's current state.
   void Initialize();
@@ -134,9 +139,6 @@ class InstallationState {
  protected:
   ProductState user_chrome_;
   ProductState system_chrome_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InstallationState);
 };  // class InstallationState
 
 }  // namespace installer

@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
@@ -35,6 +36,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
@@ -54,6 +56,8 @@ import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.ui.widget.Toast;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,6 +89,32 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
      * {@link UrlUtilities#getDomainAndRegistry}.
      */
     public static final String EXTRA_SELECTED_DOMAINS = "selected_domains";
+
+    /**
+     * Observer that monitors changes for {@link SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT}.
+     * Used to receive updates that //component/site_settings might not have access to.
+     *
+     * This is a temporary workaround until JNI content setting observer is available thus is not a
+     * recommended pattern to follow.
+     * TODO(https://crbug.com/1252504): Remove when java content_settings_observer is available.
+     */
+    public interface AutoDarkSiteSettingObserver {
+        /**
+         * Called when {@link SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT} changed in its
+         * default value (by the toggle).
+         * @param isEnabled The new state of the default value.
+         */
+        void onDefaultValueChanged(boolean isEnabled);
+
+        /**
+         * Called when {@link SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT} as a site exception
+         * is being added or removed.
+         * @param isAdded True if a site exception is being added; False otherwise.
+         */
+        void onSiteExceptionChanged(boolean isAdded);
+    }
+
+    private static @Nullable AutoDarkSiteSettingObserver sAutoDarkSiteSettingsObserver;
 
     // The list that contains preferences.
     private RecyclerView mListView;
@@ -118,6 +148,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
     @Nullable
     private Set<String> mSelectedDomains;
+
+    // Note: these values must match the SiteLayout enum in enums.xml.
+    @IntDef({SiteLayout.MOBILE, SiteLayout.DESKTOP})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SiteLayout {
+        int MOBILE = 0;
+        int DESKTOP = 1;
+        int NUM_ENTRIES = 2;
+    }
 
     // Keys for common ContentSetting toggle for categories. These three toggles are mutually
     // exclusive: a category should only show one of them, at most.
@@ -171,6 +210,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         public boolean isPreferenceControlledByCustodian(Preference preference) {
             return mCategory.isManagedByCustodian();
         }
+    }
+
+    /**
+     * Set the observer that looks at {@link SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT}
+     * @param observer
+     */
+    public static void setAutoDarkSiteSettingsObserver(
+            @Nullable AutoDarkSiteSettingObserver observer) {
+        sAutoDarkSiteSettingsObserver = observer;
     }
 
     private void getInfoForOrigins() {
@@ -434,6 +482,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
 
                 if (type == SiteSettingsCategory.Type.NOTIFICATIONS) {
                     updateNotificationsSecondaryControls();
+                } else if (type == SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT) {
+                    sAutoDarkSiteSettingsObserver.onDefaultValueChanged((boolean) newValue);
+                } else if (type == SiteSettingsCategory.Type.REQUEST_DESKTOP_SITE) {
+                    recordSiteLayoutChanged((boolean) newValue);
                 }
                 break;
             }
@@ -442,7 +494,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
             @ContentSettingValues
             int setting = (int) newValue;
-            WebsitePreferenceBridge.setContentSetting(
+            WebsitePreferenceBridge.setDefaultContentSetting(
                     browserContextHandle, mCategory.getContentSettingsType(), setting);
             getInfoForOrigins();
         } else if (FOUR_STATE_COOKIE_TOGGLE_KEY.equals(preference.getKey())) {
@@ -538,6 +590,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                         ? R.string.website_settings_add_site_description_cookies_block
                         : R.string.website_settings_add_site_description_cookies_allow;
             }
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT)) {
+            assert WebsitePreferenceBridge.isCategoryEnabled(
+                    browserContextHandle, ContentSettingsType.AUTO_DARK_WEB_CONTENT);
+            resource = R.string.website_settings_add_site_description_auto_dark_block;
         }
         assert resource > 0;
         return getString(resource);
@@ -585,7 +641,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                     : ContentSettingValues.ALLOW;
         }
 
-        WebsitePreferenceBridge.setContentSettingForPattern(browserContextHandle,
+        WebsitePreferenceBridge.setContentSettingCustomScope(browserContextHandle,
                 mCategory.getContentSettingsType(), primaryPattern, secondaryPattern, setting);
 
         String hostname = primaryPattern.equals(SITE_WILDCARD) ? secondaryPattern : primaryPattern;
@@ -603,6 +659,8 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             } else {
                 RecordUserAction.record("SoundContentSetting.UnmuteBy.PatternException");
             }
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT)) {
+            sAutoDarkSiteSettingsObserver.onSiteExceptionChanged(true);
         }
     }
 
@@ -633,6 +691,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS)
                 && !WebsitePreferenceBridge.isCategoryEnabled(
                         browserContextHandle, ContentSettingsType.AUTOMATIC_DOWNLOADS)) {
+            exception = true;
+        } else if (mCategory.showSites(SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT)
+                && WebsitePreferenceBridge.isCategoryEnabled(
+                        browserContextHandle, ContentSettingsType.AUTO_DARK_WEB_CONTENT)) {
             exception = true;
         }
         if (exception) {
@@ -966,7 +1028,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             TriStateSiteSettingsPreference triStateToggle, int contentType) {
         triStateToggle.setOnPreferenceChangeListener(this);
         @ContentSettingValues
-        int setting = WebsitePreferenceBridge.getContentSetting(
+        int setting = WebsitePreferenceBridge.getDefaultContentSetting(
                 getSiteSettingsDelegate().getBrowserContextHandle(), contentType);
         int[] descriptionIds =
                 ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
@@ -1042,7 +1104,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     }
 
     /**
-     * Builds an alert dialog which can be used to change the preference value  or remove
+     * Builds an alert dialog which can be used to change the preference value or remove
      * for the exception for the current categories ContentSettingType on a Website.
      */
     private AlertDialog.Builder buildPreferenceDialog(Website site) {
@@ -1067,6 +1129,12 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                             site.setContentSetting(browserContextHandle, contentSettingsType,
                                     ContentSettingValues.DEFAULT);
 
+                            if (mCategory.showSites(
+                                        SiteSettingsCategory.Type.AUTO_DARK_WEB_CONTENT)) {
+                                sAutoDarkSiteSettingsObserver.onSiteExceptionChanged(
+                                        /*isAdded=*/false);
+                            }
+
                             getInfoForOrigins();
                             dialog.dismiss();
                         })
@@ -1082,5 +1150,16 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                             getInfoForOrigins();
                             dialog.dismiss();
                         });
+    }
+
+    /**
+     * Records the changes of request desktop site content settings.
+     * @param enabled Whether request desktop site is enabled after the change.
+     */
+    private void recordSiteLayoutChanged(boolean enabled) {
+        @SiteLayout
+        int layout = enabled ? SiteLayout.DESKTOP : SiteLayout.MOBILE;
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.RequestDesktopSite.Changed", layout, SiteLayout.NUM_ENTRIES);
     }
 }

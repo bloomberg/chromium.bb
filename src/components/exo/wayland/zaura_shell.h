@@ -18,7 +18,7 @@ struct wl_resource;
 namespace exo {
 namespace wayland {
 
-constexpr uint32_t kZAuraShellVersion = 23;
+constexpr uint32_t kZAuraShellVersion = 25;
 
 // Adds bindings to the Aura Shell. Normally this implies Ash on ChromeOS
 // builds. On non-ChromeOS builds the protocol provides access to Aura windowing
@@ -32,6 +32,10 @@ class AuraSurface : public SurfaceObserver,
                     public ::wm::ActivationChangeObserver {
  public:
   AuraSurface(Surface* surface, wl_resource* resource);
+
+  AuraSurface(const AuraSurface&) = delete;
+  AuraSurface& operator=(const AuraSurface&) = delete;
+
   ~AuraSurface() override;
 
   void SetFrame(SurfaceFrameType type);
@@ -46,8 +50,8 @@ class AuraSurface : public SurfaceObserver,
   void DrawAttention();
   void SetFullscreenMode(uint32_t mode);
   void IntentToSnap(uint32_t snap_direction);
-  void SetSnapLeft();
-  void SetSnapRight();
+  void SetSnapPrimary();
+  void SetSnapSecondary();
   void UnsetSnap();
   void SetWindowSessionId(int32_t window_session_id);
   void SetCanGoBack();
@@ -57,6 +61,8 @@ class AuraSurface : public SurfaceObserver,
   void SetAspectRatio(const gfx::SizeF& aspect_ratio);
   void MoveToDesk(int desk_index);
   void SetInitialWorkspace(const char* initial_workspace);
+  void Pin(bool trusted);
+  void Unpin();
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
@@ -84,8 +90,6 @@ class AuraSurface : public SurfaceObserver,
   void ComputeAndSendOcclusion(
       const aura::Window::OcclusionState occlusion_state,
       const SkRegion& occluded_region);
-
-  DISALLOW_COPY_AND_ASSIGN(AuraSurface);
 };
 
 }  // namespace wayland

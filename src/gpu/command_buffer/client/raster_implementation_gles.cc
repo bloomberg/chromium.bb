@@ -26,7 +26,6 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/skia_util.h"
 
 namespace gpu {
 namespace raster {
@@ -236,7 +235,8 @@ void RasterImplementationGLES::RasterCHROMIUM(
     const gfx::Vector2dF& post_translate,
     const gfx::Vector2dF& post_scale,
     bool requires_clear,
-    size_t* max_op_size_hint) {
+    size_t* max_op_size_hint,
+    bool preserve_recording) {
   NOTREACHED();
 }
 

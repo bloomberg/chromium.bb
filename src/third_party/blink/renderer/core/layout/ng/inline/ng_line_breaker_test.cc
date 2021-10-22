@@ -673,6 +673,30 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
   EXPECT_EQ(sizes.max_size, LayoutUnit(110));
 }
 
+// `word-break: break-word` can break a space run.
+TEST_F(NGLineBreakerTest, MinMaxBreakSpaces) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    span {
+      font-size: 200%;
+    }
+    </style>
+    <div id=container>M):
+<span>    </span>p</div>
+  )HTML");
+
+  const auto sizes = ComputeMinMaxSizes(node);
+  EXPECT_EQ(sizes.min_size, LayoutUnit(10));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(90));
+}
+
 TEST_F(NGLineBreakerTest, MinMaxWithSoftHyphen) {
   LoadAhem();
   NGInlineNode node = CreateInlineNode(R"HTML(
@@ -706,6 +730,24 @@ TEST_F(NGLineBreakerTest, MinMaxWithHyphensDisabled) {
   const auto sizes = ComputeMinMaxSizes(node);
   EXPECT_EQ(sizes.min_size, LayoutUnit(60));
   EXPECT_EQ(sizes.max_size, LayoutUnit(90));
+}
+
+TEST_F(NGLineBreakerTest, MinMaxWithHyphensDisabledWithTrailingSpaces) {
+  LoadAhem();
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Ahem;
+      hyphens: none;
+    }
+    </style>
+    <div id=container>abcd&shy; ef xx</div>
+  )HTML");
+
+  const auto sizes = ComputeMinMaxSizes(node);
+  EXPECT_EQ(sizes.min_size, LayoutUnit(50));
+  EXPECT_EQ(sizes.max_size, LayoutUnit(100));
 }
 
 TEST_F(NGLineBreakerTest, MinMaxWithHyphensAuto) {
@@ -878,6 +920,30 @@ TEST_F(NGLineBreakerTest, SplitTextIntoSegements) {
         EXPECT_EQ(2u, line_info.Results()[5].Length());  // U+05E8 U+05B4
         EXPECT_EQ(1u, line_info.Results()[6].Length());  // U+05D9
         EXPECT_EQ(1u, line_info.Results()[7].Length());  // U+05EA
+      });
+}
+
+// crbug.com/1251960
+TEST_F(NGLineBreakerTest, SplitTextIntoSegementsCrash) {
+  RuntimeEnabledFeaturesTestHelpers::ScopedSVGTextNG svg_text_ng(true);
+  NGInlineNode node = CreateInlineNode(R"HTML(<!DOCTYPE html>
+      <svg viewBox="0 0 800 600">
+      <text id="container" x="50 100 150">&#x0343;&#x2585;&#x0343;&#x2585;<!--
+      -->&#x0343;&#x2585;</text>
+      </svg>)HTML");
+  BreakLines(
+      node, LayoutUnit::Max(),
+      [](const NGLineBreaker& line_breaker, const NGLineInfo& line_info) {
+        Vector<const NGInlineItemResult*> text_results;
+        for (const auto& result : line_info.Results()) {
+          if (result.item->Type() == NGInlineItem::kText)
+            text_results.push_back(&result);
+        }
+        EXPECT_EQ(4u, text_results.size());
+        EXPECT_EQ(1u, text_results[0]->Length());  // U+0343
+        EXPECT_EQ(1u, text_results[1]->Length());  // U+2585
+        EXPECT_EQ(2u, text_results[2]->Length());  // U+0343 U+2585
+        EXPECT_EQ(2u, text_results[3]->Length());  // U+0343 U+2585
       });
 }
 

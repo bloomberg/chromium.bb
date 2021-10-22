@@ -12,13 +12,14 @@
 
 #include "include/sksl/DSLCore.h"
 #include "src/core/SkTraceEvent.h"
-#include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLDSLParser.h"
 #include "src/sksl/SkSLIRGenerator.h"
+#include "src/sksl/SkSLIntrinsicMap.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/SkSLRehydrator.h"
+#include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/codegen/SkSLGLSLCodeGenerator.h"
 #include "src/sksl/codegen/SkSLMetalCodeGenerator.h"
 #include "src/sksl/codegen/SkSLSPIRVCodeGenerator.h"
@@ -28,13 +29,15 @@
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
-#include "src/sksl/ir/SkSLIntLiteral.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLModifiersDeclaration.h"
 #include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/sksl/transform/SkSLProgramWriter.h"
+#include "src/sksl/transform/SkSLTransform.h"
 #include "src/utils/SkBitSet.h"
 
 #include <fstream>
@@ -124,7 +127,7 @@ public:
 
 Compiler::Compiler(const ShaderCapsClass* caps)
         : fErrorReporter(this)
-        , fContext(std::make_shared<Context>(fErrorReporter, *caps))
+        , fContext(std::make_shared<Context>(fErrorReporter, *caps, fMangler))
         , fInliner(fContext.get()) {
     SkASSERT(caps);
     fRootModule.fSymbols = this->makeRootSymbolTable();
@@ -203,7 +206,7 @@ std::shared_ptr<SymbolTable> Compiler::makePrivateSymbolTable(std::shared_ptr<Sy
 
     // sk_Caps is "builtin", but all references to it are resolved to Settings, so we don't need to
     // treat it as builtin (ie, no need to clone it into the Program).
-    privateSymbolTable->add(std::make_unique<Variable>(/*offset=*/-1,
+    privateSymbolTable->add(std::make_unique<Variable>(/*line=*/-1,
                                                        fCoreModifiers.add(Modifiers{}),
                                                        "sk_Caps",
                                                        fContext->fTypes.fSkCaps.get(),
@@ -316,34 +319,25 @@ LoadedModule Compiler::loadModule(ProgramKind kind,
         printf("error reading %s\n", data.fPath);
         abort();
     }
-    const String* source = fRootModule.fSymbols->takeOwnershipOfString(std::move(text));
-
     ParsedModule baseModule = {base, /*fIntrinsics=*/nullptr};
-    std::vector<std::unique_ptr<ProgramElement>> elements;
-    std::vector<const ProgramElement*> sharedElements;
-    dsl::StartModule(this, kind, settings, baseModule);
-    dsl::SetErrorReporter(&this->errorReporter());
-    AutoSource as(this, source->c_str());
-    IRGenerator::IRBundle ir = fIRGenerator->convertProgram(baseModule, /*isBuiltinCode=*/true,
-                                                            *source);
-    SkASSERT(ir.fSharedElements.empty());
-    LoadedModule module = { kind, std::move(ir.fSymbolTable), std::move(ir.fElements) };
+    LoadedModule result = DSLParser(this, settings, kind,
+            std::move(text)).moduleInheritingFrom(std::move(baseModule));
     if (this->errorCount()) {
         printf("Unexpected errors: %s\n", this->fErrorText.c_str());
         SkDEBUGFAILF("%s %s\n", data.fPath, this->fErrorText.c_str());
     }
-    dsl::End();
 #else
     ProgramConfig config;
+    config.fIsBuiltinCode = true;
     config.fKind = kind;
     config.fSettings = settings;
     AutoProgramConfig autoConfig(fContext, &config);
     SkASSERT(data.fData && (data.fSize != 0));
     Rehydrator rehydrator(fContext.get(), base, data.fData, data.fSize);
-    LoadedModule module = { kind, rehydrator.symbolTable(), rehydrator.elements() };
+    LoadedModule result = { kind, rehydrator.symbolTable(), rehydrator.elements() };
 #endif
 
-    return module;
+    return result;
 }
 
 ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const ParsedModule& base) {
@@ -356,7 +350,7 @@ ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const Pars
         return ParsedModule{module.fSymbols, base.fIntrinsics};
     }
 
-    auto intrinsics = std::make_shared<IRIntrinsicMap>(base.fIntrinsics.get());
+    auto intrinsics = std::make_shared<IntrinsicMap>(base.fIntrinsics.get());
 
     // Now, transfer all of the program elements to an intrinsic map. This maps certain types of
     // global objects to the declaring ProgramElement.
@@ -395,19 +389,12 @@ ParsedModule Compiler::parseModule(ProgramKind kind, ModuleData data, const Pars
     return ParsedModule{module.fSymbols, std::move(intrinsics)};
 }
 
-std::unique_ptr<Program> Compiler::convertProgram(
-        ProgramKind kind,
-        String text,
-        Program::Settings settings) {
+std::unique_ptr<Program> Compiler::convertProgram(ProgramKind kind,
+                                                  String text,
+                                                  Program::Settings settings) {
     TRACE_EVENT0("skia.shaders", "SkSL::Compiler::convertProgram");
 
     SkASSERT(!settings.fExternalFunctions || (kind == ProgramKind::kGeneric));
-
-#if !SKSL_DSL_PARSER
-    // Loading and optimizing our base module might reset the inliner, so do that first,
-    // *then* configure the inliner with the settings for this program.
-    const ParsedModule& baseModule = this->moduleForProgramKind(kind);
-#endif
 
     // Honor our optimization-override flags.
     switch (sOptimizer) {
@@ -447,45 +434,8 @@ std::unique_ptr<Program> Compiler::convertProgram(
     this->resetErrors();
     fInliner.reset();
 
-#if SKSL_DSL_PARSER
     settings.fDSLMangling = false;
-    return DSLParser(this, settings, kind, text).program();
-#else
-    auto textPtr = std::make_unique<String>(std::move(text));
-    AutoSource as(this, textPtr->c_str());
-
-    dsl::Start(this, kind, settings);
-    dsl::SetErrorReporter(&fErrorReporter);
-    IRGenerator::IRBundle ir = fIRGenerator->convertProgram(baseModule, /*isBuiltinCode=*/false,
-                                                            *textPtr);
-    // Ideally, we would just use dsl::ReleaseProgram and not have to do any manual mucking about
-    // with the memory pool, but we've got some impedance mismatches to solve first
-    Pool* memoryPool = dsl::DSLWriter::MemoryPool().get();
-    auto program = std::make_unique<Program>(std::move(textPtr),
-                                             std::move(dsl::DSLWriter::GetProgramConfig()),
-                                             fContext,
-                                             std::move(ir.fElements),
-                                             std::move(ir.fSharedElements),
-                                             std::move(dsl::DSLWriter::GetModifiersPool()),
-                                             std::move(ir.fSymbolTable),
-                                             std::move(dsl::DSLWriter::MemoryPool()),
-                                             ir.fInputs);
-    this->errorReporter().reportPendingErrors(PositionInfo());
-    bool success = false;
-    if (!this->finalize(*program)) {
-        // Do not return programs that failed to compile.
-    } else if (!this->optimize(*program)) {
-        // Do not return programs that failed to optimize.
-    } else {
-        // We have a successful program!
-        success = true;
-    }
-    dsl::End();
-    if (memoryPool) {
-        memoryPool->detachFromThread();
-    }
-    return success ? std::move(program) : nullptr;
-#endif // SKSL_DSL_PARSER
+    return DSLParser(this, settings, kind, std::move(text)).program();
 }
 
 bool Compiler::optimize(LoadedModule& module) {
@@ -493,6 +443,7 @@ bool Compiler::optimize(LoadedModule& module) {
 
     // Create a temporary program configuration with default settings.
     ProgramConfig config;
+    config.fIsBuiltinCode = true;
     config.fKind = module.fKind;
     AutoProgramConfig autoConfig(fContext, &config);
 
@@ -510,273 +461,6 @@ bool Compiler::optimize(LoadedModule& module) {
     return this->errorCount() == 0;
 }
 
-bool Compiler::removeDeadFunctions(Program& program, ProgramUsage* usage) {
-    bool madeChanges = false;
-
-    if (program.fConfig->fSettings.fRemoveDeadFunctions) {
-        auto isDeadFunction = [&](const ProgramElement* element) {
-            if (!element->is<FunctionDefinition>()) {
-                return false;
-            }
-            const FunctionDefinition& fn = element->as<FunctionDefinition>();
-            if (fn.declaration().isMain() || usage->get(fn.declaration()) > 0) {
-                return false;
-            }
-            usage->remove(*element);
-            madeChanges = true;
-            return true;
-        };
-
-        program.fElements.erase(std::remove_if(program.fElements.begin(),
-                                               program.fElements.end(),
-                                               [&](const std::unique_ptr<ProgramElement>& element) {
-                                                   return isDeadFunction(element.get());
-                                               }),
-                                program.fElements.end());
-        program.fSharedElements.erase(std::remove_if(program.fSharedElements.begin(),
-                                                     program.fSharedElements.end(),
-                                                     isDeadFunction),
-                                      program.fSharedElements.end());
-    }
-    return madeChanges;
-}
-
-bool Compiler::removeDeadGlobalVariables(Program& program, ProgramUsage* usage) {
-    bool madeChanges = false;
-
-    if (program.fConfig->fSettings.fRemoveDeadVariables) {
-        auto isDeadVariable = [&](const ProgramElement* element) {
-            if (!element->is<GlobalVarDeclaration>()) {
-                return false;
-            }
-            const GlobalVarDeclaration& global = element->as<GlobalVarDeclaration>();
-            const VarDeclaration& varDecl = global.declaration()->as<VarDeclaration>();
-            if (!usage->isDead(varDecl.var())) {
-                return false;
-            }
-            madeChanges = true;
-            return true;
-        };
-
-        program.fElements.erase(std::remove_if(program.fElements.begin(),
-                                               program.fElements.end(),
-                                               [&](const std::unique_ptr<ProgramElement>& element) {
-                                                   return isDeadVariable(element.get());
-                                               }),
-                                program.fElements.end());
-        program.fSharedElements.erase(std::remove_if(program.fSharedElements.begin(),
-                                                     program.fSharedElements.end(),
-                                                     isDeadVariable),
-                                      program.fSharedElements.end());
-    }
-    return madeChanges;
-}
-
-bool Compiler::removeDeadLocalVariables(Program& program, ProgramUsage* usage) {
-    class DeadLocalVariableEliminator : public ProgramWriter {
-    public:
-        DeadLocalVariableEliminator(const Context& context, ProgramUsage* usage)
-                : fContext(context)
-                , fUsage(usage) {}
-
-        using ProgramWriter::visitProgramElement;
-
-        bool visitExpressionPtr(std::unique_ptr<Expression>& expr) override {
-            // We don't need to look inside expressions at all.
-            return false;
-        }
-
-        bool visitStatementPtr(std::unique_ptr<Statement>& stmt) override {
-            if (stmt->is<VarDeclaration>()) {
-                VarDeclaration& varDecl = stmt->as<VarDeclaration>();
-                const Variable* var = &varDecl.var();
-                ProgramUsage::VariableCounts* counts = fUsage->fVariableCounts.find(var);
-                SkASSERT(counts);
-                SkASSERT(counts->fDeclared);
-                if (CanEliminate(var, *counts)) {
-                    if (var->initialValue()) {
-                        // The variable has an initial-value expression, which might have side
-                        // effects. ExpressionStatement::Make will preserve side effects, but
-                        // replaces pure expressions with Nop.
-                        fUsage->remove(stmt.get());
-                        stmt = ExpressionStatement::Make(fContext, std::move(varDecl.value()));
-                        fUsage->add(stmt.get());
-                    } else {
-                        // The variable has no initial-value and can be cleanly eliminated.
-                        fUsage->remove(stmt.get());
-                        stmt = std::make_unique<Nop>();
-                    }
-                    fMadeChanges = true;
-                }
-                return false;
-            }
-            return INHERITED::visitStatementPtr(stmt);
-        }
-
-        static bool CanEliminate(const Variable* var, const ProgramUsage::VariableCounts& counts) {
-            if (!counts.fDeclared || counts.fRead || var->storage() != VariableStorage::kLocal) {
-                return false;
-            }
-            if (var->initialValue()) {
-                SkASSERT(counts.fWrite >= 1);
-                return counts.fWrite == 1;
-            } else {
-                return counts.fWrite == 0;
-            }
-        }
-
-        bool fMadeChanges = false;
-        const Context& fContext;
-        ProgramUsage* fUsage;
-
-        using INHERITED = ProgramWriter;
-    };
-
-    DeadLocalVariableEliminator visitor{*fContext, usage};
-
-    if (program.fConfig->fSettings.fRemoveDeadVariables) {
-        for (auto& [var, counts] : usage->fVariableCounts) {
-            if (DeadLocalVariableEliminator::CanEliminate(var, counts)) {
-                // This program contains at least one dead local variable.
-                // Scan the program for any dead local variables and eliminate them all.
-                for (std::unique_ptr<ProgramElement>& pe : program.ownedElements()) {
-                    if (pe->is<FunctionDefinition>()) {
-                        visitor.visitProgramElement(*pe);
-                    }
-                }
-                break;
-            }
-        }
-    }
-
-    return visitor.fMadeChanges;
-}
-
-void Compiler::removeUnreachableCode(Program& program, ProgramUsage* usage) {
-    class UnreachableCodeEliminator : public ProgramWriter {
-    public:
-        UnreachableCodeEliminator(const Context& context, ProgramUsage* usage)
-                : fContext(context)
-                , fUsage(usage) {
-            fFoundFunctionExit.push(false);
-            fFoundLoopExit.push(false);
-        }
-
-        using ProgramWriter::visitProgramElement;
-
-        bool visitExpressionPtr(std::unique_ptr<Expression>& expr) override {
-            // We don't need to look inside expressions at all.
-            return false;
-        }
-
-        bool visitStatementPtr(std::unique_ptr<Statement>& stmt) override {
-            if (fFoundFunctionExit.top() || fFoundLoopExit.top()) {
-                // If we already found an exit in this section, anything beyond it is dead code.
-                if (!stmt->is<Nop>()) {
-                    // Eliminate the dead statement by substituting a Nop.
-                    fUsage->remove(stmt.get());
-                    stmt = std::make_unique<Nop>();
-                }
-                return false;
-            }
-
-            switch (stmt->kind()) {
-                case Statement::Kind::kReturn:
-                case Statement::Kind::kDiscard:
-                    // We found a function exit on this path.
-                    fFoundFunctionExit.top() = true;
-                    break;
-
-                case Statement::Kind::kBreak:
-                case Statement::Kind::kContinue:
-                    // We found a loop exit on this path. Note that we skip over switch statements
-                    // completely when eliminating code, so any `break` statement would be breaking
-                    // out of a loop, not out of a switch.
-                    fFoundLoopExit.top() = true;
-                    break;
-
-                case Statement::Kind::kExpression:
-                case Statement::Kind::kInlineMarker:
-                case Statement::Kind::kNop:
-                case Statement::Kind::kVarDeclaration:
-                    // These statements don't affect control flow.
-                    break;
-
-                case Statement::Kind::kBlock:
-                    // Blocks are on the straight-line path and don't affect control flow.
-                    return INHERITED::visitStatementPtr(stmt);
-
-                case Statement::Kind::kDo: {
-                    // Function-exits are allowed to propagate outside of a do-loop, because it
-                    // always executes its body at least once.
-                    fFoundLoopExit.push(false);
-                    bool result = INHERITED::visitStatementPtr(stmt);
-                    fFoundLoopExit.pop();
-                    return result;
-                }
-                case Statement::Kind::kFor: {
-                    // Function-exits are not allowed to propagate out, because a for-loop or while-
-                    // loop could potentially run zero times.
-                    fFoundFunctionExit.push(false);
-                    fFoundLoopExit.push(false);
-                    bool result = INHERITED::visitStatementPtr(stmt);
-                    fFoundLoopExit.pop();
-                    fFoundFunctionExit.pop();
-                    return result;
-                }
-                case Statement::Kind::kIf: {
-                    // This statement is conditional and encloses two inner sections of code.
-                    // If both sides contain a function-exit or loop-exit, that exit is allowed to
-                    // propagate out.
-                    IfStatement& ifStmt = stmt->as<IfStatement>();
-
-                    fFoundFunctionExit.push(false);
-                    fFoundLoopExit.push(false);
-                    bool result = (ifStmt.ifTrue() && this->visitStatementPtr(ifStmt.ifTrue()));
-                    bool foundFunctionExitOnTrue = fFoundFunctionExit.top();
-                    bool foundLoopExitOnTrue = fFoundLoopExit.top();
-                    fFoundFunctionExit.pop();
-                    fFoundLoopExit.pop();
-
-                    fFoundFunctionExit.push(false);
-                    fFoundLoopExit.push(false);
-                    result |= (ifStmt.ifFalse() && this->visitStatementPtr(ifStmt.ifFalse()));
-                    bool foundFunctionExitOnFalse = fFoundFunctionExit.top();
-                    bool foundLoopExitOnFalse = fFoundLoopExit.top();
-                    fFoundFunctionExit.pop();
-                    fFoundLoopExit.pop();
-
-                    fFoundFunctionExit.top() |= foundFunctionExitOnTrue && foundFunctionExitOnFalse;
-                    fFoundLoopExit.top() |= foundLoopExitOnTrue && foundLoopExitOnFalse;
-                    return result;
-                }
-                case Statement::Kind::kSwitch:
-                case Statement::Kind::kSwitchCase:
-                    // We skip past switch statements entirely when scanning for dead code. Their
-                    // control flow is quite complex and we already do a good job of flattening out
-                    // switches on constant values.
-                    break;
-            }
-
-            return false;
-        }
-
-        const Context& fContext;
-        ProgramUsage* fUsage;
-        std::stack<bool> fFoundFunctionExit;
-        std::stack<bool> fFoundLoopExit;
-
-        using INHERITED = ProgramWriter;
-    };
-
-    for (std::unique_ptr<ProgramElement>& pe : program.ownedElements()) {
-        if (pe->is<FunctionDefinition>()) {
-            UnreachableCodeEliminator visitor{*fContext, usage};
-            visitor.visitProgramElement(*pe);
-        }
-    }
-}
-
 bool Compiler::optimize(Program& program) {
     // The optimizer only needs to run when it is enabled.
     if (!program.fConfig->fSettings.fOptimize) {
@@ -789,18 +473,19 @@ bool Compiler::optimize(Program& program) {
     if (this->errorCount() == 0) {
         // Run the inliner only once; it is expensive! Multiple passes can occasionally shake out
         // more wins, but it's diminishing returns.
-        this->runInliner(program.ownedElements(), program.fSymbols, usage);
+        this->runInliner(program.fOwnedElements, program.fSymbols, usage);
 
-        while (this->removeDeadFunctions(program, usage)) {
+        // Unreachable code can confuse some drivers, so it's worth removing. (skia:12012)
+        Transform::EliminateUnreachableCode(program, usage);
+
+        while (Transform::EliminateDeadFunctions(program, usage)) {
             // Removing dead functions may cause more functions to become unreferenced. Try again.
         }
-        while (this->removeDeadLocalVariables(program, usage)) {
+        while (Transform::EliminateDeadLocalVariables(program, usage)) {
             // Removing dead variables may cause more variables to become unreferenced. Try again.
         }
-        // Unreachable code can confuse some drivers, so it's worth removing. (skia:12012)
-        this->removeUnreachableCode(program, usage);
 
-        this->removeDeadGlobalVariables(program, usage);
+        Transform::EliminateDeadGlobalVariables(program, usage);
     }
 
     return this->errorCount() == 0;
@@ -835,7 +520,7 @@ bool Compiler::finalize(Program& program) {
     if (fContext->fConfig->strictES2Mode() && this->errorCount() == 0) {
         // Enforce Appendix A, Section 5 of the GLSL ES 1.00 spec -- Indexing. This logic assumes
         // that all loops meet the criteria of Section 4, and if they don't, could crash.
-        for (const auto& pe : program.ownedElements()) {
+        for (const auto& pe : program.fOwnedElements) {
             Analysis::ValidateIndexingForES2(*pe, this->errorReporter());
         }
         // Verify that the program size is reasonable after unrolling and inlining. This also
@@ -855,7 +540,7 @@ bool Compiler::toSPIRV(Program& program, OutputStream& out) {
     settings.fDSLUseMemoryPool = false;
     dsl::Start(this, program.fConfig->fKind, settings);
     dsl::SetErrorReporter(&fErrorReporter);
-    dsl::DSLWriter::IRGenerator().fSymbolTable = program.fSymbols;
+    ThreadContext::IRGenerator().fSymbolTable = program.fSymbols;
 #ifdef SK_ENABLE_SPIRV_VALIDATION
     StringStream buffer;
     SPIRVCodeGenerator cg(fContext.get(), &program, &buffer);
@@ -884,6 +569,7 @@ bool Compiler::toSPIRV(Program& program, OutputStream& out) {
                 errors.append(disassembly);
             }
             this->errorReporter().error(-1, errors);
+            this->errorReporter().reportPendingErrors(PositionInfo());
 #else
             SkDEBUGFAILF("%s", errors.c_str());
 #endif
@@ -957,7 +643,6 @@ void Compiler::handleError(skstd::string_view msg, PositionInfo pos) {
 }
 
 String Compiler::errorText(bool showCount) {
-    this->errorReporter().reportPendingErrors(PositionInfo());
     if (showCount) {
         this->writeErrorCount();
     }

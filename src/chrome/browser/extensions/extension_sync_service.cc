@@ -261,9 +261,8 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
   // for the existence of disable reasons instead), we're just setting it here
   // for older Chrome versions (<M48).
   bool enabled = (disable_reasons == extensions::disable_reason::DISABLE_NONE);
-  if (extensions::blocklist_prefs::GetExtensionBlocklistState(
-          id, extension_prefs) ==
-      extensions::BitMapBlocklistState::BLOCKLISTED_MALWARE) {
+  if (extensions::blocklist_prefs::IsExtensionBlocklisted(id,
+                                                          extension_prefs)) {
     enabled = false;
     NOTREACHED() << "Blocklisted extensions should not be getting synced.";
   }
@@ -476,12 +475,6 @@ void ExtensionSyncService::ApplySyncData(
         extension_sync_data.launch_type() < extensions::NUM_LAUNCH_TYPES) {
       extensions::SetLaunchType(
           profile_, id, extension_sync_data.launch_type());
-    }
-
-    if (!extension_sync_data.bookmark_app_url().empty()) {
-      // Bookmark apps have been migrated to web apps and are now handled by
-      // WebAppSyncBridge.
-      return;
     }
 
     if (extension_sync_data.app_launch_ordinal().IsValid() &&

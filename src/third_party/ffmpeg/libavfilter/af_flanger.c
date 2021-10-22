@@ -90,31 +90,18 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterChannelLayouts *layouts;
-    AVFilterFormats *formats;
     static const enum AVSampleFormat sample_fmts[] = {
         AV_SAMPLE_FMT_DBLP, AV_SAMPLE_FMT_NONE
     };
-    int ret;
-
-    layouts = ff_all_channel_counts();
-    if (!layouts)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_channel_layouts(ctx, layouts);
+    int ret = ff_set_common_all_channel_counts(ctx);
     if (ret < 0)
         return ret;
 
-    formats = ff_make_format_list(sample_fmts);
-    if (!formats)
-        return AVERROR(ENOMEM);
-    ret = ff_set_common_formats(ctx, formats);
+    ret = ff_set_common_formats_from_list(ctx, sample_fmts);
     if (ret < 0)
         return ret;
 
-    formats = ff_all_samplerates();
-    if (!formats)
-        return AVERROR(ENOMEM);
-    return ff_set_common_samplerates(ctx, formats);
+    return ff_set_common_all_samplerates(ctx);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -222,7 +209,6 @@ static const AVFilterPad flanger_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad flanger_outputs[] = {
@@ -230,7 +216,6 @@ static const AVFilterPad flanger_outputs[] = {
         .name          = "default",
         .type          = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_flanger = {
@@ -241,6 +226,6 @@ const AVFilter ff_af_flanger = {
     .priv_class    = &flanger_class,
     .init          = init,
     .uninit        = uninit,
-    .inputs        = flanger_inputs,
-    .outputs       = flanger_outputs,
+    FILTER_INPUTS(flanger_inputs),
+    FILTER_OUTPUTS(flanger_outputs),
 };

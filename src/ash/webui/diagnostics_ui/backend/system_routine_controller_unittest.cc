@@ -284,11 +284,11 @@ TEST_F(SystemRoutineControllerTest, CpuStressSuccess) {
       mojo::ScopedHandle());
 
   // Before the update interval, the routine status is not processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(59));
+  task_environment_.FastForwardBy(base::Seconds(59));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -313,11 +313,11 @@ TEST_F(SystemRoutineControllerTest, CpuStressFailure) {
       mojo::ScopedHandle());
 
   // Before the update interval, the routine status is not processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(59));
+  task_environment_.FastForwardBy(base::Seconds(59));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestFailed);
@@ -342,12 +342,12 @@ TEST_F(SystemRoutineControllerTest, CpuStressStillRunning) {
       mojo::ScopedHandle());
 
   // Before the update interval, the routine status is not processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(59));
+  task_environment_.FastForwardBy(base::Seconds(59));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // After the update interval, the results from the routine are still not
   // available.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // Update the status on cros_healthd to signify the routine is completed
@@ -356,7 +356,7 @@ TEST_F(SystemRoutineControllerTest, CpuStressStillRunning) {
       mojo::ScopedHandle());
 
   // Fast forward by the refresh interval.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -381,12 +381,12 @@ TEST_F(SystemRoutineControllerTest, CpuStressStillRunningMultipleIntervals) {
       mojo::ScopedHandle());
 
   // Before the update interval, the routine status is not processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(59));
+  task_environment_.FastForwardBy(base::Seconds(59));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // After the update interval, the results from the routine are still not
   // available.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   SetNonInteractiveRoutineUpdateResponse(
@@ -394,7 +394,7 @@ TEST_F(SystemRoutineControllerTest, CpuStressStillRunningMultipleIntervals) {
       mojo::ScopedHandle());
 
   // After another refresh interval, the routine is still running.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // Update the status on cros_healthd to signify the routine is completed
@@ -403,7 +403,7 @@ TEST_F(SystemRoutineControllerTest, CpuStressStillRunningMultipleIntervals) {
       mojo::ScopedHandle());
 
   // After a second refresh interval, the routine is completed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -426,7 +426,7 @@ TEST_F(SystemRoutineControllerTest, TwoConsecutiveRoutines) {
   SetNonInteractiveRoutineUpdateResponse(
       /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kPassed,
       mojo::ScopedHandle());
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::Seconds(60));
   EXPECT_FALSE(routine_runner_1.result.is_null());
   VerifyRoutineResult(*routine_runner_1.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -448,7 +448,7 @@ TEST_F(SystemRoutineControllerTest, TwoConsecutiveRoutines) {
   SetNonInteractiveRoutineUpdateResponse(
       /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kFailed,
       mojo::ScopedHandle());
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::Seconds(60));
   EXPECT_FALSE(routine_runner_2.result.is_null());
   VerifyRoutineResult(*routine_runner_2.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestFailed);
@@ -477,7 +477,7 @@ TEST_F(SystemRoutineControllerTest, PowerRoutineSuccess) {
       /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kPassed,
       CreateMojoHandleForPowerRoutine(expected_percent_charge,
                                       /*charge=*/true));
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(31));
+  task_environment_.FastForwardBy(base::Seconds(31));
 
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(
@@ -510,7 +510,7 @@ TEST_F(SystemRoutineControllerTest, DischargeRoutineSuccess) {
       /*percent_complete=*/100, healthd::DiagnosticRoutineStatusEnum::kPassed,
       CreateMojoHandleForPowerRoutine(expected_percent_discharge,
                                       /*charge=*/false));
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(31));
+  task_environment_.FastForwardBy(base::Seconds(31));
 
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(
@@ -540,12 +540,13 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
        healthd::DiagnosticRoutineEnum::kLanConnectivity,
        healthd::DiagnosticRoutineEnum::kSignalStrength,
        healthd::DiagnosticRoutineEnum::kArcHttp,
-       healthd::DiagnosticRoutineEnum::kArcPing});
+       healthd::DiagnosticRoutineEnum::kArcPing,
+       healthd::DiagnosticRoutineEnum::kArcDnsResolution});
 
   base::RunLoop run_loop;
   system_routine_controller_->GetSupportedRoutines(base::BindLambdaForTesting(
       [&](const std::vector<mojom::RoutineType>& supported_routines) {
-        EXPECT_EQ(16u, supported_routines.size());
+        EXPECT_EQ(17u, supported_routines.size());
         EXPECT_FALSE(base::Contains(supported_routines,
                                     mojom::RoutineType::kBatteryCharge));
         EXPECT_FALSE(base::Contains(supported_routines,
@@ -586,6 +587,8 @@ TEST_F(SystemRoutineControllerTest, AvailableRoutines) {
             base::Contains(supported_routines, mojom::RoutineType::kArcHttp));
         EXPECT_TRUE(
             base::Contains(supported_routines, mojom::RoutineType::kArcPing));
+        EXPECT_TRUE(base::Contains(supported_routines,
+                                   mojom::RoutineType::kArcDnsResolution));
         run_loop.Quit();
       }));
   run_loop.Run();
@@ -690,11 +693,11 @@ TEST_F(SystemRoutineControllerTest, RunRoutineCount1) {
       mojo::ScopedHandle());
 
   // Before the update interval, the routine status is not processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(59));
+  task_environment_.FastForwardBy(base::Seconds(59));
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment_.FastForwardBy(base::Seconds(1));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -732,7 +735,8 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
   EXPECT_TRUE(routine_runner.result.is_null());
 
   // Verify that the Running status appears in the log.
-  std::vector<std::string> log_lines = GetLogLines(log.GetContents());
+  std::vector<std::string> log_lines =
+      GetLogLines(log.GetContentsForCategory("system"));
   EXPECT_EQ(1u, log_lines.size());
 
   std::vector<std::string> log_line_contents = GetLogLineContents(log_lines[0]);
@@ -746,13 +750,13 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
       mojo::ScopedHandle());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::Seconds(60));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
 
   // Verify that the Passed status appears in the log.
-  log_lines = GetLogLines(log.GetContents());
+  log_lines = GetLogLines(log.GetContentsForCategory("system"));
   EXPECT_EQ(2u, log_lines.size());
 
   log_line_contents = GetLogLineContents(log_lines[1]);
@@ -776,7 +780,7 @@ TEST_F(SystemRoutineControllerTest, RoutineLog) {
   routine_runner_2.reset();
   task_environment_.RunUntilIdle();
 
-  log_lines = GetLogLines(log.GetContents());
+  log_lines = GetLogLines(log.GetContentsForCategory("system"));
   EXPECT_EQ(4u, log_lines.size());
 
   log_line_contents = GetLogLineContents(log_lines[3]);
@@ -806,7 +810,7 @@ TEST_F(SystemRoutineControllerTest, RoutineResultEmitted) {
       mojo::ScopedHandle());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::Seconds(60));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -859,14 +863,13 @@ TEST_F(SystemRoutineControllerTest, MemoryRuntimeEmitted) {
       mojo::ScopedHandle());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1000));
+  task_environment_.FastForwardBy(base::Seconds(1000));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kMemory,
                       mojom::StandardRoutineResult::kTestPassed);
 
   histogram_tester.ExpectUniqueTimeSample(
-      "ChromeOS.DiagnosticsUi.MemoryRoutineDuration",
-      base::TimeDelta::FromSeconds(1000),
+      "ChromeOS.DiagnosticsUi.MemoryRoutineDuration", base::Seconds(1000),
       /*expected_count=*/1);
 }
 
@@ -911,7 +914,7 @@ TEST_F(SystemRoutineControllerTest, CancelThenStartRoutine) {
       mojo::ScopedHandle());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(60));
+  task_environment_.FastForwardBy(base::Seconds(60));
   EXPECT_FALSE(routine_runner_2.result.is_null());
   VerifyRoutineResult(*routine_runner_2.result, mojom::RoutineType::kCpuStress,
                       mojom::StandardRoutineResult::kTestPassed);
@@ -939,7 +942,7 @@ TEST_F(SystemRoutineControllerTest, MemoryAcquiresWakeLock) {
       mojo::ScopedHandle());
 
   // After the update interval, the update is fetched and processed.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1000));
+  task_environment_.FastForwardBy(base::Seconds(1000));
   EXPECT_FALSE(routine_runner.result.is_null());
   VerifyRoutineResult(*routine_runner.result, mojom::RoutineType::kMemory,
                       mojom::StandardRoutineResult::kTestPassed);

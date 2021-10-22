@@ -70,14 +70,15 @@ class PasswordImportConsumer {
  public:
   explicit PasswordImportConsumer(Profile* profile);
 
+  PasswordImportConsumer(const PasswordImportConsumer&) = delete;
+  PasswordImportConsumer& operator=(const PasswordImportConsumer&) = delete;
+
   void ConsumePassword(password_manager::PasswordImporter::Result result,
                        password_manager::CSVPasswordSequence seq);
 
  private:
   Profile* profile_;
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordImportConsumer);
 };
 
 PasswordImportConsumer::PasswordImportConsumer(Profile* profile)
@@ -96,8 +97,8 @@ void PasswordImportConsumer::ConsumePassword(
     return;
 
   scoped_refptr<password_manager::PasswordStoreInterface> store(
-      PasswordStoreFactory::GetInterfaceForProfile(
-          profile_, ServiceAccessType::EXPLICIT_ACCESS));
+      PasswordStoreFactory::GetForProfile(profile_,
+                                          ServiceAccessType::EXPLICIT_ACCESS));
   for (const auto& pwd : seq) {
     if (store)
       store->AddLogin(pwd.ParseValid());

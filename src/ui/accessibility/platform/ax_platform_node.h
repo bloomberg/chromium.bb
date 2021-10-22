@@ -45,6 +45,9 @@ class AX_EXPORT AXPlatformNode {
   // Return the AXPlatformNode at the root of the tree for a native window.
   static AXPlatformNode* FromNativeWindow(gfx::NativeWindow native_window);
 
+  AXPlatformNode(const AXPlatformNode&) = delete;
+  AXPlatformNode& operator=(const AXPlatformNode&) = delete;
+
   // Provide a function that returns the AXPlatformNode at the root of the
   // tree for a native window.
   static void RegisterNativeWindowHandler(NativeWindowHandlerCallback handler);
@@ -140,11 +143,10 @@ class AX_EXPORT AXPlatformNode {
   static gfx::NativeViewAccessible popup_focus_override_;
 
   bool is_primary_web_contents_for_window_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(AXPlatformNode);
 };
 
 namespace testing {
+
 class ScopedAxModeSetter {
  public:
   explicit ScopedAxModeSetter(AXMode new_mode) {
@@ -152,6 +154,7 @@ class ScopedAxModeSetter {
   }
   ~ScopedAxModeSetter() { AXPlatformNode::ResetAxModeForTesting(); }
 };
+
 }  // namespace testing
 
 }  // namespace ui

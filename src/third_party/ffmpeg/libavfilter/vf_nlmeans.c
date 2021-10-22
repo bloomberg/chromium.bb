@@ -90,10 +90,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_NONE
     };
 
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 /**
@@ -458,8 +455,8 @@ static int nlmeans_plane(AVFilterContext *ctx, int w, int h, int p, int r,
                 compute_ssd_integral_image(&s->dsp, s->ii, s->ii_lz_32,
                                            src, src_linesize,
                                            offx, offy, e, w, h);
-                ctx->internal->execute(ctx, nlmeans_slice, &td, NULL,
-                                       FFMIN(td.endy - td.starty, ff_filter_get_nb_threads(ctx)));
+                ff_filter_execute(ctx, nlmeans_slice, &td, NULL,
+                                  FFMIN(td.endy - td.starty, ff_filter_get_nb_threads(ctx)));
             }
         }
     }
@@ -566,7 +563,6 @@ static const AVFilterPad nlmeans_inputs[] = {
         .config_props = config_input,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad nlmeans_outputs[] = {
@@ -574,7 +570,6 @@ static const AVFilterPad nlmeans_outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_VIDEO,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_nlmeans = {
@@ -584,8 +579,8 @@ const AVFilter ff_vf_nlmeans = {
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
-    .inputs        = nlmeans_inputs,
-    .outputs       = nlmeans_outputs,
+    FILTER_INPUTS(nlmeans_inputs),
+    FILTER_OUTPUTS(nlmeans_outputs),
     .priv_class    = &nlmeans_class,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
 };

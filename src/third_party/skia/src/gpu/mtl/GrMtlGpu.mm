@@ -529,7 +529,13 @@ sk_sp<GrAttachment> GrMtlGpu::makeStencilAttachment(const GrBackendFormat& /*col
 sk_sp<GrAttachment> GrMtlGpu::makeMSAAAttachment(SkISize dimensions,
                                                  const GrBackendFormat& format,
                                                  int numSamples,
-                                                 GrProtected /*isProtected*/) {
+                                                 GrProtected isProtected,
+                                                 GrMemoryless isMemoryless) {
+    // Metal doesn't support protected textures
+    SkASSERT(isProtected == GrProtected::kNo);
+    // TODO: add memoryless support
+    SkASSERT(isMemoryless == GrMemoryless::kNo);
+
     MTLPixelFormat pixelFormat = (MTLPixelFormat) format.asMtlFormat();
     SkASSERT(pixelFormat != MTLPixelFormatInvalid);
     SkASSERT(!GrMtlFormatIsCompressed(pixelFormat));
@@ -1599,15 +1605,14 @@ void GrMtlGpu::resolve(GrMtlAttachment* resolveAttachment,
     this->commandBuffer()->addGrSurface(sk_ref_sp<const GrSurface>(msaaAttachment));
 }
 
-bool GrMtlGpu::loadMSAAFromResolve(GrAttachment* dst,
-                                   GrMtlAttachment* src,
-                                   const SkIRect& srcRect,
-                                   MTLRenderPassStencilAttachmentDescriptor* stencil) {
+GrMtlRenderCommandEncoder* GrMtlGpu::loadMSAAFromResolve(
+        GrAttachment* dst, GrMtlAttachment* src, const SkIRect& srcRect,
+        MTLRenderPassStencilAttachmentDescriptor* stencil) {
     if (!dst) {
-        return false;
+        return nil;
     }
     if (!src || src->framebufferOnly()) {
-        return false;
+        return nil;
     }
 
     GrMtlAttachment* mtlDst = static_cast<GrMtlAttachment*>(dst);
@@ -1678,7 +1683,7 @@ bool GrMtlGpu::loadMSAAFromResolve(GrAttachment* dst,
 
     renderCmdEncoder->drawPrimitives(MTLPrimitiveTypeTriangleStrip, (NSUInteger)0, (NSUInteger)4);
 
-    return true;
+    return renderCmdEncoder;
 }
 
 #if GR_TEST_UTILS

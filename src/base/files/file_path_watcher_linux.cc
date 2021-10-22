@@ -275,11 +275,7 @@ LazyInstance<InotifyReader>::Leaky g_inotify_reader = LAZY_INSTANCE_INITIALIZER;
 void InotifyReaderThreadDelegate::ThreadMain() {
   PlatformThread::SetName("inotify_reader");
 
-  // Make sure the file descriptors are good for use with select().
-  std::array<pollfd, 1> fdarray
-  { {
-      { inotify_fd_, POLLIN, 0 }
-  } };
+  std::array<pollfd, 1> fdarray{{{inotify_fd_, POLLIN, 0}}};
 
   while (true) {
     // Wait until some inotify events are available.

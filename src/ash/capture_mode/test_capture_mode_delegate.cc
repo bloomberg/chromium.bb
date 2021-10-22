@@ -5,12 +5,27 @@
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 
 #include "ash/capture_mode/capture_mode_types.h"
+#include "ash/public/cpp/capture_mode/recording_overlay_view.h"
 #include "ash/services/recording/public/mojom/recording_service.mojom.h"
 #include "ash/services/recording/recording_service_test_api.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace ash {
+
+namespace {
+
+class TestRecordingOverlayView : public RecordingOverlayView {
+ public:
+  TestRecordingOverlayView() = default;
+  TestRecordingOverlayView(const TestRecordingOverlayView&) = delete;
+  TestRecordingOverlayView& operator=(const TestRecordingOverlayView&) = delete;
+  ~TestRecordingOverlayView() override = default;
+};
+
+}  // namespace
 
 TestCaptureModeDelegate::TestCaptureModeDelegate() {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -48,7 +63,9 @@ void TestCaptureModeDelegate::RequestAndWaitForVideoFrame() {
   recording_service_->RequestAndWaitForVideoFrame();
 }
 
-base::FilePath TestCaptureModeDelegate::GetScreenCaptureDir() const {
+base::FilePath TestCaptureModeDelegate::GetUserDefaultDownloadsFolder() const {
+  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
+
   return fake_downloads_dir_;
 }
 
@@ -79,7 +96,12 @@ bool TestCaptureModeDelegate::IsCaptureAllowedByPolicy() const {
 void TestCaptureModeDelegate::StartObservingRestrictedContent(
     const aura::Window* window,
     const gfx::Rect& bounds,
-    base::OnceClosure stop_callback) {}
+    base::OnceClosure stop_callback) {
+  // This is called at the last stage of recording initialization to signal that
+  // recording has actually started.
+  if (on_recording_started_callback_)
+    std::move(on_recording_started_callback_).Run();
+}
 
 void TestCaptureModeDelegate::StopObservingRestrictedContent() {}
 
@@ -101,6 +123,11 @@ void TestCaptureModeDelegate::OnServiceRemoteReset() {
   // reset (on which it shuts down the service process). Here since the service
   // is running in-process with ash_unittests, we just delete the instance.
   recording_service_.reset();
+}
+
+std::unique_ptr<RecordingOverlayView>
+TestCaptureModeDelegate::CreateRecordingOverlayView() const {
+  return std::make_unique<TestRecordingOverlayView>();
 }
 
 }  // namespace ash

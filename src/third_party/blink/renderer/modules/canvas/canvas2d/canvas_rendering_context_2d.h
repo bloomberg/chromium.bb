@@ -60,10 +60,6 @@ class CanvasImageSource;
 class Element;
 class ExceptionState;
 class Font;
-class HitRegion;
-class HitRegionOptions;
-class HitRegionManager;
-class HitTestCanvasResult;
 class Path2D;
 class TextMetrics;
 
@@ -77,18 +73,20 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   class Factory : public CanvasRenderingContextFactory {
    public:
     Factory() = default;
+
+    Factory(const Factory&) = delete;
+    Factory& operator=(const Factory&) = delete;
+
     ~Factory() override = default;
 
     CanvasRenderingContext* Create(
         CanvasRenderingContextHost* host,
         const CanvasContextCreationAttributesCore& attrs) override;
 
-    CanvasRenderingContext::ContextType GetContextType() const override {
-      return CanvasRenderingContext::kContext2D;
+    CanvasRenderingContext::CanvasRenderingAPI GetRenderingAPI()
+        const override {
+      return CanvasRenderingContext::CanvasRenderingAPI::k2D;
     }
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Factory);
   };
 
   CanvasRenderingContext2D(HTMLCanvasElement*,
@@ -146,12 +144,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void drawFocusIfNeeded(Element*);
   void drawFocusIfNeeded(Path2D*, Element*);
 
-  void addHitRegion(const HitRegionOptions*, ExceptionState&);
-  void removeHitRegion(const String& id);
-  void clearHitRegions();
-  HitRegion* HitRegionAtPoint(const FloatPoint&);
-  unsigned HitRegionsCount() const override;
-
   void LoseContext(LostContextMode) override;
   void DidSetSurfaceSize() override;
 
@@ -162,9 +154,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void StyleDidChange(const ComputedStyle* old_style,
                       const ComputedStyle& new_style) override;
-  HitTestCanvasResult* GetControlAndIdIfHitRegionExists(
-      const PhysicalOffset& location) override;
-  String GetIdFromControl(const Element*) override;
 
   // SVGResourceClient implementation
   void ResourceContentChanged(SVGResource*) override;
@@ -283,10 +272,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void DrawFocusRing(const Path&, Element*);
   void UpdateElementAccessibility(const Path&, Element*);
 
-  CanvasRenderingContext::ContextType GetContextType() const override {
-    return CanvasRenderingContext::kContext2D;
-  }
-
   bool IsComposited() const override;
   bool IsAccelerated() const override;
   bool IsOriginTopLeft() const override;
@@ -300,8 +285,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   cc::Layer* CcLayer() const override;
   bool IsCanvas2DBufferValid() const override;
-
-  Member<HitRegionManager> hit_region_manager_;
 
   FilterOperations filter_operations_;
   HashMap<String, FontDescription> fonts_resolved_using_current_style_;

@@ -5,13 +5,15 @@
 #ifndef ASH_APP_LIST_VIEWS_APP_LIST_BUBBLE_APPS_PAGE_H_
 #define ASH_APP_LIST_VIEWS_APP_LIST_BUBBLE_APPS_PAGE_H_
 
-#include "ash/app_list/views/scrollable_apps_grid_view.h"
+#include "ash/app_list/views/apps_grid_view_focus_delegate.h"
+#include "ash/app_list/views/recent_apps_view.h"
 #include "ash/ash_export.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
+class AppListConfig;
 class ApplicationDragAndDropHost;
 class AppListA11yAnnouncer;
 class AppListFolderController;
@@ -25,17 +27,31 @@ class ScrollableAppsGridView;
 // - Continue section with recent tasks and recent apps
 // - Grid of all apps
 // Does not include the search box, which is owned by a parent view.
-class ASH_EXPORT AppListBubbleAppsPage : public views::View {
+class ASH_EXPORT AppListBubbleAppsPage : public views::View,
+                                         public RecentAppsView::Delegate,
+                                         public AppsGridViewFocusDelegate {
  public:
   METADATA_HEADER(AppListBubbleAppsPage);
 
   AppListBubbleAppsPage(AppListViewDelegate* view_delegate,
                         ApplicationDragAndDropHost* drag_and_drop_host,
+                        AppListConfig* app_list_config,
                         AppListA11yAnnouncer* a11y_announcer,
                         AppListFolderController* folder_controller);
   AppListBubbleAppsPage(const AppListBubbleAppsPage&) = delete;
   AppListBubbleAppsPage& operator=(const AppListBubbleAppsPage&) = delete;
   ~AppListBubbleAppsPage() override;
+
+  // Disables all children so they cannot be focused, allowing the open folder
+  // view to handle focus.
+  void DisableFocusForShowingActiveFolder(bool disabled);
+
+  // RecentAppsView::Delegate:
+  void MoveFocusUpFromRecents() override;
+  void MoveFocusDownFromRecents(int column) override;
+
+  // AppsGridViewFocusDelegate:
+  bool MoveFocusUpFromAppsGrid(int column) override;
 
   views::ScrollView* scroll_view() { return scroll_view_; }
   ScrollableAppsGridView* scrollable_apps_grid_view() {

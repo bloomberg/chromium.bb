@@ -2099,6 +2099,11 @@ export namespace ProtocolMapping {
      */
     'Overlay.setShowHinge': {paramsType: [Protocol.Overlay.SetShowHingeRequest?]; returnType: void;};
     /**
+     * Show elements in isolation mode with overlays.
+     */
+    'Overlay.setShowIsolatedElements':
+        {paramsType: [Protocol.Overlay.SetShowIsolatedElementsRequest]; returnType: void;};
+    /**
      * Deprecated, please use addScriptToEvaluateOnNewDocument instead.
      */
     'Page.addScriptToEvaluateOnLoad': {
@@ -2162,6 +2167,7 @@ export namespace ProtocolMapping {
     'Page.getManifestIcons': {paramsType: []; returnType: Protocol.Page.GetManifestIconsResponse;};
     /**
      * Returns the unique (PWA) app id.
+     * Only returns values if the feature flag 'WebAppEnableManifestId' is enabled
      */
     'Page.getAppId': {paramsType: []; returnType: Protocol.Page.GetAppIdResponse;};
     /**
@@ -2980,30 +2986,6 @@ export namespace ProtocolMapping {
      * Collect type profile.
      */
     'Profiler.takeTypeProfile': {paramsType: []; returnType: Protocol.Profiler.TakeTypeProfileResponse;};
-    /**
-     * Enable counters collection.
-     */
-    'Profiler.enableCounters': {paramsType: []; returnType: void;};
-    /**
-     * Disable counters collection.
-     */
-    'Profiler.disableCounters': {paramsType: []; returnType: void;};
-    /**
-     * Retrieve counters.
-     */
-    'Profiler.getCounters': {paramsType: []; returnType: Protocol.Profiler.GetCountersResponse;};
-    /**
-     * Enable run time call stats collection.
-     */
-    'Profiler.enableRuntimeCallStats': {paramsType: []; returnType: void;};
-    /**
-     * Disable run time call stats collection.
-     */
-    'Profiler.disableRuntimeCallStats': {paramsType: []; returnType: void;};
-    /**
-     * Retrieve run time call stats.
-     */
-    'Profiler.getRuntimeCallStats': {paramsType: []; returnType: Protocol.Profiler.GetRuntimeCallStatsResponse;};
     /**
      * Add handler to promise with given promise object id.
      */

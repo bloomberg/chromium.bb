@@ -133,8 +133,8 @@ class SupervisedUserURLFilterTest : public MixinBasedInProcessBrowserTest {
 
   SupervisedUserService* supervised_user_service_ = nullptr;
 
-  chromeos::LoggedInUserMixin logged_in_user_mixin_{
-      &mixin_host_, chromeos::LoggedInUserMixin::LogInType::kChild,
+  ash::LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_, ash::LoggedInUserMixin::LogInType::kChild,
       embedded_test_server(), this};
 };
 
@@ -159,6 +159,9 @@ class TabClosingObserver : public TabStripModelObserver {
       : tab_strip_(tab_strip), contents_(contents) {
     tab_strip_->AddObserver(this);
   }
+
+  TabClosingObserver(const TabClosingObserver&) = delete;
+  TabClosingObserver& operator=(const TabClosingObserver&) = delete;
 
   void WaitForContentsClosing() {
     if (!contents_)
@@ -194,8 +197,6 @@ class TabClosingObserver : public TabStripModelObserver {
 
   // Contents to wait for.
   content::WebContents* contents_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TabClosingObserver);
 };
 
 // Navigates to a blocked URL.

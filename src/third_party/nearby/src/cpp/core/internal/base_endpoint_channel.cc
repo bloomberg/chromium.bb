@@ -219,6 +219,10 @@ Exception BaseEndpointChannel::Write(const ByteArray& data) {
     }
   }
 
+  {
+    MutexLock lock(&last_write_mutex_);
+    last_write_timestamp_ = SystemClock::ElapsedRealtime();
+  }
   return {Exception::kSuccess};
 }
 
@@ -256,11 +260,22 @@ void BaseEndpointChannel::CloseIo() {
   }
 }
 
+void BaseEndpointChannel::SetAnalyticsRecorder(
+    analytics::AnalyticsRecorder* analytics_recorder,
+    const std::string& endpoint_id) {
+  analytics_recorder_ = analytics_recorder;
+  endpoint_id_ = endpoint_id;
+}
+
 void BaseEndpointChannel::Close(
     proto::connections::DisconnectionReason reason) {
   NEARBY_LOGS(INFO) << __func__
                     << ": Closing endpoint channel, reason: " << reason;
   Close();
+
+  if (analytics_recorder_ != nullptr && !endpoint_id_.empty()) {
+    analytics_recorder_->OnConnectionClosed(endpoint_id_, GetMedium(), reason);
+  }
 }
 
 std::string BaseEndpointChannel::GetType() const {
@@ -313,6 +328,11 @@ void BaseEndpointChannel::Resume() {
 absl::Time BaseEndpointChannel::GetLastReadTimestamp() const {
   MutexLock lock(&last_read_mutex_);
   return last_read_timestamp_;
+}
+
+absl::Time BaseEndpointChannel::GetLastWriteTimestamp() const {
+  MutexLock lock(&last_write_mutex_);
+  return last_write_timestamp_;
 }
 
 bool BaseEndpointChannel::IsEncryptionEnabledLocked() const {

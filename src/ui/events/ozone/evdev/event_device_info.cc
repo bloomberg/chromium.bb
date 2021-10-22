@@ -46,12 +46,21 @@ constexpr struct {
     {0x046d, 0x4080},  // Logitech Pebble M350
     {0x046d, 0xb00d},  // Logitech T630 Ultrathin
     {0x046d, 0xb011},  // Logitech M558
+    {0x046d, 0xb012},  // Logitech MX Master (Bluetooth) // nocheck
+    {0x046d, 0xb013},  // Logitech MX Anywhere 2 (Bluetooth)
     {0x046d, 0xb015},  // Logitech M720 Triathlon (Bluetooth)
     {0x046d, 0xb016},  // Logitech M535
+    {0x046d, 0xb017},  // Logitech MX Master / Anywhere 2 (Bluetooth) // nocheck
     {0x046d, 0xb019},  // Logitech MX Master 2S (Bluetooth) // nocheck
-    {0x046d, 0xb01b},  // Logitech M585 (Bluetooth)
+    {0x046d, 0xb01a},  // Logitech MX Anywhere 2S (Bluetooth)
+    {0x046d, 0xb01b},  // Logitech M585/M590 (Bluetooth)
+    {0x046d, 0xb01c},  // Logitech G603 Lightspeed Gaming Mouse (Bluetooth)
+    {0x046d, 0xb01e},  // Logitech MX Master (Bluetooth) // nocheck
     {0x046d, 0xb01f},  // Logitech MX Anywhere 2 (Bluetooth)
+    {0x046d, 0xb023},  // Logitech MX Master 3 (Bluetooth) // nocheck
+    {0x046d, 0xb024},  // Logitech G604 Lightspeed Gaming Mouse (Bluetooth)
     {0x046d, 0xb503},  // Logitech Spotlight Presentation Remote (Bluetooth)
+    {0x046d, 0xb505},  // Logitech R500 (Bluetooth)
     {0x046d, 0xc093},  // Logitech M500s
     {0x046d, 0xc53e},  // Logitech Spotlight Presentation Remote (USB dongle)
     {0x056e, 0x0134},  // Elecom Enelo IR LED Mouse 350
@@ -510,6 +519,10 @@ bool EventDeviceInfo::HasStylus() const {
          HasKeyEvent(BTN_STYLUS2);
 }
 
+bool EventDeviceInfo::IsSemiMultitouch() const {
+  return HasProp(INPUT_PROP_SEMI_MT);
+}
+
 bool EventDeviceInfo::IsStylusButtonDevice() const {
   for (const auto& device_id : kStylusButtonDevices) {
     if (input_id_.vendor == device_id.vendor &&
@@ -583,6 +596,37 @@ bool EventDeviceInfo::HasStylusSwitch() const {
                                          device_type_ == INPUT_DEVICE_INTERNAL);
 }
 
+bool EventDeviceInfo::HasNumberpad() const {
+  // Does not check for HasKeyboard(): the dynamic numberpad
+  // and external standalone numeric-pads will not be considered
+  // keyboards, if their descriptor happens to be correct.
+  if (!HasEventType(EV_KEY))
+    return false;
+
+  // The block-lists for keyboards are useful; currently, if something is
+  // falsely claiming to be a keyboard, it probably has false numberpad keys as
+  // well. If a numberpad needs to be added to the keyboard block-list, then
+  // consider whether we need an overriding allow-list here, or whether
+  // it is time to grow the list into a more detailed structure that can
+  // provides more specific information on what a device's capabilities are.
+  if (IsInKeyboardBlockList(input_id_))
+    return false;
+  if (IsStylusButtonDevice())
+    return false;
+  // Internal USB devices that are keyboards tend to be hammer-likes
+  // that we should not treat as numberpads.
+  if (IsInternalUSB(input_id_))
+    return false;
+
+  // Consider a device to have a numberpad if it has all ten numeric keys.
+  for (int key : {KEY_KP0, KEY_KP1, KEY_KP2, KEY_KP3, KEY_KP4, KEY_KP5, KEY_KP6,
+                  KEY_KP7, KEY_KP8, KEY_KP9}) {
+    if (!HasKeyEvent(key))
+      return false;
+  }
+  return true;
+}
+
 bool EventDeviceInfo::HasGamepad() const {
   if (!HasEventType(EV_KEY))
     return false;
@@ -598,6 +642,13 @@ bool EventDeviceInfo::HasGamepad() const {
   }
 
   return support_gamepad_btn && !HasTablet() && !HasKeyboard();
+}
+
+bool EventDeviceInfo::HasValidMTAbsXY() const {
+  const auto x = GetAbsInfoByCode(ABS_MT_POSITION_X);
+  const auto y = GetAbsInfoByCode(ABS_MT_POSITION_Y);
+
+  return x.resolution > 0 && y.resolution > 0;
 }
 
 bool EventDeviceInfo::SupportsRumble() const {
@@ -618,6 +669,8 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
       {0x18d1, 0x504c},  // Google, Zed PID (coachz)
       {0x18d1, 0x5050},  // Google, Don PID (katsu)
       {0x18d1, 0x5052},  // Google, Star PID (homestar)
+      {0x18d1, 0x5056},  // Google, bland PID (mrbland)
+      {0x18d1, 0x5057},  // Google, eel PID (wormdingler)
       {0x1fd2, 0x8103},  // LG, Internal TouchScreen PID
   };
 
@@ -640,6 +693,12 @@ ui::InputDeviceType EventDeviceInfo::GetInputDeviceTypeFromId(input_id id) {
     default:
       return ui::InputDeviceType::INPUT_DEVICE_UNKNOWN;
   }
+}
+
+// static
+bool EventDeviceInfo::IsInternalUSB(input_id id) {
+  return (id.bustype == BUS_USB && GetInputDeviceTypeFromId(id) ==
+                                       InputDeviceType::INPUT_DEVICE_INTERNAL);
 }
 
 EventDeviceInfo::LegacyAbsoluteDeviceType

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_default.h"
+#include "third_party/blink/renderer/core/paint/paint_auto_dark_mode.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -150,16 +151,6 @@ IntRect ConvertToPaintingRect(const LayoutObject& input_layout_object,
   return PixelSnappedIntRect(part_rect);
 }
 
-mojom::blink::ColorScheme GetColorScheme(const PaintInfo& paint_info,
-                                         const ComputedStyle& style) {
-  bool enable_force_dark =
-      paint_info.context.IsDarkModeEnabled() && !style.DisableForceDark();
-  mojom::blink::ColorScheme color_scheme = style.UsedColorScheme();
-  if (color_scheme == mojom::blink::ColorScheme::kLight && enable_force_dark)
-    return mojom::blink::ColorScheme::kDark;
-  return color_scheme;
-}
-
 absl::optional<SkColor> GetAccentColor(const ComputedStyle& style) {
   if (!RuntimeEnabledFeatures::CSSAccentColorEnabled())
     return absl::nullopt;
@@ -201,7 +192,7 @@ bool ThemePainterDefault::PaintCheckbox(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartCheckbox,
       GetWebThemeState(element), unzoomed_rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      style.UsedColorScheme(), GetAccentColor(style));
   return false;
 }
 
@@ -223,7 +214,7 @@ bool ThemePainterDefault::PaintRadio(const Element& element,
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartRadio,
       GetWebThemeState(element), unzoomed_rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      style.UsedColorScheme(), GetAccentColor(style));
   return false;
 }
 
@@ -244,8 +235,8 @@ bool ThemePainterDefault::PaintButton(const Element& element,
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartButton,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -270,12 +261,12 @@ bool ThemePainterDefault::PaintTextField(const Element& element,
       style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
   extra_params.text_field.background_color = background_color.Rgb();
   extra_params.text_field.auto_complete_active =
-      DynamicTo<HTMLFormControlElement>(element)->IsAutofilled();
+      DynamicTo<HTMLFormControlElement>(element)->HighlightAutofilled();
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartTextField,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -309,8 +300,8 @@ bool ThemePainterDefault::PaintMenuList(const Element& element,
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartMenuList,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -328,8 +319,8 @@ bool ThemePainterDefault::PaintMenuListButton(const Element& element,
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartMenuList,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -397,8 +388,8 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartSliderTrack,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -424,8 +415,8 @@ bool ThemePainterDefault::PaintSliderThumb(const Element& element,
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartSliderThumb,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), accent_color);
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      accent_color);
   return false;
 }
 
@@ -450,8 +441,8 @@ bool ThemePainterDefault::PaintInnerSpinButton(const Element& element,
 
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartInnerSpinButton,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -477,8 +468,8 @@ bool ThemePainterDefault::PaintProgressBar(const Element& element,
   DirectionFlippingScope scope(layout_object, paint_info, rect);
   Platform::Current()->ThemeEngine()->Paint(
       paint_info.context.Canvas(), WebThemeEngine::kPartProgressBar,
-      GetWebThemeState(element), rect, &extra_params,
-      GetColorScheme(paint_info, style), GetAccentColor(style));
+      GetWebThemeState(element), rect, &extra_params, style.UsedColorScheme(),
+      GetAccentColor(style));
   return false;
 }
 
@@ -574,7 +565,10 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
       To<Element>(cancel_button_object.GetNode())->IsActive()
           ? color_scheme_adjusted_cancel_pressed_image
           : color_scheme_adjusted_cancel_image,
-      Image::kSyncDecode, FloatRect(painting_rect));
+      Image::kSyncDecode,
+      PaintAutoDarkMode(cancel_button_object.StyleRef(),
+                        DarkModeFilter::ElementRole::kBackground),
+      FloatRect(painting_rect));
   return false;
 }
 

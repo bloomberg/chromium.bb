@@ -66,7 +66,7 @@
 #include "chrome/browser/ui/ash/shelf/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
-#include "chrome/browser/web_applications/test/test_web_app_provider.h"
+#include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
@@ -459,7 +459,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     arc_test_.SetUp(profile_.get());
     arc_test_.SetUpIntentHelper();
 
-    web_app::TestWebAppProvider::Get(profile_.get())->Start();
+    web_app::FakeWebAppProvider::Get(profile_.get())->Start();
     CreateBuilder();
 
     CreateShelfController();
@@ -2836,7 +2836,8 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderCompressed) {
   run_loop.Run();
 }
 
-TEST_P(ArcAppModelIconTest, IconInvalidation) {
+// Flaky.  https://crbug.com/1248526
+TEST_P(ArcAppModelIconTest, DISABLED_IconInvalidation) {
   ArcAppListPrefs* const prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
@@ -2857,7 +2858,7 @@ TEST_P(ArcAppModelIconTest, IconInvalidation) {
   // AppServiceAppItem is added to UI but there is no UI in unit tests.
   FlushMojoCallsForAppService();
   model_updater()->LoadAppIcon(app_id);
-  content::RunAllTasksUntilIdle();
+  WaitForIconUpdate();
 
   EnsureIconsUpdated();
 

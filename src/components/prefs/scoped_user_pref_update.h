@@ -32,6 +32,10 @@ namespace subtle {
 // and getting access to PrefService::GetMutableUserPref and
 // PrefService::ReportUserPrefChanged.
 class COMPONENTS_PREFS_EXPORT ScopedUserPrefUpdateBase {
+ public:
+  ScopedUserPrefUpdateBase(const ScopedUserPrefUpdateBase&) = delete;
+  ScopedUserPrefUpdateBase& operator=(const ScopedUserPrefUpdateBase&) = delete;
+
  protected:
   ScopedUserPrefUpdateBase(PrefService* service, const std::string& path);
 
@@ -54,8 +58,6 @@ class COMPONENTS_PREFS_EXPORT ScopedUserPrefUpdateBase {
   base::Value* value_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdateBase);
 };
 
 }  // namespace subtle
@@ -70,6 +72,9 @@ class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
  public:
   ScopedUserPrefUpdate(PrefService* service, const std::string& path)
       : ScopedUserPrefUpdateBase(service, path) {}
+
+  ScopedUserPrefUpdate(const ScopedUserPrefUpdate&) = delete;
+  ScopedUserPrefUpdate& operator=(const ScopedUserPrefUpdate&) = delete;
 
   // Triggers an update notification if Get() was called.
   virtual ~ScopedUserPrefUpdate() {}
@@ -96,9 +101,6 @@ class ScopedUserPrefUpdate : public subtle::ScopedUserPrefUpdateBase {
   T* operator->() {
     return Get();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedUserPrefUpdate);
 };
 
 typedef ScopedUserPrefUpdate<base::DictionaryValue,

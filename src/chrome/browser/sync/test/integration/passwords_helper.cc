@@ -42,11 +42,14 @@ namespace {
 const char kFakeSignonRealm[] = "http://fake-signon-realm.google.com/";
 const char kIndexedFakeOrigin[] = "http://fake-signon-realm.google.com/%d";
 
-
 class PasswordStoreConsumerHelper
     : public password_manager::PasswordStoreConsumer {
  public:
   PasswordStoreConsumerHelper() {}
+
+  PasswordStoreConsumerHelper(const PasswordStoreConsumerHelper&) = delete;
+  PasswordStoreConsumerHelper& operator=(const PasswordStoreConsumerHelper&) =
+      delete;
 
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<PasswordForm>> results) override {
@@ -63,8 +66,6 @@ class PasswordStoreConsumerHelper
  private:
   base::RunLoop run_loop_;
   std::vector<std::unique_ptr<PasswordForm>> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordStoreConsumerHelper);
 };
 
 sync_pb::EntitySpecifics EncryptPasswordSpecifics(
@@ -126,7 +127,6 @@ PasswordStoreInterface* GetProfilePasswordStoreInterface(int index) {
                                              ServiceAccessType::IMPLICIT_ACCESS)
       .get();
 }
-
 
 PasswordStoreInterface* GetVerifierProfilePasswordStoreInterface() {
   return PasswordStoreFactory::GetForProfile(test()->verifier(),

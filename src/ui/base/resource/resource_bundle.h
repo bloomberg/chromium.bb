@@ -191,6 +191,9 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // Return the global resource loader instance.
   static ResourceBundle& GetSharedInstance();
 
+  ResourceBundle(const ResourceBundle&) = delete;
+  ResourceBundle& operator=(const ResourceBundle&) = delete;
+
   // With CEF's multi-threaded mode the ResourceBundle may be created/destroyed
   // on the main thread but accessed on the UI thread. Call this method on the
   // UI thread to clean up resources before destruction.
@@ -530,8 +533,6 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   std::string loaded_locale_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceBundle);
 };
 
 }  // namespace ui

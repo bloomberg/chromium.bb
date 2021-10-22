@@ -12,15 +12,19 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/enum_traits.h"
+#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/win/win_constants.h"
 #include "chrome/updater/win/win_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -28,14 +32,25 @@
 namespace updater {
 namespace {
 
+HKEY RootKey(UpdaterScope updater_scope) {
+  switch (updater_scope) {
+    case UpdaterScope::kUser:
+      return HKEY_CURRENT_USER;
+    case UpdaterScope::kSystem:
+      return HKEY_LOCAL_MACHINE;
+  }
+}
+
 // Opens the registry ClientState subkey for the `app_id`.
 absl::optional<base::win::RegKey> ClientStateAppKeyOpen(
+    UpdaterScope updater_scope,
     const std::string& app_id,
     REGSAM regsam) {
   std::wstring subkey;
   if (!base::UTF8ToWide(app_id.c_str(), app_id.size(), &subkey))
     return absl::nullopt;
-  base::win::RegKey key(HKEY_CURRENT_USER, CLIENT_STATE_KEY, Wow6432(regsam));
+  base::win::RegKey key(RootKey(updater_scope), CLIENT_STATE_KEY,
+                        Wow6432(regsam));
   if (key.OpenKey(subkey.c_str(), Wow6432(regsam)) != ERROR_SUCCESS)
     return absl::nullopt;
   return key;
@@ -45,12 +60,14 @@ absl::optional<base::win::RegKey> ClientStateAppKeyOpen(
 // must contain the KEY_WRITE access right for the creation of the subkey to
 // succeed.
 absl::optional<base::win::RegKey> ClientStateAppKeyCreate(
+    UpdaterScope updater_scope,
     const std::string& app_id,
     REGSAM regsam) {
   std::wstring subkey;
   if (!base::UTF8ToWide(app_id.c_str(), app_id.size(), &subkey))
     return absl::nullopt;
-  base::win::RegKey key(HKEY_CURRENT_USER, CLIENT_STATE_KEY, Wow6432(regsam));
+  base::win::RegKey key(RootKey(updater_scope), CLIENT_STATE_KEY,
+                        Wow6432(regsam));
   if (key.CreateKey(subkey.c_str(), Wow6432(regsam)) != ERROR_SUCCESS)
     return absl::nullopt;
   return key;
@@ -62,20 +79,22 @@ InstallerOutcome::InstallerOutcome() = default;
 InstallerOutcome::InstallerOutcome(const InstallerOutcome&) = default;
 InstallerOutcome::~InstallerOutcome() = default;
 
-bool ClientStateAppKeyDelete(const std::string& app_id) {
+bool ClientStateAppKeyDelete(UpdaterScope updater_scope,
+                             const std::string& app_id) {
   std::wstring subkey;
   if (!base::UTF8ToWide(app_id.c_str(), app_id.size(), &subkey))
     return false;
-  return base::win::RegKey(HKEY_CURRENT_USER, CLIENT_STATE_KEY,
+  return base::win::RegKey(RootKey(updater_scope), CLIENT_STATE_KEY,
                            Wow6432(KEY_WRITE))
              .DeleteKey(subkey.c_str()) == ERROR_SUCCESS;
 }
 
 // Reads the installer progress from the registry value at:
 // {HKLM|HKCU}\Software\Google\Update\ClientState\<appid>\InstallerProgress.
-int GetInstallerProgress(const std::string& app_id) {
+int GetInstallerProgress(UpdaterScope updater_scope,
+                         const std::string& app_id) {
   absl::optional<base::win::RegKey> key =
-      ClientStateAppKeyOpen(app_id, KEY_READ);
+      ClientStateAppKeyOpen(updater_scope, app_id, KEY_READ);
   DWORD progress = 0;
   if (!key || key->ReadValueDW(kRegValueInstallerProgress, &progress) !=
                   ERROR_SUCCESS) {
@@ -84,22 +103,26 @@ int GetInstallerProgress(const std::string& app_id) {
   return base::clamp(progress, DWORD{0}, DWORD{100});
 }
 
-bool SetInstallerProgressForTesting(const std::string& app_id, int value) {
+bool SetInstallerProgressForTesting(UpdaterScope updater_scope,
+                                    const std::string& app_id,
+                                    int value) {
   absl::optional<base::win::RegKey> key =
-      ClientStateAppKeyCreate(app_id, KEY_WRITE);
+      ClientStateAppKeyCreate(updater_scope, app_id, KEY_WRITE);
   return key && key->WriteValue(kRegValueInstallerProgress,
                                 static_cast<DWORD>(value)) == ERROR_SUCCESS;
 }
 
-bool DeleteInstallerProgress(const std::string& app_id) {
+bool DeleteInstallerProgress(UpdaterScope updater_scope,
+                             const std::string& app_id) {
   absl::optional<base::win::RegKey> key =
-      ClientStateAppKeyOpen(app_id, KEY_SET_VALUE);
+      ClientStateAppKeyOpen(updater_scope, app_id, KEY_SET_VALUE);
   return key && key->DeleteValue(kRegValueInstallerProgress) == ERROR_SUCCESS;
 }
 
-bool DeleteInstallerOutput(const std::string& app_id) {
-  absl::optional<base::win::RegKey> key =
-      ClientStateAppKeyOpen(app_id, KEY_SET_VALUE | KEY_QUERY_VALUE);
+bool DeleteInstallerOutput(UpdaterScope updater_scope,
+                           const std::string& app_id) {
+  absl::optional<base::win::RegKey> key = ClientStateAppKeyOpen(
+      updater_scope, app_id, KEY_SET_VALUE | KEY_QUERY_VALUE);
   if (!key)
     return false;
   auto delete_value = [&key](const wchar_t* value) {
@@ -119,9 +142,10 @@ bool DeleteInstallerOutput(const std::string& app_id) {
 }
 
 absl::optional<InstallerOutcome> GetInstallerOutcome(
+    UpdaterScope updater_scope,
     const std::string& app_id) {
   absl::optional<base::win::RegKey> key =
-      ClientStateAppKeyOpen(app_id, KEY_READ);
+      ClientStateAppKeyOpen(updater_scope, app_id, KEY_READ);
   if (!key)
     return absl::nullopt;
   InstallerOutcome installer_outcome;
@@ -159,10 +183,11 @@ absl::optional<InstallerOutcome> GetInstallerOutcome(
   return installer_outcome;
 }
 
-bool SetInstallerOutcomeForTesting(const std::string& app_id,
+bool SetInstallerOutcomeForTesting(UpdaterScope updater_scope,
+                                   const std::string& app_id,
                                    const InstallerOutcome& installer_outcome) {
   absl::optional<base::win::RegKey> key =
-      ClientStateAppKeyCreate(app_id, KEY_WRITE);
+      ClientStateAppKeyCreate(updater_scope, app_id, KEY_WRITE);
   if (!key)
     return false;
   if (installer_outcome.installer_result) {
@@ -303,21 +328,52 @@ Installer::Result Installer::RunApplicationInstaller(
     const base::FilePath& app_installer,
     const std::string& arguments,
     ProgressCallback progress_callback) {
-  DeleteInstallerOutput(app_id());
+  DeleteInstallerOutput(updater_scope_, app_id());
 
+  // TODO(crbug.com/1255144) - remove once the server starts returning
+  // --system-level argument for running the Chrome installer for per-system
+  // installs.
+  const auto cmdline = [&app_installer, &arguments](UpdaterScope updater_scope,
+                                                    const std::string& app_id) {
+    // Append `--system-level` to the arguments string for various flavors
+    // of Chrome app id, for per-system installs, and if the installer command
+    // line does not contain this argument. This makes the updater code behave
+    // similar to Omaha, and it temporarily unblocks future work.
+    struct CaseInsensitiveComparator {
+      // Returns true if a < b.
+      bool operator()(const char* a, const char* b) const {
+        return base::CompareCaseInsensitiveASCII(a, b) < 0;
+      }
+    };
+    constexpr wchar_t kChromeSystemLevel[] = L"--system-level";
+    static const base::flat_set<const char*, CaseInsensitiveComparator>
+        chrome_app_ids = {
+            "{8A69D345-D564-463C-AFF1-A69D9E530F96}",  // Stable.
+            "{8237E44A-0054-442C-B6B6-EA0509993955}",  // Beta.
+            "{401C381F-E0DE-4B85-8BD8-3F3F14FBDA57}",  // Dev.
+            "{4EA16AC7-FD5A-47C3-875B-DBF4A2008C20}",  // Canary.
+        };
+    std::wstring cmdline =
+        base::StrCat({base::CommandLine(app_installer).GetCommandLineString(),
+                      L" ", base::UTF8ToWide(arguments)});
+    if (updater_scope == UpdaterScope::kSystem &&
+        base::Contains(chrome_app_ids, app_id.c_str()) &&
+        !base::Contains(cmdline, kChromeSystemLevel)) {
+      cmdline += base::StrCat({L" ", kChromeSystemLevel});
+    }
+    return cmdline;
+  }(updater_scope_, app_id());
+
+  VLOG(1) << "Running application installer: " << cmdline;
   base::LaunchOptions options;
   options.start_hidden = true;
-  const auto cmdline =
-      base::StrCat({base::CommandLine(app_installer).GetCommandLineString(),
-                    L" ", base::UTF8ToWide(arguments)});
-  VLOG(1) << "Running application installer: " << cmdline;
   auto process = base::LaunchProcess(cmdline, options);
   int exit_code = -1;
   const auto time_begin = base::Time::NowFromSystemTime();
   do {
     bool wait_result = process.WaitForExitWithTimeout(
-        base::TimeDelta::FromSeconds(kWaitForInstallerProgressSec), &exit_code);
-    auto progress = GetInstallerProgress(app_id());
+        base::Seconds(kWaitForInstallerProgressSec), &exit_code);
+    auto progress = GetInstallerProgress(updater_scope_, app_id());
     DVLOG(3) << "installer progress: " << progress;
     progress_callback.Run(progress);
     if (wait_result) {
@@ -325,9 +381,10 @@ Installer::Result Installer::RunApplicationInstaller(
       break;
     }
   } while (base::Time::NowFromSystemTime() - time_begin <=
-           base::TimeDelta::FromSeconds(kWaitForAppInstallerSec));
+           base::Seconds(kWaitForAppInstallerSec));
 
-  return MakeInstallerResult(GetInstallerOutcome(app_id()), exit_code);
+  return MakeInstallerResult(GetInstallerOutcome(updater_scope_, app_id()),
+                             exit_code);
 }
 
 }  // namespace updater

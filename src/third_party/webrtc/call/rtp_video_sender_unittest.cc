@@ -103,7 +103,7 @@ VideoSendStream::Config CreateVideoSendStreamConfig(
   config.rtp.nack.rtp_history_ms = 1000;
   config.rtp.extensions.emplace_back(RtpExtension::kTransportSequenceNumberUri,
                                      kTransportsSequenceExtensionId);
-  config.rtp.extensions.emplace_back(RtpDependencyDescriptorExtension::kUri,
+  config.rtp.extensions.emplace_back(RtpDependencyDescriptorExtension::Uri(),
                                      kDependencyDescriptorExtensionId);
   config.rtp.extmap_allow_mixed = true;
   return config;
@@ -772,8 +772,6 @@ TEST(RtpVideoSenderTest, SupportsDependencyDescriptorForVp9) {
 
 TEST(RtpVideoSenderTest,
      SupportsDependencyDescriptorForVp9NotProvidedByEncoder) {
-  test::ScopedFieldTrials field_trials(
-      "WebRTC-Vp9DependencyDescriptor/Enabled/");
   RtpVideoSenderTestFixture test({kSsrc1}, {}, kPayloadType, {});
   test.router()->SetActive(true);
 

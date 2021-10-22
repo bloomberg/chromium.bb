@@ -293,6 +293,9 @@ extern const char kArcPrivacyPolicyPathFormat[];
 // Relative to |kChromeOSAssetPath|.
 extern const char kArcTermsPathFormat[];
 
+// The URL for the "Learn more" link during Bluetooth pairing.
+extern const char kBluetoothPairingLearnMoreUrl[];
+
 // Accessibility help link for Chrome.
 extern const char kChromeAccessibilityHelpURL[];
 
@@ -374,9 +377,11 @@ extern const char kArcTermsURLPath[];
 // The URL path to offline ARC++ Privacy Policy.
 extern const char kArcPrivacyPolicyURLPath[];
 
-extern const char kOnlineEulaURLPath[];
+// The URL path to Online Google EULA.
+extern const char kGoogleEulaOnlineURLPath[];
 
-extern const char kAdditionalToSOnlineURLPath[];
+// The URL path to Online Chrome and Chrome OS terms of service.
+extern const char kCrosEulaOnlineURLPath[];
 
 // The URL for the "learn more" link for TPM firmware update.
 extern const char kTPMFirmwareUpdateLearnMoreURL[];
@@ -436,6 +441,9 @@ extern const char kChromeSyncLearnMoreURL[];
 // The URL for the "Learn more" page for the outdated plugin infobar.
 extern const char kOutdatedPluginLearnMoreURL[];
 #endif
+
+// "Learn more" URL for the phone hub notifications and apps access setup.
+extern const char kPhoneHubPermissionLearnMoreURL[];
 
 // Please do not append entries here. See the comments at the top of the file.
 

@@ -10,9 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.trusted.sharing.ShareData;
 
+import org.chromium.blink.mojom.DisplayMode;
 import org.chromium.chrome.browser.browserservices.intents.WebApkExtras.ShortcutItem;
 import org.chromium.components.webapps.ShortcutSource;
 import org.chromium.components.webapps.WebApkDistributor;
+import org.chromium.device.mojom.ScreenOrientationLockType;
 
 import java.util.List;
 import java.util.Map;
@@ -71,7 +73,7 @@ public class WebappInfo {
         return getWebappExtras().shortName;
     }
 
-    public @WebDisplayMode int displayMode() {
+    public @DisplayMode.EnumType int displayMode() {
         return getWebappExtras().displayMode;
     }
 
@@ -83,7 +85,7 @@ public class WebappInfo {
         return getWebApkExtras().webApkPackageName;
     }
 
-    public int orientation() {
+    public @ScreenOrientationLockType.EnumType int orientation() {
         return getWebappExtras().orientation;
     }
 

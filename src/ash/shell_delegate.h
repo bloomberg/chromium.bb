@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
+#include "chromeos/ui/base/window_pin_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-forward.h"
 #include "services/device/public/mojom/fingerprint.mojom-forward.h"
@@ -27,8 +28,12 @@ namespace ui {
 class OSExchangeData;
 }
 
-namespace full_restore {
+namespace app_restore {
 struct AppLaunchInfo;
+}
+
+namespace desks_storage {
+class DeskModel;
 }
 
 namespace ash {
@@ -88,12 +93,6 @@ class ASH_EXPORT ShellDelegate {
   // dragged out of it.
   virtual int GetBrowserWebUITabStripHeight() = 0;
 
-  // Drops tab in a new browser window. |drop_data| must be from a tab
-  // drag as determined by IsTabDrag() above.
-  virtual aura::Window* CreateBrowserForTabDrop(
-      aura::Window* source_window,
-      const ui::OSExchangeData& drop_data);
-
   // Binds a BluetoothSystemFactory receiver if possible.
   virtual void BindBluetoothSystemFactory(
       mojo::PendingReceiver<device::mojom::BluetoothSystemFactory> receiver) {}
@@ -115,6 +114,11 @@ class ASH_EXPORT ShellDelegate {
 
   // Returns if window browser sessions are restoring.
   virtual bool IsSessionRestoreInProgress() const = 0;
+
+  // Pin or unpin a window. This is used for Quiz modes and called from another
+  // client (e.g. Lacros) through Exo.
+  virtual void SetPinnedFromExo(aura::Window* window,
+                                chromeos::WindowPinType type) = 0;
 
   // Ui Dev Tools control.
   virtual bool IsUiDevToolsStarted() const;
@@ -139,8 +143,12 @@ class ASH_EXPORT ShellDelegate {
   // data can be constructed, which can happen if the |window| does not have
   // an app id associated with it, or we're not in the primary active user
   // session.
-  virtual std::unique_ptr<::full_restore::AppLaunchInfo>
+  virtual std::unique_ptr<app_restore::AppLaunchInfo>
   GetAppLaunchDataForDeskTemplate(aura::Window* window) const = 0;
+
+  // Returns either the local desk storage backend or Chrome sync desk storage
+  // backend depending on the feature flag DeskTemplateSync.
+  virtual desks_storage::DeskModel* GetDeskModel();
 };
 
 }  // namespace ash

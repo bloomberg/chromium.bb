@@ -94,6 +94,10 @@ class TestOverrideStringCallback {
       : callback_(base::BindRepeating(&TestOverrideStringCallback::Override,
                                       base::Unretained(this))) {}
 
+  TestOverrideStringCallback(const TestOverrideStringCallback&) = delete;
+  TestOverrideStringCallback& operator=(const TestOverrideStringCallback&) =
+      delete;
+
   virtual ~TestOverrideStringCallback() {}
 
   const VariationsSeedProcessor::UIStringOverrideCallback& callback() const {
@@ -109,8 +113,6 @@ class TestOverrideStringCallback {
 
   VariationsSeedProcessor::UIStringOverrideCallback callback_;
   OverrideMap overrides_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestOverrideStringCallback);
 };
 
 }  // namespace
@@ -119,6 +121,10 @@ class VariationsSeedProcessorTest : public ::testing::Test {
  public:
   VariationsSeedProcessorTest() {
   }
+
+  VariationsSeedProcessorTest(const VariationsSeedProcessorTest&) = delete;
+  VariationsSeedProcessorTest& operator=(const VariationsSeedProcessorTest&) =
+      delete;
 
   ~VariationsSeedProcessorTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
@@ -182,9 +188,6 @@ class VariationsSeedProcessorTest : public ::testing::Test {
 
  protected:
   TestOverrideStringCallback override_callback_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessorTest);
 };
 
 TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
@@ -289,8 +292,7 @@ TEST_F(VariationsSeedProcessorTest,
   *study2 = *study1;
   ASSERT_EQ(seed.study(0).name(), seed.study(1).name());
 
-  const base::Time year_ago =
-      base::Time::Now() - base::TimeDelta::FromDays(365);
+  const base::Time year_ago = base::Time::Now() - base::Days(365);
 
   ClientFilterableState client_state(base::BindOnce([] { return false; }));
   client_state.locale = "en-CA";
@@ -849,8 +851,8 @@ TEST_F(VariationsSeedProcessorTest, FeaturesInExpiredStudies) {
     "kEnabledFeature", base::FEATURE_ENABLED_BY_DEFAULT
   };
   const base::Time now = base::Time::Now();
-  const base::Time year_ago = now - base::TimeDelta::FromDays(365);
-  const base::Time year_later = now + base::TimeDelta::FromDays(365);
+  const base::Time year_ago = now - base::Days(365);
+  const base::Time year_later = now + base::Days(365);
 
   struct {
     const base::Feature& feature;
@@ -935,8 +937,7 @@ TEST_F(VariationsSeedProcessorTest, ExistingFieldTrial_ExpiredByConfig) {
 
   Study study;
   study.set_name("Study1");
-  const base::Time year_ago =
-      base::Time::Now() - base::TimeDelta::FromDays(365);
+  const base::Time year_ago = base::Time::Now() - base::Days(365);
   study.set_expiry_date(TimeToProtoTime(year_ago));
   auto* exp1 = AddExperiment("A", 1, &study);
   exp1->mutable_feature_association()->add_enable_feature(kFeature.name);
@@ -960,8 +961,7 @@ TEST_F(VariationsSeedProcessorTest, ExpiredStudy_NoDefaultGroup) {
   // that happens.
   Study study;
   study.set_name("Study1");
-  const base::Time year_ago =
-      base::Time::Now() - base::TimeDelta::FromDays(365);
+  const base::Time year_ago = base::Time::Now() - base::Days(365);
   study.set_expiry_date(TimeToProtoTime(year_ago));
   auto* exp1 = AddExperiment("A", 1, &study);
   exp1->mutable_feature_association()->add_enable_feature(kFeature.name);

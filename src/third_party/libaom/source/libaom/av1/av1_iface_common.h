@@ -16,8 +16,11 @@
 #include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
 
-static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
-                            void *user_priv) {
+extern aom_codec_iface_t aom_codec_av1_inspect_algo;
+
+static AOM_INLINE void yuvconfig2image(aom_image_t *img,
+                                       const YV12_BUFFER_CONFIG *yv12,
+                                       void *user_priv) {
   /* aom_img_wrap() doesn't allow specifying independent strides for
    * the Y, U, and V planes, nor other alignment adjustments that
    * might be representable by a YV12_BUFFER_CONFIG, so we just
@@ -80,8 +83,8 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->metadata = NULL;
 }
 
-static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
-                                       YV12_BUFFER_CONFIG *yv12) {
+static AOM_INLINE aom_codec_err_t image2yuvconfig(const aom_image_t *img,
+                                                  YV12_BUFFER_CONFIG *yv12) {
   yv12->y_buffer = img->planes[AOM_PLANE_Y];
   yv12->u_buffer = img->planes[AOM_PLANE_U];
   yv12->v_buffer = img->planes[AOM_PLANE_V];

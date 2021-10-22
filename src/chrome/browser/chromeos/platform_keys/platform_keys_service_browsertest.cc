@@ -27,10 +27,10 @@
 #include "chrome/browser/ash/login/test/scoped_policy_update.h"
 #include "chrome/browser/ash/login/test/user_policy_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_test_util.h"
-#include "chrome/browser/chromeos/scoped_test_system_nss_key_slot_mixin.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/platform_keys/platform_keys.h"
 #include "chrome/browser/policy/policy_test_utils.h"
@@ -194,6 +194,7 @@ class PlatformKeysServiceBrowserTestBase
   std::string GenerateKeyPair(TokenId token_id, unsigned int key_size) {
     test_util::GenerateKeyExecutionWaiter generate_key_waiter;
     platform_keys_service()->GenerateRSAKey(token_id, key_size,
+                                            /*sw_backed=*/false,
                                             generate_key_waiter.GetCallback());
     generate_key_waiter.Wait();
 
@@ -427,6 +428,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerTokenBrowserTest,
   const TokenId token_id = GetParam().token_id;
   test_util::GenerateKeyExecutionWaiter generate_key_waiter;
   platform_keys_service()->GenerateRSAKey(token_id, kKeySize,
+                                          /*sw_backed=*/false,
                                           generate_key_waiter.GetCallback());
   generate_key_waiter.Wait();
   EXPECT_EQ(generate_key_waiter.status(), Status::kSuccess);
@@ -761,6 +763,7 @@ IN_PROC_BROWSER_TEST_P(PlatformKeysServicePerUnavailableTokenBrowserTest,
   const TokenId token_id = GetParam().token_id;
   test_util::GenerateKeyExecutionWaiter generate_key_waiter;
   platform_keys_service()->GenerateRSAKey(token_id, kKeySize,
+                                          /*sw_backed=*/false,
                                           generate_key_waiter.GetCallback());
   generate_key_waiter.Wait();
   EXPECT_NE(generate_key_waiter.status(), Status::kSuccess);

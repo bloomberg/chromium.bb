@@ -69,6 +69,9 @@ class DeviceEmulatorMessageHandler::BluetoothObserver
     owner_->fake_bluetooth_device_client_->AddObserver(this);
   }
 
+  BluetoothObserver(const BluetoothObserver&) = delete;
+  BluetoothObserver& operator=(const BluetoothObserver&) = delete;
+
   ~BluetoothObserver() override {
     owner_->fake_bluetooth_device_client_->RemoveObserver(this);
   }
@@ -85,8 +88,6 @@ class DeviceEmulatorMessageHandler::BluetoothObserver
 
  private:
   DeviceEmulatorMessageHandler* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothObserver);
 };
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceAdded(
@@ -120,6 +121,9 @@ class DeviceEmulatorMessageHandler::CrasAudioObserver
     chromeos::FakeCrasAudioClient::Get()->AddObserver(this);
   }
 
+  CrasAudioObserver(const CrasAudioObserver&) = delete;
+  CrasAudioObserver& operator=(const CrasAudioObserver&) = delete;
+
   ~CrasAudioObserver() override {
     chromeos::FakeCrasAudioClient::Get()->RemoveObserver(this);
   }
@@ -129,8 +133,6 @@ class DeviceEmulatorMessageHandler::CrasAudioObserver
 
  private:
   DeviceEmulatorMessageHandler* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(CrasAudioObserver);
 };
 
 class DeviceEmulatorMessageHandler::PowerObserver
@@ -140,6 +142,9 @@ class DeviceEmulatorMessageHandler::PowerObserver
     owner_->fake_power_manager_client_->AddObserver(this);
   }
 
+  PowerObserver(const PowerObserver&) = delete;
+  PowerObserver& operator=(const PowerObserver&) = delete;
+
   ~PowerObserver() override {
     owner_->fake_power_manager_client_->RemoveObserver(this);
   }
@@ -148,8 +153,6 @@ class DeviceEmulatorMessageHandler::PowerObserver
 
  private:
   DeviceEmulatorMessageHandler* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(PowerObserver);
 };
 
 void DeviceEmulatorMessageHandler::PowerObserver::PowerChanged(
@@ -201,8 +204,8 @@ void DeviceEmulatorMessageHandler::RequestPowerInfo(
 
 void DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice(
     const base::ListValue* args) {
-  std::string path;
-  CHECK(args->GetString(0, &path));
+  CHECK(!args->GetList().empty());
+  std::string path = args->GetList()[0].GetString();
   fake_bluetooth_device_client_->RemoveDevice(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       dbus::ObjectPath(path));
@@ -320,9 +323,9 @@ void DeviceEmulatorMessageHandler::HandleInsertAudioNode(
 
 void DeviceEmulatorMessageHandler::HandleRemoveAudioNode(
     const base::ListValue* args) {
-  std::string tmp_id;
+  CHECK(!args->GetList().empty());
+  std::string tmp_id = args->GetList()[0].GetString();
   uint64_t id;
-  CHECK(args->GetString(0, &tmp_id));
   CHECK(base::StringToUint64(tmp_id, &id));
 
   chromeos::FakeCrasAudioClient::Get()->RemoveAudioNodeFromList(id);
@@ -630,9 +633,7 @@ void DeviceEmulatorMessageHandler::ConnectToBluetoothDevice(
   }
   if (!device->IsPaired() && device->IsPairable()) {
     // Show pairing dialog for the unpaired device.
-    chromeos::BluetoothPairingDialog::ShowDialog(
-        device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
-        device->IsConnected());
+    BluetoothPairingDialog::ShowDialog(device->GetAddress());
   } else {
     // Attempt to connect to the device.
     device->Connect(nullptr, base::DoNothing());

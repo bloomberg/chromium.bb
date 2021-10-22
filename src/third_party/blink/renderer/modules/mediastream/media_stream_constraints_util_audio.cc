@@ -16,7 +16,7 @@
 #include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
-#include "media/webrtc/webrtc_switches.h"
+#include "media/webrtc/webrtc_features.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
@@ -890,7 +890,7 @@ class ProcessingBasedContainer {
       std::tie(min_buffer_size, max_buffer_size) =
           GetMinMaxBufferSizesForAudioParameters(parameters);
       requested_buffer_size = media::AudioLatency::GetExactBufferSize(
-          base::TimeDelta::FromSecondsD(*latency), parameters.sample_rate(),
+          base::Seconds(*latency), parameters.sample_rate(),
           parameters.frames_per_buffer(), min_buffer_size, max_buffer_size,
           max_buffer_size);
     }
@@ -1648,12 +1648,12 @@ std::tuple<double, double> GetMinMaxLatenciesForAudioParameters(
   // AudioParameters::GetBufferDuration() so that values reported to the user
   // are truncated consistently to the microseconds decimal place.
   return std::make_tuple(
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           static_cast<int64_t>(min_buffer_size *
                                base::Time::kMicrosecondsPerSecond /
                                static_cast<float>(parameters.sample_rate())))
           .InSecondsF(),
-      base::TimeDelta::FromMicroseconds(
+      base::Microseconds(
           static_cast<int64_t>(max_buffer_size *
                                base::Time::kMicrosecondsPerSecond /
                                static_cast<float>(parameters.sample_rate())))

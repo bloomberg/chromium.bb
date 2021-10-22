@@ -83,12 +83,12 @@ public:
     DSLType(TypeConstant tc)
         : fTypeConstant(tc) {}
 
-    DSLType(const SkSL::Type* type)
-        : fSkSLType(type) {}
+    DSLType(const SkSL::Type* type);
 
     DSLType(skstd::string_view name);
 
-    DSLType(skstd::string_view name, const DSLModifiers& modifiers,
+    DSLType(skstd::string_view name,
+            DSLModifiers* modifiers,
             PositionInfo pos = PositionInfo::Capture());
 
     /**
@@ -146,19 +146,24 @@ public:
      */
     bool isStruct() const;
 
+    /**
+     * Returns true if this is a Skia object type (shader, colorFilter, blender).
+     */
+    bool isEffectChild() const;
+
     template<typename... Args>
-    static DSLExpression Construct(DSLType type, DSLVarBase& var, Args&&... args) {
+    static DSLPossibleExpression Construct(DSLType type, DSLVarBase& var, Args&&... args) {
         DSLExpression argArray[] = {var, args...};
         return Construct(type, SkMakeSpan(argArray));
     }
 
     template<typename... Args>
-    static DSLExpression Construct(DSLType type, DSLExpression expr, Args&&... args) {
+    static DSLPossibleExpression Construct(DSLType type, DSLExpression expr, Args&&... args) {
         DSLExpression argArray[] = {std::move(expr), std::move(args)...};
         return Construct(type, SkMakeSpan(argArray));
     }
 
-    static DSLExpression Construct(DSLType type, SkSpan<DSLExpression> argArray);
+    static DSLPossibleExpression Construct(DSLType type, SkSpan<DSLExpression> argArray);
 
 private:
     const SkSL::Type& skslType() const;

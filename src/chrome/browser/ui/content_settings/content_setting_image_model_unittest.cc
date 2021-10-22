@@ -67,6 +67,12 @@ class TestQuietNotificationPermissionUiSelector
   explicit TestQuietNotificationPermissionUiSelector(
       QuietUiReason simulated_reason_for_quiet_ui)
       : simulated_reason_for_quiet_ui_(simulated_reason_for_quiet_ui) {}
+
+  TestQuietNotificationPermissionUiSelector(
+      const TestQuietNotificationPermissionUiSelector&) = delete;
+  TestQuietNotificationPermissionUiSelector& operator=(
+      const TestQuietNotificationPermissionUiSelector&) = delete;
+
   ~TestQuietNotificationPermissionUiSelector() override = default;
 
  protected:
@@ -84,8 +90,6 @@ class TestQuietNotificationPermissionUiSelector
 
  private:
   QuietUiReason simulated_reason_for_quiet_ui_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestQuietNotificationPermissionUiSelector);
 };
 
 class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
@@ -93,6 +97,11 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
   ContentSettingImageModelTest()
       : request_(permissions::RequestType::kNotifications,
                  permissions::PermissionRequestGestureType::GESTURE) {}
+
+  ContentSettingImageModelTest(const ContentSettingImageModelTest&) = delete;
+  ContentSettingImageModelTest& operator=(const ContentSettingImageModelTest&) =
+      delete;
+
   ~ContentSettingImageModelTest() override {}
 
   content::WebContents* web_contents() {
@@ -103,7 +112,7 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
     AddTab(browser(), GURL("http://www.google.com"));
     controller_ = &web_contents()->GetController();
-    NavigateAndCommit(controller_, GURL("http://www.google.com"));
+    NavigateAndCommit(web_contents(), GURL("http://www.google.com"));
     permissions::PermissionRequestManager::CreateForWebContents(web_contents());
     manager_ =
         permissions::PermissionRequestManager::FromWebContents(web_contents());
@@ -138,9 +147,6 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
   permissions::MockPermissionRequest request_;
   permissions::PermissionRequestManager* manager_ = nullptr;
   content::NavigationController* controller_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingImageModelTest);
 };
 
 TEST_F(ContentSettingImageModelTest, Update) {
@@ -239,7 +245,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
                              /* is_visible = */ false,
                              /* tooltip_empty = */ true);
 
-  NavigateAndCommit(controller_, GURL("http://www.google.com"));
+  NavigateAndCommit(web_contents(), GURL("http://www.google.com"));
   content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
@@ -253,7 +259,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
       content_setting_image_model.get(), /* is_visible = */ true,
       /* tooltip_empty = */ false, IDS_SENSORS_BLOCKED_TOOLTIP, 0);
 
-  NavigateAndCommit(controller_, GURL("http://www.google.com"));
+  NavigateAndCommit(web_contents(), GURL("http://www.google.com"));
   content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
@@ -267,7 +273,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
       content_setting_image_model.get(), /* is_visible = */ true,
       /* tooltip_empty = */ false, IDS_SENSORS_ALLOWED_TOOLTIP, 0);
 
-  NavigateAndCommit(controller_, GURL("http://www.google.com"));
+  NavigateAndCommit(web_contents(), GURL("http://www.google.com"));
   content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
@@ -300,7 +306,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
       std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   GURL requesting_origin = GURL("https://www.example.com");
-  NavigateAndCommit(controller_, requesting_origin);
+  NavigateAndCommit(web_contents(), requesting_origin);
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   HostContentSettingsMap* settings_map =
@@ -357,7 +363,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsUndetermined) {
       std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   GURL requesting_origin = GURL("https://www.example.com");
-  NavigateAndCommit(controller_, requesting_origin);
+  NavigateAndCommit(web_contents(), requesting_origin);
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   HostContentSettingsMap* settings_map =
@@ -405,7 +411,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessDeniedExperiment) {
       std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
   GURL requesting_origin = GURL("https://www.example.com");
-  NavigateAndCommit(controller_, requesting_origin);
+  NavigateAndCommit(web_contents(), requesting_origin);
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
@@ -469,7 +475,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
       web_contents(),
       std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
           web_contents()));
-  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  NavigateAndCommit(web_contents(), GURL("https://www.example.com"));
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   HostContentSettingsMap* settings_map =
@@ -507,7 +513,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
     EXPECT_FALSE(content_setting_image_model->is_visible());
   }
 
-  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  NavigateAndCommit(web_contents(), GURL("https://www.example.com"));
   content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
@@ -536,7 +542,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
         /* tooltip_empty = */ false, IDS_SENSORS_BLOCKED_TOOLTIP, 0);
   }
 
-  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  NavigateAndCommit(web_contents(), GURL("https://www.example.com"));
   content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
 
@@ -554,7 +560,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
         /* tooltip_empty = */ false, IDS_SENSORS_ALLOWED_TOOLTIP, 0);
   }
 
-  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  NavigateAndCommit(web_contents(), GURL("https://www.example.com"));
   content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
   // Clear site-specific exceptions.

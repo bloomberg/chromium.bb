@@ -87,6 +87,12 @@ config("icu_code") {
       "/wd4267",  # Conversion from size_t on 64-bits.
       "/utf-8",  # ICU source files are in UTF-8.
     ]
+    if (!is_clang) {
+      cflags += [
+        # Ignore some msvc warnings here because V8 still supports msvc.
+        "/wd4244",  # Conversion: possible loss of data.
+      ]
+    }
   } else if (is_linux || is_chromeos || is_android || icu_is_in_fuchsia) {
     cflags += [ "-Wno-unused-function" ]
   }
@@ -295,7 +301,7 @@ group("icuuc") {
   public_deps = [ ":icuuc_private" ]
 }
 
-group("icuuc_hidden_visiblity") {
+group("icuuc_hidden_visibility") {
   public_deps = [ ":icuuc_private_hidden_visibility" ]
 }
 
@@ -314,7 +320,7 @@ generate_icuuc("icuuc_private") {
 
 generate_icuuc("icuuc_private_hidden_visibility") {
   extra_configs = [ ":visibility_hidden" ]
-  output_name = "icuuc_hidden_visiblity"
+  output_name = "icuuc_hidden_visibility"
   visibility = [
     ":icui18n_hidden_visibility",
     ":icuuc_hidden_visibility",

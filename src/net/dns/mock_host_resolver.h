@@ -97,6 +97,9 @@ class MockHostResolverBase
   class MdnsListenerImpl;
 
  public:
+  MockHostResolverBase(const MockHostResolverBase&) = delete;
+  MockHostResolverBase& operator=(const MockHostResolverBase&) = delete;
+
   ~MockHostResolverBase() override;
 
   RuleBasedHostResolverProc* rules() {
@@ -311,8 +314,6 @@ class MockHostResolverBase
   const base::TickClock* tick_clock_;
 
   THREAD_CHECKER(thread_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(MockHostResolverBase);
 };
 
 class MockHostResolver : public MockHostResolverBase {
@@ -354,6 +355,10 @@ class MockHostResolverFactory : public HostResolver::Factory {
       scoped_refptr<RuleBasedHostResolverProc> rules = nullptr,
       bool use_caching = false,
       int cache_invalidation_num = 0);
+
+  MockHostResolverFactory(const MockHostResolverFactory&) = delete;
+  MockHostResolverFactory& operator=(const MockHostResolverFactory&) = delete;
+
   ~MockHostResolverFactory() override;
 
   std::unique_ptr<HostResolver> CreateResolver(
@@ -370,8 +375,6 @@ class MockHostResolverFactory : public HostResolver::Factory {
   const scoped_refptr<RuleBasedHostResolverProc> rules_;
   const bool use_caching_;
   const int cache_invalidation_num_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockHostResolverFactory);
 };
 
 // RuleBasedHostResolverProc applies a set of rules to map a host string to
@@ -442,6 +445,14 @@ class RuleBasedHostResolverProc : public HostResolverProc {
       const std::string& host,
       HostResolverFlags flags = HOST_RESOLVER_LOOPBACK_ONLY);
 
+  // Simulate a lookup that returns ERR_DNS_NAME_HTTPS_ONLY regardless of the
+  // request's scheme. After the rule is used once, it is deleted.
+  //
+  // TODO(https://crbug.com/1206799) Once RuleBasedHostResolverProc::Resolve
+  // takes a url::SchemeHostPort parameter, change the semantics of this method
+  // to vary depending on request scheme.
+  void AddSimulatedHTTPSServiceFormRecord(const std::string& host);
+
   // Deletes all the rules that have been added.
   void ClearRules();
 
@@ -461,6 +472,7 @@ class RuleBasedHostResolverProc : public HostResolverProc {
     enum ResolverType {
       kResolverTypeFail,
       kResolverTypeFailTimeout,
+      kResolverTypeFailHTTPSServiceFormRecord,
       // TODO(mmenke): Is it really reasonable for a "mock" host resolver to
       // fall back to the system resolver?
       kResolverTypeSystem,

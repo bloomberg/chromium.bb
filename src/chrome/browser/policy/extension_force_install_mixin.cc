@@ -37,17 +37,16 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_creator.h"
+#include "extensions/browser/extension_host_test_helper.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/test/test_background_page_first_load_observer.h"
-#include "extensions/test/test_background_page_ready_observer.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -166,9 +165,7 @@ class ForceInstallWaiter final {
   Profile* const profile_;
   std::unique_ptr<ForceInstallPrefObserver> force_install_pref_observer_;
   std::unique_ptr<extensions::TestExtensionRegistryObserver> registry_observer_;
-  std::unique_ptr<extensions::ExtensionBackgroundPageReadyObserver>
-      background_page_ready_observer_;
-  std::unique_ptr<extensions::TestBackgroundPageFirstLoadObserver>
+  std::unique_ptr<extensions::ExtensionHostTestHelper>
       background_page_first_load_observer_;
 };
 
@@ -191,15 +188,12 @@ ForceInstallWaiter::ForceInstallWaiter(
           std::make_unique<extensions::TestExtensionRegistryObserver>(
               extensions::ExtensionRegistry::Get(profile_), extension_id_);
       break;
-    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady:
-      background_page_ready_observer_ =
-          std::make_unique<extensions::ExtensionBackgroundPageReadyObserver>(
-              profile_, extension_id_);
-      break;
     case ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad:
       background_page_first_load_observer_ =
-          std::make_unique<extensions::TestBackgroundPageFirstLoadObserver>(
-              profile_, extension_id_);
+          std::make_unique<extensions::ExtensionHostTestHelper>(profile_,
+                                                                extension_id_);
+      background_page_first_load_observer_->RestrictToType(
+          extensions::mojom::ViewType::kExtensionBackgroundPage);
       break;
   }
 }
@@ -226,14 +220,10 @@ void ForceInstallWaiter::WaitImpl(bool* success) {
     case ExtensionForceInstallMixin::WaitMode::kLoad:
       *success = registry_observer_->WaitForExtensionLoaded() != nullptr;
       break;
-    case ExtensionForceInstallMixin::WaitMode::kBackgroundPageReady:
-      // Wait and assert that the waiting run loop didn't time out.
-      ASSERT_NO_FATAL_FAILURE(background_page_ready_observer_->Wait());
-      *success = true;
-      break;
     case ExtensionForceInstallMixin::WaitMode::kBackgroundPageFirstLoad:
       // Wait and assert that the waiting run loop didn't time out.
-      ASSERT_NO_FATAL_FAILURE(background_page_first_load_observer_->Wait());
+      ASSERT_NO_FATAL_FAILURE(background_page_first_load_observer_
+                                  ->WaitForHostCompletedFirstLoad());
       *success = true;
       break;
   }
@@ -365,7 +355,7 @@ void UpdatePolicyViaMockPolicyProvider(
 void UpdatePolicyViaDeviceStateMixin(
     const extensions::ExtensionId& extension_id,
     const GURL& update_manifest_url,
-    chromeos::DeviceStateMixin* device_state_mixin) {
+    ash::DeviceStateMixin* device_state_mixin) {
   device_state_mixin->RequestDevicePolicyUpdate()
       ->policy_payload()
       ->mutable_device_login_screen_extensions()
@@ -410,7 +400,7 @@ void ExtensionForceInstallMixin::InitWithMockPolicyProvider(
 
 void ExtensionForceInstallMixin::InitWithDeviceStateMixin(
     Profile* profile,
-    chromeos::DeviceStateMixin* device_state_mixin) {
+    ash::DeviceStateMixin* device_state_mixin) {
   DCHECK(profile);
   DCHECK(device_state_mixin);
   DCHECK(!profile_) << "Init already called";
@@ -497,21 +487,6 @@ const extensions::Extension* ExtensionForceInstallMixin::GetEnabledExtension(
   const auto* const registry = extensions::ExtensionRegistry::Get(profile_);
   DCHECK(registry);
   return registry->enabled_extensions().GetByID(extension_id);
-}
-
-bool ExtensionForceInstallMixin::IsExtensionBackgroundPageReady(
-    const extensions::ExtensionId& extension_id) const {
-  DCHECK(crx_file::id_util::IdIsValid(extension_id));
-  DCHECK(profile_) << "Init not called";
-
-  const auto* const extension = GetInstalledExtension(extension_id);
-  if (!extension) {
-    ADD_FAILURE() << "Extension " << extension_id << " not installed";
-    return false;
-  }
-  auto* const extension_system = extensions::ExtensionSystem::Get(profile_);
-  DCHECK(extension_system);
-  return extension_system->runtime_data()->IsBackgroundPageReady(extension);
 }
 
 void ExtensionForceInstallMixin::SetUpOnMainThread() {

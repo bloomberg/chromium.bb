@@ -108,9 +108,9 @@ void init() {
 void frame() {
     WGPUTextureView backbufferView = wgpuSwapChainGetCurrentTextureView(swapchain);
     WGPURenderPassDescriptor renderpassInfo = {};
-    WGPURenderPassColorAttachmentDescriptor colorAttachment = {};
+    WGPURenderPassColorAttachment colorAttachment = {};
     {
-        colorAttachment.attachment = backbufferView;
+        colorAttachment.view = backbufferView;
         colorAttachment.resolveTarget = nullptr;
         colorAttachment.clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
         colorAttachment.loadOp = WGPULoadOp_Clear;

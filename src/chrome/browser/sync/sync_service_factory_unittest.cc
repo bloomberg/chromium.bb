@@ -116,7 +116,7 @@ class SyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::APP_LIST);
     if (arc::IsArcAllowedForProfile(profile()))
       datatypes.push_back(syncer::ARC_PACKAGE);
-    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
       datatypes.push_back(syncer::OS_PREFERENCES);
       datatypes.push_back(syncer::OS_PRIORITY_PREFERENCES);
     }
@@ -124,6 +124,7 @@ class SyncServiceFactoryTest : public testing::Test {
     if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
       datatypes.push_back(syncer::WIFI_CONFIGURATIONS);
     }
+    datatypes.push_back(syncer::WORKSPACE_DESK);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // Common types. This excludes PASSWORDS because the password store factory

@@ -18,7 +18,7 @@ jobs:
       - run: |
           npm test
           mkdir deploy-build/
-          cp -r README.md src standalone out out-wpt docs deploy-build/
+          cp -r README.md src standalone out out-wpt docs tools deploy-build/
       - uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           BRANCH: gh-pages

@@ -367,7 +367,7 @@ struct reducer_traits<OrReducer, Device> {
 
 // Argmin/Argmax reducers.  Returns the first occurrence if multiple locations
 // contain the same min/max value.
-template <typename T> struct ArgMaxTupleReducer
+template <typename T> struct ArgMaxPairReducer
 {
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void reduce(const T t, T* accum) const {
     if (t.second < accum->second) {
@@ -385,7 +385,7 @@ template <typename T> struct ArgMaxTupleReducer
 };
 
 template <typename T, typename Device>
-struct reducer_traits<ArgMaxTupleReducer<T>, Device> {
+struct reducer_traits<ArgMaxPairReducer<T>, Device> {
   enum {
     Cost = NumTraits<T>::AddCost,
     PacketAccess = false,
@@ -395,7 +395,7 @@ struct reducer_traits<ArgMaxTupleReducer<T>, Device> {
 };
 
 
-template <typename T> struct ArgMinTupleReducer
+template <typename T> struct ArgMinPairReducer
 {
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void reduce(const T& t, T* accum) const {
     if (t.second > accum->second) {
@@ -413,7 +413,7 @@ template <typename T> struct ArgMinTupleReducer
 };
 
 template <typename T, typename Device>
-struct reducer_traits<ArgMinTupleReducer<T>, Device> {
+struct reducer_traits<ArgMinPairReducer<T>, Device> {
   enum {
     Cost = NumTraits<T>::AddCost,
     PacketAccess = false,

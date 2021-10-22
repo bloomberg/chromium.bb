@@ -54,13 +54,13 @@ class MockObserver {
         &MockObserver::OnGaiaAccountsInCookieUpdated, base::Unretained(this)));
   }
 
+  MockObserver(const MockObserver&) = delete;
+  MockObserver& operator=(const MockObserver&) = delete;
+
   MOCK_METHOD3(OnGaiaAccountsInCookieUpdated,
                void(const std::vector<gaia::ListedAccount>&,
                     const std::vector<gaia::ListedAccount>&,
                     const GoogleServiceAuthError&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
 // Counts number of InstrumentedGaiaCookieManagerService created.
@@ -111,15 +111,17 @@ class InstrumentedGaiaCookieManagerService : public GaiaCookieManagerService {
     total++;
   }
 
+  InstrumentedGaiaCookieManagerService(
+      const InstrumentedGaiaCookieManagerService&) = delete;
+  InstrumentedGaiaCookieManagerService& operator=(
+      const InstrumentedGaiaCookieManagerService&) = delete;
+
   ~InstrumentedGaiaCookieManagerService() override { total--; }
 
   MOCK_METHOD0(StartFetchingUbertoken, void());
   MOCK_METHOD0(StartFetchingListAccounts, void());
   MOCK_METHOD0(StartGaiaLogOut, void());
   MOCK_METHOD0(StartFetchingMergeSession, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InstrumentedGaiaCookieManagerService);
 };
 
 class GaiaCookieManagerServiceTest : public testing::Test {
@@ -213,8 +215,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
 
   void Advance(scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner,
                base::TimeDelta advance_by) {
-    test_task_runner->FastForwardBy(advance_by +
-                                    base::TimeDelta::FromMilliseconds(1));
+    test_task_runner->FastForwardBy(advance_by + base::Milliseconds(1));
     test_task_runner->RunUntilIdle();
   }
 

@@ -53,10 +53,21 @@ struct PartitionMemoryStats {
   size_t total_active_bytes;     // Total active bytes in the partition.
   size_t total_decommittable_bytes;  // Total bytes that could be decommitted.
   size_t total_discardable_bytes;    // Total bytes that could be discarded.
+#if BUILDFLAG(USE_BACKUP_REF_PTR)
+  size_t
+      total_brp_quarantined_bytes;  // Total bytes that are quarantined by BRP.
+  size_t total_brp_quarantined_count;  // Total number of slots that are
+                                       // quarantined by BRP.
+#endif
 
   bool has_thread_cache;
   ThreadCacheStats current_thread_cache_stats;
   ThreadCacheStats all_thread_caches_stats;
+
+  // Count and total duration of system calls made since process start. May not
+  // be reported on all platforms.
+  uint64_t syscall_count;
+  uint64_t syscall_total_time_ns;
 };
 
 // Struct used to retrieve memory statistics about a partition bucket. Used by

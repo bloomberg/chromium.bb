@@ -18,16 +18,16 @@ constexpr uint32_t kMaxLinuxDmabufVersion = 3;
 }
 
 // static
-void WaylandZwpLinuxDmabuf::Register(WaylandConnection* connection) {
-  connection->RegisterGlobalObjectFactory("zwp_linux_dmabuf_v1",
-                                          &WaylandZwpLinuxDmabuf::Instantiate);
-}
+constexpr char WaylandZwpLinuxDmabuf::kInterfaceName[];
 
 // static
 void WaylandZwpLinuxDmabuf::Instantiate(WaylandConnection* connection,
                                         wl_registry* registry,
                                         uint32_t name,
+                                        const std::string& interface,
                                         uint32_t version) {
+  DCHECK_EQ(interface, kInterfaceName);
+
   if (connection->zwp_dmabuf())
     return;
 
@@ -59,7 +59,7 @@ WaylandZwpLinuxDmabuf::WaylandZwpLinuxDmabuf(
 
 WaylandZwpLinuxDmabuf::~WaylandZwpLinuxDmabuf() = default;
 
-void WaylandZwpLinuxDmabuf::CreateBuffer(base::ScopedFD fd,
+void WaylandZwpLinuxDmabuf::CreateBuffer(const base::ScopedFD& fd,
                                          const gfx::Size& size,
                                          const std::vector<uint32_t>& strides,
                                          const std::vector<uint32_t>& offsets,

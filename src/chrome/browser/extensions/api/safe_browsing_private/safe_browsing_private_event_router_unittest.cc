@@ -82,6 +82,10 @@ class SafeBrowsingEventObserver : public TestEventRouter::EventObserver {
   explicit SafeBrowsingEventObserver(const std::string& event_name)
       : event_name_(event_name) {}
 
+  SafeBrowsingEventObserver(const SafeBrowsingEventObserver&) = delete;
+  SafeBrowsingEventObserver& operator=(const SafeBrowsingEventObserver&) =
+      delete;
+
   ~SafeBrowsingEventObserver() override = default;
 
   // Removes |event_args_| from |*this| and returns them.
@@ -100,8 +104,6 @@ class SafeBrowsingEventObserver : public TestEventRouter::EventObserver {
 
   // The arguments passed for the last observed event.
   base::Value event_args_;
-
-  DISALLOW_COPY_AND_ASSIGN(SafeBrowsingEventObserver);
 };
 
 std::unique_ptr<KeyedService> BuildSafeBrowsingPrivateEventRouter(
@@ -209,16 +211,18 @@ class SafeBrowsingPrivateEventRouterTestBase : public testing::Test {
 
   void TriggerOnLoginEvent(
       const GURL& url,
+      const std::u16string& login_user_name,
       absl::optional<url::Origin> federated_origin = absl::nullopt) {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnLoginEvent(url, federated_origin.has_value(),
                        federated_origin.has_value() ? federated_origin.value()
-                                                    : url::Origin());
+                                                    : url::Origin(),
+                       login_user_name);
   }
 
   void TriggerOnPasswordBreachEvent(
       const std::string& trigger,
-      const std::vector<std::pair<GURL, std::string>>& identities) {
+      const std::vector<std::pair<GURL, std::u16string>>& identities) {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnPasswordBreach(trigger, identities);
   }
@@ -748,9 +752,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEvent) {
 
   safe_browsing::EventReportValidator validator(client_.get());
   validator.ExpectLoginEvent("https://www.example.com/", false, "",
-                             profile_->GetProfileUserName());
+                             profile_->GetProfileUserName(), u"login-username");
 
-  TriggerOnLoginEvent(GURL("https://www.example.com/"));
+  TriggerOnLoginEvent(GURL("https://www.example.com/"), u"login-username");
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEventFederated) {
@@ -766,9 +770,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnLoginEventFederated) {
   safe_browsing::EventReportValidator validator(client_.get());
   validator.ExpectLoginEvent("https://www.example.com/", true,
                              "https://www.google.com",
-                             profile_->GetProfileUserName());
+                             profile_->GetProfileUserName(), u"login-username");
 
-  TriggerOnLoginEvent(GURL("https://www.example.com/"),
+  TriggerOnLoginEvent(GURL("https://www.example.com/"), u"login-username",
                       url::Origin::Create(GURL("https://www.google.com")));
 }
 
@@ -786,16 +790,16 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordBreach) {
   validator.ExpectPasswordBreachEvent(
       "SAFETY_CHECK",
       {
-          {"https://first.example.com/", "first_user_name"},
-          {"https://second.example.com/", "second_user_name"},
+          {"https://first.example.com/", u"first_user_name"},
+          {"https://second.example.com/", u"second_user_name"},
       },
       profile_->GetProfileUserName());
 
   TriggerOnPasswordBreachEvent(
       "SAFETY_CHECK",
       {
-          {GURL("https://first.example.com"), "first_user_name"},
-          {GURL("https://second.example.com"), "second_user_name"},
+          {GURL("https://first.example.com"), u"first_user_name"},
+          {GURL("https://second.example.com"), u"second_user_name"},
       });
 }
 
@@ -1231,11 +1235,7 @@ class SafeBrowsingIsRealtimeReportingEnabledTest
   }
 
   bool should_init() {
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
     return is_feature_flag_enabled_;
-#else
-    return is_feature_flag_enabled_ && is_manageable_;
-#endif
   }
 
  protected:
@@ -1269,9 +1269,6 @@ TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest, CheckRealtimeReport) {
 
   bool should_report =
       is_feature_flag_enabled_ && is_policy_enabled_ && is_authorized_;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  should_report &= is_manageable_;
-#endif
 
   if (should_report) {
     EXPECT_CALL(*client_, UploadSecurityEventReport_(_, _, _, _)).Times(1);

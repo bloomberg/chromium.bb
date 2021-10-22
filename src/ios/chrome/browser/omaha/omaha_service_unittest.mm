@@ -59,6 +59,9 @@ class OmahaServiceTest : public PlatformTest {
     OmahaService::ClearPersistentStateForTests();
   }
 
+  OmahaServiceTest(const OmahaServiceTest&) = delete;
+  OmahaServiceTest& operator=(const OmahaServiceTest&) = delete;
+
   void OnNeedUpdate(const UpgradeRecommendedDetails& details) {
     was_one_off_ = false;
     scheduled_callback_used_ = true;
@@ -124,8 +127,6 @@ class OmahaServiceTest : public PlatformTest {
   bool scheduled_callback_used_ = false;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   web::WebTaskEnvironment task_environment_;
-
-  DISALLOW_COPY_AND_ASSIGN(OmahaServiceTest);
 };
 
 TEST_F(OmahaServiceTest, PingMessageTest) {
@@ -252,8 +253,8 @@ TEST_F(OmahaServiceTest, SendPingSuccess) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
@@ -343,8 +344,8 @@ TEST_F(OmahaServiceTest, CallbackForScheduledNotUsedOnErrorResponse) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   std::string response =
       std::string(
@@ -381,8 +382,8 @@ TEST_F(OmahaServiceTest, OneOffSuccess) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
@@ -411,8 +412,8 @@ TEST_F(OmahaServiceTest, OngoingPingOneOffCallbackUsed) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   // One off callback set during ongoing ping, it should now be used for
   // response.
@@ -453,8 +454,8 @@ TEST_F(OmahaServiceTest, OneOffCallbackUsedOnlyOnce) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
@@ -497,16 +498,16 @@ TEST_F(OmahaServiceTest, ScheduledPingDuringOneOffDropped) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   service.SendPing();
 
   // Ping during one-off should be dropped, nothing should change.
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
@@ -575,8 +576,8 @@ TEST_F(OmahaServiceTest, SendInstallEventSuccess) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   std::string response =
       std::string(
@@ -610,8 +611,8 @@ TEST_F(OmahaServiceTest, SendPingReceiveUpdate) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   std::string response =
       std::string(
@@ -658,8 +659,8 @@ TEST_F(OmahaServiceTest, SendPingFailure) {
   // Tries with a non 200 result.
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
   base::Time next_tries_time = service.next_tries_time_;
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
@@ -680,8 +681,8 @@ TEST_F(OmahaServiceTest, SendPingFailure) {
 
   EXPECT_EQ(2, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
   next_tries_time = service.next_tries_time_;
 
   pending_request = test_url_loader_factory_.GetPendingRequest(0);
@@ -704,9 +705,9 @@ TEST_F(OmahaServiceTest, PersistStatesTest) {
   service.set_upgrade_recommended_callback(base::BindRepeating(
       &OmahaServiceTest::OnNeedUpdate, base::Unretained(this)));
   service.number_of_tries_ = 5;
-  service.last_sent_time_ = now - base::TimeDelta::FromSeconds(1);
-  service.next_tries_time_ = now + base::TimeDelta::FromSeconds(2);
-  service.current_ping_time_ = now + base::TimeDelta::FromSeconds(3);
+  service.last_sent_time_ = now - base::Seconds(1);
+  service.next_tries_time_ = now + base::Seconds(2);
+  service.current_ping_time_ = now + base::Seconds(3);
   service.last_sent_version_ = base::Version(version_string);
   service.PersistStates();
 
@@ -714,9 +715,9 @@ TEST_F(OmahaServiceTest, PersistStatesTest) {
   service2.StartInternal();
 
   EXPECT_EQ(service.number_of_tries_, 5);
-  EXPECT_EQ(service2.last_sent_time_, now - base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(service2.next_tries_time_, now + base::TimeDelta::FromSeconds(2));
-  EXPECT_EQ(service2.current_ping_time_, now + base::TimeDelta::FromSeconds(3));
+  EXPECT_EQ(service2.last_sent_time_, now - base::Seconds(1));
+  EXPECT_EQ(service2.next_tries_time_, now + base::Seconds(2));
+  EXPECT_EQ(service2.current_ping_time_, now + base::Seconds(3));
   EXPECT_EQ(service.last_sent_version_.GetString(), version_string);
 }
 
@@ -747,8 +748,8 @@ TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   std::string response =
       std::string(
@@ -764,7 +765,7 @@ TEST_F(OmahaServiceTest, ActivePingAfterInstallEventTest) {
       pending_request->request.url.spec(), response);
 
   EXPECT_EQ(1, service.number_of_tries_);
-  EXPECT_LT(service.current_ping_time_ - now, base::TimeDelta::FromMinutes(1));
+  EXPECT_LT(service.current_ping_time_ - now, base::Minutes(1));
   EXPECT_GT(service.next_tries_time_, service.current_ping_time_);
   EXPECT_FALSE(NeedUpdate());
 }
@@ -784,8 +785,8 @@ TEST_F(OmahaServiceTest, NonSpammingTest) {
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_, now + base::TimeDelta::FromMinutes(54));
-  EXPECT_LE(service.next_tries_time_, now + base::TimeDelta::FromHours(7));
+  EXPECT_GE(service.next_tries_time_, now + base::Minutes(54));
+  EXPECT_LE(service.next_tries_time_, now + base::Hours(7));
 
   std::string response =
       std::string(
@@ -801,7 +802,7 @@ TEST_F(OmahaServiceTest, NonSpammingTest) {
 
   EXPECT_EQ(0, service.number_of_tries_);
   EXPECT_FALSE(service.current_ping_time_.is_null());
-  EXPECT_GE(service.next_tries_time_ - now, base::TimeDelta::FromHours(2));
+  EXPECT_GE(service.next_tries_time_ - now, base::Hours(2));
   EXPECT_GT(service.last_sent_time_, now);
   EXPECT_FALSE(NeedUpdate());
 }

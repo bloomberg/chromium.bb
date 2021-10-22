@@ -30,6 +30,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace autofill_assistant {
 
@@ -38,6 +39,7 @@ using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
+using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::UnorderedElementsAre;
@@ -278,7 +280,7 @@ TEST_F(TriggerScriptCoordinatorTest, StartChecksStaticAndDynamicConditions) {
   EXPECT_CALL(*mock_dynamic_trigger_conditions_,
               OnUpdate(mock_web_controller_, _))
       .WillOnce(RunOnceCallback<1>());
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, ShowAndHideTriggerScript) {
@@ -301,19 +303,19 @@ TEST_F(TriggerScriptCoordinatorTest, ShowAndHideTriggerScript) {
                       mock_callback_.Get());
 
   // Condition stays true, trigger script should not be hidden.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   // Condition turns false, trigger script should be hidden.
   ON_CALL(*mock_dynamic_trigger_conditions_, GetSelectorMatches)
       .WillByDefault(Return(false));
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   // Condition is true again, trigger script should be shown again.
   ON_CALL(*mock_dynamic_trigger_conditions_, GetSelectorMatches)
       .WillByDefault(Return(true));
   EXPECT_CALL(*mock_ui_delegate_, ShowTriggerScript).Times(1);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, PauseAndResumeOnTabVisibilityChange) {
@@ -383,16 +385,16 @@ TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionNotNow) {
   EXPECT_CALL(*mock_dynamic_trigger_conditions_, GetSelectorMatches)
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_ui_delegate_, ShowTriggerScript).Times(0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_CALL(*mock_dynamic_trigger_conditions_, GetSelectorMatches)
       .WillOnce(Return(false));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_CALL(*mock_dynamic_trigger_conditions_, GetSelectorMatches)
       .WillOnce(Return(true));
   EXPECT_CALL(*mock_ui_delegate_, ShowTriggerScript).Times(1);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, PerformTriggerScriptActionCancelSession) {
@@ -638,14 +640,14 @@ TEST_F(TriggerScriptCoordinatorTest, TimeoutAfterInvisibleForTooLong) {
       .WillRepeatedly(Return(false));
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_CALL(
       mock_callback_,
       Run(Metrics::TriggerScriptFinishedState::TRIGGER_CONDITION_TIMEOUT, _,
           _));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
   EXPECT_THAT(
       GetUkmTriggerScriptFinished(ukm_recorder_),
       ElementsAreArray(ToHumanReadableMetrics(
@@ -677,24 +679,24 @@ TEST_F(TriggerScriptCoordinatorTest, TimeoutResetsAfterTriggerScriptShown) {
       .WillRepeatedly(Return(true));
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   // When the trigger script is hidden, the timeout resets.
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
   EXPECT_CALL(*mock_dynamic_trigger_conditions_, GetSelectorMatches)
       .WillRepeatedly(Return(false));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
   EXPECT_CALL(
       mock_callback_,
       Run(Metrics::TriggerScriptFinishedState::TRIGGER_CONDITION_TIMEOUT, _,
           _));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
   EXPECT_THAT(
       GetUkmTriggerScriptFinished(ukm_recorder_),
       ElementsAreArray(ToHumanReadableMetrics(
@@ -723,7 +725,7 @@ TEST_F(TriggerScriptCoordinatorTest, NoTimeoutByDefault) {
   coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
                       mock_callback_.Get());
   for (int i = 0; i < 10; ++i) {
-    task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+    task_environment()->FastForwardBy(base::Seconds(1));
   }
 }
 
@@ -764,14 +766,14 @@ TEST_F(TriggerScriptCoordinatorTest, KeyboardEventTriggersOutOfScheduleCheck) {
               OnUpdate(mock_web_controller_, _))
       .Times(3)
       .WillRepeatedly(RunOnceCallback<1>());
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_CALL(
       mock_callback_,
       Run(Metrics::TriggerScriptFinishedState::TRIGGER_CONDITION_TIMEOUT, _,
           _));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
   EXPECT_THAT(
       GetUkmTriggerScriptFinished(ukm_recorder_),
       ElementsAreArray(ToHumanReadableMetrics(
@@ -1232,10 +1234,10 @@ TEST_F(TriggerScriptCoordinatorTest, UiTimeoutWhileShown) {
                       mock_callback_.Get());
 
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   // Reloading the page should show the prompt again, resetting the timer.
   EXPECT_CALL(*mock_ui_delegate_, ShowTriggerScript).Times(1);
@@ -1244,10 +1246,10 @@ TEST_F(TriggerScriptCoordinatorTest, UiTimeoutWhileShown) {
       ukm::GetSourceIdForWebContentsDocument(web_contents()));
 
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(0);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   EXPECT_THAT(GetUkmTriggerScriptShownToUsers(ukm_recorder_),
               UnorderedElementsAreArray(ToHumanReadableMetrics(
@@ -1290,12 +1292,12 @@ TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedByCancelPopup) {
                       mock_callback_.Get());
 
   // Showing the cancel popup should have disabled the timer.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
 
   // As long as the prompt is not hidden, the timer continues to be disabled.
   content::NavigationSimulator::Reload(web_contents());
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedByOnboarding) {
@@ -1328,7 +1330,7 @@ TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedByOnboarding) {
                       mock_callback_.Get());
 
   // Showing the onboarding should have disabled the timer.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedBySkipSession) {
@@ -1359,7 +1361,7 @@ TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedBySkipSession) {
   // Just to check that the timer has gone properly out-of-scope along with the
   // coordinator and nothing blows up.
   coordinator_.reset();
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedByNotNow) {
@@ -1384,16 +1386,16 @@ TEST_F(TriggerScriptCoordinatorTest, UiTimeoutInterruptedByNotNow) {
 
   // Time that passes while the prompt is hidden is irrelevant
   // (HideTriggerScript is not called again).
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment()->FastForwardBy(base::Seconds(5));
 
   // Reloading the page will show the prompt again and reset the timeout.
   EXPECT_CALL(*mock_ui_delegate_, ShowTriggerScript).WillOnce([&]() {
     coordinator_->OnTriggerScriptShown(true);
   });
   content::NavigationSimulator::Reload(web_contents());
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
   EXPECT_CALL(*mock_ui_delegate_, HideTriggerScript).Times(1);
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 }
 
 TEST_F(TriggerScriptCoordinatorTest, StoppingTwiceDoesNotCrash) {
@@ -1428,13 +1430,11 @@ TEST_F(TriggerScriptCoordinatorTest, RecordTriggerConditionEvaluationTime) {
 
   EXPECT_CALL(*mock_dynamic_trigger_conditions_, OnUpdate)
       .WillOnce(WithArg<1>([&](auto& callback) {
-        task_environment()->FastForwardBy(
-            base::TimeDelta::FromMilliseconds(700));
+        task_environment()->FastForwardBy(base::Milliseconds(700));
         std::move(callback).Run();
       }))
       .WillOnce(WithArg<1>([&](auto& callback) {
-        task_environment()->FastForwardBy(
-            base::TimeDelta::FromMilliseconds(300));
+        task_environment()->FastForwardBy(base::Milliseconds(300));
         std::move(callback).Run();
       }));
 
@@ -1443,7 +1443,7 @@ TEST_F(TriggerScriptCoordinatorTest, RecordTriggerConditionEvaluationTime) {
                       mock_callback_.Get());
 
   // Run the second scheduled trigger condition evaluation.
-  task_environment()->FastForwardBy(base::TimeDelta::FromSeconds(1));
+  task_environment()->FastForwardBy(base::Seconds(1));
 
   // Run out-of-schedule trigger condition evaluation (should not be recorded).
   coordinator_->OnKeyboardVisibilityChanged(true);
@@ -1453,6 +1453,73 @@ TEST_F(TriggerScriptCoordinatorTest, RecordTriggerConditionEvaluationTime) {
       ElementsAreArray(std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>{
           {navigation_ids_[0], {{kTriggerConditionTimingMs, 700}}},
           {navigation_ids_[0], {{kTriggerConditionTimingMs, 300}}}}));
+}
+
+TEST_F(TriggerScriptCoordinatorTest, RecordIfPrimaryPageFailed) {
+  GetTriggerScriptsResponseProto response;
+  response.add_trigger_scripts();
+  std::string serialized_response;
+  response.SerializeToString(&serialized_response);
+  EXPECT_CALL(*mock_request_sender_, OnSendRequest(GURL(kFakeServerUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, serialized_response));
+
+  coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
+                      mock_callback_.Get());
+
+  // Navigate to the primary page.
+  EXPECT_CALL(mock_callback_,
+              Run(Metrics::TriggerScriptFinishedState::NAVIGATION_ERROR, _, _))
+      .Times(1);
+  auto simulator = content::NavigationSimulator::CreateBrowserInitiated(
+      GURL(kFakeDeepLink), web_contents());
+  simulator->Fail(net::ERR_TIMED_OUT);
+  simulator->CommitErrorPage();
+
+  // UKM should be recorded by the primary page's fail response.
+  EXPECT_THAT(GetUkmTriggerScriptFinished(ukm_recorder_),
+              ElementsAreArray(ToHumanReadableMetrics(
+                  {{navigation_ids_[0],
+                    {Metrics::TriggerScriptFinishedState::NAVIGATION_ERROR,
+                     TriggerScriptProto::UNSPECIFIED_TRIGGER_UI_TYPE}}})));
+}
+
+class TriggerScriptCoordinatorPrerenderTest
+    : public TriggerScriptCoordinatorTest {
+ public:
+  TriggerScriptCoordinatorPrerenderTest() {
+    feature_list_.InitWithFeatures(
+        {blink::features::kPrerender2},
+        // Disable the memory requirement of Prerender2 so the test can run on
+        // any bot.
+        {blink::features::kPrerender2MemoryControls});
+  }
+
+  ~TriggerScriptCoordinatorPrerenderTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(TriggerScriptCoordinatorPrerenderTest, DoNotRecordIfPrerenderingFailed) {
+  GetTriggerScriptsResponseProto response;
+  response.add_trigger_scripts();
+  std::string serialized_response;
+  response.SerializeToString(&serialized_response);
+  EXPECT_CALL(*mock_request_sender_, OnSendRequest(GURL(kFakeServerUrl), _, _))
+      .WillOnce(RunOnceCallback<2>(net::HTTP_OK, serialized_response));
+
+  EXPECT_CALL(mock_callback_, Run).Times(0);
+  coordinator_->Start(GURL(kFakeDeepLink), std::make_unique<TriggerContext>(),
+                      mock_callback_.Get());
+
+  // Start prerendering a page.
+  auto simulator = content::WebContentsTester::For(web_contents())
+                       ->AddPrerenderAndStartNavigation(GURL(kFakeDeepLink));
+  simulator->Fail(net::ERR_TIMED_OUT);
+  simulator->CommitErrorPage();
+
+  // UKM should not be recorded by the prerendering's fail response.
+  EXPECT_THAT(GetUkmTriggerScriptFinished(ukm_recorder_), IsEmpty());
 }
 
 }  // namespace autofill_assistant

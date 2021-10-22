@@ -9,14 +9,14 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include "av1/common/common.h"
 #include "av1/encoder/firstpass.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 namespace {
+
 TEST(FirstpassTest, FirstpassInfoInitWithExtBuf) {
   FIRSTPASS_INFO firstpass_info;
   FIRSTPASS_STATS ext_stats_buf[10];
@@ -76,7 +76,7 @@ TEST(FirstpassTest, FirstpassInfoPushPop) {
   EXPECT_EQ(firstpass_info.stats_count, FIRSTPASS_INFO_STATIC_BUF_SIZE);
 
   EXPECT_EQ(firstpass_info.stats_count, firstpass_info.stats_buf_size);
-  // Pusht a stats when the queue is full.
+  // Push the stats when the queue is full.
   FIRSTPASS_STATS stats;
   av1_zero(stats);
   aom_codec_err_t ret = av1_firstpass_info_push(&firstpass_info, &stats);

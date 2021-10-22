@@ -27,6 +27,10 @@ namespace media_router {
 class IssueManager {
  public:
   IssueManager();
+
+  IssueManager(const IssueManager&) = delete;
+  IssueManager& operator=(const IssueManager&) = delete;
+
   ~IssueManager();
 
   // Returns the amount of time before |issue_info| is dismissed after it is
@@ -71,15 +75,16 @@ class IssueManager {
     Entry(const Issue& issue,
           std::unique_ptr<base::CancelableOnceClosure>
               cancelable_dismiss_callback);
+
+    Entry(const Entry&) = delete;
+    Entry& operator=(const Entry&) = delete;
+
     ~Entry();
 
     Issue issue;
 
     // Set to non-null if |issue| can be auto-dismissed.
     std::unique_ptr<base::CancelableOnceClosure> cancelable_dismiss_callback;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Entry);
   };
 
   // Checks if the current top issue has changed. Updates |top_issue_|.
@@ -105,8 +110,6 @@ class IssueManager {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(IssueManager);
 };
 
 }  // namespace media_router

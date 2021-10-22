@@ -84,6 +84,11 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
         sample_counter_(0),
         task_runner_(task_runner) {}
 
+  RateLimitedSetVideoPlaneGeometry(const RateLimitedSetVideoPlaneGeometry&) =
+      delete;
+  RateLimitedSetVideoPlaneGeometry& operator=(
+      const RateLimitedSetVideoPlaneGeometry&) = delete;
+
   void SetGeometry(const chromecast::RectF& display_rect,
                    VideoPlane::Transform transform) {
     DCHECK(task_runner_->BelongsToCurrentThread());
@@ -92,7 +97,7 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
     base::TimeTicks now = base::TimeTicks::Now();
     base::TimeDelta elapsed = now - last_set_geometry_time_;
 
-    if (elapsed < base::TimeDelta::FromMilliseconds(min_calling_interval_ms_)) {
+    if (elapsed < base::Milliseconds(min_calling_interval_ms_)) {
       if (!pending_set_geometry_) {
         pending_set_geometry_ = true;
 
@@ -101,7 +106,7 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
             base::BindOnce(
                 &RateLimitedSetVideoPlaneGeometry::ApplyPendingSetGeometry,
                 this),
-            base::TimeDelta::FromMilliseconds(2 * min_calling_interval_ms_));
+            base::Milliseconds(2 * min_calling_interval_ms_));
       }
 
       pending_display_rect_ = display_rect;
@@ -160,8 +165,6 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
   size_t sample_counter_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(RateLimitedSetVideoPlaneGeometry);
 };
 
 VideoPlaneController::VideoPlaneController(

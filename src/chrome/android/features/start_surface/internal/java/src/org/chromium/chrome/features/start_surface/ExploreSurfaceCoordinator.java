@@ -13,14 +13,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.feed.FeedLaunchReliabilityLoggingState;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.feed.FeedSurfaceLifecycleManager;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
+import org.chromium.chrome.browser.feed.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
-import org.chromium.chrome.browser.ntp.ScrollableContainerDelegate;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -167,7 +168,7 @@ class ExploreSurfaceCoordinator implements FeedSurfaceDelegate {
                 bottomSheetController, mShareDelegateSupplier, scrollableContainerDelegate,
                 launchOrigin, PrivacyPreferencesManagerImpl.getInstance(), toolbarSupplier,
                 feedLaunchReliabilityLoggingState, swipeRefreshLayout, /*overScrollDisabled=*/true,
-                parentView);
+                parentView, new BookmarkBridge(profile));
         feedSurfaceCoordinator.getView().setId(R.id.start_surface_explore_view);
         return feedSurfaceCoordinator;
         // TODO(crbug.com/982018): Customize surface background for incognito and dark mode.

@@ -42,8 +42,8 @@
 #include "headless/test/headless_browser_test.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/chrome_debug_urls.h"
@@ -342,6 +342,9 @@ class CookieSetter {
                        base::Unretained(this)));
   }
 
+  CookieSetter(const CookieSetter&) = delete;
+  CookieSetter& operator=(const CookieSetter&) = delete;
+
   ~CookieSetter() {
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
   }
@@ -361,8 +364,6 @@ class CookieSetter {
   std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
 
   std::unique_ptr<network::SetCookieResult> result_;
-
-  DISALLOW_COPY_AND_ASSIGN(CookieSetter);
 };
 
 }  // namespace
@@ -571,6 +572,9 @@ class TraceHelper : public tracing::ExperimentalObserver {
         base::BindOnce(&TraceHelper::OnTracingStarted, base::Unretained(this)));
   }
 
+  TraceHelper(const TraceHelper&) = delete;
+  TraceHelper& operator=(const TraceHelper&) = delete;
+
   ~TraceHelper() override {
     target_->DetachClient(client_.get());
     EXPECT_FALSE(target_->IsAttached());
@@ -604,8 +608,6 @@ class TraceHelper : public tracing::ExperimentalObserver {
   std::unique_ptr<HeadlessDevToolsClient> client_;
 
   std::unique_ptr<base::ListValue> tracing_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(TraceHelper);
 };
 
 }  // namespace
@@ -706,12 +708,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTestAppendCommandLineFlags,
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ServerWantsClientCertificate) {
-  net::SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.request_client_certificate = true;
-
-  net::SpawnedTestServer server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("headless/test/data")));
+  net::SSLServerConfig server_config;
+  server_config.client_cert_type = net::SSLServerConfig::OPTIONAL_CLIENT_CERT;
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  server.SetSSLConfig(net::EmbeddedTestServer::CERT_AUTO, server_config);
+  server.ServeFilesFromSourceDirectory("headless/test/data");
   EXPECT_TRUE(server.Start());
 
   HeadlessBrowserContext* browser_context =

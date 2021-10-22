@@ -267,7 +267,8 @@ suite('ManageAccessibilityPageTests', function() {
 
     Polymer.dom.flush();
 
-    const deepLinkElement = page.$$('#enableSwitchAccess').$$('cr-toggle');
+    const deepLinkElement =
+        page.$$('#enableSwitchAccess').shadowRoot.querySelector('cr-toggle');
     await test_util.waitAfterNextRender(deepLinkElement);
     assertEquals(
         deepLinkElement, getDeepActiveElement(),
@@ -286,7 +287,8 @@ suite('ManageAccessibilityPageTests', function() {
     initPage();
     const locales = [{
       name: 'English (United States)',
-      offline: true,
+      worksOffline: true,
+      installed: true,
       recommended: true,
       value: 'en-US',
     }];
@@ -302,7 +304,7 @@ suite('ManageAccessibilityPageTests', function() {
     assertTrue(dictationSetting.checked);
     assertEquals('Enable dictation (speak to type)', dictationSetting.label);
     assertEquals(
-        'Send your voice to Google to allow dictation into any text field.',
+        'Type with your voice. Press Search + D, then start speaking.',
         dictationSetting.subLabel);
 
     // Dictation locale menu.
@@ -312,7 +314,7 @@ suite('ManageAccessibilityPageTests', function() {
     assertTrue(!!dictationLocaleMenuSubtitle);
     assertEquals('Language', dictationLocaleMenuLabel.innerText);
     assertEquals(
-        'English (United States) is processed locally and works offline.',
+        'English (United States) is processed locally and works offline',
         dictationLocaleMenuSubtitle.innerText);
 
     // Fake a request to change the dictation locale menu subtitle.
@@ -323,7 +325,7 @@ suite('ManageAccessibilityPageTests', function() {
     // Only the dictation locale subtitle should have changed.
     assertEquals('Enable dictation (speak to type)', dictationSetting.label);
     assertEquals(
-        'Send your voice to Google to allow dictation into any text field.',
+        'Type with your voice. Press Search + D, then start speaking.',
         dictationSetting.subLabel);
     assertEquals('Language', dictationLocaleMenuLabel.innerText);
     assertEquals('Testing', dictationLocaleMenuSubtitle.innerText);
@@ -334,13 +336,32 @@ suite('ManageAccessibilityPageTests', function() {
     const locales = [
       {
         name: 'English (United States)',
-        offline: true,
+        worksOffline: true,
+        installed: true,
         recommended: true,
         value: 'en-US',
       },
       {
+        name: 'Spanish',
+        worksOffline: true,
+        installed: false,
+        recommended: false,
+        value: 'es',
+      },
+      {
+        name: 'German',
+        // Note: this data should never occur in practice. If a locale isn't
+        // supported offline, then it should never be installed. Test this case
+        // to verify our code still works given unexpected input.
+        worksOffline: false,
+        installed: true,
+        recommended: false,
+        value: 'de',
+      },
+      {
         name: 'French (France)',
-        offline: false,
+        worksOffline: false,
+        installed: false,
         recommended: false,
         value: 'fr-FR'
       }
@@ -349,11 +370,22 @@ suite('ManageAccessibilityPageTests', function() {
     page.dictationLocaleSubtitleOverride_ = 'Testing';
     Polymer.dom.flush();
     assertEquals(
-        'English (United States) is processed locally and works offline.',
+        'English (United States) is processed locally and works offline',
         page.computeDictationLocaleSubtitle_());
 
     // Changing the Dictation locale pref should change the subtitle
     // computation.
+    page.prefs.settings.a11y.dictation_locale.value = 'es';
+    assertEquals(
+        'Couldn’t download Spanish speech files. Download will be attempted ' +
+            'later. Speech is sent to Google for processing for now.',
+        page.computeDictationLocaleSubtitle_());
+
+    page.prefs.settings.a11y.dictation_locale.value = 'de';
+    assertEquals(
+        'German speech is sent to Google for processing.',
+        page.computeDictationLocaleSubtitle_());
+
     page.prefs.settings.a11y.dictation_locale.value = 'fr-FR';
     assertEquals(
         'French (France) speech is sent to Google for processing.',

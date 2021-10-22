@@ -49,7 +49,9 @@ static_library("external_arc") {
     "//ui/accessibility:accessibility",
     "//ui/accessibility:ax_base",
     "//ui/aura",
+    "//ui/color",
     "//ui/message_center",
+    "//ui/native_theme",
     "//ui/views",
     "//ui/wm",
   ]

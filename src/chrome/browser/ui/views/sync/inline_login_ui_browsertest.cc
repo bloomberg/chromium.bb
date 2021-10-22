@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/identity_browser_test_base.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -34,7 +35,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -167,14 +167,14 @@ class MockInlineSigninHelper : public InlineSigninHelper {
       const std::string& signin_scoped_device_id,
       bool confirm_untrusted_signin);
 
+  MockInlineSigninHelper(const MockInlineSigninHelper&) = delete;
+  MockInlineSigninHelper& operator=(const MockInlineSigninHelper&) = delete;
+
   MOCK_METHOD1(OnClientOAuthSuccess, void(const ClientOAuthResult& result));
   MOCK_METHOD1(OnClientOAuthFailure, void(const GoogleServiceAuthError& error));
   MOCK_METHOD1(CreateSyncStarter, void(const std::string&));
 
   GaiaAuthFetcher* GetGaiaAuthFetcher() { return GetGaiaAuthFetcherForTest(); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockInlineSigninHelper);
 };
 
 MockInlineSigninHelper::MockInlineSigninHelper(
@@ -218,10 +218,12 @@ class MockSyncStarterInlineSigninHelper : public InlineSigninHelper {
       bool confirm_untrusted_signin,
       bool is_force_sign_in_with_usermanager);
 
-  MOCK_METHOD1(CreateSyncStarter, void(const std::string&));
+  MockSyncStarterInlineSigninHelper(const MockSyncStarterInlineSigninHelper&) =
+      delete;
+  MockSyncStarterInlineSigninHelper& operator=(
+      const MockSyncStarterInlineSigninHelper&) = delete;
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSyncStarterInlineSigninHelper);
+  MOCK_METHOD1(CreateSyncStarter, void(const std::string&));
 };
 
 MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
@@ -251,7 +253,7 @@ MockSyncStarterInlineSigninHelper::MockSyncStarterInlineSigninHelper(
 
 }  // namespace
 
-class InlineLoginUIBrowserTest : public InProcessBrowserTest {
+class InlineLoginUIBrowserTest : public IdentityBrowserTestBase {
  public:
   InlineLoginUIBrowserTest() {}
   void EnableSigninAllowed(bool enable);
@@ -403,6 +405,10 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
  public:
   InlineLoginHelperBrowserTest() : forced_signin_setter_(true) {}
 
+  InlineLoginHelperBrowserTest(const InlineLoginHelperBrowserTest&) = delete;
+  InlineLoginHelperBrowserTest& operator=(const InlineLoginHelperBrowserTest&) =
+      delete;
+
   ~InlineLoginHelperBrowserTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -499,8 +505,6 @@ class InlineLoginHelperBrowserTest : public InProcessBrowserTest {
   base::CallbackListSubscription create_services_subscription_;
   Profile* profile_ = nullptr;
   signin_util::ScopedForceSigninSetterForTesting forced_signin_setter_;
-
-  DISALLOW_COPY_AND_ASSIGN(InlineLoginHelperBrowserTest);
 };
 
 // Test signin helper calls correct fetcher methods when called with an

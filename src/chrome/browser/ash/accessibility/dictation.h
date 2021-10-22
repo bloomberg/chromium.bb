@@ -30,6 +30,13 @@ namespace ash {
 class Dictation : public SpeechRecognizerDelegate,
                   public ui::InputMethodObserver {
  public:
+  // Stores whether locales are supported by offline speech recognition and
+  // if the corresponding language pack is installed.
+  struct LocaleData {
+    bool works_offline = false;
+    bool installed = false;
+  };
+
   // Gets the default locale given a user |profile|. If this is a |new_user|,
   // uses the application language. Otherwise uses previous method of
   // determining Dictation language with default IME language.
@@ -39,9 +46,13 @@ class Dictation : public SpeechRecognizerDelegate,
 
   // Gets all possible BCP-47 style locale codes supported by Dictation,
   // and whether they are available offline.
-  static const base::flat_map<std::string, bool> GetAllSupportedLocales();
+  static const base::flat_map<std::string, LocaleData> GetAllSupportedLocales();
 
   explicit Dictation(Profile* profile);
+
+  Dictation(const Dictation&) = delete;
+  Dictation& operator=(const Dictation&) = delete;
+
   ~Dictation() override;
 
   // User-initiated dictation.
@@ -96,8 +107,6 @@ class Dictation : public SpeechRecognizerDelegate,
   base::ElapsedTimer listening_duration_timer_;
 
   base::WeakPtrFactory<Dictation> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(Dictation);
 };
 
 }  // namespace ash

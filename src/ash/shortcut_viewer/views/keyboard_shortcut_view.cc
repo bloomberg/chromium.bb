@@ -106,6 +106,9 @@ class ShortcutsListScrollView : public views::ScrollView {
     GetViewAccessibility().OverrideRole(ax::mojom::Role::kScrollView);
   }
 
+  ShortcutsListScrollView(const ShortcutsListScrollView&) = delete;
+  ShortcutsListScrollView& operator=(const ShortcutsListScrollView&) = delete;
+
   ~ShortcutsListScrollView() override = default;
 
   // views::View:
@@ -115,9 +118,6 @@ class ShortcutsListScrollView : public views::ScrollView {
   }
 
   void OnBlur() override { SetHasFocusIndicator(false); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShortcutsListScrollView);
 };
 
 std::unique_ptr<ShortcutsListScrollView> CreateScrollView(
@@ -332,7 +332,7 @@ void KeyboardShortcutView::QueryChanged(ash::SearchBoxViewBase* sender) {
 
   // TODO(wutao): This timeout value is chosen based on subjective search
   // latency tests on Minnie. Objective method or UMA is desired.
-  constexpr base::TimeDelta kTimeOut(base::TimeDelta::FromMilliseconds(250));
+  constexpr base::TimeDelta kTimeOut(base::Milliseconds(250));
   debounce_timer_.Start(
       FROM_HERE, kTimeOut,
       base::BindOnce(&KeyboardShortcutView::ShowSearchResults,

@@ -11,7 +11,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "extensions/browser/value_store/testing_value_store.h"
+#include "components/value_store/testing_value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -26,6 +26,12 @@ class WallpaperControllerClientImplTest : public testing::Test {
     user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
   }
+
+  WallpaperControllerClientImplTest(const WallpaperControllerClientImplTest&) =
+      delete;
+  WallpaperControllerClientImplTest& operator=(
+      const WallpaperControllerClientImplTest&) = delete;
+
   ~WallpaperControllerClientImplTest() override = default;
 
  private:
@@ -33,8 +39,6 @@ class WallpaperControllerClientImplTest : public testing::Test {
   ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(WallpaperControllerClientImplTest);
 };
 
 TEST_F(WallpaperControllerClientImplTest, Construction) {

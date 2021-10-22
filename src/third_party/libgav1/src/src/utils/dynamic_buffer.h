@@ -17,6 +17,7 @@
 #ifndef LIBGAV1_SRC_UTILS_DYNAMIC_BUFFER_H_
 #define LIBGAV1_SRC_UTILS_DYNAMIC_BUFFER_H_
 
+#include <cstddef>
 #include <memory>
 #include <new>
 

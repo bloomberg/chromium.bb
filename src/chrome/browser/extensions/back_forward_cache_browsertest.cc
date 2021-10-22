@@ -21,7 +21,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "net/dns/mock_host_resolver.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
-#include "third_party/blink/public/mojom/frame/back_forward_cache_controller.mojom-shared.h"
+#include "third_party/blink/public/mojom/navigation/renderer_eviction_reason.mojom-shared.h"
 
 namespace extensions {
 
@@ -145,17 +145,6 @@ class ExtensionBackForwardCacheBrowserTest : public ExtensionBrowserTest {
                      "BackForwardCache.HistoryNavigationOutcome."
                      "DisabledForRenderFrameHostReason2",
                      kMessagingBucket));
-  }
-
-  void ExpectInCache(content::RenderFrameHost* rfh) {
-    if (rfh->GetLifecycleState() !=
-        content::RenderFrameHost::LifecycleState::kInBackForwardCache) {
-      LOG(ERROR) << "Can store result "
-                 << rfh->GetBackForwardCanStoreNowDebugStringForTesting();
-    }
-
-    EXPECT_EQ(rfh->GetLifecycleState(),
-              content::RenderFrameHost::LifecycleState::kInBackForwardCache);
   }
 
   void ExpectTitleChangeSuccess(const Extension& extension, const char* title) {
@@ -452,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
-  content::RenderFrameHost* child = primary_rfh->GetFramesInSubtree().at(1);
+  content::RenderFrameHost* child = ChildFrameAt(primary_rfh, 0);
 
   std::string action = base::StringPrintf(
       R"HTML(
@@ -875,19 +864,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
   // 1) Navigate to A.
-  content::RenderFrameHost* rfh_a =
-      ui_test_utils::NavigateToURL(browser(), url_a);
-  content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  content::RenderFrameHostWrapper rfh_a(
+      ui_test_utils::NavigateToURL(browser(), url_a));
 
   // 2) Navigate to B.
-  content::RenderFrameHost* rfh_b =
-      ui_test_utils::NavigateToURL(browser(), url_b);
-  content::RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+  content::RenderFrameHostWrapper rfh_b(
+      ui_test_utils::NavigateToURL(browser(), url_b));
 
   // Ensure that `rfh_a` is in the cache.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_NE(rfh_a, rfh_b);
-  ExpectInCache(rfh_a);
+  ASSERT_FALSE(rfh_a.IsDestroyed());
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   std::u16string expected_title = u"foo";
   auto title_watcher = std::make_unique<content::TitleWatcher>(
@@ -902,9 +889,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
   // `rfh_a` should still be in the cache.
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_NE(rfh_a, rfh_b);
-  ExpectInCache(rfh_a);
+  ASSERT_FALSE(rfh_a.IsDestroyed());
+  EXPECT_EQ(rfh_a->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // Expect the original title when going back to A.
   expected_title = u"Title Of Awesomeness";
@@ -919,9 +906,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
   // `rfh_b` should still be in the cache.
-  EXPECT_FALSE(delete_observer_rfh_b.deleted());
-  EXPECT_NE(rfh_a, rfh_b);
-  ExpectInCache(rfh_b);
+  ASSERT_FALSE(rfh_b.IsDestroyed());
+  EXPECT_EQ(rfh_b->GetLifecycleState(),
+            content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
   // Now go forward to B, and expect that it is what was set before it
   // went into the back forward cache.
@@ -952,11 +939,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionBackForwardCacheBrowserTest,
       ui_test_utils::NavigateToURL(browser(), url_a);
   content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
 
-  ASSERT_EQ(2u, rfh_a->GetFramesInSubtree().size());
+  content::RenderFrameHost* iframe = ChildFrameAt(rfh_a, 0);
+  ASSERT_TRUE(iframe);
 
   // Cache the iframe's frame tree node id to send it a message later.
-  int iframe_frame_tree_node_id =
-      rfh_a->GetFramesInSubtree()[1]->GetFrameTreeNodeId();
+  int iframe_frame_tree_node_id = iframe->GetFrameTreeNodeId();
 
   // 2) Navigate to B.
   content::RenderFrameHost* rfh_b =

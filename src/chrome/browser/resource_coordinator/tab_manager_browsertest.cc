@@ -62,7 +62,7 @@ namespace resource_coordinator {
 
 namespace {
 
-constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kShortDelay = base::Seconds(1);
 
 bool IsTabDiscarded(content::WebContents* web_contents) {
   return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsDiscarded();
@@ -75,6 +75,10 @@ class ExpectStateTransitionObserver : public LifecycleUnitObserver {
       : lifecycle_unit_(lifecyle_unit), expected_state_(expected_state) {
     lifecycle_unit_->AddObserver(this);
   }
+
+  ExpectStateTransitionObserver(const ExpectStateTransitionObserver&) = delete;
+  ExpectStateTransitionObserver& operator=(
+      const ExpectStateTransitionObserver&) = delete;
 
   ~ExpectStateTransitionObserver() override {
     lifecycle_unit_->RemoveObserver(this);
@@ -110,8 +114,6 @@ class ExpectStateTransitionObserver : public LifecycleUnitObserver {
   const LifecycleUnitState expected_state_;
   std::set<LifecycleUnitState> allowed_states_;
   base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExpectStateTransitionObserver);
 };
 
 class DiscardWaiter : public TabLifecycleObserver {
@@ -199,6 +201,10 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
  public:
   TabManagerTestWithTwoTabs() = default;
 
+  TabManagerTestWithTwoTabs(const TabManagerTestWithTwoTabs&) = delete;
+  TabManagerTestWithTwoTabs& operator=(const TabManagerTestWithTwoTabs&) =
+      delete;
+
   void SetUpOnMainThread() override {
     TabManagerTest::SetUpOnMainThread();
 
@@ -208,9 +214,6 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
     OpenTwoTabs(embedded_test_server()->GetURL("/title2.html"),
                 embedded_test_server()->GetURL("/title3.html"));
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabManagerTestWithTwoTabs);
 };
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
@@ -431,8 +434,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   ASSERT_FALSE(tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
 
   // Advance the clock for more than the protection time.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime / 2 +
-                      base::TimeDelta::FromSeconds(1));
+  test_clock_.Advance(kBackgroundUrgentProtectionTime / 2 + base::Seconds(1));
 
   // Should be able to discard the background tab now.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(LifecycleUnitDiscardReason::URGENT));
@@ -766,8 +768,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   // Grab the original frames.
   content::WebContents* contents = tsm()->GetActiveWebContents();
   content::RenderFrameHost* main_frame = contents->GetMainFrame();
-  ASSERT_EQ(3u, contents->GetAllFrames().size());
-  content::RenderFrameHost* child_frame = contents->GetAllFrames()[1];
+  content::RenderFrameHost* child_frame = ChildFrameAt(main_frame, 0);
+  ASSERT_TRUE(child_frame);
 
   // Sanity check that in this test page the main frame and the
   // subframe are cross-site.
@@ -803,8 +805,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   // Re-assign pointers after discarding, as they've changed.
   contents = tsm()->GetActiveWebContents();
   main_frame = contents->GetMainFrame();
-  ASSERT_LE(2u, contents->GetAllFrames().size());
-  child_frame = contents->GetAllFrames()[1];
+  child_frame = ChildFrameAt(main_frame, 0);
+  ASSERT_TRUE(child_frame);
 
   // document.wasDiscarded is true after discard, on mainframe and childframe.
   bool discarded_mainframe_result;
@@ -821,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   GURL childframe_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateIframeToURL(contents, "frame1", childframe_url));
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents->GetAllFrames()[1], kDiscardedStateJS,
+      ChildFrameAt(contents, 0), kDiscardedStateJS,
       &discarded_childframe_result));
   EXPECT_FALSE(discarded_childframe_result);
 
@@ -830,7 +832,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
       embedded_test_server()->GetURL("d.com", "/title1.html"));
   EXPECT_TRUE(NavigateIframeToURL(contents, "frame2", second_childframe_url));
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents->GetAllFrames()[2], kDiscardedStateJS,
+      ChildFrameAt(contents, 1), kDiscardedStateJS,
       &discarded_childframe_result));
   EXPECT_FALSE(discarded_childframe_result);
 
@@ -1021,8 +1023,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerMemoryPressureTest, OomPressureListener) {
   const int kIntervalTimeInMS = 5;
   int timeout = kTimeoutTimeInMS / kIntervalTimeInMS;
   while (--timeout) {
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
+    base::PlatformThread::Sleep(base::Milliseconds(kIntervalTimeInMS));
     base::RunLoop().RunUntilIdle();
     if (IsTabDiscarded(GetWebContentsAt(0)))
       break;

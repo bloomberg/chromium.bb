@@ -22,6 +22,7 @@
 #include "gtest/gtest.h"
 #include "absl/base/attributes.h"
 #include "absl/container/internal/have_sse.h"
+#include "absl/profiling/internal/sample_recorder.h"
 #include "absl/synchronization/blocking_counter.h"
 #include "absl/synchronization/internal/thread_pool.h"
 #include "absl/synchronization/mutex.h"
@@ -90,6 +91,7 @@ TEST(HashtablezInfoTest, PrepareForSampling) {
   EXPECT_EQ(info.hashes_bitwise_or.load(), 0);
   EXPECT_EQ(info.hashes_bitwise_and.load(), ~size_t{});
   EXPECT_EQ(info.hashes_bitwise_xor.load(), 0);
+  EXPECT_EQ(info.max_reserve.load(), 0);
   EXPECT_GE(info.create_time, test_start);
 
   info.capacity.store(1, std::memory_order_relaxed);
@@ -100,6 +102,7 @@ TEST(HashtablezInfoTest, PrepareForSampling) {
   info.hashes_bitwise_or.store(1, std::memory_order_relaxed);
   info.hashes_bitwise_and.store(1, std::memory_order_relaxed);
   info.hashes_bitwise_xor.store(1, std::memory_order_relaxed);
+  info.max_reserve.store(1, std::memory_order_relaxed);
   info.create_time = test_start - absl::Hours(20);
 
   info.PrepareForSampling();
@@ -112,6 +115,7 @@ TEST(HashtablezInfoTest, PrepareForSampling) {
   EXPECT_EQ(info.hashes_bitwise_or.load(), 0);
   EXPECT_EQ(info.hashes_bitwise_and.load(), ~size_t{});
   EXPECT_EQ(info.hashes_bitwise_xor.load(), 0);
+  EXPECT_EQ(info.max_reserve.load(), 0);
   EXPECT_GE(info.create_time, test_start);
 }
 
@@ -186,6 +190,22 @@ TEST(HashtablezInfoTest, RecordRehash) {
   EXPECT_EQ(info.num_rehashes.load(), 1);
 }
 
+TEST(HashtablezInfoTest, RecordReservation) {
+  HashtablezInfo info;
+  absl::MutexLock l(&info.init_mu);
+  info.PrepareForSampling();
+  RecordReservationSlow(&info, 3);
+  EXPECT_EQ(info.max_reserve.load(), 3);
+
+  RecordReservationSlow(&info, 2);
+  // High watermark does not change
+  EXPECT_EQ(info.max_reserve.load(), 3);
+
+  RecordReservationSlow(&info, 10);
+  // High watermark does change
+  EXPECT_EQ(info.max_reserve.load(), 10);
+}
+
 #if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
 TEST(HashtablezSamplerTest, SmallSampleParameter) {
   SetHashtablezEnabled(true);
@@ -232,7 +252,7 @@ TEST(HashtablezSamplerTest, Sample) {
 }
 
 TEST(HashtablezSamplerTest, Handle) {
-  auto& sampler = HashtablezSampler::Global();
+  auto& sampler = GlobalHashtablezSampler();
   HashtablezInfoHandle h(sampler.Register());
   auto* info = HashtablezInfoHandlePeer::GetInfo(&h);
   info->hashes_bitwise_and.store(0x12345678, std::memory_order_relaxed);

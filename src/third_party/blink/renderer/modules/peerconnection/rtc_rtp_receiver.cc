@@ -349,7 +349,11 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(ScriptState* state,
       for (const auto& parameter : rtc_codec.parameters) {
         if (!sdp_fmtp_line.empty())
           sdp_fmtp_line += ";";
-        sdp_fmtp_line += parameter.first + "=" + parameter.second;
+        if (parameter.first.empty()) {
+          sdp_fmtp_line += parameter.second;
+        } else {
+          sdp_fmtp_line += parameter.first + "=" + parameter.second;
+        }
       }
       codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
     }
@@ -372,7 +376,7 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(ScriptState* state,
     IdentifiableTokenBuilder builder;
     IdentifiabilityAddRTCRtpCapabilitiesToBuilder(builder, *capabilities);
     IdentifiabilityMetricBuilder(ExecutionContext::From(state)->UkmSourceID())
-        .Set(IdentifiableSurface::FromTypeAndToken(
+        .Add(IdentifiableSurface::FromTypeAndToken(
                  IdentifiableSurface::Type::kRtcRtpReceiverGetCapabilities,
                  IdentifiabilityBenignStringToken(kind)),
              builder.GetToken())
@@ -592,7 +596,8 @@ void RTCRtpReceiver::InitializeEncodedVideoStreams(ScriptState* script_state) {
                                       ->GetEncodedVideoStreamTransformer()
                                 : nullptr;
               },
-              WrapWeakPersistent(this)));
+              WrapWeakPersistent(this)),
+          webrtc::TransformableFrameInterface::Direction::kReceiver);
   // The high water mark for the stream is set to 1 so that the stream seems
   // ready to write, but without queuing frames.
   WritableStream* writable_stream =

@@ -232,7 +232,7 @@ suite('ManageAccessibilityPageTests', function() {
                           .$$('#switchAccessActionAssignmentPane')
                           .$$('#error')
                           .textContent.trim();
-    assertEquals('Keys do not match. Press any key to exit.', errorText);
+    assertEquals('Keys don’t match. Press any key to exit.', errorText);
   });
 
   test('Deep link to auto-scan keyboards', async () => {
@@ -250,7 +250,8 @@ suite('ManageAccessibilityPageTests', function() {
     settings.Router.getInstance().navigateTo(
         settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS, params);
 
-    const deepLinkElement = page.$$('#keyboardScanSpeedSlider').$$('cr-slider');
+    const deepLinkElement = page.$$('#keyboardScanSpeedSlider')
+                                .shadowRoot.querySelector('cr-slider');
     await test_util.waitAfterNextRender(deepLinkElement);
 
     assertEquals(

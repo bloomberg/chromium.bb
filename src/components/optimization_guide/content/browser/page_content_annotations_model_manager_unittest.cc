@@ -19,7 +19,8 @@
 
 namespace optimization_guide {
 
-using testing::UnorderedElementsAre;
+using ::testing::FloatEq;
+using ::testing::UnorderedElementsAre;
 
 class ModelObserverTracker : public TestOptimizationGuideModelProvider {
  public:
@@ -49,8 +50,9 @@ class FakePageEntitiesModelExecutor : public PageEntitiesModelExecutor {
  public:
   explicit FakePageEntitiesModelExecutor(
       const base::flat_map<std::string,
-                           std::vector<tflite::task::core::Category>>& entries)
-      : entries_(entries) {}
+                           std::vector<tflite::task::core::Category>>& entries,
+      const base::flat_map<std::string, EntityMetadata>& entity_metadata)
+      : entries_(entries), entity_metadata_(entity_metadata) {}
   ~FakePageEntitiesModelExecutor() override = default;
 
   void ExecuteModelWithInput(
@@ -61,9 +63,19 @@ class FakePageEntitiesModelExecutor : public PageEntitiesModelExecutor {
         it != entries_.end() ? absl::make_optional(it->second) : absl::nullopt);
   }
 
+  void GetMetadataForEntityId(
+      const std::string& entity_id,
+      PageEntitiesModelEntityMetadataRetrievedCallback callback) override {
+    auto it = entity_metadata_.find(entity_id);
+    std::move(callback).Run(it != entity_metadata_.end()
+                                ? absl::make_optional(it->second)
+                                : absl::nullopt);
+  }
+
  private:
   base::flat_map<std::string, std::vector<tflite::task::core::Category>>
       entries_;
+  base::flat_map<std::string, EntityMetadata> entity_metadata_;
 };
 
 class PageContentAnnotationsModelManagerTest : public testing::Test {
@@ -110,10 +122,11 @@ class PageContentAnnotationsModelManagerTest : public testing::Test {
 
   void SetPageEntitiesModelExecutor(
       const base::flat_map<std::string,
-                           std::vector<tflite::task::core::Category>>&
-          entries) {
+                           std::vector<tflite::task::core::Category>>& entries,
+      const base::flat_map<std::string, EntityMetadata>& entity_metadata) {
     model_manager()->OverridePageEntitiesModelExecutorForTesting(
-        std::make_unique<FakePageEntitiesModelExecutor>(entries));
+        std::make_unique<FakePageEntitiesModelExecutor>(entries,
+                                                        entity_metadata));
   }
 
   absl::optional<history::VisitContentModelAnnotations> Annotate(
@@ -135,6 +148,25 @@ class PageContentAnnotationsModelManagerTest : public testing::Test {
     run_loop.Run();
 
     return content_annotations;
+  }
+
+  absl::optional<EntityMetadata> GetMetadataForEntityId(
+      const std::string& entity_id) {
+    absl::optional<EntityMetadata> entities_metadata;
+    base::RunLoop run_loop;
+    model_manager()->GetMetadataForEntityId(
+        entity_id,
+        base::BindOnce(
+            [](base::RunLoop* run_loop,
+               absl::optional<EntityMetadata>* out_entities_metadata,
+               const absl::optional<EntityMetadata>& entities_metadata) {
+              *out_entities_metadata = entities_metadata;
+              run_loop->Quit();
+            },
+            &run_loop, &entities_metadata));
+    run_loop.Run();
+
+    return entities_metadata;
   }
 
   ModelObserverTracker* model_observer_tracker() const {
@@ -237,13 +269,13 @@ TEST_F(PageContentAnnotationsModelManagerTest,
       ->set_category_name("SOMECATEGORY");
 
   std::vector<tflite::task::core::Category> model_output = {
-      {"SOMECATEGORY", 0.5},
+      {"SOMECATEGORY", 0.4},
       {"-2", 0.3},
   };
   history::VisitContentModelAnnotations annotations =
       GetContentModelAnnotationsFromOutput(model_metadata, model_output);
   EXPECT_TRUE(annotations.categories.empty());
-  EXPECT_EQ(annotations.visibility_score, 0.5);
+  EXPECT_THAT(annotations.visibility_score, FloatEq(0.6));
   EXPECT_EQ(annotations.page_topics_model_version, 123);
 }
 
@@ -387,7 +419,7 @@ TEST_F(PageContentAnnotationsModelManagerTest,
       ->set_category_name("SOMECATEGORY");
 
   std::vector<tflite::task::core::Category> model_output = {
-      {"0", 0.3}, {"1", 0.25}, {"2", 0.4}, {"3", 0.05}, {"SOMECATEGORY", 0.5},
+      {"0", 0.3}, {"1", 0.25}, {"2", 0.4}, {"3", 0.05}, {"SOMECATEGORY", 0.4},
   };
   history::VisitContentModelAnnotations annotations =
       GetContentModelAnnotationsFromOutput(model_metadata, model_output);
@@ -396,7 +428,7 @@ TEST_F(PageContentAnnotationsModelManagerTest,
                   history::VisitContentModelAnnotations::Category("0", 30),
                   history::VisitContentModelAnnotations::Category("1", 25),
                   history::VisitContentModelAnnotations::Category("2", 40)));
-  EXPECT_EQ(annotations.visibility_score, 0.5);
+  EXPECT_THAT(annotations.visibility_score, FloatEq(0.6));
   EXPECT_EQ(annotations.page_topics_model_version, 123);
 }
 
@@ -415,6 +447,11 @@ TEST_F(PageContentAnnotationsModelManagerTest,
 
 TEST_F(PageContentAnnotationsModelManagerTest, AnnotateModelNotAvailable) {
   EXPECT_FALSE(Annotate("sometext").has_value());
+}
+
+TEST_F(PageContentAnnotationsModelManagerTest,
+       GetMetadataForEntityIdEntitiesAnnotatorNotInitialized) {
+  EXPECT_FALSE(GetMetadataForEntityId("someid").has_value());
 }
 
 class PageContentAnnotationsModelManagerEntitiesOnlyTest
@@ -453,7 +490,8 @@ TEST_F(PageContentAnnotationsModelManagerEntitiesOnlyTest,
                                   {"entity3", 0.3},
                                   {"entity4", 0.4},
                                   {"entity5", 0.5},
-                                  {"entity6", 0.6}}}});
+                                  {"entity6", 0.6}}}},
+                               /*entity_metadata=*/{});
 
   absl::optional<history::VisitContentModelAnnotations> annotations =
       Annotate("sometext");
@@ -483,6 +521,19 @@ TEST_F(PageContentAnnotationsModelManagerEntitiesOnlyTest,
           history::VisitContentModelAnnotations::Category("entity2", 20)));
 }
 
+TEST_F(PageContentAnnotationsModelManagerEntitiesOnlyTest,
+       GetMetadataForEntityIdEntitiesAnnotatorInitialized) {
+  EntityMetadata entity_metadata;
+  entity_metadata.human_readable_name = "entity1";
+  entity_metadata.human_readable_categories = {
+      {"category1", 0.5},
+  };
+  SetPageEntitiesModelExecutor(/*entries=*/{}, {
+                                                   {"entity1", entity_metadata},
+                                               });
+  EXPECT_TRUE(GetMetadataForEntityId("entity1").has_value());
+}
+
 class PageContentAnnotationsModelManagerMultipleModelsTest
     : public PageContentAnnotationsModelManagerTest {
  public:
@@ -500,6 +551,15 @@ class PageContentAnnotationsModelManagerMultipleModelsTest
 
 TEST_F(PageContentAnnotationsModelManagerMultipleModelsTest,
        AnnotateRequestBothModels) {
+  SetPageEntitiesModelExecutor({{"sometext",
+                                 {{"entity1", 0.1},
+                                  {"entity2", 0.2},
+                                  {"entity3", 0.3},
+                                  {"entity4", 0.4},
+                                  {"entity5", 0.5},
+                                  {"entity6", 0.6}}}},
+                               /*entity_metadata=*/{});
+
   Annotate("sometext");
 
   histogram_tester()->ExpectUniqueSample(

@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -19,9 +20,9 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/app_service/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/full_restore_save_handler.h"
-#include "components/full_restore/full_restore_utils.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/full_restore_save_handler.h"
+#include "components/app_restore/full_restore_utils.h"
 #include "components/sessions/core/session_id.h"
 #endif
 
@@ -71,7 +72,7 @@ content::WebContents* BrowserAppLauncher::LaunchAppWithParams(
 
     // If the restore id is available, save the launch parameters to the full
     // restore file for the system web apps.
-    auto launch_info = std::make_unique<full_restore::AppLaunchInfo>(
+    auto launch_info = std::make_unique<app_restore::AppLaunchInfo>(
         params_for_restore.app_id, session_id, params_for_restore.container,
         params_for_restore.disposition, params_for_restore.display_id,
         std::move(params_for_restore.launch_files),
@@ -99,7 +100,7 @@ content::WebContents* BrowserAppLauncher::LaunchAppWithParams(
         params.app_id, params.container, params.disposition, params.source,
         params.display_id, params.launch_files, params.intent);
 
-    auto launch_info = std::make_unique<full_restore::AppLaunchInfo>(
+    auto launch_info = std::make_unique<app_restore::AppLaunchInfo>(
         params_for_restore.app_id, params_for_restore.container,
         params_for_restore.disposition, params_for_restore.display_id,
         std::move(params_for_restore.launch_files),
@@ -122,6 +123,7 @@ void BrowserAppLauncher::LaunchAppWithCallback(
     const base::FilePath& current_directory,
     const absl::optional<GURL>& url_handler_launch_url,
     const absl::optional<GURL>& protocol_handler_launch_url,
+    const std::vector<base::FilePath>& launch_files,
     base::OnceCallback<void(Browser* browser,
                             apps::mojom::LaunchContainer container)> callback) {
   // old-style app shortcuts
@@ -137,7 +139,7 @@ void BrowserAppLauncher::LaunchAppWithCallback(
   if (!extension || extension->from_bookmark()) {
     web_app_launch_manager_.LaunchApplication(
         app_id, command_line, current_directory, url_handler_launch_url,
-        protocol_handler_launch_url, std::move(callback));
+        protocol_handler_launch_url, launch_files, std::move(callback));
     return;
   }
 

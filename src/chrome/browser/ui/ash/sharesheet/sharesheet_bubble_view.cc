@@ -41,8 +41,8 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/transform_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -90,9 +90,9 @@ constexpr int kExpandViewPaddingBottom = 8;
 
 constexpr int kShortSpacing = 20;
 
-constexpr auto kAnimateDelay = base::TimeDelta::FromMilliseconds(100);
-constexpr auto kQuickAnimateTime = base::TimeDelta::FromMilliseconds(100);
-constexpr auto kSlowAnimateTime = base::TimeDelta::FromMilliseconds(200);
+constexpr auto kAnimateDelay = base::Milliseconds(100);
+constexpr auto kQuickAnimateTime = base::Milliseconds(100);
+constexpr auto kSlowAnimateTime = base::Milliseconds(200);
 
 // Resize Percentage.
 constexpr int kStretchy = 1.0;
@@ -167,7 +167,13 @@ SharesheetBubbleView::SharesheetBubbleView(
   CreateBubble();
 }
 
-SharesheetBubbleView::~SharesheetBubbleView() = default;
+SharesheetBubbleView::~SharesheetBubbleView() {
+  // TODO(https://crbug.com/1249491): While this is harmless, it should not be
+  // necessary unless something fishy is happening with the behavior of layer
+  // animations around widget teardown.
+  if (close_callback_)
+    std::move(close_callback_).Run(views::Widget::ClosedReason::kUnspecified);
+}
 
 void SharesheetBubbleView::ShowBubble(
     std::vector<TargetInfo> targets,
@@ -180,11 +186,8 @@ void SharesheetBubbleView::ShowBubble(
 
   main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  // When there are no targets, don't show any previews. Otherwise, show
-  // previews if the flag is enabled.
-  bool show_content_previews =
-      !targets.empty() &&
-      base::FeatureList::IsEnabled(features::kSharesheetContentPreviews);
+  // When there are no targets, don't show any previews.
+  bool show_content_previews = !targets.empty();
   header_view_ =
       main_view_->AddChildView(std::make_unique<SharesheetHeaderView>(
           intent_->Clone(), delegate_->GetProfile(), show_content_previews));
@@ -681,8 +684,7 @@ void SharesheetBubbleView::SetToDefaultBubbleSizing() {
 
 void SharesheetBubbleView::ShowWidgetWithAnimateFadeIn() {
   constexpr float kSharesheetScaleUpFactor = 0.8f;
-  constexpr auto kSharesheetScaleUpTime =
-      base::TimeDelta::FromMilliseconds(150);
+  constexpr auto kSharesheetScaleUpTime = base::Milliseconds(150);
 
   views::Widget* widget = View::GetWidget();
   ui::Layer* layer = widget->GetLayer();
@@ -707,13 +709,9 @@ void SharesheetBubbleView::ShowWidgetWithAnimateFadeIn() {
 
 void SharesheetBubbleView::CloseWidgetWithAnimateFadeOut(
     views::Widget::ClosedReason closed_reason) {
-  constexpr auto kSharesheetOpacityFadeOutTime =
-      base::TimeDelta::FromMilliseconds(80);
+  constexpr auto kSharesheetOpacityFadeOutTime = base::Milliseconds(80);
 
   is_bubble_closing_ = true;
-  if (close_callback_) {
-    std::move(close_callback_).Run(closed_reason);
-  }
   ui::Layer* layer = View::GetWidget()->GetLayer();
 
   auto scoped_settings =
@@ -736,6 +734,10 @@ void SharesheetBubbleView::CloseWidgetWithReason(
     views::Widget::ClosedReason closed_reason) {
   View::GetWidget()->CloseWithReason(closed_reason);
 
+  // Run |close_callback_| after the widget closes.
+  if (close_callback_) {
+    std::move(close_callback_).Run(closed_reason);
+  }
   // Bubble is deleted here.
   delegate_->OnBubbleClosed(active_target_);
 }

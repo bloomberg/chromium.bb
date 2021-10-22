@@ -464,10 +464,7 @@ HQX_FUNC(4)
 static int query_formats(AVFilterContext *ctx)
 {
     static const enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_RGB32, AV_PIX_FMT_NONE};
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
+    return ff_set_common_formats_from_list(ctx, pix_fmts);
 }
 
 static int config_output(AVFilterLink *outlink)
@@ -502,7 +499,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     td.in = in;
     td.out = out;
     td.rgbtoyuv = hqx->rgbtoyuv;
-    ctx->internal->execute(ctx, hqx->func, &td, NULL, FFMIN(inlink->h, ff_filter_get_nb_threads(ctx)));
+    ff_filter_execute(ctx, hqx->func, &td, NULL,
+                      FFMIN(inlink->h, ff_filter_get_nb_threads(ctx)));
 
     av_frame_free(&in);
     return ff_filter_frame(outlink, out);
@@ -541,7 +539,6 @@ static const AVFilterPad hqx_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
     },
-    { NULL }
 };
 
 static const AVFilterPad hqx_outputs[] = {
@@ -550,7 +547,6 @@ static const AVFilterPad hqx_outputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_hqx = {
@@ -559,8 +555,8 @@ const AVFilter ff_vf_hqx = {
     .priv_size     = sizeof(HQXContext),
     .init          = init,
     .query_formats = query_formats,
-    .inputs        = hqx_inputs,
-    .outputs       = hqx_outputs,
+    FILTER_INPUTS(hqx_inputs),
+    FILTER_OUTPUTS(hqx_outputs),
     .priv_class    = &hqx_class,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
 };

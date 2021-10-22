@@ -12,11 +12,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/views/profiles/profile_picker_dice_sign_in_toolbar.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -51,8 +53,9 @@ bool IsExternalURL(const GURL& url) {
 }  // namespace
 
 ProfilePickerDiceSignInProvider::ProfilePickerDiceSignInProvider(
-    ProfilePickerWebContentsHost* host)
-    : host_(host) {}
+    ProfilePickerWebContentsHost* host,
+    ProfilePickerDiceSignInToolbar* toolbar)
+    : host_(host), toolbar_(toolbar) {}
 
 ProfilePickerDiceSignInProvider::~ProfilePickerDiceSignInProvider() {
   // Record unfinished signed-in profile creation (i.e. when callback was not
@@ -80,7 +83,8 @@ void ProfilePickerDiceSignInProvider::SwitchToSignIn(
     std::move(switch_finished_callback).Run(true);
     // Do not load any url because the desired sign-in screen is still loaded in
     // `contents()`.
-    host_->ShowScreen(contents(), GURL(), /*show_toolbar=*/true);
+    host_->ShowScreen(contents(), GURL());
+    toolbar_->SetVisible(true);
     return;
   }
 
@@ -104,11 +108,34 @@ void ProfilePickerDiceSignInProvider::ReloadSignInPage() {
   }
 }
 
+void ProfilePickerDiceSignInProvider::NavigateBack() {
+  if (!IsInitialized() || !contents())
+    return;
+
+  if (contents()->GetController().CanGoBack()) {
+    contents()->GetController().GoBack();
+    return;
+  }
+
+  // Move from sign-in back to the previous screen of profile creation.
+  // Do not load any url because the desired screen is still loaded in the
+  // system contents.
+  host_->ShowScreenInSystemContents(GURL());
+  toolbar_->SetVisible(false);
+}
+
 const ui::ThemeProvider* ProfilePickerDiceSignInProvider::GetThemeProvider()
     const {
   if (!IsInitialized())
     return nullptr;
   return &ThemeService::GetThemeProviderForProfile(profile_);
+}
+
+ui::ColorProviderManager::InitializerSupplier*
+ProfilePickerDiceSignInProvider::GetCustomTheme() const {
+  if (!IsInitialized())
+    return nullptr;
+  return ThemeService::GetThemeSupplierForProfile(profile_);
 }
 
 bool ProfilePickerDiceSignInProvider::HandleContextMenu(
@@ -245,12 +272,15 @@ void ProfilePickerDiceSignInProvider::OnProfileCreated(
   views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
       contents(), GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
 
-  // The back button cannot be created from the constructor as ProfilePickerView
-  // needs to access the ThemeProvider of `this` in the process.
-  host_->CreateToolbarBackButton();
+  toolbar_->BuildToolbar(base::BindRepeating(
+      &ProfilePickerDiceSignInProvider::NavigateBack, base::Unretained(this)));
 
-  host_->ShowScreen(contents(), GetSigninURL(host_->ShouldUseDarkColors()),
-                    /*show_toolbar=*/true);
+  host_->ShowScreen(
+      contents(), GetSigninURL(host_->ShouldUseDarkColors()),
+      base::BindOnce(&ProfilePickerDiceSignInToolbar::SetVisible,
+                     // Unretained is enough as the callback is
+                     // called by the owner of the toolbar.
+                     base::Unretained(toolbar_), /*visible=*/true));
 }
 
 bool ProfilePickerDiceSignInProvider::IsInitialized() const {
@@ -260,9 +290,8 @@ bool ProfilePickerDiceSignInProvider::IsInitialized() const {
 void ProfilePickerDiceSignInProvider::FinishFlow(bool is_saml) {
   DCHECK(IsInitialized());
   contents()->SetDelegate(nullptr);
-  // Stop the sign-in: hide the toolbar and disallow navigating back (without
-  // navigating to any other page).
-  host_->ShowScreen(contents(), GURL(), /*show_toolbar=*/false,
-                    /*enable_navigating_back=*/false);
+  // Stop the sign-in: hide and clear the toolbar.
+  toolbar_->ClearToolbar();
+  toolbar_->SetVisible(false);
   std::move(callback_).Run(profile_, std::move(contents_), is_saml);
 }

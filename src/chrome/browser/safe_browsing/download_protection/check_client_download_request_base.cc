@@ -195,7 +195,7 @@ void CheckClientDownloadRequestBase::FinishRequest(
 
   auto settings = ShouldUploadBinary(reason);
   if (settings.has_value()) {
-    UploadBinary(reason, std::move(settings.value()));
+    UploadBinary(result, reason, std::move(settings.value()));
   } else {
     // Post a task to avoid reentrance issue. http://crbug.com//1152451.
     content::GetUIThreadTaskRunner({})->PostTask(
@@ -206,7 +206,7 @@ void CheckClientDownloadRequestBase::FinishRequest(
                             REASON_MAX);
 
   NotifyRequestFinished(result, reason);
-  service()->RequestFinished(this);
+  service()->RequestFinished(this, GetBrowserContext(), result);
   // DownloadProtectionService::RequestFinished may delete us.
 }
 
@@ -364,8 +364,7 @@ void CheckClientDownloadRequestBase::StartTimeout() {
       DownloadCheckResult::UNKNOWN, REASON_REQUEST_CANCELED));
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE, timeout_closure_.callback(),
-      base::TimeDelta::FromMilliseconds(
-          service_->download_request_timeout_ms()));
+      base::Milliseconds(service_->download_request_timeout_ms()));
 }
 
 void CheckClientDownloadRequestBase::OnCertificateAllowlistCheckDone(
@@ -484,9 +483,8 @@ void CheckClientDownloadRequestBase::SendRequest() {
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
 
   if (!access_token_.empty()) {
-    resource_request->headers.SetHeader(
-        net::HttpRequestHeaders::kAuthorization,
-        base::StrCat({kAuthHeaderBearer, access_token_}));
+    SetAccessTokenAndClearCookieInResourceRequest(resource_request.get(),
+                                                  access_token_);
   }
 
   loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
@@ -596,9 +594,19 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
     MaybeStorePingsForDownload(result, upload_requested,
                                client_download_request_data_,
                                *response_body.get());
-    if (ShouldPromptForDeepScanning(response.request_deep_scan())) {
+
+    bool should_prompt =
+        ShouldPromptForDeepScanning(response.request_deep_scan());
+    if (should_prompt) {
       result = DownloadCheckResult::PROMPT_FOR_SCANNING;
       reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
+    }
+
+    // Only record the UMA metric if we're in a population that potentially
+    // could prompt for deep scanning.
+    if (ShouldPromptForDeepScanning(/*server_requests_prompt=*/true)) {
+      base::UmaHistogramBoolean(
+          "SBClientDownload.ServerRequestsDeepScanningPrompt", should_prompt);
     }
   }
 

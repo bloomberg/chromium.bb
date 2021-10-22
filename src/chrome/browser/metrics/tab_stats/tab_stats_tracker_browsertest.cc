@@ -106,6 +106,10 @@ class TabStatsTrackerBrowserTest : public InProcessBrowserTest {
  public:
   TabStatsTrackerBrowserTest() = default;
 
+  TabStatsTrackerBrowserTest(const TabStatsTrackerBrowserTest&) = delete;
+  TabStatsTrackerBrowserTest& operator=(const TabStatsTrackerBrowserTest&) =
+      delete;
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
@@ -123,8 +127,6 @@ class TabStatsTrackerBrowserTest : public InProcessBrowserTest {
 
   TabStatsTracker* tab_stats_tracker_{nullptr};
   std::vector<std::unique_ptr<TestTabStatsObserver>> test_tab_stats_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabStatsTrackerBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
@@ -230,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
   // creation of the main browser.
   ASSERT_TRUE(tab_stats_tracker_ != nullptr);
 
-  constexpr base::TimeDelta kValidLongInterval = base::TimeDelta::FromHours(12);
+  constexpr base::TimeDelta kValidLongInterval = base::Hours(12);
 
   TabStatsDataStore* data_store = tab_stats_tracker_->tab_stats_data_store();
   TabStatsDataStore::TabsStateDuringIntervalMap* interval_map =

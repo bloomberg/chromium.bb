@@ -36,7 +36,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_targeter.h"
@@ -61,6 +60,10 @@ class ScrollContentsView : public views::View {
     box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical));
   }
+
+  ScrollContentsView(const ScrollContentsView&) = delete;
+  ScrollContentsView& operator=(const ScrollContentsView&) = delete;
+
   ~ScrollContentsView() override = default;
 
  protected:
@@ -258,8 +261,6 @@ class ScrollContentsView : public views::View {
 
   // Header child views that stick to the top of visible viewport when scrolled.
   std::vector<Header> headers_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScrollContentsView);
 };
 
 }  // namespace
@@ -419,10 +420,6 @@ views::Button* TrayDetailedView::CreateSettingsButton(
 views::Button* TrayDetailedView::CreateHelpButton(
     views::Button::PressedCallback callback) {
   return delegate_->CreateHelpButton(std::move(callback));
-}
-
-views::Separator* TrayDetailedView::CreateListSubHeaderSeparator() {
-  return delegate_->CreateListSubHeaderSeparator();
 }
 
 void TrayDetailedView::HandleViewClicked(views::View* view) {

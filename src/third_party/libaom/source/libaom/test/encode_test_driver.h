@@ -129,6 +129,11 @@ class Encoder {
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
+  void Control(int ctrl_id, struct aom_svc_ref_frame_comp_pred *arg) {
+    const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
+  }
+
   void Control(int ctrl_id, struct aom_svc_params *arg) {
     const aom_codec_err_t res = aom_codec_control(&encoder_, ctrl_id, arg);
     ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();

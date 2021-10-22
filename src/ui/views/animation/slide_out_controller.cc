@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/transform.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 
@@ -18,8 +18,7 @@ namespace views {
 
 namespace {
 
-constexpr base::TimeDelta kSwipeRestoreDuration =
-    base::TimeDelta::FromMilliseconds(150);
+constexpr base::TimeDelta kSwipeRestoreDuration = base::Milliseconds(150);
 constexpr int kSwipeOutTotalDurationMs = 150;
 gfx::Tween::Type kSwipeTweenType = gfx::Tween::EASE_IN;
 
@@ -165,8 +164,8 @@ void SlideOutController::SlideOutAndClose(int direction) {
 
   int swipe_out_duration = kSwipeOutTotalDurationMs * opacity_;
   SetOpacityIfNecessary(0.f);
-  SetTransformWithAnimationIfNecessary(
-      transform, base::TimeDelta::FromMilliseconds(swipe_out_duration));
+  SetTransformWithAnimationIfNecessary(transform,
+                                       base::Milliseconds(swipe_out_duration));
 }
 
 void SlideOutController::SetOpacityIfNecessary(float opacity) {
@@ -186,9 +185,9 @@ void SlideOutController::SetTransformWithAnimationIfNecessary(
     // An animation starts. OnAnimationsCompleted will be called just
     // after the animation finishes.
     AnimationBuilder()
-        .Once()
         .OnEnded(base::BindOnce(&SlideOutController::OnAnimationsCompleted,
                                 base::Unretained(this)))
+        .Once()
         .SetDuration(animation_duration)
         .SetTransform(layer, transform, kSwipeTweenType);
   } else {

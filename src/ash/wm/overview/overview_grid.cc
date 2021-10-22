@@ -8,6 +8,8 @@
 #include <functional>
 #include <memory>
 #include <utility>
+
+#include "ash/constants/ash_features.h"
 #include "ash/frame_throttler/frame_throttling_controller.h"
 #include "ash/metrics/histogram_macros.h"
 #include "ash/public/cpp/metrics_util.h"
@@ -15,6 +17,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/rotator/screen_rotation_animator.h"
@@ -27,6 +30,8 @@
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/expanded_desks_bar_button.h"
+#include "ash/wm/desks/templates/desks_templates_grid_view.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/cleanup_animation_observer.h"
 #include "ash/wm/overview/drop_target_view.h"
@@ -60,8 +65,10 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/throughput_tracker.h"
+#include "ui/gfx/geometry/transform_util.h"
 #include "ui/gfx/geometry/vector2d_f.h"
-#include "ui/gfx/transform_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -87,10 +94,10 @@ constexpr int kMinimumItemsForNewLayout = 6;
 // Wait a while before unpausing the occlusion tracker after a scroll has
 // completed as the user may start another scroll.
 constexpr base::TimeDelta kOcclusionUnpauseDurationForScroll =
-    base::TimeDelta::FromMilliseconds(500);
+    base::Milliseconds(500);
 
 constexpr base::TimeDelta kOcclusionUnpauseDurationForRotation =
-    base::TimeDelta::FromMilliseconds(300);
+    base::Milliseconds(300);
 
 // Toast id for the toast that is displayed when a user tries to move a window
 // that is visible on all desks to another desk.
@@ -243,6 +250,40 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   return widget;
 }
 
+std::unique_ptr<views::LabelButton> CreateDesksTemplatesButton(
+    views::ImageButton::PressedCallback callback) {
+  // TODO(sophiewen): Add icon and button styling when specs come out.
+  auto* color_provider = AshColorProvider::Get();
+  const SkColor icon_color = color_provider->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconColorPrimary);
+  const gfx::ImageSkia& icon_image =
+      gfx::CreateVectorIcon(kSaveDeskAsTemplateIcon, icon_color);
+  // TODO(sophiewen): Replace button label with localized text string.
+  auto button = std::make_unique<views::LabelButton>(
+      callback, u"Save desk as a template", views::style::CONTEXT_BUTTON);
+  button->SetImage(views::Button::STATE_NORMAL, icon_image);
+  return button;
+}
+
+// Creates `create_desk_templates_widget_`. It contains a button that saves the
+// active desk as a template.
+std::unique_ptr<views::Widget> CreateDesksTemplatesWidget(
+    aura::Window* root_window) {
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+  params.name = "CreateDesksTemplatesWidget";
+  params.accept_events = true;
+  params.parent = desks_util::GetActiveDeskContainerForRoot(root_window);
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
+
+  auto widget = std::make_unique<views::Widget>();
+  widget->set_focus_on_creation(false);
+  widget->Init(std::move(params));
+  return widget;
+}
+
 float GetWantedDropTargetOpacity(
     SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
   switch (window_dragging_state) {
@@ -285,6 +326,10 @@ bool ShouldExcludeItemFromGridLayout(
 class OverviewGrid::TargetWindowObserver : public aura::WindowObserver {
  public:
   TargetWindowObserver() = default;
+
+  TargetWindowObserver(const TargetWindowObserver&) = delete;
+  TargetWindowObserver& operator=(const TargetWindowObserver&) = delete;
+
   ~TargetWindowObserver() override { StopObserving(); }
 
   void StartObserving(aura::Window* window) {
@@ -341,8 +386,6 @@ class OverviewGrid::TargetWindowObserver : public aura::WindowObserver {
   }
 
   aura::Window* target_window_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(TargetWindowObserver);
 };
 
 OverviewGrid::OverviewGrid(aura::Window* root_window,
@@ -411,6 +454,10 @@ void OverviewGrid::Shutdown() {
   }
 
   window_list_.clear();
+
+  if (desks_templates_grid_)
+    desks_templates_grid_->CloseNow();
+
   overview_session_ = nullptr;
 }
 
@@ -426,6 +473,9 @@ void OverviewGrid::PrepareForOverview() {
 
   grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
+
+  if (features::AreDesksTemplatesEnabled())
+    ShowCreateDesksTemplatesButtons();
 }
 
 void OverviewGrid::PositionWindows(
@@ -786,6 +836,34 @@ void OverviewGrid::OnSelectorItemDragStarted(OverviewItem* item) {
     overview_mode_item->OnSelectorItemDragStarted(item);
 }
 
+void OverviewGrid::ShowDesksTemplatesGrid() {
+  if (!desks_templates_grid_) {
+    desks_templates_grid_ =
+        DesksTemplatesGridView::CreateDesksTemplatesGridWidget(
+            root_window_, GetGridEffectiveBounds());
+  }
+
+  desks_templates_grid_->Show();
+}
+
+void OverviewGrid::ShowCreateDesksTemplatesButtons() {
+  create_desks_templates_widget_ = CreateDesksTemplatesWidget(root_window_);
+  create_desks_templates_widget_->SetContentsView(CreateDesksTemplatesButton(
+      base::BindRepeating(&OverviewGrid::OnCreateDesksTemplatesButtonPressed,
+                          base::Unretained(this))));
+  create_desks_templates_widget_->Show();
+  // TODO(sophiewen): Set bounds when specs come out.
+  create_desks_templates_widget_->SetBounds(gfx::Rect(20, 136, 180, 32));
+}
+
+void OverviewGrid::OnCreateDesksTemplatesButtonPressed() {
+  // TODO(sophiewen): This logic will be implemented.
+}
+
+bool OverviewGrid::IsShowingDesksTemplatesGrid() const {
+  return desks_templates_grid_ && desks_templates_grid_->IsVisible();
+}
+
 void OverviewGrid::OnSelectorItemDragEnded(bool snap) {
   for (auto& overview_mode_item : window_list_)
     overview_mode_item->OnSelectorItemDragEnded(snap);
@@ -930,6 +1008,10 @@ void OverviewGrid::OnDisplayMetricsChanged() {
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 
   UpdateCannotSnapWarningVisibility();
+
+  if (desks_templates_grid_)
+    desks_templates_grid_->SetBounds(GetGridEffectiveBounds());
+
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
   if (SplitViewController::Get(root_window_)->InSplitViewMode())
@@ -1368,7 +1450,7 @@ bool OverviewGrid::IntersectsWithDesksBar(const gfx::Point& screen_location,
   return dragged_item_over_bar;
 }
 
-bool OverviewGrid::MaybeDropItemOnDeskMiniView(
+bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     const gfx::Point& screen_location,
     OverviewItem* drag_item) {
   DCHECK(desks_util::ShouldDesksBarBeCreated());
@@ -1376,7 +1458,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
   aura::Window* const dragged_window = drag_item->GetWindow();
   const bool dragged_window_is_visible_on_all_desks =
       dragged_window &&
-      dragged_window->GetProperty(aura::client::kVisibleOnAllWorkspacesKey);
+      desks_util::IsWindowVisibleOnAllWorkspaces(dragged_window);
   // End the drag for the DesksBarView.
   if (!IntersectsWithDesksBar(screen_location,
                               /*update_desks_bar_drag_details=*/
@@ -1409,7 +1491,30 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniView(
         DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   }
 
-  return false;
+  if (!features::IsDragWindowToNewDeskEnabled())
+    return false;
+
+  if (!desks_controller->CanCreateDesks())
+    return false;
+
+  if (!desks_bar_view_->expanded_state_new_desk_button()->IsPointOnButton(
+          screen_location)) {
+    return false;
+  }
+
+  desks_bar_view_->OnNewDeskButtonPressed(
+      DesksCreationRemovalSource::kDragToNewDeskButton);
+
+  return desks_controller->MoveWindowFromActiveDeskTo(
+      dragged_window, desks_controller->desks().back().get(), root_window_,
+      DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
+}
+
+void OverviewGrid::MaybeExpandDesksBarView() {
+  if (desks_bar_view_ && desks_bar_view_->IsZeroState()) {
+    desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
+                                        /*expanding_bar_view=*/true);
+  }
 }
 
 void OverviewGrid::StartScroll() {

@@ -61,6 +61,7 @@ GrGLCaps::GrGLCaps(const GrContextOptions& contextOptions,
     fAllowBGRA8CopyTexSubImage = false;
     fDisallowDynamicMSAA = false;
     fMustResetBlendFuncBetweenDualSourceAndDisable = false;
+    fBindTexture0WhenChangingTextureFBOMultisampleCount = false;
     fProgramBinarySupport = false;
     fProgramParameterSupport = false;
     fSamplerObjectSupport = false;
@@ -93,7 +94,7 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
                     const GrGLContextInfo& ctxInfo,
                     const GrGLInterface* gli) {
     GrGLStandard standard = ctxInfo.standard();
-    // standard can be unused (optimzed away) if SK_ASSUME_GL_ES is set
+    // standard can be unused (optimized away) if SK_ASSUME_GL_ES is set
     sk_ignore_unused_variable(standard);
     GrGLVersion version = ctxInfo.version();
 
@@ -395,6 +396,16 @@ void GrGLCaps::init(const GrContextOptions& contextOptions,
 
     if (GR_IS_GR_GL(standard)) {
         fWireframeSupport = true;
+    }
+
+    if (GR_IS_GR_GL(standard)) {
+        shaderCaps->fRewriteSwitchStatements =
+                ctxInfo.glslGeneration() < k130_GrGLSLGeneration;  // introduced in GLSL 1.3
+    } else if (GR_IS_GR_GL_ES(standard)) {
+        shaderCaps->fRewriteSwitchStatements =
+                ctxInfo.glslGeneration() < k330_GrGLSLGeneration;  // introduced in GLSL ES3
+    } else if (GR_IS_GR_WEBGL(standard)) {
+        shaderCaps->fRewriteSwitchStatements = version < GR_GL_VER(2, 0);  // introduced in WebGL 2
     }
 
     // Protect ourselves against tracking huge amounts of texture state.
@@ -4215,6 +4226,35 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     if (ctxInfo.driver() == GrGLDriver::kFreedreno) {
         formatWorkarounds->fDisallowUnorm16Transfers = true;
     }
+
+    // If we keep rebind the same texture to an FBO's color attachment but changing between MSAA and
+    // non-MSAA we get corruption in the texture contents. Binding texture 0 and then rebinding the
+    // original texture avoids this.
+    // This was found on Nexus 5, Android 6.0.1, build M4B30Z
+    // GL_VENDOR:   "Qualcomm"
+    // GL_RENDERER: "Adreno (TM) 330"
+    // GL_VERSION:  "OpenGL ES 3.0 V@127.0 AU@  (GIT@I96aee987eb)"
+    //
+    // We also so alpha blending issues on these GMs skbug_9819, p3_ovals, p3 on Mali-Gxx devices
+    // The GM issues were observed on a Galaxy S9 running Android 10:
+    // GL_VERSION:  "OpenGL ES 3.2 v1.r19p0-01rel0.###other-sha0123456789ABCDEF0###"
+    // GL_RENDERER: "Mali-G72"
+    // GL_VENDOR:   "ARM"
+    // and a P30 running Android 9:
+    // GL_VERSION:  "OpenGL ES 3.2 v1.r16p0-01rel0.4aee637066427cbcd25297324dba15f5"
+    // GL_RENDERER: "Mali-G76"
+    // GL_VENDOR:   "ARM"
+    // but *not* a Galaxy S20 running Android 10:
+    // GL_VERSION:  "OpenGL ES 3.2 v1.r20p0-01rel0.###other-sha0123456789ABCDEF0###"
+    // GL_RENDERER: "Mali-G77"
+    // GL_VENDOR:   "ARM"
+    // It's unclear if the difference is driver version or Bifrost vs Valhall. The workaround is
+    // fairly trivial so just applying to all Bifrost and Valhall.
+    if ((ctxInfo.renderer() == GrGLRenderer::kAdreno3xx &&
+         ctxInfo.driver()   == GrGLDriver::kQualcomm) ||
+        (ctxInfo.renderer() == GrGLRenderer::kMaliG)) {
+        fBindTexture0WhenChangingTextureFBOMultisampleCount = true;
+    }
 }
 
 void GrGLCaps::onApplyOptionsOverrides(const GrContextOptions& options) {
@@ -4277,8 +4317,7 @@ GrCaps::SurfaceReadPixelsSupport GrGLCaps::surfaceSupportsReadPixels(
     } else if (auto rt = static_cast<const GrGLRenderTarget*>(surface->asRenderTarget())) {
         // glReadPixels does not allow reading back from a MSAA framebuffer. If the underlying
         // GrSurface doesn't have a second FBO to resolve to then we must make a copy.
-        if (rt->numSamples() > 1 &&
-            rt->singleSampleFBOID() == GrGLRenderTarget::kUnresolvableFBOID) {
+        if (rt->numSamples() > 1 && !rt->asTexture()) {
             return SurfaceReadPixelsSupport::kCopyToTexture2D;
         }
     }

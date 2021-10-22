@@ -37,14 +37,14 @@ namespace dawn_native { namespace metal {
         struct MetalFunctionData {
             NSPRef<id<MTLFunction>> function;
             bool needsStorageBufferLength;
+            std::vector<uint32_t> workgroupAllocations;
         };
         MaybeError CreateFunction(const char* entryPointName,
                                   SingleShaderStage stage,
                                   const PipelineLayout* layout,
                                   MetalFunctionData* out,
                                   uint32_t sampleMask = 0xFFFFFFFF,
-                                  const RenderPipeline* renderPipeline = nullptr,
-                                  const VertexState* vertexState = nullptr);
+                                  const RenderPipeline* renderPipeline = nullptr);
 
       private:
         ResultOrError<std::string> TranslateToMSL(const char* entryPointName,
@@ -52,10 +52,10 @@ namespace dawn_native { namespace metal {
                                                   const PipelineLayout* layout,
                                                   uint32_t sampleMask,
                                                   const RenderPipeline* renderPipeline,
-                                                  const VertexState* vertexState,
                                                   std::string* remappedEntryPointName,
                                                   bool* needsStorageBufferLength,
-                                                  bool* hasInvariantAttribute);
+                                                  bool* hasInvariantAttribute,
+                                                  std::vector<uint32_t>* workgroupAllocations);
         ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModule() override = default;
         MaybeError Initialize(ShaderModuleParseResult* parseResult);

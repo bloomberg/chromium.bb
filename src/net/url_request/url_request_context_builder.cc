@@ -72,6 +72,10 @@ class ContainerURLRequestContext final : public URLRequestContext {
  public:
   explicit ContainerURLRequestContext() : storage_(this) {}
 
+  ContainerURLRequestContext(const ContainerURLRequestContext&) = delete;
+  ContainerURLRequestContext& operator=(const ContainerURLRequestContext&) =
+      delete;
+
   ~ContainerURLRequestContext() override {
 #if BUILDFLAG(ENABLE_REPORTING)
     // Shut down the NetworkErrorLoggingService so that destroying the
@@ -110,8 +114,6 @@ class ContainerURLRequestContext final : public URLRequestContext {
  private:
   URLRequestContextStorage storage_;
   std::unique_ptr<TransportSecurityPersister> transport_security_persister_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContainerURLRequestContext);
 };
 
 }  // namespace
@@ -294,8 +296,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       new ContainerURLRequestContext());
   URLRequestContextStorage* storage = context->storage();
 
-  if (!name_.empty())
-    context->set_name(name_);
   context->set_enable_brotli(enable_brotli_);
   context->set_network_quality_estimator(network_quality_estimator_);
 

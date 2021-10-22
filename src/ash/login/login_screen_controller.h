@@ -51,6 +51,10 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
       base::OnceCallback<void(absl::optional<bool> success)>;
 
   explicit LoginScreenController(SystemTrayNotifier* system_tray_notifier);
+
+  LoginScreenController(const LoginScreenController&) = delete;
+  LoginScreenController& operator=(const LoginScreenController&) = delete;
+
   ~LoginScreenController() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
@@ -81,6 +85,7 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   void SignOutUser();
   void CancelAddUser();
   void LoginAsGuest();
+  void ShowGuestTosScreen();
   void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
   void FocusLockScreenApps(bool reverse);
   void ShowGaiaSignin(const AccountId& prefilled_account);
@@ -170,8 +175,6 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   ForceFailAuth force_fail_auth_for_debug_overlay_ = ForceFailAuth::kOff;
 
   base::WeakPtrFactory<LoginScreenController> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LoginScreenController);
 };
 
 }  // namespace ash

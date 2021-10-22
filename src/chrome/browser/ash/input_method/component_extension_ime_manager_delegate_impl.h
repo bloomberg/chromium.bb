@@ -14,8 +14,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager_delegate.h"
+#include "ui/base/ime/ash/component_extension_ime_manager.h"
+#include "ui/base/ime/ash/component_extension_ime_manager_delegate.h"
 
 class Profile;
 
@@ -27,6 +27,12 @@ class ComponentExtensionIMEManagerDelegateImpl
     : public ComponentExtensionIMEManagerDelegate {
  public:
   ComponentExtensionIMEManagerDelegateImpl();
+
+  ComponentExtensionIMEManagerDelegateImpl(
+      const ComponentExtensionIMEManagerDelegateImpl&) = delete;
+  ComponentExtensionIMEManagerDelegateImpl& operator=(
+      const ComponentExtensionIMEManagerDelegateImpl&) = delete;
+
   ~ComponentExtensionIMEManagerDelegateImpl() override;
 
   // ComponentExtensionIMEManagerDelegate overrides:
@@ -67,8 +73,6 @@ class ComponentExtensionIMEManagerDelegateImpl
   std::vector<ComponentExtensionIME> component_extension_list_;
 
   std::set<std::string> login_layout_set_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComponentExtensionIMEManagerDelegateImpl);
 };
 
 }  // namespace input_method

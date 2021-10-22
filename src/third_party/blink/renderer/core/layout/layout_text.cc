@@ -120,8 +120,7 @@ class SecureTextTimer final : public GarbageCollected<SecureTextTimer>,
   void RestartWithNewText(unsigned last_typed_character_offset) {
     last_typed_character_offset_ = last_typed_character_offset;
     if (Settings* settings = layout_text_->GetDocument().GetSettings()) {
-      StartOneShot(base::TimeDelta::FromSecondsD(
-                       settings->GetPasswordEchoDurationInSeconds()),
+      StartOneShot(base::Seconds(settings->GetPasswordEchoDurationInSeconds()),
                    FROM_HERE);
     }
   }
@@ -141,13 +140,17 @@ class SecureTextTimer final : public GarbageCollected<SecureTextTimer>,
   int last_typed_character_offset_;
 };
 
-class SelectionDisplayItemClient : public DisplayItemClient {
+class SelectionDisplayItemClient
+    : public GarbageCollected<SelectionDisplayItemClient>,
+      public DisplayItemClient {
+ public:
   String DebugName() const final { return "Selection"; }
+  void Trace(Visitor* visitor) const {}
 };
 
 using SelectionDisplayItemClientMap =
     HeapHashMap<WeakMember<const LayoutText>,
-                std::unique_ptr<SelectionDisplayItemClient>>;
+                Member<SelectionDisplayItemClient>>;
 SelectionDisplayItemClientMap& GetSelectionDisplayItemClientMap() {
   DEFINE_STATIC_LOCAL(Persistent<SelectionDisplayItemClientMap>, map,
                       (MakeGarbageCollected<SelectionDisplayItemClientMap>()));
@@ -973,8 +976,9 @@ PositionWithAffinity LayoutText::PositionForPoint(
         ShouldAffinityBeDownstream should_affinity_be_downstream;
         if (LineDirectionPointFitsInBox(point_line_direction.ToInt(), box,
                                         should_affinity_be_downstream)) {
-          const int offset = box->OffsetForPosition(
-              point_line_direction, IncludePartialGlyphs, BreakGlyphs);
+          const int offset = box->OffsetForPosition(point_line_direction,
+                                                    kIncludePartialGlyphs,
+                                                    BreakGlyphsOption(true));
           return CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
               box, offset, should_affinity_be_downstream);
         }
@@ -985,7 +989,7 @@ PositionWithAffinity LayoutText::PositionForPoint(
 
   if (last_box) {
     const int offset = last_box->OffsetForPosition(
-        point_line_direction, IncludePartialGlyphs, BreakGlyphs);
+        point_line_direction, kIncludePartialGlyphs, BreakGlyphsOption(true));
     ShouldAffinityBeDownstream should_affinity_be_downstream;
     LineDirectionPointFitsInBox(point_line_direction.ToInt(), last_box,
                                 should_affinity_be_downstream);
@@ -2052,7 +2056,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
     for (RootInlineBox* curr = first_root_box; curr && curr != last_root_box;
          curr = curr->NextRootBox()) {
       if (curr->LineBreakObj().IsEqual(this) && curr->LineBreakPos() > end)
-        curr->SetLineBreakPos(clampTo<int>(curr->LineBreakPos() + delta));
+        curr->SetLineBreakPos(ClampTo<int>(curr->LineBreakPos() + delta));
     }
   }
 
@@ -2842,8 +2846,8 @@ const DisplayItemClient* LayoutText::GetSelectionDisplayItemClient() const {
   if (it != GetSelectionDisplayItemClientMap().end())
     return &*it->value;
   return GetSelectionDisplayItemClientMap()
-      .insert(this, std::make_unique<SelectionDisplayItemClient>())
-      .stored_value->value.get();
+      .insert(this, MakeGarbageCollected<SelectionDisplayItemClient>())
+      .stored_value->value.Get();
 }
 
 PhysicalRect LayoutText::DebugRect() const {

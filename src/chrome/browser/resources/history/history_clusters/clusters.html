@@ -1,43 +1,36 @@
-<style include="history-clusters-shared-style">
+<style include="cr-hidden-style">
   :host {
     color: var(--cr-primary-text-color);
     display: block;
     font-size: 0.875rem;  /* 14px */
-  }
-
-  #container {
-    height: 100%;
     overflow-y: scroll;
   }
 
   #clusters,
   #header {
-    margin: var(--cluster-padding) auto;
-    width: var(--cluster-width);
+    margin: 0 auto;
+    max-width: var(--cluster-max-width);
+    min-width: var(--cluster-min-width);
+    padding: var(--first-cluster-padding-top) var(--cluster-padding-horizontal) 0;
   }
 
-  #title {
+  #header {
     font-size: 1.75rem;  /* 28px */
-    padding: 0 var(--cluster-padding);
   }
 </style>
-<div id="container">
-  <div id="header" hidden="[[!result_.query]]">
-    <div id="title">[[title_]]</div>
-  </div>
-
-  <iron-list id="clusters" scroll-target="container"
-      items="[[result_.clusters]]"
-      on-remove-visits="onRemoveVisits_">
-    <template>
-      <history-cluster cluster="[[item]]"
-          on-cluster-emptied="onClusterEmptied_">
-      </history-cluster>
-    </template>
-  </iron-list>
-</div>
-<iron-scroll-threshold id="scrollThreshold" scroll-target="container"
-    on-lower-threshold="onScrolledToBottom_">
+<div id="header" hidden="[[!result_.query]]">[[headerText_]]</div>
+<iron-list id="clusters"
+    items="[[result_.clusters]]"
+    on-remove-visits="onRemoveVisits_">
+  <template>
+    <history-cluster cluster="[[item]]" index="[[index]]"
+        tabindex$="[[tabIndex]]"
+        on-remove-cluster="onRemoveCluster_">
+    </history-cluster>
+  </template>
+</iron-list>
+<iron-scroll-threshold id="scrollThreshold"
+    lower-threshold="500" on-lower-threshold="onScrolledToBottom_">
 </iron-scroll-threshold>
 
 <cr-lazy-render id="confirmationDialog">

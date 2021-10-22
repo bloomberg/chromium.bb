@@ -163,8 +163,7 @@ void FrameAutoAttacher::UpdatePortals() {
     return;
 
   Hosts new_hosts;
-  if (render_frame_host_ &&
-      render_frame_host_->frame_tree_node()->IsMainFrame()) {
+  if (render_frame_host_ && render_frame_host_->is_main_frame()) {
     WebContentsImpl* outer_web_contents = static_cast<WebContentsImpl*>(
         WebContents::FromRenderFrameHost(render_frame_host_));
     for (WebContents* web_contents :
@@ -186,12 +185,12 @@ void FrameAutoAttacher::UpdatePortals() {
 
 void FrameAutoAttacher::UpdateAutoAttach(base::OnceClosure callback) {
   if (auto_attach()) {
+    UpdateFrames();
     if (render_frame_host_ && !render_frame_host_->GetParent() &&
         !observing_service_workers_) {
       observing_service_workers_ = true;
       ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
       ReattachServiceWorkers();
-      UpdateFrames();
       UpdatePortals();
     }
   } else if (observing_service_workers_) {

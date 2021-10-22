@@ -3033,10 +3033,16 @@ void TestSuite::Run() {
   internal::HandleExceptionsInMethodIfSupported(
       this, &TestSuite::RunSetUpTestSuite, "SetUpTestSuite()");
 
+  const bool skip_all = ad_hoc_test_result().Failed();
+
   start_timestamp_ = internal::GetTimeInMillis();
   internal::Timer timer;
   for (int i = 0; i < total_test_count(); i++) {
-    GetMutableTestInfo(i)->Run();
+    if (skip_all) {
+      GetMutableTestInfo(i)->Skip();
+    } else {
+      GetMutableTestInfo(i)->Run();
+    }
     if (GTEST_FLAG_GET(fail_fast) &&
         GetMutableTestInfo(i)->result()->Failed()) {
       for (int j = i + 1; j < total_test_count(); j++) {
@@ -5038,7 +5044,7 @@ class ScopedPrematureExitFile {
       // create the file with a single "0" character in it.  I/O
       // errors are ignored as there's nothing better we can do and we
       // don't want to fail the test because of this.
-      FILE* pfile = posix::FOpen(premature_exit_filepath, "w");
+      FILE* pfile = posix::FOpen(premature_exit_filepath_.c_str(), "w");
       fwrite("0", 1, 1, pfile);
       fclose(pfile);
     }

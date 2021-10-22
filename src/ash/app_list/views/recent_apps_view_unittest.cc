@@ -19,11 +19,24 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace ash {
 namespace {
+
+// Used to compare distances between point that allow for certain margin of
+// error when comparing horizontal distance. Used to compare spacing between
+// views that accounts for 1 off rounding errors.
+bool AreVectorsClose(const gfx::Vector2d& v1, const gfx::Vector2d& v2) {
+  const int kHorizontalMarginOfError = 1;
+  return std::abs(v1.x() - v2.x()) <= kHorizontalMarginOfError &&
+         std::abs(v1.y() - v2.y()) == 0;
+}
 
 // Returns the first window with type WINDOW_TYPE_MENU found via depth-first
 // search. Returns nullptr if no such window exists.
@@ -54,21 +67,24 @@ void AddSearchResult(const std::string& id, AppListSearchResultType type) {
       std::move(result));
 }
 
-void ShowAppList() {
-  Shell::Get()->app_list_controller()->ShowAppList();
-}
-
-class RecentAppsViewTest : public AshTestBase {
+// Parameterized to test recent apps in the app list bubble and tablet mode.
+class RecentAppsViewTest : public AshTestBase,
+                           public testing::WithParamInterface<bool> {
  public:
   RecentAppsViewTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kAppListBubble);
+    scoped_feature_list_.InitAndEnableFeature(features::kProductivityLauncher);
   }
   ~RecentAppsViewTest() override = default;
 
-  // testing::Test:
-  void SetUp() override {
-    AshTestBase::SetUp();
-    Shell::Get()->app_list_controller()->SetClient(&app_list_client_);
+  // Whether we should run the test in tablet mode.
+  bool tablet_mode_param() { return GetParam(); }
+
+  void ShowAppList() {
+    if (tablet_mode_param()) {
+      Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+    } else {
+      Shell::Get()->app_list_controller()->ShowAppList();
+    }
   }
 
   void RightClickOn(views::View* view) {
@@ -77,14 +93,33 @@ class RecentAppsViewTest : public AshTestBase {
   }
 
   RecentAppsView* GetRecentAppsView() {
+    if (tablet_mode_param())
+      return GetAppListTestHelper()->GetFullscreenRecentAppsView();
     return GetAppListTestHelper()->GetBubbleRecentAppsView();
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestAppListClient app_list_client_;
-};
+  // Adds `count` installed app search results.
+  void AddAppResults(int count) {
+    for (int i = 0; i < count; ++i) {
+      std::string id = base::StringPrintf("id%d", i);
+      AddAppListItem(id);
+      AddSearchResult(id, AppListSearchResultType::kInstalledApp);
+    }
+  }
 
-TEST_F(RecentAppsViewTest, CreatesIconsForApps) {
+  std::vector<AppListItemView*> GetAppListItemViews() {
+    std::vector<AppListItemView*> views;
+    RecentAppsView* recent_apps = GetRecentAppsView();
+    for (int i = 0; i < recent_apps->GetItemViewCount(); i++)
+      views.push_back(recent_apps->GetItemViewAt(i));
+    return views;
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+INSTANTIATE_TEST_SUITE_P(All, RecentAppsViewTest, testing::Bool());
+
+TEST_P(RecentAppsViewTest, CreatesIconsForApps) {
   AddAppListItem("id1");
   AddSearchResult("id1", AppListSearchResultType::kInstalledApp);
   AddAppListItem("id2");
@@ -96,22 +131,113 @@ TEST_F(RecentAppsViewTest, CreatesIconsForApps) {
 
   ShowAppList();
 
-  RecentAppsView* view = GetRecentAppsView();
-  EXPECT_EQ(view->children().size(), 4u);
+  EXPECT_EQ(GetAppListItemViews().size(), 4u);
 }
 
-TEST_F(RecentAppsViewTest, DoesNotCreateIconsForNonApps) {
+TEST_P(RecentAppsViewTest, ItemsEvenlySpacedInTheViewWith5Items) {
+  AddAppResults(5);
+  ShowAppList();
+
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(5u, items.size());
+
+  for (int i = 4; i > 1; --i) {
+    const gfx::Vector2d right_space = items[i]->bounds().left_center() -
+                                      items[i - 1]->bounds().right_center();
+    const gfx::Vector2d left_space = items[i - 1]->bounds().left_center() -
+                                     items[i - 2]->bounds().right_center();
+    EXPECT_TRUE(AreVectorsClose(right_space, left_space))
+        << i << " " << right_space.ToString() << " " << left_space.ToString();
+  }
+}
+
+TEST_P(RecentAppsViewTest, ResultItemsCoverWholeContainerWith5Items) {
+  AddAppResults(5);
+  ShowAppList();
+
+  RecentAppsView* view = GetRecentAppsView();
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(5u, items.size());
+
+  EXPECT_EQ(view->GetContentsBounds().left_center(),
+            items[0]->bounds().left_center());
+  EXPECT_EQ(view->GetContentsBounds().right_center(),
+            items[4]->bounds().right_center());
+}
+
+TEST_P(RecentAppsViewTest, ItemsEvenlySpacedInTheViewWith4Items) {
+  AddAppResults(4);
+  ShowAppList();
+
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(4u, items.size());
+
+  for (int i = 3; i > 1; --i) {
+    const gfx::Vector2d right_space = items[i]->bounds().left_center() -
+                                      items[i - 1]->bounds().right_center();
+    const gfx::Vector2d left_space = items[i - 1]->bounds().left_center() -
+                                     items[i - 2]->bounds().right_center();
+    EXPECT_TRUE(AreVectorsClose(right_space, left_space))
+        << i << " " << right_space.ToString() << " " << left_space.ToString();
+  }
+}
+
+TEST_P(RecentAppsViewTest, ResultItemsCoverWholeContainerWith4Items) {
+  AddAppResults(4);
+  ShowAppList();
+
+  RecentAppsView* view = GetRecentAppsView();
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(4u, items.size());
+
+  EXPECT_EQ(view->GetContentsBounds().left_center(),
+            items[0]->bounds().left_center());
+  EXPECT_EQ(view->GetContentsBounds().right_center(),
+            items[3]->bounds().right_center());
+}
+
+TEST_P(RecentAppsViewTest, ItemsEvenlySpacedInTheViewWith3Items) {
+  AddAppResults(3);
+  ShowAppList();
+
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(3u, items.size());
+
+  for (int i = 2; i > 1; --i) {
+    const gfx::Vector2d right_space = items[i]->bounds().left_center() -
+                                      items[i - 1]->bounds().right_center();
+    const gfx::Vector2d left_space = items[i - 1]->bounds().left_center() -
+                                     items[i - 2]->bounds().right_center();
+    EXPECT_TRUE(AreVectorsClose(right_space, left_space))
+        << i << " " << right_space.ToString() << " " << left_space.ToString();
+  }
+}
+
+TEST_P(RecentAppsViewTest, ResultItemsCoverWholeContainerWith3Items) {
+  AddAppResults(3);
+  ShowAppList();
+
+  RecentAppsView* view = GetRecentAppsView();
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(3u, items.size());
+
+  EXPECT_EQ(view->GetContentsBounds().left_center(),
+            items[0]->bounds().left_center());
+  EXPECT_EQ(view->GetContentsBounds().right_center(),
+            items[2]->bounds().right_center());
+}
+
+TEST_P(RecentAppsViewTest, DoesNotCreateIconsForNonApps) {
   AddSearchResult("id1", AppListSearchResultType::kAnswerCard);
   AddSearchResult("id2", AppListSearchResultType::kFileChip);
   AddSearchResult("id3", AppListSearchResultType::kAssistantText);
 
   ShowAppList();
 
-  RecentAppsView* view = GetRecentAppsView();
-  EXPECT_EQ(view->children().size(), 0u);
+  EXPECT_EQ(GetAppListItemViews().size(), 0u);
 }
 
-TEST_F(RecentAppsViewTest, DoesNotCreateIconForMismatchedId) {
+TEST_P(RecentAppsViewTest, DoesNotCreateIconForMismatchedId) {
   AddAppListItem("id");
   AddSearchResult("bad id", AppListSearchResultType::kInstalledApp);
 
@@ -121,34 +247,39 @@ TEST_F(RecentAppsViewTest, DoesNotCreateIconForMismatchedId) {
   EXPECT_EQ(view->children().size(), 0u);
 }
 
-TEST_F(RecentAppsViewTest, ClickOnRecentApp) {
+TEST_P(RecentAppsViewTest, ClickOrTapOnRecentApp) {
   AddAppListItem("id");
   AddSearchResult("id", AppListSearchResultType::kInstalledApp);
 
   ShowAppList();
 
-  // Click on the first icon.
-  RecentAppsView* view = GetRecentAppsView();
-  ASSERT_FALSE(view->children().empty());
-  views::View* icon = view->children()[0];
-  GetEventGenerator()->MoveMouseTo(icon->GetBoundsInScreen().CenterPoint());
-  GetEventGenerator()->ClickLeftButton();
+  // Click or tap on the first icon.
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_FALSE(items.empty());
+  views::View* icon = items[0];
+
+  if (tablet_mode_param()) {
+    // Tap an item and make sure the item activation is recorded.
+    GetEventGenerator()->GestureTapAt(icon->GetBoundsInScreen().CenterPoint());
+  } else {
+    GetEventGenerator()->MoveMouseTo(icon->GetBoundsInScreen().CenterPoint());
+    GetEventGenerator()->ClickLeftButton();
+  }
 
   // The item was activated.
-  EXPECT_EQ(1, app_list_client_.activate_item_count());
-  EXPECT_EQ("id", app_list_client_.activate_item_last_id());
+  EXPECT_EQ(1, GetTestAppListClient()->activate_item_count());
+  EXPECT_EQ("id", GetTestAppListClient()->activate_item_last_id());
 }
 
-TEST_F(RecentAppsViewTest, RightClickOpensContextMenu) {
+TEST_P(RecentAppsViewTest, RightClickOpensContextMenu) {
   AddAppListItem("id1");
   AddSearchResult("id1", AppListSearchResultType::kInstalledApp);
   ShowAppList();
 
   // Right click on the first icon.
-  RecentAppsView* view = GetRecentAppsView();
-  ASSERT_FALSE(view->children().empty());
-  views::View* icon = view->children()[0];
-  GetEventGenerator()->MoveMouseTo(icon->GetBoundsInScreen().CenterPoint());
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_FALSE(items.empty());
+  GetEventGenerator()->MoveMouseTo(items[0]->GetBoundsInScreen().CenterPoint());
   GetEventGenerator()->ClickRightButton();
 
   // A menu opened.
@@ -162,7 +293,7 @@ TEST_F(RecentAppsViewTest, RightClickOpensContextMenu) {
   EXPECT_TRUE(root_bounds.Contains(menu_bounds));
 }
 
-TEST_F(RecentAppsViewTest, AppIconSelectedWhenMenuIsShown) {
+TEST_P(RecentAppsViewTest, AppIconSelectedWhenMenuIsShown) {
   // Show an app list with 2 recent apps.
   AddAppListItem("id1");
   AddSearchResult("id1", AppListSearchResultType::kInstalledApp);
@@ -170,11 +301,10 @@ TEST_F(RecentAppsViewTest, AppIconSelectedWhenMenuIsShown) {
   AddSearchResult("id2", AppListSearchResultType::kInstalledApp);
   ShowAppList();
 
-  // There are 2 items.
-  RecentAppsView* view = GetRecentAppsView();
-  ASSERT_EQ(2u, view->children().size());
-  AppListItemView* item1 = view->GetItemViewForTest(0);
-  AppListItemView* item2 = view->GetItemViewForTest(1);
+  std::vector<AppListItemView*> items = GetAppListItemViews();
+  ASSERT_EQ(2u, items.size());
+  AppListItemView* item1 = items[0];
+  AppListItemView* item2 = items[1];
 
   // The grid delegates are the same, so it doesn't matter which one we use for
   // expectations below.

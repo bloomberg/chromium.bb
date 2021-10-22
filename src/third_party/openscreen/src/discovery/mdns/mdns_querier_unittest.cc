@@ -21,6 +21,7 @@
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
 #include "platform/test/mock_udp_socket.h"
+#include "util/std_util.h"
 
 namespace openscreen {
 namespace discovery {
@@ -153,11 +154,10 @@ class MdnsQuerierTest : public testing::Test {
     auto record_trackers =
         querier->records_.Find(record.name(), type, record.dns_class());
 
-    return std::find_if(record_trackers.begin(), record_trackers.end(),
-                        [&record](const MdnsRecordTracker& tracker) {
-                          return tracker.rdata() == record.rdata() &&
-                                 tracker.ttl() == record.ttl();
-                        }) != record_trackers.end();
+    return ContainsIf(record_trackers, [&record](
+                                           const MdnsRecordTracker& tracker) {
+      return tracker.rdata() == record.rdata() && tracker.ttl() == record.ttl();
+    });
   }
 
   size_t RecordCount(MdnsQuerier* querier) { return querier->records_.size(); }

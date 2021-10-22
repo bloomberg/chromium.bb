@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -350,9 +351,8 @@ class AutofillMetrics {
     VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_CLOSED = 1,
     // The user did not interact with the bubble.
     VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_NOT_INTERACTED = 2,
-    // The bubble lost focus and was deactivated.
-    VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS = 3,
-    kMaxValue = VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS,
+    // Deprecated: VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_LOST_FOCUS = 3,
+    kMaxValue = VIRTUAL_CARD_MANUAL_FALLBACK_BUBBLE_NOT_INTERACTED,
   };
 
   // Metric to measure which field in the virtual card manual fallback bubble
@@ -933,9 +933,12 @@ class AutofillMetrics {
     PAYMENTS_INTEGRATION_DISABLED = 7,
     EMAIL_EMPTY = 8,
     EMAIL_DOMAIN_NOT_SUPPORTED = 9,
-    AUTOFILL_UPSTREAM_DISABLED = 10,
-    CARD_UPLOAD_ENABLED = 11,
-    kMaxValue = CARD_UPLOAD_ENABLED,
+    // Deprecated: AUTOFILL_UPSTREAM_DISABLED = 10,
+    // Deprecated: CARD_UPLOAD_ENABLED = 11,
+    UNSUPPORTED_COUNTRY = 12,
+    ENABLED_FOR_COUNTRY = 13,
+    ENABLED_BY_FLAG = 14,
+    kMaxValue = ENABLED_BY_FLAG,
   };
 
   // Enumerates the status of the  different requirements to successfully import
@@ -1105,13 +1108,22 @@ class AutofillMetrics {
   // nested.
   class UkmTimestampPin {
    public:
+    UkmTimestampPin() = delete;
+
     explicit UkmTimestampPin(FormInteractionsUkmLogger* logger);
+
+    UkmTimestampPin(const UkmTimestampPin&) = delete;
+    UkmTimestampPin& operator=(const UkmTimestampPin&) = delete;
+
     ~UkmTimestampPin();
 
    private:
     FormInteractionsUkmLogger* const logger_;
-    DISALLOW_IMPLICIT_CONSTRUCTORS(UkmTimestampPin);
   };
+
+  AutofillMetrics() = delete;
+  AutofillMetrics(const AutofillMetrics&) = delete;
+  AutofillMetrics& operator=(const AutofillMetrics&) = delete;
 
   // When the autofill-use-improved-label-disambiguation experiment is enabled
   // and suggestions are available, records if a LabelFormatter successfully
@@ -1203,10 +1215,15 @@ class AutofillMetrics {
   static void LogLocalCardMigrationPromptMetric(
       LocalCardMigrationOrigin local_card_migration_origin,
       LocalCardMigrationPromptMetric metric);
-  static void LogOfferNotificationBubbleOfferMetric(bool is_reshow);
+  static void LogOfferNotificationBubbleOfferMetric(
+      AutofillOfferData::OfferType offer_type,
+      bool is_reshow);
   static void LogOfferNotificationBubbleResultMetric(
+      AutofillOfferData::OfferType offer_type,
       OfferNotificationBubbleResultMetric metric,
       bool is_reshow);
+  static void LogOfferNotificationBubblePromoCodeButtonClicked(
+      AutofillOfferData::OfferType offer_type);
   static void LogOfferNotificationInfoBarDeepLinkClicked();
   static void LogOfferNotificationInfoBarResultMetric(
       OfferNotificationInfoBarResultMetric metric);
@@ -1689,9 +1706,12 @@ class AutofillMetrics {
   static void LogProfileUpdateImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs that a specific type changed in a profile update which was accepted
-  // without manual edits.
-  static void LogProfileUpdateAffectedType(ServerFieldType affected_type);
+  // Logs that a specific type changed in a profile update that received the
+  // user |decision|. Note that additional manual edits in the update prompt are
+  // not accounted for in this metric.
+  static void LogProfileUpdateAffectedType(
+      ServerFieldType affected_type,
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type was edited in an update prompt.
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
@@ -1699,10 +1719,12 @@ class AutofillMetrics {
   // Logs the number of edited fields for an accepted profile update.
   static void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);
 
-  // Logs the number of changed fields for a profile update that is accepted
-  // without manual edits.
+  // Logs the number of changed fields for a profile update that received the
+  // user |decision|. Note that additional manual edits in the update prompt are
+  // not accounted for in this metric.
   static void LogUpdateProfileNumberOfAffectedFields(
-      int number_of_affected_fields);
+      int number_of_affected_fields,
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);
@@ -1726,8 +1748,6 @@ class AutofillMetrics {
 
  private:
   static void Log(AutocompleteEvent event);
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };
 
 #if defined(UNIT_TEST)

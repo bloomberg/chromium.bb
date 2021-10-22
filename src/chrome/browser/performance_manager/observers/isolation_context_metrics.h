@@ -32,6 +32,10 @@ class IsolationContextMetrics : public FrameNode::ObserverDefaultImpl,
                                 public ProcessNode::ObserverDefaultImpl {
  public:
   IsolationContextMetrics();
+
+  IsolationContextMetrics(const IsolationContextMetrics&) = delete;
+  IsolationContextMetrics& operator=(const IsolationContextMetrics&) = delete;
+
   ~IsolationContextMetrics() override;
 
   // Starts the timer for periodic reporting.
@@ -45,8 +49,7 @@ class IsolationContextMetrics : public FrameNode::ObserverDefaultImpl,
   // collection and not on its own timer, but UMA collection lives on the UI
   // thread. This wants to be something on the same order of magnitude as UMA
   // collection but not so fast as to cause pointless wakeups.
-  static constexpr base::TimeDelta kReportingInterval =
-      base::TimeDelta::FromMinutes(5);
+  static constexpr base::TimeDelta kReportingInterval = base::Minutes(5);
 
   // This histogram records the cumulative amount of time a process spends
   // hosting only frames from distinct site instances, versus hosting more than
@@ -153,9 +156,6 @@ class IsolationContextMetrics : public FrameNode::ObserverDefaultImpl,
   // TODO(chrisha): Migrate away if metrics team provides a convenient API.
   // https://crbug.com/961468
   base::RepeatingTimer reporting_timer_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IsolationContextMetrics);
 };
 
 }  // namespace performance_manager

@@ -47,7 +47,7 @@ namespace chromeos {
 namespace {
 
 // The rate at which we will poll CUPS for print job updates.
-constexpr base::TimeDelta kPollRate = base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kPollRate = base::Milliseconds(1000);
 
 // Threshold for giving up on communicating with CUPS.
 const int kRetryMax = 6;
@@ -95,6 +95,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
+
+  CupsPrintJobManagerImpl(const CupsPrintJobManagerImpl&) = delete;
+  CupsPrintJobManagerImpl& operator=(const CupsPrintJobManagerImpl&) = delete;
 
   ~CupsPrintJobManagerImpl() override = default;
 
@@ -375,8 +378,6 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   content::NotificationRegistrar registrar_;
   std::unique_ptr<CupsWrapper> cups_wrapper_;
   base::WeakPtrFactory<CupsPrintJobManagerImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CupsPrintJobManagerImpl);
 };
 
 // static

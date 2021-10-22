@@ -46,15 +46,17 @@ struct ServiceWorkerVersionBaseInfo;
 // renderer process. One ServiceWorkerHost instance hosts one service worker
 // execution context instance.
 //
-// ServiceWorkerHost lives on the service worker core thread, since all nearly
-// all browser process service worker machinery lives on the service worker core
-// thread.
+// Lives on the UI thread.
 class CONTENT_EXPORT ServiceWorkerHost {
  public:
   ServiceWorkerHost(mojo::PendingAssociatedReceiver<
                         blink::mojom::ServiceWorkerContainerHost> host_receiver,
                     ServiceWorkerVersion* version,
                     base::WeakPtr<ServiceWorkerContextCore> context);
+
+  ServiceWorkerHost(const ServiceWorkerHost&) = delete;
+  ServiceWorkerHost& operator=(const ServiceWorkerHost&) = delete;
+
   ~ServiceWorkerHost();
 
   int worker_process_id() const { return worker_process_id_; }
@@ -117,8 +119,6 @@ class CONTENT_EXPORT ServiceWorkerHost {
       host_receiver_;
 
   base::WeakPtrFactory<ServiceWorkerHost> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHost);
 };
 
 }  // namespace content

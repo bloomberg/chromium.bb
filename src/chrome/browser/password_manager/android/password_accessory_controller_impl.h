@@ -45,6 +45,12 @@ class PasswordAccessoryControllerImpl
   using PasswordDriverSupplierForFocusedFrame =
       base::RepeatingCallback<password_manager::PasswordManagerDriver*(
           content::WebContents*)>;
+
+  PasswordAccessoryControllerImpl(const PasswordAccessoryControllerImpl&) =
+      delete;
+  PasswordAccessoryControllerImpl& operator=(
+      const PasswordAccessoryControllerImpl&) = delete;
+
   ~PasswordAccessoryControllerImpl() override;
 
   // AccessoryController:
@@ -213,15 +219,13 @@ class PasswordAccessoryControllerImpl
 
   // Helper for determining whether a bottom sheet showing passwords is useful.
   AllPasswordsBottomSheetHelper all_passwords_helper_{
-      password_client_->GetProfilePasswordStoreInterface()};
+      password_client_->GetProfilePasswordStore()};
 
   // Security level used for testing only.
   security_state::SecurityLevel security_level_for_testing_ =
       security_state::NONE;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
-
-  DISALLOW_COPY_AND_ASSIGN(PasswordAccessoryControllerImpl);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ANDROID_PASSWORD_ACCESSORY_CONTROLLER_IMPL_H_

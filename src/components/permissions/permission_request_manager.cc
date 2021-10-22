@@ -30,6 +30,7 @@
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/disallow_activation_reason.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -92,8 +93,7 @@ bool ShouldShowQuietRequestAgainIfPreempted(
     return true;
   }
 
-  static constexpr base::TimeDelta kQuietChipIgnoreTimeout =
-      base::TimeDelta::FromSecondsD(8.5);
+  static constexpr base::TimeDelta kQuietChipIgnoreTimeout = base::Seconds(8.5);
   return base::Time::Now() - request_display_start_time.value() <
          kQuietChipIgnoreTimeout;
 }
@@ -136,7 +136,9 @@ bool PermissionRequestManager::PermissionRequestSource::
     IsSourceFrameInactiveAndDisallowActivation() const {
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  return !rfh || rfh->IsInactiveAndDisallowActivation();
+  return !rfh ||
+         rfh->IsInactiveAndDisallowActivation(
+             content::DisallowActivationReasonId::kPermissionRequestSource);
 }
 
 PermissionRequestManager::~PermissionRequestManager() {
@@ -159,7 +161,8 @@ void PermissionRequestManager::AddRequest(
     return;
   }
 
-  if (source_frame->IsInactiveAndDisallowActivation()) {
+  if (source_frame->IsInactiveAndDisallowActivation(
+          content::DisallowActivationReasonId::kPermissionAddRequest)) {
     request->Cancelled();
     request->RequestFinished();
     return;
@@ -710,7 +713,7 @@ void PermissionRequestManager::FinalizeCurrentRequests(
   }
   PermissionUmaUtil::PermissionPromptResolved(
       requests_, web_contents(), permission_action, time_to_decision,
-      DetermineCurrentRequestUIDispositionForUMA(),
+      DetermineCurrentRequestUIDisposition(),
       DetermineCurrentRequestUIDispositionReasonForUMA(),
       prediction_grant_likelihood_);
 
@@ -733,7 +736,8 @@ void PermissionRequestManager::FinalizeCurrentRequests(
 
     PermissionsClient::Get()->OnPromptResolved(
         browser_context, request->request_type(), permission_action,
-        request->requesting_origin(), quiet_ui_reason);
+        request->requesting_origin(), DetermineCurrentRequestUIDisposition(),
+        quiet_ui_reason);
 
     PermissionEmbargoStatus embargo_status =
         PermissionEmbargoStatus::NOT_EMBARGOED;
@@ -954,7 +958,7 @@ void PermissionRequestManager::OnPermissionUiSelectorDone(
 }
 
 PermissionPromptDisposition
-PermissionRequestManager::DetermineCurrentRequestUIDispositionForUMA() {
+PermissionRequestManager::DetermineCurrentRequestUIDisposition() {
   if (current_request_prompt_disposition_.has_value())
     return current_request_prompt_disposition_.value();
   return PermissionPromptDisposition::NONE_VISIBLE;
@@ -1025,6 +1029,6 @@ void PermissionRequestManager::PushQueuedRequest(PermissionRequest* request) {
   }
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(PermissionRequestManager)
+WEB_CONTENTS_USER_DATA_KEY_IMPL(PermissionRequestManager);
 
 }  // namespace permissions

@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/app_list/app_list_features.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -22,8 +23,8 @@ const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSuggestedFiles{"EnableSuggestedFiles",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kEnableSuggestedDriveFiles{
-    "EnableSuggestedDriveFiles", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableSuggestedLocalFiles{
+    "EnableSuggestedLocalFiles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // "EnableEmbeddedAssistantUI" is used in finch experiment therefore we cannot
 // change it until fully launched. It is used to redirect Launcher search to
@@ -45,14 +46,14 @@ const base::Feature kEnableAggregatedMlSearchRanking{
     "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNewDragSpecInLauncher{"NewDragSpecInLauncher",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableOmniboxRichEntities{
-    "EnableOmniboxRichEntities", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableLauncherSearchNormalization{
     "EnableLauncherSearchNormalization", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kCategoricalSearch{"CategoricalSearch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLauncherQueryHighlighting{
     "LauncherQueryHighlighting", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kForceShowContinueSection{
+    "ForceShowContinueSection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAppRankerEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppRanker);
@@ -78,8 +79,8 @@ bool IsSuggestedFilesEnabled() {
   return base::FeatureList::IsEnabled(kEnableSuggestedFiles);
 }
 
-bool IsSuggestedDriveFilesEnabled() {
-  return base::FeatureList::IsEnabled(kEnableSuggestedDriveFiles);
+bool IsSuggestedLocalFilesEnabled() {
+  return base::FeatureList::IsEnabled(kEnableSuggestedLocalFiles);
 }
 
 bool IsAssistantSearchEnabled() {
@@ -110,10 +111,6 @@ bool IsNewDragSpecInLauncherEnabled() {
   return base::FeatureList::IsEnabled(kNewDragSpecInLauncher);
 }
 
-bool IsOmniboxRichEntitiesEnabled() {
-  return base::FeatureList::IsEnabled(kEnableOmniboxRichEntities);
-}
-
 bool IsLauncherSearchNormalizationEnabled() {
   return base::FeatureList::IsEnabled(kEnableLauncherSearchNormalization);
 }
@@ -131,7 +128,9 @@ bool IsAppListLaunchRecordingEnabled() {
 }
 
 bool IsCategoricalSearchEnabled() {
-  return base::FeatureList::IsEnabled(kCategoricalSearch);
+  // Force categorical search for the latest version of the launcher.
+  return ash::features::IsProductivityLauncherEnabled() ||
+         base::FeatureList::IsEnabled(kCategoricalSearch);
 }
 
 bool IsLauncherQueryHighlightingEnabled() {
@@ -140,6 +139,10 @@ bool IsLauncherQueryHighlightingEnabled() {
 
 std::string CategoricalSearchType() {
   return GetFieldTrialParamValueByFeature(kCategoricalSearch, "ranking");
+}
+
+bool IsForceShowContinueSectionEnabled() {
+  return base::FeatureList::IsEnabled(kForceShowContinueSection);
 }
 
 }  // namespace app_list_features

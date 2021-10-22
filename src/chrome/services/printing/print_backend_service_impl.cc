@@ -10,16 +10,19 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "printing/backend/print_backend.h"
 #include "printing/mojom/print.mojom.h"
+#include "printing/printing_context.h"
 
 #if defined(OS_MAC)
 #include "base/threading/thread_restrictions.h"
@@ -101,6 +104,36 @@ struct PrintBackendServiceImpl::DocumentContainer {
   // runner.
   SEQUENCE_CHECKER(system_sequence_checker);
 };
+
+// Sandboxed service helper.
+SandboxedPrintBackendHostImpl::SandboxedPrintBackendHostImpl(
+    mojo::PendingReceiver<mojom::SandboxedPrintBackendHost> receiver)
+    : receiver_(this, std::move(receiver)) {}
+
+SandboxedPrintBackendHostImpl::~SandboxedPrintBackendHostImpl() = default;
+
+void SandboxedPrintBackendHostImpl::BindBackend(
+    mojo::PendingReceiver<mojom::PrintBackendService> receiver) {
+  CHECK(!print_backend_service_)
+      << "Cannot bind service twice in same process.";
+  print_backend_service_ =
+      std::make_unique<PrintBackendServiceImpl>(std::move(receiver));
+}
+
+// Unsandboxed service helper.
+UnsandboxedPrintBackendHostImpl::UnsandboxedPrintBackendHostImpl(
+    mojo::PendingReceiver<mojom::UnsandboxedPrintBackendHost> receiver)
+    : receiver_(this, std::move(receiver)) {}
+
+UnsandboxedPrintBackendHostImpl::~UnsandboxedPrintBackendHostImpl() = default;
+
+void UnsandboxedPrintBackendHostImpl::BindBackend(
+    mojo::PendingReceiver<mojom::PrintBackendService> receiver) {
+  CHECK(!print_backend_service_)
+      << "Cannot bind service twice in same process.";
+  print_backend_service_ =
+      std::make_unique<PrintBackendServiceImpl>(std::move(receiver));
+}
 
 PrintBackendServiceImpl::PrintingContextDelegate::PrintingContextDelegate() =
     default;
@@ -263,6 +296,68 @@ void PrintBackendServiceImpl::FetchCapabilities(
           std::move(caps_and_info)));
 }
 
+void PrintBackendServiceImpl::UpdatePrintSettings(
+    base::flat_map<std::string, base::Value> job_settings,
+    mojom::PrintBackendService::UpdatePrintSettingsCallback callback) {
+  if (!print_backend_) {
+    DLOG(ERROR)
+        << "Print backend instance has not been initialized for locale.";
+    std::move(callback).Run(
+        mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
+    return;
+  }
+
+  auto item = job_settings.find(kSettingDeviceName);
+  if (item == job_settings.end()) {
+    DLOG(ERROR) << "Job settings are missing specification of printer name";
+    std::move(callback).Run(
+        mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
+    return;
+  }
+  const base::Value& device_name_value = item->second;
+  if (!device_name_value.is_string()) {
+    DLOG(ERROR) << "Invalid type for job settings device name entry, is type "
+                << device_name_value.type();
+    std::move(callback).Run(
+        mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
+    return;
+  }
+  const std::string& printer_name = device_name_value.GetString();
+
+  crash_keys_ = std::make_unique<crash_keys::ScopedPrinterInfo>(
+      print_backend_->GetPrinterDriverInfo(printer_name));
+
+#if defined(OS_LINUX) && defined(USE_CUPS)
+  // Try to fill in advanced settings based upon basic info options.
+  PrinterBasicInfo basic_info;
+  if (print_backend_->GetPrinterBasicInfo(printer_name, &basic_info) ==
+      mojom::ResultCode::kSuccess) {
+    base::Value advanced_settings(base::Value::Type::DICTIONARY);
+    for (const auto& pair : basic_info.options)
+      advanced_settings.SetStringKey(pair.first, pair.second);
+
+    job_settings[kSettingAdvancedSettings] = std::move(advanced_settings);
+  }
+#endif  // defined(OS_LINUX) && defined(USE_CUPS)
+
+  // Use a one-time `PrintingContext` to do the update to print settings.
+  // Intentionally do not cache this context here since the process model does
+  // not guarantee that we will return to this same process when
+  // `StartPrinting()` might be called.
+  std::unique_ptr<PrintingContext> context =
+      PrintingContext::Create(&context_delegate_);
+  mojom::ResultCode result =
+      context->UpdatePrintSettings(base::Value(std::move(job_settings)));
+
+  if (result != mojom::ResultCode::kSuccess) {
+    std::move(callback).Run(mojom::PrintSettingsResult::NewResultCode(result));
+    return;
+  }
+
+  std::move(callback).Run(mojom::PrintSettingsResult::NewSettings(
+      *context->TakeAndResetSettings()));
+}
+
 void PrintBackendServiceImpl::StartPrinting(
     int document_cookie,
     const std::u16string& document_name,
@@ -340,23 +435,19 @@ mojom::ResultCode PrintBackendServiceImpl::StartPrintingReadyDocument(
   }
 #endif
   context->ApplyPrintSettings(document->settings());
-  PrintingContext::Result context_result = context->UpdatePrinterSettings(
+  mojom::ResultCode result = context->UpdatePrinterSettings(
       external_preview, show_system_dialog, document_container.page_count);
-  if (context_result != PrintingContext::OK) {
+  if (result != mojom::ResultCode::kSuccess) {
     DLOG(ERROR) << "Failure updating printer settings for document "
-                << document->cookie() << ", error: " << context_result;
-    return context_result == PrintingContext::CANCEL
-               ? mojom::ResultCode::kCanceled
-               : mojom::ResultCode::kFailed;
+                << document->cookie() << ", error: " << result;
+    return result;
   }
 
-  context_result = context->NewDocument(document->name());
-  if (context_result != PrintingContext::OK) {
+  result = context->NewDocument(document->name());
+  if (result != mojom::ResultCode::kSuccess) {
     DLOG(ERROR) << "Failure initializing new document " << document->cookie()
-                << ", error: " << context_result;
-    return context_result == PrintingContext::CANCEL
-               ? mojom::ResultCode::kCanceled
-               : mojom::ResultCode::kFailed;
+                << ", error: " << result;
+    return result;
   }
 
   document_container.context = std::move(context);

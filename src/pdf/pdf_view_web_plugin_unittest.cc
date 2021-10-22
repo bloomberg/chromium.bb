@@ -5,8 +5,10 @@
 #include "pdf/pdf_view_web_plugin.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/strings/string_piece.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
@@ -18,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/input/web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_pointer_properties.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
@@ -29,11 +33,13 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/skia_util.h"
+#include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/latency/latency_info.h"
 
 namespace chrome_pdf {
@@ -65,11 +71,15 @@ struct PaintParams {
   // The plugin container's device scale.
   float device_scale;
 
-  // The window area.
+  // The window area in CSS pixels.
   gfx::Rect window_rect;
 
-  // The target painting area on the canvas.
+  // The target painting area on the canvas in CSS pixels.
   gfx::Rect paint_rect;
+
+  // The expected clipped area to be filled with paint color. The clipped area
+  // should be the intersection of `paint_rect` and `window_rect`.
+  gfx::Rect expected_clipped_rect;
 };
 
 MATCHER(SearchStringResultEq, "") {
@@ -78,22 +88,28 @@ MATCHER(SearchStringResultEq, "") {
   return l.start_index == r.start_index && l.length == r.length;
 }
 
+MATCHER_P(IsExpectedImeKeyEvent, expected_text, "") {
+  if (arg.GetType() != blink::WebInputEvent::Type::kChar)
+    return false;
+
+  const auto& event = static_cast<const blink::WebKeyboardEvent&>(arg);
+  return event.GetModifiers() == blink::WebInputEvent::kNoModifiers &&
+         event.windows_key_code == expected_text[0] &&
+         event.native_key_code == expected_text[0] &&
+         event.dom_code == static_cast<int>(ui::DomCode::NONE) &&
+         event.dom_key == ui::DomKey::NONE && !event.is_system_key &&
+         !event.is_browser_shortcut && event.text == expected_text &&
+         event.unmodified_text == expected_text;
+}
+
 // Generates the expected `SkBitmap` with `paint_color` filled in the expected
 // clipped area and `kDefaultColor` as the background color.
-SkBitmap GenerateExpectedBitmapForPaint(float device_scale,
-                                        bool use_zoom_for_dsf,
-                                        const gfx::Rect& plugin_rect,
-                                        const gfx::Rect& paint_rect,
+SkBitmap GenerateExpectedBitmapForPaint(const gfx::Rect& expected_clipped_rect,
                                         SkColor paint_color) {
-  float inverse_scale = use_zoom_for_dsf ? 1.0f : 1.0f / device_scale;
-  // TODO(crbug.com/1238395): Improve the test by pre-define the
-  // `expected_clipped_area` instead of calculating it inside the test.
-  gfx::Rect expected_clipped_area = gfx::IntersectRects(
-      gfx::ScaleToEnclosingRectSafe(plugin_rect, inverse_scale), paint_rect);
   SkBitmap expected_bitmap =
       CreateN32PremulSkBitmap(gfx::SizeToSkISize(kCanvasSize));
   expected_bitmap.eraseColor(kDefaultColor);
-  expected_bitmap.erase(paint_color, gfx::RectToSkIRect(expected_clipped_area));
+  expected_bitmap.erase(paint_color, gfx::RectToSkIRect(expected_clipped_rect));
   return expected_bitmap;
 }
 
@@ -165,6 +181,10 @@ class FakeContainerWrapper : public PdfViewWebPlugin::ContainerWrapper {
   MOCK_METHOD(void, UpdateTextInputState, (), (override));
 
   MOCK_METHOD(void, UpdateSelectionBounds, (), (override));
+
+  std::string GetEmbedderOriginString() override {
+    return "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/";
+  }
 
   blink::WebLocalFrame* GetFrame() override { return nullptr; }
 
@@ -257,7 +277,7 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     auto wrapper =
         std::make_unique<NiceMock<FakeContainerWrapper>>(plugin_.get());
     wrapper_ptr_ = wrapper.get();
-    auto engine = std::make_unique<TestPDFiumEngine>(plugin_.get());
+    auto engine = CreateEngine();
     engine_ptr_ = engine.get();
     EXPECT_TRUE(
         plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
@@ -267,6 +287,11 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     wrapper_ptr_ = nullptr;
 
     PdfViewWebPluginWithoutInitializeTest::TearDown();
+  }
+
+  // Allow derived test classes to create their own custom TestPDFiumEngine.
+  virtual std::unique_ptr<TestPDFiumEngine> CreateEngine() {
+    return std::make_unique<TestPDFiumEngine>(plugin_.get());
   }
 
   void UpdatePluginGeometry(float device_scale, const gfx::Rect& window_rect) {
@@ -280,19 +305,21 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
 
   void TestUpdateGeometrySetsPluginRect(float device_scale,
                                         const gfx::Rect& window_rect,
+                                        float expected_device_scale,
                                         const gfx::Rect& expected_plugin_rect) {
     UpdatePluginGeometry(device_scale, window_rect);
+    EXPECT_EQ(expected_device_scale, plugin_->GetDeviceScaleForTesting())
+        << "Device scale comparison failure at device scale of "
+        << device_scale;
     EXPECT_EQ(expected_plugin_rect, plugin_->GetPluginRectForTesting())
-        << "Failure at device scale of " << device_scale << ", window rect of "
-        << window_rect.ToString();
+        << "Plugin rect comparison failure at device scale of " << device_scale
+        << ", window rect of " << window_rect.ToString();
   }
 
   void TestPaintEmptySnapshots(float device_scale,
-                               bool use_zoom_for_dsf,
                                const gfx::Rect& window_rect,
-                               const gfx::Rect& paint_rect) {
-    EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-        .WillOnce(Return(use_zoom_for_dsf));
+                               const gfx::Rect& paint_rect,
+                               const gfx::Rect& expected_clipped_rect) {
     UpdatePluginGeometry(device_scale, window_rect);
     canvas_.DrawColor(kDefaultColor);
 
@@ -301,8 +328,7 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     // Expect the clipped area on canvas to be filled with plugin's background
     // color.
     SkBitmap expected_bitmap = GenerateExpectedBitmapForPaint(
-        device_scale, use_zoom_for_dsf, plugin_->GetPluginRectForTesting(),
-        paint_rect, plugin_->GetBackgroundColor());
+        expected_clipped_rect, plugin_->GetBackgroundColor());
     EXPECT_TRUE(
         cc::MatchesBitmap(canvas_.GetBitmap(), expected_bitmap,
                           cc::ExactPixelComparator(/*discard_alpha=*/false)))
@@ -311,11 +337,9 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
   }
 
   void TestPaintSnapshots(float device_scale,
-                          bool use_zoom_for_dsf,
                           const gfx::Rect& window_rect,
-                          const gfx::Rect& paint_rect) {
-    EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
-        .WillOnce(Return(use_zoom_for_dsf));
+                          const gfx::Rect& paint_rect,
+                          const gfx::Rect& expected_clipped_rect) {
     UpdatePluginGeometry(device_scale, window_rect);
     canvas_.DrawColor(kDefaultColor);
 
@@ -332,8 +356,8 @@ class PdfViewWebPluginTest : public PdfViewWebPluginWithoutInitializeTest {
     plugin_->Paint(canvas_.sk_canvas(), paint_rect);
 
     // Expect the clipped area on canvas to be filled with `kPaintColor`.
-    SkBitmap expected_bitmap = GenerateExpectedBitmapForPaint(
-        device_scale, use_zoom_for_dsf, plugin_rect, paint_rect, kPaintColor);
+    SkBitmap expected_bitmap =
+        GenerateExpectedBitmapForPaint(expected_clipped_rect, kPaintColor);
     EXPECT_TRUE(
         cc::MatchesBitmap(canvas_.GetBitmap(), expected_bitmap,
                           cc::ExactPixelComparator(/*discard_alpha=*/false)))
@@ -360,22 +384,25 @@ TEST_F(PdfViewWebPluginWithoutInitializeTest, Initialize) {
       plugin_->InitializeForTesting(std::move(wrapper), std::move(engine)));
 }
 
-// TODO(crbug.com/1238395): Split this test into two: One with zoom-for-DSF
-// enabled, one with zoom-for-DSF disabled.
+TEST_F(PdfViewWebPluginTest, UpdateGeometrySetsPluginRectUseZoomForDSFEnabled) {
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
+  TestUpdateGeometrySetsPluginRect(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(4, 4, 12, 12),
+      /*expected_device_scale=*/2.0f,
+      /*expected_plugin_rect=*/gfx::Rect(4, 4, 12, 12));
+}
+
 TEST_F(PdfViewWebPluginTest,
-       UpdateGeometrySetsPluginRectOnDifferentUseZoomForDSFSettings) {
-  // Use the same device scale for this test.
-  const float device_scale = 2.0f;
-
-  // Test when using zoom for DSF is enabled.
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled).WillOnce(Return(true));
-  TestUpdateGeometrySetsPluginRect(device_scale, gfx::Rect(4, 4, 12, 12),
-                                   gfx::Rect(4, 4, 12, 12));
-
-  // Test when using zoom for DSF is disabled.
-  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled).WillOnce(Return(false));
-  TestUpdateGeometrySetsPluginRect(device_scale, gfx::Rect(4, 4, 12, 12),
-                                   gfx::Rect(8, 8, 24, 24));
+       UpdateGeometrySetsPluginRectUseZoomForDSFDisabled) {
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
+  TestUpdateGeometrySetsPluginRect(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(4, 4, 12, 12),
+      /*expected_device_scale=*/2.0f,
+      /*expected_plugin_rect=*/gfx::Rect(8, 8, 24, 24));
 }
 
 TEST_F(PdfViewWebPluginTest,
@@ -384,8 +411,11 @@ TEST_F(PdfViewWebPluginTest,
     // The plugin container's device scale.
     float device_scale;
 
-    //  The window rect in device pixels.
+    //  The window rect in CSS pixels.
     gfx::Rect window_rect;
+
+    // The expected plugin device scale.
+    float expected_device_scale;
 
     // The expected plugin rect in device pixels.
     gfx::Rect expected_plugin_rect;
@@ -396,54 +426,127 @@ TEST_F(PdfViewWebPluginTest,
       .WillRepeatedly(Return(true));
 
   static constexpr UpdateGeometryParams kUpdateGeometryParams[] = {
-      {1.0f, gfx::Rect(3, 4, 5, 6), gfx::Rect(3, 4, 5, 6)},
-      {2.0f, gfx::Rect(4, 4, 12, 12), gfx::Rect(4, 4, 12, 12)},
-      {2.0f, gfx::Rect(5, 6, 7, 8), gfx::Rect(4, 6, 8, 8)},
+      {1.0f, gfx::Rect(3, 4, 5, 6), 1.0f, gfx::Rect(3, 4, 5, 6)},
+      {2.0f, gfx::Rect(3, 4, 5, 6), 2.0f, gfx::Rect(3, 4, 5, 6)},
   };
 
   for (const auto& params : kUpdateGeometryParams) {
     TestUpdateGeometrySetsPluginRect(params.device_scale, params.window_rect,
+                                     params.expected_device_scale,
                                      params.expected_plugin_rect);
   }
 }
 
-TEST_F(PdfViewWebPluginTest, PaintEmptySnapshots) {
-  static constexpr PaintParams kPaintEmptySnapshotsParams[]{
-      // The window origin falls outside the `paint_rect` area.
-      {1.0f, gfx::Rect(10, 10, 20, 20), gfx::Rect(5, 5, 15, 15)},
-      {4.0f, gfx::Rect(10, 10, 20, 20), gfx::Rect(5, 5, 15, 15)},
-      // The window origin falls within the `paint_rect` area.
-      {1.0f, gfx::Rect(4, 4, 20, 20), gfx::Rect(8, 8, 15, 15)},
-      {4.0f, gfx::Rect(4, 4, 20, 20), gfx::Rect(8, 8, 15, 15)},
+class PdfViewWebPluginTestUseZoomForDSF
+    : public PdfViewWebPluginTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+    PdfViewWebPluginTest::SetUp();
+    ON_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+        .WillByDefault(Return(GetParam()));
+  }
+};
+
+TEST_P(PdfViewWebPluginTestUseZoomForDSF,
+       UpdateGeometrySetsPluginRectWithEmptyWindow) {
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated).Times(0);
+  TestUpdateGeometrySetsPluginRect(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(2, 2, 0, 0),
+      /*expected_device_scale=*/1.0f, /*expected_plugin_rect=*/gfx::Rect());
+}
+
+TEST_P(PdfViewWebPluginTestUseZoomForDSF, PaintEmptySnapshots) {
+  TestPaintEmptySnapshots(/*device_scale=*/4.0f,
+                          /*window_rect=*/gfx::Rect(10, 10, 20, 20),
+                          /*paint_rect=*/gfx::Rect(5, 5, 15, 15),
+                          /*expected_clipped_rect=*/gfx::Rect(10, 10, 10, 10));
+}
+
+TEST_P(PdfViewWebPluginTestUseZoomForDSF, PaintSnapshots) {
+  TestPaintSnapshots(/*device_scale=*/4.0f,
+                     /*window_rect=*/gfx::Rect(10, 10, 20, 20),
+                     /*paint_rect=*/gfx::Rect(5, 5, 15, 15),
+                     /*expected_clipped_rect=*/gfx::Rect(10, 10, 10, 10));
+}
+
+TEST_P(PdfViewWebPluginTestUseZoomForDSF,
+       PaintSnapshotsWithVariousDeviceScales) {
+  static constexpr PaintParams kPaintWithVariousScalesParams[] = {
+      {0.4f, gfx::Rect(8, 8, 30, 30), gfx::Rect(10, 10, 30, 30),
+       gfx::Rect(10, 10, 28, 28)},
+      {1.0f, gfx::Rect(8, 8, 30, 30), gfx::Rect(10, 10, 30, 30),
+       gfx::Rect(10, 10, 28, 28)},
+      {4.0f, gfx::Rect(8, 8, 30, 30), gfx::Rect(10, 10, 30, 30),
+       gfx::Rect(10, 10, 28, 28)},
   };
 
-  for (const auto& params : kPaintEmptySnapshotsParams) {
-    TestPaintEmptySnapshots(params.device_scale, /*use_zoom_for_dsf=*/true,
-                            params.window_rect, params.paint_rect);
-    TestPaintEmptySnapshots(params.device_scale, /*use_zoom_for_dsf=*/false,
-                            params.window_rect, params.paint_rect);
+  for (const auto& params : kPaintWithVariousScalesParams) {
+    TestPaintSnapshots(params.device_scale, params.window_rect,
+                       params.paint_rect, params.expected_clipped_rect);
   }
 }
 
-TEST_F(PdfViewWebPluginTest, PaintSnapshots) {
-  static constexpr PaintParams kPaintWithScalesTestParams[] = {
+TEST_P(PdfViewWebPluginTestUseZoomForDSF,
+       PaintSnapshotsWithVariousRectPositions) {
+  static constexpr PaintParams kPaintWithVariousPositionsParams[] = {
       // The window origin falls outside the `paint_rect` area.
-      {1.0f, gfx::Rect(8, 8, 30, 30), gfx::Rect(10, 10, 30, 30)},
-      {2.0f, gfx::Rect(8, 8, 30, 30), gfx::Rect(10, 10, 30, 30)},
+      {4.0f, gfx::Rect(10, 10, 20, 20), gfx::Rect(5, 5, 15, 15),
+       gfx::Rect(10, 10, 10, 10)},
       // The window origin falls within the `paint_rect` area.
-      {1.0f, gfx::Rect(10, 10, 30, 30), gfx::Rect(4, 4, 30, 30)},
-      {2.0f, gfx::Rect(10, 10, 30, 30), gfx::Rect(4, 4, 30, 30)},
+      {4.0f, gfx::Rect(4, 4, 20, 20), gfx::Rect(8, 8, 15, 15),
+       gfx::Rect(8, 8, 15, 15)},
   };
 
-  for (const auto& params : kPaintWithScalesTestParams) {
-    TestPaintSnapshots(params.device_scale, /*use_zoom_for_dsf=*/true,
-                       params.window_rect, params.paint_rect);
-    TestPaintSnapshots(params.device_scale, /*use_zoom_for_dsf=*/false,
-                       params.window_rect, params.paint_rect);
+  for (const auto& params : kPaintWithVariousPositionsParams) {
+    TestPaintSnapshots(params.device_scale, params.window_rect,
+                       params.paint_rect, params.expected_clipped_rect);
   }
 }
 
-TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFEnabled) {
+INSTANTIATE_TEST_SUITE_P(All,
+                         PdfViewWebPluginTestUseZoomForDSF,
+                         testing::Bool());
+
+class PdfViewWebPluginMouseEventsTest : public PdfViewWebPluginTest {
+ public:
+  class TestPDFiumEngineForMouseEvents : public TestPDFiumEngine {
+   public:
+    explicit TestPDFiumEngineForMouseEvents(PDFEngine::Client* client)
+        : TestPDFiumEngine(client) {}
+
+    // TestPDFiumEngine:
+    bool HandleInputEvent(const blink::WebInputEvent& event) override {
+      // Since blink::WebInputEvent is an abstract class, we cannot use equal
+      // matcher to verify its value. Here we test with blink::WebMouseEvent
+      // specifically.
+      if (!blink::WebInputEvent::IsMouseEventType(event.GetType()))
+        return false;
+
+      scaled_mouse_event_ = std::make_unique<blink::WebMouseEvent>();
+      *scaled_mouse_event_ = static_cast<const blink::WebMouseEvent&>(event);
+      return true;
+    }
+
+    const blink::WebMouseEvent* GetScaledMouseEvent() const {
+      return scaled_mouse_event_.get();
+    }
+
+   private:
+    std::unique_ptr<blink::WebMouseEvent> scaled_mouse_event_;
+  };
+
+  std::unique_ptr<TestPDFiumEngine> CreateEngine() override {
+    return std::make_unique<TestPDFiumEngineForMouseEvents>(plugin_.get());
+  }
+
+  TestPDFiumEngineForMouseEvents* engine() {
+    return static_cast<TestPDFiumEngineForMouseEvents*>(engine_ptr_);
+  }
+};
+
+TEST_F(PdfViewWebPluginMouseEventsTest,
+       HandleInputEventWithUseZoomForDSFEnabled) {
   // Test when using zoom for DSF is enabled.
   EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
       .WillRepeatedly(Return(true));
@@ -456,12 +559,13 @@ TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFEnabled) {
                                     ui::LatencyInfo()),
       &dummy_cursor);
 
-  ASSERT_TRUE(engine_ptr_->GetScaledMouseEvent());
-  EXPECT_EQ(gfx::PointF(-10.0f, 0.0f),
-            engine_ptr_->GetScaledMouseEvent()->PositionInWidget());
+  const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
+  ASSERT_TRUE(event);
+  EXPECT_EQ(gfx::PointF(-10.0f, 0.0f), event->PositionInWidget());
 }
 
-TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFDisabled) {
+TEST_F(PdfViewWebPluginMouseEventsTest,
+       HandleInputEventWithUseZoomForDSFDisabled) {
   // Test when using zoom for DSF is disabled.
   EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
       .WillRepeatedly(Return(false));
@@ -474,9 +578,109 @@ TEST_F(PdfViewWebPluginTest, HandleInputEventWithUseZoomForDSFDisabled) {
                                     ui::LatencyInfo()),
       &dummy_cursor);
 
-  ASSERT_TRUE(engine_ptr_->GetScaledMouseEvent());
-  EXPECT_EQ(gfx::PointF(-20.0f, 0.0f),
-            engine_ptr_->GetScaledMouseEvent()->PositionInWidget());
+  const blink::WebMouseEvent* event = engine()->GetScaledMouseEvent();
+  ASSERT_TRUE(event);
+  EXPECT_EQ(gfx::PointF(-20.0f, 0.0f), event->PositionInWidget());
+}
+
+class PdfViewWebPluginImeTest : public PdfViewWebPluginTest {
+ public:
+  class TestPDFiumEngineForIme : public TestPDFiumEngine {
+   public:
+    explicit TestPDFiumEngineForIme(PDFEngine::Client* client)
+        : TestPDFiumEngine(client) {}
+
+    // TestPDFiumEngine:
+    MOCK_METHOD(bool,
+                HandleInputEvent,
+                (const blink::WebInputEvent&),
+                (override));
+  };
+
+  std::unique_ptr<TestPDFiumEngine> CreateEngine() override {
+    return std::make_unique<TestPDFiumEngineForIme>(plugin_.get());
+  }
+
+  TestPDFiumEngineForIme* engine() {
+    return static_cast<TestPDFiumEngineForIme*>(engine_ptr_);
+  }
+
+  void TestImeSetCompositionForPlugin(const blink::WebString& text) {
+    EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    plugin_->ImeSetCompositionForPlugin(text, std::vector<ui::ImeTextSpan>(),
+                                        gfx::Range(),
+                                        /*selection_start=*/0,
+                                        /*selection_end=*/0);
+  }
+
+  void TestImeFinishComposingTextForPlugin(
+      const blink::WebString& expected_text) {
+    InSequence sequence;
+    std::u16string expected_text16 = expected_text.Utf16();
+    if (expected_text16.size()) {
+      for (const auto& c : expected_text16) {
+        base::StringPiece16 expected_key(&c, 1);
+        EXPECT_CALL(*engine(),
+                    HandleInputEvent(IsExpectedImeKeyEvent(expected_key)))
+            .WillOnce(Return(true));
+      }
+    } else {
+      EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    }
+    plugin_->ImeFinishComposingTextForPlugin(false);
+  }
+
+  void TestImeCommitTextForPlugin(const blink::WebString& text) {
+    InSequence sequence;
+    std::u16string expected_text16 = text.Utf16();
+    if (expected_text16.size()) {
+      for (const auto& c : expected_text16) {
+        base::StringPiece16 event(&c, 1);
+        EXPECT_CALL(*engine(), HandleInputEvent(IsExpectedImeKeyEvent(event)))
+            .WillOnce(Return(true));
+      }
+    } else {
+      EXPECT_CALL(*engine(), HandleInputEvent).Times(0);
+    }
+    plugin_->ImeCommitTextForPlugin(text, std::vector<ui::ImeTextSpan>(),
+                                    gfx::Range(),
+                                    /*relative_cursor_pos=*/0);
+  }
+};
+
+TEST_F(PdfViewWebPluginImeTest, ImeSetCompositionAndFinishAscii) {
+  const blink::WebString text = blink::WebString::FromASCII("input");
+  TestImeSetCompositionForPlugin(text);
+  TestImeFinishComposingTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeSetCompositionAndFinishUnicode) {
+  const blink::WebString text = blink::WebString::FromUTF16(u"你好");
+  TestImeSetCompositionForPlugin(text);
+  TestImeFinishComposingTextForPlugin(text);
+  // Calling ImeFinishComposingTextForPlugin() again is a no-op.
+  TestImeFinishComposingTextForPlugin("");
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeSetCompositionAndFinishEmpty) {
+  const blink::WebString text;
+  TestImeSetCompositionForPlugin(text);
+  TestImeFinishComposingTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginAscii) {
+  const blink::WebString text = blink::WebString::FromASCII("a b");
+  TestImeCommitTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginUnicode) {
+  const blink::WebString text = blink::WebString::FromUTF16(u"さようなら");
+  TestImeCommitTextForPlugin(text);
+}
+
+TEST_F(PdfViewWebPluginImeTest, ImeCommitTextForPluginEmpty) {
+  const blink::WebString text;
+  TestImeCommitTextForPlugin(text);
 }
 
 TEST_F(PdfViewWebPluginTest, ChangeTextSelection) {
@@ -587,6 +791,30 @@ TEST_F(PdfViewWebPluginTest, UpdateFocus) {
   plugin_->UpdateFocus(/*focused=*/false, blink::mojom::FocusType::kNone);
   checkpoint.Call(4);
   plugin_->UpdateFocus(/*focused=*/true, blink::mojom::FocusType::kNone);
+}
+
+TEST_F(PdfViewWebPluginTest, ShouldDispatchImeEventsToPlugin) {
+  ASSERT_TRUE(plugin_->ShouldDispatchImeEventsToPlugin());
+}
+
+TEST_F(PdfViewWebPluginTest, CaretChangeUseZoomForDSFEnabled) {
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
+  UpdatePluginGeometry(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(12, 24, 36, 48));
+  plugin_->CaretChanged(gfx::Rect(10, 20, 30, 40));
+  EXPECT_EQ(gfx::Rect(28, 20, 30, 40), plugin_->GetPluginCaretBounds());
+}
+
+TEST_F(PdfViewWebPluginTest, CaretChangeUseZoomForDSFDisabled) {
+  EXPECT_CALL(*client_ptr_, IsUseZoomForDSFEnabled)
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*engine_ptr_, ZoomUpdated(2.0f));
+  UpdatePluginGeometry(
+      /*device_scale=*/2.0f, /*window_rect=*/gfx::Rect(12, 24, 36, 48));
+  plugin_->CaretChanged(gfx::Rect(10, 20, 30, 40));
+  EXPECT_EQ(gfx::Rect(23, 10, 15, 20), plugin_->GetPluginCaretBounds());
 }
 
 }  // namespace chrome_pdf

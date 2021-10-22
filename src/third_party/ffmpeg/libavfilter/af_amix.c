@@ -553,10 +553,8 @@ static av_cold int init(AVFilterContext *ctx)
         if (!pad.name)
             return AVERROR(ENOMEM);
 
-        if ((ret = ff_insert_inpad(ctx, i, &pad)) < 0) {
-            av_freep(&pad.name);
+        if ((ret = ff_append_inpad_free_name(ctx, &pad)) < 0)
             return ret;
-        }
     }
 
     s->fdsp = avpriv_float_dsp_alloc(0);
@@ -589,9 +587,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_freep(&s->scale_norm);
     av_freep(&s->weights);
     av_freep(&s->fdsp);
-
-    for (i = 0; i < ctx->nb_inputs; i++)
-        av_freep(&ctx->input_pads[i].name);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -603,11 +598,11 @@ static int query_formats(AVFilterContext *ctx)
     };
     int ret;
 
-    if ((ret = ff_set_common_formats(ctx, ff_make_format_list(sample_fmts))) < 0 ||
-        (ret = ff_set_common_samplerates(ctx, ff_all_samplerates())) < 0)
+    if ((ret = ff_set_common_formats_from_list(ctx, sample_fmts)) < 0 ||
+        (ret = ff_set_common_all_samplerates(ctx)) < 0)
         return ret;
 
-    return ff_set_common_channel_layouts(ctx, ff_all_channel_counts());
+    return ff_set_common_all_channel_counts(ctx);
 }
 
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
@@ -634,7 +629,6 @@ static const AVFilterPad avfilter_af_amix_outputs[] = {
         .type          = AVMEDIA_TYPE_AUDIO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_amix = {
@@ -647,7 +641,7 @@ const AVFilter ff_af_amix = {
     .activate       = activate,
     .query_formats  = query_formats,
     .inputs         = NULL,
-    .outputs        = avfilter_af_amix_outputs,
+    FILTER_OUTPUTS(avfilter_af_amix_outputs),
     .process_command = process_command,
     .flags          = AVFILTER_FLAG_DYNAMIC_INPUTS,
 };

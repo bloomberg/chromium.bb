@@ -50,8 +50,9 @@ using InstantServiceTest = InstantUnitTestBase;
 
 TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   ntp_tiles::NTPTile some_tile;
-  some_tile.source = ntp_tiles::TileSource::TOP_SITES;
-  some_tile.title_source = ntp_tiles::TileTitleSource::TITLE_TAG;
+  some_tile.url = GURL("https://foo.com");
+  some_tile.title = u"Foo";
+  some_tile.favicon_url = GURL("https://foo.com/favicon");
   ntp_tiles::NTPTilesVector suggestions{some_tile};
 
   std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector> suggestions_map;
@@ -61,8 +62,9 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
 
   auto items = instant_service_->most_visited_info_->items;
   ASSERT_EQ(1, (int)items.size());
-  EXPECT_EQ(ntp_tiles::TileSource::TOP_SITES, items[0].source);
-  EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
+  EXPECT_EQ("https://foo.com/", items[0].url);
+  EXPECT_EQ(u"Foo", items[0].title);
+  EXPECT_EQ("https://foo.com/favicon", items[0].favicon);
 }
 
 TEST_F(InstantServiceTest, TestNoNtpTheme) {
@@ -73,14 +75,16 @@ TEST_F(InstantServiceTest, TestNoNtpTheme) {
 class InstantServiceThemeTest : public InstantServiceTest {
  public:
   InstantServiceThemeTest() {}
+
+  InstantServiceThemeTest(const InstantServiceThemeTest&) = delete;
+  InstantServiceThemeTest& operator=(const InstantServiceThemeTest&) = delete;
+
   ~InstantServiceThemeTest() override {}
 
   ui::TestNativeTheme* theme() { return &theme_; }
 
  private:
   ui::TestNativeTheme theme_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstantServiceThemeTest);
 };
 
 TEST_F(InstantServiceTest, SetNTPElementsNtpTheme) {

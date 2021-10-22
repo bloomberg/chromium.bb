@@ -148,12 +148,15 @@ class ScopedPriorityClass {
   // Applies |priority_class|, returning an instance if a change was made.
   // Otherwise, returns an empty scoped_ptr.
   static std::unique_ptr<ScopedPriorityClass> Create(DWORD priority_class);
+
+  ScopedPriorityClass(const ScopedPriorityClass&) = delete;
+  ScopedPriorityClass& operator=(const ScopedPriorityClass&) = delete;
+
   ~ScopedPriorityClass();
 
  private:
   explicit ScopedPriorityClass(DWORD original_priority_class);
   DWORD original_priority_class_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedPriorityClass);
 };
 
 std::unique_ptr<ScopedPriorityClass> ScopedPriorityClass::Create(
@@ -246,8 +249,7 @@ TEST(SetupUtilTest, GetInstallAge) {
   FILE_BASIC_INFO info = {};
   ASSERT_NE(0, ::GetFileInformationByHandleEx(dir.Get(), FileBasicInfo, &info,
                                               sizeof(info)));
-  FILETIME creation_time =
-      (now - base::TimeDelta::FromDays(kAgeDays)).ToFileTime();
+  FILETIME creation_time = (now - base::Days(kAgeDays)).ToFileTime();
   info.CreationTime.u.LowPart = creation_time.dwLowDateTime;
   info.CreationTime.u.HighPart = creation_time.dwHighDateTime;
   ASSERT_NE(0, ::SetFileInformationByHandle(dir.Get(), FileBasicInfo, &info,
@@ -373,6 +375,10 @@ namespace {
 // A test fixture that configures an InstallationState and an InstallerState
 // with a product being updated.
 class FindArchiveToPatchTest : public testing::Test {
+ public:
+  FindArchiveToPatchTest(const FindArchiveToPatchTest&) = delete;
+  FindArchiveToPatchTest& operator=(const FindArchiveToPatchTest&) = delete;
+
  protected:
   class FakeInstallationState : public installer::InstallationState {};
 
@@ -469,8 +475,6 @@ class FindArchiveToPatchTest : public testing::Test {
 
  private:
   registry_util::RegistryOverrideManager registry_override_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(FindArchiveToPatchTest);
 };
 
 const bool FindArchiveToPatchTest::kSystemInstall_ = false;
@@ -796,6 +800,10 @@ TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKeyWithPreserve) {
 }
 
 class LegacyCleanupsTest : public ::testing::Test {
+ public:
+  LegacyCleanupsTest(const LegacyCleanupsTest&) = delete;
+  LegacyCleanupsTest& operator=(const LegacyCleanupsTest&) = delete;
+
  protected:
   LegacyCleanupsTest() = default;
   void SetUp() override {
@@ -884,7 +892,6 @@ class LegacyCleanupsTest : public ::testing::Test {
   base::ScopedTempDir temp_dir_;
   registry_util::RegistryOverrideManager registry_override_manager_;
   std::unique_ptr<FakeInstallerState> installer_state_;
-  DISALLOW_COPY_AND_ASSIGN(LegacyCleanupsTest);
 };
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

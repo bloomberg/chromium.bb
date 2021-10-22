@@ -521,7 +521,6 @@ void AddStringsGeneric(base::Value* dict) {
              IDS_FILE_BROWSER_PASSWORD_DIALOG_CONFIRM_LABEL);
   SET_STRING("PASSWORD_DIALOG_INVALID",
              IDS_FILE_BROWSER_PASSWORD_DIALOG_INVALID);
-  SET_STRING("SHARE_BUTTON_TOOLTIP", IDS_FILE_BROWSER_SHARE_BUTTON_TOOLTIP);
   SET_STRING("SORT_BUTTON_TOOLTIP", IDS_FILE_BROWSER_SORT_BUTTON_TOOLTIP);
   SET_STRING("GEAR_BUTTON_TOOLTIP", IDS_FILE_BROWSER_GEAR_BUTTON_TOOLTIP);
   SET_STRING("SELECTION_MENU_BUTTON_TOOLTIP",
@@ -677,8 +676,6 @@ void AddStringsGeneric(base::Value* dict) {
   SET_STRING("OPEN_WITH_BUTTON_LABEL", IDS_FILE_BROWSER_OPEN_WITH_BUTTON_LABEL);
   SET_STRING("OPENING_LINUX_FILES",
              IDS_FILE_BROWSER_DROP_TARGET_OPENING_LINUX_FILES);
-  SET_STRING("MORE_ACTIONS_BUTTON_LABEL",
-             IDS_FILE_BROWSER_MORE_ACTIONS_BUTTON_LABEL);
   SET_STRING("GO_TO_FILE_LOCATION_BUTTON_LABEL",
              IDS_FILE_BROWSER_GO_TO_FILE_LOCATION_BUTTON_LABEL);
   SET_STRING("OPEN_WITH_VERB_BUTTON_LABEL",
@@ -985,8 +982,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
       "DRIVE_DSS_PIN_ENABLED",
       base::FeatureList::IsEnabled(
           chromeos::features::kDriveFsBidirectionalNativeMessaging));
-  dict->SetBoolKey("SHARESHEET_ENABLED",
-                   base::FeatureList::IsEnabled(features::kSharesheet));
   dict->SetBoolKey(
       "FILTERS_IN_RECENTS_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kFiltersInRecents));

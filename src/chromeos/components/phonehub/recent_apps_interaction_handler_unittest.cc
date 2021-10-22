@@ -20,7 +20,9 @@ class FakeClickHandler : public RecentAppClickObserver {
 
   std::string get_package_name() { return package_name; }
 
-  void OnRecentAppClicked(const std::string& recent_app_package_name) override {
+  void OnRecentAppClicked(
+      const std::string& recent_app_package_name,
+      const std::u16string& recent_app_visible_name) override {
     package_name = recent_app_package_name;
   }
 
@@ -66,7 +68,8 @@ TEST_F(RecentAppsInteractionHandlerTest, RecentAppsClicked) {
   auto expected_app_metadata = Notification::AppMetadata(
       expected_app_visible_name, expected_package_name, gfx::Image());
 
-  handler().NotifyRecentAppClicked(expected_package_name);
+  handler().NotifyRecentAppClicked(expected_package_name,
+                                   expected_app_visible_name);
 
   EXPECT_EQ(expected_package_name, GetPackageName());
 }
@@ -88,14 +91,12 @@ TEST_F(RecentAppsInteractionHandlerTest, RecentAppsUpdated) {
   EXPECT_EQ(now, handler().recent_app_metadata_list_[0].second);
 
   // The same package name only update last accessed timestamp.
-  const base::Time next_minute =
-      base::Time::Now() + base::TimeDelta::FromMinutes(1);
+  const base::Time next_minute = base::Time::Now() + base::Minutes(1);
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, next_minute);
   EXPECT_EQ(1U, handler().recent_app_metadata_list_.size());
   EXPECT_EQ(next_minute, handler().recent_app_metadata_list_[0].second);
 
-  const base::Time next_hour =
-      base::Time::Now() + base::TimeDelta::FromHours(1);
+  const base::Time next_hour = base::Time::Now() + base::Hours(1);
   handler().NotifyRecentAppAddedOrUpdated(app_metadata2, next_hour);
   EXPECT_EQ(2U, handler().recent_app_metadata_list_.size());
 }
@@ -117,10 +118,8 @@ TEST_F(RecentAppsInteractionHandlerTest, FetchRecentAppMetadataList) {
       Notification::AppMetadata(app_visible_name3, package_name3, gfx::Image());
 
   const base::Time now = base::Time::Now();
-  const base::Time next_minute =
-      base::Time::Now() + base::TimeDelta::FromMinutes(1);
-  const base::Time next_hour =
-      base::Time::Now() + base::TimeDelta::FromHours(1);
+  const base::Time next_minute = base::Time::Now() + base::Minutes(1);
+  const base::Time next_hour = base::Time::Now() + base::Hours(1);
 
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
   handler().NotifyRecentAppAddedOrUpdated(app_metadata2, next_minute);
@@ -149,12 +148,9 @@ TEST_F(RecentAppsInteractionHandlerTest, FetchRecentAppMetadataList) {
   auto app_metadata6 =
       Notification::AppMetadata(app_visible_name6, package_name6, gfx::Image());
 
-  const base::Time next_two_hour =
-      base::Time::Now() + base::TimeDelta::FromHours(2);
-  const base::Time next_three_hour =
-      base::Time::Now() + base::TimeDelta::FromHours(3);
-  const base::Time next_four_hour =
-      base::Time::Now() + base::TimeDelta::FromHours(4);
+  const base::Time next_two_hour = base::Time::Now() + base::Hours(2);
+  const base::Time next_three_hour = base::Time::Now() + base::Hours(3);
+  const base::Time next_four_hour = base::Time::Now() + base::Hours(4);
 
   handler().NotifyRecentAppAddedOrUpdated(app_metadata4, next_two_hour);
   handler().NotifyRecentAppAddedOrUpdated(app_metadata5, next_three_hour);

@@ -93,6 +93,10 @@ const UIStrings = {
   */
   groupSimilarMessagesInConsole: 'Group similar messages in console',
   /**
+  *@description Title of a setting under the Console category that can be invoked through the Command Menu
+  */
+  showCorsErrorsInConsole: 'Show `CORS` errors in console',
+  /**
   * @description Tooltip for the the console sidebar toggle in the Console panel. Command to
   * open/show the sidebar.
   */
@@ -257,6 +261,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   private readonly showSettingsPaneButton: UI.Toolbar.ToolbarSettingToggle;
   private readonly progressToolbarItem: UI.Toolbar.ToolbarItem;
   private readonly groupSimilarSetting: Common.Settings.Setting<boolean>;
+  private readonly showCorsErrorsSetting: Common.Settings.Setting<boolean>;
   private readonly preserveLogCheckbox: UI.Toolbar.ToolbarSettingCheckbox;
   private readonly hideNetworkMessagesCheckbox: UI.Toolbar.ToolbarSettingCheckbox;
   private readonly timestampsSetting: Common.Settings.Setting<unknown>;
@@ -267,7 +272,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   private messagesCountElement: HTMLElement;
   private viewportThrottler: Common.Throttler.Throttler;
   private pendingBatchResize: boolean;
-  private readonly onMessageResizedBound: (e: Common.EventTarget.EventTargetEvent) => void;
+  private readonly onMessageResizedBound: (e: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void;
   private topGroup: ConsoleGroup;
   private currentGroup: ConsoleGroup;
   private readonly promptElement: HTMLElement;
@@ -366,6 +371,13 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.groupSimilarSetting.addChangeListener(() => this.updateMessageList());
     const groupSimilarToggle = new UI.Toolbar.ToolbarSettingCheckbox(
         this.groupSimilarSetting, i18nString(UIStrings.groupSimilarMessagesInConsole));
+    this.showCorsErrorsSetting = Common.Settings.Settings.instance().moduleSetting('consoleShowsCorsErrors');
+    this.showCorsErrorsSetting.addChangeListener(() => {
+      Host.userMetrics.showCorsErrorsSettingChanged(this.showCorsErrorsSetting.get());
+      this.updateMessageList();
+    });
+    const showCorsErrorsToggle = new UI.Toolbar.ToolbarSettingCheckbox(
+        this.showCorsErrorsSetting, i18nString(UIStrings.showCorsErrorsInConsole));
 
     const toolbar = new UI.Toolbar.Toolbar('console-main-toolbar', this.consoleToolbarContainer);
     toolbar.makeWrappable(true);
@@ -428,6 +440,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     settingsToolbarLeft.appendToolbarItem(this.preserveLogCheckbox);
     settingsToolbarLeft.appendToolbarItem(filterByExecutionContextCheckbox);
     settingsToolbarLeft.appendToolbarItem(groupSimilarToggle);
+    settingsToolbarLeft.appendToolbarItem(showCorsErrorsToggle);
 
     const settingsToolbarRight = new UI.Toolbar.Toolbar('', settingsPane.element);
     settingsToolbarRight.makeVertical();
@@ -475,7 +488,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
     this.viewportThrottler = new Common.Throttler.Throttler(50);
     this.pendingBatchResize = false;
-    this.onMessageResizedBound = (e: Common.EventTarget.EventTargetEvent): void => {
+    this.onMessageResizedBound = (e: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>): void => {
       this.onMessageResized(e);
     };
 
@@ -620,11 +633,9 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
 
   private registerWithMessageSink(): void {
     Common.Console.Console.instance().messages().forEach(this.addSinkMessage, this);
-    Common.Console.Console.instance().addEventListener(Common.Console.Events.MessageAdded, messageAdded, this);
-
-    function messageAdded(this: ConsoleView, event: Common.EventTarget.EventTargetEvent): void {
-      this.addSinkMessage((event.data as Common.Console.Message));
-    }
+    Common.Console.Console.instance().addEventListener(Common.Console.Events.MessageAdded, ({data: message}) => {
+      this.addSinkMessage(message);
+    }, this);
   }
 
   private addSinkMessage(message: Common.Console.Message): void {
@@ -864,6 +875,10 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
   }
 
   private appendMessageToEnd(viewMessage: ConsoleViewMessage, preventCollapse?: boolean): void {
+    if (viewMessage.consoleMessage().category === Protocol.Log.LogEntryCategory.Cors &&
+        !this.showCorsErrorsSetting.get()) {
+      return;
+    }
     if (!this.shouldMessageBeVisible(viewMessage)) {
       this.hiddenByFilterCount++;
       return;
@@ -930,8 +945,9 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     }
   }
 
-  private async onMessageResized(event: Common.EventTarget.EventTargetEvent): Promise<void> {
-    const treeElement = (event.data as UI.TreeOutline.TreeElement);
+  private async onMessageResized(event: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>):
+      Promise<void> {
+    const treeElement = event.data;
     if (this.pendingBatchResize || !treeElement.treeOutline) {
       return;
     }
@@ -1597,8 +1613,8 @@ export class ConsoleViewFilter {
     this.levelMenuButton.setTitle(i18nString(UIStrings.logLevelS, {PH1: text}));
   }
 
-  private showLevelContextMenu(event: Common.EventTarget.EventTargetEvent): void {
-    const mouseEvent = (event.data as Event);
+  private showLevelContextMenu(event: Common.EventTarget.EventTargetEvent<Event>): void {
+    const mouseEvent = event.data;
     const setting = this.messageLevelFiltersSetting;
     const levels = setting.get();
 

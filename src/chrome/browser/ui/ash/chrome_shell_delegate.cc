@@ -9,7 +9,6 @@
 
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/window_properties.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/command_line.h"
@@ -17,10 +16,11 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
+#include "chrome/browser/extensions/api/tabs/tabs_util.h"
 #include "chrome/browser/nearby_sharing/nearby_share_delegate_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
+#include "chrome/browser/ui/ash/desks_client.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/tab_scrubber.h"
@@ -48,11 +49,13 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
-#include "components/full_restore/app_launch_info.h"
-#include "components/full_restore/app_restore_data.h"
-#include "components/full_restore/full_restore_save_handler.h"
-#include "components/full_restore/full_restore_utils.h"
-#include "components/full_restore/restore_data.h"
+#include "components/app_restore/app_launch_info.h"
+#include "components/app_restore/app_restore_data.h"
+#include "components/app_restore/features.h"
+#include "components/app_restore/full_restore_save_handler.h"
+#include "components/app_restore/full_restore_utils.h"
+#include "components/app_restore/restore_data.h"
+#include "components/app_restore/window_properties.h"
 #include "components/ui_devtools/devtools_server.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/device_service.h"
@@ -103,13 +106,23 @@ std::vector<GURL> GetURLsIfApplicable(TabStripModel* tab_strip_model) {
 // Returns true if `window` is supported in desk templates feature.
 bool IsWindowSupportedForDeskTemplate(aura::Window* window,
                                       Profile* user_profile) {
-  // For now we'll ignore ARC, crostini and lacros windows in desk template.
+  // For now we'll crostini and lacros windows in desk template. We'll also
+  // ignore ARC apps unless the flag is turned on.
   const ash::AppType app_type =
       static_cast<ash::AppType>(window->GetProperty(aura::client::kAppType));
-  if (app_type != ash::AppType::BROWSER &&
-      app_type != ash::AppType::CHROME_APP &&
-      app_type != ash::AppType::SYSTEM_APP) {
-    return false;
+  switch (app_type) {
+    case ash::AppType::NON_APP:
+    case ash::AppType::CROSTINI_APP:
+    case ash::AppType::LACROS:
+      return false;
+    case ash::AppType::ARC_APP:
+      if (!app_restore::features::IsArcAppsForDesksTemplatesEnabled())
+        return false;
+      break;
+    case ash::AppType::BROWSER:
+    case ash::AppType::CHROME_APP:
+    case ash::AppType::SYSTEM_APP:
+      break;
   }
 
   DCHECK(user_profile);
@@ -206,47 +219,6 @@ int ChromeShellDelegate::GetBrowserWebUITabStripHeight() {
   return TabStripUILayout::GetContainerHeight();
 }
 
-aura::Window* ChromeShellDelegate::CreateBrowserForTabDrop(
-    aura::Window* source_window,
-    const ui::OSExchangeData& drop_data) {
-  DCHECK(ash::features::IsWebUITabStripTabDragIntegrationEnabled());
-
-  BrowserView* source_view = BrowserView::GetBrowserViewForNativeWindow(
-      source_window->GetToplevelWindow());
-  if (!source_view)
-    return nullptr;
-
-  Browser::CreateParams params = source_view->browser()->create_params();
-  params.user_gesture = true;
-  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
-  Browser* browser = Browser::Create(params);
-  if (!browser)
-    return nullptr;
-
-  if (!tab_strip_ui::DropTabsInNewBrowser(browser, drop_data)) {
-    browser->window()->Close();
-    return nullptr;
-  }
-
-  // TODO(https://crbug.com/1069869): evaluate whether the above
-  // failures can happen in valid states, and if so whether we need to
-  // reflect failure in UX.
-
-  // TODO(crbug.com/1225667): Loosen restriction for SplitViewController to be
-  // able to snap a window without calling Show(). It will simplify the logic
-  // without having to set and clear ash::kIsDraggingTabsKey by calling Show()
-  // after snapping the window to the right place.
-
-  // We need to mark the newly created window with |ash::kIsDraggingTabsKey|
-  // and clear it afterwards in order to prevent
-  // SplitViewController::AutoSnapController from snapping it on Show().
-  aura::Window* window = browser->window()->GetNativeWindow();
-  window->SetProperty(ash::kIsDraggingTabsKey, true);
-  browser->window()->Show();
-  window->ClearProperty(ash::kIsDraggingTabsKey);
-  return window;
-}
-
 void ChromeShellDelegate::BindBluetoothSystemFactory(
     mojo::PendingReceiver<device::mojom::BluetoothSystemFactory> receiver) {
   content::GetDeviceService().BindBluetoothSystemFactory(std::move(receiver));
@@ -333,7 +305,7 @@ base::FilePath ChromeShellDelegate::GetPrimaryUserDownloadsFolder() const {
   return base::FilePath();
 }
 
-std::unique_ptr<::full_restore::AppLaunchInfo>
+std::unique_ptr<app_restore::AppLaunchInfo>
 ChromeShellDelegate::GetAppLaunchDataForDeskTemplate(
     aura::Window* window) const {
   const user_manager::User* active_user =
@@ -349,7 +321,7 @@ ChromeShellDelegate::GetAppLaunchDataForDeskTemplate(
 
   // Get |full_restore_data| from FullRestoreSaveHandler which contains all
   // restoring information for all apps running on the device.
-  const full_restore::RestoreData* full_restore_data =
+  const app_restore::RestoreData* full_restore_data =
       full_restore::FullRestoreSaveHandler::GetInstance()->GetRestoreData(
           user_profile->GetPath());
   DCHECK(full_restore_data);
@@ -357,22 +329,22 @@ ChromeShellDelegate::GetAppLaunchDataForDeskTemplate(
   const std::string app_id = full_restore::GetAppId(window);
   DCHECK(!app_id.empty());
 
-  const int32_t window_id = window->GetProperty(full_restore::kWindowIdKey);
-  std::unique_ptr<full_restore::AppLaunchInfo> app_launch_info =
-      std::make_unique<full_restore::AppLaunchInfo>(app_id, window_id);
+  const int32_t window_id = window->GetProperty(app_restore::kWindowIdKey);
+  std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info =
+      std::make_unique<app_restore::AppLaunchInfo>(app_id, window_id);
   auto* tab_strip_model = GetTabstripModelForWindowIfAny(window);
   if (tab_strip_model) {
     app_launch_info->urls = GetURLsIfApplicable(tab_strip_model);
     app_launch_info->active_tab_index = tab_strip_model->active_index();
   }
   const std::string* app_name =
-      window->GetProperty(full_restore::kBrowserAppNameKey);
+      window->GetProperty(app_restore::kBrowserAppNameKey);
   if (app_name)
     app_launch_info->app_name = *app_name;
 
   // Read all other relevant app launching information from
   // |app_restore_data| to |app_launch_info|.
-  const full_restore::AppRestoreData* app_restore_data =
+  const app_restore::AppRestoreData* app_restore_data =
       full_restore_data->GetAppRestoreData(app_id, window_id);
   if (app_restore_data) {
     app_launch_info->app_type_browser = app_restore_data->app_type_browser;
@@ -410,6 +382,11 @@ void ChromeShellDelegate::OpenFeedbackPageForPersistentDesksBar() {
                              /*description_template=*/"#BentoBar\n\n");
 }
 
+void ChromeShellDelegate::SetPinnedFromExo(aura::Window* window,
+                                           chromeos::WindowPinType type) {
+  extensions::tabs_util::SetLockedFullscreenStateFromExo(window, type);
+}
+
 // static
 void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
   disable_logging_redirect_for_testing = value;
@@ -418,4 +395,8 @@ void ChromeShellDelegate::SetDisableLoggingRedirectForTesting(bool value) {
 // static
 void ChromeShellDelegate::ResetDisableLoggingRedirectForTesting() {
   disable_logging_redirect_for_testing.reset();
+}
+
+desks_storage::DeskModel* ChromeShellDelegate::GetDeskModel() {
+  return DesksClient::Get()->GetDeskModel();
 }

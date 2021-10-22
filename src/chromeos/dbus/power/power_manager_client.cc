@@ -171,6 +171,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
   PowerManagerClientImpl()
       : origin_thread_id_(base::PlatformThread::CurrentId()) {}
 
+  PowerManagerClientImpl(const PowerManagerClientImpl&) = delete;
+  PowerManagerClientImpl& operator=(const PowerManagerClientImpl&) = delete;
+
   ~PowerManagerClientImpl() override {
     // Here we should unregister suspend notifications from powerd,
     // however:
@@ -1011,7 +1014,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
       // Set |max_dark_suspend_delay_timeout_| to the minimum time power manager
       // guarantees before resuspending.
       max_dark_suspend_delay_timeout_ =
-          base::TimeDelta::FromMilliseconds(protobuf.min_delay_timeout_ms());
+          base::Milliseconds(protobuf.min_delay_timeout_ms());
 
       POWER_LOG(EVENT) << "Registered dark suspend delay "
                        << dark_suspend_delay_id_;
@@ -1251,8 +1254,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     has_dark_suspend_delay_id_ = false;
 
     power_manager::RegisterSuspendDelayRequest protobuf_request;
-    base::TimeDelta timeout =
-        base::TimeDelta::FromMilliseconds(kSuspendDelayTimeoutMs);
+    base::TimeDelta timeout = base::Milliseconds(kSuspendDelayTimeoutMs);
     protobuf_request.set_timeout(timeout.ToInternalValue());
     protobuf_request.set_description(kSuspendDelayDescription);
 
@@ -1385,8 +1387,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<PowerManagerClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(PowerManagerClientImpl);
 };
 
 PowerManagerClient::PowerManagerClient() {

@@ -4,6 +4,8 @@
 
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
@@ -150,8 +152,9 @@ TEST(StorageKeyTest, EquivalencePartitioned) {
   EXPECT_NE(TwoArgKey1_origin1_origin2, TwoArgKey_origin2_origin1);
 }
 
-// Test that StorageKeys Serialize to the expected value.
-TEST(StorageKeyTest, Serialize) {
+// Test that StorageKeys Serialize to the expected value. Both Serialize() and
+// SerializeForServiceWorker().
+TEST(StorageKeyTest, SerializeLegacy) {
   struct {
     const char* origin_str;
     const char* expected_serialization;
@@ -171,6 +174,46 @@ TEST(StorageKeyTest, Serialize) {
     SCOPED_TRACE(test.origin_str);
     StorageKey key(url::Origin::Create(GURL(test.origin_str)));
     EXPECT_EQ(test.expected_serialization, key.Serialize());
+    EXPECT_EQ(test.expected_serialization, key.SerializeForServiceWorker());
+  }
+}
+
+// Tests that the top-level site is correctly serialized for service workers
+// when kThirdPartyStoragePartitioning is enabled.
+TEST(StorageKeyTest, SerializeForServiceWorkerPartitioned) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      features::kThirdPartyStoragePartitioning);
+
+  net::SchemefulSite SiteExample(GURL("https://example.com"));
+  net::SchemefulSite SiteTest(GURL("https://test.example"));
+  net::SchemefulSite SiteFile(GURL("file:///"));
+
+  struct {
+    const std::pair<const char*, const net::SchemefulSite&>
+        origin_and_top_level_site;
+    const char* expected_serialization;
+  } kTestCases[] = {
+      // 1p context case.
+      {{"https://example.com/", SiteExample}, "https://example.com/"},
+      {{"https://test.example", SiteTest}, "https://test.example/"},
+      {{"https://sub.test.example/", SiteTest}, "https://sub.test.example/"},
+      // 3p context case
+      {{"https://example.com/", SiteTest},
+       "https://example.com/^https://test.example"},
+      {{"https://sub.test.example/", SiteExample},
+       "https://sub.test.example/^https://example.com"},
+      // File case.
+      {{"file:///foo/bar", SiteFile}, "file:///"},
+  };
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.origin_and_top_level_site.first);
+    const url::Origin origin =
+        url::Origin::Create(GURL(test.origin_and_top_level_site.first));
+    const net::SchemefulSite& site = test.origin_and_top_level_site.second;
+    StorageKey key(origin, site);
+    EXPECT_EQ(test.expected_serialization, key.SerializeForServiceWorker());
   }
 }
 
@@ -214,6 +257,51 @@ TEST(StorageKeyTest, Deserialize) {
   EXPECT_FALSE(IsOpaque(*key2));
   EXPECT_FALSE(key3.has_value());
   EXPECT_FALSE(key4.has_value());
+}
+
+// Test that deserialized service worker StorageKeys are valid/opaque as
+// expected.
+TEST(StorageKeyTest, DeserializeForServiceWorker) {
+  std::string example = "https://example.com/";
+  std::string test = "https://test.example/";
+  std::string wrong = "I'm not a valid URL.";
+
+  absl::optional<StorageKey> key1 =
+      StorageKey::DeserializeForServiceWorker(example);
+  absl::optional<StorageKey> key2 =
+      StorageKey::DeserializeForServiceWorker(test);
+  absl::optional<StorageKey> key3 =
+      StorageKey::DeserializeForServiceWorker(wrong);
+  absl::optional<StorageKey> key4 =
+      StorageKey::DeserializeForServiceWorker(std::string());
+
+  ASSERT_TRUE(key1.has_value());
+  EXPECT_FALSE(IsOpaque(*key1));
+  ASSERT_TRUE(key2.has_value());
+  EXPECT_FALSE(IsOpaque(*key2));
+  EXPECT_FALSE(key3.has_value());
+  EXPECT_FALSE(key4.has_value());
+
+  std::string example_with_test = "https://example.com/^https://test.example";
+  std::string test_with_example = "https://test.example/^https://example.com";
+  std::string example_with_wrong = "https://example.com/^I'm not a valid URL.";
+  std::string wrong_with_example = "I'm not a valid URL.^https://example.com";
+
+  absl::optional<StorageKey> key5 =
+      StorageKey::DeserializeForServiceWorker(example_with_test);
+  absl::optional<StorageKey> key6 =
+      StorageKey::DeserializeForServiceWorker(test_with_example);
+  absl::optional<StorageKey> key7 =
+      StorageKey::DeserializeForServiceWorker(example_with_wrong);
+  absl::optional<StorageKey> key8 =
+      StorageKey::DeserializeForServiceWorker(wrong_with_example);
+
+  ASSERT_TRUE(key5.has_value());
+  EXPECT_FALSE(IsOpaque(*key5));
+  ASSERT_TRUE(key6.has_value());
+  EXPECT_FALSE(IsOpaque(*key6));
+  EXPECT_FALSE(key7.has_value());
+  EXPECT_FALSE(key8.has_value());
 }
 
 // Test that string -> StorageKey test function performs as expected.
@@ -263,6 +351,79 @@ TEST(StorageKeyTest, SerializeDeserialize) {
   }
 }
 
+// Test that a StorageKey, constructed by deserializing another serialized
+// StorageKey, is equivalent to the original for service workers.
+TEST(StorageKeyTest, SerializeDeserializeForServiceWorkers) {
+  const char* kTestCases[] = {"https://example.com", "https://sub.test.example",
+                              "file://", "file://example.fileshare.com"};
+
+  for (const char* test : kTestCases) {
+    SCOPED_TRACE(test);
+    url::Origin origin = url::Origin::Create(GURL(test));
+    StorageKey key(origin);
+    std::string key_string = key.SerializeForServiceWorker();
+    absl::optional<StorageKey> key_deserialized =
+        StorageKey::DeserializeForServiceWorker(key_string);
+
+    ASSERT_TRUE(key_deserialized.has_value());
+    if (origin.scheme() != "file") {
+      EXPECT_EQ(key, *key_deserialized);
+    } else {
+      // file origins are all collapsed to file:// by serialization.
+      EXPECT_EQ(StorageKey(url::Origin::Create(GURL("file://"))),
+                *key_deserialized);
+    }
+  }
+}
+
+// Same as SerializeDeserializeForServiceWorkers but for partitioned StorageKeys
+// when kThirdPartyStoragePartitioning is enabled.
+TEST(StorageKeyTest, SerializeDeserializeForServiceWorkersPartitioned) {
+  base::test::ScopedFeatureList scope_feature_list;
+  scope_feature_list.InitAndEnableFeature(
+      features::kThirdPartyStoragePartitioning);
+
+  net::SchemefulSite SiteExample(GURL("https://example.com"));
+  net::SchemefulSite SiteTest(GURL("https://test.example"));
+  net::SchemefulSite SiteFile(GURL("file:///"));
+
+  struct {
+    const char* origin;
+    const net::SchemefulSite& site;
+  } kTestCases[] = {
+      // 1p context case.
+      {"https://example.com/", SiteExample},
+      {"https://test.example", SiteTest},
+      {"https://sub.test.example/", SiteTest},
+      // 3p context case
+      {"https://example.com/", SiteTest},
+      {"https://sub.test.example/", SiteExample},
+      // File case.
+      {"file:///foo/bar", SiteFile},
+  };
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.origin);
+    url::Origin origin = url::Origin::Create(GURL(test.origin));
+    const net::SchemefulSite& site = test.site;
+
+    StorageKey key(origin, site);
+    std::string key_string = key.SerializeForServiceWorker();
+    absl::optional<StorageKey> key_deserialized =
+        StorageKey::DeserializeForServiceWorker(key_string);
+    ASSERT_TRUE(key_deserialized.has_value());
+
+    if (origin.scheme() != "file") {
+      EXPECT_EQ(key, *key_deserialized);
+    } else {
+      // file origins are all collapsed to file:// by serialization.
+      EXPECT_EQ(StorageKey(url::Origin::Create(GURL("file://")),
+                           net::SchemefulSite(GURL("file://"))),
+                *key_deserialized);
+    }
+  }
+}
+
 TEST(StorageKeyTest, IsThirdPartyStoragePartitioningEnabled) {
   EXPECT_FALSE(StorageKey::IsThirdPartyStoragePartitioningEnabled());
   base::test::ScopedFeatureList scoped_feature_list;
@@ -303,6 +464,95 @@ TEST(StorageKeyTest, TopLevelSiteGetterWithPartitioningEnabled) {
   EXPECT_EQ(net::SchemefulSite(origin1), key_origin1.top_level_site());
   EXPECT_EQ(net::SchemefulSite(origin1), key_origin1_site1.top_level_site());
   EXPECT_EQ(net::SchemefulSite(origin2), key_origin1_site2.top_level_site());
+}
+
+TEST(StorageKeyTest, IsThirdPartyContext) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kThirdPartyStoragePartitioning);
+
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.com"));
+  const url::Origin kInsecureOrigin =
+      url::Origin::Create(GURL("http://www.foo.com"));
+  const url::Origin kSubdomainOrigin =
+      url::Origin::Create(GURL("https://bar.foo.com"));
+  const url::Origin kDifferentSite =
+      url::Origin::Create(GURL("https://www.bar.com"));
+
+  struct TestCase {
+    const url::Origin origin;
+    const url::Origin top_level_origin;
+    const bool expected;
+    const bool has_nonce = false;
+  } test_cases[] = {
+      {kOrigin, kOrigin, false},          {kOrigin, kInsecureOrigin, true},
+      {kOrigin, kSubdomainOrigin, false}, {kOrigin, kDifferentSite, true},
+      {kOrigin, kOrigin, true, true},
+  };
+  for (const auto& test_case : test_cases) {
+    if (test_case.has_nonce) {
+      StorageKey key = StorageKey::CreateWithNonce(
+          test_case.origin, base::UnguessableToken::Create());
+      EXPECT_EQ(test_case.expected, key.IsThirdPartyContext());
+      EXPECT_NE(key.IsThirdPartyContext(), key.IsFirstPartyContext());
+      continue;
+    }
+    StorageKey key(test_case.origin, test_case.top_level_origin);
+    EXPECT_EQ(test_case.expected, key.IsThirdPartyContext());
+    EXPECT_NE(key.IsThirdPartyContext(), key.IsFirstPartyContext());
+    // IsThirdPartyContext should not depend on the order of the arguments.
+    key = StorageKey(test_case.top_level_origin, test_case.origin);
+    EXPECT_EQ(test_case.expected, key.IsThirdPartyContext());
+    EXPECT_NE(key.IsThirdPartyContext(), key.IsFirstPartyContext());
+  }
+}
+
+TEST(StorageKeyTest, ToNetSiteForCookies) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kThirdPartyStoragePartitioning);
+
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://www.foo.com"));
+  const url::Origin kInsecureOrigin =
+      url::Origin::Create(GURL("http://www.foo.com"));
+  const url::Origin kSubdomainOrigin =
+      url::Origin::Create(GURL("https://bar.foo.com"));
+  const url::Origin kDifferentSite =
+      url::Origin::Create(GURL("https://www.bar.com"));
+
+  struct TestCase {
+    const url::Origin origin;
+    const url::Origin top_level_origin;
+    const net::SchemefulSite expected;
+    const bool expected_opaque = false;
+    const bool has_nonce = false;
+  } test_cases[] = {
+      {kOrigin, kOrigin, net::SchemefulSite(kOrigin)},
+      {kOrigin, kInsecureOrigin, net::SchemefulSite(kInsecureOrigin)},
+      {kInsecureOrigin, kOrigin, net::SchemefulSite(kOrigin)},
+      {kOrigin, kSubdomainOrigin, net::SchemefulSite(kOrigin)},
+      {kSubdomainOrigin, kOrigin, net::SchemefulSite(kOrigin)},
+      {kOrigin, kDifferentSite, net::SchemefulSite(), true},
+      {kOrigin, kOrigin, net::SchemefulSite(), true, true},
+  };
+  for (const auto& test_case : test_cases) {
+    net::SchemefulSite got_site;
+    if (test_case.has_nonce) {
+      got_site = StorageKey::CreateWithNonce(test_case.origin,
+                                             base::UnguessableToken::Create())
+                     .ToNetSiteForCookies()
+                     .site();
+    } else {
+      got_site = StorageKey(test_case.origin, test_case.top_level_origin)
+                     .ToNetSiteForCookies()
+                     .site();
+    }
+    if (test_case.expected_opaque) {
+      EXPECT_TRUE(got_site.opaque());
+      continue;
+    }
+    EXPECT_EQ(test_case.expected, got_site);
+  }
 }
 
 }  // namespace blink

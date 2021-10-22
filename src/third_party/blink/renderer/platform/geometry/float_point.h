@@ -38,7 +38,7 @@
 #include "third_party/skia/include/core/SkPoint.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_f.h"
-#include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 #if defined(OS_MAC)
 typedef struct CGPoint CGPoint;
@@ -136,9 +136,6 @@ class PLATFORM_EXPORT FloatPoint {
     return gfx::Vector2dF(x_, y_);
   }
   explicit operator SkPoint() const { return SkPoint::Make(x_, y_); }
-  explicit operator gfx::ScrollOffset() const {
-    return gfx::ScrollOffset(x_, y_);
-  }
   operator gfx::Point3F() const { return gfx::Point3F(x_, y_, 0.f); }
 
   String ToString() const;
@@ -215,27 +212,27 @@ inline float operator*(const FloatPoint& a, const FloatPoint& b) {
 }
 
 inline IntPoint RoundedIntPoint(const FloatPoint& p) {
-  return IntPoint(clampTo<int>(roundf(p.X())), clampTo<int>(roundf(p.Y())));
+  return IntPoint(ClampTo<int>(roundf(p.X())), ClampTo<int>(roundf(p.Y())));
 }
 
 inline IntSize RoundedIntSize(const FloatPoint& p) {
-  return IntSize(clampTo<int>(roundf(p.X())), clampTo<int>(roundf(p.Y())));
+  return IntSize(ClampTo<int>(roundf(p.X())), ClampTo<int>(roundf(p.Y())));
 }
 
 inline IntPoint FlooredIntPoint(const FloatPoint& p) {
-  return IntPoint(clampTo<int>(floorf(p.X())), clampTo<int>(floorf(p.Y())));
+  return IntPoint(ClampTo<int>(floorf(p.X())), ClampTo<int>(floorf(p.Y())));
 }
 
 inline IntPoint FlooredIntPoint(const gfx::PointF& p) {
-  return IntPoint(clampTo<int>(floorf(p.x())), clampTo<int>(floorf(p.y())));
+  return IntPoint(ClampTo<int>(floorf(p.x())), ClampTo<int>(floorf(p.y())));
 }
 
 inline IntPoint CeiledIntPoint(const FloatPoint& p) {
-  return IntPoint(clampTo<int>(ceilf(p.X())), clampTo<int>(ceilf(p.Y())));
+  return IntPoint(ClampTo<int>(ceilf(p.X())), ClampTo<int>(ceilf(p.Y())));
 }
 
 inline IntSize FlooredIntSize(const FloatPoint& p) {
-  return IntSize(clampTo<int>(floorf(p.X())), clampTo<int>(floorf(p.Y())));
+  return IntSize(ClampTo<int>(floorf(p.X())), ClampTo<int>(floorf(p.Y())));
 }
 
 inline FloatSize ToFloatSize(const FloatPoint& a) {

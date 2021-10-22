@@ -18,17 +18,16 @@
 #include "VkBuffer.hpp"
 #include "VkDevice.hpp"
 #include "VkDeviceMemory.hpp"
-#include "VkDeviceMemoryExternalBase.hpp"
 #include "VkImage.hpp"
 
 #include <vndk/hardware_buffer.h>
 
-class AHardwareBufferExternalMemory : public vk::DeviceMemory::ExternalBase
+class AHardwareBufferExternalMemory : public vk::DeviceMemory, public vk::ObjectBase<AHardwareBufferExternalMemory, VkDeviceMemory>
 {
 public:
-	// Helper struct to used the parse allocation info and extract
-	// relevant information related to the handle type supported
-	// by this DeviceMemory::ExternalBase subclass.
+	// Helper struct which reads the parsed allocation info and
+	// extracts relevant information related to the handle type
+	// supported by this DeviceMemory subclass.
 	struct AllocateInfo
 	{
 		bool importAhb = false;
@@ -39,7 +38,7 @@ public:
 
 		AllocateInfo() = default;
 
-		// Used the parsed allocation info to initialize a AllocateInfo.
+		// Use the parsed allocation info to initialize a AllocateInfo.
 		AllocateInfo(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo);
 	};
 
@@ -51,17 +50,15 @@ public:
 		return info.importAhb || info.exportAhb;
 	}
 
-	explicit AHardwareBufferExternalMemory(const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo);
+	explicit AHardwareBufferExternalMemory(const VkMemoryAllocateInfo *pCreateInfo, void *mem, const vk::DeviceMemory::ExtendedAllocationInfo &extendedAllocationInfo, vk::Device *pDevice);
 	~AHardwareBufferExternalMemory();
 
-	VkResult allocate(size_t size, void **pBuffer) override;
-	void deallocate(void *buffer, size_t size) override;
+	VkResult allocateBuffer() override;
+	void freeBuffer() override;
 
 	VkExternalMemoryHandleTypeFlagBits getFlagBit() const override { return typeFlagBit; }
 
-	VkResult exportAndroidHardwareBuffer(AHardwareBuffer **pAhb) const;
-
-	void setDevicePtr(vk::Device *pDevice) override { device = pDevice; }
+	virtual VkResult exportAndroidHardwareBuffer(AHardwareBuffer **pAhb) const override final;
 
 	static VkFormat GetVkFormatFromAHBFormat(uint32_t ahbFormat);
 	static VkResult GetAndroidHardwareBufferFormatProperties(const AHardwareBuffer_Desc &ahbDesc, VkAndroidHardwareBufferFormatPropertiesANDROID *pFormat);

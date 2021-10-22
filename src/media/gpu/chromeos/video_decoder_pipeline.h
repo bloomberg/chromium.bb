@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "media/base/cdm_context.h"
 #include "media/base/supported_video_decoder_config.h"
 #include "media/base/video_decoder.h"
@@ -93,6 +94,10 @@ class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
       std::unique_ptr<MediaLog> media_log,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       base::WeakPtr<VideoDecoderMixin::Client> client);
+
+  VideoDecoderMixin(const VideoDecoderMixin&) = delete;
+  VideoDecoderMixin& operator=(const VideoDecoderMixin&) = delete;
+
   ~VideoDecoderMixin() override;
 
   // After DecoderInterface calls |prepare_change_resolution_cb| passed
@@ -114,8 +119,6 @@ class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
 
   // The WeakPtr client instance, bound to |decoder_task_runner_|.
   base::WeakPtr<VideoDecoderMixin::Client> client_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderMixin);
 };
 
 class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,

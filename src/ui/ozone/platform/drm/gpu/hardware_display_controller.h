@@ -33,8 +33,7 @@ namespace ui {
 
 // The maximum amount of time we will wait for a new modeset attempt before we
 // crash the GPU process.
-constexpr base::TimeDelta kWaitForModesetTimeout =
-    base::TimeDelta::FromSeconds(15);
+constexpr base::TimeDelta kWaitForModesetTimeout = base::Seconds(15);
 
 class CrtcController;
 class DrmFramebuffer;
@@ -99,6 +98,11 @@ class HardwareDisplayController {
  public:
   HardwareDisplayController(std::unique_ptr<CrtcController> controller,
                             const gfx::Point& origin);
+
+  HardwareDisplayController(const HardwareDisplayController&) = delete;
+  HardwareDisplayController& operator=(const HardwareDisplayController&) =
+      delete;
+
   ~HardwareDisplayController();
 
   // Gets the props required to modeset a CRTC with a |mode| onto
@@ -227,8 +231,6 @@ class HardwareDisplayController {
   int16_t failed_page_flip_counter_ = 0;
 
   base::WeakPtrFactory<HardwareDisplayController> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };
 
 }  // namespace ui

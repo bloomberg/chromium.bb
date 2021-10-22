@@ -173,6 +173,11 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       trust_token_redemption_policy_(params->trust_token_redemption_policy),
       isolation_info_(params->isolation_info),
       debug_tag_(params->debug_tag),
+      cross_origin_embedder_policy_(
+          params->client_security_state
+              ? params->client_security_state->cross_origin_embedder_policy
+              : CrossOriginEmbedderPolicy()),
+      coep_reporter_(std::move(params->coep_reporter)),
       origin_access_list_(origin_access_list) {
   DCHECK(context_);
   DCHECK(origin_access_list_);
@@ -260,7 +265,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         context_->GetWebBundleManager().CreateWebBundleURLLoaderFactory(
             resource_request.url, *resource_request.web_bundle_token_params,
             process_id_, std::move(devtools_observer),
-            resource_request.devtools_request_id);
+            resource_request.devtools_request_id, cross_origin_embedder_policy_,
+            coep_reporter());
     client = web_bundle_url_loader_factory->MaybeWrapURLLoaderClient(
         std::move(client));
     if (!client)
@@ -504,6 +510,18 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
        base::EqualsCaseInsensitiveASCII(
            request.method, net::HttpRequestHeaders::kConnectMethod))) {
     mojo::ReportBadMessage("CorsURLLoaderFactory: Forbidden method");
+    return false;
+  }
+
+  // |net_log_params| field is expected to be used within network service.
+  if (request.net_log_params.has_value()) {
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: net_log_params field is not expected.");
+  }
+
+  if (request.target_ip_address_space != mojom::IPAddressSpace::kUnknown) {
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: target_ip_address_space field is set");
     return false;
   }
 

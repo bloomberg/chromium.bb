@@ -67,6 +67,9 @@ class ArcImeService : public KeyedService,
   ArcImeService(content::BrowserContext* context,
                 ArcBridgeService* bridge_service);
 
+  ArcImeService(const ArcImeService&) = delete;
+  ArcImeService& operator=(const ArcImeService&) = delete;
+
   ~ArcImeService() override;
 
   // Injects the custom IPC bridge object for testing purpose only.
@@ -160,6 +163,9 @@ class ArcImeService : public KeyedService,
   bool AddGrammarFragments(
       const std::vector<ui::GrammarFragment>& fragments) override;
   void OnDispatchingKeyEventPostIME(ui::KeyEvent* event) override;
+  void GetActiveTextInputControlLayoutBounds(
+      absl::optional<gfx::Rect>* control_bounds,
+      absl::optional<gfx::Rect>* selection_bounds) override {}
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.
@@ -214,8 +220,6 @@ class ArcImeService : public KeyedService,
   aura::Window* focused_arc_window_ = nullptr;
 
   std::unique_ptr<KeyEventResultReceiver> receiver_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcImeService);
 };
 
 }  // namespace arc

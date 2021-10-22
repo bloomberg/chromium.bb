@@ -45,8 +45,7 @@ namespace {
 // ensure that Mirror account consistency is respected in light of the more
 // restrictive Intelligent Tracking Prevention (ITP) guidelines in iOS 14
 // that may remove or invalidate Gaia cookies on the Google domain.
-constexpr base::TimeDelta kDelayThresholdToUpdateGaiaCookie =
-    base::TimeDelta::FromHours(1);
+constexpr base::TimeDelta kDelayThresholdToUpdateGaiaCookie = base::Hours(1);
 
 const char* kGoogleUrl = "https://google.com";
 const char* kYoutubeUrl = "https://youtube.com";
@@ -90,7 +89,7 @@ base::TimeDelta GetDelayThresholdToUpdateGaiaCookie() {
         signin::kDelayThresholdMinutesToUpdateGaiaCookie);
     int commandLineDelay = 0;
     if (base::StringToInt(delayString, &commandLineDelay)) {
-      return base::TimeDelta::FromMinutes(commandLineDelay);
+      return base::Minutes(commandLineDelay);
     }
   }
   return kDelayThresholdToUpdateGaiaCookie;
@@ -127,13 +126,13 @@ class AccountConsistencyService::AccountConsistencyHandler
   // web::WebStatePolicyDecider override.
   void ShouldAllowRequest(
       NSURLRequest* request,
-      const web::WebStatePolicyDecider::RequestInfo& request_info,
+      web::WebStatePolicyDecider::RequestInfo request_info,
       web::WebStatePolicyDecider::PolicyDecisionCallback callback) override;
   // Decides on navigation corresponding to |response| whether the navigation
   // should continue and updates authentication cookies on Google domains.
   void ShouldAllowResponse(
       NSURLResponse* response,
-      bool for_main_frame,
+      web::WebStatePolicyDecider::ResponseInfo response_info,
       web::WebStatePolicyDecider::PolicyDecisionCallback callback) override;
   void WebStateDestroyed() override;
 
@@ -167,7 +166,7 @@ AccountConsistencyService::AccountConsistencyHandler::AccountConsistencyHandler(
 
 void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowRequest(
     NSURLRequest* request,
-    const web::WebStatePolicyDecider::RequestInfo& request_info,
+    web::WebStatePolicyDecider::RequestInfo request_info,
     web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   GURL url = net::GURLWithNSURL(request.URL);
   if (base::FeatureList::IsEnabled(signin::kRestoreGaiaCookiesOnUserAction) &&
@@ -185,7 +184,7 @@ void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowRequest(
 
 void AccountConsistencyService::AccountConsistencyHandler::ShouldAllowResponse(
     NSURLResponse* response,
-    bool for_main_frame,
+    web::WebStatePolicyDecider::ResponseInfo response_info,
     web::WebStatePolicyDecider::PolicyDecisionCallback callback) {
   NSHTTPURLResponse* http_response =
       base::mac::ObjCCast<NSHTTPURLResponse>(response);
@@ -367,6 +366,7 @@ BOOL AccountConsistencyService::RestoreGaiaCookies(
     cookie_manager->GetCookieList(
         GaiaUrls::GetInstance()->secure_google_url(),
         net::CookieOptions::MakeAllInclusive(),
+        net::CookiePartitionKeychain::Todo(),
         base::BindOnce(
             &AccountConsistencyService::TriggerGaiaCookieChangeIfDeleted,
             base::Unretained(this), std::move(cookies_restored_callback)));
@@ -496,8 +496,7 @@ void AccountConsistencyService::SetChromeConnectedCookieWithUrl(
           /*creation_time=*/base::Time::Now(),
           // Create expiration date of Now+2y to roughly follow the SAPISID
           // cookie.
-          /*expiration_time=*/base::Time::Now() +
-              base::TimeDelta::FromDays(730),
+          /*expiration_time=*/base::Time::Now() + base::Days(730),
           /*last_access_time=*/base::Time(),
           /*secure=*/true,
           /*httponly=*/false, net::CookieSameSite::LAX_MODE,

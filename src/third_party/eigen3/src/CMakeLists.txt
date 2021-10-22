@@ -1,6 +1,19 @@
 # cmake_minimum_require must be the first command of the file
 cmake_minimum_required(VERSION 3.5.0)
 
+# NOTE Remove setting the policy once the minimum required CMake version is
+# increased to at least 3.15. Retain enabling the export to package registry.
+if (POLICY CMP0090)
+  # The export command does not populate package registry by default
+  cmake_policy (SET CMP0090 NEW)
+
+  # Unless otherwise specified, always export to package registry to ensure
+  # backwards compatibility.
+  if (NOT DEFINED CMAKE_EXPORT_PACKAGE_REGISTRY)
+    set (CMAKE_EXPORT_PACKAGE_REGISTRY ON)
+  endif (NOT DEFINED CMAKE_EXPORT_PACKAGE_REGISTRY)
+endif (POLICY CMP0090)
+
 project(Eigen3)
 
 set(CMAKE_CXX_STANDARD 11 CACHE STRING "Default C++ standard")
@@ -569,16 +582,12 @@ set ( EIGEN_VERSION_STRING ${EIGEN_VERSION_NUMBER} )
 set ( EIGEN_VERSION_MAJOR  ${EIGEN_WORLD_VERSION} )
 set ( EIGEN_VERSION_MINOR  ${EIGEN_MAJOR_VERSION} )
 set ( EIGEN_VERSION_PATCH  ${EIGEN_MINOR_VERSION} )
-set ( EIGEN_DEFINITIONS "")
-set ( EIGEN_INCLUDE_DIR "${CMAKE_INSTALL_PREFIX}/${INCLUDE_INSTALL_DIR}" )
-set ( EIGEN_ROOT_DIR ${CMAKE_INSTALL_PREFIX} )
 
 include (CMakePackageConfigHelpers)
 
 # Imported target support
 add_library (eigen INTERFACE)
 add_library (Eigen3::Eigen ALIAS eigen)
-target_compile_definitions (eigen INTERFACE ${EIGEN_DEFINITIONS})
 target_include_directories (eigen INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
@@ -592,20 +601,30 @@ install (TARGETS eigen EXPORT Eigen3Targets)
 configure_package_config_file (
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Eigen3Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/Eigen3Config.cmake
-  PATH_VARS EIGEN_INCLUDE_DIR EIGEN_ROOT_DIR
   INSTALL_DESTINATION ${CMAKEPACKAGE_INSTALL_DIR}
+  NO_SET_AND_CHECK_MACRO # Eigen does not provide legacy style defines
   NO_CHECK_REQUIRED_COMPONENTS_MACRO # Eigen does not provide components
 )
-# Remove CMAKE_SIZEOF_VOID_P from Eigen3ConfigVersion.cmake since Eigen does
-# not depend on architecture specific settings or libraries. More
-# specifically, an Eigen3Config.cmake generated from a 64 bit target can be
-# used for 32 bit targets as well (and vice versa).
-set (_Eigen3_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
-unset (CMAKE_SIZEOF_VOID_P)
-write_basic_package_version_file (Eigen3ConfigVersion.cmake
-                                  VERSION ${EIGEN_VERSION_NUMBER}
-                                  COMPATIBILITY SameMajorVersion)
-set (CMAKE_SIZEOF_VOID_P ${_Eigen3_CMAKE_SIZEOF_VOID_P})
+
+# NOTE Remove the first code path once the minimum required CMake version is
+# bumped to 3.14 or above.
+if (CMAKE_VERSION VERSION_LESS 3.14)
+  # Remove CMAKE_SIZEOF_VOID_P from Eigen3ConfigVersion.cmake since Eigen does
+  # not depend on architecture specific settings or libraries. More
+  # specifically, an Eigen3Config.cmake generated from a 64 bit target can be
+  # used for 32 bit targets as well (and vice versa).
+  set (_Eigen3_CMAKE_SIZEOF_VOID_P ${CMAKE_SIZEOF_VOID_P})
+  unset (CMAKE_SIZEOF_VOID_P)
+  write_basic_package_version_file (Eigen3ConfigVersion.cmake
+                                    VERSION ${EIGEN_VERSION_NUMBER}
+                                    COMPATIBILITY SameMajorVersion)
+  set (CMAKE_SIZEOF_VOID_P ${_Eigen3_CMAKE_SIZEOF_VOID_P})
+else (CMAKE_VERSION VERSION_LESS 3.14)
+  write_basic_package_version_file (Eigen3ConfigVersion.cmake
+                                    VERSION ${EIGEN_VERSION_NUMBER}
+                                    COMPATIBILITY SameMajorVersion
+                                    ARCH_INDEPENDENT)
+endif (CMAKE_VERSION VERSION_LESS 3.14)
 
 # The Eigen target will be located in the Eigen3 namespace. Other CMake
 # targets can refer to it using Eigen3::Eigen.
@@ -616,10 +635,9 @@ export (PACKAGE Eigen3)
 
 install (EXPORT Eigen3Targets NAMESPACE Eigen3:: DESTINATION ${CMAKEPACKAGE_INSTALL_DIR})
 
-install ( FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/UseEigen3.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/Eigen3Config.cmake
-                ${CMAKE_CURRENT_BINARY_DIR}/Eigen3ConfigVersion.cmake
-          DESTINATION ${CMAKEPACKAGE_INSTALL_DIR} )
+install (FILES ${CMAKE_CURRENT_BINARY_DIR}/Eigen3Config.cmake
+               ${CMAKE_CURRENT_BINARY_DIR}/Eigen3ConfigVersion.cmake
+         DESTINATION ${CMAKEPACKAGE_INSTALL_DIR})
 
 # Add uninstall target
 add_custom_target ( uninstall

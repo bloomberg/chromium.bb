@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
@@ -56,6 +55,7 @@
 #include "services/network/data_pipe_element_reader.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
+#include "services/network/private_network_access_check.h"
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/corb/orb_impl.h"
@@ -182,12 +182,13 @@ class BytesElementReader : public net::UploadBytesElementReader {
                                       element.AsStringPiece().size()),
         resource_request_body_(resource_request_body) {}
 
+  BytesElementReader(const BytesElementReader&) = delete;
+  BytesElementReader& operator=(const BytesElementReader&) = delete;
+
   ~BytesElementReader() override {}
 
  private:
   scoped_refptr<ResourceRequestBody> resource_request_body_;
-
-  DISALLOW_COPY_AND_ASSIGN(BytesElementReader);
 };
 
 // A subclass of net::UploadFileElementReader which owns
@@ -208,12 +209,13 @@ class FileElementReader : public net::UploadFileElementReader {
                                      element.expected_modification_time()),
         resource_request_body_(resource_request_body) {}
 
+  FileElementReader(const FileElementReader&) = delete;
+  FileElementReader& operator=(const FileElementReader&) = delete;
+
   ~FileElementReader() override {}
 
  private:
   scoped_refptr<ResourceRequestBody> resource_request_body_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileElementReader);
 };
 
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
@@ -402,7 +404,13 @@ std::vector<mojom::WebClientHintsType> ComputeAcceptCHFrameHints(
   // Only look at/add headers that aren't already present.
   std::vector<mojom::WebClientHintsType> hints;
   for (auto hint : maybe_hints.value()) {
-    const char* header = kClientHintsNameMapping[static_cast<int>(hint)];
+    // ResourceWidth is only for images, which won't trigger a restart.
+    if (hint == mojom::WebClientHintsType::kResourceWidth ||
+        hint == mojom::WebClientHintsType::kResourceWidth_DEPRECATED) {
+      continue;
+    }
+
+    const std::string header = GetClientHintToNameMap().at(hint);
     if (!headers.HasHeader(header))
       hints.push_back(hint);
   }
@@ -498,6 +506,7 @@ URLLoader::URLLoader(
       custom_proxy_pre_cache_headers_(request.custom_proxy_pre_cache_headers),
       custom_proxy_post_cache_headers_(request.custom_proxy_post_cache_headers),
       fetch_window_id_(request.fetch_window_id),
+      target_ip_address_space_(request.target_ip_address_space),
       trust_token_helper_factory_(std::move(trust_token_helper_factory)),
       origin_access_list_(origin_access_list),
       cookie_observer_(std::move(cookie_observer)),
@@ -532,7 +541,12 @@ URLLoader::URLLoader(
   receiver_.set_disconnect_handler(
       base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
   url_request_ = url_request_context_->CreateRequest(
-      GURL(request.url), request.priority, this, traffic_annotation);
+      GURL(request.url), request.priority, this, traffic_annotation,
+      /*is_for_websockets=*/false,
+      request.net_log_params
+          ? absl::make_optional(request.net_log_params->source_id)
+          : absl::nullopt);
+
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
   if (ShouldForceIgnoreSiteForCookies(request))
@@ -675,6 +689,9 @@ class URLLoader::FileOpenerForUpload {
     StartOpeningNextBatch();
   }
 
+  FileOpenerForUpload(const FileOpenerForUpload&) = delete;
+  FileOpenerForUpload& operator=(const FileOpenerForUpload&) = delete;
+
   ~FileOpenerForUpload() {
     if (!opened_files_.empty())
       PostCloseFiles(std::move(opened_files_));
@@ -717,7 +734,7 @@ class URLLoader::FileOpenerForUpload {
   static void PostCloseFiles(std::vector<base::File> opened_files) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(base::DoNothing::Once<std::vector<base::File>>(),
+        base::BindOnce([](std::vector<base::File>) {},
                        std::move(opened_files)));
   }
 
@@ -753,8 +770,6 @@ class URLLoader::FileOpenerForUpload {
   std::vector<base::File> opened_files_;
 
   base::WeakPtrFactory<FileOpenerForUpload> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FileOpenerForUpload);
 };
 
 void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
@@ -1002,29 +1017,8 @@ void URLLoader::ResumeReadingBodyFromNet() {
   }
 }
 
-// static.
-bool URLLoader::PrivateNetworkAccessCheckResultIsAllowed(
-    PrivateNetworkAccessCheckResult result) {
-  switch (result) {
-    case PrivateNetworkAccessCheckResult::kAllowedMissingClientSecurityState:
-    case PrivateNetworkAccessCheckResult::kAllowedNoLessPublic:
-    case PrivateNetworkAccessCheckResult::kAllowedByPolicyAllow:
-    case PrivateNetworkAccessCheckResult::kAllowedByPolicyWarn:
-      return true;
-    case PrivateNetworkAccessCheckResult::kBlockedByLoadOption:
-    case PrivateNetworkAccessCheckResult::kBlockedByPolicyBlock:
-      return false;
-  }
-}
-
-URLLoader::PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
+PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
     mojom::IPAddressSpace resource_address_space) const {
-  if (options_ & mojom::kURLLoadOptionBlockLocalRequest &&
-      IsLessPublicAddressSpace(resource_address_space,
-                               network::mojom::IPAddressSpace::kPublic)) {
-    return PrivateNetworkAccessCheckResult::kBlockedByLoadOption;
-  }
-
   // Depending on the type of URL request, we source the client security state
   // from either the URLRequest's trusted params (for navigations, which share
   // a factory) or the URLLoaderFactory's params. We prefer the factory params
@@ -1035,28 +1029,28 @@ URLLoader::PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
           ? factory_params_->client_security_state
           : request_client_security_state_;
 
-  if (!security_state)
-    return PrivateNetworkAccessCheckResult::kAllowedMissingClientSecurityState;
-
-  if (!IsLessPublicAddressSpace(resource_address_space,
-                                security_state->ip_address_space)) {
-    // Resource is no less public than the initiator.
-    return PrivateNetworkAccessCheckResult::kAllowedNoLessPublic;
-  }
+  // Fully-qualify function name to disambiguate it, otherwise it resolves to
+  // `URLLoader::PrivateNetworkAccessCheck()` and fails to compile.
+  PrivateNetworkAccessCheckResult result = network::PrivateNetworkAccessCheck(
+      security_state.get(), target_ip_address_space_, options_,
+      resource_address_space);
 
   bool is_warning = false;
-  // We use a switch statement to force this code to be amended when values are
-  // added to the PrivateNetworkRequestPolicy enum.
-  switch (security_state->private_network_request_policy) {
-    case mojom::PrivateNetworkRequestPolicy::kAllow:
-      return PrivateNetworkAccessCheckResult::kAllowedByPolicyAllow;
-    case mojom::PrivateNetworkRequestPolicy::kWarn:
+  switch (result) {
+    case PrivateNetworkAccessCheckResult::kAllowedByPolicyWarn:
       is_warning = true;
       break;
-    case mojom::PrivateNetworkRequestPolicy::kBlock:
+    case PrivateNetworkAccessCheckResult::kBlockedByPolicyBlock:
       is_warning = false;
       break;
+    default:
+      // Do not report anything to DevTools in these cases.
+      return result;
   }
+
+  // If `security_state` was nullptr, then `result` should not have mentioned
+  // the policy set in `security_state->private_network_request_policy`.
+  DCHECK(security_state);
 
   if (auto* devtools_observer = GetDevToolsObserver()) {
     devtools_observer->OnPrivateNetworkRequest(
@@ -1064,10 +1058,7 @@ URLLoader::PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
         resource_address_space, security_state->Clone());
   }
 
-  if (is_warning)
-    return PrivateNetworkAccessCheckResult::kAllowedByPolicyWarn;
-
-  return PrivateNetworkAccessCheckResult::kBlockedByPolicyBlock;
+  return result;
 }
 
 int URLLoader::OnConnected(net::URLRequest* url_request,
@@ -1082,15 +1073,16 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
   // this request should be blocked per Private Network Access.
   mojom::IPAddressSpace resource_address_space =
       IPEndPointToIPAddressSpace(info.endpoint);
-  PrivateNetworkAccessCheckResult result =
-      PrivateNetworkAccessCheck(resource_address_space);
-  base::UmaHistogramEnumeration("Security.PrivateNetworkAccess.CheckResult",
-                                result);
-  if (!PrivateNetworkAccessCheckResultIsAllowed(result)) {
+
+  absl::optional<mojom::CorsError> cors_error =
+      PrivateNetworkAccessCheckResultToCorsError(
+          PrivateNetworkAccessCheck(resource_address_space));
+  if (cors_error.has_value()) {
     // Remember the CORS error so we can annotate the URLLoaderCompletionStatus
     // with it later, then fail the request with the same net error code as
     // other CORS errors.
-    cors_error_status_ = CorsErrorStatus(resource_address_space);
+    cors_error_status_ = CorsErrorStatus(*cors_error, target_ip_address_space_,
+                                         resource_address_space);
     return net::ERR_FAILED;
   }
 
@@ -1387,12 +1379,20 @@ void URLLoader::ContinueOnResponseStarted() {
         corb_analyzer_->Init(url_request_->url(), url_request_->initiator(),
                              request_mode_, *response_);
     switch (decision) {
-      case network::corb::ResponseAnalyzer::Decision::kBlock:
-        if (BlockResponseForCorb() == kWillCancelRequest)
+      case network::corb::ResponseAnalyzer::Decision::kBlock: {
+        bool should_report_corb_blocking =
+            corb_analyzer_->ShouldReportBlockedResponse();
+        corb_analyzer_.reset();
+        is_more_corb_sniffing_needed_ = false;
+        if (BlockResponseForCorb(should_report_corb_blocking) ==
+            kWillCancelRequest)
           return;
         break;
+      }
 
       case network::corb::ResponseAnalyzer::Decision::kAllow:
+        corb_analyzer_.reset();
+        is_more_corb_sniffing_needed_ = false;
         break;
 
       case network::corb::ResponseAnalyzer::Decision::kSniffMore:
@@ -1535,6 +1535,9 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
         data_length = net::kMaxBytesToSniff;
 
       base::StringPiece data(pending_write_->buffer(), data_length);
+      bool stop_sniffing_after_processing_current_data =
+          (num_bytes <= 0 ||
+           pending_write_buffer_offset_ >= net::kMaxBytesToSniff);
 
       if (is_more_mime_sniffing_needed_) {
         const std::string& type_hint = response_->mime_type;
@@ -1547,31 +1550,46 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
         // returns a new type that is probably better than the current one.
         response_->mime_type.assign(new_type);
         response_->did_mime_sniff = true;
+
+        if (stop_sniffing_after_processing_current_data)
+          is_more_mime_sniffing_needed_ = false;
       }
 
-      // `has_new_data_to_sniff` can be false at the end-of-stream.
-      bool has_new_data_to_sniff = new_data_offset < data.length();
-      if (is_more_corb_sniffing_needed_ && has_new_data_to_sniff) {
-        switch (corb_analyzer_->Sniff(data)) {
-          case network::corb::ResponseAnalyzer::Decision::kBlock:
+      if (is_more_corb_sniffing_needed_) {
+        corb::ResponseAnalyzer::Decision corb_decision =
+            corb::ResponseAnalyzer::Decision::kSniffMore;
+
+        // `has_new_data_to_sniff` can be false at the end-of-stream.
+        bool has_new_data_to_sniff = new_data_offset < data.length();
+        if (has_new_data_to_sniff)
+          corb_decision = corb_analyzer_->Sniff(data);
+
+        if (corb_decision == corb::ResponseAnalyzer::Decision::kSniffMore &&
+            stop_sniffing_after_processing_current_data) {
+          corb_decision = corb_analyzer_->HandleEndOfSniffableResponseBody();
+          DCHECK_NE(corb::ResponseAnalyzer::Decision::kSniffMore,
+                    corb_decision);
+        }
+
+        switch (corb_decision) {
+          case network::corb::ResponseAnalyzer::Decision::kBlock: {
+            bool should_report_corb_blocking =
+                corb_analyzer_->ShouldReportBlockedResponse();
+            corb_analyzer_.reset();
             is_more_corb_sniffing_needed_ = false;
-            if (BlockResponseForCorb() == kWillCancelRequest)
+            if (BlockResponseForCorb(should_report_corb_blocking) ==
+                kWillCancelRequest)
               return;
             break;
+          }
           case network::corb::ResponseAnalyzer::Decision::kAllow:
+            corb_analyzer_.reset();
             is_more_corb_sniffing_needed_ = false;
             break;
           case network::corb::ResponseAnalyzer::Decision::kSniffMore:
             break;
         }
       }
-    }
-
-    if (num_bytes <= 0 ||
-        pending_write_buffer_offset_ >= net::kMaxBytesToSniff) {
-      is_more_mime_sniffing_needed_ = false;
-      is_more_corb_sniffing_needed_ = false;
-      corb_analyzer_.reset();
     }
 
     if (!is_more_mime_sniffing_needed_ && !is_more_corb_sniffing_needed_) {
@@ -2065,7 +2083,8 @@ void URLLoader::CompleteBlockedResponse(
   url_loader_client_.reset();
 }
 
-URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
+URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb(
+    bool should_report_corb_blocking) {
   // CORB should only do work after the response headers have been received.
   DCHECK(has_received_response_);
 
@@ -2087,8 +2106,6 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
   url_loader_client_->OnStartLoadingResponseBody(std::move(consumer_handle));
 
   // Tell the real URLLoaderClient that the response has been completed.
-  bool should_report_corb_blocking =
-      corb_analyzer_->ShouldReportBlockedResponse();
   if (corb_detachable_) {
     // TODO(lukasza): https://crbug.com/827633#c5: Consider passing net::ERR_OK
     // instead.  net::ERR_ABORTED was chosen for consistency with the old CORB
@@ -2356,15 +2373,12 @@ void URLLoader::SetRequestCredentials(const GURL& url) {
       ShouldSendClientCertificates(request_credentials_mode_) &&
       coep_allow_credentials;
 
-  // TODO(https://crbug.com/799935) net::LOAD_DO_NOT_* are in the process of
-  // being converted to credentials_mode. Using set_allow_credentials will
-  // implicitly override the deprecated LOAD_DO_NOT_SAVE_COOKIE flag. As a
-  // result, set_allow_credentials should not be called when not needed, or it
-  // would have side effects.
-  if (url_request_->allow_credentials() != allow_credentials)
-    url_request_->set_allow_credentials(allow_credentials);
-
-  url_request_->set_send_client_certs(allow_client_certificates);
+  // The decision not to include credentials is sticky. This is equivalent to
+  // checking the tainted origin flag in the fetch specification.
+  if (!allow_credentials)
+    url_request_->set_allow_credentials(false);
+  if (!allow_client_certificates)
+    url_request_->set_send_client_certs(false);
 
   // Contrary to Firefox or blink's cache, the HTTP cache doesn't distinguish
   // requests including user's credentials from the anonymous ones yet. See

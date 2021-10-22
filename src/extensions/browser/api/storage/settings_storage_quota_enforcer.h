@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "extensions/browser/value_store/value_store.h"
+#include "components/value_store/value_store.h"
 
 namespace extensions {
 
@@ -37,6 +37,10 @@ class SettingsStorageQuotaEnforcer : public value_store::ValueStore {
   SettingsStorageQuotaEnforcer(
       const Limits& limits,
       std::unique_ptr<value_store::ValueStore> delegate);
+
+  SettingsStorageQuotaEnforcer(const SettingsStorageQuotaEnforcer&) = delete;
+  SettingsStorageQuotaEnforcer& operator=(const SettingsStorageQuotaEnforcer&) =
+      delete;
 
   ~SettingsStorageQuotaEnforcer() override;
 
@@ -84,8 +88,6 @@ class SettingsStorageQuotaEnforcer : public value_store::ValueStore {
 
   // Map of item key to its size, including the key itself.
   std::map<std::string, size_t> used_per_setting_;
-
-  DISALLOW_COPY_AND_ASSIGN(SettingsStorageQuotaEnforcer);
 };
 
 }  // namespace extensions

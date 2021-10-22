@@ -45,6 +45,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #endif
 
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+#include "base/trace_event/trace_log.h"  // nogncheck
+#endif                                   // BUILDFLAG(ENABLE_BASE_TRACING)
+
 namespace base {
 namespace test {
 
@@ -105,6 +109,9 @@ class TaskEnvironment::TestTaskTracker
  public:
   TestTaskTracker();
 
+  TestTaskTracker(const TestTaskTracker&) = delete;
+  TestTaskTracker& operator=(const TestTaskTracker&) = delete;
+
   // Allow running tasks. Returns whether tasks were previously allowed to run.
   bool AllowRunTasks();
 
@@ -151,15 +158,12 @@ class TaskEnvironment::TestTaskTracker
   // The set of tasks currently running, keyed by the id from
   // |next_task_number_|.
   base::flat_map<int64_t, Location> running_tasks_ GUARDED_BY(lock_);
-
-  DISALLOW_COPY_AND_ASSIGN(TestTaskTracker);
 };
 
 class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
                                         public TickClock {
  public:
-  explicit MockTimeDomain(sequence_manager::SequenceManager* sequence_manager)
-      : sequence_manager_(sequence_manager) {
+  explicit MockTimeDomain() {
     DCHECK_EQ(nullptr, current_mock_time_domain_);
     current_mock_time_domain_ = this;
   }
@@ -169,6 +173,8 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
     current_mock_time_domain_ = nullptr;
   }
 
+  using TimeDomain::GetNextDelayedWakeUp;
+
   static MockTimeDomain* current_mock_time_domain_;
 
   static Time GetTime() {
@@ -176,15 +182,6 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
   }
 
   static TimeTicks GetTimeTicks() { return current_mock_time_domain_->Now(); }
-
-  using TimeDomain::NextScheduledRunTime;
-
-  absl::optional<TimeTicks> NextScheduledRunTime() const {
-    // The TimeDomain doesn't know about immediate tasks, check if we have any.
-    if (!sequence_manager_->IsIdleForTesting())
-      return Now();
-    return TimeDomain::NextScheduledRunTime();
-  }
 
   void AdvanceClock(TimeDelta delta) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -198,8 +195,7 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
 
   static std::unique_ptr<TaskEnvironment::MockTimeDomain> CreateAndRegister(
       sequence_manager::SequenceManager* sequence_manager) {
-    auto mock_time_domain =
-        std::make_unique<TaskEnvironment::MockTimeDomain>(sequence_manager);
+    auto mock_time_domain = std::make_unique<TaskEnvironment::MockTimeDomain>();
     sequence_manager->RegisterTimeDomain(mock_time_domain.get());
     return mock_time_domain;
   }
@@ -225,29 +221,27 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
     return now_ticks_;
   }
 
-  absl::optional<TimeDelta> DelayTillNextTask(
-      sequence_manager::LazyNow* lazy_now) override {
+  base::TimeTicks GetNextDelayedTaskTime(
+      sequence_manager::LazyNow* lazy_now) const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    // Make sure TimeDomain::NextScheduledRunTime has taken canceled tasks into
-    // account, ReclaimMemory sweeps canceled delayed tasks.
-    sequence_manager()->ReclaimMemory();
-    absl::optional<TimeTicks> run_time = NextScheduledRunTime();
-    // Check if we've run out of tasks.
-    if (!run_time)
-      return absl::nullopt;
+    absl::optional<sequence_manager::DelayedWakeUp> wake_up =
+        GetNextDelayedWakeUp();
+    // Check if we've run out of delayed tasks.
+    if (!wake_up)
+      return base::TimeTicks::Max();
 
     // Check if we have a task that should be running now. Reading |now_ticks_|
     // from the main thread doesn't require the lock.
-    if (run_time <= TS_UNCHECKED_READ(now_ticks_))
-      return base::TimeDelta();
+    if (wake_up->time <= TS_UNCHECKED_READ(now_ticks_))
+      return base::TimeTicks();
 
     // The next task is a future delayed task. Since we're using mock time, we
     // don't want an actual OS level delayed wake up scheduled, so pretend we
     // have no more work. This will result in appearing idle, TaskEnvironment
     // will decide what to do based on that (return to caller or fast-forward
     // time).
-    return absl::nullopt;
+    return base::TimeTicks::Max();
   }
 
   // This method is called when the underlying message pump has run out of
@@ -277,15 +271,15 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
     kThreadPool,
   };
 
-  // Advances time to the first of : next main thread task, next thread pool
-  // task, or |fast_forward_cap| (if it's not Max()).
+  // Advances time to the first of : next main thread delayed task, next thread
+  // pool task, or |fast_forward_cap| (if it's not Max()). Ignores immediate
+  // tasks, expected to be called after being just idle, racily scheduling
+  // immediate tasks doesn't affect the outcome of this call
   NextTaskSource FastForwardToNextTaskOrCap(TimeTicks fast_forward_cap) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-    // We don't need to call ReclaimMemory here because
-    // DelayTillNextTask will have dealt with cancelled delayed tasks for us.
-    absl::optional<TimeTicks> next_main_thread_task_time =
-        NextScheduledRunTime();
+    absl::optional<sequence_manager::DelayedWakeUp> next_main_thread_wake_up =
+        GetNextDelayedWakeUp();
 
     // Consider the next thread pool tasks iff they're running.
     absl::optional<TimeTicks> next_thread_pool_task_time;
@@ -298,13 +292,13 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
     // smallest value. Could consider using TimeTicks::Max() instead of nullopt
     // to represent out-of-tasks?
     absl::optional<TimeTicks> next_task_time;
-    if (!next_main_thread_task_time) {
+    if (!next_main_thread_wake_up) {
       next_task_time = next_thread_pool_task_time;
     } else if (!next_thread_pool_task_time) {
-      next_task_time = next_main_thread_task_time;
+      next_task_time = next_main_thread_wake_up->time;
     } else {
       next_task_time =
-          std::min(*next_main_thread_task_time, *next_thread_pool_task_time);
+          std::min(next_main_thread_wake_up->time, *next_thread_pool_task_time);
     }
 
     if (next_task_time && *next_task_time <= fast_forward_cap) {
@@ -348,8 +342,6 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
 
  private:
   SEQUENCE_CHECKER(sequence_checker_);
-
-  sequence_manager::SequenceManager* const sequence_manager_;
 
   internal::ThreadPoolImpl* thread_pool_ = nullptr;
   const TestTaskTracker* thread_pool_task_tracker_ = nullptr;
@@ -449,6 +441,12 @@ TaskEnvironment::TestTaskTracker* TaskEnvironment::CreateThreadPool() {
 }
 
 void TaskEnvironment::InitializeThreadPool() {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+  // Force the creation of TraceLog instance before starting ThreadPool and
+  // creating additional threads to avoid race conditions.
+  trace_event::TraceLog::GetInstance();
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
+
   task_tracker_ = CreateThreadPool();
   if (mock_time_domain_) {
     mock_time_domain_->SetThreadPool(
@@ -584,7 +582,7 @@ void TaskEnvironment::RunUntilIdle() {
   //       base::RunLoop().RunUntilIdle();
   //       // Avoid busy-looping.
   //       if (task_tracker_->HasIncompleteTasks())
-  //         PlatformThread::Sleep(TimeDelta::FromMilliSeconds(1));
+  //         PlatformThread::Sleep(Milliseconds(1));
   //     }
   // Update: This can likely be done now that MessageLoop::IsIdleForTesting()
   // checks all queues.
@@ -667,6 +665,9 @@ void TaskEnvironment::FastForwardBy(TimeDelta delta) {
   const TimeTicks fast_forward_until = mock_time_domain_->NowTicks() + delta;
   do {
     RunUntilIdle();
+    // ReclaimMemory sweeps canceled delayed tasks, making sure
+    // FastForwardToNextTaskOrCap isn't affected by canceled tasks.
+    sequence_manager_->ReclaimMemory();
   } while (mock_time_domain_->FastForwardToNextTaskOrCap(fast_forward_until) !=
            MockTimeDomain::NextTaskSource::kNone);
 
@@ -716,11 +717,12 @@ TimeDelta TaskEnvironment::NextMainThreadPendingTaskDelay() const {
   // ReclaimMemory sweeps canceled delayed tasks.
   sequence_manager_->ReclaimMemory();
   DCHECK(mock_time_domain_);
-  absl::optional<TimeTicks> run_time =
-      mock_time_domain_->NextScheduledRunTime();
-  if (run_time)
-    return *run_time - mock_time_domain_->Now();
-  return TimeDelta::Max();
+  sequence_manager::LazyNow lazy_now(mock_time_domain_->NowTicks());
+  if (!sequence_manager_->IsIdleForTesting())
+    return TimeDelta();
+  absl::optional<sequence_manager::DelayedWakeUp> wake_up =
+      mock_time_domain_->GetNextDelayedWakeUp();
+  return wake_up ? wake_up->time - lazy_now.Now() : TimeDelta::Max();
 }
 
 bool TaskEnvironment::NextTaskIsDelayed() const {
@@ -775,7 +777,7 @@ bool TaskEnvironment::TestTaskTracker::DisallowRunTasks() {
     // Attempt to wait a bit so that the caller doesn't busy-loop with the same
     // set of pending work. A short wait is required to avoid deadlock
     // scenarios. See DisallowRunTasks()'s declaration for more details.
-    task_completed_cv_.TimedWait(TimeDelta::FromMilliseconds(1));
+    task_completed_cv_.TimedWait(Milliseconds(1));
     return false;
   }
 

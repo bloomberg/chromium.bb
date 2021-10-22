@@ -24,6 +24,7 @@
 #include "absl/time/time.h"
 #include "gtest/gtest.h"
 #include "src/dsp/dsp.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/cpu.h"
 #include "tests/third_party/libvpx/acm_random.h"
@@ -37,6 +38,7 @@ const char kIntraEdge[] = "IntraEdge";
 const char kIntraEdgeFilterName[] = "Intra Edge Filter";
 const char kIntraEdgeUpsamplerName[] = "Intra Edge Upsampler";
 
+constexpr int kIntraEdgeBufferSize = 144;  // see Tile::IntraPrediction.
 constexpr int kIntraEdgeFilterTestMaxSize = 129;
 constexpr int kIntraEdgeFilterTestFixedInput[kIntraEdgeFilterTestMaxSize] = {
     159, 208, 54,  136, 205, 124, 125, 165, 164, 63,  171, 143, 210, 236, 253,
@@ -104,14 +106,19 @@ class IntraEdgeFilterTest : public testing::TestWithParam<EdgeFilterParams> {
              << test_case;
     }
 
+#if LIBGAV1_MSAN
+    // Match the behavior of Tile::IntraPrediction to prevent warnings due to
+    // assembly code (safely) overreading to fill a register.
+    memset(buffer_, 0, sizeof(buffer_));
+#endif  // LIBGAV1_MSAN
     cur_intra_edge_filter_ = dsp->intra_edge_filter;
   }
 
   void TestFixedValues(const char* digest);
   void TestRandomValues(int num_runs);
 
-  Pixel buffer_[kIntraEdgeFilterTestMaxSize];
-  Pixel base_buffer_[kIntraEdgeFilterTestMaxSize];
+  Pixel buffer_[kIntraEdgeBufferSize];
+  Pixel base_buffer_[kIntraEdgeBufferSize];
   int strength_ = GetParam().strength;
   int size_ = GetParam().size;
 
@@ -141,9 +148,11 @@ void IntraEdgeFilterTest<bitdepth, Pixel>::TestRandomValues(int num_runs) {
   libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
   absl::Duration elapsed_time;
   absl::Duration base_elapsed_time;
+  memset(base_buffer_, 0, sizeof(base_buffer_));
+  memset(buffer_, 0, sizeof(buffer_));
   for (int num_tests = 0; num_tests < num_runs; ++num_tests) {
-    for (int i = 0; i < kIntraEdgeFilterTestMaxSize; ++i) {
-      const Pixel val = rnd(bitdepth);
+    for (int i = 0; i < size_; ++i) {
+      const Pixel val = rnd(1 << bitdepth);
       buffer_[i] = val;
       base_buffer_[i] = val;
     }
@@ -236,7 +245,7 @@ TEST_P(IntraEdgeFilterTest8bpp, Correctness) {
   TestRandomValues(1);
 }
 
-TEST_P(IntraEdgeFilterTest8bpp, DISABLED_Speed) { TestRandomValues(5e7); }
+TEST_P(IntraEdgeFilterTest8bpp, DISABLED_Speed) { TestRandomValues(1e7); }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 using IntraEdgeFilterTest10bpp = IntraEdgeFilterTest<10, uint16_t>;
@@ -305,7 +314,7 @@ TEST_P(IntraEdgeFilterTest10bpp, FixedInput) {
   TestRandomValues(1);
 }
 
-TEST_P(IntraEdgeFilterTest10bpp, DISABLED_Speed) { TestRandomValues(5e7); }
+TEST_P(IntraEdgeFilterTest10bpp, DISABLED_Speed) { TestRandomValues(1e7); }
 #endif
 
 template <int bitdepth, typename Pixel>
@@ -340,6 +349,11 @@ class IntraEdgeUpsamplerTest : public testing::TestWithParam<int> {
              << test_case;
     }
     cur_intra_edge_upsampler_ = dsp->intra_edge_upsampler;
+#if LIBGAV1_MSAN
+    // Match the behavior of Tile::IntraPrediction to prevent warnings due to
+    // assembly code (safely) overreading to fill a register.
+    memset(buffer_, 0, sizeof(buffer_));
+#endif
   }
 
   void TestFixedValues(const char* digest);
@@ -382,7 +396,7 @@ void IntraEdgeUpsamplerTest<bitdepth, Pixel>::TestRandomValues(int num_runs) {
     buffer_[0] = 0;
     base_buffer_[0] = 0;
     for (int i = 1; i < size_ + 2; ++i) {
-      const Pixel val = rnd(bitdepth);
+      const Pixel val = rnd(1 << bitdepth);
       buffer_[i] = val;
       base_buffer_[i] = val;
     }

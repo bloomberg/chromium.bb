@@ -46,12 +46,12 @@ namespace {
 
 class BufferZeroInitTest : public DawnTest {
   protected:
-    std::vector<const char*> GetRequiredExtensions() override {
-        std::vector<const char*> requiredExtensions = {};
-        if (SupportsExtensions({"timestamp_query"})) {
-            requiredExtensions.push_back("timestamp_query");
+    std::vector<const char*> GetRequiredFeatures() override {
+        std::vector<const char*> requiredFeatures = {};
+        if (SupportsFeatures({"timestamp_query"})) {
+            requiredFeatures.push_back("timestamp_query");
         }
-        return requiredExtensions;
+        return requiredFeatures;
     }
 
   public:
@@ -1314,8 +1314,8 @@ TEST_P(BufferZeroInitTest, ResolveQuerySet) {
     // without any copy commands on Metal on AMD GPU.
     DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
-    // Skip if timestamp extension is not supported on device
-    DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"timestamp_query"}));
+    // Skip if timestamp feature is not supported on device
+    DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"timestamp_query"}));
 
     // crbug.com/dawn/940: Does not work on Mac 11.0+. Backend validation changed.
     DAWN_TEST_UNSUPPORTED_IF(IsMacOS() && !IsMacOS(10));
@@ -1362,9 +1362,9 @@ TEST_P(BufferZeroInitTest, ResolveQuerySet) {
     // destinationOffset > 0 and destinationOffset + 8 * queryCount <= kBufferSize
     {
         constexpr uint32_t kQueryCount = 1;
-        constexpr uint64_t kDestinationOffset = 8u;
+        constexpr uint64_t kDestinationOffset = 256u;
 
-        wgpu::Buffer destination = CreateBuffer(kBufferSize, kBufferUsage);
+        wgpu::Buffer destination = CreateBuffer(kBufferSize + kDestinationOffset, kBufferUsage);
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
         encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, kDestinationOffset);

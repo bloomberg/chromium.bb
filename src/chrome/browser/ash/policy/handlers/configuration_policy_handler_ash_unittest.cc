@@ -12,7 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/ui/ash/chrome_shelf_prefs.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/policy_error_map.h"
@@ -40,12 +40,14 @@ class LoginScreenPowerManagementPolicyHandlerTest : public testing::Test {
  protected:
   LoginScreenPowerManagementPolicyHandlerTest();
 
+  LoginScreenPowerManagementPolicyHandlerTest(
+      const LoginScreenPowerManagementPolicyHandlerTest&) = delete;
+  LoginScreenPowerManagementPolicyHandlerTest& operator=(
+      const LoginScreenPowerManagementPolicyHandlerTest&) = delete;
+
   void SetUp() override;
 
   Schema chrome_schema_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginScreenPowerManagementPolicyHandlerTest);
 };
 
 LoginScreenPowerManagementPolicyHandlerTest::
@@ -306,14 +308,14 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   // Extension IDs are OK.
   base::Value entry1("abcdefghijklmnopabcdefghijklmnop");
   base::Value entry1_dict(base::Value::Type::DICTIONARY);
-  entry1_dict.SetKey(kPinnedAppsPrefAppIDKey, entry1.Clone());
+  entry1_dict.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, entry1.Clone());
   expected_pinned_apps.Append(std::move(entry1_dict));
   list.Append(entry1.Clone());
 
   // Android appds are OK.
   base::Value entry2("com.google.android.gm");
   auto entry2_dict = base::Value(base::Value::Type::DICTIONARY);
-  entry2_dict.SetKey(kPinnedAppsPrefAppIDKey, entry2.Clone());
+  entry2_dict.SetKey(ChromeShelfPrefs::kPinnedAppsPrefAppIDKey, entry2.Clone());
   expected_pinned_apps.Append(std::move(entry2_dict));
   list.Append(entry2.Clone());
 

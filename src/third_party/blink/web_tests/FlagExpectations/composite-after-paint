@@ -5,6 +5,13 @@
 # Expectations for CompositeAfterPaint
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 
+# ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-add.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-add-2.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-delete-2.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-fonts/palette-values-rule-delete.html [ Timeout ]
+crbug.com/626703 external/wpt/mediacapture-fromelement/capture.html [ Crash ]
+
 virtual/composite-after-paint/* [ Skip ]
 virtual/stable/* [ Skip ]
 
@@ -46,7 +53,3 @@ crbug.com/1123189 virtual/threaded-composited-iframes/external/wpt/is-input-pend
 # These tests expect fragment stitching when composited, which isn't correct rendering.
 crbug.com/1058792 fast/multicol/composited-layer-with-transform.html [ Skip ]
 crbug.com/1058792 fast/multicol/composited-with-child-layer-vertical-rl.html [ Skip ]
-
-# Needs to meet requirement of DevTools for trace events.
-crbug.com/1191032 http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure ]
-crbug.com/1191032 http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Failure Timeout ]

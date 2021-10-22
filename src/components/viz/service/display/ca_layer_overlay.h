@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/rrect_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/video_types.h"
 #include "ui/gl/ca_renderer_layer_params.h"
 
@@ -96,6 +96,10 @@ typedef std::vector<CALayerOverlay> CALayerOverlayList;
 class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
  public:
   CALayerOverlayProcessor() = default;
+
+  CALayerOverlayProcessor(const CALayerOverlayProcessor&) = delete;
+  CALayerOverlayProcessor& operator=(const CALayerOverlayProcessor&) = delete;
+
   virtual ~CALayerOverlayProcessor() = default;
 
   bool AreClipSettingsValid(const CALayerOverlay& ca_layer_overlay,
@@ -137,8 +141,6 @@ class VIZ_SERVICE_EXPORT CALayerOverlayProcessor {
           render_pass_backdrop_filters,
       gfx::ProtectedVideoType protected_video_type,
       CALayerOverlayList* ca_layer_overlays) const;
-
-  DISALLOW_COPY_AND_ASSIGN(CALayerOverlayProcessor);
 };
 
 }  // namespace viz

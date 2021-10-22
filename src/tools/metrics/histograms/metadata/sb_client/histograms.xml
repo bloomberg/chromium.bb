@@ -65,7 +65,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientDownload.DeepScanTrigger" enum="SBDeepScanTriggers"
-    expires_after="2022-01-23">
+    expires_after="2022-04-24">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -98,7 +98,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadExtensions"
-    enum="SBClientDownloadExtensions" expires_after="2022-01-02">
+    enum="SBClientDownloadExtensions" expires_after="2022-04-10">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -135,7 +135,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestNetError" enum="NetErrorCodes"
-    expires_after="2022-01-16">
+    expires_after="2022-04-24">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -180,7 +180,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientDownload.DownloadRequestResponseCode"
-    enum="HttpResponseCode" expires_after="2021-11-07">
+    enum="HttpResponseCode" expires_after="2022-04-24">
   <owner>vakh@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <owner>mattm@chromium.org</owner>
@@ -261,6 +261,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientDownload.SafeDownloadOpenedLatency.{ShowAction}"
     units="ms" expires_after="2022-05-20">
+  <obsolete>
+    Removed 09-2021 in favor of SBClientDownload.SafeDownloadOpenedLatency2
+    which filters autopened downloads.
+  </obsolete>
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -273,6 +277,68 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name="OpenDirectly" summary="opens the download directly"/>
     <variant name="ShowInFolder" summary="clicks show in folder"/>
   </token>
+</histogram>
+
+<histogram name="SBClientDownload.SafeDownloadOpenedLatency2.{ShowAction}"
+    units="ms" expires_after="2022-05-20">
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records the latency between when a safe download is completed and when the
+    user {ShowAction}. Users can open the download either from the download
+    shelf or from the downloads page. Note that if the user opens the same
+    download for several times, this metric is recorded each time. Excludes
+    downloads that were auto opened.
+  </summary>
+  <token key="ShowAction">
+    <variant name="OpenDirectly" summary="opens the download directly"/>
+    <variant name="ShowInFolder" summary="clicks show in folder"/>
+  </token>
+</histogram>
+
+<histogram
+    name="SBClientDownload.SafeDownloadOpenedLatencyByContentType.{DownloadContent}"
+    units="ms" expires_after="2022-09-30">
+  <owner>anise@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records the latency between when a safe {DownloadContent} download is
+    completed and when the user opens the download either from the download
+    shelf or from the downloads page. Note that if the user opens the same
+    download for several times, this metric is recorded each time. Also, this
+    metrics excludes downloads that were auto opened.
+  </summary>
+  <token key="DownloadContent">
+    <variant name="APK" summary="apk"/>
+    <variant name="ARCHIVE" summary="archive"/>
+    <variant name="AUDIO" summary="audio"/>
+    <variant name="CRX" summary="crx"/>
+    <variant name="DMG" summary="dmg"/>
+    <variant name="DOCUMENT" summary="document"/>
+    <variant name="EBOOK" summary="ebook"/>
+    <variant name="EXECUTABLE" summary="executable"/>
+    <variant name="FONT" summary="font"/>
+    <variant name="IMAGE" summary="image"/>
+    <variant name="MAX" summary="max"/>
+    <variant name="OCTET_STREAM" summary="octet stream"/>
+    <variant name="PDF" summary="pdf"/>
+    <variant name="PRESENTATION" summary="presentation"/>
+    <variant name="SPREADSHEET" summary="spreadsheet"/>
+    <variant name="TEXT" summary="text"/>
+    <variant name="UNRECOGNIZED" summary="unrecognized"/>
+    <variant name="VIDEO" summary="video"/>
+    <variant name="WEB" summary="web"/>
+  </token>
+</histogram>
+
+<histogram name="SBClientDownload.ServerRequestsDeepScanningPrompt"
+    enum="BooleanRequested" expires_after="2022-03-01">
+  <owner>drubery@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    Records how often users in a population consented to deep scanning are
+    actually prompted for deep scanning.
+  </summary>
 </histogram>
 
 <histogram name="SBClientDownload.UserGestureFileType.Attributes"
@@ -439,7 +505,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.CacheDetectsPhishing"
-    enum="BooleanIsPhishing" expires_after="2021-09-17">
+    enum="BooleanIsPhishing" expires_after="2022-09-17">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -474,7 +540,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.Classifier.Event"
-    enum="SBPhishingClassifierEvent" expires_after="2021-12-05">
+    enum="SBPhishingClassifierEvent" expires_after="2022-04-24">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -501,7 +567,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientPhishing.ClientModelDownloadResponseOrErrorCode"
     enum="CombinedHttpResponseAndNetErrorCode" expires_after="M94">
-  <owner>drubery@google.com</owner>
+  <obsolete>
+    Remove 09-2021
+  </obsolete>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Response or error codes from the SafeBrowsing service. Logged after a
@@ -592,7 +660,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.FlatBufferMappedRegionValid"
-    enum="BooleanSuccess" expires_after="2021-11-25">
+    enum="BooleanSuccess" expires_after="2022-04-03">
   <owner>bhatiarohit@google.com</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -603,7 +671,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.FlatBufferScorer.CreationStatus"
-    enum="SBClientPhishingScorerCreationStatus" expires_after="M96">
+    enum="SBClientPhishingScorerCreationStatus" expires_after="M97">
   <owner>bhatiarohit@google.com</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -696,7 +764,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.PhishingDetectionDuration" units="ms"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>bdea@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -719,17 +787,20 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="SBClientPhishing.PreClassificationCheckResult"
     enum="SBClientDetectionPreClassificationCheckResult"
-    expires_after="2022-02-06">
+    expires_after="2022-04-10">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
     Records the result of phishing pre-classification checks. This is recorded
     on every classification attempt (roughly every page load).
+
+    Starting in M95, the PRIVATE_IP bucket was split to include LOCAL_RESOURCE
+    and CHROME_UI_PAGE.
   </summary>
 </histogram>
 
 <histogram name="SBClientPhishing.ProtobufScorer.CreationStatus"
-    enum="SBClientPhishingScorerCreationStatus" expires_after="M96">
+    enum="SBClientPhishingScorerCreationStatus" expires_after="2022-04-03">
   <owner>bhatiarohit@google.com</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -825,7 +896,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureChunkTime" units="ms"
-    expires_after="2021-10-17">
+    expires_after="2022-10-17">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -834,7 +905,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureIterations" units="units"
-    expires_after="2021-10-31">
+    expires_after="2022-10-17">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -843,7 +914,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.TermFeatureTimeout" units="units"
-    expires_after="2021-10-17">
+    expires_after="2022-10-17">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -886,7 +957,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.VisualComparisonTime" units="ms"
-    expires_after="2021-12-05">
+    expires_after="2022-04-03">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>
@@ -896,7 +967,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="SBClientPhishing.VisualFeatureTime" units="ms"
-    expires_after="2021-12-12">
+    expires_after="2022-04-10">
   <owner>drubery@chromium.org</owner>
   <owner>chrome-safebrowsing-alerts@google.com</owner>
   <summary>

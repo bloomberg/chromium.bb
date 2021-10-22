@@ -233,6 +233,10 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
  public:
   DriveInternalsWebUIHandler() : last_sent_event_id_(-1) {}
 
+  DriveInternalsWebUIHandler(const DriveInternalsWebUIHandler&) = delete;
+  DriveInternalsWebUIHandler& operator=(const DriveInternalsWebUIHandler&) =
+      delete;
+
   ~DriveInternalsWebUIHandler() override {}
 
   void DownloadLogsZip(const base::FilePath& path) {
@@ -813,7 +817,6 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   bool developer_mode_ = false;
 
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
 };
 
 class LogsZipper : public download::AllDownloadItemNotifier::Observer {
@@ -827,6 +830,9 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
                 .DirName()),
         zip_path_(logs_directory_.AppendASCII(kLogsZipName)),
         drive_internals_(std::move(drive_internals)) {}
+
+  LogsZipper(const LogsZipper&) = delete;
+  LogsZipper& operator=(const LogsZipper&) = delete;
 
   void Start() {
     base::ThreadPool::PostTaskAndReplyWithResult(
@@ -905,8 +911,6 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
   const base::WeakPtr<DriveInternalsWebUIHandler> drive_internals_;
 
   std::unique_ptr<download::AllDownloadItemNotifier> download_notifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(LogsZipper);
 };
 
 constexpr char LogsZipper::kLogsZipName[];

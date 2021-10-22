@@ -36,9 +36,9 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
 #include "ui/gfx/x/xproto.h"  // nogncheck
-#endif  // USE_X11
+#endif                        // BUILDFLAG(USE_VAAPI_X11)
 
 namespace gfx {
 enum class BufferFormat;
@@ -162,6 +162,11 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       EncryptionScheme encryption_scheme,
       const ReportErrorToUMACB& report_error_to_uma_cb);
 
+  // Returns the supported SVC scalability modes for specified profile.
+  static std::vector<SVCScalabilityMode> GetSupportedScalabilityModes(
+      VideoCodecProfile media_profile,
+      VAProfile va_profile);
+
   // Return the supported video encode profiles.
   static VideoEncodeAccelerator::SupportedProfiles GetSupportedEncodeProfiles();
 
@@ -239,7 +244,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   static VAEntrypoint GetDefaultVaEntryPoint(CodecMode mode, VAProfile profile);
 
   static uint32_t BufferFormatToVARTFormat(gfx::BufferFormat fmt);
-  static uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt);
 
   // Returns the current instance identifier for the protected content system.
   // This can be used to detect when protected context loss has occurred, so any
@@ -422,13 +426,13 @@ class MEDIA_GPU_EXPORT VaapiWrapper
       const std::vector<std::pair<VABufferID, VABufferDescriptor>>& va_buffers)
       WARN_UNUSED_RESULT;
 
-#if defined(USE_X11)
+#if BUILDFLAG(USE_VAAPI_X11)
   // Put data from |va_surface_id| into |x_pixmap| of size
   // |dest_size|, converting/scaling to it.
   bool PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                             x11::Pixmap x_pixmap,
                             gfx::Size dest_size) WARN_UNUSED_RESULT;
-#endif  // USE_X11
+#endif  // BUILDFLAG(USE_VAAPI_X11)
 
   // Creates a ScopedVAImage from a VASurface |va_surface_id| and map it into
   // memory with the given |format| and |size|. If |format| is not equal to the
@@ -480,6 +484,15 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                                          size_t* max_ref_frames)
       WARN_UNUSED_RESULT;
 
+  // Gets packed headers are supported for encoding. This is called for
+  // H264 encoding. |packed_sps|, |packed_pps| and |packed_slice| stands for
+  // whether packed slice parameter set, packed picture parameter set and packed
+  // slice header is supported, respectively.
+  virtual bool GetSupportedPackedHeaders(VideoCodecProfile profile,
+                                         bool& packed_sps,
+                                         bool& packed_pps,
+                                         bool& packed_slice) WARN_UNUSED_RESULT;
+
   // Checks if the driver supports frame rotation.
   bool IsRotationSupported();
 
@@ -521,6 +534,7 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, ScopedVAImage);
   FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVAImage);
   FRIEND_TEST_ALL_PREFIXES(VaapiUtilsTest, BadScopedVABufferMapping);
+  FRIEND_TEST_ALL_PREFIXES(VaapiMinigbmTest, AllocateAndCompareWithMinigbm);
 
   bool Initialize(VAProfile va_profile,
                   EncryptionScheme encryption_scheme) WARN_UNUSED_RESULT;

@@ -45,7 +45,6 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -170,6 +169,8 @@ const char SafeBrowsingPrivateEventRouter::kKeyScanId[] = "scanId";
 const char SafeBrowsingPrivateEventRouter::kKeyIsFederated[] = "isFederated";
 const char SafeBrowsingPrivateEventRouter::kKeyFederatedOrigin[] =
     "federatedOrigin";
+const char SafeBrowsingPrivateEventRouter::kKeyLoginUserName[] =
+    "loginUserName";
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordBreachIdentities[] =
     "identities";
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordBreachIdentitiesUrl[] =
@@ -766,7 +767,8 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
 void SafeBrowsingPrivateEventRouter::OnLoginEvent(
     const GURL& url,
     bool is_federated,
-    const url::Origin& federated_origin) {
+    const url::Origin& federated_origin,
+    const std::u16string& username) {
   absl::optional<enterprise_connectors::ReportingSettings> settings =
       GetReportingSettings();
   if (!settings.has_value() ||
@@ -780,6 +782,7 @@ void SafeBrowsingPrivateEventRouter::OnLoginEvent(
   if (is_federated)
     event.SetStringKey(kKeyFederatedOrigin, federated_origin.Serialize());
   event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+  event.SetStringKey(kKeyLoginUserName, username);
 
   ReportRealtimeEvent(kKeyLoginEvent, std::move(settings.value()),
                       std::move(event));
@@ -787,7 +790,7 @@ void SafeBrowsingPrivateEventRouter::OnLoginEvent(
 
 void SafeBrowsingPrivateEventRouter::OnPasswordBreach(
     const std::string& trigger,
-    const std::vector<std::pair<GURL, std::string>>& identities) {
+    const std::vector<std::pair<GURL, std::u16string>>& identities) {
   absl::optional<enterprise_connectors::ReportingSettings> settings =
       GetReportingSettings();
   if (!settings.has_value() ||
@@ -798,7 +801,7 @@ void SafeBrowsingPrivateEventRouter::OnPasswordBreach(
   base::Value event(base::Value::Type::DICTIONARY);
   std::vector<base::Value> identities_list;
   event.SetStringKey(kKeyTrigger, trigger);
-  for (const std::pair<GURL, std::string>& i : identities) {
+  for (const std::pair<GURL, std::u16string>& i : identities) {
     base::Value identity(base::Value::Type::DICTIONARY);
     identity.SetStringKey(kKeyPasswordBreachIdentitiesUrl, i.first.spec());
     identity.SetStringKey(kKeyPasswordBreachIdentitiesUsername, i.second);
@@ -821,11 +824,6 @@ bool SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient() {
     return false;
   }
 
-  if (!IsRealtimeReportingAvailable()) {
-    DVLOG(1) << "Safe browsing real-time event reporting is only available for "
-                "managed browsers, devices or users.";
-    return false;
-  }
   return true;
 }
 
@@ -1102,25 +1100,6 @@ const user_manager::User* SafeBrowsingPrivateEventRouter::GetChromeOSUser() {
 
 #endif
 
-bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingAvailable() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // The device must be managed.
-  if (!g_browser_process->platform_part()
-           ->browser_policy_connector_ash()
-           ->IsDeviceEnterpriseManaged())
-    return false;
-
-  // The Chrome OS user must be affiliated with the device.
-  // This also implies that the user is managed.
-  const user_manager::User* user = GetChromeOSUser();
-  return user && user->IsAffiliated();
-#else
-  // The management status is determined by the settings returned by
-  // ConnectorsService.
-  return true;
-#endif
-}
-
 void SafeBrowsingPrivateEventRouter::RemoveDmTokenFromRejectedSet(
     const std::string& dm_token) {
   rejected_dm_token_timers_.erase(dm_token);
@@ -1144,7 +1123,7 @@ void SafeBrowsingPrivateEventRouter::OnClientError(
       rejected_dm_token_timers_[client->dm_token()] =
           std::make_unique<base::OneShotTimer>();
       rejected_dm_token_timers_[client->dm_token()]->Start(
-          FROM_HERE, base::TimeDelta::FromHours(24),
+          FROM_HERE, base::Hours(24),
           base::BindOnce(
               &SafeBrowsingPrivateEventRouter::RemoveDmTokenFromRejectedSet,
               weak_ptr_factory_.GetWeakPtr(), client->dm_token()));

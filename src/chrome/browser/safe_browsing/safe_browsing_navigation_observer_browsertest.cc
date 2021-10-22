@@ -100,6 +100,10 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
     manager->AddObserver(this);
   }
 
+  DownloadItemCreatedObserver(const DownloadItemCreatedObserver&) = delete;
+  DownloadItemCreatedObserver& operator=(const DownloadItemCreatedObserver&) =
+      delete;
+
   ~DownloadItemCreatedObserver() override {
     if (manager_)
       manager_->RemoveObserver(this);
@@ -146,8 +150,6 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
   base::OnceClosure quit_waiting_callback_;
   DownloadManager* manager_;
   std::vector<DownloadItem*> items_seen_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadItemCreatedObserver);
 };
 
 class InnerContentsCreationObserver : public content::WebContentsObserver {
@@ -214,14 +216,16 @@ class TestNavigationObserverManager
     }
   }
 
+  TestNavigationObserverManager(const TestNavigationObserverManager&) = delete;
+  TestNavigationObserverManager& operator=(
+      const TestNavigationObserverManager&) = delete;
+
   ~TestNavigationObserverManager() override = default;
 
  private:
   std::vector<std::unique_ptr<SafeBrowsingNavigationObserver>> observer_list_;
   std::vector<std::unique_ptr<InnerContentsCreationObserver>>
       inner_contents_creation_observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestNavigationObserverManager);
 };
 
 class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
@@ -551,10 +555,16 @@ class SBNavigationObserverBrowserTest : public InProcessBrowserTest {
 
   void FindAndAddNavigationToReferrerChain(ReferrerChain* referrer_chain,
                                            const GURL& target_url) {
-    NavigationEvent* nav_event =
+    size_t nav_event_index =
         observer_manager_->navigation_event_list()->FindNavigationEvent(
-            base::Time::Now(), target_url, GURL(), SessionID::InvalidValue());
-    if (nav_event) {
+            base::Time::Now(), target_url, GURL(), SessionID::InvalidValue(),
+            (observer_manager_->navigation_event_list()
+                 ->NavigationEventsSize() -
+             1));
+    if (static_cast<int>(nav_event_index) != -1) {
+      auto* nav_event =
+          observer_manager_->navigation_event_list()->GetNavigationEvent(
+              nav_event_index);
       observer_manager_->AddToReferrerChain(referrer_chain, nav_event, GURL(),
                                             ReferrerChainEntry::EVENT_URL);
     }
@@ -2205,7 +2215,7 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest, IPListDedup) {
   std::string test_server_host(embedded_test_server()->base_url().host());
   ip_map->insert(
       std::make_pair(test_server_host, std::vector<ResolvedIPAddress>()));
-  base::Time yesterday(base::Time::Now() - base::TimeDelta::FromDays(1));
+  base::Time yesterday(base::Time::Now() - base::Days(1));
   (*ip_map)[test_server_host].push_back(ResolvedIPAddress(
       yesterday, embedded_test_server()->host_port_pair().host()));
   ASSERT_EQ(1U, (*ip_map)[test_server_host].size());
@@ -2993,8 +3003,9 @@ IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
                            referrer_chain.Get(0));
 }
 
+// TODO(crbug.com/1247228): Test is flaky across multiple platforms.
 IN_PROC_BROWSER_TEST_F(SBNavigationObserverBrowserTest,
-                       AllowlistDomainsRemoved_RecentNavigation) {
+                       DISABLED_AllowlistDomainsRemoved_RecentNavigation) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL(kSingleFrameTestURL)));
   GURL initial_url = embedded_test_server()->GetURL(kSingleFrameTestURL);

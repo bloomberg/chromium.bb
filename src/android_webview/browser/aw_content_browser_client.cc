@@ -143,6 +143,9 @@ class AwContentsMessageFilter
  public:
   explicit AwContentsMessageFilter(int process_id);
 
+  AwContentsMessageFilter(const AwContentsMessageFilter&) = delete;
+  AwContentsMessageFilter& operator=(const AwContentsMessageFilter&) = delete;
+
   // BrowserMessageFilter methods.
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -154,8 +157,6 @@ class AwContentsMessageFilter
   ~AwContentsMessageFilter() override;
 
   int process_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwContentsMessageFilter);
 };
 
 AwContentsMessageFilter::AwContentsMessageFilter(int process_id)
@@ -829,10 +830,19 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
     bool is_main_frame,
+    network::mojom::WebSandboxFlags /*sandbox_flags*/,
     ui::PageTransition page_transition,
     bool has_user_gesture,
     const absl::optional<url::Origin>& initiating_origin,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
+  // Sandbox flags
+  // =============
+  //
+  // Contrary to the chrome/ implementation, sandbox flags are ignored. Webview
+  // by itself to not invoke external apps. However it let the embedding
+  // app to intercept the request and decide what to do. We need to be careful
+  // here not breaking applications, so the sandbox flags are ignored.
+
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       out_factory->InitWithNewPipeAndPassReceiver();
   // We don't need to care for |security_options| as the factories constructed
@@ -905,7 +915,8 @@ size_t AwContentBrowserClient::GetMaxRendererProcessCountOverride() {
   return 1u;
 }
 
-bool AwContentBrowserClient::ShouldDisableSiteIsolation() {
+bool AwContentBrowserClient::ShouldDisableSiteIsolation(
+    content::SiteIsolationMode site_isolation_mode) {
   // Since AW does not yet support OOPIFs, we must return true here to disable
   // features that may trigger OOPIFs, such as origin isolation.
   //

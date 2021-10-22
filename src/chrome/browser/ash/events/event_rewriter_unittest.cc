@@ -20,7 +20,7 @@
 #include "chrome/browser/ash/input_method/mock_input_method_manager_impl.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/notifications/deprecation_notification_controller.h"
-#include "chrome/browser/chromeos/preferences.h"
+#include "chrome/browser/ash/preferences.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "components/prefs/pref_member.h"
@@ -31,7 +31,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ime/chromeos/fake_ime_keyboard.h"
+#include "ui/base/ime/ash/fake_ime_keyboard.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/chromeos/events/modifier_key.h"
@@ -363,7 +363,7 @@ class EventRewriterTest : public ChromeAshTestBase {
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   std::unique_ptr<EventRewriterDelegateImpl> delegate_;
-  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<ui::EventRewriterChromeOS> rewriter_;
   DeprecationNotificationController* deprecation_controller_;  // Not owned.
   message_center::FakeMessageCenter message_center_;
@@ -3724,6 +3724,10 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
 class EventBuffer : public ui::test::TestEventProcessor {
  public:
   EventBuffer() {}
+
+  EventBuffer(const EventBuffer&) = delete;
+  EventBuffer& operator=(const EventBuffer&) = delete;
+
   ~EventBuffer() override {}
 
   void PopEvents(std::vector<std::unique_ptr<ui::Event>>* events) {
@@ -3739,8 +3743,6 @@ class EventBuffer : public ui::test::TestEventProcessor {
   }
 
   std::vector<std::unique_ptr<ui::Event>> events_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventBuffer);
 };
 
 // Trivial EventSource that does nothing but send events.
@@ -3764,6 +3766,10 @@ class EventRewriterAshTest : public ChromeAshTestBase {
       : source_(&buffer_),
         fake_user_manager_(new FakeChromeUserManager),
         user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
+
+  EventRewriterAshTest(const EventRewriterAshTest&) = delete;
+  EventRewriterAshTest& operator=(const EventRewriterAshTest&) = delete;
+
   ~EventRewriterAshTest() override {}
 
   ui::EventDispatchDetails Send(ui::Event* event) {
@@ -3830,7 +3836,7 @@ class EventRewriterAshTest : public ChromeAshTestBase {
 
  private:
   std::unique_ptr<EventRewriterDelegateImpl> delegate_;
-  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<ui::EventRewriterChromeOS> rewriter_;
 
   EventBuffer buffer_;
@@ -3839,8 +3845,6 @@ class EventRewriterAshTest : public ChromeAshTestBase {
   FakeChromeUserManager* fake_user_manager_;  // Not owned.
   user_manager::ScopedUserManager user_manager_enabler_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventRewriterAshTest);
 };
 
 TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
@@ -4631,7 +4635,7 @@ class ExtensionRewriterInputTest : public EventRewriterAshTest,
 
  protected:
   sync_preferences::TestingPrefServiceSyncable prefs_;
-  chromeos::input_method::FakeImeKeyboard fake_ime_keyboard_;
+  input_method::FakeImeKeyboard fake_ime_keyboard_;
   std::unique_ptr<ui::EventRewriterChromeOS> event_rewriter_chromeos_;
 
  private:

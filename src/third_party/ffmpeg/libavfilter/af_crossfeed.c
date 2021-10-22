@@ -48,7 +48,7 @@ static int query_formats(AVFilterContext *ctx)
         (ret = ff_set_common_formats         (ctx     , formats            )) < 0 ||
         (ret = ff_add_channel_layout         (&layout , AV_CH_LAYOUT_STEREO)) < 0 ||
         (ret = ff_set_common_channel_layouts (ctx     , layout             )) < 0 ||
-        (ret = ff_set_common_samplerates     (ctx     , ff_all_samplerates())) < 0)
+        (ret = ff_set_common_all_samplerates (ctx                          )) < 0)
         return ret;
 
     return 0;
@@ -164,7 +164,6 @@ static const AVFilterPad inputs[] = {
         .filter_frame = filter_frame,
         .config_props = config_input,
     },
-    { NULL }
 };
 
 static const AVFilterPad outputs[] = {
@@ -172,7 +171,6 @@ static const AVFilterPad outputs[] = {
         .name = "default",
         .type = AVMEDIA_TYPE_AUDIO,
     },
-    { NULL }
 };
 
 const AVFilter ff_af_crossfeed = {
@@ -181,8 +179,8 @@ const AVFilter ff_af_crossfeed = {
     .query_formats  = query_formats,
     .priv_size      = sizeof(CrossfeedContext),
     .priv_class     = &crossfeed_class,
-    .inputs         = inputs,
-    .outputs        = outputs,
+    FILTER_INPUTS(inputs),
+    FILTER_OUTPUTS(outputs),
     .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
     .process_command = process_command,
 };

@@ -213,7 +213,8 @@ void av1_quantize_lp_c(const int16_t *coeff_ptr, intptr_t n_coeffs,
                        const int16_t *round_ptr, const int16_t *quant_ptr,
                        int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr,
                        const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                       const int16_t *scan) {
+                       const int16_t *scan, const int16_t *iscan) {
+  (void)iscan;
   int eob = -1;
 
   memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
@@ -684,15 +685,33 @@ void av1_set_q_index(const EncQuantDequantParams *enc_quant_dequant_params,
   x->qindex = qindex;
   x->seg_skip_block =
       0;  // TODO(angiebird): Find a proper place to init this variable.
-  for (int i = 0; i < MAX_MB_PLANE; ++i) {
-    x->plane[i].quant_QTX = quants->y_quant[qindex];
-    x->plane[i].quant_fp_QTX = quants->y_quant_fp[qindex];
-    x->plane[i].round_fp_QTX = quants->y_round_fp[qindex];
-    x->plane[i].quant_shift_QTX = quants->y_quant_shift[qindex];
-    x->plane[i].zbin_QTX = quants->y_zbin[qindex];
-    x->plane[i].round_QTX = quants->y_round[qindex];
-    x->plane[i].dequant_QTX = dequants->y_dequant_QTX[qindex];
-  }
+
+  // Y
+  x->plane[0].quant_QTX = quants->y_quant[qindex];
+  x->plane[0].quant_fp_QTX = quants->y_quant_fp[qindex];
+  x->plane[0].round_fp_QTX = quants->y_round_fp[qindex];
+  x->plane[0].quant_shift_QTX = quants->y_quant_shift[qindex];
+  x->plane[0].zbin_QTX = quants->y_zbin[qindex];
+  x->plane[0].round_QTX = quants->y_round[qindex];
+  x->plane[0].dequant_QTX = dequants->y_dequant_QTX[qindex];
+
+  // U
+  x->plane[1].quant_QTX = quants->u_quant[qindex];
+  x->plane[1].quant_fp_QTX = quants->u_quant_fp[qindex];
+  x->plane[1].round_fp_QTX = quants->u_round_fp[qindex];
+  x->plane[1].quant_shift_QTX = quants->u_quant_shift[qindex];
+  x->plane[1].zbin_QTX = quants->u_zbin[qindex];
+  x->plane[1].round_QTX = quants->u_round[qindex];
+  x->plane[1].dequant_QTX = dequants->u_dequant_QTX[qindex];
+
+  // V
+  x->plane[2].quant_QTX = quants->v_quant[qindex];
+  x->plane[2].quant_fp_QTX = quants->v_quant_fp[qindex];
+  x->plane[2].round_fp_QTX = quants->v_round_fp[qindex];
+  x->plane[2].quant_shift_QTX = quants->v_quant_shift[qindex];
+  x->plane[2].zbin_QTX = quants->v_zbin[qindex];
+  x->plane[2].round_QTX = quants->v_round[qindex];
+  x->plane[2].dequant_QTX = dequants->v_dequant_QTX[qindex];
 }
 
 void av1_set_qmatrix(const CommonQuantParams *quant_params, int segment_id,
@@ -745,14 +764,34 @@ void av1_frame_init_quantizer(AV1_COMP *cpi) {
   av1_init_plane_quantizers(cpi, x, xd->mi[0]->segment_id);
 }
 
+static int adjust_hdr_cb_deltaq(int base_qindex) {
+  double baseQp = base_qindex / QP_SCALE_FACTOR;
+  const double chromaQp = CHROMA_QP_SCALE * baseQp + CHROMA_QP_OFFSET;
+  const double dcbQP = CHROMA_CB_QP_SCALE * chromaQp * QP_SCALE_FACTOR;
+  int dqpCb = (int)(dcbQP + (dcbQP < 0 ? -0.5 : 0.5));
+  dqpCb = AOMMIN(0, dqpCb);
+  dqpCb = (int)CLIP(dqpCb, -12 * QP_SCALE_FACTOR, 12 * QP_SCALE_FACTOR);
+  return dqpCb;
+}
+
+static int adjust_hdr_cr_deltaq(int base_qindex) {
+  double baseQp = base_qindex / QP_SCALE_FACTOR;
+  const double chromaQp = CHROMA_QP_SCALE * baseQp + CHROMA_QP_OFFSET;
+  const double dcrQP = CHROMA_CR_QP_SCALE * chromaQp * QP_SCALE_FACTOR;
+  int dqpCr = (int)(dcrQP + (dcrQP < 0 ? -0.5 : 0.5));
+  dqpCr = AOMMIN(0, dqpCr);
+  dqpCr = (int)CLIP(dqpCr, -12 * QP_SCALE_FACTOR, 12 * QP_SCALE_FACTOR);
+  return dqpCr;
+}
+
 void av1_set_quantizer(AV1_COMMON *const cm, int min_qmlevel, int max_qmlevel,
-                       int q, int enable_chroma_deltaq) {
+                       int q, int enable_chroma_deltaq, int enable_hdr_deltaq) {
   // quantizer has to be reinitialized with av1_init_quantizer() if any
   // delta_q changes.
   CommonQuantParams *quant_params = &cm->quant_params;
   quant_params->base_qindex = AOMMAX(cm->delta_q_info.delta_q_present_flag, q);
-
   quant_params->y_dc_delta_q = 0;
+
   if (enable_chroma_deltaq) {
     // TODO(aomedia:2717): need to design better delta
     quant_params->u_dc_delta_q = 2;
@@ -764,6 +803,18 @@ void av1_set_quantizer(AV1_COMMON *const cm, int min_qmlevel, int max_qmlevel,
     quant_params->u_ac_delta_q = 0;
     quant_params->v_dc_delta_q = 0;
     quant_params->v_ac_delta_q = 0;
+  }
+
+  // following section 8.3.2 in T-REC-H.Sup15 document
+  // to apply to AV1 qindex in the range of [0, 255]
+  if (enable_hdr_deltaq) {
+    int dqpCb = adjust_hdr_cb_deltaq(quant_params->base_qindex);
+    int dqpCr = adjust_hdr_cr_deltaq(quant_params->base_qindex);
+    quant_params->u_dc_delta_q = quant_params->u_ac_delta_q = dqpCb;
+    quant_params->v_dc_delta_q = quant_params->v_ac_delta_q = dqpCr;
+    if (dqpCb != dqpCr) {
+      cm->seq_params->separate_uv_delta_q = 1;
+    }
   }
 
   quant_params->qmatrix_level_y =

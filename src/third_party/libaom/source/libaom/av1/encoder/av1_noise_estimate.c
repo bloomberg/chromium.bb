@@ -53,12 +53,7 @@ void av1_noise_estimate_init(NOISE_ESTIMATE *const ne, int width, int height) {
 }
 
 static int enable_noise_estimation(AV1_COMP *const cpi) {
-  ResizePendingParams *const resize_pending_params =
-      &cpi->resize_pending_params;
-  const int resize_pending =
-      (resize_pending_params->width && resize_pending_params->height &&
-       (cpi->common.width != resize_pending_params->width ||
-        cpi->common.height != resize_pending_params->height));
+  const int resize_pending = is_frame_resize_pending(cpi);
 
 #if CONFIG_AV1_HIGHBITDEPTH
   if (cpi->common.seq_params->use_highbitdepth) return 0;

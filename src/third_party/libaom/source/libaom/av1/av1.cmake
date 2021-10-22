@@ -237,6 +237,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/svc_layercontext.h"
             "${AOM_ROOT}/av1/encoder/temporal_filter.c"
             "${AOM_ROOT}/av1/encoder/temporal_filter.h"
+            "${AOM_ROOT}/av1/encoder/thirdpass.c"
+            "${AOM_ROOT}/av1/encoder/thirdpass.h"
             "${AOM_ROOT}/av1/encoder/tokenize.c"
             "${AOM_ROOT}/av1/encoder/tokenize.h"
             "${AOM_ROOT}/av1/encoder/tpl_model.c"
@@ -390,12 +392,14 @@ list(APPEND AOM_AV1_ENCODER_ASM_SSE2 "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm"
 list(APPEND AOM_AV1_ENCODER_INTRIN_SSE2
             "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm_sse2.h"
+            "${AOM_ROOT}/av1/encoder/x86/av1_k_means_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/av1_quantize_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse2.c"
+            "${AOM_ROOT}/av1/encoder/x86/error_intrin_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
-            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse2.c"
-            "${AOM_ROOT}/av1/encoder/x86/av1_k_means_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/highbd_temporal_filter_sse2.c"
+            "${AOM_ROOT}/av1/encoder/x86/reconinter_enc_sse2.c"
+            "${AOM_ROOT}/av1/encoder/x86/temporal_filter_sse2.c"
             "${AOM_ROOT}/av1/encoder/x86/wedge_utils_sse2.c")
 
 if(CONFIG_AV1_TEMPORAL_DENOISING)
@@ -411,6 +415,9 @@ if(NOT CONFIG_AV1_HIGHBITDEPTH)
 endif()
 
 list(APPEND AOM_AV1_ENCODER_INTRIN_SSE3 "${AOM_ROOT}/av1/encoder/x86/ml_sse3.c")
+
+list(APPEND AOM_AV1_ENCODER_INTRIN_SSSE3
+            "${AOM_ROOT}/av1/encoder/x86/reconinter_enc_ssse3.c")
 
 list(APPEND AOM_AV1_ENCODER_ASM_SSSE3_X86_64
             "${AOM_ROOT}/av1/encoder/x86/av1_quantize_ssse3_x86_64.asm")
@@ -617,6 +624,12 @@ function(setup_av1_targets)
       if(AOM_AV1_DECODER_INTRIN_SSSE3)
         add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_decoder"
                                       "AOM_AV1_DECODER_INTRIN_SSSE3")
+      endif()
+    endif()
+    if(CONFIG_AV1_ENCODER)
+      if(AOM_AV1_ENCODER_INTRIN_SSSE3)
+        add_intrinsics_object_library("-mssse3" "ssse3" "aom_av1_encoder"
+                                      "AOM_AV1_ENCODER_INTRIN_SSSE3")
       endif()
     endif()
   endif()

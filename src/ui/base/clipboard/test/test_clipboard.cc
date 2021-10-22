@@ -150,27 +150,6 @@ void TestClipboard::ReadAvailableTypes(
   *types = GetStandardFormats(buffer, data_dst);
 }
 
-std::vector<std::u16string>
-TestClipboard::ReadAvailablePlatformSpecificFormatNames(
-    ClipboardBuffer buffer,
-    const ui::DataTransferEndpoint* data_dst) const {
-  const DataStore& store = GetStore(buffer);
-  if (!IsReadAllowed(store.data_src.get(), data_dst))
-    return {};
-
-  const auto& data = store.data;
-  std::vector<std::u16string> types;
-  types.reserve(data.size());
-  std::map<std::string, std::string> custom_format_names =
-      ExtractCustomPlatformNames(buffer, data_dst);
-  for (const auto& item : custom_format_names)
-    types.push_back(base::UTF8ToUTF16(item.first));
-  for (const auto& item : GetStandardFormats(buffer, data_dst))
-    types.push_back(item);
-
-  return types;
-}
-
 void TestClipboard::ReadText(ClipboardBuffer buffer,
                              const DataTransferEndpoint* data_dst,
                              std::u16string* result) const {
@@ -251,19 +230,6 @@ void TestClipboard::ReadPng(ClipboardBuffer buffer,
     return;
   }
   std::move(callback).Run(store.png);
-}
-
-void TestClipboard::ReadImage(ClipboardBuffer buffer,
-                              const DataTransferEndpoint* data_dst,
-                              ReadImageCallback callback) const {
-  const DataStore& store = GetStore(buffer);
-  if (!IsReadAllowed(store.data_src.get(), data_dst)) {
-    std::move(callback).Run(SkBitmap());
-    return;
-  }
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(store.png.data(), store.png.size(), &bitmap);
-  std::move(callback).Run(bitmap);
 }
 
 // TODO(crbug.com/1103215): |data_dst| should be supported.

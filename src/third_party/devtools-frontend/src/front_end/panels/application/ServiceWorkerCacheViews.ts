@@ -216,7 +216,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     dataGrid.addEventListener(DataGrid.DataGrid.Events.SortingChanged, this.sortingChanged, this);
 
     dataGrid.addEventListener(DataGrid.DataGrid.Events.SelectedNode, event => {
-      this.previewCachedResponse(event.data.data);
+      this.previewCachedResponse(event.data.data as SDK.NetworkRequest.NetworkRequest);
     }, this);
     dataGrid.setStriped(true);
     return dataGrid;
@@ -353,7 +353,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     return;
   }
 
-  private refreshButtonClicked(_event: Common.EventTarget.EventTargetEvent): void {
+  private refreshButtonClicked(): void {
     this.updateData(true);
   }
 
@@ -517,7 +517,7 @@ export class RequestView extends UI.Widget.VBox {
     }
   }
 
-  private tabSelected(event: Common.EventTarget.EventTargetEvent): void {
+  private tabSelected(event: Common.EventTarget.EventTargetEvent<UI.TabbedPane.EventData>): void {
     if (!event.data.isUserGesture) {
       return;
     }

@@ -41,14 +41,15 @@ class TrivialThread : public PlatformThread::Delegate {
   TrivialThread() : run_event_(WaitableEvent::ResetPolicy::MANUAL,
                                WaitableEvent::InitialState::NOT_SIGNALED) {}
 
+  TrivialThread(const TrivialThread&) = delete;
+  TrivialThread& operator=(const TrivialThread&) = delete;
+
   void ThreadMain() override { run_event_.Signal(); }
 
   WaitableEvent& run_event() { return run_event_; }
 
  private:
   WaitableEvent run_event_;
-
-  DISALLOW_COPY_AND_ASSIGN(TrivialThread);
 };
 
 }  // namespace
@@ -117,6 +118,10 @@ class FunctionTestThread : public PlatformThread::Delegate {
         terminate_thread_(WaitableEvent::ResetPolicy::MANUAL,
                           WaitableEvent::InitialState::NOT_SIGNALED),
         done_(false) {}
+
+  FunctionTestThread(const FunctionTestThread&) = delete;
+  FunctionTestThread& operator=(const FunctionTestThread&) = delete;
+
   ~FunctionTestThread() override {
     EXPECT_TRUE(terminate_thread_.IsSignaled())
         << "Need to mark thread for termination and join the underlying thread "
@@ -168,8 +173,6 @@ class FunctionTestThread : public PlatformThread::Delegate {
   mutable WaitableEvent termination_ready_;
   WaitableEvent terminate_thread_;
   bool done_;
-
-  DISALLOW_COPY_AND_ASSIGN(FunctionTestThread);
 };
 
 }  // namespace
@@ -235,6 +238,10 @@ class ThreadPriorityTestThread : public FunctionTestThread {
  public:
   explicit ThreadPriorityTestThread(ThreadPriority from, ThreadPriority to)
       : from_(from), to_(to) {}
+
+  ThreadPriorityTestThread(const ThreadPriorityTestThread&) = delete;
+  ThreadPriorityTestThread& operator=(const ThreadPriorityTestThread&) = delete;
+
   ~ThreadPriorityTestThread() override = default;
 
  private:
@@ -255,8 +262,6 @@ class ThreadPriorityTestThread : public FunctionTestThread {
 
   const ThreadPriority from_;
   const ThreadPriority to_;
-
-  DISALLOW_COPY_AND_ASSIGN(ThreadPriorityTestThread);
 };
 
 void TestSetCurrentThreadPriority() {
@@ -553,14 +558,14 @@ INSTANTIATE_TEST_SUITE_P(
                 {kOptimizedRealtimeThreadingMacBusy.name, "0.7"},
                 {kOptimizedRealtimeThreadingMacBusyLimit.name, "0.7"}},
             FieldTrialParams{
-                {kOptimizedRealtimeThreadingMacBusy.name, "1.0"},
+                {kOptimizedRealtimeThreadingMacBusy.name, "0.5"},
                 {kOptimizedRealtimeThreadingMacBusyLimit.name, "1.0"}}),
         testing::Values(TimeDelta(),
-                        TimeDelta::FromSeconds(256.0 / 48000),
-                        TimeDelta::FromMilliseconds(5),
-                        TimeDelta::FromMilliseconds(10),
-                        TimeDelta::FromSeconds(1024.0 / 44100),
-                        TimeDelta::FromSeconds(1024.0 / 16000))));
+                        Seconds(256.0 / 48000),
+                        Milliseconds(5),
+                        Milliseconds(10),
+                        Seconds(1024.0 / 44100),
+                        Seconds(1024.0 / 16000))));
 
 }  // namespace
 

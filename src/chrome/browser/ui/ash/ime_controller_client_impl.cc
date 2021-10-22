@@ -9,18 +9,18 @@
 
 #include "base/check_op.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/ime_bridge.h"
-#include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
-
-using chromeos::input_method::InputMethodDescriptor;
-using chromeos::input_method::InputMethodManager;
-using chromeos::input_method::InputMethodUtil;
-using ui::ime::InputMethodMenuManager;
+#include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/ime_bridge.h"
+#include "ui/base/ime/ash/ime_keyboard.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
+#include "ui/base/ime/ash/input_method_util.h"
 
 namespace {
+
+using ::ash::input_method::InputMethodDescriptor;
+using ::ash::input_method::InputMethodManager;
+using ::ash::input_method::InputMethodUtil;
+using ::ui::ime::InputMethodMenuManager;
 
 ImeControllerClientImpl* g_ime_controller_client_instance = nullptr;
 
@@ -98,8 +98,8 @@ void ImeControllerClientImpl::ActivateImeMenuItem(const std::string& key) {
 }
 
 void ImeControllerClientImpl::SetCapsLockEnabled(bool caps_enabled) {
-  chromeos::input_method::ImeKeyboard* keyboard =
-      chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+  ash::input_method::ImeKeyboard* keyboard =
+      InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
     keyboard->SetCapsLockEnabled(caps_enabled);
 }
@@ -119,7 +119,7 @@ void ImeControllerClientImpl::UpdateCastingState(bool casting_enabled) {
 }
 
 void ImeControllerClientImpl::OverrideKeyboardKeyset(
-    chromeos::input_method::ImeKeyset keyset,
+    ash::input_method::ImeKeyset keyset,
     OverrideKeyboardKeysetCallback callback) {
   input_method_manager_->OverrideKeyboardKeyset(keyset);
   std::move(callback).Run();
@@ -131,7 +131,7 @@ void ImeControllerClientImpl::ShowModeIndicator() {
       input_method_manager_->GetActiveIMEState()->GetCurrentInputMethod();
   const std::u16string short_name = descriptor.GetIndicator();
 
-  chromeos::IMECandidateWindowHandlerInterface* cw_handler =
+  ash::IMECandidateWindowHandlerInterface* cw_handler =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (!cw_handler)
     return;
@@ -151,7 +151,7 @@ void ImeControllerClientImpl::ShowModeIndicator() {
   ime_controller_->ShowModeIndicator(anchor_bounds, short_name);
 }
 
-// chromeos::input_method::InputMethodManager::Observer:
+// ash::input_method::InputMethodManager::Observer:
 void ImeControllerClientImpl::InputMethodChanged(InputMethodManager* manager,
                                                  Profile* profile,
                                                  bool show_message) {
@@ -160,7 +160,7 @@ void ImeControllerClientImpl::InputMethodChanged(InputMethodManager* manager,
     ShowModeIndicator();
 }
 
-// chromeos::input_method::InputMethodManager::ImeMenuObserver:
+// ash::input_method::InputMethodManager::ImeMenuObserver:
 void ImeControllerClientImpl::ImeMenuActivationChanged(bool is_active) {
   ime_controller_->ShowImeMenuOnShelf(is_active);
 }
@@ -179,7 +179,7 @@ void ImeControllerClientImpl::InputMethodMenuItemChanged(
   RefreshIme();
 }
 
-// chromeos::input_method::ImeKeyboard::Observer:
+// ash::input_method::ImeKeyboard::Observer:
 void ImeControllerClientImpl::OnCapsLockChanged(bool enabled) {
   ime_controller_->UpdateCapsLockState(enabled);
 }
@@ -194,7 +194,7 @@ void ImeControllerClientImpl::InitAndSetClient() {
   // Now that the client is set, flush state from observed objects to
   // the ImeController, now that it will hear it.
   input_method_manager_->NotifyObserversImeExtraInputStateChange();
-  if (const chromeos::input_method::ImeKeyboard* keyboard =
+  if (const ash::input_method::ImeKeyboard* keyboard =
           input_method_manager_->GetImeKeyboard()) {
     ime_controller_->OnKeyboardLayoutNameChanged(
         keyboard->GetCurrentKeyboardLayoutName());
@@ -208,7 +208,7 @@ ash::ImeInfo ImeControllerClientImpl::GetAshImeInfo(
   info.id = ime.id();
   info.name = util->GetInputMethodLongName(ime);
   info.short_name = ime.GetIndicator();
-  info.third_party = chromeos::extension_ime_util::IsExtensionIME(ime.id());
+  info.third_party = ash::extension_ime_util::IsExtensionIME(ime.id());
   return info;
 }
 
@@ -225,9 +225,9 @@ void ImeControllerClientImpl::RefreshIme() {
   const std::string current_ime_id = state->GetCurrentInputMethod().id();
 
   std::vector<ash::ImeInfo> available_imes;
-  std::unique_ptr<std::vector<InputMethodDescriptor>>
-      available_ime_descriptors = state->GetActiveInputMethods();
-  for (const InputMethodDescriptor& descriptor : *available_ime_descriptors) {
+  std::unique_ptr<std::vector<InputMethodDescriptor>> enabled_ime_descriptors =
+      state->GetEnabledInputMethodsSortedByLocalizedDisplayNames();
+  for (const InputMethodDescriptor& descriptor : *enabled_ime_descriptors) {
     ash::ImeInfo info = GetAshImeInfo(descriptor);
     available_imes.push_back(std::move(info));
   }

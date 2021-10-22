@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef AOM_DSP_ARM_MEM_NEON_H_
-#define AOM_DSP_ARM_MEM_NEON_H_
+#ifndef AOM_AOM_DSP_ARM_MEM_NEON_H_
+#define AOM_AOM_DSP_ARM_MEM_NEON_H_
 
 #include <arm_neon.h>
 #include <string.h>
@@ -536,4 +536,4 @@ static INLINE void store_s16q_to_tran_low(tran_low_t *buf, const int16x8_t a) {
   vst1q_s32(buf + 4, v1);
 }
 
-#endif  // AOM_DSP_ARM_MEM_NEON_H_
+#endif  // AOM_AOM_DSP_ARM_MEM_NEON_H_

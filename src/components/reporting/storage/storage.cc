@@ -59,22 +59,19 @@ constexpr base::FilePath::CharType kFastBatchQueueSubdir[] =
     FILE_PATH_LITERAL("FastBatch");
 constexpr base::FilePath::CharType kFastBatchQueuePrefix[] =
     FILE_PATH_LITERAL("P_FastBatch");
-constexpr base::TimeDelta kFastBatchUploadPeriod =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kFastBatchUploadPeriod = base::Seconds(1);
 
 constexpr base::FilePath::CharType kSlowBatchQueueSubdir[] =
     FILE_PATH_LITERAL("SlowBatch");
 constexpr base::FilePath::CharType kSlowBatchQueuePrefix[] =
     FILE_PATH_LITERAL("P_SlowBatch");
-constexpr base::TimeDelta kSlowBatchUploadPeriod =
-    base::TimeDelta::FromSeconds(20);
+constexpr base::TimeDelta kSlowBatchUploadPeriod = base::Seconds(20);
 
 constexpr base::FilePath::CharType kBackgroundQueueSubdir[] =
     FILE_PATH_LITERAL("Background");
 constexpr base::FilePath::CharType kBackgroundQueuePrefix[] =
     FILE_PATH_LITERAL("P_Background");
-constexpr base::TimeDelta kBackgroundQueueUploadPeriod =
-    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kBackgroundQueueUploadPeriod = base::Minutes(1);
 
 constexpr base::FilePath::CharType kManualQueueSubdir[] =
     FILE_PATH_LITERAL("Manual");
@@ -89,8 +86,7 @@ const int32_t kEncryptionKeyMaxFileSize = 256;
 // Failed upload retry delay: if an upload fails and there are no more incoming
 // events, collected events will not get uploaded for an indefinite time (see
 // b/192666219).
-constexpr base::TimeDelta kFailedUploadRetryDelay =
-    base::TimeDelta::FromSeconds(1);
+constexpr base::TimeDelta kFailedUploadRetryDelay = base::Seconds(1);
 
 // Returns vector of <priority, queue_options> for all expected queues in
 // Storage. Queues are all located under the given root directory.
@@ -414,9 +410,8 @@ class Storage::KeyInStorage {
         directory_,
         /*recursive=*/false, base::FileEnumerator::FILES,
         base::StrCat({kEncryptionKeyFilePrefix, FILE_PATH_LITERAL("*")}));
-
-    for (base::FilePath full_name = dir_enum.Next(); !full_name.empty();
-         full_name = dir_enum.Next()) {
+    base::FilePath full_name;
+    while (full_name = dir_enum.Next(), !full_name.empty()) {
       const auto result = key_files_to_remove.emplace(full_name);
       if (!result.second) {
         // Duplicate file name. Should not happen.
@@ -441,8 +436,8 @@ class Storage::KeyInStorage {
       key_files_to_remove.erase(result.first);
     }
     // Delete all files assigned for deletion.
-    for (const auto& full_name : key_files_to_remove) {
-      base::DeleteFile(full_name);  // Ignore errors, if any.
+    for (const auto& file_to_remove : key_files_to_remove) {
+      base::DeleteFile(file_to_remove);  // Ignore errors, if any.
     }
   }
 

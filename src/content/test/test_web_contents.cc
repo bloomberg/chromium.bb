@@ -102,7 +102,7 @@ TestRenderFrameHost* TestWebContents::GetSpeculativePrimaryMainFrame() {
 
 int TestWebContents::DownloadImage(const GURL& url,
                                    bool is_favicon,
-                                   uint32_t preferred_size,
+                                   const gfx::Size& preferred_size,
                                    uint32_t max_bitmap_size,
                                    bool bypass_cache,
                                    ImageDownloadCallback callback) {
@@ -289,7 +289,7 @@ void TestWebContents::CommitPendingNavigation() {
   NavigationEntry* entry = GetController().GetPendingEntry();
   DCHECK(entry);
 
-  auto navigation = NavigationSimulator::CreateFromPending(this);
+  auto navigation = NavigationSimulator::CreateFromPending(GetController());
   navigation->Commit();
 }
 
@@ -411,9 +411,9 @@ bool TestWebContents::IsBackForwardCacheSupported() {
 }
 
 int TestWebContents::AddPrerender(const GURL& url) {
-  auto attributes = blink::mojom::PrerenderAttributes::New();
-  attributes->url = url;
-  return GetPrerenderHostRegistry()->CreateAndStartHost(std::move(attributes),
+  PrerenderAttributes attributes{url, PrerenderTriggerType::kSpeculationRule,
+                                 Referrer()};
+  return GetPrerenderHostRegistry()->CreateAndStartHost(attributes,
                                                         *GetMainFrame());
 }
 
@@ -431,4 +431,16 @@ TestRenderFrameHost* TestWebContents::AddPrerenderAndCommitNavigation(
   }
   return static_cast<TestRenderFrameHost*>(host->GetPrerenderedMainFrameHost());
 }
+
+std::unique_ptr<NavigationSimulator>
+TestWebContents::AddPrerenderAndStartNavigation(const GURL& url) {
+  int host_id = AddPrerender(url);
+  PrerenderHost* host =
+      GetPrerenderHostRegistry()->FindNonReservedHostById(host_id);
+  DCHECK(host);
+
+  return NavigationSimulatorImpl::CreateFromPendingInFrame(
+      FrameTreeNode::GloballyFindByID(host->frame_tree_node_id()));
+}
+
 }  // namespace content

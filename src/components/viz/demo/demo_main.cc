@@ -37,10 +37,6 @@
 #include "ui/platform_window/win/win_window.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/platform_window/x11/x11_window.h"  // nogncheck
-#endif
-
 namespace {
 
 // Initializes and owns the components from base necessary to run the app.
@@ -52,14 +48,15 @@ class InitBase {
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams("demo");
   }
 
+  InitBase(const InitBase&) = delete;
+  InitBase& operator=(const InitBase&) = delete;
+
   ~InitBase() = default;
 
  private:
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager_;
   base::SingleThreadTaskExecutor main_task_executor_{base::MessagePumpType::UI};
-
-  DISALLOW_COPY_AND_ASSIGN(InitBase);
 };
 
 // Initializes and owns mojo.
@@ -74,13 +71,14 @@ class InitMojo {
         mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
   }
 
+  InitMojo(const InitMojo&) = delete;
+  InitMojo& operator=(const InitMojo&) = delete;
+
   ~InitMojo() = default;
 
  private:
   base::Thread thread_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitMojo);
 };
 
 // Initializes and owns the UI components needed for the app.
@@ -90,12 +88,13 @@ class InitUI {
     event_source_ = ui::PlatformEventSource::CreateDefault();
   }
 
+  InitUI(const InitUI&) = delete;
+  InitUI& operator=(const InitUI&) = delete;
+
   ~InitUI() = default;
 
  private:
   std::unique_ptr<ui::PlatformEventSource> event_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(InitUI);
 };
 
 // DemoWindow creates the native window for the demo app. The native window
@@ -104,6 +103,10 @@ class InitUI {
 class DemoWindow : public ui::PlatformWindowDelegate {
  public:
   DemoWindow() = default;
+
+  DemoWindow(const DemoWindow&) = delete;
+  DemoWindow& operator=(const DemoWindow&) = delete;
+
   ~DemoWindow() override = default;
 
   void Create(const gfx::Rect& bounds) {
@@ -117,20 +120,9 @@ class DemoWindow : public ui::PlatformWindowDelegate {
   std::unique_ptr<ui::PlatformWindow> CreatePlatformWindow(
       const gfx::Rect& bounds) {
     ui::PlatformWindowInitProperties props(bounds);
-#if defined(USE_X11) || defined(USE_OZONE)
 #if defined(USE_OZONE)
-    if (features::IsUsingOzonePlatform()) {
       return ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
           this, std::move(props));
-    }
-#endif
-#if defined(USE_X11)
-    auto x11_window = std::make_unique<ui::X11Window>(this);
-    x11_window->Initialize(std::move(props));
-    return x11_window;
-#endif
-    NOTREACHED();
-    return nullptr;
 #elif defined(OS_WIN)
     return std::make_unique<ui::WinWindow>(this, props.bounds);
 #else
@@ -195,8 +187,6 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 
   std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget widget_;
-
-  DISALLOW_COPY_AND_ASSIGN(DemoWindow);
 };
 
 int DemoMain() {
@@ -255,7 +245,7 @@ int main(int argc, char** argv) {
 
     // To create dmabuf through gbm, Ozone needs to be set up.
     gpu_helper = std::make_unique<ui::OzoneGpuTestHelper>();
-    gpu_helper->Initialize(base::ThreadTaskRunnerHandle::Get());
+    gpu_helper->Initialize();
   }
 #endif
 

@@ -134,7 +134,6 @@ class LocalFrameMojoHandler
   // frame's sandbox flags or container policy. The new policy won't take effect
   // until the next navigation.
   void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
-  void OnScreensChange() final;
   void PostMessageEvent(
       const absl::optional<RemoteFrameToken>& source_frame_token,
       const String& source_origin,
@@ -273,8 +272,8 @@ class LocalFrameMojoHandler
   device::mojom::blink::DevicePostureType current_device_posture_ =
       device::mojom::blink::DevicePostureType::kContinuous;
 
-  // TODO(crbug.com/1166695): change this to a separate voter for executing JS.
-  std::unique_ptr<power_scheduler::PowerModeVoter> loading_power_mode_voter_;
+  std::unique_ptr<power_scheduler::PowerModeVoter>
+      script_execution_power_mode_voter_;
 };
 
 class ActiveURLMessageFilter : public mojo::MessageFilter {

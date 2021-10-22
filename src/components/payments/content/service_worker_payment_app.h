@@ -58,6 +58,10 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       const std::string& enabled_method,
       bool is_incognito,
       const base::RepeatingClosure& show_processing_spinner);
+
+  ServiceWorkerPaymentApp(const ServiceWorkerPaymentApp&) = delete;
+  ServiceWorkerPaymentApp& operator=(const ServiceWorkerPaymentApp&) = delete;
+
   ~ServiceWorkerPaymentApp() override;
 
   // The callback for ValidateCanMakePayment.
@@ -95,9 +99,6 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   const SkBitmap* icon_bitmap() const override;
   std::set<std::string> GetApplicationIdentifiersThatHideThisApp()
       const override;
-  bool IsReadyForMinimalUI() const override;
-  std::string GetAccountBalance() const override;
-  void DisableShowingOwnUI() override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
@@ -161,18 +162,11 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
   std::string installable_enabled_method_;
 
-  // Minimal UI fields.
-  bool is_ready_for_minimal_ui_ = false;
-  std::string account_balance_;
-  bool can_show_own_ui_ = true;
-
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
 
   base::WeakPtr<content::WebContents> web_contents_;
 
   base::WeakPtrFactory<ServiceWorkerPaymentApp> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPaymentApp);
 };
 
 }  // namespace payments

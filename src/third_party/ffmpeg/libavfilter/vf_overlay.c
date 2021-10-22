@@ -255,7 +255,7 @@ static int query_formats(AVFilterContext *ctx)
         overlay_formats = overlay_pix_fmts_gbrp;
         break;
     case OVERLAY_FORMAT_AUTO:
-        return ff_set_common_formats(ctx, ff_make_format_list(alpha_pix_fmts));
+        return ff_set_common_formats_from_list(ctx, alpha_pix_fmts);
     default:
         av_assert0(0);
     }
@@ -1029,8 +1029,8 @@ static int do_blend(FFFrameSync *fs)
 
         td.dst = mainpic;
         td.src = second;
-        ctx->internal->execute(ctx, s->blend_slice, &td, NULL, FFMIN(FFMAX(1, FFMIN3(s->y + second->height, FFMIN(second->height, mainpic->height), mainpic->height - s->y)),
-                                                                     ff_filter_get_nb_threads(ctx)));
+        ff_filter_execute(ctx, s->blend_slice, &td, NULL, FFMIN(FFMAX(1, FFMIN3(s->y + second->height, FFMIN(second->height, mainpic->height), mainpic->height - s->y)),
+                                                                ff_filter_get_nb_threads(ctx)));
     }
     return ff_filter_frame(ctx->outputs[0], mainpic);
 }
@@ -1094,7 +1094,6 @@ static const AVFilterPad avfilter_vf_overlay_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input_overlay,
     },
-    { NULL }
 };
 
 static const AVFilterPad avfilter_vf_overlay_outputs[] = {
@@ -1103,7 +1102,6 @@ static const AVFilterPad avfilter_vf_overlay_outputs[] = {
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
     },
-    { NULL }
 };
 
 const AVFilter ff_vf_overlay = {
@@ -1117,8 +1115,8 @@ const AVFilter ff_vf_overlay = {
     .query_formats = query_formats,
     .activate      = activate,
     .process_command = process_command,
-    .inputs        = avfilter_vf_overlay_inputs,
-    .outputs       = avfilter_vf_overlay_outputs,
+    FILTER_INPUTS(avfilter_vf_overlay_inputs),
+    FILTER_OUTPUTS(avfilter_vf_overlay_outputs),
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL |
                      AVFILTER_FLAG_SLICE_THREADS,
 };

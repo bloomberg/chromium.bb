@@ -28,23 +28,20 @@
  */
 
 import type * as Platform from '../platform/platform.js';
-import type {EventDescriptor, EventTarget, EventTargetEvent, EventType, EventPayload, EventPayloadToRestParameters} from './EventTarget.js';
+import type {EventDescriptor, EventListener, EventTarget, EventTargetEvent, EventPayloadToRestParameters} from './EventTarget.js';
 
-interface ListenerCallbackTuple {
+export interface ListenerCallbackTuple<Events, T extends keyof Events> {
   thisObject?: Object;
-  listener: (arg0: EventTargetEvent) => void;
+  listener: EventListener<Events, T>;
   disposed?: boolean;
 }
 
-// TODO(crbug.com/1228674) Remove defaults for generic type parameters once
-//                         all event emitters and sinks have been migrated.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export class ObjectWrapper<Events = any> implements EventTarget<Events> {
-  listeners?: Map<EventType<Events>, Set<ListenerCallbackTuple>>;
+export class ObjectWrapper<Events> implements EventTarget<Events> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  listeners?: Map<keyof Events, Set<ListenerCallbackTuple<Events, any>>>;
 
-  addEventListener<T extends EventType<Events>>(
-      eventType: T, listener: (arg0: EventTargetEvent<EventPayload<Events, T>>) => void,
-      thisObject?: Object): EventDescriptor<Events, T> {
+  addEventListener<T extends keyof Events>(eventType: T, listener: EventListener<Events, T>, thisObject?: Object):
+      EventDescriptor<Events, T> {
     if (!this.listeners) {
       this.listeners = new Map();
     }
@@ -58,7 +55,7 @@ export class ObjectWrapper<Events = any> implements EventTarget<Events> {
     return {eventTarget: this, eventType, thisObject, listener};
   }
 
-  once<T extends EventType<Events>>(eventType: T): Promise<EventPayload<Events, T>> {
+  once<T extends keyof Events>(eventType: T): Promise<Events[T]> {
     return new Promise(resolve => {
       const descriptor = this.addEventListener(eventType, event => {
         this.removeEventListener(eventType, descriptor.listener);
@@ -67,8 +64,8 @@ export class ObjectWrapper<Events = any> implements EventTarget<Events> {
     });
   }
 
-  removeEventListener<T extends EventType<Events>>(
-      eventType: T, listener: (arg0: EventTargetEvent<EventPayload<Events, T>>) => void, thisObject?: Object): void {
+  removeEventListener<T extends keyof Events>(eventType: T, listener: EventListener<Events, T>, thisObject?: Object):
+      void {
     const listeners = this.listeners?.get(eventType);
     if (!listeners) {
       return;
@@ -85,18 +82,23 @@ export class ObjectWrapper<Events = any> implements EventTarget<Events> {
     }
   }
 
-  hasEventListeners(eventType: EventType<Events>): boolean {
+  hasEventListeners(eventType: keyof Events): boolean {
     return Boolean(this.listeners && this.listeners.has(eventType));
   }
 
-  dispatchEventToListeners<T extends EventType<Events>>(
+  dispatchEventToListeners<T extends keyof Events>(
       eventType: Platform.TypeScriptUtilities.NoUnion<T>,
-      ...[eventData]: EventPayloadToRestParameters<EventPayload<Events, T>>): void {
+      ...[eventData]: EventPayloadToRestParameters<Events, T>): void {
     const listeners = this.listeners?.get(eventType);
     if (!listeners) {
       return;
     }
-    const event = {data: eventData};
+    // `eventData` is typed as `Events[T] | undefined`:
+    //   - `undefined` when `Events[T]` is void.
+    //   - `Events[T]` otherwise.
+    // We cast it to `Events[T]` which is the correct type in all instances, as
+    // `void` will be cast and used as `undefined`.
+    const event = {data: eventData as Events[T]};
     // Work on a snapshot of the current listeners, callbacks might remove/add
     // new listeners.
     for (const listener of [...listeners]) {
@@ -105,4 +107,39 @@ export class ObjectWrapper<Events = any> implements EventTarget<Events> {
       }
     }
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor = new (...args: any[]) => {};
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function eventMixin<Events, Base extends Constructor>(base: Base) {
+  return class EventHandling extends base implements EventTarget<Events> {
+    #events = new ObjectWrapper<Events>();
+
+    addEventListener<T extends keyof Events>(
+        eventType: T, listener: (arg0: EventTargetEvent<Events[T]>) => void,
+        thisObject?: Object): EventDescriptor<Events, T> {
+      return this.#events.addEventListener(eventType, listener, thisObject);
+    }
+
+    once<T extends keyof Events>(eventType: T): Promise<Events[T]> {
+      return this.#events.once(eventType);
+    }
+
+    removeEventListener<T extends keyof Events>(
+        eventType: T, listener: (arg0: EventTargetEvent<Events[T]>) => void, thisObject?: Object): void {
+      this.#events.removeEventListener(eventType, listener, thisObject);
+    }
+
+    hasEventListeners(eventType: keyof Events): boolean {
+      return this.#events.hasEventListeners(eventType);
+    }
+
+    dispatchEventToListeners<T extends keyof Events>(
+        eventType: Platform.TypeScriptUtilities.NoUnion<T>,
+        ...eventData: EventPayloadToRestParameters<Events, T>): void {
+      this.#events.dispatchEventToListeners(eventType, ...eventData);
+    }
+  };
 }

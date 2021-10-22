@@ -13,23 +13,20 @@
 
 class Profile;
 
-namespace password_manager {
-class PasswordStore;
-}
-
 // Singleton that owns all Gaia-account-scoped PasswordStores and associates
 // them with Profiles.
 class AccountPasswordStoreFactory
     : public RefcountedBrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<password_manager::PasswordStore> GetForProfile(
+  static scoped_refptr<password_manager::PasswordStoreInterface> GetForProfile(
       Profile* profile,
       ServiceAccessType set);
 
-  static scoped_refptr<password_manager::PasswordStoreInterface>
-  GetInterfaceForProfile(Profile* profile, ServiceAccessType set);
-
   static AccountPasswordStoreFactory* GetInstance();
+
+  AccountPasswordStoreFactory(const AccountPasswordStoreFactory&) = delete;
+  AccountPasswordStoreFactory& operator=(const AccountPasswordStoreFactory&) =
+      delete;
 
  private:
   friend struct base::DefaultSingletonTraits<AccountPasswordStoreFactory>;
@@ -43,8 +40,6 @@ class AccountPasswordStoreFactory
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountPasswordStoreFactory);
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_ACCOUNT_PASSWORD_STORE_FACTORY_H_

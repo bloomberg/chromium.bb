@@ -11,9 +11,9 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/tpm_firmware_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -25,11 +25,9 @@
 namespace {
 
 // Timeout for the TPM firmware update availability check.
-const base::TimeDelta kFirmwareAvailabilityCheckerTimeout =
-    base::TimeDelta::FromSeconds(20);
+const base::TimeDelta kFirmwareAvailabilityCheckerTimeout = base::Seconds(20);
 
-const base::TimeDelta kTPMUpdatePlannedNotificationWaitTime =
-    base::TimeDelta::FromDays(1);
+const base::TimeDelta kTPMUpdatePlannedNotificationWaitTime = base::Days(1);
 
 // Reads the value of the the device setting key
 // TPMFirmwareUpdateSettings.AutoUpdateMode from a trusted store. If the value

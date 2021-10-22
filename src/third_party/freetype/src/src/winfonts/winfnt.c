@@ -885,7 +885,7 @@
       }
       family_size = font->header.file_size - font->header.face_name_offset;
       /* Some broken fonts don't delimit the face name with a final */
-      /* NULL byte -- the frame is erroneously one byte too small.  */
+      /* null byte -- the frame is erroneously one byte too small.  */
       /* We thus allocate one more byte, setting it explicitly to   */
       /* zero.                                                      */
       if ( FT_QALLOC( font->family_name, family_size + 1 ) )
@@ -897,9 +897,10 @@
 
       font->family_name[family_size] = '\0';
 
-      if ( FT_REALLOC( font->family_name,
-                       family_size,
-                       ft_strlen( font->family_name ) + 1 ) )
+      /* shrink it to the actual length */
+      if ( FT_QREALLOC( font->family_name,
+                        family_size + 1,
+                        ft_strlen( font->family_name ) + 1 ) )
         goto Fail;
 
       root->family_name = font->family_name;

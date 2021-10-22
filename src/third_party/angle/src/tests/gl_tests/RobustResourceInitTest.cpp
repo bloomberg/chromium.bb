@@ -9,6 +9,7 @@
 
 #include "test_utils/gl_raii.h"
 #include "util/EGLWindow.h"
+#include "util/gles_loader_autogen.h"
 
 namespace angle
 {
@@ -435,10 +436,6 @@ TEST_P(RobustResourceInitTestES3, D3D11RecoverFromStorageBug)
     // http://anglebug.com/5770
     // Vulkan uses incorrect copy sizes when redefining/zero initializing NPOT compressed textures.
     ANGLE_SKIP_TEST_IF(IsVulkan());
-
-    // http://anglebug.com/4929
-    // Metal doesn't support robust resource init with compressed textures yet.
-    ANGLE_SKIP_TEST_IF(IsMetal());
 
     static constexpr uint8_t img_8x8_rgb_dxt1[] = {
         0xe0, 0x07, 0x00, 0xf8, 0x11, 0x10, 0x15, 0x00, 0x1f, 0x00, 0xe0,
@@ -1532,6 +1529,7 @@ void RobustResourceInitTest::maskedDepthClear(ClearFunc clearFunc)
     // Draw red with a depth function that checks for the clear value.
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_EQUAL);
+    glViewport(0, 0, kSize, kSize);
 
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
 
@@ -1614,6 +1612,7 @@ void RobustResourceInitTest::maskedStencilClear(ClearFunc clearFunc)
     glEnable(GL_STENCIL_TEST);
     glStencilFunc(GL_EQUAL, 0x00, 0xFF);
     glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glViewport(0, 0, kSize, kSize);
 
     ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
 
@@ -1906,10 +1905,6 @@ TEST_P(RobustResourceInitTestES3, CompressedSubImage)
     ANGLE_SKIP_TEST_IF(!hasGLExtension());
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_texture_compression_dxt1"));
 
-    // http://anglebug.com/4929
-    // Metal doesn't support robust resource init with compressed textures yet.
-    ANGLE_SKIP_TEST_IF(IsMetal());
-
     constexpr int width     = 8;
     constexpr int height    = 8;
     constexpr int subX0     = 0;
@@ -2029,9 +2024,6 @@ TEST_P(RobustResourceInitTest, SurfaceInitialized)
 TEST_P(RobustResourceInitTest, SurfaceInitializedAfterSwap)
 {
     ANGLE_SKIP_TEST_IF(!hasRobustSurfaceInit());
-
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsMetal() && IsAMD());
 
     EGLint swapBehaviour = 0;
     ASSERT_TRUE(eglQuerySurface(getEGLWindow()->getDisplay(), getEGLWindow()->getSurface(),
@@ -2292,25 +2284,132 @@ TEST_P(RobustResourceInitTest, CopyTexImageToOffsetCubeMap)
     EXPECT_PIXEL_COLOR_EQ(1, 1, GLColor::red);
 }
 
+TEST_P(RobustResourceInitTestES3, CheckDepthStencilRenderbufferIsCleared)
+{
+    ANGLE_SKIP_TEST_IF(!hasRobustSurfaceInit());
+
+    GLRenderbuffer colorRb;
+    GLFramebuffer fb;
+    GLRenderbuffer depthStencilRb;
+
+    // Make a framebuffer with RGBA + DEPTH_STENCIL
+    glBindRenderbuffer(GL_RENDERBUFFER, colorRb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, kWidth, kHeight);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, depthStencilRb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, kWidth, kHeight);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRb);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                              depthStencilRb);
+    ASSERT_GL_NO_ERROR();
+
+    // Render a quad at Z = 1.0 with depth test on and depth function set to GL_EQUAL.
+    // If the depth buffer is not cleared to 1.0 this will fail
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_EQUAL);
+
+    ANGLE_GL_PROGRAM(drawGreen, essl1_shaders::vs::Simple(), essl1_shaders::fs::Green());
+    drawQuad(drawGreen, essl1_shaders::PositionAttrib(), 1.0f, 1.0f, true);
+    EXPECT_PIXEL_RECT_EQ(0, 0, kWidth, kHeight, GLColor::green);
+
+    // Render with stencil test on and stencil function set to GL_EQUAL
+    // If the stencil is not zero this will fail.
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilFunc(GL_EQUAL, 0, 0xFF);
+
+    ANGLE_GL_PROGRAM(drawRed, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    drawQuad(drawRed, essl1_shaders::PositionAttrib(), 1.0f, 1.0f, true);
+    EXPECT_PIXEL_RECT_EQ(0, 0, kWidth, kHeight, GLColor::red);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+TEST_P(RobustResourceInitTestES3, CheckMultisampleDepthStencilRenderbufferIsCleared)
+{
+    ANGLE_SKIP_TEST_IF(!hasRobustSurfaceInit());
+
+    GLRenderbuffer colorRb;
+    GLFramebuffer fb;
+
+    // Make a framebuffer with RGBA
+    glBindRenderbuffer(GL_RENDERBUFFER, colorRb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, kWidth, kHeight);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, fb);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRb);
+    ASSERT_GL_NO_ERROR();
+
+    // Make a corresponding multisample framebuffer with RGBA + DEPTH_STENCIL
+    constexpr int kSamples = 4;
+    GLRenderbuffer multisampleColorRb;
+    GLFramebuffer multisampleFb;
+    GLRenderbuffer multisampleDepthStencilRb;
+
+    // Make a framebuffer with RGBA + DEPTH_STENCIL
+    glBindRenderbuffer(GL_RENDERBUFFER, multisampleColorRb);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, kSamples, GL_RGBA8, kWidth, kHeight);
+
+    glBindRenderbuffer(GL_RENDERBUFFER, multisampleDepthStencilRb);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, kSamples, GL_DEPTH24_STENCIL8, kWidth,
+                                     kHeight);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, multisampleFb);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+                              multisampleColorRb);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                              multisampleDepthStencilRb);
+    ASSERT_GL_NO_ERROR();
+
+    // Render a quad at Z = 1.0 with depth test on and depth function set to GL_EQUAL.
+    // If the depth buffer is not cleared to 1.0 this will fail
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_EQUAL);
+
+    ANGLE_GL_PROGRAM(drawGreen, essl1_shaders::vs::Simple(), essl1_shaders::fs::Green());
+    drawQuad(drawGreen, essl1_shaders::PositionAttrib(), 1.0f, 1.0f, true);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb);
+    glBlitFramebuffer(0, 0, kWidth, kHeight, 0, 0, kWidth, kHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fb);
+    EXPECT_PIXEL_RECT_EQ(0, 0, kWidth, kHeight, GLColor::green);
+
+    // Render with stencil test on and stencil function set to GL_EQUAL
+    // If the stencil is not zero this will fail.
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+    glStencilFunc(GL_EQUAL, 0, 0xFF);
+
+    ANGLE_GL_PROGRAM(drawRed, essl1_shaders::vs::Simple(), essl1_shaders::fs::Red());
+    glBindFramebuffer(GL_FRAMEBUFFER, multisampleFb);
+    drawQuad(drawRed, essl1_shaders::PositionAttrib(), 1.0f, 1.0f, true);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fb);
+    glBlitFramebuffer(0, 0, kWidth, kHeight, 0, 0, kWidth, kHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fb);
+    EXPECT_PIXEL_RECT_EQ(0, 0, kWidth, kHeight, GLColor::red);
+
+    ASSERT_GL_NO_ERROR();
+}
+
 // Test that blit between two depth/stencil buffers after glClearBufferfi works.  The blit is done
 // once expecting robust resource init value, then clear is called with the same value as the robust
 // init, and blit is done again.  This triggers an optimization in the Vulkan backend where the
 // second clear is no-oped.
 TEST_P(RobustResourceInitTestES3, BlitDepthStencilAfterClearBuffer)
 {
+    ANGLE_SKIP_TEST_IF(!hasRobustSurfaceInit());
+
     // http://anglebug.com/5301
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
 
     // http://anglebug.com/5300
     ANGLE_SKIP_TEST_IF(IsD3D11());
 
-    // http://anglebug.com/4919
-    ANGLE_SKIP_TEST_IF(IsIntel() && IsMetal());
-
-    // Test failure introduced by Apple's changes (anglebug.com/5505)
-    ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsMetal());
-
     constexpr GLsizei kSize = 16;
+    glViewport(0, 0, kSize, kSize);
 
     GLFramebuffer readFbo, drawFbo;
     GLRenderbuffer readDepthStencil, drawDepthStencil;
