@@ -295,9 +295,10 @@ RenderWebView::~RenderWebView()
         delete d_renderViewObserver;
     }
 
-    if (d_cursorLoader.get()) {
-      d_cursorLoader.reset(nullptr);
-    }
+    // CursorFactory is referenced when destroying CursorLoader.
+    // We need to release d_cursorLoader here to make sure it is
+    // destoryed before CursorFactory
+    d_cursorLoader.reset();
 }
 
 RenderMessageDelegate& RenderWebView::GetMessageDelegate()
@@ -852,6 +853,9 @@ void RenderWebView::initializeBrowserLike()
     GetWindowRect(d_hwnd.get(), &rect);
     d_geometry = gfx::Rect(rect);
 
+    // CursorFactory is a singleton, and it will be used later when
+    // creating CursorLoader. We need to make sure to create
+    // CursorFactory early.
     d_cursorFactory = std::make_unique<ui::CursorFactory>();
     d_cursorLoader = std::make_unique<ui::CursorLoader>();
     d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
