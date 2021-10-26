@@ -441,6 +441,7 @@ static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
 {
     switches->push_back("enable-blink-features=CompositingOptimizations");
     switches->push_back("disable-in-process-stack-traces");
+    switches->push_back("no-sandbox");
 
 
 
