@@ -200,9 +200,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 #if defined(USE_OZONE)
   void TerminateGpuProcess(const std::string& message) override;
 #endif
-  void OnEstablishGpuChannelTimeout(int client_id,
-                                    uint64_t client_tracing_id,
-                                    bool is_gpu_host) override;
 
   bool LaunchGpuProcess();
 

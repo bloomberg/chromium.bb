@@ -341,10 +341,10 @@ void RunCallbackOnIO(GpuProcessKind kind,
   std::move(callback).Run(host);
 }
 
-void OnGpuProcessHostDestroyedOnUI(int host_id, std::string message, int severity) {
+void OnGpuProcessHostDestroyedOnUI(int host_id, const std::string& message, int severity) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GpuDataManagerImpl::GetInstance()->AddLogMessage(severity,
-                                                   "GpuProcessHost", std::move(message));
+                                                   "GpuProcessHost", message);
 #if defined(USE_OZONE)
   if (features::IsUsingOzonePlatform()) {
     ui::OzonePlatform::GetInstance()
@@ -660,26 +660,6 @@ void GpuProcessHost::TerminateGpuProcess(const std::string& message) {
   process_->TerminateOnBadMessageReceived(message);
 }
 #endif  // defined(USE_OZONE)
-
-void GpuProcessHost::OnEstablishGpuChannelTimeout(int client_id,
-                                                  uint64_t client_tracing_id,
-                                                  bool is_gpu_host) {
-  std::string msg = "Establish Gpu Channel Timeout";
-  msg += "; client_id:" + std::to_string(client_id);
-  msg += "; client_tracing_id:" + std::to_string(client_tracing_id);
-  msg += "; is_gpu_host:" + std::to_string(is_gpu_host);
-  msg += "; process_launched_:" + std::to_string(process_launched_);
-  msg += "; sandboxed:" + std::to_string(kind_ == GPU_PROCESS_KIND_SANDBOXED);
-  msg += "; has process_:" + std::to_string(!!process_);
-  msg += "; has gpu_host:" + std::to_string(!!gpu_host_);
-
-  if (process_ && process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED && gpu_host_) {
-    process_->TerminateOnBadMessageReceived(msg);
-  }
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, std::move(msg), logging::LOG_WARNING));
-}
 
 // static
 GpuProcessHost* GpuProcessHost::FromID(int host_id) {
