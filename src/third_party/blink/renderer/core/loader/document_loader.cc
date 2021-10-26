@@ -1542,7 +1542,7 @@ void DocumentLoader::StartLoadingInternal() {
 
   GURL url = (GURL) url_;
 
-  if (sender_delegate->CanHandleURL(url.spec())) {
+  if (sender_delegate && sender_delegate->CanHandleURL(url.spec())) {
     network::ResourceRequest request;
 
     request.url = url;

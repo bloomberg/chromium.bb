@@ -187,7 +187,7 @@ void WebResourceRequestSender::SendSync(
     }
   }
 
-  if (delegate_->CanHandleURL(request->url.spec())) {
+  if (delegate_ && delegate_->CanHandleURL(request->url.spec())) {
     return;
   }
 
@@ -275,7 +275,7 @@ int WebResourceRequestSender::SendAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
 
-  if (delegate_->CanHandleURL(request->url.spec())) {
+  if (delegate_ && delegate_->CanHandleURL(request->url.spec())) {
     delegate_->Start(peer.get(), this, request.get(), request_id, loading_task_runner);
     request_info_ = std::make_unique<PendingRequestInfo>(
         std::move(peer), request->destination,
@@ -336,7 +336,7 @@ int WebResourceRequestSender::SendAsync(
 void WebResourceRequestSender::Cancel(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
 
-  if (request_info_ && delegate_->CanHandleURL(request_info_->url.spec())) {
+  if (request_info_ && delegate_ && delegate_->CanHandleURL(request_info_->url.spec())) {
     delegate_->Cancel(request_info_->request_id);
     return;
   }
@@ -384,7 +384,7 @@ void WebResourceRequestSender::DeletePendingRequest(
   if (!request_info_)
     return;
 
-  if (request_info_->net_error == net::ERR_IO_PENDING && !delegate_->CanHandleURL(request_info_->url.spec())) {
+  if (request_info_->net_error == net::ERR_IO_PENDING && !(delegate_ && delegate_->CanHandleURL(request_info_->url.spec()))) {
     request_info_->net_error = net::ERR_ABORTED;
     request_info_->resource_load_info_notifier_wrapper
         ->NotifyResourceLoadCanceled(request_info_->net_error);
