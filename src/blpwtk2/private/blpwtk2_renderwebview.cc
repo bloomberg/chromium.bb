@@ -294,6 +294,11 @@ RenderWebView::~RenderWebView()
     if (d_renderViewObserver) {
         delete d_renderViewObserver;
     }
+
+    // CursorFactory is referenced when destroying CursorLoader.
+    // We need to release d_cursorLoader here to make sure it is
+    // destoryed before CursorFactory
+    d_cursorLoader.reset();
 }
 
 RenderMessageDelegate& RenderWebView::GetMessageDelegate()
@@ -848,6 +853,10 @@ void RenderWebView::initializeBrowserLike()
     GetWindowRect(d_hwnd.get(), &rect);
     d_geometry = gfx::Rect(rect);
 
+    // CursorFactory is a singleton, and it will be used later when
+    // creating CursorLoader. We need to make sure to create
+    // CursorFactory early.
+    d_cursorFactory = std::make_unique<ui::CursorFactory>();
     d_cursorLoader = std::make_unique<ui::CursorLoader>();
     d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
 
@@ -992,9 +1001,11 @@ void RenderWebView::updateGeometry()
 
     d_compositor->Resize(size);
 
-    blink::VisualProperties params = {};
+    blink::ScreenInfo screen_info = {}; 
+    GetNativeViewScreenInfo(&screen_info, d_hwnd.get());
 
-    GetNativeViewScreenInfo(&params.screen_infos.mutable_current(), d_hwnd.get());
+    blink::VisualProperties params = {};
+    params.screen_infos = blink::ScreenInfos(screen_info);
 
     auto dip_size = gfx::Size { size.width()  / params.screen_infos.current().device_scale_factor,
                                 size.height() / params.screen_infos.current().device_scale_factor  };
@@ -2342,7 +2353,10 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
         if (d_currentCursor.cursor().type() != ui::mojom::CursorType::kCustom) {
             auto native_cursor = d_currentCursor.GetNativeCursor();
             d_cursorLoader->SetPlatformCursor(&native_cursor);
-            platformCursor = static_cast<ui::WinCursor*>(native_cursor.platform().get())->hcursor();
+            auto cursor_platform = native_cursor.platform();
+            if (cursor_platform) {
+              platformCursor = static_cast<ui::WinCursor*>(cursor_platform.get())->hcursor();
+            }
         }
         else {
             ui::Cursor uiCursor(ui::mojom::CursorType::kCustom);
@@ -2355,8 +2369,10 @@ void RenderWebView::OnSetCursor(const content::WebCursor& cursor)
             uiCursor.set_custom_hotspot(hotspot);
             uiCursor.set_image_scale_factor(scale_factor);
 
-            auto native_cursor = d_currentCursor.GetNativeCursor();
-            platformCursor = static_cast<ui::WinCursor*>(native_cursor.platform().get())->hcursor();
+            auto cursor_platform = d_currentCursor.GetNativeCursor().platform();
+            if (cursor_platform) {
+              platformCursor = static_cast<ui::WinCursor*>(cursor_platform.get())->hcursor();
+            }
         }
 
         setPlatformCursor(platformCursor);
