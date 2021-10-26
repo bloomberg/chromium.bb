@@ -72,6 +72,15 @@ void Partitions::Initialize() {
 }
 
 // static
+bool Partitions::IsInitialized() {
+  // blpwtk2: This will likely be called off the main thread. We are not
+  // using atomics here because it's safe to read a stale 'false' value,
+  // in which case we won't return memory usage data to the embedder (for
+  // a short period of time).
+  return initialized_;
+}
+
+// static
 bool Partitions::InitializeOnce() {
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   static base::NoDestructor<base::PartitionAllocator> fast_malloc_allocator{};

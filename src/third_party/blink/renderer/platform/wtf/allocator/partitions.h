@@ -47,6 +47,7 @@ class WTF_EXPORT Partitions {
 
   // Should be called on the thread which is or will become the main one.
   static void Initialize();
+  static bool IsInitialized();
   static void StartPeriodicReclaim(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 

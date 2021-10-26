@@ -907,52 +907,54 @@ void ToolkitImpl::getMetrics(
                         const int      *metrics,
                         unsigned int    count) const
 {
-  for (unsigned int i = 0; i < count; ++i) {
-    values[i] = 0;
-    if (metrics[i] == d_metrics.d_computedStyleCount) {
-      values[i] = blink::ComputedStyle::GetObjectCount();
-      continue;
-    }
-    if (metrics[i] ==
-        d_metrics.d_wtfPartitionsTotalSizeOfCommittedPagesKB) {
-      if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
-          // If initialized
-        values[i] = WTF::Partitions::TotalSizeOfCommittedPages() / 1024;
+  if (WTF::Partitions::IsInitialized()) {
+    for (unsigned int i = 0; i < count; ++i) {
+      values[i] = 0;
+      if (metrics[i] == d_metrics.d_computedStyleCount) {
+        values[i] = blink::ComputedStyle::GetObjectCount();
+        continue;
       }
-      continue;
-    }
+      if (metrics[i] ==
+          d_metrics.d_wtfPartitionsTotalSizeOfCommittedPagesKB) {
+        if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
+            // If initialized
+          values[i] = WTF::Partitions::TotalSizeOfCommittedPages() / 1024;
+        }
+        continue;
+      }
 
-    // FastMallocPartition() is private, so derive its memory value from the others
-    if (metrics[i] == d_metrics.d_wtfPartitionsFastMallocKB) {
-      if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
-        values[i] = (WTF::Partitions::TotalSizeOfCommittedPages()
-            - WTF::Partitions::ArrayBufferPartition()->total_size_of_committed_pages
-            - WTF::Partitions::BufferPartition()->total_size_of_committed_pages
-            - WTF::Partitions::LayoutPartition()->total_size_of_committed_pages)
-                / 1024;
+      // FastMallocPartition() is private, so derive its memory value from the others
+      if (metrics[i] == d_metrics.d_wtfPartitionsFastMallocKB) {
+        if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
+          values[i] = (WTF::Partitions::TotalSizeOfCommittedPages()
+              - WTF::Partitions::ArrayBufferPartition()->total_size_of_committed_pages
+              - WTF::Partitions::BufferPartition()->total_size_of_committed_pages
+              - WTF::Partitions::LayoutPartition()->total_size_of_committed_pages)
+                  / 1024;
+        }
+        continue;
       }
-      continue;
-    }
-    if (metrics[i] == d_metrics.d_wtfPartitionsArrayBufferKB) {
-      base::ThreadSafePartitionRoot* p = WTF::Partitions::ArrayBufferPartition();
-      if (p) {
-        values[i] = p->total_size_of_committed_pages / 1024;
+      if (metrics[i] == d_metrics.d_wtfPartitionsArrayBufferKB) {
+        base::ThreadSafePartitionRoot* p = WTF::Partitions::ArrayBufferPartition();
+        if (p) {
+          values[i] = p->total_size_of_committed_pages / 1024;
+        }
+        continue;
       }
-      continue;
-    }
-    if (metrics[i] == d_metrics.d_wtfPartitionsBufferKB) {
-      base::ThreadSafePartitionRoot* p = WTF::Partitions::BufferPartition();
-      if (p) {
-        values[i] = p->total_size_of_committed_pages / 1024;
+      if (metrics[i] == d_metrics.d_wtfPartitionsBufferKB) {
+        base::ThreadSafePartitionRoot* p = WTF::Partitions::BufferPartition();
+        if (p) {
+          values[i] = p->total_size_of_committed_pages / 1024;
+        }
+        continue;
       }
-      continue;
-    }
-    if (metrics[i] == d_metrics.d_wtfPartitionsLayoutKB) {
-      base::ThreadUnsafePartitionRoot* p = WTF::Partitions::LayoutPartition();
-      if (p) {
-        values[i] = p->total_size_of_committed_pages / 1024;
+      if (metrics[i] == d_metrics.d_wtfPartitionsLayoutKB) {
+        base::ThreadUnsafePartitionRoot* p = WTF::Partitions::LayoutPartition();
+        if (p) {
+          values[i] = p->total_size_of_committed_pages / 1024;
+        }
+        continue;
       }
-      continue;
     }
   }
 }
