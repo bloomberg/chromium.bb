@@ -345,7 +345,13 @@ void WebResourceRequestSender::DidChangePriority(
     return;
   }
 
-  request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
+  // blpwtk2: Null-check before we attempt to use the throttling loader. This
+  // check is needed because we bail out very early in the StartAsync function
+  // if the embedder's URL loader is used, and we never give the chance for
+  // the throttling loader to be installed later in the function.
+  if (request_info_->url_loader) {
+    request_info_->url_loader->SetPriority(new_priority, intra_priority_value);
+  }
 }
 
 void WebResourceRequestSender::DeletePendingRequest(
