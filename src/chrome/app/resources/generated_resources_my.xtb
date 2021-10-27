@@ -425,6 +425,7 @@
 <translation id="1436390408194692385"><ph name="TICKET_TIME_LEFT" /> အထိ အကျုံးဝင်သည်</translation>
 <translation id="1436784010935106834">ဖယ်ရှားပစ်ခဲ့</translation>
 <translation id="1437986450143295708">ပြဿနာကို အသေးစိတ်ဖော်ပြရန်</translation>
+<translation id="1439671507542716852">ရေရှည် အကူအညီ</translation>
 <translation id="144283815522798837"><ph name="NUMBER_OF_ITEMS_SELECTED" /> ရွေးချယ်ထားသည်</translation>
 <translation id="1442851588227551435">အသုံးပြုနေသော Kerberos လက်မှတ် သတ်မှတ်ရန်</translation>
 <translation id="1444628761356461360">ဤကြိုတင်ချိန်ညှိချက်များအား စက်ပစ္စည်း၏ ပိုင်ရှင် <ph name="OWNER_EMAIL" /> မှ စီမံသည်။</translation>
@@ -1438,6 +1439,7 @@
 <translation id="2454264884354864965">ကင်မရာကို ပိတ်ထားသည်</translation>
 <translation id="245650153866130664">လက်မှတ်တစ်ခုကို အလိုအလျောက် ပြန်လည်စတင်ရန်အတွက် “စကားဝှက်ကို မှတ်သားရန်" ကို အမှန်ခြစ်ပါ။ သင့်စကားဝှက်ကို သင့်စက်ပေါ်တွင်သာ သိမ်းဆည်းသွားပါမည်။</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> သည် <ph name="VOLUME_NAME" />မှ ဖိုင်များ ကူးယူလို၏။</translation>
+<translation id="2457842160081795172">လောလောဆယ် <ph name="CHANNEL_NAME" /> ချန်နယ်တွင် ရှိသည်</translation>
 <translation id="2458379781610688953">အကောင့် အပ်ဒိတ်လုပ်ရန်၊ <ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">စက်ပစ္စည်းစီမံခန့်ခွဲမှု တိုကင်နံပါတ် မမှန်ကန်ပါ။</translation>
 <translation id="2459703812219683497">စသုံးရန်ကုဒ် တွေ့ရှိသည်</translation>
@@ -2077,6 +2079,7 @@
 <translation id="310671807099593501">ဝဘ်ဆိုက်က ဘလူးတုသ်ကို အသုံးပြုနေသည်</translation>
 <translation id="3108931485517391283">လက်ခံ၍မရပါ</translation>
 <translation id="3109724472072898302">ခေါက်ထား</translation>
+<translation id="311214366526552035">မည်သို့ပင်ဖြစ်စေ ဒေါင်းလုဒ်လုပ်ရန်</translation>
 <translation id="311394601889664316">သင့်စက်ပေါ်ရှိ ဖိုင် (သို့) ဖိုင်တွဲများကို တည်းဖြတ်ရန် ဝဘ်ဆိုက်များကို ခွင့်မပြုပါနှင့်</translation>
 <translation id="3115147772012638511">ကက်ရှ အတွက် စောင့်နေ...</translation>
 <translation id="3115580024857770654">အားလုံး ခေါက်ရန်</translation>
@@ -2356,6 +2359,7 @@
 <translation id="3429160811076349561">အစမ်းသုံးလုပ်ဆောင်ချက်များကို ပိတ်ထားသည်</translation>
 <translation id="3429271624041785769">ဝဘ်အကြောင်းအရာ ဘာသာစကားများ</translation>
 <translation id="3429275422858276529">နောင်တွင် အလွယ်တကူပြန်ရှာနိုင်ရန် ဤစာမျက်နှာ၏လိပ်စာကို မှတ်ထားပါ</translation>
+<translation id="343115368966109153"><ph name="FILE_NAME" /> ကို ဒေါင်းလုဒ်လုပ်မလား။ စက်အသုံးပြုသူ မည်သူမဆို တွေ့မြင်နိုင်ပါသည်။</translation>
 <translation id="3432227430032737297">ပြသထားသည်များအားလုံးကို ဖယ်ရှားရန်</translation>
 <translation id="3432762828853624962">မျှဝေထားသော လုပ်သားများ</translation>
 <translation id="3433621910545056227">အို၊ သော့ချရန် လိုအပ်သည့် စက်ပစ္စည်းတပ်ဆင်ချိန်အား စနစ်မှ မစတင်နိုင်ပါ။</translation>
@@ -2697,6 +2701,7 @@
 <translation id="3777806571986431400">အိတ်စတန်းရှင်း ဖွင့်ထားပါသည်</translation>
 <translation id="3778152852029592020">ဒေါင်းလုပ်အား ပယ်ဖျက်ခဲ့သည်။</translation>
 <translation id="3778208826288864398">ပင်နံပါတ်အမှားကို အကြိမ်များစွာထည့်သဖြင့် လုံခြုံရေးကီးကို လော့ခ်ချလိုက်ပါသည်။ လုံခြုံရေးကီးကို ပြင်ဆင်သတ်မှတ်ရပါမည်။</translation>
+<translation id="3778369586810509692">ဤဖိုင်ကို စက်တွင် သိမ်းမည်ဖြစ်၍ လူတိုင်းက ၎င်းကို တွေ့မြင်နိုင်ပါမည်။</translation>
 <translation id="3778740492972734840">ပြုစုသူ ကိရိယာများ</translation>
 <translation id="3778868487658107119">၎င်းကို မေးခွန်းများမေးပါ။ အလုပ်များ စေခိုင်းပါ။ ၎င်းသည် သင့်ကိုယ်ပိုင် Google ဖြစ်ပြီး အကူအညီပေးရန် အမြဲအသင့်ရှိနေပါသည်။</translation>
 <translation id="3781742599892759500">Linux မိုက်ခရိုဖုန်း သုံးခွင့်</translation>
@@ -4709,6 +4714,7 @@
 <translation id="597235323114979258">နောက်ထပ် သွားရောက်ရန်နေရာများကို ကြည့်ရန်</translation>
 <translation id="5972666587303800813">No-op ဝန်ဆောင်မှု</translation>
 <translation id="5972708806901999743">အပေါ်သို့ ရွှေ့ရန်</translation>
+<translation id="5972801171078377748">နောက်ထပ်မပြပါနှင့်</translation>
 <translation id="5972826969634861500">အစ <ph name="PRODUCT_NAME" /></translation>
 <translation id="5973041996755340290">"<ph name="CLIENT_NAME" />" က ဤဘရောင်ဇာ၏အမှားကို စတင်၍ ရှာပြင်ပေးနေသည်</translation>
 <translation id="5973605538625120605">ပင်နံပါတ်ပြောင်းပါ</translation>
@@ -5000,7 +5006,6 @@
 <translation id="6284632978374966585">မှောင်သည့် အပြင်အဆင် ဖွင့်ရန်</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> ကို ဒေါင်းလုဒ်လုပ်လေ့ မရှိကြပါ။ အန္တရာယ် ရှိနိုင်သည်။</translation>
 <translation id="6285770818046456882">သင်နှင့်မျှဝေထားသောစက်က လွှဲပြောင်းမှုကို ပယ်ဖျက်လိုက်သည်</translation>
-<translation id="6286744355355996781">LTS</translation>
 <translation id="6290613030083731160">အနီးတွင် မျှဝေနေသော စက်များမရှိပါ။ <ph name="LINK_BEGIN" />ပိုမိုလေ့လာရန်<ph name="LINK_END" /></translation>
 <translation id="6291086328725007688">စသုံးရန်ကုဒ် စိစစ်နေသည်။ မိနစ်အနည်းငယ် ကြာနိုင်ပါသည်။</translation>
 <translation id="6291741848715722067">မှန်ကြောင်းအတည်ပြုကုဒ်</translation>

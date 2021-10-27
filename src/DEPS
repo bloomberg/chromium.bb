@@ -240,11 +240,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '249b346bb9f3f458107afbe2b5b83aac4def80e2',
+  'v8_revision': 'e1026639c7816001da60cdb0bb9ad5ec72aa2a30',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'af5ea7f9e31c00c82992f56ad05ed5e72e1817c2',
+  'angle_revision': 'f4d94efbc335db33e007818fdc5bbc648596b716',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -252,7 +252,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '749b933182a6df56a360e5e1e1d26d64b6c5bd8c',
+  'pdfium_revision': '4888f0787318b65445196c9f741e7dcee0f8b73b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -1536,7 +1536,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/robolectric',
-              'version': 'iC6RDM5EH3GEAzR-1shW_Mg0FeeNE5shq1okkFfuuNQC',
+              'version': 'Kdd6dNFAKqj9g9Bsfo2z1zQr52Vk60EL_wb9Bf2c8rcC',
           },
       ],
       'condition': 'checkout_android',
@@ -1638,7 +1638,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'b0291fd966b55a5efc496772555b94842bde1085',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '40abb7d8ff6ebdb8095d372c18949940c5fcecb5',
+    Var('webrtc_git') + '/src.git' + '@' + '53a9c7a2a012680a34802e248cfab86c15c435f5',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1696,7 +1696,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a02a790e0cf63f1d4c9e3ff6ba9dc0980ee90323',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@52beec0b5a366fb67539e84e4c06618ab8c8ad15',
     'condition': 'checkout_src_internal',
   },
 

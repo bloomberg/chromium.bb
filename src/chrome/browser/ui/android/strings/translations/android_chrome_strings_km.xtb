@@ -109,6 +109,7 @@
 <translation id="1680919990519905526">រកទិញរូបភាពដោយប្រើ Google Lens <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="1682195225331129001">សាកល្បង​ឥឡូវ​នេះ​</translation>
 <translation id="1697284962337958118">បញ្ចូល​ទៅ</translation>
+<translation id="1702543251015153180">ប្ដូរការកំណត់​រចនាប័ទ្ម​ងងឹតរបស់អ្នកឬ?</translation>
 <translation id="1718835860248848330">មួយម៉ោងមុន</translation>
 <translation id="1724977129262658800">ដោះសោ ដើម្បីកែពាក្យ​សម្ងាត់របស់អ្នក</translation>
 <translation id="173522743738009831">អំពី Privacy Sandbox</translation>
@@ -259,6 +260,7 @@
 <translation id="2581165646603367611">វានឹងជម្រះខុកឃី ឃ្លាំងសម្ងាត់ និងទិន្នន័យផ្សេងទៀតនៃគេហទំព័រដែល Chrome គិតថាមិនសំខាន់។</translation>
 <translation id="2587052924345400782">មានផ្តល់ជូនកំណែថ្មី</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2604446170045642109">អ្នកអាចបិទ​រចនាប័ទ្ម​ងងឹតសម្រាប់គេហទំព័រនៅក្នុងការកំណត់របស់អ្នក។</translation>
 <translation id="2612676031748830579">លេខកាត</translation>
 <translation id="2625189173221582860">បានចម្លង​ពាក្យសម្ងាត់</translation>
 <translation id="2631006050119455616">បានរក្សាទុក</translation>
@@ -319,6 +321,7 @@
 <translation id="2932222164150889403">ក្ដារចុច​របស់អ្នក​នឹងមិន​ផ្លាស់ប្ដូរ​ទេ</translation>
 <translation id="2942036813789421260">ផ្ទាំងមើលសាកល្បងបាន​បិទ</translation>
 <translation id="2946420957526726953">កំពុង​ដំឡើងកំណែ Chrome ដើម្បីភ្ជាប់ជាមួយ​ឧបករណ៍​ផ្សេងទៀត</translation>
+<translation id="2951071800649516099">បញ្ចូលទំព័រទៅក្នុងបញ្ជីអានរបស់អ្នកសម្រាប់អានពេលក្រោយ</translation>
 <translation id="2956410042958133412">គណនីត្រូវបានគ្រប់គ្រងដោយ <ph name="PARENT_NAME_1" /> និង <ph name="PARENT_NAME_2" />។</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{ទំព័រមិន​ទាន់អាន <ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" />}other{ទំព័រមិន​ទាន់អាន <ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" />}}</translation>
 <translation id="2961210776189273067">ចំណងជើង</translation>
@@ -553,6 +556,7 @@
 <translation id="4452411734226507615">បិទ​ផ្ទាំង <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">បានបន្ថែមចំណាំទៅ <ph name="FOLDER_NAME" /></translation>
 <translation id="4472118726404937099">ដើម្បី​ធ្វើ​សមកាលកម្ម និងកំណត់​ផ្ទាល់​ខ្លួន​នៅលើ​ឧបករណ៍នានា សូមចូលគណនី និង​បើក​សមកាលកម្ម</translation>
+<translation id="4479839115899251637">លុបចេញពីបញ្ជីអាន</translation>
 <translation id="4479972344484327217">កំពុងដំឡើង <ph name="MODULE" /> សម្រាប់ Chrome…</translation>
 <translation id="4487967297491345095">ទិន្នន័យ​កម្មវិធី​របស់ Chrome ទាំងអស់​នឹងត្រូវ​បានលុប​ជា​អចិន្ត្រៃយ៍។ វា​រាប់បញ្ចូល​ទាំង​ឯកសារ ការកំណត់ គណនី មូលដ្ឋាន​ទិន្នន័យ​ទាំងអស់ ។ល។</translation>
 <translation id="449126573531210296">អ៊ីនគ្រីប​ពាក្យសម្ងាត់​ដែលបាន​ធ្វើសមកាលកម្ម​ជាមួយគណនី Google របស់អ្នក</translation>
@@ -995,6 +999,7 @@
 <translation id="6945221475159498467">ជ្រើសរើស</translation>
 <translation id="6955535239952325894">ការកំណត់​នេះត្រូវបានបិទនៅលើកម្មវិធីរុករកតាមអ៊ីនធឺណិតដែលស្ថិតក្រោមការគ្រប់គ្រង</translation>
 <translation id="6963766334940102469">លុបចំណាំ</translation>
+<translation id="6964116075545915250">កែបញ្ជីអាន</translation>
 <translation id="696447261358045621">ចាកចេញពី​មុខងារ​ឯកជន</translation>
 <translation id="6979737339423435258">គ្រប់​ពេល</translation>
 <translation id="6981982820502123353">លទ្ធភាពប្រើប្រាស់</translation>
@@ -1002,6 +1007,7 @@
 <translation id="6989267951144302301">មិន​អាច​ទាញ​យកបាន​ទេ</translation>
 <translation id="6995899638241819463">ទទួលបាន​ការព្រមាន ប្រសិនបើ​ពាក្យសម្ងាត់​​បែកធ្លាយ​នៅក្នុង​ការបំពាន​ទិន្នន័យ</translation>
 <translation id="7001056293070445572">ឯកសារនេះ​មានទំហំធំ (<ph name="FILE_SIZE" />)</translation>
+<translation id="7020741890149022655">បញ្ចូលទៅក្នុងបញ្ជីអាន<ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">បើកនៅក្នុងកម្មវិធីរុករក</translation>
 <translation id="702463548815491781">បានណែនាំ នៅពេល​បើកកម្មវិធីតបវិញ ឬមុខងារ​ប្រើប៊ូតុងចុច​</translation>
 <translation id="7027549951530753705">បានស្ដារ <ph name="ITEM_TITLE" /></translation>

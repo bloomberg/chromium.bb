@@ -109,6 +109,7 @@
 <translation id="1680919990519905526">選購 Google 智慧鏡頭拍攝的產品<ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="1682195225331129001">立即嘗試</translation>
 <translation id="1697284962337958118">新增至</translation>
+<translation id="1702543251015153180">要變更深色主題設定嗎？</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1724977129262658800">解鎖後即可編輯密碼</translation>
 <translation id="173522743738009831">關於 Privacy Sandbox</translation>
@@ -259,6 +260,7 @@
 <translation id="2581165646603367611">這項操作會清除不重要的網站 Cookie、快取等其他資料 (Chrome 會自動判斷資料的重要性)。</translation>
 <translation id="2587052924345400782">已推出新版本</translation>
 <translation id="2593272815202181319">等寬</translation>
+<translation id="2604446170045642109">你可以在設定中關閉網站的深色主題設定。</translation>
 <translation id="2612676031748830579">卡號</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2631006050119455616">已節省</translation>
@@ -319,6 +321,7 @@
 <translation id="2932222164150889403">這不會影響你的鍵盤設定</translation>
 <translation id="2942036813789421260">預覽分頁已關閉</translation>
 <translation id="2946420957526726953">正在更新 Chrome 以連線到其他裝置</translation>
+<translation id="2951071800649516099">將網頁新增至閱讀清單以供日後使用</translation>
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2961208450284224863">{READING_LIST_UNREAD_PAGE_COUNT,plural, =1{<ph name="READING_LIST_UNREAD_PAGE_COUNT_ONE" /> 個未讀取的網頁}other{<ph name="READING_LIST_UNREAD_PAGE_COUNT_MANY" /> 個未讀取的網頁}}</translation>
 <translation id="2961210776189273067">稱謂</translation>
@@ -403,6 +406,7 @@
 <translation id="3398320232533725830">開啟書籤管理員</translation>
 <translation id="3414952576877147120">空間大小：</translation>
 <translation id="3429160811076349561">試用功能已關閉</translation>
+<translation id="3435465986463792564">開啟了多個視窗嗎？你可以在這裡進行管理</translation>
 <translation id="3440975416244667276">按住即可查看更多相關資訊</translation>
 <translation id="3443221991560634068">重新載入目前網頁</translation>
 <translation id="3444179773590444986">要針對網站的深色主題提供意見嗎？</translation>
@@ -552,6 +556,7 @@
 <translation id="4452411734226507615">關閉 [<ph name="TAB_TITLE" />] 分頁</translation>
 <translation id="4452548195519783679">已將書籤加入「<ph name="FOLDER_NAME" />」</translation>
 <translation id="4472118726404937099">如要進行同步處理並在所有裝置上享有個人化的體驗，請登入並開啟同步處理功能</translation>
+<translation id="4479839115899251637">從閱讀清單中刪除</translation>
 <translation id="4479972344484327217">正在為 Chrome 安裝 <ph name="MODULE" />…</translation>
 <translation id="4487967297491345095">Chrome 的應用程式資料會全部遭到永久刪除，包括所有檔案、設定、帳戶、資料庫等等。</translation>
 <translation id="449126573531210296">使用你的 Google 帳戶對已同步處理的密碼進行加密</translation>
@@ -994,6 +999,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="6945221475159498467">選取</translation>
 <translation id="6955535239952325894">受管理的瀏覽器已停用這項設定</translation>
 <translation id="6963766334940102469">刪除書籤</translation>
+<translation id="6964116075545915250">編輯閱讀清單</translation>
 <translation id="696447261358045621">退出無痕模式</translation>
 <translation id="6979737339423435258">不限時間</translation>
 <translation id="6981982820502123353">無障礙設定</translation>
@@ -1001,6 +1007,7 @@ Privacy Sandbox 的試用功能仍在積極開發階段，目前開放地區有�
 <translation id="6989267951144302301">無法下載</translation>
 <translation id="6995899638241819463">當密碼因資料侵害事件遭到外洩時發出警告</translation>
 <translation id="7001056293070445572">檔案較大 (<ph name="FILE_SIZE" />)</translation>
+<translation id="7020741890149022655">新增到閱讀清單 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="702463548815491781">建議在 TalkBack 或切換控制功能開啟時使用</translation>
 <translation id="7027549951530753705">已還原 <ph name="ITEM_TITLE" /></translation>

@@ -425,6 +425,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="1436390408194692385">Obowiązuje jeszcze przez: <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436784010935106834">Usunięto</translation>
 <translation id="1437986450143295708">Opisz szczegółowo problem</translation>
+<translation id="1439671507542716852">długoterminowa pomoc</translation>
 <translation id="144283815522798837">Wybrane elementy: <ph name="NUMBER_OF_ITEMS_SELECTED" /></translation>
 <translation id="1442851588227551435">Ustawianie aktywnego zgłoszenia Kerberos</translation>
 <translation id="1444628761356461360">Tym urządzeniem zarządza właściciel urządzenia: <ph name="OWNER_EMAIL" />.</translation>
@@ -1423,6 +1424,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2454264884354864965">Kamera jest wyłączona</translation>
 <translation id="245650153866130664">Aby automatycznie odświeżać zgłoszenie, zaznacz opcję „Zapamiętaj hasło”. Hasło będzie przechowywane wyłącznie na Twoim urządzeniu.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> chce skopiować pliki z dysku <ph name="VOLUME_NAME" />.</translation>
+<translation id="2457842160081795172">Obecnie na kanale <ph name="CHANNEL_NAME" /></translation>
 <translation id="2458379781610688953">Aktualizuj konto, <ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">Token zarządzania urządzeniem jest nieprawidłowy.</translation>
 <translation id="2459703812219683497">Wykryto kod aktywacyjny</translation>
@@ -4983,7 +4985,6 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="6284632978374966585">Włącz ciemny motyw</translation>
 <translation id="6285120108426285413">Plik <ph name="FILE_NAME" /> jest rzadko pobierany i może być niebezpieczny.</translation>
 <translation id="6285770818046456882">Urządzenie udostępniające Ci dane anulowało przesyłanie</translation>
-<translation id="6286744355355996781">LTS</translation>
 <translation id="6290613030083731160">W pobliżu nie ma dostępnych urządzeń udostępniających dane. <ph name="LINK_BEGIN" />Więcej informacji<ph name="LINK_END" /></translation>
 <translation id="6291086328725007688">Sprawdzam kod aktywacyjny. Może to potrwać kilka minut.</translation>
 <translation id="6291741848715722067">Kod potwierdzenia</translation>
@@ -7547,7 +7548,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="8966870118594285808">Możesz ponownie otworzyć kartę zamkniętą przez przypadek</translation>
 <translation id="8967427617812342790">Dodaj do listy Do przeczytania</translation>
 <translation id="8968766641738584599">Zapisz kartę</translation>
-<translation id="89720367119469899">Ucieczka</translation>
+<translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Skontaktuj się z administratorem sieci, by dowiedzieć się, czy zapora sieciowa nie blokuje pobrań z serwerów Google.</translation>
 <translation id="8973557916016709913">Usuń poziom powiększenia</translation>
 <translation id="8973596347849323817">Możesz dostosować urządzenie do swoich potrzeb. Ułatwienia dostępu możesz zawsze zmienić w Ustawieniach.</translation>

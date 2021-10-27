@@ -425,6 +425,7 @@
 <translation id="1436390408194692385">Inatumika kwa <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436784010935106834">Zimeondolewa</translation>
 <translation id="1437986450143295708">Fafanua tatizo kwa kina</translation>
+<translation id="1439671507542716852">uwezo wa kutumika kwa muda mrefu</translation>
 <translation id="144283815522798837">Umechagua vipengee <ph name="NUMBER_OF_ITEMS_SELECTED" /></translation>
 <translation id="1442851588227551435">Weka mipangilio ya tiketi ya Kerberos inayotumika</translation>
 <translation id="1444628761356461360">Mpangilio huu unasimamiwa na mmiliki wa kifaa, <ph name="OWNER_EMAIL" />.</translation>
@@ -1436,6 +1437,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2454264884354864965">Kamera imezimwa</translation>
 <translation id="245650153866130664">Ili uonyeshe upya tiketi kiotomatiki, chagua "Kumbuka nenosiri." Nenosiri lako litahifadhiwa kwenye kifaa chako pekee.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> inataka kunakili faili kutoka <ph name="VOLUME_NAME" />.</translation>
+<translation id="2457842160081795172">Kwa sasa unatumia kituo cha <ph name="CHANNEL_NAME" /></translation>
 <translation id="2458379781610688953">Sakinisha akaunti, <ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">Tokeni ya kudhibiti kifaa si sahihi.</translation>
 <translation id="2459703812219683497">Msimbo wa kuanza kutumia umetambuliwa</translation>
@@ -2075,6 +2077,7 @@ na vitufe vya Ctrl, Alt pamoja na kitufe cha kupunguza Mwangaza ili usogeze mbal
 <translation id="310671807099593501">Tovuti inatumia bluetooth</translation>
 <translation id="3108931485517391283">Imeshindwa kupokea</translation>
 <translation id="3109724472072898302">Imekunjwa</translation>
+<translation id="311214366526552035">Pakua Licha ya Hayo</translation>
 <translation id="311394601889664316">Usiruhusu tovuti zibadilishe faili au folda kwenye kifaa chako</translation>
 <translation id="3115147772012638511">Inasubiri akiba...</translation>
 <translation id="3115580024857770654">Kunja zote</translation>
@@ -2354,6 +2357,7 @@ na vitufe vya Ctrl, Alt pamoja na kitufe cha kupunguza Mwangaza ili usogeze mbal
 <translation id="3429160811076349561">Vipengele vya jaribio vimezimwa</translation>
 <translation id="3429271624041785769">Lugha za maudhui ya wavuti</translation>
 <translation id="3429275422858276529">Alamisha ukurasa huu ili uupate kwa urahisi baadaye</translation>
+<translation id="343115368966109153">Ungependa kupakua <ph name="FILE_NAME" />? Mtu yeyote anayetumia kifaa anaweza kuiona.</translation>
 <translation id="3432227430032737297">Futa Vidakuzi Vyote Vilivyoonyeshwa</translation>
 <translation id="3432762828853624962">Wafanyakazi wa Pamoja</translation>
 <translation id="3433621910545056227">Lo! Mfumo umeshindwa kuanzisha kufungwa kwa sifa za muda wa usakinishaji wa kifaa.</translation>
@@ -2695,6 +2699,7 @@ na vitufe vya Ctrl, Alt pamoja na kitufe cha kupunguza Mwangaza ili usogeze mbal
 <translation id="3777806571986431400">Kiendelezi Kimewezeshwa</translation>
 <translation id="3778152852029592020">Upakuaji ulighairiwa.</translation>
 <translation id="3778208826288864398">Tumefunga ufunguo wa usalama kwa sababu umeweka PIN isiyo sahihi mara nyingi mno. Utahitaji kubadilisha ufunguo wa usalama.</translation>
+<translation id="3778369586810509692">Faili hii itahifadhiwa kwenye kifaa na kila mtu ataweza kuiona.</translation>
 <translation id="3778740492972734840">Zana za &amp;Wasanidi Programu</translation>
 <translation id="3778868487658107119">Iulize maswali. Iambie ifanye kitu. Ni Google yako mwenyewe, tayari kukusaidia kila wakati.</translation>
 <translation id="3781742599892759500">Uwezo wa kufikia maikrofoni kwenye Linux</translation>
@@ -4707,6 +4712,7 @@ Unaweza kukabidhi kitendo hiki swichi nyingi.</translation>
 <translation id="597235323114979258">Ona maeneo zaidi</translation>
 <translation id="5972666587303800813">Huduma ya No-op</translation>
 <translation id="5972708806901999743">Sogeza juu</translation>
+<translation id="5972801171078377748">Usionyeshe tena</translation>
 <translation id="5972826969634861500">Anzisha <ph name="PRODUCT_NAME" /></translation>
 <translation id="5973041996755340290">"<ph name="CLIENT_NAME" />" alianzisha utatuzi kwenye kivinjari hiki</translation>
 <translation id="5973605538625120605">Badilisha PIN</translation>
@@ -4997,7 +5003,6 @@ Unaweza kukabidhi kitendo hiki swichi nyingi.</translation>
 <translation id="6284632978374966585">Washa mandhari meusi</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> haipakuliwi kwa kawaida na huenda ikawa hatari.</translation>
 <translation id="6285770818046456882">Kifaa kinachoshiriki nawe kimeghairi uhamishaji</translation>
-<translation id="6286744355355996781">LTS</translation>
 <translation id="6290613030083731160">Hakuna vifaa vinavyoshiriki karibu. <ph name="LINK_BEGIN" />Pata maelezo zaidi<ph name="LINK_END" /></translation>
 <translation id="6291086328725007688">Inathibitisha msimbo wa kuanza kutumia. Hatua hii inaweza kuchukua dakika kadhaa.</translation>
 <translation id="6291741848715722067">Nambari ya kuthibitisha</translation>

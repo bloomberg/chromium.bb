@@ -573,6 +573,9 @@ crbug.com/1207960 [ Linux ] compositing/perspective-interest-rect.html [ Failure
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg.html [ Failure ]
 crbug.com/954591 external/wpt/css/css-transforms/composited-under-rotateY-180deg-clip.html [ Failure ]
 
+crbug.com/1261905 external/wpt/css/css-transforms/backface-visibility-hidden-child-will-change-transform.html [ Failure ]
+crbug.com/1261905 virtual/backface-visibility-interop/external/wpt/css/css-transforms/backface-visibility-hidden-child-translate.html [ Failure ]
+
 # Fixed in CompositeAfterPaint.
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Crash Failure Pass ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Failure ]
@@ -6339,7 +6342,6 @@ crbug.com/1208173 [ Mac ] external/wpt/css/css-paint-api/background-image-alpha.
 crbug.com/1208173 [ Mac ] external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
 crbug.com/1208173 [ Mac ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
 crbug.com/1208173 [ Mac ] svg/custom/svg-root-with-opacity.html [ Failure ]
-crbug.com/1208173 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-image.html [ Failure ]
 crbug.com/1208173 [ Mac ] virtual/oopr-canvas2d/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Failure ]
 crbug.com/1208173 [ Mac ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
 crbug.com/1208173 [ Mac ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
@@ -7182,3 +7184,9 @@ crbug.com/crbug.com/1256763 [ Win7 ] virtual/gpu-rasterization/images/jpeg-with-
 # Sheriff 2021-10-13
 crbug.com/1259167 [ Mac ] virtual/threaded/external/wpt/scroll-animations/scroll-timelines/scroll-animation-inactive-timeline.html [ Failure Pass ]
 crbug.com/1259188 [ Mac10.14 ] virtual/gpu-rasterization/images/color-profile-animate.html [ Failure Pass ]
+
+# Sheriff 2021-10-26
+crbug.com/1208173 [ Mac ] virtual/oopr-canvas2d/fast/canvas/canvas-composite-image.html [ Failure Pass Timeout ]
+crbug.com/1208173 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-color.html [ Pass Timeout ]
+crbug.com/1208173 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-color-over-gradient.html [ Pass Timeout ]
+crbug.com/1259277 [ Debug Linux ] virtual/scroll-unification/fast/events/message-port-multi.html [ Failure Pass ]

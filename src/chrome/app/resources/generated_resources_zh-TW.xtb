@@ -423,6 +423,7 @@
 <translation id="1436390408194692385">有效期間：<ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436784010935106834">已移除</translation>
 <translation id="1437986450143295708">請詳細說明問題</translation>
+<translation id="1439671507542716852">長期支援</translation>
 <translation id="144283815522798837">已選取 <ph name="NUMBER_OF_ITEMS_SELECTED" /> 個項目</translation>
 <translation id="1442851588227551435">設定使用中的 Kerberos 票證</translation>
 <translation id="1444628761356461360">這項設定是由裝置擁有者「<ph name="OWNER_EMAIL" />」管理。</translation>
@@ -1425,6 +1426,7 @@
 <translation id="2454264884354864965">攝影機已關閉</translation>
 <translation id="245650153866130664">如果要自動重新整理票證，請勾選「記住密碼」。你的密碼只會儲存在你的裝置上。</translation>
 <translation id="2457246892030921239">「<ph name="APP_NAME" />」要求複製 <ph name="VOLUME_NAME" /> 中的檔案。</translation>
+<translation id="2457842160081795172">目前為<ph name="CHANNEL_NAME" />版</translation>
 <translation id="2458379781610688953">更新帳戶 (<ph name="EMAIL" />)</translation>
 <translation id="2458591546854598341">裝置管理憑證無效。</translation>
 <translation id="2459703812219683497">已偵測到啟用代碼</translation>
@@ -2064,6 +2066,7 @@
 <translation id="310671807099593501">網站正在使用藍牙</translation>
 <translation id="3108931485517391283">無法接收</translation>
 <translation id="3109724472072898302">已收合</translation>
+<translation id="311214366526552035">仍要下載</translation>
 <translation id="311394601889664316">禁止網站編輯裝置上的檔案或資料夾</translation>
 <translation id="3115147772012638511">等候快取...</translation>
 <translation id="3115580024857770654">全部收合</translation>
@@ -2343,6 +2346,7 @@
 <translation id="3429160811076349561">試用功能已關閉</translation>
 <translation id="3429271624041785769">網路內容語言</translation>
 <translation id="3429275422858276529">將這個網頁加入書籤，方便日後查看</translation>
+<translation id="343115368966109153">要下載「<ph name="FILE_NAME" />」嗎？使用這部裝置的所有人都會看到該檔案。</translation>
 <translation id="3432227430032737297">將顯示的項目全部移除</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">糟糕！系統無法鎖定裝置安裝時的屬性。</translation>
@@ -2684,6 +2688,7 @@
 <translation id="3777806571986431400">擴充功能已啟用</translation>
 <translation id="3778152852029592020">下載作業已取消。</translation>
 <translation id="3778208826288864398">由於你輸入太多次錯誤的 PIN 碼，因此安全金鑰已遭到鎖定。你必須重設安全金鑰。</translation>
+<translation id="3778369586810509692">系統會將這個檔案儲存在裝置上，所有人都能查看。</translation>
 <translation id="3778740492972734840">開發人員工具(&amp;D)</translation>
 <translation id="3778868487658107119">Google 助理可根據你的問題提供解答，或是依指令執行各種操作。它是你專屬的 Google 服務，隨時為你提供協助。</translation>
 <translation id="3781742599892759500">Linux 麥克風存取權</translation>
@@ -4696,6 +4701,7 @@
 <translation id="597235323114979258">顯示更多列印端點</translation>
 <translation id="5972666587303800813">無作業服務</translation>
 <translation id="5972708806901999743">移至頂端</translation>
+<translation id="5972801171078377748">不要再顯示</translation>
 <translation id="5972826969634861500">啟動 <ph name="PRODUCT_NAME" /></translation>
 <translation id="5973041996755340290">「<ph name="CLIENT_NAME" />」已開始為這個瀏覽器偵錯</translation>
 <translation id="5973605538625120605">變更 PIN 碼</translation>
@@ -4986,7 +4992,6 @@
 <translation id="6284632978374966585">開啟深色主題</translation>
 <translation id="6285120108426285413">一般使用者不常下載 <ph name="FILE_NAME" />，代表這個檔案可能不安全。</translation>
 <translation id="6285770818046456882">原本與你分享內容的裝置已取消傳輸作業</translation>
-<translation id="6286744355355996781">LTS：長期支援</translation>
 <translation id="6290613030083731160">附近沒有可分享內容的裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="6291086328725007688">正在驗證啟用代碼。請稍候片刻。</translation>
 <translation id="6291741848715722067">確認碼</translation>

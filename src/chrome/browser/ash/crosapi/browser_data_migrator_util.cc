@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ash/crosapi/user_data_stats_recorder.h"
-
-#include <string.h>
+#include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 
 #include <algorithm>
 
@@ -16,9 +14,8 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 
-namespace crosapi {
-namespace user_data_stats_recorder {
-
+namespace ash {
+namespace browser_data_migrator_util {
 namespace {
 
 struct PathNamePair {
@@ -134,6 +131,7 @@ static_assert(base::ranges::is_sorted(kPathNamePairs, PathNameComparator()),
 }  // namespace
 
 void RecordUserDataSizes(const base::FilePath& profile_data_dir) {
+  int64_t total_profile_dir_size = 0;
   base::FileEnumerator enumerator(profile_data_dir, false /* recursive */,
                                   base::FileEnumerator::FILES |
                                       base::FileEnumerator::DIRECTORIES |
@@ -151,9 +149,13 @@ void RecordUserDataSizes(const base::FilePath& profile_data_dir) {
       // Skip links.
       continue;
     }
-
+    total_profile_dir_size += size;
     RecordUserDataSize(entry, size);
   }
+
+  // Record the total size of the user's profile data directory in MB.
+  base::UmaHistogramCustomCounts(
+      kTotalSize, total_profile_dir_size / 1024 / 1024, 1, 10000, 100);
 }
 
 int64_t ComputeDirectorySizeWithoutLinks(const base::FilePath& dir_path) {
@@ -202,5 +204,5 @@ std::string GetUMAItemName(const base::FilePath& path) {
   return kUnknownUMAName;
 }
 
-}  // namespace user_data_stats_recorder
-}  // namespace crosapi
+}  // namespace browser_data_migrator_util
+}  // namespace ash

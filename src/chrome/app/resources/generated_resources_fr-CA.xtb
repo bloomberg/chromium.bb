@@ -424,6 +424,7 @@ Les signets, l'historique et les mots de passe enregistrés ne seront pas touch�
 <translation id="1436390408194692385">Valide pendant <ph name="TICKET_TIME_LEFT" /></translation>
 <translation id="1436784010935106834">Supprimés</translation>
 <translation id="1437986450143295708">Décrivez attentivement le problème</translation>
+<translation id="1439671507542716852">assistance à long terme</translation>
 <translation id="144283815522798837"><ph name="NUMBER_OF_ITEMS_SELECTED" /> sélectionné(s)</translation>
 <translation id="1442851588227551435">Définir le ticket Kerberos actif</translation>
 <translation id="1444628761356461360">Ce paramètre est géré par le propriétaire de l'appareil : <ph name="OWNER_EMAIL" />.</translation>
@@ -1426,6 +1427,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2454264884354864965">La caméra est désactivée</translation>
 <translation id="245650153866130664">Pour actualiser automatiquement un ticket, cochez l'option « Mémoriser le mot de passe ». Votre mot de passe sera enregistré sur votre appareil seulement.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> souhaite copier des fichiers de <ph name="VOLUME_NAME" />.</translation>
+<translation id="2457842160081795172">Version actuelle : <ph name="CHANNEL_NAME" /></translation>
 <translation id="2458379781610688953">Mettre à jour le compte <ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">Le jeton de la gestion d'appareils est incorrect.</translation>
 <translation id="2459703812219683497">Code d'activation détecté</translation>
@@ -4989,7 +4991,6 @@ Vous pouvez attribuer plusieurs commutateurs à cette action.</translation>
 <translation id="6284632978374966585">Activer le thème sombre</translation>
 <translation id="6285120108426285413">Le fichier <ph name="FILE_NAME" /> n'est pas souvent téléchargé et peut être dangereux.</translation>
 <translation id="6285770818046456882">L'appareil qui partage du contenu avec vous a annulé le transfert</translation>
-<translation id="6286744355355996781">SLT</translation>
 <translation id="6290613030083731160">Aucun appareil à proximité avec qui partager du contenu. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="6291086328725007688">Vérification du code d'activation en cours… Cette opération peut prendre quelques minutes.</translation>
 <translation id="6291741848715722067">Code de confirmation</translation>
