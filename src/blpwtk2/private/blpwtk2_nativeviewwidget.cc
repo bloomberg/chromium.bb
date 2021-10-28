@@ -117,11 +117,21 @@ void NativeViewWidget::move(int x, int y, int width, int height)
     d_impl->SetBounds(gfx::Rect(x, y, width, height));
 }
 
-void NativeViewWidget::focus()
+bool NativeViewWidget::focus()
 {
     DCHECK(d_impl);
     HWND hwnd = views::HWNDForWidget(d_impl);
-    ::SetFocus(hwnd);
+    if(::SetFocus(hwnd) == NULL) {
+        PLOG(WARNING) << "::SetFocus for HWND " << hwnd << " failed";
+        return false;
+    }
+    HWND focusedHwnd = ::GetFocus();
+    if (hwnd != focusedHwnd) {
+        LOG(WARNING) << "::SetFocus for HWND " << hwnd << " failed because focused HWND is "
+            << focusedHwnd;
+        return false;
+    }
+    return true;
 }
 
 blpwtk2::NativeView NativeViewWidget::getNativeWidgetView() const

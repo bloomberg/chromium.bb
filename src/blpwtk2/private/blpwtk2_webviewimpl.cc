@@ -432,8 +432,7 @@ void WebViewImpl::takeKeyboardFocus()
     DCHECK(!d_wasDestroyed);
     if (d_widget) {
         base::AutoReset<bool> isTakingKeyboardFocus(&d_isTakingKeyboardFocus, true);
-        d_widget->focus();
-        if (d_delegate) {
+        if (d_widget->focus() && d_delegate) {
             d_delegate->focused(this);
         }
     }

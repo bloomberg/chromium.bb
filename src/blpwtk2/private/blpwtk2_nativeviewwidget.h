@@ -52,7 +52,10 @@ class NativeViewWidget : private views::WidgetDelegateView {
     void show();
     void hide();
     void move(int x, int y, int width, int height);
-    void focus();
+
+    // Return false when focus failed
+    bool focus();
+
     blpwtk2::NativeView getNativeWidgetView() const;
     void setRegion(blpwtk2::NativeRegion);
 
