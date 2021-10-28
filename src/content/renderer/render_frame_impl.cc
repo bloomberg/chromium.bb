@@ -1446,7 +1446,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   web_frame_widget->InitializeCompositing(
       agent_scheduling_group.agent_group_scheduler(),
       params->widget_params->visual_properties.screen_infos,
-      params->widget_params->routing_id,
+      params->view_id,
       /*settings=*/nullptr);
 
   // The WebFrame created here was already attached to the Page as its main

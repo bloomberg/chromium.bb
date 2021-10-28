@@ -144,6 +144,9 @@ struct CreateLocalMainFrameParams {
   // The ID of the main frame hosted in the view. Must not be kRoutingIdNone.
   int32 routing_id = IPC.mojom.kRoutingIdNone;
 
+  // The ID of the view
+  int32 view_id = IPC.mojom.kRoutingIdNone;
+
   // The communication interfaces for the WebLocalFrame in blink.
   pending_associated_receiver<content.mojom.Frame> frame;
 

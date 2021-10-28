@@ -434,6 +434,7 @@ bool RenderViewHostImpl::CreateRenderView(
     auto local_frame_params = mojom::CreateLocalMainFrameParams::New();
     local_frame_params->token = main_rfh->GetFrameToken();
     local_frame_params->routing_id = main_frame_routing_id_;
+    local_frame_params->view_id = GetRoutingID();
     mojo::PendingAssociatedRemote<mojom::Frame> pending_frame_remote;
     local_frame_params->frame =
         pending_frame_remote.InitWithNewEndpointAndPassReceiver();
