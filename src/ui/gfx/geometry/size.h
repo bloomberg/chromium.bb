@@ -103,23 +103,11 @@ void PrintTo(const Size& size, ::std::ostream* os);
 GEOMETRY_EXPORT Size ScaleToCeiledSize(const Size& size,
                                        float x_scale,
                                        float y_scale);
-#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-// blpwtk2: This function is commented out so that we can catch accidental
-//          calls to it at compile time.  We always want the
-//          ScaleToCeiledSize(size,x,y) version to be called.
 GEOMETRY_EXPORT Size ScaleToCeiledSize(const Size& size, float scale);
-#endif
-
 GEOMETRY_EXPORT Size ScaleToFlooredSize(const Size& size,
                                         float x_scale,
                                         float y_scale);
-#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-// blpwtk2: This function is commented out so that we can catch accidental
-//          calls to it at compile time.  We always want the
-//          ScaleToFlooredSize(size,x,y) version to be called.
 GEOMETRY_EXPORT Size ScaleToFlooredSize(const Size& size, float scale);
-#endif
-
 GEOMETRY_EXPORT Size ScaleToRoundedSize(const Size& size,
                                         float x_scale,
                                         float y_scale);

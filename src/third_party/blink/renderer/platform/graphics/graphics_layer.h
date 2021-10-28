@@ -80,7 +80,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   USING_FAST_MALLOC(GraphicsLayer);
 
  public:
-  explicit GraphicsLayer(GraphicsLayerClient&, bool use_nearest_neighbor_filter = false);
+  explicit GraphicsLayer(GraphicsLayerClient&);
   ~GraphicsLayer() override;
 
   GraphicsLayerClient& Client() const { return client_; }
@@ -259,8 +259,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   RasterInvalidator& EnsureRasterInvalidator();
   void InvalidateRaster(const IntRect&);
 
-  bool NearestNeighbor() const final;
-
   GraphicsLayerClient& client_;
 
   // Offset from the owning layoutObject
@@ -279,8 +277,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   // and is updated after CommitNewDisplayItems.
   bool should_create_layers_after_paint_ : 1;
   bool repainted_ : 1;
-
-  bool use_nearest_neighbor_filter_ : 1;
 
   GraphicsLayerPaintingPhase painting_phase_;
 

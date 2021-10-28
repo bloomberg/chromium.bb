@@ -185,8 +185,7 @@ void CompositedLayerMapping::RemoveSquashedLayers(
 std::unique_ptr<GraphicsLayer> CompositedLayerMapping::CreateGraphicsLayer(
     CompositingReasons reasons,
     SquashingDisallowedReasons squashing_disallowed_reasons) {
-  bool use_nearest_neighbor_filter = true;
-  auto graphics_layer = std::make_unique<GraphicsLayer>(*this, use_nearest_neighbor_filter);
+  auto graphics_layer = std::make_unique<GraphicsLayer>(*this);
 
   graphics_layer->SetCompositingReasons(reasons);
   graphics_layer->SetSquashingDisallowedReasons(squashing_disallowed_reasons);

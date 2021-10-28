@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-
 #include "cc/layers/layer_impl.h"
 
 #include <stddef.h>
@@ -155,13 +153,13 @@ void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state,
   state->is_fast_rounded_corner = draw_properties_.is_fast_rounded_corner;
 }
 
-void LayerImpl::PopulateScaledSharedQuadState1(viz::SharedQuadState* state,
-                                               float layer_to_content_scale,
-                                               bool contents_opaque) const {
+void LayerImpl::PopulateScaledSharedQuadState(viz::SharedQuadState* state,
+                                              float layer_to_content_scale,
+                                              bool contents_opaque) const {
   gfx::Size scaled_bounds =
-      gfx::ScaleToCeiledSize(bounds(), layer_to_content_scale, layer_to_content_scale);
+      gfx::ScaleToCeiledSize(bounds(), layer_to_content_scale);
   gfx::Rect scaled_visible_layer_rect =
-      gfx::ScaleToEnclosingRect(visible_layer_rect(), layer_to_content_scale, layer_to_content_scale);
+      gfx::ScaleToEnclosingRect(visible_layer_rect(), layer_to_content_scale);
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
   PopulateScaledSharedQuadStateWithContentRects(
@@ -186,42 +184,6 @@ void LayerImpl::PopulateScaledSharedQuadStateWithContentRects(
   state->SetAll(scaled_draw_transform, content_rect, visible_content_rect,
                 draw_properties().mask_filter_info, clip_rect, contents_opaque,
                 draw_properties().opacity,
-                effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
-                                                : effect_node->blend_mode,
-                GetSortingContextId());
-  state->is_fast_rounded_corner = draw_properties().is_fast_rounded_corner;
-}
-
-void LayerImpl::PopulateTransformedSharedQuadState(
-    viz::SharedQuadState* state,
-    const gfx::AxisTransform2d& transform,
-    bool contents_opaque) const {
-  // blpwtk2: This is a fork of PopulateScaledSharedQuadState with the
-  //          following changes:
-  //
-  //  - layer_to_content_scale_x is replaced by transform.scale().width()
-  //  - layer_to_content_scale_y is replaced by transform.scale().height()
-  //  - a call to scaled_draw_transform.Translate(-transform.translation().x(),
-  //                                              -transform.translation().y());
-  //    after a call to scaled_draw_transform.Scale(...);
-
-  gfx::Transform scaled_draw_transform =
-      draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_Scalar1 / transform.scale().x(),
-                              SK_Scalar1 / transform.scale().y());
-  scaled_draw_transform.Translate(-transform.translation().x(),
-                                  -transform.translation().y());
-  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
-      bounds(), transform.scale().x(), transform.scale().y());
-  gfx::Rect scaled_visible_layer_rect =
-      gfx::ScaleToEnclosingRect(visible_layer_rect(), transform.scale().x(),
-                                transform.scale().y());
-  scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
-
-  EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
-  state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
-                scaled_visible_layer_rect, draw_properties().mask_filter_info,
-                draw_properties().clip_rect, contents_opaque, draw_properties().opacity,
                 effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver
                                                 : effect_node->blend_mode,
                 GetSortingContextId());
@@ -509,15 +471,6 @@ gfx::Transform LayerImpl::GetScaledDrawTransform(
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_Scalar1 / layer_to_content_scale,
                               SK_Scalar1 / layer_to_content_scale);
-  return scaled_draw_transform;
-}
-
-gfx::Transform LayerImpl::GetScaledDrawTransform2(
-    const gfx::Vector2dF& layer_to_content_scale) const {
-  gfx::Transform scaled_draw_transform =
-      draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_Scalar1 / layer_to_content_scale.x(),
-                              SK_Scalar1 / layer_to_content_scale.y());
   return scaled_draw_transform;
 }
 
@@ -828,10 +781,10 @@ Region LayerImpl::GetInvalidationRegionForDebugging() {
 }
 
 gfx::Rect LayerImpl::GetEnclosingVisibleRectInTargetSpace() const {
-  return GetScaledEnclosingVisibleRectInTargetSpace1(1.0f);
+  return GetScaledEnclosingVisibleRectInTargetSpace(1.0f);
 }
 
-gfx::Rect LayerImpl::GetScaledEnclosingVisibleRectInTargetSpace1(
+gfx::Rect LayerImpl::GetScaledEnclosingVisibleRectInTargetSpace(
     float scale) const {
   // TODO(oshima): Define an utility function to scale layer and conslidate with
   // the logic in ComputeDrawPropertiesOfVisibleLayers() in
@@ -846,28 +799,7 @@ gfx::Rect LayerImpl::GetScaledEnclosingVisibleRectInTargetSpace1(
     drawable_bounds = gfx::Rect(bounds());
   }
   gfx::Transform scaled_draw_transform = GetScaledDrawTransform(scale);
-  gfx::Rect scaled_bounds = ScaleToEnclosingRect(drawable_bounds, scale, scale);
-
-  return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
-                                           scaled_bounds);
-}
-
-gfx::Rect LayerImpl::GetScaledEnclosingVisibleRectInTargetSpace2(const gfx::Vector2dF& scale) const {
-  // TODO(oshima): Define an utility function to scale layer and conslidate with
-  // the logic in ComputeDrawPropertiesOfVisibleLayers() in
-  // draw_property_util.cc.
-  DCHECK_GT(scale.x(), 0.0);
-  DCHECK_GT(scale.y(), 0.0);
-
-  bool only_draws_visible_content = GetPropertyTrees()
-                                        ->effect_tree.Node(effect_tree_index())
-                                        ->only_draws_visible_content;
-  gfx::Rect drawable_bounds = visible_layer_rect();
-  if (!only_draws_visible_content) {
-    drawable_bounds = gfx::Rect(bounds());
-  }
-  gfx::Transform scaled_draw_transform = GetScaledDrawTransform2(scale);
-  gfx::Rect scaled_bounds = ScaleToEnclosingRect(drawable_bounds, scale.x(), scale.y());
+  gfx::Rect scaled_bounds = ScaleToEnclosingRect(drawable_bounds, scale);
 
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
                                            scaled_bounds);

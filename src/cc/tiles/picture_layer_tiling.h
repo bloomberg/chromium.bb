@@ -147,9 +147,6 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Size tiling_size() const { return tiling_data_.tiling_size(); }
   gfx::Rect live_tiles_rect() const { return live_tiles_rect_; }
   gfx::Size tile_size() const { return tiling_data_.max_texture_size(); }
-  const gfx::Vector2dF& contents_scale_key2() const { return raster_transform_.scale(); }
-
-#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
   // PictureLayerTilingSet uses the scale component of the raster transform
   // as the key for indexing and sorting. In theory we can have multiple
   // tilings with the same scale but different translation, but currently
@@ -158,7 +155,6 @@ class CC_EXPORT PictureLayerTiling {
     const gfx::Vector2dF& scale = raster_transform_.scale();
     return std::max(scale.x(), scale.y());
   }
-#endif
   const gfx::AxisTransform2d& raster_transform() const {
     return raster_transform_;
   }
@@ -226,7 +222,7 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Rect& skewport,
       const gfx::Rect& soon_border_rect,
       const gfx::Rect& eventually_rect) {
-    SetTilePriorityRects(gfx::SizeF(1.f, 1.f), visible_rect_in_content_space, skewport,
+    SetTilePriorityRects(1.f, visible_rect_in_content_space, skewport,
                          soon_border_rect, eventually_rect, Occlusion());
   }
 
@@ -328,7 +324,7 @@ class CC_EXPORT PictureLayerTiling {
   bool TilingMatchesTileIndices(const PictureLayerTiling* twin) const;
 
   // Save the required data for computing tile priorities later.
-  void SetTilePriorityRects(const gfx::SizeF& content_to_screen_scale,
+  void SetTilePriorityRects(float content_to_screen_scale,
                             const gfx::Rect& visible_rect_in_content_space,
                             const gfx::Rect& skewport,
                             const gfx::Rect& soon_border_rect,
@@ -403,7 +399,7 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect current_soon_border_rect_;
   gfx::Rect current_eventually_rect_;
   // Other properties used for tile iteration and prioritization.
-  gfx::SizeF current_content_to_screen_scale_;
+  float current_content_to_screen_scale_ = 0.f;
   Occlusion current_occlusion_in_layer_space_;
   float max_skewport_extent_in_screen_space_ = 0.f;
 

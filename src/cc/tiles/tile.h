@@ -75,15 +75,10 @@ class CC_EXPORT Tile {
   const TileDrawInfo& draw_info() const { return draw_info_; }
   TileDrawInfo& draw_info() { return draw_info_; }
 
-#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
   float contents_scale_key() const {
     const gfx::Vector2dF& scale = raster_transform_.scale();
     return std::max(scale.x(), scale.y());
   }
-#endif
-
-  const gfx::Vector2dF& contents_scale_key2() const { return raster_transform_.scale(); }
-
   const gfx::AxisTransform2d& raster_transform() const {
     return raster_transform_;
   }

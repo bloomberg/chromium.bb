@@ -33,7 +33,6 @@
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/display_color_spaces.h"
-#include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -113,33 +112,17 @@ class CC_EXPORT LayerImpl {
   void PopulateSharedQuadState(viz::SharedQuadState* state,
                                bool contents_opaque) const;
 
- private:
   // If using these two, you need to override GetEnclosingRectInTargetSpace() to
   // use GetScaledEnclosingRectInTargetSpace(). To do otherwise may result in
   // inconsistent values, and drawing/clipping problems.
-  void PopulateScaledSharedQuadState1(viz::SharedQuadState* state,
-                                      float layer_to_content_scale,
-                                      bool contents_opaque) const;
- public:
-#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
   void PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                                      float layer_to_content_scale,
-                                     bool contents_opaque) const {
-    PopulateScaledSharedQuadState1(
-            state, layer_to_content_scale, contents_opaque);
-  }
-#endif
-
+                                     bool contents_opaque) const;
   void PopulateScaledSharedQuadStateWithContentRects(
       viz::SharedQuadState* state,
       float layer_to_content_scale,
       const gfx::Rect& content_rect,
       const gfx::Rect& content_visible_rect,
-      bool contents_opaque) const;
-
-  void PopulateTransformedSharedQuadState(
-      viz::SharedQuadState* state,
-      const gfx::AxisTransform2d& transform,
       bool contents_opaque) const;
 
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
@@ -402,21 +385,11 @@ class CC_EXPORT LayerImpl {
   // PopulateScaledSharedQuadState().
   virtual gfx::Rect GetEnclosingVisibleRectInTargetSpace() const;
 
- private:
   // Returns the visible bounds of this layer in target space when scaled by
   // |scale|.  This function scales in the same way as
   // PopulateScaledSharedQuadStateQuadState(). See
   // PopulateScaledSharedQuadStateQuadState() for more details.
-  gfx::Rect GetScaledEnclosingVisibleRectInTargetSpace1(float scale) const;
-
- public:
-  gfx::Rect GetScaledEnclosingVisibleRectInTargetSpace2(const gfx::Vector2dF& scale) const;
-
-#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-  gfx::Rect GetScaledEnclosingVisibleRectInTargetSpace(float scale) const {
-    return GetScaledEnclosingVisibleRectInTargetSpace1(scale);
-  }
-#endif
+  gfx::Rect GetScaledEnclosingVisibleRectInTargetSpace(float scale) const;
 
   // GetIdealContentsScale() returns the ideal 2D scale, clamped to not exceed
   // GetPreferredRasterScale().
@@ -479,7 +452,6 @@ class CC_EXPORT LayerImpl {
  private:
   void ValidateQuadResourcesInternal(viz::DrawQuad* quad) const;
   gfx::Transform GetScaledDrawTransform(float layer_to_content_scale) const;
-  gfx::Transform GetScaledDrawTransform2(const gfx::Vector2dF& layer_to_content_scale) const;
 
   virtual const char* LayerTypeAsString() const;
 

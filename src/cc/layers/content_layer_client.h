@@ -34,9 +34,6 @@ class CC_EXPORT ContentLayerClient {
   // because it will cover any uncleared data with content.
   virtual bool FillsBoundsCompletely() const = 0;
 
-  // Return the flag if GL_NEAREST should be used for filtering or not
-  virtual bool NearestNeighbor() const;
-
  protected:
   virtual ~ContentLayerClient() {}
 };

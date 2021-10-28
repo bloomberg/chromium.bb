@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#define DISALLOW_UNIFORM_SCALE_ENFORCEMENT
-
 #include "cc/benchmarks/rasterize_and_record_benchmark_impl.h"
 
 #include <stddef.h>
