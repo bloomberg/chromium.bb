@@ -64,6 +64,8 @@
 
 namespace {
 
+std::unique_ptr<ui::CursorFactory> g_cursorFactory;
+
 // static
 blink::WebFrameWidget *GetWidgetFromViewRoutingId(const base::Optional<int>& renderViewRoutingId) {
   if (!renderViewRoutingId) {
@@ -853,10 +855,13 @@ void RenderWebView::initializeBrowserLike()
     GetWindowRect(d_hwnd.get(), &rect);
     d_geometry = gfx::Rect(rect);
 
-    // CursorFactory is a singleton, and it will be used later when
-    // creating CursorLoader. We need to make sure to create
-    // CursorFactory early.
-    d_cursorFactory = std::make_unique<ui::CursorFactory>();
+    if (!g_cursorFactory) {
+        // CursorFactory is a singleton, and it will be used later when
+        // creating CursorLoader. We need to make sure to create
+        // CursorFactory early.
+        g_cursorFactory = std::make_unique<ui::CursorFactory>();
+    }
+
     d_cursorLoader = std::make_unique<ui::CursorLoader>();
     d_currentPlatformCursor = LoadCursor(NULL, IDC_ARROW);
 

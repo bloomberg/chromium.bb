@@ -187,7 +187,6 @@ class RenderWebView final : public WebView
     gfx::Range d_selectionRange;
 
     // State related to drag-and-drop:
-    std::unique_ptr<ui::CursorFactory> d_cursorFactory;
     scoped_refptr<DragDrop> d_dragDrop;
 
     // State related to displaying native tooltips:
