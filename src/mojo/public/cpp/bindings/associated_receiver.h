@@ -181,7 +181,7 @@ class AssociatedReceiver : public internal::AssociatedReceiverBase {
   // current SequencedTaskRunner.
   void Bind(PendingAssociatedReceiver<Interface> pending_receiver,
             scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
-    DCHECK(!is_bound()) << "AssociatedReceiver is already bound";
+    //DCHECK(!is_bound()) << "AssociatedReceiver is already bound";
 
     if (pending_receiver) {
       BindImpl(pending_receiver.PassHandle(), &stub_,

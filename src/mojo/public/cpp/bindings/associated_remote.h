@@ -185,7 +185,7 @@ class AssociatedRemote {
   // SequencedTaskRunner.
   void Bind(PendingAssociatedRemote<Interface> pending_remote,
             scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr) {
-    DCHECK(!is_bound()) << "AssociatedRemote is already bound";
+    //DCHECK(!is_bound()) << "AssociatedRemote is already bound";
 
     if (!pending_remote) {
       reset();

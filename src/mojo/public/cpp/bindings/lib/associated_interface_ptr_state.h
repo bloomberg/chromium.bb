@@ -120,7 +120,7 @@ class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
 
   void Bind(AssociatedInterfacePtrInfo<Interface> info,
             scoped_refptr<base::SequencedTaskRunner> runner) {
-    DCHECK(!proxy_);
+    //DCHECK(!proxy_);
     AssociatedInterfacePtrStateBase::Bind(
         info.PassHandle(), info.version(),
         std::make_unique<typename Interface::ResponseValidator_>(),
