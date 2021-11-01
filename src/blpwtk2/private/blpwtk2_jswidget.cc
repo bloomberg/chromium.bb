@@ -105,6 +105,8 @@ void JsWidget::UpdateGeometry(
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> context = d_frame->MainWorldScriptContext();
     v8::Context::Scope contextScope(context);
+    v8::MicrotasksScope microtaskScope(isolate,
+                                       v8::MicrotasksScope::kRunMicrotasks);
 
     v8::Handle<v8::Object> detailObj = v8::Object::New(isolate);
     {
@@ -145,6 +147,8 @@ void JsWidget::UpdateVisibility(bool isVisible)
 
     v8::Handle<v8::Context> context = d_frame->MainWorldScriptContext();
     v8::Context::Scope contextScope(context);
+    v8::MicrotasksScope microtaskScope(isolate,
+                                       v8::MicrotasksScope::kRunMicrotasks);
 
     v8::Handle<v8::Object> detailObj = v8::Object::New(isolate);
     {
