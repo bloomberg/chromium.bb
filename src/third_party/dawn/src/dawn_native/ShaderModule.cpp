@@ -625,7 +625,7 @@ namespace dawn_native {
         }
 
         ResultOrError<EntryPointMetadataTable> ReflectShaderUsingTint(
-            DeviceBase*,
+            const DeviceBase* device,
             const tint::Program* program) {
             ASSERT(program->IsValid());
 
@@ -647,6 +647,10 @@ namespace dawn_native {
                 auto metadata = std::make_unique<EntryPointMetadata>();
 
                 if (!entryPoint.overridable_constants.empty()) {
+                    DAWN_INVALID_IF(device->IsToggleEnabled(Toggle::DisallowUnsafeAPIs),
+                                    "Pipeline overridable constants are disallowed because they "
+                                    "are partially implemented.");
+
                     const auto& name2Id = inspector.GetConstantNameToIdMap();
 
                     for (auto& c : entryPoint.overridable_constants) {

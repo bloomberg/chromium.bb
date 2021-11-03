@@ -10,11 +10,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/payments/card_unmask_otp_input_dialog_controller.h"
 #include "chrome/browser/ui/autofill/payments/card_unmask_otp_input_dialog_view.h"
+#include "components/autofill/core/browser/payments/otp_unmask_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill {
+
+enum class OtpUnmaskResult;
 
 class CardUnmaskOtpInputDialogControllerImpl
     : public CardUnmaskOtpInputDialogController,
@@ -28,10 +31,16 @@ class CardUnmaskOtpInputDialogControllerImpl
       const CardUnmaskOtpInputDialogControllerImpl&) = delete;
   ~CardUnmaskOtpInputDialogControllerImpl() override;
 
-  void ShowDialog(size_t otp_length);
+  // Show the dialog for users to type in OTPs.
+  void ShowDialog(size_t otp_length, base::WeakPtr<OtpUnmaskDelegate> delegate);
+
+  // Invoked when the OTP verification is completed.
+  void OnOtpVerificationResult(OtpUnmaskResult result);
 
   // CardUnmaskOtpInputDialogController:
-  void OnDialogClosed() override;
+  void OnDialogClosed(bool user_closed_dialog) override;
+  void OnOkButtonClicked(const std::u16string& otp) override;
+  void OnNewCodeLinkClicked() override;
   std::u16string GetWindowTitle() const override;
   std::u16string GetTextfieldPlaceholderText() const override;
 #if defined(OS_ANDROID)
@@ -42,6 +51,7 @@ class CardUnmaskOtpInputDialogControllerImpl
   std::u16string GetNewCodeLinkText() const override;
   std::u16string GetOkButtonLabel() const override;
   std::u16string GetProgressLabel() const override;
+  std::u16string GetConfirmationMessage() const override;
 
 #if defined(UNIT_TEST)
   CardUnmaskOtpInputDialogView* GetDialogViewForTesting();
@@ -54,7 +64,14 @@ class CardUnmaskOtpInputDialogControllerImpl
   friend class content::WebContentsUserData<
       CardUnmaskOtpInputDialogControllerImpl>;
 
+  // Sets the view's state to the invalid state for the corresponding
+  // |otp_unmask_result|.
+  void ShowInvalidState(OtpUnmaskResult otp_unmask_result);
+
   size_t otp_length_;
+
+  base::WeakPtr<OtpUnmaskDelegate> delegate_;
+
   CardUnmaskOtpInputDialogView* dialog_view_ = nullptr;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

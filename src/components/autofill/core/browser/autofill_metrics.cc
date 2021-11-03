@@ -1272,6 +1272,15 @@ void AutofillMetrics::LogOfferNotificationInfoBarShown() {
       "Autofill.OfferNotificationInfoBarOffer.CardLinkedOffer", true);
 }
 
+void AutofillMetrics::LogProgressDialogResultMetric(bool is_canceled_by_user) {
+  base::UmaHistogramBoolean("Autofill.ProgressDialog.CardUnmask.Result",
+                            is_canceled_by_user);
+}
+
+void AutofillMetrics::LogProgressDialogShown() {
+  base::UmaHistogramBoolean("Autofill.ProgressDialog.CardUnmask.Shown", true);
+}
+
 // static
 void AutofillMetrics::LogVirtualCardManualFallbackBubbleShown(bool is_reshow) {
   base::UmaHistogramBoolean("Autofill.VirtualCardManualFallbackBubble.Shown",
@@ -3017,6 +3026,39 @@ void AutofillMetrics::LogVirtualCardMetadataSynced(bool existing_card) {
 // static
 void AutofillMetrics::LogImageFetchResult(bool succeeded) {
   base::UmaHistogramBoolean("Autofill.ImageFetcher.Result", succeeded);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthAttempt() {
+  base::UmaHistogramBoolean("Autofill.OtpAuth.SmsOtp.Attempt", true);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthResult(OtpAuthEvent event) {
+  DCHECK_LE(event, OtpAuthEvent::kMaxValue);
+  base::UmaHistogramEnumeration("Autofill.OtpAuth.SmsOtp.Result", event);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthRetriableError(OtpAuthEvent event) {
+  DCHECK_LE(event, OtpAuthEvent::kMaxValue);
+  base::UmaHistogramEnumeration("Autofill.OtpAuth.SmsOtp.RetriableError",
+                                event);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthUnmaskCardRequestLatency(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.OtpAuth.SmsOtp.RequestLatency.UnmaskCardRequest", duration);
+}
+
+// static
+void AutofillMetrics::LogOtpAuthSelectChallengeOptionRequestLatency(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.OtpAuth.SmsOtp.RequestLatency.SelectChallengeOptionRequest",
+      duration);
 }
 
 }  // namespace autofill

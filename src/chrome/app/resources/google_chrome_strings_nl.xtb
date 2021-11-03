@@ -51,7 +51,8 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2121284319307530122">Opnieuw starten om &amp;Chrome te updaten</translation>
 <translation id="2123055963409958220">Help Chrome beter te maken door de <ph name="BEGIN_LINK" />huidige instellingen<ph name="END_LINK" /> te melden</translation>
 <translation id="2151406531797534936">Chrome nu opnieuw opstarten</translation>
-<translation id="2246246234298806438">Google Chrome kan het afdrukvoorbeeld niet tonen wanneer de ingebouwde pdf-viewer ontbreekt.</translation>
+<translation id="2189289170880510015">Pas enkele van de belangrijkste privacyinstellingen van Chrome aan</translation>
+<translation id="2246246234298806438">Google Chrome kan het afdrukvoorbeeld niet bekijken wanneer de ingebouwde pdf-viewer ontbreekt.</translation>
 <translation id="2290014774651636340">Google API-sleutels ontbreken. Sommige functies van Google Chrome worden uitgezet.</translation>
 <translation id="2290095356545025170">Weet je zeker dat je Google Chrome wilt verwijderen?</translation>
 <translation id="2309047409763057870">Dit is een tweede installatie van Google Chrome en kan niet als standaardbrowser worden ingesteld.</translation>
@@ -113,6 +114,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3596080736082218006">{COUNT,plural, =0{Je beheerder vereist dat je Chrome opnieuw start om een update uit te voeren.}=1{Je beheerder vereist dat je Chrome opnieuw start om een update uit te voeren. Je incognitovenster kan niet opnieuw worden geopend.}other{Je beheerder vereist dat je Chrome opnieuw start om een update uit te voeren. Je # incognitovensters kunnen niet opnieuw worden geopend.}}</translation>
 <translation id="3622797965165704966">Het is nu gemakkelijker om Chrome met je Google-account en op gedeelde computers te gebruiken.</translation>
 <translation id="3673813398384385993">Chrome heeft vastgesteld dat <ph name="EXTENSION_NAME" /> malware bevat</translation>
+<translation id="3678552270983184277">Voor de meeste mensen werken de standaardinstellingen, maar je kunt ze aanpassen aan de manier waarop je Chrome wilt gebruiken.</translation>
 <translation id="3718181793972440140">Hiermee wordt 1 item verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">De extensie <ph name="EXTENSION_NAME" /> heeft gewijzigd welke pagina je ziet als je Chrome start.</translation>
 <translation id="3779473566290487688">Als je toekomstige Google Chrome-updates wilt ontvangen, heb je OS X 10.11 of hoger nodig. Deze computer gebruikt OS X 10.10.</translation>
@@ -177,7 +179,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5386244825306882791">Hiermee wordt ook gecontroleerd welke pagina wordt getoond wanneer je Chrome start of vanuit de omnibox zoekt.</translation>
 <translation id="5394833366792865639">Een Chrome-tabblad delen</translation>
 <translation id="5430073640787465221">Je bestand met voorkeuren is beschadigd of ongeldig. Google Chrome kan je instellingen niet herstellen.</translation>
-<translation id="556024056938947818">Google Chrome probeert wachtwoorden te tonen.</translation>
+<translation id="556024056938947818">Google Chrome probeert wachtwoorden te bekijken.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />Chrome OS-instellingen<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
@@ -266,7 +268,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="8129812357326543296">Over &amp;Google Chrome</translation>
 <translation id="822971176939352383">De volgende accounts zijn niet ingelogd bij Chrome-profielen. Als je een account wilt gebruiken in een ander profiel, verwijder je eerst dat profiel.</translation>
 <translation id="8255190535488645436">Google Chrome gebruikt je camera en microfoon.</translation>
-<translation id="8286862437124483331">Google Chrome probeert wachtwoorden te tonen. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
+<translation id="8286862437124483331">Google Chrome probeert wachtwoorden te bekijken. Geef je Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="828798499196665338">Je ouder heeft 'Rechten voor sites, apps en extensies' uitgezet voor Chrome. Je mag deze <ph name="EXTENSION_TYPE_PARAMETER" /> niet aanzetten.</translation>
 <translation id="8290100596633877290">Oeps! Google Chrome is vastgelopen. Nu opnieuw starten?</translation>
 <translation id="8342675569599923794">Dit bestand is gevaarlijk en is daarom door Chrome geblokkeerd.</translation>

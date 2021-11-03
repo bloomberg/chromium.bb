@@ -19,13 +19,8 @@
 namespace location {
 namespace nearby {
 namespace windows {
-
-BluetoothSocket::BluetoothSocket(StreamSocket streamSocket)
-    : windows_socket_(streamSocket) {
-  bluetooth_device_ = std::make_unique<BluetoothDevice>(
-      winrt::Windows::Devices::Bluetooth::BluetoothDevice::FromHostNameAsync(
-          windows_socket_.Information().RemoteHostName())
-          .get());
+BluetoothSocket::BluetoothSocket() {
+  windows_socket_ = IStreamSocket();
   input_stream_ =
       std::make_unique<BluetoothInputStream>(windows_socket_.InputStream());
   output_stream_ =
@@ -64,9 +59,8 @@ Exception BluetoothSocket::Close() {
 // https://developer.android.com/reference/android/bluetooth/BluetoothSocket.html#getRemoteDevice()
 // Returns valid BluetoothDevice pointer if there is a connection, and
 // nullptr otherwise.
-api::BluetoothDevice* BluetoothSocket::GetRemoteDevice() {
-  return bluetooth_device_.get();
-}
+// TODO(b/184975123): replace with real implementation.
+api::BluetoothDevice* BluetoothSocket::GetRemoteDevice() { return nullptr; }
 
 // Starts an asynchronous operation on a StreamSocket object to connect to a
 // remote network destination specified by a remote hostname and a remote
@@ -87,7 +81,7 @@ ExceptionOr<ByteArray> BluetoothSocket::BluetoothInputStream::Read(
     std::int64_t size) {
   Buffer buffer = Buffer(size);
 
-  winrt_stream_.ReadAsync(buffer, size, InputStreamOptions::None).get();
+  winrt_stream_.ReadAsync(buffer, size, InputStreamOptions::None);
 
   DataReader dataReader = DataReader::FromBuffer(buffer);
 
@@ -99,7 +93,7 @@ ExceptionOr<ByteArray> BluetoothSocket::BluetoothInputStream::Read(
 IAsyncAction BluetoothSocket::CancelIOAsync() {
   // Cancels pending reads and writes over a StreamSocket object.
   // https://docs.microsoft.com/en-us/uwp/api/windows.networking.sockets.streamsocket.cancelioasync?view=winrt-20348
-  return windows_socket_.CancelIOAsync();
+  return windows_socket_.as<StreamSocket>().CancelIOAsync();
 }
 
 Exception BluetoothSocket::BluetoothInputStream::Close() {
@@ -119,11 +113,11 @@ BluetoothSocket::BluetoothOutputStream::BluetoothOutputStream(
 
 Exception BluetoothSocket::BluetoothOutputStream::Write(const ByteArray& data) {
   Buffer buffer = Buffer(data.size());
+
   std::memcpy(buffer.data(), data.data(), data.size());
-  buffer.Length(data.size());
 
   try {
-    winrt_stream_.WriteAsync(buffer).get();
+    winrt_stream_.WriteAsync(buffer);
   } catch (std::exception exception) {
     return {Exception::kFailed};
   }

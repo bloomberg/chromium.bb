@@ -108,6 +108,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Testa att rensa cookies<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Kontrollera inställningarna för den säkra DNS-konfigurationen</translation>
 <translation id="1307966114820526988">Utfasade funktioner</translation>
+<translation id="1308113895091915999">Tillgängligt erbjudande</translation>
 <translation id="1312803275555673949">Vad finns det för belägg för detta?</translation>
 <translation id="131405271941274527"><ph name="URL" /> vill skicka och ta emot information när du snuddar vid en NFC-enhet med telefonen</translation>
 <translation id="1314509827145471431">Bindning till höger</translation>
@@ -152,7 +153,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1405567553485452995">Ljusgrön</translation>
 <translation id="1407135791313364759">Öppna alla</translation>
 <translation id="1408787208417187241">Tre häftklamrar högst upp</translation>
-<translation id="1413809658975081374">Sekretessfel</translation>
+<translation id="1413809658975081374">Integritetsfel</translation>
 <translation id="1422930527989633628">Får begära tillstånd att söka efter Bluetooth-enheter i närheten</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1428146450423315676">Utmatningsfack 7</translation>
@@ -986,6 +987,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
     ingen princip, och därför går det inte att slutföra begäran
     om <ph name="SITE" /> i webbläsaren. Ursprungsprinciper kan användas av webbplatsoperatörer
     för att konfigurera säkerhetsfunktioner och andra funktioner för webbplatser.</translation>
+<translation id="4210602799576081649">Verifieringskoden har löpt ut. Begär en ny kod.</translation>
 <translation id="421066178035138955">använda VR-enheter och data</translation>
 <translation id="4214357935346142455">profil på inloggningsskärmen</translation>
 <translation id="4215751373031079683">7x9 (kuvert)</translation>
@@ -1263,7 +1265,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="503498442187459473"><ph name="HOST" /> vill använda kameran och mikrofonen</translation>
 <translation id="5039762155821394373">Teckensnittsstorlek</translation>
 <translation id="5039804452771397117">Tillåt</translation>
-<translation id="5040262127954254034">Sekretess</translation>
+<translation id="5040262127954254034">Integritet</translation>
 <translation id="5043480802608081735">Länk som du har kopierat</translation>
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
 <translation id="5056425809654826431">{NUM_FILES,plural, =1{Om du vill skicka den här filen med Närdelning ska du frigöra utrymme (<ph name="DISK_SPACE_SIZE" />) på enheten}other{Om du vill skicka de här filerna med Närdelning ska du frigöra utrymme (<ph name="DISK_SPACE_SIZE" />) på enheten}}</translation>
@@ -1297,6 +1299,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5126510351761255129">Verifiera kortet</translation>
 <translation id="512670116361803001"><ph name="APP_NAME" /> kan påverkas om storleken ändras. Använd förinställda fönsterstorlekar för att appen ska fungera som avsett.</translation>
 <translation id="5135404736266831032">Hantera adresser …</translation>
+<translation id="5136841603454277753">Ange rätt kod</translation>
 <translation id="5138014172396933048">Virtuella kort är inte tillgängliga just nu. Kontakta banken</translation>
 <translation id="5138227688689900538">Visa färre</translation>
 <translation id="5145883236150621069">Felkoden ingår i policysvaret</translation>

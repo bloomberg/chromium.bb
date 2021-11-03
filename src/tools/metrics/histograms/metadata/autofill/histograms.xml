@@ -61,6 +61,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
                from the FreeListingCouponService."/>
 </variants>
 
+<variants name="Autofill.OtpAuth.Type">
+  <variant name="SmsOtp" summary="The OTP authentication with a SMS OTP."/>
+</variants>
+
 <variants name="Autofill.PaymentBubble.Show">
   <variant name="FirstShow" summary="The bubble is shown for the first time."/>
   <variant name="Reshows" summary="The bubble is re-shown."/>
@@ -81,6 +85,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="Success" summary="Request succeeded."/>
   <variant name="VcnRetrievalFailure"
       summary="Request failed in retrieving the virtual card information."/>
+</variants>
+
+<variants name="Autofill.ProgressDialog.FlowType">
+  <variant name="CardUnmask"
+      summary="Progress dialog for the VCN Card Unmask Flow"/>
 </variants>
 
 <variants name="Autofill.Snackbar.Type">
@@ -2023,6 +2032,59 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="OfferType" variants="Autofill.OfferNotification.Type"/>
 </histogram>
 
+<histogram name="Autofill.OtpAuth.{OtpAuthType}.Attempt"
+    enum="BooleanAttempted" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when an OTP authentication starts and does not emit any value
+    otherwise.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram
+    name="Autofill.OtpAuth.{OtpAuthType}.RequestLatency.SelectChallengeOptionRequest"
+    units="ms" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the roundtrip latency of the SelectChallengeOptionRequest in the OTP
+    authentication.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram
+    name="Autofill.OtpAuth.{OtpAuthType}.RequestLatency.UnmaskCardRequest"
+    units="ms" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the roundtrip latency of the UnmaskCardRequest in the OTP
+    authentication.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpAuth.{OtpAuthType}.Result"
+    enum="AutofillOtpAuthEvent" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>Logs the result of the OTP authentication.</summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpAuth.{OtpAuthType}.RetriableError"
+    enum="AutofillOtpAuthEvent" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs any retriable failure before the OTP authentication completes.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
 <histogram name="Autofill.PageTranslationStatus" enum="Boolean"
     expires_after="2022-12-12">
   <owner>koerber@google.com</owner>
@@ -2270,6 +2332,41 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     experiment is enabled and profile suggestions are available. This metric
     measures how often suggestions were created with and without a formatter.
   </summary>
+</histogram>
+
+<histogram name="Autofill.ProgressDialog.{FlowType}.Result"
+    enum="BooleanCanceled" expires_after="2022-04-01">
+  <owner>siashah@chromium.org</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records the result of the progress dialog, which can either be canceled
+    (user canceled while it was in progress) or not canceled (user waited until
+    confirmation). This dialog is shown in between other dialogs in a flow to
+    provide a progress state to the user. If the user does not cancel it, after
+    its related background task completes it moves on to the next dialog in the
+    flow that it is a part of. The metric is recorded when this dialog is
+    dismissed, and the result that gets logged is false if the user waited until
+    confirmation or true if the user canceled the dialog.
+  </summary>
+  <token key="FlowType" variants="Autofill.ProgressDialog.FlowType"/>
+</histogram>
+
+<histogram name="Autofill.ProgressDialog.{FlowType}.Shown" enum="BooleanShown"
+    expires_after="2022-04-01">
+  <owner>siashah@chromium.org</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records true every time the progress dialog is shown. This dialog is shown
+    in between other dialogs in a payments autofill flow to provide a progress
+    state to the user. If the user does not cancel it, after its related
+    background task completes it moves on to the next dialog in the flow that it
+    is a part of.
+  </summary>
+  <token key="FlowType" variants="Autofill.ProgressDialog.FlowType"/>
 </histogram>
 
 <histogram name="Autofill.QueriedCreditCardFormIsSecure" enum="BooleanSecure"

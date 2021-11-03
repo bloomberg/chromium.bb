@@ -659,7 +659,7 @@
 <translation id="1674073353928166410">Abrir todo (<ph name="URL_COUNT" />) en una ventana de incógnito</translation>
 <translation id="1677306805708094828">No se puede agregar la <ph name="EXTENSION_TYPE_PARAMETER" /></translation>
 <translation id="1677472565718498478">Tiempo restante <ph name="TIME" /></translation>
-<translation id="1679068421605151609">Herramientas del programador</translation>
+<translation id="1679068421605151609">Herramientas para desarrolladores</translation>
 <translation id="1679810534535368772">¿Confirmas que quieres salir?</translation>
 <translation id="167983332380191032">El servicio de administración envió un error de HTTP.</translation>
 <translation id="1680841347983561661">Intenta iniciar Google Play nuevamente en unos minutos.</translation>
@@ -1559,7 +1559,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2602501489742255173">Desliza hacia arriba para comenzar</translation>
 <translation id="2603115962224169880">Limpiar la computadora</translation>
 <translation id="2603355571917519942">Voice Match está listo</translation>
-<translation id="2604138917550693049">Buscar imagen con Google Lens</translation>
+<translation id="2604138917550693049">Buscar imagen con Lens</translation>
 <translation id="2604255671529671813">Error de conexión de red</translation>
 <translation id="2605668923777146443">Para ver tus opciones de Better Together, accede a la <ph name="LINK_BEGIN" />Configuración<ph name="LINK_END" />.</translation>
 <translation id="2606246518223360146">Vincular datos</translation>
@@ -2063,6 +2063,7 @@ y Ctrl + Alt + Disminuir brillo para alejar.</translation>
 <translation id="310671807099593501">El sitio está usando la conexión Bluetooth</translation>
 <translation id="3108931485517391283">No se puede recibir el archivo</translation>
 <translation id="3109724472072898302">Contraído</translation>
+<translation id="311214366526552035">Descargar de todos modos</translation>
 <translation id="311394601889664316">No permitir que los sitios editen archivos ni carpetas de tu dispositivo</translation>
 <translation id="3115147772012638511">Esperando caché...</translation>
 <translation id="3115580024857770654">Contraer todo</translation>
@@ -2342,6 +2343,7 @@ y Ctrl + Alt + Disminuir brillo para alejar.</translation>
 <translation id="3429160811076349561">Las funciones de prueba están desactivadas</translation>
 <translation id="3429271624041785769">Idiomas del contenido web</translation>
 <translation id="3429275422858276529">Agrega esta página a favoritos para encontrarla fácilmente más tarde</translation>
+<translation id="343115368966109153">¿Quieres descargar <ph name="FILE_NAME" />? Todas las personas que usen el dispositivo podrán ver el archivo.</translation>
 <translation id="3432227430032737297">Quitar todo lo que se muestra</translation>
 <translation id="3432762828853624962">Shared Workers</translation>
 <translation id="3433621910545056227">El sistema no pudo establecer el bloqueo de atributos del tiempo de instalación del dispositivo.</translation>
@@ -2683,6 +2685,7 @@ y Ctrl + Alt + Disminuir brillo para alejar.</translation>
 <translation id="3777806571986431400">Extensión habilitada</translation>
 <translation id="3778152852029592020">Se canceló la descarga.</translation>
 <translation id="3778208826288864398">Se ingresó el PIN de forma incorrecta demasiadas veces; por lo tanto, se bloqueó la llave de seguridad. Deberás restablecerla.</translation>
+<translation id="3778369586810509692">Este archivo se almacenará en el dispositivo, y cualquier persona podrá verlo.</translation>
 <translation id="3778740492972734840">&amp;Herramientas del desarrollador</translation>
 <translation id="3778868487658107119">Hazle preguntas. Encárgale tareas. Es tu versión personal de Google, está siempre lista para ayudarte.</translation>
 <translation id="3781742599892759500">Acceso al micrófono en Linux</translation>
@@ -3854,7 +3857,7 @@ y Ctrl + Alt + Disminuir brillo para alejar.</translation>
 <translation id="5051836348807686060">Los idiomas seleccionados no son compatibles con el corrector ortográfico</translation>
 <translation id="5052499409147950210">Editar sitio</translation>
 <translation id="505347685865235222">Grupo sin nombre: <ph name="GROUP_CONTENT_STRING" /></translation>
-<translation id="5053962746715621840">Buscar imagen con Google Lens</translation>
+<translation id="5053962746715621840">Buscar imagen con Lens</translation>
 <translation id="5056950756634735043">Conectando al contenedor</translation>
 <translation id="5057110919553308744">Cuando haces clic en la extensión</translation>
 <translation id="5057403786441168405">Administra las cuentas en las que accediste. En función de los permisos, es posible que los sitios web, las apps y las extensiones en Chrome y Google Play usen estas cuentas para personalizar tu experiencia. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
@@ -4696,6 +4699,7 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="597235323114979258">Ver más destinos</translation>
 <translation id="5972666587303800813">Servicio sin funcionamiento</translation>
 <translation id="5972708806901999743">Mover al principio</translation>
+<translation id="5972801171078377748">No volver a mostrar</translation>
 <translation id="5972826969634861500">Comienzo <ph name="PRODUCT_NAME" /></translation>
 <translation id="5973041996755340290">"<ph name="CLIENT_NAME" />" comenzó a depurar este navegador</translation>
 <translation id="5973605538625120605">Cambiar un PIN</translation>

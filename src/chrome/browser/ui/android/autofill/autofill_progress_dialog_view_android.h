@@ -24,7 +24,8 @@ class AutofillProgressDialogViewAndroid : public AutofillProgressDialogView {
   ~AutofillProgressDialogViewAndroid() override;
 
   // AutofillProgressDialogView.
-  void Dismiss(bool show_confirmation_before_closing) override;
+  void Dismiss(bool show_confirmation_before_closing,
+               bool is_canceled_by_user) override;
 
   // Called by the Java code when the progress dialog is dismissed.
   void OnDismissed(JNIEnv* env);

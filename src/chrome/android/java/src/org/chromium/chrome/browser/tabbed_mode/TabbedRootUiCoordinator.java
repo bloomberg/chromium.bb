@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
+import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpController;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpControllerFactory;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -241,6 +242,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      * @param insetObserverViewSupplier Supplier for the {@link InsetObserverView}.
      * @param backButtonShouldCloseTabFn Function which supplies whether or not the back button
      *         should close the tab.
+     * @param tabReparentingControllerSupplier Supplier for the {@link TabReparentingController}.
+     * @param initializeUiWithIncognitoColors Whether to initialize the UI with incognito colors.
      */
     public TabbedRootUiCoordinator(@NonNull AppCompatActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -278,7 +281,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     ephemeralTabCoordinatorSupplier,
             @NonNull IntentRequestTracker intentRequestTracker, int controlContainerHeightResource,
             @NonNull Supplier<InsetObserverView> insetObserverViewSupplier,
-            @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn) {
+            @NonNull Function<Tab, Boolean> backButtonShouldCloseTabFn,
+            OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
+            boolean initializeUiWithIncognitoColors) {
         super(activity, onOmniboxFocusChangedListener, shareDelegateSupplier, tabProvider,
                 profileSupplier, bookmarkBridgeSupplier, contextualSearchManagerSupplier,
                 tabModelSelectorSupplier, startSurfaceSupplier, intentMetadataOneshotSupplier,
@@ -290,7 +295,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                 compositorViewHolderSupplier, tabContentManagerSupplier,
                 overviewModeBehaviorSupplier, snackbarManagerSupplier, activityType,
                 isInOverviewModeSupplier, isWarmOnResumeSupplier, appMenuDelegate,
-                statusBarColorProvider, intentRequestTracker);
+                statusBarColorProvider, intentRequestTracker, tabReparentingControllerSupplier,
+                initializeUiWithIncognitoColors);
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
         mControlContainerHeightResource = controlContainerHeightResource;
         mInsetObserverViewSupplier = insetObserverViewSupplier;

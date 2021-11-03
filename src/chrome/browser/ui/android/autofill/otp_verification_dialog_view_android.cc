@@ -27,13 +27,7 @@ OtpVerificationDialogViewAndroid::OtpVerificationDialogViewAndroid(
   DCHECK(controller);
 }
 
-OtpVerificationDialogViewAndroid::~OtpVerificationDialogViewAndroid() {
-  // Inform |controller_| of the dialog's destruction.
-  if (controller_) {
-    controller_->OnDialogClosed();
-    controller_ = nullptr;
-  }
-}
+OtpVerificationDialogViewAndroid::~OtpVerificationDialogViewAndroid() = default;
 
 // static
 CardUnmaskOtpInputDialogView* CardUnmaskOtpInputDialogView::CreateAndShow(
@@ -50,11 +44,7 @@ CardUnmaskOtpInputDialogView* CardUnmaskOtpInputDialogView::CreateAndShow(
   OtpVerificationDialogViewAndroid* dialog_view =
       new OtpVerificationDialogViewAndroid(controller);
   // Return the dialog only if we were able to show it.
-  if (dialog_view->ShowDialog(window_android)) {
-    return dialog_view;
-  } else {
-    return nullptr;
-  }
+  return dialog_view->ShowDialog(window_android) ? dialog_view : nullptr;
 }
 
 void OtpVerificationDialogViewAndroid::ShowPendingState() {
@@ -63,15 +53,23 @@ void OtpVerificationDialogViewAndroid::ShowPendingState() {
   NOTREACHED();
 }
 
-void OtpVerificationDialogViewAndroid::ShowErrorMessage(
-    const std::u16string error_message) {
+void OtpVerificationDialogViewAndroid::ShowInvalidState(
+    const std::u16string& invalid_label_text) {
   DCHECK(java_object_);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_OtpVerificationDialogBridge_showOtpErrorMessage(
-      env, java_object_, ConvertUTF16ToJavaString(env, error_message));
+      env, java_object_, ConvertUTF16ToJavaString(env, invalid_label_text));
 }
 
-void OtpVerificationDialogViewAndroid::OnControllerDestroying() {
+void OtpVerificationDialogViewAndroid::Dismiss(
+    bool show_confirmation_before_closing,
+    bool user_closed_dialog) {
+  // TODO(crbug.com/1243475): Update the throbber and show the checkmark if
+  // |show_confirmation_before_closing| is true.
+  if (controller_) {
+    controller_->OnDialogClosed(/*user_closed_dialog=*/user_closed_dialog);
+    controller_ = nullptr;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!java_object_.is_null()) {
     Java_OtpVerificationDialogBridge_dismissDialog(env, java_object_);
@@ -81,20 +79,22 @@ void OtpVerificationDialogViewAndroid::OnControllerDestroying() {
 }
 
 void OtpVerificationDialogViewAndroid::OnDialogDismissed(JNIEnv* env) {
-  // Since the destructor would call controller->OnDialogClosed, calling delete
-  // on this is sufficient.
+  // Inform |controller_| of the dialog's destruction.
+  if (controller_) {
+    controller_->OnDialogClosed(/*user_closed_dialog=*/true);
+    controller_ = nullptr;
+  }
   delete this;
 }
 
 void OtpVerificationDialogViewAndroid::OnConfirm(
     JNIEnv* env,
     const JavaParamRef<jstring>& otp) {
-  // TODO(crbug.com/1196021): Implement method in
-  // CardUnmaskOtpInputDialogController
+  controller_->OnOkButtonClicked(ConvertJavaStringToUTF16(env, otp));
 }
+
 void OtpVerificationDialogViewAndroid::OnNewOtpRequested(JNIEnv* env) {
-  // TODO(crbug.com/1196021): Implement method in
-  // CardUnmaskOtpInputDialogController
+  controller_->OnNewCodeLinkClicked();
 }
 
 bool OtpVerificationDialogViewAndroid::ShowDialog(

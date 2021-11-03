@@ -656,7 +656,7 @@
   {
     "name": "cellular-forbid-attach-apn",
     "owners": [ "hsuregan", "cros-connectivity@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 100
   },
   {
     "name": "cellular-use-attach-apn",
@@ -3508,8 +3508,8 @@
   },
   {
     "name": "ios-synthetic-crash-reports",
-    "owners": [ "eugenebut", "olivierrobin", "bling-flags@google.com" ],
-    "expiry_milestone": 95
+    "owners": [ "olivierrobin", "justincohen", "bling-flags@google.com" ],
+    "expiry_milestone": 100
   },
   {
     "name": "isolate-origins",
@@ -3959,6 +3959,11 @@
     "name": "ntp-shopping-tasks-module",
     "owners": [ "mahmadi", "tiborg" ],
     "expiry_milestone": 96
+  },
+  {
+    "name": "ntp-view-hierarchy-repair",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 98
   },
   {
     "name": "offline-indicator-v2",
@@ -5171,14 +5176,9 @@
     "expiry_milestone": 99
   },
   {
-    "name": "tabgrid-context-menu-ios",
-    "owners": [ "mrefaat", "michaeldo", "bling-flags@google.com" ],
-    "expiry_milestone": 95
-  },
-  {
     "name": "tabs-bulkactions-ios",
     "owners": [ "mrefaat", "michaeldo", "bling-flags@google.com" ],
-    "expiry_milestone": 95
+    "expiry_milestone": 98
   },
   {
     "name": "terminal-ssh",

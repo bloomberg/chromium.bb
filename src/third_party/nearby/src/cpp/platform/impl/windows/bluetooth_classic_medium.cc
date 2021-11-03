@@ -60,9 +60,7 @@ void BluetoothClassicMedium::OnScanModeChanged(
   bool radioDiscoverable = bluetooth_adapter_.GetScanMode() ==
                            BluetoothAdapter::ScanMode::kConnectableDiscoverable;
 
-  if (bluetooth_server_socket_ != nullptr) {
-    bluetooth_server_socket_->SetScanMode(radioDiscoverable);
-  }
+  bluetooth_server_socket_->SetScanMode(radioDiscoverable);
 }
 
 bool BluetoothClassicMedium::StartDiscovery(
@@ -253,14 +251,14 @@ bool BluetoothClassicMedium::CheckSdp(RfcommDeviceService requestedService) {
   // Do various checks of the SDP record to make sure you are talking to a
   // device that actually supports the Bluetooth Rfcomm Service
   // https://docs.microsoft.com/en-us/uwp/api/windows.devices.bluetooth.rfcomm.rfcommdeviceservice.getsdprawattributesasync?view=winrt-20348
-  auto attributes = requestedService.GetSdpRawAttributesAsync().get();
-  if (!attributes.HasKey(Constants::SdpServiceNameAttributeId)) {
+  auto attributes = /*await*/ requestedService.GetSdpRawAttributesAsync();
+  if (!attributes.get().HasKey(Constants::SdpServiceNameAttributeId)) {
     NEARBY_LOGS(ERROR) << __func__ << ": Missing SdpServiceNameAttributeId.";
     return false;
   }
 
   auto attributeReader = DataReader::FromBuffer(
-      attributes.Lookup(Constants::SdpServiceNameAttributeId));
+      attributes.get().Lookup(Constants::SdpServiceNameAttributeId));
 
   auto attributeType = attributeReader.ReadByte();
 
@@ -376,7 +374,7 @@ winrt::fire_and_forget BluetoothClassicMedium::DeviceWatcher_Added(
                 EnterCriticalSection(&critical_section_);
 
                 std::unique_ptr<BluetoothDevice> bluetoothDevice =
-                    std::make_unique<BluetoothDevice>(async.get());
+                    std::make_unique<BluetoothDevice>(async.GetResults());
 
                 devices_by_id_[deviceInfo.Id()] = std::move(bluetoothDevice);
 

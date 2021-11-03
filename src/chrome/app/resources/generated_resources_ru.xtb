@@ -705,7 +705,7 @@
 <translation id="1719312230114180055">Помните, что распознавание отпечатков защищает не так надежно, как сложный пароль или PIN-код.</translation>
 <translation id="1720318856472900922">Аутентификация сервера TLS WWW</translation>
 <translation id="1720941539803966190">Закрыть руководство</translation>
-<translation id="172123215662733643">Искать изображения с помощью функции "<ph name="VISUAL_SEARCH_PROVIDER" />"</translation>
+<translation id="172123215662733643">Найти через <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="1721312023322545264">Для доступа к этой странице требуется разрешение пользователя <ph name="NAME" /></translation>
 <translation id="1722460139690167654">Ваше <ph name="BEGIN_LINK" />устройство <ph name="DEVICE_TYPE" /> находится под управлением<ph name="END_LINK" /> домена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="1723824996674794290">&amp;Новое окно</translation>
@@ -1564,7 +1564,7 @@
 <translation id="2602501489742255173">Чтобы начать, проведите по экрану вверх.</translation>
 <translation id="2603115962224169880">Удалить вредоносное ПО с компьютера</translation>
 <translation id="2603355571917519942">Функция Voice Match настроена</translation>
-<translation id="2604138917550693049">Выполнить поиск по изображению, используя Google Объектив</translation>
+<translation id="2604138917550693049">Найти через Google Объектив</translation>
 <translation id="2604255671529671813">Ошибка подключения к сети</translation>
 <translation id="2605668923777146443">Чтобы посмотреть параметры режима Better Together, откройте <ph name="LINK_BEGIN" />Настройки<ph name="LINK_END" />.</translation>
 <translation id="2606246518223360146">Связать данные</translation>
@@ -2067,6 +2067,7 @@
 <translation id="310671807099593501">Сайт использует Bluetooth</translation>
 <translation id="3108931485517391283">Не удалось получить файл</translation>
 <translation id="3109724472072898302">Свернуто</translation>
+<translation id="311214366526552035">Все равно скачать</translation>
 <translation id="311394601889664316">Запретить сайтам изменять файлы и папки на устройстве</translation>
 <translation id="3115147772012638511">Ожидание кеша…</translation>
 <translation id="3115580024857770654">Свернуть все</translation>
@@ -2346,6 +2347,7 @@
 <translation id="3429160811076349561">Функции отключены</translation>
 <translation id="3429271624041785769">Языки веб-контента</translation>
 <translation id="3429275422858276529">Чтобы в будущем эту страницу было проще найти, добавьте ее в закладки</translation>
+<translation id="343115368966109153">Скачать файл <ph name="FILE_NAME" />? Он будет доступен всем пользователям этого устройства.</translation>
 <translation id="3432227430032737297">Удалить все показанные файлы cookie</translation>
 <translation id="3432762828853624962">Разделяемые объекты worker</translation>
 <translation id="3433621910545056227">Системе не удалось заблокировать атрибуты устройства на время установки.</translation>
@@ -2687,6 +2689,7 @@
 <translation id="3777806571986431400">Расширение включено</translation>
 <translation id="3778152852029592020">Скачивание отменено.</translation>
 <translation id="3778208826288864398">Слишком много попыток ввода PIN-кода. Электронный ключ заблокирован. Сбросьте настройки электронного ключа.</translation>
+<translation id="3778369586810509692">Файл будет храниться на этом устройстве, и все смогут его видеть.</translation>
 <translation id="3778740492972734840">&amp;Инструменты разработчика</translation>
 <translation id="3778868487658107119">Это ваш личный помощник, который всегда рядом. Просто спросите его о чем-нибудь или дайте поручение.</translation>
 <translation id="3781742599892759500">Доступ к микрофону в Linux</translation>
@@ -3858,7 +3861,7 @@
 <translation id="5051836348807686060">Проверка правописания не поддерживается для выбранных языков.</translation>
 <translation id="5052499409147950210">Изменение сайта</translation>
 <translation id="505347685865235222">Группа без названия: <ph name="GROUP_CONTENT_STRING" /></translation>
-<translation id="5053962746715621840">Выполнить поиск по изображению, используя Google Объектив</translation>
+<translation id="5053962746715621840">Найти через Google Объектив</translation>
 <translation id="5056950756634735043">Подключение к контейнеру…</translation>
 <translation id="5057110919553308744">При нажатии на расширение</translation>
 <translation id="5057403786441168405">Управляйте аккаунтами, в которые вы вошли. При наличии разрешений сайты, приложения и расширения в Chrome и Google Play могут использовать данные этих аккаунтов для персонализации сервисов. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
@@ -4700,6 +4703,7 @@
 <translation id="597235323114979258">Другие места назначения печати</translation>
 <translation id="5972666587303800813">No-op</translation>
 <translation id="5972708806901999743">К началу</translation>
+<translation id="5972801171078377748">Больше не показывать</translation>
 <translation id="5972826969634861500">Запустить <ph name="PRODUCT_NAME" /></translation>
 <translation id="5973041996755340290">Инструмент "<ph name="CLIENT_NAME" />" запустил отладку этого браузера.</translation>
 <translation id="5973605538625120605">Изменение PIN-кода</translation>
@@ -5855,7 +5859,7 @@
 <translation id="7230222852462421043">&amp;Восстановить окно</translation>
 <translation id="7230787553283372882">Позволяет настроить размер текста</translation>
 <translation id="7232750842195536390">Название не изменено</translation>
-<translation id="723343421145275488">Искать изображения с помощью функции "<ph name="VISUAL_SEARCH_PROVIDER" />"</translation>
+<translation id="723343421145275488">Найти через <ph name="VISUAL_SEARCH_PROVIDER" /></translation>
 <translation id="7234010996000898150">Отмена восстановления контейнера Linux…</translation>
 <translation id="7235716375204803342">Загрузка действий...</translation>
 <translation id="7235737137505019098">На электронном ключе не хватает места для нового аккаунта.</translation>

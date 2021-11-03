@@ -64,10 +64,6 @@ using winrt::Windows::Storage::Streams::DataWriter;
 // https://docs.microsoft.com/en-us/uwp/api/windows.storage.streams.unicodeencoding?view=winrt-20348
 using winrt::Windows::Storage::Streams::UnicodeEncoding;
 
-// Specifies the level of encryption to use on a StreamSocket object.
-// https://docs.microsoft.com/en-us/uwp/api/windows.networking.sockets.socketprotectionlevel?view=winrt-22000
-using winrt::Windows::Networking::Sockets::SocketProtectionLevel;
-
 // https://developer.android.com/reference/android/bluetooth/BluetoothServerSocket.html.
 class BluetoothServerSocket : public api::BluetoothServerSocket {
  public:
@@ -94,8 +90,8 @@ class BluetoothServerSocket : public api::BluetoothServerSocket {
   Exception StartListening(bool radioDiscoverable);
 
   void SetScanMode(bool radioDiscoverable) {
-    StopAdvertising();
     radio_discoverable_ = radioDiscoverable;
+    StopAdvertising();
     StartAdvertising();
   }
 
@@ -120,7 +116,7 @@ class BluetoothServerSocket : public api::BluetoothServerSocket {
   const std::string service_name_;
   const std::string service_uuid_;
 
-  RfcommServiceProvider rfcomm_provider_;
+  RfcommServiceProvider* rfcomm_provider_;
 };
 
 }  // namespace windows

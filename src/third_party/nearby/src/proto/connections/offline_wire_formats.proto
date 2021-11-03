@@ -269,8 +269,7 @@ message BandwidthUpgradeNegotiationFrame {
 }
 
 message KeepAliveFrame {
-  // And ack will be sent after receiving KEEP_ALIVE frame.
-  optional bool ack = 1;
+  // Empty on purpose.
 }
 
 // Informs the remote side to immediately severe the socket connection.

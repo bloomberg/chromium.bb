@@ -403,7 +403,7 @@ void CreditCardAccessManager::GetAuthenticationTypeForVirtualCard(
 
   // Then we should let users confirm the OTP auth, trigger the selection
   // dialog and wait for user's response.
-  // TODO(crbug.com/1243475): Trigger auth selection dialog.
+  ShowUnmaskAuthenticatorSelectionDialog();
 }
 
 void CreditCardAccessManager::GetAuthenticationTypeForMaskedServerCard(
@@ -488,9 +488,11 @@ void CreditCardAccessManager::Authenticate() {
       // UnmaskResponseDetails while for masked server cards, it comes from the
       // UnmaskDetails.
       base::Value fido_request_options;
+      absl::optional<std::string> context_token;
       if (base::FeatureList::IsEnabled(
               features::kAutofillEnableVirtualCardsRiskBasedAuthentication) &&
           card_->record_type() == CreditCard::VIRTUAL_CARD) {
+        context_token = virtual_card_unmask_response_details_.context_token;
         fido_request_options = std::move(
             virtual_card_unmask_response_details_.fido_request_options.value());
       } else {
@@ -499,7 +501,7 @@ void CreditCardAccessManager::Authenticate() {
       }
       GetOrCreateFIDOAuthenticator()->Authenticate(
           card_.get(), weak_ptr_factory_.GetWeakPtr(),
-          std::move(fido_request_options));
+          std::move(fido_request_options), context_token);
 #endif
       break;
     }
@@ -738,7 +740,7 @@ void CreditCardAccessManager::OnFIDOAuthenticationComplete(
     if (card_->record_type() == CreditCard::VIRTUAL_CARD &&
         base::FeatureList::IsEnabled(
             features::kAutofillEnableVirtualCardsRiskBasedAuthentication)) {
-      // TODO(crbug.com/1243475): Show authentication selection dialog.
+      ShowUnmaskAuthenticatorSelectionDialog();
     } else {
       unmask_auth_flow_type_ = UnmaskAuthFlowType::kCvcFallbackFromFido;
       Authenticate();
@@ -762,7 +764,7 @@ void CreditCardAccessManager::OnOtpAuthenticationComplete(
   accessor_->OnCreditCardFetched(response.did_succeed
                                      ? CreditCardFetchResult::kSuccess
                                      : CreditCardFetchResult::kTransientError,
-                                 card_.get(), cvc_);
+                                 response.card, response.cvc);
   HandleFidoOptInStatusChange();
   Reset();
 }
@@ -1023,11 +1025,8 @@ void CreditCardAccessManager::OnStopWaitingForUnmaskDetails(
 }
 
 void CreditCardAccessManager::OnUserAcceptedAuthenticationSelectionDialog(
-    const CardUnmaskChallengeOption& selected_challenge_option) {
-  // Currently only SMS OTP auth go through this dialog.
-  DCHECK_EQ(selected_challenge_option.type,
-            CardUnmaskChallengeOptionType::kSmsOtp);
-  selected_challenge_option_id_ = selected_challenge_option.id;
+    const std::string& selected_challenge_option_id) {
+  selected_challenge_option_id_ = selected_challenge_option_id;
   UnmaskAuthFlowType selected_authentication_type =
       unmask_auth_flow_type_ == UnmaskAuthFlowType::kFido
           ? UnmaskAuthFlowType::kOtpFallbackFromFido
@@ -1072,6 +1071,16 @@ void CreditCardAccessManager::HandleFidoOptInStatusChange() {
   // Reset |opt_in_intention_| after the authentication completes.
   opt_in_intention_ = UserOptInIntention::kUnspecified;
 #endif
+}
+
+void CreditCardAccessManager::ShowUnmaskAuthenticatorSelectionDialog() {
+  client_->ShowUnmaskAuthenticatorSelectionDialog(
+      virtual_card_unmask_response_details_.card_unmask_challenge_options,
+      base::BindOnce(
+          &CreditCardAccessManager::OnUserAcceptedAuthenticationSelectionDialog,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&CreditCardAccessManager::OnVirtualCardUnmaskCancelled,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace autofill
