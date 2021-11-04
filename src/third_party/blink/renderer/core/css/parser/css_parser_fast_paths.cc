@@ -974,7 +974,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyID::kWhiteSpace:
       return value_id == CSSValueID::kNormal || value_id == CSSValueID::kPre ||
              value_id == CSSValueID::kPreWrap ||
-             value_id == CSSValueID::kBbPreWrapText ||
              value_id == CSSValueID::kPreLine ||
              value_id == CSSValueID::kNowrap ||
              value_id == CSSValueID::kBreakSpaces;
