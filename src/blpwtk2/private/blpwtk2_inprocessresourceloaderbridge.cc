@@ -247,6 +247,8 @@ class InProcessURLRequest : public URLRequest {
                 visitor->visitHeader(StringRef(it.name()), StringRef(it.value()));
             } while (it.GetNext());
         }
+
+        CHECK(!d_requestBody || d_requestBody->elements()->empty());
     }
 
     bool reportUploadProgress() const override

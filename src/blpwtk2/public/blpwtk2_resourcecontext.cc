@@ -29,12 +29,6 @@ HTTPHeaderVisitor::~HTTPHeaderVisitor()
 {
 }
 
-HTTPBodyVisitor::~HTTPBodyVisitor()
-{
-}
-
-HTTPBodyVisitor::HTTPBodyVisitor() = default;
-
 URLRequest::~URLRequest()
 {
 }

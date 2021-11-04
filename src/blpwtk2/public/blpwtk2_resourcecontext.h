@@ -41,16 +41,6 @@ class BLPWTK2_EXPORT HTTPHeaderVisitor {
     virtual ~HTTPHeaderVisitor();
 };
 
-class BLPWTK2_EXPORT HTTPBodyVisitor {
-  public:
-    HTTPBodyVisitor();
-    virtual void visitBodyElement(const Blob& element) = 0;
-
-  protected:
-
-    virtual ~HTTPBodyVisitor();
-};
-
 class BLPWTK2_EXPORT URLRequest {
   public:
     using AppCacheHostID = String;
