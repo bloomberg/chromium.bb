@@ -158,7 +158,7 @@ bool LoadDefaultEGLGLES2Bindings(
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
     base::FilePath module_path;
 #if !defined(OS_FUCHSIA)
-    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_ASSETS, &module_path))
       return false;
     module_path = module_path.Append(FILE_PATH_LITERAL("swiftshader/"));
 #endif
@@ -171,7 +171,7 @@ bool LoadDefaultEGLGLES2Bindings(
   } else if (implementation.gl == gl::kGLImplementationEGLANGLE) {
     base::FilePath module_path;
 #if !defined(OS_FUCHSIA)
-    if (!base::PathService::Get(base::DIR_MODULE, &module_path))
+    if (!base::PathService::Get(base::DIR_ASSETS, &module_path))
       return false;
 #endif
 
