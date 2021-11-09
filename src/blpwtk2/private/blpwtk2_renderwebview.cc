@@ -53,7 +53,7 @@
 #include <ui/events/base_event_utils.h>
 #include <ui/events/blink/web_input_event.h>
 #include <ui/base/cursor/cursor_loader.h>
-#include <ui/base/cursor/win/win_cursor.h>
+#include <ui/base/cursor/win/win_cursor_factory.h>
 #include <ui/base/win/session_change_observer.h>
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
@@ -859,7 +859,7 @@ void RenderWebView::initializeBrowserLike()
         // CursorFactory is a singleton, and it will be used later when
         // creating CursorLoader. We need to make sure to create
         // CursorFactory early.
-        g_cursorFactory = std::make_unique<ui::CursorFactory>();
+        g_cursorFactory = std::make_unique<ui::WinCursorFactory>();
     }
 
     d_cursorLoader = std::make_unique<ui::CursorLoader>();
