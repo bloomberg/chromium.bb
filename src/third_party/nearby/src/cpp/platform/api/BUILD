@@ -18,7 +18,6 @@ cc_library(
     hdrs = [
         "atomic_boolean.h",
         "atomic_reference.h",
-        "bluetooth_adapter.h",
         "cancelable.h",
         "condition_variable.h",
         "count_down_latch.h",
@@ -61,7 +60,6 @@ cc_library(
         "webrtc.h",
         "wifi.h",
         "wifi_lan.h",
-        "wifi_lan_v2.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
     visibility = [

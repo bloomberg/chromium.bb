@@ -24,7 +24,10 @@ proto_library(
     name = "connections_enums_proto",
     srcs = ["connections_enums.proto"],
     cc_api_version = 2,
-    compatible_with = ["//buildenv/target:non_prod"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:appengine",
+    ],
     deps = [
         "//logs/proto/logs_annotations",
     ],
@@ -69,16 +72,16 @@ portable_proto_library(
 filegroup(
     name = "connections_enums_proto_config",
     srcs = ["connections_enums_proto_config.asciipb"],
-    compatible_with = [
-        "//buildenv/target:non_prod",
-    ],
 )
 
 proto_library(
     name = "sharing_enums_proto",
     srcs = ["sharing_enums.proto"],
     cc_api_version = 2,
-    compatible_with = ["//buildenv/target:non_prod"],
+    compatible_with = [
+        "//buildenv/target:non_prod",
+        "//buildenv/target:appengine",
+    ],
     deps = [
         "//logs/proto/logs_annotations",
     ],

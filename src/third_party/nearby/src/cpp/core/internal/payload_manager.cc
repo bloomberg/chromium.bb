@@ -351,30 +351,11 @@ void PayloadManager::SendPayload(ClientProxy* client,
   if (shutdown_.Get()) return;
   NEARBY_LOG(INFO, "SendPayload: endpoint_ids={%s}",
              ToString(endpoint_ids).c_str());
-  // Before transfer to internal payload, retrieves the Payload size for
-  // analytics.
-  std::int64_t payload_total_size;
-  switch (payload.GetType()) {
-    case connections::Payload::Type::kBytes:
-      payload_total_size = payload.AsBytes().size();
-      break;
-    case connections::Payload::Type::kFile:
-      payload_total_size = payload.AsFile()->GetTotalSize();
-      break;
-    case connections::Payload::Type::kStream:
-    case connections::Payload::Type::kUnknown:
-      payload_total_size = -1;
-      break;
-  }
-
   auto executor = GetOutgoingPayloadExecutor(payload.GetType());
   // The |executor| will be null if the payload is of a type we cannot work
   // with. This should never be reached since the ServiceControllerRouter has
   // already checked whether or not we can work with this Payload type.
   if (!executor) {
-    RecordInvalidPayloadAnalytics(client, endpoint_ids, payload.GetId(),
-                                  payload.GetType(), payload.GetOffset(),
-                                  payload_total_size);
     NEARBY_LOGS(INFO)
         << "PayloadManager failed to determine the right executor for "
            "outgoing payload_id="
@@ -395,14 +376,11 @@ void PayloadManager::SendPayload(ClientProxy* client,
   Payload::Id payload_id =
       CreateOutgoingPayload(std::move(payload), endpoint_ids);
   executor->Execute(
-      "send-payload", [this, client, endpoint_ids, payload_id, payload_type,
-                       resume_offset, payload_total_size]() {
+      "send-payload",
+      [this, client, endpoint_ids, payload_id, payload_type, resume_offset]() {
         if (shutdown_.Get()) return;
         PendingPayload* pending_payload = GetPayload(payload_id);
         if (!pending_payload) {
-          RecordInvalidPayloadAnalytics(client, endpoint_ids, payload_id,
-                                        payload_type, resume_offset,
-                                        payload_total_size);
           NEARBY_LOGS(INFO)
               << "PayloadManager failed to create InternalPayload for outgoing "
                  "payload_id="
@@ -412,11 +390,6 @@ void PayloadManager::SendPayload(ClientProxy* client,
         }
         auto* internal_payload = pending_payload->GetInternalPayload();
         if (!internal_payload) return;
-
-        RecordPayloadStartedAnalytics(client, endpoint_ids, payload_id,
-                                      payload_type, resume_offset,
-                                      internal_payload->GetTotalSize());
-
         PayloadTransferFrame::PayloadHeader payload_header{
             CreatePayloadHeader(*internal_payload, resume_offset)};
         bool should_continue = true;
@@ -528,16 +501,6 @@ void PayloadManager::OnEndpointDisconnect(ClientProxy* client,
 
               // Send a client notification of a payload transfer failure.
               client->OnPayloadProgress(endpoint_id, update);
-
-              if (pending_payload->IsIncoming()) {
-                client->GetAnalyticsRecorder().OnIncomingPayloadDone(
-                    endpoint_id, pending_payload->GetId(),
-                    proto::connections::ENDPOINT_IO_ERROR);
-              } else {
-                client->GetAnalyticsRecorder().OnOutgoingPayloadDone(
-                    endpoint_id, pending_payload->GetId(),
-                    proto::connections::ENDPOINT_IO_ERROR);
-              }
             }
 
             barrier.CountDown();
@@ -687,10 +650,6 @@ void PayloadManager::SendClientCallbacksForFinishedOutgoingPayload(
 
           // Notify the client.
           client->OnPayloadProgress(endpoint_id, update);
-
-          // Mark this payload as done for analytics.
-          client->GetAnalyticsRecorder().OnOutgoingPayloadDone(
-              endpoint_id, payload_header.id(), status);
         }
 
         // Remove these endpoints from our tracking list for this payload.
@@ -725,10 +684,6 @@ void PayloadManager::SendClientCallbacksForFinishedIncomingPayload(
             payload_header.total_size(), offset_bytes};
         NotifyClientOfIncomingPayloadProgressInfo(client, endpoint_id, update);
         DestroyPendingPayload(payload_header.id());
-
-        // Analyze
-        client->GetAnalyticsRecorder().OnIncomingPayloadDone(
-            endpoint_id, payload_header.id(), status);
       });
 }
 
@@ -851,9 +806,6 @@ void PayloadManager::HandleSuccessfulOutgoingChunk(
         client->OnPayloadProgress(endpoint_id, update);
 
         if (is_last_chunk) {
-          client->GetAnalyticsRecorder().OnOutgoingPayloadDone(
-              endpoint_id, payload_header.id(), proto::connections::SUCCESS);
-
           // Stop tracking this endpoint.
           pending_payload->RemoveEndpoints({endpoint_id});
 
@@ -861,9 +813,6 @@ void PayloadManager::HandleSuccessfulOutgoingChunk(
           if (pending_payload->GetEndpoints().empty()) {
             pending_payload->Close();
           }
-        } else {
-          client->GetAnalyticsRecorder().OnPayloadChunkSent(
-              endpoint_id, payload_header.id(), payload_chunk_body_size);
         }
       });
 }
@@ -915,15 +864,6 @@ void PayloadManager::HandleSuccessfulIncomingChunk(
 
         // Notify the client of this update.
         NotifyClientOfIncomingPayloadProgressInfo(client, endpoint_id, update);
-
-        // Analyze the success.
-        if (is_last_chunk) {
-          client->GetAnalyticsRecorder().OnIncomingPayloadDone(
-              endpoint_id, payload_header.id(), proto::connections::SUCCESS);
-        } else {
-          client->GetAnalyticsRecorder().OnPayloadChunkReceived(
-              endpoint_id, payload_header.id(), payload_chunk_body_size);
-        }
       });
 }
 
@@ -942,17 +882,6 @@ void PayloadManager::ProcessDataPacket(
 
   PendingPayload* pending_payload;
   if (payload_chunk.offset() == 0) {
-    RunOnStatusUpdateThread(
-        "process-data-packet", [to_client, from_endpoint_id, payload_header,
-                                this]() RUN_ON_PAYLOAD_STATUS_UPDATE_THREAD() {
-          // This is the first chunk of a new incoming
-          // payload. Start the analysis.
-          to_client->GetAnalyticsRecorder().OnIncomingPayloadStarted(
-              from_endpoint_id, payload_header.id(),
-              FramePayloadTypeToPayloadType(payload_header.type()),
-              payload_header.total_size());
-        });
-
     pending_payload =
         CreateIncomingPayload(payload_transfer_frame, from_endpoint_id);
     if (!pending_payload) {
@@ -1097,42 +1026,6 @@ void PayloadManager::NotifyClientOfIncomingPayloadProgressInfo(
   client->OnPayloadProgress(endpoint_id, payload_transfer_update);
 }
 
-void PayloadManager::RecordPayloadStartedAnalytics(
-    ClientProxy* client, const EndpointIds& endpoint_ids,
-    std::int64_t payload_id, Payload::Type payload_type, std::int64_t offset,
-    std::int64_t total_size) {
-  client->GetAnalyticsRecorder().OnOutgoingPayloadStarted(
-      endpoint_ids, payload_id, payload_type,
-      total_size == -1 ? -1 : total_size - offset);
-}
-
-void PayloadManager::RecordInvalidPayloadAnalytics(
-    ClientProxy* client, const EndpointIds& endpoint_ids,
-    std::int64_t payload_id, Payload::Type payload_type, std::int64_t offset,
-    std::int64_t total_size) {
-  RecordPayloadStartedAnalytics(client, endpoint_ids, payload_id, payload_type,
-                                offset, total_size);
-
-  for (const auto& endpoint_id : endpoint_ids) {
-    client->GetAnalyticsRecorder().OnOutgoingPayloadDone(
-        endpoint_id, payload_id, proto::connections::LOCAL_ERROR);
-  }
-}
-
-Payload::Type PayloadManager::FramePayloadTypeToPayloadType(
-    PayloadTransferFrame::PayloadHeader::PayloadType type) {
-  switch (type) {
-    case PayloadTransferFrame_PayloadHeader_PayloadType_BYTES:
-      return connections::Payload::Type::kBytes;
-    case PayloadTransferFrame_PayloadHeader_PayloadType_FILE:
-      return connections::Payload::Type::kFile;
-    case PayloadTransferFrame_PayloadHeader_PayloadType_STREAM:
-      return connections::Payload::Type::kStream;
-    default:
-      return connections::Payload::Type::kUnknown;
-  }
-}
-
 ///////////////////////////////// EndpointInfo /////////////////////////////////
 
 PayloadManager::EndpointInfo::Status
@@ -1171,11 +1064,10 @@ PayloadManager::PendingPayload::PendingPayload(
   // failures. Any of these situations will cause endpoint to be marked as
   // unavailable.
   for (const auto& id : endpoint_ids) {
-    EndpointInfo endpoint_info{};
-    endpoint_info.id = id;
-    endpoint_info.status.Set(EndpointInfo::Status::kAvailable);
-
-    endpoints_.emplace(id, std::move(endpoint_info));
+    endpoints_.emplace(id, EndpointInfo{
+                               .id = id,
+                               .status{EndpointInfo::Status::kAvailable},
+                           });
   }
 }
 

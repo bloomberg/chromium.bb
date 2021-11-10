@@ -239,7 +239,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'eb339186b050c93a0fc8348881d53f490d3045d7',
+  'v8_revision': '7a8373f18e2327d7dc52600fc9e52cc2f5b6abf6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -378,7 +378,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nearby
   # and whatever else without interference from each other.
-  'nearby_revision': 'dceb1e216bdd22daf37f71026db3d93124841cd4',
+  'nearby_revision': 'f483110a8d92cf4d26f2d725a09655a0ce3b0f6c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling securemessage
   # and whatever else without interference from each other.
@@ -1695,7 +1695,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4b26c53a49051a6adc33cc697cde1c7ed998347e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@899b70cb4e3ffc90f470ef3fec2533090459a7e9',
     'condition': 'checkout_src_internal',
   },
 
@@ -1714,7 +1714,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'Sf45jx3OKZCvU0AOdLrWrSSIbMHe8WPJ11wqXaLHUagC',
+        'version': 'BPQAq0LqR4VGeH0ANPn4ci0kkBTVzaLB3ewqcZtRacQC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

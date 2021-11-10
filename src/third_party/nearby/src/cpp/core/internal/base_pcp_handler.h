@@ -348,9 +348,6 @@ class BasePcpHandler : public PcpHandler,
     // accepted. Crypto context is passed over to channel_manager_ before
     // switching to connected state, where Payload may be exchanged.
     std::unique_ptr<securegcm::UKey2Handshake> ukey2;
-
-    // Used in AnalyticsRecorder for devices connection tracking.
-    std::string connection_token;
   };
 
   // @EncryptionRunnerThread
@@ -385,7 +382,6 @@ class BasePcpHandler : public PcpHandler,
       absl::Seconds(2);
   static constexpr absl::Duration kRejectedConnectionCloseDelay =
       absl::Seconds(2);
-  static constexpr int kConnectionTokenLength = 8;
 
   void OnConnectionResponse(ClientProxy* client, const std::string& endpoint_id,
                             const OfflineFrame& frame);
@@ -427,10 +423,10 @@ class BasePcpHandler : public PcpHandler,
   bool AppendWebRTCEndpoint(const std::string& endpoint_id,
                             const ConnectionOptions& local_discovery_options);
 
-  void ProcessPreConnectionInitiationFailure(
-      ClientProxy* client, Medium medium, const std::string& endpoint_id,
-      EndpointChannel* channel, bool is_incoming, absl::Time start_time,
-      Status status, Future<Status>* result);
+  void ProcessPreConnectionInitiationFailure(const std::string& endpoint_id,
+                                             EndpointChannel* channel,
+                                             Status status,
+                                             Future<Status>* result);
   void ProcessPreConnectionResultFailure(ClientProxy* client,
                                          const std::string& endpoint_id);
 
@@ -449,18 +445,6 @@ class BasePcpHandler : public PcpHandler,
 
   ExceptionOr<OfflineFrame> ReadConnectionRequestFrame(
       EndpointChannel* channel);
-
-  // Returns an 8 characters length hashed string generated via a token byte
-  // array.
-  std::string GetHashedConnectionToken(const ByteArray& token_bytes);
-
-  static void LogConnectionAttempt(ClientProxy* client, Medium medium,
-                                   const std::string& endpoint_id,
-                                   bool is_incoming, absl::Time start_time);
-
-  // Returns true if the client cancels the operation in progress through the
-  // endpoint id. This is done by CancellationFlag.
-  static bool Cancelled(ClientProxy* client, const std::string& endpoint_id);
 
   void WaitForLatch(const std::string& method_name, CountDownLatch* latch);
   Status WaitForResult(const std::string& method_name, std::int64_t client_id,

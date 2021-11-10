@@ -190,7 +190,7 @@ WifiLanMedium::~WifiLanMedium() {
   // If acceptance thread is still running, wait to finish.
   if (acceptance_thread_running_) {
     while (acceptance_thread_running_) {
-      shared::CountDownLatch latch(1);
+      CountDownLatch latch(1);
       close_accept_loops_runner_.Execute([&latch]() { latch.CountDown(); });
       latch.Await();
     }

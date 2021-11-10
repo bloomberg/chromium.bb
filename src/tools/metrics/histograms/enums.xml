@@ -5527,6 +5527,18 @@ others/histograms.xml -->
   <int value="3" label="Closed without user interaction"/>
 </enum>
 
+<enum name="AutofillCardUnmaskAuthenticationSelectionDialogResult">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="User canceled before selecting a challenge option"/>
+  <int value="2"
+      label="User canceled after selecting a challenge option, while the
+             dialog was in pending state"/>
+  <int value="3"
+      label="A challenge option was selected and the server returned success"/>
+  <int value="4"
+      label="A challenge option was selected and the server returned failure"/>
+</enum>
+
 <enum name="AutofillCardUploadDecision">
   <obsolete>
     Deprecated as of 2/2016, replaced by AutofillCardUploadDecisionExpanded.
@@ -6480,6 +6492,26 @@ others/histograms.xml -->
       label="OTP auth temporarily failed due to OTP being incorrect"/>
 </enum>
 
+<enum name="AutofillOtpInputDialogError">
+  <int value="0" label="Unknown error"/>
+  <int value="1" label="OTP expired temporary error was shown"/>
+  <int value="2" label="OTP mismatch temporary error was shown"/>
+</enum>
+
+<enum name="AutofillOtpInputDialogResult">
+  <int value="0" label="Unknown result"/>
+  <int value="1"
+      label="User closed the OTP input dialog before pressing the OK button"/>
+  <int value="3"
+      label="User closed the OTP input dialog after pressing the OK button"/>
+  <int value="4"
+      label="OTP input dialog closed automatically after the OTP verification
+             succeeded"/>
+  <int value="5"
+      label="OTP input dialog closed automatically after a server failure
+             response"/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -6630,6 +6662,21 @@ others/histograms.xml -->
   <int value="0" label="Scan card shown"/>
   <int value="1" label="Scan card selected"/>
   <int value="2" label="Some other item selected"/>
+</enum>
+
+<enum name="AutofillServerCardUnmaskResult">
+  <int value="0" label="Unknown result"/>
+  <int value="1" label="Local cache hit"/>
+  <int value="2"
+      label="Completed risk-based unmasking, no user-facing authentication"/>
+  <int value="3" label="Completed unmasking via authentication"/>
+  <int value="4" label="Authentication-related errors"/>
+  <int value="5" label="Virtual-card-retrieval-related errors"/>
+  <int value="6" label="Flow was cancelled"/>
+  <int value="7"
+      label="FIDO option was the only option provided but user has not opted
+             in"/>
+  <int value="8" label="Unexpected errors"/>
 </enum>
 
 <enum name="AutofillServerFieldType">
@@ -7841,6 +7888,8 @@ Called by update_bad_message_reasons.py.-->
   <int value="251"
       label="OBSOLETE_RFH_CHILD_FRAME_UNEXPECTED_OWNER_ELEMENT_TYPE"/>
   <int value="252" label="RFH_POPUP_REQUEST_WHILE_PRERENDERING"/>
+  <int value="253" label="RFH_INTERECEPT_DOWNLOAD_WHILE_INACTIVE"/>
+  <int value="254" label="RFH_CREATE_CHILD_FRAME_SANDBOX_FLAGS"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -10048,6 +10097,11 @@ Called by update_bad_message_reasons.py.-->
 <enum name="BooleanStreamed">
   <int value="0" label="Not streamed"/>
   <int value="1" label="Streamed"/>
+</enum>
+
+<enum name="BooleanSubmitted">
+  <int value="0" label="Not submitted"/>
+  <int value="1" label="Submitted"/>
 </enum>
 
 <enum name="BooleanSuccess">
@@ -19964,6 +20018,8 @@ Called by update_debug_scenarios.py.-->
   <int value="48" label="hideIssuesFeature"/>
   <int value="49" label="reportingApiDebugging"/>
   <int value="50" label="syncSettings"/>
+  <int value="51" label="groupAndHideIssuesByKind"/>
+  <int value="52" label="cssTypeComponentLength"/>
 </enum>
 
 <enum name="DevToolsGridOverlayOpenedFrom">
@@ -89372,6 +89428,8 @@ Called by update_scheduler_enums.py.-->
   <int value="4" label="Clear Site Group Data"/>
   <int value="5" label="Clear Origin Data"/>
   <int value="6" label="Enter Site Details"/>
+  <int value="7" label="Remove Site Group"/>
+  <int value="8" label="Remove Origin"/>
 </enum>
 
 <enum name="WebsiteSettingsDiscoverabilityAction">

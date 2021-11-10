@@ -32,7 +32,6 @@ cc_library(
         "webrtc_socket_wrapper.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
-    copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
         "//core/internal:__subpackages__",
     ],

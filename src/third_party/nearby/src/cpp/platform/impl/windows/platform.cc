@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2020 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 #include "platform/impl/windows/bluetooth_classic_medium.h"
 #include "platform/impl/windows/cancelable.h"
 #include "platform/impl/windows/condition_variable.h"
-#include "platform/impl/shared/count_down_latch.h"
+#include "platform/impl/windows/count_down_latch.h"
 #include "platform/impl/windows/executor.h"
 #include "platform/impl/windows/future.h"
 #include "platform/impl/windows/listenable_future.h"
@@ -46,39 +46,44 @@ std::string GetPayloadPath(PayloadId payload_id) {
 }
 }  // namespace
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<AtomicBoolean> ImplementationPlatform::CreateAtomicBoolean(
     bool initial_value) {
   return absl::make_unique<windows::AtomicBoolean>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<AtomicUint32> ImplementationPlatform::CreateAtomicUint32(
     std::uint32_t value) {
   return absl::make_unique<windows::AtomicUint32>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<CountDownLatch> ImplementationPlatform::CreateCountDownLatch(
     std::int32_t count) {
-  return absl::make_unique<shared::CountDownLatch>(count);
+  return absl::make_unique<windows::CountDownLatch>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<Mutex> ImplementationPlatform::CreateMutex(Mutex::Mode mode) {
-  return absl::make_unique<windows::Mutex>(mode);
+  return absl::make_unique<windows::Mutex>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<ConditionVariable>
 ImplementationPlatform::CreateConditionVariable(Mutex* mutex) {
-  return absl::make_unique<windows::ConditionVariable>(mutex);
+  return std::unique_ptr<ConditionVariable>(new windows::ConditionVariable());
 }
 
 std::unique_ptr<InputFile> ImplementationPlatform::CreateInputFile(
     PayloadId payload_id, std::int64_t total_size) {
-  return absl::make_unique<shared::InputFile>(
+  return absl::make_unique<location::nearby::shared::InputFile>(
       GetPayloadPath(payload_id), total_size);
 }
 
 std::unique_ptr<OutputFile> ImplementationPlatform::CreateOutputFile(
     PayloadId payload_id) {
-  return absl::make_unique<shared::OutputFile>(
+  return absl::make_unique<location::nearby::shared::OutputFile>(
       GetPayloadPath(payload_id));
 }
 
@@ -88,32 +93,36 @@ std::unique_ptr<LogMessage> ImplementationPlatform::CreateLogMessage(
   return absl::make_unique<windows::LogMessage>(file, line, severity);
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<SubmittableExecutor>
 ImplementationPlatform::CreateSingleThreadExecutor() {
   return absl::make_unique<windows::SubmittableExecutor>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<SubmittableExecutor>
 ImplementationPlatform::CreateMultiThreadExecutor(
     std::int32_t max_concurrency) {
-  return absl::make_unique<windows::SubmittableExecutor>(max_concurrency);
+  return absl::make_unique<windows::SubmittableExecutor>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<ScheduledExecutor>
 ImplementationPlatform::CreateScheduledExecutor() {
   return absl::make_unique<windows::ScheduledExecutor>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<BluetoothAdapter>
 ImplementationPlatform::CreateBluetoothAdapter() {
   return absl::make_unique<windows::BluetoothAdapter>();
 }
 
+// TODO(b/184975123): replace with real implementation.
 std::unique_ptr<BluetoothClassicMedium>
 ImplementationPlatform::CreateBluetoothClassicMedium(
-    nearby::api::BluetoothAdapter& adapter) {
-  return absl::make_unique<windows::BluetoothClassicMedium>(
-      adapter);
+    BluetoothAdapter& adapter) {
+  return absl::make_unique<location::nearby::windows::BluetoothClassicMedium>();
 }
 
 // TODO(b/184975123): replace with real implementation.

@@ -30,9 +30,6 @@ cc_library(
         "uuid.lib",
         "winmm.lib",
         "winspool.lib",
-        "comsuppwd.lib",
-        "setupapi.lib",
-        "dnsapi.lib",
     ],
     textual_hdrs = glob(["**/*.h"]),
     visibility = [

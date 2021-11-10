@@ -133,8 +133,6 @@ message PayloadTransferFrame {
     optional PayloadType type = 2;
     optional int64 total_size = 3;
     optional bool is_sensitive = 4;
-    optional string file_name = 5;
-    optional string parent_folder = 6;
   }
 
   // Accompanies DATA packets.
@@ -305,12 +303,6 @@ message MediumMetadata {
   optional AvailableChannels available_channels = 7;
   // Usable WiFi Direct client channels on the local device.
   optional WifiDirectCliUsableChannels wifi_direct_cli_usable_channels = 8;
-  // Usable WiFi LAN channels on the local device.
-  optional WifiLanUsableChannels wifi_lan_usable_channels = 9;
-  // Usable WiFi Aware channels on the local device.
-  optional WifiAwareUsableChannels wifi_aware_usable_channels = 10;
-  // Usable WiFi Hotspot STA channels on the local device.
-  optional WifiHotspotStaUsableChannels wifi_hotspot_sta_usable_channels = 11;
 }
 
 // Available channels on the local device.
@@ -320,21 +312,6 @@ message AvailableChannels {
 
 // Usable WiFi Direct client channels on the local device.
 message WifiDirectCliUsableChannels {
-  repeated int32 channels = 1 [packed = true];
-}
-
-// Usable WiFi LAN channels on the local device.
-message WifiLanUsableChannels {
-  repeated int32 channels = 1 [packed = true];
-}
-
-// Usable WiFi Aware channels on the local device.
-message WifiAwareUsableChannels {
-  repeated int32 channels = 1 [packed = true];
-}
-
-// Usable WiFi Hotspot STA channels on the local device.
-message WifiHotspotStaUsableChannels {
   repeated int32 channels = 1 [packed = true];
 }
 

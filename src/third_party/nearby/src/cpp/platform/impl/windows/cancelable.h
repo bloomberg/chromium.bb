@@ -15,8 +15,6 @@
 #ifndef PLATFORM_IMPL_WINDOWS_CANCELABLE_H_
 #define PLATFORM_IMPL_WINDOWS_CANCELABLE_H_
 
-#include <windows.h>
-
 #include "platform/api/cancelable.h"
 
 namespace location {
@@ -27,20 +25,11 @@ namespace windows {
 // long-running operations.
 class Cancelable : public api::Cancelable {
  public:
-  Cancelable(HANDLE handle) : handle_(handle) {}
+  // TODO(b/184975123): replace with real implementation.
   ~Cancelable() override = default;
 
-  bool Cancel() override {
-    if (CancelWaitableTimer(handle_)) {
-      CloseHandle(handle_);
-      return true;
-    }
-
-    return false;
-  };
-
- private:
-  HANDLE handle_;
+  // TODO(b/184975123): replace with real implementation.
+  bool Cancel() override { return false; };
 };
 
 }  // namespace windows
