@@ -64,10 +64,15 @@ std::vector<blink::mojom::DataTransferFilePtr> FileInfosToDataTransferFiles(
     base::FilePath entry_path = file_info.path;
     FileSystemAccessManagerImpl::PathType path_type =
         MaybeRemapPath(&entry_path);
-    file_system_access_manager->CreateFileSystemAccessDataTransferToken(
-        path_type, entry_path, child_id,
-        pending_token.InitWithNewPipeAndPassReceiver());
-    file->file_system_access_token = std::move(pending_token);
+
+    // blpwtk2: In RendererUI mode, blpwtk2::RenderWebView cannot provide
+    // a reference to the file system access manager.
+    if (file_system_access_manager) {
+      file_system_access_manager->CreateFileSystemAccessDataTransferToken(
+          path_type, entry_path, child_id,
+          pending_token.InitWithNewPipeAndPassReceiver());
+      file->file_system_access_token = std::move(pending_token);
+    }
     result.push_back(std::move(file));
   }
   return result;

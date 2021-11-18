@@ -605,9 +605,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
                     content::MouseEventWithLatencyInfo(
                         event,
                         ui::LatencyInfo()),
-                    base::BindOnce(
-                        &RenderWebView::onMouseEventAck,
-                        base::Unretained(this)));
+                    base::DoNothing());
             }
 
             return 0;
@@ -1104,8 +1102,7 @@ void RenderWebView::sendScreenRects()
     if (blink_widget_) {
       blink_widget_->UpdateScreenRects(
           gfx::Rect(view_screen_rect), gfx::Rect(view_screen_rect),
-          base::BindOnce(&RenderWebView::OnUpdateScreenRectsAck,
-                         weak_factory_.GetWeakPtr()));
+          base::DoNothing());
     }
 }
 
@@ -1260,14 +1257,6 @@ void RenderWebView::forceRedrawWindow(int attempts)
         return;
     }
     InvalidateRect(d_hwnd.get(), NULL, FALSE);
-}
-
-void RenderWebView::onDragTargetDropAck()
-{
-}
-
-void RenderWebView::onDragSourceEndedAck()
-{
 }
 
 // blpwtk2::WebView overrides:
@@ -1938,9 +1927,7 @@ ui::EventDispatchDetails RenderWebView::DispatchKeyEventPostIME(
                 content::NativeWebKeyboardEventWithLatencyInfo(
                     content::NativeWebKeyboardEvent(*key_event),
                     ui::LatencyInfo()),
-                base::BindOnce(
-                    &RenderWebView::onKeyboardEventAck,
-                    base::Unretained(this)));
+                base::DoNothing());
         }
     }
 
@@ -2018,9 +2005,7 @@ void RenderWebView::InsertChar(const ui::KeyEvent& event)
             content::NativeWebKeyboardEventWithLatencyInfo(
                 content::NativeWebKeyboardEvent(event),
                 ui::LatencyInfo()),
-            base::BindOnce(
-                &RenderWebView::onKeyboardEventAck,
-                base::Unretained(this)));
+            base::DoNothing());
     }
 }
 
@@ -2264,8 +2249,7 @@ void RenderWebView::DragTargetDrop(const content::DropData& drop_data,
     blink_frame_widget_->DragTargetDrop(content::DropDataToDragData(drop_data, nullptr, processID),
                                         ConvertWindowPointToViewport(client_pt),
                                         screen_pt, key_modifiers,
-                                        base::BindOnce(&RenderWebView::onDragTargetDropAck,
-                                                       base::Unretained(this)));
+                                        base::DoNothing());
   }
 }
 
@@ -2280,7 +2264,7 @@ void RenderWebView::DragSourceEnded(
   if (blink_frame_widget_) {
     blink_frame_widget_->DragSourceEndedAt(
         ConvertWindowPointToViewport(client_pt), screen_pt, static_cast<ui::mojom::DragOperation>(drag_operation), 
-        base::BindOnce(&RenderWebView::onDragSourceEndedAck, base::Unretained(this)));
+        base::DoNothing());
   }
 }
 
@@ -2500,9 +2484,6 @@ void RenderWebView::OnShowWidget(
 void RenderWebView::OnClose()
 {
     this->destroy();
-}
-
-void RenderWebView::OnUpdateScreenRectsAck() {
 }
 
 #if defined(BLPWTK2_FEATURE_MEMORY_DIAGNOSTIC)

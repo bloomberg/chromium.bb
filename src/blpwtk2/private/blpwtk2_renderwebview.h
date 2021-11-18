@@ -553,14 +553,6 @@ class RenderWebView final : public WebView
     bool dispatchIPCMessage(const IPC::Message& message);
     void sendScreenRects();
     void setPlatformCursor(HCURSOR cursor);
-    void onMouseEventAck(
-        const content::MouseEventWithLatencyInfo& event,
-        blink::mojom::InputEventResultSource ack_source,
-        blink::mojom::InputEventResultState ack_result) {}
-    void onKeyboardEventAck(
-        const content::NativeWebKeyboardEventWithLatencyInfo& event,
-        blink::mojom::InputEventResultSource ack_source,
-        blink::mojom::InputEventResultState ack_result) {}
     void onQueueWheelEventWithPhaseEnded();
     void onStartDraggingImpl(
             const content::DropData& drop_data,
