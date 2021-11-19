@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/actions/action_delegate_util.h"
+#include "components/autofill_assistant/browser/web/element_action_util.h"
 
 #include "base/guid.h"
 #include "base/test/bind.h"
@@ -21,7 +21,6 @@ namespace {
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::InSequence;
-using ::testing::Return;
 
 class ElementActionUtilTest : public testing::Test {
  public:

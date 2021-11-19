@@ -134,7 +134,7 @@ class StreamingVideoEncoder {
     // target point.
     double time_utilization() const {
       return static_cast<double>(encode_wall_time.count()) /
-             frame_duration.count();
+             static_cast<double>(frame_duration.count());
     }
     double space_utilization() const { return encoded_size / target_size; }
     double entropy_utilization() const {

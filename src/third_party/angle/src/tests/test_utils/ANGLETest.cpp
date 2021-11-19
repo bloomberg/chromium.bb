@@ -616,7 +616,7 @@ void ANGLETestBase::ANGLETestSetUp()
 
     angle::GPUTestConfig::API api = GetTestConfigAPIFromRenderer(mCurrentParams->getRenderer(),
                                                                  mCurrentParams->getDeviceType());
-    GPUTestConfig testConfig      = GPUTestConfig(api, 0, false);
+    GPUTestConfig testConfig      = GPUTestConfig(api, 0);
 
     std::stringstream fullTestNameStr;
     fullTestNameStr << testInfo->test_case_name() << "." << testInfo->name();
@@ -1222,7 +1222,10 @@ void ANGLETestBase::draw3DTexturedQuad(GLfloat positionAttribZ,
 
 bool ANGLETestBase::platformSupportsMultithreading() const
 {
-    return (IsOpenGLES() && IsAndroid()) || IsVulkan();
+    return (mFixture && mFixture->eglWindow &&
+            IsEGLDisplayExtensionEnabled(mFixture->eglWindow->getDisplay(),
+                                         "EGL_ANGLE_context_virtualization")) ||
+           IsVulkan();
 }
 
 void ANGLETestBase::checkD3D11SDKLayersMessages()

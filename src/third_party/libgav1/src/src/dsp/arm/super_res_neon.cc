@@ -23,6 +23,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
@@ -94,8 +95,14 @@ void SuperRes_NEON(const void* LIBGAV1_RESTRICT const coefficients,
   do {
     const auto* filter = static_cast<const uint8_t*>(coefficients);
     uint8_t* dst_ptr = dst;
+#if LIBGAV1_MSAN
+    // Initialize the padding area to prevent msan warnings.
+    const int super_res_right_border = kSuperResHorizontalPadding;
+#else
+    const int super_res_right_border = kSuperResHorizontalBorder;
+#endif
     ExtendLine<uint8_t>(src + DivideBy2(kSuperResFilterTaps), downscaled_width,
-                        kSuperResHorizontalBorder, kSuperResHorizontalBorder);
+                        kSuperResHorizontalBorder, super_res_right_border);
     int subpixel_x = initial_subpixel_x;
     uint8x8_t sr[8];
     uint8x16_t s[8];
@@ -249,8 +256,14 @@ void SuperRes_NEON(const void* LIBGAV1_RESTRICT const coefficients,
   do {
     const auto* filter = static_cast<const uint16_t*>(coefficients);
     uint16_t* dst_ptr = dst;
+#if LIBGAV1_MSAN
+    // Initialize the padding area to prevent msan warnings.
+    const int super_res_right_border = kSuperResHorizontalPadding;
+#else
+    const int super_res_right_border = kSuperResHorizontalBorder;
+#endif
     ExtendLine<uint16_t>(src + DivideBy2(kSuperResFilterTaps), downscaled_width,
-                         kSuperResHorizontalBorder, kSuperResHorizontalBorder);
+                         kSuperResHorizontalBorder, super_res_right_border);
     int subpixel_x = initial_subpixel_x;
     uint16x8_t sr[8];
     int x = RightShiftWithCeiling(upscaled_width, 3);

@@ -607,7 +607,6 @@
 <translation id="5138912041966667164">Mellanmörkt skifferblå</translation>
 <translation id="5140016802771803559">Rebecca-lila</translation>
 <translation id="5142101052131610456">Alla lektioner</translation>
-<translation id="5152605892605507188">flytta åt höger</translation>
 <translation id="5158275234811857234">Omslag</translation>
 <translation id="516076699907426116">Om du vill fortsätta letar du reda på knappen Nästa lektion med Explore by touch. Tryck sedan snabbt två gånger för att fortsätta.</translation>
 <translation id="5170206230005240598">Textning med punktskrift har aktiverats</translation>
@@ -741,6 +740,7 @@
 <translation id="6034000775414344507">Ljusgrå</translation>
 <translation id="6036135911048686884">Tryck och dra för att utforska</translation>
 <translation id="6037602951055904232">Panorera framåt</translation>
+<translation id="604240746417122825">grammatikfel</translation>
 <translation id="6082768461603900813">Grundläggande navigering</translation>
 <translation id="609281021724813947">Det finns inget föregående skjutreglage</translation>
 <translation id="6100239002225743044">Flytta uppåt en rad</translation>
@@ -751,7 +751,6 @@
 <translation id="6142308968191113180">Rubrik 4</translation>
 <translation id="6150023170003443621">Gulgrön</translation>
 <translation id="6158882249329863701">rad <ph name="TABLECELLROWINDEX" /> kolumn <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">flytta åt vänster</translation>
 <translation id="6164829606128959761">mätare</translation>
 <translation id="6165508094623778733">Läs mer</translation>
 <translation id="6166362019018438352">Textning med punktskrift har inaktiverats</translation>
@@ -798,6 +797,7 @@
 <translation id="6544923685317771506">Snäckskalsvit</translation>
 <translation id="6551185905438378412">Elfenbensvit</translation>
 <translation id="6561818612645211875">Flytta till början av den aktuella raden</translation>
+<translation id="6563126228219321999">Inget giltigt objekt</translation>
 <translation id="6579990219486187401">Ljusrosa</translation>
 <translation id="6583174818554398774">Flytta till nästa på detaljnivå</translation>
 <translation id="6584162722998608255">Nu ska vi gå igenom hur du flyttar dig på skärmen. Du kan fortsätta till nästa objekt genom att svepa från vänster till höger med ett finger. Testa att fortsätta till nästa steg nu.</translation>
@@ -828,6 +828,7 @@
 <translation id="6815255864998354418">Gulbrun</translation>
 <translation id="6816066673340002913">Blekt gullrisgul</translation>
 <translation id="6826226459053491773">Svep nedåt med två fingrar</translation>
+<translation id="6826669432862053130">Nästa giltiga objekt</translation>
 <translation id="6833103209700200188">Sidfot</translation>
 <translation id="6837853484260746864">Välj en röst:</translation>
 <translation id="6858047746862060282">Prolog</translation>
@@ -842,7 +843,6 @@
 <translation id="6910969481785184048">På, av och stopp</translation>
 <translation id="6919104639734799681">Visa tabellistan</translation>
 <translation id="692135145298539227">radera</translation>
-<translation id="6935674530832500465">flytta nedåt</translation>
 <translation id="6945221475159498467">Välj</translation>
 <translation id="6949846980769640811">Mellanmörk akvamarin</translation>
 <translation id="6951482098621102657">Det finns inga fler rubriker på nivå 5</translation>
@@ -1018,6 +1018,7 @@
 <translation id="8126386426083591964">Det finns ingen föregående rubrik på nivå 5</translation>
 <translation id="812886159861361726">Nedladdningen stoppades <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">Det finns inga celler ovanför den här</translation>
+<translation id="8132248161074464367">Föregående giltiga objekt</translation>
 <translation id="8138880386467279117">Trycka</translation>
 <translation id="8146613869421949343">I nästa steg får du lära dig om Sök-tangenten. Sök-tangenten används tillsammans med andra tangenter för olika ChromeVox-kommandon. Sök-tangenten sitter precis ovanför den vänstra Skift-tangenten. Tryck på Sök-tangenten för att fortsätta.</translation>
 <translation id="8158033275290782295">markera alla</translation>
@@ -1039,14 +1040,12 @@
 <translation id="826825447994856889">Inledning</translation>
 <translation id="827266600368092403">Börja eller sluta markera</translation>
 <translation id="827422111966801947">Indigoblå</translation>
-<translation id="827496561804786391">flytta uppåt</translation>
 <translation id="8276439074553447000">Hoppa till föregående fokuserbara objekt</translation>
 <translation id="8279039817939141096">Tryck på en tangent på tangentbordet, en tangent på den uppdateringsbara punktskriftsskärmen eller en skärmrörelse om du vill veta vad den gör. Avsluta genom att svepa åt vänster med två fingrar eller trycka på Ctrl och W, blanksteg och Z eller Esc.</translation>
 <translation id="8283603667300770666">Nästa formulärfält</translation>
 <translation id="8310185481635255431">Det finns inga fler länkar</translation>
 <translation id="831207808878314375">Definition</translation>
 <translation id="8313653172105209786">kat</translation>
-<translation id="8314546933558091113">avmarkera alla</translation>
 <translation id="8316881042119029234">Blekt gulorange</translation>
 <translation id="8324974933005349667">Anpassa inställningarna för text till tal</translation>
 <translation id="8326783648485765113">Gräsgrön</translation>

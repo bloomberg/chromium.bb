@@ -20,7 +20,7 @@
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_Font;
 class CFX_UnicodeEncodingEx;
@@ -40,11 +40,11 @@ class CFGAS_GEFont final : public Retainable {
                                                const ByteString& font_family);
 
   uint32_t GetFontStyles() const;
-  Optional<uint16_t> GetCharWidth(wchar_t wUnicode);
+  absl::optional<uint16_t> GetCharWidth(wchar_t wUnicode);
   int32_t GetGlyphIndex(wchar_t wUnicode);
   int32_t GetAscent() const;
   int32_t GetDescent() const;
-  Optional<FX_RECT> GetCharBBox(wchar_t wUnicode);
+  absl::optional<FX_RECT> GetCharBBox(wchar_t wUnicode);
 
   RetainPtr<CFGAS_GEFont> GetSubstFont(int32_t iGlyphIndex);
   CFX_Font* GetDevFont() const { return m_pFont.Get(); }
@@ -61,7 +61,6 @@ class CFGAS_GEFont final : public Retainable {
   bool LoadFontInternal(const wchar_t* pszFontFamily,
                         uint32_t dwFontStyles,
                         FX_CodePage wCodePage);
-  bool LoadFontInternal(const uint8_t* pBuffer, int32_t length);
 #endif
   bool LoadFontInternal(std::unique_ptr<CFX_Font> pInternalFont);
   bool LoadFontInternal(const RetainPtr<CPDF_Font>& pPDFFont);
@@ -71,11 +70,11 @@ class CFGAS_GEFont final : public Retainable {
       bool bRecursive);
   WideString GetFamilyName() const;
 
-  Optional<uint32_t> m_dwLogFontStyle;
+  absl::optional<uint32_t> m_dwLogFontStyle;
   RetainPtr<CPDF_Font> m_pPDFFont;  // Must come before |m_pFont|.
   MaybeOwned<CFX_Font> m_pFont;     // Must come before |m_pFontEncoding|.
   std::unique_ptr<CFX_UnicodeEncodingEx> m_pFontEncoding;
-  std::map<wchar_t, Optional<uint16_t>> m_CharWidthMap;
+  std::map<wchar_t, absl::optional<uint16_t>> m_CharWidthMap;
   std::map<wchar_t, FX_RECT> m_BBoxMap;
   std::vector<RetainPtr<CFGAS_GEFont>> m_SubstFonts;
   std::map<wchar_t, RetainPtr<CFGAS_GEFont>> m_FontMapper;

@@ -44,8 +44,8 @@ export class ParsedURL {
   folderPathComponents: string;
   lastPathComponent: string;
   readonly blobInnerScheme: string|undefined;
-  private displayNameInternal?: string;
-  private dataURLDisplayNameInternal?: string;
+  #displayNameInternal?: string;
+  #dataURLDisplayNameInternal?: string;
 
   constructor(url: string) {
     this.isValid = false;
@@ -110,24 +110,26 @@ export class ParsedURL {
     return null;
   }
 
-  static platformPathToURL(fileSystemPath: string): string {
-    fileSystemPath = fileSystemPath.replace(/\\/g, '/');
-    if (!fileSystemPath.startsWith('file://')) {
-      if (fileSystemPath.startsWith('/')) {
-        fileSystemPath = 'file://' + fileSystemPath;
+  static rawPathToUrlString(fileSystemPath: Platform.DevToolsPath.RawPathString): Platform.DevToolsPath.UrlString {
+    let rawPath: string = fileSystemPath;
+    rawPath = rawPath.replace(/\\/g, '/');
+    if (!rawPath.startsWith('file://')) {
+      if (rawPath.startsWith('/')) {
+        rawPath = 'file://' + rawPath;
       } else {
-        fileSystemPath = 'file:///' + fileSystemPath;
+        rawPath = 'file:///' + rawPath;
       }
     }
-    return fileSystemPath;
+    return rawPath as Platform.DevToolsPath.UrlString;
   }
 
-  static urlToPlatformPath(fileURL: string, isWindows?: boolean): string {
+  static capFilePrefix(fileURL: Platform.DevToolsPath.RawPathString, isWindows?: boolean):
+      Platform.DevToolsPath.RawPathString {
     console.assert(fileURL.startsWith('file://'), 'This must be a file URL.');
     if (isWindows) {
-      return fileURL.substr('file:///'.length).replace(/\//g, '\\');
+      return fileURL.substr('file:///'.length).replace(/\//g, '\\') as Platform.DevToolsPath.RawPathString;
     }
-    return fileURL.substr('file://'.length);
+    return fileURL.substr('file://'.length) as Platform.DevToolsPath.RawPathString;
   }
 
   static urlWithoutHash(url: string): string {
@@ -322,8 +324,8 @@ export class ParsedURL {
   }
 
   get displayName(): string {
-    if (this.displayNameInternal) {
-      return this.displayNameInternal;
+    if (this.#displayNameInternal) {
+      return this.#displayNameInternal;
     }
 
     if (this.isDataURL()) {
@@ -336,25 +338,25 @@ export class ParsedURL {
       return this.url;
     }
 
-    this.displayNameInternal = this.lastPathComponent;
-    if (!this.displayNameInternal) {
-      this.displayNameInternal = (this.host || '') + '/';
+    this.#displayNameInternal = this.lastPathComponent;
+    if (!this.#displayNameInternal) {
+      this.#displayNameInternal = (this.host || '') + '/';
     }
-    if (this.displayNameInternal === '/') {
-      this.displayNameInternal = this.url;
+    if (this.#displayNameInternal === '/') {
+      this.#displayNameInternal = this.url;
     }
-    return this.displayNameInternal;
+    return this.#displayNameInternal;
   }
 
   dataURLDisplayName(): string {
-    if (this.dataURLDisplayNameInternal) {
-      return this.dataURLDisplayNameInternal;
+    if (this.#dataURLDisplayNameInternal) {
+      return this.#dataURLDisplayNameInternal;
     }
     if (!this.isDataURL()) {
       return '';
     }
-    this.dataURLDisplayNameInternal = Platform.StringUtilities.trimEndWithMaxLength(this.url, 20);
-    return this.dataURLDisplayNameInternal;
+    this.#dataURLDisplayNameInternal = Platform.StringUtilities.trimEndWithMaxLength(this.url, 20);
+    return this.#dataURLDisplayNameInternal;
   }
 
   isAboutBlank(): boolean {

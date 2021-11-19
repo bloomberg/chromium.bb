@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_GENERATOR_H
 #define EIGEN_CXX11_TENSOR_TENSOR_GENERATOR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorGeneratorOp

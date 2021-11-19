@@ -472,6 +472,8 @@
 
 
 /** \brief Namespace containing all symbols from the %Eigen library. */
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 inline static const char *SimdInstructionSetsInUse(void) {

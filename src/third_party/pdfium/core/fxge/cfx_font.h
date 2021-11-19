@@ -18,7 +18,7 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_face.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
@@ -107,7 +107,7 @@ class CFX_Font {
   int GetGlyphWidth(uint32_t glyph_index);
   int GetAscent() const;
   int GetDescent() const;
-  Optional<FX_RECT> GetGlyphBBox(uint32_t glyph_index);
+  absl::optional<FX_RECT> GetGlyphBBox(uint32_t glyph_index);
   bool IsItalic() const;
   bool IsBold() const;
   bool IsFixedWidth() const;
@@ -119,10 +119,10 @@ class CFX_Font {
   bool IsTTFont() const;
 
   // Raw bounding box.
-  Optional<FX_RECT> GetRawBBox() const;
+  absl::optional<FX_RECT> GetRawBBox() const;
 
   // Bounding box adjusted for font units.
-  Optional<FX_RECT> GetBBox() const;
+  absl::optional<FX_RECT> GetBBox() const;
 
   bool IsEmbedded() const { return m_bEmbedded; }
   uint8_t* GetSubData() const { return m_pGsubData.get(); }

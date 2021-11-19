@@ -275,6 +275,8 @@ export class GPUTest extends Fixture {
 
   /**
    * Expect a GPUBuffer's contents to pass the provided check.
+   *
+   * A library of checks can be found in {@link webgpu/util/check_contents}.
    */
   expectGPUBufferValuesPassCheck<T extends TypedArrayBufferView>(
     src: GPUBuffer,
@@ -583,7 +585,7 @@ export class GPUTest extends Fixture {
       slice = 0,
       layout,
       generateWarningOnly = false,
-      checkElementsBetweenFn = checkElementsBetween,
+      checkElementsBetweenFn = (act, [a, b]) => checkElementsBetween(act, [i => a[i], i => b[i]]),
     }: {
       exp: [TypedArrayBufferView, TypedArrayBufferView];
       slice?: number;

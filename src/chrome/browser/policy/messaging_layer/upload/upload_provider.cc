@@ -7,15 +7,16 @@
 #include <memory>
 #include <utility>
 
-#include "base/bind_post_task.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/strcat.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/policy/messaging_layer/upload/upload_client.h"
 #include "chrome/browser/policy/messaging_layer/util/get_cloud_policy_client.h"
-#include "components/reporting/proto/record.pb.h"
+#include "components/reporting/proto/synced/record.pb.h"
 #include "components/reporting/util/backoff_settings.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/status.pb.h"
@@ -29,10 +30,10 @@ class EncryptedReportingUploadProvider::UploadHelper
     : public base::RefCountedDeleteOnSequence<UploadHelper> {
  public:
   UploadHelper(
-      GetCloudPolicyClientCallback build_cloud_policy_client_cb,
-      UploadClientBuilderCb upload_client_builder_cb,
       UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
       UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
+      GetCloudPolicyClientCallback build_cloud_policy_client_cb,
+      UploadClientBuilderCb upload_client_builder_cb,
       scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
   UploadHelper(const UploadHelper& other) = delete;
   UploadHelper& operator=(const UploadHelper& other) = delete;
@@ -49,12 +50,6 @@ class EncryptedReportingUploadProvider::UploadHelper
   friend class base::RefCountedDeleteOnSequence<UploadHelper>;
   friend class base::DeleteHelper<UploadHelper>;
 
-  struct StoredUploadRequest {
-    bool need_encryption_key;
-    std::unique_ptr<std::vector<EncryptedRecord>> records;
-    base::OnceCallback<void(Status)> enqueued_cb;
-  };
-
   // Refcounted object can only have private or protected destructor.
   ~UploadHelper();
 
@@ -66,9 +61,6 @@ class EncryptedReportingUploadProvider::UploadHelper
   void UpdateUploadClient(std::unique_ptr<UploadClient> client);
   void OnUploadClientResult(
       StatusOr<std::unique_ptr<UploadClient>> client_result);
-  void OnSuccessfulUpload(SequencingInformation sequencing_information,
-                          bool force_confirm);
-  void OnEncryptionKeyAttached(SignedEncryptionInfo signed_encryption_info);
 
   // Uploads encrypted records on sequenced task runner (and thus capable of
   // detecting whether upload client is ready or not). If not ready,
@@ -84,19 +76,31 @@ class EncryptedReportingUploadProvider::UploadHelper
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   SEQUENCE_CHECKER(sequenced_task_checker_);
 
-  // Callbacks for cloud policy and upload client creation.
-  const GetCloudPolicyClientCallback build_cloud_policy_client_cb_;
-  const UploadClientBuilderCb upload_client_builder_cb_;
+  // Callbacks for successful upload and key delivery.
   const UploadClient::ReportSuccessfulUploadCallback
       report_successful_upload_cb_;
   const UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb_;
+
+  // Callbacks for cloud policy and upload client creation.
+  const GetCloudPolicyClientCallback build_cloud_policy_client_cb_;
+  UploadClientBuilderCb upload_client_builder_cb_;
 
   // Tracking of asynchronous stages.
   std::atomic<bool> upload_client_request_in_progress_{false};
   const std::unique_ptr<::net::BackoffEntry> backoff_entry_;
 
-  // Stored upload requests before upload client is ready.
-  std::vector<StoredUploadRequest> stored_uploads_;
+  // Stored data from upload requests before upload client is ready.
+  // Note that vectors of records submitted for upload are mapped by
+  // generation id (which is the same for all records being uploaded at once
+  // since they originate from the same priority queue). As a result, if
+  // the caller attempts to upload the same records multiple times (e.g.
+  // because it did not yet get a confirmation from server), we will only
+  // hold to one set of records.
+  // Guarded by sequenced_task_runner_.
+  base::flat_map</*generation_id*/ int64_t,
+                 std::unique_ptr<std::vector<EncryptedRecord>>>
+      stored_records_;
+  bool stored_need_encryption_key_{false};
 
   // Upload client (protected by sequenced task runner). Once set, is used
   // repeatedly.
@@ -108,17 +112,17 @@ class EncryptedReportingUploadProvider::UploadHelper
 };
 
 EncryptedReportingUploadProvider::UploadHelper::UploadHelper(
-    GetCloudPolicyClientCallback build_cloud_policy_client_cb,
-    UploadClientBuilderCb upload_client_builder_cb,
     UploadClient::ReportSuccessfulUploadCallback report_successful_upload_cb,
     UploadClient::EncryptionKeyAttachedCallback encryption_key_attached_cb,
+    GetCloudPolicyClientCallback build_cloud_policy_client_cb,
+    UploadClientBuilderCb upload_client_builder_cb,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
     : base::RefCountedDeleteOnSequence<UploadHelper>(sequenced_task_runner),
       sequenced_task_runner_(std::move(sequenced_task_runner)),
-      build_cloud_policy_client_cb_(build_cloud_policy_client_cb),
-      upload_client_builder_cb_(upload_client_builder_cb),
       report_successful_upload_cb_(report_successful_upload_cb),
       encryption_key_attached_cb_(encryption_key_attached_cb),
+      build_cloud_policy_client_cb_(build_cloud_policy_client_cb),
+      upload_client_builder_cb_(std::move(upload_client_builder_cb)),
       backoff_entry_(GetBackoffEntry()) {
   DETACH_FROM_SEQUENCE(sequenced_task_checker_);
 }
@@ -174,18 +178,12 @@ void EncryptedReportingUploadProvider::UploadHelper::OnCloudPolicyClientResult(
     TryNewCloudPolicyClientRequest();
     return;
   }
-  upload_client_builder_cb_.Run(
-      client_result.ValueOrDie(),
-      base::BindPostTask(sequenced_task_runner_,
-                         base::BindRepeating(&UploadHelper::OnSuccessfulUpload,
-                                             weak_ptr_factory_.GetWeakPtr())),
-      base::BindPostTask(
-          sequenced_task_runner_,
-          base::BindRepeating(&UploadHelper::OnEncryptionKeyAttached,
-                              weak_ptr_factory_.GetWeakPtr())),
-      base::BindPostTask(sequenced_task_runner_,
-                         base::BindOnce(&UploadHelper::OnUploadClientResult,
-                                        weak_ptr_factory_.GetWeakPtr())));
+  std::move(upload_client_builder_cb_)
+      .Run(client_result.ValueOrDie(),
+           base::BindPostTask(
+               sequenced_task_runner_,
+               base::BindRepeating(&UploadHelper::OnUploadClientResult,
+                                   weak_ptr_factory_.GetWeakPtr())));
 }
 
 void EncryptedReportingUploadProvider::UploadHelper::OnUploadClientResult(
@@ -205,18 +203,6 @@ void EncryptedReportingUploadProvider::UploadHelper::OnUploadClientResult(
                                 std::move(client_result.ValueOrDie())));
 }
 
-void EncryptedReportingUploadProvider::UploadHelper::OnSuccessfulUpload(
-    SequencingInformation sequencing_information,
-    bool force_confirm) {
-  report_successful_upload_cb_.Run(std::move(sequencing_information),
-                                   force_confirm);
-}
-
-void EncryptedReportingUploadProvider::UploadHelper::OnEncryptionKeyAttached(
-    SignedEncryptionInfo signed_encryption_info) {
-  encryption_key_attached_cb_.Run(std::move(signed_encryption_info));
-}
-
 void EncryptedReportingUploadProvider::UploadHelper::UpdateUploadClient(
     std::unique_ptr<UploadClient> upload_client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenced_task_checker_);
@@ -224,12 +210,19 @@ void EncryptedReportingUploadProvider::UploadHelper::UpdateUploadClient(
   backoff_entry_->InformOfRequest(/*succeeded=*/true);
   upload_client_request_in_progress_ = false;
   // Upload client is ready, upload all previously stored requests (if any).
-  for (auto& stored_upload : stored_uploads_) {
-    std::move(std::move(stored_upload.enqueued_cb))
-        .Run(upload_client_->EnqueueUpload(stored_upload.need_encryption_key,
-                                           std::move(stored_upload.records)));
+  auto records = std::make_unique<std::vector<EncryptedRecord>>();
+  if (!stored_records_.empty()) {
+    records = std::move(stored_records_.begin()->second);
+    stored_records_.erase(stored_records_.begin());
   }
-  stored_uploads_.clear();
+  bool need_encryption_key = stored_need_encryption_key_;
+  stored_need_encryption_key_ = false;
+  const auto result = upload_client_->EnqueueUpload(
+      need_encryption_key, std::move(records), report_successful_upload_cb_,
+      encryption_key_attached_cb_);
+  if (!result.ok()) {
+    LOG(ERROR) << "Upload failed, error=" << result;
+  }
 }
 
 void EncryptedReportingUploadProvider::UploadHelper::EnqueueUpload(
@@ -249,15 +242,21 @@ void EncryptedReportingUploadProvider::UploadHelper::EnqueueUploadInternal(
     base::OnceCallback<void(Status)> enqueued_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequenced_task_checker_);
   if (upload_client_ == nullptr) {
-    stored_uploads_.emplace_back(
-        StoredUploadRequest{.need_encryption_key = need_encryption_key,
-                            .records = std::move(records),
-                            .enqueued_cb = std::move(enqueued_cb)});
+    stored_need_encryption_key_ |= need_encryption_key;
+    int64_t generation_id = 0;
+    if (records && !records->empty()) {
+      generation_id = records->begin()->sequence_information().generation_id();
+    }
+    stored_records_.emplace(generation_id, std::move(records));
+    // Report success even though the upload has not been executed.
+    // Actual success is reported through two permanent repeating callbacks.
+    std::move(enqueued_cb).Run(Status::StatusOK());
     return;
   }
   std::move(enqueued_cb)
-      .Run(upload_client_->EnqueueUpload(need_encryption_key,
-                                         std::move(records)));
+      .Run(upload_client_->EnqueueUpload(
+          need_encryption_key, std::move(records), report_successful_upload_cb_,
+          encryption_key_attached_cb_));
 }
 
 // EncryptedReportingUploadProvider implementation.
@@ -268,10 +267,10 @@ EncryptedReportingUploadProvider::EncryptedReportingUploadProvider(
     GetCloudPolicyClientCallback build_cloud_policy_client_cb,
     UploadClientBuilderCb upload_client_builder_cb)
     : helper_(base::MakeRefCounted<UploadHelper>(
-          build_cloud_policy_client_cb,
-          upload_client_builder_cb,
           report_successful_upload_cb,
           encryption_key_attached_cb,
+          build_cloud_policy_client_cb,
+          std::move(upload_client_builder_cb),
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::TaskPriority::BEST_EFFORT, base::MayBlock()}))) {
   helper_->PostNewCloudPolicyClientRequest();
@@ -291,6 +290,6 @@ void EncryptedReportingUploadProvider::RequestUploadEncryptedRecords(
 // static
 EncryptedReportingUploadProvider::UploadClientBuilderCb
 EncryptedReportingUploadProvider::GetUploadClientBuilder() {
-  return base::BindRepeating(&UploadClient::Create);
+  return base::BindOnce(&UploadClient::Create);
 }
 }  // namespace reporting

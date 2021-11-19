@@ -27,15 +27,15 @@ TEST_F(UnaryOpExpressionTest, Creation) {
   auto* ident = Expr("ident");
 
   auto* u = create<UnaryOpExpression>(UnaryOp::kNot, ident);
-  EXPECT_EQ(u->op(), UnaryOp::kNot);
-  EXPECT_EQ(u->expr(), ident);
+  EXPECT_EQ(u->op, UnaryOp::kNot);
+  EXPECT_EQ(u->expr, ident);
 }
 
 TEST_F(UnaryOpExpressionTest, Creation_WithSource) {
   auto* ident = Expr("ident");
   auto* u = create<UnaryOpExpression>(Source{Source::Location{20, 2}},
                                       UnaryOp::kNot, ident);
-  auto src = u->source();
+  auto src = u->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -63,16 +63,6 @@ TEST_F(UnaryOpExpressionTest, Assert_DifferentProgramID_Expression) {
         b1.create<UnaryOpExpression>(UnaryOp::kNot, b2.Expr(true));
       },
       "internal compiler error");
-}
-
-TEST_F(UnaryOpExpressionTest, ToStr) {
-  auto* ident = Expr("ident");
-  auto* u = create<UnaryOpExpression>(UnaryOp::kNot, ident);
-  EXPECT_EQ(str(u), R"(UnaryOp[not set]{
-  not
-  Identifier[not set]{ident}
-}
-)");
 }
 
 }  // namespace

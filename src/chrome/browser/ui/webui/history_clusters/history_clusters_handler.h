@@ -27,6 +27,14 @@ class WebContents;
 
 namespace history_clusters {
 
+// Not in an anonymous namespace so that it can be tested.
+// TODO(manukh) Try to setup a complete `HistoryClusterHandler` for testing so
+//  that we can test the public method `QueryClusters` directly instead.
+mojom::QueryResultPtr QueryClustersResultToMojom(Profile* profile,
+                                                 const std::string& query,
+                                                 bool is_continuation,
+                                                 QueryClustersResult result);
+
 // Handles bidirectional communication between the history clusters page and the
 // browser.
 class HistoryClustersHandler : public mojom::PageHandler,
@@ -47,6 +55,7 @@ class HistoryClustersHandler : public mojom::PageHandler,
   void QueryClusters(mojom::QueryParamsPtr query_params) override;
   void RemoveVisits(std::vector<mojom::URLVisitPtr> visits,
                     RemoveVisitsCallback callback) override;
+  void OpenVisitUrlsInTabGroup(std::vector<mojom::URLVisitPtr> visits) override;
 
   // HistoryClustersService::Observer:
   void OnDebugMessage(const std::string& message) override;

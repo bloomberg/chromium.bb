@@ -889,7 +889,7 @@ void packetmath_real() {
         data1[0] = std::numeric_limits<Scalar>::denorm_min();
         data1[1] = -std::numeric_limits<Scalar>::denorm_min();
         h.store(data2, internal::plog(h.load(data1)));
-        // TODO(rmlarsen): Reenable.
+        // TODO(rmlarsen): Re-enable.
         //        VERIFY_IS_EQUAL(std::log(std::numeric_limits<Scalar>::denorm_min()), data2[0]);
         VERIFY((numext::isnan)(data2[1]));
       }

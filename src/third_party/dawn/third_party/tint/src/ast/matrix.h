@@ -26,29 +26,19 @@ namespace ast {
 class Matrix : public Castable<Matrix, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param subtype type matrix type
   /// @param rows the number of rows in the matrix
   /// @param columns the number of columns in the matrix
-  Matrix(ProgramID program_id,
-         const Source& source,
-         Type* subtype,
+  Matrix(ProgramID pid,
+         const Source& src,
+         const Type* subtype,
          uint32_t rows,
          uint32_t columns);
   /// Move constructor
   Matrix(Matrix&&);
   ~Matrix() override;
-
-  /// @returns the type of the matrix
-  Type* type() const { return subtype_; }
-  /// @returns the number of rows in the matrix
-  uint32_t rows() const { return rows_; }
-  /// @returns the number of columns in the matrix
-  uint32_t columns() const { return columns_; }
-
-  /// @returns the name for this type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -58,12 +48,16 @@ class Matrix : public Castable<Matrix, Type> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  Matrix* Clone(CloneContext* ctx) const override;
+  const Matrix* Clone(CloneContext* ctx) const override;
 
- private:
-  Type* const subtype_;
-  uint32_t const rows_;
-  uint32_t const columns_;
+  /// The type of the matrix
+  const Type* const type;
+
+  /// The number of rows in the matrix
+  const uint32_t rows;
+
+  /// The number of columns in the matrix
+  const uint32_t columns;
 };
 
 }  // namespace ast

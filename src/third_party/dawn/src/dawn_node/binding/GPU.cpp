@@ -18,8 +18,12 @@
 
 #include <cstdlib>
 
+#if defined(_WIN32)
+#    include <Windows.h>
+#endif
+
 namespace {
-    std::string getEnvVar(const char* varName) {
+    std::string GetEnvVar(const char* varName) {
 #if defined(_WIN32)
         // Use _dupenv_s to avoid unsafe warnings about std::getenv
         char* value = nullptr;
@@ -37,6 +41,14 @@ namespace {
         return "";
 #endif
     }
+
+    void SetDllDir(const char* dir) {
+        (void)dir;
+#if defined(_WIN32)
+        ::SetDllDirectory(dir);
+#endif
+    }
+
 }  // namespace
 
 namespace wgpu { namespace binding {
@@ -44,19 +56,23 @@ namespace wgpu { namespace binding {
     ////////////////////////////////////////////////////////////////////////////////
     // wgpu::bindings::GPU
     ////////////////////////////////////////////////////////////////////////////////
-    GPU::GPU() {
+    GPU::GPU(Flags flags) : flags_(std::move(flags)) {
         // TODO: Disable in 'release'
         instance_.EnableBackendValidation(true);
         instance_.SetBackendValidationLevel(dawn_native::BackendValidationLevel::Full);
 
+        // Setting the DllDir changes where we load adapter DLLs from (e.g. d3dcompiler_47.dll)
+        if (auto dir = flags_.Get("dlldir")) {
+            SetDllDir(dir->c_str());
+        }
         instance_.DiscoverDefaultAdapters();
     }
 
     interop::Promise<std::optional<interop::Interface<interop::GPUAdapter>>> GPU::requestAdapter(
         Napi::Env env,
         interop::GPURequestAdapterOptions options) {
-        auto promise =
-            interop::Promise<std::optional<interop::Interface<interop::GPUAdapter>>>(env);
+        auto promise = interop::Promise<std::optional<interop::Interface<interop::GPUAdapter>>>(
+            env, PROMISE_INFO);
 
         if (options.forceFallbackAdapter) {
             // Software adapters are not currently supported.
@@ -81,27 +97,39 @@ namespace wgpu { namespace binding {
 #endif
 
         auto targetBackendType = defaultBackendType;
+        std::string forceBackend;
 
         // Check for override from env var
-        std::string envVar = getEnvVar("DAWNNODE_BACKEND");
-        std::transform(envVar.begin(), envVar.end(), envVar.begin(),
+        if (std::string envVar = GetEnvVar("DAWNNODE_BACKEND"); !envVar.empty()) {
+            forceBackend = envVar;
+        }
+
+        // Check for override from flag
+        if (auto f = flags_.Get("dawn-backend")) {
+            forceBackend = *f;
+        }
+
+        std::transform(forceBackend.begin(), forceBackend.end(), forceBackend.begin(),
                        [](char c) { return std::tolower(c); });
-        if (envVar == "null") {
-            targetBackendType = wgpu::BackendType::Null;
-        } else if (envVar == "webgpu") {
-            targetBackendType = wgpu::BackendType::WebGPU;
-        } else if (envVar == "d3d11") {
-            targetBackendType = wgpu::BackendType::D3D11;
-        } else if (envVar == "d3d12" || envVar == "d3d") {
-            targetBackendType = wgpu::BackendType::D3D12;
-        } else if (envVar == "metal") {
-            targetBackendType = wgpu::BackendType::Metal;
-        } else if (envVar == "vulkan" || envVar == "vk") {
-            targetBackendType = wgpu::BackendType::Vulkan;
-        } else if (envVar == "opengl" || envVar == "gl") {
-            targetBackendType = wgpu::BackendType::OpenGL;
-        } else if (envVar == "opengles" || envVar == "gles") {
-            targetBackendType = wgpu::BackendType::OpenGLES;
+
+        if (!forceBackend.empty()) {
+            if (forceBackend == "null") {
+                targetBackendType = wgpu::BackendType::Null;
+            } else if (forceBackend == "webgpu") {
+                targetBackendType = wgpu::BackendType::WebGPU;
+            } else if (forceBackend == "d3d11") {
+                targetBackendType = wgpu::BackendType::D3D11;
+            } else if (forceBackend == "d3d12" || forceBackend == "d3d") {
+                targetBackendType = wgpu::BackendType::D3D12;
+            } else if (forceBackend == "metal") {
+                targetBackendType = wgpu::BackendType::Metal;
+            } else if (forceBackend == "vulkan" || forceBackend == "vk") {
+                targetBackendType = wgpu::BackendType::Vulkan;
+            } else if (forceBackend == "opengl" || forceBackend == "gl") {
+                targetBackendType = wgpu::BackendType::OpenGL;
+            } else if (forceBackend == "opengles" || forceBackend == "gles") {
+                targetBackendType = wgpu::BackendType::OpenGLES;
+            }
         }
 
         // Default to first adapter if we don't find a match
@@ -115,7 +143,7 @@ namespace wgpu { namespace binding {
             }
         }
 
-        auto adapter = GPUAdapter::Create<GPUAdapter>(env, adapters[adapterIndex]);
+        auto adapter = GPUAdapter::Create<GPUAdapter>(env, adapters[adapterIndex], flags_);
         promise.Resolve(std::optional<interop::Interface<interop::GPUAdapter>>(adapter));
         return promise;
     }

@@ -31,10 +31,13 @@ perfetto_component("base") {
     "../../include/perfetto/ext/base",
   ]
   sources = [
+    "android_utils.cc",
+    "crash_keys.cc",
     "ctrl_c_handler.cc",
     "event_fd.cc",
     "file_utils.cc",
     "getopt_compat.cc",
+    "log_ring_buffer.h",
     "logging.cc",
     "metatrace.cc",
     "paged_memory.cc",

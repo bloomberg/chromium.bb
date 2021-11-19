@@ -10,6 +10,8 @@
 #ifndef EIGEN_SKYLINEINPLACELU_H
 #define EIGEN_SKYLINEINPLACELU_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \ingroup Skyline_Module

@@ -13,6 +13,8 @@
 
 #include "./RealSchur.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \eigenvalues_module \ingroup Eigenvalues_Module

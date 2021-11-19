@@ -110,6 +110,8 @@ list(APPEND AOM_AV1_DECODER_SOURCES
             "${AOM_ROOT}/av1/decoder/detokenize.c"
             "${AOM_ROOT}/av1/decoder/detokenize.h"
             "${AOM_ROOT}/av1/decoder/dthread.h"
+            "${AOM_ROOT}/av1/decoder/grain_synthesis.c"
+            "${AOM_ROOT}/av1/decoder/grain_synthesis.h"
             "${AOM_ROOT}/av1/decoder/obu.h"
             "${AOM_ROOT}/av1/decoder/obu.c")
 

@@ -23,7 +23,7 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_ContentParser;
 class CPDF_Document;
@@ -101,10 +101,10 @@ class CPDF_PageObjectHolder {
   bool HasDirtyStreams() const { return !m_DirtyStreams.empty(); }
   std::set<int32_t> TakeDirtyStreams();
 
-  Optional<ByteString> GraphicsMapSearch(const GraphicsData& gd);
+  absl::optional<ByteString> GraphicsMapSearch(const GraphicsData& gd);
   void GraphicsMapInsert(const GraphicsData& gd, const ByteString& str);
 
-  Optional<ByteString> FontsMapSearch(const FontData& fd);
+  absl::optional<ByteString> FontsMapSearch(const FontData& fd);
   void FontsMapInsert(const FontData& fd, const ByteString& str);
 
  protected:

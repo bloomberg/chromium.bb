@@ -10,6 +10,8 @@
 
 #ifndef EIGEN_QUATERNION_H
 #define EIGEN_QUATERNION_H
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 
@@ -341,20 +343,17 @@ public:
   EIGEN_DEVICE_FUNC inline const Coefficients& coeffs() const { return m_coeffs;}
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(bool(NeedsAlignment))
-  
+
 #ifdef EIGEN_QUATERNION_PLUGIN
 # include EIGEN_QUATERNION_PLUGIN
 #endif
 
 protected:
   Coefficients m_coeffs;
-  
+
 #ifndef EIGEN_PARSED_BY_DOXYGEN
-    static EIGEN_STRONG_INLINE void _check_template_params()
-    {
-      EIGEN_STATIC_ASSERT( (Options_ & DontAlign) == Options_,
-        INVALID_MATRIX_TEMPLATE_PARAMETERS)
-    }
+  EIGEN_STATIC_ASSERT( (Options_ & DontAlign) == Options_,
+                       INVALID_MATRIX_TEMPLATE_PARAMETERS)
 #endif
 };
 

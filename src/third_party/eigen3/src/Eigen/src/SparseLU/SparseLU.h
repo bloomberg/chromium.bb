@@ -12,6 +12,8 @@
 #ifndef EIGEN_SPARSE_LU_H
 #define EIGEN_SPARSE_LU_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template <typename MatrixType_, typename OrderingType_ = COLAMDOrdering<typename MatrixType_::StorageIndex> > class SparseLU;

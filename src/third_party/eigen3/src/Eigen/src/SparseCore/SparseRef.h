@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSE_REF_H
 #define EIGEN_SPARSE_REF_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 enum {

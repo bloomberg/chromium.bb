@@ -9,6 +9,9 @@ config("ignore_warnings") {
     cflags_cc = [
       "-Wno-unused-result",
       "-Wno-exit-time-destructors",
+      "-Wno-shadow",
+      "-Wno-implicit-int-float-conversion",
+      "-Wno-unreachable-code-return",
     ]
   }
 }

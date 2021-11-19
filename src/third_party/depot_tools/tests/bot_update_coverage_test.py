@@ -251,7 +251,7 @@ class BotUpdateUnittests(unittest.TestCase):
     bot_update.ensure_checkout(**self.params)
     args = self.gclient.records[0]
     patch_refs = set(
-        args[i+1] for i in xrange(len(args))
+        args[i+1] for i in range(len(args))
         if args[i] == '--patch-ref' and i+1 < len(args))
     self.assertIn(self.params['patch_refs'][0], patch_refs)
     self.assertIn(self.params['patch_refs'][1], patch_refs)
@@ -286,6 +286,10 @@ class BotUpdateUnittests(unittest.TestCase):
     actual_results = bot_update.parse_revisions(revisions, 'root')
     self.assertEqual(expected_results, actual_results)
 
+class CallUnitTest(unittest.TestCase):
+  def testCall(self):
+    ret = bot_update.call(sys.executable, '-c', 'print(1)')
+    self.assertEqual(u'1\n', ret)
 
 if __name__ == '__main__':
   unittest.main()

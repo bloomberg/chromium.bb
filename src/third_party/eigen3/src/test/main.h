@@ -1,4 +1,3 @@
-
 // This file is part of Eigen, a lightweight C++ template library
 // for linear algebra.
 //
@@ -55,19 +54,26 @@
 #endif
 #endif
 
-// Same for cuda_fp16.h
-#if defined(__CUDACC__) && !defined(EIGEN_NO_CUDA)
-  // Means the compiler is either nvcc or clang with CUDA enabled
+// Configure GPU.
+#if defined(EIGEN_USE_HIP)
+  #if defined(__HIPCC__) && !defined(EIGEN_NO_HIP)
+    #define EIGEN_HIPCC __HIPCC__
+    #include <hip/hip_runtime.h>
+    #include <hip/hip_runtime_api.h>
+  #endif
+#elif defined(__CUDACC__) && !defined(EIGEN_NO_CUDA)
   #define EIGEN_CUDACC __CUDACC__
+  #include <cuda.h>
+  #include <cuda_runtime.h>
+  #include <cuda_runtime_api.h>
+  #if CUDA_VERSION >= 7050
+    #include <cuda_fp16.h>
+  #endif
 #endif
-#if defined(EIGEN_CUDACC)
-#include <cuda.h>
-  #define EIGEN_CUDA_SDK_VER (CUDA_VERSION * 10)
-#else
-  #define EIGEN_CUDA_SDK_VER 0
-#endif
-#if EIGEN_CUDA_SDK_VER >= 70500
-#include <cuda_fp16.h>
+
+#if defined(EIGEN_CUDACC) || defined(EIGEN_HIPCC)
+  #define EIGEN_TEST_NO_LONGDOUBLE
+  #define EIGEN_DEFAULT_DENSE_INDEX_TYPE int
 #endif
 
 // To test that all calls from Eigen code to std::min() and std::max() are
@@ -314,35 +320,9 @@ namespace Eigen
     #endif // EIGEN_EXCEPTIONS
   #endif // EIGEN_DEBUG_ASSERTS
 
-  #if defined(TEST_CHECK_STATIC_ASSERTIONS) && defined(EIGEN_EXCEPTIONS)
-    #define EIGEN_STATIC_ASSERT(a,MSG) \
-      if( (!Eigen::internal::copy_bool(a)) && (!no_more_assert) )\
-      {                                       \
-        Eigen::no_more_assert = true;         \
-        if(report_on_cerr_on_assert_failure)  \
-          eigen_plain_assert((a) && #MSG);      \
-        else                                  \
-          EIGEN_THROW_X(Eigen::eigen_static_assert_exception()); \
-      }
-    #define VERIFY_RAISES_STATIC_ASSERT(a) {                    \
-      Eigen::no_more_assert = false;                            \
-      Eigen::report_on_cerr_on_assert_failure = false;          \
-      try {                                                     \
-        a;                                                      \
-        VERIFY(Eigen::should_raise_an_assert && # a);           \
-      }                                                         \
-      catch (Eigen::eigen_static_assert_exception&) { VERIFY(true); }  \
-      Eigen::report_on_cerr_on_assert_failure = true;           \
-    }
-  #endif // TEST_CHECK_STATIC_ASSERTIONS
-
 #ifndef VERIFY_RAISES_ASSERT
   #define VERIFY_RAISES_ASSERT(a) \
     std::cout << "Can't VERIFY_RAISES_ASSERT( " #a " ) with exceptions disabled\n";
-#endif
-#ifndef VERIFY_RAISES_STATIC_ASSERT
-  #define VERIFY_RAISES_STATIC_ASSERT(a) \
-    std::cout << "Can't VERIFY_RAISES_STATIC_ASSERT( " #a " ) with exceptions disabled\n";
 #endif
 
   #if !defined(__CUDACC__) && !defined(__HIPCC__) && !defined(SYCL_DEVICE_ONLY)
@@ -352,7 +332,6 @@ namespace Eigen
 #else // EIGEN_NO_ASSERTION_CHECKING
 
   #define VERIFY_RAISES_ASSERT(a) {}
-  #define VERIFY_RAISES_STATIC_ASSERT(a) {}
 
 #endif // EIGEN_NO_ASSERTION_CHECKING
 
@@ -391,6 +370,8 @@ inline void verify_impl(bool condition, const char *testname, const char *file, 
 #define VERIFY_IS_NOT_MUCH_SMALLER_THAN(a, b) VERIFY(!test_isMuchSmallerThan(a, b))
 #define VERIFY_IS_APPROX_OR_LESS_THAN(a, b) VERIFY(test_isApproxOrLessThan(a, b))
 #define VERIFY_IS_NOT_APPROX_OR_LESS_THAN(a, b) VERIFY(!test_isApproxOrLessThan(a, b))
+#define VERIFY_IS_CWISE_EQUAL(a, b) VERIFY(verifyIsCwiseApprox(a, b, true))
+#define VERIFY_IS_CWISE_APPROX(a, b) VERIFY(verifyIsCwiseApprox(a, b, false))
 
 #define VERIFY_IS_UNITARY(a) VERIFY(test_isUnitary(a))
 
@@ -403,34 +384,19 @@ inline void verify_impl(bool condition, const char *testname, const char *file, 
   } while (0)
 
 
-  namespace Eigen {
-
 // Forward declarations to avoid ICC warnings
+#if EIGEN_COMP_ICC
+
+template<typename T> std::string type_name();
+
+namespace Eigen {
+
 template<typename T, typename U>
 bool test_is_equal(const T& actual, const U& expected, bool expect_equal=true);
 
-template<typename MatrixType>
-void createRandomPIMatrixOfRank(Index desired_rank, Index rows, Index cols, MatrixType& m);
-
-template<typename PermutationVectorType>
-void randomPermutationVector(PermutationVectorType& v, Index size);
-
-template<typename MatrixType>
-MatrixType generateRandomUnitaryMatrix(const Index dim);
-
-template<typename MatrixType, typename RealScalarVectorType>
-void generateRandomMatrixSvs(const RealScalarVectorType &svs, const Index rows, const Index cols, MatrixType& M);
-
-template<typename VectorType, typename RealScalar>
-VectorType setupRandomSvs(const Index dim, const RealScalar max);
-
-template<typename VectorType, typename RealScalar>
-VectorType setupRangeSvs(const Index dim, const RealScalar min, const RealScalar max);
-
 } // end namespace Eigen
 
-// Forward declaration to avoid ICC warnings
-template<typename T> std::string type_name();
+#endif  // EIGEN_COMP_ICC
 
 
 namespace Eigen {
@@ -453,6 +419,9 @@ template<> inline long double test_precision<std::complex<long double> >() { ret
 #define EIGEN_TEST_SCALAR_TEST_OVERLOAD(TYPE)                             \
   inline bool test_isApprox(TYPE a, TYPE b)                               \
   { return internal::isApprox(a, b, test_precision<TYPE>()); }            \
+  inline bool test_isCwiseApprox(TYPE a, TYPE b, bool exact)              \
+  { return a == b || ((numext::isnan)(a) && (numext::isnan)(b)) ||        \
+      (!exact && internal::isApprox(a, b, test_precision<TYPE>())); }     \
   inline bool test_isMuchSmallerThan(TYPE a, TYPE b)                      \
   { return internal::isMuchSmallerThan(a, b, test_precision<TYPE>()); }   \
   inline bool test_isApproxOrLessThan(TYPE a, TYPE b)                     \
@@ -622,6 +591,22 @@ inline bool verifyIsApprox(const Type1& a, const Type2& b)
   return ret;
 }
 
+// verifyIsCwiseApprox is a wrapper to test_isCwiseApprox that outputs the relative difference magnitude if the test fails.
+template<typename Type1, typename Type2>
+inline bool verifyIsCwiseApprox(const Type1& a, const Type2& b, bool exact)
+{
+  bool ret = test_isCwiseApprox(a,b,exact);
+  if(!ret) {
+    if (exact) {
+      std::cerr << "Values are not an exact match";
+    } else {
+      std::cerr << "Difference too large wrt tolerance " << get_test_precision(a);
+    }
+    std::cerr << ", relative error is: " << test_relative_error(a,b) << std::endl;
+  }
+  return ret;
+}
+
 // The idea behind this function is to compare the two scalars a and b where
 // the scalar ref is a hint about the expected order of magnitude of a and b.
 // WARNING: the scalar a and b must be positive
@@ -655,6 +640,29 @@ inline bool test_isUnitary(const MatrixBase<Derived>& m)
   return m.isUnitary(test_precision<typename internal::traits<Derived>::Scalar>());
 }
 
+// Checks component-wise, works with infs and nans.
+template<typename Derived1, typename Derived2>
+bool test_isCwiseApprox(const DenseBase<Derived1>& m1,
+                        const DenseBase<Derived2>& m2,
+                        bool exact) {
+  if (m1.rows() != m2.rows()) {
+    return false;
+  }
+  if (m1.cols() != m2.cols()) {
+    return false;
+  }
+  for (Index r = 0; r < m1.rows(); ++r) {
+    for (Index c = 0; c < m1.cols(); ++c) {
+      if (m1(r, c) != m2(r, c)
+          && !((numext::isnan)(m1(r, c)) && (numext::isnan)(m2(r, c))) 
+          && (exact || !test_isApprox(m1(r, c), m2(r, c)))) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 template<typename T, typename U>
 bool test_is_equal(const T& actual, const U& expected, bool expect_equal)
 {
@@ -667,215 +675,7 @@ bool test_is_equal(const T& actual, const U& expected, bool expect_equal)
     return false;
 }
 
-// Forward declaration to avoid ICC warning
-template<typename MatrixType>
-void createRandomPIMatrixOfRank(Index desired_rank, Index rows, Index cols, MatrixType& m);
-/**
- * Creates a random partial isometry matrix of given rank.
- *
- * A partial isometry is a matrix all of whose singular values are either 0 or 1.
- * This is very useful to test rank-revealing algorithms.
- *
- * @tparam MatrixType type of random partial isometry matrix
- * @param desired_rank rank requested for the random partial isometry matrix
- * @param rows row dimension of requested random partial isometry matrix
- * @param cols column dimension of requested random partial isometry matrix
- * @param m random partial isometry matrix
- */
-template<typename MatrixType>
-void createRandomPIMatrixOfRank(Index desired_rank, Index rows, Index cols, MatrixType& m)
-{
-  typedef typename internal::traits<MatrixType>::Scalar Scalar;
-  enum { Rows = MatrixType::RowsAtCompileTime, Cols = MatrixType::ColsAtCompileTime };
 
-  typedef Matrix<Scalar, Dynamic, 1> VectorType;
-  typedef Matrix<Scalar, Rows, Rows> MatrixAType;
-  typedef Matrix<Scalar, Cols, Cols> MatrixBType;
-
-  if(desired_rank == 0)
-  {
-    m.setZero(rows,cols);
-    return;
-  }
-
-  if(desired_rank == 1)
-  {
-    // here we normalize the vectors to get a partial isometry
-    m = VectorType::Random(rows).normalized() * VectorType::Random(cols).normalized().transpose();
-    return;
-  }
-
-  MatrixAType a = MatrixAType::Random(rows,rows);
-  MatrixType d = MatrixType::Identity(rows,cols);
-  MatrixBType  b = MatrixBType::Random(cols,cols);
-
-  // set the diagonal such that only desired_rank non-zero entries remain
-  const Index diag_size = (std::min)(d.rows(),d.cols());
-  if(diag_size != desired_rank)
-    d.diagonal().segment(desired_rank, diag_size-desired_rank) = VectorType::Zero(diag_size-desired_rank);
-
-  HouseholderQR<MatrixAType> qra(a);
-  HouseholderQR<MatrixBType> qrb(b);
-  m = qra.householderQ() * d * qrb.householderQ();
-}
-
-// Forward declaration to avoid ICC warning
-template<typename PermutationVectorType>
-void randomPermutationVector(PermutationVectorType& v, Index size);
-/**
- * Generate random permutation vector.
- *
- * @tparam PermutationVectorType type of vector used to store permutation
- * @param v permutation vector
- * @param size length of permutation vector
- */
-template<typename PermutationVectorType>
-void randomPermutationVector(PermutationVectorType& v, Index size)
-{
-  typedef typename PermutationVectorType::Scalar Scalar;
-  v.resize(size);
-  for(Index i = 0; i < size; ++i) v(i) = Scalar(i);
-  if(size == 1) return;
-  for(Index n = 0; n < 3 * size; ++n)
-  {
-    Index i = internal::random<Index>(0, size-1);
-    Index j;
-    do j = internal::random<Index>(0, size-1); while(j==i);
-    std::swap(v(i), v(j));
-  }
-}
-
-/**
- * Generate a random unitary matrix of prescribed dimension.
- *
- * The algorithm is using a random Householder sequence to produce
- * a random unitary matrix.
- *
- * @tparam MatrixType type of matrix to generate
- * @param dim row and column dimension of the requested square matrix
- * @return random unitary matrix
- */
-template<typename MatrixType>
-MatrixType generateRandomUnitaryMatrix(const Index dim)
-{
-  typedef typename internal::traits<MatrixType>::Scalar Scalar;
-  typedef Matrix<Scalar, Dynamic, 1> VectorType;
-
-  MatrixType v = MatrixType::Identity(dim, dim);
-  VectorType h = VectorType::Zero(dim);
-  for (Index i = 0; i < dim; ++i)
-  {
-    v.col(i).tail(dim - i - 1) = VectorType::Random(dim - i - 1);
-    h(i) = 2 / v.col(i).tail(dim - i).squaredNorm();
-  }
-
-  const Eigen::HouseholderSequence<MatrixType, VectorType> HSeq(v, h);
-  return MatrixType(HSeq);
-}
-
-/**
- * Generation of random matrix with prescribed singular values.
- *
- * We generate random matrices with given singular values by setting up
- * a singular value decomposition. By choosing the number of zeros as
- * singular values we can specify the rank of the matrix.
- * Moreover, we also control its spectral norm, which is the largest
- * singular value, as well as its condition number with respect to the
- * l2-norm, which is the quotient of the largest and smallest singular
- * value.
- *
- * Reference: For details on the method see e.g. Section 8.1 (pp. 62 f) in
- *
- *   C. C. Paige, M. A. Saunders,
- *   LSQR: An algorithm for sparse linear equations and sparse least squares.
- *   ACM Transactions on Mathematical Software 8(1), pp. 43-71, 1982.
- *   https://web.stanford.edu/group/SOL/software/lsqr/lsqr-toms82a.pdf
- *
- * and also the LSQR webpage https://web.stanford.edu/group/SOL/software/lsqr/.
- *
- * @tparam MatrixType matrix type to generate
- * @tparam RealScalarVectorType vector type with real entries used for singular values
- * @param svs vector of desired singular values
- * @param rows row dimension of requested random matrix
- * @param cols column dimension of requested random matrix
- * @param M generated matrix with prescribed singular values
- */
-template<typename MatrixType, typename RealScalarVectorType>
-void generateRandomMatrixSvs(const RealScalarVectorType &svs, const Index rows, const Index cols, MatrixType& M)
-{
-  enum { Rows = MatrixType::RowsAtCompileTime, Cols = MatrixType::ColsAtCompileTime };
-  typedef typename internal::traits<MatrixType>::Scalar Scalar;
-  typedef Matrix<Scalar, Rows, Rows> MatrixAType;
-  typedef Matrix<Scalar, Cols, Cols> MatrixBType;
-
-  const Index min_dim = (std::min)(rows, cols);
-
-  const MatrixAType U = generateRandomUnitaryMatrix<MatrixAType>(rows);
-  const MatrixBType V = generateRandomUnitaryMatrix<MatrixBType>(cols);
-
-  M = U.block(0, 0, rows, min_dim) * svs.asDiagonal() * V.block(0, 0, cols, min_dim).transpose();
-}
-
-/**
- * Setup a vector of random singular values with prescribed upper limit.
- * For use with generateRandomMatrixSvs().
- *
- * Singular values are non-negative real values. By convention (to be consistent with
- * singular value decomposition) we sort them in decreasing order.
- *
- * This strategy produces random singular values in the range [0, max], in particular
- * the singular values can be zero or arbitrarily close to zero.
- *
- * @tparam VectorType vector type with real entries used for singular values
- * @tparam RealScalar data type used for real entry
- * @param dim number of singular values to generate
- * @param max upper bound for singular values
- * @return vector of singular values
- */
-template<typename VectorType, typename RealScalar>
-VectorType setupRandomSvs(const Index dim, const RealScalar max)
-{
-  VectorType svs = max / RealScalar(2) * (VectorType::Random(dim) + VectorType::Ones(dim));
-  std::sort(svs.begin(), svs.end(), std::greater<RealScalar>());
-  return svs;
-}
-
-/**
- * Setup a vector of random singular values with prescribed range.
- * For use with generateRandomMatrixSvs().
- *
- * Singular values are non-negative real values. By convention (to be consistent with
- * singular value decomposition) we sort them in decreasing order.
- *
- * For dim > 1 this strategy generates a vector with largest entry max, smallest entry
- * min, and remaining entries in the range [min, max]. For dim == 1 the only entry is
- * min.
- *
- * @tparam VectorType vector type with real entries used for singular values
- * @tparam RealScalar data type used for real entry
- * @param dim number of singular values to generate
- * @param min smallest singular value to use
- * @param max largest singular value to use
- * @return vector of singular values
- */
-template<typename VectorType, typename RealScalar>
-VectorType setupRangeSvs(const Index dim, const RealScalar min, const RealScalar max)
-{
-  VectorType svs = VectorType::Random(dim);
-  if(dim == 0)
-    return svs;
-  if(dim == 1)
-  {
-    svs(0) = min;
-    return svs;
-  }
-  std::sort(svs.begin(), svs.end(), std::greater<RealScalar>());
-
-  // scale to range [min, max]
-  const RealScalar c_min = svs(dim - 1), c_max = svs(0);
-  svs = (svs - VectorType::Constant(dim, c_min)) / (c_max - c_min);
-  return min * (VectorType::Ones(dim) - svs) + max * svs;
-}
 
 /**
  * Check if number is "not a number" (NaN).
@@ -914,6 +714,10 @@ template<typename T> bool isMinusInf(const T& x)
 }
 
 } // end namespace Eigen
+
+
+#include "random_matrix_helper.h"
+
 
 template<typename T> struct GetDifferentType;
 
@@ -1056,3 +860,5 @@ int main(int argc, char *argv[])
   // 4503 - decorated name length exceeded, name was truncated
   #pragma warning( disable : 4503)
 #endif
+
+#include "gpu_test_helper.h"

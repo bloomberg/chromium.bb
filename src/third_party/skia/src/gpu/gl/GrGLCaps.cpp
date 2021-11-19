@@ -22,7 +22,6 @@
 #include "src/gpu/gl/GrGLContext.h"
 #include "src/gpu/gl/GrGLRenderTarget.h"
 #include "src/gpu/gl/GrGLTexture.h"
-#include "src/utils/SkJSONWriter.h"
 
 #if defined(SK_BUILD_FOR_IOS)
 #include <TargetConditionals.h>
@@ -72,7 +71,7 @@ GrGLCaps::GrGLCaps(const GrContextOptions& contextOptions,
     fSRGBWriteControl = false;
     fSkipErrorChecks = false;
 
-    fShaderCaps.reset(new GrShaderCaps(contextOptions));
+    fShaderCaps = std::make_unique<GrShaderCaps>();
 
     // All of Skia's automated testing of ANGLE and all related tuning of performance and driver
     // workarounds is oriented around the D3D backends of ANGLE. Chrome has started using Skia
@@ -972,10 +971,11 @@ void GrGLCaps::initGLSL(const GrGLContextInfo& ctxInfo, const GrGLInterface* gli
     }
 
     if (GR_IS_GR_GL(standard)) {
-        shaderCaps->fInfinitySupport = true;
+        shaderCaps->fInfinitySupport = shaderCaps->fNonconstantArrayIndexSupport = true;
     } else if (GR_IS_GR_GL_ES(standard) || GR_IS_GR_WEBGL(standard)) {
         // Desktop GLSL 3.30 == ES GLSL 3.00.
-        shaderCaps->fInfinitySupport = ctxInfo.glslGeneration() >= k330_GrGLSLGeneration;
+        shaderCaps->fInfinitySupport = shaderCaps->fNonconstantArrayIndexSupport =
+                (ctxInfo.glslGeneration() >= k330_GrGLSLGeneration);
     }
 
     if (GR_IS_GR_GL(standard)) {
@@ -1108,6 +1108,8 @@ void GrGLCaps::initStencilSupport(const GrGLContextInfo& ctxInfo) {
 }
 
 #ifdef SK_ENABLE_DUMP_GPU
+#include "src/utils/SkJSONWriter.h"
+
 static const char* multi_draw_type_name(GrGLCaps::MultiDrawType multiDrawType) {
     switch (multiDrawType) {
         case GrGLCaps::MultiDrawType::kNone : return "kNone";
@@ -1872,19 +1874,19 @@ void GrGLCaps::initFormatTable(const GrGLContextInfo& ctxInfo, const GrGLInterfa
         GrGLenum bgraTexImageFormat;
         // If BGRA is supported as an internal format it must always be specified to glTex[Sub]Image
         // as a base format. Which base format depends on which extension is used.
-        if (ctxInfo.hasExtension("GL_APPLE_texture_format_BGRA8888")) {
-            // GL_APPLE_texture_format_BGRA8888:
-            //     ES 2.0: the extension makes BGRA an external format but not an internal format.
-            //     ES 3.0: the extension explicitly states GL_BGRA8 is not a valid internal format
-            //             for glTexImage (just for glTexStorage).
-            bgraTexImageFormat = GR_GL_RGBA;
-        } else {
+        if (ctxInfo.hasExtension("GL_EXT_texture_format_BGRA8888")) {
             // GL_EXT_texture_format_BGRA8888:
             //      This extension adds GL_BGRA as an unsized internal format. However, it is
             //      written against ES 2.0 and therefore doesn't define a GL_BGRA8 as ES 2.0 doesn't
             //      have sized internal formats. See later where we check for tex storage BGRA8
             //      support.
             bgraTexImageFormat = GR_GL_BGRA;
+        } else {
+            // GL_APPLE_texture_format_BGRA8888:
+            //     ES 2.0: the extension makes BGRA an external format but not an internal format.
+            //     ES 3.0: the extension explicitly states GL_BGRA8 is not a valid internal format
+            //             for glTexImage (just for glTexStorage).
+            bgraTexImageFormat = GR_GL_RGBA;
         }
 
         // TexStorage requires using a sized internal format and BGRA8 is only supported if we have
@@ -3884,14 +3886,6 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     }
 #endif
 
-    if (ctxInfo.renderer() == GrGLRenderer::kAdreno615 ||
-        ctxInfo.renderer() == GrGLRenderer::kAdreno620 ||
-        ctxInfo.renderer() == GrGLRenderer::kAdreno630 ||
-        ctxInfo.renderer() == GrGLRenderer::kAdreno640 ||
-        ctxInfo.renderer() == GrGLRenderer::kAdreno6xx_other) {
-        shaderCaps->fInBlendModesFailRandomlyForAllZeroVec = true;
-    }
-
     // The Adreno 5xx and 6xx produce incorrect results when comparing a pair of matrices.
     if (ctxInfo.renderer() == GrGLRenderer::kAdreno530 ||
         ctxInfo.renderer() == GrGLRenderer::kAdreno5xx_other ||
@@ -3996,7 +3990,9 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
     // This is fixed by reseting the blend function to anything that does not reference src2 when we
     // disable blending.
     if (ctxInfo.renderer() == GrGLRenderer::kAdreno530 ||
-        ctxInfo.renderer() == GrGLRenderer::kAdreno5xx_other) {
+        ctxInfo.renderer() == GrGLRenderer::kAdreno5xx_other ||
+        ctxInfo.renderer() == GrGLRenderer::kAdreno620 ||
+        ctxInfo.renderer() == GrGLRenderer::kAdreno640) {
         fMustResetBlendFuncBetweenDualSourceAndDisable = true;
     }
 
@@ -4030,6 +4026,16 @@ void GrGLCaps::applyDriverCorrectnessWorkarounds(const GrGLContextInfo& ctxInfo,
         ctxInfo.renderer() == GrGLRenderer::kAdreno430 ||
         ctxInfo.renderer() == GrGLRenderer::kAdreno4xx_other ||  // We get garbage on Adreno405.
         ctxInfo.angleBackend() == GrGLANGLEBackend::kD3D9) {  // D3D9 conic strokes fail.
+        fDisableTessellationPathRenderer = true;
+    }
+    // We found that on Wembley devices (PowerVR GE8320) that using tessellation path renderer would
+    // cause lots of rendering errors where it seemed like vertices were in the wrong place. This
+    // led to lots of GMs drawing nothing (e.g. dashing4) or lots of garbage. The Wembley devices
+    // were running Android 12 with a driver version of 1.13. We previously had TecnoSpark devices
+    // with the same GPU running on Android P (driver 1.10) which did not have this issue. We don't
+    // know when the bug appeared in the driver so for now we disable tessellation path renderer for
+    // all matching gpus regardless of driver version.
+    if (ctxInfo.renderer() == GrGLRenderer::kPowerVRRogue) {
         fDisableTessellationPathRenderer = true;
     }
 

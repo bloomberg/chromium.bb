@@ -48,7 +48,7 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git rp = reparent-branch
+  rp = reparent-branch
 ----
 
 SEE ALSO

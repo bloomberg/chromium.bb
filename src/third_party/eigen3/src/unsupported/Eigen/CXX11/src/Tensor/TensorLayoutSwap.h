@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_LAYOUT_SWAP_H
 #define EIGEN_CXX11_TENSOR_TENSOR_LAYOUT_SWAP_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorLayoutSwap

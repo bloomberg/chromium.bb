@@ -1138,6 +1138,9 @@ string MinidumpProcessor::GetCrashReason(Minidump* dump, uint64_t* address) {
         case MD_EXCEPTION_MAC_SIMULATED:
           reason = "Simulated Exception";
           break;
+        case MD_NS_EXCEPTION_SIMULATED:
+          reason = "Uncaught NSException";
+          break;
       }
       break;
     }

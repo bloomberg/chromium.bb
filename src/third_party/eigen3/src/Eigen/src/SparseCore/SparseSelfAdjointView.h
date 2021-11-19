@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSE_SELFADJOINTVIEW_H
 #define EIGEN_SPARSE_SELFADJOINTVIEW_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
   
 /** \ingroup SparseCore_Module

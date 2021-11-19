@@ -32,7 +32,7 @@ macro(libgav1_set_build_definitions)
   #
   # We set LIBGAV1_SOVERSION = [c-a].a.r
   set(LT_CURRENT 0)
-  set(LT_REVISION 0)
+  set(LT_REVISION 1)
   set(LT_AGE 0)
   math(EXPR LIBGAV1_SOVERSION_MAJOR "${LT_CURRENT} - ${LT_AGE}")
   set(LIBGAV1_SOVERSION "${LIBGAV1_SOVERSION_MAJOR}.${LT_AGE}.${LT_REVISION}")

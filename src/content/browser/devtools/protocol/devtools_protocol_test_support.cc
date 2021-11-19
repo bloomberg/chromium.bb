@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/security_style_explanations.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -160,13 +159,7 @@ DevToolsProtocolTest::WaitForNotification(const std::string& notification,
 }
 
 blink::SecurityStyle DevToolsProtocolTest::GetSecurityStyle(
-    content::WebContents* web_contents,
-    content::SecurityStyleExplanations* security_style_explanations) {
-  security_style_explanations->secure_explanations.push_back(
-      SecurityStyleExplanation(
-          "an explanation title", "an explanation summary",
-          "an explanation description", cert_,
-          blink::mojom::MixedContentContextType::kNotMixedContent));
+    content::WebContents* web_contents) {
   return blink::SecurityStyle::kNeutral;
 }
 
@@ -255,14 +248,16 @@ void DevToolsProtocolTest::DispatchProtocolMessage(
                                 message.size());
   auto root = base::DictionaryValue::From(
       base::JSONReader::ReadDeprecated(message_str));
-  int id;
-  if (root->GetInteger("id", &id)) {
-    result_ids_.push_back(id);
+  absl::optional<int> id = root->FindIntKey("id");
+  if (id) {
+    result_ids_.push_back(*id);
     base::DictionaryValue* result;
     bool have_result = root->GetDictionary("result", &result);
     result_.reset(have_result ? result->DeepCopy() : nullptr);
+    base::Value* error = root->FindDictKey("error");
+    error_ = error ? error->Clone() : base::Value();
     in_dispatch_ = false;
-    if (id && id == waiting_for_command_result_id_) {
+    if (*id && *id == waiting_for_command_result_id_) {
       waiting_for_command_result_id_ = 0;
       std::move(run_loop_quit_closure_).Run();
     }
@@ -293,6 +288,10 @@ void DevToolsProtocolTest::DispatchProtocolMessage(
 void DevToolsProtocolTest::AgentHostClosed(DevToolsAgentHost* agent_host) {
   if (!agent_host_can_close_)
     NOTREACHED();
+}
+
+bool DevToolsProtocolTest::AllowUnsafeOperations() {
+  return allow_unsafe_operations_;
 }
 
 }  // namespace content

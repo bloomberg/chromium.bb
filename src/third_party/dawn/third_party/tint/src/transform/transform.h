@@ -190,7 +190,7 @@ class Transform : public Castable<Transform> {
   /// continuing of for-loops.
   /// @param ctx the clone context
   /// @param stmt the statement to remove when the program is cloned
-  static void RemoveStatement(CloneContext& ctx, ast::Statement* stmt);
+  static void RemoveStatement(CloneContext& ctx, const ast::Statement* stmt);
 
   /// CreateASTTypeFor constructs new ast::Type nodes that reconstructs the
   /// semantic type `ty`.
@@ -198,7 +198,8 @@ class Transform : public Castable<Transform> {
   /// @param ty the semantic type to reconstruct
   /// @returns a ast::Type that when resolved, will produce the semantic type
   /// `ty`.
-  static ast::Type* CreateASTTypeFor(CloneContext& ctx, const sem::Type* ty);
+  static const ast::Type* CreateASTTypeFor(CloneContext& ctx,
+                                           const sem::Type* ty);
 };
 
 }  // namespace transform

@@ -893,27 +893,6 @@ def CheckChangeOnCommit(input_api, output_api):
           'on the file to figure out who to ask for help.\n')
       self.assertEqual(sys.stdout.getvalue(), text)
 
-  def testGetTryMastersExecuter(self):
-    change = self.ExampleChange(
-        extra_lines=['STORY=http://tracker.com/42', 'BUG=boo\n'])
-    executer = presubmit.GetTryMastersExecuter()
-    self.assertEqual({}, executer.ExecPresubmitScript('', '', '', change))
-    self.assertEqual({},
-        executer.ExecPresubmitScript('def foo():\n  return\n', '', '', change))
-
-    expected_result = {'m1': {'s1': set(['t1', 't2'])},
-                       'm2': {'s1': set(['defaulttests']),
-                              's2': set(['defaulttests'])}}
-    empty_result1 = {}
-    empty_result2 = {'m': {}}
-    space_in_name_result = {'m r': {'s\tv': set(['t1'])}}
-    for result in (
-        expected_result, empty_result1, empty_result2, space_in_name_result):
-      self.assertEqual(
-          result,
-          executer.ExecPresubmitScript(
-              self.presubmit_trymaster % result, '', '', change))
-
   def ExampleChange(self, extra_lines=None):
     """Returns an example Change instance for tests."""
     description_lines = [
@@ -954,44 +933,6 @@ def CheckChangeOnCommit(input_api, output_api):
     }
     for permutation in itertools.permutations(parts):
       self.assertEqual(expected, functools.reduce(merge, permutation, {}))
-
-  def testDoGetTryMasters(self):
-    root_text = (self.presubmit_trymaster
-        % '{"t1.cr": {"win": set(["defaulttests"])}}')
-    linux_text = (self.presubmit_trymaster
-        % ('{"t1.cr": {"linux1": set(["t1"])},'
-           ' "t2.cr": {"linux2": set(["defaulttests"])}}'))
-
-    filename = 'foo.cc'
-    filename_linux = os.path.join('linux_only', 'penguin.cc')
-    root_presubmit = os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    linux_presubmit = os.path.join(
-        self.fake_root_dir, 'linux_only', 'PRESUBMIT.py')
-
-    os.path.isfile.side_effect = (
-        lambda f: f in [root_presubmit, linux_presubmit])
-    os.listdir.return_value = ['PRESUBMIT.py']
-    gclient_utils.FileRead.side_effect = (
-        lambda f, _: root_text if f == root_presubmit else linux_text)
-
-    change = presubmit.Change(
-        'mychange', '', self.fake_root_dir, [], 0, 0, None)
-
-    output = StringIO()
-    self.assertEqual({'t1.cr': {'win': ['defaulttests']}},
-                     presubmit.DoGetTryMasters(change, [filename],
-                                               self.fake_root_dir,
-                                               None, None, False, output))
-    output = StringIO()
-    expected = {
-      't1.cr': {'win': ['defaulttests'], 'linux1': ['t1']},
-      't2.cr': {'linux2': ['defaulttests']},
-    }
-    self.assertEqual(expected,
-                     presubmit.DoGetTryMasters(change,
-                                               [filename, filename_linux],
-                                               self.fake_root_dir, None, None,
-                                               False, output))
 
   def testMainPostUpload(self):
     os.path.isfile.side_effect = lambda f: 'PRESUBMIT.py' in f

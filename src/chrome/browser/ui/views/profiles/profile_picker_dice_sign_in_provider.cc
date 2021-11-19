@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -45,7 +46,7 @@ bool IsExternalURL(const GURL& url) {
   // sign-in succeeds.
   if (url.is_empty() || url == GURL(url::kAboutBlankURL))
     return false;
-  if (gaia::IsGaiaSignonRealm(url.GetOrigin()))
+  if (gaia::IsGaiaSignonRealm(url.DeprecatedGetOriginAsURL()))
     return false;
   return true;
 }
@@ -139,7 +140,7 @@ ProfilePickerDiceSignInProvider::GetCustomTheme() const {
 }
 
 bool ProfilePickerDiceSignInProvider::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   // Ignores context menu.
   return true;
@@ -247,6 +248,10 @@ void ProfilePickerDiceSignInProvider::OnProfileCreated(
   web_modal::WebContentsModalDialogManager::CreateForWebContents(contents());
   web_modal::WebContentsModalDialogManager::FromWebContents(contents())
       ->SetDelegate(this);
+
+  // To allow passing encryption keys during interactions with the page,
+  // instantiate SyncEncryptionKeysTabHelper.
+  SyncEncryptionKeysTabHelper::CreateForWebContents(contents());
 
   // Listen for sign-in getting completed.
   identity_manager_observation_.Observe(

@@ -10,6 +10,8 @@
 #ifndef EIGEN_ARCH_GENERIC_PACKET_MATH_FUNCTIONS_FWD_H
 #define EIGEN_ARCH_GENERIC_PACKET_MATH_FUNCTIONS_FWD_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 

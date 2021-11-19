@@ -596,9 +596,10 @@ class QUIC_EXPORT_PRIVATE QuicSession
     return user_agent_id_;
   }
 
+  // TODO(wub): remove saving user-agent to QuicSession.
   void SetUserAgentId(std::string user_agent_id) {
     user_agent_id_ = std::move(user_agent_id);
-    connection()->OnUserAgentIdKnown();
+    connection()->OnUserAgentIdKnown(user_agent_id_.value());
   }
 
   void SetSourceAddressTokenToSend(absl::string_view token) {
@@ -617,10 +618,8 @@ class QUIC_EXPORT_PRIVATE QuicSession
 
   virtual QuicSSLConfig GetSSLConfig() const { return QuicSSLConfig(); }
 
-  // Get latched flag value.
-  bool quic_tls_disable_resumption_refactor() const {
-    return quic_tls_disable_resumption_refactor_;
-  }
+  // Latched value of flag --quic_tls_server_support_client_cert.
+  bool support_client_cert() const { return support_client_cert_; }
 
   // Try converting all pending streams to normal streams.
   void ProcessAllPendingStreams();
@@ -788,6 +787,11 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // closed. static streams and zombie streams are not considered active
   // streams.
   QuicStream* GetActiveStream(QuicStreamId id) const;
+
+  const UberQuicStreamIdManager& ietf_streamid_manager() const {
+    QUICHE_DCHECK(VersionHasIetfQuicFrames(transport_version()));
+    return ietf_streamid_manager_;
+  }
 
  private:
   friend class test::QuicSessionPeer;
@@ -980,8 +984,8 @@ class QUIC_EXPORT_PRIVATE QuicSession
   // Whether BoringSSL randomizes the order of TLS extensions.
   bool permutes_tls_extensions_ = true;
 
-  const bool quic_tls_disable_resumption_refactor_ =
-      GetQuicReloadableFlag(quic_tls_disable_resumption_refactor);
+  const bool support_client_cert_ =
+      GetQuicRestartFlag(quic_tls_server_support_client_cert);
 };
 
 }  // namespace quic

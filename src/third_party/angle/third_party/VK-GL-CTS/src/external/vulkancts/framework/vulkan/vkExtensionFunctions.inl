@@ -322,6 +322,14 @@ void getInstanceExtensionFunctions (uint32_t apiVersion, ::std::string extName, 
 	{
 		return;
 	}
+	if (extName == "VK_KHR_format_feature_flags2")
+	{
+		return;
+	}
+	if (extName == "VK_KHR_maintenance4")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_debug_report")
 	{
 		functions.push_back("vkCreateDebugReportCallbackEXT");
@@ -829,6 +837,10 @@ void getInstanceExtensionFunctions (uint32_t apiVersion, ::std::string extName, 
 	{
 		return;
 	}
+	if (extName == "VK_EXT_rgba10x6_formats")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_acquire_drm_display")
 	{
 		functions.push_back("vkAcquireDrmDisplayEXT");
@@ -942,6 +954,10 @@ void getInstanceExtensionFunctions (uint32_t apiVersion, ::std::string extName, 
 		return;
 	}
 	if (extName == "VK_EXT_load_store_op_none")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_border_color_swizzle")
 	{
 		return;
 	}
@@ -1460,6 +1476,17 @@ void getDeviceExtensionFunctions (uint32_t apiVersion, ::std::string extName, ::
 		functions.push_back("vkCmdCopyImageToBuffer2KHR");
 		functions.push_back("vkCmdBlitImage2KHR");
 		functions.push_back("vkCmdResolveImage2KHR");
+		return;
+	}
+	if (extName == "VK_KHR_format_feature_flags2")
+	{
+		return;
+	}
+	if (extName == "VK_KHR_maintenance4")
+	{
+		functions.push_back("vkGetDeviceBufferMemoryRequirementsKHR");
+		functions.push_back("vkGetDeviceImageMemoryRequirementsKHR");
+		functions.push_back("vkGetDeviceImageSparseMemoryRequirementsKHR");
 		return;
 	}
 	if (extName == "VK_EXT_debug_report")
@@ -2055,6 +2082,10 @@ void getDeviceExtensionFunctions (uint32_t apiVersion, ::std::string extName, ::
 	{
 		return;
 	}
+	if (extName == "VK_EXT_rgba10x6_formats")
+	{
+		return;
+	}
 	if (extName == "VK_EXT_acquire_drm_display")
 	{
 		return;
@@ -2182,6 +2213,10 @@ void getDeviceExtensionFunctions (uint32_t apiVersion, ::std::string extName, ::
 		return;
 	}
 	if (extName == "VK_EXT_load_store_op_none")
+	{
+		return;
+	}
+	if (extName == "VK_EXT_border_color_swizzle")
 	{
 		return;
 	}
@@ -2440,6 +2475,7 @@ void getDeviceExtensionFunctions (uint32_t apiVersion, ::std::string extName, ::
 	"VK_KHR_pipeline_executable_properties",
 	"VK_KHR_synchronization2",
 	"VK_KHR_copy_commands2",
+	"VK_KHR_maintenance4",
 	"VK_EXT_debug_marker",
 	"VK_EXT_transform_feedback",
 	"VK_NVX_binary_import",

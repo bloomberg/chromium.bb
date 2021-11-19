@@ -11,6 +11,8 @@
 #ifndef EIGEN_COLPIVOTINGHOUSEHOLDERQR_H
 #define EIGEN_COLPIVOTINGHOUSEHOLDERQR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -426,10 +428,7 @@ template<typename MatrixType_> class ColPivHouseholderQR
 
     friend class CompleteOrthogonalDecomposition<MatrixType>;
 
-    static void check_template_parameters()
-    {
-      EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-    }
+    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
 
     void computeInPlace();
 
@@ -481,8 +480,6 @@ ColPivHouseholderQR<MatrixType>& ColPivHouseholderQR<MatrixType>::compute(const 
 template<typename MatrixType>
 void ColPivHouseholderQR<MatrixType>::computeInPlace()
 {
-  check_template_parameters();
-
   // the column permutation is stored as int indices, so just to be sure:
   eigen_assert(m_qr.cols()<=NumTraits<int>::highest());
 

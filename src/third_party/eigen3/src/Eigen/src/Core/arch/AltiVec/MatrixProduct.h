@@ -43,6 +43,8 @@
  * - Check StorageOrder on dhs_pack (the innermost second loop seems unvectorized when it could). *
  * - Check the possibility of transposing as GETREAL and GETIMAG when needed.                     *
  **************************************************************************************************/
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

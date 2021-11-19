@@ -18,14 +18,16 @@
 
 #include "src/core/tsi/ssl_transport_security.h"
 
-#include <grpc/grpc.h>
-#include <grpc/support/alloc.h>
-#include <grpc/support/log.h>
-#include <grpc/support/string_util.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#include <grpc/grpc.h>
+#include <grpc/support/alloc.h>
+#include <grpc/support/log.h>
+#include <grpc/support/string_util.h>
+
+#include "src/core/lib/gprpp/memory.h"
 #include "src/core/lib/iomgr/load_file.h"
 #include "src/core/lib/security/security_connector/security_connector.h"
 #include "src/core/tsi/transport_security.h"
@@ -35,6 +37,7 @@
 
 extern "C" {
 #include <openssl/crypto.h>
+#include <openssl/err.h>
 #include <openssl/pem.h>
 }
 
@@ -449,14 +452,12 @@ static char* load_file(const char* dir_path, const char* file_name) {
 }
 
 static tsi_test_fixture* ssl_tsi_test_fixture_create() {
-  ssl_tsi_test_fixture* ssl_fixture =
-      static_cast<ssl_tsi_test_fixture*>(gpr_zalloc(sizeof(*ssl_fixture)));
+  ssl_tsi_test_fixture* ssl_fixture = grpc_core::Zalloc<ssl_tsi_test_fixture>();
   tsi_test_fixture_init(&ssl_fixture->base);
   ssl_fixture->base.test_unused_bytes = true;
   ssl_fixture->base.vtable = &vtable;
   /* Create ssl_key_cert_lib. */
-  ssl_key_cert_lib* key_cert_lib =
-      static_cast<ssl_key_cert_lib*>(gpr_zalloc(sizeof(*key_cert_lib)));
+  ssl_key_cert_lib* key_cert_lib = grpc_core::Zalloc<ssl_key_cert_lib>();
   key_cert_lib->use_bad_server_cert = false;
   key_cert_lib->use_bad_client_cert = false;
   key_cert_lib->use_root_store = false;
@@ -498,8 +499,7 @@ static tsi_test_fixture* ssl_tsi_test_fixture_create() {
   GPR_ASSERT(key_cert_lib->root_store != nullptr);
   ssl_fixture->key_cert_lib = key_cert_lib;
   /* Create ssl_alpn_lib. */
-  ssl_alpn_lib* alpn_lib =
-      static_cast<ssl_alpn_lib*>(gpr_zalloc(sizeof(*alpn_lib)));
+  ssl_alpn_lib* alpn_lib = grpc_core::Zalloc<ssl_alpn_lib>();
   alpn_lib->server_alpn_protocols = static_cast<const char**>(
       gpr_zalloc(sizeof(char*) * SSL_TSI_TEST_ALPN_NUM));
   alpn_lib->client_alpn_protocols = static_cast<const char**>(
@@ -703,6 +703,17 @@ void ssl_tsi_test_do_round_trip_for_all_configs() {
     tsi_test_fixture_destroy(fixture);
   }
   gpr_free(bit_array);
+}
+
+void ssl_tsi_test_do_round_trip_with_error_on_stack() {
+  gpr_log(GPR_INFO, "ssl_tsi_test_do_round_trip_with_error_on_stack");
+  // Invoke an SSL function that causes an error, and ensure the error
+  // makes it to the stack.
+  GPR_ASSERT(!EC_KEY_new_by_curve_name(NID_rsa));
+  GPR_ASSERT(ERR_peek_error() != 0);
+  tsi_test_fixture* fixture = ssl_tsi_test_fixture_create();
+  tsi_test_do_round_trip(fixture);
+  tsi_test_fixture_destroy(fixture);
 }
 
 static bool is_slow_build() {
@@ -1035,6 +1046,7 @@ int main(int argc, char** argv) {
     ssl_tsi_test_do_handshake_alpn_client_server_ok();
     ssl_tsi_test_do_handshake_session_cache();
     ssl_tsi_test_do_round_trip_for_all_configs();
+    ssl_tsi_test_do_round_trip_with_error_on_stack();
     ssl_tsi_test_do_round_trip_odd_buffer_size();
     ssl_tsi_test_handshaker_factory_internals();
     ssl_tsi_test_duplicate_root_certificates();

@@ -11,7 +11,7 @@
 
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/renderdevicedriver_iface.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CGdiDeviceDriver : public RenderDeviceDriverIface {
  protected:
@@ -24,13 +24,13 @@ class CGdiDeviceDriver : public RenderDeviceDriverIface {
   void SaveState() override;
   void RestoreState(bool bKeepSaved) override;
   void SetBaseClip(const FX_RECT& rect) override;
-  bool SetClip_PathFill(const CFX_Path* pPath,
+  bool SetClip_PathFill(const CFX_Path& path,
                         const CFX_Matrix* pObject2Device,
                         const CFX_FillRenderOptions& fill_options) override;
-  bool SetClip_PathStroke(const CFX_Path* pPath,
+  bool SetClip_PathStroke(const CFX_Path& path,
                           const CFX_Matrix* pObject2Device,
                           const CFX_GraphStateData* pGraphState) override;
-  bool DrawPath(const CFX_Path* pPath,
+  bool DrawPath(const CFX_Path& path,
                 const CFX_Matrix* pObject2Device,
                 const CFX_GraphStateData* pGraphState,
                 uint32_t fill_color,
@@ -72,7 +72,7 @@ class CGdiDeviceDriver : public RenderDeviceDriverIface {
   int m_nBitsPerPixel;
   const DeviceType m_DeviceType;
   int m_RenderCaps;
-  Optional<FX_RECT> m_BaseClipBox;
+  absl::optional<FX_RECT> m_BaseClipBox;
 };
 
 #endif  // CORE_FXGE_WIN32_CGDI_DEVICE_DRIVER_H_

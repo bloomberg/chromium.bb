@@ -4,13 +4,24 @@
 # license that can be found in the LICENSE file.
 
 set(JPEGXL_MAJOR_VERSION 0)
-set(JPEGXL_MINOR_VERSION 5)
-set(JPEGXL_PATCH_VERSION 0)
+set(JPEGXL_MINOR_VERSION 6)
+set(JPEGXL_PATCH_VERSION 1)
 set(JPEGXL_LIBRARY_VERSION
     "${JPEGXL_MAJOR_VERSION}.${JPEGXL_MINOR_VERSION}.${JPEGXL_PATCH_VERSION}")
 
-# This the library API compatibility version.
+# This is the library API/ABI compatibility version. Changing this value makes
+# the shared library incompatible with previous version. A program linked
+# against this shared library SOVERSION will not run with an older SOVERSION.
+# It is important to update this value when making incompatible API/ABI changes
+# so that programs that depend on libjxl can update their dependencies. Semantic
+# versioning allows 0.y.z to have incompatible changes in minor versions.
+set(JPEGXL_SO_MINOR_VERSION 6)
+if (JPEGXL_MAJOR_VERSION EQUAL 0)
+set(JPEGXL_LIBRARY_SOVERSION
+    "${JPEGXL_MAJOR_VERSION}.${JPEGXL_SO_MINOR_VERSION}")
+else()
 set(JPEGXL_LIBRARY_SOVERSION "${JPEGXL_MAJOR_VERSION}")
+endif()
 
 
 # List of warning and feature flags for our library and tests.
@@ -43,7 +54,6 @@ set(JPEGXL_INTERNAL_FLAGS
 # Warning flags supported by clang.
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
   list(APPEND JPEGXL_INTERNAL_FLAGS
-    -Wc++2a-extensions
     -Wdeprecated-increment-bool
     # TODO(deymo): Add -Wextra-semi once we update third_party/highway.
     # -Wextra-semi
@@ -64,6 +74,9 @@ if (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     -Wunreachable-code
     -Wunused-comparison
   )
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0)
+    list(APPEND HWY_FLAGS -Wc++2a-extensions)
+  endif()
 endif()  # Clang
 
 if (WIN32)

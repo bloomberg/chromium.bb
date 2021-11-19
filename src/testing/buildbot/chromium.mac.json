@@ -9651,6 +9651,7 @@
         "test_id_prefix": "ninja://headless:headless_unittests/"
       },
       {
+        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -10222,7 +10223,8 @@
               "os": "Mac-10.15"
             }
           ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 2
         },
         "test": "unit_tests",
         "test_id_prefix": "ninja://chrome/test:unit_tests/"
@@ -10388,6 +10390,7 @@
           "--num-retries=3",
           "--debug"
         ],
+        "experiment_percentage": 100,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -21930,6 +21933,110 @@
       {
         "args": [
           "--platform",
+          "iPhone 7",
+          "--version",
+          "14.4",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a233",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_crash_xcuitests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_crash_xcuitests_module_iPhone 7 14.4",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a233",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_14_4",
+              "path": "Runtime-ios-14.4"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/"
+      },
+      {
+        "args": [
+          "--platform",
+          "iPhone 7",
+          "--version",
+          "15.0",
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "13a233",
+          "--xctest",
+          "--xcode-parallelization"
+        ],
+        "isolate_name": "ios_crash_xcuitests_module",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "ios_crash_xcuitests_module_iPhone 7 15.0",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-11|Mac-10.16"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_13a233",
+              "path": "Xcode.app"
+            },
+            {
+              "name": "runtime_ios_15_0",
+              "path": "Runtime-ios-15.0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/"
+      },
+      {
+        "args": [
+          "--platform",
           "iPhone 6s",
           "--version",
           "14.4",
@@ -22787,6 +22894,9 @@
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac11-arm64-rel.browser_tests.filter"
+        ],
         "ci_only": false,
         "merge": {
           "args": [],
@@ -24063,7 +24173,6 @@
           "--num-retries=3"
         ],
         "ci_only": true,
-        "experiment_percentage": 100,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [

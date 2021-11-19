@@ -17,7 +17,8 @@ extern "C" {
 #endif  // __cplusplus
 
 #include <stdint.h>
-#include "aom_dsp/grain_synthesis.h"
+#include "aom_dsp/grain_params.h"
+#include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
 
 /*!\brief Wrapper of data required to represent linear system of eqns and soln.

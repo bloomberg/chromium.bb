@@ -240,9 +240,9 @@ const escapedReplacements = new Map([
   ['\v', '\\v'],
   ['\'', '\\\''],
   ['\\', '\\\\'],
-  ['<!--', '<\\!--'],
-  ['<script', '<\\script'],
-  ['</script', '<\\/script'],
+  ['<!--', '\\x3C!--'],
+  ['<script', '\\x3Cscript'],
+  ['</script', '\\x3C/script'],
 ]);
 
 export const formatAsJSLiteral = (content: string): string => {
@@ -578,4 +578,27 @@ export const base64ToSize = function(content: string|null): number {
     size--;
   }
   return size;
+};
+
+export const SINGLE_QUOTE = '\'';
+export const DOUBLE_QUOTE = '"';
+const BACKSLASH = '\\';
+
+export const findUnclosedCssQuote = function(str: string): string {
+  let unmatchedQuote = '';
+  for (let i = 0; i < str.length; ++i) {
+    const char = str[i];
+    if (char === BACKSLASH) {
+      i++;
+      continue;
+    }
+    if (char === SINGLE_QUOTE || char === DOUBLE_QUOTE) {
+      if (unmatchedQuote === char) {
+        unmatchedQuote = '';
+      } else if (unmatchedQuote === '') {
+        unmatchedQuote = char;
+      }
+    }
+  }
+  return unmatchedQuote;
 };

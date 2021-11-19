@@ -31,32 +31,19 @@ class VariableDeclStatement
   /// @param variable the variable
   VariableDeclStatement(ProgramID program_id,
                         const Source& source,
-                        Variable* variable);
+                        const Variable* variable);
   /// Move constructor
   VariableDeclStatement(VariableDeclStatement&&);
   ~VariableDeclStatement() override;
-
-  /// @returns the variable
-  Variable* variable() const { return variable_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  VariableDeclStatement* Clone(CloneContext* ctx) const override;
+  const VariableDeclStatement* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
-
- private:
-  VariableDeclStatement(const VariableDeclStatement&) = delete;
-
-  Variable* const variable_;
+  /// The variable
+  const Variable* const variable;
 };
 
 }  // namespace ast

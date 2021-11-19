@@ -37,7 +37,7 @@ TEST_F(AstStorageTextureTest, Dim) {
   auto* s =
       create<StorageTexture>(TextureDimension::k2dArray,
                              ImageFormat::kRgba32Float, subtype, Access::kRead);
-  EXPECT_EQ(s->dim(), TextureDimension::k2dArray);
+  EXPECT_EQ(s->dim, TextureDimension::k2dArray);
 }
 
 TEST_F(AstStorageTextureTest, Format) {
@@ -45,15 +45,7 @@ TEST_F(AstStorageTextureTest, Format) {
   auto* s =
       create<StorageTexture>(TextureDimension::k2dArray,
                              ImageFormat::kRgba32Float, subtype, Access::kRead);
-  EXPECT_EQ(s->image_format(), ImageFormat::kRgba32Float);
-}
-
-TEST_F(AstStorageTextureTest, TypeName) {
-  auto* subtype = StorageTexture::SubtypeFor(ImageFormat::kRgba32Float, *this);
-  auto* s =
-      create<StorageTexture>(TextureDimension::k2dArray,
-                             ImageFormat::kRgba32Float, subtype, Access::kRead);
-  EXPECT_EQ(s->type_name(), "__storage_texture_2d_array_rgba32float_read");
+  EXPECT_EQ(s->format, ImageFormat::kRgba32Float);
 }
 
 TEST_F(AstStorageTextureTest, FriendlyName) {
@@ -73,7 +65,7 @@ TEST_F(AstStorageTextureTest, F32) {
 
   ASSERT_TRUE(s->Is<Texture>());
   ASSERT_TRUE(s->Is<StorageTexture>());
-  EXPECT_TRUE(s->As<StorageTexture>()->type()->Is<F32>());
+  EXPECT_TRUE(s->As<StorageTexture>()->type->Is<F32>());
 }
 
 TEST_F(AstStorageTextureTest, U32) {
@@ -84,7 +76,7 @@ TEST_F(AstStorageTextureTest, U32) {
 
   ASSERT_TRUE(s->Is<Texture>());
   ASSERT_TRUE(s->Is<StorageTexture>());
-  EXPECT_TRUE(s->As<StorageTexture>()->type()->Is<U32>());
+  EXPECT_TRUE(s->As<StorageTexture>()->type->Is<U32>());
 }
 
 TEST_F(AstStorageTextureTest, I32) {
@@ -95,7 +87,7 @@ TEST_F(AstStorageTextureTest, I32) {
 
   ASSERT_TRUE(s->Is<Texture>());
   ASSERT_TRUE(s->Is<StorageTexture>());
-  EXPECT_TRUE(s->As<StorageTexture>()->type()->Is<I32>());
+  EXPECT_TRUE(s->As<StorageTexture>()->type->Is<I32>());
 }
 
 }  // namespace

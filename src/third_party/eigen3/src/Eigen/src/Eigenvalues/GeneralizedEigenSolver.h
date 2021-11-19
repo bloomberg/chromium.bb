@@ -14,6 +14,8 @@
 
 #include "./RealQZ.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \eigenvalues_module \ingroup Eigenvalues_Module
@@ -267,13 +269,10 @@ template<typename MatrixType_> class GeneralizedEigenSolver
     }
 
   protected:
-    
-    static void check_template_parameters()
-    {
-      EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-      EIGEN_STATIC_ASSERT(!NumTraits<Scalar>::IsComplex, NUMERIC_TYPE_MUST_BE_REAL);
-    }
-    
+
+    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
+    EIGEN_STATIC_ASSERT(!NumTraits<Scalar>::IsComplex, NUMERIC_TYPE_MUST_BE_REAL)
+
     EigenvectorsType m_eivec;
     ComplexVectorType m_alphas;
     VectorType m_betas;
@@ -286,8 +285,6 @@ template<typename MatrixType>
 GeneralizedEigenSolver<MatrixType>&
 GeneralizedEigenSolver<MatrixType>::compute(const MatrixType& A, const MatrixType& B, bool computeEigenvectors)
 {
-  check_template_parameters();
-  
   using std::sqrt;
   using std::abs;
   eigen_assert(A.cols() == A.rows() && B.cols() == A.rows() && B.cols() == B.rows());

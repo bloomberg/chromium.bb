@@ -5,8 +5,11 @@
  * found in the LICENSE file.
  */
 
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/ir/SkSLSetting.h"
+
+#include "include/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLProgramSettings.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
 namespace SkSL {
@@ -87,7 +90,6 @@ static const CapsLookupTable& caps_lookup_table() {
         CAP(Bool, mustDeclareFragmentShaderOutput),
         CAP(Bool, mustDoOpBetweenFloorAndAbs),
         CAP(Bool, mustGuardDivisionEvenAfterExplicitZeroCheck),
-        CAP(Bool, inBlendModesFailRandomlyForAllZeroVec),
         CAP(Bool, atan2ImplementedAsAtanYOverX),
         CAP(Bool, canUseAnyFunctionInShader),
         CAP(Bool, floatIs32Bits),

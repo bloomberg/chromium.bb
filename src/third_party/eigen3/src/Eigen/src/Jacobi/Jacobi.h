@@ -11,6 +11,8 @@
 #ifndef EIGEN_JACOBI_H
 #define EIGEN_JACOBI_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \ingroup Jacobi_Module

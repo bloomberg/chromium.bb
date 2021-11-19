@@ -9,14 +9,16 @@
 
 #include "include/core/SkRegion.h"
 #include "src/core/SkMatrixPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
+
+namespace skgpu::v1::RegionOp {
 
 namespace {
 
@@ -122,8 +124,8 @@ private:
 
         QuadHelper helper(target, fProgramInfo->geomProc().vertexStride(), numRects);
 
-        GrVertexWriter vertices{helper.vertices()};
-        if (!vertices.fPtr) {
+        VertexWriter vertices{helper.vertices()};
+        if (!vertices) {
             SkDebugf("Could not allocate vertices\n");
             return;
         }
@@ -133,7 +135,7 @@ private:
             SkRegion::Iterator iter(fRegions[i].fRegion);
             while (!iter.done()) {
                 SkRect rect = SkRect::Make(iter.rect());
-                vertices.writeQuad(GrVertexWriter::TriStripFromRect(rect), color);
+                vertices.writeQuad(VertexWriter::TriStripFromRect(rect), color);
                 iter.next();
             }
         }
@@ -197,8 +199,6 @@ private:
 
 }  // anonymous namespace
 
-namespace skgpu::v1::RegionOp {
-
 GrOp::Owner Make(GrRecordingContext* context,
                  GrPaint&& paint,
                  const SkMatrix& viewMatrix,
@@ -243,8 +243,8 @@ GR_DRAW_OP_TEST_DEFINE(RegionOp) {
     if (numSamples > 1 && random->nextBool()) {
         aaType = GrAAType::kMSAA;
     }
-    return RegionOpImpl::Make(context, std::move(paint), viewMatrix, region, aaType,
-                              GrGetRandomStencil(random, context));
+    return skgpu::v1::RegionOp::RegionOpImpl::Make(context, std::move(paint), viewMatrix, region,
+                                                   aaType, GrGetRandomStencil(random, context));
 }
 
 #endif // GR_TEST_UTILS

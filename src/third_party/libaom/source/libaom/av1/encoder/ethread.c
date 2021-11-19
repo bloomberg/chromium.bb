@@ -638,21 +638,23 @@ void av1_init_mt_sync(AV1_COMP *cpi, int is_first_pass) {
     }
 
 #if !CONFIG_REALTIME_ONLY
-    // Initialize loop restoration MT object.
-    AV1LrSync *lr_sync = &mt_info->lr_row_sync;
-    int rst_unit_size;
-    if (cm->width * cm->height > 352 * 288)
-      rst_unit_size = RESTORATION_UNITSIZE_MAX;
-    else
-      rst_unit_size = (RESTORATION_UNITSIZE_MAX >> 1);
-    int num_rows_lr = av1_lr_count_units_in_tile(rst_unit_size, cm->height);
-    int num_lr_workers = av1_get_num_mod_workers_for_alloc(p_mt_info, MOD_LR);
-    if (!lr_sync->sync_range || num_rows_lr > lr_sync->rows ||
-        num_lr_workers > lr_sync->num_workers ||
-        MAX_MB_PLANE > lr_sync->num_planes) {
-      av1_loop_restoration_dealloc(lr_sync, num_lr_workers);
-      av1_loop_restoration_alloc(lr_sync, cm, num_lr_workers, num_rows_lr,
-                                 MAX_MB_PLANE, cm->width);
+    if (is_restoration_used(cm)) {
+      // Initialize loop restoration MT object.
+      AV1LrSync *lr_sync = &mt_info->lr_row_sync;
+      int rst_unit_size;
+      if (cm->width * cm->height > 352 * 288)
+        rst_unit_size = RESTORATION_UNITSIZE_MAX;
+      else
+        rst_unit_size = (RESTORATION_UNITSIZE_MAX >> 1);
+      int num_rows_lr = av1_lr_count_units_in_tile(rst_unit_size, cm->height);
+      int num_lr_workers = av1_get_num_mod_workers_for_alloc(p_mt_info, MOD_LR);
+      if (!lr_sync->sync_range || num_rows_lr > lr_sync->rows ||
+          num_lr_workers > lr_sync->num_workers ||
+          MAX_MB_PLANE > lr_sync->num_planes) {
+        av1_loop_restoration_dealloc(lr_sync, num_lr_workers);
+        av1_loop_restoration_alloc(lr_sync, cm, num_lr_workers, num_rows_lr,
+                                   MAX_MB_PLANE, cm->width);
+      }
     }
 #endif
 
@@ -742,11 +744,17 @@ void av1_init_tile_thread_data(AV1_PRIMARY *ppi, int is_first_pass) {
         alloc_compound_type_rd_buffers(&ppi->error,
                                        &thread_data->td->comp_rd_buffer);
 
-        for (int j = 0; j < 2; ++j) {
-          AOM_CHECK_MEM_ERROR(
-              &ppi->error, thread_data->td->tmp_pred_bufs[j],
-              aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                   sizeof(*thread_data->td->tmp_pred_bufs[j])));
+        // The buffers 'tmp_pred_bufs[]' are used in inter frames to store
+        // temporary prediction results. Hence, the memory allocation is avoided
+        // for allintra encode.
+        if (ppi->cpi->oxcf.kf_cfg.key_freq_max != 0) {
+          for (int j = 0; j < 2; ++j) {
+            AOM_CHECK_MEM_ERROR(
+                &ppi->error, thread_data->td->tmp_pred_bufs[j],
+                aom_memalign(32,
+                             2 * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                 sizeof(*thread_data->td->tmp_pred_bufs[j])));
+          }
         }
 
         const SPEED_FEATURES *sf = &ppi->cpi->sf;
@@ -919,7 +927,8 @@ static AOM_INLINE void prepare_fpmt_workers(AV1_PRIMARY *ppi,
         &p_mt_info->workers[i];
     AV1_COMP *cur_cpi = ppi->parallel_cpi[frame_idx];
     MultiThreadInfo *mt_info = &cur_cpi->mt_info;
-    const int num_planes = av1_num_planes(&cur_cpi->common);
+    AV1_COMMON *const cm = &cur_cpi->common;
+    const int num_planes = av1_num_planes(cm);
 
     // Assign start of level 2 worker pool
     mt_info->workers = &p_mt_info->workers[i];
@@ -941,24 +950,25 @@ static AOM_INLINE void prepare_fpmt_workers(AV1_PRIMARY *ppi,
             mt_info->cdef_worker->colbuf[plane];
     }
 #if !CONFIG_REALTIME_ONLY
-    // Back up the original LR buffers before update.
-    int idx = i + mt_info->num_workers - 1;
-    mt_info->restore_state_buf.rst_tmpbuf =
-        mt_info->lr_row_sync.lrworkerdata[idx].rst_tmpbuf;
-    mt_info->restore_state_buf.rlbs =
-        mt_info->lr_row_sync.lrworkerdata[idx].rlbs;
+    if (is_restoration_used(cm)) {
+      // Back up the original LR buffers before update.
+      int idx = i + mt_info->num_workers - 1;
+      mt_info->restore_state_buf.rst_tmpbuf =
+          mt_info->lr_row_sync.lrworkerdata[idx].rst_tmpbuf;
+      mt_info->restore_state_buf.rlbs =
+          mt_info->lr_row_sync.lrworkerdata[idx].rlbs;
 
-    // Update LR buffers.
-    mt_info->lr_row_sync.lrworkerdata[idx].rst_tmpbuf =
-        cur_cpi->common.rst_tmpbuf;
-    mt_info->lr_row_sync.lrworkerdata[idx].rlbs = cur_cpi->common.rlbs;
+      // Update LR buffers.
+      mt_info->lr_row_sync.lrworkerdata[idx].rst_tmpbuf = cm->rst_tmpbuf;
+      mt_info->lr_row_sync.lrworkerdata[idx].rlbs = cm->rlbs;
+    }
 #endif
 
     // At this stage, the thread specific CDEF buffers for the current frame's
     // 'common' and 'cdef_sync' only need to be allocated. 'cdef_worker' has
     // already been allocated across parallel frames.
-    av1_alloc_cdef_buffers(&cur_cpi->common, &p_mt_info->cdef_worker,
-                           &mt_info->cdef_sync, p_mt_info->num_workers, 0);
+    av1_alloc_cdef_buffers(cm, &p_mt_info->cdef_worker, &mt_info->cdef_sync,
+                           p_mt_info->num_workers, 0);
 
     frame_worker->hook = hook;
     frame_worker->data1 = cur_cpi;
@@ -1021,7 +1031,8 @@ static AOM_INLINE void restore_workers_after_fpmt(AV1_PRIMARY *ppi,
   while (i < num_workers) {
     AV1_COMP *cur_cpi = ppi->parallel_cpi[frame_idx];
     MultiThreadInfo *mt_info = &cur_cpi->mt_info;
-    const int num_planes = av1_num_planes(&cur_cpi->common);
+    const AV1_COMMON *const cm = &cur_cpi->common;
+    const int num_planes = av1_num_planes(cm);
 
     // Restore the original cdef_worker pointers.
     if (ppi->p_mt_info.cdef_worker != NULL) {
@@ -1031,12 +1042,14 @@ static AOM_INLINE void restore_workers_after_fpmt(AV1_PRIMARY *ppi,
             mt_info->restore_state_buf.cdef_colbuf[plane];
     }
 #if !CONFIG_REALTIME_ONLY
-    // Restore the original LR buffers.
-    int idx = i + mt_info->num_workers - 1;
-    mt_info->lr_row_sync.lrworkerdata[idx].rst_tmpbuf =
-        mt_info->restore_state_buf.rst_tmpbuf;
-    mt_info->lr_row_sync.lrworkerdata[idx].rlbs =
-        mt_info->restore_state_buf.rlbs;
+    if (is_restoration_used(cm)) {
+      // Restore the original LR buffers.
+      int idx = i + mt_info->num_workers - 1;
+      mt_info->lr_row_sync.lrworkerdata[idx].rst_tmpbuf =
+          mt_info->restore_state_buf.rst_tmpbuf;
+      mt_info->lr_row_sync.lrworkerdata[idx].rlbs =
+          mt_info->restore_state_buf.rlbs;
+    }
 #endif
 
     frame_idx++;

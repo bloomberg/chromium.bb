@@ -10,6 +10,8 @@
 #ifndef EIGEN_PASTIXSUPPORT_H
 #define EIGEN_PASTIXSUPPORT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 #if defined(DCOMPLEX)

@@ -44,11 +44,10 @@ void create_destroy_device_loop(uint32_t num_loops_create_destroy_device, uint32
                                 VkPhysicalDevice phys_dev) {
     for (uint32_t i = 0; i < num_loops_create_destroy_device; i++) {
         DeviceWrapper dev{*inst};
-        DeviceCreateInfo dev_create_info{};
-        dev_create_info.add_device_queue(DeviceQueueCreateInfo{}.add_priority(1.0));
-        ASSERT_EQ(VK_SUCCESS, CreateDevice(phys_dev, dev, dev_create_info));
+        dev.create_info.add_device_queue(DeviceQueueCreateInfo{}.add_priority(1.0));
+        dev.CheckCreate(phys_dev);
 
-        for (uint32_t i = 0; i < num_loops_try_get_proc_addr; i++) {
+        for (uint32_t j = 0; j < num_loops_try_get_proc_addr; j++) {
             PFN_vkCmdBindPipeline p =
                 reinterpret_cast<PFN_vkCmdBindPipeline>(dev->vkGetDeviceProcAddr(dev.dev, "vkCmdBindPipeline"));
             ASSERT_NE(p, nullptr);
@@ -67,6 +66,18 @@ void create_destroy_device_loop(uint32_t num_loops_create_destroy_device, uint32
     }
 }
 
+VKAPI_ATTR void VKAPI_CALL test_vkCmdBindPipeline(VkCommandBuffer cmd_buf, VkPipelineBindPoint pipelineBindPoint,
+                                                  VkPipeline pipeline) {}
+VKAPI_ATTR void VKAPI_CALL test_vkCmdBindDescriptorSets(VkCommandBuffer cmd_buf, VkPipelineBindPoint pipelineBindPoint,
+                                                        VkPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount,
+                                                        const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount,
+                                                        const uint32_t* pDynamicOffsets) {}
+VKAPI_ATTR void VKAPI_CALL test_vkCmdBindVertexBuffers(VkCommandBuffer cmd_buf, uint32_t firstBinding, uint32_t bindingCount,
+                                                       const VkBuffer* pBuffers, const VkDeviceSize* pOffsets) {}
+VKAPI_ATTR void VKAPI_CALL test_vkCmdBindIndexBuffer(VkCommandBuffer cmd_buf, uint32_t firstBinding, uint32_t bindingCount,
+                                                     const VkBuffer* pBuffers, const VkDeviceSize* pOffsets) {}
+VKAPI_ATTR void VKAPI_CALL test_vkCmdDraw(VkCommandBuffer cmd_buf, uint32_t vertexCount, uint32_t instanceCount,
+                                          uint32_t firstVertex, uint32_t firstInstance) {}
 TEST_F(ThreadingTests, ConcurentGetDeviceProcAddr) {
     uint32_t num_threads = 100;
     uint32_t num_loops_create_destroy_device = 10;
@@ -74,23 +85,21 @@ TEST_F(ThreadingTests, ConcurentGetDeviceProcAddr) {
     auto& driver = env->get_test_icd();
 
     driver.physical_devices.emplace_back("physical_device_0");
-    driver.physical_devices.back().known_device_functions_no_implementation.push_back("vkCmdBindPipeline");
-    driver.physical_devices.back().known_device_functions_no_implementation.push_back("vkCmdBindDescriptorSets");
-    driver.physical_devices.back().known_device_functions_no_implementation.push_back("vkCmdBindVertexBuffers");
-    driver.physical_devices.back().known_device_functions_no_implementation.push_back("vkCmdBindIndexBuffer");
-    driver.physical_devices.back().known_device_functions_no_implementation.push_back("vkCmdDraw");
+    driver.physical_devices.back().known_device_functions.push_back({"vkCmdBindPipeline", (void*)test_vkCmdBindPipeline});
+    driver.physical_devices.back().known_device_functions.push_back(
+        {"vkCmdBindDescriptorSets", (void*)test_vkCmdBindDescriptorSets});
+    driver.physical_devices.back().known_device_functions.push_back({"vkCmdBindVertexBuffers", (void*)test_vkCmdBindVertexBuffers});
+    driver.physical_devices.back().known_device_functions.push_back({"vkCmdBindIndexBuffer", (void*)test_vkCmdBindIndexBuffer});
+    driver.physical_devices.back().known_device_functions.push_back({"vkCmdDraw", (void*)test_vkCmdDraw});
 
     InstWrapper inst{env->vulkan_functions};
-    InstanceCreateInfo inst_create_info;
-    ASSERT_EQ(CreateInst(inst, inst_create_info), VK_SUCCESS);
+    inst.CheckCreate();
 
-    VkPhysicalDevice phys_dev;
-    ASSERT_EQ(CreatePhysDev(inst, phys_dev), VK_SUCCESS);
+    VkPhysicalDevice phys_dev = inst.GetPhysDev();
 
     DeviceWrapper dev{inst};
-    DeviceCreateInfo dev_create_info{};
-    dev_create_info.add_device_queue(DeviceQueueCreateInfo{}.add_priority(1.0));
-    ASSERT_EQ(VK_SUCCESS, CreateDevice(phys_dev, dev, dev_create_info));
+    dev.create_info.add_device_queue(DeviceQueueCreateInfo{}.add_priority(1.0));
+    dev.CheckCreate(phys_dev);
 
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < num_threads; i++) {

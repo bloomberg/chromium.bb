@@ -1373,23 +1373,39 @@ StatusCode DecoderImpl::DecodeTiles(
     const int pixel_size = sequence_header.color_config.bitdepth == 8
                                ? sizeof(uint8_t)
                                : sizeof(uint16_t);
+    const int coefficients_size = kSuperResFilterTaps *
+                                  Align(frame_header.upscaled_width, 16) *
+                                  pixel_size;
     if (!frame_scratch_buffer->superres_coefficients[kPlaneTypeY].Resize(
-            kSuperResFilterTaps * Align(frame_header.upscaled_width, 16) *
-            pixel_size)) {
+            coefficients_size)) {
       LIBGAV1_DLOG(ERROR,
                    "Failed to Resize superres_coefficients[kPlaneTypeY].");
       return kStatusOutOfMemory;
     }
+#if LIBGAV1_MSAN
+    // Quiet SuperRes_NEON() msan warnings.
+    memset(frame_scratch_buffer->superres_coefficients[kPlaneTypeY].get(), 0,
+           coefficients_size);
+#endif
+    const int uv_coefficients_size =
+        kSuperResFilterTaps *
+        Align(SubsampledValue(frame_header.upscaled_width, 1), 16) * pixel_size;
     if (!sequence_header.color_config.is_monochrome &&
         sequence_header.color_config.subsampling_x != 0 &&
         !frame_scratch_buffer->superres_coefficients[kPlaneTypeUV].Resize(
-            kSuperResFilterTaps *
-            Align(SubsampledValue(frame_header.upscaled_width, 1), 16) *
-            pixel_size)) {
+            uv_coefficients_size)) {
       LIBGAV1_DLOG(ERROR,
                    "Failed to Resize superres_coefficients[kPlaneTypeUV].");
       return kStatusOutOfMemory;
     }
+#if LIBGAV1_MSAN
+    if (!sequence_header.color_config.is_monochrome &&
+        sequence_header.color_config.subsampling_x != 0) {
+      // Quiet SuperRes_NEON() msan warnings.
+      memset(frame_scratch_buffer->superres_coefficients[kPlaneTypeUV].get(), 0,
+             uv_coefficients_size);
+    }
+#endif
   }
 
   if (do_superres && threading_strategy.post_filter_thread_pool() != nullptr) {

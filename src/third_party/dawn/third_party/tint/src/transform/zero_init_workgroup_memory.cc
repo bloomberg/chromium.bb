@@ -46,7 +46,7 @@ struct ZeroInitWorkgroupMemory::State {
   uint32_t workgroup_size_const = 0;
   /// The size of the workgroup as an expression generator. Use if
   /// #workgroup_size_const is 0.
-  std::function<ast::Expression*()> workgroup_size_expr;
+  std::function<const ast::Expression*()> workgroup_size_expr;
 
   /// ArrayIndex represents a function on the local invocation index, of
   /// the form: `array_index = (local_invocation_index % modulo) / division`
@@ -80,7 +80,7 @@ struct ZeroInitWorkgroupMemory::State {
   /// statement will zero workgroup values.
   struct Expression {
     /// The AST expression node
-    ast::Expression* expr = nullptr;
+    const ast::Expression* expr = nullptr;
     /// The number of iterations required to zero the value
     uint32_t num_iterations = 0;
     /// All array indices used by this expression
@@ -91,7 +91,7 @@ struct ZeroInitWorkgroupMemory::State {
   /// values.
   struct Statement {
     /// The AST statement node
-    ast::Statement* stmt;
+    const ast::Statement* stmt;
     /// The number of iterations required to zero the value
     uint32_t num_iterations;
     /// All array indices used by this statement
@@ -112,11 +112,11 @@ struct ZeroInitWorkgroupMemory::State {
   /// Run inserts the workgroup memory zero-initialization logic at the top of
   /// the given function
   /// @param fn a compute shader entry point function
-  void Run(ast::Function* fn) {
+  void Run(const ast::Function* fn) {
     auto& sem = ctx.src->Sem();
 
     CalculateWorkgroupSize(
-        ast::GetDecoration<ast::WorkgroupDecoration>(fn->decorations()));
+        ast::GetDecoration<ast::WorkgroupDecoration>(fn->decorations));
 
     // Generate a list of statements to zero initialize each of the
     // workgroup storage variables used by `fn`. This will populate #statements.
@@ -125,7 +125,7 @@ struct ZeroInitWorkgroupMemory::State {
       if (var->StorageClass() == ast::StorageClass::kWorkgroup) {
         BuildZeroingStatements(
             var->Type()->UnwrapRef(), [&](uint32_t num_values) {
-              auto var_name = ctx.Clone(var->Declaration()->symbol());
+              auto var_name = ctx.Clone(var->Declaration()->symbol);
               return Expression{b.Expr(var_name), num_values, ArrayIndices{}};
             });
       }
@@ -137,12 +137,12 @@ struct ZeroInitWorkgroupMemory::State {
 
     // Scan the entry point for an existing local_invocation_index builtin
     // parameter
-    std::function<ast::Expression*()> local_index;
-    for (auto* param : fn->params()) {
-      if (auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(
-              param->decorations())) {
-        if (builtin->value() == ast::Builtin::kLocalInvocationIndex) {
-          local_index = [=] { return b.Expr(ctx.Clone(param->symbol())); };
+    std::function<const ast::Expression*()> local_index;
+    for (auto* param : fn->params) {
+      if (auto* builtin =
+              ast::GetDecoration<ast::BuiltinDecoration>(param->decorations)) {
+        if (builtin->builtin == ast::Builtin::kLocalInvocationIndex) {
+          local_index = [=] { return b.Expr(ctx.Clone(param->symbol)); };
           break;
         }
       }
@@ -150,11 +150,11 @@ struct ZeroInitWorkgroupMemory::State {
       if (auto* str = sem.Get(param)->Type()->As<sem::Struct>()) {
         for (auto* member : str->Members()) {
           if (auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(
-                  member->Declaration()->decorations())) {
-            if (builtin->value() == ast::Builtin::kLocalInvocationIndex) {
+                  member->Declaration()->decorations)) {
+            if (builtin->builtin == ast::Builtin::kLocalInvocationIndex) {
               local_index = [=] {
-                auto* param_expr = b.Expr(ctx.Clone(param->symbol()));
-                auto member_name = ctx.Clone(member->Declaration()->symbol());
+                auto* param_expr = b.Expr(ctx.Clone(param->symbol));
+                auto member_name = ctx.Clone(member->Declaration()->symbol);
                 return b.MemberAccessor(param_expr, member_name);
               };
               break;
@@ -168,8 +168,8 @@ struct ZeroInitWorkgroupMemory::State {
       auto* param =
           b.Param(b.Symbols().New("local_invocation_index"), b.ty.u32(),
                   {b.Builtin(ast::Builtin::kLocalInvocationIndex)});
-      ctx.InsertBack(fn->params(), param);
-      local_index = [=] { return b.Expr(param->symbol()); };
+      ctx.InsertBack(fn->params, param);
+      local_index = [=] { return b.Expr(param->symbol); };
     }
 
     // Take the zeroing statements and bin them by the number of iterations
@@ -225,7 +225,7 @@ struct ZeroInitWorkgroupMemory::State {
           block.emplace_back(s.stmt);
         }
         auto* for_loop = b.For(init, cond, cont, b.Block(block));
-        ctx.InsertFront(fn->body()->statements(), for_loop);
+        ctx.InsertFront(fn->body->statements, for_loop);
       } else if (num_iterations < workgroup_size_const) {
         // Workgroup size is a known constant, but is greater than
         // num_iterations. Emit an if statement:
@@ -241,7 +241,7 @@ struct ZeroInitWorkgroupMemory::State {
           block.emplace_back(s.stmt);
         }
         auto* if_stmt = b.If(cond, b.Block(block));
-        ctx.InsertFront(fn->body()->statements(), if_stmt);
+        ctx.InsertFront(fn->body->statements, if_stmt);
       } else {
         // Workgroup size exactly equals num_iterations.
         // No need for any conditionals. Just emit a basic block:
@@ -254,13 +254,13 @@ struct ZeroInitWorkgroupMemory::State {
         for (auto& s : stmts) {
           block.emplace_back(s.stmt);
         }
-        ctx.InsertFront(fn->body()->statements(), b.Block(block));
+        ctx.InsertFront(fn->body->statements, b.Block(block));
       }
     }
 
     // Append a single workgroup barrier after the zero initialization.
-    ctx.InsertFront(fn->body()->statements(),
-                    b.create<ast::CallStatement>(b.Call("workgroupBarrier")));
+    ctx.InsertFront(fn->body->statements,
+                    b.CallStmt(b.Call("workgroupBarrier")));
   }
 
   /// BuildZeroingExpr is a function that builds a sub-expression used to zero
@@ -286,15 +286,14 @@ struct ZeroInitWorkgroupMemory::State {
       auto* zero_init = b.Construct(CreateASTTypeFor(ctx, atomic->Type()));
       auto expr = get_expr(1u);
       auto* store = b.Call("atomicStore", b.AddressOf(expr.expr), zero_init);
-      statements.emplace_back(Statement{b.create<ast::CallStatement>(store),
-                                        expr.num_iterations,
+      statements.emplace_back(Statement{b.CallStmt(store), expr.num_iterations,
                                         expr.array_indices});
       return;
     }
 
     if (auto* str = ty->As<sem::Struct>()) {
       for (auto* member : str->Members()) {
-        auto name = ctx.Clone(member->Declaration()->symbol());
+        auto name = ctx.Clone(member->Declaration()->symbol);
         BuildZeroingStatements(member->Type(), [&](uint32_t num_values) {
           auto s = get_expr(num_values);
           return Expression{b.MemberAccessor(s.expr, name), s.num_iterations,
@@ -341,7 +340,7 @@ struct ZeroInitWorkgroupMemory::State {
   ast::StatementList DeclareArrayIndices(
       uint32_t num_iterations,
       const ArrayIndices& array_indices,
-      const std::function<ast::Expression*()>& iteration) {
+      const std::function<const ast::Expression*()>& iteration) {
     ast::StatementList stmts;
     std::map<Symbol, ArrayIndex> indices_by_name;
     for (auto index : array_indices) {
@@ -365,7 +364,7 @@ struct ZeroInitWorkgroupMemory::State {
     bool is_signed = false;
     workgroup_size_const = 1u;
     workgroup_size_expr = nullptr;
-    for (auto* expr : deco->values()) {
+    for (auto* expr : deco->Values()) {
       if (!expr) {
         continue;
       }
@@ -436,7 +435,7 @@ ZeroInitWorkgroupMemory::~ZeroInitWorkgroupMemory() = default;
 
 void ZeroInitWorkgroupMemory::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   for (auto* fn : ctx.src->AST().Functions()) {
-    if (fn->pipeline_stage() == ast::PipelineStage::kCompute) {
+    if (fn->PipelineStage() == ast::PipelineStage::kCompute) {
       State{ctx}.Run(fn);
     }
   }

@@ -4,7 +4,9 @@
 # license that can be found in the LICENSE file.
 
 set(TEST_FILES
+  extras/codec_pgx_test.cc
   extras/codec_test.cc
+  extras/color_description_test.cc
   jxl/ac_strategy_test.cc
   jxl/adaptive_reconstruction_test.cc
   jxl/alpha_test.cc
@@ -70,6 +72,7 @@ set(TESTLIB_FILES
   jxl/dct_for_test.h
   jxl/dec_transforms_testonly.cc
   jxl/dec_transforms_testonly.h
+  jxl/fake_parallel_runner_testonly.h
   jxl/image_test_utils.h
   jxl/test_utils.h
   jxl/testdata.h

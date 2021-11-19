@@ -12,6 +12,9 @@
 #     cat ${TEST_FILES}/*.test | ./import_conformance_tests.py
 #
 # This will generate two directories, "pass" and "fail", containing finished runtime shaders.
+# Note that some tests were originally designed to fail, because a conforming compiler should not
+# allow the program. A handful of others fail because they are incompatible with SkSL. This script
+# identifies SkSL-incompatible tests them and moves them from "pass" to "fail" automatically.
 #
 # Not all ES2 test files are meaningful in SkSL. These input files are not supported:
 # - linkage.test: Runtime Effects only handle fragment processing
@@ -20,6 +23,7 @@
 
 import os
 import pyparsing as pp
+import re
 import sys
 
 # Each case can contain expected input/output values, sometimes in [bracketed|lists] and
@@ -102,6 +106,7 @@ for c in testCases:
     # Parse the case body
     skipTest = ''
     expectPass = True
+    allowMismatch = False
     testCode = ''
     inputs = []
     outputs = []
@@ -148,6 +153,42 @@ for c in testCases:
     if skipTest != '':
         print("skipped %s (%s)" % (testName, skipTest))
         continue
+
+    # The test is safe to run, but it might not get the same result.
+    # SkSL does not guarantee that function arguments will always be evaluated left-to-right.
+    if re.fullmatch('argument_eval_order_[12]', testName):
+        allowMismatch = True
+        print("allowing mismatch in %s" % testName)
+
+    # The ES2 conformance tests allow floating point comparisons to be off by 0.05:
+    # https://osscs.corp.google.com/android/platform/superproject/+/master:external/deqp/external/openglcts/modules/common/glcShaderLibraryCase.cpp;l=714;drc=84322c9402f810da3cd80b52e9f9ef72150a9004
+    # A few tests require this slop factor to pass, regardless of GPU precision
+    # (e.g. the test is written to expect 2.19, but actually computes 2.194285)
+    compare = lambda type, a, b : '((' + a + ') == (' + b + '))'
+    if (testName == 'math_float' or
+        testName == 'struct' or
+        testName == 'nested_struct' or
+        testName == 'nested_builtin_funcs'):
+        compare = lambda type, a, b : (
+                      '(floor(20 * abs((' + a + ') - (' + b + '))) == ' + type + '(0))'
+                  )
+
+    # Switch tests to a "fail" expectation instead of "pass" when SkSL and GLSL disagree.
+    # SkSL does not support casts which discard elements such as `float(myFloat4)`.
+    if (re.fullmatch('(vec|bvec|ivec)[234]_to_(float|int|bool)', testName) or
+        re.fullmatch('(vec|bvec|ivec)[34]_to_(vec|bvec|ivec)2', testName) or
+        re.fullmatch('(vec|bvec|ivec)[4]_to_(vec|bvec|ivec)3', testName) or
+    # SkSL requires that function out-parameters match the precision of the variable passed in.
+        re.fullmatch('(out|inout)_lowp_(int|float)', testName) or
+    # SkSL rejects code that fails to return a value; GLSL ES2 allows it.
+        testName == 'missing_returns' or
+    # SkSL does not support a global `precision` directive.
+        testName == 'default_vs_explicit_precision' or
+    # SkSL does not allow variables to be created without an enclosing scope.
+        testName == 'variable_in_if_hides_global_variable'):
+        assert expectPass
+        expectPass = False
+        print("moved %s to fail" % testName)
 
     # Apply fixups to the test code.
     # SkSL doesn't support the `precision` keyword, so comment it out if it appears.
@@ -203,9 +244,10 @@ for c in testCases:
 
             # Verify output values inside ${OUTPUT}.
             outputChecks = "return true"
-            for v in outputs:
-                if len(v[2]) > varIndex:
-                    outputChecks += " && (%s == %s)" % (v[1], v[2][varIndex])
+            if not allowMismatch:
+                for v in outputs:
+                    if len(v[2]) > varIndex:
+                        outputChecks += " && " + compare(v[0], v[1], v[2][varIndex])
 
             outputChecks += ";\n"
 

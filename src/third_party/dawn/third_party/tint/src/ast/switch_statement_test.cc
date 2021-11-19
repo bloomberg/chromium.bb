@@ -33,9 +33,9 @@ TEST_F(SwitchStatementTest, Creation) {
   body.push_back(case_stmt);
 
   auto* stmt = create<SwitchStatement>(ident, body);
-  EXPECT_EQ(stmt->condition(), ident);
-  ASSERT_EQ(stmt->body().size(), 1u);
-  EXPECT_EQ(stmt->body()[0], case_stmt);
+  EXPECT_EQ(stmt->condition, ident);
+  ASSERT_EQ(stmt->body.size(), 1u);
+  EXPECT_EQ(stmt->body[0], case_stmt);
 }
 
 TEST_F(SwitchStatementTest, Creation_WithSource) {
@@ -43,7 +43,7 @@ TEST_F(SwitchStatementTest, Creation_WithSource) {
 
   auto* stmt = create<SwitchStatement>(Source{Source::Location{20, 2}}, ident,
                                        CaseStatementList());
-  auto src = stmt->source();
+  auto src = stmt->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -111,37 +111,6 @@ TEST_F(SwitchStatementTest, Assert_DifferentProgramID_CaseStatement) {
                                                   });
       },
       "internal compiler error");
-}
-
-TEST_F(SwitchStatementTest, ToStr_Empty) {
-  auto* ident = Expr("ident");
-
-  auto* stmt = create<SwitchStatement>(ident, CaseStatementList{});
-  EXPECT_EQ(str(stmt), R"(Switch{
-  Identifier[not set]{ident}
-  {
-  }
-}
-)");
-}
-
-TEST_F(SwitchStatementTest, ToStr) {
-  CaseSelectorList lit;
-  lit.push_back(create<SintLiteral>(2));
-
-  auto* ident = Expr("ident");
-  CaseStatementList body;
-  body.push_back(create<CaseStatement>(lit, Block()));
-
-  auto* stmt = create<SwitchStatement>(ident, body);
-  EXPECT_EQ(str(stmt), R"(Switch{
-  Identifier[not set]{ident}
-  {
-    Case 2{
-    }
-  }
-}
-)");
 }
 
 }  // namespace

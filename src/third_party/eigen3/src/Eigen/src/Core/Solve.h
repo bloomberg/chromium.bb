@@ -10,6 +10,8 @@
 #ifndef EIGEN_SOLVE_H
 #define EIGEN_SOLVE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename Decomposition, typename RhsType, typename StorageKind> class SolveImpl;

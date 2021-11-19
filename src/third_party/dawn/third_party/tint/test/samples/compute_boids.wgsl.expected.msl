@@ -33,8 +33,8 @@ struct Particles {
 };
 
 float4 vert_main_inner(float2 a_particlePos, float2 a_particleVel, float2 a_pos) {
-  float angle = -(atan2(a_particleVel.x, a_particleVel.y));
-  float2 pos = float2(((a_pos.x * cos(angle)) - (a_pos.y * sin(angle))), ((a_pos.x * sin(angle)) + (a_pos.y * cos(angle))));
+  float angle = -(atan2(a_particleVel[0], a_particleVel[1]));
+  float2 pos = float2(((a_pos[0] * cos(angle)) - (a_pos[1] * sin(angle))), ((a_pos[0] * sin(angle)) + (a_pos[1] * cos(angle))));
   return float4((pos + a_particlePos), 0.0f, 1.0f);
 }
 
@@ -56,13 +56,13 @@ fragment tint_symbol_3 frag_main() {
   return wrapper_result_1;
 }
 
-void comp_main_inner(constant SimParams& params, device Particles& particlesA, device Particles& particlesB, uint3 gl_GlobalInvocationID) {
-  uint index = gl_GlobalInvocationID.x;
+void comp_main_inner(uint3 gl_GlobalInvocationID, device Particles* const tint_symbol_4, const constant SimParams* const tint_symbol_5, device Particles* const tint_symbol_6) {
+  uint index = gl_GlobalInvocationID[0];
   if ((index >= 5u)) {
     return;
   }
-  float2 vPos = particlesA.particles.arr[index].pos;
-  float2 vVel = particlesA.particles.arr[index].vel;
+  float2 vPos = (*(tint_symbol_4)).particles.arr[index].pos;
+  float2 vVel = (*(tint_symbol_4)).particles.arr[index].vel;
   float2 cMass = float2(0.0f, 0.0f);
   float2 cVel = float2(0.0f, 0.0f);
   float2 colVel = float2(0.0f, 0.0f);
@@ -74,16 +74,16 @@ void comp_main_inner(constant SimParams& params, device Particles& particlesA, d
     if ((i == index)) {
       continue;
     }
-    pos = particlesA.particles.arr[i].pos.xy;
-    vel = particlesA.particles.arr[i].vel.xy;
-    if ((distance(pos, vPos) < params.rule1Distance)) {
+    pos = float2((*(tint_symbol_4)).particles.arr[i].pos).xy;
+    vel = float2((*(tint_symbol_4)).particles.arr[i].vel).xy;
+    if ((distance(pos, vPos) < (*(tint_symbol_5)).rule1Distance)) {
       cMass = (cMass + pos);
       cMassCount = as_type<int>((as_type<uint>(cMassCount) + as_type<uint>(1)));
     }
-    if ((distance(pos, vPos) < params.rule2Distance)) {
+    if ((distance(pos, vPos) < (*(tint_symbol_5)).rule2Distance)) {
       colVel = (colVel - (pos - vPos));
     }
-    if ((distance(pos, vPos) < params.rule3Distance)) {
+    if ((distance(pos, vPos) < (*(tint_symbol_5)).rule3Distance)) {
       cVel = (cVel + vel);
       cVelCount = as_type<int>((as_type<uint>(cVelCount) + as_type<uint>(1)));
     }
@@ -94,27 +94,27 @@ void comp_main_inner(constant SimParams& params, device Particles& particlesA, d
   if ((cVelCount > 0)) {
     cVel = (cVel / float2(float(cVelCount), float(cVelCount)));
   }
-  vVel = (((vVel + (cMass * params.rule1Scale)) + (colVel * params.rule2Scale)) + (cVel * params.rule3Scale));
+  vVel = (((vVel + (cMass * (*(tint_symbol_5)).rule1Scale)) + (colVel * (*(tint_symbol_5)).rule2Scale)) + (cVel * (*(tint_symbol_5)).rule3Scale));
   vVel = (normalize(vVel) * clamp(length(vVel), 0.0f, 0.100000001f));
-  vPos = (vPos + (vVel * params.deltaT));
-  if ((vPos.x < -1.0f)) {
-    vPos.x = 1.0f;
+  vPos = (vPos + (vVel * (*(tint_symbol_5)).deltaT));
+  if ((vPos[0] < -1.0f)) {
+    vPos[0] = 1.0f;
   }
-  if ((vPos.x > 1.0f)) {
-    vPos.x = -1.0f;
+  if ((vPos[0] > 1.0f)) {
+    vPos[0] = -1.0f;
   }
-  if ((vPos.y < -1.0f)) {
-    vPos.y = 1.0f;
+  if ((vPos[1] < -1.0f)) {
+    vPos[1] = 1.0f;
   }
-  if ((vPos.y > 1.0f)) {
-    vPos.y = -1.0f;
+  if ((vPos[1] > 1.0f)) {
+    vPos[1] = -1.0f;
   }
-  particlesB.particles.arr[index].pos = vPos;
-  particlesB.particles.arr[index].vel = vVel;
+  (*(tint_symbol_6)).particles.arr[index].pos = vPos;
+  (*(tint_symbol_6)).particles.arr[index].vel = vVel;
 }
 
-kernel void comp_main(uint3 gl_GlobalInvocationID [[thread_position_in_grid]], constant SimParams& params [[buffer(0)]], device Particles& particlesA [[buffer(1)]], device Particles& particlesB [[buffer(2)]]) {
-  comp_main_inner(params, particlesA, particlesB, gl_GlobalInvocationID);
+kernel void comp_main(device Particles* tint_symbol_7 [[buffer(1)]], const constant SimParams* tint_symbol_8 [[buffer(0)]], device Particles* tint_symbol_9 [[buffer(2)]], uint3 gl_GlobalInvocationID [[thread_position_in_grid]]) {
+  comp_main_inner(gl_GlobalInvocationID, tint_symbol_7, tint_symbol_8, tint_symbol_9);
   return;
 }
 

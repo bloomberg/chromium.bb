@@ -11,6 +11,8 @@
 #ifndef EIGEN_META_H
 #define EIGEN_META_H
 
+#include "../InternalHeaderCheck.h"
+
 #if defined(EIGEN_GPU_COMPILE_PHASE)
 
  #include <cfloat>
@@ -31,6 +33,7 @@
 // Define portable (u)int{32,64} types
 #if EIGEN_HAS_CXX11 || EIGEN_ICC_NEEDS_CSTDINT
 #include <cstdint>
+
 namespace Eigen {
 namespace numext {
 typedef std::uint8_t  uint8_t;
@@ -47,6 +50,7 @@ typedef std::int64_t  int64_t;
 // Without c++11, all compilers able to compile Eigen also
 // provide the C99 stdint.h header file.
 #include <stdint.h>
+
 namespace Eigen {
 namespace numext {
 typedef ::uint8_t  uint8_t;
@@ -647,6 +651,60 @@ struct invoke_result<F, ArgType0, ArgType1, void> {
   typedef typename remove_all<type1>::type type;
 };
 #endif
+
+// C++14 integer/index_sequence.
+#if defined(__cpp_lib_integer_sequence) && __cpp_lib_integer_sequence >= 201304L && EIGEN_MAX_CPP_VER >= 14
+
+using std::integer_sequence;
+using std::make_integer_sequence;
+
+using std::index_sequence;
+using std::make_index_sequence;
+
+#else 
+
+template <typename T, T... Ints>
+struct integer_sequence {
+  static EIGEN_CONSTEXPR size_t size() EIGEN_NOEXCEPT { return sizeof...(Ints); }
+};
+
+template <typename T, typename Sequence, T N>
+struct append_integer;
+
+template<typename T, T... Ints, T N>
+struct append_integer<T, integer_sequence<T, Ints...>, N> {
+  using type = integer_sequence<T, Ints..., N>;
+};
+
+template<typename T, size_t N>
+struct generate_integer_sequence {
+  using type = typename append_integer<T, typename generate_integer_sequence<T, N-1>::type, N-1>::type;
+};
+
+template<typename T>
+struct generate_integer_sequence<T, 0> {
+  using type = integer_sequence<T>;
+};
+
+template <typename T, size_t N>
+using make_integer_sequence = typename generate_integer_sequence<T, N>::type;
+
+template<size_t... Ints>
+using index_sequence = integer_sequence<size_t, Ints...>;
+
+template<size_t N>
+using make_index_sequence = make_integer_sequence<size_t, N>;
+
+#endif
+
+// Reduces a sequence of bools to true if all are true, false otherwise.
+template<bool... values>
+using reduce_all = std::is_same<integer_sequence<bool, values..., true>, integer_sequence<bool, true, values...> >;
+
+// Reduces a sequence of bools to true if any are true, false if all false.
+template<bool... values>
+using reduce_any = std::integral_constant<bool,
+    !std::is_same<integer_sequence<bool, values..., false>, integer_sequence<bool, false, values...> >::value>;
 
 struct meta_yes { char a[1]; };
 struct meta_no  { char a[2]; };

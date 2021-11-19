@@ -10,6 +10,8 @@
 #ifndef EIGEN_BINARY_FUNCTORS_H
 #define EIGEN_BINARY_FUNCTORS_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -356,7 +358,7 @@ struct functor_traits<scalar_pow_op<Scalar,Exponent> > {
     PacketAccess = (!NumTraits<Scalar>::IsComplex && !NumTraits<Scalar>::IsInteger &&
                     packet_traits<Scalar>::HasExp && packet_traits<Scalar>::HasLog &&
                     packet_traits<Scalar>::HasRound && packet_traits<Scalar>::HasCmp &&
-                    // Temporarly disable packet access for half/bfloat16 until
+                    // Temporarily disable packet access for half/bfloat16 until
                     // accuracy is improved.
                     !is_same<Scalar, half>::value && !is_same<Scalar, bfloat16>::value
                     )

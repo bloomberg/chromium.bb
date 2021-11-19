@@ -23,7 +23,6 @@
 #include "src/core/ext/filters/client_channel/lb_policy.h"
 #include "src/core/ext/filters/client_channel/lb_policy_factory.h"
 #include "src/core/ext/filters/client_channel/lb_policy_registry.h"
-#include "src/core/ext/filters/client_channel/service_config.h"
 #include "src/core/ext/xds/xds_certificate_provider.h"
 #include "src/core/ext/xds/xds_client.h"
 #include "src/core/lib/channel/channel_args.h"
@@ -123,6 +122,7 @@ class CdsLb : public LoadBalancingPolicy {
     void UpdateState(grpc_connectivity_state state, const absl::Status& status,
                      std::unique_ptr<SubchannelPicker> picker) override;
     void RequestReresolution() override;
+    absl::string_view GetAuthority() override;
     void AddTraceEvent(TraceSeverity severity,
                        absl::string_view message) override;
 
@@ -207,7 +207,7 @@ CdsLb::ClusterWatcher::Notifier::Notifier(RefCountedPtr<CdsLb> parent,
 void CdsLb::ClusterWatcher::Notifier::RunInExecCtx(void* arg,
                                                    grpc_error_handle error) {
   Notifier* self = static_cast<Notifier*>(arg);
-  GRPC_ERROR_REF(error);
+  (void)GRPC_ERROR_REF(error);
   self->parent_->work_serializer()->Run(
       [self, error]() { self->RunInWorkSerializer(error); }, DEBUG_LOCATION);
 }
@@ -259,6 +259,10 @@ void CdsLb::Helper::RequestReresolution() {
             parent_.get());
   }
   parent_->channel_control_helper()->RequestReresolution();
+}
+
+absl::string_view CdsLb::Helper::GetAuthority() {
+  return parent_->channel_control_helper()->GetAuthority();
 }
 
 void CdsLb::Helper::AddTraceEvent(TraceSeverity severity,
@@ -392,25 +396,24 @@ bool CdsLb::GenerateDiscoveryMechanismForCluster(
     }
     return !missing_cluster;
   }
-  std::string type;
+  Json::Object mechanism = {
+      {"clusterName", name},
+      {"max_concurrent_requests", state.update->max_concurrent_requests},
+  };
   switch (state.update->cluster_type) {
     case XdsApi::CdsUpdate::ClusterType::EDS:
-      type = "EDS";
+      mechanism["type"] = "EDS";
+      if (!state.update->eds_service_name.empty()) {
+        mechanism["edsServiceName"] = state.update->eds_service_name;
+      }
       break;
     case XdsApi::CdsUpdate::ClusterType::LOGICAL_DNS:
-      type = "LOGICAL_DNS";
+      mechanism["type"] = "LOGICAL_DNS";
+      mechanism["dnsHostname"] = state.update->dns_hostname;
       break;
     default:
       GPR_ASSERT(0);
       break;
-  }
-  Json::Object mechanism = {
-      {"clusterName", name},
-      {"max_concurrent_requests", state.update->max_concurrent_requests},
-      {"type", std::move(type)},
-  };
-  if (!state.update->eds_service_name.empty()) {
-    mechanism["edsServiceName"] = state.update->eds_service_name;
   }
   if (state.update->lrs_load_reporting_server_name.has_value()) {
     mechanism["lrsLoadReportingServerName"] =
@@ -452,22 +455,9 @@ void CdsLb::OnClusterChanged(const std::string& name,
     // Construct config for child policy.
     Json::Object xds_lb_policy;
     if (cluster_data.lb_policy == "RING_HASH") {
-      std::string hash_function;
-      switch (cluster_data.hash_function) {
-        case XdsApi::CdsUpdate::HashFunction::XX_HASH:
-          hash_function = "XX_HASH";
-          break;
-        case XdsApi::CdsUpdate::HashFunction::MURMUR_HASH_2:
-          hash_function = "MURMUR_HASH_2";
-          break;
-        default:
-          GPR_ASSERT(0);
-          break;
-      }
       xds_lb_policy["RING_HASH"] = Json::Object{
           {"min_ring_size", cluster_data.min_ring_size},
           {"max_ring_size", cluster_data.max_ring_size},
-          {"hash_function", hash_function},
       };
     } else {
       xds_lb_policy["ROUND_ROBIN"] = Json::Object();
@@ -550,12 +540,12 @@ void CdsLb::OnError(const std::string& name, grpc_error_handle error) {
   // policy (i.e., we have not yet received data from xds).  Otherwise,
   // we keep running with the data we had previously.
   if (child_policy_ == nullptr) {
+    absl::Status status = grpc_error_to_absl_status(error);
     channel_control_helper()->UpdateState(
-        GRPC_CHANNEL_TRANSIENT_FAILURE, grpc_error_to_absl_status(error),
-        absl::make_unique<TransientFailurePicker>(error));
-  } else {
-    GRPC_ERROR_UNREF(error);
+        GRPC_CHANNEL_TRANSIENT_FAILURE, status,
+        absl::make_unique<TransientFailurePicker>(status));
   }
+  GRPC_ERROR_UNREF(error);
 }
 
 void CdsLb::OnResourceDoesNotExist(const std::string& name) {
@@ -563,15 +553,11 @@ void CdsLb::OnResourceDoesNotExist(const std::string& name) {
           "[cdslb %p] CDS resource for %s does not exist -- reporting "
           "TRANSIENT_FAILURE",
           this, name.c_str());
-  grpc_error_handle error =
-      grpc_error_set_int(GRPC_ERROR_CREATE_FROM_COPIED_STRING(
-                             absl::StrCat("CDS resource \"", config_->cluster(),
-                                          "\" does not exist")
-                                 .c_str()),
-                         GRPC_ERROR_INT_GRPC_STATUS, GRPC_STATUS_UNAVAILABLE);
+  absl::Status status = absl::UnavailableError(
+      absl::StrCat("CDS resource \"", config_->cluster(), "\" does not exist"));
   channel_control_helper()->UpdateState(
-      GRPC_CHANNEL_TRANSIENT_FAILURE, grpc_error_to_absl_status(error),
-      absl::make_unique<TransientFailurePicker>(error));
+      GRPC_CHANNEL_TRANSIENT_FAILURE, status,
+      absl::make_unique<TransientFailurePicker>(status));
   MaybeDestroyChildPolicyLocked();
 }
 
@@ -590,11 +576,11 @@ grpc_error_handle CdsLb::UpdateXdsCertificateProvider(
   }
   // Configure root cert.
   absl::string_view root_provider_instance_name =
-      cluster_data.common_tls_context.combined_validation_context
-          .validation_context_certificate_provider_instance.instance_name;
+      cluster_data.common_tls_context.certificate_validation_context
+          .ca_certificate_provider_instance.instance_name;
   absl::string_view root_provider_cert_name =
-      cluster_data.common_tls_context.combined_validation_context
-          .validation_context_certificate_provider_instance.certificate_name;
+      cluster_data.common_tls_context.certificate_validation_context
+          .ca_certificate_provider_instance.certificate_name;
   RefCountedPtr<XdsCertificateProvider> new_root_provider;
   if (!root_provider_instance_name.empty()) {
     new_root_provider =
@@ -602,10 +588,9 @@ grpc_error_handle CdsLb::UpdateXdsCertificateProvider(
             .CreateOrGetCertificateProvider(root_provider_instance_name);
     if (new_root_provider == nullptr) {
       return grpc_error_set_int(
-          GRPC_ERROR_CREATE_FROM_COPIED_STRING(
+          GRPC_ERROR_CREATE_FROM_CPP_STRING(
               absl::StrCat("Certificate provider instance name: \"",
-                           root_provider_instance_name, "\" not recognized.")
-                  .c_str()),
+                           root_provider_instance_name, "\" not recognized.")),
           GRPC_ERROR_INT_GRPC_STATUS, GRPC_STATUS_UNAVAILABLE);
     }
   }
@@ -630,11 +615,11 @@ grpc_error_handle CdsLb::UpdateXdsCertificateProvider(
           : root_certificate_provider_->distributor());
   // Configure identity cert.
   absl::string_view identity_provider_instance_name =
-      cluster_data.common_tls_context
-          .tls_certificate_certificate_provider_instance.instance_name;
+      cluster_data.common_tls_context.tls_certificate_provider_instance
+          .instance_name;
   absl::string_view identity_provider_cert_name =
-      cluster_data.common_tls_context
-          .tls_certificate_certificate_provider_instance.certificate_name;
+      cluster_data.common_tls_context.tls_certificate_provider_instance
+          .certificate_name;
   RefCountedPtr<XdsCertificateProvider> new_identity_provider;
   if (!identity_provider_instance_name.empty()) {
     new_identity_provider =
@@ -642,11 +627,9 @@ grpc_error_handle CdsLb::UpdateXdsCertificateProvider(
             .CreateOrGetCertificateProvider(identity_provider_instance_name);
     if (new_identity_provider == nullptr) {
       return grpc_error_set_int(
-          GRPC_ERROR_CREATE_FROM_COPIED_STRING(
-              absl::StrCat("Certificate provider instance name: \"",
-                           identity_provider_instance_name,
-                           "\" not recognized.")
-                  .c_str()),
+          GRPC_ERROR_CREATE_FROM_CPP_STRING(absl::StrCat(
+              "Certificate provider instance name: \"",
+              identity_provider_instance_name, "\" not recognized.")),
           GRPC_ERROR_INT_GRPC_STATUS, GRPC_STATUS_UNAVAILABLE);
     }
   }
@@ -671,8 +654,8 @@ grpc_error_handle CdsLb::UpdateXdsCertificateProvider(
           : identity_certificate_provider_->distributor());
   // Configure SAN matchers.
   const std::vector<StringMatcher>& match_subject_alt_names =
-      cluster_data.common_tls_context.combined_validation_context
-          .default_validation_context.match_subject_alt_names;
+      cluster_data.common_tls_context.certificate_validation_context
+          .match_subject_alt_names;
   xds_certificate_provider_->UpdateSubjectAlternativeNameMatchers(
       cluster_name, match_subject_alt_names);
   return GRPC_ERROR_NONE;

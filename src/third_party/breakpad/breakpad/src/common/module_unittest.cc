@@ -193,7 +193,8 @@ TEST(Write, OmitUnusedFiles) {
   function->lines.push_back(line2);
   m.AddFunction(function);
 
-  m.AssignSourceIds();
+  std::set<Module::InlineOrigin*, Module::InlineOriginCompare> inline_origins;
+  m.AssignSourceIds(inline_origins);
 
   vector<Module::File*> vec;
   m.GetFiles(&vec);

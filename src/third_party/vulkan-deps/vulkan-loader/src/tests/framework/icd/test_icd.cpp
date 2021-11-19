@@ -50,7 +50,7 @@
 TestICD icd;
 extern "C" {
 FRAMEWORK_EXPORT TestICD* get_test_icd_func() { return &icd; }
-FRAMEWORK_EXPORT TestICD* get_new_test_icd_func() {
+FRAMEWORK_EXPORT TestICD* reset_icd_func() {
     icd.~TestICD();
     return new (&icd) TestICD();
 }
@@ -70,6 +70,12 @@ bool CheckLayer(std::vector<LayerDefinition>& layers, std::string layerName) {
     return false;
 }
 
+bool IsInstanceExtensionEnabled(const char* extension_name) {
+    return icd.instance_extensions.end() !=
+           std::find_if(icd.instance_extensions.begin(), icd.instance_extensions.end(),
+                        [extension_name](Extension const& ext) { return ext.extensionName == extension_name; });
+}
+
 // typename T must have '.get()' function that returns a type U
 template <typename T, typename U>
 VkResult FillCountPtr(std::vector<T> const& data_vec, uint32_t* pCount, U* pData) {
@@ -77,11 +83,11 @@ VkResult FillCountPtr(std::vector<T> const& data_vec, uint32_t* pCount, U* pData
         return VK_ERROR_OUT_OF_HOST_MEMORY;
     }
     if (pData == nullptr) {
-        *pCount = data_vec.size();
+        *pCount = static_cast<uint32_t>(data_vec.size());
         return VK_SUCCESS;
     }
     uint32_t amount_written = 0;
-    uint32_t amount_to_write = data_vec.size();
+    uint32_t amount_to_write = static_cast<uint32_t>(data_vec.size());
     if (*pCount < data_vec.size()) {
         amount_to_write = *pCount;
     }
@@ -103,11 +109,11 @@ VkResult FillCountPtr(std::vector<T> const& data_vec, uint32_t* pCount, T* pData
         return VK_ERROR_OUT_OF_HOST_MEMORY;
     }
     if (pData == nullptr) {
-        *pCount = data_vec.size();
+        *pCount = static_cast<uint32_t>(data_vec.size());
         return VK_SUCCESS;
     }
     uint32_t amount_written = 0;
-    uint32_t amount_to_write = data_vec.size();
+    uint32_t amount_to_write = static_cast<uint32_t>(data_vec.size());
     if (*pCount < data_vec.size()) {
         amount_to_write = *pCount;
     }
@@ -172,7 +178,7 @@ VKAPI_ATTR void VKAPI_CALL test_vkDestroyInstance(VkInstance instance, const VkA
 VKAPI_ATTR VkResult VKAPI_CALL test_vkEnumeratePhysicalDevices(VkInstance instance, uint32_t* pPhysicalDeviceCount,
                                                                VkPhysicalDevice* pPhysicalDevices) {
     if (pPhysicalDevices == nullptr) {
-        *pPhysicalDeviceCount = icd.physical_devices.size();
+        *pPhysicalDeviceCount = static_cast<uint32_t>(icd.physical_devices.size());
     } else {
         uint32_t handles_written = 0;
         for (size_t i = 0; i < icd.physical_devices.size(); i++) {
@@ -193,7 +199,7 @@ VKAPI_ATTR VkResult VKAPI_CALL test_vkEnumeratePhysicalDevices(VkInstance instan
 VKAPI_ATTR VkResult VKAPI_CALL test_vkEnumeratePhysicalDeviceGroups(
     VkInstance instance, uint32_t* pPhysicalDeviceGroupCount, VkPhysicalDeviceGroupProperties* pPhysicalDeviceGroupProperties) {
     if (pPhysicalDeviceGroupProperties == nullptr) {
-        *pPhysicalDeviceGroupCount = icd.physical_device_groups.size();
+        *pPhysicalDeviceGroupCount = static_cast<uint32_t>(icd.physical_device_groups.size());
     } else {
         for (size_t device_group = 0; device_group < icd.physical_device_groups.size(); device_group++) {
             if (device_group >= *pPhysicalDeviceGroupCount) {
@@ -351,16 +357,52 @@ VKAPI_ATTR VkResult VKAPI_CALL test_vkGetPhysicalDeviceSurfacePresentModesKHR(Vk
 }
 
 //// stubs
+// 1.0
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceFeatures(VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures* pFeatures) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceProperties(VkPhysicalDevice physicalDevice,
+                                                              VkPhysicalDeviceProperties* pProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceMemoryProperties(VkPhysicalDevice physicalDevice,
+                                                                    VkPhysicalDeviceMemoryProperties* pMemoryProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceSparseImageFormatProperties(VkPhysicalDevice physicalDevice, VkFormat format,
+                                                                               VkImageType type, VkSampleCountFlagBits samples,
+                                                                               VkImageUsageFlags usage, VkImageTiling tiling,
+                                                                               uint32_t* pPropertyCount,
+                                                                               VkSparseImageFormatProperties* pProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceFormatProperties(VkPhysicalDevice physicalDevice, VkFormat format,
+                                                                    VkFormatProperties* pFormatProperties) {}
+VKAPI_ATTR VkResult VKAPI_CALL test_vkGetPhysicalDeviceImageFormatProperties(VkPhysicalDevice physicalDevice, VkFormat format,
+                                                                             VkImageType type, VkImageTiling tiling,
+                                                                             VkImageUsageFlags usage, VkImageCreateFlags flags,
+                                                                             VkImageFormatProperties* pImageFormatProperties) {
+    return VK_SUCCESS;
+}
 
-VKAPI_ATTR VkResult VKAPI_CALL test_stub_func_with_return() { return VK_SUCCESS; }
-VKAPI_ATTR void VKAPI_CALL test_stub_func_no_return() {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceFeatures2(VkPhysicalDevice physicalDevice,
+                                                             VkPhysicalDeviceFeatures2* pFeatures) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceProperties2(VkPhysicalDevice physicalDevice,
+                                                               VkPhysicalDeviceProperties2* pProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceMemoryProperties2(VkPhysicalDevice physicalDevice,
+                                                                     VkPhysicalDeviceMemoryProperties2* pMemoryProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceQueueFamilyProperties2(VkPhysicalDevice physicalDevice,
+                                                                          uint32_t* pQueueFamilyPropertyCount,
+                                                                          VkQueueFamilyProperties2* pQueueFamilyProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceSparseImageFormatProperties2(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceSparseImageFormatInfo2* pFormatInfo, uint32_t* pPropertyCount,
+    VkSparseImageFormatProperties2* pProperties) {}
+VKAPI_ATTR void VKAPI_CALL test_vkGetPhysicalDeviceFormatProperties2(VkPhysicalDevice physicalDevice, VkFormat format,
+                                                                     VkFormatProperties2* pFormatProperties) {}
+VKAPI_ATTR VkResult VKAPI_CALL test_vkGetPhysicalDeviceImageFormatProperties2(
+    VkPhysicalDevice physicalDevice, const VkPhysicalDeviceImageFormatInfo2* pImageFormatInfo,
+    VkImageFormatProperties2* pImageFormatProperties) {
+    return VK_SUCCESS;
+}
 
 //// trampolines
 
 #define TO_VOID_PFN(func) reinterpret_cast<PFN_vkVoidFunction>(func)
 
 PFN_vkVoidFunction get_instance_func_ver_1_1(VkInstance instance, const char* pName) {
-    if (icd.icd_api_version < VK_MAKE_VERSION(1, 1, 0)) {
+    if (icd.icd_api_version >= VK_MAKE_VERSION(1, 1, 0)) {
         if (string_eq(pName, "test_vkEnumerateInstanceVersion")) {
             return TO_VOID_PFN(test_vkEnumerateInstanceVersion);
         }
@@ -368,7 +410,7 @@ PFN_vkVoidFunction get_instance_func_ver_1_1(VkInstance instance, const char* pN
     return nullptr;
 }
 PFN_vkVoidFunction get_instance_func_ver_1_2(VkInstance instance, const char* pName) {
-    if (icd.icd_api_version < VK_MAKE_VERSION(1, 2, 0)) {
+    if (icd.icd_api_version >= VK_MAKE_VERSION(1, 2, 0)) {
         return nullptr;
     }
     return nullptr;
@@ -434,12 +476,32 @@ PFN_vkVoidFunction get_physical_device_func(VkInstance instance, const char* pNa
         return TO_VOID_PFN(test_vkGetPhysicalDeviceQueueFamilyProperties);
     if (string_eq(pName, "vkCreateDevice")) return TO_VOID_PFN(test_vkCreateDevice);
 
-    if (string_eq(pName, "vkGetPhysicalDeviceFeatures") || string_eq(pName, "vkGetPhysicalDeviceProperties") ||
-        string_eq(pName, "vkGetPhysicalDeviceMemoryProperties") ||
-        string_eq(pName, "vkGetPhysicalDeviceSparseImageFormatProperties") ||
-        string_eq(pName, "vkGetPhysicalDeviceFormatProperties"))
-        return TO_VOID_PFN(test_stub_func_no_return);
-    if (string_eq(pName, "vkGetPhysicalDeviceImageFormatProperties")) return TO_VOID_PFN(test_stub_func_with_return);
+    if (string_eq(pName, "vkGetPhysicalDeviceFeatures")) return TO_VOID_PFN(test_vkGetPhysicalDeviceFeatures);
+    if (string_eq(pName, "vkGetPhysicalDeviceProperties")) return TO_VOID_PFN(test_vkGetPhysicalDeviceProperties);
+    if (string_eq(pName, "vkGetPhysicalDeviceMemoryProperties")) return TO_VOID_PFN(test_vkGetPhysicalDeviceMemoryProperties);
+    if (string_eq(pName, "vkGetPhysicalDeviceSparseImageFormatProperties"))
+        return TO_VOID_PFN(test_vkGetPhysicalDeviceSparseImageFormatProperties);
+    if (string_eq(pName, "vkGetPhysicalDeviceFormatProperties")) return TO_VOID_PFN(test_vkGetPhysicalDeviceFormatProperties);
+    if (string_eq(pName, "vkGetPhysicalDeviceImageFormatProperties"))
+        return TO_VOID_PFN(test_vkGetPhysicalDeviceImageFormatProperties);
+
+    if (icd.icd_api_version >= VK_MAKE_API_VERSION(0, 1, 1, 0) ||
+        IsInstanceExtensionEnabled("VK_KHR_get_physical_device_properties2")) {
+        if (string_eq(pName, "vkGetPhysicalDeviceFeatures2")) return TO_VOID_PFN(test_vkGetPhysicalDeviceFeatures2);
+        if (string_eq(pName, "vkGetPhysicalDeviceProperties2")) return TO_VOID_PFN(test_vkGetPhysicalDeviceProperties2);
+        if (string_eq(pName, "vkGetPhysicalDeviceFormatProperties2")) return TO_VOID_PFN(test_vkGetPhysicalDeviceFormatProperties2);
+        if (string_eq(pName, "vkGetPhysicalDeviceMemoryProperties2")) return TO_VOID_PFN(test_vkGetPhysicalDeviceMemoryProperties2);
+
+        if (string_eq(pName, "vkGetPhysicalDeviceQueueFamilyProperties2"))
+            return TO_VOID_PFN(test_vkGetPhysicalDeviceQueueFamilyProperties2);
+
+        if (string_eq(pName, "vkGetPhysicalDeviceSparseImageFormatProperties2"))
+            return TO_VOID_PFN(test_vkGetPhysicalDeviceSparseImageFormatProperties2);
+
+        if (string_eq(pName, "vkGetPhysicalDeviceImageFormatProperties2")) {
+            return TO_VOID_PFN(test_vkGetPhysicalDeviceImageFormatProperties2);
+        }
+    }
     return nullptr;
 }
 
@@ -482,9 +544,9 @@ PFN_vkVoidFunction get_device_func(VkDevice device, const char* pName) {
     if (!found) return nullptr;
     if (string_eq(pName, "vkDestroyDevice")) return TO_VOID_PFN(test_vkDestroyDevice);
     if (string_eq(pName, "vkCreateSwapchainKHR")) return TO_VOID_PFN(test_vkCreateSwapchainKHR);
-    for (auto& function_name : found_phys_dev->known_device_functions_no_implementation) {
-        if (string_eq(pName, function_name)) {
-            return reinterpret_cast<PFN_vkVoidFunction>(test_stub_func_with_return);
+    for (auto& function : found_phys_dev->known_device_functions) {
+        if (string_eq(pName, function.name)) {
+            return reinterpret_cast<PFN_vkVoidFunction>(function.function);
         }
     }
     return nullptr;

@@ -67,7 +67,6 @@ DEFAULT_DELETER(zwp_linux_explicit_synchronization_v1,
                 zwp_linux_explicit_synchronization_v1_destroy)
 DEFAULT_DELETER(zwp_linux_surface_synchronization_v1,
                 zwp_linux_surface_synchronization_v1_destroy)
-DEFAULT_DELETER(zcr_color_space_v1, zcr_color_space_v1_destroy)
 DEFAULT_DELETER(zcr_vsync_feedback_v1, zcr_vsync_feedback_v1_destroy)
 DEFAULT_DELETER(zcr_vsync_timing_v1, zcr_vsync_timing_v1_destroy)
 DEFAULT_DELETER(wl_data_device_manager, wl_data_device_manager_destroy)
@@ -78,6 +77,7 @@ DEFAULT_DELETER(zwp_text_input_manager_v1, zwp_text_input_manager_v1_destroy)
 DEFAULT_DELETER(zcr_secure_output_v1, zcr_secure_output_v1_destroy)
 DEFAULT_DELETER(zcr_alpha_compositing_v1, zcr_alpha_compositing_v1_destroy)
 DEFAULT_DELETER(zcr_stylus_v2, zcr_stylus_v2_destroy)
+DEFAULT_DELETER(zcr_pointer_stylus_v2, zcr_pointer_stylus_v2_destroy)
 DEFAULT_DELETER(zcr_cursor_shapes_v1, zcr_cursor_shapes_v1_destroy)
 DEFAULT_DELETER(zcr_gaming_input_v2, zcr_gaming_input_v2_destroy)
 DEFAULT_DELETER(zcr_keyboard_configuration_v1,

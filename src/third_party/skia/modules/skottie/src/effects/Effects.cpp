@@ -31,6 +31,7 @@ EffectBuilder::EffectBuilderT EffectBuilder::findBuilder(const skjson::ObjectVal
         const char*    fName;
         EffectBuilderT fBuilder;
     } gBuilderInfo[] = {
+        // alphabetized for binary search lookup
         { "ADBE Black&White"            , &EffectBuilder::attachBlackAndWhiteEffect      },
         { "ADBE Brightness & Contrast 2", &EffectBuilder::attachBrightnessContrastEffect },
         { "ADBE Corner Pin"             , &EffectBuilder::attachCornerPinEffect          },
@@ -44,6 +45,7 @@ EffectBuilder::EffectBuilderT EffectBuilder::findBuilder(const skjson::ObjectVal
         { "ADBE HUE SATURATION"         , &EffectBuilder::attachHueSaturationEffect      },
         { "ADBE Invert"                 , &EffectBuilder::attachInvertEffect             },
         { "ADBE Linear Wipe"            , &EffectBuilder::attachLinearWipeEffect         },
+        { "ADBE Motion Blur"            , &EffectBuilder::attachDirectionalBlurEffect    },
         { "ADBE Pro Levels2"            , &EffectBuilder::attachProLevelsEffect          },
         { "ADBE Radial Wipe"            , &EffectBuilder::attachRadialWipeEffect         },
         { "ADBE Ramp"                   , &EffectBuilder::attachGradientEffect           },
@@ -54,6 +56,8 @@ EffectBuilder::EffectBuilderT EffectBuilder::findBuilder(const skjson::ObjectVal
         { "ADBE Tritone"                , &EffectBuilder::attachTritoneEffect            },
         { "ADBE Venetian Blinds"        , &EffectBuilder::attachVenetianBlindsEffect     },
         { "CC Sphere"                   , &EffectBuilder::attachSphereEffect             },
+        { "CC Toner"                    , &EffectBuilder::attachCCTonerEffect            },
+        { "SkSL Shader"                 , &EffectBuilder::attachSkSLEffect               },
     };
 
     const skjson::StringValue* mn = jeffect["mn"];

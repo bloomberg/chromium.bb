@@ -29,11 +29,13 @@ GrMtlPipelineStateDataManager::GrMtlPipelineStateDataManager(const UniformInfoAr
                  uniformInfo.fVariable.getArrayCount() > 0);
         SkDEBUGCODE(
             uniform.fArrayCount = uniformInfo.fVariable.getArrayCount();
-            uniform.fType = uniformInfo.fVariable.getType();
         )
         uniform.fOffset = uniformInfo.fUBOffset;
+        uniform.fType = uniformInfo.fVariable.getType();
         ++i;
     }
+
+    fWrite16BitUniforms = true;
 }
 
 void GrMtlPipelineStateDataManager::set1iv(UniformHandle u,
@@ -46,7 +48,7 @@ void GrMtlPipelineStateDataManager::set1iv(UniformHandle u,
              (1 == arrayCount && GrShaderVar::kNonArray == uni.fArrayCount));
 
     void* buffer = this->getBufferPtrAndMarkDirty(uni);
-    memcpy(buffer, v, arrayCount * sizeof(int32_t));
+    this->copyUniforms(buffer, v, arrayCount, uni.fType);
 }
 
 void GrMtlPipelineStateDataManager::set1fv(UniformHandle u,
@@ -59,7 +61,7 @@ void GrMtlPipelineStateDataManager::set1fv(UniformHandle u,
              (1 == arrayCount && GrShaderVar::kNonArray == uni.fArrayCount));
 
     void* buffer = this->getBufferPtrAndMarkDirty(uni);
-    memcpy(buffer, v, arrayCount * sizeof(float));
+    this->copyUniforms(buffer, v, arrayCount, uni.fType);
 }
 
 void GrMtlPipelineStateDataManager::set2iv(UniformHandle u,
@@ -72,7 +74,7 @@ void GrMtlPipelineStateDataManager::set2iv(UniformHandle u,
              (1 == arrayCount && GrShaderVar::kNonArray == uni.fArrayCount));
 
     void* buffer = this->getBufferPtrAndMarkDirty(uni);
-    memcpy(buffer, v, arrayCount * 2 * sizeof(int32_t));
+    this->copyUniforms(buffer, v, arrayCount * 2, uni.fType);
 }
 
 void GrMtlPipelineStateDataManager::set2fv(UniformHandle u,
@@ -85,7 +87,7 @@ void GrMtlPipelineStateDataManager::set2fv(UniformHandle u,
              (1 == arrayCount && GrShaderVar::kNonArray == uni.fArrayCount));
 
     void* buffer = this->getBufferPtrAndMarkDirty(uni);
-    memcpy(buffer, v, arrayCount * 2 * sizeof(float));
+    this->copyUniforms(buffer, v, arrayCount * 2, uni.fType);
 }
 
 void GrMtlPipelineStateDataManager::setMatrix2f(UniformHandle u, const float matrix[]) const {
@@ -102,7 +104,7 @@ void GrMtlPipelineStateDataManager::setMatrix2fv(UniformHandle u,
              (1 == arrayCount && GrShaderVar::kNonArray == uni.fArrayCount));
 
     void* buffer = this->getBufferPtrAndMarkDirty(uni);
-    memcpy(buffer, m, arrayCount * 4 * sizeof(float));
+    this->copyUniforms(buffer, m, arrayCount * 4, uni.fType);
 }
 
 void GrMtlPipelineStateDataManager::uploadAndBindUniformBuffers(

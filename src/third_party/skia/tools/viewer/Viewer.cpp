@@ -27,6 +27,7 @@
 #include "src/core/SkTSort.h"
 #include "src/core/SkTaskGroup.h"
 #include "src/core/SkTextBlobPriv.h"
+#include "src/core/SkVMBlitter.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrPersistentCacheUtils.h"
@@ -374,7 +375,7 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     gSkVMAllowJIT = FLAGS_jit;
     gSkVMJITViaDylib = FLAGS_dylib;
 
-    ToolUtils::SetDefaultFontMgr();
+    CommonFlags::SetDefaultFontMgr();
 
     initializeEventTracingForTools();
     static SkTaskGroup::Enabler kTaskGroupEnabler(FLAGS_threads);
@@ -385,7 +386,7 @@ Viewer::Viewer(int argc, char** argv, void* platformData)
     DisplayParams displayParams;
     displayParams.fMSAASampleCount = FLAGS_msaa;
     displayParams.fEnableBinaryArchive = FLAGS_binaryarchive;
-    SetCtxOptionsFromCommonFlags(&displayParams.fGrContextOptions);
+    CommonFlags::SetCtxOptions(&displayParams.fGrContextOptions);
     displayParams.fGrContextOptions.fPersistentCache = &fPersistentCache;
     displayParams.fGrContextOptions.fShaderCacheStrategy =
             GrContextOptions::ShaderCacheStrategy::kSkSL;
@@ -2610,6 +2611,43 @@ void Viewer::drawImGui() {
 
                         entry.fShader[kFragment_GrShaderType] = backup;
                     }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("SkVM")) {
+                if (ImGui::Button("Clear")) {
+                    if (auto* cache = SkVMBlitter::TryAcquireProgramCache()) {
+                        cache->reset();
+                        SkVMBlitter::ReleaseProgramCache();
+                    }
+                }
+                auto showVMEntry = [](const SkVMBlitter::Key* key, const skvm::Program* program) {
+                    uint8_t keyData[sizeof(*key)];
+                    memcpy(keyData, key, sizeof(*key));
+                    SkString keyString;
+                    for (size_t i = 0; i < sizeof(*key); ++i) {
+                        keyString.appendf("%02X", keyData[i]);
+                    }
+
+                    if (ImGui::TreeNode(keyString.c_str())) {
+                        SkDynamicMemoryWStream stream;
+                        program->dump(&stream);
+                        auto dumpData = stream.detachAsData();
+
+                        auto stringBox = [](const char* label, std::string* str) {
+                            int lines = std::count(str->begin(), str->end(), '\n') + 2;
+                            ImVec2 boxSize(-1.0f, ImGui::GetTextLineHeight() * std::min(lines, 30));
+                            ImGui::InputTextMultiline(label, str, boxSize);
+                        };
+                        std::string dumpString((const char*)dumpData->data(), dumpData->size());
+                        stringBox("##VM", &dumpString);
+
+                        ImGui::TreePop();
+                    }
+                };
+                if (auto* cache = SkVMBlitter::TryAcquireProgramCache()) {
+                    cache->foreach(showVMEntry);
+                    SkVMBlitter::ReleaseProgramCache();
                 }
             }
         }

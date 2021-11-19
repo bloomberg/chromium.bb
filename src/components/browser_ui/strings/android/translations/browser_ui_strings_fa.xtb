@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">قبل از اجازه دادن به سایت‌ها برای اتصال به دستگاه سؤال شود (توصیه می‌شود)</translation>
 <translation id="1779089405699405702">رمزگشای تصویر</translation>
 <translation id="1818308510395330587">‏برای اینکه به <ph name="APP_NAME" /> اجازه دهید از AR استفاده کند، دوربین را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> نیز روشن کنید.</translation>
+<translation id="1864927262126810325">از <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">‏دسترسی به مکان برای این دستگاه خاموش است. آن را در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> روشن کنید.</translation>
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1919950603503897840">انتخاب مخاطبین</translation>
@@ -55,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> مگابایت</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مجاز هستند}one{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مجاز هستند}other{<ph name="PERMISSION_1" />، <ph name="PERMISSION_2" />، و <ph name="NUM_MORE" /> اجازه دیگر مجاز هستند}}</translation>
 <translation id="2434158240863470628">بارگیری کامل شد <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">همیشه سایت ویژه رایانه درخواست شود</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
 <translation id="2485422356828889247">حذف نصب</translation>
 <translation id="2490684707762498678">تحت مدیریت <ph name="APP_NAME" /></translation>
@@ -94,6 +96,7 @@
 <translation id="3328801116991980348">اطلاعات سایت</translation>
 <translation id="3333961966071413176">همه مخاطبین</translation>
 <translation id="3386292677130313581">قبل از اجازه به سایت‌ها برای اطلاع از مکانتان، ابتدا سؤال شود (توصیه می‌شود)</translation>
+<translation id="3517437118288792304">همیشه نمایه رایانه برای این سایت خاص درخواست شود.</translation>
 <translation id="3538390592868664640">قابلیت سایت‌ها برای ایجاد نقشه سه‌بعدی از محیط یا ردیابی موقعیت دوربین مسدود می‌شود</translation>
 <translation id="3551268116566418498">از «حالت ناشناس» خارج می‌شوید؟</translation>
 <translation id="3586500876634962664">استفاده از دوربین و میکروفون</translation>
@@ -116,7 +119,6 @@
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
-<translation id="4176463684765177261">غیرفعال شد</translation>
 <translation id="4200726100658658164">باز کردن «تنظیمات مکان»</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="4259722352634471385">پیمایش مسدود شده است: <ph name="URL" /></translation>
@@ -124,6 +126,7 @@
 <translation id="429312253194641664">سایتی درحال پخش رسانه است</translation>
 <translation id="42981349822642051">بزرگ کردن</translation>
 <translation id="4336434711095810371">پاک کردن همه داده‌ها</translation>
+<translation id="4353125860368453721">همیشه نمایه تلفن همراه برای این سایت خاص درخواست شود.</translation>
 <translation id="4402755511846832236">از اینکه سایت‌ها بدانند چه زمانی به‌صورت فعال از این دستگاه استفاده می‌کنید جلوگیری می‌شود</translation>
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="445467742685312942">به سایت‌ها اجازه داده شود محتوای محافظت‌شده پخش کنند</translation>
@@ -148,8 +151,10 @@
 <translation id="5048398596102334565">مجاز بودن دسترسی سایت‌ها به حسگرهای حرکتی (توصیه می‌شود)</translation>
 <translation id="5050380848339752099">این سایت می‌خواهد خارج از «حالت ناشناس»، اطلاعاتی را با برنامه‌ای هم‌رسانی کند.</translation>
 <translation id="5063480226653192405">کاربر </translation>
+<translation id="509133520954049755">درخواست نمای رایانه</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="5123685120097942451">برگه ناشناس</translation>
+<translation id="5134599672855298214">درخواست نمای تلفن همراه (توصیه می‌شود)</translation>
 <translation id="5186036860380548585">گزینه مربوطه در نزدیکی بالای صفحه دردسترس است</translation>
 <translation id="5197729504361054390">مخاطبین انتخابی شما با <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> هم‌رسانی می‌شود.</translation>
 <translation id="5216942107514965959">آخرین بازدید: امروز</translation>
@@ -185,7 +190,6 @@
 <translation id="5876056640971328065">مکث ویدیو</translation>
 <translation id="5887687176710214216">آخرین بازدید: دیروز</translation>
 <translation id="5916664084637901428">روشن</translation>
-<translation id="59174027418879706">فعال شد</translation>
 <translation id="5922853908706496913">درحال هم‌رسانی صفحه‌نمایش</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5975083100439434680">دورنمایی کردن</translation>
@@ -202,7 +206,6 @@
 <translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">«<ph name="APP_NAME" />» حذف نصب شود؟</translation>
-<translation id="6233545266937675277">درخواست نمایش سایت‌ها در نمای ویژه رایانه</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> و <ph name="PERMISSION_2" /> مسدود هستند</translation>
 <translation id="6270391203985052864">سایت‌ها می‌توانند برای ارسال اعلان درخواست دهند</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
@@ -238,6 +241,7 @@
 <translation id="7016516562562142042">برای موتور جستجوی فعلی مجاز است</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
+<translation id="7070090581017165256">درباره این سایت</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> مورد انتخاب شد.  گزینه‌ها در نزدیکی بالای صفحه دردسترس است</translation>
 <translation id="7141896414559753902">مسدود کردن نمایش پنجره‌های بازشو و هدایت‌ها در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> کیلوبایت</translation>
@@ -286,7 +290,6 @@
 <translation id="8211406090763984747">اتصال امن است</translation>
 <translation id="8249310407154411074">انتقال به بالا</translation>
 <translation id="8261506727792406068">حذف</translation>
-<translation id="8267092878336850213">درخواست نمایش سایت‌ها در نمای ویژه تلفن همراه</translation>
 <translation id="8300705686683892304">مدیریت‌شده توسط برنامه</translation>
 <translation id="8324158725704657629">دوباره سؤال نشود</translation>
 <translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
@@ -300,6 +303,7 @@
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{۱ کوکی درحال استفاده است}one{# کوکی درحال استفاده است}other{# کوکی درحال استفاده است}}</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
+<translation id="848952951823693243">همیشه سایت ویژه تلفن همراه درخواست شود</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>
 <translation id="8525306231823319788">تمام صفحه</translation>
 <translation id="857943718398505171">مجاز (توصیه می‌شود)</translation>

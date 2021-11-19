@@ -23,27 +23,27 @@ using StructMemberTest = TestHelper;
 
 TEST_F(StructMemberTest, Creation) {
   auto* st = Member("a", ty.i32(), {MemberSize(4)});
-  EXPECT_EQ(st->symbol(), Symbol(1, ID()));
-  EXPECT_TRUE(st->type()->Is<ast::I32>());
-  EXPECT_EQ(st->decorations().size(), 1u);
-  EXPECT_TRUE(st->decorations()[0]->Is<StructMemberSizeDecoration>());
-  EXPECT_EQ(st->source().range.begin.line, 0u);
-  EXPECT_EQ(st->source().range.begin.column, 0u);
-  EXPECT_EQ(st->source().range.end.line, 0u);
-  EXPECT_EQ(st->source().range.end.column, 0u);
+  EXPECT_EQ(st->symbol, Symbol(1, ID()));
+  EXPECT_TRUE(st->type->Is<ast::I32>());
+  EXPECT_EQ(st->decorations.size(), 1u);
+  EXPECT_TRUE(st->decorations[0]->Is<StructMemberSizeDecoration>());
+  EXPECT_EQ(st->source.range.begin.line, 0u);
+  EXPECT_EQ(st->source.range.begin.column, 0u);
+  EXPECT_EQ(st->source.range.end.line, 0u);
+  EXPECT_EQ(st->source.range.end.column, 0u);
 }
 
 TEST_F(StructMemberTest, CreationWithSource) {
   auto* st = Member(
       Source{Source::Range{Source::Location{27, 4}, Source::Location{27, 8}}},
       "a", ty.i32());
-  EXPECT_EQ(st->symbol(), Symbol(1, ID()));
-  EXPECT_TRUE(st->type()->Is<ast::I32>());
-  EXPECT_EQ(st->decorations().size(), 0u);
-  EXPECT_EQ(st->source().range.begin.line, 27u);
-  EXPECT_EQ(st->source().range.begin.column, 4u);
-  EXPECT_EQ(st->source().range.end.line, 27u);
-  EXPECT_EQ(st->source().range.end.column, 8u);
+  EXPECT_EQ(st->symbol, Symbol(1, ID()));
+  EXPECT_TRUE(st->type->Is<ast::I32>());
+  EXPECT_EQ(st->decorations.size(), 0u);
+  EXPECT_EQ(st->source.range.begin.line, 27u);
+  EXPECT_EQ(st->source.range.begin.column, 4u);
+  EXPECT_EQ(st->source.range.end.line, 27u);
+  EXPECT_EQ(st->source.range.end.column, 8u);
 }
 
 TEST_F(StructMemberTest, Assert_Empty_Symbol) {
@@ -91,16 +91,6 @@ TEST_F(StructMemberTest, Assert_DifferentProgramID_Decoration) {
         b1.Member("a", b1.ty.i32(), {b2.MemberSize(4)});
       },
       "internal compiler error");
-}
-
-TEST_F(StructMemberTest, ToStr) {
-  auto* st = Member("a", ty.i32(), {MemberSize(4)});
-  EXPECT_EQ(str(st), "StructMember{[[ size 4 ]] a: __i32}\n");
-}
-
-TEST_F(StructMemberTest, ToStrNoDecorations) {
-  auto* st = Member("a", ty.i32());
-  EXPECT_EQ(str(st), "StructMember{a: __i32}\n");
 }
 
 }  // namespace

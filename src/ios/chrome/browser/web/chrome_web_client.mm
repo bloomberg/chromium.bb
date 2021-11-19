@@ -29,11 +29,16 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
+#import "ios/chrome/browser/link_to_text/link_to_text_java_script_feature.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/reading_list/offline_page_tab_helper.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/chrome/browser/safe_browsing/password_protection_java_script_feature.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/search_engines/search_engine_java_script_feature.h"
+#import "ios/chrome/browser/search_engines/search_engine_tab_helper_factory.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_features.h"
@@ -62,6 +67,7 @@
 #include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
+#import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -301,8 +307,7 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   static base::NoDestructor<PrintJavaScriptFeature> print_feature;
   std::vector<web::JavaScriptFeature*> features;
   if (base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordReuseDetectionEnabled) &&
-      base::ios::IsRunningOnIOS14OrLater()) {
+          password_manager::features::kPasswordReuseDetectionEnabled)) {
     features.push_back(PasswordProtectionJavaScriptFeature::GetInstance());
   }
 
@@ -313,7 +318,9 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
 
   features.push_back(print_feature.get());
 
-  if (!browser_state->IsOffTheRecord() && IsReadingListMessagesEnabled()) {
+  BOOL shouldInjectReadingListJavaScript =
+      IsReadingListMessagesEnabled() || IsReadingListTimeToReadEnabled();
+  if (!browser_state->IsOffTheRecord() && shouldInjectReadingListJavaScript) {
     static base::NoDestructor<ReadingListJavaScriptFeature>
         reading_list_feature;
     features.push_back(reading_list_feature.get());
@@ -327,6 +334,11 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(ImageFetchJavaScriptFeature::GetInstance());
   features.push_back(
       password_manager::PasswordManagerJavaScriptFeature::GetInstance());
+  features.push_back(LinkToTextJavaScriptFeature::GetInstance());
+
+  SearchEngineJavaScriptFeature::GetInstance()->SetDelegate(
+      SearchEngineTabHelperFactory::GetInstance());
+  features.push_back(SearchEngineJavaScriptFeature::GetInstance());
 
   return features;
 }
@@ -441,4 +453,22 @@ web::UserAgentType ChromeWebClient::GetDefaultUserAgent(
 bool ChromeWebClient::RestoreSessionFromCache(web::WebState* web_state) const {
   return WebSessionStateTabHelper::FromWebState(web_state)
       ->RestoreSessionFromCache();
+}
+
+void ChromeWebClient::CleanupNativeRestoreURLs(web::WebState* web_state) const {
+  web::NavigationManager* navigationManager = web_state->GetNavigationManager();
+  for (int i = 0; i < navigationManager->GetItemCount(); i++) {
+    // The WKWebView URL underneath the NTP is about://newtab, which has no
+    // title. When restoring the NTP, be sure to re-add the title below.
+    web::NavigationItem* item = navigationManager->GetItemAtIndex(i);
+    NewTabPageTabHelper::UpdateItem(item);
+
+    // The WKWebView URL underneath a forced-offline page is chrome://offline,
+    // which has an embedded entry URL. Apply that entryURL to the virtualURL
+    // here.
+    if (item->GetVirtualURL().host() == kChromeUIOfflineHost) {
+      item->SetVirtualURL(
+          reading_list::EntryURLForOfflineURL(item->GetVirtualURL()));
+    }
+  }
 }

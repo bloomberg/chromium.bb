@@ -38,9 +38,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := VkLayer_khronos_validation
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/state_tracker.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/device_memory_state.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/buffer_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/cmd_buffer_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/image_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/pipeline_state.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/queue_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/render_pass_state.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/core_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/drawdispatch.cpp
@@ -49,6 +51,7 @@ LOCAL_SRC_FILES += $(SRC_DIR)/layers/buffer_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/shader_module.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/shader_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/generated/spirv_validation_helper.cpp
+LOCAL_SRC_FILES += $(SRC_DIR)/layers/generated/spirv_grammar_helper.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/generated/command_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/gpu_validation.cpp
 LOCAL_SRC_FILES += $(SRC_DIR)/layers/gpu_utils.cpp
@@ -100,7 +103,16 @@ LOCAL_SRC_FILES += $(SRC_DIR)/tests/layer_validation_tests.cpp \
                    $(SRC_DIR)/tests/vklayertests_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_arm_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_wsi.cpp \
-                   $(SRC_DIR)/tests/vkpositivelayertests.cpp \
+                   $(SRC_DIR)/tests/positive/command.cpp \
+                   $(SRC_DIR)/tests/positive/descriptors.cpp \
+                   $(SRC_DIR)/tests/positive/image_buffer.cpp \
+                   $(SRC_DIR)/tests/positive/instance.cpp \
+                   $(SRC_DIR)/tests/positive/other.cpp \
+                   $(SRC_DIR)/tests/positive/pipeline.cpp \
+                   $(SRC_DIR)/tests/positive/render_pass.cpp \
+                   $(SRC_DIR)/tests/positive/shaderval.cpp \
+                   $(SRC_DIR)/tests/positive/sync.cpp \
+                   $(SRC_DIR)/tests/positive/tooling.cpp \
                    $(SRC_DIR)/tests/vksyncvaltests.cpp \
                    $(SRC_DIR)/tests/vktestbinding.cpp \
                    $(SRC_DIR)/tests/vktestframeworkandroid.cpp \
@@ -137,7 +149,16 @@ LOCAL_SRC_FILES += $(SRC_DIR)/tests/layer_validation_tests.cpp \
                    $(SRC_DIR)/tests/vklayertests_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_arm_best_practices.cpp \
                    $(SRC_DIR)/tests/vklayertests_wsi.cpp \
-                   $(SRC_DIR)/tests/vkpositivelayertests.cpp \
+                   $(SRC_DIR)/tests/positive/command.cpp \
+                   $(SRC_DIR)/tests/positive/descriptors.cpp \
+                   $(SRC_DIR)/tests/positive/image_buffer.cpp \
+                   $(SRC_DIR)/tests/positive/instance.cpp \
+                   $(SRC_DIR)/tests/positive/other.cpp \
+                   $(SRC_DIR)/tests/positive/pipeline.cpp \
+                   $(SRC_DIR)/tests/positive/render_pass.cpp \
+                   $(SRC_DIR)/tests/positive/shaderval.cpp \
+                   $(SRC_DIR)/tests/positive/sync.cpp \
+                   $(SRC_DIR)/tests/positive/tooling.cpp \
                    $(SRC_DIR)/tests/vksyncvaltests.cpp \
                    $(SRC_DIR)/tests/vktestbinding.cpp \
                    $(SRC_DIR)/tests/vktestframeworkandroid.cpp \

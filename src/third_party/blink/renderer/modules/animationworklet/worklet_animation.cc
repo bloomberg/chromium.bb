@@ -421,8 +421,8 @@ void WorkletAnimation::cancel() {
   // update the value in the next frame.
   if (IsActive(play_state_)) {
     for (auto& effect : effects_) {
-      effect->UpdateInheritedTime(absl::nullopt, absl::nullopt, playback_rate_,
-                                  kTimingUpdateOnDemand);
+      effect->UpdateInheritedTime(absl::nullopt, absl::nullopt, false,
+                                  playback_rate_, kTimingUpdateOnDemand);
     }
   }
   SetPlayState(Animation::kIdle);
@@ -508,7 +508,7 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
         local_times_[i]
             ? absl::make_optional(AnimationTimeDelta(local_times_[i].value()))
             : absl::nullopt,
-        absl::nullopt, playback_rate_, reason);
+        absl::nullopt, false, playback_rate_, reason);
   }
 }
 
@@ -625,7 +625,7 @@ bool WorkletAnimation::CanStartOnCompositor() {
   // If the scroll source is not composited, fall back to main thread.
   if (timeline_->IsScrollTimeline() &&
       !CompositorAnimations::CheckUsesCompositedScrolling(
-          To<ScrollTimeline>(*timeline_).ResolvedScrollSource())) {
+          To<ScrollTimeline>(*timeline_).ResolvedSource())) {
     return false;
   }
 

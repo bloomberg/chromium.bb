@@ -23,6 +23,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/views_delegate.h"
 
@@ -88,11 +89,15 @@ void WebView::SetWebContents(content::WebContents* replacement) {
   TRACE_EVENT0("views", "WebView::SetWebContents");
   if (replacement == web_contents())
     return;
-  if (web_contents())
-    web_contents()->SetColorProviderSource(nullptr);
   SetCrashedOverlayView(nullptr);
   DetachWebContentsNativeView();
   WebContentsObserver::Observe(replacement);
+
+  // Do not remove the observation of the previously hosted WebContents to allow
+  // the WebContents to continue to use the source for colors and receive update
+  // notifications when in the background and not directly part of a UI
+  // hierarchy. This avoids color pop-in if the WebContents is re-inserted into
+  // the same hierarchy at a later point in time.
   if (replacement)
     replacement->SetColorProviderSource(GetWidget());
 
@@ -386,6 +391,14 @@ void WebView::AttachWebContentsNativeView() {
   if (holder_->native_view() == view_to_attach)
     return;
 
+  const auto* bg_color =
+      WebContentsSetBackgroundColor::FromWebContents(web_contents());
+  if (bg_color) {
+    holder_->SetBackgroundColorWhenClipped(bg_color->color());
+  } else {
+    holder_->SetBackgroundColorWhenClipped(absl::nullopt);
+  }
+
   holder_->Attach(view_to_attach);
 
   // We set the parent accessible of the native view to be our parent.
@@ -401,8 +414,9 @@ void WebView::AttachWebContentsNativeView() {
 
 void WebView::DetachWebContentsNativeView() {
   TRACE_EVENT0("views", "WebView::DetachWebContentsNativeView");
-  if (web_contents())
+  if (web_contents()) {
     holder_->Detach();
+  }
 }
 
 void WebView::UpdateCrashedOverlayView() {

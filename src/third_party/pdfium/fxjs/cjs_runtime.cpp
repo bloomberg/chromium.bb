@@ -155,7 +155,7 @@ void CJS_Runtime::SetFormFillEnvToDocument() {
   if (pThis.IsEmpty())
     return;
 
-  auto pJSDocument = JSGetObject<CJS_Document>(pThis);
+  auto pJSDocument = JSGetObject<CJS_Document>(GetIsolate(), pThis);
   if (!pJSDocument)
     return;
 
@@ -166,7 +166,7 @@ CPDFSDK_FormFillEnvironment* CJS_Runtime::GetFormFillEnv() const {
   return m_pFormFillEnv.Get();
 }
 
-Optional<IJS_Runtime::JS_Error> CJS_Runtime::ExecuteScript(
+absl::optional<IJS_Runtime::JS_Error> CJS_Runtime::ExecuteScript(
     const WideString& script) {
   return Execute(script);
 }

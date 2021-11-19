@@ -10,6 +10,8 @@
 #ifndef EIGEN_MAPPED_SPARSEMATRIX_H
 #define EIGEN_MAPPED_SPARSEMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \deprecated Use Map<SparseMatrix<> >

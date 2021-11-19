@@ -392,11 +392,11 @@ int main(int argc, char** argv) {
     gSkVMJITViaDylib = FLAGS_dylib;
 
     initializeEventTracingForTools();
-    ToolUtils::SetDefaultFontMgr();
-    SetAnalyticAAFromCommonFlags();
+    CommonFlags::SetDefaultFontMgr();
+    CommonFlags::SetAnalyticAA();
 
     GrContextOptions baseOptions;
-    SetCtxOptionsFromCommonFlags(&baseOptions);
+    CommonFlags::SetCtxOptions(&baseOptions);
     baseOptions.fReducedShaderVariations = FLAGS_reducedshaders;
 
     sk_gpu_test::MemoryCache memoryCache;
@@ -417,13 +417,13 @@ int main(int argc, char** argv) {
 
     SkTHashMap<SkString, const skiatest::Test*> tests;
     for (const skiatest::Test& test : skiatest::TestRegistry::Range()) {
-        if (test.needsGpu) {
+        if (test.fNeedsGpu || test.fNeedsGraphite) {
             continue;  // TODO
         }
         if (FLAGS_listTests) {
-            fprintf(stdout, "%s\n", test.name);
+            fprintf(stdout, "%s\n", test.fName);
         } else {
-            tests.set(SkString{test.name}, &test);
+            tests.set(SkString{test.fName}, &test);
         }
     }
 

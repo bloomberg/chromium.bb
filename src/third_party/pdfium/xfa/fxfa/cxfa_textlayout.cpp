@@ -812,7 +812,7 @@ bool CXFA_TextLayout::LoadRichText(
           while (iTabCount-- > 0)
             wsText += L'\t';
         } else {
-          Optional<WideString> obj =
+          absl::optional<WideString> obj =
               m_pTextParser->GetEmbeddedObj(m_pTextProvider, pXMLNode);
           if (obj.has_value())
             wsText = obj.value();
@@ -1285,7 +1285,7 @@ void CXFA_TextLayout::RenderPath(CFX_RenderDevice* pDevice,
   graphState.m_LineWidth = 1;
   graphState.m_MiterLimit = 10;
   graphState.m_DashPhase = 0;
-  pDevice->DrawPath(&path, &mtDoc2Device, &graphState, 0, pPiece->dwColor,
+  pDevice->DrawPath(path, &mtDoc2Device, &graphState, 0, pPiece->dwColor,
                     CFX_FillRenderOptions());
 }
 

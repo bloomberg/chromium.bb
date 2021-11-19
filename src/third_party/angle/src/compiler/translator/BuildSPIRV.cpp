@@ -1545,6 +1545,15 @@ spirv::IdRef SPIRVBuilder::declareSpecConst(TBasicType type, int id, const char 
     return specConstId;
 }
 
+void SPIRVBuilder::declareNamedConst(spirv::IdRef id, const char *name)
+{
+    // Output debug information.
+    if (name)
+    {
+        spirv::WriteName(&mSpirvDebug, id, name);
+    }
+}
+
 void SPIRVBuilder::startConditional(size_t blockCount, bool isContinuable, bool isBreakable)
 {
     mConditionalStack.emplace_back();
@@ -2227,7 +2236,7 @@ void SPIRVBuilder::writeExecutionModes(spirv::Blob *blob)
     }
 
     // Add any execution modes that were added due to built-ins used in the shader.
-    for (uint32_t executionMode : mExecutionModes)
+    for (size_t executionMode : mExecutionModes)
     {
         spirv::WriteExecutionMode(blob, mEntryPointId,
                                   static_cast<spv::ExecutionMode>(executionMode), {});

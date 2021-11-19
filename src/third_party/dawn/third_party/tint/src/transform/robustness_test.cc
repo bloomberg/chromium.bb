@@ -663,10 +663,6 @@ TEST_F(RobustnessTest, TextureLoad_Clamp) {
 [[group(0), binding(0)]] var tex_ms_2d : texture_multisampled_2d<f32>;
 [[group(0), binding(0)]] var tex_depth_2d : texture_depth_2d;
 [[group(0), binding(0)]] var tex_depth_2d_arr : texture_depth_2d_array;
-[[group(0), binding(0)]] var tex_storage_1d : texture_storage_1d<rgba8sint, read>;
-[[group(0), binding(0)]] var tex_storage_2d : texture_storage_2d<rgba8sint, read>;
-[[group(0), binding(0)]] var tex_storage_2d_arr : texture_storage_2d_array<rgba8sint, read>;
-[[group(0), binding(0)]] var tex_storage_3d : texture_storage_3d<rgba8sint, read>;
 [[group(0), binding(0)]] var tex_external : texture_external;
 
 fn f() {
@@ -674,22 +670,19 @@ fn f() {
   var level_idx : i32;
   var sample_idx : i32;
 
-  ignore(textureLoad(tex_1d, 1, level_idx));
-  ignore(textureLoad(tex_2d, vec2<i32>(1, 2), level_idx));
-  ignore(textureLoad(tex_2d_arr, vec2<i32>(1, 2), array_idx, level_idx));
-  ignore(textureLoad(tex_3d, vec3<i32>(1, 2, 3), level_idx));
-  ignore(textureLoad(tex_ms_2d, vec2<i32>(1, 2), sample_idx));
-  ignore(textureLoad(tex_depth_2d, vec2<i32>(1, 2), level_idx));
-  ignore(textureLoad(tex_depth_2d_arr, vec2<i32>(1, 2), array_idx, level_idx));
-  ignore(textureLoad(tex_storage_1d, 1));
-  ignore(textureLoad(tex_storage_2d, vec2<i32>(1, 2)));
-  ignore(textureLoad(tex_storage_2d_arr, vec2<i32>(1, 2), array_idx));
-  ignore(textureLoad(tex_storage_3d, vec3<i32>(1, 2, 3)));
-  ignore(textureLoad(tex_external, vec2<i32>(1, 2)));
+  textureLoad(tex_1d, 1, level_idx);
+  textureLoad(tex_2d, vec2<i32>(1, 2), level_idx);
+  textureLoad(tex_2d_arr, vec2<i32>(1, 2), array_idx, level_idx);
+  textureLoad(tex_3d, vec3<i32>(1, 2, 3), level_idx);
+  textureLoad(tex_ms_2d, vec2<i32>(1, 2), sample_idx);
+  textureLoad(tex_depth_2d, vec2<i32>(1, 2), level_idx);
+  textureLoad(tex_depth_2d_arr, vec2<i32>(1, 2), array_idx, level_idx);
+  textureLoad(tex_external, vec2<i32>(1, 2));
 }
 )";
 
-  auto* expect = R"(
+  auto* expect =
+      R"(
 [[group(0), binding(0)]] var tex_1d : texture_1d<f32>;
 
 [[group(0), binding(0)]] var tex_2d : texture_2d<f32>;
@@ -704,32 +697,20 @@ fn f() {
 
 [[group(0), binding(0)]] var tex_depth_2d_arr : texture_depth_2d_array;
 
-[[group(0), binding(0)]] var tex_storage_1d : texture_storage_1d<rgba8sint, read>;
-
-[[group(0), binding(0)]] var tex_storage_2d : texture_storage_2d<rgba8sint, read>;
-
-[[group(0), binding(0)]] var tex_storage_2d_arr : texture_storage_2d_array<rgba8sint, read>;
-
-[[group(0), binding(0)]] var tex_storage_3d : texture_storage_3d<rgba8sint, read>;
-
 [[group(0), binding(0)]] var tex_external : texture_external;
 
 fn f() {
   var array_idx : i32;
   var level_idx : i32;
   var sample_idx : i32;
-  ignore(textureLoad(tex_1d, clamp(1, i32(), (textureDimensions(tex_1d, clamp(level_idx, 0, (textureNumLevels(tex_1d) - 1))) - i32(1))), clamp(level_idx, 0, (textureNumLevels(tex_1d) - 1))));
-  ignore(textureLoad(tex_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_2d, clamp(level_idx, 0, (textureNumLevels(tex_2d) - 1))) - vec2<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_2d) - 1))));
-  ignore(textureLoad(tex_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_2d_arr, clamp(level_idx, 0, (textureNumLevels(tex_2d_arr) - 1))) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_2d_arr) - 1)), clamp(level_idx, 0, (textureNumLevels(tex_2d_arr) - 1))));
-  ignore(textureLoad(tex_3d, clamp(vec3<i32>(1, 2, 3), vec3<i32>(), (textureDimensions(tex_3d, clamp(level_idx, 0, (textureNumLevels(tex_3d) - 1))) - vec3<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_3d) - 1))));
-  ignore(textureLoad(tex_ms_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_ms_2d) - vec2<i32>(1))), sample_idx));
-  ignore(textureLoad(tex_depth_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_depth_2d, clamp(level_idx, 0, (textureNumLevels(tex_depth_2d) - 1))) - vec2<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_depth_2d) - 1))));
-  ignore(textureLoad(tex_depth_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_depth_2d_arr, clamp(level_idx, 0, (textureNumLevels(tex_depth_2d_arr) - 1))) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_depth_2d_arr) - 1)), clamp(level_idx, 0, (textureNumLevels(tex_depth_2d_arr) - 1))));
-  ignore(textureLoad(tex_storage_1d, clamp(1, i32(), (textureDimensions(tex_storage_1d) - i32(1)))));
-  ignore(textureLoad(tex_storage_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_storage_2d) - vec2<i32>(1)))));
-  ignore(textureLoad(tex_storage_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_storage_2d_arr) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_storage_2d_arr) - 1))));
-  ignore(textureLoad(tex_storage_3d, clamp(vec3<i32>(1, 2, 3), vec3<i32>(), (textureDimensions(tex_storage_3d) - vec3<i32>(1)))));
-  ignore(textureLoad(tex_external, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_external) - vec2<i32>(1)))));
+  textureLoad(tex_1d, clamp(1, i32(), (textureDimensions(tex_1d, clamp(level_idx, 0, (textureNumLevels(tex_1d) - 1))) - i32(1))), clamp(level_idx, 0, (textureNumLevels(tex_1d) - 1)));
+  textureLoad(tex_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_2d, clamp(level_idx, 0, (textureNumLevels(tex_2d) - 1))) - vec2<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_2d) - 1)));
+  textureLoad(tex_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_2d_arr, clamp(level_idx, 0, (textureNumLevels(tex_2d_arr) - 1))) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_2d_arr) - 1)), clamp(level_idx, 0, (textureNumLevels(tex_2d_arr) - 1)));
+  textureLoad(tex_3d, clamp(vec3<i32>(1, 2, 3), vec3<i32>(), (textureDimensions(tex_3d, clamp(level_idx, 0, (textureNumLevels(tex_3d) - 1))) - vec3<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_3d) - 1)));
+  textureLoad(tex_ms_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_ms_2d) - vec2<i32>(1))), sample_idx);
+  textureLoad(tex_depth_2d, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_depth_2d, clamp(level_idx, 0, (textureNumLevels(tex_depth_2d) - 1))) - vec2<i32>(1))), clamp(level_idx, 0, (textureNumLevels(tex_depth_2d) - 1)));
+  textureLoad(tex_depth_2d_arr, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_depth_2d_arr, clamp(level_idx, 0, (textureNumLevels(tex_depth_2d_arr) - 1))) - vec2<i32>(1))), clamp(array_idx, 0, (textureNumLayers(tex_depth_2d_arr) - 1)), clamp(level_idx, 0, (textureNumLevels(tex_depth_2d_arr) - 1)));
+  textureLoad(tex_external, clamp(vec2<i32>(1, 2), vec2<i32>(), (textureDimensions(tex_external) - vec2<i32>(1))));
 }
 )";
 
@@ -833,6 +814,331 @@ fn f() {
 )";
 
   auto got = Run<Robustness>(src);
+
+  EXPECT_EQ(expect, str(got));
+}
+
+const char* kOmitSourceShader = R"(
+[[block]]
+struct S {
+  a : array<f32, 4>;
+  b : array<f32>;
+};
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+type UArr = [[stride(16)]] array<f32, 4>;
+[[block]] struct U {
+  a : UArr;
+};
+[[group(1), binding(0)]] var<uniform> u : U;
+
+fn f() {
+  // Signed
+  var i32_sa1 : f32 = s.a[4];
+  var i32_sa2 : f32 = s.a[1];
+  var i32_sa3 : f32 = s.a[0];
+  var i32_sa4 : f32 = s.a[-1];
+  var i32_sa5 : f32 = s.a[-4];
+
+  var i32_sb1 : f32 = s.b[4];
+  var i32_sb2 : f32 = s.b[1];
+  var i32_sb3 : f32 = s.b[0];
+  var i32_sb4 : f32 = s.b[-1];
+  var i32_sb5 : f32 = s.b[-4];
+
+  var i32_ua1 : f32 = u.a[4];
+  var i32_ua2 : f32 = u.a[1];
+  var i32_ua3 : f32 = u.a[0];
+  var i32_ua4 : f32 = u.a[-1];
+  var i32_ua5 : f32 = u.a[-4];
+
+  // Unsigned
+  var u32_sa1 : f32 = s.a[0u];
+  var u32_sa2 : f32 = s.a[1u];
+  var u32_sa3 : f32 = s.a[3u];
+  var u32_sa4 : f32 = s.a[4u];
+  var u32_sa5 : f32 = s.a[10u];
+  var u32_sa6 : f32 = s.a[100u];
+
+  var u32_sb1 : f32 = s.b[0u];
+  var u32_sb2 : f32 = s.b[1u];
+  var u32_sb3 : f32 = s.b[3u];
+  var u32_sb4 : f32 = s.b[4u];
+  var u32_sb5 : f32 = s.b[10u];
+  var u32_sb6 : f32 = s.b[100u];
+
+  var u32_ua1 : f32 = u.a[0u];
+  var u32_ua2 : f32 = u.a[1u];
+  var u32_ua3 : f32 = u.a[3u];
+  var u32_ua4 : f32 = u.a[4u];
+  var u32_ua5 : f32 = u.a[10u];
+  var u32_ua6 : f32 = u.a[100u];
+}
+)";
+
+TEST_F(RobustnessTest, OmitNone) {
+  auto* expect = R"(
+[[block]]
+struct S {
+  a : array<f32, 4>;
+  b : array<f32>;
+};
+
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+type UArr = [[stride(16)]] array<f32, 4>;
+
+[[block]]
+struct U {
+  a : UArr;
+};
+
+[[group(1), binding(0)]] var<uniform> u : U;
+
+fn f() {
+  var i32_sa1 : f32 = s.a[3];
+  var i32_sa2 : f32 = s.a[1];
+  var i32_sa3 : f32 = s.a[0];
+  var i32_sa4 : f32 = s.a[0];
+  var i32_sa5 : f32 = s.a[0];
+  var i32_sb1 : f32 = s.b[min(4u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb2 : f32 = s.b[min(1u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb3 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb4 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb5 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_ua1 : f32 = u.a[3];
+  var i32_ua2 : f32 = u.a[1];
+  var i32_ua3 : f32 = u.a[0];
+  var i32_ua4 : f32 = u.a[0];
+  var i32_ua5 : f32 = u.a[0];
+  var u32_sa1 : f32 = s.a[0u];
+  var u32_sa2 : f32 = s.a[1u];
+  var u32_sa3 : f32 = s.a[3u];
+  var u32_sa4 : f32 = s.a[3u];
+  var u32_sa5 : f32 = s.a[3u];
+  var u32_sa6 : f32 = s.a[3u];
+  var u32_sb1 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb2 : f32 = s.b[min(1u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb3 : f32 = s.b[min(3u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb4 : f32 = s.b[min(4u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb5 : f32 = s.b[min(10u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb6 : f32 = s.b[min(100u, (arrayLength(&(s.b)) - 1u))];
+  var u32_ua1 : f32 = u.a[0u];
+  var u32_ua2 : f32 = u.a[1u];
+  var u32_ua3 : f32 = u.a[3u];
+  var u32_ua4 : f32 = u.a[3u];
+  var u32_ua5 : f32 = u.a[3u];
+  var u32_ua6 : f32 = u.a[3u];
+}
+)";
+
+  Robustness::Config cfg;
+  DataMap data;
+  data.Add<Robustness::Config>(cfg);
+
+  auto got = Run<Robustness>(kOmitSourceShader, data);
+
+  EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(RobustnessTest, OmitStorage) {
+  auto* expect = R"(
+[[block]]
+struct S {
+  a : array<f32, 4>;
+  b : array<f32>;
+};
+
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+type UArr = [[stride(16)]] array<f32, 4>;
+
+[[block]]
+struct U {
+  a : UArr;
+};
+
+[[group(1), binding(0)]] var<uniform> u : U;
+
+fn f() {
+  var i32_sa1 : f32 = s.a[4];
+  var i32_sa2 : f32 = s.a[1];
+  var i32_sa3 : f32 = s.a[0];
+  var i32_sa4 : f32 = s.a[-1];
+  var i32_sa5 : f32 = s.a[-4];
+  var i32_sb1 : f32 = s.b[4];
+  var i32_sb2 : f32 = s.b[1];
+  var i32_sb3 : f32 = s.b[0];
+  var i32_sb4 : f32 = s.b[-1];
+  var i32_sb5 : f32 = s.b[-4];
+  var i32_ua1 : f32 = u.a[3];
+  var i32_ua2 : f32 = u.a[1];
+  var i32_ua3 : f32 = u.a[0];
+  var i32_ua4 : f32 = u.a[0];
+  var i32_ua5 : f32 = u.a[0];
+  var u32_sa1 : f32 = s.a[0u];
+  var u32_sa2 : f32 = s.a[1u];
+  var u32_sa3 : f32 = s.a[3u];
+  var u32_sa4 : f32 = s.a[4u];
+  var u32_sa5 : f32 = s.a[10u];
+  var u32_sa6 : f32 = s.a[100u];
+  var u32_sb1 : f32 = s.b[0u];
+  var u32_sb2 : f32 = s.b[1u];
+  var u32_sb3 : f32 = s.b[3u];
+  var u32_sb4 : f32 = s.b[4u];
+  var u32_sb5 : f32 = s.b[10u];
+  var u32_sb6 : f32 = s.b[100u];
+  var u32_ua1 : f32 = u.a[0u];
+  var u32_ua2 : f32 = u.a[1u];
+  var u32_ua3 : f32 = u.a[3u];
+  var u32_ua4 : f32 = u.a[3u];
+  var u32_ua5 : f32 = u.a[3u];
+  var u32_ua6 : f32 = u.a[3u];
+}
+)";
+
+  Robustness::Config cfg;
+  cfg.omitted_classes.insert(Robustness::StorageClass::kStorage);
+
+  DataMap data;
+  data.Add<Robustness::Config>(cfg);
+
+  auto got = Run<Robustness>(kOmitSourceShader, data);
+
+  EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(RobustnessTest, OmitUniform) {
+  auto* expect = R"(
+[[block]]
+struct S {
+  a : array<f32, 4>;
+  b : array<f32>;
+};
+
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+type UArr = [[stride(16)]] array<f32, 4>;
+
+[[block]]
+struct U {
+  a : UArr;
+};
+
+[[group(1), binding(0)]] var<uniform> u : U;
+
+fn f() {
+  var i32_sa1 : f32 = s.a[3];
+  var i32_sa2 : f32 = s.a[1];
+  var i32_sa3 : f32 = s.a[0];
+  var i32_sa4 : f32 = s.a[0];
+  var i32_sa5 : f32 = s.a[0];
+  var i32_sb1 : f32 = s.b[min(4u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb2 : f32 = s.b[min(1u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb3 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb4 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_sb5 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var i32_ua1 : f32 = u.a[4];
+  var i32_ua2 : f32 = u.a[1];
+  var i32_ua3 : f32 = u.a[0];
+  var i32_ua4 : f32 = u.a[-1];
+  var i32_ua5 : f32 = u.a[-4];
+  var u32_sa1 : f32 = s.a[0u];
+  var u32_sa2 : f32 = s.a[1u];
+  var u32_sa3 : f32 = s.a[3u];
+  var u32_sa4 : f32 = s.a[3u];
+  var u32_sa5 : f32 = s.a[3u];
+  var u32_sa6 : f32 = s.a[3u];
+  var u32_sb1 : f32 = s.b[min(0u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb2 : f32 = s.b[min(1u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb3 : f32 = s.b[min(3u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb4 : f32 = s.b[min(4u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb5 : f32 = s.b[min(10u, (arrayLength(&(s.b)) - 1u))];
+  var u32_sb6 : f32 = s.b[min(100u, (arrayLength(&(s.b)) - 1u))];
+  var u32_ua1 : f32 = u.a[0u];
+  var u32_ua2 : f32 = u.a[1u];
+  var u32_ua3 : f32 = u.a[3u];
+  var u32_ua4 : f32 = u.a[4u];
+  var u32_ua5 : f32 = u.a[10u];
+  var u32_ua6 : f32 = u.a[100u];
+}
+)";
+
+  Robustness::Config cfg;
+  cfg.omitted_classes.insert(Robustness::StorageClass::kUniform);
+
+  DataMap data;
+  data.Add<Robustness::Config>(cfg);
+
+  auto got = Run<Robustness>(kOmitSourceShader, data);
+
+  EXPECT_EQ(expect, str(got));
+}
+
+TEST_F(RobustnessTest, OmitBoth) {
+  auto* expect = R"(
+[[block]]
+struct S {
+  a : array<f32, 4>;
+  b : array<f32>;
+};
+
+[[group(0), binding(0)]] var<storage, read> s : S;
+
+type UArr = [[stride(16)]] array<f32, 4>;
+
+[[block]]
+struct U {
+  a : UArr;
+};
+
+[[group(1), binding(0)]] var<uniform> u : U;
+
+fn f() {
+  var i32_sa1 : f32 = s.a[4];
+  var i32_sa2 : f32 = s.a[1];
+  var i32_sa3 : f32 = s.a[0];
+  var i32_sa4 : f32 = s.a[-1];
+  var i32_sa5 : f32 = s.a[-4];
+  var i32_sb1 : f32 = s.b[4];
+  var i32_sb2 : f32 = s.b[1];
+  var i32_sb3 : f32 = s.b[0];
+  var i32_sb4 : f32 = s.b[-1];
+  var i32_sb5 : f32 = s.b[-4];
+  var i32_ua1 : f32 = u.a[4];
+  var i32_ua2 : f32 = u.a[1];
+  var i32_ua3 : f32 = u.a[0];
+  var i32_ua4 : f32 = u.a[-1];
+  var i32_ua5 : f32 = u.a[-4];
+  var u32_sa1 : f32 = s.a[0u];
+  var u32_sa2 : f32 = s.a[1u];
+  var u32_sa3 : f32 = s.a[3u];
+  var u32_sa4 : f32 = s.a[4u];
+  var u32_sa5 : f32 = s.a[10u];
+  var u32_sa6 : f32 = s.a[100u];
+  var u32_sb1 : f32 = s.b[0u];
+  var u32_sb2 : f32 = s.b[1u];
+  var u32_sb3 : f32 = s.b[3u];
+  var u32_sb4 : f32 = s.b[4u];
+  var u32_sb5 : f32 = s.b[10u];
+  var u32_sb6 : f32 = s.b[100u];
+  var u32_ua1 : f32 = u.a[0u];
+  var u32_ua2 : f32 = u.a[1u];
+  var u32_ua3 : f32 = u.a[3u];
+  var u32_ua4 : f32 = u.a[4u];
+  var u32_ua5 : f32 = u.a[10u];
+  var u32_ua6 : f32 = u.a[100u];
+}
+)";
+
+  Robustness::Config cfg;
+  cfg.omitted_classes.insert(Robustness::StorageClass::kStorage);
+  cfg.omitted_classes.insert(Robustness::StorageClass::kUniform);
+
+  DataMap data;
+  data.Add<Robustness::Config>(cfg);
+
+  auto got = Run<Robustness>(kOmitSourceShader, data);
 
   EXPECT_EQ(expect, str(got));
 }

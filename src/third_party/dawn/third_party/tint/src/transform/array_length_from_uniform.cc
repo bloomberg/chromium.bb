@@ -64,7 +64,7 @@ void ArrayLengthFromUniform::Run(CloneContext& ctx,
 
   // Get (or create, on first call) the uniform buffer that will receive the
   // size of each storage buffer in the module.
-  ast::Variable* buffer_size_ubo = nullptr;
+  const ast::Variable* buffer_size_ubo = nullptr;
   auto get_ubo = [&]() {
     if (!buffer_size_ubo) {
       // Emit an array<vec4<u32>, N>, where N is 1/4 number of elements.
@@ -106,21 +106,21 @@ void ArrayLengthFromUniform::Run(CloneContext& ctx,
     // We assume that the argument to `arrayLength` has the form
     // `&resource.array`, which requires that `InlinePointerLets` and
     // `Simplify` have been run before this transform.
-    auto* param = call_expr->params()[0]->As<ast::UnaryOpExpression>();
-    if (!param || param->op() != ast::UnaryOp::kAddressOf) {
+    auto* param = call_expr->args[0]->As<ast::UnaryOpExpression>();
+    if (!param || param->op != ast::UnaryOp::kAddressOf) {
       TINT_ICE(Transform, ctx.dst->Diagnostics())
           << "expected form of arrayLength argument to be "
              "&resource.array";
       break;
     }
-    auto* accessor = param->expr()->As<ast::MemberAccessorExpression>();
+    auto* accessor = param->expr->As<ast::MemberAccessorExpression>();
     if (!accessor) {
       TINT_ICE(Transform, ctx.dst->Diagnostics())
           << "expected form of arrayLength argument to be "
              "&resource.array";
       break;
     }
-    auto* storage_buffer_expr = accessor->structure();
+    auto* storage_buffer_expr = accessor->structure;
     auto* storage_buffer_sem =
         sem.Get(storage_buffer_expr)->As<sem::VariableUser>();
     if (!storage_buffer_sem) {
@@ -151,7 +151,7 @@ void ArrayLengthFromUniform::Run(CloneContext& ctx,
     // Load the total storage buffer size from the UBO.
     uint32_t array_index = idx_itr->second / 4;
     auto* vec_expr = ctx.dst->IndexAccessor(
-        ctx.dst->MemberAccessor(get_ubo()->symbol(), kBufferSizeMemberName),
+        ctx.dst->MemberAccessor(get_ubo()->symbol, kBufferSizeMemberName),
         array_index);
     uint32_t vec_index = idx_itr->second % 4;
     auto* total_storage_buffer_size =

@@ -50,11 +50,6 @@ namespace {
 using ::payments::mojom::CanMakePaymentQueryResult;
 using ::payments::mojom::HasEnrolledInstrumentQueryResult;
 
-bool IsGooglePaymentMethod(const std::string& method_name) {
-  return method_name == methods::kGooglePay ||
-         method_name == methods::kAndroidPay;
-}
-
 // Redact shipping address before exposing it in ShippingAddressChangeEvent.
 // https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
 mojom::PaymentAddressPtr RedactShippingAddress(
@@ -78,10 +73,9 @@ PaymentRequest::PaymentRequest(
     base::WeakPtr<PaymentRequestWebContentsManager> manager,
     base::WeakPtr<PaymentRequestDisplayManager> display_manager,
     mojo::PendingReceiver<mojom::PaymentRequest> receiver,
+    SPCTransactionMode spc_transaction_mode,
     base::WeakPtr<ObserverForTest> observer_for_testing)
-    : initiator_frame_routing_id_(content::GlobalRenderFrameHostId(
-          render_frame_host->GetProcess()->GetID(),
-          render_frame_host->GetRoutingID())),
+    : initiator_frame_routing_id_(render_frame_host->GetGlobalId()),
       log_(web_contents()),
       delegate_(std::move(delegate)),
       manager_(manager),
@@ -92,6 +86,7 @@ PaymentRequest::PaymentRequest(
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
           render_frame_host->GetLastCommittedURL())),
       frame_security_origin_(render_frame_host->GetLastCommittedOrigin()),
+      spc_transaction_mode_(spc_transaction_mode),
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsOffTheRecord(),
                       ukm::GetSourceIdForWebContentsDocument(web_contents())) {
@@ -99,8 +94,6 @@ PaymentRequest::PaymentRequest(
   // TerminateConnection will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
-  // TODO(crbug.com/683636): Investigate using
-  // set_connection_error_with_reason_handler with Binding::CloseWithReason.
   receiver_.set_disconnect_handler(base::BindOnce(
       &PaymentRequest::TerminateConnection, weak_ptr_factory_.GetWeakPtr()));
 
@@ -219,15 +212,21 @@ void PaymentRequest::Init(
   // Log metrics around which payment methods are requested by the merchant.
   GURL google_pay_url(methods::kGooglePay);
   GURL android_pay_url(methods::kAndroidPay);
+  GURL google_play_billing_url(methods::kGooglePlayBilling);
   // Looking for payment methods that are NOT google-related payment methods.
   auto non_google_it =
       std::find_if(spec_->url_payment_method_identifiers().begin(),
                    spec_->url_payment_method_identifiers().end(),
-                   [google_pay_url, android_pay_url](const GURL& url) {
-                     return url != google_pay_url && url != android_pay_url;
+                   [google_pay_url, android_pay_url,
+                    google_play_billing_url](const GURL& url) {
+                     return url != google_pay_url && url != android_pay_url &&
+                            url != google_play_billing_url;
                    });
   std::vector<JourneyLogger::PaymentMethodCategory> method_categories;
-  if (!spec_->supported_card_networks().empty()) {
+  // Note that only a test can add autofill payment apps when basic-card
+  // feature is disabled.
+  if (base::FeatureList::IsEnabled(::features::kPaymentRequestBasicCard) &&
+      !spec_->supported_card_networks().empty()) {
     method_categories.push_back(
         JourneyLogger::PaymentMethodCategory::kBasicCard);
   }
@@ -235,6 +234,11 @@ void PaymentRequest::Init(
       base::Contains(spec_->url_payment_method_identifiers(),
                      android_pay_url)) {
     method_categories.push_back(JourneyLogger::PaymentMethodCategory::kGoogle);
+  }
+  if (base::Contains(spec_->url_payment_method_identifiers(),
+                     google_play_billing_url)) {
+    method_categories.push_back(
+        JourneyLogger::PaymentMethodCategory::kPlayBilling);
   }
   if (spec_->IsSecurePaymentConfirmationRequested()) {
     method_categories.push_back(
@@ -898,8 +902,11 @@ JourneyLogger::PaymentMethodCategory PaymentRequest::GetSelectedMethodCategory()
       // Intentionally fall through.
     case PaymentApp::Type::NATIVE_MOBILE_APP: {
       for (const std::string& method : selected_app->GetAppMethodNames()) {
-        if (IsGooglePaymentMethod(method))
+        if (method == methods::kGooglePay || method == methods::kAndroidPay) {
           return JourneyLogger::PaymentMethodCategory::kGoogle;
+        } else if (method == methods::kGooglePlayBilling) {
+          return JourneyLogger::PaymentMethodCategory::kPlayBilling;
+        }
       }
       break;
     }

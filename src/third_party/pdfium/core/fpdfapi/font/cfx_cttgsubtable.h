@@ -15,7 +15,7 @@
 
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_CTTGSUBTable {
  public:
@@ -137,10 +137,10 @@ class CFX_CTTGSUBTable {
   std::unique_ptr<TSubTable1> ParseSingleSubstFormat1(FT_Bytes raw);
   std::unique_ptr<TSubTable2> ParseSingleSubstFormat2(FT_Bytes raw);
 
-  Optional<uint32_t> GetVerticalGlyphSub(const TFeatureRecord& feature,
-                                         uint32_t glyphnum) const;
-  Optional<uint32_t> GetVerticalGlyphSub2(const TLookup& lookup,
-                                          uint32_t glyphnum) const;
+  absl::optional<uint32_t> GetVerticalGlyphSub(const TFeatureRecord& feature,
+                                               uint32_t glyphnum) const;
+  absl::optional<uint32_t> GetVerticalGlyphSub2(const TLookup& lookup,
+                                                uint32_t glyphnum) const;
   int GetCoverageIndex(TCoverageFormatBase* Coverage, uint32_t g) const;
 
   uint8_t GetUInt8(FT_Bytes& p) const;

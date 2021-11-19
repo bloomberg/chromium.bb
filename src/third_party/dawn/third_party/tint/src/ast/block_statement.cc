@@ -21,11 +21,11 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::BlockStatement);
 namespace tint {
 namespace ast {
 
-BlockStatement::BlockStatement(ProgramID program_id,
-                               const Source& source,
-                               const StatementList& statements)
-    : Base(program_id, source), statements_(std::move(statements)) {
-  for (auto* stmt : *this) {
+BlockStatement::BlockStatement(ProgramID pid,
+                               const Source& src,
+                               const StatementList& stmts)
+    : Base(pid, src), statements(std::move(stmts)) {
+  for (auto* stmt : statements) {
     TINT_ASSERT(AST, stmt);
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, stmt, program_id);
   }
@@ -35,25 +35,11 @@ BlockStatement::BlockStatement(BlockStatement&&) = default;
 
 BlockStatement::~BlockStatement() = default;
 
-BlockStatement* BlockStatement::Clone(CloneContext* ctx) const {
+const BlockStatement* BlockStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto stmts = ctx->Clone(statements_);
+  auto src = ctx->Clone(source);
+  auto stmts = ctx->Clone(statements);
   return ctx->dst->create<BlockStatement>(src, stmts);
-}
-
-void BlockStatement::to_str(const sem::Info& sem,
-                            std::ostream& out,
-                            size_t indent) const {
-  make_indent(out, indent);
-  out << "Block{" << std::endl;
-
-  for (auto* stmt : *this) {
-    stmt->to_str(sem, out, indent + 2);
-  }
-
-  make_indent(out, indent);
-  out << "}" << std::endl;
 }
 
 }  // namespace ast

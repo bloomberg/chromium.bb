@@ -13,24 +13,22 @@
 # limitations under the License.
 """The Python implementation of the GRPC helloworld.Greeter server."""
 
-from concurrent import futures
 import argparse
+from concurrent import futures
 import logging
 import socket
 
 import grpc
-
-import helloworld_pb2
-import helloworld_pb2_grpc
-
-from grpc_reflection.v1alpha import reflection
 from grpc_health.v1 import health
 from grpc_health.v1 import health_pb2
 from grpc_health.v1 import health_pb2_grpc
+from grpc_reflection.v1alpha import reflection
+import helloworld_pb2
+import helloworld_pb2_grpc
 
 _DESCRIPTION = "A general purpose phony server."
 
-_LISTEN_HOST = "[::]"
+_LISTEN_HOST = "0.0.0.0"
 
 _THREAD_POOL_SIZE = 256
 

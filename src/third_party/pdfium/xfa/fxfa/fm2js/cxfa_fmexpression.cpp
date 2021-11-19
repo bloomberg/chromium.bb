@@ -384,7 +384,7 @@ bool CXFA_FMUnaryExpression::ToJavaScript(CFX_WideTextBuf* js,
   if (CXFA_IsTooBig(*js) || !depthManager.IsWithinMaxDepth())
     return false;
 
-  *js << "pfm_rt." << m_OpName.c_str() << "(";
+  *js << "pfm_rt." << m_OpName << "(";
   if (!m_pExp->ToJavaScript(js, ReturnType::kInferred))
     return false;
   *js << ")";
@@ -771,7 +771,7 @@ void CXFA_FMAST::Trace(cppgc::Visitor* visitor) const {
   ContainerTrace(visitor, expressions_);
 }
 
-Optional<CFX_WideTextBuf> CXFA_FMAST::ToJavaScript() const {
+absl::optional<CFX_WideTextBuf> CXFA_FMAST::ToJavaScript() const {
   CFX_WideTextBuf js;
   if (expressions_.empty()) {
     js << "// comments only";
@@ -796,13 +796,13 @@ Optional<CFX_WideTextBuf> CXFA_FMAST::ToJavaScript() const {
             ? CXFA_FMAssignExpression::ReturnType::kImplied
             : CXFA_FMAssignExpression::ReturnType::kInferred;
     if (!expr->ToJavaScript(&js, ret_type))
-      return pdfium::nullopt;
+      return absl::nullopt;
   }
   js << "return pfm_rt.get_val(pfm_ret);\n";
   js << "}).call(this);";
 
   if (CXFA_IsTooBig(js))
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return js;
 }

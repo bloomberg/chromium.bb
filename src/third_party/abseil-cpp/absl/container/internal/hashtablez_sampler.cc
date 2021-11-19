@@ -21,10 +21,10 @@
 #include <limits>
 
 #include "absl/base/attributes.h"
-#include "absl/base/internal/exponential_biased.h"
 #include "absl/container/internal/have_sse.h"
 #include "absl/debugging/stacktrace.h"
 #include "absl/memory/memory.h"
+#include "absl/profiling/internal/exponential_biased.h"
 #include "absl/profiling/internal/sample_recorder.h"
 #include "absl/synchronization/mutex.h"
 
@@ -40,7 +40,7 @@ ABSL_CONST_INIT std::atomic<bool> g_hashtablez_enabled{
 ABSL_CONST_INIT std::atomic<int32_t> g_hashtablez_sample_parameter{1 << 10};
 
 #if defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
-ABSL_PER_THREAD_TLS_KEYWORD absl::base_internal::ExponentialBiased
+ABSL_PER_THREAD_TLS_KEYWORD absl::profiling_internal::ExponentialBiased
     g_exponential_biased_generator;
 #endif
 
@@ -55,6 +55,9 @@ HashtablezSampler& GlobalHashtablezSampler() {
   return *sampler;
 }
 
+// TODO(bradleybear): The comments at this constructors declaration say that the
+// fields are not initialized, but this definition does initialize the fields.
+// Something needs to be cleaned up.
 HashtablezInfo::HashtablezInfo() { PrepareForSampling(); }
 HashtablezInfo::~HashtablezInfo() = default;
 
@@ -98,10 +101,12 @@ static bool ShouldForceSampling() {
   return state == kForce;
 }
 
-HashtablezInfo* SampleSlow(int64_t* next_sample) {
+HashtablezInfo* SampleSlow(int64_t* next_sample, size_t inline_element_size) {
   if (ABSL_PREDICT_FALSE(ShouldForceSampling())) {
     *next_sample = 1;
-    return GlobalHashtablezSampler().Register();
+    HashtablezInfo* result = GlobalHashtablezSampler().Register();
+    result->inline_element_size = inline_element_size;
+    return result;
   }
 
 #if !defined(ABSL_INTERNAL_HASHTABLEZ_SAMPLE)
@@ -123,10 +128,12 @@ HashtablezInfo* SampleSlow(int64_t* next_sample) {
   // that case.
   if (first) {
     if (ABSL_PREDICT_TRUE(--*next_sample > 0)) return nullptr;
-    return SampleSlow(next_sample);
+    return SampleSlow(next_sample, inline_element_size);
   }
 
-  return GlobalHashtablezSampler().Register();
+  HashtablezInfo* result = GlobalHashtablezSampler().Register();
+  result->inline_element_size = inline_element_size;
+  return result;
 #endif
 }
 

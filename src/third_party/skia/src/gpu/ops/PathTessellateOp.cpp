@@ -9,7 +9,7 @@
 
 #include "src/gpu/GrAppliedClip.h"
 #include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/tessellate/GrPathWedgeTessellator.h"
+#include "src/gpu/tessellate/PathWedgeTessellator.h"
 #include "src/gpu/tessellate/shaders/GrPathTessellationShader.h"
 
 namespace skgpu::v1 {
@@ -35,8 +35,8 @@ void PathTessellateOp::prepareTessellator(const GrTessellationShader::ProgramArg
     SkASSERT(!fTessellationProgram);
     auto* pipeline = GrTessellationShader::MakePipeline(args, fAAType, std::move(appliedClip),
                                                         std::move(fProcessors));
-    fTessellator = GrPathWedgeTessellator::Make(args.fArena, fViewMatrix, fColor,
-                                                fPath.countVerbs(), *pipeline, *args.fCaps);
+    fTessellator = PathWedgeTessellator::Make(args.fArena, fViewMatrix, fColor, fPath.countVerbs(),
+                                              *pipeline, *args.fCaps);
     fTessellationProgram = GrTessellationShader::MakeProgram(args, fTessellator->shader(), pipeline,
                                                              fStencil);
 }
@@ -64,7 +64,7 @@ void PathTessellateOp::onPrepare(GrOpFlushState* flushState) {
                                  &flushState->caps()}, flushState->detachAppliedClip());
         SkASSERT(fTessellator);
     }
-    fTessellator->prepare(flushState, this->bounds(), {SkMatrix::I(), fPath}, fPath.countVerbs());
+    fTessellator->prepare(flushState, {SkMatrix::I(), fPath}, fPath.countVerbs());
 }
 
 void PathTessellateOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) {

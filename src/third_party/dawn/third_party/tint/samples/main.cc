@@ -20,6 +20,11 @@
 #include <string>
 #include <vector>
 
+#if TINT_BUILD_GLSL_WRITER
+#include "StandAlone/ResourceLimits.h"
+#include "glslang/Public/ShaderLang.h"
+#endif
+
 #if TINT_BUILD_SPV_READER
 #include "spirv-tools/libspirv.hpp"
 #endif  // TINT_BUILD_SPV_READER
@@ -64,7 +69,6 @@ struct Options {
   std::string output_file = "-";  // Default to stdout
 
   bool parse_only = false;
-  bool dump_ast = false;
   bool disable_workgroup_init = false;
   bool validate = false;
   bool demangle = false;
@@ -104,7 +108,6 @@ const char kUsage[] = R"(Usage: tint [options] <input-file>
                                 renamer
                                 robustness
   --parse-only              -- Stop after parsing the input
-  --dump-ast                -- Dump the generated AST to stdout
   --disable-workgroup-init  -- Disable workgroup memory zero initialization.
   --demangle                -- Preserve original source names. Demangle them.
                                Affects AST dumping, and text-based output languages.
@@ -347,9 +350,6 @@ std::string ResourceTypeToString(
     case tint::inspector::ResourceBinding::ResourceType::kMultisampledTexture:
       return "MultisampledTexture";
     case tint::inspector::ResourceBinding::ResourceType::
-        kReadOnlyStorageTexture:
-      return "ReadOnlyStorageTexture";
-    case tint::inspector::ResourceBinding::ResourceType::
         kWriteOnlyStorageTexture:
       return "WriteOnlyStorageTexture";
     case tint::inspector::ResourceBinding::ResourceType::kDepthTexture:
@@ -407,8 +407,6 @@ bool ParseArgs(const std::vector<std::string>& args, Options* opts) {
       opts->transforms = split_transform_names(args[i]);
     } else if (arg == "--parse-only") {
       opts->parse_only = true;
-    } else if (arg == "--dump-ast") {
-      opts->dump_ast = true;
     } else if (arg == "--disable-workgroup-init") {
       opts->disable_workgroup_init = true;
     } else if (arg == "--demangle") {
@@ -720,8 +718,6 @@ bool GenerateMsl(const tint::Program* program, const Options& options) {
         case tint::inspector::ResourceBinding::ResourceType::
             kMultisampledTexture:
         case tint::inspector::ResourceBinding::ResourceType::
-            kReadOnlyStorageTexture:
-        case tint::inspector::ResourceBinding::ResourceType::
             kWriteOnlyStorageTexture:
         case tint::inspector::ResourceBinding::ResourceType::kDepthTexture:
         case tint::inspector::ResourceBinding::ResourceType::
@@ -850,28 +846,70 @@ bool GenerateHlsl(const tint::Program* program, const Options& options) {
 #endif  // TINT_BUILD_HLSL_WRITER
 }
 
+#if TINT_BUILD_GLSL_WRITER
+EShLanguage pipeline_stage_to_esh_language(tint::ast::PipelineStage stage) {
+  switch (stage) {
+    case tint::ast::PipelineStage::kFragment:
+      return EShLangFragment;
+    case tint::ast::PipelineStage::kVertex:
+      return EShLangVertex;
+    case tint::ast::PipelineStage::kCompute:
+      return EShLangCompute;
+    default:
+      TINT_ASSERT(AST, false);
+      return EShLangVertex;
+  }
+}
+#endif
+
 /// Generate GLSL code for a program.
 /// @param program the program to generate
 /// @param options the options that Tint was invoked with
 /// @returns true on success
 bool GenerateGlsl(const tint::Program* program, const Options& options) {
 #if TINT_BUILD_GLSL_WRITER
+  if (options.validate) {
+    glslang::InitializeProcess();
+  }
   tint::writer::glsl::Options gen_options;
-  auto result = tint::writer::glsl::Generate(program, gen_options);
-  if (!result.success) {
-    PrintWGSL(std::cerr, *program);
-    std::cerr << "Failed to generate: " << result.error << std::endl;
-    return false;
-  }
+  tint::inspector::Inspector inspector(program);
+  for (auto& entry_point : inspector.GetEntryPoints()) {
+    auto result =
+        tint::writer::glsl::Generate(program, gen_options, entry_point.name);
+    if (!result.success) {
+      PrintWGSL(std::cerr, *program);
+      std::cerr << "Failed to generate: " << result.error << std::endl;
+      return false;
+    }
 
-  if (!WriteFile(options.output_file, "w", result.glsl)) {
-    return false;
-  }
+    if (!WriteFile(options.output_file, "w", result.glsl)) {
+      return false;
+    }
 
-  // TODO(senorblanco): implement GLSL validation
+    if (options.validate) {
+      for (auto entry_pt : result.entry_points) {
+        EShLanguage lang = pipeline_stage_to_esh_language(entry_pt.second);
+        glslang::TShader shader(lang);
+        const char* strings[1] = {result.glsl.c_str()};
+        int lengths[1] = {static_cast<int>(result.glsl.length())};
+        shader.setStringsWithLengths(strings, lengths, 1);
+        shader.setEntryPoint("main");
+        bool glslang_result =
+            shader.parse(&glslang::DefaultTBuiltInResource, 310, EEsProfile,
+                         false, false, EShMsgDefault);
+        if (!glslang_result) {
+          std::cerr << "Error parsing GLSL shader:\n"
+                    << shader.getInfoLog() << "\n"
+                    << shader.getInfoDebugLog() << "\n";
+        }
+      }
+    }
+  }
 
   return true;
 #else
+  (void)program;
+  (void)options;
   std::cerr << "GLSL writer not enabled in tint build" << std::endl;
   return false;
 #endif  // TINT_BUILD_GLSL_WRITER
@@ -977,10 +1015,6 @@ int main(int argc, const char** argv) {
   }
   if (program->Diagnostics().count() > 0) {
     diag_formatter.format(program->Diagnostics(), diag_printer.get());
-  }
-
-  if (options.dump_ast) {
-    std::cout << std::endl << program->to_str(options.demangle) << std::endl;
   }
 
   if (!program->IsValid()) {

@@ -47,7 +47,7 @@
 #include "aom_dsp/aom_dsp_common.h"
 
 #if CONFIG_AV1_DECODER
-#include "aom_dsp/grain_synthesis.h"
+#include "av1/decoder/grain_synthesis.h"
 #endif
 
 #include "aom_dsp/grain_table.h"
@@ -183,8 +183,8 @@ static void print_variance_y(FILE *debug_file, aom_image_t *raw,
   grain->bit_depth = raw->bit_depth;
   aom_img_alloc(&renoised, raw->fmt, raw->w, raw->h, 1);
 
-  if (aom_add_film_grain(grain, denoised, &renoised)) {
-    fprintf(stderr, "Internal failure in aom_add_film_grain().\n");
+  if (av1_add_film_grain(grain, denoised, &renoised)) {
+    fprintf(stderr, "Internal failure in av1_add_film_grain().\n");
     aom_img_free(&renoised);
     return;
   }

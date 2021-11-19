@@ -22,22 +22,18 @@ namespace tint {
 namespace ast {
 
 // ExternalTexture::ExternalTexture() : Base(ast::TextureDimension::k2d) {}
-ExternalTexture::ExternalTexture(ProgramID program_id, const Source& source)
-    : Base(program_id, source, ast::TextureDimension::k2d) {}
+ExternalTexture::ExternalTexture(ProgramID pid, const Source& src)
+    : Base(pid, src, ast::TextureDimension::k2d) {}
 
 ExternalTexture::ExternalTexture(ExternalTexture&&) = default;
 
 ExternalTexture::~ExternalTexture() = default;
 
-std::string ExternalTexture::type_name() const {
-  return "__external_texture";
-}
-
 std::string ExternalTexture::FriendlyName(const SymbolTable&) const {
   return "texture_external";
 }
 
-ExternalTexture* ExternalTexture::Clone(CloneContext* ctx) const {
+const ExternalTexture* ExternalTexture::Clone(CloneContext* ctx) const {
   return ctx->dst->create<ExternalTexture>();
 }
 

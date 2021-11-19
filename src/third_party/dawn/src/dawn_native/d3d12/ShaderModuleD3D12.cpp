@@ -106,6 +106,9 @@ namespace dawn_native { namespace d3d12 {
             tint::transform::BindingRemapper::BindingPoints bindingPoints;
             tint::transform::BindingRemapper::AccessControls accessControls;
             bool isRobustnessEnabled;
+            bool usesNumWorkgroups;
+            uint32_t numWorkgroupsRegisterSpace;
+            uint32_t numWorkgroupsShaderRegister;
 
             // FXC/DXC common inputs
             bool disableWorkgroupInit;
@@ -125,7 +128,7 @@ namespace dawn_native { namespace d3d12 {
                 uint32_t compileFlags,
                 const Device* device,
                 const tint::Program* program,
-                const BindingInfoArray& moduleBindingInfo) {
+                const EntryPointMetadata& entryPoint) {
                 Compiler compiler;
                 uint64_t dxcVersion = 0;
                 if (device->IsToggleEnabled(Toggle::UseDXC)) {
@@ -145,6 +148,7 @@ namespace dawn_native { namespace d3d12 {
                 // Tint AST to make the "bindings" decoration match the offset chosen by
                 // d3d12::BindGroupLayout so that Tint produces HLSL with the correct registers
                 // assigned to each interface variable.
+                const BindingInfoArray& moduleBindingInfo = entryPoint.bindings;
                 for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
                     const BindGroupLayout* bgl = ToBackend(layout->GetBindGroupLayout(group));
                     const auto& groupBindingInfo = moduleBindingInfo[group];
@@ -189,6 +193,9 @@ namespace dawn_native { namespace d3d12 {
                 request.isRobustnessEnabled = device->IsRobustnessEnabled();
                 request.disableWorkgroupInit =
                     device->IsToggleEnabled(Toggle::DisableWorkgroupInit);
+                request.usesNumWorkgroups = entryPoint.usesNumWorkgroups;
+                request.numWorkgroupsShaderRegister = layout->GetNumWorkgroupsShaderRegister();
+                request.numWorkgroupsRegisterSpace = layout->GetNumWorkgroupsRegisterSpace();
                 request.fxcVersion = compiler == Compiler::FXC ? GetD3DCompilerVersion() : 0;
                 request.dxcVersion = compiler == Compiler::DXC ? dxcVersion : 0;
                 request.deviceInfo = &device->GetDeviceInfo();
@@ -233,6 +240,10 @@ namespace dawn_native { namespace d3d12 {
 
                 stream << " accessControls=";
                 Serialize(stream, accessControls);
+
+                stream << " useNumWorkgroups=" << usesNumWorkgroups;
+                stream << " numWorkgroupsRegisterSpace=" << numWorkgroupsRegisterSpace;
+                stream << " numWorkgroupsShaderRegister=" << numWorkgroupsShaderRegister;
 
                 stream << " shaderModel=" << deviceInfo->shaderModel;
                 stream << " disableWorkgroupInit=" << disableWorkgroupInit;
@@ -330,9 +341,8 @@ namespace dawn_native { namespace d3d12 {
                 ComPtr<IDxcBlobEncoding> errors;
                 DAWN_TRY(CheckHRESULT(result->GetErrorBuffer(&errors), "DXC get error buffer"));
 
-                std::string message = std::string("DXC compile failed with ") +
-                                      static_cast<char*>(errors->GetBufferPointer());
-                return DAWN_VALIDATION_ERROR(message);
+                return DAWN_FORMAT_VALIDATION_ERROR("DXC compile failed with: %s",
+                                                    static_cast<char*>(errors->GetBufferPointer()));
             }
 
             ComPtr<IDxcBlob> compiledShader;
@@ -359,14 +369,12 @@ namespace dawn_native { namespace d3d12 {
             ComPtr<ID3DBlob> compiledShader;
             ComPtr<ID3DBlob> errors;
 
-            if (FAILED(functions->d3dCompile(hlslSource.c_str(), hlslSource.length(), nullptr,
-                                             nullptr, nullptr, request.entryPointName,
-                                             targetProfile, request.compileFlags, 0,
-                                             &compiledShader, &errors))) {
-                std::string message = std::string("D3D compile failed with ") +
-                                      static_cast<char*>(errors->GetBufferPointer());
-                return DAWN_VALIDATION_ERROR(message);
-            }
+            DAWN_INVALID_IF(FAILED(functions->d3dCompile(
+                                hlslSource.c_str(), hlslSource.length(), nullptr, nullptr, nullptr,
+                                request.entryPointName, targetProfile, request.compileFlags, 0,
+                                &compiledShader, &errors)),
+                            "D3D compile failed with: %s",
+                            static_cast<char*>(errors->GetBufferPointer()));
 
             return std::move(compiledShader);
         }
@@ -410,24 +418,24 @@ namespace dawn_native { namespace d3d12 {
                 if (it != data->remappings.end()) {
                     *remappedEntryPointName = it->second;
                 } else {
-                    if (request.disableSymbolRenaming) {
-                        *remappedEntryPointName = request.entryPointName;
-                    } else {
-                        return DAWN_VALIDATION_ERROR(
-                            "Could not find remapped name for entry point.");
-                    }
+                    DAWN_INVALID_IF(!request.disableSymbolRenaming,
+                                    "Could not find remapped name for entry point.");
+
+                    *remappedEntryPointName = request.entryPointName;
                 }
             } else {
-                return DAWN_VALIDATION_ERROR("Transform output missing renamer data.");
+                return DAWN_FORMAT_VALIDATION_ERROR("Transform output missing renamer data.");
             }
 
             tint::writer::hlsl::Options options;
             options.disable_workgroup_init = request.disableWorkgroupInit;
-            auto result = tint::writer::hlsl::Generate(&transformedProgram, options);
-            if (!result.success) {
-                errorStream << "Generator: " << result.error << std::endl;
-                return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+            if (request.usesNumWorkgroups) {
+                options.root_constant_binding_point.group = request.numWorkgroupsRegisterSpace;
+                options.root_constant_binding_point.binding = request.numWorkgroupsShaderRegister;
             }
+            auto result = tint::writer::hlsl::Generate(&transformedProgram, options);
+            DAWN_INVALID_IF(!result.success, "An error occured while generating HLSL: %s",
+                            result.error);
 
             return std::move(result.hlsl);
         }
@@ -459,6 +467,22 @@ namespace dawn_native { namespace d3d12 {
                     DAWN_TRY_ASSIGN(compiledShader->compiledFXCShader,
                                     CompileShaderFXC(functions, request, hlslSource));
                     break;
+            }
+
+            if (dumpShaders && request.compiler == ShaderCompilationRequest::Compiler::FXC) {
+                std::ostringstream dumpedMsg;
+                dumpedMsg << "/* Dumped disassembled DXBC */" << std::endl;
+
+                ComPtr<ID3DBlob> disassembly;
+                if (FAILED(functions->d3dDisassemble(
+                        compiledShader->compiledFXCShader->GetBufferPointer(),
+                        compiledShader->compiledFXCShader->GetBufferSize(), 0, nullptr,
+                        &disassembly))) {
+                    dumpedMsg << "D3D disassemble failed" << std::endl;
+                } else {
+                    dumpedMsg << reinterpret_cast<const char*>(disassembly->GetBufferPointer());
+                }
+                DumpShadersEmitLog(WGPULoggingType_Info, dumpedMsg.str().c_str());
             }
 
             return {};
@@ -531,9 +555,9 @@ namespace dawn_native { namespace d3d12 {
         }
 
         ShaderCompilationRequest request;
-        DAWN_TRY_ASSIGN(request, ShaderCompilationRequest::Create(
-                                     entryPointName, stage, layout, compileFlags, device, program,
-                                     GetEntryPoint(entryPointName).bindings));
+        DAWN_TRY_ASSIGN(request, ShaderCompilationRequest::Create(entryPointName, stage, layout,
+                                                                  compileFlags, device, program,
+                                                                  GetEntryPoint(entryPointName)));
 
         PersistentCacheKey shaderCacheKey;
         DAWN_TRY_ASSIGN(shaderCacheKey, request.CreateCacheKey());

@@ -9,11 +9,15 @@
 #define PathInnerTriangulateOp_DEFINED
 
 #include "src/gpu/geometry/GrInnerFanTriangulator.h"
+#include "src/gpu/ops/FillPathFlags.h"
 #include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/tessellate/GrTessTypes.h"
 #include "src/gpu/tessellate/shaders/GrTessellationShader.h"
 
-class GrPathCurveTessellator;
+namespace skgpu {
+
+class PathCurveTessellator;
+
+};
 
 namespace skgpu::v1 {
 
@@ -29,8 +33,11 @@ class PathInnerTriangulateOp final : public GrDrawOp {
 private:
     DEFINE_OP_CLASS_ID
 
-    PathInnerTriangulateOp(const SkMatrix& viewMatrix, const SkPath& path, GrPaint&& paint,
-                           GrAAType aaType, GrTessellationPathFlags pathFlags,
+    PathInnerTriangulateOp(const SkMatrix& viewMatrix,
+                           const SkPath& path,
+                           GrPaint&& paint,
+                           GrAAType aaType,
+                           FillPathFlags pathFlags,
                            const SkRect& drawBounds)
             : GrDrawOp(ClassID())
             , fPathFlags(pathFlags)
@@ -59,7 +66,7 @@ private:
     void onPrepare(GrOpFlushState*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
 
-    const GrTessellationPathFlags fPathFlags;
+    const FillPathFlags fPathFlags;
     const SkMatrix fViewMatrix;
     const SkPath fPath;
     const GrAAType fAAType;
@@ -75,7 +82,7 @@ private:
     const GrPipeline* fPipelineForFills = nullptr;
 
     // Tessellates the outer curves.
-    GrPathCurveTessellator* fTessellator = nullptr;
+    PathCurveTessellator* fTessellator = nullptr;
 
     // Pass 1: Tessellate the outer curves into the stencil buffer.
     const GrProgramInfo* fStencilCurvesProgram = nullptr;

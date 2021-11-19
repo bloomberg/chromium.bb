@@ -28,31 +28,19 @@ namespace ast {
 class Pointer : public Castable<Pointer, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param subtype the pointee type
   /// @param storage_class the storage class of the pointer
   /// @param access the access control of the pointer
-  Pointer(ProgramID program_id,
-          const Source& source,
-          Type* const subtype,
+  Pointer(ProgramID pid,
+          const Source& src,
+          const Type* const subtype,
           ast::StorageClass storage_class,
           ast::Access access);
   /// Move constructor
   Pointer(Pointer&&);
   ~Pointer() override;
-
-  /// @returns the pointee type
-  Type* type() const { return const_cast<Type*>(subtype_); }
-
-  /// @returns the storage class of the pointer
-  ast::StorageClass storage_class() const { return storage_class_; }
-
-  /// @returns the access control of the pointer
-  ast::Access access() const { return access_; }
-
-  /// @returns the name for this type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -62,12 +50,16 @@ class Pointer : public Castable<Pointer, Type> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  Pointer* Clone(CloneContext* ctx) const override;
+  const Pointer* Clone(CloneContext* ctx) const override;
 
- private:
-  Type const* const subtype_;
-  ast::StorageClass const storage_class_;
-  ast::Access const access_;
+  /// The pointee type
+  const Type* const type;
+
+  /// The storage class of the pointer
+  ast::StorageClass const storage_class;
+
+  /// The access control of the pointer
+  ast::Access const access;
 };
 
 }  // namespace ast

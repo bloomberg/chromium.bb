@@ -10,6 +10,7 @@
 #ifndef LIBANGLE_RENDERER_VULKAN_SURFACEVK_H_
 #define LIBANGLE_RENDERER_VULKAN_SURFACEVK_H_
 
+#include "common/CircularBuffer.h"
 #include "common/vulkan/vk_headers.h"
 #include "libANGLE/renderer/SurfaceImpl.h"
 #include "libANGLE/renderer/vulkan/RenderTargetVk.h"
@@ -149,6 +150,7 @@ struct ImagePresentHistory : angle::NonCopyable
 {
     ImagePresentHistory();
     ImagePresentHistory(ImagePresentHistory &&other);
+    ImagePresentHistory &operator=(ImagePresentHistory &&other);
     ~ImagePresentHistory();
 
     vk::Semaphore semaphore;
@@ -168,9 +170,8 @@ struct SwapchainImage : angle::NonCopyable
 
     // A circular array of semaphores used for presenting this image.
     static constexpr size_t kPresentHistorySize = kSwapHistorySize + 1;
-    std::array<ImagePresentHistory, kPresentHistorySize> presentHistory;
-    size_t currentPresentHistoryIndex = 0;
-    uint64_t mFrameNumber             = 0;
+    angle::CircularBuffer<ImagePresentHistory, kPresentHistorySize> presentHistory;
+    uint64_t mFrameNumber = 0;
 };
 }  // namespace impl
 
@@ -235,7 +236,7 @@ class WindowSurfaceVk : public SurfaceVk
                                         const vk::RenderPass &compatibleRenderPass,
                                         vk::Framebuffer **framebufferOut);
 
-    vk::Semaphore getAcquireImageSemaphore();
+    const vk::Semaphore *getAndResetAcquireImageSemaphore();
 
     VkSurfaceTransformFlagBitsKHR getPreTransform() const
     {
@@ -314,8 +315,7 @@ class WindowSurfaceVk : public SurfaceVk
 
     // A circular buffer that stores the serial of the submission fence of the context on every
     // swap. The CPU is throttled by waiting for the 2nd previous serial to finish.
-    std::array<Serial, impl::kSwapHistorySize> mSwapHistory;
-    size_t mCurrentSwapHistoryIndex;
+    angle::CircularBuffer<Serial, impl::kSwapHistorySize> mSwapHistory;
 
     // The previous swapchain which needs to be scheduled for destruction when appropriate.  This
     // will be done when the first image of the current swapchain is presented.  If there were
@@ -328,9 +328,36 @@ class WindowSurfaceVk : public SurfaceVk
 
     std::vector<impl::SwapchainImage> mSwapchainImages;
     std::vector<angle::ObserverBinding> mSwapchainImageBindings;
-    vk::Semaphore mAcquireImageSemaphore;
     uint32_t mCurrentSwapchainImageIndex;
 
+    // Given that the CPU is throttled after a number of swaps, there is an upper bound to the
+    // number of semaphores that are used to acquire swapchain images, and that is
+    // kSwapHistorySize+1:
+    //
+    //                    Unrelated submission in      Submission as part of
+    //                      the middle of frame            buffer swap
+    //                               |                          |
+    //                               V                          V
+    //     Frame i:     ... ANI ... QS (fence Fa) ... Wait(..) QS (Fence Fb) QP
+    //     Frame i+1:   ... ANI ... QS (fence Fc) ... Wait(..) QS (Fence Fd) QP
+    //     Frame i+2:   ... ANI ... QS (fence Fe) ... Wait(Fb) QS (Fence Ff) QP
+    //                                                 ^
+    //                                                 |
+    //                                          CPU throttling
+    //
+    // In frame i+2 (2 is kSwapHistorySize), ANGLE waits on fence Fb which means that the semaphore
+    // used for Frame i's ANI can be reused (because Fb-is-signalled implies Fa-is-signalled).
+    // Before this wait, there were three acquire semaphores in use corresponding to frames i, i+1
+    // and i+2.  Frame i+3 can reuse the semaphore of frame i.
+    angle::CircularBuffer<vk::Semaphore, impl::kSwapHistorySize + 1> mAcquireImageSemaphores;
+    // A pointer to mAcquireImageSemaphores.  This is set when an image is acquired and is waited on
+    // by the next submission (which uses this image), at which point it is reset so future
+    // submissions don't wait on it until the next acquire.
+    const vk::Semaphore *mAcquireImageSemaphore;
+
+    // There is no direct signal from Vulkan regarding when a Present semaphore can be be reused.
+    // During window resizing when swapchains are recreated every frame, the number of in-flight
+    // present semaphores can grow indefinitely.  See doc/PresentSemaphores.md.
     vk::Recycler<vk::Semaphore> mPresentSemaphoreRecycler;
 
     // Depth/stencil image.  Possibly multisampled.

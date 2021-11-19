@@ -19,6 +19,10 @@ class Node : public LinkNode<Node> {
         return id_;
     }
 
+    void set_id(int id) {
+        id_ = id;
+    }
+
   private:
     int id_;
 };
@@ -360,6 +364,72 @@ TEST(LinkedList, IsInList) {
     EXPECT_FALSE(n.IsInList());
     list.Append(&n);
     EXPECT_TRUE(n.IsInList());
-    n.RemoveFromList();
+    EXPECT_TRUE(n.RemoveFromList());
     EXPECT_FALSE(n.IsInList());
+    EXPECT_FALSE(n.RemoveFromList());
+}
+
+TEST(LinkedList, MoveInto) {
+    LinkedList<Node> l1;
+    LinkedList<Node> l2;
+
+    Node n1(1);
+    Node n2(2);
+    l1.Append(&n1);
+    l2.Append(&n2);
+
+    l2.MoveInto(&l1);
+    const int expected[] = {1, 2};
+    ExpectListContents(l1, 2, expected);
+    EXPECT_TRUE(l2.empty());
+}
+
+TEST(LinkedList, MoveEmptyListInto) {
+    LinkedList<Node> l1;
+    LinkedList<Node> l2;
+
+    Node n1(1);
+    Node n2(2);
+    l1.Append(&n1);
+    l1.Append(&n2);
+
+    l2.MoveInto(&l1);
+    const int expected[] = {1, 2};
+    ExpectListContents(l1, 2, expected);
+    EXPECT_TRUE(l2.empty());
+}
+
+TEST(LinkedList, MoveIntoEmpty) {
+    LinkedList<Node> l1;
+    LinkedList<Node> l2;
+
+    Node n1(1);
+    Node n2(2);
+    l2.Append(&n1);
+    l2.Append(&n2);
+
+    l2.MoveInto(&l1);
+    const int expected[] = {1, 2};
+    ExpectListContents(l1, 2, expected);
+    EXPECT_TRUE(l2.empty());
+}
+
+TEST(LinkedList, RangeBasedModify) {
+    LinkedList<Node> list;
+
+    Node n1(1);
+    Node n2(2);
+    list.Append(&n1);
+    list.Append(&n2);
+
+    for (LinkNode<Node>* node : list) {
+        node->value()->set_id(node->value()->id() + 1);
+    }
+    const int expected[] = {2, 3};
+    ExpectListContents(list, 2, expected);
+}
+
+TEST(LinkedList, RangeBasedEndIsEnd) {
+    LinkedList<Node> list;
+    EXPECT_EQ(list.end(), *end(list));
 }

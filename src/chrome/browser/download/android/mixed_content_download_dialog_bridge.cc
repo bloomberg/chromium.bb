@@ -46,13 +46,16 @@ MixedContentDownloadDialogBridge::~MixedContentDownloadDialogBridge() {
 void MixedContentDownloadDialogBridge::CreateDialog(
     download::DownloadItem* download,
     const base::FilePath& base_name,
-    download::DownloadItem::MixedContentStatus mixed_content_status,
     ui::WindowAndroid* window_android,
     base::OnceCallback<void(bool /* accept */)> callback) {
+  if (!window_android) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), false));
+    return;
+  }
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MixedContentDownloadDialogBridge_showDialog(
       env, java_object_, window_android->GetJavaObject(),
-      mixed_content_status == MixedContentStatus::BLOCK,
       base::android::ConvertUTF16ToJavaString(
           env, base::UTF8ToUTF16(base_name.value())),
       download->GetTotalBytes(),

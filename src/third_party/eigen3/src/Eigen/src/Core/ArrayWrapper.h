@@ -10,6 +10,8 @@
 #ifndef EIGEN_ARRAYWRAPPER_H
 #define EIGEN_ARRAYWRAPPER_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class ArrayWrapper

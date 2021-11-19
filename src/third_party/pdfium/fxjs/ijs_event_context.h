@@ -9,7 +9,7 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "fxjs/ijs_runtime.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_FormField;
 
@@ -20,7 +20,7 @@ class IJS_EventContext {
  public:
   virtual ~IJS_EventContext() = default;
 
-  virtual Optional<IJS_Runtime::JS_Error> RunScript(
+  virtual absl::optional<IJS_Runtime::JS_Error> RunScript(
       const WideString& script) = 0;
 
   virtual void OnDoc_Open(const WideString& strTargetName) = 0;

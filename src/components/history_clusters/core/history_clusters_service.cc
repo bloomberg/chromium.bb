@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
@@ -30,6 +29,7 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history_clusters/core/history_clusters_buildflags.h"
+#include "components/history_clusters/core/history_clusters_db_tasks.h"
 #include "components/history_clusters/core/memories_features.h"
 #include "components/history_clusters/core/remote_clustering_backend.h"
 #include "components/optimization_guide/core/entity_metadata_provider.h"
@@ -45,195 +45,6 @@
 namespace history_clusters {
 
 namespace {
-
-// Gets persisted `AnnotatedVisit`s to cluster including both persisted visits
-// from the history DB and incomplete visits.
-// - We don't want incomplete visits to be mysteriously missing from the
-//   Clusters UI. They haven't recorded the page end metrics yet, but that's
-//   fine.
-// - The history backend will return persisted visits with already computed
-//  `referring_visit_of_redirect_chain_start`, while incomplete visits will have
-//   to invoke `GetRedirectChainStart()`.
-class GetAnnotatedVisitsToCluster : public history::HistoryDBTask {
- public:
-  using Callback = base::OnceCallback<void(std::vector<history::AnnotatedVisit>,
-                                           base::Time)>;
-
-  GetAnnotatedVisitsToCluster(
-      HistoryClustersService::IncompleteVisitMap incomplete_visit_map,
-      base::Time end_time,
-      size_t max_count,
-      Callback callback)
-      : incomplete_visit_map_(incomplete_visit_map),
-        original_end_time_(end_time),
-        visit_soft_cap_(max_count),
-        callback_(std::move(callback)) {
-    // Provide a parameter-controlled hard-cap of the max visits to fetch.
-    // Note in most cases we stop fetching visits far before reaching this
-    // number. This is to prevent OOM errors. See https://crbug.com/1262016.
-    options_.max_count = kMaxVisitsToCluster.Get();
-
-    // Determine initial query options.
-    options_.end_time = end_time;
-    // Super simple method of pagination: one day a time, broken up at 4AM.
-    // Get 4AM yesterday in the morning, and 4AM today in the afternoon.
-    base::Time begin = end_time.is_null() ? base::Time::Now() : end_time;
-    begin -= base::Hours(12);
-    base::Time::Exploded exploded_begin;
-    begin.LocalExplode(&exploded_begin);
-    exploded_begin.hour = 4;
-    exploded_begin.minute = 0;
-    exploded_begin.second = 0;
-    exploded_begin.millisecond = 0;
-    // If for some reason this fails, fallback to 24 hours ago.
-    if (!base::Time::FromLocalExploded(exploded_begin, &options_.begin_time))
-      options_.begin_time = end_time - base::Days(1);
-
-    // History Clusters wants a complete navigation graph and internally handles
-    // de-duplication.
-    options_.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
-  }
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    // Accumulate 1 day at a time of visits to avoid breaking up clusters.
-    // We stop once we meet `visit_soft_cap_`. Also hard cap at
-    // `options_.max_count` which is enforced at the database level to avoid any
-    // one day blasting past the hard cap, causing OOM errors.
-    while (!exhausted_history_ && annotated_visits_.size() < visit_soft_cap_ &&
-           annotated_visits_.size() < size_t(options_.EffectiveMaxCount())) {
-      auto newly_fetched_annotated_visits =
-          backend->GetAnnotatedVisits(options_);
-      // Tack on all the newly fetched visits onto our accumulator vector.
-      base::ranges::move(newly_fetched_annotated_visits,
-                         std::back_inserter(annotated_visits_));
-      // TODO(tommycli): Connect this to History's limit defined internally in
-      //  components/history.
-      exhausted_history_ =
-          (base::Time::Now() - options_.begin_time) >= base::Days(90);
-
-      // If we didn't get enough visits, ask for another day's worth from
-      // History and call this method again when done.
-      options_.end_time = options_.begin_time;
-      options_.begin_time = options_.end_time - base::Days(1);
-    }
-
-    // Now we have enough visits for clustering, add all incomplete visits
-    // between the current `options.begin_time` and `original_end_time`, as
-    // otherwise they will be mysteriously missing from the Clusters UI. They
-    // haven't recorded the page end metrics yet, but that's fine. Filter
-    // incomplete visits to those that have a `url_row`, have a `visit_row`, and
-    // match `options`.
-    for (const auto& item : incomplete_visit_map_) {
-      auto& incomplete_visit_context_annotations = item.second;
-      // Discard incomplete visits that don't have a `url_row` and `visit_row`.
-      // It's possible that the `url_row` and `visit_row` will be available
-      // before they're needed (i.e. before
-      // `GetAnnotatedVisitsToCluster::RunOnDBThread()`). But since it'll only
-      // have a copy of the incomplete context annotations, the copy won't have
-      // the fields updated. A weak ptr won't help since it can't be accessed on
-      // different threads. A `scoped_refptr` could work. However, only very
-      // recently opened tabs won't have the rows set, so we don't bother using
-      // `scoped_refptr`s.
-      if (!incomplete_visit_context_annotations.status.history_rows)
-        continue;
-
-      // Discard incomplete visits outside the time bounds. `begin_time` is
-      // inclusive, and `end_time` is exclusive.
-      const auto& visit_time =
-          incomplete_visit_context_annotations.visit_row.visit_time;
-      if ((!options_.begin_time.is_null() &&
-           visit_time < options_.begin_time) ||
-          (!original_end_time_.is_null() && visit_time >= original_end_time_)) {
-        continue;
-      }
-
-      // Discard any incomplete visits that were already fetched from History.
-      // This can happen when History finishes writing the rows after we
-      // snapshot the incomplete visits at the beginning of this task.
-      // https://crbug.com/1252047.
-      history::VisitID visit_id =
-          incomplete_visit_context_annotations.visit_row.visit_id;
-      if (base::Contains(annotated_visits_, visit_id, [](const auto& visit) {
-            return visit.visit_row.visit_id;
-          })) {
-        continue;
-      }
-
-      // Compute `referring_visit_of_redirect_chain_start` for each incomplete
-      // visit.
-      const auto& first_redirect = backend->GetRedirectChainStart(
-          incomplete_visit_context_annotations.visit_row);
-
-      // Compute `visit_source` for each incomplete visit.
-      history::VisitSource visit_source;
-      backend->GetVisitSource(
-          incomplete_visit_context_annotations.visit_row.visit_id,
-          &visit_source);
-
-      annotated_visits_.push_back(
-          {incomplete_visit_context_annotations.url_row,
-           incomplete_visit_context_annotations.visit_row,
-           incomplete_visit_context_annotations.context_annotations,
-           // TODO(tommycli): Add content annotations.
-           {},
-           first_redirect.referring_visit,
-           first_redirect.opener_visit,
-           visit_source});
-    }
-
-    // Filter out visits from sync.
-    // TODO(manukh): Consider allowing the clustering backend to handle sync
-    //  visits.
-    annotated_visits_.erase(
-        base::ranges::remove_if(annotated_visits_,
-                                [](const auto& annotated_visit) {
-                                  return annotated_visit.source ==
-                                         history::SOURCE_SYNCED;
-                                }),
-        annotated_visits_.end());
-
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    // Assuming we didn't completely exhaust history, the
-    // `continuation_end_time` is the `options.begin_time` of the latest History
-    // query we completed.
-    base::Time continuation_end_time;
-    if (!exhausted_history_)
-      continuation_end_time = options_.begin_time;
-
-    std::move(callback_).Run(annotated_visits_, continuation_end_time);
-  }
-
- private:
-  // Incomplete visits that have history rows and are withing the time frame of
-  // the completed visits fetched will be appended to the annotated visits
-  // returned for clustering. It's used in the DB thread as each filtered visit
-  // will need to fetch its `referring_visit_of_redirect_chain_start`.
-  HistoryClustersService::IncompleteVisitMap incomplete_visit_map_;
-  // The end time used in the initial history request for completed visits. Used
-  // in the DB thread to filter `incomplete_visit_map_`.
-  base::Time original_end_time_;
-  // Set to true if all annotated visits were fetched. It's set in the DB thread
-  // and used in the main thread to determine `continuation_end_time`.
-  bool exhausted_history_{false};
-  // The options to use when fetching annotated visits. It's updated on each
-  // fetch in the DB thread and used in the main thread to determine
-  // `continuation_end_time`.
-  history::QueryOptions options_;
-  // This task stops fetching days of History once we've hit this soft cap,
-  // which is controlled by the UI. Note there is a separate
-  // parameter-controlled hard cap to prevent OOM errors if a single day has too
-  // many visits.
-  size_t visit_soft_cap_;
-  // Persisted visits retrieved from the history DB thread and returned through
-  // the callback on the main thread.
-  std::vector<history::AnnotatedVisit> annotated_visits_;
-  // The callback called on the main thread on completion.
-  Callback callback_;
-};
 
 // Returns true if `find_nodes` matches `cluster`.
 // This is deliberately meant to closely mirror the History implementation..
@@ -354,6 +165,7 @@ std::string GetDebugJSONForVisits(
     base::DictionaryValue debug_visit;
     debug_visit.SetIntKey("visitId", visit.visit_row.visit_id);
     debug_visit.SetStringKey("url", visit.url_row.url().spec());
+    debug_visit.SetStringKey("title", visit.url_row.title());
     debug_visit.SetIntKey("foreground_time_secs",
                           visit.visit_row.visit_duration.InSeconds());
     debug_visit.SetIntKey(
@@ -393,6 +205,8 @@ std::string GetDebugJSONForClusters(
       debug_keywords.Append(keyword);
     }
     debug_cluster.SetKey("keywords", std::move(debug_keywords));
+    debug_cluster.SetBoolKey("should_show_on_prominent_ui_surfaces",
+                             cluster.should_show_on_prominent_ui_surfaces);
 
     base::ListValue debug_visits;
     for (const auto& visit : cluster.visits) {
@@ -400,6 +214,31 @@ std::string GetDebugJSONForClusters(
       debug_visit.SetIntKey("visit_id",
                             visit.annotated_visit.visit_row.visit_id);
       debug_visit.SetDoubleKey("score", visit.score);
+      base::ListValue debug_categories;
+      for (const auto& category : visit.annotated_visit.content_annotations
+                                      .model_annotations.categories) {
+        base::DictionaryValue debug_category;
+        debug_category.SetStringKey("name", category.id);
+        debug_category.SetIntKey("value", category.weight);
+        debug_categories.Append(std::move(debug_category));
+      }
+      debug_visit.SetKey("categories", std::move(debug_categories));
+      base::ListValue debug_entities;
+      for (const auto& entity : visit.annotated_visit.content_annotations
+                                    .model_annotations.entities) {
+        base::DictionaryValue debug_entity;
+        debug_entity.SetStringKey("name", entity.id);
+        debug_entity.SetIntKey("value", entity.weight);
+        debug_entities.Append(std::move(debug_entity));
+      }
+      debug_visit.SetKey("entities", std::move(debug_entities));
+
+      base::ListValue debug_duplicate_visits;
+      for (const auto duplicate_visit : visit.duplicate_visit_ids) {
+        debug_duplicate_visits.Append(int(duplicate_visit));
+      }
+      debug_visit.SetKey("duplicate_visits", std::move(debug_duplicate_visits));
+
       debug_visits.Append(std::move(debug_visit));
     }
     debug_cluster.SetKey("visits", std::move(debug_visits));
@@ -527,6 +366,7 @@ void HistoryClustersService::CompleteVisitContextAnnotationsIfReady(
 
 void HistoryClustersService::QueryClusters(
     const std::string& query,
+    base::Time begin_time,
     base::Time end_time,
     const size_t max_count,
     QueryClustersCallback callback,
@@ -564,7 +404,8 @@ void HistoryClustersService::QueryClusters(
   history_service_->ScheduleDBTask(
       FROM_HERE,
       std::make_unique<GetAnnotatedVisitsToCluster>(
-          incomplete_visit_context_annotations_, end_time, max_visit_count,
+          incomplete_visit_context_annotations_, begin_time, end_time,
+          max_visit_count,
           base::BindOnce(&HistoryClustersService::OnGotHistoryVisits,
                          weak_ptr_factory_.GetWeakPtr(), query,
                          std::move(callback))),
@@ -593,15 +434,18 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
     // (The cache_query_task_tracker_ should also do this.)
     all_keywords_cache_timestamp_ = base::Time::Now();
 
+    // Query for 30 days of clusters since older visits won't have keywords.
+    const auto begin_time = base::Time::Now() - base::Days(30);
     // TODO(tommycli): This `QueryClusters()` correctly returns only clusters
-    // with `should_show_on_prominent_ui_surfaces` set to true because the
-    // `query` parameter is set to empty. However, it would be nice if this
-    // was more explicit, rather than just a happy coincidence. Likely the real
-    // solution will be to explicitly ask the backend for this bag of keywords.
+    //  with `should_show_on_prominent_ui_surfaces` set to true because the
+    //  `query` parameter is set to empty. However, it would be nice if this
+    //  was more explicit, rather than just a happy coincidence. Likely the real
+    //  solution will be to explicitly ask the backend for this bag of keywords.
     QueryClusters(
-        /*query=*/"", /*end_time=*/base::Time(), kMaxCountForKeywordCacheBatch,
+        /*query=*/"", begin_time, /*end_time=*/
+        base::Time(), kMaxCountForKeywordCacheBatch,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
-                       weak_ptr_factory_.GetWeakPtr(),
+                       weak_ptr_factory_.GetWeakPtr(), begin_time,
                        std::make_unique<std::set<std::u16string>>()),
         &cache_query_task_tracker_);
   }
@@ -687,6 +531,7 @@ void HistoryClustersService::ClearKeywordCache() {
 }
 
 void HistoryClustersService::PopulateClusterKeywordCache(
+    base::Time begin_time,
     std::unique_ptr<std::set<std::u16string>> keyword_accumulator,
     QueryClustersResult result) {
   // Copy keywords from every cluster into a the accumulator set.
@@ -703,15 +548,21 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   // If there's still more to get, ask for another batch of keywords.
   if (result.continuation_end_time) {
     QueryClusters(
-        /*query=*/"", *result.continuation_end_time,
+        /*query=*/"", begin_time, *result.continuation_end_time,
         kMaxCountForKeywordCacheBatch,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
-                       weak_ptr_factory_.GetWeakPtr(),
+                       weak_ptr_factory_.GetWeakPtr(), begin_time,
                        // Pass on the accumulator set to the next callback.
                        std::move(keyword_accumulator)),
         &cache_query_task_tracker_);
     return;
   }
+
+  // TODO(manukh) Even though `keyword_accumulator` is a `std::set`, we still
+  //  often end up with duplicate keywords since different strings in the
+  //  accumulator may contain the same words. We should add a metric to measure
+  //  the keyword cache size and consider preventing duplicate keywords being
+  //  inserted.
 
   // We've got all the keywords now, time to populate the cache.
   all_keywords_cache_.clear();

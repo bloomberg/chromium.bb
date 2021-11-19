@@ -11,6 +11,8 @@
 #ifndef EIGEN_RESHAPED_H
 #define EIGEN_RESHAPED_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class Reshaped

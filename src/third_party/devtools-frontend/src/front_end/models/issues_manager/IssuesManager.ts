@@ -18,6 +18,7 @@ import type {Issue, IssueKind} from './Issue.js';
 import {Events} from './IssuesManagerEvents.js';
 import {LowTextContrastIssue} from './LowTextContrastIssue.js';
 import {MixedContentIssue} from './MixedContentIssue.js';
+import {NavigatorUserAgentIssue} from './NavigatorUserAgentIssue.js';
 import {QuirksModeIssue} from './QuirksModeIssue.js';
 import {SameSiteCookieIssue} from './SameSiteCookieIssue.js';
 import {SharedArrayBufferIssue} from './SharedArrayBufferIssue.js';
@@ -85,7 +86,7 @@ const issueCodeHandlers = new Map<
   ],
   [
     Protocol.Audits.InspectorIssueCode.NavigatorUserAgentIssue,
-    DeprecationIssue.fromInspectorIssue,
+    NavigatorUserAgentIssue.fromInspectorIssue,
   ],
   [
     Protocol.Audits.InspectorIssueCode.AttributionReportingIssue,
@@ -98,6 +99,10 @@ const issueCodeHandlers = new Map<
   [
     Protocol.Audits.InspectorIssueCode.GenericIssue,
     GenericIssue.fromInspectorIssue,
+  ],
+  [
+    Protocol.Audits.InspectorIssueCode.DeprecationIssue,
+    DeprecationIssue.fromInspectorIssue,
   ],
 ]);
 

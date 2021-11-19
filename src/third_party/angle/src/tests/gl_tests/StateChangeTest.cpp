@@ -802,7 +802,7 @@ TEST_P(StateChangeRenderTest, GenerateMipmap)
     drawQuad(mProgram, "position", 0.5f);
     EXPECT_PIXEL_COLOR_EQ(0, 0, red);
 
-    // This will trigger the texture to be re-created on FL9_3.
+    // This may trigger the texture to be re-created internally.
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // Explictly check FBO status sync in some versions of ANGLE no_error skips FBO checks.
@@ -6905,7 +6905,7 @@ void main()
         EGLConfig config           = window->getConfig();
         EGLint pbufferAttributes[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE, EGL_NONE};
         EGLSurface surface         = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
-        EGLContext ctx             = window->createContext(EGL_NO_CONTEXT);
+        EGLContext ctx             = window->createContext(EGL_NO_CONTEXT, nullptr);
         EXPECT_EGL_SUCCESS();
         std::thread flushThread = std::thread([&]() {
             EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));

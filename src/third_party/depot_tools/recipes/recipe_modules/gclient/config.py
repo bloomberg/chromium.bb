@@ -456,27 +456,34 @@ def tint(c):
   c.got_revision_mapping['tint'] = 'got_revision'
 
 @config_ctx()
+def gerrit(c):
+  s = c.solutions.add()
+  s.name = 'gerrit'
+  s.url = 'https://gerrit.googlesource.com/gerrit.git'
+  c.revisions['gerrit'] = 'refs/heads/master'
+
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_binary_size(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_binary_size'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'binary-size.git')
   c.got_revision_mapping['gerrit_plugins_binary_size'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_buildbucket(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_buildbucket'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'buildbucket.git')
   c.got_revision_mapping['gerrit_plugins_buildbucket'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_chromium_behavior(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_chromium_behavior'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'chromium-behavior.git')
   c.got_revision_mapping['gerrit_plugins_chromium_behavior'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_chromium_binary_size(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_chromium_binary_size'
@@ -484,42 +491,42 @@ def gerrit_plugins_chromium_binary_size(c):
                          'chromium-binary-size.git')
   c.got_revision_mapping['gerrit_plugins_chromium_binary_size'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_chromium_style(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_chromium_style'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'chromium-style.git')
   c.got_revision_mapping['gerrit_plugins_binary_size'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_chumpdetector(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_chumpdetector'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'chumpdetector.git')
   c.got_revision_mapping['gerrit_plugins_chumpdetector'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_code_coverage(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_code_coverage'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'code-coverage.git')
   c.got_revision_mapping['gerrit_plugins_code_coverage'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_git_numberer(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_git_numberer'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'git-numberer.git')
   c.got_revision_mapping['gerrit_plugins_git_numberer'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_landingwidget(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_landingwidget'
   s.url = ChromiumGitURL(c, 'infra', 'gerrit-plugins', 'landingwidget.git')
   c.got_revision_mapping['gerrit_plugins_landingwidget'] = 'got_revision'
 
-@config_ctx()
+@config_ctx(includes=['gerrit'])
 def gerrit_plugins_tricium(c):
   s = c.solutions.add()
   s.name = 'gerrit_plugins_tricium'

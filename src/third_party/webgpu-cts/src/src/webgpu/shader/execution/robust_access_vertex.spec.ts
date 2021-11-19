@@ -518,14 +518,6 @@ class F extends GPUTest {
       { x: 0, y: 0 },
       { exp: new Uint8Array([0x00, 0xff, 0x00, 0xff]), layout: { mipLevel: 0 } }
     );
-    // Validate wee see red on the right pixel, showing that at least one case succeed, prevent the test
-    // from unexpectly doing nothing and pass the validation
-    this.expectSinglePixelIn2DTexture(
-      colorAttachment,
-      'rgba8unorm',
-      { x: 1, y: 0 },
-      { exp: new Uint8Array([0xff, 0x00, 0x00, 0xff]), layout: { mipLevel: 0 } }
-    );
   }
 }
 

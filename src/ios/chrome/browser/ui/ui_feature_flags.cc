@@ -16,9 +16,6 @@ const base::Feature kTestFeature{"TestFeature",
 const base::Feature kSharedHighlightingIOS{"SharedHighlightingIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableFREDefaultBrowserScreen{
-    "EnableFREDefaultBrowserScreen", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnableFREDefaultBrowserScreenTesting{
     "EnableFREDefaultBrowserScreenTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -38,9 +35,6 @@ const base::Feature kIncognitoBrandConsistencyForIOS{
 
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kLocationPermissionsPrompt{
-    "LocationPermissionsPrompt", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDefaultBrowserFullscreenPromoExperiment{
     "DefaultBrowserFullscreenPromoExperiment",
@@ -69,6 +63,9 @@ const base::Feature kUseLensToSearchForImage{"UseLensToSearchForImage",
 
 const base::Feature kCredentialProviderExtensionPromo{
     "CredentialProviderExtensionPromo", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRemoveExcessNTPs{"RemoveExcessNTPs",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsContextMenuActionsRefreshEnabled() {
   return base::FeatureList::IsEnabled(kContextMenuActionsRefresh);

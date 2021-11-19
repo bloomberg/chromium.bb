@@ -31,7 +31,6 @@ limitations under the License.
 #include "mlir/IR/PatternMatch.h"  // from @llvm-project
 #include "mlir/Support/LLVM.h"  // from @llvm-project
 #include "mlir/Transforms/DialectConversion.h"  // from @llvm-project
-#include "mlir/Transforms/GreedyPatternRewriteDriver.h"  // from @llvm-project
 #include "tensorflow/compiler/mlir/lite/ir/tfl_ops.h"
 #include "tensorflow/compiler/mlir/tosa/transforms/legalize_common.h"
 #include "tensorflow/compiler/mlir/tosa/transforms/legalize_utils.h"
@@ -104,6 +103,7 @@ DECL_CONVERT_OP(Elu);
 DECL_CONVERT_OP(Softmax);
 DECL_CONVERT_OP(LogSoftmax);
 DECL_CONVERT_OP(Sqrt);
+DECL_CONVERT_OP(L2Normalization);
 DECL_CONVERT_OP(ReduceAny);
 DECL_CONVERT_OP(ReduceMax);
 DECL_CONVERT_OP(ReduceMin);
@@ -114,6 +114,7 @@ DECL_CONVERT_OP(Conv2D);
 DECL_CONVERT_OP(TransposeConv);
 DECL_CONVERT_OP(DepthwiseConv2D);
 DECL_CONVERT_OP(FullyConnected);
+DECL_CONVERT_OP(BatchMatMul);
 DECL_CONVERT_OP(Split);
 DECL_CONVERT_OP(SplitV);
 DECL_CONVERT_OP(Pack);
@@ -127,6 +128,7 @@ DECL_CONVERT_OP(ZerosLike);
 DECL_CONVERT_OP(Less);
 DECL_CONVERT_OP(LessEqual);
 DECL_CONVERT_OP(Pad);
+DECL_CONVERT_OP(PadV2);
 DECL_CONVERT_OP(ResizeBilinear);
 DECL_CONVERT_OP(ResizeNearestNeighbor);
 DECL_CONVERT_OP(Select);
@@ -160,7 +162,7 @@ DECL_CONVERT_OP(FakeQuant);
 
 struct ConvertConstantOp : public RewritePattern {
   explicit ConvertConstantOp(MLIRContext* context)
-      : RewritePattern(ConstantOp::getOperationName(), 1, context) {}
+      : RewritePattern(arith::ConstantOp::getOperationName(), 1, context) {}
   LogicalResult matchAndRewrite(Operation* op,
                                 PatternRewriter& rewriter) const override;
 };
@@ -849,9 +851,19 @@ LogicalResult ConvertTFLAveragePool2DOp::matchAndRewrite(
       return failure();
   }
 
-  CreateReplaceOpAndInfer<tosa::AvgPool2dOp>(rewriter, op, output_type,
-                                             tfl_avgpool_op.input(),
-                                             kernel_size, stride, pad);
+  auto average_etype = input_type.getElementType();
+  auto average_type = output_type.clone(average_etype);
+
+  Value result = CreateOpAndInfer<tosa::AvgPool2dOp>(
+      rewriter, op->getLoc(), average_type, tfl_avgpool_op.input(), kernel_size,
+      stride, pad);
+
+  if (average_type != output_type) {
+    result = CreateOpAndInfer<tosa::CastOp>(rewriter, op->getLoc(), output_type,
+                                            result);
+  }
+
+  rewriter.replaceOp(op, result);
   return success();
 }
 
@@ -1265,6 +1277,66 @@ LogicalResult ConvertTFLDepthwiseConv2DOp::matchAndRewrite(
   }
 
   rewriter.replaceOp(op, {conv2d_output});
+
+  return success();
+}
+
+LogicalResult ConvertTFLBatchMatMulOp::matchAndRewrite(
+    Operation* op, PatternRewriter& rewriter) const {
+  auto tfl_mm_op = cast<TFL::BatchMatMulOp>(op);
+  auto result_ty = tfl_mm_op.getType().cast<ShapedType>();
+  Value lhs = tfl_mm_op.x();
+  Value rhs = tfl_mm_op.y();
+  ShapedType lhs_type = lhs.getType().cast<ShapedType>();
+  ShapedType rhs_type = rhs.getType().cast<ShapedType>();
+  bool transpose_lhs = tfl_mm_op.adj_x();
+  bool transpose_rhs = tfl_mm_op.adj_y();
+
+  bool lhs_is_qtype =
+      lhs_type.getElementType().isa<mlir::quant::QuantizedType>();
+  bool rhs_is_qtype =
+      rhs_type.getElementType().isa<mlir::quant::QuantizedType>();
+  bool result_is_qtype =
+      result_ty.getElementType().isa<mlir::quant::QuantizedType>();
+
+  if ((lhs_is_qtype != rhs_is_qtype) || (lhs_is_qtype != result_is_qtype)) {
+    return op->emitOpError(
+        "ConvertTFLBatchMatMulOp: lhs/rhs/output tensor should "
+        "be all quantized or all floating-point.");
+  }
+
+  if (transpose_lhs) {
+    auto lhs_ty = lhs.getType().cast<ShapedType>();
+    Value perms =
+        getConstTensor<int32_t>(rewriter, op, /*vec=*/{0, 2, 1}, /*shape=*/{3})
+            .getValue();
+    Type output_type = UnrankedTensorType::get(lhs_ty.getElementType());
+    lhs = CreateOpAndInfer<tosa::TransposeOp>(rewriter, op->getLoc(),
+                                              output_type, lhs, perms)
+              .getResult();
+  }
+
+  if (transpose_rhs) {
+    auto rhs_ty = rhs.getType().cast<ShapedType>();
+    Value perms =
+        getConstTensor<int32_t>(rewriter, op, /*vec=*/{0, 2, 1}, /*shape=*/{3})
+            .getValue();
+    Type output_type = UnrankedTensorType::get(rhs_ty.getElementType());
+    rhs = CreateOpAndInfer<tosa::TransposeOp>(rewriter, op->getLoc(),
+                                              output_type, rhs, perms)
+              .getResult();
+  }
+
+  auto matmul = CreateOpAndInfer<tosa::MatMulOp>(rewriter, op->getLoc(),
+                                                 result_ty, lhs, rhs)
+                    .getResult();
+
+  if (lhs_is_qtype) {
+    matmul = buildRescaleOpConvOutput(rewriter, op, matmul, lhs_type, rhs_type,
+                                      result_ty);
+  }
+
+  rewriter.replaceOp(op, matmul);
 
   return success();
 }
@@ -1801,6 +1873,50 @@ LogicalResult ConvertTFLSqrtOp::matchAndRewrite(
   return success();
 }
 
+LogicalResult ConvertTFLL2NormalizationOp::matchAndRewrite(
+    Operation* op, PatternRewriter& rewriter) const {
+  auto tfl_l2norm_op = cast<TFL::L2NormalizationOp>(op);
+  auto input = tfl_l2norm_op.input();
+  auto input_ty = input.getType().cast<ShapedType>();
+  auto loc = op->getLoc();
+
+  if (!input_ty.hasRank()) return failure();
+
+  if (input_ty.getElementType().isF32()) {
+    auto shift = rewriter.getIntegerAttr(rewriter.getI32Type(), 0);
+    auto result_ty = UnrankedTensorType::get(input_ty.getElementType());
+    auto mul = CreateOpAndInfer<tosa::MulOp>(rewriter, loc, result_ty, input,
+                                             input, shift);
+    auto sum = CreateOpAndInfer<tosa::ReduceSumOp>(
+        rewriter, loc, result_ty, mul,
+        rewriter.getI64IntegerAttr(input_ty.getRank() - 1));
+
+    SmallVector<float> min(1, sqrt(std::numeric_limits<float>::min()));
+    Value min_val = getConstTensor<float>(rewriter, op, min, {}).getValue();
+    auto max = CreateOpAndInfer<tosa::MaximumOp>(rewriter, loc, result_ty, sum,
+                                                 min_val);
+    auto rsqrt = CreateOpAndInfer<tosa::RsqrtOp>(rewriter, loc, result_ty, max)
+                     .getResult();
+    auto result = CreateOpAndInfer<tosa::MulOp>(rewriter, loc, result_ty, rsqrt,
+                                                input, shift)
+                      .getResult();
+
+    auto fused_activation_fn = tfl_l2norm_op.fused_activation_functionAttr();
+
+    if (fused_activation_fn) {
+      llvm::Optional<Value> fused_activation_val =
+          convertFusedActivation(rewriter, op, result, fused_activation_fn);
+      if (!fused_activation_val) return failure();
+      result = fused_activation_val.getValue();
+    }
+
+    rewriter.replaceOp(op, result);
+    return success();
+  }
+
+  return failure();
+}
+
 LogicalResult ConvertTFLLogSoftmaxOp::matchAndRewrite(
     Operation* op, PatternRewriter& rewriter) const {
   auto tfl_logsoftmax_op = cast<TFL::LogSoftmaxOp>(op);
@@ -2016,6 +2132,82 @@ LogicalResult ConvertTFLPadOp::matchAndRewrite(
                                     tfl_pad_op.input(), tfl_pad_op.padding());
 
   rewriter.replaceOp(op, {pad_op.getResult()});
+  return success();
+}
+
+LogicalResult ConvertTFLPadV2Op::matchAndRewrite(
+    Operation* op, PatternRewriter& rewriter) const {
+  auto tfl_pad_op = cast<TFL::PadV2Op>(op);
+
+  Value input = tfl_pad_op.input();
+  auto input_ty = input.getType().cast<ShapedType>();
+
+  if (!input_ty.hasRank()) return failure();
+
+  ElementsAttr constant_values_attr;
+  if (!matchPattern(tfl_pad_op.constant_values(),
+                    m_Constant(&constant_values_attr)))
+    return failure();
+
+  ElementsAttr padding_values_attr;
+  if (!matchPattern(tfl_pad_op.padding(), m_Constant(&padding_values_attr)))
+    return failure();
+
+  Attribute constant_attr = constant_values_attr.getValue<Attribute>(0);
+  llvm::SmallVector<int32_t> padding;
+  for (auto pad : padding_values_attr.getValues<int32_t>())
+    padding.push_back(pad);
+
+  for (int i = 0, s = padding.size(); i < s; i += 2) {
+    int64_t axis = i / 2;
+    int32_t pad_up = padding[i];
+    int32_t pad_down = padding[i + 1];
+    input_ty = input.getType().cast<ShapedType>();
+
+    if (pad_up == 0 && pad_down == 0) continue;
+
+    llvm::SmallVector<Value> concat_inputs;
+    if (pad_up != 0) {
+      llvm::SmallVector<int64_t> pad_shape(input_ty.getShape().begin(),
+                                           input_ty.getShape().end());
+      pad_shape[axis] = pad_up;
+      auto pad_type =
+          RankedTensorType::get(pad_shape, input_ty.getElementType());
+      // Change this for dynamic shapes.
+      if (!pad_type.hasStaticShape()) return failure();
+
+      auto pad_attr = DenseElementsAttr::get(pad_type, constant_attr);
+      concat_inputs.push_back(
+          rewriter.create<tosa::ConstOp>(op->getLoc(), pad_type, pad_attr)
+              .getResult());
+    }
+
+    concat_inputs.push_back(input);
+
+    if (pad_down != 0) {
+      llvm::SmallVector<int64_t> pad_shape(input_ty.getShape().begin(),
+                                           input_ty.getShape().end());
+      pad_shape[axis] = pad_down;
+      auto pad_type =
+          RankedTensorType::get(pad_shape, input_ty.getElementType());
+      // Change this for dynamic shapes.
+      if (!pad_type.hasStaticShape()) return failure();
+
+      auto pad_attr = DenseElementsAttr::get(pad_type, constant_attr);
+      concat_inputs.push_back(
+          rewriter.create<tosa::ConstOp>(op->getLoc(), pad_type, pad_attr)
+              .getResult());
+    }
+
+    auto concat_ty = UnrankedTensorType::get(input_ty.getElementType());
+    input = CreateOpAndInfer<tosa::ConcatOp>(rewriter, op->getLoc(), concat_ty,
+                                             concat_inputs,
+                                             rewriter.getI64IntegerAttr(axis))
+                .getResult();
+  }
+
+  rewriter.replaceOp(op, input);
+
   return success();
 }
 
@@ -2747,7 +2939,7 @@ LogicalResult ConvertTFLQConstOp::matchAndRewrite(
 
 LogicalResult ConvertConstantOp::matchAndRewrite(
     Operation* op, PatternRewriter& rewriter) const {
-  auto tfl_const_op = cast<ConstantOp>(op);
+  auto tfl_const_op = cast<arith::ConstantOp>(op);
 
   ShapedType output_type =
       tfl_const_op.getResult().getType().dyn_cast<ShapedType>();
@@ -2872,28 +3064,22 @@ LogicalResult ConvertTFLFakeQuantOp::matchAndRewrite(
 }
 
 void LegalizeTFL::runOnFunction() {
-  ConversionTarget target(getContext());
+  OwningRewritePatternList patterns(&getContext());
+  populateLegalizeTFLPatterns(&getContext(), patterns);
 
-  target.addIllegalDialect<TFL::TensorFlowLiteDialect>();
-  target.addIllegalOp<quant::StatisticsOp>();
-  // Operations are legal if they don't contain any illegal type.
-  target.markUnknownOpDynamicallyLegal([](Operation* op) {
-    if (auto constantOp = dyn_cast<ConstantOp>(op)) {
-      return constantOp.getType().isa<NoneType>();
-    }
-    return true;
-  });
-
-  auto* ctx = &getContext();
   auto func = getFunction();
+  if (ApplyPatternsWithShapeResolution(func, std::move(patterns)).failed()) {
+    signalPassFailure();
+  }
+}
+}  // namespace
 
-  RewritePatternSet patterns(&getContext());
-
+void populateLegalizeTFLPatterns(MLIRContext* ctx,
+                                 RewritePatternSet& patterns) {
   // Add the generated patterns to the list.
   populateWithGenerated(patterns);
 
 #define DEF_PATTERN_INSERT(PAT) patterns.insert<Convert##PAT##Op>(ctx);
-
   DEF_PATTERN_INSERT(TFLRelu);
   DEF_PATTERN_INSERT(TFLRelu6);
   DEF_PATTERN_INSERT(TFLEqual);
@@ -2924,6 +3110,7 @@ void LegalizeTFL::runOnFunction() {
   DEF_PATTERN_INSERT(TFLSoftmax);
   DEF_PATTERN_INSERT(TFLLogSoftmax);
   DEF_PATTERN_INSERT(TFLSqrt);
+  DEF_PATTERN_INSERT(TFLL2Normalization);
   DEF_PATTERN_INSERT(TFLReduceAny);
   DEF_PATTERN_INSERT(TFLReduceMax);
   DEF_PATTERN_INSERT(TFLReduceMin);
@@ -2934,6 +3121,7 @@ void LegalizeTFL::runOnFunction() {
   DEF_PATTERN_INSERT(TFLTransposeConv);
   DEF_PATTERN_INSERT(TFLDepthwiseConv2D);
   DEF_PATTERN_INSERT(TFLFullyConnected);
+  DEF_PATTERN_INSERT(TFLBatchMatMul);
   DEF_PATTERN_INSERT(TFLSplit);
   DEF_PATTERN_INSERT(TFLSplitV);
   DEF_PATTERN_INSERT(TFLPack);
@@ -2947,6 +3135,7 @@ void LegalizeTFL::runOnFunction() {
   DEF_PATTERN_INSERT(TFLLess);
   DEF_PATTERN_INSERT(TFLLessEqual);
   DEF_PATTERN_INSERT(TFLPad);
+  DEF_PATTERN_INSERT(TFLPadV2);
   DEF_PATTERN_INSERT(TFLResizeBilinear);
   DEF_PATTERN_INSERT(TFLResizeNearestNeighbor);
   DEF_PATTERN_INSERT(TFLSelect);
@@ -2973,54 +3162,8 @@ void LegalizeTFL::runOnFunction() {
   DEF_PATTERN_INSERT(TFLArgMax);
   DEF_PATTERN_INSERT(TFLFakeQuant);
   DEF_PATTERN_INSERT(TFLOneHot);
-
-  GreedyRewriteConfig config;
-  config.useTopDownTraversal = true;
-  if (failed(applyPatternsAndFoldGreedily(func, std::move(patterns), config))) {
-    signalPassFailure();
-  }
-
-  func.walk([&](tosa::ConstOp op) {
-    auto ety = op.value().getType().getElementType();
-    auto new_ty = op.getType().cast<ShapedType>().clone(ety);
-    op.getResult().setType(new_ty);
-  });
-
-  // Insert UnrealizedConversionCasts to guarantee ReturnOp agress with
-  // the FuncOp type.
-  IRRewriter rewriter(func.getContext());
-  func.walk([&](ReturnOp op) {
-    FuncOp parent = dyn_cast<FuncOp>(op->getParentOp());
-    if (!parent) return;
-
-    rewriter.setInsertionPoint(op);
-    FunctionType funcTy = func.getType();
-    auto resultTys = funcTy.getResults();
-
-    bool castAdded = false;
-    SmallVector<Value> castedValues;
-    for (auto it : llvm::zip(op->getOperands(), resultTys)) {
-      Value operand = std::get<0>(it);
-      Type currentTy = operand.getType();
-      Type castTy = std::get<1>(it);
-      if (currentTy == castTy) {
-        castedValues.push_back(operand);
-        continue;
-      }
-
-      castedValues.push_back(
-          rewriter.create<tensor::CastOp>(op.getLoc(), castTy, operand)
-              .getResult());
-
-      castAdded = true;
-    }
-
-    if (castAdded) {
-      rewriter.replaceOpWithNewOp<ReturnOp>(op, castedValues);
-    }
-  });
+#undef DEF_PATTERN_INSERT
 }
-}  // namespace
 
 // Creates an instance of the TensorFlow Lite dialect LegalizeTFL pass.
 std::unique_ptr<OperationPass<FuncOp>> createLegalizeTFLPass() {

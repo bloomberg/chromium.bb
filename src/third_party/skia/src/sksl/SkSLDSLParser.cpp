@@ -9,10 +9,10 @@
 
 #include "include/private/SkSLString.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
 #include "src/sksl/dsl/priv/DSL_priv.h"
-
 #include <memory>
 
 using namespace SkSL::dsl;
@@ -123,13 +123,23 @@ Token DSLParser::nextRawToken() {
 }
 
 Token DSLParser::nextToken() {
-    Token token = this->nextRawToken();
-    while (token.fKind == Token::Kind::TK_WHITESPACE ||
-           token.fKind == Token::Kind::TK_LINE_COMMENT ||
-           token.fKind == Token::Kind::TK_BLOCK_COMMENT) {
-        token = this->nextRawToken();
+    for (;;) {
+        Token token = this->nextRawToken();
+        switch (token.fKind) {
+            case Token::Kind::TK_WHITESPACE:
+            case Token::Kind::TK_LINE_COMMENT:
+            case Token::Kind::TK_BLOCK_COMMENT:
+                continue;
+
+            case Token::Kind::TK_RESERVED:
+                this->error(token, "'" + this->text(token) + "' is a reserved word");
+                token.fKind = Token::Kind::TK_IDENTIFIER;
+                [[fallthrough]];
+
+            default:
+                return token;
+        }
     }
-    return token;
 }
 
 void DSLParser::pushback(Token t) {
@@ -178,7 +188,7 @@ bool DSLParser::expectIdentifier(Token* result) {
     if (!this->expect(Token::Kind::TK_IDENTIFIER, "an identifier", result)) {
         return false;
     }
-    if (IsType(this->text(*result))) {
+    if (IsBuiltinType(this->text(*result))) {
         this->error(*result, "expected an identifier, but found type '" +
                              this->text(*result) + "'");
         this->fEncounteredFatalError = true;
@@ -384,32 +394,25 @@ bool DSLParser::functionDeclarationEnd(const DSLModifiers& modifiers,
 }
 
 SKSL_INT DSLParser::arraySize() {
-    Token next = this->peek();
-    if (next.fKind == Token::Kind::TK_INT_LITERAL) {
-        SKSL_INT size;
-        if (this->intLiteral(&size)) {
-            if (size > INT32_MAX) {
-                this->error(next, "array size out of bounds");
-                return 1;
-            }
-            if (size <= 0) {
-                this->error(next, "array size must be positive");
-                return 1;
-            }
-            return size;
-        }
-        return 1;
-    } else if (this->checkNext(Token::Kind::TK_MINUS) &&
-               this->checkNext(Token::Kind::TK_INT_LITERAL)) {
-        this->error(next, "array size must be positive");
-        return 1;
-    } else {
-        DSLExpression expr = this->expression();
-        if (expr.isValid()) {
-            this->error(next, "expected int literal");
-        }
+    DSLExpression sizeExpr = this->expression();
+    if (!sizeExpr.isValid()) {
         return 1;
     }
+    std::unique_ptr<SkSL::Expression> sizeLiteral = sizeExpr.release();
+    SKSL_INT size;
+    if (!ConstantFolder::GetConstantInt(*sizeLiteral, &size)) {
+        this->error(sizeLiteral->fLine, "array size must be an integer");
+        return 1;
+    }
+    if (size > INT32_MAX) {
+        this->error(sizeLiteral->fLine, "array size out of bounds");
+        return 1;
+    }
+    if (size <= 0) {
+        this->error(sizeLiteral->fLine, "array size must be positive");
+        return 1;
+    }
+    return size;
 }
 
 bool DSLParser::parseArrayDimensions(int line, DSLType* type) {
@@ -537,7 +540,7 @@ DSLStatement DSLParser::varDeclarationsOrExpressionStatement() {
         if (this->varDeclarationsPrefix(&prefix)) {
             checkpoint.accept();
             return this->localVarDeclarationEnd(prefix.fPosition, prefix.fModifiers, prefix.fType,
-                    this->text(prefix.fName));
+                                                this->text(prefix.fName));
         }
 
         // If this statement wasn't actually a vardecl after all, rewind and try parsing it as an
@@ -647,21 +650,8 @@ skstd::optional<DSLWrapper<DSLParameter>> DSLParser::parameter() {
     if (!this->expectIdentifier(&name)) {
         return skstd::nullopt;
     }
-    while (this->checkNext(Token::Kind::TK_LBRACKET)) {
-        Token sizeToken;
-        if (!this->expect(Token::Kind::TK_INT_LITERAL, "a positive integer", &sizeToken)) {
-            return skstd::nullopt;
-        }
-        skstd::string_view arraySizeFrag = this->text(sizeToken);
-        SKSL_INT arraySize;
-        if (!SkSL::stoi(arraySizeFrag, &arraySize)) {
-            this->error(sizeToken, "array size is too large: " + arraySizeFrag);
-            arraySize = 1;
-        }
-        type = Array(*type, arraySize, this->position(name));
-        if (!this->expect(Token::Kind::TK_RBRACKET, "']'")) {
-            return skstd::nullopt;
-        }
+    if (!this->parseArrayDimensions(name.fLine, &type.value())) {
+        return skstd::nullopt;
     }
     return {{DSLParameter(modifiers, *type, this->text(name), this->position(name))}};
 }

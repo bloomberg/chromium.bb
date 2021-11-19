@@ -100,6 +100,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/debug_info_manager.cpp \
 		source/opt/def_use_manager.cpp \
 		source/opt/desc_sroa.cpp \
+		source/opt/desc_sroa_util.cpp \
 		source/opt/dominator_analysis.cpp \
 		source/opt/dominator_tree.cpp \
 		source/opt/eliminate_dead_constant_pass.cpp \
@@ -157,6 +158,7 @@ SPVTOOLS_OPT_SRC_FILES := \
 		source/opt/relax_float_ops_pass.cpp \
 		source/opt/remove_duplicates_pass.cpp \
 		source/opt/remove_unused_interface_variables_pass.cpp \
+		source/opt/replace_desc_array_access_using_var_index.cpp \
 		source/opt/replace_invalid_opc.cpp \
 		source/opt/scalar_analysis.cpp \
 		source/opt/scalar_analysis_simplification.cpp \
@@ -184,7 +186,7 @@ SPV_GLSL_GRAMMAR=$(SPVHEADERS_LOCAL_PATH)/include/spirv/unified1/extinst.glsl.st
 SPV_OPENCL_GRAMMAR=$(SPVHEADERS_LOCAL_PATH)/include/spirv/unified1/extinst.opencl.std.100.grammar.json
 SPV_DEBUGINFO_GRAMMAR=$(SPVHEADERS_LOCAL_PATH)/include/spirv/unified1/extinst.debuginfo.grammar.json
 SPV_CLDEBUGINFO100_GRAMMAR=$(SPVHEADERS_LOCAL_PATH)/include/spirv/unified1/extinst.opencl.debuginfo.100.grammar.json
-SPV_VKDEBUGINFO100_GRAMMAR=$(LOCAL_PATH)/source/extinst.nonsemantic.vulkan.debuginfo.100.grammar.json
+SPV_VKDEBUGINFO100_GRAMMAR=$(SPVHEADERS_LOCAL_PATH)/include/spirv/unified1/extinst.nonsemantic.shader.debuginfo.100.grammar.json
 
 define gen_spvtools_grammar_tables
 $(call generate-file-dir,$(1)/core.insts-unified1.inc)
@@ -216,7 +218,7 @@ $(LOCAL_PATH)/source/ext_inst.cpp: \
 	$(1)/opencl.std.insts.inc \
 	$(1)/debuginfo.insts.inc \
 	$(1)/opencl.debuginfo.100.insts.inc \
-	$(1)/nonsemantic.vulkan.debuginfo.100.insts.inc \
+	$(1)/nonsemantic.shader.debuginfo.100.insts.inc \
 	$(1)/spv-amd-gcn-shader.insts.inc \
 	$(1)/spv-amd-shader-ballot.insts.inc \
 	$(1)/spv-amd-shader-explicit-vertex-parameter.insts.inc \
@@ -246,7 +248,7 @@ endef
 # We generate language-specific headers for DebugInfo and OpenCL.DebugInfo.100
 $(eval $(call gen_spvtools_lang_headers,$(SPVTOOLS_OUT_PATH),DebugInfo,$(SPV_DEBUGINFO_GRAMMAR)))
 $(eval $(call gen_spvtools_lang_headers,$(SPVTOOLS_OUT_PATH),OpenCLDebugInfo100,$(SPV_CLDEBUGINFO100_GRAMMAR)))
-$(eval $(call gen_spvtools_lang_headers,$(SPVTOOLS_OUT_PATH),NonSemanticVulkanDebugInfo100,$(SPV_VKDEBUGINFO100_GRAMMAR)))
+$(eval $(call gen_spvtools_lang_headers,$(SPVTOOLS_OUT_PATH),NonSemanticShaderDebugInfo100,$(SPV_VKDEBUGINFO100_GRAMMAR)))
 
 
 define gen_spvtools_vendor_tables
@@ -261,22 +263,10 @@ $(1)/$(2).insts.inc : \
 		@echo "[$(TARGET_ARCH_ABI)] Vendor extended instruction set: $(2) tables <= grammar"
 $(LOCAL_PATH)/source/ext_inst.cpp: $(1)/$(2).insts.inc
 endef
-define gen_spvtools_vendor_tables_local
-$(call generate-file-dir,$(1)/$(2).insts.inc)
-$(1)/$(2).insts.inc : \
-        $(LOCAL_PATH)/utils/generate_grammar_tables.py \
-        $(LOCAL_PATH)/source/extinst.$(2).grammar.json
-		@$(HOST_PYTHON) $(LOCAL_PATH)/utils/generate_grammar_tables.py \
-		    --extinst-vendor-grammar=$(LOCAL_PATH)/source/extinst.$(2).grammar.json \
-		    --vendor-insts-output=$(1)/$(2).insts.inc \
-		    --vendor-operand-kind-prefix=$(3)
-		@echo "[$(TARGET_ARCH_ABI)] Vendor extended instruction set: $(2) tables <= grammar"
-$(LOCAL_PATH)/source/ext_inst.cpp: $(1)/$(2).insts.inc
-endef
 # Vendor and debug extended instruction sets, with grammars from SPIRV-Tools source tree.
 $(eval $(call gen_spvtools_vendor_tables,$(SPVTOOLS_OUT_PATH),debuginfo,""))
 $(eval $(call gen_spvtools_vendor_tables,$(SPVTOOLS_OUT_PATH),opencl.debuginfo.100,"CLDEBUG100_"))
-$(eval $(call gen_spvtools_vendor_tables_local,$(SPVTOOLS_OUT_PATH),nonsemantic.vulkan.debuginfo.100,"VKDEBUG100_"))
+$(eval $(call gen_spvtools_vendor_tables,$(SPVTOOLS_OUT_PATH),nonsemantic.shader.debuginfo.100,"SHDEBUG100_"))
 $(eval $(call gen_spvtools_vendor_tables,$(SPVTOOLS_OUT_PATH),spv-amd-gcn-shader,""))
 $(eval $(call gen_spvtools_vendor_tables,$(SPVTOOLS_OUT_PATH),spv-amd-shader-ballot,""))
 $(eval $(call gen_spvtools_vendor_tables,$(SPVTOOLS_OUT_PATH),spv-amd-shader-explicit-vertex-parameter,""))

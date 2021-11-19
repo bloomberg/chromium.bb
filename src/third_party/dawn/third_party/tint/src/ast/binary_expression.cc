@@ -21,44 +21,29 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::BinaryExpression);
 namespace tint {
 namespace ast {
 
-BinaryExpression::BinaryExpression(ProgramID program_id,
-                                   const Source& source,
-                                   BinaryOp op,
-                                   Expression* lhs,
-                                   Expression* rhs)
-    : Base(program_id, source), op_(op), lhs_(lhs), rhs_(rhs) {
-  TINT_ASSERT(AST, lhs_);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, lhs_, program_id);
-  TINT_ASSERT(AST, rhs_);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, rhs_, program_id);
-  TINT_ASSERT(AST, op_ != BinaryOp::kNone);
+BinaryExpression::BinaryExpression(ProgramID pid,
+                                   const Source& src,
+                                   BinaryOp o,
+                                   const Expression* l,
+                                   const Expression* r)
+    : Base(pid, src), op(o), lhs(l), rhs(r) {
+  TINT_ASSERT(AST, lhs);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, lhs, program_id);
+  TINT_ASSERT(AST, rhs);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, rhs, program_id);
+  TINT_ASSERT(AST, op != BinaryOp::kNone);
 }
 
 BinaryExpression::BinaryExpression(BinaryExpression&&) = default;
 
 BinaryExpression::~BinaryExpression() = default;
 
-BinaryExpression* BinaryExpression::Clone(CloneContext* ctx) const {
+const BinaryExpression* BinaryExpression::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* l = ctx->Clone(lhs_);
-  auto* r = ctx->Clone(rhs_);
-  return ctx->dst->create<BinaryExpression>(src, op_, l, r);
-}
-
-void BinaryExpression::to_str(const sem::Info& sem,
-                              std::ostream& out,
-                              size_t indent) const {
-  make_indent(out, indent);
-  out << "Binary[" << result_type_str(sem) << "]{" << std::endl;
-  lhs_->to_str(sem, out, indent + 2);
-
-  make_indent(out, indent + 2);
-  out << op_ << std::endl;
-
-  rhs_->to_str(sem, out, indent + 2);
-  make_indent(out, indent);
-  out << "}" << std::endl;
+  auto src = ctx->Clone(source);
+  auto* l = ctx->Clone(lhs);
+  auto* r = ctx->Clone(rhs);
+  return ctx->dst->create<BinaryExpression>(src, op, l, r);
 }
 
 }  // namespace ast

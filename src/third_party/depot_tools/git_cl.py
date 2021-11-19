@@ -185,7 +185,10 @@ def RunCommand(args, error_ok=False, error_message=None, shell=False, **kwargs):
     if not error_ok:
       message = error_message or e.stdout.decode('utf-8', 'replace') or ''
       DieWithError('Command "%s" failed.\n%s' % (' '.join(args), message))
-    return e.stdout.decode('utf-8', 'replace')
+    out = e.stdout.decode('utf-8', 'replace')
+    if e.stderr:
+      out += e.stderr.decode('utf-8', 'replace')
+    return out
 
 
 def RunGit(args, **kwargs):
@@ -5282,6 +5285,7 @@ def CMDformat(parser, args):
         # Will return non-zero exit code if non-empty diff.
         stdout = RunCommand(cmd,
                             error_ok=True,
+                            stderr=subprocess2.PIPE,
                             cwd=top_dir,
                             shell=sys.platform.startswith('win32'))
         if opts.diff:

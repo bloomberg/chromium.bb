@@ -266,6 +266,9 @@ def main():
       # Include libclang_rt.builtins.a for Fuchsia targets.
       'lib/clang/$V/lib/aarch64-unknown-fuchsia/libclang_rt.builtins.a',
       'lib/clang/$V/lib/x86_64-unknown-fuchsia/libclang_rt.builtins.a',
+
+      # Add llvm-readobj (symlinked from llvm-readelf) for extracting SONAMEs.
+      'bin/llvm-readobj',
     ])
     if not args.build_mac_arm:
       # TODO(thakis): Figure out why this doesn't build in --build-mac-arm
@@ -297,8 +300,13 @@ def main():
     ])
   elif sys.platform.startswith('linux'):
     want.extend([
+        # pylint: disable=line-too-long
+
         # Copy the stdlibc++.so.6 we linked the binaries against.
         'lib/libstdc++.so.6',
+
+        # dwp needed for use_debug_fission.
+        'bin/llvm-dwp',
 
         # Add llvm-objcopy for partition extraction on Android.
         'bin/llvm-objcopy',
@@ -307,14 +315,14 @@ def main():
         'bin/llvm-nm',
 
         # AddressSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/$V/lib/linux/libclang_rt.asan-i386.a',
-        'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.asan-x86_64.a.syms',
+        'lib/clang/$V/lib/i386-unknown-linux-gnu/libclang_rt.asan.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.asan.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.asan.a.syms',
 
         # AddressSanitizer C++ runtime.
-        'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-i386.a',
-        'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.asan_cxx-x86_64.a.syms',
+        'lib/clang/$V/lib/i386-unknown-linux-gnu/libclang_rt.asan_cxx.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.asan_cxx.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.asan_cxx.a.syms',
 
         # AddressSanitizer Android runtime.
         'lib/clang/$V/lib/linux/libclang_rt.asan-aarch64-android.so',
@@ -331,46 +339,46 @@ def main():
         'lib/clang/$V/lib/linux/libclang_rt.hwasan-aarch64-android.so',
 
         # MemorySanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.msan-x86_64.a.syms',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.msan.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.msan.a.syms',
 
         # MemorySanitizer C++ runtime.
-        'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.msan_cxx-x86_64.a.syms',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.msan_cxx.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.msan_cxx.a.syms',
 
         # Profile runtime (used by profiler and code coverage).
-        'lib/clang/$V/lib/linux/libclang_rt.profile-i386.a',
+        'lib/clang/$V/lib/i386-unknown-linux-gnu/libclang_rt.profile.a',
         'lib/clang/$V/lib/linux/libclang_rt.profile-i686-android.a',
-        'lib/clang/$V/lib/linux/libclang_rt.profile-x86_64.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.profile.a',
         'lib/clang/$V/lib/linux/libclang_rt.profile-aarch64-android.a',
         'lib/clang/$V/lib/linux/libclang_rt.profile-arm-android.a',
 
         # ThreadSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.tsan-x86_64.a.syms',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.tsan.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.tsan.a.syms',
 
         # ThreadSanitizer C++ runtime.
-        'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.tsan_cxx-x86_64.a.syms',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.tsan_cxx.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.tsan_cxx.a.syms',
 
         # UndefinedBehaviorSanitizer C runtime (pure C won't link with *_cxx).
-        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-i386.a',
-        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-x86_64.a.syms',
+        'lib/clang/$V/lib/i386-unknown-linux-gnu/libclang_rt.ubsan_standalone.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.ubsan_standalone.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.ubsan_standalone.a.syms',
 
         # UndefinedBehaviorSanitizer C++ runtime.
-        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-i386.a',
-        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a',
-        'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone_cxx-x86_64.a.syms',
+        'lib/clang/$V/lib/i386-unknown-linux-gnu/libclang_rt.ubsan_standalone_cxx.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.ubsan_standalone_cxx.a',
+        'lib/clang/$V/lib/x86_64-unknown-linux-gnu/libclang_rt.ubsan_standalone_cxx.a.syms',
 
         # UndefinedBehaviorSanitizer Android runtime, needed for CFI.
-        # pylint: disable=line-too-long
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-aarch64-android.so',
-        # pylint: enable=line-too-long
         'lib/clang/$V/lib/linux/libclang_rt.ubsan_standalone-arm-android.so',
 
         # Ignorelist for MemorySanitizer (used on Linux only).
         'lib/clang/$V/share/msan_*list.txt',
+
+        # pylint: enable=line-too-long
     ])
   elif sys.platform == 'win32':
     want.extend([
@@ -439,6 +447,7 @@ def main():
     os.symlink('lld', os.path.join(pdir, 'bin', 'ld64.lld'))
     os.symlink('lld', os.path.join(pdir, 'bin', 'lld-link'))
     os.symlink('lld', os.path.join(pdir, 'bin', 'wasm-ld'))
+    os.symlink('llvm-readobj', os.path.join(pdir, 'bin', 'llvm-readelf'))
 
   if sys.platform.startswith('linux'):
     os.symlink('llvm-objcopy', os.path.join(pdir, 'bin', 'llvm-strip'))
@@ -476,7 +485,7 @@ def main():
   os.makedirs(os.path.join(objdumpdir, 'bin'))
   for filename in [
       'llvm-bcanalyzer', 'llvm-cxxfilt', 'llvm-dwarfdump', 'llvm-nm',
-      'llvm-objdump', 'llvm-readobj'
+      'llvm-objdump'
   ]:
     shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', filename + exe_ext),
                 os.path.join(objdumpdir, 'bin'))
@@ -487,7 +496,6 @@ def main():
     f.write('\n')
   if sys.platform != 'win32':
     os.symlink('llvm-objdump', os.path.join(objdumpdir, 'bin', 'llvm-otool'))
-    os.symlink('llvm-readobj', os.path.join(objdumpdir, 'bin', 'llvm-readelf'))
   PackageInArchive(objdumpdir, objdumpdir + '.tgz')
   MaybeUpload(args.upload, objdumpdir + '.tgz', gcs_platform)
 

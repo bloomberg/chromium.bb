@@ -63,6 +63,70 @@
       "vpython",
       "-u",
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "tag",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--project",
+      "v8/v8",
+      "--tag",
+      "1.0",
+      "--commit",
+      "67ebf73496383c6777035e374d2d664009e2aa5c",
+      "--json_file",
+      "/path/to/tmp/json"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "gerrit create_gerrit_tag (v8/v8 1.0)",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"can_delete\": true, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/tags/1.0\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revision\": \"67ebf73496383c6777035e374d2d664009e2aa5c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
+      "rawapi",
+      "--host",
+      "https://chromium-review.googlesource.com",
+      "--path",
+      "/projects/v8/v8/tags/1.0",
+      "--json_file",
+      "/path/to/tmp/json",
+      "--method",
+      "PUT",
+      "--body",
+      "{\"revision\": \"67ebf73496383c6777035e374d2d664009e2aa5c\"}",
+      "--accept_status",
+      "201"
+    ],
+    "env": {
+      "PATH": "<PATH>:RECIPE_REPO[depot_tools]"
+    },
+    "infra_step": true,
+    "name": "gerrit raw_create_tag",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"can_delete\": true, @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"ref\": \"refs/tags/1.0\", @@@",
+      "@@@STEP_LOG_LINE@json.output@  \"revision\": \"67ebf73496383c6777035e374d2d664009e2aa5c\"@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "movechanges",
       "--host",
       "https://chromium-review.googlesource.com",

@@ -218,7 +218,7 @@ static void PrintStackContents(const string& indent,
         modules->GetModuleForAddress(pointee_frame.instruction);
 
     // Try to look up the function name.
-    vector<unique_ptr<StackFrame>> inlined_frames;
+    std::deque<unique_ptr<StackFrame>> inlined_frames;
     if (pointee_frame.module)
       resolver->FillSourceLineInfo(&pointee_frame, &inlined_frames);
 

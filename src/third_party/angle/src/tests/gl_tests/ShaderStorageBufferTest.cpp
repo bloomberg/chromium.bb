@@ -366,8 +366,8 @@ TEST_P(ShaderStorageBufferTest31, ShaderStorageBufferReadWriteAndBufferSubData)
             // rendering result but just to have a unflushed rendering using the buffer so that it
             // will appears as pending.
             glFinish();
-            constexpr char kVS[] = R"(attribute vec3 in_attrib;
-                                    varying vec3 v_attrib;
+            constexpr char kVS[] = R"(attribute vec4 in_attrib;
+                                    varying vec4 v_attrib;
                                     void main()
                                     {
                                         v_attrib = in_attrib;
@@ -375,22 +375,23 @@ TEST_P(ShaderStorageBufferTest31, ShaderStorageBufferReadWriteAndBufferSubData)
                                         gl_PointSize = 100.0;
                                     })";
             constexpr char kFS[] = R"(precision mediump float;
-                                    varying vec3 v_attrib;
+                                    varying vec4 v_attrib;
                                     void main()
                                     {
-                                        gl_FragColor = vec4(v_attrib, 1);
+                                        gl_FragColor = v_attrib;
                                     })";
-            GLuint program       = CompileProgram(kVS, kFS);
-            ASSERT_NE(program, 0U);
-            GLint attribLocation = glGetAttribLocation(program, "in_attrib");
+            GLuint readProgram   = CompileProgram(kVS, kFS);
+            ASSERT_NE(readProgram, 0U);
+            GLint attribLocation = glGetAttribLocation(readProgram, "in_attrib");
             ASSERT_NE(attribLocation, -1);
-            glUseProgram(program);
+            glUseProgram(readProgram);
             ASSERT_GL_NO_ERROR();
             glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_ELEMENT_ARRAY_BARRIER_BIT);
             glBindBuffer(GL_ARRAY_BUFFER, shaderStorageBuffer);
-            glVertexAttribPointer(attribLocation, 3, GL_UNSIGNED_BYTE, GL_TRUE, 3, nullptr);
+            glVertexAttribPointer(attribLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4, nullptr);
             glEnableVertexAttribArray(attribLocation);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, shaderStorageBuffer);
+            glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, nullptr);
             ASSERT_GL_NO_ERROR();
         }

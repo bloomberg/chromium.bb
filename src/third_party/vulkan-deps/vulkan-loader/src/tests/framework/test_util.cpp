@@ -82,14 +82,14 @@ std::string get_env_var(std::string const& name) {
     }
     return value;
 }
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 
 bool set_env_var(std::string const& name, std::string const& value) { return setenv(name.c_str(), value.c_str(), 1); }
 bool remove_env_var(std::string const& name) { return unsetenv(name.c_str()); }
-std::string get_env_var(std::string const& name) {
+std::string get_env_var(std::string const& name, bool report_failure) {
     char* ret = getenv(name.c_str());
     if (ret == nullptr) {
-        std::cerr << "Failed to get environment variable:" << name << "\n";
+        if (report_failure) std::cerr << "Failed to get environment variable:" << name << "\n";
         return std::string();
     }
     return ret;
@@ -101,7 +101,7 @@ std::string ManifestICD::get_manifest_str() const {
     out += "{\n";
     out += "    " + file_format_version.get_version_str() + "\n";
     out += "    \"ICD\": {\n";
-    out += "        \"library_path\": \"" + lib_path + "\",\n";
+    out += "        \"library_path\": \"" + fs::fixup_backslashes_in_path(lib_path) + "\",\n";
     out += "        \"api_version\": \"" + version_to_string(api_version) + "\"\n";
     out += "    }\n";
     out += "}\n";
@@ -129,7 +129,7 @@ std::string ManifestLayer::LayerDescription::get_manifest_str() const {
     out += "\t\t\"name\":\"" + name + "\",\n";
     out += "\t\t\"type\":\"" + get_type_str(type) + "\",\n";
     if (lib_path.size() > 0) {
-        out += "\t\t\"library_path\": \"" + lib_path + "\",\n";
+        out += "\t\t\"library_path\": \"" + fs::fixup_backslashes_in_path(lib_path.str()) + "\",\n";
     }
     out += "\t\t\"api_version\": \"" + version_to_string(api_version) + "\",\n";
     out += "\t\t\"implementation_version\":\"" + std::to_string(implementation_version) + "\",\n";
@@ -172,7 +172,7 @@ std::string ManifestLayer::LayerDescription::get_manifest_str() const {
             if (i > 0) out += ", ";
             out += "\"" + component_layers.at(i) + "\"";
         }
-        out += "]\n\t\t}";
+        out += "]\n";
     }
     if (pre_instance_functions.size() > 0) {
         out += ",\n\t\t\"pre_instance_functions\": [";
@@ -188,8 +188,8 @@ std::string ManifestLayer::LayerDescription::get_manifest_str() const {
 
 VkLayerProperties ManifestLayer::LayerDescription::get_layer_properties() const {
     VkLayerProperties properties{};
-    strncpy(properties.layerName, name.c_str(), 256);
-    strncpy(properties.description, description.c_str(), 256);
+    copy_string_to_char_array(name, properties.layerName, VK_MAX_EXTENSION_NAME_SIZE);
+    copy_string_to_char_array(description, properties.description, VK_MAX_EXTENSION_NAME_SIZE);
     properties.implementationVersion = implementation_version;
     properties.specVersion = api_version;
     return properties;
@@ -224,7 +224,7 @@ std::string make_native(std::string const& in_path) {
         else
             out += c;
     }
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     for (size_t i = 0; i < in_path.size(); i++) {
         if (i + 1 < in_path.size() && in_path[i] == '\\' && in_path[i + 1] == '\\') {
             out += '/';
@@ -585,6 +585,10 @@ InstanceCreateInfo& InstanceCreateInfo::set_api_version(uint32_t api_version) {
     this->api_version = api_version;
     return *this;
 }
+InstanceCreateInfo& InstanceCreateInfo::set_api_version(uint32_t major, uint32_t minor, uint32_t patch) {
+    this->api_version = VK_MAKE_API_VERSION(0, major, minor, patch);
+    return *this;
+}
 InstanceCreateInfo& InstanceCreateInfo::add_layer(const char* layer_name) {
     enabled_layers.push_back(layer_name);
     return *this;
@@ -629,37 +633,4 @@ DeviceCreateInfo& DeviceCreateInfo::add_extension(const char* ext_name) {
 DeviceCreateInfo& DeviceCreateInfo::add_device_queue(DeviceQueueCreateInfo queue_info_detail) {
     queue_info_details.push_back(queue_info_detail);
     return *this;
-}
-
-VkResult CreateInst(InstWrapper& inst, InstanceCreateInfo& inst_info) {
-    return inst.functions->vkCreateInstance(inst_info.get(), inst.callbacks, &inst.inst);
-}
-
-VkResult CreatePhysDevs(InstWrapper& inst, uint32_t phys_dev_count, std::vector<VkPhysicalDevice>& physical_devices) {
-    physical_devices.resize(phys_dev_count);
-    uint32_t physical_count = phys_dev_count;
-    return inst.functions->vkEnumeratePhysicalDevices(inst.inst, &physical_count, physical_devices.data());
-}
-
-VkResult CreatePhysDev(InstWrapper& inst, VkPhysicalDevice& physical_device) {
-    uint32_t physical_count = 1;
-    return inst.functions->vkEnumeratePhysicalDevices(inst.inst, &physical_count, &physical_device);
-}
-
-VkResult CreateDevice(VkPhysicalDevice phys_dev, DeviceWrapper& dev, DeviceCreateInfo& dev_info) {
-    return dev.functions->vkCreateDevice(phys_dev, dev_info.get(), dev.callbacks, &dev.dev);
-}
-
-VkResult CreateDebugUtilsMessenger(DebugUtilsWrapper& debug_utils) {
-    return debug_utils.vkCreateDebugUtilsMessengerEXT(debug_utils.inst, debug_utils.get(), debug_utils.callbacks,
-                                                      &debug_utils.messenger);
-}
-
-void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsLogger& logger) {
-    create_info.add_extension("VK_EXT_debug_utils");
-    create_info.inst_info.pNext = logger.get();
-}
-void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsWrapper& wrapper) {
-    create_info.add_extension("VK_EXT_debug_utils");
-    create_info.inst_info.pNext = wrapper.get();
 }

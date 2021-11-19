@@ -30,6 +30,22 @@ export function clamp(n: number, { min, max }: { min: number; max: number }): nu
   return Math.min(Math.max(n, min), max);
 }
 
-/**  */
-export const kPositiveInfF32AsHex = 0x7f800000;
-export const kNegativeInfF32AsHex = 0xff800000;
+/**
+ * Return the Units of Last Place difference between the numbers a and b.
+ * Requires `a` and `b` to be finite numbers.
+ */
+export function diffULP(a: number, b: number): number {
+  const arr = new Uint32Array(new Float32Array([a, b]).buffer);
+  const u32_a = arr[0];
+  const u32_b = arr[1];
+
+  const sign_a = (u32_a & 0x80000000) !== 0;
+  const sign_b = (u32_b & 0x80000000) !== 0;
+  const masked_a = u32_a & 0x7fffffff;
+  const masked_b = u32_b & 0x7fffffff;
+
+  if (sign_a === sign_b) {
+    return Math.max(masked_a, masked_b) - Math.min(masked_a, masked_b);
+  }
+  return masked_a + masked_b;
+}

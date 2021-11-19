@@ -77,8 +77,11 @@ static AOM_INLINE void alloc_compressor_data(AV1_COMP *cpi) {
     aom_free(cpi->td.mb.mv_costs);
     cpi->td.mb.mv_costs = NULL;
   }
-  CHECK_MEM_ERROR(cm, cpi->td.mb.mv_costs,
-                  (MvCosts *)aom_calloc(1, sizeof(MvCosts)));
+  // Avoid the memory allocation of 'mv_costs' for allintra encoding mode.
+  if (cpi->oxcf.kf_cfg.key_freq_max != 0) {
+    CHECK_MEM_ERROR(cm, cpi->td.mb.mv_costs,
+                    (MvCosts *)aom_calloc(1, sizeof(MvCosts)));
+  }
 
   if (cpi->td.mb.dv_costs) {
     aom_free(cpi->td.mb.dv_costs);
@@ -354,19 +357,10 @@ static AOM_INLINE void alloc_util_frame_buffers(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const SequenceHeader *const seq_params = cm->seq_params;
   const int byte_alignment = cm->features.byte_alignment;
-  if (aom_realloc_frame_buffer(
-          &cpi->last_frame_uf, cm->width, cm->height, seq_params->subsampling_x,
-          seq_params->subsampling_y, seq_params->use_highbitdepth,
-          cpi->oxcf.border_in_pixels, byte_alignment, NULL, NULL, NULL, 0))
-    aom_internal_error(cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate last frame buffer");
 
   // The frame buffer trial_frame_rst is used during loop restoration filter
   // search. Hence it is allocated only when loop restoration is used.
-  const int use_restoration = cm->seq_params->enable_restoration &&
-                              !cm->features.all_lossless &&
-                              !cm->tiles.large_scale;
-  if (use_restoration) {
+  if (is_restoration_used(cm)) {
     if (aom_realloc_frame_buffer(
             &cpi->trial_frame_rst, cm->superres_upscaled_width,
             cm->superres_upscaled_height, seq_params->subsampling_x,

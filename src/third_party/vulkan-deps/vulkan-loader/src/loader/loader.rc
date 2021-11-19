@@ -1,7 +1,7 @@
 //
-// Copyright (c) 2014-2019 The Khronos Group Inc.
-// Copyright (c) 2014-2019 Valve Corporation
-// Copyright (c) 2014-2019 LunarG, Inc.
+// Copyright (c) 2014-2021 The Khronos Group Inc.
+// Copyright (c) 2014-2021 Valve Corporation
+// Copyright (c) 2014-2021 LunarG, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,55 +16,15 @@
 // limitations under the License.
 //
 // Author: David Pinedo <david@lunarg.com>
+// Author: Charles Giessen <charles@lunarg.com>
 //
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-// Start customize section
-// Edit this section for your build
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-#define VERSION_MAJOR               1
-#define VERSION_MINOR               0
-#define VERSION_PATCH               1111
-#define VERSION_BUILDNO             2222
-
-#define VERSION_BUILD_DESCRIPTION   "Dev Build"
-
-// All builds except release builds should set this to 0.
-// Release builds should set this to 1.
-#define VERSION_IS_RELEASEBUILD        0
-
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-// End of customize section
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
 
 #include "winres.h"
 
-#define VER_FILE_VERSION            VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_BUILDNO
-
-#define STRINGIZE2(s) #s
-#define STRINGIZE(s) STRINGIZE2(s)
-
-#if VERSION_IS_RELEASEBUILD==1
-   #define VER_FILE_DESCRIPTION_STR    "Vulkan Loader"
-   #define VER_FILE_VERSION_STR        STRINGIZE(VERSION_MAJOR)        \
-                                       "." STRINGIZE(VERSION_MINOR)    \
-                                       "." STRINGIZE(VERSION_PATCH)    \
-                                       "." STRINGIZE(VERSION_BUILDNO)
-#else
-   #define VER_FILE_DESCRIPTION_STR    "Vulkan Loader - " VERSION_BUILD_DESCRIPTION
-   #define VER_FILE_VERSION_STR        STRINGIZE(VERSION_MAJOR)        \
-                                    "." STRINGIZE(VERSION_MINOR)    \
-                                    "." STRINGIZE(VERSION_PATCH)    \
-                                    "." STRINGIZE(VERSION_BUILDNO) \
-                                    "." VERSION_BUILD_DESCRIPTION
-#endif
-
+// All set through CMake
+#define VER_FILE_VERSION 1, 0, 1111, 2222
+#define VER_FILE_DESCRIPTION_STR "Vulkan Loader - Dev Build"
+#define VER_FILE_VERSION_STR "1.0.1111.2222.Dev Build"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION VER_FILE_VERSION

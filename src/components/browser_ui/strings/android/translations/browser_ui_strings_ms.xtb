@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">Tanya sebelum membenarkan tapak menyambung ke peranti (disyorkan)</translation>
 <translation id="1779089405699405702">Penyahkod imej</translation>
 <translation id="1818308510395330587">Untuk membolehkan <ph name="APP_NAME" /> menggunakan AR, hidupkan juga kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
+<translation id="1864927262126810325">Daripada <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">Akses lokasi dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Iklan</translation>
 <translation id="1919950603503897840">Pilih kenalan</translation>
@@ -55,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dan <ph name="NUM_MORE" /> lagi dibenarkan}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> dan <ph name="NUM_MORE" /> lagi dibenarkan}}</translation>
 <translation id="2434158240863470628">Muat turun selesai: <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">Sentiasa minta laman desktop</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2490684707762498678">Diurus oleh <ph name="APP_NAME" /></translation>
@@ -94,6 +96,7 @@
 <translation id="3328801116991980348">Maklumat tapak</translation>
 <translation id="3333961966071413176">Semua kenalan</translation>
 <translation id="3386292677130313581">Tanya sebelum membenarkan tapak mengetahui lokasi anda (disyorkan)</translation>
+<translation id="3517437118288792304">Sentiasa minta paparan desktop untuk laman tertentu.</translation>
 <translation id="3538390592868664640">Sekat tapak daripada membuat peta 3D bagi persekitaran anda atau menjejaki kedudukan kamera</translation>
 <translation id="3551268116566418498">Tinggalkan mod Inkognito?</translation>
 <translation id="3586500876634962664">Penggunaan kamera dan mikrofon</translation>
@@ -116,7 +119,6 @@
 <translation id="4008040567710660924">Benarkan kuki untuk tapak tertentu.</translation>
 <translation id="4046123991198612571">Lagu seterusnya</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
-<translation id="4176463684765177261">Dilumpuhkan</translation>
 <translation id="4200726100658658164">Buka Tetapan Lokasi</translation>
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
@@ -124,6 +126,7 @@
 <translation id="429312253194641664">Tapak sedang memainkan media</translation>
 <translation id="42981349822642051">Kembangkan</translation>
 <translation id="4336434711095810371">Kosongkan semua data</translation>
+<translation id="4353125860368453721">Sentiasa minta paparan mudah alih untuk laman tertentu.</translation>
 <translation id="4402755511846832236">Sekat tapak daripada mengetahui waktu anda menggunakan peranti ini dengan aktif</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="445467742685312942">Benarkan tapak memainkan kandungan yang dilindungi</translation>
@@ -148,8 +151,10 @@
 <translation id="5048398596102334565">Benarkan tapak mengakses penderia gerakan (disyorkan)</translation>
 <translation id="5050380848339752099">Laman ini akan berkongsi maklumat dengan apl di luar mod Inkognito.</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
+<translation id="509133520954049755">Minta paparan desktop</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
+<translation id="5134599672855298214">Minta paparan mudah alih (disyorkan)</translation>
 <translation id="5186036860380548585">Pilihan tersedia berhampiran bahagian atas skrin</translation>
 <translation id="5197729504361054390">Kenalan yang anda pilih akan dikongsi dengan <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Terakhir dilawati hari ini</translation>
@@ -185,7 +190,6 @@
 <translation id="5876056640971328065">Jeda video</translation>
 <translation id="5887687176710214216">Terakhir dilawati semalam</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
-<translation id="59174027418879706">Didayakan</translation>
 <translation id="5922853908706496913">Berkongsi skrin anda</translation>
 <translation id="5939518447894949180">Tetapkan semula</translation>
 <translation id="5975083100439434680">Zum keluar</translation>
@@ -202,7 +206,6 @@
 <translation id="6196640612572343990">Sekat kuki pihak ketiga</translation>
 <translation id="6216432067784365534">Pilihan <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Nyahpasang '<ph name="APP_NAME" />'?</translation>
-<translation id="6233545266937675277">Minta paparan desktop laman</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> dan <ph name="PERMISSION_2" /> disekat</translation>
 <translation id="6270391203985052864">Tapak boleh membuat permintaan untuk menghantar pemberitahuan</translation>
 <translation id="6295158916970320988">Semua tapak</translation>
@@ -238,6 +241,7 @@
 <translation id="7016516562562142042">Dibenarkan untuk enjin carian semasa</translation>
 <translation id="7053983685419859001">Sekat</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
+<translation id="7070090581017165256">Perihal laman ini</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Pilihan tersedia berhampiran bahagian atas skrin</translation>
 <translation id="7141896414559753902">Sekat tapak daripada memaparkan tetingkap timbul dan ubah hala (disyorkan)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -286,7 +290,6 @@
 <translation id="8211406090763984747">Sambungan selamat</translation>
 <translation id="8249310407154411074">Alihkan ke atas</translation>
 <translation id="8261506727792406068">Padam</translation>
-<translation id="8267092878336850213">Minta paparan mudah alih laman</translation>
 <translation id="8300705686683892304">Diurus oleh apl</translation>
 <translation id="8324158725704657629">Jangan tanya lagi</translation>
 <translation id="8372893542064058268">Benarkan Penyegerakan Latar Belakang untuk tapak tertentu</translation>
@@ -300,6 +303,7 @@
 <translation id="8447861592752582886">Batalkan kebenaran peranti</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 kuki sedang digunakan}other{# kuki sedang digunakan}}</translation>
 <translation id="8487700953926739672">Tersedia di luar talian</translation>
+<translation id="848952951823693243">Sentiasa minta laman mudah alih</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
 <translation id="8525306231823319788">Skrin penuh</translation>
 <translation id="857943718398505171">Dibenarkan (disyorkan)</translation>

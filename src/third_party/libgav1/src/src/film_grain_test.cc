@@ -945,7 +945,7 @@ using AutoRegressionTestLuma8bpp = AutoRegressionTestLuma<8>;
 TEST_P(AutoRegressionTestLuma8bpp, AutoRegressiveFilterLuma) {
   TestAutoRegressiveFilterLuma(std::get<0>(GetParam()), std::get<1>(GetParam()),
                                1, /*saturate=*/false,
-                               /*compare=*/true);
+                               /*compare=*/false);
 }
 
 TEST_P(AutoRegressionTestLuma8bpp, AutoRegressiveFilterLumaSaturated) {
@@ -966,7 +966,7 @@ using AutoRegressionTestLuma10bpp = AutoRegressionTestLuma<10>;
 TEST_P(AutoRegressionTestLuma10bpp, AutoRegressiveFilterLuma) {
   TestAutoRegressiveFilterLuma(std::get<0>(GetParam()), std::get<1>(GetParam()),
                                1, /*saturate=*/false,
-                               /*compare=*/true);
+                               /*compare=*/false);
 }
 
 TEST_P(AutoRegressionTestLuma10bpp, AutoRegressiveFilterLumaSaturated) {

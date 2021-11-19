@@ -14,6 +14,8 @@
 #define EIGEN_MINRES_H_
 
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
     
     namespace internal {

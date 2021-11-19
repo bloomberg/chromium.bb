@@ -106,6 +106,10 @@ TCPPort::TCPPort(rtc::Thread* thread,
   if (allow_listen_) {
     TryCreateServerSocket();
   }
+  // Set TCP_NODELAY (via OPT_NODELAY) for improved performance; this causes
+  // small media packets to be sent immediately rather than being buffered up,
+  // reducing latency.
+  SetOption(rtc::Socket::OPT_NODELAY, 1);
 }
 
 TCPPort::~TCPPort() {
@@ -169,13 +173,11 @@ void TCPPort::PrepareAddress() {
     // Socket may be in the CLOSED state if Listen()
     // failed, we still want to add the socket address.
     RTC_LOG(LS_VERBOSE) << "Preparing TCP address, current state: "
-                        << listen_socket_->GetState();
-    if (listen_socket_->GetState() == rtc::AsyncPacketSocket::STATE_BOUND ||
-        listen_socket_->GetState() == rtc::AsyncPacketSocket::STATE_CLOSED)
-      AddAddress(listen_socket_->GetLocalAddress(),
-                 listen_socket_->GetLocalAddress(), rtc::SocketAddress(),
-                 TCP_PROTOCOL_NAME, "", TCPTYPE_PASSIVE_STR, LOCAL_PORT_TYPE,
-                 ICE_TYPE_PREFERENCE_HOST_TCP, 0, "", true);
+                        << static_cast<int>(listen_socket_->GetState());
+    AddAddress(listen_socket_->GetLocalAddress(),
+               listen_socket_->GetLocalAddress(), rtc::SocketAddress(),
+               TCP_PROTOCOL_NAME, "", TCPTYPE_PASSIVE_STR, LOCAL_PORT_TYPE,
+               ICE_TYPE_PREFERENCE_HOST_TCP, 0, "", true);
   } else {
     RTC_LOG(LS_INFO) << ToString()
                      << ": Not listening due to firewall restrictions.";
@@ -245,19 +247,17 @@ int TCPPort::SendTo(const void* data,
 }
 
 int TCPPort::GetOption(rtc::Socket::Option opt, int* value) {
-  if (listen_socket_) {
-    return listen_socket_->GetOption(opt, value);
-  } else {
-    return SOCKET_ERROR;
+  auto const& it = socket_options_.find(opt);
+  if (it == socket_options_.end()) {
+    return -1;
   }
+  *value = it->second;
+  return 0;
 }
 
 int TCPPort::SetOption(rtc::Socket::Option opt, int value) {
-  if (listen_socket_) {
-    return listen_socket_->SetOption(opt, value);
-  } else {
-    return SOCKET_ERROR;
-  }
+  socket_options_[opt] = value;
+  return 0;
 }
 
 int TCPPort::GetError() {
@@ -276,6 +276,9 @@ void TCPPort::OnNewConnection(rtc::AsyncListenSocket* socket,
                               rtc::AsyncPacketSocket* new_socket) {
   RTC_DCHECK(socket == listen_socket_.get());
 
+  for (const auto& option : socket_options_) {
+    new_socket->SetOption(option.first, option.second);
+  }
   Incoming incoming;
   incoming.addr = new_socket->GetRemoteAddress();
   incoming.socket = new_socket;

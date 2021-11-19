@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">사이트에서 내 기기에 연결하도록 허용하기 전에 확인(권장)</translation>
 <translation id="1779089405699405702">이미지 디코더</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" />에서 AR을 사용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 카메라를 사용 설정하세요.</translation>
+<translation id="1864927262126810325">출처: <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">이 기기의 위치 액세스가 사용 중지되었습니다. <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 사용 설정하세요.</translation>
 <translation id="1919345977826869612">광고</translation>
 <translation id="1919950603503897840">연락처 선택</translation>
@@ -55,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" />MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> 외 <ph name="NUM_MORE" />개 허용됨}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> 외 <ph name="NUM_MORE" />개 허용됨}}</translation>
 <translation id="2434158240863470628">다운로드 완료: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">항상 데스크톱 사이트 요청</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" />에서 관리함</translation>
@@ -94,6 +96,7 @@
 <translation id="3328801116991980348">사이트 정보</translation>
 <translation id="3333961966071413176">모든 연락처</translation>
 <translation id="3386292677130313581">사이트에서 내 위치를 파악하도록 허용하기 전에 확인(권장)</translation>
+<translation id="3517437118288792304">특정 사이트의 경우 항상 데스크톱 뷰를 요청합니다.</translation>
 <translation id="3538390592868664640">사이트에서 주변 환경의 3D 지도를 생성하거나 카메라 위치를 추적하지 못하도록 차단</translation>
 <translation id="3551268116566418498">시크릿 모드를 종료하시겠습니까?</translation>
 <translation id="3586500876634962664">카메라 및 마이크 사용</translation>
@@ -116,7 +119,6 @@
 <translation id="4008040567710660924">특정 사이트의 쿠키를 허용합니다.</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
-<translation id="4176463684765177261">사용 중지됨</translation>
 <translation id="4200726100658658164">위치 설정 열기</translation>
 <translation id="4226663524361240545">알림이 있으면 진동이 울릴 수도 있습니다.</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
@@ -124,6 +126,7 @@
 <translation id="429312253194641664">사이트에서 미디어 재생 중</translation>
 <translation id="42981349822642051">펼치기</translation>
 <translation id="4336434711095810371">모든 데이터 삭제</translation>
+<translation id="4353125860368453721">특정 사이트의 경우 항상 모바일 뷰를 요청합니다.</translation>
 <translation id="4402755511846832236">사용자가 현재 기기를 사용 중인지 사이트에서 알 수 없도록 차단합니다.</translation>
 <translation id="4434045419905280838">팝업 및 리디렉션</translation>
 <translation id="445467742685312942">사이트에서 보호된 콘텐츠를 재생하도록 허용</translation>
@@ -148,8 +151,10 @@
 <translation id="5048398596102334565">사이트의 움직임 감지 센서 액세스 허용(권장)</translation>
 <translation id="5050380848339752099">이 사이트에서 시크릿 모드 외부의 앱을 사용하여 정보를 공유하려고 합니다.</translation>
 <translation id="5063480226653192405">사용</translation>
+<translation id="509133520954049755">데스크톱 뷰 요청</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5123685120097942451">시크릿 탭</translation>
+<translation id="5134599672855298214">모바일 뷰 요청(권장)</translation>
 <translation id="5186036860380548585">화면 상단에서 옵션을 선택할 수 있습니다</translation>
 <translation id="5197729504361054390">선택한 연락처가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />과(와) 공유됩니다.</translation>
 <translation id="5216942107514965959">최근 방문: 오늘</translation>
@@ -185,7 +190,6 @@
 <translation id="5876056640971328065">동영상 일시중지</translation>
 <translation id="5887687176710214216">최근 방문: 어제</translation>
 <translation id="5916664084637901428">사용</translation>
-<translation id="59174027418879706">사용 가능</translation>
 <translation id="5922853908706496913">화면 공유</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5975083100439434680">축소</translation>
@@ -202,7 +206,6 @@
 <translation id="6196640612572343990">타사 쿠키 차단</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
 <translation id="6231752747840485235">'<ph name="APP_NAME" />' 앱을 제거하시겠습니까?</translation>
-<translation id="6233545266937675277">사이트의 데스크톱 뷰를 요청합니다.</translation>
 <translation id="6262279340360821358"><ph name="PERMISSION_1" /> 및 <ph name="PERMISSION_2" /> 차단됨</translation>
 <translation id="6270391203985052864">사이트에서 알림 전송 허용을 요청할 수 있음</translation>
 <translation id="6295158916970320988">모든 사이트</translation>
@@ -238,6 +241,7 @@
 <translation id="7016516562562142042">현재 검색엔진에 허용됨</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
+<translation id="7070090581017165256">사이트 정보</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />개 선택됨. 화면 상단에서 옵션 선택 가능</translation>
 <translation id="7141896414559753902">사이트에서 팝업 및 리디렉션을 표시하지 못하도록 차단(권장)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" />KB</translation>
@@ -286,7 +290,6 @@
 <translation id="8211406090763984747">이 사이트는 보안 연결(HTTPS)이 사용되었습니다.</translation>
 <translation id="8249310407154411074">맨 위로 이동</translation>
 <translation id="8261506727792406068">삭제</translation>
-<translation id="8267092878336850213">사이트의 휴대기기 뷰를 요청합니다.</translation>
 <translation id="8300705686683892304">앱에서 관리함</translation>
 <translation id="8324158725704657629">다시 묻지 않음</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
@@ -300,6 +303,7 @@
 <translation id="8447861592752582886">기기 액세스 권한 취소</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{쿠키 1개 사용 중}other{쿠키 #개 사용 중}}</translation>
 <translation id="8487700953926739672">오프라인으로 사용 가능</translation>
+<translation id="848952951823693243">항상 모바일 사이트 요청</translation>
 <translation id="851751545965956758">사이트에서 기기에 연결하지 못하도록 차단</translation>
 <translation id="8525306231823319788">전체화면</translation>
 <translation id="857943718398505171">허용(권장)</translation>

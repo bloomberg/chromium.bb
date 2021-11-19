@@ -20,6 +20,9 @@
  *
  * Author: Spencer Fricke <s.fricke@samsung.com>
  *
+ * This file is related to anything that is found in the Vulkan XML related
+ * to SPIR-V. Anything related to the SPIR-V grammar belongs in spirv_grammar_helper
+ *
  ****************************************************************************/
 
 #include <string>
@@ -239,7 +242,9 @@ static const std::unordered_multimap<uint32_t, RequiredSpirvInfo> spirvCapabilit
     {spv::CapabilityStorageImageExtendedFormats, {VK_API_VERSION_1_0, nullptr, nullptr, ""}},
     {spv::CapabilityStorageImageMultisample, {0, &VkPhysicalDeviceFeatures::shaderStorageImageMultisample, nullptr, ""}},
     {spv::CapabilityStorageImageReadWithoutFormat, {0, &VkPhysicalDeviceFeatures::shaderStorageImageReadWithoutFormat, nullptr, ""}},
+    {spv::CapabilityStorageImageReadWithoutFormat, {0, nullptr, &DeviceExtensions::vk_khr_format_feature_flags2, ""}},
     {spv::CapabilityStorageImageWriteWithoutFormat, {0, &VkPhysicalDeviceFeatures::shaderStorageImageWriteWithoutFormat, nullptr, ""}},
+    {spv::CapabilityStorageImageWriteWithoutFormat, {0, nullptr, &DeviceExtensions::vk_khr_format_feature_flags2, ""}},
     {spv::CapabilityStorageInputOutput16, {0, &VkPhysicalDeviceVulkan11Features::storageInputOutput16, nullptr, ""}},
     {spv::CapabilityStoragePushConstant16, {0, &VkPhysicalDeviceVulkan11Features::storagePushConstant16, nullptr, ""}},
     {spv::CapabilityStoragePushConstant8, {0, &VkPhysicalDeviceVulkan12Features::storagePushConstant8, nullptr, ""}},
@@ -632,7 +637,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
             } else if (it->second.extension) {
                 // kEnabledByApiLevel is not valid as some extension are promoted with feature bits to be used.
                 // If the new Api Level gives support, it will be caught in the "it->second.version" check instead.
-                if (device_extensions.*(it->second.extension) == kEnabledByCreateinfo) {
+                if (IsExtEnabledByCreateinfo(device_extensions.*(it->second.extension))) {
                     has_support = true;
                 }
             } else if (it->second.property) {
@@ -705,7 +710,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
         if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
             if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
                 (spv::CapabilityInterpolationFunction == insn.word(1))) {
-                skip |= LogError(device, kVUID_Portability_InterpolationFunction,
+                skip |= LogError(device, "VUID-RuntimeSpirv-shaderSampleRateInterpolationFunctions-06325",
                                     "Invalid shader capability (portability error): interpolation functions are not supported "
                                     "by this platform");
             }
@@ -743,7 +748,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
                     has_support = true;
                 }
             } else if (it->second.extension) {
-                if (device_extensions.*(it->second.extension)) {
+                if (IsExtEnabled(device_extensions.*(it->second.extension))) {
                     has_support = true;
                 }
             } else if (it->second.property) {

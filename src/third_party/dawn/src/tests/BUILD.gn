@@ -126,10 +126,41 @@ dawn_json_generator("mock_webgpu_gen") {
   ]
 }
 
+# Source code for mocks used for unit testing are separated from the rest of
+# sources so that they aren't included in non-test builds.
+source_set("dawn_native_mocks_sources") {
+  testonly = true
+
+  deps = [
+    ":gmock_and_gtest",
+    "${dawn_root}/src/dawn_native:dawn_native_sources",
+    "${dawn_root}/src/dawn_native:dawn_native_static",
+    "${dawn_root}/src/utils:dawn_utils",
+  ]
+
+  # Add internal dawn_native config for internal unittests.
+  configs += [ "${dawn_root}/src/dawn_native:dawn_native_internal" ]
+
+  sources = [
+    "unittests/native/mocks/BindGroupLayoutMock.h",
+    "unittests/native/mocks/BindGroupMock.h",
+    "unittests/native/mocks/ComputePipelineMock.h",
+    "unittests/native/mocks/DeviceMock.h",
+    "unittests/native/mocks/PipelineLayoutMock.h",
+    "unittests/native/mocks/QuerySetMock.h",
+    "unittests/native/mocks/RenderPipelineMock.h",
+    "unittests/native/mocks/SamplerMock.h",
+    "unittests/native/mocks/ShaderModuleMock.cpp",
+    "unittests/native/mocks/ShaderModuleMock.h",
+    "unittests/native/mocks/SwapChainMock.h",
+  ]
+}
+
 test("dawn_unittests") {
   configs += [ "${dawn_root}/src/common:dawn_internal" ]
 
   deps = [
+    ":dawn_native_mocks_sources",
     ":gmock_and_gtest",
     ":mock_webgpu_gen",
     "${dawn_root}/src/common",
@@ -150,6 +181,8 @@ test("dawn_unittests") {
     "${dawn_root}/src/dawn_wire/client/ClientMemoryTransferService_mock.h",
     "${dawn_root}/src/dawn_wire/server/ServerMemoryTransferService_mock.cpp",
     "${dawn_root}/src/dawn_wire/server/ServerMemoryTransferService_mock.h",
+    "DawnNativeTest.cpp",
+    "DawnNativeTest.h",
     "MockCallback.h",
     "ToggleParser.cpp",
     "ToggleParser.h",
@@ -159,6 +192,7 @@ test("dawn_unittests") {
     "unittests/BuddyMemoryAllocatorTests.cpp",
     "unittests/ChainUtilsTests.cpp",
     "unittests/CommandAllocatorTests.cpp",
+    "unittests/ConcurrentCacheTests.cpp",
     "unittests/EnumClassBitmasksTests.cpp",
     "unittests/EnumMaskIteratorTests.cpp",
     "unittests/ErrorTests.cpp",
@@ -188,6 +222,8 @@ test("dawn_unittests") {
     "unittests/SystemUtilsTests.cpp",
     "unittests/ToBackendTests.cpp",
     "unittests/TypedIntegerTests.cpp",
+    "unittests/native/CommandBufferEncodingTests.cpp",
+    "unittests/native/DestroyObjectTests.cpp",
     "unittests/validation/BindGroupValidationTests.cpp",
     "unittests/validation/BufferValidationTests.cpp",
     "unittests/validation/CommandBufferValidationTests.cpp",
@@ -208,6 +244,7 @@ test("dawn_unittests") {
     "unittests/validation/MinimumBufferSizeValidationTests.cpp",
     "unittests/validation/MultipleDeviceTests.cpp",
     "unittests/validation/OverridableConstantsValidationTests.cpp",
+    "unittests/validation/PipelineAndPassCompatibilityTests.cpp",
     "unittests/validation/QueryValidationTests.cpp",
     "unittests/validation/QueueOnSubmittedWorkDoneValidationTests.cpp",
     "unittests/validation/QueueSubmitValidationTests.cpp",
@@ -332,6 +369,7 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/FirstIndexOffsetTests.cpp",
     "end2end/GpuMemorySynchronizationTests.cpp",
     "end2end/IndexFormatTests.cpp",
+    "end2end/MaxLimitTests.cpp",
     "end2end/MemoryAllocationStressTests.cpp",
     "end2end/MultisampledRenderingTests.cpp",
     "end2end/MultisampledSamplingTests.cpp",
@@ -345,6 +383,7 @@ source_set("dawn_end2end_tests_sources") {
     "end2end/QueryTests.cpp",
     "end2end/QueueTests.cpp",
     "end2end/QueueTimelineTests.cpp",
+    "end2end/ReadOnlyDepthStencilAttachmentTests.cpp",
     "end2end/RenderAttachmentTests.cpp",
     "end2end/RenderBundleTests.cpp",
     "end2end/RenderPassLoadOpTests.cpp",

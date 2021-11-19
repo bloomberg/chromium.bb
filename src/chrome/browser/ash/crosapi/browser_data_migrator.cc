@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_switches.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/span.h"
@@ -24,6 +25,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -32,17 +34,14 @@
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "components/account_id/account_id.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace ash {
 namespace {
-// The name of temporary directory that will store copies of files from the
-// original user data directory. At the end of the migration, it will be moved
-// to the appropriate destination.
-constexpr char kTmpDir[] = "browser_data_migrator";
 // The base names of files and directories directly under the original profile
 // data directory that does not need to be copied nor need to remain in ash e.g.
 // cache data.
@@ -118,11 +117,6 @@ const int64_t kBuffer = (int64_t)1024 * 1024 * 1024;
 constexpr char kLacrosCategory[] = "lacros";
 constexpr char kCommonCategory[] = "common";
 
-// Enable this to turn on profile migration for non-googlers. Currently the
-// feature is only limited to googlers only.
-const base::Feature kLacrosProfileMigrationForAnyUser{
-    "LacrosProfileMigrationForAnyUser", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable these to fallback to an older version of paths lists.
 const base::Feature kLacrosProfileMigrationUseDeprecatedNoCopyPaths{
     "LacrosProfileMigrationUseDeprecatedNoCopyPaths",
@@ -180,17 +174,6 @@ void OnRestartRequestResponse(bool result) {
   chrome::AttemptRestart();
 }
 
-// This will be posted with `IsMigrationRequiredOnWorker()` as the reply on UI
-// thread or called directly from `MaybeRestartToMigrate()`.
-void MaybeRestartToMigrateCallback(const AccountId& account_id,
-                                   bool is_required) {
-  if (!is_required)
-    return;
-  SessionManagerClient::Get()->RequestBrowserDataMigration(
-      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
-      base::BindOnce(&OnRestartRequestResponse));
-}
-
 base::span<const char* const> GetNoCopyDataPaths() {
   if (base::FeatureList::IsEnabled(
           kLacrosProfileMigrationUseDeprecatedNoCopyPaths)) {
@@ -215,6 +198,9 @@ base::span<const char* const> GetLacrosDataPaths() {
   return base::make_span(kLacrosDataPaths);
 }
 }  // namespace
+
+CancelFlag::CancelFlag() : cancelled_(false) {}
+CancelFlag::~CancelFlag() = default;
 
 BrowserDataMigrator::TargetInfo::TargetInfo()
     : ash_data_size(0),
@@ -245,13 +231,15 @@ int64_t BrowserDataMigrator::TargetInfo::TotalDirSize() const {
 
 // static
 void BrowserDataMigrator::MaybeRestartToMigrate(
-    const UserContext& user_context) {
-  const AccountId account_id = user_context.GetAccountId();
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(account_id);
-  // Check if lacros is enabled. If not immediately return.
-  if (!crosapi::browser_util::IsLacrosEnabledWithUser(user))
+    const AccountId& account_id,
+    const std::string& user_id_hash) {
+  // If `MigrationStep` is not `kCheckStep`, `MaybeRestartToMigrate()` has
+  // already moved on to later steps. Namely either in the middle of migration
+  // or migration has already run.
+  if (GetMigrationStep(g_browser_process->local_state()) !=
+      MigrationStep::kCheckStep) {
     return;
+  }
 
   // Check if the switch for testing is present.
   const std::string force_migration_switch =
@@ -260,41 +248,109 @@ void BrowserDataMigrator::MaybeRestartToMigrate(
   if (force_migration_switch == kBrowserDataMigrationForceSkip)
     return;
   if (force_migration_switch == kBrowserDataMigrationForceMigration) {
-    MaybeRestartToMigrateCallback(account_id, true /* is_required */);
+    MaybeRestartToMigrateCallback(account_id, user_id_hash,
+                                  true /* is_required */);
     return;
   }
-
-  //  Currently we turn on profile migration only for Googlers.
-  //  `kLacrosProfileMigrationForAnyUser` can be enabled to allow testing with
-  //  non-googler accounts.
-  if (!gaia::IsGoogleInternalAccountEmail(account_id.GetUserEmail()) &&
-      !base::FeatureList::IsEnabled(kLacrosProfileMigrationForAnyUser))
-    return;
 
   // Emergency switch to turn off profile migration. Turn this on via Finch in
   // case profile migration needs to be turned off after launch.
   if (base::FeatureList::IsEnabled(kLacrosProfileMigrationForceOff))
     return;
 
-  const std::string user_id_hash = user_context.GetUserIDHash();
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id);
+  // Check if user exists i.e. not a guest session.
+  if (!user)
+    return;
+  // Check if lacros is enabled. If not immediately return.
+  if (!crosapi::browser_util::IsLacrosEnabledForMigration(user)) {
+    // If lacros is not enabled other than reaching the maximum retry count of
+    // profile migration, clear the retry count. This will allow users to reset
+    // the retry count by disabling lacros and re-enabling lacros back.
+    ClearMigrationAttemptCountForUser(g_browser_process->local_state(),
+                                      user_id_hash);
+    return;
+  }
+
+  //  Currently we turn on profile migration only for Googlers. To test profile
+  //  migration without @google.com account, enable feature
+  //  `kLacrosProfileMigrationForAnyUser` defined in browser_util.
+  // TODO(crbug.com/1266669): Remove this check once profile migration is
+  // enabled for all users.
+  if (!crosapi::browser_util::IsProfileMigrationEnabled(account_id))
+    return;
+
+  // If the user is a new user, then there shouldn't be anything to migrate.
+  // Also mark the user as migration completed.
+  if (user_manager::UserManager::Get()->IsCurrentUserNew()) {
+    crosapi::browser_util::SetProfileMigrationCompletedForUser(
+        g_browser_process->local_state(), user_id_hash);
+    return;
+  }
+
+  int attempts = GetMigrationAttemptCountForUser(
+      g_browser_process->local_state(), user_id_hash);
+  if (attempts >= kMaxMigrationAttemptCount) {
+    return;
+  }
+
   if (crosapi::browser_util::IsDataWipeRequired(user_id_hash)) {
     // If data wipe is required, no need for a further check to determine if
     // lacros data dir exists or not.
-    MaybeRestartToMigrateCallback(account_id, true /* is_required */);
+    MaybeRestartToMigrateCallback(account_id, user_id_hash,
+                                  true /* is_required */);
     return;
   }
 
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    LOG(ERROR) << "Could not get the original user data dir path.";
+  if (!crosapi::browser_util::IsProfileMigrationCompletedForUser(
+          g_browser_process->local_state(), user_id_hash)) {
+    MaybeRestartToMigrateCallback(account_id, user_id_hash,
+                                  true /* is_required */);
     return;
-  }
+  } else {
+    // Check if profile migration is required by checking if lacros data
+    // directory exists even if profile migration is marked as completed. This
+    // is needed because until the official release because lacros user data
+    // directory can be wiped by disabling and re-enabling lacros.
+    base::FilePath user_data_dir;
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+      LOG(ERROR) << "Could not get the original user data dir path.";
+      return;
+    }
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&BrowserDataMigrator::IsMigrationRequiredOnWorker,
-                     user_data_dir, user_id_hash),
-      base::BindOnce(&MaybeRestartToMigrateCallback, account_id));
+    base::ThreadPool::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+        base::BindOnce(&BrowserDataMigrator::IsMigrationRequiredOnWorker,
+                       user_data_dir, user_id_hash),
+        base::BindOnce(&MaybeRestartToMigrateCallback, account_id,
+                       user_id_hash));
+  }
+}
+
+// static
+void BrowserDataMigrator::MaybeRestartToMigrateCallback(
+    const AccountId& account_id,
+    const std::string& user_id_hash,
+    bool is_required) {
+  if (!is_required)
+    return;
+
+  SetMigrationStep(g_browser_process->local_state(),
+                   MigrationStep::kRestartCalled);
+
+  UpdateMigrationAttemptCountForUser(g_browser_process->local_state(),
+                                     user_id_hash);
+
+  crosapi::browser_util::ClearProfileMigrationCompletedForUser(
+      g_browser_process->local_state(), user_id_hash);
+
+  g_browser_process->local_state()->CommitPendingWrite();
+
+  SessionManagerClient::Get()->RequestBrowserDataMigration(
+      cryptohome::CreateAccountIdentifierFromAccountId(account_id),
+      base::BindOnce(&OnRestartRequestResponse));
 }
 
 // static
@@ -311,25 +367,44 @@ bool BrowserDataMigrator::IsMigrationRequiredOnWorker(
 }
 
 // static
-void BrowserDataMigrator::Migrate(const std::string& user_id_hash,
-                                  base::OnceClosure callback) {
+base::OnceClosure BrowserDataMigrator::Migrate(
+    const std::string& user_id_hash,
+    const ProgressCallback& progress_callback,
+    base::OnceClosure completion_callback) {
+  DCHECK(GetMigrationStep(g_browser_process->local_state()) ==
+         MigrationStep::kRestartCalled);
+  SetMigrationStep(g_browser_process->local_state(), MigrationStep::kStarted);
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
     LOG(ERROR)
         << "Could not get the original user data dir path. Aborting migration.";
     RecordStatus(FinalStatus::kGetPathFailed);
-    std::move(callback).Run();
-    return;
+    std::move(completion_callback).Run();
+    return base::DoNothing();
   }
+
+  // The pointer will be shared by `cancel_callback` and `MigrateInternal()`.
+  scoped_refptr<CancelFlag> cancel_flag = base::MakeRefCounted<CancelFlag>();
+  // Create a callback that can be called to cancel the migration.
+  base::OnceClosure cancel_callback = base::BindOnce(
+      [](scoped_refptr<CancelFlag> cancel_flag) { cancel_flag->Set(); },
+      cancel_flag);
+
+  std::unique_ptr<MigrationProgressTracker> progress_tracker =
+      std::make_unique<MigrationProgressTrackerImpl>(progress_callback);
+
   base::FilePath profile_data_dir =
       user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&BrowserDataMigrator::MigrateInternal, profile_data_dir),
+      base::BindOnce(&BrowserDataMigrator::MigrateInternal, profile_data_dir,
+                     std::move(progress_tracker), cancel_flag),
       base::BindOnce(&BrowserDataMigrator::MigrateInternalFinishedUIThread,
-                     std::move(callback), user_id_hash));
+                     std::move(completion_callback), user_id_hash));
+
+  return cancel_callback;
 }
 
 // static
@@ -369,7 +444,9 @@ void BrowserDataMigrator::RecordStatus(const FinalStatus& final_status,
 // Note that during testing phase we are copying files and leaving files in
 // original location intact. We will allow these two states to diverge.
 BrowserDataMigrator::MigrationResult BrowserDataMigrator::MigrateInternal(
-    const base::FilePath& original_user_dir) {
+    const base::FilePath& original_user_dir,
+    std::unique_ptr<MigrationProgressTracker> progress_tracker,
+    scoped_refptr<CancelFlag> cancel_flag) {
   ResultValue data_wipe_result = ResultValue::kSkipped;
 
   const base::FilePath tmp_dir = original_user_dir.Append(kTmpDir);
@@ -396,6 +473,8 @@ BrowserDataMigrator::MigrationResult BrowserDataMigrator::MigrateInternal(
   }
 
   TargetInfo target_info = GetTargetInfo(original_user_dir);
+  progress_tracker->SetTotalSizeToCopy(target_info.TotalCopySize());
+
   base::ElapsedTimer timer;
 
   if (!HasEnoughDiskSpace(target_info, original_user_dir, Mode::kCopy)) {
@@ -403,16 +482,17 @@ BrowserDataMigrator::MigrationResult BrowserDataMigrator::MigrateInternal(
     return {data_wipe_result, ResultValue::kFailed};
   }
 
-  if (!IsMigrationSmallEnough(target_info)) {
-    RecordStatus(FinalStatus::kSizeLimitExceeded, &target_info);
-    return {data_wipe_result, ResultValue::kFailed};
-  }
-
   // Copy files to `tmp_dir`.
-  if (!SetupTmpDir(target_info, original_user_dir, tmp_dir)) {
+  if (!SetupTmpDir(target_info, original_user_dir, tmp_dir, cancel_flag.get(),
+                   progress_tracker.get())) {
     if (base::PathExists(tmp_dir)) {
       base::DeletePathRecursively(tmp_dir);
     }
+    if (cancel_flag->IsSet()) {
+      RecordStatus(FinalStatus::kCancelled, &target_info);
+      return {data_wipe_result, ResultValue::kCancelled};
+    }
+
     RecordStatus(FinalStatus::kCopyFailed, &target_info);
     return {data_wipe_result, ResultValue::kFailed};
   }
@@ -439,6 +519,10 @@ void BrowserDataMigrator::MigrateInternalFinishedUIThread(
     base::OnceClosure callback,
     const std::string& user_id_hash,
     MigrationResult result) {
+  DCHECK(GetMigrationStep(g_browser_process->local_state()) ==
+         MigrationStep::kStarted);
+  SetMigrationStep(g_browser_process->local_state(), MigrationStep::kEnded);
+
   if (result.data_wipe == ResultValue::kSucceeded) {
     crosapi::browser_util::RecordDataVer(g_browser_process->local_state(),
                                          user_id_hash,
@@ -446,17 +530,17 @@ void BrowserDataMigrator::MigrateInternalFinishedUIThread(
   }
 
   if (result.data_migration == ResultValue::kSucceeded) {
-    // If we did a migration, then we should set kClearUserDataDir1Pref. Note
-    // that if we did the migration, then the new user-data-dir has the ash
-    // profile as the main lacros profile.
-    //
-    // We only needed to delete old user-data-dirs because of the possibility
-    // that the main profile might not match the ash profile.
-    //
-    // TODO(https://crbug.com/1197220): Set the preference
-    // kClearUserDataDir1Pref to true. It's unclear whether the profile is
-    // ready for use at this point in the startup cycle.
+    crosapi::browser_util::SetProfileMigrationCompletedForUser(
+        g_browser_process->local_state(), user_id_hash);
+
+    ClearMigrationAttemptCountForUser(g_browser_process->local_state(),
+                                      user_id_hash);
   }
+  // If migration has failed or skipped, we silently relaunch ash and send them
+  // to their home screen. In that case lacros will be disabled.
+
+  g_browser_process->local_state()->CommitPendingWrite();
+
   std::move(callback).Run();
 }
 
@@ -465,13 +549,20 @@ void BrowserDataMigrator::MigrateInternalFinishedUIThread(
 // false on failure.
 bool BrowserDataMigrator::CopyTargetItem(
     const BrowserDataMigrator::TargetItem& item,
-    const base::FilePath& dest) {
+    const base::FilePath& dest,
+    CancelFlag* cancel_flag,
+    MigrationProgressTracker* progress_tracker) {
+  if (cancel_flag->IsSet())
+    return false;
+
   if (item.is_directory) {
-    if (CopyDirectory(item.path, dest))
+    if (CopyDirectory(item.path, dest, cancel_flag, progress_tracker))
       return true;
   } else {
-    if (base::CopyFile(item.path, dest))
+    if (base::CopyFile(item.path, dest)) {
+      progress_tracker->UpdateProgress(item.size);
       return true;
+    }
   }
 
   PLOG(ERROR) << "Copy failed for " << item.path;
@@ -570,22 +661,14 @@ bool BrowserDataMigrator::HasEnoughDiskSpace(
 }
 
 // static
-bool BrowserDataMigrator::IsMigrationSmallEnough(
-    const TargetInfo& target_info) {
-  constexpr int64_t max_migration_size = (int64_t)4 * 1024 * 1024 * 1024;
-  if (target_info.TotalCopySize() > max_migration_size) {
-    LOG(ERROR) << "Aborting migration because the data size is too large for "
-                  "migration: "
-               << target_info.TotalCopySize() << " bytes.";
+bool BrowserDataMigrator::CopyDirectory(
+    const base::FilePath& from_path,
+    const base::FilePath& to_path,
+    CancelFlag* cancel_flag,
+    MigrationProgressTracker* progress_tracker) {
+  if (cancel_flag->IsSet())
     return false;
-  }
 
-  return true;
-}
-
-// static
-bool BrowserDataMigrator::CopyDirectory(const base::FilePath& from_path,
-                                        const base::FilePath& to_path) {
   if (!base::PathExists(to_path) && !base::CreateDirectory(to_path)) {
     PLOG(ERROR) << "CreateDirectory() failed for " << to_path.value();
     return false;
@@ -597,6 +680,9 @@ bool BrowserDataMigrator::CopyDirectory(const base::FilePath& from_path,
                                       base::FileEnumerator::SHOW_SYM_LINKS);
   for (base::FilePath entry = enumerator.Next(); !entry.empty();
        entry = enumerator.Next()) {
+    if (cancel_flag->IsSet())
+      return false;
+
     const base::FileEnumerator::FileInfo& info = enumerator.GetInfo();
 
     // Only copy a file or a dir i.e. skip other types like symlink since
@@ -604,23 +690,35 @@ bool BrowserDataMigrator::CopyDirectory(const base::FilePath& from_path,
     if (S_ISREG(info.stat().st_mode)) {
       if (!base::CopyFile(entry, to_path.Append(entry.BaseName())))
         return false;
+
+      progress_tracker->UpdateProgress(info.GetSize());
     } else if (S_ISDIR(info.stat().st_mode)) {
-      if (!CopyDirectory(entry, to_path.Append(entry.BaseName())))
+      if (!CopyDirectory(entry, to_path.Append(entry.BaseName()), cancel_flag,
+                         progress_tracker)) {
         return false;
+      }
     }
   }
 
   return true;
 }
 
-bool BrowserDataMigrator::CopyTargetItems(const base::FilePath& to_dir,
-                                          const std::vector<TargetItem>& items,
-                                          int64_t items_size,
-                                          base::StringPiece category_name) {
+bool BrowserDataMigrator::CopyTargetItems(
+    const base::FilePath& to_dir,
+    const std::vector<TargetItem>& items,
+    CancelFlag* cancel_flag,
+    int64_t items_size,
+    base::StringPiece category_name,
+    MigrationProgressTracker* progress_tracker) {
   base::ElapsedTimer timer;
   for (const auto& item : items) {
-    if (!CopyTargetItem(item, to_dir.Append(item.path.BaseName())))
+    if (cancel_flag->IsSet())
       return false;
+
+    if (!CopyTargetItem(item, to_dir.Append(item.path.BaseName()), cancel_flag,
+                        progress_tracker)) {
+      return false;
+    }
   }
   base::TimeDelta elapsed_time = timer.Elapsed();
   // TODO(crbug.com/1178702): Once BrowserDataMigrator stabilises, reduce the
@@ -641,9 +739,12 @@ bool BrowserDataMigrator::CopyTargetItems(const base::FilePath& to_dir,
 }
 
 // static
-bool BrowserDataMigrator::SetupTmpDir(const TargetInfo& target_info,
-                                      const base::FilePath& from_dir,
-                                      const base::FilePath& tmp_dir) {
+bool BrowserDataMigrator::SetupTmpDir(
+    const TargetInfo& target_info,
+    const base::FilePath& from_dir,
+    const base::FilePath& tmp_dir,
+    CancelFlag* cancel_flag,
+    MigrationProgressTracker* progress_tracker) {
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(tmp_dir.Append(kLacrosProfilePath),
                                         &error)) {
@@ -656,13 +757,15 @@ bool BrowserDataMigrator::SetupTmpDir(const TargetInfo& target_info,
 
   // Copy lacros items.
   if (!CopyTargetItems(tmp_dir.Append(kLacrosProfilePath),
-                       target_info.lacros_data_items,
-                       target_info.lacros_data_size, kLacrosCategory))
+                       target_info.lacros_data_items, cancel_flag,
+                       target_info.lacros_data_size, kLacrosCategory,
+                       progress_tracker))
     return false;
   // Copy common items.
   if (!CopyTargetItems(tmp_dir.Append(kLacrosProfilePath),
-                       target_info.common_data_items,
-                       target_info.common_data_size, kCommonCategory))
+                       target_info.common_data_items, cancel_flag,
+                       target_info.common_data_size, kCommonCategory,
+                       progress_tracker))
     return false;
 
   // Copy `First Run` in user data directory.
@@ -673,6 +776,59 @@ bool BrowserDataMigrator::SetupTmpDir(const TargetInfo& target_info,
   }
 
   return true;
+}
+
+// static
+void BrowserDataMigrator::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(kMigrationStep,
+                                static_cast<int>(MigrationStep::kCheckStep));
+  registry->RegisterDictionaryPref(kMigrationAttemptCountPref,
+                                   base::DictionaryValue());
+}
+
+// static
+void BrowserDataMigrator::SetMigrationStep(
+    PrefService* local_state,
+    BrowserDataMigrator::MigrationStep step) {
+  local_state->SetInteger(kMigrationStep, static_cast<int>(step));
+}
+
+// static
+void BrowserDataMigrator::ClearMigrationStep(PrefService* local_state) {
+  local_state->ClearPref(kMigrationStep);
+}
+
+// static
+BrowserDataMigrator::MigrationStep BrowserDataMigrator::GetMigrationStep(
+    PrefService* local_state) {
+  return static_cast<MigrationStep>(local_state->GetInteger(kMigrationStep));
+}
+
+void BrowserDataMigrator::UpdateMigrationAttemptCountForUser(
+    PrefService* local_state,
+    const std::string& user_id_hash) {
+  int count = GetMigrationAttemptCountForUser(local_state, user_id_hash);
+  count += 1;
+  DictionaryPrefUpdate update(local_state, kMigrationAttemptCountPref);
+  base::DictionaryValue* dict = update.Get();
+  dict->SetKey(user_id_hash, base::Value(count));
+}
+
+int BrowserDataMigrator::GetMigrationAttemptCountForUser(
+    PrefService* local_state,
+    const std::string& user_id_hash) {
+  return local_state->GetDictionary(kMigrationAttemptCountPref)
+      ->FindIntPath(user_id_hash)
+      .value_or(0);
+}
+
+void BrowserDataMigrator::ClearMigrationAttemptCountForUser(
+    PrefService* local_state,
+    const std::string& user_id_hash) {
+  DictionaryPrefUpdate update(local_state, kMigrationAttemptCountPref);
+  base::DictionaryValue* dict = update.Get();
+  dict->RemoveKey(user_id_hash);
 }
 
 // static

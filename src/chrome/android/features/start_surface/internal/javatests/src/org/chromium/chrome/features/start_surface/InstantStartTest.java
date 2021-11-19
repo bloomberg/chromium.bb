@@ -48,6 +48,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.BoundedMatcher;
 import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.espresso.matcher.ViewMatchers.Visibility;
+import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -85,6 +87,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -549,6 +552,9 @@ public class InstantStartTest {
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
         ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+        // Disable feed placeholder animation because we can't render it in exactly the same way
+        // for each run.
+        FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH,
         "force-fieldtrials=Study/Group",
         IMMEDIATE_RETURN_PARAMS +
             "/start_surface_variation/single" +
@@ -590,12 +596,14 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    @DisabledTest(message = "https://crbug.com/1263928")
     public void testFeedPlaceholderFromColdStart() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
 
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         // Feed placeholder should be shown from cold start with Instant Start on.
         onView(withId(R.id.placeholders_layout)).check(matches(isDisplayed()));
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
@@ -605,19 +613,27 @@ public class InstantStartTest {
         ViewUtils.onViewWaiting(
                 AllOf.allOf(withId(R.id.feed_stream_recycler_view), matchesBackgroundAlpha(255)));
 
+        StartSurfaceCoordinator startSurfaceCoordinator =
+                StartSurfaceTestUtils.getStartSurfaceFromUIThread(cta);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(((StartSurfaceMediator) startSurfaceCoordinator.getController())
+                                       .shouldShowFeedPlaceholder());
+        });
+
         // TODO(spdonghao): Add a test for Feed placeholder from warm start. It's tested in
         // StartSurfaceMediatorUnitTest#feedPlaceholderFromWarmStart currently because warm start is
         // hard to simulate here.
     }
 
     @Test
-    @SmallTest
+    @LargeTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     // clang-format off
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    @DisabledTest(message = "https://crbug.com/1263928")
     public void testCachedFeedVisibility() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -676,6 +692,7 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    @DisabledTest(message = "https://crbug.com/1263928")
     public void testShowFeedPlaceholder() {
         // clang-format on
         StartSurfaceConfiguration.setFeedVisibilityForTesting(true);
@@ -792,6 +809,7 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    @DisabledTest(message = "https://crbug.com/1263928")
     public void renderSingleAsHomepage_NoTab_scrollToolbarToTop() throws IOException {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -829,6 +847,7 @@ public class InstantStartTest {
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    @DisabledTest(message = "https://crbug.com/1263928")
     public void testShadowVisibility() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -986,6 +1005,9 @@ public class InstantStartTest {
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study", ChromeFeatureList.EXPLORE_SITES})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            // Disable feed placeholder animation because we can't render it in exactly the same
+            // way for each run.
+            FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH,
             "force-fieldtrials=Study/Group",
             IMMEDIATE_RETURN_PARAMS +
                     "/start_surface_variation/single/exclude_mv_tiles/false"})
@@ -1018,14 +1040,15 @@ public class InstantStartTest {
     }
 
     @Test
-    @MediumTest
+    @LargeTest
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // clang-format off
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
             "force-fieldtrials=Study/Group",
-            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single",
+            FeedPlaceholderLayout.DISABLE_ANIMATION_SWITCH})
     public void testScrollToSelectedTab() throws IOException {
         // clang-format on
         StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, null, 5);
@@ -1263,6 +1286,54 @@ public class InstantStartTest {
         testShowLastTabWhenHomepageDisabledNoImmediateReturnImpl();
     }
 
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+        "force-fieldtrials=Study/Group",
+        IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single",
+        ChromeSwitches.FORCE_UPDATE_MENU_UPDATE_TYPE + "=update_available"})
+    public void testMenuUpdateBadgeWithUpdateAvailable() throws IOException {
+        // clang-format on
+        testMenuUpdateBadge(/*shouldShowUpdateBadgeOnStartAndTabs=*/true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+        "force-fieldtrials=Study/Group",
+        IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single",
+        ChromeSwitches.FORCE_UPDATE_MENU_UPDATE_TYPE + "=unsupported_os_version"})
+    public void testMenuUpdateBadgeWithUnsupportedOsVersion() throws IOException {
+        // clang-format on
+        testMenuUpdateBadge(/*shouldShowUpdateBadgeOnStartAndTabs=*/true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+        ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+        "force-fieldtrials=Study/Group",
+        IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single",
+        ChromeSwitches.FORCE_UPDATE_MENU_UPDATE_TYPE + "=none"})
+    public void testMenuUpdateBadgeWithoutUpdate() throws IOException {
+        // clang-format on
+        testMenuUpdateBadge(/*shouldShowUpdateBadgeOnStartAndTabs=*/false);
+    }
+
     private void testNewTabFromLauncherImpl() throws IOException {
         StartSurfaceTestUtils.createTabStateFile(new int[] {0});
         StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile(0);
@@ -1376,6 +1447,56 @@ public class InstantStartTest {
         });
     }
 
+    private void testMenuUpdateBadge(boolean shouldShowUpdateBadgeOnStartAndTabs)
+            throws IOException {
+        StartSurfaceTestUtils.createTabStateFile(new int[] {0, 1, 2});
+        StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(cta);
+        startAndWaitNativeInitialization();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+
+        // Check whether the update badge shows on start surface toolbar.
+        if (shouldShowUpdateBadgeOnStartAndTabs) {
+            onViewWaiting(allOf(withId(R.id.menu_badge),
+                                  isDescendantOfA(withId(R.id.tab_switcher_toolbar))))
+                    .check(matches(isDisplayed()));
+        } else {
+            onView(allOf(withId(R.id.menu_badge),
+                           isDescendantOfA(withId(R.id.tab_switcher_toolbar))))
+                    .check(matches(withEffectiveVisibility(Visibility.INVISIBLE)));
+        }
+
+        // Navigate to any tab to check whether the update badge shows on toolbar layout.
+        StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 3);
+        if (shouldShowUpdateBadgeOnStartAndTabs) {
+            onViewWaiting(allOf(withId(R.id.menu_badge), isDescendantOfA(withId(R.id.toolbar))))
+                    .check(matches(isDisplayed()));
+        } else {
+            onView(allOf(withId(R.id.menu_badge), isDescendantOfA(withId(R.id.toolbar))))
+                    .check(matches(withEffectiveVisibility(Visibility.INVISIBLE)));
+        }
+
+        // Update badge shouldn't show on tab switcher surface toolbar.
+        TabUiTestHelper.enterTabSwitcher(cta);
+        waitForView(withId(R.id.secondary_tasks_surface_view));
+        onViewWaiting(
+                allOf(withId(R.id.menu_button), isDescendantOfA(withId(R.id.tab_switcher_toolbar))))
+                .check(matches(isDisplayed()));
+        if (shouldShowUpdateBadgeOnStartAndTabs) {
+            // If the update badge should show on homepage and tabs, it's suppressed in
+            // StartSurfaceToolbarMediator#onStartSurfaceStateChanged when tab switcher surface is
+            // shown. So its visibility should be Gone instead of Invisible (as initialized).
+            onView(allOf(withId(R.id.menu_badge),
+                           isDescendantOfA(withId(R.id.tab_switcher_toolbar))))
+                    .check(matches(withEffectiveVisibility(Visibility.GONE)));
+        } else {
+            onView(allOf(withId(R.id.menu_badge),
+                           isDescendantOfA(withId(R.id.tab_switcher_toolbar))))
+                    .check(matches(withEffectiveVisibility(Visibility.INVISIBLE)));
+        }
+    }
+
     private void startNewTabFromLauncherIcon(boolean incognito) {
         Intent intent = IntentHandler.createTrustedOpenNewTabIntent(
                 ContextUtils.getApplicationContext(), incognito);
@@ -1395,6 +1516,8 @@ public class InstantStartTest {
                 mActivityTestRule.getActivity().getTabModelSelector()::isTabStateInitialized,
                 10000L, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         Assert.assertTrue(LibraryLoader.getInstance().isInitialized());
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForOverviewVisible(cta);
     }
 
     private boolean allCardsHaveThumbnail(RecyclerView recyclerView) {

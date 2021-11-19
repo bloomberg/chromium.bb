@@ -11,10 +11,10 @@
 #include "include/core/SkPoint.h"
 #include "include/core/SkPoint3.h"
 #include "include/private/GrTypesPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrSamplerState.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/geometry/GrQuadUtils.h"
 #include "src/gpu/ops/TextureOp.h"
@@ -23,7 +23,7 @@ class GrCaps;
 class GrColorSpaceXform;
 class GrMeshDrawTarget;
 class GrShaderCaps;
-struct GrVertexWriter;
+struct VertexWriter;
 
 namespace skgpu::v1::QuadPerEdgeAA {
     using Saturate = skgpu::v1::TextureOp::Saturate;
@@ -146,14 +146,14 @@ namespace skgpu::v1::QuadPerEdgeAA {
         void append(GrQuad* deviceQuad, GrQuad* localQuad,
                     const SkPMColor4f& color, const SkRect& uvSubset, GrQuadAAFlags aaFlags);
 
-        SkDEBUGCODE(char* vertices() const { return (char*) fVertexWriter.fPtr; })
+        SkDEBUGCODE(char* vertices() const { return (char*) fVertexWriter.ptr(); })
 
     private:
         // VertexSpec defines many unique ways to write vertex attributes, which can be handled
         // generically by branching per-quad based on the VertexSpec. However, there are several
         // specs that appear in the wild far more frequently, so they use explicit WriteQuadProcs
         // that have no branches.
-        typedef void (*WriteQuadProc)(GrVertexWriter* vertices, const VertexSpec& spec,
+        typedef void (*WriteQuadProc)(VertexWriter* vertices, const VertexSpec& spec,
                                       const GrQuad* deviceQuad, const GrQuad* localQuad,
                                       const float coverage[4], const SkPMColor4f& color,
                                       const SkRect& geomSubset, const SkRect& texSubset);
@@ -161,7 +161,7 @@ namespace skgpu::v1::QuadPerEdgeAA {
 
         GrQuadUtils::TessellationHelper fAAHelper;
         VertexSpec                      fVertexSpec;
-        GrVertexWriter                  fVertexWriter;
+        VertexWriter                    fVertexWriter;
         WriteQuadProc                   fWriteProc;
     };
 

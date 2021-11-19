@@ -8,12 +8,17 @@
 #ifndef SkBlockAllocator_DEFINED
 #define SkBlockAllocator_DEFINED
 
-#include "include/private/GrTypesPriv.h"
+#include "include/core/SkMath.h"
+#include "include/core/SkTypes.h"
+#include "include/private/SkMacros.h"
 #include "include/private/SkNoncopyable.h"
+#include "include/private/SkTo.h"
 #include "src/core/SkASAN.h"
 
 #include <memory>  // std::unique_ptr
 #include <cstddef> // max_align_t
+#include <limits> // numeric_limits
+#include <algorithm> // max
 
 /**
  * SkBlockAllocator provides low-level support for a block allocated arena with a dynamic tail that
@@ -49,7 +54,7 @@ class SkBlockAllocator final : SkNoncopyable {
 public:
     // Largest size that can be requested from allocate(), chosen because it's the largest pow-2
     // that is less than int32_t::max()/2.
-    static constexpr int kMaxAllocationSize = 1 << 29;
+    inline static constexpr int kMaxAllocationSize = 1 << 29;
 
     enum class GrowthPolicy : int {
         kFixed,       // Next block size = N
@@ -58,7 +63,7 @@ public:
         kExponential, //   = 2^#blocks * N
         kLast = kExponential
     };
-    static constexpr int kGrowthPolicyCount = static_cast<int>(GrowthPolicy::kLast) + 1;
+    inline static constexpr int kGrowthPolicyCount = static_cast<int>(GrowthPolicy::kLast) + 1;
 
     class Block;
 
@@ -398,8 +403,8 @@ public:
     inline BlockIter<false, true> rblocks() const;
 
 #ifdef SK_DEBUG
-    static constexpr int kAssignedMarker = 0xBEEFFACE;
-    static constexpr int kFreedMarker    = 0xCAFEBABE;
+    inline static constexpr int kAssignedMarker = 0xBEEFFACE;
+    inline static constexpr int kFreedMarker    = 0xCAFEBABE;
 
     void validate() const;
 #endif
@@ -408,7 +413,7 @@ private:
     friend class BlockAllocatorTestAccess;
     friend class TBlockListTestAccess;
 
-    static constexpr int kDataStart = sizeof(Block);
+    inline static constexpr int kDataStart = sizeof(Block);
     #ifdef SK_FORCE_8_BYTE_ALIGNMENT
         // This is an issue for WASM builds using emscripten, which had std::max_align_t = 16, but
         // was returning pointers only aligned to 8 bytes.
@@ -417,11 +422,11 @@ private:
         // Setting this to 8 will let SkBlockAllocator properly correct for the pointer address if
         // a 16-byte aligned allocation is requested in wasm (unlikely since we don't use long
         // doubles).
-        static constexpr size_t kAddressAlign = 8;
+        inline static constexpr size_t kAddressAlign = 8;
     #else
         // The alignment Block addresses will be at when created using operator new
         // (spec-compliant is pointers are aligned to max_align_t).
-        static constexpr size_t kAddressAlign = alignof(std::max_align_t);
+        inline static constexpr size_t kAddressAlign = alignof(std::max_align_t);
     #endif
 
     // Calculates the size of a new Block required to store a kMaxAllocationSize request for the
@@ -509,12 +514,12 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Template and inline implementations
 
-GR_MAKE_BITFIELD_OPS(SkBlockAllocator::ReserveFlags)
+SK_MAKE_BITFIELD_OPS(SkBlockAllocator::ReserveFlags)
 
 template<size_t Align, size_t Padding>
 constexpr size_t SkBlockAllocator::BlockOverhead() {
-    static_assert(GrAlignTo(kDataStart + Padding, Align) >= sizeof(Block));
-    return GrAlignTo(kDataStart + Padding, Align);
+    static_assert(SkAlignTo(kDataStart + Padding, Align) >= sizeof(Block));
+    return SkAlignTo(kDataStart + Padding, Align);
 }
 
 template<size_t Align, size_t Padding>
@@ -562,7 +567,7 @@ SkBlockAllocator::ByteRange SkBlockAllocator::allocate(size_t size) {
     static constexpr int kBlockOverhead = (int) BlockOverhead<Align, Padding>();
 
     // Ensures 'offset' and 'end' calculations will be valid
-    static_assert((kMaxAllocationSize + GrAlignTo(MaxBlockSize<Align, Padding>(), Align))
+    static_assert((kMaxAllocationSize + SkAlignTo(MaxBlockSize<Align, Padding>(), Align))
                         <= (size_t) std::numeric_limits<int32_t>::max());
     // Ensures size + blockOverhead + addBlock's alignment operations will be valid
     static_assert(kMaxAllocationSize + kBlockOverhead + ((1 << 12) - 1) // 4K align for large blocks
@@ -625,7 +630,7 @@ int SkBlockAllocator::Block::alignedOffset(int offset) const {
                         <= (size_t) std::numeric_limits<int32_t>::max());
 
     if /* constexpr */ (Align <= kAddressAlign) {
-        // Same as GrAlignTo, but operates on ints instead of size_t
+        // Same as SkAlignTo, but operates on ints instead of size_t
         return (offset + Padding + Align - 1) & ~(Align - 1);
     } else {
         // Must take into account that 'this' may be starting at a pointer that doesn't satisfy the

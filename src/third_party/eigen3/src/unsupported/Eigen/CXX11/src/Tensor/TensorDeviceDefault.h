@@ -11,6 +11,8 @@
 #define EIGEN_CXX11_TENSOR_TENSOR_DEVICE_DEFAULT_H
 
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // Default device for the machine (typically a single cpu core)

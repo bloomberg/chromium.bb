@@ -161,8 +161,9 @@ template <class T, size_t N, class Storage>
 template <class InputIt, std::enable_if_t<!std::is_integral<InputIt>::value, bool>>
 FastVector<T, N, Storage>::FastVector(InputIt first, InputIt last)
 {
-    mSize = last - first;
-    ensure_capacity(mSize);
+    size_t newSize = last - first;
+    ensure_capacity(newSize);
+    mSize = newSize;
     std::copy(first, last, begin());
 }
 
@@ -179,7 +180,7 @@ FastVector<T, N, Storage> &FastVector<T, N, Storage>::operator=(
 template <class T, size_t N, class Storage>
 FastVector<T, N, Storage> &FastVector<T, N, Storage>::operator=(FastVector<T, N, Storage> &&other)
 {
-    swap(*this, other);
+    swap(other);
     return *this;
 }
 

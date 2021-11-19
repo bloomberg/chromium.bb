@@ -14,9 +14,7 @@
 #include "include/core/SkColorSpace.h"
 #include "include/core/SkData.h"
 #include "include/core/SkDocument.h"
-#include "include/core/SkFontMgr.h"
 #include "include/core/SkGraphics.h"
-#include "include/ports/SkTypeface_win.h"
 #include "include/private/SkChecksum.h"
 #include "include/private/SkHalf.h"
 #include "include/private/SkSpinlock.h"
@@ -115,6 +113,7 @@ static DEFINE_bool2(veryVerbose, V, false, "tell individual tests to be verbose.
 
 static DEFINE_bool(cpu, true, "Run CPU-bound work?");
 static DEFINE_bool(gpu, true, "Run GPU-bound work?");
+static DEFINE_bool(graphite, true, "Run Graphite work?");
 
 static DEFINE_bool(dryRun, false,
                    "just print the tests that would be run, without actually running them.");
@@ -887,7 +886,7 @@ static bool gather_srcs() {
     }
 
     SkTArray<SkString> images;
-    if (!CollectImages(FLAGS_images, &images)) {
+    if (!CommonFlags::CollectImages(FLAGS_images, &images)) {
         return false;
     }
 
@@ -896,7 +895,7 @@ static bool gather_srcs() {
     }
 
     SkTArray<SkString> colorImages;
-    if (!CollectImages(FLAGS_colorImages, &colorImages)) {
+    if (!CommonFlags::CollectImages(FLAGS_colorImages, &colorImages)) {
         return false;
     }
 
@@ -944,9 +943,7 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
                      "GM tests will be skipped.\n", gpuConfig->getTag().c_str());
                 return nullptr;
             }
-            if (gpuConfig->getUseGraphite()) {
-                return new GraphiteSink();
-            } else if (gpuConfig->getTestThreading()) {
+            if (gpuConfig->getTestThreading()) {
                 SkASSERT(!gpuConfig->getTestPersistentCache());
                 return new GPUThreadTestingSink(gpuConfig, grCtxOptions);
             } else if (gpuConfig->getTestPersistentCache()) {
@@ -962,6 +959,13 @@ static Sink* create_sink(const GrContextOptions& grCtxOptions, const SkCommandLi
             }
         }
     }
+#ifdef SK_GRAPHITE_ENABLED
+    if (FLAGS_graphite) {
+        if (const SkCommandLineConfigGraphite *graphiteConfig = config->asConfigGraphite()) {
+            return new GraphiteSink(graphiteConfig);
+        }
+    }
+#endif
     if (const SkCommandLineConfigSvg* svgConfig = config->asConfigSvg()) {
         int pageIndex = svgConfig->getPageIndex();
         return new SVGSink(pageIndex);
@@ -1427,12 +1431,14 @@ static void gather_tests() {
         if (!in_shard()) {
             continue;
         }
-        if (CommandLineFlags::ShouldSkip(FLAGS_match, test.name)) {
+        if (CommandLineFlags::ShouldSkip(FLAGS_match, test.fName)) {
             continue;
         }
-        if (test.needsGpu && FLAGS_gpu) {
+        if (test.fNeedsGpu && FLAGS_gpu) {
             gSerialTests->push_back(test);
-        } else if (!test.needsGpu && FLAGS_cpu) {
+        } else if (test.fNeedsGraphite && FLAGS_graphite) {
+            gSerialTests->push_back(test);
+        } else if (!test.fNeedsGpu && !test.fNeedsGraphite && FLAGS_cpu) {
             gParallelTests->push_back(test);
         }
     }
@@ -1449,16 +1455,16 @@ static void run_test(skiatest::Test test, const GrContextOptions& grCtxOptions) 
         bool verbose() const override { return FLAGS_veryVerbose; }
     } reporter;
 
-    if (!FLAGS_dryRun && !should_skip("_", "tests", "_", test.name)) {
+    if (!FLAGS_dryRun && !should_skip("_", "tests", "_", test.fName)) {
         AutoreleasePool pool;
         GrContextOptions options = grCtxOptions;
         test.modifyGrContextOptions(&options);
 
-        skiatest::ReporterContext ctx(&reporter, SkString(test.name));
-        start("unit", "test", "", test.name);
+        skiatest::ReporterContext ctx(&reporter, SkString(test.fName));
+        start("unit", "test", "", test.fName);
         test.run(&reporter, options);
     }
-    done("unit", "test", "", test.name);
+    done("unit", "test", "", test.fName);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1480,8 +1486,8 @@ int main(int argc, char** argv) {
     setbuf(stdout, nullptr);
     setup_crash_handler();
 
-    ToolUtils::SetDefaultFontMgr();
-    SetAnalyticAAFromCommonFlags();
+    CommonFlags::SetDefaultFontMgr();
+    CommonFlags::SetAnalyticAA();
 
     gSkForceRasterPipelineBlitter = FLAGS_forceRasterPipeline;
     gUseSkVMBlitter               = FLAGS_skvm;
@@ -1497,7 +1503,7 @@ int main(int argc, char** argv) {
     }
 
     GrContextOptions grCtxOptions;
-    SetCtxOptionsFromCommonFlags(&grCtxOptions);
+    CommonFlags::SetCtxOptions(&grCtxOptions);
 
     dump_json();  // It's handy for the bots to assume this is ~never missing.
 

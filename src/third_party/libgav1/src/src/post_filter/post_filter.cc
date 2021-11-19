@@ -26,6 +26,7 @@
 #include "src/utils/array_2d.h"
 #include "src/utils/blocking_counter.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/memory.h"
 #include "src/utils/types.h"
@@ -374,9 +375,18 @@ void PostFilter::CopyBordersForOneSuperBlockRow(int row4x4, int sb4x4,
     const int left_border = for_loop_restoration
                                 ? kRestorationHorizontalBorder
                                 : frame_buffer_.left_border(plane);
+#if LIBGAV1_MSAN
+    // The optimized loop restoration code will overread the visible frame
+    // buffer into the right border. Extend the right boundary further to
+    // prevent msan warnings.
+    const int right_border = for_loop_restoration
+                                 ? kRestorationHorizontalBorder + 16
+                                 : frame_buffer_.right_border(plane);
+#else
     const int right_border = for_loop_restoration
                                  ? kRestorationHorizontalBorder
                                  : frame_buffer_.right_border(plane);
+#endif
     const int top_border =
         (row == 0) ? (for_loop_restoration ? kRestorationVerticalBorder
                                            : frame_buffer_.top_border(plane))

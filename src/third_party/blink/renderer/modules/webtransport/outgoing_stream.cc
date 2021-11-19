@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_transferring_optimizer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -78,11 +79,9 @@ class OutgoingStream::UnderlyingSink final : public UnderlyingSinkBase {
     // by streams so we don't care.
     outgoing_stream_->close_promise_resolver_->SuppressDetachCheck();
 
-    if (outgoing_stream_->client_) {
-      outgoing_stream_->state_ = State::kSentFin;
-      outgoing_stream_->client_->SendFin();
-      outgoing_stream_->client_ = nullptr;
-    }
+    DCHECK_EQ(outgoing_stream_->state_, State::kOpen);
+    outgoing_stream_->state_ = State::kSentFin;
+    outgoing_stream_->client_->SendFin();
 
     // Close the data pipe to signal to the network service that no more data
     // will be sent.
@@ -389,7 +388,7 @@ void OutgoingStream::ErrorStreamAbortAndReset(ScriptValue reason) {
 void OutgoingStream::AbortAndReset() {
   DVLOG(1) << "OutgoingStream::AbortAndReset() this=" << this;
 
-  DCHECK_EQ(state_, State::kOpen);
+  DCHECK(state_ == State::kOpen || state_ == State::kSentFin);
   state_ = State::kAborted;
   client_->ForgetStream();
 

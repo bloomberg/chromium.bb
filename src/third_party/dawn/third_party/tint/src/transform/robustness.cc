@@ -22,9 +22,11 @@
 #include "src/sem/block_statement.h"
 #include "src/sem/call.h"
 #include "src/sem/expression.h"
+#include "src/sem/reference_type.h"
 #include "src/sem/statement.h"
 
 TINT_INSTANTIATE_TYPEINFO(tint::transform::Robustness);
+TINT_INSTANTIATE_TYPEINFO(tint::transform::Robustness::Config);
 
 namespace tint {
 namespace transform {
@@ -34,25 +36,38 @@ struct Robustness::State {
   /// The clone context
   CloneContext& ctx;
 
+  /// Set of storage classes to not apply the transform to
+  std::unordered_set<ast::StorageClass> omitted_classes;
+
   /// Applies the transformation state to `ctx`.
   void Transform() {
+    ctx.ReplaceAll([&](const ast::ArrayAccessorExpression* expr) {
+      return Transform(expr);
+    });
     ctx.ReplaceAll(
-        [&](ast::ArrayAccessorExpression* expr) { return Transform(expr); });
-    ctx.ReplaceAll([&](ast::CallExpression* expr) { return Transform(expr); });
+        [&](const ast::CallExpression* expr) { return Transform(expr); });
   }
 
   /// Apply bounds clamping to array, vector and matrix indexing
   /// @param expr the array, vector or matrix index expression
   /// @return the clamped replacement expression, or nullptr if `expr` should be
   /// cloned without changes.
-  ast::ArrayAccessorExpression* Transform(ast::ArrayAccessorExpression* expr) {
-    auto* ret_type = ctx.src->Sem().Get(expr->array())->Type()->UnwrapRef();
+  const ast::ArrayAccessorExpression* Transform(
+      const ast::ArrayAccessorExpression* expr) {
+    auto* ret_type = ctx.src->Sem().Get(expr->array)->Type();
+
+    auto* ref = ret_type->As<sem::Reference>();
+    if (ref && omitted_classes.count(ref->StorageClass()) != 0) {
+      return nullptr;
+    }
+
+    auto* ret_unwrapped = ret_type->UnwrapRef();
 
     ProgramBuilder& b = *ctx.dst;
     using u32 = ProgramBuilder::u32;
 
     struct Value {
-      ast::Expression* expr = nullptr;  // If null, then is a constant
+      const ast::Expression* expr = nullptr;  // If null, then is a constant
       union {
         uint32_t u32 = 0;  // use if is_signed == false
         int32_t i32;       // use if is_signed == true
@@ -62,12 +77,12 @@ struct Robustness::State {
 
     Value size;              // size of the array, vector or matrix
     size.is_signed = false;  // size is always unsigned
-    if (auto* vec = ret_type->As<sem::Vector>()) {
+    if (auto* vec = ret_unwrapped->As<sem::Vector>()) {
       size.u32 = vec->Width();
 
-    } else if (auto* arr = ret_type->As<sem::Array>()) {
+    } else if (auto* arr = ret_unwrapped->As<sem::Array>()) {
       size.u32 = arr->Count();
-    } else if (auto* mat = ret_type->As<sem::Matrix>()) {
+    } else if (auto* mat = ret_unwrapped->As<sem::Matrix>()) {
       // The row accessor would have been an embedded array accessor and already
       // handled, so we just need to do columns here.
       size.u32 = mat->columns();
@@ -76,13 +91,13 @@ struct Robustness::State {
     }
 
     if (size.u32 == 0) {
-      if (!ret_type->Is<sem::Array>()) {
+      if (!ret_unwrapped->Is<sem::Array>()) {
         b.Diagnostics().add_error(diag::System::Transform,
-                                  "invalid 0 sized non-array", expr->source());
+                                  "invalid 0 sized non-array", expr->source);
         return nullptr;
       }
       // Runtime sized array
-      auto* arr = ctx.Clone(expr->array());
+      auto* arr = ctx.Clone(expr->array);
       size.expr = b.Call("arrayLength", b.AddressOf(arr));
     }
 
@@ -101,7 +116,7 @@ struct Robustness::State {
 
     Value idx;  // index value
 
-    auto* idx_sem = ctx.src->Sem().Get(expr->idx_expr());
+    auto* idx_sem = ctx.src->Sem().Get(expr->index);
     auto* idx_ty = idx_sem->Type()->UnwrapRef();
     if (!idx_ty->IsAnyOf<sem::I32, sem::U32>()) {
       TINT_ICE(Transform, b.Diagnostics())
@@ -121,12 +136,12 @@ struct Robustness::State {
         b.Diagnostics().add_error(diag::System::Transform,
                                   "unsupported constant value for accessor: " +
                                       idx_constant.Type()->type_name(),
-                                  expr->source());
+                                  expr->source);
         return nullptr;
       }
     } else {
       // Dynamic value index
-      idx.expr = ctx.Clone(expr->idx_expr());
+      idx.expr = ctx.Clone(expr->index);
       idx.is_signed = idx_ty->Is<sem::I32>();
     }
 
@@ -178,8 +193,8 @@ struct Robustness::State {
     }
 
     // Clone arguments outside of create() call to have deterministic ordering
-    auto src = ctx.Clone(expr->source());
-    auto* arr = ctx.Clone(expr->array());
+    auto src = ctx.Clone(expr->source);
+    auto* arr = ctx.Clone(expr->array);
     return b.IndexAccessor(src, arr, idx.expr);
   }
 
@@ -196,7 +211,7 @@ struct Robustness::State {
   /// @param expr the intrinsic call expression
   /// @return the clamped replacement call expression, or nullptr if `expr`
   /// should be cloned without changes.
-  ast::CallExpression* Transform(ast::CallExpression* expr) {
+  const ast::CallExpression* Transform(const ast::CallExpression* expr) {
     auto* call = ctx.src->Sem().Get(expr);
     auto* call_target = call->Target();
     auto* intrinsic = call_target->As<sem::Intrinsic>();
@@ -208,17 +223,14 @@ struct Robustness::State {
 
     // Indices of the mandatory texture and coords parameters, and the optional
     // array and level parameters.
-    auto texture_idx =
-        sem::IndexOf(intrinsic->Parameters(), sem::ParameterUsage::kTexture);
-    auto coords_idx =
-        sem::IndexOf(intrinsic->Parameters(), sem::ParameterUsage::kCoords);
-    auto array_idx =
-        sem::IndexOf(intrinsic->Parameters(), sem::ParameterUsage::kArrayIndex);
-    auto level_idx =
-        sem::IndexOf(intrinsic->Parameters(), sem::ParameterUsage::kLevel);
+    auto& signature = intrinsic->Signature();
+    auto texture_idx = signature.IndexOf(sem::ParameterUsage::kTexture);
+    auto coords_idx = signature.IndexOf(sem::ParameterUsage::kCoords);
+    auto array_idx = signature.IndexOf(sem::ParameterUsage::kArrayIndex);
+    auto level_idx = signature.IndexOf(sem::ParameterUsage::kLevel);
 
-    auto* texture_arg = expr->params()[texture_idx];
-    auto* coords_arg = expr->params()[coords_idx];
+    auto* texture_arg = expr->args[texture_idx];
+    auto* coords_arg = expr->args[coords_idx];
     auto* coords_ty = intrinsic->Parameters()[coords_idx]->Type();
 
     // If the level is provided, then we need to clamp this. As the level is
@@ -226,10 +238,10 @@ struct Robustness::State {
     // to clamp both usages.
     // TODO(bclayton): We probably want to place this into a let so that the
     // calculation can be reused. This is fiddly to get right.
-    std::function<ast::Expression*()> level_arg;
+    std::function<const ast::Expression*()> level_arg;
     if (level_idx >= 0) {
       level_arg = [&] {
-        auto* arg = expr->params()[level_idx];
+        auto* arg = expr->args[level_idx];
         auto* num_levels = b.Call("textureNumLevels", ctx.Clone(texture_arg));
         auto* zero = b.Expr(0);
         auto* max = ctx.dst->Sub(num_levels, 1);
@@ -253,7 +265,7 @@ struct Robustness::State {
 
     // Clamp the array_index argument, if provided
     if (array_idx >= 0) {
-      auto* arg = expr->params()[array_idx];
+      auto* arg = expr->args[array_idx];
       auto* num_layers = b.Call("textureNumLayers", ctx.Clone(texture_arg));
       auto* zero = b.Expr(0);
       auto* max = ctx.dst->Sub(num_layers, 1);
@@ -263,7 +275,7 @@ struct Robustness::State {
 
     // Clamp the level argument, if provided
     if (level_idx >= 0) {
-      auto* arg = expr->params()[level_idx];
+      auto* arg = expr->args[level_idx];
       ctx.Replace(arg, level_arg ? level_arg() : ctx.dst->Expr(0));
     }
 
@@ -271,11 +283,34 @@ struct Robustness::State {
   }
 };
 
+Robustness::Config::Config() = default;
+Robustness::Config::Config(const Config&) = default;
+Robustness::Config::~Config() = default;
+Robustness::Config& Robustness::Config::operator=(const Config&) = default;
+
 Robustness::Robustness() = default;
 Robustness::~Robustness() = default;
 
-void Robustness::Run(CloneContext& ctx, const DataMap&, DataMap&) {
-  State state{ctx};
+void Robustness::Run(CloneContext& ctx, const DataMap& inputs, DataMap&) {
+  Config cfg;
+  if (auto* cfg_data = inputs.Get<Config>()) {
+    cfg = *cfg_data;
+  }
+
+  std::unordered_set<ast::StorageClass> omitted_classes;
+  for (auto sc : cfg.omitted_classes) {
+    switch (sc) {
+      case StorageClass::kUniform:
+        omitted_classes.insert(ast::StorageClass::kUniform);
+        break;
+      case StorageClass::kStorage:
+        omitted_classes.insert(ast::StorageClass::kStorage);
+        break;
+    }
+  }
+
+  State state{ctx, std::move(omitted_classes)};
+
   state.Transform();
   ctx.Clone();
 }

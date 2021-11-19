@@ -2597,7 +2597,9 @@ TEST_F(OpTest, Pad) {
 
     DataType tpaddings = Choose<DataType>({DT_INT32, DT_INT64});
     std::vector<int64_t> paddings_vec;
-    for (int i = 0; i < t_dims.size(); ++i) {
+    auto dims_size = t_dims.size();
+    paddings_vec.reserve(dims_size * 2);
+    for (int i = 0; i < dims_size; ++i) {
       std::uniform_int_distribution<int> pad_distribution(0, t_dims[i]);
       int pad_size = pad_distribution(generator());
       std::uniform_int_distribution<int> lower_distribution(0, pad_size);
@@ -2607,9 +2609,8 @@ TEST_F(OpTest, Pad) {
       t_dims[i] -= pad_size;
     }
     Tensor paddings;
-    CHECK(paddings.CopyFrom(
-        AsIntTensor(tpaddings, paddings_vec),
-        TensorShape({static_cast<int64_t>(t_dims.size()), 2})));
+    CHECK(paddings.CopyFrom(AsIntTensor(tpaddings, paddings_vec),
+                            TensorShape({static_cast<int64_t>(dims_size), 2})));
     return ExpectTfAndXlaOutputsAreClose(OpTestBuilder("Pad")
                                              .RandomInput(type, t_dims)
                                              .Input(paddings)
@@ -3494,6 +3495,65 @@ TEST_F(OpTest, XlaDotV2) {
             .Attr("LhsT", a.dtype)
             .Attr("RhsT", a.dtype)
             .Attr("preferred_element_type", a.dtype));
+  });
+}
+
+TEST_F(OpTest, XlaEinsum) {
+  Repeatedly([this]() {
+    std::string equation;
+    std::vector<int64> lhs_dims, rhs_dims;
+
+    enum EinsumType { matmul, batchmatmul, dot, outer };
+    int op_kind = Choose<int>({matmul, batchmatmul, dot, outer});
+    switch (op_kind) {
+      case matmul:
+      case batchmatmul: {
+        std::vector<int64> dims;
+        if (op_kind == matmul) {
+          equation = "ij,jk->ik";
+          dims = RandomDims(2, 2);
+        } else {
+          equation = "...ij,...jk->...ik";
+          dims = RandomDims(2);
+        }
+        int64_t ndims = dims.size();
+        int64_t inner_dim = RandomDim();
+        lhs_dims = dims;
+        rhs_dims = dims;
+        lhs_dims[ndims - 1] = inner_dim;
+        rhs_dims[ndims - 2] = inner_dim;
+        break;
+      }
+      case dot: {
+        equation = "i,i->";
+        std::vector<int64> dims = RandomDims(1, 1);
+        lhs_dims = dims;
+        rhs_dims = dims;
+        break;
+      }
+      case outer: {
+        equation = "i,j->ij";
+        lhs_dims = RandomDims(1, 1);
+        rhs_dims = RandomDims(1, 1);
+        break;
+      }
+    }
+
+    auto dtype = Choose<DataType>(kAllXlaTypes);
+    return ExpectTfAndXlaOutputsAreClose(OpTestBuilder("XlaEinsum")
+                                             .RandomInput(dtype, lhs_dims)
+                                             .RandomInput(dtype, rhs_dims)
+                                             .Attr("equation", equation)
+                                             .Attr("T", dtype));
+  });
+}
+
+TEST_F(OpTest, XlaSort) {
+  Repeatedly([this]() {
+    auto dtype = Choose<DataType>(kAllXlaTypes);
+    return ExpectTfAndXlaOutputsAreClose(OpTestBuilder("XlaSort")
+                                             .RandomInput(dtype, RandomDims())
+                                             .Attr("T", dtype));
   });
 }
 

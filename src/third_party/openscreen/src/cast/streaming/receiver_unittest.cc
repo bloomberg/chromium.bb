@@ -401,10 +401,11 @@ TEST_F(ReceiverTest, ReceivesAndSendsRtcpPackets) {
   // from the wire-format NtpTimestamps. See the unit tests in
   // ntp_time_unittest.cc for further discussion.
   constexpr auto kAllowedNtpRoundingError = microseconds(2);
-  EXPECT_NEAR(
-      to_microseconds(kOneWayNetworkDelay).count(),
-      to_microseconds(receiver_reference_time - sender_reference_time).count(),
-      kAllowedNtpRoundingError.count());
+  EXPECT_NEAR(to_microseconds(kOneWayNetworkDelay).count(),
+              static_cast<double>(to_microseconds(receiver_reference_time -
+                                                  sender_reference_time)
+                                      .count()),
+              kAllowedNtpRoundingError.count());
 
   // Without the Sender doing anything, the Receiver should continue providing
   // RTCP reports at regular intervals. Simulate three intervals of time,

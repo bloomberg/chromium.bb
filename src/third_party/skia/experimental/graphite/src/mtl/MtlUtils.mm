@@ -25,8 +25,12 @@ bool FormatIsDepthOrStencil(MTLPixelFormat format) {
 
 MTLPixelFormat SkColorTypeToFormat(SkColorType colorType) {
     switch (colorType) {
-        case (kRGBA_8888_SkColorType):
+        case kRGBA_8888_SkColorType:
             return MTLPixelFormatRGBA8Unorm;
+        case kAlpha_8_SkColorType:
+            return MTLPixelFormatR8Unorm;
+        case kRGBA_F16_SkColorType:
+            return MTLPixelFormatRGBA16Float;
         default:
             // TODO: fill in the rest of the formats
             SkUNREACHABLE;
@@ -84,4 +88,3 @@ sk_cfp<id<MTLLibrary>> CompileShaderLibrary(const Gpu* gpu,
 }
 
 } // namespace skgpu::mtl
-

@@ -98,15 +98,13 @@ class DnsDataGraphTests : public testing::Test {
   }
 
   void StartTracking(const DomainName& domain) {
-    graph_->StartTracking(domain, [this](const DomainName& domain) {
-      callbacks_.OnStartTracking(domain);
-    });
+    graph_->StartTracking(
+        domain, [this](const DomainName& d) { callbacks_.OnStartTracking(d); });
   }
 
   void StopTracking(const DomainName& domain) {
-    graph_->StopTracking(domain, [this](const DomainName& domain) {
-      callbacks_.OnStopTracking(domain);
-    });
+    graph_->StopTracking(
+        domain, [this](const DomainName& d) { callbacks_.OnStopTracking(d); });
   }
 
   StrictMock<DomainChangeImpl> callbacks_;

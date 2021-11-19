@@ -11,6 +11,8 @@
 #ifndef EIGEN_PARTIALLU_H
 #define EIGEN_PARTIALLU_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -265,10 +267,7 @@ template<typename MatrixType_> class PartialPivLU
 
   protected:
 
-    static void check_template_parameters()
-    {
-      EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-    }
+    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
 
     void compute();
 
@@ -524,8 +523,6 @@ void partial_lu_inplace(MatrixType& lu, TranspositionType& row_transpositions, t
 template<typename MatrixType>
 void PartialPivLU<MatrixType>::compute()
 {
-  check_template_parameters();
-
   // the row permutation is stored as int indices, so just to be sure:
   eigen_assert(m_lu.rows()<NumTraits<int>::highest());
 

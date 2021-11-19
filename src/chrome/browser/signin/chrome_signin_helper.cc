@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -66,6 +67,10 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -220,8 +225,9 @@ void ProcessMirrorHeader(
           web_contents);
 #endif
 
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   // Do not do anything if the navigation happened in the "background".
-  if (!chrome::FindBrowserWithWebContents(web_contents) &&
+  if ((!browser || !browser->window()->IsActive()) &&
       should_ignore_guest_webview) {
     return;
   }
@@ -230,10 +236,12 @@ void ProcessMirrorHeader(
   base::UmaHistogramEnumeration("AccountManager.ManageAccountsServiceType",
                                 service_type);
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ignore response to background request from another profile, so dialogs are
-  // not displayed in the wrong profile when using multiprofile mode.
+  // not displayed in the wrong profile when using ChromeOS multiprofile mode.
   if (profile != ProfileManager::GetActiveUserProfile())
     return;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // The only allowed operations are:
   // 1. Going Incognito.
@@ -302,16 +310,28 @@ void ProcessMirrorHeader(
     // Display a re-authentication dialog.
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowReauthAccountDialog(account_manager::AccountManagerFacade::
-                                      AccountAdditionSource::kContentArea,
+                                      AccountAdditionSource::kContentAreaReauth,
                                   manage_accounts_params.email);
     return;
   }
 
   // 3. Displaying an account addition window.
   if (service_type == GAIA_SERVICE_TYPE_ADDSESSION) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (base::FeatureList::IsEnabled(kMultiProfileAccountConsistency)) {
+      g_browser_process->profile_manager()
+          ->GetAccountProfileMapper()
+          ->ShowAddAccountDialog(profile->GetPath(),
+                                 account_manager::AccountManagerFacade::
+                                     AccountAdditionSource::kOgbAddAccount,
+                                 AccountProfileMapper::AddAccountCallback());
+      return;
+    }
+#endif
+
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowAddAccountDialog(account_manager::AccountManagerFacade::
-                                   AccountAdditionSource::kContentArea);
+                                   AccountAdditionSource::kOgbAddAccount);
     return;
   }
 

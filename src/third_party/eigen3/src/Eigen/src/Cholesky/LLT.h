@@ -10,6 +10,8 @@
 #ifndef EIGEN_LLT_H
 #define EIGEN_LLT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal{
@@ -217,10 +219,7 @@ template<typename MatrixType_, int UpLo_> class LLT
 
   protected:
 
-    static void check_template_parameters()
-    {
-      EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-    }
+    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
 
     /** \internal
       * Used to compute and store L
@@ -431,8 +430,6 @@ template<typename MatrixType, int UpLo_>
 template<typename InputType>
 LLT<MatrixType,UpLo_>& LLT<MatrixType,UpLo_>::compute(const EigenBase<InputType>& a)
 {
-  check_template_parameters();
-
   eigen_assert(a.rows()==a.cols());
   const Index size = a.rows();
   m_matrix.resize(size, size);

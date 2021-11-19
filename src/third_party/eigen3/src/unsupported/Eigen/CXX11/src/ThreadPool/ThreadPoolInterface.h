@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_THREADPOOL_THREAD_POOL_INTERFACE_H
 #define EIGEN_CXX11_THREADPOOL_THREAD_POOL_INTERFACE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // This defines an interface that ThreadPoolDevice can take to use

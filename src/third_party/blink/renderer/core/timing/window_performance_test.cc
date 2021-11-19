@@ -84,8 +84,7 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void SimulateSwapPromise(base::TimeTicks timestamp) {
-    performance_->ReportEventTimings(frame_counter++, WebSwapResult::kDidSwap,
-                                     timestamp);
+    performance_->ReportEventTimings(frame_counter++, timestamp);
   }
 
   void SimulateInteractionId(
@@ -861,8 +860,8 @@ TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   trace_analyzer::Start("*");
   // |element| needs to be non-null to prevent a crash.
   performance_->AddElementTiming(
-      "image-paint", "url", FloatRect(10, 20, 30, 40), GetTimeStamp(2000),
-      GetTimeStamp(1000), "identifier", IntSize(200, 300), "id",
+      "image-paint", "url", gfx::RectF(10, 20, 30, 40), GetTimeStamp(2000),
+      GetTimeStamp(1000), "identifier", gfx::Size(200, 300), "id",
       /*element*/ page_holder_->GetDocument().documentElement());
   auto analyzer = trace_analyzer::Stop();
   trace_analyzer::TraceEventVector events;
@@ -880,12 +879,8 @@ TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   std::string element_type;
   EXPECT_TRUE(arg_dict->GetString("elementType", &element_type));
   EXPECT_EQ(element_type, "image-paint");
-  int load_time;
-  EXPECT_TRUE(arg_dict->GetInteger("loadTime", &load_time));
-  EXPECT_EQ(load_time, 1000);
-  int render_time;
-  EXPECT_TRUE(arg_dict->GetInteger("renderTime", &render_time));
-  EXPECT_EQ(render_time, 2000);
+  EXPECT_EQ(arg_dict->FindIntKey("loadTime").value_or(-1), 1000);
+  EXPECT_EQ(arg_dict->FindIntKey("renderTime").value_or(-1), 2000);
   EXPECT_EQ(arg_dict->FindDoubleKey("rectLeft").value_or(-1), 10);
   EXPECT_EQ(arg_dict->FindDoubleKey("rectTop").value_or(-1), 20);
   EXPECT_EQ(arg_dict->FindDoubleKey("rectWidth").value_or(-1), 30);
@@ -893,12 +888,8 @@ TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   std::string identifier;
   EXPECT_TRUE(arg_dict->GetString("identifier", &identifier));
   EXPECT_EQ(identifier, "identifier");
-  int natural_width;
-  EXPECT_TRUE(arg_dict->GetInteger("naturalWidth", &natural_width));
-  EXPECT_EQ(natural_width, 200);
-  int natural_height;
-  EXPECT_TRUE(arg_dict->GetInteger("naturalHeight", &natural_height));
-  EXPECT_EQ(natural_height, 300);
+  EXPECT_EQ(arg_dict->FindIntKey("naturalWidth").value_or(-1), 200);
+  EXPECT_EQ(arg_dict->FindIntKey("naturalHeight").value_or(-1), 300);
   std::string element_id;
   EXPECT_TRUE(arg_dict->GetString("elementId", &element_id));
   EXPECT_EQ(element_id, "id");
@@ -1384,6 +1375,22 @@ TEST_F(InteractionIdTest, MultiTouch) {
   test::RunDelayedTasks(base::Seconds(1));
   CheckUKMValues({{50, 60, UserInteractionType::kTapOrClick},
                   {30, 50, UserInteractionType::kTapOrClick}});
+}
+
+TEST_F(InteractionIdTest, ClickIncorrectPointerId) {
+  // On mobile, in cases where touchstart is skipped, click does not get the
+  // correct pointerId. See crbug.com/1264930 for more details.
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kPointerup, absl::nullopt, 1, GetTimeStamp(100),
+       GetTimeStamp(130)},
+      {event_type_names::kClick, absl::nullopt, 0, GetTimeStamp(120),
+       GetTimeStamp(160)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  EXPECT_GT(ids[0], 0u) << "Nonzero interaction id";
+  EXPECT_EQ(ids[0], ids[1]) << "Pointerup and click have same interaction id";
+  // Flush UKM logging mojo request.
+  RunPendingTasks();
+  CheckUKMValues({{40, 60, UserInteractionType::kTapOrClick}});
 }
 
 }  // namespace blink

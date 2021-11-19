@@ -1299,13 +1299,12 @@ int main(int argc, const char **argv) {
   while (frame_avail || got_data) {
     struct aom_usec_timer timer;
     frame_avail = read_frame(&(app_input.input_ctx), &raw);
-    int is_key_frame = (frame_cnt % cfg.kf_max_dist) == 0;
     // Loop over spatial layers.
     for (unsigned int slx = 0; slx < ss_number_layers; slx++) {
       aom_codec_iter_t iter = NULL;
       const aom_codec_cx_pkt_t *pkt;
       int layer = 0;
-
+      int is_key_frame = (frame_cnt % cfg.kf_max_dist) == 0 && slx == 0;
       // For flexible mode:
       if (app_input.layering_mode >= 0) {
         // Set the reference/update flags, layer_id, and reference_map

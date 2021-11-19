@@ -12,6 +12,8 @@
 #ifndef EIGEN_CONSTANTS_H
 #define EIGEN_CONSTANTS_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** This value means that a positive quantity (e.g., a size) is not known at compile-time, and that instead the value is

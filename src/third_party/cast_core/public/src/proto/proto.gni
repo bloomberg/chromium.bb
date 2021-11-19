@@ -15,6 +15,7 @@ template("cast_core_proto_library") {
                            [
                              "deps",
                              "sources",
+                             "generate_javascript",
                            ])
     if (!defined(deps)) {
       deps = []

@@ -12,7 +12,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxcrt/widestring.h"
 #include "fxjs/gc/heap.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/member.h"
 #include "xfa/fgas/crt/locale_mgr_iface.h"
@@ -22,8 +22,8 @@ class CXFA_Node;
 class CXFA_NodeLocale;
 class CXFA_XMLLocale;
 
-class CXFA_LocaleMgr : public cppgc::GarbageCollected<CXFA_LocaleMgr>,
-                       public LocaleMgrIface {
+class CXFA_LocaleMgr final : public cppgc::GarbageCollected<CXFA_LocaleMgr>,
+                             public LocaleMgrIface {
  public:
   enum class LangID : uint16_t {
     k_zh_HK = 0x0c04,
@@ -52,7 +52,7 @@ class CXFA_LocaleMgr : public cppgc::GarbageCollected<CXFA_LocaleMgr>,
   GCedLocaleIface* GetLocaleByName(const WideString& wsLocaleName) override;
 
   void SetDefLocale(GCedLocaleIface* pLocale);
-  Optional<WideString> GetConfigLocaleName(CXFA_Node* pConfig) const;
+  absl::optional<WideString> GetConfigLocaleName(CXFA_Node* pConfig) const;
 
  private:
   CXFA_LocaleMgr(cppgc::Heap* pHeap,
@@ -74,7 +74,7 @@ class CXFA_LocaleMgr : public cppgc::GarbageCollected<CXFA_LocaleMgr>,
   // 3. we might have tried and gotten something.
   // So |m_bConfigLocaleCached| indicates whether we've already tried,
   // and |m_wsConfigLocale| is the possibly nothing we got if we tried.
-  mutable Optional<WideString> m_wsConfigLocale;
+  mutable absl::optional<WideString> m_wsConfigLocale;
   mutable bool m_bConfigLocaleCached = false;
 
   LangID m_eDeflcid;

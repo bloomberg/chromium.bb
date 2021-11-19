@@ -51,7 +51,7 @@ class CastAppDiscoveryServiceImplTest : public ::testing::Test {
       const CastMediaSource& source,
       std::vector<ReceiverInfo>* save_receivers) {
     return app_discovery_service_.StartObservingAvailability(
-        source, [save_receivers](const CastMediaSource& source,
+        source, [save_receivers](const CastMediaSource&,
                                  const std::vector<ReceiverInfo>& receivers) {
           *save_receivers = receivers;
         });

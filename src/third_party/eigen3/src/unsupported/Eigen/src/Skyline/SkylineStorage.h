@@ -10,6 +10,8 @@
 #ifndef EIGEN_SKYLINE_STORAGE_H
 #define EIGEN_SKYLINE_STORAGE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** Stores a skyline set of values in three structures :

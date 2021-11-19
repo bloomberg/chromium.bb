@@ -33,6 +33,7 @@
 #include "core/fxge/dib/fx_dib.h"
 #include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
+#include "third_party/base/cxx17_backports.h"
 #include "third_party/base/span.h"
 
 namespace {
@@ -74,7 +75,7 @@ std::array<FX_ARGB, kShadingSteps> GetShadingSteps(
     for (const auto& func : funcs) {
       if (!func)
         continue;
-      Optional<uint32_t> nresults =
+      absl::optional<uint32_t> nresults =
           func->Call(pdfium::make_span(&input, 1), result_span);
       if (nresults.has_value())
         result_span = result_span.subspan(nresults.value());
@@ -129,11 +130,10 @@ void DrawAxialShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
   std::array<FX_ARGB, kShadingSteps> shading_steps =
       GetShadingSteps(t_min, t_max, funcs, pCS, alpha, total_results);
 
-  int pitch = pBitmap->GetPitch();
   CFX_Matrix matrix = mtObject2Bitmap.GetInverse();
   for (int row = 0; row < height; row++) {
     uint32_t* dib_buf =
-        reinterpret_cast<uint32_t*>(pBitmap->GetBuffer() + row * pitch);
+        reinterpret_cast<uint32_t*>(pBitmap->GetWritableScanline(row).data());
     for (int column = 0; column < width; column++) {
       CFX_PointF pos = matrix.Transform(
           CFX_PointF(static_cast<float>(column), static_cast<float>(row)));
@@ -201,14 +201,12 @@ void DrawRadialShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
 
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int pitch = pBitmap->GetPitch();
-
   bool bDecreasing = dr < 0 && static_cast<int>(FXSYS_sqrt2(dx, dy)) < -dr;
 
   CFX_Matrix matrix = mtObject2Bitmap.GetInverse();
   for (int row = 0; row < height; row++) {
     uint32_t* dib_buf =
-        reinterpret_cast<uint32_t*>(pBitmap->GetBuffer() + row * pitch);
+        reinterpret_cast<uint32_t*>(pBitmap->GetWritableScanline(row).data());
     for (int column = 0; column < width; column++) {
       CFX_PointF pos = matrix.Transform(
           CFX_PointF(static_cast<float>(column), static_cast<float>(row)));
@@ -283,13 +281,13 @@ void DrawFuncShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
       mtObject2Bitmap.GetInverse() * mtDomain2Target.GetInverse();
   int width = pBitmap->GetWidth();
   int height = pBitmap->GetHeight();
-  int pitch = pBitmap->GetPitch();
 
   DCHECK(total_results >= CountOutputsFromFunctions(funcs));
   DCHECK(total_results >= pCS->CountComponents());
   std::vector<float> result_array(total_results);
   for (int row = 0; row < height; ++row) {
-    uint32_t* dib_buf = (uint32_t*)(pBitmap->GetBuffer() + row * pitch);
+    uint32_t* dib_buf =
+        reinterpret_cast<uint32_t*>(pBitmap->GetWritableScanline(row).data());
     for (int column = 0; column < width; column++) {
       CFX_PointF pos = matrix.Transform(
           CFX_PointF(static_cast<float>(column), static_cast<float>(row)));
@@ -301,7 +299,7 @@ void DrawFuncShading(const RetainPtr<CFX_DIBitmap>& pBitmap,
       for (const auto& func : funcs) {
         if (!func)
           continue;
-        Optional<uint32_t> nresults = func->Call(input, result_span);
+        absl::optional<uint32_t> nresults = func->Call(input, result_span);
         if (nresults.has_value())
           result_span = result_span.subspan(nresults.value());
       }
@@ -391,25 +389,26 @@ void DrawGouraud(const RetainPtr<CFX_DIBitmap>& pBitmap,
       end_index = 0;
     }
 
-    int start_x = std::max(min_x, 0);
-    int end_x = std::min(max_x, pBitmap->GetWidth());
-
-    uint8_t* dib_buf =
-        pBitmap->GetBuffer() + y * pBitmap->GetPitch() + start_x * 4;
+    int start_x = pdfium::clamp(min_x, 0, pBitmap->GetWidth());
+    int end_x = pdfium::clamp(max_x, 0, pBitmap->GetWidth());
     float r_unit = (r[end_index] - r[start_index]) / (max_x - min_x);
     float g_unit = (g[end_index] - g[start_index]) / (max_x - min_x);
     float b_unit = (b[end_index] - b[start_index]) / (max_x - min_x);
     float r_result = r[start_index] + (start_x - min_x) * r_unit;
     float g_result = g[start_index] + (start_x - min_x) * g_unit;
     float b_result = b[start_index] + (start_x - min_x) * b_unit;
+    pdfium::span<uint8_t> dib_span =
+        pBitmap->GetWritableScanline(y).subspan(start_x * 4);
+
     for (int x = start_x; x < end_x; x++) {
+      uint8_t* dib_buf = dib_span.data();
       r_result += r_unit;
       g_result += g_unit;
       b_result += b_unit;
       FXARGB_SETDIB(dib_buf, ArgbEncode(alpha, static_cast<int>(r_result * 255),
                                         static_cast<int>(g_result * 255),
                                         static_cast<int>(b_result * 255)));
-      dib_buf += 4;
+      dib_span = dib_span.subspan(4);
     }
   }
 }
@@ -716,7 +715,7 @@ struct PatchDrawer {
       if (bNoPathSmooth)
         fill_options.aliased_path = true;
       pDevice->DrawPath(
-          &path, nullptr, nullptr,
+          path, nullptr, nullptr,
           ArgbEncode(alpha, div_colors[0].comp[0], div_colors[0].comp[1],
                      div_colors[0].comp[2]),
           0, fill_options);

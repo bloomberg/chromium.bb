@@ -423,7 +423,7 @@ void PdfViewPluginBase::DocumentLoadComplete() {
   RecordDocumentMetrics();
 
   // Clear the focus state for on-screen keyboards.
-  FormTextFieldFocusChange(false);
+  FormFieldFocusChange(PDFEngine::FocusFieldType::kNoFocus);
 
   if (IsPrintPreview())
     OnPrintPreviewLoaded();
@@ -496,13 +496,13 @@ void PdfViewPluginBase::DocumentLoadProgress(uint32_t available,
   SendLoadingProgress(progress);
 }
 
-void PdfViewPluginBase::FormTextFieldFocusChange(bool in_focus) {
+void PdfViewPluginBase::FormFieldFocusChange(PDFEngine::FocusFieldType type) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "formFocusChange");
-  message.SetBoolKey("focused", in_focus);
+  message.SetBoolKey("focused", type != PDFEngine::FocusFieldType::kNoFocus);
   SendMessage(std::move(message));
 
-  SetFormFieldInFocus(in_focus);
+  SetFormTextFieldInFocus(type == PDFEngine::FocusFieldType::kText);
 }
 
 bool PdfViewPluginBase::IsPrintPreview() const {
@@ -638,6 +638,9 @@ void PdfViewPluginBase::SaveToBuffer(const std::string& token) {
   message.SetStringKey("type", "saveData");
   message.SetStringKey("token", token);
   message.SetStringKey("fileName", GetFileNameForSaveFromUrl(url_));
+
+  // Expose `edit_mode_` state for integration testing.
+  message.SetBoolKey("editModeForTesting", edit_mode_);
 
   base::Value data_to_save;
   if (edit_mode_) {

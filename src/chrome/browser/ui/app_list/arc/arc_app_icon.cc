@@ -524,12 +524,10 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadAdaptiveIconFiles(
   if (!base::PathExists(background_path)) {
     // For non-adaptive icon, there could be a |foreground_icon_path| file
     // only without a |background_icon_path| file.
-    base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcAppIcon", false);
     return ArcAppIcon::ReadFile(false /* request_to_install */, scale_factor,
                                 false /* resize_allowed */, foreground_path);
   }
 
-  base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcAppIcon", true);
   return ArcAppIcon::ReadFiles(false /* request_to_install */, scale_factor,
                                false /* resize_allowed */, foreground_path,
                                background_path);
@@ -567,14 +565,11 @@ ArcAppIcon::ReadDefaultAppAdaptiveIconFiles(
       !base::PathExists(default_app_background_path)) {
     // For non-adaptive icon, there could be a |default_app_foreground_path|
     // file only without a |default_app_background_path| file.
-    base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcDefaultAppIcon",
-                              false);
     return ArcAppIcon::ReadFile(true /* request_to_install */, scale_factor,
                                 true /* resize_allowed */,
                                 default_app_foreground_path);
   }
 
-  base::UmaHistogramBoolean("Arc.AdaptiveIconLoad.FromArcDefaultAppIcon", true);
   return ArcAppIcon::ReadFiles(
       true /* request_to_install */, scale_factor, true /* resize_allowed */,
       default_app_foreground_path, default_app_background_path);
@@ -670,7 +665,7 @@ void ArcAppIcon::OnIconRead(
   switch (icon_type_) {
     case IconType::kUncompressed: {
       DCHECK_EQ(1u, read_result->unsafe_icon_data.size());
-      DecodeImage(read_result->unsafe_icon_data[0],
+      DecodeImage(std::move(read_result->unsafe_icon_data[0]),
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
                   read_result->resize_allowed, false /* retain_padding */,
@@ -689,7 +684,7 @@ void ArcAppIcon::OnIconRead(
       // element for |foreground_icon_path| only.
       if (read_result->unsafe_icon_data.size() == 1) {
         is_adaptive_icons_[read_result->scale_factor] = false;
-        DecodeImage(read_result->unsafe_icon_data[0],
+        DecodeImage(std::move(read_result->unsafe_icon_data[0]),
                     ArcAppIconDescriptor(resource_size_in_dip_,
                                          read_result->scale_factor),
                     read_result->resize_allowed, false /* retain_padding */,
@@ -698,12 +693,12 @@ void ArcAppIcon::OnIconRead(
       }
 
       DCHECK_EQ(2u, read_result->unsafe_icon_data.size());
-      DecodeImage(read_result->unsafe_icon_data[0],
+      DecodeImage(std::move(read_result->unsafe_icon_data[0]),
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
                   read_result->resize_allowed, true /* retain_padding */,
                   foreground_image_skia_, foreground_incomplete_scale_factors_);
-      DecodeImage(read_result->unsafe_icon_data[1],
+      DecodeImage(std::move(read_result->unsafe_icon_data[1]),
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
                   read_result->resize_allowed, true /* retain_padding */,
@@ -714,7 +709,7 @@ void ArcAppIcon::OnIconRead(
 }
 
 void ArcAppIcon::DecodeImage(
-    const std::string& unsafe_icon_data,
+    std::string unsafe_icon_data,
     const ArcAppIconDescriptor& descriptor,
     bool resize_allowed,
     bool retain_padding,
@@ -734,7 +729,8 @@ void ArcAppIcon::DecodeImage(
       decode_requests_.back()->OnDecodeImageFailed();
     }
   } else {
-    ImageDecoder::Start(decode_requests_.back().get(), unsafe_icon_data);
+    ImageDecoder::Start(decode_requests_.back().get(),
+                        std::move(unsafe_icon_data));
   }
 }
 

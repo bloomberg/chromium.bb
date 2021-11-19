@@ -26,9 +26,30 @@ class ComputeDispatchTests : public DawnTest {
         DawnTest::SetUp();
 
         // Write workgroup number into the output buffer if we saw the biggest dispatch
-        // This is a workaround since D3D12 doesn't have gl_NumWorkGroups
         // To make sure the dispatch was not called, write maximum u32 value for 0 dispatches
-        wgpu::ShaderModule module = utils::CreateShaderModule(device, R"(
+        wgpu::ShaderModule moduleForDispatch = utils::CreateShaderModule(device, R"(
+            [[block]] struct OutputBuf {
+                workGroups : vec3<u32>;
+            };
+
+            [[group(0), binding(0)]] var<storage, read_write> output : OutputBuf;
+
+            [[stage(compute), workgroup_size(1, 1, 1)]]
+            fn main([[builtin(global_invocation_id)]] GlobalInvocationID : vec3<u32>,
+                    [[builtin(num_workgroups)]] dispatch : vec3<u32>) {
+                if (dispatch.x == 0u || dispatch.y == 0u || dispatch.z == 0u) {
+                    output.workGroups = vec3<u32>(0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu);
+                    return;
+                }
+
+                if (all(GlobalInvocationID == dispatch - vec3<u32>(1u, 1u, 1u))) {
+                    output.workGroups = dispatch;
+                }
+            })");
+
+        // TODO(dawn:839): use moduleForDispatch for indirect dispatch tests when D3D12 supports
+        // [[num_workgroups]] for indirect dispatch.
+        wgpu::ShaderModule moduleForDispatchIndirect = utils::CreateShaderModule(device, R"(
             [[block]] struct InputBuf {
                 expectedDispatch : vec3<u32>;
             };
@@ -54,9 +75,12 @@ class ComputeDispatchTests : public DawnTest {
             })");
 
         wgpu::ComputePipelineDescriptor csDesc;
-        csDesc.compute.module = module;
+        csDesc.compute.module = moduleForDispatch;
         csDesc.compute.entryPoint = "main";
-        pipeline = device.CreateComputePipeline(&csDesc);
+        pipelineForDispatch = device.CreateComputePipeline(&csDesc);
+
+        csDesc.compute.module = moduleForDispatchIndirect;
+        pipelineForDispatchIndirect = device.CreateComputePipeline(&csDesc);
     }
 
     void DirectTest(uint32_t x, uint32_t y, uint32_t z) {
@@ -66,23 +90,18 @@ class ComputeDispatchTests : public DawnTest {
             wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst,
             kSentinelData);
 
-        std::initializer_list<uint32_t> expectedBufferData{x, y, z};
-        wgpu::Buffer expectedBuffer = utils::CreateBufferFromData<uint32_t>(
-            device, wgpu::BufferUsage::Uniform, expectedBufferData);
-
         // Set up bind group and issue dispatch
         wgpu::BindGroup bindGroup =
-            utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+            utils::MakeBindGroup(device, pipelineForDispatch.GetBindGroupLayout(0),
                                  {
-                                     {0, expectedBuffer, 0, 3 * sizeof(uint32_t)},
-                                     {1, dst, 0, 3 * sizeof(uint32_t)},
+                                     {0, dst, 0, 3 * sizeof(uint32_t)},
                                  });
 
         wgpu::CommandBuffer commands;
         {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-            pass.SetPipeline(pipeline);
+            pass.SetPipeline(pipelineForDispatch);
             pass.SetBindGroup(0, bindGroup);
             pass.Dispatch(x, y, z);
             pass.EndPass();
@@ -93,7 +112,7 @@ class ComputeDispatchTests : public DawnTest {
         queue.Submit(1, &commands);
 
         std::vector<uint32_t> expected =
-            x == 0 || y == 0 || z == 0 ? kSentinelData : expectedBufferData;
+            x == 0 || y == 0 || z == 0 ? kSentinelData : std::initializer_list<uint32_t>{x, y, z};
 
         // Verify the dispatch got called if all group counts are not zero
         EXPECT_BUFFER_U32_RANGE_EQ(&expected[0], dst, 0, 3);
@@ -118,7 +137,7 @@ class ComputeDispatchTests : public DawnTest {
 
         // Set up bind group and issue dispatch
         wgpu::BindGroup bindGroup =
-            utils::MakeBindGroup(device, pipeline.GetBindGroupLayout(0),
+            utils::MakeBindGroup(device, pipelineForDispatchIndirect.GetBindGroupLayout(0),
                                  {
                                      {0, expectedBuffer, 0, 3 * sizeof(uint32_t)},
                                      {1, dst, 0, 3 * sizeof(uint32_t)},
@@ -128,7 +147,7 @@ class ComputeDispatchTests : public DawnTest {
         {
             wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
             wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-            pass.SetPipeline(pipeline);
+            pass.SetPipeline(pipelineForDispatchIndirect);
             pass.SetBindGroup(0, bindGroup);
             pass.DispatchIndirect(indirectBuffer, indirectOffset);
             pass.EndPass();
@@ -139,8 +158,14 @@ class ComputeDispatchTests : public DawnTest {
         queue.Submit(1, &commands);
 
         std::vector<uint32_t> expected;
+
+        uint32_t maxComputeWorkgroupsPerDimension =
+            GetSupportedLimits().limits.maxComputeWorkgroupsPerDimension;
         if (indirectBufferData[indirectStart] == 0 || indirectBufferData[indirectStart + 1] == 0 ||
-            indirectBufferData[indirectStart + 2] == 0) {
+            indirectBufferData[indirectStart + 2] == 0 ||
+            indirectBufferData[indirectStart] > maxComputeWorkgroupsPerDimension ||
+            indirectBufferData[indirectStart + 1] > maxComputeWorkgroupsPerDimension ||
+            indirectBufferData[indirectStart + 2] > maxComputeWorkgroupsPerDimension) {
             expected = kSentinelData;
         } else {
             expected.assign(indirectBufferData.begin() + indirectStart,
@@ -153,7 +178,8 @@ class ComputeDispatchTests : public DawnTest {
     }
 
   private:
-    wgpu::ComputePipeline pipeline;
+    wgpu::ComputePipeline pipelineForDispatch;
+    wgpu::ComputePipeline pipelineForDispatchIndirect;
 };
 
 // Test basic direct
@@ -199,6 +225,52 @@ TEST_P(ComputeDispatchTests, IndirectNoop) {
 // Test indirect with buffer offset
 TEST_P(ComputeDispatchTests, IndirectOffset) {
     IndirectTest({0, 0, 0, 2, 3, 4}, 3 * sizeof(uint32_t));
+}
+
+// Test indirect dispatches at max limit.
+TEST_P(ComputeDispatchTests, MaxWorkgroups) {
+    // TODO(crbug.com/dawn/1165): Fails with WARP
+    DAWN_SUPPRESS_TEST_IF(IsWARP());
+    uint32_t max = GetSupportedLimits().limits.maxComputeWorkgroupsPerDimension;
+
+    // Test that the maximum works in each dimension.
+    // Note: Testing (max, max, max) is very slow.
+    IndirectTest({max, 3, 4}, 0);
+    IndirectTest({2, max, 4}, 0);
+    IndirectTest({2, 3, max}, 0);
+}
+
+// Test indirect dispatches exceeding the max limit are noop-ed.
+TEST_P(ComputeDispatchTests, ExceedsMaxWorkgroupsNoop) {
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
+
+    uint32_t max = GetSupportedLimits().limits.maxComputeWorkgroupsPerDimension;
+
+    // All dimensions are above the max
+    IndirectTest({max + 1, max + 1, max + 1}, 0);
+
+    // Only x dimension is above the max
+    IndirectTest({max + 1, 3, 4}, 0);
+    IndirectTest({2 * max, 3, 4}, 0);
+
+    // Only y dimension is above the max
+    IndirectTest({2, max + 1, 4}, 0);
+    IndirectTest({2, 2 * max, 4}, 0);
+
+    // Only z dimension is above the max
+    IndirectTest({2, 3, max + 1}, 0);
+    IndirectTest({2, 3, 2 * max}, 0);
+}
+
+// Test indirect dispatches exceeding the max limit with an offset are noop-ed.
+TEST_P(ComputeDispatchTests, ExceedsMaxWorkgroupsWithOffsetNoop) {
+    DAWN_TEST_UNSUPPORTED_IF(HasToggleEnabled("skip_validation"));
+
+    uint32_t max = GetSupportedLimits().limits.maxComputeWorkgroupsPerDimension;
+
+    IndirectTest({1, 2, 3, max + 1, 4, 5}, 1 * sizeof(uint32_t));
+    IndirectTest({1, 2, 3, max + 1, 4, 5}, 2 * sizeof(uint32_t));
+    IndirectTest({1, 2, 3, max + 1, 4, 5}, 3 * sizeof(uint32_t));
 }
 
 DAWN_INSTANTIATE_TEST(ComputeDispatchTests,

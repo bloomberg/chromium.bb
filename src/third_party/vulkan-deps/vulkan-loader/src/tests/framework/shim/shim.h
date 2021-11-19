@@ -29,6 +29,8 @@
 
 #include "test_util.h"
 
+#include <stdlib.h>
+
 #if defined(WIN32)
 #include <strsafe.h>
 #include <cfgmgr32.h>
@@ -103,6 +105,7 @@ struct PlatformShim {
     void reset(DebugMode debug_mode = DebugMode::none);
 
     void redirect_all_paths(fs::path const& path);
+    void redirect_category(fs::path const& new_path, ManifestCategory category);
 
     void set_path(ManifestCategory category, fs::path const& path);
 
@@ -132,18 +135,15 @@ struct PlatformShim {
 
     std::vector<fs::path> icd_paths;
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     bool is_fake_path(fs::path const& path);
     fs::path const& get_fake_path(fs::path const& path);
 
+    void redirect_path(fs::path const& path, fs::path const& new_path);
+    void remove_redirect(fs::path const& path);
+
     std::unordered_map<std::string, fs::path> redirection_map;
-#endif
-   private:
-    void redirect_category(fs::path const& new_path, ManifestCategory category);
-#if defined(WIN32)
-#elif defined(__linux__) || defined(__APPLE__)
-    void add(fs::path const& path, fs::path const& new_path);
-    void remove(fs::path const& path);
+
 #endif
 };
 
@@ -154,7 +154,7 @@ extern "C" {
 using PFN_get_platform_shim = PlatformShim* (*)();
 #define GET_PLATFORM_SHIM_STR "get_platform_shim"
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__)
 // statically link on linux
 PlatformShim* get_platform_shim();
 #endif
@@ -172,15 +172,18 @@ inline void PlatformShim::redirect_all_paths(fs::path const& path) {
 
 inline std::vector<std::string> parse_env_var_list(std::string const& var) {
     std::vector<std::string> items;
-    int start = 0;
-    int len = 0;
+    size_t start = 0;
+    size_t len = 0;
     for (size_t i = 0; i < var.size(); i++) {
 #if defined(WIN32)
         if (var[i] == ';') {
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         if (var[i] == ':') {
 #endif
-            items.push_back(var.substr(start, len));
+            if (len != 0) {
+                // only push back non empty strings
+                items.push_back(var.substr(start, len));
+            }
             start = i + 1;
             len = 0;
         } else {
@@ -290,7 +293,7 @@ inline void add_key_value(HKEY const& key, fs::path const& manifest_path, bool e
 }
 
 inline void add_key_value_string(HKEY const& key, const char* name, const char* str) {
-    LSTATUS out = RegSetValueExA(key, name, 0, REG_SZ, reinterpret_cast<const BYTE*>(str), strlen(str));
+    LSTATUS out = RegSetValueExA(key, name, 0, REG_SZ, reinterpret_cast<const BYTE*>(str), static_cast<DWORD>(strlen(str)));
     if (out != ERROR_SUCCESS)
         std::cerr << win_api_error_str(out) << " failed to set string value for " << name << ":" << str << "\n";
 }
@@ -311,7 +314,7 @@ inline void clear_key_values(HKEY const& key) {
     }
     std::string tchValName(dwValueNameLen + 1, '\0');
     for (DWORD i = 0; i < dwNumValues; i++) {
-        DWORD length = tchValName.size();
+        DWORD length = static_cast<DWORD>(tchValName.size());
         LPSTR lpstr = &tchValName[0];
         out = RegEnumValue(key, i, lpstr, &length, 0, 0, 0, 0);
         if (out != ERROR_SUCCESS) {
@@ -342,8 +345,12 @@ inline void PlatformShim::setup_override(DebugMode debug_mode) {
     HKEY timestamp_key = create_key(HKEY_CURRENT_USER, reg_base.c_str());
 
     std::time_t cur_time = std::time(nullptr);
-    auto* cur_time_text = std::ctime(&cur_time);
-    add_key_value_string(timestamp_key, "Timestamp", cur_time_text);
+    char mbstr[100];
+    tm time_buf{};
+    localtime_s(&time_buf, &cur_time);
+    if (std::strftime(mbstr, sizeof(mbstr), "%A %c", &time_buf)) {
+        add_key_value_string(timestamp_key, "Timestamp", mbstr);
+    }
 
     setup_override_key(HKEY_LOCAL_MACHINE, random_base_path);
     setup_override_key(HKEY_CURRENT_USER, random_base_path);
@@ -395,7 +402,8 @@ inline void PlatformShim::add_CM_Device_ID(std::wstring const& id, fs::path cons
     }
     CM_device_ID_list += id;
     std::string id_str(id.length(), '\0');
-    std::wcstombs(&id_str[0], id.c_str(), id_str.length());
+    size_t size_written{};
+    wcstombs_s(&size_written, &id_str[0], id_str.length(), id.c_str(), id.length());
 
     std::string device_path = std::string(pnp_registry_path) + "\\" + id_str;
     CM_device_ID_registry_keys.emplace_back(HKEY_LOCAL_MACHINE, device_path.c_str());
@@ -430,7 +438,7 @@ inline void PlatformShim::redirect_category(fs::path const& new_path, ManifestCa
     }
 }
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 
 #include <dirent.h>
 #include <unistd.h>
@@ -447,61 +455,58 @@ inline void PlatformShim::setup_override(DebugMode debug_mode) {}
 inline void PlatformShim::clear_override(DebugMode debug_mode) {}
 inline void PlatformShim::reset(DebugMode debug_mode) { redirection_map.clear(); }
 
-inline void PlatformShim::add(fs::path const& path, fs::path const& new_path) { redirection_map[path.str()] = new_path; }
-inline void PlatformShim::remove(fs::path const& path) { redirection_map.erase(path.str()); }
+inline void PlatformShim::redirect_path(fs::path const& path, fs::path const& new_path) { redirection_map[path.str()] = new_path; }
+inline void PlatformShim::remove_redirect(fs::path const& path) { redirection_map.erase(path.str()); }
 inline bool PlatformShim::is_fake_path(fs::path const& path) { return redirection_map.count(path.str()) > 0; }
 inline fs::path const& PlatformShim::get_fake_path(fs::path const& path) { return redirection_map.at(path.str()); }
 
 inline void PlatformShim::add_manifest(ManifestCategory category, fs::path const& path) {}
 
+inline void parse_and_add_env_var_override(std::vector<std::string>& paths, std::string env_var_contents) {
+    auto parsed_paths = parse_env_var_list(env_var_contents);
+    paths.insert(paths.end(), parsed_paths.begin(), parsed_paths.end());
+}
+
 inline void PlatformShim::redirect_category(fs::path const& new_path, ManifestCategory category) {
-    std::vector<std::string> xdg_paths;
-    std::string home = get_env_var("HOME");
+    std::vector<std::string> paths;
+    auto home = fs::path(get_env_var("HOME"));
     if (home.size() != 0) {
-        std::string xdg_config_home_path = fs::path(home).c_str();
-        xdg_config_home_path += "/.config";
-        xdg_paths.push_back(xdg_config_home_path);
+        paths.push_back((home / ".config").str());
+        paths.push_back((home / ".local/share").str());
     }
-
-    std::string xdg_config_dirs_var = get_env_var("XDG_CONFIG_DIRS");
-    if (xdg_config_dirs_var.size() == 0) {
-        xdg_config_dirs_var = FALLBACK_CONFIG_DIRS;
+    parse_and_add_env_var_override(paths, get_env_var("XDG_CONFIG_DIRS"));
+    parse_and_add_env_var_override(paths, get_env_var("XDG_CONFIG_HOME"));
+    parse_and_add_env_var_override(paths, get_env_var("XDG_DATA_DIRS"));
+    parse_and_add_env_var_override(paths, get_env_var("XDG_DATA_HOME"));
+    if (category == ManifestCategory::explicit_layer) {
+        parse_and_add_env_var_override(paths, get_env_var("VK_LAYER_PATH", false));  // don't report failure
     }
-    auto config_dirs_paths = parse_env_var_list(xdg_config_dirs_var);
-    xdg_paths.insert(xdg_paths.end(), config_dirs_paths.begin(), config_dirs_paths.end());
+    parse_and_add_env_var_override(paths, FALLBACK_DATA_DIRS);
+    parse_and_add_env_var_override(paths, FALLBACK_CONFIG_DIRS);
 
-    xdg_paths.push_back(fs::path(SYSCONFDIR).c_str());
+    auto sys_conf_dir = std::string(SYSCONFDIR);
+    if (!sys_conf_dir.empty()) {
+        paths.push_back(sys_conf_dir);
+    }
 #if defined(EXTRASYSCONFDIR)
     // EXTRASYSCONFDIR default is /etc, if SYSCONFDIR wasn't defined, it will have /etc put
     // as its default. Don't want to double add it
-    if (!string_eq(SYSCONFDIR, EXTRASYSCONFDIR)) {
-        xdg_paths.push_back(fs::path(EXTRASYSCONFDIR).c_str());
+    auto extra_sys_conf_dir = std::string(EXTRASYSCONFDIR);
+    if (!extra_sys_conf_dir.empty() && sys_conf_dir != extra_sys_conf_dir) {
+        paths.push_back(extra_sys_conf_dir);
     }
 #endif
-    if (home.size() != 0) {
-        std::string xdg_data_home_path = fs::path(home).c_str();
-        xdg_data_home_path += "/.local/share";
-        xdg_paths.push_back(xdg_data_home_path);
-    }
 
-    std::string xdg_data_dirs_var = get_env_var("XDG_DATA_DIRS");
-    if (xdg_data_dirs_var.size() == 0) {
-        xdg_data_dirs_var = FALLBACK_DATA_DIRS;
-    }
-    auto data_dirs_paths = parse_env_var_list(xdg_data_dirs_var);
-    xdg_paths.insert(xdg_paths.end(), data_dirs_paths.begin(), data_dirs_paths.end());
-
-    for (auto& path : xdg_paths) {
-        add(fs::path(path) / "vulkan" / category_path_name(category), new_path);
+    for (auto& path : paths) {
+        if (!path.empty()) {
+            redirect_path(fs::path(path) / "vulkan" / category_path_name(category), new_path);
+        }
     }
 }
 
 inline void PlatformShim::set_path(ManifestCategory category, fs::path const& path) {
     // use /etc as the 'redirection path' by default since its always searched
-
-    if (category == ManifestCategory::implicit_layer) add(fs::path(SYSCONFDIR) / "vulkan/implicit_layer.d", path);
-    if (category == ManifestCategory::explicit_layer) add(fs::path(SYSCONFDIR) / "vulkan/explicit_layer.d", path);
-    if (category == ManifestCategory::icd) add(fs::path(SYSCONFDIR) / "vulkan/icd.d", path);
+    redirect_path(fs::path(SYSCONFDIR) / "vulkan" / category_path_name(category), path);
 }
 
 #endif

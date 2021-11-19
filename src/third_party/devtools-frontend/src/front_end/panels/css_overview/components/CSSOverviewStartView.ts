@@ -75,7 +75,7 @@ export class OverviewStartRequestedEvent extends Event {
 
 export class CSSOverviewStartView extends HTMLElement {
   static readonly litTagName = LitHtml.literal`devtools-css-overview-start-view`;
-  private readonly shadow = this.attachShadow({mode: 'open'});
+  readonly #shadow = this.attachShadow({mode: 'open'});
   #feedbackLink: HTMLAnchorElement;
 
   constructor() {
@@ -87,7 +87,7 @@ export class CSSOverviewStartView extends HTMLElement {
   }
 
   connectedCallback(): void {
-    this.shadow.adoptedStyleSheets = [cssOverviewStartViewStyles];
+    this.#shadow.adoptedStyleSheets = [cssOverviewStartViewStyles];
     this.render();
   }
 
@@ -106,6 +106,7 @@ export class CSSOverviewStartView extends HTMLElement {
   private render(): void {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
+    // eslint-disable-next-line rulesdir/ban_a_tags_in_lit_html
     render(html`
       <div class="css-overview-start-view">
         <h1 class="summary-header">${i18nString(UIStrings.identifyCSSImprovements)}</h1>
@@ -149,12 +150,12 @@ export class CSSOverviewStartView extends HTMLElement {
         </section>
         <a class="feedback-standalone" href=${FEEDBACK_LINK} target="_blank">${i18nString(UIStrings.feedbackStandalone)}</a>
       </div>
-    `, this.shadow, {
+    `, this.#shadow, {
       host: this,
     });
     // clang-format on
 
-    const startButton = this.shadow.querySelector<HTMLElement>('.start-capture');
+    const startButton = this.#shadow.querySelector<HTMLElement>('.start-capture');
     if (startButton) {
       startButton.focus();
     }

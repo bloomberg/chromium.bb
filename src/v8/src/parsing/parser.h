@@ -161,6 +161,8 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
 
   // Move statistics to Isolate
   void UpdateStatistics(Isolate* isolate, Handle<Script> script);
+  void UpdateStatistics(Handle<Script> script, int* use_counters,
+                        int* preparse_skipped);
   template <typename IsolateT>
   void HandleSourceURLComments(IsolateT* isolate, Handle<Script> script);
 
@@ -707,6 +709,13 @@ class V8_EXPORT_PRIVATE Parser : public NON_EXPORTED_BASE(ParserBase<Parser>) {
 
   const AstRawString* GetRawNameFromIdentifier(const AstRawString* arg) {
     return arg;
+  }
+
+  const AstRawString* PreParserIdentifierToAstRawString(
+      const PreParserIdentifier& arg) {
+    // This method definition is only needed due to an MSVC oddity that
+    // instantiates the method despite it being unused. See crbug.com/v8/12266 .
+    UNREACHABLE();
   }
 
   IterationStatement* AsIterationStatement(BreakableStatement* s) {

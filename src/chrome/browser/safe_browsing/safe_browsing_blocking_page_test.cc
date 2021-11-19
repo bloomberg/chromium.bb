@@ -47,7 +47,9 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view_base.h"
+#include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -56,6 +58,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/page_info/features.h"
 #include "components/permissions/permission_util.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -96,7 +99,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -112,8 +114,10 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/styled_label.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Delayed warnings feature checks if the Suspicious Site Reporter extension
@@ -1508,32 +1512,24 @@ namespace {
 class SecurityStyleTestObserver : public content::WebContentsObserver {
  public:
   explicit SecurityStyleTestObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents),
-        latest_security_style_(blink::SecurityStyle::kUnknown),
-        latest_security_style_explanations_() {}
+      : content::WebContentsObserver(web_contents) {}
 
   SecurityStyleTestObserver(const SecurityStyleTestObserver&) = delete;
   SecurityStyleTestObserver& operator=(const SecurityStyleTestObserver&) =
       delete;
 
-  blink::SecurityStyle latest_security_style() const {
-    return latest_security_style_;
-  }
-
-  content::SecurityStyleExplanations latest_security_style_explanations()
-      const {
-    return latest_security_style_explanations_;
+  absl::optional<security_state::SecurityLevel> latest_security_level() const {
+    return latest_security_level_;
   }
 
   // WebContentsObserver:
   void DidChangeVisibleSecurityState() override {
-    latest_security_style_ = web_contents()->GetDelegate()->GetSecurityStyle(
-        web_contents(), &latest_security_style_explanations_);
+    auto* helper = SecurityStateTabHelper::FromWebContents(web_contents());
+    latest_security_level_ = helper->GetSecurityLevel();
   }
 
  private:
-  blink::SecurityStyle latest_security_style_;
-  content::SecurityStyleExplanations latest_security_style_explanations_;
+  absl::optional<security_state::SecurityLevel> latest_security_level_;
 };
 
 }  // namespace
@@ -1549,11 +1545,8 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   // The security indicator should be downgraded while the interstitial shows.
   SetupThreatIframeWarningAndNavigate();
   ExpectSecurityIndicatorDowngrade(error_tab, 0u);
-  EXPECT_EQ(blink::SecurityStyle::kInsecureBroken,
-            observer.latest_security_style());
-  // Security style summary for Developer Tools should contain a warning.
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
-            observer.latest_security_style_explanations().summary);
+  EXPECT_EQ(security_state::SecurityLevel::DANGEROUS,
+            observer.latest_security_level());
 
   // The security indicator should still be downgraded post-interstitial.
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
@@ -1689,20 +1682,12 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   SetupWarningAndNavigateToValidHTTPS();
   ExpectSecurityIndicatorDowngrade(error_tab, 0u);
 
-  // Security style summary for Developer Tools should contain a warning.
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
-            observer.latest_security_style_explanations().summary);
-
   // The security indicator should still be downgraded post-interstitial.
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
   AssertNoInterstitial(true);
   WebContents* post_tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(post_tab);
   ExpectSecurityIndicatorDowngrade(post_tab, 0u);
-
-  // Security style summary for Developer Tools should still contain a warning.
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
-            observer.latest_security_style_explanations().summary);
 }
 
 // Test that the security indicator is still downgraded after two interstitials
@@ -2008,6 +1993,13 @@ class SafeBrowsingBlockingPageDelayedWarningBrowserTest
     static_cast<FakeSafeBrowsingDatabaseManager*>(
         service->database_manager().get())
         ->AddDangerousUrl(url, threat_type);
+  }
+
+  std::u16string GetSecuritySummaryTextFromPageInfo() {
+    auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
+    auto* summary_label = page_info->GetViewByID(
+        PageInfoViewFactory::VIEW_ID_PAGE_INFO_SECURITY_SUMMARY_LABEL);
+    return static_cast<views::StyledLabel*>(summary_label)->GetText();
   }
 
  protected:
@@ -2660,7 +2652,7 @@ IN_PROC_BROWSER_TEST_P(
   auto* page_info = OpenPageInfo(browser());
   ASSERT_TRUE(page_info);
   EXPECT_EQ(
-      page_info->GetWindowTitle(),
+      GetSecuritySummaryTextFromPageInfo(),
       l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
 
   // When the Safety Tip is showing, the security level should be downgraded, as
@@ -2767,7 +2759,7 @@ IN_PROC_BROWSER_TEST_P(
             PageInfoBubbleViewBase::GetShownBubbleType());
   auto* page_info = OpenPageInfo(browser());
   ASSERT_TRUE(page_info);
-  EXPECT_EQ(page_info->GetWindowTitle(),
+  EXPECT_EQ(GetSecuritySummaryTextFromPageInfo(),
             l10n_util::GetStringFUTF16(IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
                                        u"google.com"));
 }

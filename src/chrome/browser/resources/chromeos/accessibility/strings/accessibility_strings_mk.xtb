@@ -608,7 +608,6 @@
 <translation id="5138912041966667164">Средносина како шкрилец</translation>
 <translation id="5140016802771803559">Виолетова „Ребека“</translation>
 <translation id="5142101052131610456">Сите лекции</translation>
-<translation id="5152605892605507188">премести надесно</translation>
 <translation id="5158275234811857234">Корица</translation>
 <translation id="516076699907426116">За да продолжите, истражувајте со допир за да го најдете копчето „Следна лекција“. Потоа, допрете двапати за да продолжите.</translation>
 <translation id="5170206230005240598">Овозможени се описи со брајово писмо</translation>
@@ -742,6 +741,7 @@
 <translation id="6034000775414344507">Светлосива</translation>
 <translation id="6036135911048686884">Истражувајте со допир</translation>
 <translation id="6037602951055904232">Повлечи напред</translation>
+<translation id="604240746417122825">граматичка грешка</translation>
 <translation id="6082768461603900813">Основна навигација</translation>
 <translation id="609281021724813947">Нема претходен лизгач</translation>
 <translation id="6100239002225743044">Преместете нагоре за еден ред</translation>
@@ -752,7 +752,6 @@
 <translation id="6142308968191113180">Заглавие 4</translation>
 <translation id="6150023170003443621">Жолто-зелена</translation>
 <translation id="6158882249329863701">ред <ph name="TABLECELLROWINDEX" />, колона <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">премести налево</translation>
 <translation id="6164829606128959761">мерач</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
 <translation id="6166362019018438352">Оневозможени описи со брајово писмо</translation>
@@ -799,6 +798,7 @@
 <translation id="6544923685317771506">Боја на морска школка</translation>
 <translation id="6551185905438378412">Боја на слонова коска</translation>
 <translation id="6561818612645211875">Одете на почетокот на тековниот ред</translation>
+<translation id="6563126228219321999">Нема неважечка ставка</translation>
 <translation id="6579990219486187401">Светлорозова</translation>
 <translation id="6583174818554398774">Оди на следно при грануларност</translation>
 <translation id="6584162722998608255">Понатаму, ќе дознаете како да се движите низ екранот. Може да повлечете со еден прст одлево надесно за да одите на следната ставка. Пробајте сега за да одите на следниот чекор.</translation>
@@ -829,6 +829,7 @@
 <translation id="6815255864998354418">Боја на шифон со лимон</translation>
 <translation id="6816066673340002913">Бледозлатеста</translation>
 <translation id="6826226459053491773">Повлечете надолу со два прста</translation>
+<translation id="6826669432862053130">Следна неважечка ставка</translation>
 <translation id="6833103209700200188">Подножје</translation>
 <translation id="6837853484260746864">Изберете глас:</translation>
 <translation id="6858047746862060282">Пролог</translation>
@@ -843,7 +844,6 @@
 <translation id="6910969481785184048">Вклучи, исклучи и запри</translation>
 <translation id="6919104639734799681">Прикажи список со табели</translation>
 <translation id="692135145298539227">избриши</translation>
-<translation id="6935674530832500465">премести надолу</translation>
 <translation id="6945221475159498467">Избери</translation>
 <translation id="6949846980769640811">Средна аквамарин</translation>
 <translation id="6951482098621102657">Нема следен наслов на ниво 5</translation>
@@ -1019,6 +1019,7 @@
 <translation id="8126386426083591964">Нема претходен наслов на ниво 5</translation>
 <translation id="812886159861361726">Преземањето на <ph name="FILE_NAME" /> запре</translation>
 <translation id="8129445297241948503">Нема ќелија горе</translation>
+<translation id="8132248161074464367">Претходна неважечка ставка</translation>
 <translation id="8138880386467279117">Допир</translation>
 <translation id="8146613869421949343">Следно, ќе дознаете за копчето Search. Копчето Search се користи во комбинација со другите копчиња за наредбите на ChromeVox. Се наоѓа веднаш над левото копче Shift. За да продолжите, притиснете го копчето Search.</translation>
 <translation id="8158033275290782295">избери сè</translation>
@@ -1040,14 +1041,12 @@
 <translation id="826825447994856889">Вовед</translation>
 <translation id="827266600368092403">Започнете или завршете го изборот</translation>
 <translation id="827422111966801947">Индиго</translation>
-<translation id="827496561804786391">премести нагоре</translation>
 <translation id="8276439074553447000">Скокни на претходната фокусирачка ставка</translation>
 <translation id="8279039817939141096">Притиснете некое од копчињата qwerty, копчето за освежување на брајовото писмо или допрете на движење за да ја дознаете неговата функција. Притиснете control со w, копчето за празно место со Z, повлечете налево со два прста или escape за да излезете.</translation>
 <translation id="8283603667300770666">Следно поле со образец</translation>
 <translation id="8310185481635255431">Нема следен линк</translation>
 <translation id="831207808878314375">Дефиниција</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8314546933558091113">поништи го изборот на сè</translation>
 <translation id="8316881042119029234">Боја на стара чипка</translation>
 <translation id="8324974933005349667">Персонализирани поставки за „Од текст во говор“</translation>
 <translation id="8326783648485765113">Зелена како трева</translation>

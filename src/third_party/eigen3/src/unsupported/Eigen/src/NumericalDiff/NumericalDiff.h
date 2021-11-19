@@ -13,6 +13,8 @@
 #ifndef EIGEN_NUMERICAL_DIFF_H
 #define EIGEN_NUMERICAL_DIFF_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 enum NumericalDiffMode {

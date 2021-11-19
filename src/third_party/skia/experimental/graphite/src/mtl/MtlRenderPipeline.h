@@ -25,14 +25,28 @@ class Gpu;
 
 class RenderPipeline final : public skgpu::RenderPipeline {
 public:
-    static std::unique_ptr<RenderPipeline> Make(const Gpu*, const skgpu::RenderPipelineDesc&);
+    inline static constexpr unsigned int kUniformBufferIndex = 0;
+    inline static constexpr unsigned int kVertexBufferIndex = 1;
+    inline static constexpr unsigned int kInstanceBufferIndex = 2;
+
+    static sk_sp<RenderPipeline> Make(const Gpu*, const skgpu::RenderPipelineDesc&);
     ~RenderPipeline() override {}
 
+    id<MTLRenderPipelineState> mtlPipelineState() const { return fPipelineState.get(); }
+    size_t vertexStride() const { return fVertexStride; }
+    size_t instanceStride() const { return fInstanceStride; }
+
 private:
-    RenderPipeline(sk_cfp<id<MTLRenderPipelineState>> pso)
-        : fPipelineState(std::move(pso)) {}
+    RenderPipeline(sk_cfp<id<MTLRenderPipelineState>> pso,
+                   size_t vertexStride,
+                   size_t instanceStride)
+        : fPipelineState(std::move(pso))
+        , fVertexStride(vertexStride)
+        , fInstanceStride(instanceStride) {}
 
     sk_cfp<id<MTLRenderPipelineState>> fPipelineState;
+    size_t fVertexStride = 0;
+    size_t fInstanceStride = 0;
 };
 
 } // namespace skgpu::mtl

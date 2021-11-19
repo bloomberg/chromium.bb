@@ -127,7 +127,7 @@ void XFA_DrawImage(CFGAS_GEGraphics* pGS,
   CFX_RenderDevice::StateRestorer restorer(pRenderDevice);
   CFX_Path path;
   path.AppendRect(rtImage.left, rtImage.bottom(), rtImage.right(), rtImage.top);
-  pRenderDevice->SetClip_PathFill(&path, &matrix,
+  pRenderDevice->SetClip_PathFill(path, &matrix,
                                   CFX_FillRenderOptions::WindingOptions());
 
   CFX_Matrix mtImage(1, 0, 0, -1, 0, 1);
@@ -508,12 +508,12 @@ bool CXFA_FFWidget::Redo() {
   return false;
 }
 
-Optional<WideString> CXFA_FFWidget::Copy() {
-  return pdfium::nullopt;
+absl::optional<WideString> CXFA_FFWidget::Copy() {
+  return absl::nullopt;
 }
 
-Optional<WideString> CXFA_FFWidget::Cut() {
-  return pdfium::nullopt;
+absl::optional<WideString> CXFA_FFWidget::Cut() {
+  return absl::nullopt;
 }
 
 bool CXFA_FFWidget::Paste(const WideString& wsPaste) {

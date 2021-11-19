@@ -22,6 +22,8 @@
   #define EIGEN_EMPTY_STRUCT_CTOR(X)
 #endif
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

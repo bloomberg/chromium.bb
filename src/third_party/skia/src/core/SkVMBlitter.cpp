@@ -33,7 +33,7 @@ namespace {
         int       y;      // Device y coordinate.
     };
     static_assert(SkIsAlign4(sizeof(BlitterUniforms)), "");
-    static constexpr int kBlitterUniformsCount = sizeof(BlitterUniforms) / 4;
+    inline static constexpr int kBlitterUniformsCount = sizeof(BlitterUniforms) / 4;
 
     static skvm::Coord device_coord(skvm::Builder* p, skvm::Uniforms* uniforms) {
         skvm::I32 dx = p->uniform32(uniforms->base, offsetof(BlitterUniforms, right))
@@ -532,9 +532,10 @@ SkVMBlitter::SkVMBlitter(const SkPixmap& device,
                          const SkMatrixProvider& matrices,
                          sk_sp<SkShader> clip,
                          bool* ok)
-        : fDevice(device), fSprite(sprite ? *sprite : SkPixmap{})
+        : fDevice(device)
+        , fSprite(sprite ? *sprite : SkPixmap{})
         , fSpriteOffset(spriteOffset)
-        , fUniforms(skvm::UPtr{{0}}, kBlitterUniformsCount)
+        , fUniforms(skvm::UPtr{0}, kBlitterUniformsCount)
         , fParams(EffectiveParams(device, sprite, paint, matrices, std::move(clip)))
         , fKey(CacheKey(fParams, &fUniforms, &fAlloc, ok)) {}
 
@@ -654,13 +655,28 @@ void SkVMBlitter::blitAntiH(int x, int y, const SkAlpha cov[], const int16_t run
     if (fBlitAntiH.empty()) {
         fBlitAntiH = this->buildProgram(Coverage::UniformF);
     }
+    if (fBlitH.empty()) {
+        fBlitH = this->buildProgram(Coverage::Full);
+    }
     for (int16_t run = *runs; run > 0; run = *runs) {
-        this->updateUniforms(x+run, y);
-        const float covF = *cov * (1/255.0f);
-        if (const void* sprite = this->isSprite(x,y)) {
-            fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), sprite, &covF);
-        } else {
-            fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), &covF);
+        const SkAlpha coverage = *cov;
+        if (coverage != 0x00) {
+            this->updateUniforms(x+run, y);
+            const void* sprite = this->isSprite(x,y);
+            if (coverage == 0xFF) {
+                if (sprite) {
+                    fBlitH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), sprite);
+                } else {
+                    fBlitH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y));
+                }
+            } else {
+                const float covF = *cov * (1/255.0f);
+                if (sprite) {
+                    fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), sprite, &covF);
+                } else {
+                    fBlitAntiH.eval(run, fUniforms.buf.data(), fDevice.addr(x,y), &covF);
+                }
+            }
         }
         x    += run;
         runs += run;

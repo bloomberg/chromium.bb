@@ -273,7 +273,8 @@ LIBGAV1_ALWAYS_INLINE void Transpose8x4To4x8(const int16x8_t in[4],
 
 //------------------------------------------------------------------------------
 template <int store_width, int store_count>
-LIBGAV1_ALWAYS_INLINE void StoreDst(int16_t* dst, int32_t stride, int32_t idx,
+LIBGAV1_ALWAYS_INLINE void StoreDst(int16_t* LIBGAV1_RESTRICT dst,
+                                    int32_t stride, int32_t idx,
                                     const int16x8_t* const s) {
   assert(store_count % 4 == 0);
   assert(store_width == 8 || store_width == 16);
@@ -297,8 +298,8 @@ LIBGAV1_ALWAYS_INLINE void StoreDst(int16_t* dst, int32_t stride, int32_t idx,
 }
 
 template <int load_width, int load_count>
-LIBGAV1_ALWAYS_INLINE void LoadSrc(const int16_t* src, int32_t stride,
-                                   int32_t idx, int16x8_t* x) {
+LIBGAV1_ALWAYS_INLINE void LoadSrc(const int16_t* LIBGAV1_RESTRICT src,
+                                   int32_t stride, int32_t idx, int16x8_t* x) {
   assert(load_count % 4 == 0);
   assert(load_width == 8 || load_width == 16);
   // NOTE: It is expected that the compiler will unroll these loops.

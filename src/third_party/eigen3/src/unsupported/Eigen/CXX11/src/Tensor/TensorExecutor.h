@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_EXECUTOR_H
 #define EIGEN_CXX11_TENSOR_TENSOR_EXECUTOR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /**

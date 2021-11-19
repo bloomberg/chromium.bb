@@ -143,22 +143,12 @@ const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
 
-const char kDownloadMobileConfigFileName[] = "Download .mobileconfig file";
-const char kDownloadMobileConfigFileDescription[] =
-    "Allows user to download and install a .mobileconfig file";
-
 const char kDownloadVcardName[] = "Download Vcard";
 const char kDownloadVcardDescription[] = "Allows user to download & open Vcard";
 
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
     "Enables password editing in settings.";
-
-const char kRestoreSessionFromCacheName[] =
-    "Use native WKWebView sesion restoration (iOS15 only).";
-const char kRestoreSessionFromCacheDescription[] =
-    "Enable instant session restoration for faster web session restoration "
-    "(iOS15 only).";
 
 const char kEnableAutofillAccountWalletStorageName[] =
     "Enable the account data storage for autofill";
@@ -190,18 +180,16 @@ const char kEnableDiscoverFeedPreviewName[] = "Enable discover feed preview";
 const char kEnableDiscoverFeedPreviewDescription[] =
     "Enable showing a live preview for discover feed long-press menu.";
 
+const char kEnableDiscoverFeedShorterCacheName[] =
+    "Enable discover feed shorter cache";
+const char kEnableDiscoverFeedShorterCacheDescription[] =
+    "Enable more ghost cards by using a shorter cache.";
+
 const char kEnableDiscoverFeedStaticResourceServingName[] =
     "Enable discover feed static resource serving";
 const char kEnableDiscoverFeedStaticResourceServingDescription[] =
     "When enabled the discover feed will optimize the request of resources "
     "coming from the server.";
-
-const char kEnableFREDefaultBrowserScreenName[] =
-    "Enable FRE default browser screen";
-const char kEnableFREDefaultBrowserScreenDescription[] =
-    "When enabled, displays the 'default browser' screen in the new FRE which "
-    "suggests changing the default browser in the Settings.app with a button "
-    "to go directly to it.";
 
 const char kEnableFREDefaultBrowserScreenTestingName[] =
     "Enable FRE default browser screen testing";
@@ -253,6 +241,11 @@ const char kFillingAcrossAffiliatedWebsitesName[] =
 const char kFillingAcrossAffiliatedWebsitesDescription[] =
     "Enables filling password on a website when there is saved "
     "password on affiliated website.";
+
+const char kEnableWebChannelsName[] = "Enable Web Channels";
+const char kEnableWebChannelsDescription[] =
+    "Enable folowing content from web and display Following feed on NTP based "
+    "on websites that users followed.";
 
 const char kForceDisableExtendedSyncPromosName[] =
     "Disable all extended sync promos";
@@ -329,6 +322,15 @@ const char kIOSSharedHighlightingColorChangeDescription[] =
     "Changes the Shared Highlighting color of the text fragment"
     "away from the default yellow in iOS. Works with #scroll-to-text-ios flag.";
 
+const char kIOSSharedHighlightingAmpName[] = "Shared Highlighting on AMP pages";
+const char kIOSSharedHighlightingAmpDescription[] =
+    "Enables the Create Link option on AMP pages.";
+
+const char kIOSSharedHighlightingV2Name[] = "Text Fragments UI improvements";
+const char kIOSSharedHighlightingV2Description[] =
+    "Enables improvements to text fragments UI, including a menu for removing "
+    "or resharing a highlight.";
+
 const char kSharedHighlightingUseBlocklistIOSName[] =
     "Shared Highlighting blocklist";
 const char kSharedHighlightingUseBlocklistIOSDescription[] =
@@ -336,12 +338,6 @@ const char kSharedHighlightingUseBlocklistIOSDescription[] =
     "certain sites where personalized or dynamic content or other technical "
     "restrictions make it unlikely that a URL can be generated and actually "
     "work when shared.";
-
-const char kLocationPermissionsPromptName[] =
-    "Location Permisssions Prompt Experiment";
-const char kLocationPermissionsPromptDescription[] =
-    "When enabled, a different user experience flow will be shown to ask for "
-    "location permissions.";
 
 const char kLockBottomToolbarName[] = "Lock bottom toolbar";
 const char kLockBottomToolbarDescription[] =
@@ -351,9 +347,6 @@ const char kLockBottomToolbarDescription[] =
 const char kMetrickitCrashReportName[] = "Metrickit crash reports";
 const char kMetrickitCrashReportDescription[] =
     "Enables sending Metrickit crash reports";
-
-const char kMICEWebSignInName[] = "MICE Web Sign-in";
-const char kMICEWebSignInDescription[] = "Enables MICE web sign-in.";
 
 const char kModernTabStripName[] = "Modern TabStrip";
 const char kModernTabStripDescription[] =
@@ -417,11 +410,22 @@ const char kReadingListMessagesDescription[] =
     "When enabled, a Messages prompt may be presented to allow the user to "
     "save the current page to Reading List";
 
-const char kRestoreGaiaCookiesOnUserActionName[] =
-    "Restore GAIA cookies on user action";
-const char kRestoreGaiaCookiesOnUserActionDescription[] =
-    "When enabled, will restore GAIA cookies for signed-in Chrome users if "
-    "the user explicitly requests a Google service.";
+const char kReadingListTimeToReadName[] = "Enables Reading List Time To Read";
+const char kReadingListTimeToReadDescription[] =
+    "When enabled, a Time to Read estimate is added to each Reading List "
+    "entry.";
+
+extern const char kRemoveExcessNTPsExperimentName[] =
+    "Remove extra New Tab Pages";
+extern const char kRemoveExcessNTPsExperimentDescription[] =
+    "When enabled, extra tabs with the New Tab Page open and no navigation "
+    "history will be removed.";
+
+const char kRestoreSessionFromCacheName[] =
+    "Use native WKWebView sesion restoration (iOS15 only).";
+const char kRestoreSessionFromCacheDescription[] =
+    "Enable instant session restoration for faster web session restoration "
+    "(iOS15 only).";
 
 const char kSafeBrowsingAvailableName[] = "Make Safe Browsing available";
 const char kSafeBrowsingAvailableDescription[] =
@@ -472,6 +476,12 @@ const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
 
+const char kSynthesizedRestoreSessionName[] =
+    "Use a synthesized native WKWebView sesion restoration (iOS15 only).";
+const char kSynthesizedRestoreSessionDescription[] =
+    "Enable instant session restoration by synthesizing WKWebView session "
+    "restoration data (iOS15 only).";
+
 const char kSyncTrustedVaultPassphraseiOSRPCName[] =
     "Enable RPC for sync trusted vault passphrase.";
 const char kSyncTrustedVaultPassphraseiOSRPCDescription[] =
@@ -500,6 +510,11 @@ const char kTabsBulkActionsName[] = "Enable Tab Grid Bulk Actions";
 const char kTabsBulkActionsDescription[] =
     "Enables the selection mode in the Tab grid where users can perform "
     "actions on multiple tabs at once for iOS 13 and above.";
+
+extern const char kTabsSearchName[] = "Enable Tabs Search";
+extern const char kTabsSearchDescription[] =
+    "Enables the search mode in the Tab grid where users can search open tabs "
+    "or recent tabs.";
 
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
@@ -543,12 +558,6 @@ const char kWebPageDefaultZoomFromDynamicTypeDescription[] =
     "When enabled, the default text zoom level for a website comes from the "
     "current dynamic type setting.";
 
-const char kWebPageTextAccessibilityName[] =
-    "Enable text accessibility in web pages";
-const char kWebPageTextAccessibilityDescription[] =
-    "When enabled, text in web pages will respect the user's Dynamic Type "
-    "setting.";
-
 const char kWebPageAlternativeTextZoomName[] =
     "Use different method for zooming web pages";
 const char kWebPageAlternativeTextZoomDescription[] =
@@ -572,6 +581,10 @@ const char kRecordSnapshotSizeDescription[] =
     "When enabled, the app will record UMA histograms for image and PDF "
     "snapshots. PDF snaphot will be taken just for the purpose of the "
     "histogram recording.";
+
+const char kSingleNtpName[] = "Enable Single NTP";
+const char kSingleNtpDescription[] =
+    "When enabled, uses one NTP for all tabs in a Browser";
 
 // Please insert your name/description above in alphabetical order.
 

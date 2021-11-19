@@ -11,7 +11,11 @@
 #include "src/gpu/ops/GrDrawOp.h"
 #include "src/gpu/tessellate/shaders/GrTessellationShader.h"
 
-class GrPathTessellator;
+namespace skgpu {
+
+class PathTessellator;
+
+};
 
 namespace skgpu::v1 {
 
@@ -56,7 +60,7 @@ private:
     GrProcessorSet fProcessors;
 
     // Decided during prepareTessellator.
-    GrPathTessellator* fTessellator = nullptr;
+    PathTessellator* fTessellator = nullptr;
     const GrProgramInfo* fTessellationProgram = nullptr;
 
     friend class GrOp;  // For ctor.

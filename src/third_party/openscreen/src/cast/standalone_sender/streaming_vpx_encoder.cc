@@ -374,7 +374,8 @@ void StreamingVpxEncoder::ComputeFrameEncodeStats(
       1.0 / Clock::to_duration(seconds(1)).count();
   const double target_bytes_per_clock_tick =
       target_bitrate * (kBytesPerBit * kSecondsPerClockTick);
-  stats.target_size = target_bytes_per_clock_tick * work_unit.duration.count();
+  stats.target_size = target_bytes_per_clock_tick *
+                      static_cast<double>(work_unit.duration.count());
 
   // The quantizer the encoder used. This is the result of the VP8/9 encoder
   // taking a guess at what quantizer value would produce an encoded frame size

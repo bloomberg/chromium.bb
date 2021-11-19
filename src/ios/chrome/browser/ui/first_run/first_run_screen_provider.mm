@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/first_run/first_run_screen_provider.h"
 
-#include "ios/chrome/browser/ui/first_run/default_browser_promo_field_trial.h"
+#include "ios/chrome/browser/ui/first_run/fre_field_trial.h"
 #import "ios/chrome/browser/ui/screen/screen_provider+protected.h"
 #import "ios/chrome/browser/ui/screen/screen_type.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -17,10 +17,9 @@
 
 - (instancetype)init {
   NSMutableArray* screens = [NSMutableArray
-      arrayWithArray:@[ @(kWelcomeAndConsent), @(kSignIn), @(kSync) ]];
+      arrayWithArray:@[ @(kWelcomeAndConsent), @(kSignInAndSync) ]];
 
-  if (fre_default_browser_promo_field_trial::
-          IsFREDefaultBrowserScreenEnabled()) {
+  if (fre_field_trial::IsFREDefaultBrowserScreenEnabled()) {
     [screens addObject:@(kDefaultBrowserPromo)];
   }
 

@@ -14,8 +14,8 @@
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
@@ -301,7 +301,8 @@ void GetVideoCapabilities(const gpu::GpuPreferences& gpu_preferences,
   gpu_info->video_encode_accelerator_supported_profiles =
       media::GpuVideoAcceleratorUtil::ConvertMediaToGpuEncodeProfiles(
           media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
-              gpu_preferences, gpu_workarounds));
+              gpu_preferences, gpu_workarounds,
+              /*populate_extended_info=*/false));
 #endif
 }
 

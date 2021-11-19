@@ -40,7 +40,8 @@ TEST_F(ResolverIntrinsicValidationTest, InvalidPipelineStageDirect) {
 
   auto* dpdx = create<ast::CallExpression>(Source{{3, 4}}, Expr("dpdx"),
                                            ast::ExpressionList{Expr(1.0f)});
-  Func(Source{{1, 2}}, "func", ast::VariableList{}, ty.void_(), {Ignore(dpdx)},
+  Func(Source{{1, 2}}, "func", ast::VariableList{}, ty.void_(),
+       {CallStmt(dpdx)},
        {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
 
   EXPECT_FALSE(r()->Resolve());
@@ -56,16 +57,13 @@ TEST_F(ResolverIntrinsicValidationTest, InvalidPipelineStageIndirect) {
 
   auto* dpdx = create<ast::CallExpression>(Source{{3, 4}}, Expr("dpdx"),
                                            ast::ExpressionList{Expr(1.0f)});
-  Func(Source{{1, 2}}, "f0", {}, ty.void_(), {Ignore(dpdx)});
+  Func(Source{{1, 2}}, "f0", {}, ty.void_(), {CallStmt(dpdx)});
 
-  Func(Source{{3, 4}}, "f1", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("f0"))});
+  Func(Source{{3, 4}}, "f1", {}, ty.void_(), {CallStmt(Call("f0"))});
 
-  Func(Source{{5, 6}}, "f2", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("f1"))});
+  Func(Source{{5, 6}}, "f2", {}, ty.void_(), {CallStmt(Call("f1"))});
 
-  Func(Source{{7, 8}}, "main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("f2"))},
+  Func(Source{{7, 8}}, "main", {}, ty.void_(), {CallStmt(Call("f2"))},
        {Stage(ast::PipelineStage::kCompute), WorkgroupSize(1)});
 
   EXPECT_FALSE(r()->Resolve());
@@ -125,8 +123,8 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ConstExpr) {
   auto& p = GetParam();
   auto param = std::get<0>(p);
   auto offset = std::get<1>(p);
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
 
   auto args = param.args(this);
   // Make Resolver visit the Node about to be removed
@@ -141,7 +139,7 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ConstExpr) {
   }
 
   auto* call = Call(param.function, args);
-  Func("func", {}, ty.void_(), {Ignore(call)},
+  Func("func", {}, ty.void_(), {CallStmt(call)},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   if (offset.is_valid) {
@@ -160,8 +158,8 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ConstExprOfConstExpr) {
   auto& p = GetParam();
   auto param = std::get<0>(p);
   auto offset = std::get<1>(p);
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
 
   auto args = param.args(this);
   // Make Resolver visit the Node about to be removed
@@ -175,7 +173,7 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ConstExprOfConstExpr) {
                              Construct(ty.vec2<i32>(), offset.y, offset.z)));
   }
   auto* call = Call(param.function, args);
-  Func("func", {}, ty.void_(), {Ignore(call)},
+  Func("func", {}, ty.void_(), {CallStmt(call)},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
   if (offset.is_valid) {
     EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -192,8 +190,8 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ConstExprOfConstExpr) {
 TEST_P(IntrinsicTextureSamplerValidationTest, EmptyVectorConstructor) {
   auto& p = GetParam();
   auto param = std::get<0>(p);
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
 
   auto args = param.args(this);
   // Make Resolver visit the Node about to be removed
@@ -206,7 +204,7 @@ TEST_P(IntrinsicTextureSamplerValidationTest, EmptyVectorConstructor) {
   }
 
   auto* call = Call(param.function, args);
-  Func("func", {}, ty.void_(), {Ignore(call)},
+  Func("func", {}, ty.void_(), {CallStmt(call)},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
   EXPECT_TRUE(r()->Resolve()) << r()->error();
 }
@@ -215,8 +213,8 @@ TEST_P(IntrinsicTextureSamplerValidationTest, GlobalConst) {
   auto& p = GetParam();
   auto param = std::get<0>(p);
   auto offset = std::get<1>(p);
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
 
   auto args = param.args(this);
   // Make Resolver visit the Node about to be removed
@@ -232,7 +230,7 @@ TEST_P(IntrinsicTextureSamplerValidationTest, GlobalConst) {
   }
 
   auto* call = Call(param.function, args);
-  Func("func", {}, ty.void_(), {Ignore(call)},
+  Func("func", {}, ty.void_(), {CallStmt(call)},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
   EXPECT_FALSE(r()->Resolve());
   std::stringstream err;
@@ -245,8 +243,8 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ScalarConst) {
   auto& p = GetParam();
   auto param = std::get<0>(p);
   auto offset = std::get<1>(p);
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
   auto* x = Const("x", ty.i32(), Construct(ty.i32(), offset.x));
 
   auto args = param.args(this);
@@ -261,7 +259,7 @@ TEST_P(IntrinsicTextureSamplerValidationTest, ScalarConst) {
   }
 
   auto* call = Call(param.function, args);
-  Func("func", {}, ty.void_(), {Decl(x), Ignore(call)},
+  Func("func", {}, ty.void_(), {Decl(x), CallStmt(call)},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
   EXPECT_FALSE(r()->Resolve());
   std::stringstream err;

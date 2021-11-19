@@ -117,6 +117,18 @@ def Fission : FunctionPass<"tf-cpurt-fission"> {
   ];
 }
 
+def Fusion : FunctionPass<"tf-cpurt-fusion"> {
+  let summary = "Fuse Linalg generic operations on Tensors";
+  let constructor = "tensorflow::CreateFusionPass()";
+  let description = [{
+    Fuse Linalg generic operations on Tensors using custom heuristics for
+    producer fusion profitability.
+  }];
+  let dependentDialects = [
+    "mlir::TF::TensorFlowDialect"
+  ];
+}
+
 def SymbolicShapeOptimization
     : FunctionPass<"tf-cpurt-symbolic-shape-optimization"> {
   let summary = "Optimizes broadcasts based on the symbolic shapes";
@@ -171,5 +183,11 @@ def PadTiledOps : FunctionPass<"tf-cpurt-pad-tiled-ops"> {
 def VectorizeTiledOps : FunctionPass<"tf-cpurt-vectorize-tiled-ops"> {
   let summary = "Vectorize tiled Linalg ops inside `tiled_loop`";
   let constructor = "tensorflow::CreateVectorizeTiledOpsPass()";
+  let dependentDialects = ["mlir::linalg::LinalgDialect"];
+}
+
+def DetensorizeLinalg : FunctionPass<"tf-cpurt-detensorize-linalg"> {
+  let summary = "Replace 0d tensor inputs to LinalgOp with extracted elements.";
+  let constructor = "tensorflow::CreateDetensorizeLinalgPass()";
   let dependentDialects = ["mlir::linalg::LinalgDialect"];
 }

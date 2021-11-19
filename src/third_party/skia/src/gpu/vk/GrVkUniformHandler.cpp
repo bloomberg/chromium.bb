@@ -23,17 +23,6 @@
 // https://www.khronos.org/registry/vulkan/specs/1.0-wsi_extensions/html/vkspec.html#interfaces-resources-layout
 static uint32_t grsltype_to_alignment_mask(GrSLType type) {
     switch(type) {
-        case kByte_GrSLType: // fall through
-        case kUByte_GrSLType:
-            return 0x0;
-        case kByte2_GrSLType: // fall through
-        case kUByte2_GrSLType:
-            return 0x1;
-        case kByte3_GrSLType: // fall through
-        case kByte4_GrSLType:
-        case kUByte3_GrSLType:
-        case kUByte4_GrSLType:
-            return 0x3;
         case kShort_GrSLType: // fall through
         case kUShort_GrSLType:
             return 0x1;
@@ -46,15 +35,15 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
         case kUShort4_GrSLType:
             return 0x7;
         case kInt_GrSLType:
-        case kUint_GrSLType:
+        case kUInt_GrSLType:
             return 0x3;
         case kInt2_GrSLType:
-        case kUint2_GrSLType:
+        case kUInt2_GrSLType:
             return 0x7;
         case kInt3_GrSLType:
-        case kUint3_GrSLType:
+        case kUInt3_GrSLType:
         case kInt4_GrSLType:
-        case kUint4_GrSLType:
+        case kUInt4_GrSLType:
             return 0xF;
         case kHalf_GrSLType: // fall through
         case kFloat_GrSLType:
@@ -98,22 +87,6 @@ static uint32_t grsltype_to_alignment_mask(GrSLType type) {
 /** Returns the size in bytes taken up in vulkanbuffers for GrSLTypes. */
 static inline uint32_t grsltype_to_vk_size(GrSLType type, int layout) {
     switch(type) {
-        case kByte_GrSLType:
-            return sizeof(int8_t);
-        case kByte2_GrSLType:
-            return 2 * sizeof(int8_t);
-        case kByte3_GrSLType:
-            return 3 * sizeof(int8_t);
-        case kByte4_GrSLType:
-            return 4 * sizeof(int8_t);
-        case kUByte_GrSLType:
-            return sizeof(uint8_t);
-        case kUByte2_GrSLType:
-            return 2 * sizeof(uint8_t);
-        case kUByte3_GrSLType:
-            return 3 * sizeof(uint8_t);
-        case kUByte4_GrSLType:
-            return 4 * sizeof(uint8_t);
         case kShort_GrSLType:
             return sizeof(int16_t);
         case kShort2_GrSLType:
@@ -143,16 +116,16 @@ static inline uint32_t grsltype_to_vk_size(GrSLType type, int layout) {
         case kFloat4_GrSLType:
             return 4 * sizeof(float);
         case kInt_GrSLType: // fall through
-        case kUint_GrSLType:
+        case kUInt_GrSLType:
             return sizeof(int32_t);
         case kInt2_GrSLType: // fall through
-        case kUint2_GrSLType:
+        case kUInt2_GrSLType:
             return 2 * sizeof(int32_t);
         case kInt3_GrSLType: // fall through
-        case kUint3_GrSLType:
+        case kUInt3_GrSLType:
             return 3 * sizeof(int32_t);
         case kInt4_GrSLType: // fall through
-        case kUint4_GrSLType:
+        case kUInt4_GrSLType:
             return 4 * sizeof(int32_t);
         case kHalf2x2_GrSLType: // fall through
         case kFloat2x2_GrSLType:
@@ -246,21 +219,27 @@ GrGLSLUniformHandler::UniformHandle GrVkUniformHandler::internalAddUniformArray(
     }
     SkString resolvedName = fProgramBuilder->nameVariable(prefix, name, mangleName);
 
-    uint32_t offsets[kLayoutCount];
+    VkUniformInfo tempInfo;
+    tempInfo.fVariable = GrShaderVar{std::move(resolvedName),
+                                     type,
+                                     GrShaderVar::TypeModifier::None,
+                                     arrayCount};
+
+    tempInfo.fVisibility = visibility;
+    tempInfo.fOwner      = owner;
+    tempInfo.fRawName    = SkString(name);
+
     for (int layout = 0; layout < kLayoutCount; ++layout) {
-        offsets[layout] = get_aligned_offset(&fCurrentOffsets[layout], type, arrayCount, layout);
+        tempInfo.fOffsets[layout] = get_aligned_offset(&fCurrentOffsets[layout],
+                                                       type,
+                                                       arrayCount,
+                                                       layout);
     }
 
-    VkUniformInfo& uni = fUniforms.push_back(VkUniformInfo{
-        {
-            GrShaderVar{std::move(resolvedName), type, GrShaderVar::TypeModifier::None, arrayCount},
-            visibility, owner, SkString(name)
-        },
-        {offsets[0], offsets[1]}, nullptr
-    });
+    fUniforms.push_back(tempInfo);
 
     if (outName) {
-        *outName = uni.fVariable.c_str();
+        *outName = fUniforms.back().fVariable.c_str();
     }
 
     return GrGLSLUniformHandler::UniformHandle(fUniforms.count() - 1);
@@ -277,24 +256,31 @@ GrGLSLUniformHandler::SamplerHandle GrVkUniformHandler::addSampler(
     SkString layoutQualifier;
     layoutQualifier.appendf("set=%d, binding=%d", kSamplerDescSet, fSamplers.count());
 
-    VkUniformInfo& info = fSamplers.push_back(VkUniformInfo{
-        {
+    VkUniformInfo tempInfo;
+    tempInfo.fVariable =
             GrShaderVar{std::move(mangleName),
                         GrSLCombinedSamplerTypeForTextureType(backendFormat.textureType()),
-                        GrShaderVar::TypeModifier::Uniform, GrShaderVar::kNonArray,
-                        std::move(layoutQualifier), SkString()},
-            kFragment_GrShaderFlag, nullptr, SkString(name)
-        },
-        {0, 0}, nullptr
-    });
+                        GrShaderVar::TypeModifier::Uniform,
+                        GrShaderVar::kNonArray,
+                        std::move(layoutQualifier),
+                        SkString()};
+
+    tempInfo.fVisibility = kFragment_GrShaderFlag;
+    tempInfo.fOwner      = nullptr;
+    tempInfo.fRawName    = SkString(name);
+    tempInfo.fOffsets[0] = 0;
+    tempInfo.fOffsets[1] = 0;
+
+    fSamplers.push_back(tempInfo);
 
     // Check if we are dealing with an external texture and store the needed information if so.
     auto ycbcrInfo = backendFormat.getVkYcbcrConversionInfo();
     if (ycbcrInfo && ycbcrInfo->isValid()) {
         GrVkGpu* gpu = static_cast<GrVkPipelineStateBuilder*>(fProgramBuilder)->gpu();
-        info.fImmutableSampler = gpu->resourceProvider().findOrCreateCompatibleSampler(
-                state, *ycbcrInfo);
-        if (!info.fImmutableSampler) {
+        GrVkSampler* sampler = gpu->resourceProvider().findOrCreateCompatibleSampler(state,
+                                                                                     *ycbcrInfo);
+        fSamplers.back().fImmutableSampler = sampler;
+        if (!sampler) {
             return {};
         }
     }

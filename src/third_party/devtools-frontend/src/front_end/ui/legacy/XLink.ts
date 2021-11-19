@@ -5,6 +5,7 @@
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as ComponentHelpers from '../components/helpers/helpers.js';
+import * as LitHtml from '../lit-html/lit-html.js';
 
 import * as ARIAUtils from './ARIAUtils.js';
 import type {ContextMenu, Provider} from './ContextMenu.js';
@@ -14,9 +15,6 @@ import {addReferrerToURLIfNecessary, copyLinkAddressLabel, MaxLengthForDisplayed
 import {XElement} from './XElement.js';
 
 export class XLink extends XElement {
-  tabIndex: number;
-  target: string;
-  rel: string;
   hrefInternal: string|null;
   private clickable: boolean;
   private readonly onClick: (arg0: Event) => void;
@@ -40,9 +38,9 @@ export class XLink extends XElement {
 
     this.style.setProperty('display', 'inline');
     ARIAUtils.markAsLink(this);
-    this.tabIndex = 0;
-    this.target = '_blank';
-    this.rel = 'noopener';
+    this.setAttribute('tabindex', '0');
+    this.setAttribute('target', '_blank');
+    this.setAttribute('rel', 'noopener');
 
     this.hrefInternal = null;
     this.clickable = true;
@@ -152,3 +150,5 @@ export class ContextMenuProvider implements Provider {
 }
 
 ComponentHelpers.CustomElements.defineComponent('x-link', XLink);
+
+export const sample = LitHtml.html`<p>Hello, <x-link>world!</x-link></p>`;

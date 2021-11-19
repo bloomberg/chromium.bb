@@ -9,6 +9,7 @@
 
 #include "include/gpu/GrRecordingContext.h"
 #include "src/core/SkRRectPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrMemoryPool.h"
@@ -17,7 +18,6 @@
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/GrVx.h"
 #include "src/gpu/geometry/GrShape.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -25,6 +25,8 @@
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+
+namespace skgpu::v1::FillRRectOp {
 
 namespace {
 
@@ -367,7 +369,7 @@ private:
         this->setInstanceAttributes(fInstanceAttribs.begin(), fInstanceAttribs.count());
     }
 
-    static constexpr Attribute kVertexAttribs[] = {
+    inline static constexpr Attribute kVertexAttribs[] = {
             {"radii_selector", kFloat4_GrVertexAttribType, kFloat4_GrSLType},
             {"corner_and_radius_outsets", kFloat4_GrVertexAttribType, kFloat4_GrSLType},
             // Coverage only.
@@ -379,8 +381,6 @@ private:
     SkSTArray<kMaxInstanceAttribs, Attribute> fInstanceAttribs;
     const Attribute* fColorAttrib;
 };
-
-constexpr GrGeometryProcessor::Attribute FillRRectOpImpl::Processor::kVertexAttribs[];
 
 // Our coverage geometry consists of an inset octagon with solid coverage, surrounded by linear
 // coverage ramps on the horizontal and vertical edges, and "arc coverage" pieces on the diagonal
@@ -517,8 +517,8 @@ void FillRRectOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
 
     size_t instanceStride = fProgramInfo->geomProc().instanceStride();
 
-    if (GrVertexWriter instanceWrter = target->makeVertexSpace(instanceStride, fInstanceCount,
-                                                               &fInstanceBuffer, &fBaseInstance)) {
+    if (VertexWriter instanceWrter = target->makeVertexSpace(instanceStride, fInstanceCount,
+                                                             &fInstanceBuffer, &fBaseInstance)) {
         SkDEBUGCODE(auto end = instanceWrter.makeOffset(instanceStride * fInstanceCount));
         for (Instance* i = fHeadInstance; i; i = i->fNext) {
             auto [l, t, r, b] = i->fRRect.rect();
@@ -532,18 +532,16 @@ void FillRRectOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
 
             // Convert the radii to [-1, -1, +1, +1] space and write their attribs.
             grvx::float4 radiiX, radiiY;
-            grvx::strided_load2(&SkRRectPriv::GetRadiiArray(i->fRRect)->fX, radiiX, radiiY);
+            skvx::strided_load2(&SkRRectPriv::GetRadiiArray(i->fRRect)->fX, radiiX, radiiY);
             radiiX *= 2 / (r - l);
             radiiY *= 2 / (b - t);
 
-            instanceWrter.write(
-                    m.getScaleX(), m.getSkewX(), m.getSkewY(), m.getScaleY(),
-                    m.getTranslateX(), m.getTranslateY(),
-                    radiiX,
-                    radiiY,
-                    GrVertexColor(i->fColor, fProcessorFlags & ProcessorFlags::kWideColor),
-                    GrVertexWriter::If(fProcessorFlags & ProcessorFlags::kHasLocalCoords,
-                                       i->fLocalRect));
+            instanceWrter << m.getScaleX() << m.getSkewX() << m.getSkewY() << m.getScaleY()
+                          << m.getTranslateX() << m.getTranslateY()
+                          << radiiX << radiiY
+                          << GrVertexColor(i->fColor, fProcessorFlags & ProcessorFlags::kWideColor)
+                          << VertexWriter::If(fProcessorFlags & ProcessorFlags::kHasLocalCoords,
+                                              i->fLocalRect);
         }
         SkASSERT(instanceWrter == end);
     }
@@ -851,8 +849,6 @@ bool can_use_hw_derivatives_with_coverage(const GrShaderCaps& shaderCaps,
 }
 
 } // anonymous namespace
-
-namespace skgpu::v1::FillRRectOp {
 
 GrOp::Owner Make(GrRecordingContext* ctx,
                  SkArenaAlloc* arena,

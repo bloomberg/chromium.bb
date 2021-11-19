@@ -44,15 +44,13 @@ class BrowserReportGenerator {
 
     virtual std::string GetExecutablePath() = 0;
     virtual version_info::Channel GetChannel() = 0;
-    virtual std::vector<ReportedProfileData> GetReportedProfiles(
-        ReportType report_type) = 0;
+    virtual std::vector<ReportedProfileData> GetReportedProfiles() = 0;
     virtual bool IsExtendedStableChannel() = 0;
     virtual void GenerateBuildStateInfo(
         enterprise_management::BrowserReport* report) = 0;
     virtual void GeneratePluginsIfNeeded(
         ReportCallback callback,
         std::unique_ptr<enterprise_management::BrowserReport> report) = 0;
-    virtual void OnProfileInfoGenerated(ReportType report_type) = 0;
   };
 
   explicit BrowserReportGenerator(ReportingDelegateFactory* delegate_factory);
@@ -67,15 +65,15 @@ class BrowserReportGenerator {
   void Generate(ReportType report_type, ReportCallback callback);
 
   // Generates user profiles info in the given report instance.
-  void GenerateProfileInfo(ReportType report_type,
-                           enterprise_management::BrowserReport* report);
+  void GenerateProfileInfo(enterprise_management::BrowserReport* report);
 
  private:
   std::unique_ptr<Delegate> delegate_;
 
   // Generates browser_version, channel, executable_path info in the given
   // report instance.
-  void GenerateBasicInfo(enterprise_management::BrowserReport* report);
+  void GenerateBasicInfo(enterprise_management::BrowserReport* report,
+                         ReportType report_type);
 };
 
 }  // namespace enterprise_reporting

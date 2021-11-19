@@ -24,6 +24,7 @@
 #include "chrome/browser/web_applications/preinstalled_app_install_features.h"
 #include "chrome/browser/web_applications/preinstalled_web_app_manager.h"
 #include "chrome/browser/web_applications/preinstalled_web_apps/preinstalled_web_apps.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -100,6 +101,8 @@ class PreinstalledWebAppMigrationBrowserTest
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
     os_hooks_suppress_ =
         OsIntegrationManager::ScopedSuppressOsHooksForTesting();
+    web_app::test::WaitUntilReady(
+        web_app::WebAppProvider::GetForTest(profile()));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> RequestHandlerOverride(
@@ -266,11 +269,8 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     EXPECT_TRUE(IsExtensionAppInstalled());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ChromeAppListItem* app_list_item =
-        app_list_model_updater->FindItem(kExtensionId);
-    ChromeAppListItem::TestApi(app_list_item)
-        .SetPosition(syncer::StringOrdinal("testapplistposition"));
-    app_list_model_updater->OnItemUpdated(app_list_item->CloneMetadata());
+    app_list_model_updater->SetItemPosition(
+        kExtensionId, syncer::StringOrdinal("testapplistposition"));
     app_list_syncable_service->SetPinPosition(
         kExtensionId, syncer::StringOrdinal("testpinposition"));
     EXPECT_EQ(app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),
@@ -401,11 +401,8 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppMigrationBrowserTest,
     EXPECT_TRUE(IsExtensionAppInstalled());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ChromeAppListItem* app_list_item =
-        app_list_model_updater->FindItem(kExtensionId);
-    ChromeAppListItem::TestApi(app_list_item)
-        .SetPosition(syncer::StringOrdinal("testapplistposition"));
-    app_list_model_updater->OnItemUpdated(app_list_item->CloneMetadata());
+    app_list_model_updater->SetItemPosition(
+        kExtensionId, syncer::StringOrdinal("testapplistposition"));
     app_list_syncable_service->SetPinPosition(
         kExtensionId, syncer::StringOrdinal("testpinposition"));
     EXPECT_EQ(app_list_syncable_service->GetSyncItem(kExtensionId)->ToString(),

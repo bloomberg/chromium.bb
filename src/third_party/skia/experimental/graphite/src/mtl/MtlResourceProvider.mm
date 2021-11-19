@@ -7,6 +7,7 @@
 
 #include "experimental/graphite/src/mtl/MtlResourceProvider.h"
 
+#include "experimental/graphite/src/mtl/MtlBuffer.h"
 #include "experimental/graphite/src/mtl/MtlCommandBuffer.h"
 #include "experimental/graphite/src/mtl/MtlGpu.h"
 #include "experimental/graphite/src/mtl/MtlTexture.h"
@@ -24,18 +25,24 @@ const Gpu* ResourceProvider::mtlGpu() {
     return static_cast<const Gpu*>(fGpu);
 }
 
-std::unique_ptr<skgpu::CommandBuffer> ResourceProvider::createCommandBuffer() {
-    return CommandBuffer::Make(this->mtlGpu()->queue());
+sk_sp<skgpu::CommandBuffer> ResourceProvider::createCommandBuffer() {
+    return CommandBuffer::Make(this->mtlGpu());
 }
 
-std::unique_ptr<skgpu::RenderPipeline> ResourceProvider::onCreateRenderPipeline(
-            const RenderPipelineDesc& desc) {
+sk_sp<skgpu::RenderPipeline> ResourceProvider::onCreateRenderPipeline(
+        const RenderPipelineDesc& desc) {
     return RenderPipeline::Make(this->mtlGpu(), desc);
 }
 
 sk_sp<skgpu::Texture> ResourceProvider::createTexture(SkISize dimensions,
                                                       const skgpu::TextureInfo& info) {
     return Texture::Make(this->mtlGpu(), dimensions, info);
+}
+
+sk_sp<skgpu::Buffer> ResourceProvider::createBuffer(size_t size,
+                                                    BufferType type,
+                                                    PrioritizeGpuReads prioritizeGpuReads) {
+    return Buffer::Make(this->mtlGpu(), size, type, prioritizeGpuReads);
 }
 
 } // namespace skgpu::mtl

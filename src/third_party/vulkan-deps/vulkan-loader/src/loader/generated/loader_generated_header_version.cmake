@@ -1,5 +1,5 @@
 # *** THIS FILE IS GENERATED - DO NOT EDIT ***
-# See loader_generated_header_version_generator.py for modifications
+# See loader_versioning_generator.py for modifications
 
 ############################################################################
 #
@@ -24,9 +24,5 @@
 #
 ############################################################################
 
-set_target_properties(vulkan
-                      PROPERTIES SOVERSION
-                      "1"
-                      VERSION
-                      "1.2.190")
+set(LOADER_GENERATED_HEADER_VERSION "1.2.197")
 

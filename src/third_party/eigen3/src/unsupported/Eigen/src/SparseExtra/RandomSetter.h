@@ -16,6 +16,8 @@
 namespace google {}
 #endif
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** Represents a std::map

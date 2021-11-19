@@ -10,6 +10,8 @@
 #ifndef EIGEN_SCALING_H
 #define EIGEN_SCALING_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \geometry_module \ingroup Geometry_Module

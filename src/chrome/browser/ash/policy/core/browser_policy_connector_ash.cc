@@ -18,10 +18,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ash/attestation/attestation_ca_client.h"
@@ -399,18 +399,13 @@ std::string BrowserPolicyConnectorAsh::GetEnterpriseEnrollmentDomain() const {
   return chromeos::InstallAttributes::Get()->GetDomain();
 }
 
-std::string BrowserPolicyConnectorAsh::GetEnterpriseDisplayDomain() const {
-  const em::PolicyData* policy = GetDevicePolicy();
-  if (policy && policy->has_display_domain())
-    return policy->display_domain();
-  return GetEnterpriseEnrollmentDomain();
-}
-
 std::string BrowserPolicyConnectorAsh::GetEnterpriseDomainManager() const {
   const em::PolicyData* policy = GetDevicePolicy();
   if (policy && policy->has_managed_by())
     return policy->managed_by();
-  return GetEnterpriseDisplayDomain();
+  if (policy && policy->has_display_domain())
+    return policy->display_domain();
+  return GetEnterpriseEnrollmentDomain();
 }
 
 std::string BrowserPolicyConnectorAsh::GetSSOProfile() const {

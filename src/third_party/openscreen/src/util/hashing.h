@@ -5,24 +5,31 @@
 #ifndef UTIL_HASHING_H_
 #define UTIL_HASHING_H_
 
+#include <utility>
+#include <vector>
+
 namespace openscreen {
+
+// This value is taken from absl::Hash implementation.
+constexpr uint64_t kDefaultSeed = UINT64_C(0xc3a5c85c97cb3127);
 
 // Computes the aggregate hash of the provided hashable objects.
 // Seed must initially use a large prime between 2^63 and 2^64 as a starting
 // value, or the result of a previous call to this function.
 template <typename... T>
-uint64_t ComputeAggregateHash(uint64_t seed, const T&... objs) {
-  auto hash_combiner = [](uint64_t seed, uint64_t hash_value) -> uint64_t {
+uint64_t ComputeAggregateHash(uint64_t original_seed, const T&... objs) {
+  auto hash_combiner = [](uint64_t current_seed,
+                          uint64_t hash_value) -> uint64_t {
     static const uint64_t kMultiplier = UINT64_C(0x9ddfea08eb382d69);
-    uint64_t a = (hash_value ^ seed) * kMultiplier;
+    uint64_t a = (hash_value ^ current_seed) * kMultiplier;
     a ^= (a >> 47);
-    uint64_t b = (seed ^ a) * kMultiplier;
+    uint64_t b = (current_seed ^ a) * kMultiplier;
     b ^= (b >> 47);
     b *= kMultiplier;
     return b;
   };
 
-  uint64_t result = seed;
+  uint64_t result = original_seed;
   std::vector<uint64_t> hashes{std::hash<T>()(objs)...};
   for (uint64_t hash : hashes) {
     result = hash_combiner(result, hash);

@@ -34,6 +34,7 @@
 #ifndef GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
 #define GOOGLE_BREAKPAD_PROCESSOR_SOURCE_LINE_RESOLVER_INTERFACE_H__
 
+#include <deque>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,7 +99,7 @@ class SourceLineResolverInterface {
   // inlined_frames in an order from outermost frame to inner most frame.
   virtual void FillSourceLineInfo(
       StackFrame* frame,
-      std::vector<std::unique_ptr<StackFrame>>* inlined_frames) = 0;
+      std::deque<std::unique_ptr<StackFrame>>* inlined_frames) = 0;
 
   // If Windows stack walking information is available covering
   // FRAME's instruction address, return a WindowsFrameInfo structure

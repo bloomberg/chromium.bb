@@ -14,6 +14,7 @@
 
 namespace skgpu {
 
+class CommandBuffer;
 class DrawPass;
 
 /**
@@ -25,14 +26,11 @@ class DrawPass;
  */
 class RenderPassTask final : public Task {
 public:
-    // TODO: 'prior' isn't actually used yet but is here to represent the dependency between a
-    // series of RenderPassTasks.
-    static sk_sp<RenderPassTask> Make(sk_sp<Task> prior,
-                                      std::vector<std::unique_ptr<DrawPass>> passes);
+    static sk_sp<RenderPassTask> Make(std::vector<std::unique_ptr<DrawPass>> passes);
 
     ~RenderPassTask() override;
 
-    // TBD: Expose the surfaces that will need to be attached within the renderpass?
+    void execute(CommandBuffer*) override;
 
 private:
     RenderPassTask(std::vector<std::unique_ptr<DrawPass>> passes);

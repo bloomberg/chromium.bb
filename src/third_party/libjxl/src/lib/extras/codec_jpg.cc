@@ -40,6 +40,7 @@
 #endif
 
 namespace jxl {
+namespace extras {
 
 #if JPEGXL_ENABLE_JPEG
 namespace {
@@ -235,17 +236,21 @@ void MyOutputMessage(j_common_ptr cinfo) {
 }  // namespace
 #endif  // JPEGXL_ENABLE_JPEG
 
-Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
+Status DecodeImageJPGCoefficients(Span<const uint8_t> bytes, CodecInOut* io) {
+  // Use brunsli JPEG decoder to read quantized coefficients.
+  if (!jpeg::DecodeImageJPG(bytes, io)) {
+    fprintf(stderr, "Corrupt or CMYK JPEG.\n");
+    return false;
+  }
+  return true;
+}
+
+Status DecodeImageJPG(const Span<const uint8_t> bytes,
+                      const ColorHints& color_hints, ThreadPool* pool,
                       CodecInOut* io, double* const elapsed_deinterleave) {
   if (elapsed_deinterleave != nullptr) *elapsed_deinterleave = 0;
   // Don't do anything for non-JPEG files (no need to report an error)
   if (!IsJPG(bytes)) return false;
-  const DecodeTarget target = io->dec_target;
-
-  // Use brunsli JPEG decoder to read quantized coefficients.
-  if (target == DecodeTarget::kQuantizedCoeffs) {
-    return jxl::jpeg::DecodeImageJPG(bytes, io);
-  }
 
 #if JPEGXL_ENABLE_JPEG
   // TODO(veluca): use JPEGData also for pixels?
@@ -260,11 +265,9 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
 
   const auto try_catch_block = [&]() -> bool {
     jpeg_decompress_struct cinfo;
-#ifdef MEMORY_SANITIZER
     // cinfo is initialized by libjpeg, which we are not instrumenting with
     // msan, therefore we need to initialize cinfo here.
-    memset(&cinfo, 0, sizeof(cinfo));
-#endif
+    msan::UnpoisonMemory(&cinfo, sizeof(cinfo));
     // Setup error handling in jpeg library so we can deal with broken jpegs in
     // the fuzzer.
     jpeg_error_mgr jerr;
@@ -310,11 +313,9 @@ Status DecodeImageJPG(const Span<const uint8_t> bytes, ThreadPool* pool,
     if (nbcomp != 1 && nbcomp != 3) {
       return failure("unsupported number of components in JPEG");
     }
-    (void)io->dec_hints.Foreach(
-        [](const std::string& key, const std::string& /*value*/) {
-          JXL_WARNING("JPEG decoder ignoring %s hint", key.c_str());
-          return true;
-        });
+    if (!ApplyColorHints(color_hints, /*color_already_set=*/true, false, io)) {
+      return failure("ApplyColorHints failed");
+    }
 
     jpeg_start_decompress(&cinfo);
     JXL_ASSERT(cinfo.output_components == nbcomp);
@@ -471,23 +472,22 @@ Status EncodeWithSJpeg(const ImageBundle* ib, size_t quality,
 }
 #endif  // JPEGXL_ENABLE_JPEG
 
+Status EncodeImageJPGCoefficients(const CodecInOut* io, PaddedBytes* bytes) {
+  auto write = [&bytes](const uint8_t* buf, size_t len) {
+    bytes->append(buf, buf + len);
+    return len;
+  };
+  return jpeg::WriteJpeg(*io->Main().jpeg_data, write);
+}
+
 Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
                       YCbCrChromaSubsampling chroma_subsampling,
-                      ThreadPool* pool, PaddedBytes* bytes,
-                      const DecodeTarget target) {
+                      ThreadPool* pool, PaddedBytes* bytes) {
   if (io->Main().HasAlpha()) {
     return JXL_FAILURE("alpha is not supported");
   }
   if (quality > 100) {
     return JXL_FAILURE("please specify a 0-100 JPEG quality");
-  }
-
-  if (target == DecodeTarget::kQuantizedCoeffs) {
-    auto write = [&bytes](const uint8_t* buf, size_t len) {
-      bytes->append(buf, buf + len);
-      return len;
-    };
-    return jpeg::WriteJpeg(*io->Main().jpeg_data, write);
   }
 
 #if JPEGXL_ENABLE_JPEG
@@ -516,4 +516,5 @@ Status EncodeImageJPG(const CodecInOut* io, JpegEncoder encoder, size_t quality,
 #endif  // JPEGXL_ENABLE_JPEG
 }
 
+}  // namespace extras
 }  // namespace jxl

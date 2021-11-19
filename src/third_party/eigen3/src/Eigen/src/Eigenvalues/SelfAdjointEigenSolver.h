@@ -13,6 +13,8 @@
 
 #include "./Tridiagonalization.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 template<typename MatrixType_>
@@ -372,12 +374,8 @@ template<typename MatrixType_> class SelfAdjointEigenSolver
     static const int m_maxIterations = 30;
 
   protected:
-    static EIGEN_DEVICE_FUNC
-    void check_template_parameters()
-    {
-      EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-    }
-    
+    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
+
     EigenvectorsType m_eivec;
     RealVectorType m_eivalues;
     typename TridiagonalizationType::SubDiagonalType m_subdiag;
@@ -419,10 +417,8 @@ EIGEN_DEVICE_FUNC
 SelfAdjointEigenSolver<MatrixType>& SelfAdjointEigenSolver<MatrixType>
 ::compute(const EigenBase<InputType>& a_matrix, int options)
 {
-  check_template_parameters();
-  
   const InputType &matrix(a_matrix.derived());
-  
+
   EIGEN_USING_STD(abs);
   eigen_assert(matrix.cols() == matrix.rows());
   eigen_assert((options&~(EigVecMask|GenEigMask))==0

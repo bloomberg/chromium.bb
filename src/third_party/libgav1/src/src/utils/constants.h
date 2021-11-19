@@ -71,6 +71,7 @@ enum {
   // but was increased to simplify the SIMD loads in
   // ConvolveCompoundScale2D_NEON() and ConvolveScale2D_NEON().
   kConvolveBorderRight = 8,
+  kConvolveScaleBorderRight = 15,
   kConvolveBorderBottom = 4,
   kSubPixelTaps = 8,
   kWienerFilterBits = 7,

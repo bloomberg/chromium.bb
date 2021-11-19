@@ -21,15 +21,12 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::Matrix);
 namespace tint {
 namespace ast {
 
-Matrix::Matrix(ProgramID program_id,
-               const Source& source,
-               Type* subtype,
-               uint32_t rows,
-               uint32_t columns)
-    : Base(program_id, source),
-      subtype_(subtype),
-      rows_(rows),
-      columns_(columns) {
+Matrix::Matrix(ProgramID pid,
+               const Source& src,
+               const Type* subtype,
+               uint32_t r,
+               uint32_t c)
+    : Base(pid, src), type(subtype), rows(r), columns(c) {
   TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, subtype, program_id);
   TINT_ASSERT(AST, rows > 1);
   TINT_ASSERT(AST, rows < 5);
@@ -41,23 +38,18 @@ Matrix::Matrix(Matrix&&) = default;
 
 Matrix::~Matrix() = default;
 
-std::string Matrix::type_name() const {
-  return "__mat_" + std::to_string(rows_) + "_" + std::to_string(columns_) +
-         subtype_->type_name();
-}
-
 std::string Matrix::FriendlyName(const SymbolTable& symbols) const {
   std::ostringstream out;
-  out << "mat" << columns_ << "x" << rows_ << "<"
-      << subtype_->FriendlyName(symbols) << ">";
+  out << "mat" << columns << "x" << rows << "<" << type->FriendlyName(symbols)
+      << ">";
   return out.str();
 }
 
-Matrix* Matrix::Clone(CloneContext* ctx) const {
+const Matrix* Matrix::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* ty = ctx->Clone(type());
-  return ctx->dst->create<Matrix>(src, ty, rows_, columns_);
+  auto src = ctx->Clone(source);
+  auto* ty = ctx->Clone(type);
+  return ctx->dst->create<Matrix>(src, ty, rows, columns);
 }
 
 }  // namespace ast

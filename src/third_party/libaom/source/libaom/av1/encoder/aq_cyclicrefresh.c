@@ -268,7 +268,9 @@ void av1_cyclic_refresh_postencode(AV1_COMP *const cpi) {
        !cpi->svc.layer_context[cpi->svc.temporal_layer_id].is_key_frame &&
        cpi->svc.spatial_layer_id == cpi->svc.number_spatial_layers - 1)) {
     rc->avg_frame_low_motion =
-        (3 * rc->avg_frame_low_motion + avg_cnt_zeromv) / 4;
+        (rc->avg_frame_low_motion == 0)
+            ? avg_cnt_zeromv
+            : (3 * rc->avg_frame_low_motion + avg_cnt_zeromv) / 4;
     // For SVC: set avg_frame_low_motion (only computed on top spatial layer)
     // to all lower spatial layers.
     if (cpi->ppi->use_svc &&
@@ -291,11 +293,16 @@ void av1_cyclic_refresh_set_golden_update(AV1_COMP *const cpi) {
   // Set minimum gf_interval for GF update to a multiple of the refresh period,
   // with some max limit. Depending on past encoding stats, GF flag may be
   // reset and update may not occur until next baseline_gf_interval.
+  const int gf_length_mult[2] = { 8, 4 };
   if (cr->percent_refresh > 0)
-    p_rc->baseline_gf_interval = AOMMIN(2 * (100 / cr->percent_refresh), 40);
+    p_rc->baseline_gf_interval =
+        AOMMIN(gf_length_mult[cpi->sf.rt_sf.gf_length_lvl] *
+                   (100 / cr->percent_refresh),
+               MAX_GF_INTERVAL_RT);
   else
-    p_rc->baseline_gf_interval = 20;
-  if (rc->avg_frame_low_motion < 40) p_rc->baseline_gf_interval = 8;
+    p_rc->baseline_gf_interval = FIXED_GF_INTERVAL_RT;
+  if (rc->avg_frame_low_motion && rc->avg_frame_low_motion < 40)
+    p_rc->baseline_gf_interval = 16;
 }
 
 // Update the segmentation map, and related quantities: cyclic refresh map,

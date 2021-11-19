@@ -48,9 +48,17 @@ class TestPermissionBubbleViewDelegate
   void Accept() override {}
   void AcceptThisTime() override {}
   void Deny() override {}
-  void Closing() override {}
+  void Dismiss() override {}
+  void Ignore() override {}
 
+  absl::optional<permissions::PermissionUiSelector::QuietUiReason>
+  ReasonForUsingQuietUi() const override;
+  bool ShouldCurrentRequestUseQuietUI() const override;
+  bool ShouldDropCurrentRequestIfCannotShowQuietly() const override;
   bool WasCurrentRequestAlreadyDisplayed() override;
+  void SetDismissOnTabClose() override {}
+  void SetBubbleShown() override {}
+  void SetDecisionTime() override {}
 
   void set_requests(std::vector<permissions::PermissionRequest*> requests) {
     requests_ = requests;

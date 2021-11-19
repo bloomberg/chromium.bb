@@ -16,7 +16,7 @@
 
 #include "sys/stat.h"
 
-#include "common/angle_version.h"
+#include "common/angle_version_info.h"
 #include "common/mathutil.h"
 #include "common/serializer/JsonSerializer.h"
 #include "common/string_utils.h"
@@ -569,20 +569,25 @@ void WriteResourceIDPointerParamReplay(DataTracker *dataTracker,
     ASSERT(resourceIDType != ResourceIDType::InvalidEnum);
     const char *name = GetResourceIDTypeName(resourceIDType);
 
-    ASSERT(param.dataNElements > 0);
-    ASSERT(param.data.size() == 1);
-
-    const ParamT *returnedIDs = reinterpret_cast<const ParamT *>(param.data[0].data());
-    for (GLsizei resIndex = 0; resIndex < param.dataNElements; ++resIndex)
+    if (param.dataNElements > 0)
     {
-        ParamT id = returnedIDs[resIndex];
-        if (resIndex > 0)
-        {
-            header << ", ";
-        }
-        header << "g" << name << "Map2[" << id.value << "]";
-    }
+        ASSERT(param.data.size() == 1);
 
+        const ParamT *returnedIDs = reinterpret_cast<const ParamT *>(param.data[0].data());
+        for (GLsizei resIndex = 0; resIndex < param.dataNElements; ++resIndex)
+        {
+            ParamT id = returnedIDs[resIndex];
+            if (resIndex > 0)
+            {
+                header << ", ";
+            }
+            header << "g" << name << "Map2[" << id.value << "]";
+        }
+    }
+    else
+    {
+        header << "0";
+    }
     header << " };\n    ";
 
     WriteParamStaticVarName(call, param, counter, out);
@@ -1154,19 +1159,18 @@ void MaybeResetOpaqueTypeObjects(std::stringstream &out,
     MaybeResetFenceSyncObjects(out, dataTracker, header, resourceTracker, binaryData);
 }
 
-bool FindShaderProgramIDInCall(const CallCapture &call, gl::ShaderProgramID *idOut)
+bool FindShaderProgramIDsInCall(const CallCapture &call, std::vector<gl::ShaderProgramID> &idsOut)
 {
     for (const ParamCapture &param : call.params.getParamCaptures())
     {
         // Only checking for programs right now, but could be expanded to all ResourceTypes
         if (param.type == ParamType::TShaderProgramID)
         {
-            *idOut = param.value.ShaderProgramIDVal;
-            return true;
+            idsOut.push_back(param.value.ShaderProgramIDVal);
         }
     }
 
-    return false;
+    return !idsOut.empty();
 }
 
 void MarkResourceIDActive(ResourceIDType resourceType,
@@ -1661,10 +1665,12 @@ void MaybeCaptureUpdateResourceIDs(std::vector<CallCapture> *callsOut)
     }
 }
 
-void CaptureUpdateCurrentProgram(const CallCapture &call, std::vector<CallCapture> *callsOut)
+void CaptureUpdateCurrentProgram(const CallCapture &call,
+                                 int programParamPos,
+                                 std::vector<CallCapture> *callsOut)
 {
     const ParamCapture &param =
-        call.params.getParam("programPacked", ParamType::TShaderProgramID, 0);
+        call.params.getParam("programPacked", ParamType::TShaderProgramID, programParamPos);
     gl::ShaderProgramID programID = param.value.ShaderProgramIDVal;
 
     ParamBuffer paramBuffer;
@@ -1805,7 +1811,7 @@ void CaptureUpdateUniformValues(const gl::State &replayState,
     if (!replayState.getProgram() || replayState.getProgram()->id() != program->id())
     {
         Capture(callsOut, CaptureUseProgram(replayState, true, program->id()));
-        CaptureUpdateCurrentProgram(callsOut->back(), callsOut);
+        CaptureUpdateCurrentProgram(callsOut->back(), 0, callsOut);
     }
 
     const std::vector<gl::LinkedUniform> &uniforms = program->getState().getUniforms();
@@ -2352,18 +2358,23 @@ void GenerateLinkedProgram(const gl::Context *context,
                            std::vector<CallCapture> *setupCalls,
                            gl::Program *program,
                            gl::ShaderProgramID id,
+                           gl::ShaderProgramID tempIDStart,
                            const ProgramSources &linkedSources)
 {
-    // Bump up our max program ID before creating temp shaders
-    resourceTracker->onShaderProgramAccess(id);
-
-    // Use max ID as a temporary shader ID.
-    // Note this isn't the real ID of the shader, just a lookup into the gShaderProgram map.
-    gl::ShaderProgramID tempShaderID = {resourceTracker->getMaxShaderPrograms()};
+    // A map to store the gShaderProgram map lookup index of the temp shaders we attached below. We
+    // need this map to retrieve the lookup index to pass to CaptureDetachShader calls at the end of
+    // GenerateLinkedProgram.
+    PackedEnumMap<gl::ShaderType, gl::ShaderProgramID> tempShaderIDTracker;
 
     // Compile with last linked sources.
     for (gl::ShaderType shaderType : program->getExecutable().getLinkedShaderStages())
     {
+        // Bump the max shader program id for each new tempIDStart we use to create, compile, and
+        // attach the temp shader object.
+        resourceTracker->onShaderProgramAccess(tempIDStart);
+        // Store the tempIDStart in the tempShaderIDTracker to retrieve for CaptureDetachShader
+        // calls later.
+        tempShaderIDTracker[shaderType] = tempIDStart;
         const std::string &sourceString = linkedSources[shaderType];
         const char *sourcePointer       = sourceString.c_str();
 
@@ -2380,12 +2391,15 @@ void GenerateLinkedProgram(const gl::Context *context,
         }
 
         // Compile and attach the temporary shader. Then free it immediately.
-        Capture(setupCalls, CaptureCreateShader(replayState, true, shaderType, tempShaderID.value));
+        Capture(setupCalls, CaptureCreateShader(replayState, true, shaderType, tempIDStart.value));
         Capture(setupCalls,
-                CaptureShaderSource(replayState, true, tempShaderID, 1, &sourcePointer, nullptr));
-        Capture(setupCalls, CaptureCompileShader(replayState, true, tempShaderID));
-        Capture(setupCalls, CaptureAttachShader(replayState, true, id, tempShaderID));
-        Capture(setupCalls, CaptureDeleteShader(replayState, true, tempShaderID));
+                CaptureShaderSource(replayState, true, tempIDStart, 1, &sourcePointer, nullptr));
+        Capture(setupCalls, CaptureCompileShader(replayState, true, tempIDStart));
+        Capture(setupCalls, CaptureAttachShader(replayState, true, id, tempIDStart));
+        // Increment tempIDStart to get a new gShaderProgram map index for the next linked stage
+        // shader object. We can't reuse the same tempIDStart as we need to retrieve the index of
+        // each attached shader object later to pass to CaptureDetachShader calls.
+        tempIDStart.value += 1;
     }
 
     // Gather XFB varyings
@@ -2450,6 +2464,22 @@ void GenerateLinkedProgram(const gl::Context *context,
         GLuint blockBinding = program->getUniformBlockBinding(uniformBlockIndex);
         Capture(setupCalls, CaptureUniformBlockBinding(replayState, true, id, {uniformBlockIndex},
                                                        blockBinding));
+    }
+
+    // Add DetachShader call if that's what the app does, so that the
+    // ResourceManagerBase::mHandleAllocator can release the ShaderProgramID handle assigned to the
+    // shader object when glDeleteShader is called. This ensures the ShaderProgramID handles used in
+    // SetupReplayContextShared() are consistent with the ShaderProgramID handles used by the app.
+    for (gl::ShaderType shaderType : program->getExecutable().getLinkedShaderStages())
+    {
+        gl::Shader *attachedShader = program->getAttachedShader(shaderType);
+        if (attachedShader == nullptr)
+        {
+            Capture(setupCalls,
+                    CaptureDetachShader(replayState, true, id, tempShaderIDTracker[shaderType]));
+        }
+        Capture(setupCalls,
+                CaptureDeleteShader(replayState, true, tempShaderIDTracker[shaderType]));
     }
 }
 
@@ -3010,6 +3040,7 @@ void CaptureShareGroupMidExecutionSetup(const gl::Context *context,
         shadersAndPrograms.getProgramsForCaptureAndPerf();
 
     // Capture Program binary state.
+    gl::ShaderProgramID tempShaderStartID = {resourceTracker->getMaxShaderPrograms()};
     for (const auto &programIter : programs)
     {
         gl::ShaderProgramID id = {programIter.first};
@@ -3031,7 +3062,7 @@ void CaptureShareGroupMidExecutionSetup(const gl::Context *context,
         cap(CaptureCreateProgram(replayState, true, id.value));
 
         GenerateLinkedProgram(context, replayState, resourceTracker, setupCalls, program, id,
-                              linkedSources);
+                              tempShaderStartID, linkedSources);
 
         // Update the program in replayState
         if (!replayState.getProgram() || replayState.getProgram()->id() != program->id())
@@ -3494,7 +3525,7 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         if (apiState.getProgram())
         {
             cap(CaptureUseProgram(replayState, true, apiState.getProgram()->id()));
-            CaptureUpdateCurrentProgram(setupCalls->back(), setupCalls);
+            CaptureUpdateCurrentProgram(setupCalls->back(), 0, setupCalls);
             (void)replayState.setProgram(context, apiState.getProgram());
 
             // Set this program as active so it will be generated in Setup
@@ -3504,7 +3535,7 @@ void CaptureMidExecutionSetup(const gl::Context *context,
         else if (replayState.getProgram())
         {
             cap(CaptureUseProgram(replayState, true, {0}));
-            CaptureUpdateCurrentProgram(setupCalls->back(), setupCalls);
+            CaptureUpdateCurrentProgram(setupCalls->back(), 0, setupCalls);
             (void)replayState.setProgram(context, nullptr);
         }
 
@@ -4781,8 +4812,10 @@ void FrameCaptureShared::overrideProgramBinary(const gl::Context *context,
     gl::Program *program = context->getProgramResolveLink(id);
     ASSERT(program);
 
+    mResourceTracker.onShaderProgramAccess(id);
+    gl::ShaderProgramID tempShaderStartID = {mResourceTracker.getMaxShaderPrograms()};
     GenerateLinkedProgram(context, context->getState(), &mResourceTracker, &outCalls, program, id,
-                          getProgramSources(id));
+                          tempShaderStartID, getProgramSources(id));
 }
 
 void FrameCaptureShared::maybeOverrideEntryPoint(const gl::Context *context,
@@ -5295,16 +5328,19 @@ void FrameCaptureShared::maybeCapturePreCallUpdates(
 
     updateReadBufferSize(call.params.getReadBufferSize());
 
-    gl::ShaderProgramID shaderProgramID;
-    if (FindShaderProgramIDInCall(call, &shaderProgramID))
+    std::vector<gl::ShaderProgramID> shaderProgramIDs;
+    if (FindShaderProgramIDsInCall(call, shaderProgramIDs))
     {
-        mResourceTracker.onShaderProgramAccess(shaderProgramID);
-
-        if (isCaptureActive())
+        for (gl::ShaderProgramID shaderProgramID : shaderProgramIDs)
         {
-            // Track that this call referenced a ShaderProgram, setting it active for Setup
-            MarkResourceIDActive(ResourceIDType::ShaderProgram, shaderProgramID.value,
-                                 shareGroupSetupCalls, resourceIDToSetupCalls);
+            mResourceTracker.onShaderProgramAccess(shaderProgramID);
+
+            if (isCaptureActive())
+            {
+                // Track that this call referenced a ShaderProgram, setting it active for Setup
+                MarkResourceIDActive(ResourceIDType::ShaderProgram, shaderProgramID.value,
+                                     shareGroupSetupCalls, resourceIDToSetupCalls);
+            }
         }
     }
 
@@ -5451,7 +5487,10 @@ void FrameCaptureShared::maybeCapturePostCallUpdates(const gl::Context *context)
             break;
         }
         case EntryPoint::GLUseProgram:
-            CaptureUpdateCurrentProgram(lastCall, &mFrameCalls);
+            CaptureUpdateCurrentProgram(lastCall, 0, &mFrameCalls);
+            break;
+        case EntryPoint::GLActiveShaderProgram:
+            CaptureUpdateCurrentProgram(lastCall, 1, &mFrameCalls);
             break;
         case EntryPoint::GLDeleteProgram:
         {
@@ -6034,7 +6073,7 @@ void FrameCaptureShared::writeCppReplayIndexFiles(const gl::Context *context,
 
     JsonSerializer json;
     json.startGroup("TraceMetadata");
-    json.addScalar("CaptureRevision", ANGLE_REVISION);
+    json.addScalar("CaptureRevision", GetANGLERevision());
     json.addScalar("ContextClientMajorVersion", context->getClientMajorVersion());
     json.addScalar("ContextClientMinorVersion", context->getClientMinorVersion());
     json.addHexValue("DisplayPlatformType", displayAttribs.getAsInt(EGL_PLATFORM_ANGLE_TYPE_ANGLE));
@@ -6798,6 +6837,22 @@ void WriteParamValueReplay<ParamType::TvoidConstPointer>(std::ostream &os,
 }
 
 template <>
+void WriteParamValueReplay<ParamType::TvoidPointer>(std::ostream &os,
+                                                    const CallCapture &call,
+                                                    void *value)
+{
+    if (value == 0)
+    {
+        os << "nullptr";
+    }
+    else
+    {
+        os << "reinterpret_cast<void *>(" << static_cast<int>(reinterpret_cast<uintptr_t>(value))
+           << ")";
+    }
+}
+
+template <>
 void WriteParamValueReplay<ParamType::TGLfloatConstPointer>(std::ostream &os,
                                                             const CallCapture &call,
                                                             const GLfloat *value)
@@ -6967,10 +7022,11 @@ void WriteParamValueReplay<ParamType::TUniformLocation>(std::ostream &os,
     os << "gUniformLocations2[";
 
     // Find the program from the call parameters.
-    gl::ShaderProgramID programID;
-    if (FindShaderProgramIDInCall(call, &programID))
+    std::vector<gl::ShaderProgramID> programIDs;
+    if (FindShaderProgramIDsInCall(call, programIDs))
     {
-        os << "gShaderProgramMap2[" << programID.value << "]";
+        ASSERT(programIDs.size() == 1);
+        os << "gShaderProgramMap2[" << programIDs[0].value << "]";
     }
     else
     {
@@ -6986,11 +7042,11 @@ void WriteParamValueReplay<ParamType::TUniformBlockIndex>(std::ostream &os,
                                                           gl::UniformBlockIndex value)
 {
     // Find the program from the call parameters.
-    gl::ShaderProgramID programID;
-    bool foundProgram = FindShaderProgramIDInCall(call, &programID);
-    ASSERT(foundProgram);
+    std::vector<gl::ShaderProgramID> programIDs;
+    bool foundProgram = FindShaderProgramIDsInCall(call, programIDs);
+    ASSERT(foundProgram && programIDs.size() == 1);
 
-    os << "gUniformBlockIndexes[gShaderProgramMap2[" << programID.value << "]][" << value.value
+    os << "gUniformBlockIndexes[gShaderProgramMap2[" << programIDs[0].value << "]][" << value.value
        << "]";
 }
 

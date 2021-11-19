@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_THREADPOOL_RUNQUEUE_H_
 #define EIGEN_CXX11_THREADPOOL_RUNQUEUE_H_
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // RunQueue is a fixed-size, partially non-blocking deque or Work items.

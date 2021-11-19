@@ -117,6 +117,9 @@
         goto Exit;
 
       blend->num_default_design_vector = 0;
+      blend->weight_vector             = NULL;
+      blend->default_weight_vector     = NULL;
+      blend->design_pos[0]             = NULL;
 
       face->blend = blend;
     }
@@ -130,13 +133,10 @@
 
 
         /* allocate the blend `private' and `font_info' dictionaries */
-        if ( FT_QNEW_ARRAY( blend->font_infos[1], num_designs     ) ||
-             FT_QNEW_ARRAY( blend->privates  [1], num_designs     ) ||
-             FT_QNEW_ARRAY( blend->bboxes    [1], num_designs     ) ||
-             FT_QNEW_ARRAY( blend->weight_vector, num_designs * 2 ) )
+        if ( FT_NEW_ARRAY( blend->font_infos[1], num_designs ) ||
+             FT_NEW_ARRAY( blend->privates  [1], num_designs ) ||
+             FT_NEW_ARRAY( blend->bboxes    [1], num_designs ) )
           goto Exit;
-
-        blend->default_weight_vector = blend->weight_vector + num_designs;
 
         blend->font_infos[0] = &face->type1.font_info;
         blend->privates  [0] = &face->type1.private_dict;
@@ -162,21 +162,6 @@
         goto Fail;
 
       blend->num_axis = num_axis;
-    }
-
-    /* allocate the blend design pos table if needed */
-    num_designs = blend->num_designs;
-    num_axis    = blend->num_axis;
-    if ( num_designs && num_axis && blend->design_pos[0] == NULL )
-    {
-      FT_UInt  n;
-
-
-      if ( FT_QNEW_ARRAY( blend->design_pos[0], num_designs * num_axis ) )
-        goto Exit;
-
-      for ( n = 1; n < num_designs; n++ )
-        blend->design_pos[n] = blend->design_pos[0] + num_axis * n;
     }
 
   Exit:
@@ -872,12 +857,14 @@
   {
     T1_TokenRec  design_tokens[T1_MAX_MM_DESIGNS];
     FT_Int       num_designs;
-    FT_Int       num_axis;
-    T1_Parser    parser = &loader->parser;
+    FT_Int       num_axis = 0; /* make compiler happy */
+    T1_Parser    parser   = &loader->parser;
+    FT_Memory    memory   = face->root.memory;
+    FT_Error     error    = FT_Err_Ok;
+    FT_Fixed*    design_pos[T1_MAX_MM_DESIGNS];
 
-    FT_Error     error = FT_Err_Ok;
-    PS_Blend     blend;
 
+    design_pos[0] = NULL;
 
     /* get the array of design tokens -- compute number of designs */
     T1_ToTokenArray( parser, design_tokens,
@@ -899,11 +886,9 @@
     {
       FT_Byte*  old_cursor = parser->root.cursor;
       FT_Byte*  old_limit  = parser->root.limit;
-      FT_Int    n;
+      FT_Int    n, nn;
+      PS_Blend  blend;
 
-
-      blend    = face->blend;
-      num_axis = 0;  /* make compiler happy */
 
       FT_TRACE4(( " [" ));
 
@@ -937,7 +922,13 @@
                                      (FT_UInt)num_axis );
           if ( error )
             goto Exit;
-          blend = face->blend;
+
+          /* allocate a blend design pos table */
+          if ( FT_QNEW_ARRAY( design_pos[0], num_designs * num_axis ) )
+            goto Exit;
+
+          for ( nn = 1; nn < num_designs; nn++ )
+            design_pos[nn] = design_pos[0] + num_axis * nn;
         }
         else if ( n_axis != num_axis )
         {
@@ -955,8 +946,8 @@
 
           parser->root.cursor = token2->start;
           parser->root.limit  = token2->limit;
-          blend->design_pos[n][axis] = T1_ToFixed( parser, 0 );
-          FT_TRACE4(( " %f", (double)blend->design_pos[n][axis] / 65536 ));
+          design_pos[n][axis] = T1_ToFixed( parser, 0 );
+          FT_TRACE4(( " %f", (double)design_pos[n][axis] / 65536 ));
         }
         FT_TRACE4(( "]" )) ;
       }
@@ -965,9 +956,21 @@
 
       loader->parser.root.cursor = old_cursor;
       loader->parser.root.limit  = old_limit;
+
+      /* a valid BlendDesignPosition has been parsed */
+      blend = face->blend;
+      if ( blend->design_pos[0] )
+        FT_FREE( blend->design_pos[0] );
+
+      for ( n = 0; n < num_designs; n++ )
+      {
+        blend->design_pos[n] = design_pos[n];
+        design_pos[n]        = NULL;
+      }
     }
 
   Exit:
+    FT_FREE( design_pos[0] );
     loader->parser.root.error = error;
   }
 
@@ -1088,6 +1091,7 @@
     T1_TokenRec  design_tokens[T1_MAX_MM_DESIGNS];
     FT_Int       num_designs;
     FT_Error     error  = FT_Err_Ok;
+    FT_Memory    memory = face->root.memory;
     T1_Parser    parser = &loader->parser;
     PS_Blend     blend  = face->blend;
     T1_Token     token;
@@ -1128,6 +1132,12 @@
       error = FT_THROW( Invalid_File_Format );
       goto Exit;
     }
+
+    if ( !blend->weight_vector )
+      if ( FT_QNEW_ARRAY( blend->weight_vector, num_designs * 2 ) )
+        goto Exit;
+
+    blend->default_weight_vector = blend->weight_vector + num_designs;
 
     old_cursor = parser->root.cursor;
     old_limit  = parser->root.limit;
@@ -1336,7 +1346,7 @@
 
   static int
   read_binary_data( T1_Parser  parser,
-                    FT_ULong*  size,
+                    FT_Long*   size,
                     FT_Byte**  base,
                     FT_Bool    incremental )
   {
@@ -1368,7 +1378,7 @@
       if ( s >= 0 && s < limit - *base )
       {
         parser->root.cursor += s + 1;
-        *size = (FT_ULong)s;
+        *size = s;
         return !parser->root.error;
       }
     }
@@ -1793,7 +1803,7 @@
     for ( count = 0; ; count++ )
     {
       FT_Long   idx;
-      FT_ULong  size;
+      FT_Long   size;
       FT_Byte*  base;
 
 
@@ -1851,7 +1861,7 @@
         /* some fonts define empty subr records -- this is not totally */
         /* compliant to the specification (which says they should at   */
         /* least contain a `return'), but we support them anyway       */
-        if ( size < (FT_ULong)face->type1.private_dict.lenIV )
+        if ( size < face->type1.private_dict.lenIV )
         {
           error = FT_THROW( Invalid_File_Format );
           goto Fail;
@@ -1862,7 +1872,7 @@
           goto Fail;
         FT_MEM_COPY( temp, base, size );
         psaux->t1_decrypt( temp, size, 4330 );
-        size -= (FT_ULong)face->type1.private_dict.lenIV;
+        size -= face->type1.private_dict.lenIV;
         error = T1_Add_Table( table, (FT_Int)idx,
                               temp + face->type1.private_dict.lenIV, size );
         FT_FREE( temp );
@@ -1967,7 +1977,7 @@
 
     for (;;)
     {
-      FT_ULong  size;
+      FT_Long   size;
       FT_Byte*  base;
 
 
@@ -2061,7 +2071,7 @@
           FT_Byte*  temp = NULL;
 
 
-          if ( size <= (FT_ULong)face->type1.private_dict.lenIV )
+          if ( size <= face->type1.private_dict.lenIV )
           {
             error = FT_THROW( Invalid_File_Format );
             goto Fail;
@@ -2072,7 +2082,7 @@
             goto Fail;
           FT_MEM_COPY( temp, base, size );
           psaux->t1_decrypt( temp, size, 4330 );
-          size -= (FT_ULong)face->type1.private_dict.lenIV;
+          size -= face->type1.private_dict.lenIV;
           error = T1_Add_Table( code_table, n,
                                 temp + face->type1.private_dict.lenIV, size );
           FT_FREE( temp );
@@ -2324,7 +2334,7 @@
       else if ( *cur == 'R' && cur + 6 < limit && *(cur + 1) == 'D' &&
                 have_integer )
       {
-        FT_ULong  s;
+        FT_Long   s;
         FT_Byte*  b;
 
 
@@ -2337,7 +2347,7 @@
       else if ( *cur == '-' && cur + 6 < limit && *(cur + 1) == '|' &&
                 have_integer )
       {
-        FT_ULong  s;
+        FT_Long   s;
         FT_Byte*  b;
 
 
@@ -2578,7 +2588,15 @@
          ( !face->blend->num_designs || !face->blend->num_axis ) )
       T1_Done_Blend( face );
 
-    /* another safety check */
+    /* the font may have no valid WeightVector */
+    if ( face->blend && !face->blend->weight_vector )
+      T1_Done_Blend( face );
+
+    /* the font may have no valid BlendDesignPositions */
+    if ( face->blend && !face->blend->design_pos[0] )
+      T1_Done_Blend( face );
+
+    /* the font may have no valid BlendDesignMap */
     if ( face->blend )
     {
       FT_UInt  i;

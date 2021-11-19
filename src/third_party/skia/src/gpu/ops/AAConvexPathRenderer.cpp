@@ -13,13 +13,13 @@
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkPathPriv.h"
 #include "src/core/SkPointPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDrawOpTest.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrPathUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -30,6 +30,8 @@
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelperWithStencil.h"
 #include "src/gpu/v1/SurfaceDrawContext_v1.h"
+
+namespace skgpu::v1 {
 
 namespace {
 
@@ -364,7 +366,7 @@ void create_vertices(const SegmentArray& segments,
                      const SkPoint& fanPt,
                      const GrVertexColor& color,
                      DrawArray* draws,
-                     GrVertexWriter& verts,
+                     VertexWriter& verts,
                      uint16_t* idxs,
                      size_t vertexStride) {
     Draw* draw = &draws->push_back();
@@ -398,10 +400,10 @@ void create_vertices(const SegmentArray& segments,
         // FIXME: These tris are inset in the 1 unit arc around the corner
         SkPoint p0 = sega.endPt();
         // Position, Color, UV, D0, D1
-        verts.write(p0,                  color, SkPoint{0, 0},           negOneDists);
-        verts.write(p0 + sega.endNorm(), color, SkPoint{0, -SK_Scalar1}, negOneDists);
-        verts.write(p0 + segb.fMid,      color, SkPoint{0, -SK_Scalar1}, negOneDists);
-        verts.write(p0 + segb.fNorms[0], color, SkPoint{0, -SK_Scalar1}, negOneDists);
+        verts << p0                    << color << SkPoint{0, 0}           << negOneDists;
+        verts << (p0 + sega.endNorm()) << color << SkPoint{0, -SK_Scalar1} << negOneDists;
+        verts << (p0 + segb.fMid)      << color << SkPoint{0, -SK_Scalar1} << negOneDists;
+        verts << (p0 + segb.fNorms[0]) << color << SkPoint{0, -SK_Scalar1} << negOneDists;
 
         idxs[*i + 0] = *v + 0;
         idxs[*i + 1] = *v + 2;
@@ -420,11 +422,11 @@ void create_vertices(const SegmentArray& segments,
             SkPoint v2Pos = segb.fPts[0];
             SkScalar dist = SkPointPriv::DistanceToLineBetween(fanPt, v1Pos, v2Pos);
 
-            verts.write(fanPt,                  color, SkPoint{0, dist},        negOneDists);
-            verts.write(v1Pos,                  color, SkPoint{0, 0},           negOneDists);
-            verts.write(v2Pos,                  color, SkPoint{0, 0},           negOneDists);
-            verts.write(v1Pos + segb.fNorms[0], color, SkPoint{0, -SK_Scalar1}, negOneDists);
-            verts.write(v2Pos + segb.fNorms[0], color, SkPoint{0, -SK_Scalar1}, negOneDists);
+            verts << fanPt                    << color << SkPoint{0, dist}        << negOneDists;
+            verts << v1Pos                    << color << SkPoint{0, 0}           << negOneDists;
+            verts << v2Pos                    << color << SkPoint{0, 0}           << negOneDists;
+            verts << (v1Pos + segb.fNorms[0]) << color << SkPoint{0, -SK_Scalar1} << negOneDists;
+            verts << (v2Pos + segb.fNorms[0]) << color << SkPoint{0, -SK_Scalar1} << negOneDists;
 
             idxs[*i + 0] = *v + 3;
             idxs[*i + 1] = *v + 1;
@@ -474,32 +476,32 @@ void create_vertices(const SegmentArray& segments,
             GrPathUtils::QuadUVMatrix toUV(qpts);
             toUV.apply(posAndUVPoints, 6, sizeof(PosAndUV), sizeof(SkPoint));
 
-            verts.write(posAndUVPoints[0].fPos, color, posAndUVPoints[0].fUV,
-                        -segb.fNorms[0].dot(fanPt) + c0,
-                        -segb.fNorms[1].dot(fanPt) + c1);
+            verts << posAndUVPoints[0].fPos << color << posAndUVPoints[0].fUV
+                  << (-segb.fNorms[0].dot(fanPt) + c0)
+                  << (-segb.fNorms[1].dot(fanPt) + c1);
 
-            verts.write(posAndUVPoints[1].fPos, color, posAndUVPoints[1].fUV,
-                        0.0f,
-                        -segb.fNorms[1].dot(qpts[0]) + c1);
+            verts << posAndUVPoints[1].fPos << color << posAndUVPoints[1].fUV
+                  << 0.0f
+                  << (-segb.fNorms[1].dot(qpts[0]) + c1);
 
-            verts.write(posAndUVPoints[2].fPos, color, posAndUVPoints[2].fUV,
-                        -segb.fNorms[0].dot(qpts[2]) + c0,
-                        0.0f);
+            verts << posAndUVPoints[2].fPos << color << posAndUVPoints[2].fUV
+                  << (-segb.fNorms[0].dot(qpts[2]) + c0)
+                  << 0.0f;
             // We need a negative value that is very large that it won't effect results if it is
             // interpolated with. However, the value can't be too large of a negative that it
             // effects numerical precision on less powerful GPUs.
             static const SkScalar kStableLargeNegativeValue = -SK_ScalarMax/1000000;
-            verts.write(posAndUVPoints[3].fPos, color, posAndUVPoints[3].fUV,
-                        kStableLargeNegativeValue,
-                        kStableLargeNegativeValue);
+            verts << posAndUVPoints[3].fPos << color << posAndUVPoints[3].fUV
+                  << kStableLargeNegativeValue
+                  << kStableLargeNegativeValue;
 
-            verts.write(posAndUVPoints[4].fPos, color, posAndUVPoints[4].fUV,
-                        kStableLargeNegativeValue,
-                        kStableLargeNegativeValue);
+            verts << posAndUVPoints[4].fPos << color << posAndUVPoints[4].fUV
+                  << kStableLargeNegativeValue
+                  << kStableLargeNegativeValue;
 
-            verts.write(posAndUVPoints[5].fPos, color, posAndUVPoints[5].fUV,
-                        kStableLargeNegativeValue,
-                        kStableLargeNegativeValue);
+            verts << posAndUVPoints[5].fPos << color << posAndUVPoints[5].fUV
+                  << kStableLargeNegativeValue
+                  << kStableLargeNegativeValue;
 
             idxs[*i + 0] = *v + 3;
             idxs[*i + 1] = *v + 1;
@@ -800,10 +802,12 @@ private:
             sk_sp<const GrBuffer> vertexBuffer;
             int firstVertex;
 
-            GrVertexWriter verts{target->makeVertexSpace(kVertexStride, vertexCount,
-                                                         &vertexBuffer, &firstVertex)};
+            VertexWriter verts{target->makeVertexSpace(kVertexStride,
+                                                       vertexCount,
+                                                       &vertexBuffer,
+                                                       &firstVertex)};
 
-            if (!verts.fPtr) {
+            if (!verts) {
                 SkDebugf("Could not allocate vertices\n");
                 return;
             }
@@ -893,22 +897,7 @@ private:
 
 } // anonymous namespace
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-#if GR_TEST_UTILS
-
-GR_DRAW_OP_TEST_DEFINE(AAConvexPathOp) {
-    SkMatrix viewMatrix = GrTest::TestMatrixInvertible(random);
-    const SkPath& path = GrTest::TestPathConvex(random);
-    const GrUserStencilSettings* stencilSettings = GrGetRandomStencil(random, context);
-    return AAConvexPathOp::Make(context, std::move(paint), viewMatrix, path, stencilSettings);
-}
-
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
-
-namespace skgpu::v1 {
 
 PathRenderer::CanDrawPath AAConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
     // This check requires convexity and known direction, since the direction is used to build
@@ -939,3 +928,15 @@ bool AAConvexPathRenderer::onDrawPath(const DrawPathArgs& args) {
 }
 
 } // namespace skgpu::v1
+
+#if GR_TEST_UTILS
+
+GR_DRAW_OP_TEST_DEFINE(AAConvexPathOp) {
+    SkMatrix viewMatrix = GrTest::TestMatrixInvertible(random);
+    const SkPath& path = GrTest::TestPathConvex(random);
+    const GrUserStencilSettings* stencilSettings = GrGetRandomStencil(random, context);
+    return skgpu::v1::AAConvexPathOp::Make(context, std::move(paint), viewMatrix, path,
+                                           stencilSettings);
+}
+
+#endif

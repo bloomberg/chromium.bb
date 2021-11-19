@@ -15,6 +15,8 @@
 // A separate header (included at the end of this file) will undefine all 
 #include "TensorGpuHipCudaDefines.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 static const int kGpuScratchSize = 1024;

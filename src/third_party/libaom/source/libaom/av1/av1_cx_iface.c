@@ -1134,7 +1134,10 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   // Set cost update frequency configuration.
   oxcf->cost_upd_freq.coeff = (COST_UPDATE_TYPE)extra_cfg->coeff_cost_upd_freq;
   oxcf->cost_upd_freq.mode = (COST_UPDATE_TYPE)extra_cfg->mode_cost_upd_freq;
-  oxcf->cost_upd_freq.mv = (COST_UPDATE_TYPE)extra_cfg->mv_cost_upd_freq;
+  // Avoid MV cost update for allintra encoding mode.
+  oxcf->cost_upd_freq.mv = (cfg->kf_max_dist != 0)
+                               ? (COST_UPDATE_TYPE)extra_cfg->mv_cost_upd_freq
+                               : COST_UPD_OFF;
   oxcf->cost_upd_freq.dv = (COST_UPDATE_TYPE)extra_cfg->dv_cost_upd_freq;
 
   // Set frame resize mode configuration.
@@ -1368,10 +1371,14 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   oxcf->unit_test_cfg.sb_multipass_unit_test =
       extra_cfg->sb_multipass_unit_test;
 
+  // For allintra encoding mode, inter-frame motion search is not applicable and
+  // the intraBC motion vectors are restricted within the tile boundaries. Hence
+  // a smaller frame border size (AOM_ENC_ALLINTRA_BORDER) is used in this case.
   oxcf->border_in_pixels =
       (resize_cfg->resize_mode || superres_cfg->superres_mode)
           ? AOM_BORDER_IN_PIXELS
-          : AOM_ENC_NO_SCALE_BORDER;
+          : (oxcf->kf_cfg.key_freq_max == 0) ? AOM_ENC_ALLINTRA_BORDER
+                                             : AOM_ENC_NO_SCALE_BORDER;
   memcpy(oxcf->target_seq_level_idx, extra_cfg->target_seq_level_idx,
          sizeof(oxcf->target_seq_level_idx));
   oxcf->tier_mask = extra_cfg->tier_mask;
@@ -2581,15 +2588,8 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
 
 static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
                                                    unsigned int lib_flags) {
-  const SVC *const svc = &cpi->svc;
   aom_codec_frame_flags_t flags = lib_flags << 16;
-
-  if (lib_flags & FRAMEFLAGS_KEY ||
-      (cpi->ppi->use_svc &&
-       svc->layer_context[svc->spatial_layer_id * svc->number_temporal_layers +
-                          svc->temporal_layer_id]
-           .is_key_frame))
-    flags |= AOM_FRAME_IS_KEY;
+  if (lib_flags & FRAMEFLAGS_KEY) flags |= AOM_FRAME_IS_KEY;
   if (lib_flags & FRAMEFLAGS_INTRAONLY) flags |= AOM_FRAME_IS_INTRAONLY;
   if (lib_flags & FRAMEFLAGS_SWITCH) flags |= AOM_FRAME_IS_SWITCH;
   if (lib_flags & FRAMEFLAGS_ERROR_RESILIENT)
@@ -2705,7 +2705,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
 #endif
 
   // Handle fixed keyframe intervals
-  if (is_stat_generation_stage(ppi->cpi)) {
+  if (is_stat_generation_stage(ppi->cpi) || is_one_pass_rt_params(ppi->cpi)) {
     if (ctx->cfg.kf_mode == AOM_KF_AUTO &&
         ctx->cfg.kf_min_dist == ctx->cfg.kf_max_dist) {
       if (ppi->cpi->common.spatial_layer_id == 0 &&

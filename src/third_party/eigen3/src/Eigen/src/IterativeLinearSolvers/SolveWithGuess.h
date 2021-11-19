@@ -10,6 +10,8 @@
 #ifndef EIGEN_SOLVEWITHGUESS_H
 #define EIGEN_SOLVEWITHGUESS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename Decomposition, typename RhsType, typename GuessType> class SolveWithGuess;

@@ -26,9 +26,9 @@ TEST_F(TypeConstructorExpressionTest, Creation) {
   expr.push_back(Expr("expr"));
 
   auto* t = create<TypeConstructorExpression>(ty.f32(), expr);
-  EXPECT_TRUE(t->type()->Is<ast::F32>());
-  ASSERT_EQ(t->values().size(), 1u);
-  EXPECT_EQ(t->values()[0], expr[0]);
+  EXPECT_TRUE(t->type->Is<ast::F32>());
+  ASSERT_EQ(t->values.size(), 1u);
+  EXPECT_EQ(t->values[0], expr[0]);
 }
 
 TEST_F(TypeConstructorExpressionTest, Creation_WithSource) {
@@ -37,7 +37,7 @@ TEST_F(TypeConstructorExpressionTest, Creation_WithSource) {
 
   auto* t = create<TypeConstructorExpression>(Source{Source::Location{20, 2}},
                                               ty.f32(), expr);
-  auto src = t->source();
+  auto src = t->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -78,22 +78,6 @@ TEST_F(TypeConstructorExpressionTest, Assert_DifferentProgramID_Value) {
                                              ExpressionList{b2.Expr(1)});
       },
       "internal compiler error");
-}
-
-TEST_F(TypeConstructorExpressionTest, ToStr) {
-  ExpressionList expr;
-  expr.push_back(Expr("expr_1"));
-  expr.push_back(Expr("expr_2"));
-  expr.push_back(Expr("expr_3"));
-
-  auto* t = create<TypeConstructorExpression>(ty.vec3<f32>(), expr);
-  EXPECT_EQ(str(t), R"(TypeConstructor[not set]{
-  __vec_3__f32
-  Identifier[not set]{expr_1}
-  Identifier[not set]{expr_2}
-  Identifier[not set]{expr_3}
-}
-)");
 }
 
 }  // namespace

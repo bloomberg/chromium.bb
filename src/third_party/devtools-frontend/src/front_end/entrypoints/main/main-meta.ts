@@ -717,6 +717,7 @@ Common.Settings.registerSettingExtension({
 });
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'activeKeybindSet',
   settingType: Common.Settings.SettingType.ENUM,
   defaultValue: 'devToolsDefault',
@@ -768,7 +769,6 @@ Common.Settings.registerSettingExtension({
     ...filterLocalesForSettings().map(locale => createOptionForLocale(locale)),
   ],
   reloadRequired: true,
-  experiment: Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS,
 });
 
 Common.Settings.registerSettingExtension({
@@ -783,6 +783,7 @@ Common.Settings.registerSettingExtension({
 });
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'userShortcuts',
   settingType: Common.Settings.SettingType.ARRAY,
   defaultValue: [],

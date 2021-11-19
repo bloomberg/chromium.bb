@@ -20,6 +20,8 @@
 #endif
 #endif
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /* TODO extract L, extract U, compute det, etc... */

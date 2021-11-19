@@ -207,9 +207,9 @@ void UrlAvailabilityRequester::ReceiverRequester::RequestUrlAvailabilities(
     std::vector<std::string> urls) {
   if (urls.empty())
     return;
-  const uint64_t request_id = GetNextRequestId(endpoint_id);
+  const uint64_t request_id = GetNextRequestId(endpoint_id_);
   ErrorOr<uint64_t> watch_id_or_error(0);
-  if (!connection || (watch_id_or_error = SendRequest(request_id, urls))) {
+  if (!connection_ || (watch_id_or_error = SendRequest(request_id, urls))) {
     request_by_id.emplace(request_id,
                           Request{watch_id_or_error.value(), std::move(urls)});
   } else {
@@ -232,16 +232,16 @@ ErrorOr<uint64_t> UrlAvailabilityRequester::ReceiverRequester::SendRequest(
   msgs::CborEncodeBuffer buffer;
   if (msgs::EncodePresentationUrlAvailabilityRequest(cbor_request, &buffer)) {
     OSP_VLOG << "writing presentation-url-availability-request";
-    connection->Write(buffer.data(), buffer.size());
+    connection_->Write(buffer.data(), buffer.size());
     watch_by_id.emplace(
         watch_id, Watch{listener->now_function_() + kWatchDuration, urls});
     if (!event_watch) {
       event_watch = GetClientDemuxer()->WatchMessageType(
-          endpoint_id, msgs::Type::kPresentationUrlAvailabilityEvent, this);
+          endpoint_id_, msgs::Type::kPresentationUrlAvailabilityEvent, this);
     }
     if (!response_watch) {
       response_watch = GetClientDemuxer()->WatchMessageType(
-          endpoint_id, msgs::Type::kPresentationUrlAvailabilityResponse, this);
+          endpoint_id_, msgs::Type::kPresentationUrlAvailabilityResponse, this);
     }
     return watch_id;
   }
@@ -321,17 +321,17 @@ void UrlAvailabilityRequester::ReceiverRequester::RemoveUnobservedRequests(
     if (split == request.urls.end())
       continue;
     MoveVectorSegment(request.urls.begin(), split, &still_observed_urls);
-    if (connection)
+    if (connection_)
       watch_by_id.erase(request.watch_id);
   }
   if (!still_observed_urls.empty()) {
-    const uint64_t new_request_id = GetNextRequestId(endpoint_id);
+    const uint64_t new_request_id = GetNextRequestId(endpoint_id_);
     ErrorOr<uint64_t> watch_id_or_error(0);
     std::vector<std::string> urls;
     urls.reserve(still_observed_urls.size());
     for (auto& url : still_observed_urls)
       urls.emplace_back(std::move(url));
-    if (!connection ||
+    if (!connection_ ||
         (watch_id_or_error = SendRequest(new_request_id, urls))) {
       new_requests.emplace(new_request_id,
                            Request{watch_id_or_error.value(), std::move(urls)});
@@ -390,8 +390,8 @@ void UrlAvailabilityRequester::ReceiverRequester::OnConnectionOpened(
   connect_request.MarkComplete();
   // TODO(btolsch): This is one place where we need to make sure the QUIC
   // connection stays alive, even without constant traffic.
-  endpoint_id = connection->endpoint_id();
-  this->connection = std::move(connection);
+  endpoint_id_ = connection->endpoint_id();
+  connection_ = std::move(connection);
   ErrorOr<uint64_t> watch_id_or_error(0);
   for (auto entry = request_by_id.begin(); entry != request_by_id.end();) {
     if ((watch_id_or_error = SendRequest(entry->first, entry->second.urls))) {

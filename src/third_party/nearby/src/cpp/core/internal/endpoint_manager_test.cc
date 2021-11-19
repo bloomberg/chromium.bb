@@ -64,6 +64,9 @@ class MockEndpointChannel : public EndpointChannel {
   MOCK_METHOD(void, Pause, (), (override));
   MOCK_METHOD(void, Resume, (), (override));
   MOCK_METHOD(absl::Time, GetLastReadTimestamp, (), (const override));
+  MOCK_METHOD(absl::Time, GetLastWriteTimestamp, (), (const override));
+  MOCK_METHOD(void, SetAnalyticsRecorder,
+              (analytics::AnalyticsRecorder*, const std::string&), (override));
 
   bool IsClosed() const {
     absl::MutexLock lock(&mutex_);
@@ -106,9 +109,11 @@ class EndpointManagerTest : public ::testing::Test {
     EXPECT_CALL(*channel, GetMedium()).WillRepeatedly(Return(Medium::BLE));
     EXPECT_CALL(*channel, GetLastReadTimestamp())
         .WillRepeatedly(Return(start_time_));
+    EXPECT_CALL(*channel, GetLastWriteTimestamp())
+        .WillRepeatedly(Return(start_time_));
     EXPECT_CALL(mock_listener_.initiated_cb, Call).Times(1);
     em_.RegisterEndpoint(&client_, endpoint_id_, info_, options_,
-                         std::move(channel), listener_);
+                         std::move(channel), listener_, connection_token);
     if (should_close) {
       EXPECT_TRUE(done.Await(absl::Milliseconds(1000)).result());
     }
@@ -151,6 +156,7 @@ class EndpointManagerTest : public ::testing::Test {
       .bandwidth_changed_cb =
           mock_listener_.bandwidth_changed_cb.AsStdFunction(),
   };
+  std::string connection_token = "conntokn";
   absl::Time start_time_{absl::Now()};
 };
 

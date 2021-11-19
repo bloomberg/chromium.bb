@@ -21,6 +21,7 @@
 
 #include "securegcm/d2d_connection_context_v1.h"
 #include "absl/base/thread_annotations.h"
+#include "analytics/analytics_recorder.h"
 #include "core/internal/endpoint_channel.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/input_stream.h"
@@ -88,6 +89,14 @@ class BaseEndpointChannel : public EndpointChannel {
   absl::Time GetLastReadTimestamp() const
       ABSL_LOCKS_EXCLUDED(last_read_mutex_) override;
 
+  // Returns the timestamp (returned by ElapsedRealtime) of the last write to
+  // this endpoint, or -1 if no writes have occurred.
+  absl::Time GetLastWriteTimestamp() const
+      ABSL_LOCKS_EXCLUDED(last_write_mutex_) override;
+
+  void SetAnalyticsRecorder(analytics::AnalyticsRecorder* analytics_recorder,
+                            const std::string& endpoint_id) override;
+
  protected:
   virtual void CloseImpl() = 0;
 
@@ -104,11 +113,18 @@ class BaseEndpointChannel : public EndpointChannel {
   void BlockUntilUnpaused() ABSL_EXCLUSIVE_LOCKS_REQUIRED(is_paused_mutex_);
   void CloseIo() ABSL_NO_THREAD_SAFETY_ANALYSIS;
 
-  // We need a separate mutex to pritect read timestamp, because if a read
+  // We need a separate mutex to protect read timestamp, because if a read
   // blocks on IO, we don't want timestamp read access to block too.
   mutable Mutex last_read_mutex_;
   absl::Time last_read_timestamp_ ABSL_GUARDED_BY(last_read_mutex_) =
       absl::InfinitePast();
+
+  // We need a separate mutex to protect write timestamp, because if a write
+  // blocks on IO, we don't want timestamp write access to block too.
+  mutable Mutex last_write_mutex_;
+  absl::Time last_write_timestamp_ ABSL_GUARDED_BY(last_write_mutex_) =
+      absl::InfinitePast();
+
   const std::string channel_name_;
 
   // The reader and writer are synchronized independently since we can't have
@@ -128,6 +144,9 @@ class BaseEndpointChannel : public EndpointChannel {
   ConditionVariable is_paused_cond_{&is_paused_mutex_};
   // If true, writes should block until this has been set to false.
   bool is_paused_ ABSL_GUARDED_BY(is_paused_mutex_) = false;
+
+  analytics::AnalyticsRecorder* analytics_recorder_ = nullptr;
+  std::string endpoint_id_ = "";
 };
 
 }  // namespace connections

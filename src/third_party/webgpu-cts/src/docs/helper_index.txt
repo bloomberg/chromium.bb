@@ -62,6 +62,7 @@ Whenever a new generally-useful helper is added, it should be indexed here.
 - {@link webgpu/util/texture/subresource}: Helpers for working with texture subresource ranges.
 - {@link webgpu/util/texture/texel_data}: Helpers encoding/decoding texel formats.
 - {@link webgpu/shader/types}: Helpers for WGSL data types.
+- {@link webgpu/shader/execution/builtin/builtin}: Helpers for WGSL builtin-function execution tests.
 - {@link webgpu/web_platform/util}: Helpers for web platform features (e.g. video elements).
 
 ### General Helpers

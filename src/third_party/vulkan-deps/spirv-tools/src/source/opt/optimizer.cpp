@@ -320,6 +320,8 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
     RegisterPass(CreateCombineAccessChainsPass());
   } else if (pass_name == "convert-local-access-chains") {
     RegisterPass(CreateLocalAccessChainConvertPass());
+  } else if (pass_name == "replace-desc-array-access-using-var-index") {
+    RegisterPass(CreateReplaceDescArrayAccessUsingVarIndexPass());
   } else if (pass_name == "descriptor-scalar-replacement") {
     RegisterPass(CreateDescriptorScalarReplacementPass());
   } else if (pass_name == "eliminate-dead-code-aggressive") {
@@ -417,22 +419,22 @@ bool Optimizer::RegisterPassFromFlag(const std::string& flag) {
     RegisterPass(CreateSimplificationPass());
     RegisterPass(CreateDeadBranchElimPass());
     RegisterPass(CreateBlockMergePass());
-    RegisterPass(CreateAggressiveDCEPass());
+    RegisterPass(CreateAggressiveDCEPass(true));
   } else if (pass_name == "inst-desc-idx-check") {
     RegisterPass(CreateInstBindlessCheckPass(7, 23, true, true));
     RegisterPass(CreateSimplificationPass());
     RegisterPass(CreateDeadBranchElimPass());
     RegisterPass(CreateBlockMergePass());
-    RegisterPass(CreateAggressiveDCEPass());
+    RegisterPass(CreateAggressiveDCEPass(true));
   } else if (pass_name == "inst-buff-oob-check") {
     RegisterPass(CreateInstBindlessCheckPass(7, 23, false, false, true, true));
     RegisterPass(CreateSimplificationPass());
     RegisterPass(CreateDeadBranchElimPass());
     RegisterPass(CreateBlockMergePass());
-    RegisterPass(CreateAggressiveDCEPass());
+    RegisterPass(CreateAggressiveDCEPass(true));
   } else if (pass_name == "inst-buff-addr-check") {
     RegisterPass(CreateInstBuffAddrCheckPass(7, 23));
-    RegisterPass(CreateAggressiveDCEPass());
+    RegisterPass(CreateAggressiveDCEPass(true));
   } else if (pass_name == "convert-relaxed-to-half") {
     RegisterPass(CreateConvertRelaxedToHalfPass());
   } else if (pass_name == "relax-float-ops") {
@@ -762,9 +764,9 @@ Optimizer::PassToken CreateLocalMultiStoreElimPass() {
       MakeUnique<opt::SSARewritePass>());
 }
 
-Optimizer::PassToken CreateAggressiveDCEPass() {
+Optimizer::PassToken CreateAggressiveDCEPass(bool preserve_interface) {
   return MakeUnique<Optimizer::PassToken::Impl>(
-      MakeUnique<opt::AggressiveDCEPass>());
+      MakeUnique<opt::AggressiveDCEPass>(preserve_interface));
 }
 
 Optimizer::PassToken CreateRemoveUnusedInterfaceVariablesPass() {
@@ -956,6 +958,11 @@ Optimizer::PassToken CreateFixStorageClassPass() {
 Optimizer::PassToken CreateGraphicsRobustAccessPass() {
   return MakeUnique<Optimizer::PassToken::Impl>(
       MakeUnique<opt::GraphicsRobustAccessPass>());
+}
+
+Optimizer::PassToken CreateReplaceDescArrayAccessUsingVarIndexPass() {
+  return MakeUnique<Optimizer::PassToken::Impl>(
+      MakeUnique<opt::ReplaceDescArrayAccessUsingVarIndex>());
 }
 
 Optimizer::PassToken CreateDescriptorScalarReplacementPass() {

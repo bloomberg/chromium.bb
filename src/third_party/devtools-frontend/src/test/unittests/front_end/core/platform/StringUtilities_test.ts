@@ -747,7 +747,7 @@ describe('StringUtilities', () => {
 
     it('escapes problematic script tags', () => {
       const inputString = '<!-- <script </script';
-      const expectedString = String.raw`<\!-- <\script <\/script`;
+      const expectedString = String.raw`\x3C!-- \x3Cscript \x3C/script`;
       assert.strictEqual('\'' + expectedString + '\'', Platform.StringUtilities.formatAsJSLiteral(inputString));
     });
 
@@ -776,6 +776,26 @@ describe('StringUtilities', () => {
       const inputString = '\\';
       const expectedString = String.raw`\\`;
       assert.strictEqual('\'' + expectedString + '\'', Platform.StringUtilities.formatAsJSLiteral(inputString));
+    });
+  });
+
+  describe('findUnclosedCssQuote', () => {
+    it('correctly finds unclosed quotes', () => {
+      assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('\'de'), Platform.StringUtilities.SINGLE_QUOTE);
+      assert.strictEqual(
+          Platform.StringUtilities.findUnclosedCssQuote('abc\'de\'f\'g'), Platform.StringUtilities.SINGLE_QUOTE);
+      assert.strictEqual(
+          Platform.StringUtilities.findUnclosedCssQuote('abc\\\'de\'fg'), Platform.StringUtilities.SINGLE_QUOTE);
+      assert.strictEqual(
+          Platform.StringUtilities.findUnclosedCssQuote('\'ab"c\'de\\\'f\'g'), Platform.StringUtilities.SINGLE_QUOTE);
+      assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('"de'), Platform.StringUtilities.DOUBLE_QUOTE);
+      assert.strictEqual(
+          Platform.StringUtilities.findUnclosedCssQuote('a\\"b\\""c\'de\'f\'g'), Platform.StringUtilities.DOUBLE_QUOTE);
+      assert.strictEqual(
+          Platform.StringUtilities.findUnclosedCssQuote('"ab"c"de\\\'f\'g'), Platform.StringUtilities.DOUBLE_QUOTE);
+      assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('a'), '');
+      assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('"ab"c\'de\'f'), '');
+      assert.strictEqual(Platform.StringUtilities.findUnclosedCssQuote('"a\\\'b"c\\\'de\'f\\\'\''), '');
     });
   });
 });

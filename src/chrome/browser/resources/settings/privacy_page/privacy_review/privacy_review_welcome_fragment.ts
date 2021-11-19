@@ -8,7 +8,7 @@
  * card that contains the welcome screen and its description.
  */
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
-import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
+import '../../controls/settings_checkbox.js';
 import './privacy_review_fragment_shared_css.js';
 
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -22,7 +22,21 @@ export class PrivacyReviewWelcomeFragmentElement extends PolymerElement {
     return html`{__html_template__}`;
   }
 
-  private onStartButtonClick_() {
+  static get properties() {
+    return {
+      /**
+       * Preferences state.
+       */
+      prefs: {
+        type: Object,
+        notify: true,
+      },
+    };
+  }
+
+  private onStartButtonClick_(e: Event) {
+    e.stopPropagation();
+    this.shadowRoot!.querySelector('settings-checkbox')!.sendPrefChange();
     this.dispatchEvent(
         new CustomEvent('start-button-click', {bubbles: true, composed: true}));
   }

@@ -1175,7 +1175,14 @@ class Change(object):
 
   def BugsFromDescription(self):
     """Returns all bugs referenced in the commit description."""
-    tags = [b.strip() for b in self.tags.get('BUG', '').split(',') if b.strip()]
+    bug_tags = ['BUG', 'FIXED']
+
+    tags = []
+    for tag in bug_tags:
+      values = self.tags.get(tag)
+      if values:
+        tags += [value.strip() for value in values.split(',')]
+
     footers = []
     parsed = self.GitFootersFromDescription()
     unsplit_footers = parsed.get('Bug', []) + parsed.get('Fixed', [])
@@ -1342,37 +1349,6 @@ def ListRelevantPresubmitFiles(files, root):
   return results
 
 
-class GetTryMastersExecuter(object):
-  @staticmethod
-  def ExecPresubmitScript(script_text, presubmit_path, project, change):
-    """Executes GetPreferredTryMasters() from a single presubmit script.
-
-    Args:
-      script_text: The text of the presubmit script.
-      presubmit_path: Project script to run.
-      project: Project name to pass to presubmit script for bot selection.
-
-    Return:
-      A map of try masters to map of builders to set of tests.
-    """
-    context = {}
-    try:
-      exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
-           context)
-    except Exception as e:
-      raise PresubmitFailure('"%s" had an exception.\n%s'
-                             % (presubmit_path, e))
-
-    function_name = 'GetPreferredTryMasters'
-    if function_name not in context:
-      return {}
-    get_preferred_try_masters = context[function_name]
-    if not len(inspect.getargspec(get_preferred_try_masters)[0]) == 2:
-      raise PresubmitFailure(
-          'Expected function "GetPreferredTryMasters" to take two arguments.')
-    return get_preferred_try_masters(project, change)
-
-
 class GetPostUploadExecuter(object):
   @staticmethod
   def ExecPresubmitScript(script_text, presubmit_path, gerrit_obj, change):
@@ -1414,57 +1390,6 @@ def _MergeMasters(masters1, masters2):
     for (builder, tests) in builders.items():
       new_builders.setdefault(builder, set([])).update(tests)
   return result
-
-
-def DoGetTryMasters(change,
-                    changed_files,
-                    repository_root,
-                    default_presubmit,
-                    project,
-                    verbose,
-                    output_stream):
-  """Get the list of try masters from the presubmit scripts.
-
-  Args:
-    changed_files: List of modified files.
-    repository_root: The repository root.
-    default_presubmit: A default presubmit script to execute in any case.
-    project: Optional name of a project used in selecting trybots.
-    verbose: Prints debug info.
-    output_stream: A stream to write debug output to.
-
-  Return:
-    Map of try masters to map of builders to set of tests.
-  """
-  presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
-  if not presubmit_files and verbose:
-    output_stream.write('Warning, no PRESUBMIT.py found.\n')
-  results = {}
-  executer = GetTryMastersExecuter()
-
-  if default_presubmit:
-    if verbose:
-      output_stream.write('Running default presubmit script.\n')
-    fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
-    results = _MergeMasters(results, executer.ExecPresubmitScript(
-        default_presubmit, fake_path, project, change))
-  for filename in presubmit_files:
-    filename = os.path.abspath(filename)
-    if verbose:
-      output_stream.write('Running %s\n' % filename)
-    # Accept CRLF presubmit script.
-    presubmit_script = gclient_utils.FileRead(filename, 'rU')
-    results = _MergeMasters(results, executer.ExecPresubmitScript(
-        presubmit_script, filename, project, change))
-
-  # Make sets to lists again for later JSON serialization.
-  for builders in results.values():
-    for builder in builders:
-      builders[builder] = list(builders[builder])
-
-  if results and verbose:
-    output_stream.write('%s\n' % str(results))
-  return results
 
 
 def DoPostUploadExecuter(change,

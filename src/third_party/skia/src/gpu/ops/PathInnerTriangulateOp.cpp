@@ -13,10 +13,8 @@
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
-#include "src/gpu/tessellate/GrPathCurveTessellator.h"
+#include "src/gpu/tessellate/PathCurveTessellator.h"
 #include "src/gpu/tessellate/shaders/GrPathTessellationShader.h"
-
-using PathFlags = GrTessellationPathFlags;
 
 namespace {
 
@@ -219,8 +217,9 @@ void PathInnerTriangulateOp::prePreparePrograms(const GrTessellationShader::Prog
 
     // If using wireframe, we have to fall back on a standard Redbook "stencil then cover" algorithm
     // instead of bypassing the stencil buffer to fill the fan directly.
-    bool forceRedbookStencilPass = (fPathFlags & (PathFlags::kStencilOnly | PathFlags::kWireframe));
-    bool doFill = !(fPathFlags & PathFlags::kStencilOnly);
+    bool forceRedbookStencilPass =
+            (fPathFlags & (FillPathFlags::kStencilOnly | FillPathFlags::kWireframe));
+    bool doFill = !(fPathFlags & FillPathFlags::kStencilOnly);
 
     bool isLinear;
     fFanTriangulator = args.fArena->make<GrInnerFanTriangulator>(fPath, args.fArena);
@@ -229,8 +228,11 @@ void PathInnerTriangulateOp::prePreparePrograms(const GrTessellationShader::Prog
     // Create a pipeline for stencil passes if needed.
     const GrPipeline* pipelineForStencils = nullptr;
     if (forceRedbookStencilPass || !isLinear) {  // Curves always get stencilled.
+        auto pipelineFlags = (fPathFlags & FillPathFlags::kWireframe)
+                ? GrPipeline::InputFlags::kWireframe
+                : GrPipeline::InputFlags::kNone;
         pipelineForStencils = GrPathTessellationShader::MakeStencilOnlyPipeline(
-                args, fAAType, fPathFlags, appliedClip.hardClip());
+                args, fAAType, appliedClip.hardClip(), pipelineFlags);
     }
 
     // Create a pipeline for fill passes if needed.
@@ -242,11 +244,13 @@ void PathInnerTriangulateOp::prePreparePrograms(const GrTessellationShader::Prog
 
     // Pass 1: Tessellate the outer curves into the stencil buffer.
     if (!isLinear) {
-        fTessellator = GrPathCurveTessellator::Make(args.fArena, fViewMatrix,
-                                                    SK_PMColor4fTRANSPARENT,
-                                                    GrPathCurveTessellator::DrawInnerFan::kNo,
-                                                    fPath.countVerbs(), *pipelineForStencils,
-                                                    *args.fCaps);
+        fTessellator = PathCurveTessellator::Make(args.fArena,
+                                                  fViewMatrix,
+                                                  SK_PMColor4fTRANSPARENT,
+                                                  PathCurveTessellator::DrawInnerFan::kNo,
+                                                  fPath.countVerbs(),
+                                                  *pipelineForStencils,
+                                                  *args.fCaps);
         const GrUserStencilSettings* stencilPathSettings =
                 GrPathTessellationShader::StencilPathSettings(GrFillRuleForSkPath(fPath));
         fStencilCurvesProgram = GrTessellationShader::MakeProgram(args, fTessellator->shader(),
@@ -404,8 +408,10 @@ void PathInnerTriangulateOp::onPrepare(GrOpFlushState* flushState) {
 
     if (fTessellator) {
         // Must be called after polysToTriangles() in order for fFanBreadcrumbs to be complete.
-        fTessellator->prepare(flushState, this->bounds(), {SkMatrix::I(), fPath},
-                              fPath.countVerbs(), &fFanBreadcrumbs);
+        fTessellator->prepare(flushState,
+                              {SkMatrix::I(), fPath},
+                              fPath.countVerbs(),
+                              &fFanBreadcrumbs);
     }
 
     if (!flushState->caps().shaderCaps()->vertexIDSupport()) {

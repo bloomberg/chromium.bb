@@ -24,29 +24,22 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::StructMemberSizeDecoration);
 namespace tint {
 namespace ast {
 
-StructMemberSizeDecoration::StructMemberSizeDecoration(ProgramID program_id,
-                                                       const Source& source,
-                                                       uint32_t size)
-    : Base(program_id, source), size_(size) {}
+StructMemberSizeDecoration::StructMemberSizeDecoration(ProgramID pid,
+                                                       const Source& src,
+                                                       uint32_t sz)
+    : Base(pid, src), size(sz) {}
 
 StructMemberSizeDecoration::~StructMemberSizeDecoration() = default;
 
-std::string StructMemberSizeDecoration::name() const {
+std::string StructMemberSizeDecoration::Name() const {
   return "size";
 }
 
-void StructMemberSizeDecoration::to_str(const sem::Info&,
-                                        std::ostream& out,
-                                        size_t indent) const {
-  make_indent(out, indent);
-  out << "size " << std::to_string(size_);
-}
-
-StructMemberSizeDecoration* StructMemberSizeDecoration::Clone(
+const StructMemberSizeDecoration* StructMemberSizeDecoration::Clone(
     CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<StructMemberSizeDecoration>(src, size_);
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<StructMemberSizeDecoration>(src, size);
 }
 
 }  // namespace ast

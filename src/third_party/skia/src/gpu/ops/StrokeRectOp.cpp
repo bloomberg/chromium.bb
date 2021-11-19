@@ -11,6 +11,7 @@
 #include "include/private/GrResourceKey.h"
 #include "include/utils/SkRandom.h"
 #include "src/core/SkMatrixPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
@@ -18,10 +19,12 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrResourceProvider.h"
-#include "src/gpu/GrVertexWriter.h"
+#include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/ops/FillRectOp.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+
+namespace skgpu::v1::StrokeRectOp {
 
 namespace {
 
@@ -558,7 +561,7 @@ private:
 
     CombineResult onCombineIfPossible(GrOp* t, SkArenaAlloc*, const GrCaps&) override;
 
-    void generateAAStrokeRectGeometry(GrVertexWriter& vertices,
+    void generateAAStrokeRectGeometry(VertexWriter& vertices,
                                       const SkPMColor4f& color,
                                       bool wideColor,
                                       const SkRect& devOutside,
@@ -638,8 +641,8 @@ void AAStrokeRectOp::onPrepareDraws(GrMeshDrawTarget* target) {
     PatternHelper helper(target, GrPrimitiveType::kTriangles,
                          fProgramInfo->geomProc().vertexStride(), std::move(indexBuffer),
                          verticesPerInstance, indicesPerInstance, instanceCount, maxQuads);
-    GrVertexWriter vertices{ helper.vertices() };
-    if (!vertices.fPtr) {
+    VertexWriter vertices{ helper.vertices() };
+    if (!vertices) {
         SkDebugf("Could not allocate vertices\n");
         return;
     }
@@ -790,7 +793,7 @@ GrOp::CombineResult AAStrokeRectOp::onCombineIfPossible(GrOp* t, SkArenaAlloc*, 
     return CombineResult::kMerged;
 }
 
-void AAStrokeRectOp::generateAAStrokeRectGeometry(GrVertexWriter& vertices,
+void AAStrokeRectOp::generateAAStrokeRectGeometry(VertexWriter& vertices,
                                                   const SkPMColor4f& color,
                                                   bool wideColor,
                                                   const SkRect& devOutside,
@@ -810,13 +813,13 @@ void AAStrokeRectOp::generateAAStrokeRectGeometry(GrVertexWriter& vertices,
     SkASSERT(stroke_dev_half_size_supported(devHalfStrokeSize));
 
     auto inset_fan = [](const SkRect& r, SkScalar dx, SkScalar dy) {
-        return GrVertexWriter::TriFanFromRect(r.makeInset(dx, dy));
+        return VertexWriter::TriFanFromRect(r.makeInset(dx, dy));
     };
 
     bool tweakAlphaForCoverage = this->compatibleWithCoverageAsAlpha(usesMSAASurface);
 
     auto maybe_coverage = [tweakAlphaForCoverage](float coverage) {
-        return GrVertexWriter::If(!tweakAlphaForCoverage, coverage);
+        return VertexWriter::If(!tweakAlphaForCoverage, coverage);
     };
 
     // How much do we inset toward the inside of the strokes?
@@ -912,27 +915,25 @@ void AAStrokeRectOp::generateAAStrokeRectGeometry(GrVertexWriter& vertices,
         }
         GrVertexColor interiorColor(tweakAlphaForCoverage ? color * interiorCoverage : color,
                                     wideColor);
-        vertices.writeQuad(GrVertexWriter::TriFanFromRect(interiorAABoundary),
+        vertices.writeQuad(VertexWriter::TriFanFromRect(interiorAABoundary),
                            interiorColor,
                            maybe_coverage(interiorCoverage));
     } else {
         // When the interior rect has become degenerate we smoosh to a single point
         SkASSERT(devInside.fLeft == devInside.fRight && devInside.fTop == devInside.fBottom);
 
-        vertices.writeQuad(GrVertexWriter::TriFanFromRect(devInside),
+        vertices.writeQuad(VertexWriter::TriFanFromRect(devInside),
                            innerColor,
                            maybe_coverage(innerCoverage));
 
         // ... unless we are degenerate, in which case we must apply the scaled coverage
-        vertices.writeQuad(GrVertexWriter::TriFanFromRect(devInside),
+        vertices.writeQuad(VertexWriter::TriFanFromRect(devInside),
                            innerColor,
                            maybe_coverage(innerCoverage));
     }
 }
 
 }  // anonymous namespace
-
-namespace skgpu::v1::StrokeRectOp {
 
 GrOp::Owner Make(GrRecordingContext* context,
                  GrPaint&& paint,
@@ -1001,7 +1002,8 @@ GR_DRAW_OP_TEST_DEFINE(NonAAStrokeRectOp) {
     if (numSamples > 1) {
         aaType = random->nextBool() ? GrAAType::kMSAA : GrAAType::kNone;
     }
-    return NonAAStrokeRectOp::Make(context, std::move(paint), viewMatrix, rect, strokeRec, aaType);
+    return skgpu::v1::StrokeRectOp::NonAAStrokeRectOp::Make(context, std::move(paint), viewMatrix,
+                                                            rect, strokeRec, aaType);
 }
 
 GR_DRAW_OP_TEST_DEFINE(AAStrokeRectOp) {
@@ -1018,7 +1020,8 @@ GR_DRAW_OP_TEST_DEFINE(AAStrokeRectOp) {
     rec.setStrokeParams(SkPaint::kButt_Cap,
                         miterStroke ? SkPaint::kMiter_Join : SkPaint::kBevel_Join, 1.f);
     SkMatrix matrix = GrTest::TestMatrixRectStaysRect(random);
-    return AAStrokeRectOp::Make(context, std::move(paint), matrix, rect, rec);
+    return skgpu::v1::StrokeRectOp::AAStrokeRectOp::Make(context, std::move(paint), matrix, rect,
+                                                         rec);
 }
 
 #endif

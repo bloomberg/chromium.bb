@@ -22,7 +22,7 @@ CJS_EventContext::CJS_EventContext(CJS_Runtime* pRuntime)
 
 CJS_EventContext::~CJS_EventContext() = default;
 
-Optional<IJS_Runtime::JS_Error> CJS_EventContext::RunScript(
+absl::optional<IJS_Runtime::JS_Error> CJS_EventContext::RunScript(
     const WideString& script) {
   v8::Isolate::Scope isolate_scope(m_pRuntime->GetIsolate());
   v8::HandleScope handle_scope(m_pRuntime->GetIsolate());
@@ -44,7 +44,7 @@ Optional<IJS_Runtime::JS_Error> CJS_EventContext::RunScript(
         1, 1, JSGetStringFromID(JSMessage::kDuplicateEventError));
   }
 
-  Optional<IJS_Runtime::JS_Error> err;
+  absl::optional<IJS_Runtime::JS_Error> err;
   if (script.GetLength() > 0)
     err = m_pRuntime->ExecuteScript(script);
 
@@ -65,12 +65,12 @@ CJS_Field* CJS_EventContext::SourceField() {
     return nullptr;
 
   auto* pFormFillEnv = GetFormFillEnv();
-  auto* pJSDocument =
-      static_cast<CJS_Document*>(CFXJS_Engine::GetObjectPrivate(pDocObj));
+  auto* pJSDocument = static_cast<CJS_Document*>(
+      CFXJS_Engine::GetObjectPrivate(m_pRuntime->GetIsolate(), pDocObj));
   pJSDocument->SetFormFillEnv(pFormFillEnv);
 
-  auto* pJSField =
-      static_cast<CJS_Field*>(CFXJS_Engine::GetObjectPrivate(pFieldObj));
+  auto* pJSField = static_cast<CJS_Field*>(
+      CFXJS_Engine::GetObjectPrivate(m_pRuntime->GetIsolate(), pFieldObj));
   pJSField->AttachField(pJSDocument, SourceName());
   return pJSField;
 }
@@ -87,12 +87,12 @@ CJS_Field* CJS_EventContext::TargetField() {
     return nullptr;
 
   auto* pFormFillEnv = GetFormFillEnv();
-  auto* pJSDocument =
-      static_cast<CJS_Document*>(CFXJS_Engine::GetObjectPrivate(pDocObj));
+  auto* pJSDocument = static_cast<CJS_Document*>(
+      CFXJS_Engine::GetObjectPrivate(m_pRuntime->GetIsolate(), pDocObj));
   pJSDocument->SetFormFillEnv(pFormFillEnv);
 
-  auto* pJSField =
-      static_cast<CJS_Field*>(CFXJS_Engine::GetObjectPrivate(pFieldObj));
+  auto* pJSField = static_cast<CJS_Field*>(
+      CFXJS_Engine::GetObjectPrivate(m_pRuntime->GetIsolate(), pFieldObj));
   pJSField->AttachField(pJSDocument, TargetName());
   return pJSField;
 }

@@ -5,6 +5,7 @@
 let showDetails = false;
 
 let localWebApprovalsEnabled = false;
+let interstitialRefreshEnabled = false;
 
 function updateDetails() {
   $('details').hidden = !showDetails;
@@ -16,8 +17,11 @@ function sendCommand(cmd) {
       case 'back':
         supervisedUserErrorPageController.goBack();
         break;
-      case 'request':
-        supervisedUserErrorPageController.requestPermission();
+      case 'requestUrlAccessRemote':
+        supervisedUserErrorPageController.requestUrlAccessRemote();
+        break;
+      case 'requestUrlAccessLocal':
+        supervisedUserErrorPageController.requestUrlAccessLocal();
         break;
       case 'feedback':
         supervisedUserErrorPageController.feedback();
@@ -42,8 +46,16 @@ function initialize() {
   const custodianName = loadTimeData.getString('custodianName');
   localWebApprovalsEnabled =
       loadTimeData.getBoolean('isLocalWebApprovalsEnabled');
+  interstitialRefreshEnabled =
+      loadTimeData.getBoolean('isWebFilterInterstitialRefreshEnabled');
+  if (localWebApprovalsEnabled && !interstitialRefreshEnabled) {
+    console.error(
+        'Local web approvals should not be enabled without web filter' +
+        'interstitial refresh being enabled.');
+    return;
+  }
   document.body.classList.toggle(
-      'local-web-approvals-enabled', localWebApprovalsEnabled);
+      'interstitial-refresh-enabled', interstitialRefreshEnabled);
   if (custodianName && allowAccessRequests) {
     $('custodians-information').hidden = false;
     if (avatarURL1x) {
@@ -68,30 +80,32 @@ function initialize() {
     }
   }
 
-  const already_requested_access =
-      loadTimeData.getBoolean('alreadySentRequest');
-  if (already_requested_access) {
-    const is_main_frame = loadTimeData.getBoolean('isMainFrame');
-    requestCreated(true, is_main_frame);
+  const alreadyRequestedAccessRemote =
+      loadTimeData.getBoolean('alreadySentRemoteRequest');
+  if (alreadyRequestedAccessRemote) {
+    const isMainFrame = loadTimeData.getBoolean('isMainFrame');
+    requestCreated(true, isMainFrame);
     return;
   }
 
   if (allowAccessRequests) {
     $('remote-approvals-button').hidden = false;
-    if (localWebApprovalsEnabled) {
+    if (interstitialRefreshEnabled && localWebApprovalsEnabled) {
       $('local-approvals-button').hidden = false;
       $('remote-approvals-button').classList.add('secondary-button');
     }
     $('remote-approvals-button').onclick = function(event) {
-      sendCommand('request');
+      sendCommand('requestUrlAccessRemote');
     };
-    // TODO(b/195319994): Add handler for clicks on local approvals button.
+    $('local-approvals-button').onclick = function(event) {
+      sendCommand('requestUrlAccessLocal');
+    };
   } else {
     $('remote-approvals-button').hidden = true;
   }
 
   if (loadTimeData.getBoolean('showFeedbackLink') &&
-      !localWebApprovalsEnabled) {
+      !interstitialRefreshEnabled) {
     $('show-details-link').hidden = false;
     $('show-details-link').onclick = function(event) {
       showDetails = true;
@@ -138,9 +152,11 @@ function requestCreated(isSuccessful, isMainFrame) {
   $('block-page-header').hidden = true;
   $('block-page-message').hidden = true;
   $('hide-details-link').hidden = true;
-  if (localWebApprovalsEnabled) {
+  if (interstitialRefreshEnabled) {
     $('custodians-information').hidden = true;
-    $('local-approvals-button').hidden = false;
+    if (localWebApprovalsEnabled) {
+      $('local-approvals-button').hidden = false;
+    }
   }
   showDetails = false;
   updateDetails();
@@ -153,7 +169,7 @@ function requestCreated(isSuccessful, isMainFrame) {
     $('back-button').hidden = !isMainFrame;
     $('remote-approvals-button').hidden = true;
     $('show-details-link').hidden = true;
-    if (localWebApprovalsEnabled) {
+    if (interstitialRefreshEnabled) {
       $('request-sent-description').hidden = false;
       $('local-approvals-button').classList.add('secondary-button');
     }

@@ -8,6 +8,7 @@
 #ifndef GrFragmentProcessor_DEFINED
 #define GrFragmentProcessor_DEFINED
 
+#include "include/private/SkMacros.h"
 #include "include/private/SkSLSampleUsage.h"
 #include "include/private/SkSLString.h"
 #include "src/gpu/GrProcessor.h"
@@ -68,6 +69,13 @@ public:
      *  output = input * child.a
      */
     static std::unique_ptr<GrFragmentProcessor> MulInputByChildAlpha(
+            std::unique_ptr<GrFragmentProcessor> child);
+
+    /**
+     *  Invokes child with an opaque version of the input color, then applies the input alpha to
+     *  the result. Used to incorporate paint alpha to the evaluation of an SkShader tree FP.
+     */
+    static std::unique_ptr<GrFragmentProcessor> ApplyPaintAlpha(
             std::unique_ptr<GrFragmentProcessor> child);
 
     /**
@@ -336,7 +344,7 @@ protected:
                                  kPreservesOpaqueInput_OptimizationFlag |
                                  kConstantOutputForConstantInput_OptimizationFlag
     };
-    GR_DECL_BITFIELD_OPS_FRIENDS(OptimizationFlags)
+    SK_DECL_BITFIELD_OPS_FRIENDS(OptimizationFlags)
 
     /**
      * Can be used as a helper to decide which fragment processor OptimizationFlags should be set.
@@ -675,7 +683,7 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
-GR_MAKE_BITFIELD_OPS(GrFragmentProcessor::OptimizationFlags)
+SK_MAKE_BITFIELD_OPS(GrFragmentProcessor::OptimizationFlags)
 
 static inline GrFPResult GrFPFailure(std::unique_ptr<GrFragmentProcessor> fp) {
     return {false, std::move(fp)};

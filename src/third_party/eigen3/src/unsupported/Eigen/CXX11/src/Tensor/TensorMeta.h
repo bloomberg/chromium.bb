@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_META_H
 #define EIGEN_CXX11_TENSOR_TENSOR_META_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<bool cond> struct Cond {};

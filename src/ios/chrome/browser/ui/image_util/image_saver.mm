@@ -15,7 +15,6 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -89,8 +88,7 @@ const base::Feature kPhotoLibrarySaveImage{"PhotoLibrarySaveImage",
       return;
     }
 
-    if (base::FeatureList::IsEnabled(kPhotoLibrarySaveImage) &&
-        base::ios::IsRunningOnIOS14OrLater()) {
+    if (base::FeatureList::IsEnabled(kPhotoLibrarySaveImage)) {
       // Dump |data| into the photo library. Requires the usage of
       // NSPhotoLibraryAddUsageDescription.
       [[PHPhotoLibrary sharedPhotoLibrary]

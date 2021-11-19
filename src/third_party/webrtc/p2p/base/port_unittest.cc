@@ -350,7 +350,7 @@ class TestChannel : public sigslot::has_slots<> {
 
   void OnDestroyed(Connection* conn) {
     ASSERT_EQ(conn_, conn);
-    RTC_LOG(INFO) << "OnDestroy connection " << conn << " deleted";
+    RTC_LOG(LS_INFO) << "OnDestroy connection " << conn << " deleted";
     conn_ = NULL;
     // When the connection is destroyed, also clear these fields so future
     // connections are possible.
@@ -506,8 +506,7 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
   std::unique_ptr<UDPPort> CreateUdpPort(const SocketAddress& addr,
                                          PacketSocketFactory* socket_factory) {
     return UDPPort::Create(&main_, socket_factory, MakeNetwork(addr), 0, 0,
-                           username_, password_, std::string(), true,
-                           absl::nullopt);
+                           username_, password_, true, absl::nullopt);
   }
   std::unique_ptr<TCPPort> CreateTcpPort(const SocketAddress& addr) {
     return CreateTcpPort(addr, &socket_factory_);
@@ -522,8 +521,7 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
     ServerAddresses stun_servers;
     stun_servers.insert(kStunAddr);
     return StunPort::Create(&main_, factory, MakeNetwork(addr), 0, 0, username_,
-                            password_, stun_servers, std::string(),
-                            absl::nullopt);
+                            password_, stun_servers, absl::nullopt);
   }
   std::unique_ptr<Port> CreateRelayPort(const SocketAddress& addr,
                                         ProtocolType int_proto,
@@ -548,7 +546,7 @@ class PortTest : public ::testing::Test, public sigslot::has_slots<> {
     return TurnPort::Create(&main_, socket_factory, MakeNetwork(addr), 0, 0,
                             username_, password_,
                             ProtocolAddress(server_addr, int_proto),
-                            kRelayCredentials, 0, "", {}, {}, nullptr, nullptr);
+                            kRelayCredentials, 0, {}, {}, nullptr, nullptr);
   }
   std::unique_ptr<rtc::NATServer> CreateNatServer(const SocketAddress& addr,
                                                   rtc::NATType type) {
@@ -1002,7 +1000,10 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory {
   void set_next_client_tcp_socket(AsyncPacketSocket* next_client_tcp_socket) {
     next_client_tcp_socket_ = next_client_tcp_socket;
   }
-  rtc::AsyncResolverInterface* CreateAsyncResolver() override { return NULL; }
+  std::unique_ptr<webrtc::AsyncDnsResolverInterface> CreateAsyncDnsResolver()
+      override {
+    return nullptr;
+  }
 
  private:
   AsyncPacketSocket* next_udp_socket_;
@@ -1055,6 +1056,24 @@ class FakeAsyncPacketSocket : public AsyncPacketSocket {
  private:
   int error_ = 0;
   State state_;
+};
+
+class FakeAsyncListenSocket : public AsyncListenSocket {
+ public:
+  // Returns current local address. Address may be set to NULL if the
+  // socket is not bound yet (GetState() returns STATE_BINDING).
+  virtual SocketAddress GetLocalAddress() const { return local_address_; }
+  void Bind(const SocketAddress& address) {
+    local_address_ = address;
+    state_ = State::kBound;
+  }
+  virtual int GetOption(Socket::Option opt, int* value) { return 0; }
+  virtual int SetOption(Socket::Option opt, int value) { return 0; }
+  virtual State GetState() const { return state_; }
+
+ private:
+  SocketAddress local_address_;
+  State state_ = State::kClosed;
 };
 
 // Local -> XXXX
@@ -1480,12 +1499,51 @@ TEST_F(PortTest, TestIceRoleConflict) {
 }
 
 TEST_F(PortTest, TestTcpNoDelay) {
+  rtc::ScopedFakeClock clock;
   auto port1 = CreateTcpPort(kLocalAddr1);
   port1->SetIceRole(cricket::ICEROLE_CONTROLLING);
   int option_value = -1;
   int success = port1->GetOption(rtc::Socket::OPT_NODELAY, &option_value);
   ASSERT_EQ(0, success);  // GetOption() should complete successfully w/ 0
-  ASSERT_EQ(1, option_value);
+  EXPECT_EQ(1, option_value);
+
+  auto port2 = CreateTcpPort(kLocalAddr2);
+  port2->SetIceRole(cricket::ICEROLE_CONTROLLED);
+
+  // Set up a connection, and verify that option is set on connected sockets at
+  // both ends.
+  TestChannel ch1(std::move(port1));
+  TestChannel ch2(std::move(port2));
+  // Acquire addresses.
+  ch1.Start();
+  ch2.Start();
+  ASSERT_EQ_SIMULATED_WAIT(1, ch1.complete_count(), kDefaultTimeout, clock);
+  ASSERT_EQ_SIMULATED_WAIT(1, ch2.complete_count(), kDefaultTimeout, clock);
+  // Connect and send a ping from src to dst.
+  ch1.CreateConnection(GetCandidate(ch2.port()));
+  ASSERT_TRUE(ch1.conn() != NULL);
+  EXPECT_TRUE_SIMULATED_WAIT(ch1.conn()->connected(), kDefaultTimeout,
+                             clock);  // for TCP connect
+  ch1.Ping();
+  SIMULATED_WAIT(!ch2.remote_address().IsNil(), kShortTimeout, clock);
+
+  // Accept the connection.
+  ch2.AcceptConnection(GetCandidate(ch1.port()));
+  ASSERT_TRUE(ch2.conn() != NULL);
+
+  option_value = -1;
+  success = static_cast<TCPConnection*>(ch1.conn())
+                ->socket()
+                ->GetOption(rtc::Socket::OPT_NODELAY, &option_value);
+  ASSERT_EQ(0, success);
+  EXPECT_EQ(1, option_value);
+
+  option_value = -1;
+  success = static_cast<TCPConnection*>(ch2.conn())
+                ->socket()
+                ->GetOption(rtc::Socket::OPT_NODELAY, &option_value);
+  ASSERT_EQ(0, success);
+  EXPECT_EQ(1, option_value);
 }
 
 TEST_F(PortTest, TestDelayedBindingUdp) {
@@ -1505,8 +1563,8 @@ TEST_F(PortTest, TestDelayedBindingUdp) {
 }
 
 TEST_F(PortTest, TestDisableInterfaceOfTcpPort) {
-  FakeAsyncPacketSocket* lsocket = new FakeAsyncPacketSocket();
-  FakeAsyncPacketSocket* rsocket = new FakeAsyncPacketSocket();
+  FakeAsyncListenSocket* lsocket = new FakeAsyncListenSocket();
+  FakeAsyncListenSocket* rsocket = new FakeAsyncListenSocket();
   FakePacketSocketFactory socket_factory;
 
   socket_factory.set_next_server_tcp_socket(lsocket);
@@ -1515,10 +1573,8 @@ TEST_F(PortTest, TestDisableInterfaceOfTcpPort) {
   socket_factory.set_next_server_tcp_socket(rsocket);
   auto rport = CreateTcpPort(kLocalAddr2, &socket_factory);
 
-  lsocket->set_state(AsyncPacketSocket::STATE_BOUND);
-  lsocket->local_address_ = kLocalAddr1;
-  rsocket->set_state(AsyncPacketSocket::STATE_BOUND);
-  rsocket->local_address_ = kLocalAddr2;
+  lsocket->Bind(kLocalAddr1);
+  rsocket->Bind(kLocalAddr2);
 
   lport->SetIceRole(cricket::ICEROLE_CONTROLLING);
   lport->SetIceTiebreaker(kTiebreaker1);
@@ -1557,17 +1613,17 @@ void PortTest::TestCrossFamilyPorts(int type) {
       SocketAddress("192.168.1.3", 0), SocketAddress("192.168.1.4", 0),
       SocketAddress("2001:db8::1", 0), SocketAddress("2001:db8::2", 0)};
   for (int i = 0; i < 4; i++) {
-    FakeAsyncPacketSocket* socket = new FakeAsyncPacketSocket();
     if (type == SOCK_DGRAM) {
+      FakeAsyncPacketSocket* socket = new FakeAsyncPacketSocket();
       factory.set_next_udp_socket(socket);
       ports[i] = CreateUdpPort(addresses[i], &factory);
       socket->set_state(AsyncPacketSocket::STATE_BINDING);
       socket->SignalAddressReady(socket, addresses[i]);
     } else if (type == SOCK_STREAM) {
+      FakeAsyncListenSocket* socket = new FakeAsyncListenSocket();
       factory.set_next_server_tcp_socket(socket);
       ports[i] = CreateTcpPort(addresses[i], &factory);
-      socket->set_state(AsyncPacketSocket::STATE_BOUND);
-      socket->local_address_ = addresses[i];
+      socket->Bind(addresses[i]);
     }
     ports[i]->PrepareAddress();
   }

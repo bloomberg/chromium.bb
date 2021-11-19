@@ -2028,9 +2028,10 @@ static void estimate_intra_mode(
   if (x->source_variance < spatial_var_thresh) {
     // If the best inter mode is large motion or non-LAST ref reduce intra cost
     // penalty, so intra mode is more likely tested.
-    if (best_pickmode->best_ref_frame != LAST_FRAME ||
-        abs(mi->mv[0].as_mv.row) >= motion_thresh ||
-        abs(mi->mv[0].as_mv.col) >= motion_thresh) {
+    if (best_rdc->rdcost != INT64_MAX &&
+        (best_pickmode->best_ref_frame != LAST_FRAME ||
+         abs(mi->mv[0].as_mv.row) >= motion_thresh ||
+         abs(mi->mv[0].as_mv.col) >= motion_thresh)) {
       intra_cost_penalty = intra_cost_penalty >> 2;
       inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
       do_early_exit_rdthresh = 0;

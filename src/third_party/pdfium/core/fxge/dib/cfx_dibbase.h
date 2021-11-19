@@ -35,6 +35,7 @@ class CFX_DIBBase : public Retainable {
   virtual uint8_t* GetBuffer() const;
   virtual pdfium::span<const uint8_t> GetScanline(int line) const = 0;
   virtual bool SkipToScanline(int line, PauseIndicatorIface* pPause) const;
+  virtual uint32_t GetEstimatedImageMemoryBurden() const;
 
   pdfium::span<uint8_t> GetWritableScanline(int line) {
     pdfium::span<const uint8_t> src = GetScanline(line);
@@ -59,15 +60,16 @@ class CFX_DIBBase : public Retainable {
   // Copies into internally-owned palette.
   void SetPalette(pdfium::span<const uint32_t> src_palette);
 
-  RetainPtr<CFX_DIBitmap> Clone(const FX_RECT* pClip) const;
-  RetainPtr<CFX_DIBitmap> CloneConvert(FXDIB_Format format);
+  RetainPtr<CFX_DIBitmap> Realize() const;
+  RetainPtr<CFX_DIBitmap> ClipTo(const FX_RECT& rect) const;
+  RetainPtr<CFX_DIBitmap> ConvertTo(FXDIB_Format format) const;
   RetainPtr<CFX_DIBitmap> StretchTo(int dest_width,
                                     int dest_height,
                                     const FXDIB_ResampleOptions& options,
-                                    const FX_RECT* pClip);
+                                    const FX_RECT* pClip) const;
   RetainPtr<CFX_DIBitmap> TransformTo(const CFX_Matrix& mtDest,
                                       int* left,
-                                      int* top);
+                                      int* top) const;
   RetainPtr<CFX_DIBitmap> SwapXY(bool bXFlip, bool bYFlip) const;
   RetainPtr<CFX_DIBitmap> FlipImage(bool bXFlip, bool bYFlip) const;
 
@@ -94,7 +96,7 @@ class CFX_DIBBase : public Retainable {
                       const CFX_ClipRgn* pClipRgn) const;
 
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
-  void DebugVerifyBitmapIsPreMultiplied(void* buffer) const;
+  void DebugVerifyBufferIsPreMultiplied(void* buffer) const;
 #endif
 
  protected:
@@ -106,11 +108,12 @@ class CFX_DIBBase : public Retainable {
       int dest_pitch,
       int width,
       int height,
-      const RetainPtr<CFX_DIBBase>& pSrcBitmap,
+      const RetainPtr<const CFX_DIBBase>& pSrcBitmap,
       int src_left,
       int src_top,
       std::vector<uint32_t, FxAllocAllocator<uint32_t>>* pal);
 
+  RetainPtr<CFX_DIBitmap> ClipToInternal(const FX_RECT* pClip) const;
   void BuildPalette();
   bool BuildAlphaMask();
   int FindPalette(uint32_t color) const;

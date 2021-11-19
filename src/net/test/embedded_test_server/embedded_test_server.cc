@@ -25,7 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/current_thread.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "base/test/bind.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -499,8 +499,8 @@ bool EmbeddedTestServer::GenerateCertAndKey() {
       intermediate->SetCertificatePolicies(cert_config_.policy_oids);
   }
 
-  if (!cert_config_.dns_names.empty()) {
-    leaf->SetSubjectAltNames(cert_config_.dns_names, {});
+  if (!cert_config_.dns_names.empty() || !cert_config_.ip_addresses.empty()) {
+    leaf->SetSubjectAltNames(cert_config_.dns_names, cert_config_.ip_addresses);
   }
 
   const std::string leaf_serial_text =

@@ -467,6 +467,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicTime GetEarliestPacketSentTimeForPto(
       PacketNumberSpace* packet_number_space) const;
 
+  void set_num_ptos_for_path_degrading(int num_ptos_for_path_degrading) {
+    num_ptos_for_path_degrading_ = num_ptos_for_path_degrading;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::QuicSentPacketManagerPeer;
@@ -618,6 +622,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // Maximum number of packets to send upon RTO.
   QuicPacketCount max_rto_packets_;
   // If true, send the TLP at 0.5 RTT.
+  // TODO(renjietang): remove it once quic_deprecate_tlpr flag is deprecated.
   bool enable_half_rtt_tail_loss_probe_;
   bool using_pacing_;
   // If true, use the new RTO with loss based CWND reduction instead of the send

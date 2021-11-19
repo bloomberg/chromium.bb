@@ -111,7 +111,7 @@ CJS_Result CJX_Field::getSaveItem(
   if (!node->IsWidgetReady())
     return CJS_Result::Success(runtime->NewNull());
 
-  Optional<WideString> value = node->GetChoiceListItem(iIndex, true);
+  absl::optional<WideString> value = node->GetChoiceListItem(iIndex, true);
   if (!value.has_value())
     return CJS_Result::Success(runtime->NewNull());
 
@@ -177,7 +177,7 @@ CJS_Result CJX_Field::getDisplayItem(
   if (!node->IsWidgetReady())
     return CJS_Result::Success(runtime->NewNull());
 
-  Optional<WideString> value = node->GetChoiceListItem(iIndex, false);
+  absl::optional<WideString> value = node->GetChoiceListItem(iIndex, false);
   if (!value.has_value())
     return CJS_Result::Success(runtime->NewNull());
 
@@ -351,7 +351,7 @@ void CJX_Field::length(v8::Isolate* pIsolate,
                        bool bSetting,
                        XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
 
@@ -365,7 +365,7 @@ void CJX_Field::parentSubform(v8::Isolate* pIsolate,
                               bool bSetting,
                               XFA_Attribute eAttribute) {
   if (bSetting) {
-    ThrowInvalidPropertyException();
+    ThrowInvalidPropertyException(pIsolate);
     return;
   }
   *pValue = fxv8::NewNullHelper(pIsolate);

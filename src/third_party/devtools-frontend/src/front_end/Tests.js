@@ -145,10 +145,10 @@
    * Run specified test on a fresh instance of the test suite.
    * @param {Array<string>} args method name followed by its parameters.
    */
-  TestSuite.prototype.dispatchOnTestSuite = function(args) {
+  TestSuite.prototype.dispatchOnTestSuite = async function(args) {
     const methodName = args.shift();
     try {
-      this[methodName].apply(this, args);
+      await this[methodName].apply(this, args);
       if (!this.controlTaken_) {
         this.reportOk_();
       }
@@ -1290,7 +1290,6 @@
 
   TestSuite.prototype.testInspectedElementIs = async function(nodeName) {
     this.takeControl();
-    await self.runtime.loadModulePromise('elements');
     if (!Elements.ElementsPanel.firstInspectElementNodeNameForTest) {
       await new Promise(f => this.addSniffer(Elements.ElementsPanel, 'firstInspectElementCompletedForTest', f));
     }
@@ -1518,6 +1517,19 @@
         SDK.NetworkManager, SDK.NetworkManager.Events.RequestUpdated, onRequestUpdated.bind(this));
 
     this.evaluateInConsole_(`new WebSocket('ws://127.0.0.1:${websocketPort}')`, () => {});
+  };
+
+  TestSuite.prototype.testExtensionWebSocketOfflineNetworkConditions = async function(websocketPort) {
+    self.SDK.multitargetNetworkManager.setNetworkConditions(SDK.NetworkManager.OfflineConditions);
+
+    // TODO(crbug.com/1263900): Currently we don't send loadingFailed for web sockets.
+    // Update this once we do.
+    this.addSniffer(SDK.NetworkDispatcher.prototype, 'webSocketClosed', () => {
+      this.releaseControl();
+    });
+
+    this.takeControl();
+    this.evaluateInConsole_(`new WebSocket('ws://127.0.0.1:${websocketPort}/echo-with-no-extension')`, () => {});
   };
 
   /**

@@ -315,7 +315,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
     # Ah hah! Now that everything is in place, lets run bot_update!
     step_result = None
     try:
-      step_result = self(name, cmd, step_test_data=step_test_data, **kwargs)
+      # Error code 88 is the 'patch failure' code for patch apply failure.
+      step_result = self(name, cmd, step_test_data=step_test_data,
+                         ok_ret=(0, 88), **kwargs)
     except self.m.step.StepFailure as f:
       step_result = f.result
       raise
@@ -346,6 +348,9 @@ class BotUpdateApi(recipe_api.RecipeApi):
             raise self.m.step.InfraFailure(
                 'Patch failure: Git reported a download failure')
           else:
+            # Mark it as failure so we provide useful logs
+            # https://crbug.com/1207685
+            step_result.presentation.status = 'FAILURE'
             # This is actual patch failure.
             self.m.tryserver.set_patch_failure_tryjob_result()
             self.m.cq.set_do_not_retry_build()

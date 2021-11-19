@@ -35,6 +35,8 @@
 #ifndef EIGEN_INVERSE_SIZE_4_H
 #define EIGEN_INVERSE_SIZE_4_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen
 {
 namespace internal

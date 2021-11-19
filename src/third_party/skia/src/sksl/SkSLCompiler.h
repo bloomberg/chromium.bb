@@ -11,6 +11,7 @@
 #include <set>
 #include <unordered_set>
 #include <vector>
+#include "include/core/SkSize.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/SkSLInliner.h"
@@ -27,6 +28,7 @@
 #define SK_MAIN_COORDS_BUILTIN         10009
 #define SK_INPUT_COLOR_BUILTIN         10010
 #define SK_DEST_COLOR_BUILTIN          10011
+#define SK_SECONDARYFRAGCOLOR_BUILTIN  10012
 #define SK_FRAGCOORD_BUILTIN              15
 #define SK_CLOCKWISE_BUILTIN              17
 #define SK_VERTEXID_BUILTIN               42
@@ -45,7 +47,6 @@ namespace dsl {
 
 class ExternalFunction;
 class FunctionDeclaration;
-class IRGenerator;
 class ProgramUsage;
 
 struct LoadedModule {
@@ -64,10 +65,10 @@ struct LoadedModule {
  */
 class SK_API Compiler {
 public:
-    static constexpr const char FRAGCOLOR_NAME[] = "sk_FragColor";
-    static constexpr const char RTADJUST_NAME[]  = "sk_RTAdjust";
-    static constexpr const char PERVERTEX_NAME[] = "sk_PerVertex";
-    static constexpr const char POISON_TAG[]     = "<POISON>";
+    inline static constexpr const char FRAGCOLOR_NAME[] = "sk_FragColor";
+    inline static constexpr const char RTADJUST_NAME[]  = "sk_RTAdjust";
+    inline static constexpr const char PERVERTEX_NAME[] = "sk_PerVertex";
+    inline static constexpr const char POISON_TAG[]     = "<POISON>";
 
     /**
      * Gets a float4 that adjusts the position from Skia device coords to normalized device coords,
@@ -141,6 +142,8 @@ public:
             String text,
             Program::Settings settings);
 
+    std::unique_ptr<Expression> convertIdentifier(int line, skstd::string_view name);
+
     bool toSPIRV(Program& program, OutputStream& out);
 
     bool toSPIRV(Program& program, String* out);
@@ -193,10 +196,6 @@ public:
     LoadedModule loadModule(ProgramKind kind, ModuleData data, std::shared_ptr<SymbolTable> base,
                             bool dehydrate);
     ParsedModule parseModule(ProgramKind kind, ModuleData data, const ParsedModule& base);
-
-    IRGenerator& irGenerator() {
-        return *fIRGenerator;
-    }
 
     const ParsedModule& moduleForProgramKind(ProgramKind kind);
 
@@ -255,7 +254,9 @@ private:
 
     Mangler fMangler;
     Inliner fInliner;
-    std::unique_ptr<IRGenerator> fIRGenerator;
+    // This is the current symbol table of the code we are processing, and therefore changes during
+    // compilation
+    std::shared_ptr<SymbolTable> fSymbolTable;
 
     String fErrorText;
 

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load(
     "//absl:copts/configure_copts.bzl",
     "ABSL_DEFAULT_COPTS",
@@ -307,6 +306,17 @@ cc_library(
 )
 
 cc_test(
+    name = "cord_internal_test",
+    srcs = ["internal/cord_internal_test.cc"],
+    copts = ABSL_TEST_COPTS,
+    visibility = ["//visibility:private"],
+    deps = [
+        ":cord_internal",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "cord_rep_btree_test",
     size = "medium",
     srcs = ["internal/cord_rep_btree_test.cc"],
@@ -508,8 +518,8 @@ cc_library(
     deps = [
         "//absl/base:config",
         "//absl/base:core_headers",
-        "//absl/base:exponential_biased",
         "//absl/base:raw_logging_internal",
+        "//absl/profiling:exponential_biased",
     ],
 )
 
@@ -685,6 +695,7 @@ cc_test(
         "//absl/base:endian",
         "//absl/base:raw_logging_internal",
         "//absl/container:fixed_array",
+        "//absl/random",
         "@com_google_googletest//:gtest_main",
     ],
 )

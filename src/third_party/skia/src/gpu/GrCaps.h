@@ -18,6 +18,7 @@
 #include "src/gpu/GrSamplerState.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrSurfaceProxy.h"
+#include "src/gpu/GrSwizzle.h"
 
 class GrBackendFormat;
 class GrBackendRenderTarget;
@@ -40,7 +41,6 @@ public:
     void dumpJSON(SkJSONWriter*) const;
 
     const GrShaderCaps* shaderCaps() const { return fShaderCaps.get(); }
-    sk_sp<const GrShaderCaps> refShaderCaps() const { return fShaderCaps; }
 
     bool npotTextureTileSupport() const { return fNPOTTextureTileSupport; }
     /** To avoid as-yet-unnecessary complexity we don't allow any partial support of MIP Maps (e.g.
@@ -525,7 +525,7 @@ protected:
 
     virtual bool onSupportsDynamicMSAA(const GrRenderTargetProxy*) const { return false; }
 
-    sk_sp<GrShaderCaps> fShaderCaps;
+    std::unique_ptr<GrShaderCaps> fShaderCaps;
 
     bool fNPOTTextureTileSupport                     : 1;
     bool fMipmapSupport                              : 1;

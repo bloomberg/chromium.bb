@@ -17,9 +17,9 @@
 
 #ifndef SKSL_STANDALONE
 #include "include/core/SkTypes.h"
-#include "include/private/GrTypesPriv.h"
 #if SK_SUPPORT_GPU
 #include "include/gpu/GrContextOptions.h"
+#include "include/private/GrTypesPriv.h"
 #include "src/gpu/GrShaderCaps.h"
 #endif // SK_SUPPORT_GPU
 #endif // SKSL_STANDALONE
@@ -132,11 +132,6 @@ public:
     bool fMustGuardDivisionEvenAfterExplicitZeroCheck = false;
     bool mustGuardDivisionEvenAfterExplicitZeroCheck() const {
         return fMustGuardDivisionEvenAfterExplicitZeroCheck;
-    }
-
-    bool fInBlendModesFailRandomlyForAllZeroVec = false;
-    bool inBlendModesFailRandomlyForAllZeroVec() const {
-        return fInBlendModesFailRandomlyForAllZeroVec;
     }
 
     bool fMustEnableAdvBlendEqs = false;
@@ -284,13 +279,12 @@ public:
 };
 
 using ShaderCapsClass = StandaloneShaderCaps;
-using ShaderCapsPointer = std::shared_ptr<StandaloneShaderCaps>;
-extern StandaloneShaderCaps standaloneCaps;
+using ShaderCapsPointer = std::unique_ptr<StandaloneShaderCaps>;
 
 #else
 
 using ShaderCapsClass = GrShaderCaps;
-using ShaderCapsPointer = sk_sp<GrShaderCaps>;
+using ShaderCapsPointer = std::unique_ptr<GrShaderCaps>;
 
 #endif  // defined(SKSL_STANDALONE) || !SK_SUPPORT_GPU
 
@@ -314,12 +308,6 @@ public:
         ShaderCapsPointer result = MakeShaderCaps();
         result->fVersionDeclString = "#version 400";
         result->fAddAndTrueToLoopCondition = true;
-        return result;
-    }
-
-    static ShaderCapsPointer BlendModesFailRandomlyForAllZeroVec() {
-        ShaderCapsPointer result = MakeShaderCaps();
-        result->fInBlendModesFailRandomlyForAllZeroVec = true;
         return result;
     }
 
@@ -467,7 +455,7 @@ private:
     static ShaderCapsPointer MakeShaderCaps();
 };
 
-#if !defined(SKSL_STANDALONE)
+#if !defined(SKSL_STANDALONE) && SK_SUPPORT_GPU
 bool type_to_grsltype(const Context& context, const Type& type, GrSLType* outType);
 #endif
 

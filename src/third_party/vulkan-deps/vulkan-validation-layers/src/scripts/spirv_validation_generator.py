@@ -31,27 +31,26 @@ class SpirvValidationHelperOutputGeneratorOptions(GeneratorOptions):
                  filename = None,
                  directory = '.',
                  genpath = None,
-                 apiname = None,
+                 apiname = 'vulkan',
                  profile = None,
                  versions = '.*',
                  emitversions = '.*',
-                 defaultExtensions = None,
+                 defaultExtensions = 'vulkan',
                  addExtensions = None,
                  removeExtensions = None,
                  emitExtensions = None,
                  emitSpirv = None,
                  sortProcedure = regSortFeatures,
-                 prefixText = "",
                  genFuncPointers = True,
                  protectFile = True,
-                 protectFeature = True,
-                 apicall = '',
-                 apientry = '',
-                 apientryp = '',
+                 protectFeature = False,
+                 apicall = 'VKAPI_ATTR ',
+                 apientry = 'VKAPI_CALL ',
+                 apientryp = 'VKAPI_PTR *',
                  indentFuncProto = True,
                  indentFuncPointer = False,
-                 alignFuncParam = 0,
-                 expandEnumerants = True):
+                 alignFuncParam = 48,
+                 expandEnumerants = False):
         GeneratorOptions.__init__(self,
                 conventions = conventions,
                 filename = filename,
@@ -67,7 +66,6 @@ class SpirvValidationHelperOutputGeneratorOptions(GeneratorOptions):
                 emitExtensions = emitExtensions,
                 emitSpirv = emitSpirv,
                 sortProcedure = sortProcedure)
-        self.prefixText      = prefixText
         self.genFuncPointers = genFuncPointers
         self.protectFile     = protectFile
         self.protectFeature  = protectFeature
@@ -196,6 +194,9 @@ class SpirvValidationHelperOutputGenerator(OutputGenerator):
         copyright += ' * limitations under the License.\n'
         copyright += ' *\n'
         copyright += ' * Author: Spencer Fricke <s.fricke@samsung.com>\n'
+        copyright += ' *\n'
+        copyright += ' * This file is related to anything that is found in the Vulkan XML related\n'
+        copyright += ' * to SPIR-V. Anything related to the SPIR-V grammar belongs in spirv_grammar_helper\n'
         copyright += ' *\n'
         copyright += ' ****************************************************************************/\n'
         write(copyright, file=self.outFile)
@@ -407,7 +408,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
             } else if (it->second.extension) {
                 // kEnabledByApiLevel is not valid as some extension are promoted with feature bits to be used.
                 // If the new Api Level gives support, it will be caught in the "it->second.version" check instead.
-                if (device_extensions.*(it->second.extension) == kEnabledByCreateinfo) {
+                if (IsExtEnabledByCreateinfo(device_extensions.*(it->second.extension))) {
                     has_support = true;
                 }
             } else if (it->second.property) {
@@ -447,7 +448,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
         if (IsExtEnabled(device_extensions.vk_khr_portability_subset)) {
             if ((VK_FALSE == enabled_features.portability_subset_features.shaderSampleRateInterpolationFunctions) &&
                 (spv::CapabilityInterpolationFunction == insn.word(1))) {
-                skip |= LogError(device, kVUID_Portability_InterpolationFunction,
+                skip |= LogError(device, "VUID-RuntimeSpirv-shaderSampleRateInterpolationFunctions-06325",
                                     "Invalid shader capability (portability error): interpolation functions are not supported "
                                     "by this platform");
             }
@@ -485,7 +486,7 @@ bool CoreChecks::ValidateShaderCapabilitiesAndExtensions(SHADER_MODULE_STATE con
                     has_support = true;
                 }
             } else if (it->second.extension) {
-                if (device_extensions.*(it->second.extension)) {
+                if (IsExtEnabled(device_extensions.*(it->second.extension))) {
                     has_support = true;
                 }
             } else if (it->second.property) {

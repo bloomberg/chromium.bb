@@ -28,46 +28,6 @@ class UnsafeAPIValidationTest : public ValidationTest {
     }
 };
 
-// Check that DispatchIndirect is disallowed as part of unsafe APIs.
-TEST_F(UnsafeAPIValidationTest, DispatchIndirectDisallowed) {
-    // Create the index and indirect buffers.
-    wgpu::BufferDescriptor indirectBufferDesc;
-    indirectBufferDesc.size = 64;
-    indirectBufferDesc.usage = wgpu::BufferUsage::Indirect;
-    wgpu::Buffer indirectBuffer = device.CreateBuffer(&indirectBufferDesc);
-
-    // Create the dummy compute pipeline.
-    wgpu::ComputePipelineDescriptor pipelineDesc;
-    pipelineDesc.compute.entryPoint = "main";
-    pipelineDesc.compute.module =
-        utils::CreateShaderModule(device, "[[stage(compute), workgroup_size(1)]] fn main() {}");
-    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
-
-    // Control case: dispatch is allowed.
-    {
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-
-        pass.SetPipeline(pipeline);
-        pass.Dispatch(1, 1, 1);
-
-        pass.EndPass();
-        encoder.Finish();
-    }
-
-    // Error case: dispatch indirect is disallowed.
-    {
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-
-        pass.SetPipeline(pipeline);
-        pass.DispatchIndirect(indirectBuffer, 0);
-
-        pass.EndPass();
-        ASSERT_DEVICE_ERROR(encoder.Finish());
-    }
-}
-
 // Check that dynamic storage buffers are disallowed.
 TEST_F(UnsafeAPIValidationTest, DynamicStorageBuffer) {
     wgpu::BindGroupLayoutEntry entry;
@@ -129,8 +89,8 @@ TEST_F(UnsafeAPIValidationTest, PipelineOverridableConstants) {
 [[override(1000)]] let c1: u32;
 
 [[stage(compute), workgroup_size(1)]] fn main() {
-    ignore(c0);
-    ignore(c1);
+    _ = c0;
+    _ = c1;
 })"));
     }
 
@@ -150,8 +110,8 @@ class UnsafeQueryAPIValidationTest : public ValidationTest {
   protected:
     WGPUDevice CreateTestDevice() override {
         dawn_native::DeviceDescriptor descriptor;
-        descriptor.requiredFeatures.push_back("pipeline_statistics_query");
-        descriptor.requiredFeatures.push_back("timestamp_query");
+        descriptor.requiredFeatures.push_back("pipeline-statistics-query");
+        descriptor.requiredFeatures.push_back("timestamp-query");
         descriptor.forceEnabledToggles.push_back("disallow_unsafe_apis");
         return adapter.CreateDevice(&descriptor);
     }

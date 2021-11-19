@@ -12,9 +12,9 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/cfx_dibbase.h"
 #include "core/fxge/dib/fx_dib.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-class CFX_DIBitmap : public CFX_DIBBase {
+class CFX_DIBitmap final : public CFX_DIBBase {
  public:
   struct PitchAndSize {
     uint32_t pitch;
@@ -35,6 +35,7 @@ class CFX_DIBitmap : public CFX_DIBBase {
   // CFX_DIBBase
   uint8_t* GetBuffer() const override;
   pdfium::span<const uint8_t> GetScanline(int line) const override;
+  uint32_t GetEstimatedImageMemoryBurden() const override;
 
   void TakeOver(RetainPtr<CFX_DIBitmap>&& pSrcBitmap);
   bool ConvertFormat(FXDIB_Format format);
@@ -100,34 +101,29 @@ class CFX_DIBitmap : public CFX_DIBBase {
   // If |pitch| is non-zero, then that be used as the actual pitch.
   // The actual pitch will be used to calculate the size.
   // Returns the calculated pitch and size on success, or nullopt on failure.
-  static Optional<PitchAndSize> CalculatePitchAndSize(int width,
-                                                      int height,
-                                                      FXDIB_Format format,
-                                                      uint32_t pitch);
+  static absl::optional<PitchAndSize> CalculatePitchAndSize(int width,
+                                                            int height,
+                                                            FXDIB_Format format,
+                                                            uint32_t pitch);
 
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
   void PreMultiply();
+  void DebugVerifyBitmapIsPreMultiplied() const;
 #endif
 #if defined(_SKIA_SUPPORT_PATHS_)
   void UnPreMultiply();
 #endif
 
- protected:
-  CFX_DIBitmap();
-  CFX_DIBitmap(const CFX_DIBitmap& src);
-  ~CFX_DIBitmap() override;
+ private:
+  enum class Channel : uint8_t { kRed, kAlpha };
 
 #if defined(_SKIA_SUPPORT_PATHS_)
   enum class Format { kCleared, kPreMultiplied, kUnPreMultiplied };
 #endif
 
-  MaybeOwned<uint8_t, FxFreeDeleter> m_pBuffer;
-#if defined(_SKIA_SUPPORT_PATHS_)
-  Format m_nFormat = Format::kCleared;
-#endif
-
- private:
-  enum class Channel : uint8_t { kRed, kAlpha };
+  CFX_DIBitmap();
+  CFX_DIBitmap(const CFX_DIBitmap& src);
+  ~CFX_DIBitmap() override;
 
   bool SetChannelFromBitmap(Channel destChannel,
                             const RetainPtr<CFX_DIBBase>& pSrcBitmap);
@@ -154,6 +150,11 @@ class CFX_DIBitmap : public CFX_DIBBase {
                                   const RetainPtr<CFX_DIBBase>& pSrcBitmap,
                                   int src_left,
                                   int src_top);
+
+  MaybeOwned<uint8_t, FxFreeDeleter> m_pBuffer;
+#if defined(_SKIA_SUPPORT_PATHS_)
+  Format m_nFormat = Format::kCleared;
+#endif
 };
 
 #endif  // CORE_FXGE_DIB_CFX_DIBITMAP_H_

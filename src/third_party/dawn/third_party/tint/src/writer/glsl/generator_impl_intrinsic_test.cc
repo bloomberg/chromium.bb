@@ -57,9 +57,9 @@ inline std::ostream& operator<<(std::ostream& out, IntrinsicData data) {
   return out;
 }
 
-ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
-                                  ParamType type,
-                                  ProgramBuilder* builder) {
+const ast::CallExpression* GenerateCall(IntrinsicType intrinsic,
+                                        ParamType type,
+                                        ProgramBuilder* builder) {
   std::string name;
   std::ostringstream str(name);
   str << intrinsic;
@@ -167,7 +167,7 @@ TEST_P(GlslIntrinsicTest, Emit) {
 
   auto* call = GenerateCall(param.intrinsic, param.type, this);
   ASSERT_NE(nullptr, call) << "Unhandled intrinsic";
-  Func("func", {}, ty.void_(), {Ignore(call)},
+  Func("func", {}, ty.void_(), {CallStmt(call)},
        {create<ast::StageDecoration>(ast::PipelineStage::kFragment)});
 
   GeneratorImpl& gen = Build();
@@ -192,7 +192,7 @@ INSTANTIATE_TEST_SUITE_P(
         IntrinsicData{IntrinsicType::kAny, ParamType::kBool, "any"},
         IntrinsicData{IntrinsicType::kAsin, ParamType::kF32, "asin"},
         IntrinsicData{IntrinsicType::kAtan, ParamType::kF32, "atan"},
-        IntrinsicData{IntrinsicType::kAtan2, ParamType::kF32, "atan2"},
+        IntrinsicData{IntrinsicType::kAtan2, ParamType::kF32, "atan"},
         IntrinsicData{IntrinsicType::kCeil, ParamType::kF32, "ceil"},
         IntrinsicData{IntrinsicType::kClamp, ParamType::kF32, "clamp"},
         IntrinsicData{IntrinsicType::kClamp, ParamType::kU32, "clamp"},
@@ -297,6 +297,7 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, Select_Vector) {
   EXPECT_EQ(out.str(), "(bvec2(true, false) ? ivec2(3, 4) : ivec2(1, 2))");
 }
 
+#if 0
 TEST_F(GlslGeneratorImplTest_Intrinsic, Modf_Scalar) {
   auto* res = Var("res", ty.f32());
   auto* call = Call("modf", 1.0f, AddressOf(res));
@@ -319,7 +320,6 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, Modf_Vector) {
   EXPECT_THAT(gen.result(), HasSubstr("modf(vec3(0.0f, 0.0f, 0.0f), res)"));
 }
 
-#if 0
 TEST_F(GlslGeneratorImplTest_Intrinsic, Frexp_Scalar_i32) {
   auto* exp = Var("exp", ty.i32());
   auto* call = Call("frexp", 1.0f, AddressOf(exp));
@@ -536,7 +536,7 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, Unpack2x16Float) {
 
 TEST_F(GlslGeneratorImplTest_Intrinsic, StorageBarrier) {
   Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("storageBarrier"))},
+       {CallStmt(Call("storageBarrier"))},
        {
            Stage(ast::PipelineStage::kCompute),
            WorkgroupSize(1),
@@ -545,7 +545,7 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, StorageBarrier) {
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
+  EXPECT_EQ(gen.result(), R"(layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   DeviceMemoryBarrierWithGroupSync();
   return;
@@ -555,7 +555,7 @@ void main() {
 
 TEST_F(GlslGeneratorImplTest_Intrinsic, WorkgroupBarrier) {
   Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("workgroupBarrier"))},
+       {CallStmt(Call("workgroupBarrier"))},
        {
            Stage(ast::PipelineStage::kCompute),
            WorkgroupSize(1),
@@ -564,7 +564,7 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, WorkgroupBarrier) {
   GeneratorImpl& gen = Build();
 
   ASSERT_TRUE(gen.Generate()) << gen.error();
-  EXPECT_EQ(gen.result(), R"([numthreads(1, 1, 1)]
+  EXPECT_EQ(gen.result(), R"(layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   GroupMemoryBarrierWithGroupSync();
   return;
@@ -577,7 +577,7 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, Ignore) {
        ty.i32(), {Return(Mul(Add("a", "b"), "c"))});
 
   Func("main", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("ignore", Call("f", 1, 2, 3)))},
+       {CallStmt(Call("ignore", Call("f", 1, 2, 3)))},
        {
            Stage(ast::PipelineStage::kCompute),
            WorkgroupSize(1),
@@ -590,7 +590,7 @@ TEST_F(GlslGeneratorImplTest_Intrinsic, Ignore) {
   return ((a + b) * c);
 }
 
-[numthreads(1, 1, 1)]
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   f(1, 2, 3);
   return;

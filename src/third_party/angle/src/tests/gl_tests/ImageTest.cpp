@@ -462,6 +462,16 @@ class ImageTest : public ANGLETest
         ASSERT_GL_NO_ERROR();
     }
 
+    size_t getLayerPitch(size_t height, size_t rowStride)
+    {
+        // Undocumented alignment of layer stride.  This is potentially platform dependent, but
+        // allows functionality to be tested.
+        constexpr size_t kLayerAlignment = 4096;
+
+        const size_t layerSize = height * rowStride;
+        return (layerSize + kLayerAlignment - 1) & ~(kLayerAlignment - 1);
+    }
+
     struct AHBPlaneData
     {
         const GLubyte *data;
@@ -490,6 +500,8 @@ class ImageTest : public ANGLETest
 
             size_t planeHeight = (isYUV && planeIdx > 0) ? (height / 2) : height;
             size_t planeWidth  = (isYUV && planeIdx > 0) ? (width / 2) : width;
+            size_t layerPitch  = getLayerPitch(planeHeight, plane.rowStride);
+
             for (size_t z = 0; z < depth; z++)
             {
                 const uint8_t *srcDepthSlice =
@@ -504,9 +516,8 @@ class ImageTest : public ANGLETest
                     for (size_t x = 0; x < planeWidth; x++)
                     {
                         const uint8_t *src = srcRow + x * planeData.bytesPerPixel;
-                        uint8_t *dst       = reinterpret_cast<uint8_t *>(plane.data) +
-                                       (z * planeHeight + y) * plane.rowStride +
-                                       x * plane.pixelStride;
+                        uint8_t *dst = reinterpret_cast<uint8_t *>(plane.data) + z * layerPitch +
+                                       y * plane.rowStride + x * plane.pixelStride;
                         memcpy(dst, src, planeData.bytesPerPixel);
                     }
                 }
@@ -525,16 +536,20 @@ class ImageTest : public ANGLETest
         // Need to grab the stride the implementation might have enforced
         AHardwareBuffer_Desc aHardwareBufferDescription = {};
         AHardwareBuffer_describe(aHardwareBuffer, &aHardwareBufferDescription);
-        const uint32_t stride = aHardwareBufferDescription.stride;
+        const size_t stride = aHardwareBufferDescription.stride * data[0].bytesPerPixel;
+        size_t layerPitch   = getLayerPitch(height, stride);
 
         uint32_t rowSize = stride * height;
-        for (uint32_t i = 0; i < depth * height; i++)
+        for (size_t z = 0; z < depth; z++)
         {
-            uint32_t dstPtrOffset = stride * i * (uint32_t)data[0].bytesPerPixel;
-            uint32_t srcPtrOffset = width * i * (uint32_t)data[0].bytesPerPixel;
+            for (uint32_t y = 0; y < height; y++)
+            {
+                size_t dstPtrOffset = z * layerPitch + y * stride;
+                size_t srcPtrOffset = (z * height + y) * width * data[0].bytesPerPixel;
 
-            uint8_t *dst = reinterpret_cast<uint8_t *>(mappedMemory) + dstPtrOffset;
-            memcpy(dst, data[0].data + srcPtrOffset, rowSize);
+                uint8_t *dst = reinterpret_cast<uint8_t *>(mappedMemory) + dstPtrOffset;
+                memcpy(dst, data[0].data + srcPtrOffset, rowSize);
+            }
         }
 
         res = AHardwareBuffer_unlock(aHardwareBuffer, nullptr);
@@ -794,6 +809,7 @@ class ImageTest : public ANGLETest
 
             const size_t planeHeight = (isYUV && planeIdx > 0) ? (height / 2) : height;
             const size_t planeWidth  = (isYUV && planeIdx > 0) ? (width / 2) : width;
+            size_t layerPitch        = getLayerPitch(planeHeight, plane.rowStride);
 
             uint32_t xStart = 0;
             uint32_t xEnd   = planeWidth;
@@ -827,7 +843,7 @@ class ImageTest : public ANGLETest
                                                        referenceData + planeData.bytesPerPixel);
 
                         const uint8_t *ahbData = reinterpret_cast<uint8_t *>(plane.data) +
-                                                 (z * planeHeight + y) * plane.rowStride +
+                                                 z * layerPitch + y * plane.rowStride +
                                                  x * plane.pixelStride;
                         std::vector<uint8_t> ahb(ahbData, ahbData + planeData.bytesPerPixel);
 
@@ -842,7 +858,8 @@ class ImageTest : public ANGLETest
         ASSERT_EQ(1u, data.size());
         ASSERT_FALSE(isYUV);
 
-        const uint32_t rowStride = aHardwareBufferDescription.stride;
+        const uint32_t rowStride = aHardwareBufferDescription.stride * data[0].bytesPerPixel;
+        size_t layerPitch        = getLayerPitch(height, rowStride);
 
         void *mappedMemory = nullptr;
         ASSERT_EQ(0, AHardwareBuffer_lock(source, AHARDWAREBUFFER_USAGE_CPU_WRITE_RARELY, -1,
@@ -879,7 +896,7 @@ class ImageTest : public ANGLETest
                                                    referenceData + data[0].bytesPerPixel);
 
                     const uint8_t *ahbData = reinterpret_cast<uint8_t *>(mappedMemory) +
-                                             (z * height + y) * rowStride +
+                                             z * layerPitch + y * rowStride +
                                              x * data[0].bytesPerPixel;
                     std::vector<uint8_t> ahb(ahbData, ahbData + data[0].bytesPerPixel);
 
@@ -1776,6 +1793,41 @@ TEST_P(ImageTestES3, Source2DTarget2DTargetTextureRespecifyLevel)
 
     // Clean up
     eglDestroyImageKHR(window->getDisplay(), image);
+}
+
+// Create target texture from EGL image and then trigger texture respecification which releases the
+// last image ref.
+TEST_P(ImageTest, ImageOrphanRefCountingBug)
+{
+    EGLWindow *window = getEGLWindow();
+    ANGLE_SKIP_TEST_IF(!hasOESExt() || !hasBaseExt() || !has2DTextureExt());
+
+    // Create the first Image
+    GLTexture source1;
+    EGLImageKHR image1;
+    createEGLImage2DTextureSource(1, 1, GL_RGBA, GL_UNSIGNED_BYTE, kDefaultAttribs,
+                                  static_cast<void *>(&kLinearColor), source1, &image1);
+
+    // Create the target
+    GLTexture target;
+    createEGLImageTargetTexture2D(image1, target);
+
+    // Delete the source and image. A ref is still held by the target texture
+    source1.reset();
+    eglDestroyImageKHR(window->getDisplay(), image1);
+
+    // Create the second Image
+    GLTexture source2;
+    EGLImageKHR image2;
+    createEGLImage2DTextureSource(1, 1, GL_RGBA, GL_UNSIGNED_BYTE, kDefaultAttribs,
+                                  static_cast<void *>(&kLinearColor), source2, &image2);
+
+    // Respecify the target with the second image.
+    glBindTexture(GL_TEXTURE_2D, target);
+    glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, image2);
+
+    // Clean up
+    eglDestroyImageKHR(window->getDisplay(), image2);
 }
 
 // Testing source 2D texture, target 2D array texture

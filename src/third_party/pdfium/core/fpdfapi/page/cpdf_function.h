@@ -11,7 +11,7 @@
 #include <set>
 #include <vector>
 
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 class CPDF_ExpIntFunc;
@@ -21,7 +21,7 @@ class CPDF_StitchFunc;
 
 class CPDF_Function {
  public:
-  // Valid values are from PDF 32000-1:2008 spec, table 38. DO NOT CHANGE.
+  // Valid values are from ISO 32000-1:2008 spec, table 38. DO NOT CHANGE.
   enum class Type {
     kTypeInvalid = -1,
     kType0Sampled = 0,
@@ -34,8 +34,8 @@ class CPDF_Function {
 
   virtual ~CPDF_Function();
 
-  Optional<uint32_t> Call(pdfium::span<const float> inputs,
-                          pdfium::span<float> results) const;
+  absl::optional<uint32_t> Call(pdfium::span<const float> inputs,
+                                pdfium::span<float> results) const;
   uint32_t CountInputs() const { return m_nInputs; }
   uint32_t CountOutputs() const { return m_nOutputs; }
   float GetDomain(int i) const { return m_Domains[i]; }

@@ -9,6 +9,7 @@
 
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
@@ -272,12 +273,11 @@ GetTransitionFromMetricsAnimationInfo(
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
-    : model_(std::make_unique<AppListModel>()),
+    : model_provider_(std::make_unique<AppListModelProvider>()),
       fullscreen_presenter_(std::make_unique<AppListPresenterImpl>(this)) {
   if (features::IsProductivityLauncherEnabled())
     bubble_presenter_ = std::make_unique<AppListBubblePresenter>(this);
 
-  model_->AddObserver(this);
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
   session_controller->AddObserver(this);
@@ -337,208 +337,32 @@ AppListClient* AppListControllerImpl::GetClient() {
   return client_;
 }
 
-AppListModel* AppListControllerImpl::GetModel() {
-  return model_.get();
-}
-
-SearchModel* AppListControllerImpl::GetSearchModel() {
-  return &search_model_;
-}
-
 AppListNotifier* AppListControllerImpl::GetNotifier() {
   if (!client_)
     return nullptr;
   return client_->GetNotifier();
 }
 
-void AppListControllerImpl::AddItem(
-    std::unique_ptr<AppListItemMetadata> item_data) {
-  const std::string folder_id = item_data->folder_id;
-  if (folder_id.empty())
-    model_->AddItem(CreateAppListItem(std::move(item_data)));
-  else
-    AddItemToFolder(std::move(item_data), folder_id);
-}
-
-void AppListControllerImpl::AddItemToFolder(
-    std::unique_ptr<AppListItemMetadata> item_data,
-    const std::string& folder_id) {
-  // When we're setting a whole model of a profile, each item may have its
-  // folder id set properly. However, |AppListModel::AddItemToFolder| requires
-  // the item to add is not in the target folder yet, and sets its folder id
-  // later. So we should clear the folder id here to avoid breaking checks.
-  item_data->folder_id.clear();
-  model_->AddItemToFolder(CreateAppListItem(std::move(item_data)), folder_id);
-}
-
-void AppListControllerImpl::RemoveItem(const std::string& id) {
-  model_->DeleteItem(id);
-}
-
-void AppListControllerImpl::RemoveUninstalledItem(const std::string& id) {
-  model_->DeleteUninstalledItem(id);
-}
-
-void AppListControllerImpl::SetStatus(AppListModelStatus status) {
-  model_->SetStatus(status);
-}
-
-void AppListControllerImpl::SetSearchEngineIsGoogle(bool is_google) {
-  search_model_.SetSearchEngineIsGoogle(is_google);
-}
-
-void AppListControllerImpl::UpdateSearchBox(const std::u16string& text,
-                                            bool initiated_by_user) {
-  search_model_.search_box()->Update(text, initiated_by_user);
-}
-
-void AppListControllerImpl::PublishSearchResults(
-    std::vector<std::unique_ptr<SearchResultMetadata>> results) {
-  std::vector<std::unique_ptr<SearchResult>> new_results;
-  for (auto& result_metadata : results) {
-    std::unique_ptr<SearchResult> result = std::make_unique<SearchResult>();
-    result->SetMetadata(std::move(result_metadata));
-    new_results.push_back(std::move(result));
-  }
-  search_model_.PublishResults(std::move(new_results));
-}
-
-void AppListControllerImpl::SetItemMetadata(
-    const std::string& id,
-    std::unique_ptr<AppListItemMetadata> data) {
-  AppListItem* item = model_->FindItem(id);
-  if (!item)
-    return;
-
-  // TODO(https://crbug.com/1252433): refactor this function because the current
-  // implementation is bug prone.
-
-  // data may not contain valid position or icon. Preserve it in this case.
-  if (!data->position.IsValid())
-    data->position = item->position();
-
-  // Update the item's position and name based on the metadata.
-  if (!data->position.Equals(item->position()))
-    model_->SetItemPosition(item, data->position);
-
-  if (data->short_name.empty()) {
-    if (data->name != item->name()) {
-      model_->SetItemName(item, data->name);
-    }
-  } else {
-    if (data->name != item->name() || data->short_name != item->short_name()) {
-      model_->SetItemNameAndShortName(item, data->name, data->short_name);
-    }
-  }
-
-  // Folder icon is generated on ash side and chrome side passes a null
-  // icon here. Skip it.
-  if (data->icon.isNull())
-    data->icon = item->GetDefaultIcon();
-
-  if (data->folder_id != item->folder_id())
-    model_->MoveItemToFolder(item, data->folder_id);
-
-  item->SetMetadata(std::move(data));
-}
-
-void AppListControllerImpl::SetItemIconVersion(const std::string& id,
-                                               int icon_version) {
-  AppListItem* item = model_->FindItem(id);
-  if (item)
-    item->SetIconVersion(icon_version);
-}
-
-void AppListControllerImpl::SetItemIcon(const std::string& id,
-                                        const gfx::ImageSkia& icon) {
-  AppListItem* item = model_->FindItem(id);
-  if (item)
-    item->SetDefaultIcon(icon);
-}
-
-void AppListControllerImpl::SetItemNotificationBadgeColor(const std::string& id,
-                                                          const SkColor color) {
-  AppListItem* item = model_->FindItem(id);
-  if (item)
-    item->SetNotificationBadgeColor(color);
-}
-
-void AppListControllerImpl::SetModelData(
-    int profile_id,
-    std::vector<std::unique_ptr<AppListItemMetadata>> apps,
-    bool is_search_engine_google) {
-  // Clear old model data.
-  model_->DeleteAllItems();
-  search_model_.DeleteAllResults();
+void AppListControllerImpl::SetActiveModel(int profile_id,
+                                           AppListModel* model,
+                                           SearchModel* search_model) {
+  model_observation_.Reset();
 
   profile_id_ = profile_id;
 
-  // Populate new models. First populate folders and then other items to avoid
-  // automatically creating folder items in |AddItemToFolder|.
-  for (auto& app : apps) {
-    if (!app->is_folder)
-      continue;
-    DCHECK(app->folder_id.empty());
-    AddItem(std::move(app));
-  }
-  for (auto& app : apps) {
-    if (!app)
-      continue;
-    AddItem(std::move(app));
-  }
-  search_model_.SetSearchEngineIsGoogle(is_search_engine_google);
+  model_provider_->SetActiveModel(model, search_model);
+
+  if (model)
+    model_observation_.Observe(model);
+
+  UpdateAssistantVisibility();
 }
 
-void AppListControllerImpl::SetSearchResultMetadata(
-    std::unique_ptr<SearchResultMetadata> metadata) {
-  SearchResult* result = search_model_.FindSearchResult(metadata->id);
-  if (result)
-    result->SetMetadata(std::move(metadata));
-}
-
-void AppListControllerImpl::GetIdToAppListIndexMap(
-    GetIdToAppListIndexMapCallback callback) {
-  base::flat_map<std::string, uint16_t> id_to_app_list_index;
-  for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i)
-    id_to_app_list_index[model_->top_level_item_list()->item_at(i)->id()] = i;
-  std::move(callback).Run(id_to_app_list_index);
-}
-
-void AppListControllerImpl::FindOrCreateOemFolder(
-    const std::string& oem_folder_name,
-    const syncer::StringOrdinal& preferred_oem_position,
-    FindOrCreateOemFolderCallback callback) {
-  AppListFolderItem* oem_folder = model_->FindFolderItem(kOemFolderId);
-  if (!oem_folder) {
-    std::unique_ptr<AppListFolderItem> new_folder =
-        std::make_unique<AppListFolderItem>(kOemFolderId);
-    syncer::StringOrdinal oem_position = preferred_oem_position.IsValid()
-                                             ? preferred_oem_position
-                                             : GetOemFolderPos();
-    // Do not create a sync item for the OEM folder here, do it in
-    // ResolveFolderPositions() when the item position is finalized.
-    oem_folder =
-        static_cast<AppListFolderItem*>(model_->AddItem(std::move(new_folder)));
-    model_->SetItemPosition(oem_folder, oem_position);
-  }
-  model_->SetItemName(oem_folder, oem_folder_name);
-  std::move(callback).Run();
-}
-
-void AppListControllerImpl::ResolveOemFolderPosition(
-    const syncer::StringOrdinal& preferred_oem_position,
-    ResolveOemFolderPositionCallback callback) {
-  // In ash:
-  AppListFolderItem* ash_oem_folder = FindFolderItem(kOemFolderId);
-  std::unique_ptr<AppListItemMetadata> metadata;
-  if (ash_oem_folder) {
-    const syncer::StringOrdinal& oem_folder_pos =
-        preferred_oem_position.IsValid() ? preferred_oem_position
-                                         : GetOemFolderPos();
-    model_->SetItemPosition(ash_oem_folder, oem_folder_pos);
-    metadata = ash_oem_folder->CloneMetadata();
-  }
-  std::move(callback).Run(std::move(metadata));
+void AppListControllerImpl::ClearActiveModel() {
+  model_observation_.Reset();
+  profile_id_ = kAppListInvalidProfileID;
+  model_provider_->ClearActiveModel();
+  UpdateAssistantVisibility();
 }
 
 void AppListControllerImpl::NotifyProcessSyncChangesFinished() {
@@ -616,8 +440,6 @@ bool AppListControllerImpl::IsVisible() {
 // AppListModelObserver:
 
 void AppListControllerImpl::OnAppListItemAdded(AppListItem* item) {
-  client_->OnItemAdded(profile_id_, item->CloneMetadata());
-
   if (cache_ && notification_badging_pref_enabled_.value_or(false)) {
     // Update the notification badge indicator for the newly added app list
     // item.
@@ -685,38 +507,6 @@ void AppListControllerImpl::OnSessionStateChanged(
     fullscreen_presenter_->SetViewVisibility(false);
   else
     OnVisibilityChanged(true, last_visible_display_id_);
-}
-
-void AppListControllerImpl::OnAppListItemWillBeDeleted(AppListItem* item) {
-  if (!client_)
-    return;
-
-  if (item->is_folder())
-    client_->OnFolderDeleted(profile_id_, item->CloneMetadata());
-
-  if (item->is_page_break())
-    client_->OnPageBreakItemDeleted(profile_id_, item->id());
-}
-
-void AppListControllerImpl::OnAppListItemUpdated(AppListItem* item) {
-  if (client_)
-    client_->OnItemUpdated(profile_id_, item->CloneMetadata());
-}
-
-void AppListControllerImpl::OnAppListStateChanged(AppListState new_state,
-                                                  AppListState old_state) {
-  UpdateLauncherContainer();
-
-  if (new_state == AppListState::kStateEmbeddedAssistant) {
-    // ShowUi() will be no-op if the Assistant UI is already visible.
-    AssistantUiController::Get()->ShowUi(AssistantEntryPoint::kUnspecified);
-    return;
-  }
-
-  if (old_state == AppListState::kStateEmbeddedAssistant) {
-    // CloseUi() will be no-op if the Assistant UI is already closed.
-    AssistantUiController::Get()->CloseUi(AssistantExitPoint::kBackInLauncher);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -915,10 +705,6 @@ bool AppListControllerImpl::GoHome(int64_t display_id) {
   }
 
   return true;
-}
-
-AppListViewState AppListControllerImpl::GetAppListViewState() {
-  return model_->state_fullscreen();
 }
 
 bool AppListControllerImpl::ShouldHomeLauncherBeVisible() const {
@@ -1337,6 +1123,14 @@ void AppListControllerImpl::SetKeyboardTraversalMode(bool engaged) {
       fullscreen_presenter_->GetView()->search_box_view()->search_box()) {
     fullscreen_presenter_->GetView()->search_box_view()->SchedulePaint();
   } else {
+    // Ensure that when an app list item's focus ring is triggered by key
+    // events, the item is selected.
+    // TODO(https://crbug.com/1262236): class name comparision and static cast
+    // should be avoided in the production code. Find a better way to guarantee
+    // the item's selection status.
+    if (focused_view->GetClassName() == AppListItemView::kViewClassName)
+      static_cast<AppListItemView*>(focused_view)->EnsureSelected();
+
     focused_view->SchedulePaint();
   }
 }
@@ -1355,13 +1149,6 @@ AppListViewState AppListControllerImpl::CalculateStateAfterShelfDrag(
         event_in_screen, launcher_above_shelf_bottom_amount);
   }
   return AppListViewState::kClosed;
-}
-
-void AppListControllerImpl::SetAppListModelForTest(
-    std::unique_ptr<AppListModel> model) {
-  model_->RemoveObserver(this);
-  model_ = std::move(model);
-  model_->AddObserver(this);
 }
 
 void AppListControllerImpl::SetStateTransitionAnimationCallbackForTesting(
@@ -1410,7 +1197,8 @@ void AppListControllerImpl::OpenSearchResult(
     AppListLaunchType launch_type,
     int suggestion_index,
     bool launch_as_default) {
-  SearchResult* result = search_model_.FindSearchResult(result_id);
+  SearchModel* search_model = GetSearchModel();
+  SearchResult* result = search_model->FindSearchResult(result_id);
   if (!result)
     return;
 
@@ -1471,9 +1259,9 @@ void AppListControllerImpl::OpenSearchResult(
 
 void AppListControllerImpl::InvokeSearchResultAction(
     const std::string& result_id,
-    int action_index) {
+    SearchResultActionType action) {
   if (client_)
-    client_->InvokeSearchResultAction(result_id, action_index);
+    client_->InvokeSearchResultAction(result_id, action);
 }
 
 void AppListControllerImpl::GetSearchResultContextMenuModel(
@@ -1539,6 +1327,11 @@ void AppListControllerImpl::GetContextMenuModel(
 void AppListControllerImpl::SortAppList(AppListSortOrder order) {
   if (client_)
     client_->OnAppListSortRequested(profile_id_, order);
+}
+
+void AppListControllerImpl::RevertAppListSort() {
+  if (client_)
+    client_->OnAppListSortRevertRequested(profile_id_);
 }
 
 ui::ImplicitAnimationObserver* AppListControllerImpl::GetAnimationObserver(
@@ -1672,7 +1465,13 @@ void AppListControllerImpl::OnStateTransitionAnimationCompleted(
     close_assistant_ui_runner_.RunAndReset();
 }
 
+AppListViewState AppListControllerImpl::GetAppListViewState() const {
+  return app_list_view_state_;
+}
+
 void AppListControllerImpl::OnViewStateChanged(AppListViewState state) {
+  app_list_view_state_ = state;
+
   auto* notifier = GetNotifier();
   if (notifier)
     notifier->NotifyUIStateChanged(state);
@@ -1740,6 +1539,34 @@ gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
   DCHECK(app_list_view && app_list_view->GetWidget());
   aura::Window* window = app_list_view->GetWidget()->GetNativeView();
   return screen_util::SnapBoundsToDisplayEdge(bounds, window);
+}
+
+AppListState AppListControllerImpl::GetCurrentAppListPage() const {
+  return app_list_page_;
+}
+
+void AppListControllerImpl::OnAppListPageChanged(AppListState page) {
+  const AppListState old_page = app_list_page_;
+  if (old_page == page)
+    return;
+
+  app_list_page_ = page;
+
+  if (!fullscreen_presenter_)
+    return;
+
+  UpdateLauncherContainer();
+
+  if (page == AppListState::kStateEmbeddedAssistant) {
+    // ShowUi() will be no-op if the Assistant UI is already visible.
+    AssistantUiController::Get()->ShowUi(AssistantEntryPoint::kUnspecified);
+    return;
+  }
+
+  if (old_page == AppListState::kStateEmbeddedAssistant) {
+    // CloseUi() will be no-op if the Assistant UI is already closed.
+    AssistantUiController::Get()->CloseUi(AssistantExitPoint::kBackInLauncher);
+  }
 }
 
 int AppListControllerImpl::GetShelfSize() {
@@ -1903,63 +1730,12 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
 ////////////////////////////////////////////////////////////////////////////////
 // Private used only:
 
-syncer::StringOrdinal AppListControllerImpl::GetOemFolderPos() {
-  // Place the OEM folder just after the web store, which should always be
-  // followed by a pre-installed app (e.g. Search), so the poosition should be
-  // stable. TODO(stevenjb): consider explicitly setting the OEM folder
-  // location along with the name in
-  // ServicesCustomizationDocument::SetOemFolderName().
-  AppListItemList* item_list = model_->top_level_item_list();
-  if (!item_list->item_count()) {
-    LOG(ERROR) << "No top level item was found. "
-               << "Placing OEM folder at the beginning.";
-    return syncer::StringOrdinal::CreateInitialOrdinal();
-  }
-
-  size_t web_store_app_index;
-  if (!item_list->FindItemIndex(extensions::kWebStoreAppId,
-                                &web_store_app_index)) {
-    LOG(ERROR) << "Web store position is not found it top items. "
-               << "Placing OEM folder at the end.";
-    return item_list->item_at(item_list->item_count() - 1)
-        ->position()
-        .CreateAfter();
-  }
-
-  // Skip items with the same position.
-  const AppListItem* web_store_app_item =
-      item_list->item_at(web_store_app_index);
-  for (size_t j = web_store_app_index + 1; j < item_list->item_count(); ++j) {
-    const AppListItem* next_item = item_list->item_at(j);
-    DCHECK(next_item->position().IsValid());
-    if (!next_item->position().Equals(web_store_app_item->position())) {
-      const syncer::StringOrdinal oem_ordinal =
-          web_store_app_item->position().CreateBetween(next_item->position());
-      VLOG(1) << "Placing OEM Folder at: " << j
-              << " position: " << oem_ordinal.ToDebugString();
-      return oem_ordinal;
-    }
-  }
-
-  const syncer::StringOrdinal oem_ordinal =
-      web_store_app_item->position().CreateAfter();
-  VLOG(1) << "Placing OEM Folder at: " << item_list->item_count()
-          << " position: " << oem_ordinal.ToDebugString();
-  return oem_ordinal;
+AppListModel* AppListControllerImpl::GetModel() {
+  return model_provider_->model();
 }
 
-std::unique_ptr<AppListItem> AppListControllerImpl::CreateAppListItem(
-    std::unique_ptr<AppListItemMetadata> metadata) {
-  std::unique_ptr<AppListItem> app_list_item =
-      metadata->is_folder ? std::make_unique<AppListFolderItem>(metadata->id)
-                          : std::make_unique<AppListItem>(metadata->id);
-  app_list_item->SetMetadata(std::move(metadata));
-  return app_list_item;
-}
-
-AppListFolderItem* AppListControllerImpl::FindFolderItem(
-    const std::string& folder_id) {
-  return model_->FindFolderItem(folder_id);
+SearchModel* AppListControllerImpl::GetSearchModel() {
+  return model_provider_->search_model();
 }
 
 void AppListControllerImpl::UpdateAssistantVisibility() {
@@ -2132,12 +1908,12 @@ aura::Window* AppListControllerImpl::GetContainerForDisplayId(
 
 bool AppListControllerImpl::ShouldLauncherShowBehindApps() const {
   return IsTabletMode() &&
-         model_->state() != AppListState::kStateEmbeddedAssistant;
+         app_list_page_ != AppListState::kStateEmbeddedAssistant;
 }
 
 int AppListControllerImpl::GetLastQueryLength() {
   std::u16string query;
-  base::TrimWhitespace(search_model_.search_box()->text(), base::TRIM_ALL,
+  base::TrimWhitespace(GetSearchModel()->search_box()->text(), base::TRIM_ALL,
                        &query);
   return query.length();
 }
@@ -2157,7 +1933,8 @@ void AppListControllerImpl::Shutdown() {
   shell->wallpaper_controller()->RemoveObserver(this);
   shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
-  model_->RemoveObserver(this);
+
+  model_observation_.Reset();
 }
 
 bool AppListControllerImpl::IsHomeScreenVisible() {
@@ -2223,7 +2000,7 @@ void AppListControllerImpl::RecordAppListState() {
 void AppListControllerImpl::UpdateItemNotificationBadge(
     const std::string& app_id,
     apps::mojom::OptionalBool has_badge) {
-  AppListItem* item = model_->FindItem(app_id);
+  AppListItem* item = GetModel()->FindItem(app_id);
   if (item) {
     item->UpdateNotificationBadge(has_badge ==
                                   apps::mojom::OptionalBool::kTrue);

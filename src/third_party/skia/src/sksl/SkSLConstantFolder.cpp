@@ -10,7 +10,9 @@
 #include <limits>
 
 #include "include/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLContext.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorCompound.h"
@@ -107,11 +109,21 @@ static std::unique_ptr<Expression> simplify_vector(const Context& context,
     }
 
     const Type& componentType = type.componentType();
+    double minimumValue = -INFINITY, maximumValue = INFINITY;
+    if (componentType.isInteger()) {
+        minimumValue = componentType.minimumValue();
+        maximumValue = componentType.maximumValue();
+    }
+
     ExpressionArray args;
     args.reserve_back(type.columns());
     for (int i = 0; i < type.columns(); i++) {
         double value = foldFn(left.getConstantSubexpression(i)->as<Literal>().value(),
                               right.getConstantSubexpression(i)->as<Literal>().value());
+        if (value < minimumValue || value > maximumValue) {
+            return nullptr;
+        }
+
         args.push_back(Literal::Make(left.fLine, value, &componentType));
     }
     return ConstructorCompound::Make(context, left.fLine, type, std::move(args));
@@ -122,18 +134,7 @@ static std::unique_ptr<Expression> cast_expression(const Context& context,
                                                    const Type& type) {
     ExpressionArray ctorArgs;
     ctorArgs.push_back(expr.clone());
-    std::unique_ptr<Expression> ctor = Constructor::Convert(context, expr.fLine, type,
-                                                            std::move(ctorArgs));
-    SkASSERT(ctor);
-    return ctor;
-}
-
-static ConstructorSplat splat_scalar(const Expression& scalar, const Type& type) {
-    SkASSERT(type.isVector());
-    SkASSERT(type.componentType() == scalar.type());
-
-    // Use a constructor to splat the scalar expression across a vector.
-    return ConstructorSplat{scalar.fLine, type, scalar.clone()};
+    return Constructor::Convert(context, expr.fLine, type, std::move(ctorArgs));
 }
 
 bool ConstantFolder::GetConstantInt(const Expression& value, SKSL_INT* out) {
@@ -268,8 +269,9 @@ static std::unique_ptr<Expression> simplify_no_op_arithmetic(const Context& cont
                 return cast_expression(context, left, resultType);
             }
             if (is_constant_value(left, 0.0)) {   // 0 - x (to `-x`)
-                return PrefixExpression::Make(context, Token::Kind::TK_MINUS,
-                                              cast_expression(context, right, resultType));
+                if (std::unique_ptr<Expression> val = cast_expression(context, right, resultType)) {
+                    return PrefixExpression::Make(context, Token::Kind::TK_MINUS, std::move(val));
+                }
             }
             break;
 
@@ -282,18 +284,20 @@ static std::unique_ptr<Expression> simplify_no_op_arithmetic(const Context& cont
         case Token::Kind::TK_PLUSEQ:
         case Token::Kind::TK_MINUSEQ:
             if (is_constant_value(right, 0.0)) {  // x += 0, x -= 0
-                std::unique_ptr<Expression> result = cast_expression(context, left, resultType);
-                Analysis::UpdateVariableRefKind(result.get(), VariableRefKind::kRead);
-                return result;
+                if (std::unique_ptr<Expression> var = cast_expression(context, left, resultType)) {
+                    Analysis::UpdateVariableRefKind(var.get(), VariableRefKind::kRead);
+                    return var;
+                }
             }
             break;
 
         case Token::Kind::TK_STAREQ:
         case Token::Kind::TK_SLASHEQ:
             if (is_constant_value(right, 1.0)) {  // x *= 1, x /= 1
-                std::unique_ptr<Expression> result = cast_expression(context, left, resultType);
-                Analysis::UpdateVariableRefKind(result.get(), VariableRefKind::kRead);
-                return result;
+                if (std::unique_ptr<Expression> var = cast_expression(context, left, resultType)) {
+                    Analysis::UpdateVariableRefKind(var.get(), VariableRefKind::kRead);
+                    return var;
+                }
             }
             break;
 
@@ -526,14 +530,14 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // Perform constant folding on vectors against scalars, e.g.: half4(2) + 2
     if (leftType.isVector() && leftType.componentType() == rightType) {
         if (rightType.isFloat()) {
-            return simplify_vector(context, *left, op, splat_scalar(*right, left->type()));
+            return simplify_vector(context, *left, op, ConstructorSplat(*right, left->type()));
         }
         if (rightType.isInteger()) {
-            return simplify_vector(context, *left, op, splat_scalar(*right, left->type()));
+            return simplify_vector(context, *left, op, ConstructorSplat(*right, left->type()));
         }
         if (rightType.isBoolean()) {
             return simplify_vector_equality(context, *left, op,
-                                            splat_scalar(*right, left->type()));
+                                            ConstructorSplat(*right, left->type()));
         }
         return nullptr;
     }
@@ -541,13 +545,13 @@ std::unique_ptr<Expression> ConstantFolder::Simplify(const Context& context,
     // Perform constant folding on scalars against vectors, e.g.: 2 + half4(2)
     if (rightType.isVector() && rightType.componentType() == leftType) {
         if (leftType.isFloat()) {
-            return simplify_vector(context, splat_scalar(*left, right->type()), op, *right);
+            return simplify_vector(context, ConstructorSplat(*left, right->type()), op, *right);
         }
         if (leftType.isInteger()) {
-            return simplify_vector(context, splat_scalar(*left, right->type()), op, *right);
+            return simplify_vector(context, ConstructorSplat(*left, right->type()), op, *right);
         }
         if (leftType.isBoolean()) {
-            return simplify_vector_equality(context, splat_scalar(*left, right->type()),
+            return simplify_vector_equality(context, ConstructorSplat(*left, right->type()),
                                             op, *right);
         }
         return nullptr;

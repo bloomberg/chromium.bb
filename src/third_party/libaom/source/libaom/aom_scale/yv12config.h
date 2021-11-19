@@ -29,6 +29,7 @@ extern "C" {
 #define AOM_INTERP_EXTEND 4
 #define AOM_BORDER_IN_PIXELS 288
 #define AOM_ENC_NO_SCALE_BORDER 160
+#define AOM_ENC_ALLINTRA_BORDER 64
 #define AOM_DEC_BORDER_IN_PIXELS 64
 
 /*!\endcond */

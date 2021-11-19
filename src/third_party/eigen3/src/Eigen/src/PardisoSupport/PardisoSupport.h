@@ -32,6 +32,8 @@
 #ifndef EIGEN_PARDISOSUPPORT_H
 #define EIGEN_PARDISOSUPPORT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 template<typename MatrixType_> class PardisoLU;

@@ -20,6 +20,15 @@ bool IsCastStreamingAudioOnlyAppId(const std::string& app_id) {
   return app_id == GetCastStreamingAudioOnlyAppId();
 }
 
+bool IsCastStreamingReceiverAppId(const std::string& app_id) {
+  return app_id == GetCastStreamingAudioVideoAppId() ||
+         app_id == GetCastStreamingAudioOnlyAppId() ||
+         app_id == GetAndroidMirroringAudioVideoAppId() ||
+         app_id == GetAndroidMirroringAudioOnlyAppId() ||
+         app_id == GetAndroidAppStreamingAudioVideoAppId() ||
+         app_id == GetIosAppStreamingAudioVideoAppId();
+}
+
 std::vector<std::string> GetCastStreamingAppIds() {
   return std::vector<std::string>(
       {GetCastStreamingAudioVideoAppId(), GetCastStreamingAudioOnlyAppId()});

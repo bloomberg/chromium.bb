@@ -8,7 +8,7 @@ import {isChromeOS, isLacros} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {eventToPromise} from '../test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 /**
  * @param {boolean=} isPdf
@@ -41,7 +41,8 @@ export function getDefaultInitialSettings(isPdf = false) {
 /**
  * @param {string} printerId
  * @param {string=} opt_printerName Defaults to an empty string.
- * @return {!{printer: !capabilities: !Cdd}}
+ * @return {!{printer: {deviceName: string, printerName: string},
+ *                      capabilities: !Cdd}}
  */
 export function getCddTemplate(printerId, opt_printerName) {
   const template = {

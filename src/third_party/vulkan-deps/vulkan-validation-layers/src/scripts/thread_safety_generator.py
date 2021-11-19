@@ -31,8 +31,6 @@ from common_codegen import *
 # layer generation.
 #
 # Additional members
-#   prefixText - list of strings to prefix generated header with
-#     (usually a copyright statement + calling convention macros).
 #   protectFile - True if multiple inclusion protection should be
 #     generated (based on the filename) around the entire header.
 #   protectFeature - True if #ifndef..#endif protection should be
@@ -64,27 +62,26 @@ class ThreadGeneratorOptions(GeneratorOptions):
                  filename = None,
                  directory = '.',
                  genpath = None,
-                 apiname = None,
+                 apiname = 'vulkan',
                  profile = None,
                  versions = '.*',
                  emitversions = '.*',
-                 defaultExtensions = None,
+                 defaultExtensions = 'vulkan',
                  addExtensions = None,
                  removeExtensions = None,
                  emitExtensions = None,
                  emitSpirv = None,
                  sortProcedure = regSortFeatures,
-                 prefixText = "",
                  genFuncPointers = True,
                  protectFile = True,
-                 protectFeature = True,
-                 apicall = '',
-                 apientry = '',
-                 apientryp = '',
+                 protectFeature = False,
+                 apicall = 'VKAPI_ATTR ',
+                 apientry = 'VKAPI_CALL ',
+                 apientryp = 'VKAPI_PTR *',
                  indentFuncProto = True,
                  indentFuncPointer = False,
-                 alignFuncParam = 0,
-                 expandEnumerants = True):
+                 alignFuncParam = 48,
+                 expandEnumerants = False):
         GeneratorOptions.__init__(self,
                 conventions = conventions,
                 filename = filename,
@@ -100,7 +97,6 @@ class ThreadGeneratorOptions(GeneratorOptions):
                 emitExtensions = emitExtensions,
                 emitSpirv = emitSpirv,
                 sortProcedure = sortProcedure)
-        self.prefixText      = prefixText
         self.genFuncPointers = genFuncPointers
         self.protectFile     = protectFile
         self.protectFeature  = protectFeature
@@ -426,13 +422,8 @@ public:
 
     // Override chassis read/write locks for this validation object
     // This override takes a deferred lock. i.e. it is not acquired.
-    read_lock_guard_t read_lock() override;
-    write_lock_guard_t write_lock() override;
-
-    // If this ThreadSafety is for a VkDevice, then parent_instance points to the
-    // ThreadSafety object of its parent VkInstance. This is used to get to the counters
-    // for objects created with the instance as parent.
-    ThreadSafety *parent_instance;
+    ReadLockGuard ReadLock() override;
+    WriteLockGuard WriteLock() override;
 
     vl_concurrent_unordered_map<VkCommandBuffer, VkCommandPool, 6> command_pool_map;
     layer_data::unordered_map<VkCommandPool, layer_data::unordered_set<VkCommandBuffer>> pool_command_buffers_map;
@@ -469,9 +460,13 @@ COUNTER_CLASS_DEFINITIONS_TEMPLATE
     counter<uint64_t> c_uint64_t;
 #endif  // DISTINCT_NONDISPATCHABLE_HANDLES
 
+    // If this ThreadSafety is for a VkDevice, then parent_instance points to the
+    // ThreadSafety object of its parent VkInstance. This is used to get to the counters
+    // for objects created with the instance as parent.
+    ThreadSafety *parent_instance;
+
     ThreadSafety(ThreadSafety *parent)
-        : parent_instance(parent),
-          c_VkCommandBuffer("VkCommandBuffer", kVulkanObjectTypeCommandBuffer, this),
+        : c_VkCommandBuffer("VkCommandBuffer", kVulkanObjectTypeCommandBuffer, this),
           c_VkDevice("VkDevice", kVulkanObjectTypeDevice, this),
           c_VkInstance("VkInstance", kVulkanObjectTypeInstance, this),
           c_VkQueue("VkQueue", kVulkanObjectTypeQueue, this),
@@ -482,8 +477,9 @@ COUNTER_CLASS_INSTANCES_TEMPLATE
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
-          c_uint64_t("NON_DISPATCHABLE_HANDLE", kVulkanObjectTypeUnknown, this)
+          c_uint64_t("NON_DISPATCHABLE_HANDLE", kVulkanObjectTypeUnknown, this),
 #endif  // DISTINCT_NONDISPATCHABLE_HANDLES
+          parent_instance(parent)
     {
         container_type = LayerObjectTypeThreading;
     };
@@ -636,12 +632,12 @@ void PostCallRecordGetRandROutputDisplayEXT(
 
 
     inline_custom_source_preamble = """
-read_lock_guard_t ThreadSafety::read_lock() {
-    return read_lock_guard_t(validation_object_mutex, std::defer_lock);
+ReadLockGuard ThreadSafety::ReadLock() {
+    return ReadLockGuard(validation_object_mutex, std::defer_lock);
 }
 
-write_lock_guard_t ThreadSafety::write_lock() {
-    return write_lock_guard_t(validation_object_mutex, std::defer_lock);
+WriteLockGuard ThreadSafety::WriteLock() {
+    return WriteLockGuard(validation_object_mutex, std::defer_lock);
 }
 
 void ThreadSafety::PreCallRecordAllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo *pAllocateInfo,
@@ -657,7 +653,7 @@ void ThreadSafety::PostCallRecordAllocateCommandBuffers(VkDevice device, const V
 
     // Record mapping from command buffer to command pool
     if(pCommandBuffers) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_command_buffers = pool_command_buffers_map[pAllocateInfo->commandPool];
         for (uint32_t index = 0; index < pAllocateInfo->commandBufferCount; index++) {
             command_pool_map.insert_or_assign(pCommandBuffers[index], pAllocateInfo->commandPool);
@@ -714,7 +710,7 @@ void ThreadSafety::PostCallRecordAllocateDescriptorSets(VkDevice device, const V
     FinishWriteObject(pAllocateInfo->descriptorPool, "vkAllocateDescriptorSets");
     // Host access to pAllocateInfo::descriptorPool must be externally synchronized
     if (VK_SUCCESS == result) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_descriptor_sets = pool_descriptor_sets_map[pAllocateInfo->descriptorPool];
         for (uint32_t index0 = 0; index0 < pAllocateInfo->descriptorSetCount; index0++) {
             CreateObject(pDescriptorSets[index0]);
@@ -763,7 +759,7 @@ void ThreadSafety::PostCallRecordFreeDescriptorSets(
     // Host access to each member of pDescriptorSets must be externally synchronized
     // Host access to pAllocateInfo::descriptorPool must be externally synchronized
     if (VK_SUCCESS == result) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_descriptor_sets = pool_descriptor_sets_map[descriptorPool];
         for (uint32_t index0 = 0; index0 < descriptorSetCount; index0++) {
             DestroyObject(pDescriptorSets[index0]);
@@ -779,7 +775,7 @@ void ThreadSafety::PreCallRecordDestroyDescriptorPool(
     StartReadObjectParentInstance(device, "vkDestroyDescriptorPool");
     StartWriteObject(descriptorPool, "vkDestroyDescriptorPool");
     // Host access to descriptorPool must be externally synchronized
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     auto iterator = pool_descriptor_sets_map.find(descriptorPool);
     // Possible to have no descriptor sets allocated from pool
     if (iterator != pool_descriptor_sets_map.end()) {
@@ -798,7 +794,7 @@ void ThreadSafety::PostCallRecordDestroyDescriptorPool(
     DestroyObject(descriptorPool);
     // Host access to descriptorPool must be externally synchronized
     {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         // remove references to implicitly freed descriptor sets
         for(auto descriptor_set : pool_descriptor_sets_map[descriptorPool]) {
             FinishWriteObject(descriptor_set, "vkDestroyDescriptorPool");
@@ -817,7 +813,7 @@ void ThreadSafety::PreCallRecordResetDescriptorPool(
     StartWriteObject(descriptorPool, "vkResetDescriptorPool");
     // Host access to descriptorPool must be externally synchronized
     // any sname:VkDescriptorSet objects allocated from pname:descriptorPool must be externally synchronized between host accesses
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     auto iterator = pool_descriptor_sets_map.find(descriptorPool);
     // Possible to have no descriptor sets allocated from pool
     if (iterator != pool_descriptor_sets_map.end()) {
@@ -838,7 +834,7 @@ void ThreadSafety::PostCallRecordResetDescriptorPool(
     // any sname:VkDescriptorSet objects allocated from pname:descriptorPool must be externally synchronized between host accesses
     if (VK_SUCCESS == result) {
         // remove references to implicitly freed descriptor sets
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         for(auto descriptor_set : pool_descriptor_sets_map[descriptorPool]) {
             FinishWriteObject(descriptor_set, "vkResetDescriptorPool");
             DestroyObject(descriptor_set);
@@ -1002,7 +998,7 @@ void ThreadSafety::PreCallRecordFreeCommandBuffers(VkDevice device, VkCommandPoo
         // so this isn't a no-op
         // The driver may immediately reuse command buffers in another thread.
         // These updates need to be done before calling down to the driver.
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &pool_command_buffers = pool_command_buffers_map[commandPool];
         for (uint32_t index = 0; index < commandBufferCount; index++) {
             StartWriteObject(pCommandBuffers[index], "vkFreeCommandBuffers", lockCommandPool);
@@ -1063,7 +1059,7 @@ void ThreadSafety::PreCallRecordDestroyCommandPool(VkDevice device, VkCommandPoo
     c_VkCommandPoolContents.StartWrite(commandPool, "vkDestroyCommandPool");
     // Host access to commandPool must be externally synchronized
 
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     // The driver may immediately reuse command buffers in another thread.
     // These updates need to be done before calling down to the driver.
     // remove references to implicitly freed command pools
@@ -1095,7 +1091,7 @@ void ThreadSafety::PostCallRecordGetSwapchainImagesKHR(VkDevice device, VkSwapch
     FinishReadObjectParentInstance(device, "vkGetSwapchainImagesKHR");
     FinishReadObjectParentInstance(swapchain, "vkGetSwapchainImagesKHR");
     if (pSwapchainImages != NULL) {
-        auto lock = write_lock_guard_t(thread_safety_lock);
+        auto lock = WriteLockGuard(thread_safety_lock);
         auto &wrapped_swapchain_image_handles = swapchain_wrapped_image_handle_map[swapchain];
         for (uint32_t i = static_cast<uint32_t>(wrapped_swapchain_image_handles.size()); i < *pSwapchainImageCount; i++) {
             CreateObject(pSwapchainImages[i]);
@@ -1111,7 +1107,7 @@ void ThreadSafety::PreCallRecordDestroySwapchainKHR(
     StartReadObjectParentInstance(device, "vkDestroySwapchainKHR");
     StartWriteObjectParentInstance(swapchain, "vkDestroySwapchainKHR");
     // Host access to swapchain must be externally synchronized
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     for (auto &image_handle : swapchain_wrapped_image_handle_map[swapchain]) {
         StartWriteObject(image_handle, "vkDestroySwapchainKHR");
     }
@@ -1125,7 +1121,7 @@ void ThreadSafety::PostCallRecordDestroySwapchainKHR(
     FinishWriteObjectParentInstance(swapchain, "vkDestroySwapchainKHR");
     DestroyObjectParentInstance(swapchain);
     // Host access to swapchain must be externally synchronized
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     for (auto &image_handle : swapchain_wrapped_image_handle_map[swapchain]) {
         FinishWriteObject(image_handle, "vkDestroySwapchainKHR");
         DestroyObject(image_handle);
@@ -1146,7 +1142,7 @@ void ThreadSafety::PostCallRecordDestroyDevice(
     FinishWriteObjectParentInstance(device, "vkDestroyDevice");
     DestroyObjectParentInstance(device);
     // Host access to device must be externally synchronized
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     for (auto &queue : device_queues_map[device]) {
         DestroyObject(queue);
     }
@@ -1168,7 +1164,7 @@ void ThreadSafety::PostCallRecordGetDeviceQueue(
     VkQueue*                                    pQueue) {
     FinishReadObjectParentInstance(device, "vkGetDeviceQueue");
     CreateObject(*pQueue);
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     device_queues_map[device].insert(*pQueue);
 }
 
@@ -1185,7 +1181,7 @@ void ThreadSafety::PostCallRecordGetDeviceQueue2(
     VkQueue*                                    pQueue) {
     FinishReadObjectParentInstance(device, "vkGetDeviceQueue2");
     CreateObject(*pQueue);
-    auto lock = write_lock_guard_t(thread_safety_lock);
+    auto lock = WriteLockGuard(thread_safety_lock);
     device_queues_map[device].insert(*pQueue);
 }
 
@@ -1341,7 +1337,7 @@ void ThreadSafety::PostCallRecordGetRandROutputDisplayEXT(
 void ThreadSafety::PreCallRecordDeviceWaitIdle(
     VkDevice                                    device) {
     StartReadObjectParentInstance(device, "vkDeviceWaitIdle");
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     const auto &queue_set = device_queues_map[device];
     for (const auto &queue : queue_set) {
         StartWriteObject(queue, "vkDeviceWaitIdle");
@@ -1352,7 +1348,7 @@ void ThreadSafety::PostCallRecordDeviceWaitIdle(
     VkDevice                                    device,
     VkResult                                    result) {
     FinishReadObjectParentInstance(device, "vkDeviceWaitIdle");
-    auto lock = read_lock_guard_t(thread_safety_lock);
+    auto lock = ReadLockGuard(thread_safety_lock);
     const auto &queue_set = device_queues_map[device];
     for (const auto &queue : queue_set) {
         FinishWriteObject(queue, "vkDeviceWaitIdle");
@@ -1558,6 +1554,7 @@ void ThreadSafety::PostCallRecordDeviceWaitIdle(
         # Initialize members that require the tree
         self.handle_types = GetHandleTypes(self.registry.tree)
         self.is_aliased_type = GetHandleAliased(self.registry.tree)
+        self.type_guards = GetTypeGuards(self.registry.tree)
 
         # TODO: LUGMAL -- remove this and add our copyright
         # User-supplied prefix text, if any (list of strings)
@@ -1586,16 +1583,17 @@ void ThreadSafety::PostCallRecordDeviceWaitIdle(
 
         for obj in sorted(self.non_dispatchable_types):
             if (not self.is_aliased_type[obj]):
-                counter_class_defs += '    counter<%s> c_%s;\n' % (obj, obj)
+                obj_guard = self.type_guards.get(obj)
+                counter_class_defs += Guarded(obj_guard, '    counter<%s> c_%s;\n' % (obj, obj))
                 obj_type = 'kVulkanObjectType' + obj[2:]
-                counter_class_instances += '          c_%s("%s", %s, this),\n' % (obj, obj, obj_type)
+                counter_class_instances += Guarded(obj_guard, '          c_%s("%s", %s, this),\n' % (obj, obj, obj_type))
                 if 'VkSurface' in obj or 'VkSwapchainKHR' in obj or 'VkDebugReportCallback' in obj or 'VkDebugUtilsMessenger' in obj:
                     counter_class_bodies += 'WRAPPER_PARENT_INSTANCE(%s)\n' % obj
                 else:
-                    counter_class_bodies += 'WRAPPER(%s)\n' % obj
+                    counter_class_bodies += Guarded(obj_guard, 'WRAPPER(%s)\n' % obj)
         if self.header_file:
             class_def = self.inline_custom_header_preamble.replace('COUNTER_CLASS_DEFINITIONS_TEMPLATE', counter_class_defs)
-            class_def = class_def.replace('COUNTER_CLASS_INSTANCES_TEMPLATE', counter_class_instances[:-2]) # Kill last comma
+            class_def = class_def.replace('COUNTER_CLASS_INSTANCES_TEMPLATE', counter_class_instances)
             class_def = class_def.replace('COUNTER_CLASS_BODIES_TEMPLATE', counter_class_bodies)
             write(class_def, file=self.outFile)
         write('\n'.join(self.sections['command']), file=self.outFile)

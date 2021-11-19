@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_model_provider.h"
+#include "ash/app_list/model/app_list_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
 
 TestAppListClient::TestAppListClient() = default;
+
 TestAppListClient::~TestAppListClient() = default;
 
 void TestAppListClient::StartSearch(const std::u16string& trimmed_query) {
@@ -28,9 +31,10 @@ void TestAppListClient::OpenSearchResult(int profile_id,
   last_opened_search_result_ = result_id;
 }
 
-void TestAppListClient::InvokeSearchResultAction(const std::string& result_id,
-                                                 int action_index) {
-  invoked_result_actions_.push_back(std::make_pair(result_id, action_index));
+void TestAppListClient::InvokeSearchResultAction(
+    const std::string& result_id,
+    SearchResultActionType action) {
+  invoked_result_actions_.push_back(std::make_pair(result_id, action));
 }
 
 void TestAppListClient::GetSearchResultContextMenuModel(

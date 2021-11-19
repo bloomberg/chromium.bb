@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import type * as Platform from '../../core/platform/platform.js';
+
 // TODO(crbug.com/1167717): Make this a const enum again
 // eslint-disable-next-line rulesdir/const_enum
 export enum Events {
@@ -84,7 +86,7 @@ export interface DevToolsFileSystem {
   type: string;
   fileSystemName: string;
   rootURL: string;
-  fileSystemPath: string;
+  fileSystemPath: Platform.DevToolsPath.RawPathString;
 }
 
 export interface FileSystemAddedEvent {
@@ -93,9 +95,9 @@ export interface FileSystemAddedEvent {
 }
 
 export interface FilesChangedEvent {
-  changed: string[];
-  added: string[];
-  removed: string[];
+  changed: Platform.DevToolsPath.RawPathString[];
+  added: Platform.DevToolsPath.RawPathString[];
+  removed: Platform.DevToolsPath.RawPathString[];
 }
 
 export interface IndexingEvent {
@@ -131,7 +133,7 @@ export interface SavedURLEvent {
 
 export interface SearchCompletedEvent {
   requestId: number;
-  files: string[];
+  files: Platform.DevToolsPath.RawPathString[];
 }
 
 // While `EventDescriptors` are used to dynamically dispatch host binding events,
@@ -153,7 +155,7 @@ export type EventTypes = {
   [Events.EnterInspectElementMode]: void,
   [Events.EyeDropperPickedColor]: EyeDropperPickedColorEvent,
   [Events.FileSystemsLoaded]: DevToolsFileSystem[],
-  [Events.FileSystemRemoved]: string,
+  [Events.FileSystemRemoved]: Platform.DevToolsPath.RawPathString,
   [Events.FileSystemAdded]: FileSystemAddedEvent,
   [Events.FileSystemFilesChangedAddedRemoved]: FilesChangedEvent,
   [Events.IndexingTotalWorkCalculated]: IndexingTotalWorkCalculatedEvent,
@@ -237,6 +239,8 @@ export interface InspectorFrontendHostAPI {
   removePreference(name: string): void;
 
   clearPreferences(): void;
+
+  getSyncInformation(callback: (arg0: SyncInformation) => void): void;
 
   upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void;
 
@@ -322,6 +326,16 @@ export interface ShowSurveyResult {
 export interface CanShowSurveyResult {
   canShowSurvey: boolean;
 }
+export interface SyncInformation {
+  /** Whether Chrome Sync is enabled and active */
+  isSyncActive: boolean;
+  /** Whether syncing of Chrome Settings is enabled via Chrome Sync is enabled */
+  arePreferencesSynced?: boolean;
+  /** The email of the account used for syncing */
+  accountEmail?: string;
+  /** The image of the account used for syncing. Its a base64 encoded PNG */
+  accountImage?: string;
+}
 
 /**
  * Enum for recordPerformanceHistogram
@@ -354,4 +368,5 @@ export enum EnumeratedHistogram {
   LinearMemoryInspectorTarget = 'DevTools.LinearMemoryInspector.Target',
   Language = 'DevTools.Language',
   ConsoleShowsCorsErrors = 'DevTools.ConsoleShowsCorsErrors',
+  SyncSetting = 'DevTools.SyncSetting',
 }

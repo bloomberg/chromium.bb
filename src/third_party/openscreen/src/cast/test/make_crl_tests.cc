@@ -137,10 +137,12 @@ int CastMain() {
   july2020.day = 23;
   std::chrono::seconds not_before = DateTimeToSeconds(july2019);
   std::chrono::seconds not_after = DateTimeToSeconds(july2020);
-  TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
-                              device_cert.get(), inter_cert.get());
-  PackCrlIntoFile(data_path + "good_crl.pb", tbs_crl, crl_inter_der[0],
-                  crl_inter_key.get());
+  {
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+                                device_cert.get(), inter_cert.get());
+    PackCrlIntoFile(data_path + "good_crl.pb", tbs_crl, crl_inter_der[0],
+                    crl_inter_key.get());
+  }
 
   // NOTE: CRL used outside its valid time range.
   {
@@ -148,8 +150,8 @@ int CastMain() {
     august2019.month = 8;
     august2019.year = 2019;
     august2019.day = 16;
-    std::chrono::seconds not_after = DateTimeToSeconds(august2019);
-    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after.count(),
+    std::chrono::seconds not_after_invalid = DateTimeToSeconds(august2019);
+    TbsCrl tbs_crl = MakeTbsCrl(not_before.count(), not_after_invalid.count(),
                                 device_cert.get(), inter_cert.get());
     PackCrlIntoFile(data_path + "invalid_time_crl.pb", tbs_crl,
                     crl_inter_der[0], crl_inter_key.get());

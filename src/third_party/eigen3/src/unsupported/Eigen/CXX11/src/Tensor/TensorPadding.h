@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_PADDING_H
 #define EIGEN_CXX11_TENSOR_TENSOR_PADDING_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorPadding

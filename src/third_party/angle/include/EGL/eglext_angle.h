@@ -115,10 +115,10 @@
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_EGL_ANGLE 0x348E
 #endif /* EGL_ANGLE_platform_angle_device_type_egl_angle */
 
-#ifndef EGL_ANGLE_platform_angle_context_virtualization
-#define EGL_ANGLE_platform_angle_context_virtualization 1
-#define EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE 0x3481
-#endif /* EGL_ANGLE_platform_angle_context_virtualization */
+#ifndef EGL_ANGLE_context_virtualization
+#define EGL_ANGLE_context_virtualization 1
+#define EGL_CONTEXT_VIRTUALIZATION_GROUP_ANGLE 0x3481
+#endif /* EGL_ANGLE_context_virtualization */
 
 #ifndef EGL_ANGLE_platform_angle_device_context_volatile_eagl
 #define EGL_ANGLE_platform_angle_device_context_volatile_eagl 1
@@ -354,6 +354,15 @@ EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffersWithFrameTokenANGLE(EGLDisplay dpy, 
 #define EGL_ANGLE_create_surface_swap_interval 1
 #define EGL_SWAP_INTERVAL_ANGLE 0x322F
 #endif /* EGL_ANGLE_create_surface_swap_interval */
+
+#ifndef EGL_ANGLE_device_vulkan
+#define EGL_ANGLE_device_vulkan 1
+#define EGL_VULKAN_DEVICE_ANGLE 0x34A8
+#define EGL_VULKAN_EXTENSIONS_ANGLE 0x34A9
+#define EGL_VULKAN_PHYSICAL_DEVICE_ANGLE 0x34AA
+#define EGL_VULKAN_QUEUE_ANGLE 0x34AB
+#define EGL_VULKAN_QUEUE_FAMILIY_INDEX_ANGLE 0x34AC
+#endif /* EGL_ANGLE_device_vulkan */
 
 // clang-format on
 

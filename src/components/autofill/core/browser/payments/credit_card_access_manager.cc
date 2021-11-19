@@ -1011,7 +1011,7 @@ void CreditCardAccessManager::FetchVirtualCard() {
 
   // Send a risk-based unmasking request to server to attempt to fetch the card.
   absl::optional<GURL> last_committed_url_origin =
-      client_->GetLastCommittedURL().GetOrigin();
+      client_->GetLastCommittedURL().DeprecatedGetOriginAsURL();
   if (!last_committed_url_origin.has_value()) {
     accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
     AutofillMetrics::LogServerCardUnmaskResult(
@@ -1025,8 +1025,6 @@ void CreditCardAccessManager::FetchVirtualCard() {
   virtual_card_unmask_request_details_.last_committed_url_origin =
       last_committed_url_origin;
   virtual_card_unmask_request_details_.card = *card_;
-  virtual_card_unmask_request_details_.reason =
-      AutofillClient::UnmaskCardReason::kAutofill;
   virtual_card_unmask_request_details_.billing_customer_number =
       payments::GetBillingCustomerId(personal_data_manager_);
 
@@ -1149,6 +1147,15 @@ void CreditCardAccessManager::OnUserAcceptedAuthenticationSelectionDialog(
 
 void CreditCardAccessManager::OnVirtualCardUnmaskCancelled() {
   accessor_->OnCreditCardFetched(CreditCardFetchResult::kTransientError);
+
+  if (unmask_auth_flow_type_ == UnmaskAuthFlowType::kOtp ||
+      unmask_auth_flow_type_ == UnmaskAuthFlowType::kOtpFallbackFromFido) {
+    // It is possible to have the user hit the cancel button during an in-flight
+    // Virtual Card Unmask request, so we need to reset the state of the
+    // CreditCardOtpAuthenticator as well to ensure the flow does not continue,
+    // as continuing the flow can cause a crash.
+    GetOrCreateOtpAuthenticator()->Reset();
+  }
 
   AutofillMetrics::VirtualCardUnmaskFlowType flow_type;
   switch (unmask_auth_flow_type_) {

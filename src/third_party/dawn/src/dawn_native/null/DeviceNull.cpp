@@ -27,9 +27,8 @@ namespace dawn_native { namespace null {
     Adapter::Adapter(InstanceBase* instance) : AdapterBase(instance, wgpu::BackendType::Null) {
         mPCIInfo.name = "Null backend";
         mAdapterType = wgpu::AdapterType::CPU;
-
-        // Enable all features by default for the convenience of tests.
-        mSupportedFeatures.featuresBitSet.set();
+        MaybeError err = Initialize();
+        ASSERT(err.IsSuccess());
     }
 
     Adapter::~Adapter() = default;
@@ -41,6 +40,21 @@ namespace dawn_native { namespace null {
     // Used for the tests that intend to use an adapter without all features enabled.
     void Adapter::SetSupportedFeatures(const std::vector<const char*>& requiredFeatures) {
         mSupportedFeatures = GetInstance()->FeatureNamesToFeaturesSet(requiredFeatures);
+    }
+
+    MaybeError Adapter::InitializeImpl() {
+        return {};
+    }
+
+    MaybeError Adapter::InitializeSupportedFeaturesImpl() {
+        // Enable all features by default for the convenience of tests.
+        mSupportedFeatures.featuresBitSet.set();
+        return {};
+    }
+
+    MaybeError Adapter::InitializeSupportedLimitsImpl(CombinedLimits* limits) {
+        GetDefaultLimits(&limits->v1);
+        return {};
     }
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
@@ -56,7 +70,8 @@ namespace dawn_native { namespace null {
             // There is always a single Null adapter because it is purely CPU based and doesn't
             // depend on the system.
             std::vector<std::unique_ptr<AdapterBase>> adapters;
-            adapters.push_back(std::make_unique<Adapter>(GetInstance()));
+            std::unique_ptr<Adapter> adapter = std::make_unique<Adapter>(GetInstance());
+            adapters.push_back(std::move(adapter));
             return adapters;
         }
     };
@@ -87,7 +102,7 @@ namespace dawn_native { namespace null {
     }
 
     Device::~Device() {
-        ShutDownBase();
+        Destroy();
     }
 
     MaybeError Device::Initialize() {
@@ -112,7 +127,7 @@ namespace dawn_native { namespace null {
         const CommandBufferDescriptor* descriptor) {
         return AcquireRef(new CommandBuffer(encoder, descriptor));
     }
-    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
+    Ref<ComputePipelineBase> Device::CreateUninitializedComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
         return AcquireRef(new ComputePipeline(this, descriptor));
     }
@@ -164,7 +179,7 @@ namespace dawn_native { namespace null {
         return std::move(stagingBuffer);
     }
 
-    void Device::ShutDownImpl() {
+    void Device::DestroyImpl() {
         ASSERT(GetState() == State::Disconnected);
 
         // Clear pending operations before checking mMemoryUsage because some operations keep a
@@ -263,17 +278,20 @@ namespace dawn_native { namespace null {
           BindGroupBase(device, descriptor, mBindingDataAllocation) {
     }
 
+    // BindGroupLayout
+
+    BindGroupLayout::BindGroupLayout(DeviceBase* device,
+                                     const BindGroupLayoutDescriptor* descriptor,
+                                     PipelineCompatibilityToken pipelineCompatibilityToken)
+        : BindGroupLayoutBase(device, descriptor, pipelineCompatibilityToken) {
+    }
+
     // Buffer
 
     Buffer::Buffer(Device* device, const BufferDescriptor* descriptor)
         : BufferBase(device, descriptor) {
         mBackingData = std::unique_ptr<uint8_t[]>(new uint8_t[GetSize()]);
         mAllocatedSize = GetSize();
-    }
-
-    Buffer::~Buffer() {
-        DestroyInternal();
-        ToBackend(GetDevice())->DecrementMemoryUsage(GetSize());
     }
 
     bool Buffer::IsCPUWritableAtCreation() const {
@@ -311,7 +329,8 @@ namespace dawn_native { namespace null {
     void Buffer::UnmapImpl() {
     }
 
-    void Buffer::DestroyImpl() {
+    void Buffer::DestroyApiObjectImpl() {
+        ToBackend(GetDevice())->DecrementMemoryUsage(GetSize());
     }
 
     // CommandBuffer
@@ -326,11 +345,7 @@ namespace dawn_native { namespace null {
         : QuerySetBase(device, descriptor) {
     }
 
-    QuerySet::~QuerySet() {
-        DestroyInternal();
-    }
-
-    void QuerySet::DestroyImpl() {
+    void QuerySet::DestroyApiObjectImpl() {
     }
 
     // Queue
@@ -356,6 +371,11 @@ namespace dawn_native { namespace null {
                                       const void* data,
                                       size_t size) {
         ToBackend(buffer)->DoWriteBuffer(bufferOffset, data, size);
+        return {};
+    }
+
+    // ComputePipeline
+    MaybeError ComputePipeline::Initialize() {
         return {};
     }
 

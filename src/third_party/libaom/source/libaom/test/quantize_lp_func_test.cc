@@ -348,4 +348,18 @@ INSTANTIATE_TEST_SUITE_P(SSE2, FullPrecisionQuantizeLpTest,
                          ::testing::ValuesIn(kQParamArraySSE2));
 #endif
 
+#if HAVE_NEON
+const QuantizeParam kQParamArrayNEON[] = {
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_neon,
+             static_cast<TX_SIZE>(TX_16X16), AOM_BITS_8),
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_neon,
+             static_cast<TX_SIZE>(TX_8X8), AOM_BITS_8),
+  make_tuple(&av1_quantize_lp_c, &av1_quantize_lp_neon,
+             static_cast<TX_SIZE>(TX_4X4), AOM_BITS_8)
+};
+
+INSTANTIATE_TEST_SUITE_P(NEON, FullPrecisionQuantizeLpTest,
+                         ::testing::ValuesIn(kQParamArrayNEON));
+#endif
+
 }  // namespace

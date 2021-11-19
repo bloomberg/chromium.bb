@@ -1,6 +1,0 @@
-{
-  "dependencies": [
-    "ui/legacy",
-    "ui/legacy/components/object_ui"
-  ]
-}

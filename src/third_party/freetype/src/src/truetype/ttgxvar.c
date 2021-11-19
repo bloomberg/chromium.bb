@@ -3164,7 +3164,7 @@
   /*************************************************************************/
 
 
-#ifdef TT_CONFIG_GPTION_BYTECODE_INTERPRETER
+#ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 
   static FT_Error
   tt_cvt_ready_iterator( FT_ListNode  node,
@@ -3211,7 +3211,7 @@
   tt_face_vary_cvt( TT_Face    face,
                     FT_Stream  stream )
   {
-#ifdef TT_CONFIG_GPTION_BYTECODE_INTERPRETER
+#ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
 
     FT_Error   error;
     FT_Memory  memory = stream->memory;
@@ -3416,9 +3416,7 @@
                                         point_count == 0 ? face->cvt_size
                                                          : point_count );
 
-      if ( !points                                                        ||
-           !deltas                                                        ||
-           ( localpoints == ALL_POINTS && point_count != face->cvt_size ) )
+      if ( !points || !deltas )
         ; /* failure, ignore it */
 
       else if ( localpoints == ALL_POINTS )

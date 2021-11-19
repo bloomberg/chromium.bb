@@ -334,7 +334,7 @@ class GitApi(recipe_api.RecipeApi):
       step_test_data = lambda: self.m.raw_io.test_api.stream_output(test_data)
     return self('show', commit, '--format=%at', '-s',
                 stdout=self.m.raw_io.output(),
-                step_test_data=step_test_data).stdout.rstrip()
+                step_test_data=step_test_data).stdout.rstrip().decode('utf-8')
 
   def rebase(self, name_prefix, branch, dir_path, remote_name=None,
              **kwargs):

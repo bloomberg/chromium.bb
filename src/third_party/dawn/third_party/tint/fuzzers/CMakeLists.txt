@@ -24,16 +24,13 @@ function(add_tint_fuzzer NAME)
     random_generator.h
     tint_common_fuzzer.cc
     tint_common_fuzzer.h
+    tint_reader_writer_fuzzer.h
     transform_builder.h
     )
   target_link_libraries(${NAME} libtint-fuzz)
   tint_default_compile_options(${NAME})
   target_compile_options(${NAME} PRIVATE -Wno-missing-prototypes)
 endfunction()
-
-if (${TINT_BUILD_WGSL_READER})
-  add_tint_fuzzer(tint_wgsl_reader_fuzzer)
-endif()
 
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_WGSL_WRITER})
   add_tint_fuzzer(tint_wgsl_reader_wgsl_writer_fuzzer)
@@ -43,7 +40,6 @@ if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_SPV_WRITER})
   add_tint_fuzzer(tint_all_transforms_fuzzer)
   add_tint_fuzzer(tint_binding_remapper_fuzzer)
   add_tint_fuzzer(tint_first_index_offset_fuzzer)
-  add_tint_fuzzer(tint_inspector_fuzzer)
   add_tint_fuzzer(tint_renamer_fuzzer)
   add_tint_fuzzer(tint_robustness_fuzzer)
   add_tint_fuzzer(tint_single_entry_point_fuzzer)
@@ -57,10 +53,6 @@ endif()
 
 if (${TINT_BUILD_WGSL_READER} AND ${TINT_BUILD_MSL_WRITER})
   add_tint_fuzzer(tint_wgsl_reader_msl_writer_fuzzer)
-endif()
-
-if (${TINT_BUILD_SPV_READER})
-  add_tint_fuzzer(tint_spv_reader_fuzzer)
 endif()
 
 if (${TINT_BUILD_SPV_READER} AND ${TINT_BUILD_WGSL_WRITER})

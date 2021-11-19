@@ -14,7 +14,6 @@
 #include "src/core/SkTraceEvent.h"
 #include "src/sksl/SkSLConstantFolder.h"
 #include "src/sksl/SkSLDSLParser.h"
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLIntrinsicMap.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLProgramSettings.h"
@@ -28,12 +27,19 @@
 #include "src/sksl/dsl/priv/DSL_priv.h"
 #include "src/sksl/ir/SkSLExpression.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
+#include "src/sksl/ir/SkSLExternalFunctionReference.h"
+#include "src/sksl/ir/SkSLField.h"
+#include "src/sksl/ir/SkSLFieldAccess.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
+#include "src/sksl/ir/SkSLFunctionReference.h"
+#include "src/sksl/ir/SkSLInterfaceBlock.h"
 #include "src/sksl/ir/SkSLLiteral.h"
 #include "src/sksl/ir/SkSLModifiersDeclaration.h"
 #include "src/sksl/ir/SkSLNop.h"
 #include "src/sksl/ir/SkSLSymbolTable.h"
 #include "src/sksl/ir/SkSLTernaryExpression.h"
+#include "src/sksl/ir/SkSLTypeReference.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
 #include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/transform/SkSLProgramWriter.h"
@@ -132,54 +138,69 @@ Compiler::Compiler(const ShaderCapsClass* caps)
     SkASSERT(caps);
     fRootModule.fSymbols = this->makeRootSymbolTable();
     fPrivateModule.fSymbols = this->makePrivateSymbolTable(fRootModule.fSymbols);
-    fIRGenerator = std::make_unique<IRGenerator>(fContext.get());
 }
 
 Compiler::~Compiler() {}
 
-#define TYPE(t) fContext->fTypes.f ## t .get()
+#define TYPE(t) &BuiltinTypes::f ## t
+
+using BuiltinTypePtr = const std::unique_ptr<Type> BuiltinTypes::*;
+
+inline static constexpr BuiltinTypePtr kRootTypes[] = {
+    TYPE(Void),
+
+    TYPE( Float), TYPE( Float2), TYPE( Float3), TYPE( Float4),
+    TYPE(  Half), TYPE(  Half2), TYPE(  Half3), TYPE(  Half4),
+    TYPE(   Int), TYPE(   Int2), TYPE(   Int3), TYPE(   Int4),
+    TYPE(  UInt), TYPE(  UInt2), TYPE(  UInt3), TYPE(  UInt4),
+    TYPE( Short), TYPE( Short2), TYPE( Short3), TYPE( Short4),
+    TYPE(UShort), TYPE(UShort2), TYPE(UShort3), TYPE(UShort4),
+    TYPE(  Bool), TYPE(  Bool2), TYPE(  Bool3), TYPE(  Bool4),
+
+    TYPE(Float2x2), TYPE(Float2x3), TYPE(Float2x4),
+    TYPE(Float3x2), TYPE(Float3x3), TYPE(Float3x4),
+    TYPE(Float4x2), TYPE(Float4x3), TYPE(Float4x4),
+
+    TYPE(Half2x2),  TYPE(Half2x3),  TYPE(Half2x4),
+    TYPE(Half3x2),  TYPE(Half3x3),  TYPE(Half3x4),
+    TYPE(Half4x2),  TYPE(Half4x3),  TYPE(Half4x4),
+
+    TYPE(SquareMat), TYPE(SquareHMat),
+    TYPE(Mat),       TYPE(HMat),
+
+    // TODO(skia:12349): generic short/ushort
+    TYPE(GenType),   TYPE(GenIType), TYPE(GenUType),
+    TYPE(GenHType),   /* (GenSType)      (GenUSType) */
+    TYPE(GenBType),
+
+    TYPE(Vec),     TYPE(IVec),     TYPE(UVec),
+    TYPE(HVec),    TYPE(SVec),     TYPE(USVec),
+    TYPE(BVec),
+
+    TYPE(ColorFilter),
+    TYPE(Shader),
+    TYPE(Blender),
+};
+
+inline static constexpr BuiltinTypePtr kPrivateTypes[] = {
+    TYPE(Sampler1D), TYPE(Sampler2D), TYPE(Sampler3D),
+    TYPE(SamplerExternalOES),
+    TYPE(Sampler2DRect),
+
+    TYPE(ISampler2D),
+    TYPE(SubpassInput), TYPE(SubpassInputMS),
+
+    TYPE(Sampler),
+    TYPE(Texture2D),
+};
+
+#undef TYPE
 
 std::shared_ptr<SymbolTable> Compiler::makeRootSymbolTable() {
     auto rootSymbolTable = std::make_shared<SymbolTable>(*fContext, /*builtin=*/true);
 
-    const SkSL::Symbol* rootTypes[] = {
-        TYPE(Void),
-
-        TYPE( Float), TYPE( Float2), TYPE( Float3), TYPE( Float4),
-        TYPE(  Half), TYPE(  Half2), TYPE(  Half3), TYPE(  Half4),
-        TYPE(   Int), TYPE(   Int2), TYPE(   Int3), TYPE(   Int4),
-        TYPE(  UInt), TYPE(  UInt2), TYPE(  UInt3), TYPE(  UInt4),
-        TYPE( Short), TYPE( Short2), TYPE( Short3), TYPE( Short4),
-        TYPE(UShort), TYPE(UShort2), TYPE(UShort3), TYPE(UShort4),
-        TYPE(  Bool), TYPE(  Bool2), TYPE(  Bool3), TYPE(  Bool4),
-
-        TYPE(Float2x2), TYPE(Float2x3), TYPE(Float2x4),
-        TYPE(Float3x2), TYPE(Float3x3), TYPE(Float3x4),
-        TYPE(Float4x2), TYPE(Float4x3), TYPE(Float4x4),
-
-        TYPE(Half2x2),  TYPE(Half2x3),  TYPE(Half2x4),
-        TYPE(Half3x2),  TYPE(Half3x3),  TYPE(Half3x4),
-        TYPE(Half4x2),  TYPE(Half4x3),  TYPE(Half4x4),
-
-        TYPE(SquareMat), TYPE(SquareHMat),
-        TYPE(Mat),       TYPE(HMat),
-
-        // TODO(skia:12349): generic short/ushort
-        TYPE(GenType),   TYPE(GenIType), TYPE(GenUType),
-        TYPE(GenHType),   /* (GenSType)      (GenUSType) */
-        TYPE(GenBType),
-
-        TYPE(Vec),     TYPE(IVec),     TYPE(UVec),
-        TYPE(HVec),    TYPE(SVec),     TYPE(USVec),
-        TYPE(BVec),
-
-        TYPE(ColorFilter),
-        TYPE(Shader),
-        TYPE(Blender),
-    };
-
-    for (const SkSL::Symbol* type : rootTypes) {
-        rootSymbolTable->addWithoutOwnership(type);
+    for (BuiltinTypePtr rootType : kRootTypes) {
+        rootSymbolTable->addWithoutOwnership((fContext->fTypes.*rootType).get());
     }
 
     return rootSymbolTable;
@@ -188,20 +209,8 @@ std::shared_ptr<SymbolTable> Compiler::makeRootSymbolTable() {
 std::shared_ptr<SymbolTable> Compiler::makePrivateSymbolTable(std::shared_ptr<SymbolTable> parent) {
     auto privateSymbolTable = std::make_shared<SymbolTable>(parent, /*builtin=*/true);
 
-    const SkSL::Symbol* privateTypes[] = {
-        TYPE(Sampler1D), TYPE(Sampler2D), TYPE(Sampler3D),
-        TYPE(SamplerExternalOES),
-        TYPE(Sampler2DRect),
-
-        TYPE(ISampler2D),
-        TYPE(SubpassInput), TYPE(SubpassInputMS),
-
-        TYPE(Sampler),
-        TYPE(Texture2D),
-    };
-
-    for (const SkSL::Symbol* type : privateTypes) {
-        privateSymbolTable->addWithoutOwnership(type);
+    for (BuiltinTypePtr privateType : kPrivateTypes) {
+        privateSymbolTable->addWithoutOwnership((fContext->fTypes.*privateType).get());
     }
 
     // sk_Caps is "builtin", but all references to it are resolved to Settings, so we don't need to
@@ -212,11 +221,8 @@ std::shared_ptr<SymbolTable> Compiler::makePrivateSymbolTable(std::shared_ptr<Sy
                                                        fContext->fTypes.fSkCaps.get(),
                                                        /*builtin=*/false,
                                                        Variable::Storage::kGlobal));
-
     return privateSymbolTable;
 }
-
-#undef TYPE
 
 const ParsedModule& Compiler::loadGPUModule() {
     if (!fGPUModule.fSymbols) {
@@ -242,7 +248,7 @@ const ParsedModule& Compiler::loadVertexModule() {
 }
 
 static void add_glsl_type_aliases(SkSL::SymbolTable* symbols, const SkSL::BuiltinTypes& types) {
-    // Add some aliases to the runtime effect modules so that it's friendlier, and more like GLSL
+    // Add some aliases to the runtime effect modules so that it's friendlier, and more like GLSL.
     symbols->addAlias("vec2", types.fFloat2.get());
     symbols->addAlias("vec3", types.fFloat3.get());
     symbols->addAlias("vec4", types.fFloat4.get());
@@ -258,6 +264,12 @@ static void add_glsl_type_aliases(SkSL::SymbolTable* symbols, const SkSL::Builti
     symbols->addAlias("mat2", types.fFloat2x2.get());
     symbols->addAlias("mat3", types.fFloat3x3.get());
     symbols->addAlias("mat4", types.fFloat4x4.get());
+
+    // Alias every private type to "invalid". This will prevent code from using built-in names like
+    // `sampler2D` as variable names.
+    for (BuiltinTypePtr privateType : kPrivateTypes) {
+        symbols->addAlias((types.*privateType)->name(), types.fInvalid.get());
+    }
 }
 
 const ParsedModule& Compiler::loadPublicModule() {
@@ -438,6 +450,58 @@ std::unique_ptr<Program> Compiler::convertProgram(ProgramKind kind,
     return DSLParser(this, settings, kind, std::move(text)).program();
 }
 
+std::unique_ptr<Expression> Compiler::convertIdentifier(int line, skstd::string_view name) {
+    const Symbol* result = (*fSymbolTable)[name];
+    if (!result) {
+        this->errorReporter().error(line, "unknown identifier '" + name + "'");
+        return nullptr;
+    }
+    switch (result->kind()) {
+        case Symbol::Kind::kFunctionDeclaration: {
+            std::vector<const FunctionDeclaration*> f = {
+                &result->as<FunctionDeclaration>()
+            };
+            return std::make_unique<FunctionReference>(*fContext, line, f);
+        }
+        case Symbol::Kind::kUnresolvedFunction: {
+            const UnresolvedFunction* f = &result->as<UnresolvedFunction>();
+            return std::make_unique<FunctionReference>(*fContext, line, f->functions());
+        }
+        case Symbol::Kind::kVariable: {
+            const Variable* var = &result->as<Variable>();
+            const Modifiers& modifiers = var->modifiers();
+            switch (modifiers.fLayout.fBuiltin) {
+                case SK_FRAGCOORD_BUILTIN:
+                    if (fContext->fCaps.canUseFragCoord()) {
+                        ThreadContext::Inputs().fUseFlipRTUniform = true;
+                    }
+                    break;
+                case SK_CLOCKWISE_BUILTIN:
+                    ThreadContext::Inputs().fUseFlipRTUniform = true;
+                    break;
+            }
+            // default to kRead_RefKind; this will be corrected later if the variable is written to
+            return VariableReference::Make(line, var, VariableReference::RefKind::kRead);
+        }
+        case Symbol::Kind::kField: {
+            const Field* field = &result->as<Field>();
+            auto base = VariableReference::Make(line, &field->owner(),
+                                                VariableReference::RefKind::kRead);
+            return FieldAccess::Make(*fContext, std::move(base), field->fieldIndex(),
+                                     FieldAccess::OwnerKind::kAnonymousInterfaceBlock);
+        }
+        case Symbol::Kind::kType: {
+            return TypeReference::Convert(*fContext, line, &result->as<Type>());
+        }
+        case Symbol::Kind::kExternal: {
+            const ExternalFunction* r = &result->as<ExternalFunction>();
+            return std::make_unique<ExternalFunctionReference>(line, r);
+        }
+        default:
+            SK_ABORT("unsupported symbol type %d\n", (int) result->kind());
+    }
+}
+
 bool Compiler::optimize(LoadedModule& module) {
     SkASSERT(!this->errorCount());
 
@@ -494,20 +558,20 @@ bool Compiler::optimize(Program& program) {
 bool Compiler::runInliner(const std::vector<std::unique_ptr<ProgramElement>>& elements,
                           std::shared_ptr<SymbolTable> symbols,
                           ProgramUsage* usage) {
-    // The program's SymbolTable was taken out of the IRGenerator when the program was bundled, but
-    // the inliner relies (indirectly) on having a valid SymbolTable in the IRGenerator.
+    // The program's SymbolTable was taken out of fSymbolTable when the program was bundled, but
+    // the inliner relies (indirectly) on having a valid SymbolTable.
     // In particular, inlining can turn a non-optimizable expression like `normalize(myVec)` into
     // `normalize(vec2(7))`, which is now optimizable. The optimizer can use DSL to simplify this
     // expression--e.g., in the case of normalize, using DSL's Length(). The DSL relies on
-    // irGenerator.convertIdentifier() to look up `length`. convertIdentifier() needs a valid symbol
-    // table to find the declaration of `length`. To allow this chain of events to succeed, we
-    // re-insert the program's symbol table back into the IRGenerator temporarily.
-    SkASSERT(!fIRGenerator->fSymbolTable);
-    fIRGenerator->fSymbolTable = symbols;
+    // convertIdentifier() to look up `length`. convertIdentifier() needs a valid symbol table to
+    // find the declaration of `length`. To allow this chain of events to succeed, we re-insert the
+    // program's symbol table temporarily.
+    SkASSERT(!fSymbolTable);
+    fSymbolTable = symbols;
 
     bool result = fInliner.analyze(elements, symbols, usage);
 
-    fIRGenerator->fSymbolTable = nullptr;
+    fSymbolTable = nullptr;
     return result;
 }
 
@@ -540,7 +604,7 @@ bool Compiler::toSPIRV(Program& program, OutputStream& out) {
     settings.fDSLUseMemoryPool = false;
     dsl::Start(this, program.fConfig->fKind, settings);
     dsl::SetErrorReporter(&fErrorReporter);
-    ThreadContext::IRGenerator().fSymbolTable = program.fSymbols;
+    fSymbolTable = program.fSymbols;
 #ifdef SK_ENABLE_SPIRV_VALIDATION
     StringStream buffer;
     SPIRVCodeGenerator cg(fContext.get(), &program, &buffer);

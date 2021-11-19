@@ -26,34 +26,23 @@ namespace ast {
 class StrideDecoration : public Castable<StrideDecoration, Decoration> {
  public:
   /// constructor
-  /// @param program_id the identifier of the program that owns this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param stride the stride value
-  /// @param source the source of this decoration
-  StrideDecoration(ProgramID program_id, const Source& source, uint32_t stride);
+  StrideDecoration(ProgramID pid, const Source& src, uint32_t stride);
   ~StrideDecoration() override;
 
-  /// @returns the stride value
-  uint32_t stride() const { return stride_; }
-
   /// @returns the WGSL name for the decoration
-  std::string name() const override;
-
-  /// Outputs the decoration to the given stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  std::string Name() const override;
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  StrideDecoration* Clone(CloneContext* ctx) const override;
+  const StrideDecoration* Clone(CloneContext* ctx) const override;
 
- private:
-  uint32_t const stride_;
+  /// The stride value
+  const uint32_t stride;
 };
 
 }  // namespace ast

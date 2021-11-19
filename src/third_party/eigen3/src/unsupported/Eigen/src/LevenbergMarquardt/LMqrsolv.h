@@ -15,6 +15,8 @@
 #ifndef EIGEN_LMQRSOLV_H
 #define EIGEN_LMQRSOLV_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

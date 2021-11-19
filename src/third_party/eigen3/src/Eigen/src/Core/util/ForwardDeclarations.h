@@ -11,6 +11,8 @@
 #ifndef EIGEN_FORWARDDECLARATIONS_H
 #define EIGEN_FORWARDDECLARATIONS_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 

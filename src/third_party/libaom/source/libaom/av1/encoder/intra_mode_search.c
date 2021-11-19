@@ -1118,48 +1118,48 @@ static double intra_rd_variance_factor(const AV1_COMP *cpi, MACROBLOCK *x,
                           x->plane[0].src.buf + i * x->plane[0].src.stride + j,
                           x->plane[0].src.stride,
                           CONVERT_TO_BYTEPTR(highbd_all_zeros), 0, &sse) /
-                          16);
+                          16.0);
         rec_var += log(
             1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
                       xd->plane[0].dst.buf + i * xd->plane[0].dst.stride + j,
                       xd->plane[0].dst.stride,
                       CONVERT_TO_BYTEPTR(highbd_all_zeros), 0, &sse) /
-                      16);
+                      16.0);
       } else {
         src_var +=
             log(1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
                           x->plane[0].src.buf + i * x->plane[0].src.stride + j,
                           x->plane[0].src.stride, all_zeros, 0, &sse) /
-                          16);
+                          16.0);
         rec_var += log(
             1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
                       xd->plane[0].dst.buf + i * xd->plane[0].dst.stride + j,
                       xd->plane[0].dst.stride, all_zeros, 0, &sse) /
-                      16);
+                      16.0);
       }
     }
   }
   src_var /= (double)blocks;
   rec_var /= (double)blocks;
 
-  // Only take action when the spatial complexity is low
-  if ((rec_var < threshold) || (src_var < threshold)) {
-    // Dont allow 0 to prevent / 0 below.
-    src_var += 0.000001;
-    rec_var += 0.000001;
+  // Dont allow 0 to prevent / 0 below.
+  src_var += 0.000001;
+  rec_var += 0.000001;
 
-    // Heavier weigth if the reconstruction has lower variance.
-    if (src_var >= rec_var) {
-      var_diff = (src_var - rec_var) * 2;
-      variance_rd_factor = 1.0 + (var_diff / src_var);
-    } else {
-      var_diff = (rec_var - src_var) / 2;
-      variance_rd_factor = 1.0 + (var_diff / src_var);
+  if (src_var >= rec_var) {
+    var_diff = (src_var - rec_var);
+    if ((var_diff > 0.5) && (rec_var < threshold)) {
+      variance_rd_factor = 1.0 + ((var_diff * 2) / src_var);
     }
-
-    // Limit adjustment;
-    variance_rd_factor = AOMMIN(3.0, variance_rd_factor);
+  } else {
+    var_diff = (rec_var - src_var);
+    if ((var_diff > 0.5) && (src_var < threshold)) {
+      variance_rd_factor = 1.0 + (var_diff / (2 * src_var));
+    }
   }
+
+  // Limit adjustment;
+  variance_rd_factor = AOMMIN(3.0, variance_rd_factor);
 
   return variance_rd_factor;
 }

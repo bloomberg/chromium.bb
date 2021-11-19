@@ -21,15 +21,14 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::DisableValidationDecoration);
 namespace tint {
 namespace ast {
 
-DisableValidationDecoration::DisableValidationDecoration(
-    ProgramID program_id,
-    DisabledValidation validation)
-    : Base(program_id), validation_(validation) {}
+DisableValidationDecoration::DisableValidationDecoration(ProgramID pid,
+                                                         DisabledValidation val)
+    : Base(pid), validation(val) {}
 
 DisableValidationDecoration::~DisableValidationDecoration() = default;
 
 std::string DisableValidationDecoration::InternalName() const {
-  switch (validation_) {
+  switch (validation) {
     case DisabledValidation::kFunctionHasNoBody:
       return "disable_validation__function_has_no_body";
     case DisabledValidation::kBindingPointCollision:
@@ -48,10 +47,10 @@ std::string DisableValidationDecoration::InternalName() const {
   return "<invalid>";
 }
 
-DisableValidationDecoration* DisableValidationDecoration::Clone(
+const DisableValidationDecoration* DisableValidationDecoration::Clone(
     CloneContext* ctx) const {
   return ctx->dst->ASTNodes().Create<DisableValidationDecoration>(
-      ctx->dst->ID(), validation_);
+      ctx->dst->ID(), validation);
 }
 
 }  // namespace ast

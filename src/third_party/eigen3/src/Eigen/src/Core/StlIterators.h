@@ -10,6 +10,8 @@
 #ifndef EIGEN_STLITERATORS_H
 #define EIGEN_STLITERATORS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

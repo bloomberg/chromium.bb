@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_REDUCTION_GPU_H
 #define EIGEN_CXX11_TENSOR_TENSOR_REDUCTION_GPU_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 

@@ -9,7 +9,7 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/unowned_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_Document;
 
@@ -18,7 +18,7 @@ class CPDF_PageLabel {
   explicit CPDF_PageLabel(CPDF_Document* pDocument);
   ~CPDF_PageLabel();
 
-  Optional<WideString> GetLabel(int nPage) const;
+  absl::optional<WideString> GetLabel(int nPage) const;
 
  private:
   UnownedPtr<CPDF_Document> const m_pDocument;

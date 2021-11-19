@@ -7791,6 +7791,70 @@ OpFunctionEnd
           "member 0 is a matrix with stride 3 not satisfying alignment to 4"));
 }
 
+TEST_F(ValidateDecorations, MissingOffsetStructNestedInArray) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpExtension "SPV_KHR_storage_buffer_storage_class"
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpExecutionMode %main LocalSize 1 1 1
+OpDecorate %array ArrayStride 4
+OpDecorate %outer Block
+OpMemberDecorate %outer 0 Offset 0
+OpDecorate %var DescriptorSet 0
+OpDecorate %var Binding 0
+%void = OpTypeVoid
+%int = OpTypeInt 32 0
+%int_4 = OpConstant %int 4
+%inner = OpTypeStruct %int
+%array = OpTypeArray %inner %int_4
+%outer = OpTypeStruct %array
+%ptr_ssbo_outer = OpTypePointer StorageBuffer %outer
+%var = OpVariable %ptr_ssbo_outer StorageBuffer
+%void_fn = OpTypeFunction %void
+%main = OpFunction %void None %void_fn
+%entry = OpLabel
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("Structure id 3 decorated as Block must be explicitly "
+                        "laid out with Offset decorations"));
+}
+
+TEST_F(ValidateDecorations, AllOnesOffset) {
+  const std::string spirv = R"(
+OpCapability Shader
+OpMemoryModel Logical GLSL450
+OpEntryPoint GLCompute %main "main"
+OpDecorate %var DescriptorSet 0
+OpDecorate %var Binding 0
+OpDecorate %outer Block
+OpMemberDecorate %outer 0 Offset 0
+OpMemberDecorate %struct 0 Offset 4294967295
+%void = OpTypeVoid
+%int = OpTypeInt 32 0
+%struct = OpTypeStruct %int
+%outer = OpTypeStruct %struct
+%ptr = OpTypePointer Uniform %outer
+%var = OpVariable %ptr Uniform
+%void_fn = OpTypeFunction %void
+%main = OpFunction %void None %void_fn
+%entry = OpLabel
+OpReturn
+OpFunctionEnd
+)";
+
+  CompileSuccessfully(spirv);
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
+  EXPECT_THAT(getDiagnosticString(),
+              HasSubstr("decorated as Block must be explicitly laid out with "
+                        "Offset decorations"));
+}
+
 }  // namespace
 }  // namespace val
 }  // namespace spvtools

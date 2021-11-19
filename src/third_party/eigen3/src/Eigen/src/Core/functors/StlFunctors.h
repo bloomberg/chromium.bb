@@ -10,6 +10,8 @@
 #ifndef EIGEN_STL_FUNCTORS_H
 #define EIGEN_STL_FUNCTORS_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // Portable replacements for certain functors.

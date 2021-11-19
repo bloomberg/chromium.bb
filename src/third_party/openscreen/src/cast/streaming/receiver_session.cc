@@ -102,12 +102,11 @@ template <typename T>
 bool HasLessRestrictiveLimits(std::vector<T> first, std::vector<T> second) {
   // Sort both vectors to allow for element-by-element comparison between the
   // two. All elements with |applies_to_all_codecs| set are sorted to the front.
-  std::function<bool(const T&, const T&)> sorter = [](const T& first,
-                                                      const T& second) {
-    if (first.applies_to_all_codecs != second.applies_to_all_codecs) {
-      return first.applies_to_all_codecs;
+  std::function<bool(const T&, const T&)> sorter = [](const T& x, const T& y) {
+    if (x.applies_to_all_codecs != y.applies_to_all_codecs) {
+      return x.applies_to_all_codecs;
     }
-    return static_cast<int>(first.codec) < static_cast<int>(second.codec);
+    return static_cast<int>(x.codec) < static_cast<int>(y.codec);
   };
   std::sort(first.begin(), first.end(), sorter);
   std::sort(second.begin(), second.end(), sorter);

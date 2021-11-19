@@ -16,6 +16,7 @@
 
 #include "gmock/gmock.h"
 #include "src/program_builder.h"
+#include "src/sem/atomic_type.h"
 #include "src/sem/depth_multisampled_texture_type.h"
 #include "src/sem/depth_texture_type.h"
 #include "src/sem/external_texture_type.h"
@@ -211,22 +212,24 @@ TEST_F(IntrinsicTableTest, MismatchBool) {
 }
 
 TEST_F(IntrinsicTableTest, MatchPointer) {
-  auto* f32 = create<sem::F32>();
-  auto* ptr = create<sem::Pointer>(f32, ast::StorageClass::kFunction,
+  auto* i32 = create<sem::I32>();
+  auto* atomicI32 = create<sem::Atomic>(i32);
+  auto* ptr = create<sem::Pointer>(atomicI32, ast::StorageClass::kWorkgroup,
                                    ast::Access::kReadWrite);
-  auto* result = table->Lookup(IntrinsicType::kModf, {f32, ptr}, Source{});
+  auto* result = table->Lookup(IntrinsicType::kAtomicLoad, {ptr}, Source{});
   ASSERT_NE(result, nullptr) << Diagnostics().str();
   ASSERT_EQ(Diagnostics().str(), "");
-  EXPECT_THAT(result->Type(), IntrinsicType::kModf);
-  EXPECT_THAT(result->ReturnType(), f32);
-  ASSERT_EQ(result->Parameters().size(), 2u);
-  EXPECT_EQ(result->Parameters()[0]->Type(), f32);
-  EXPECT_EQ(result->Parameters()[1]->Type(), ptr);
+  EXPECT_THAT(result->Type(), IntrinsicType::kAtomicLoad);
+  EXPECT_THAT(result->ReturnType(), i32);
+  ASSERT_EQ(result->Parameters().size(), 1u);
+  EXPECT_EQ(result->Parameters()[0]->Type(), ptr);
 }
 
 TEST_F(IntrinsicTableTest, MismatchPointer) {
-  auto* f32 = create<sem::F32>();
-  auto* result = table->Lookup(IntrinsicType::kModf, {f32, f32}, Source{});
+  auto* i32 = create<sem::I32>();
+  auto* atomicI32 = create<sem::Atomic>(i32);
+  auto* result =
+      table->Lookup(IntrinsicType::kAtomicLoad, {atomicI32}, Source{});
   ASSERT_EQ(result, nullptr);
   ASSERT_THAT(Diagnostics().str(), HasSubstr("no matching call"));
 }
@@ -373,30 +376,6 @@ TEST_F(IntrinsicTableTest, MatchExternalTexture) {
   auto* vec2_i32 = create<sem::Vector>(i32, 2);
   auto* vec4_f32 = create<sem::Vector>(f32, 4);
   auto* tex = create<sem::ExternalTexture>();
-  auto* result =
-      table->Lookup(IntrinsicType::kTextureLoad, {tex, vec2_i32}, Source{});
-  ASSERT_NE(result, nullptr) << Diagnostics().str();
-  ASSERT_EQ(Diagnostics().str(), "");
-  EXPECT_THAT(result->Type(), IntrinsicType::kTextureLoad);
-  EXPECT_THAT(result->ReturnType(), vec4_f32);
-  ASSERT_EQ(result->Parameters().size(), 2u);
-  EXPECT_EQ(result->Parameters()[0]->Type(), tex);
-  EXPECT_EQ(result->Parameters()[0]->Usage(), ParameterUsage::kTexture);
-  EXPECT_EQ(result->Parameters()[1]->Type(), vec2_i32);
-  EXPECT_EQ(result->Parameters()[1]->Usage(), ParameterUsage::kCoords);
-}
-
-TEST_F(IntrinsicTableTest, MatchROStorageTexture) {
-  auto* f32 = create<sem::F32>();
-  auto* i32 = create<sem::I32>();
-  auto* vec2_i32 = create<sem::Vector>(i32, 2);
-  auto* vec4_f32 = create<sem::Vector>(f32, 4);
-  auto* subtype =
-      sem::StorageTexture::SubtypeFor(ast::ImageFormat::kR32Float, Types());
-  auto* tex = create<sem::StorageTexture>(ast::TextureDimension::k2d,
-                                          ast::ImageFormat::kR32Float,
-                                          ast::Access::kRead, subtype);
-
   auto* result =
       table->Lookup(IntrinsicType::kTextureLoad, {tex, vec2_i32}, Source{});
   ASSERT_NE(result, nullptr) << Diagnostics().str();
@@ -563,10 +542,10 @@ TEST_F(IntrinsicTableTest, OverloadOrderByNumberOfParameters) {
   textureDimensions(texture: texture_depth_cube) -> vec2<i32>
   textureDimensions(texture: texture_depth_cube_array) -> vec2<i32>
   textureDimensions(texture: texture_depth_multisampled_2d) -> vec2<i32>
-  textureDimensions(texture: texture_storage_1d<F, A>) -> i32  where: A is read or write
-  textureDimensions(texture: texture_storage_2d<F, A>) -> vec2<i32>  where: A is read or write
-  textureDimensions(texture: texture_storage_2d_array<F, A>) -> vec2<i32>  where: A is read or write
-  textureDimensions(texture: texture_storage_3d<F, A>) -> vec3<i32>  where: A is read or write
+  textureDimensions(texture: texture_storage_1d<F, A>) -> i32  where: A is write
+  textureDimensions(texture: texture_storage_2d<F, A>) -> vec2<i32>  where: A is write
+  textureDimensions(texture: texture_storage_2d_array<F, A>) -> vec2<i32>  where: A is write
+  textureDimensions(texture: texture_storage_3d<F, A>) -> vec3<i32>  where: A is write
   textureDimensions(texture: texture_external) -> vec2<i32>
 )");
 }
@@ -602,10 +581,10 @@ TEST_F(IntrinsicTableTest, OverloadOrderByMatchingParameter) {
   textureDimensions(texture: texture_depth_cube) -> vec2<i32>
   textureDimensions(texture: texture_depth_cube_array) -> vec2<i32>
   textureDimensions(texture: texture_depth_multisampled_2d) -> vec2<i32>
-  textureDimensions(texture: texture_storage_1d<F, A>) -> i32  where: A is read or write
-  textureDimensions(texture: texture_storage_2d<F, A>) -> vec2<i32>  where: A is read or write
-  textureDimensions(texture: texture_storage_2d_array<F, A>) -> vec2<i32>  where: A is read or write
-  textureDimensions(texture: texture_storage_3d<F, A>) -> vec3<i32>  where: A is read or write
+  textureDimensions(texture: texture_storage_1d<F, A>) -> i32  where: A is write
+  textureDimensions(texture: texture_storage_2d<F, A>) -> vec2<i32>  where: A is write
+  textureDimensions(texture: texture_storage_2d_array<F, A>) -> vec2<i32>  where: A is write
+  textureDimensions(texture: texture_storage_3d<F, A>) -> vec3<i32>  where: A is write
   textureDimensions(texture: texture_external) -> vec2<i32>
 )");
 }

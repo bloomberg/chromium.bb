@@ -31,69 +31,6 @@
 
 static const VkImageLayout kInvalidLayout = VK_IMAGE_LAYOUT_MAX_ENUM;
 
-static void RecordRenderPassDAG(const VkRenderPassCreateInfo2 *pCreateInfo, RENDER_PASS_STATE *render_pass) {
-    auto &subpass_to_node = render_pass->subpassToNode;
-    subpass_to_node.resize(pCreateInfo->subpassCount);
-    auto &self_dependencies = render_pass->self_dependencies;
-    self_dependencies.resize(pCreateInfo->subpassCount);
-    auto &subpass_dependencies = render_pass->subpass_dependencies;
-    subpass_dependencies.resize(pCreateInfo->subpassCount);
-
-    for (uint32_t i = 0; i < pCreateInfo->subpassCount; ++i) {
-        subpass_to_node[i].pass = i;
-        self_dependencies[i].clear();
-        subpass_dependencies[i].pass = i;
-    }
-    for (uint32_t i = 0; i < pCreateInfo->dependencyCount; ++i) {
-        const auto &dependency = pCreateInfo->pDependencies[i];
-        const auto src_subpass = dependency.srcSubpass;
-        const auto dst_subpass = dependency.dstSubpass;
-        if ((dependency.srcSubpass != VK_SUBPASS_EXTERNAL) && (dependency.dstSubpass != VK_SUBPASS_EXTERNAL)) {
-            if (dependency.srcSubpass == dependency.dstSubpass) {
-                self_dependencies[dependency.srcSubpass].push_back(i);
-            } else {
-                subpass_to_node[dependency.dstSubpass].prev.push_back(dependency.srcSubpass);
-                subpass_to_node[dependency.srcSubpass].next.push_back(dependency.dstSubpass);
-            }
-        }
-        if (src_subpass == VK_SUBPASS_EXTERNAL) {
-            assert(dst_subpass != VK_SUBPASS_EXTERNAL);  // this is invalid per VUID-VkSubpassDependency-srcSubpass-00865
-            subpass_dependencies[dst_subpass].barrier_from_external.emplace_back(&dependency);
-        } else if (dst_subpass == VK_SUBPASS_EXTERNAL) {
-            subpass_dependencies[src_subpass].barrier_to_external.emplace_back(&dependency);
-        } else if (dependency.srcSubpass != dependency.dstSubpass) {
-            // ignore self dependencies in prev and next
-            subpass_dependencies[src_subpass].next[&subpass_dependencies[dst_subpass]].emplace_back(&dependency);
-            subpass_dependencies[dst_subpass].prev[&subpass_dependencies[src_subpass]].emplace_back(&dependency);
-        }
-    }
-
-    //
-    // Determine "asynchrononous" subpassess
-    // syncronization is only interested in asyncronous stages *earlier* that the current one... so we'll only look towards those.
-    // NOTE: This is O(N^3), which we could shrink to O(N^2logN) using sets instead of arrays, but given that N is likely to be
-    // small and the K for |= from the prev is must less than for set, we'll accept the brute force.
-    std::vector<std::vector<bool>> pass_depends(pCreateInfo->subpassCount);
-    for (uint32_t i = 1; i < pCreateInfo->subpassCount; ++i) {
-        auto &depends = pass_depends[i];
-        depends.resize(i);
-        auto &subpass_dep = subpass_dependencies[i];
-        for (const auto &prev : subpass_dep.prev) {
-            const auto prev_pass = prev.first->pass;
-            const auto &prev_depends = pass_depends[prev_pass];
-            for (uint32_t j = 0; j < prev_pass; j++) {
-                depends[j] = depends[j] | prev_depends[j];
-            }
-            depends[prev_pass] = true;
-        }
-        for (uint32_t pass = 0; pass < subpass_dep.pass; pass++) {
-            if (!depends[pass]) {
-                subpass_dep.async.push_back(pass);
-            }
-        }
-    }
-}
-
 static VkSubpassDependency2 ImplicitDependencyFromExternal(uint32_t subpass) {
     VkSubpassDependency2 from_external = {VK_STRUCTURE_TYPE_SUBPASS_DEPENDENCY_2,
                                           nullptr,
@@ -125,24 +62,105 @@ static VkSubpassDependency2 ImplicitDependencyToExternal(uint32_t subpass) {
                                         0};
     return to_external;
 }
+// NOTE: The functions below are only called from the RENDER_PASS_STATE constructor, and use const_cast<> to set up
+// members that never change after construction is finished.
+static void RecordRenderPassDAG(const VkRenderPassCreateInfo2 *pCreateInfo, RENDER_PASS_STATE *render_pass) {
+    auto &subpass_to_node = const_cast<RENDER_PASS_STATE::DAGNodeVec &>(render_pass->subpass_to_node);
+    subpass_to_node.resize(pCreateInfo->subpassCount);
+    auto &self_dependencies = const_cast<RENDER_PASS_STATE::SelfDepVec &>(render_pass->self_dependencies);
+    self_dependencies.resize(pCreateInfo->subpassCount);
+    auto &subpass_dependencies = const_cast<RENDER_PASS_STATE::SubpassGraphVec &>(render_pass->subpass_dependencies);
+    subpass_dependencies.resize(pCreateInfo->subpassCount);
+
+    for (uint32_t i = 0; i < pCreateInfo->subpassCount; ++i) {
+        subpass_to_node[i].pass = i;
+        self_dependencies[i].clear();
+        subpass_dependencies[i].pass = i;
+    }
+    for (uint32_t i = 0; i < pCreateInfo->dependencyCount; ++i) {
+        const auto &dependency = pCreateInfo->pDependencies[i];
+        const auto src_subpass = dependency.srcSubpass;
+        const auto dst_subpass = dependency.dstSubpass;
+        if ((dependency.srcSubpass != VK_SUBPASS_EXTERNAL) && (dependency.dstSubpass != VK_SUBPASS_EXTERNAL)) {
+            if (dependency.srcSubpass == dependency.dstSubpass) {
+                self_dependencies[dependency.srcSubpass].push_back(i);
+            } else {
+                subpass_to_node[dependency.dstSubpass].prev.push_back(dependency.srcSubpass);
+                subpass_to_node[dependency.srcSubpass].next.push_back(dependency.dstSubpass);
+            }
+        }
+        if (src_subpass == VK_SUBPASS_EXTERNAL) {
+            assert(dst_subpass != VK_SUBPASS_EXTERNAL);  // this is invalid per VUID-VkSubpassDependency-srcSubpass-00865
+            subpass_dependencies[dst_subpass].barrier_from_external.emplace_back(&dependency);
+        } else if (dst_subpass == VK_SUBPASS_EXTERNAL) {
+            subpass_dependencies[src_subpass].barrier_to_external.emplace_back(&dependency);
+        } else if (dependency.srcSubpass != dependency.dstSubpass) {
+            // ignore self dependencies in prev and next
+            subpass_dependencies[src_subpass].next[&subpass_dependencies[dst_subpass]].emplace_back(&dependency);
+            subpass_dependencies[dst_subpass].prev[&subpass_dependencies[src_subpass]].emplace_back(&dependency);
+        }
+    }
+
+    // If no barriers to external are provided for a given subpass, add them.
+    for (auto &subpass_dep : subpass_dependencies) {
+        const uint32_t pass = subpass_dep.pass;
+        if (subpass_dep.barrier_from_external.size() == 0) {
+            // Add implicit from barrier if they're aren't any
+            subpass_dep.implicit_barrier_from_external =
+                layer_data::make_unique<VkSubpassDependency2>(ImplicitDependencyFromExternal(pass));
+            subpass_dep.barrier_from_external.emplace_back(subpass_dep.implicit_barrier_from_external.get());
+        }
+        if (subpass_dep.barrier_to_external.size() == 0) {
+            // Add implicit to barrier  if they're aren't any
+            subpass_dep.implicit_barrier_to_external =
+                layer_data::make_unique<VkSubpassDependency2>(ImplicitDependencyToExternal(pass));
+            subpass_dep.barrier_to_external.emplace_back(subpass_dep.implicit_barrier_to_external.get());
+        }
+    }
+
+    //
+    // Determine "asynchrononous" subpassess
+    // syncronization is only interested in asyncronous stages *earlier* that the current one... so we'll only look towards those.
+    // NOTE: This is O(N^3), which we could shrink to O(N^2logN) using sets instead of arrays, but given that N is likely to be
+    // small and the K for |= from the prev is must less than for set, we'll accept the brute force.
+    std::vector<std::vector<bool>> pass_depends(pCreateInfo->subpassCount);
+    for (uint32_t i = 1; i < pCreateInfo->subpassCount; ++i) {
+        auto &depends = pass_depends[i];
+        depends.resize(i);
+        auto &subpass_dep = subpass_dependencies[i];
+        for (const auto &prev : subpass_dep.prev) {
+            const auto prev_pass = prev.first->pass;
+            const auto &prev_depends = pass_depends[prev_pass];
+            for (uint32_t j = 0; j < prev_pass; j++) {
+                depends[j] = depends[j] || prev_depends[j];
+            }
+            depends[prev_pass] = true;
+        }
+        for (uint32_t pass = 0; pass < subpass_dep.pass; pass++) {
+            if (!depends[pass]) {
+                subpass_dep.async.push_back(pass);
+            }
+        }
+    }
+}
 
 struct AttachmentTracker {  // This is really only of local interest, but a bit big for a lambda
     RENDER_PASS_STATE *const rp;
-    std::vector<uint32_t> &first;
-    std::vector<bool> &first_is_transition;
-    std::vector<uint32_t> &last;
-    std::vector<std::vector<RENDER_PASS_STATE::AttachmentTransition>> &subpass_transitions;
-    layer_data::unordered_map<uint32_t, bool> &first_read;
+    RENDER_PASS_STATE::SubpassVec &first;
+    RENDER_PASS_STATE::FirstIsTransitionVec &first_is_transition;
+    RENDER_PASS_STATE::SubpassVec &last;
+    RENDER_PASS_STATE::TransitionVec &subpass_transitions;
+    RENDER_PASS_STATE::FirstReadMap &first_read;
     const uint32_t attachment_count;
     std::vector<VkImageLayout> attachment_layout;
     std::vector<std::vector<VkImageLayout>> subpass_attachment_layout;
     explicit AttachmentTracker(RENDER_PASS_STATE *render_pass)
         : rp(render_pass),
-          first(rp->attachment_first_subpass),
-          first_is_transition(rp->attachment_first_is_transition),
-          last(rp->attachment_last_subpass),
-          subpass_transitions(rp->subpass_transitions),
-          first_read(rp->attachment_first_read),
+          first(const_cast<RENDER_PASS_STATE::SubpassVec &>(rp->attachment_first_subpass)),
+          first_is_transition(const_cast<RENDER_PASS_STATE::FirstIsTransitionVec &>(rp->attachment_first_is_transition)),
+          last(const_cast<RENDER_PASS_STATE::SubpassVec &>(rp->attachment_last_subpass)),
+          subpass_transitions(const_cast<RENDER_PASS_STATE::TransitionVec &>(rp->subpass_transitions)),
+          first_read(const_cast<RENDER_PASS_STATE::FirstReadMap &>(rp->attachment_first_read)),
           attachment_count(rp->createInfo.attachmentCount),
           attachment_layout(),
           subpass_attachment_layout() {
@@ -218,30 +236,6 @@ static void InitRenderPassState(RENDER_PASS_STATE *render_pass) {
         attachment_tracker.Update(subpass_index, subpass.pInputAttachments, subpass.inputAttachmentCount, true);
     }
     attachment_tracker.FinalTransitions();
-
-    // Add implicit dependencies
-    for (uint32_t attachment = 0; attachment < attachment_tracker.attachment_count; attachment++) {
-        const auto first_use = attachment_tracker.first[attachment];
-        if (first_use != VK_SUBPASS_EXTERNAL) {
-            auto &subpass_dep = render_pass->subpass_dependencies[first_use];
-            if (subpass_dep.barrier_from_external.size() == 0) {
-                // Add implicit from barrier if they're aren't any
-                subpass_dep.implicit_barrier_from_external.reset(
-                    new VkSubpassDependency2(ImplicitDependencyFromExternal(first_use)));
-                subpass_dep.barrier_from_external.emplace_back(subpass_dep.implicit_barrier_from_external.get());
-            }
-        }
-
-        const auto last_use = attachment_tracker.last[attachment];
-        if (last_use != VK_SUBPASS_EXTERNAL) {
-            auto &subpass_dep = render_pass->subpass_dependencies[last_use];
-            if (render_pass->subpass_dependencies[last_use].barrier_to_external.size() == 0) {
-                // Add implicit to barrier  if they're aren't any
-                subpass_dep.implicit_barrier_to_external.reset(new VkSubpassDependency2(ImplicitDependencyToExternal(last_use)));
-                subpass_dep.barrier_to_external.emplace_back(subpass_dep.implicit_barrier_to_external.get());
-            }
-        }
-    }
 }
 
 RENDER_PASS_STATE::RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo2 const *pCreateInfo)
@@ -249,9 +243,14 @@ RENDER_PASS_STATE::RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo2 co
     InitRenderPassState(this);
 }
 
+static safe_VkRenderPassCreateInfo2 ConvertCreateInfo(const VkRenderPassCreateInfo &create_info) {
+    safe_VkRenderPassCreateInfo2 create_info_2;
+    ConvertVkRenderPassCreateInfoToV2KHR(create_info, &create_info_2);
+    return create_info_2;
+}
+
 RENDER_PASS_STATE::RENDER_PASS_STATE(VkRenderPass rp, VkRenderPassCreateInfo const *pCreateInfo)
-    : BASE_NODE(rp, kVulkanObjectTypeRenderPass) {
-    ConvertVkRenderPassCreateInfoToV2KHR(*pCreateInfo, &createInfo);
+    : BASE_NODE(rp, kVulkanObjectTypeRenderPass), createInfo(ConvertCreateInfo(*pCreateInfo)) {
     InitRenderPassState(this);
 }
 
@@ -285,11 +284,13 @@ bool RENDER_PASS_STATE::UsesDepthStencilAttachment(uint32_t subpass_num) const {
 FRAMEBUFFER_STATE::FRAMEBUFFER_STATE(VkFramebuffer fb, const VkFramebufferCreateInfo *pCreateInfo,
                                      std::shared_ptr<RENDER_PASS_STATE> &&rpstate,
                                      std::vector<std::shared_ptr<IMAGE_VIEW_STATE>> &&attachments)
-    : BASE_NODE(fb, kVulkanObjectTypeFramebuffer), createInfo(pCreateInfo), rp_state(rpstate) {
-    for (auto &a : attachments) {
+    : BASE_NODE(fb, kVulkanObjectTypeFramebuffer),
+      createInfo(pCreateInfo),
+      rp_state(rpstate),
+      attachments_view_state(std::move(attachments)) {
+    for (auto &a : attachments_view_state) {
         a->AddParent(this);
     }
-    attachments_view_state = std::move(attachments);
 }
 
 void FRAMEBUFFER_STATE::Destroy() {

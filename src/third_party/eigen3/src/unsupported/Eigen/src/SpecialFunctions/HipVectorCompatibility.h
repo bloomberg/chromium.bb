@@ -5,6 +5,8 @@ namespace hip_impl {
   template <typename, typename, unsigned int> struct Scalar_accessor;
 }   // end namespace hip_impl
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 

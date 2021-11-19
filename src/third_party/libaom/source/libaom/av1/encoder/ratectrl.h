@@ -46,6 +46,9 @@ extern "C" {
 #define FIXED_GF_INTERVAL 16
 #define MAX_GF_LENGTH_LAP 16
 
+#define FIXED_GF_INTERVAL_RT 80
+#define MAX_GF_INTERVAL_RT 160
+
 #define MAX_NUM_GF_INTERVALS 15
 
 #define MAX_ARF_LAYERS 6

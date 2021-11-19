@@ -13,7 +13,6 @@
 #include "src/gpu/mock/GrMockCaps.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLDSLParser.h"
-#include "src/sksl/SkSLIRGenerator.h"
 
 class SkSLCompilerStartupBench : public Benchmark {
 protected:
@@ -26,7 +25,7 @@ protected:
     }
 
     void onDraw(int loops, SkCanvas*) override {
-        GrShaderCaps caps(GrContextOptions{});
+        GrShaderCaps caps;
         for (int i = 0; i < loops; i++) {
             SkSL::Compiler compiler(&caps);
         }
@@ -518,7 +517,7 @@ void RunSkSLMemoryBenchmarks(NanoJSONResultsWriter* log) {
     // Heap used by a default compiler (with no modules loaded)
     {
         int before = heap_bytes_used();
-        GrShaderCaps caps(GrContextOptions{});
+        GrShaderCaps caps;
         SkSL::Compiler compiler(&caps);
         int after = heap_bytes_used();
         bench("sksl_compiler_baseline", after - before);
@@ -527,7 +526,7 @@ void RunSkSLMemoryBenchmarks(NanoJSONResultsWriter* log) {
     // Heap used by a compiler with the two main GPU modules (fragment + vertex) loaded
     {
         int before = heap_bytes_used();
-        GrShaderCaps caps(GrContextOptions{});
+        GrShaderCaps caps;
         SkSL::Compiler compiler(&caps);
         compiler.moduleForProgramKind(SkSL::ProgramKind::kVertex);
         compiler.moduleForProgramKind(SkSL::ProgramKind::kFragment);
@@ -538,7 +537,7 @@ void RunSkSLMemoryBenchmarks(NanoJSONResultsWriter* log) {
     // Heap used by a compiler with the runtime shader, color filter and blending modules loaded
     {
         int before = heap_bytes_used();
-        GrShaderCaps caps(GrContextOptions{});
+        GrShaderCaps caps;
         SkSL::Compiler compiler(&caps);
         compiler.moduleForProgramKind(SkSL::ProgramKind::kRuntimeColorFilter);
         compiler.moduleForProgramKind(SkSL::ProgramKind::kRuntimeShader);

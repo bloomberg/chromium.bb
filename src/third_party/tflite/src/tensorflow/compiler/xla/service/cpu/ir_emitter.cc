@@ -97,6 +97,8 @@ IrEmitter::IrEmitter(mlir::MLIRContext* mlir_context,
                          instruction_to_profile_idx,
                      std::unordered_map<const HloComputation*, int64_t>
                          computation_to_profile_idx,
+                     absl::flat_hash_map<const HloComputation*, bool>
+                         computation_transitively_contains_custom_call,
                      const TargetMachineFeatures* target_machine_features,
                      bool emit_code_for_msan)
     : assignment_(assignment),
@@ -106,6 +108,8 @@ IrEmitter::IrEmitter(mlir::MLIRContext* mlir_context,
       mlir_context_(mlir_context),
       instruction_to_profile_idx_(std::move(instruction_to_profile_idx)),
       computation_to_profile_idx_(std::move(computation_to_profile_idx)),
+      computation_transitively_contains_custom_call_(
+          std::move(computation_transitively_contains_custom_call)),
       alias_analysis_(hlo_module, assignment, &llvm_module->getContext()),
       hlo_module_config_(hlo_module.config()),
       is_top_level_computation_(false),
@@ -419,7 +423,7 @@ Status IrEmitter::HandleInfeed(HloInstruction* instruction) {
     // tuple outer buffer containing pointers to the internal
     // elements.
     std::vector<llvm::Value*> tuple_element_addresses;
-    for (int64_t i = 0; i < data_shape.tuple_shapes_size(); ++i) {
+    for (int i = 0; i < data_shape.tuple_shapes_size(); ++i) {
       TF_ASSIGN_OR_RETURN(BufferAllocation::Slice buffer,
                           assignment_.GetUniqueSlice(infeed, {0, i}));
 
@@ -533,7 +537,7 @@ Status IrEmitter::HandleOutfeed(HloInstruction* outfeed) {
 
   TF_RET_CHECK(!ShapeUtil::IsNestedTuple(operand_shape));
 
-  for (int64_t i = 0; i < operand_shape.tuple_shapes_size(); ++i) {
+  for (int i = 0; i < operand_shape.tuple_shapes_size(); ++i) {
     const Shape& tuple_element_shape =
         ShapeUtil::GetTupleElementShape(operand_shape, i);
     llvm::Value* tuple_element = llvm_ir::EmitGetTupleElement(
@@ -640,7 +644,7 @@ Status IrEmitter::HandleSort(HloInstruction* hlo) {
 
 Status IrEmitter::HandleTuple(HloInstruction* tuple) {
   TF_RETURN_IF_ERROR(EmitTargetAddressForOp(tuple));
-  std::vector<llvm::Value*> base_ptrs;
+  llvm::SmallVector<llvm::Value*> base_ptrs;
   for (auto operand : tuple->operands()) {
     base_ptrs.push_back(GetEmittedValueFor(operand));
   }
@@ -731,7 +735,7 @@ Status IrEmitter::HandleSelectAndScatter(HloInstruction* select_and_scatter) {
 
   // Create the inner loop to iterate over the window.
   llvm_ir::ForLoopNest window_loops(IrName(select_and_scatter, "window"), &b_);
-  std::vector<int64_t> window_size;
+  llvm::SmallVector<int64_t> window_size;
   for (const auto& dim : window.dimensions()) {
     window_size.push_back(dim.size());
   }
@@ -742,7 +746,7 @@ Status IrEmitter::HandleSelectAndScatter(HloInstruction* select_and_scatter) {
   // Compute the operand index to visit and evaluate the condition whether the
   // operand index is within the bounds. The unsigned comparison includes
   // checking whether the operand index >= 0.
-  std::vector<llvm::Value*> operand_multi_index(source_index.size());
+  llvm::SmallVector<llvm::Value*> operand_multi_index(source_index.size());
   llvm::Value* in_bounds_condition = b_.getTrue();
   for (int64_t i = 0; i < rank; ++i) {
     llvm::Value* strided_index =
@@ -812,7 +816,7 @@ Status IrEmitter::HandleSelectAndScatter(HloInstruction* select_and_scatter) {
   // location is computed by calling the `scatter` function with the source
   // value and the current output value.
   SetToFirstInsertPoint(window_loops.GetOuterLoopExitBasicBlock(), &b_);
-  std::vector<llvm::Value*> selected_multi_index;
+  llvm::SmallVector<llvm::Value*> selected_multi_index;
   for (int64_t i = 0; i < rank; ++i) {
     llvm::Value* selected_index_address_slot =
         InBoundsGEP(selected_index_address, {b_.getInt32(i)});
@@ -1919,7 +1923,7 @@ Status IrEmitter::HandleSlice(HloInstruction* slice) {
           : 1;
 
   // Determine the dimensions that get lowered as loops.
-  std::vector<int64_t> outer_dims;
+  llvm::SmallVector<int64_t> outer_dims;
   for (int64_t i = 0; i < num_dims - inner_dims.size() - 1; ++i) {
     outer_dims.push_back(LayoutUtil::Major(layout, i));
   }
@@ -2159,11 +2163,13 @@ Status IrEmitter::HandleCall(HloInstruction* call) {
     TF_RETURN_IF_ERROR(EmitCallToParallelForkJoin(
         call_args, root->shape(), root->outer_dimension_partitions(), &b_,
         call_ir_function, computation->name()));
+
+    if (ComputationTransitivelyContainsCustomCall(computation)) {
+      EmitEarlyReturnIfErrorStatus();
+    }
   } else {
     EmitGlobalCall(*computation, computation->name());
   }
-
-  EmitEarlyReturnIfErrorStatus();
 
   return Status::OK();
 }
@@ -2234,7 +2240,7 @@ Status IrEmitter::HandlePadToStatic(HloInstruction* hlo) {
   // PadToStatic has a dynamic tensor as input and variadic size of outputs:
   // (static_tensor, dynamic_dim_0, dynamic_dim_1, ... )
   // Dynamic dimension sizes starts from output index 1.
-  for (int64_t i = 1; i < hlo->shape().tuple_shapes_size(); ++i) {
+  for (int i = 1; i < hlo->shape().tuple_shapes_size(); ++i) {
     // Read from the metadata section of the dynamic input (operand 0).
     const Shape& dim_shape = ShapeUtil::GetSubshape(hlo->shape(), {i});
     TF_RET_CHECK(Shape::Equal()(dim_shape, ShapeUtil::MakeScalarShape(S32)));
@@ -3092,29 +3098,11 @@ llvm::BasicBlock* IrEmitter::GetReturnBlock() {
 
 void IrEmitter::EmitEarlyReturnIfErrorStatus() {
   // Use the runtime helper to get the success/failure state as a boolean.
-  auto succeeded =
+  llvm::Value* succeeded =
       EmitCallToFunc(runtime::kStatusIsSuccessSymbolName, {GetStatusArgument()},
                      b_.getInt1Ty(), /*does_not_throw=*/true,
                      /*only_accesses_arg_memory=*/true);
-  llvm::BasicBlock* continued;
-  if (b_.GetInsertBlock()->getTerminator() == nullptr) {
-    // If we are generating code into an incomplete basic block we can just
-    // create a new basic block to jump to after our conditional branch.
-    continued = llvm_ir::CreateBasicBlock(/*insert_before=*/nullptr,
-                                          /*name=*/"", &b_);
-  } else {
-    // If we are generating code into a basic block that already has code, we
-    // need to split that block so as to not disturb the existing code.
-    auto original = b_.GetInsertBlock();
-    continued = original->splitBasicBlock(b_.GetInsertPoint());
-    // Remove the auto-generated unconditional branch to replace with our
-    // conditional branch.
-    original->getTerminator()->eraseFromParent();
-    b_.SetInsertPoint(original);
-  }
-  CondBr(succeeded, continued, GetReturnBlock());
-
-  b_.SetInsertPoint(continued, continued->getFirstInsertionPt());
+  llvm_ir::EmitEarlyReturn(succeeded, &b_, GetReturnBlock());
 }
 
 llvm::Value* IrEmitter::EmitThreadLocalBufferPointer(
@@ -3381,7 +3369,9 @@ std::vector<llvm::Value*> IrEmitter::EmitThreadLocalCall(
            /*status_arg=*/GetStatusArgument(),
            /*profile_counters_arg=*/GetProfileCountersArgument()));
 
-  EmitEarlyReturnIfErrorStatus();
+  if (ComputationTransitivelyContainsCustomCall(&callee)) {
+    EmitEarlyReturnIfErrorStatus();
+  }
 
   std::vector<llvm::Value*> returned_scalars;
   returned_scalars.reserve(allocas_for_returned_scalars.size());
@@ -3405,7 +3395,9 @@ void IrEmitter::EmitGlobalCall(const HloComputation& callee,
            /*status_arg=*/GetStatusArgument(),
            /*profile_counters_arg=*/GetProfileCountersArgument()));
 
-  EmitEarlyReturnIfErrorStatus();
+  if (ComputationTransitivelyContainsCustomCall(&callee)) {
+    EmitEarlyReturnIfErrorStatus();
+  }
 }
 
 llvm::Value* IrEmitter::GetBufferForGlobalCallReturnValue(

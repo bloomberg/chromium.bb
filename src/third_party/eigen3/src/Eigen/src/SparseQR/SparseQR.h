@@ -11,6 +11,8 @@
 #ifndef EIGEN_SPARSE_QR_H
 #define EIGEN_SPARSE_QR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename MatrixType, typename OrderingType> class SparseQR;

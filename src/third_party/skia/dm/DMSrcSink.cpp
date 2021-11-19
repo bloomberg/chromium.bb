@@ -82,6 +82,8 @@
 #ifdef SK_GRAPHITE_ENABLED
 #include "experimental/graphite/include/Context.h"
 #include "experimental/graphite/include/SkStuff.h"
+#include "experimental/graphite/src/Recorder.h"
+#include "experimental/graphite/src/Recording.h"
 #include "tools/graphite/ContextFactory.h"
 #include "tools/graphite/GraphiteTestContext.h"
 #endif
@@ -2117,41 +2119,77 @@ Result RasterSink::draw(const Src& src, SkBitmap* dst, SkWStream*, SkString*) co
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-GraphiteSink::GraphiteSink() {}
-
 #ifdef SK_GRAPHITE_ENABLED
+
+namespace {
+
+// For the sprint Graphite only handles:
+//    solid colors with src or srcOver
+//    repeated or clamped linear gradients with src or srcOver
+void precompile(skgpu::Context* context) {
+    using ShaderType = skgpu::ShaderCombo::ShaderType;
+
+    skgpu::PaintCombo c1 { { skgpu::ShaderCombo({ ShaderType::kNone },
+                                                { SkTileMode::kRepeat }) },
+                           { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
+    context->preCompile(c1);
+
+    skgpu::PaintCombo c2 { { skgpu::ShaderCombo({ ShaderType::kLinearGradient },
+                                                { SkTileMode::kRepeat, SkTileMode::kClamp }) },
+                           { SkBlendMode::kSrcOver, SkBlendMode::kSrc } };
+    context->preCompile(c2);
+}
+
+} // anonymous namespace
+
+GraphiteSink::GraphiteSink(const SkCommandLineConfigGraphite* config)
+        : fContextType(config->getContextType())
+        , fColorType(config->getColorType())
+        , fAlphaType(config->getAlphaType())
+        , fTestPrecompile(config->getTestPrecompile()) {
+}
 
 Result GraphiteSink::draw(const Src& src,
                           SkBitmap* dst,
                           SkWStream* dstStream,
                           SkString* log) const {
-    using ContextType = sk_graphite_test::ContextFactory::ContextType;
+    SkImageInfo ii = SkImageInfo::Make(src.size(), fColorType, fAlphaType);
 
-    SkImageInfo ii = SkImageInfo::Make(src.size(), kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    skiatest::graphite::ContextFactory factory;
+    auto [_, context] = factory.getContextInfo(fContextType);
 
-    sk_graphite_test::ContextFactory factory;
-    auto [_, context] = factory.getContextInfo(ContextType::kMetal);
-
-    sk_sp<SkSurface> surface = MakeGraphite(std::move(context), ii);
-    if (!surface) {
-        return Result::Fatal("Could not create a surface.");
+    if (fTestPrecompile) {
+        precompile(context.get());
     }
-    Result result = src.draw(/* dContext */ nullptr, surface->getCanvas());
-    if (!result.isOk()) {
-        return result;
-    }
-    surface->flushAndSubmit();
 
-    dst->allocPixels(surface->imageInfo());
-    if (!surface->readPixels(*dst, 0, 0)) {
-        return Result::Fatal("Could not readback from surface.");
+    sk_sp<skgpu::Recorder> recorder = context->createRecorder();
+    if (!recorder) {
+        return Result::Fatal("Could not create a recorder.");
     }
+
+    dst->allocPixels(ii);
+
+    {
+        sk_sp<SkSurface> surface = MakeGraphite(recorder, ii);
+        if (!surface) {
+            return Result::Fatal("Could not create a surface.");
+        }
+        Result result = src.draw(/* dContext */ nullptr, surface->getCanvas());
+        if (!result.isOk()) {
+            return result;
+        }
+
+        if (!surface->readPixels(*dst, 0, 0)) {
+            return Result::Fatal("Could not readback from surface.");
+        }
+    }
+
+    std::unique_ptr<skgpu::Recording> recording = recorder->snap();
+
+    context->insertRecording(std::move(recording));
+    context->submit(skgpu::SyncToCpu::kYes);
 
     return Result::Ok();
-}
-#else
-Result GraphiteSink::draw(const Src& src, SkBitmap*, SkWStream* dst, SkString*) const {
-    return Result::Fatal("Graphite not enabled.");
 }
 #endif
 

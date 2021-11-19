@@ -10,7 +10,6 @@
 
 #include "include/private/SkSLDefines.h"
 #include "src/sksl/SkSLContext.h"
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLExpression.h"
@@ -21,7 +20,7 @@ namespace SkSL {
  * Represents a vector swizzle operation such as 'float3(1, 2, 3).zyx'.
  */
 struct Swizzle final : public Expression {
-    static constexpr Kind kExpressionKind = Kind::kSwizzle;
+    inline static constexpr Kind kExpressionKind = Kind::kSwizzle;
 
     Swizzle(const Context& context, std::unique_ptr<Expression> base,
             const ComponentArray& components)

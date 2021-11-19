@@ -10,7 +10,7 @@
 
 #include "include/core/SkStrokeRec.h"
 #include "src/gpu/ops/GrDrawOp.h"
-#include "src/gpu/tessellate/GrStrokeTessellator.h"
+#include "src/gpu/tessellate/StrokeTessellator.h"
 #include "src/gpu/tessellate/shaders/GrTessellationShader.h"
 
 class GrRecordingContext;
@@ -25,7 +25,7 @@ public:
 
 private:
     using ShaderFlags = GrStrokeTessellationShader::ShaderFlags;
-    using PathStrokeList = GrStrokeTessellator::PathStrokeList;
+    using PathStrokeList = StrokeTessellator::PathStrokeList;
     DEFINE_OP_CLASS_ID
 
     SkStrokeRec& headStroke() { return fPathStrokeList.fStroke; }
@@ -69,12 +69,11 @@ private:
     ShaderFlags fShaderFlags = ShaderFlags::kNone;
     PathStrokeList fPathStrokeList;
     PathStrokeList** fPathStrokeTail = &fPathStrokeList.fNext;
-    float fInflationRadius = 0;
     int fTotalCombinedVerbCnt = 0;
     GrProcessorSet fProcessors;
     bool fNeedsStencil;
 
-    GrStrokeTessellator* fTessellator = nullptr;
+    StrokeTessellator* fTessellator = nullptr;
     const GrProgramInfo* fStencilProgram = nullptr;  // Only used if the stroke has transparency.
     const GrProgramInfo* fFillProgram = nullptr;
 };

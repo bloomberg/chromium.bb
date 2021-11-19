@@ -94,6 +94,7 @@ namespace dawn_native {
                             "buffer copy.",
                             src.texture, src.texture->GetFormat().format);
                     case wgpu::TextureFormat::Depth32Float:
+                    case wgpu::TextureFormat::Depth16Unorm:
                         break;
 
                     default:
@@ -513,7 +514,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding BeginComputePass(%s).", descriptor);
+            "encoding %s.BeginComputePass(%s).", this, descriptor);
 
         if (success) {
             ComputePassEncoder* passEncoder =
@@ -532,6 +533,8 @@ namespace dawn_native {
 
         uint32_t width = 0;
         uint32_t height = 0;
+        bool depthReadOnly = false;
+        bool stencilReadOnly = false;
         Ref<AttachmentState> attachmentState;
         bool success = mEncodingContext.TryEncode(
             this,
@@ -587,6 +590,10 @@ namespace dawn_native {
                         descriptor->depthStencilAttachment->stencilLoadOp;
                     cmd->depthStencilAttachment.stencilStoreOp =
                         descriptor->depthStencilAttachment->stencilStoreOp;
+                    cmd->depthStencilAttachment.depthReadOnly =
+                        descriptor->depthStencilAttachment->depthReadOnly;
+                    cmd->depthStencilAttachment.stencilReadOnly =
+                        descriptor->depthStencilAttachment->stencilReadOnly;
 
                     if (IsReadOnlyDepthStencilAttachment(descriptor->depthStencilAttachment)) {
                         // TODO(dawn:485): Readonly depth/stencil attachment is not fully
@@ -600,6 +607,9 @@ namespace dawn_native {
                     } else {
                         usageTracker.TextureViewUsedAs(view, wgpu::TextureUsage::RenderAttachment);
                     }
+
+                    depthReadOnly = descriptor->depthStencilAttachment->depthReadOnly;
+                    stencilReadOnly = descriptor->depthStencilAttachment->stencilReadOnly;
                 }
 
                 cmd->width = width;
@@ -609,12 +619,13 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding BeginRenderPass(%s).", descriptor);
+            "encoding %s.BeginRenderPass(%s).", this, descriptor);
 
         if (success) {
-            RenderPassEncoder* passEncoder = new RenderPassEncoder(
-                device, this, &mEncodingContext, std::move(usageTracker),
-                std::move(attachmentState), descriptor->occlusionQuerySet, width, height);
+            RenderPassEncoder* passEncoder =
+                new RenderPassEncoder(device, this, &mEncodingContext, std::move(usageTracker),
+                                      std::move(attachmentState), descriptor->occlusionQuerySet,
+                                      width, height, depthReadOnly, stencilReadOnly);
             mEncodingContext.EnterPass(passEncoder);
             return passEncoder;
         }
@@ -663,8 +674,8 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding CopyBufferToBuffer(%s, %u, %s, %u, %u).", source, sourceOffset, destination,
-            destinationOffset, size);
+            "encoding %s.CopyBufferToBuffer(%s, %u, %s, %u, %u).", this, source, sourceOffset,
+            destination, destinationOffset, size);
     }
 
     void CommandEncoder::APICopyBufferToTexture(const ImageCopyBuffer* source,
@@ -722,8 +733,8 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding CopyBufferToTexture(%s, %s, %s).", source->buffer, destination->texture,
-            copySize);
+            "encoding %s.CopyBufferToTexture(%s, %s, %s).", this, source->buffer,
+            destination->texture, copySize);
     }
 
     void CommandEncoder::APICopyTextureToBuffer(const ImageCopyTexture* source,
@@ -780,8 +791,8 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding CopyTextureToBuffer(%s, %s, %s).", source->texture, destination->buffer,
-            copySize);
+            "encoding %s.CopyTextureToBuffer(%s, %s, %s).", this, source->texture,
+            destination->buffer, copySize);
     }
 
     void CommandEncoder::APICopyTextureToTexture(const ImageCopyTexture* source,
@@ -852,8 +863,8 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding CopyTextureToTexture(%s, %s, %s).", source->texture, destination->texture,
-            copySize);
+            "encoding %s.CopyTextureToTexture(%s, %s, %s).", this, source->texture,
+            destination->texture, copySize);
     }
 
     void CommandEncoder::APIInjectValidationError(const char* message) {
@@ -875,7 +886,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding InsertDebugMarker(\"%s\").", groupLabel);
+            "encoding %s.InsertDebugMarker(\"%s\").", this, groupLabel);
     }
 
     void CommandEncoder::APIPopDebugGroup() {
@@ -885,8 +896,7 @@ namespace dawn_native {
                 if (GetDevice()->IsValidationEnabled()) {
                     DAWN_INVALID_IF(
                         mDebugGroupStackSize == 0,
-                        "Every call to PopDebugGroup must be balanced by a corresponding call to "
-                        "PushDebugGroup.");
+                        "PopDebugGroup called when no debug groups are currently pushed.");
                 }
                 allocator->Allocate<PopDebugGroupCmd>(Command::PopDebugGroup);
                 mDebugGroupStackSize--;
@@ -894,7 +904,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding PopDebugGroup().");
+            "encoding %s.PopDebugGroup().", this);
     }
 
     void CommandEncoder::APIPushDebugGroup(const char* groupLabel) {
@@ -913,7 +923,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding PushDebugGroup(\"%s\").", groupLabel);
+            "encoding %s.PushDebugGroup(\"%s\").", this, groupLabel);
     }
 
     void CommandEncoder::APIResolveQuerySet(QuerySetBase* querySet,
@@ -953,8 +963,8 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding ResolveQuerySet(%s, %u, %u, %s, %u).", querySet, firstQuery, queryCount,
-            destination, destinationOffset);
+            "encoding %s.ResolveQuerySet(%s, %u, %u, %s, %u).", this, querySet, firstQuery,
+            queryCount, destination, destinationOffset);
     }
 
     void CommandEncoder::APIWriteBuffer(BufferBase* buffer,
@@ -980,7 +990,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding WriteBuffer(%s, %u, ..., %u).", buffer, bufferOffset, size);
+            "encoding %s.WriteBuffer(%s, %u, ..., %u).", this, buffer, bufferOffset, size);
     }
 
     void CommandEncoder::APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
@@ -1001,7 +1011,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding WriteTimestamp(%s, %u).", querySet, queryIndex);
+            "encoding %s.WriteTimestamp(%s, %u).", this, querySet, queryIndex);
     }
 
     CommandBufferBase* CommandEncoder::APIFinish(const CommandBufferDescriptor* descriptor) {
@@ -1011,18 +1021,6 @@ namespace dawn_native {
         }
         ASSERT(!IsError());
         return commandBuffer.Detach();
-    }
-
-    void CommandEncoder::EncodeSetValidatedBufferLocationsInternal(
-        std::vector<DeferredBufferLocationUpdate> updates) {
-        ASSERT(GetDevice()->IsValidationEnabled());
-        mEncodingContext.TryEncode(this, [&](CommandAllocator* allocator) -> MaybeError {
-            SetValidatedBufferLocationsInternalCmd* cmd =
-                allocator->Allocate<SetValidatedBufferLocationsInternalCmd>(
-                    Command::SetValidatedBufferLocationsInternal);
-            cmd->updates = std::move(updates);
-            return {};
-        });
     }
 
     ResultOrError<Ref<CommandBufferBase>> CommandEncoder::FinishInternal(

@@ -285,13 +285,8 @@ public:
 
     // Override chassis read/write locks for this validation object
     // This override takes a deferred lock. i.e. it is not acquired.
-    read_lock_guard_t read_lock() override;
-    write_lock_guard_t write_lock() override;
-
-    // If this ThreadSafety is for a VkDevice, then parent_instance points to the
-    // ThreadSafety object of its parent VkInstance. This is used to get to the counters
-    // for objects created with the instance as parent.
-    ThreadSafety *parent_instance;
+    ReadLockGuard ReadLock() override;
+    WriteLockGuard WriteLock() override;
 
     vl_concurrent_unordered_map<VkCommandBuffer, VkCommandPool, 6> command_pool_map;
     layer_data::unordered_map<VkCommandPool, layer_data::unordered_set<VkCommandBuffer>> pool_command_buffers_map;
@@ -322,6 +317,9 @@ public:
     counter<VkAccelerationStructureKHR> c_VkAccelerationStructureKHR;
     counter<VkAccelerationStructureNV> c_VkAccelerationStructureNV;
     counter<VkBuffer> c_VkBuffer;
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    counter<VkBufferCollectionFUCHSIA> c_VkBufferCollectionFUCHSIA;
+#endif
     counter<VkBufferView> c_VkBufferView;
     counter<VkCommandPool> c_VkCommandPool;
     counter<VkCuFunctionNVX> c_VkCuFunctionNVX;
@@ -356,8 +354,12 @@ public:
     counter<VkSurfaceKHR> c_VkSurfaceKHR;
     counter<VkSwapchainKHR> c_VkSwapchainKHR;
     counter<VkValidationCacheEXT> c_VkValidationCacheEXT;
+#ifdef VK_ENABLE_BETA_EXTENSIONS
     counter<VkVideoSessionKHR> c_VkVideoSessionKHR;
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
     counter<VkVideoSessionParametersKHR> c_VkVideoSessionParametersKHR;
+#endif
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
@@ -367,9 +369,13 @@ public:
     counter<uint64_t> c_uint64_t;
 #endif  // DISTINCT_NONDISPATCHABLE_HANDLES
 
+    // If this ThreadSafety is for a VkDevice, then parent_instance points to the
+    // ThreadSafety object of its parent VkInstance. This is used to get to the counters
+    // for objects created with the instance as parent.
+    ThreadSafety *parent_instance;
+
     ThreadSafety(ThreadSafety *parent)
-        : parent_instance(parent),
-          c_VkCommandBuffer("VkCommandBuffer", kVulkanObjectTypeCommandBuffer, this),
+        : c_VkCommandBuffer("VkCommandBuffer", kVulkanObjectTypeCommandBuffer, this),
           c_VkDevice("VkDevice", kVulkanObjectTypeDevice, this),
           c_VkInstance("VkInstance", kVulkanObjectTypeInstance, this),
           c_VkQueue("VkQueue", kVulkanObjectTypeQueue, this),
@@ -379,6 +385,9 @@ public:
           c_VkAccelerationStructureKHR("VkAccelerationStructureKHR", kVulkanObjectTypeAccelerationStructureKHR, this),
           c_VkAccelerationStructureNV("VkAccelerationStructureNV", kVulkanObjectTypeAccelerationStructureNV, this),
           c_VkBuffer("VkBuffer", kVulkanObjectTypeBuffer, this),
+#ifdef VK_USE_PLATFORM_FUCHSIA
+          c_VkBufferCollectionFUCHSIA("VkBufferCollectionFUCHSIA", kVulkanObjectTypeBufferCollectionFUCHSIA, this),
+#endif
           c_VkBufferView("VkBufferView", kVulkanObjectTypeBufferView, this),
           c_VkCommandPool("VkCommandPool", kVulkanObjectTypeCommandPool, this),
           c_VkCuFunctionNVX("VkCuFunctionNVX", kVulkanObjectTypeCuFunctionNVX, this),
@@ -413,13 +422,19 @@ public:
           c_VkSurfaceKHR("VkSurfaceKHR", kVulkanObjectTypeSurfaceKHR, this),
           c_VkSwapchainKHR("VkSwapchainKHR", kVulkanObjectTypeSwapchainKHR, this),
           c_VkValidationCacheEXT("VkValidationCacheEXT", kVulkanObjectTypeValidationCacheEXT, this),
+#ifdef VK_ENABLE_BETA_EXTENSIONS
           c_VkVideoSessionKHR("VkVideoSessionKHR", kVulkanObjectTypeVideoSessionKHR, this),
-          c_VkVideoSessionParametersKHR("VkVideoSessionParametersKHR", kVulkanObjectTypeVideoSessionParametersKHR, this)
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+          c_VkVideoSessionParametersKHR("VkVideoSessionParametersKHR", kVulkanObjectTypeVideoSessionParametersKHR, this),
+#endif
+
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
-          c_uint64_t("NON_DISPATCHABLE_HANDLE", kVulkanObjectTypeUnknown, this)
+          c_uint64_t("NON_DISPATCHABLE_HANDLE", kVulkanObjectTypeUnknown, this),
 #endif  // DISTINCT_NONDISPATCHABLE_HANDLES
+          parent_instance(parent)
     {
         container_type = LayerObjectTypeThreading;
     };
@@ -472,6 +487,9 @@ WRAPPER(VkQueue)
 WRAPPER(VkAccelerationStructureKHR)
 WRAPPER(VkAccelerationStructureNV)
 WRAPPER(VkBuffer)
+#ifdef VK_USE_PLATFORM_FUCHSIA
+WRAPPER(VkBufferCollectionFUCHSIA)
+#endif
 WRAPPER(VkBufferView)
 WRAPPER(VkCommandPool)
 WRAPPER(VkCuFunctionNVX)
@@ -506,8 +524,12 @@ WRAPPER(VkShaderModule)
 WRAPPER_PARENT_INSTANCE(VkSurfaceKHR)
 WRAPPER_PARENT_INSTANCE(VkSwapchainKHR)
 WRAPPER(VkValidationCacheEXT)
+#ifdef VK_ENABLE_BETA_EXTENSIONS
 WRAPPER(VkVideoSessionKHR)
+#endif
+#ifdef VK_ENABLE_BETA_EXTENSIONS
 WRAPPER(VkVideoSessionParametersKHR)
+#endif
 
 
 #else   // DISTINCT_NONDISPATCHABLE_HANDLES
@@ -2908,6 +2930,20 @@ void PostCallRecordCmdDecodeVideoKHR(
     const VkVideoDecodeInfoKHR*                 pFrameInfo) override;
 #endif // VK_ENABLE_BETA_EXTENSIONS
 
+void PreCallRecordCmdBeginRenderingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkRenderingInfoKHR*                   pRenderingInfo) override;
+
+void PostCallRecordCmdBeginRenderingKHR(
+    VkCommandBuffer                             commandBuffer,
+    const VkRenderingInfoKHR*                   pRenderingInfo) override;
+
+void PreCallRecordCmdEndRenderingKHR(
+    VkCommandBuffer                             commandBuffer) override;
+
+void PostCallRecordCmdEndRenderingKHR(
+    VkCommandBuffer                             commandBuffer) override;
+
 void PreCallRecordGetDeviceGroupPeerMemoryFeaturesKHR(
     VkDevice                                    device,
     uint32_t                                    heapIndex,
@@ -3691,6 +3727,38 @@ void PostCallRecordCmdResolveImage2KHR(
     VkCommandBuffer                             commandBuffer,
     const VkResolveImageInfo2KHR*               pResolveImageInfo) override;
 
+void PreCallRecordGetDeviceBufferMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceBufferMemoryRequirementsKHR*  pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) override;
+
+void PostCallRecordGetDeviceBufferMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceBufferMemoryRequirementsKHR*  pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) override;
+
+void PreCallRecordGetDeviceImageMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) override;
+
+void PostCallRecordGetDeviceImageMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    VkMemoryRequirements2*                      pMemoryRequirements) override;
+
+void PreCallRecordGetDeviceImageSparseMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    uint32_t*                                   pSparseMemoryRequirementCount,
+    VkSparseImageMemoryRequirements2*           pSparseMemoryRequirements) override;
+
+void PostCallRecordGetDeviceImageSparseMemoryRequirementsKHR(
+    VkDevice                                    device,
+    const VkDeviceImageMemoryRequirementsKHR*   pInfo,
+    uint32_t*                                   pSparseMemoryRequirementCount,
+    VkSparseImageMemoryRequirements2*           pSparseMemoryRequirements) override;
+
 void PreCallRecordCreateDebugReportCallbackEXT(
     VkInstance                                  instance,
     const VkDebugReportCallbackCreateInfoEXT*   pCreateInfo,
@@ -3935,6 +4003,9 @@ void PostCallRecordCmdDrawIndexedIndirectCountAMD(
     VkDeviceSize                                countBufferOffset,
     uint32_t                                    maxDrawCount,
     uint32_t                                    stride) override;
+
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+#endif // VK_ENABLE_BETA_EXTENSIONS
 
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 #endif // VK_ENABLE_BETA_EXTENSIONS
@@ -5279,6 +5350,65 @@ void PostCallRecordGetSemaphoreZirconHandleFUCHSIA(
     VkResult                                    result) override;
 #endif // VK_USE_PLATFORM_FUCHSIA
 
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void PreCallRecordCreateBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    const VkBufferCollectionCreateInfoFUCHSIA*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferCollectionFUCHSIA*                  pCollection) override;
+
+void PostCallRecordCreateBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    const VkBufferCollectionCreateInfoFUCHSIA*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferCollectionFUCHSIA*                  pCollection,
+    VkResult                                    result) override;
+
+void PreCallRecordSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkImageConstraintsInfoFUCHSIA*        pImageConstraintsInfo) override;
+
+void PostCallRecordSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkImageConstraintsInfoFUCHSIA*        pImageConstraintsInfo,
+    VkResult                                    result) override;
+
+void PreCallRecordSetBufferCollectionBufferConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkBufferConstraintsInfoFUCHSIA*       pBufferConstraintsInfo) override;
+
+void PostCallRecordSetBufferCollectionBufferConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkBufferConstraintsInfoFUCHSIA*       pBufferConstraintsInfo,
+    VkResult                                    result) override;
+
+void PreCallRecordDestroyBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PostCallRecordDestroyBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkAllocationCallbacks*                pAllocator) override;
+
+void PreCallRecordGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    VkBufferCollectionPropertiesFUCHSIA*        pProperties) override;
+
+void PostCallRecordGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    VkBufferCollectionPropertiesFUCHSIA*        pProperties,
+    VkResult                                    result) override;
+#endif // VK_USE_PLATFORM_FUCHSIA
+
 void PreCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI(
     VkDevice                                    device,
     VkRenderPass                                renderpass,
@@ -5416,6 +5546,16 @@ void PostCallRecordCmdDrawMultiIndexedEXT(
     uint32_t                                    firstInstance,
     uint32_t                                    stride,
     const int32_t*                              pVertexOffset) override;
+
+void PreCallRecordSetDeviceMemoryPriorityEXT(
+    VkDevice                                    device,
+    VkDeviceMemory                              memory,
+    float                                       priority) override;
+
+void PostCallRecordSetDeviceMemoryPriorityEXT(
+    VkDevice                                    device,
+    VkDeviceMemory                              memory,
+    float                                       priority) override;
 
 void PreCallRecordCreateAccelerationStructureKHR(
     VkDevice                                    device,

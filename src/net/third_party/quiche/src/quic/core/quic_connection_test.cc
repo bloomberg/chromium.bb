@@ -512,6 +512,15 @@ class TestConnection : public QuicConnection {
     return false;
   }
 
+  void SendOrQueuePacket(SerializedPacket packet) override {
+    QuicConnection::SendOrQueuePacket(std::move(packet));
+    self_address_on_default_path_while_sending_packet_ = self_address();
+  }
+
+  QuicSocketAddress self_address_on_default_path_while_sending_packet() {
+    return self_address_on_default_path_while_sending_packet_;
+  }
+
   SimpleDataProducer* producer() { return &producer_; }
 
   using QuicConnection::active_effective_peer_migration_type;
@@ -538,6 +547,8 @@ class TestConnection : public QuicConnection {
   SimpleSessionNotifier* notifier_;
 
   std::unique_ptr<QuicSocketAddress> next_effective_peer_addr_;
+
+  QuicSocketAddress self_address_on_default_path_while_sending_packet_;
 };
 
 enum class AckResponse { kDefer, kImmediate };
@@ -1320,15 +1331,15 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
   void set_perspective(Perspective perspective) {
     connection_.set_perspective(perspective);
     if (perspective == Perspective::IS_SERVER) {
+      QuicConfig config;
       if (!GetQuicReloadableFlag(
               quic_remove_connection_migration_connection_option)) {
-        QuicConfig config;
         QuicTagVector connection_options;
         connection_options.push_back(kRVCM);
         config.SetInitialReceivedConnectionOptions(connection_options);
-        EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
-        connection_.SetFromConfig(config);
       }
+      EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+      connection_.SetFromConfig(config);
 
       connection_.set_can_truncate_connection_ids(true);
       QuicConnectionPeer::SetNegotiatedVersion(&connection_);
@@ -1509,8 +1520,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
 };
 
 // Run all end to end tests with all supported versions.
-INSTANTIATE_TEST_SUITE_P(QuicConnectionTests,
-                         QuicConnectionTest,
+INSTANTIATE_TEST_SUITE_P(QuicConnectionTests, QuicConnectionTest,
                          ::testing::ValuesIn(GetTestParams()),
                          ::testing::PrintToStringParamName());
 
@@ -2067,6 +2077,58 @@ TEST_P(QuicConnectionTest, EffectivePeerAddressChangeAtServer) {
   }
 }
 
+// Regression test for b/200020764.
+TEST_P(QuicConnectionTest, ConnectionMigrationWithPendingPaddingBytes) {
+  // TODO(haoyuewang) Move these test setup code to a common member function.
+  set_perspective(Perspective::IS_SERVER);
+  if (!connection_.connection_migration_use_new_cid()) {
+    return;
+  }
+  QuicPacketCreatorPeer::SetSendVersionInPacket(creator_, false);
+  connection_.CreateConnectionIdManager();
+  connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
+  QuicConnectionPeer::SetPeerAddress(&connection_, kPeerAddress);
+  QuicConnectionPeer::SetEffectivePeerAddress(&connection_, kPeerAddress);
+  QuicConnectionPeer::SetAddressValidated(&connection_);
+
+  // Sends new server CID to client.
+  QuicConnectionId new_cid;
+  EXPECT_CALL(visitor_, OnServerConnectionIdIssued(_))
+      .WillOnce(Invoke([&](const QuicConnectionId& cid) { new_cid = cid; }));
+  EXPECT_CALL(visitor_, SendNewConnectionId(_));
+  // Discard INITIAL key.
+  connection_.RemoveEncrypter(ENCRYPTION_INITIAL);
+  connection_.NeuterUnencryptedPackets();
+  connection_.OnHandshakeComplete();
+  EXPECT_CALL(visitor_, GetHandshakeState())
+      .WillRepeatedly(Return(HANDSHAKE_CONFIRMED));
+
+  auto* packet_creator = QuicConnectionPeer::GetPacketCreator(&connection_);
+  packet_creator->FlushCurrentPacket();
+  packet_creator->AddPendingPadding(50u);
+  const QuicSocketAddress kPeerAddress3 =
+      QuicSocketAddress(QuicIpAddress::Loopback6(), /*port=*/56789);
+  auto ack_frame = InitAckFrame(1);
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(_, _, _, _, _));
+  EXPECT_CALL(visitor_, OnConnectionMigration(PORT_CHANGE)).Times(1);
+  ProcessFramesPacketWithAddresses({QuicFrame(&ack_frame)}, kSelfAddress,
+                                   kPeerAddress3, ENCRYPTION_FORWARD_SECURE);
+  if (GetQuicReloadableFlag(
+          quic_flush_pending_frames_and_padding_bytes_on_migration)) {
+    // Any pending frames/padding should be flushed before default_path_ is
+    // temporarily reset.
+    ASSERT_EQ(connection_.self_address_on_default_path_while_sending_packet()
+                  .host()
+                  .address_family(),
+              IpAddressFamily::IP_V6);
+  } else {
+    ASSERT_EQ(connection_.self_address_on_default_path_while_sending_packet()
+                  .host()
+                  .address_family(),
+              IpAddressFamily::IP_UNSPEC);
+  }
+}
+
 // Regression test for b/196208556.
 TEST_P(QuicConnectionTest,
        ReversePathValidationResponseReceivedFromUnexpectedPeerAddress) {
@@ -2256,7 +2318,7 @@ TEST_P(QuicConnectionTest, ReversePathValidationFailureAtServer) {
   EXPECT_EQ(default_path->client_connection_id, client_cid0);
   EXPECT_EQ(default_path->server_connection_id, server_cid0);
   EXPECT_TRUE(alternative_path->server_connection_id.IsEmpty());
-  EXPECT_FALSE(alternative_path->stateless_reset_token_received);
+  EXPECT_FALSE(alternative_path->stateless_reset_token.has_value());
   auto* retire_peer_issued_cid_alarm =
       connection_.GetRetirePeerIssuedConnectionIdAlarm();
   ASSERT_TRUE(retire_peer_issued_cid_alarm->IsSet());
@@ -4483,7 +4545,7 @@ TEST_P(QuicConnectionTest, TLP) {
 }
 
 TEST_P(QuicConnectionTest, TailLossProbeDelayForStreamDataInTLPR) {
-  if (connection_.PtoEnabled()) {
+  if (connection_.PtoEnabled() || GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     return;
   }
 
@@ -4518,7 +4580,7 @@ TEST_P(QuicConnectionTest, TailLossProbeDelayForStreamDataInTLPR) {
 }
 
 TEST_P(QuicConnectionTest, TailLossProbeDelayForNonStreamDataInTLPR) {
-  if (connection_.PtoEnabled()) {
+  if (connection_.PtoEnabled() || GetQuicReloadableFlag(quic_deprecate_tlpr)) {
     return;
   }
 
@@ -10595,10 +10657,8 @@ TEST_P(QuicConnectionTest, MultiplePacketNumberSpacePto) {
 }
 
 void QuicConnectionTest::TestClientRetryHandling(
-    bool invalid_retry_tag,
-    bool missing_original_id_in_config,
-    bool wrong_original_id_in_config,
-    bool missing_retry_id_in_config,
+    bool invalid_retry_tag, bool missing_original_id_in_config,
+    bool wrong_original_id_in_config, bool missing_retry_id_in_config,
     bool wrong_retry_id_in_config) {
   if (invalid_retry_tag) {
     ASSERT_FALSE(missing_original_id_in_config);
@@ -14172,7 +14232,7 @@ TEST_P(QuicConnectionTest, PathChallengeBeforePeerIpAddressChangeAtServer) {
   // Verify that alternative_path_ is cleared and the peer CID is retired.
   EXPECT_TRUE(alternative_path->client_connection_id.IsEmpty());
   EXPECT_TRUE(alternative_path->server_connection_id.IsEmpty());
-  EXPECT_FALSE(alternative_path->stateless_reset_token_received);
+  EXPECT_FALSE(alternative_path->stateless_reset_token.has_value());
   auto* retire_peer_issued_cid_alarm =
       connection_.GetRetirePeerIssuedConnectionIdAlarm();
   ASSERT_TRUE(retire_peer_issued_cid_alarm->IsSet());
@@ -14281,7 +14341,7 @@ TEST_P(QuicConnectionTest,
   EXPECT_EQ(packet_creator->GetSourceConnectionId(), server_cid1);
   // Verify that alternative_path_ is cleared.
   EXPECT_TRUE(alternative_path->server_connection_id.IsEmpty());
-  EXPECT_FALSE(alternative_path->stateless_reset_token_received);
+  EXPECT_FALSE(alternative_path->stateless_reset_token.has_value());
 
   // Switch to use the mock send algorithm.
   send_algorithm_ = new StrictMock<MockSendAlgorithm>();
@@ -14451,12 +14511,11 @@ TEST_P(QuicConnectionTest,
   EXPECT_EQ(default_path->client_connection_id, client_cid1);
   EXPECT_EQ(default_path->server_connection_id, server_cid1);
   EXPECT_EQ(default_path->stateless_reset_token, frame1.stateless_reset_token);
-  EXPECT_TRUE(default_path->stateless_reset_token_received);
   const auto* alternative_path =
       QuicConnectionPeer::GetAlternativePath(&connection_);
   EXPECT_TRUE(alternative_path->client_connection_id.IsEmpty());
   EXPECT_TRUE(alternative_path->server_connection_id.IsEmpty());
-  EXPECT_FALSE(alternative_path->stateless_reset_token_received);
+  EXPECT_FALSE(alternative_path->stateless_reset_token.has_value());
   ASSERT_EQ(packet_creator->GetDestinationConnectionId(), server_cid1);
 
   // Client will retire server connection ID on old default_path.
@@ -14527,7 +14586,7 @@ TEST_P(QuicConnectionTest, ServerConnectionIdRetiredUponPathValidationFailure) {
       QuicConnectionPeer::GetAlternativePath(&connection_);
   EXPECT_TRUE(alternative_path->client_connection_id.IsEmpty());
   EXPECT_TRUE(alternative_path->server_connection_id.IsEmpty());
-  EXPECT_FALSE(alternative_path->stateless_reset_token_received);
+  EXPECT_FALSE(alternative_path->stateless_reset_token.has_value());
 
   // Client will retire server connection ID on alternative_path.
   auto* retire_peer_issued_cid_alarm =
@@ -14604,7 +14663,6 @@ TEST_P(QuicConnectionTest,
   EXPECT_EQ(default_path->client_connection_id, new_client_connection_id);
   EXPECT_EQ(default_path->server_connection_id, frame1.connection_id);
   EXPECT_EQ(default_path->stateless_reset_token, frame1.stateless_reset_token);
-  EXPECT_TRUE(default_path->stateless_reset_token_received);
 
   // Client will retire server connection ID on old default_path.
   auto* retire_peer_issued_cid_alarm =
@@ -15000,7 +15058,7 @@ TEST_P(QuicConnectionTest, PatchMissingClientConnectionIdOntoAlternativePath) {
   alternative_path->peer_address = QuicSocketAddress(new_host, 12345);
   alternative_path->server_connection_id = TestConnectionId(3);
   ASSERT_TRUE(alternative_path->client_connection_id.IsEmpty());
-  ASSERT_FALSE(alternative_path->stateless_reset_token_received);
+  ASSERT_FALSE(alternative_path->stateless_reset_token.has_value());
 
   QuicNewConnectionIdFrame frame;
   frame.sequence_number = 1u;
@@ -15015,7 +15073,6 @@ TEST_P(QuicConnectionTest, PatchMissingClientConnectionIdOntoAlternativePath) {
   ASSERT_EQ(alternative_path->client_connection_id, frame.connection_id);
   ASSERT_EQ(alternative_path->stateless_reset_token,
             frame.stateless_reset_token);
-  ASSERT_TRUE(alternative_path->stateless_reset_token_received);
 }
 
 TEST_P(QuicConnectionTest, PatchMissingClientConnectionIdOntoDefaultPath) {
@@ -15043,7 +15100,7 @@ TEST_P(QuicConnectionTest, PatchMissingClientConnectionIdOntoDefaultPath) {
 
   ASSERT_FALSE(default_path->validated);
   ASSERT_TRUE(default_path->client_connection_id.IsEmpty());
-  ASSERT_FALSE(default_path->stateless_reset_token_received);
+  ASSERT_FALSE(default_path->stateless_reset_token.has_value());
 
   QuicNewConnectionIdFrame frame;
   frame.sequence_number = 1u;
@@ -15057,7 +15114,6 @@ TEST_P(QuicConnectionTest, PatchMissingClientConnectionIdOntoDefaultPath) {
 
   ASSERT_EQ(default_path->client_connection_id, frame.connection_id);
   ASSERT_EQ(default_path->stateless_reset_token, frame.stateless_reset_token);
-  ASSERT_TRUE(default_path->stateless_reset_token_received);
   ASSERT_EQ(packet_creator->GetDestinationConnectionId(), frame.connection_id);
 }
 
@@ -15358,8 +15414,7 @@ TEST_P(QuicConnectionTest, AckElicitingFrames) {
     connection_.SetFromConfig(config);
   }
   if (!version().HasIetfQuicFrames() ||
-      !connection_.connection_migration_use_new_cid() ||
-      !GetQuicReloadableFlag(quic_add_missing_update_ack_timeout)) {
+      !connection_.connection_migration_use_new_cid()) {
     return;
   }
   EXPECT_CALL(visitor_, SendNewConnectionId(_)).Times(2);

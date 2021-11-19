@@ -10,19 +10,15 @@
 #include <map>
 #include <memory>
 
-#include "core/fxcrt/fx_codepage_forward.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
 class CFX_Face;
 class CFX_FontMapper;
-class CFX_SubstFont;
-class SystemFontInfoIface;
 
 class CFX_FontMgr {
  public:
@@ -45,7 +41,10 @@ class CFX_FontMgr {
     ObservedPtr<CFX_Face> m_TTCFaces[16];
   };
 
-  static Optional<pdfium::span<const uint8_t>> GetBuiltinFont(size_t index);
+  // `index` must be less than `CFX_FontMapper::kNumStandardFonts`.
+  static pdfium::span<const uint8_t> GetStandardFont(size_t index);
+  static pdfium::span<const uint8_t> GetGenericSansFont();
+  static pdfium::span<const uint8_t> GetGenericSerifFont();
 
   CFX_FontMgr();
   ~CFX_FontMgr();
@@ -70,15 +69,6 @@ class CFX_FontMgr {
   RetainPtr<CFX_Face> NewFixedFace(const RetainPtr<FontDesc>& pDesc,
                                    pdfium::span<const uint8_t> span,
                                    int face_index);
-  RetainPtr<CFX_Face> FindSubstFont(const ByteString& face_name,
-                                    bool bTrueType,
-                                    uint32_t flags,
-                                    int weight,
-                                    int italic_angle,
-                                    FX_CodePage code_page,
-                                    CFX_SubstFont* pSubstFont);
-
-  void SetSystemFontInfo(std::unique_ptr<SystemFontInfoIface> pFontInfo);
 
   // Always present.
   CFX_FontMapper* GetBuiltinMapper() const { return m_pBuiltinMapper.get(); }

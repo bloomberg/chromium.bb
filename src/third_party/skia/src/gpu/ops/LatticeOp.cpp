@@ -11,19 +11,21 @@
 #include "include/core/SkRect.h"
 #include "src/core/SkLatticeIter.h"
 #include "src/core/SkMatrixPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrResourceProviderPriv.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+
+namespace skgpu::v1::LatticeOp {
 
 namespace {
 
@@ -247,8 +249,8 @@ private:
 
         QuadHelper helper(target, kVertexStride, numRects);
 
-        GrVertexWriter vertices{helper.vertices()};
-        if (!vertices.fPtr) {
+        VertexWriter vertices{helper.vertices()};
+        if (!vertices) {
             SkDebugf("Could not allocate vertices\n");
             return;
         }
@@ -288,8 +290,8 @@ private:
                 coords.store(&texCoords);
 
                 if (isScaleTranslate) {
-                    vertices.writeQuad(GrVertexWriter::TriStripFromRect(dstR),
-                                       GrVertexWriter::TriStripFromRect(texCoords),
+                    vertices.writeQuad(VertexWriter::TriStripFromRect(dstR),
+                                       VertexWriter::TriStripFromRect(texCoords),
                                        texDomain,
                                        patchColor);
                 } else {
@@ -300,22 +302,22 @@ private:
                     // However, mapRectToQuad returns them in the order:
                     // left-top, right-top, right-bottom, left-bottom
                     // Thus we write out the vertices to match the writeQuad path.
-                    vertices.write(mappedPts[0],
-                                   SkPoint::Make(texCoords.fLeft, texCoords.fTop),
-                                   texDomain,
-                                   patchColor);
-                    vertices.write(mappedPts[3],
-                                   SkPoint::Make(texCoords.fLeft, texCoords.fBottom),
-                                   texDomain,
-                                   patchColor);
-                    vertices.write(mappedPts[1],
-                                   SkPoint::Make(texCoords.fRight, texCoords.fTop),
-                                   texDomain,
-                                   patchColor);
-                    vertices.write(mappedPts[2],
-                                   SkPoint::Make(texCoords.fRight, texCoords.fBottom),
-                                   texDomain,
-                                   patchColor);
+                    vertices << mappedPts[0]
+                             << SkPoint::Make(texCoords.fLeft, texCoords.fTop)
+                             << texDomain
+                             << patchColor;
+                    vertices << mappedPts[3]
+                             << SkPoint::Make(texCoords.fLeft, texCoords.fBottom)
+                             << texDomain
+                             << patchColor;
+                    vertices << mappedPts[1]
+                             << SkPoint::Make(texCoords.fRight, texCoords.fTop)
+                             << texDomain
+                             << patchColor;
+                    vertices << mappedPts[2]
+                             << SkPoint::Make(texCoords.fRight, texCoords.fBottom)
+                             << texDomain
+                             << patchColor;
                 }
             }
         }
@@ -393,8 +395,6 @@ private:
 
 }  // anonymous namespace
 
-namespace skgpu::v1::LatticeOp {
-
 GrOp::Owner MakeNonAA(GrRecordingContext* context,
                       GrPaint&& paint,
                       const SkMatrix& viewMatrix,
@@ -419,9 +419,9 @@ GrOp::Owner MakeNonAA(GrRecordingContext* context,
 static void init_random_divs(int divs[], int count, int subsetStart, int subsetStop,
                              SkRandom* random) {
     // Rules for lattice divs: Must be strictly increasing and in the range
-    // [subsetStart, subsetStop).
+    // [subsetStart, subsetStop.
     // Not terribly efficient alg for generating random divs:
-    // 1) Start with minimum legal pixels between each div.
+    // 1 Start with minimum legal pixels between each div.
     // 2) Randomly assign the remaining pixels of the subset to divs.
     // 3) Convert from pixel counts to div offsets.
 
@@ -529,8 +529,10 @@ GR_DRAW_OP_TEST_DEFINE(NonAALatticeOp) {
             std::move(proxy), origin,
             context->priv().caps()->getReadSwizzle(format, GrColorType::kRGBA_8888));
 
-    return NonAALatticeOp::Make(context, std::move(paint), viewMatrix, std::move(view),
-                                kPremul_SkAlphaType, std::move(csxf), filter, std::move(iter), dst);
+    return skgpu::v1::LatticeOp::NonAALatticeOp::Make(context, std::move(paint), viewMatrix,
+                                                      std::move(view), kPremul_SkAlphaType,
+                                                      std::move(csxf), filter, std::move(iter),
+                                                      dst);
 }
 
 #endif

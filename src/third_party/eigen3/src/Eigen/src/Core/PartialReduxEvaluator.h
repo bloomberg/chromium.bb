@@ -10,6 +10,8 @@
 #ifndef EIGEN_PARTIALREDUX_H
 #define EIGEN_PARTIALREDUX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {
@@ -29,7 +31,7 @@ namespace internal {
 *    some (optional) processing of the outcome, e.g., division by n for mean.
 *
 * For the vectorized path let's observe that the packet-size and outer-unrolling
-* are both decided by the assignement logic. So all we have to do is to decide
+* are both decided by the assignment logic. So all we have to do is to decide
 * on the inner unrolling.
 *
 * For the unrolling, we can reuse "internal::redux_vec_unroller" from Redux.h,

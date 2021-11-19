@@ -1064,6 +1064,10 @@ void Convolve2D_NEON(const void* LIBGAV1_RESTRICT const reference,
   // The output of the horizontal filter is guaranteed to fit in 16 bits.
   int16_t intermediate_result[kMaxSuperBlockSizeInPixels *
                               (kMaxSuperBlockSizeInPixels + kSubPixelTaps - 1)];
+#if LIBGAV1_MSAN
+  // Quiet msan warnings. Set with random non-zero value to aid in debugging.
+  memset(intermediate_result, 0x43, sizeof(intermediate_result));
+#endif
   const int intermediate_height = height + vertical_taps - 1;
   const ptrdiff_t src_stride = reference_stride >> 1;
   const auto* const src = static_cast<const uint16_t*>(reference) -
@@ -1873,6 +1877,10 @@ inline uint8x16x3_t LoadSrcVals(const uint16_t* const src_x) {
   // 2 vectors of eight 16-bit values.
   ret.val[0] = vreinterpretq_u8_u16(vld1q_u16(src_x));
   ret.val[1] = vreinterpretq_u8_u16(vld1q_u16(src_x + 8));
+#if LIBGAV1_MSAN
+  // Initialize to quiet msan warnings when grade_x <= 1.
+  ret.val[2] = vdupq_n_u8(0);
+#endif
   if (grade_x > 1) {
     // When fractional step size is greater than 1 (up to 2), the rightmost
     // starting value for a filter may be at position 15. For an 8-tap filter,
@@ -2741,6 +2749,10 @@ void ConvolveScale2D_NEON(const void* LIBGAV1_RESTRICT const reference,
       num_vert_taps;
   int16_t intermediate_result[kIntermediateAllocWidth *
                               (2 * kIntermediateAllocWidth + 8)];
+#if LIBGAV1_MSAN
+  // Quiet msan warnings. Set with random non-zero value to aid in debugging.
+  memset(intermediate_result, 0x54, sizeof(intermediate_result));
+#endif
   // Horizontal filter.
   // Filter types used for width <= 4 are different from those for width > 4.
   // When width > 4, the valid filter index range is always [0, 3].

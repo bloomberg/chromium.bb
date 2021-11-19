@@ -253,6 +253,27 @@ static int compare_distance(const void *a, const void *b) {
   return 0;
 }
 
+static int disable_gm_search_based_on_stats(const AV1_COMP *const cpi) {
+  int is_gm_present = 1;
+
+  // Check number of GM models only in GF groups with ARF frames. GM param
+  // estimation is always done in the case of GF groups with no ARF frames (flat
+  // gops)
+  if (cpi->ppi->gf_group.arf_index > -1) {
+    // valid_gm_model_found is initialized to INT32_MAX in the beginning of
+    // every GF group.
+    // Therefore, GM param estimation is always done for all frames until
+    // atleast 1 frame each of ARF_UPDATE, INTNL_ARF_UPDATE and LF_UPDATE are
+    // encoded in a GF group For subsequent frames, GM param estimation is
+    // disabled, if no valid models have been found in all the three update
+    // types.
+    is_gm_present = (cpi->ppi->valid_gm_model_found[ARF_UPDATE] != 0) ||
+                    (cpi->ppi->valid_gm_model_found[INTNL_ARF_UPDATE] != 0) ||
+                    (cpi->ppi->valid_gm_model_found[LF_UPDATE] != 0);
+  }
+  return !is_gm_present;
+}
+
 // Prunes reference frames for global motion estimation based on the speed
 // feature 'gm_search_type'.
 static int do_gm_search_logic(SPEED_FEATURES *const sf, int frame) {
@@ -282,6 +303,11 @@ static AOM_INLINE void update_valid_ref_frames_for_gm(
   const GF_GROUP *gf_group = &cpi->ppi->gf_group;
   int ref_pruning_enabled = is_frame_eligible_for_ref_pruning(
       gf_group, cpi->sf.inter_sf.selective_ref_frame, 1, cpi->gf_frame_index);
+  int cur_frame_gm_disabled = 0;
+
+  if (cpi->sf.gm_sf.disable_gm_search_based_on_stats) {
+    cur_frame_gm_disabled = disable_gm_search_based_on_stats(cpi);
+  }
 
   for (int frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
     const MV_REFERENCE_FRAME ref_frame[2] = { frame, NONE_FRAME };
@@ -305,7 +331,8 @@ static AOM_INLINE void update_valid_ref_frames_for_gm(
 
     if (ref_buf[frame]->y_crop_width == cpi->source->y_crop_width &&
         ref_buf[frame]->y_crop_height == cpi->source->y_crop_height &&
-        do_gm_search_logic(&cpi->sf, frame) && !prune_ref_frames) {
+        do_gm_search_logic(&cpi->sf, frame) && !prune_ref_frames &&
+        !cur_frame_gm_disabled) {
       assert(ref_buf[frame] != NULL);
       const int relative_frame_dist = av1_encoder_get_relative_dist(
           buf->display_order_hint, cm->cur_frame->display_order_hint);
@@ -428,6 +455,13 @@ static AOM_INLINE void global_motion_estimation(AV1_COMP *cpi) {
 void av1_compute_global_motion_facade(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   GlobalMotionInfo *const gm_info = &cpi->gm_info;
+
+  if (cpi->oxcf.tool_cfg.enable_global_motion) {
+    if (cpi->gf_frame_index == 0) {
+      for (int i = 0; i < FRAME_UPDATE_TYPES; i++)
+        cpi->ppi->valid_gm_model_found[i] = INT32_MAX;
+    }
+  }
 
   if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
       cpi->oxcf.tool_cfg.enable_global_motion && !gm_info->search_done) {

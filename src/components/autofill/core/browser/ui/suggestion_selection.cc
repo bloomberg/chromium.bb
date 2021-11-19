@@ -61,10 +61,6 @@ constexpr size_t kMaxSuggestedProfilesCount = 50;
 // indices clicked by our users. The suggestions will also refine as they type.
 constexpr size_t kMaxUniqueSuggestionsCount = 10;
 
-// This is the maximum number of suggestions that will be displayed when the
-// kAutofillPruneSuggestions flag is enabled.
-constexpr size_t kMaxPrunedUniqueSuggestionsCount = 3;
-
 std::vector<Suggestion> GetPrefixMatchedSuggestions(
     const AutofillType& type,
     const std::u16string& raw_field_contents,
@@ -131,11 +127,15 @@ std::vector<Suggestion> GetPrefixMatchedSuggestions(
         }
       }
 
-      suggestions.push_back(Suggestion(value));
+      suggestions.emplace_back(value);
       suggestions.back().backend_id = profile->guid();
       suggestions.back().match = prefix_matched_suggestion
                                      ? Suggestion::PREFIX_MATCH
                                      : Suggestion::SUBSTRING_MATCH;
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillUseConsistentPopupSettingsIcons)) {
+        suggestions.back().icon = "accountIcon";
+      }
     }
   }
 
@@ -159,18 +159,12 @@ std::vector<Suggestion> GetUniqueSuggestions(
     std::vector<AutofillProfile*>* unique_matched_profiles) {
   std::vector<Suggestion> unique_suggestions;
 
-  size_t max_num_suggestions =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillPruneSuggestions)
-          ? kMaxPrunedUniqueSuggestionsCount
-          : kMaxUniqueSuggestionsCount;
-
   // Limit number of unique profiles as having too many makes the
   // browser hang due to drawing calculations (and is also not
   // very useful for the user).
   ServerFieldTypeSet types(field_types.begin(), field_types.end());
   for (size_t i = 0; i < matched_profiles.size() &&
-                     unique_suggestions.size() < max_num_suggestions;
+                     unique_suggestions.size() < kMaxUniqueSuggestionsCount;
        ++i) {
     bool include = true;
     AutofillProfile* profile_a = matched_profiles[i];

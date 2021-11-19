@@ -83,6 +83,32 @@ const char* kReservedKeywordsGLSL[] = {
     "fvec2",
     "fvec3",
     "fvec4",
+    "gl_BaseInstance",
+    "gl_BaseVertex",
+    "gl_ClipDistance",
+    "gl_DepthRangeParameters",
+    "gl_DrawID",
+    "gl_FragCoord",
+    "gl_FragDepth",
+    "gl_FrontFacing",
+    "gl_GlobalInvocationID",
+    "gl_InstanceID",
+    "gl_LocalInvocationID",
+    "gl_LocalInvocationIndex",
+    "gl_NumSamples",
+    "gl_NumWorkGroups",
+    "gl_PerVertex",
+    "gl_PointCoord",
+    "gl_PointSize",
+    "gl_Position",
+    "gl_PrimitiveID",
+    "gl_SampleID",
+    "gl_SampleMask",
+    "gl_SampleMaskIn",
+    "gl_SamplePosition",
+    "gl_VertexID",
+    "gl_WorkGroupID",
+    "gl_WorkGroupSize",
     "goto",
     "half",
     "highp",
@@ -136,6 +162,7 @@ const char* kReservedKeywordsGLSL[] = {
     "layout",
     "long",
     "lowp",
+    "main",
     "mat2",
     "mat2x2",
     "mat2x3",
@@ -1104,7 +1131,7 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
 
   // Swizzles, intrinsic calls and builtin structure members need to keep their
   // symbols preserved.
-  std::unordered_set<ast::IdentifierExpression*> preserve;
+  std::unordered_set<const ast::IdentifierExpression*> preserve;
   for (auto* node : in->ASTNodes().Objects()) {
     if (auto* member = node->As<ast::MemberAccessorExpression>()) {
       auto* sem = in->Sem().Get(member);
@@ -1114,11 +1141,11 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
         continue;
       }
       if (sem->Is<sem::Swizzle>()) {
-        preserve.emplace(member->member());
-      } else if (auto* str_expr = in->Sem().Get(member->structure())) {
+        preserve.emplace(member->member);
+      } else if (auto* str_expr = in->Sem().Get(member->structure)) {
         if (auto* ty = str_expr->Type()->UnwrapRef()->As<sem::Struct>()) {
           if (ty->Declaration() == nullptr) {  // Builtin structure
-            preserve.emplace(member->member());
+            preserve.emplace(member->member);
           }
         }
       }
@@ -1130,7 +1157,7 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
         continue;
       }
       if (sem->Target()->Is<sem::Intrinsic>()) {
-        preserve.emplace(call->func());
+        preserve.emplace(call->func);
       }
     }
   }
@@ -1186,17 +1213,17 @@ Output Renamer::Run(const Program* in, const DataMap& inputs) {
     return sym_out;
   });
 
-  ctx.ReplaceAll(
-      [&](ast::IdentifierExpression* ident) -> ast::IdentifierExpression* {
-        if (preserve.count(ident)) {
-          auto sym_in = ident->symbol();
-          auto str = in->Symbols().NameFor(sym_in);
-          auto sym_out = out.Symbols().Register(str);
-          return ctx.dst->create<ast::IdentifierExpression>(
-              ctx.Clone(ident->source()), sym_out);
-        }
-        return nullptr;  // Clone ident. Uses the symbol remapping above.
-      });
+  ctx.ReplaceAll([&](const ast::IdentifierExpression* ident)
+                     -> const ast::IdentifierExpression* {
+    if (preserve.count(ident)) {
+      auto sym_in = ident->symbol;
+      auto str = in->Symbols().NameFor(sym_in);
+      auto sym_out = out.Symbols().Register(str);
+      return ctx.dst->create<ast::IdentifierExpression>(
+          ctx.Clone(ident->source), sym_out);
+    }
+    return nullptr;  // Clone ident. Uses the symbol remapping above.
+  });
   ctx.Clone();
 
   return Output(Program(std::move(out)),

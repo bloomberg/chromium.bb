@@ -16,13 +16,12 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_color.h"
 #include "fpdfsdk/cpdfsdk_baannot.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_RenderDevice;
 class CPDF_Annot;
 class CPDF_FormControl;
 class CPDF_FormField;
-class CPDF_RenderOptions;
 class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_InteractiveForm;
 class CPDFSDK_PageView;
@@ -52,9 +51,10 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   // CPDFSDK_BAAnnot:
   CPDF_Action GetAAction(CPDF_AAction::AActionType eAAT) override;
   bool IsAppearanceValid() override;
-
-  // CPDFSDK_Annot:
   int GetLayoutOrder() const override;
+  void DrawAppearance(CFX_RenderDevice* pDevice,
+                      const CFX_Matrix& mtUser2Device,
+                      CPDF_Annot::AppearanceMode mode) override;
 
   bool IsSignatureWidget() const;
   void SetRect(const CFX_FloatRect& rect);
@@ -62,9 +62,9 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   int GetFieldFlags() const;
   int GetRotate() const;
 
-  Optional<FX_COLORREF> GetFillColor() const;
-  Optional<FX_COLORREF> GetBorderColor() const;
-  Optional<FX_COLORREF> GetTextColor() const;
+  absl::optional<FX_COLORREF> GetFillColor() const;
+  absl::optional<FX_COLORREF> GetBorderColor() const;
+  absl::optional<FX_COLORREF> GetTextColor() const;
   float GetFontSize() const;
 
   int GetSelectedIndex(int nIndex) const;
@@ -95,10 +95,11 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   void ResetXFAAppearance(ValueChanged bValueChanged);
 #endif  // PDF_ENABLE_XFA
 
-  void ResetAppearance(Optional<WideString> sValue, ValueChanged bValueChanged);
+  void ResetAppearance(absl::optional<WideString> sValue,
+                       ValueChanged bValueChanged);
   void ResetFieldAppearance();
   void UpdateField();
-  Optional<WideString> OnFormat();
+  absl::optional<WideString> OnFormat();
 
   bool OnAAction(CPDF_AAction::AActionType type,
                  CFFL_FieldAction* data,
@@ -120,11 +121,6 @@ class CPDFSDK_Widget final : public CPDFSDK_BAAnnot {
   uint32_t GetValueAge() const { return m_nValueAge; }
 
   bool IsWidgetAppearanceValid(CPDF_Annot::AppearanceMode mode);
-  void DrawAppearance(CFX_RenderDevice* pDevice,
-                      const CFX_Matrix& mtUser2Device,
-                      CPDF_Annot::AppearanceMode mode,
-                      const CPDF_RenderOptions* pOptions) override;
-
   CFX_Matrix GetMatrix() const;
   CFX_FloatRect GetClientRect() const;
   CFX_FloatRect GetRotatedRect() const;

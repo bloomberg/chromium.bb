@@ -29,18 +29,17 @@ class Decoration : public Castable<Decoration, Node> {
   ~Decoration() override;
 
   /// @returns the WGSL name for the decoration
-  virtual std::string name() const = 0;
+  virtual std::string Name() const = 0;
 
  protected:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this decoration
-  Decoration(ProgramID program_id, const Source& source)
-      : Base(program_id, source) {}
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
+  Decoration(ProgramID pid, const Source& src) : Base(pid, src) {}
 };
 
 /// A list of decorations
-using DecorationList = std::vector<Decoration*>;
+using DecorationList = std::vector<const Decoration*>;
 
 /// @param decorations the list of decorations to search
 /// @returns true if `decorations` includes a decoration of type `T`
@@ -57,7 +56,7 @@ bool HasDecoration(const DecorationList& decorations) {
 /// @param decorations the list of decorations to search
 /// @returns a pointer to `T` from `decorations` if found, otherwise nullptr.
 template <typename T>
-T* GetDecoration(const DecorationList& decorations) {
+const T* GetDecoration(const DecorationList& decorations) {
   for (auto* deco : decorations) {
     if (deco->Is<T>()) {
       return deco->As<T>();

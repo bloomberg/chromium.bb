@@ -14,6 +14,8 @@
 
 #include "./HessenbergDecomposition.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {
@@ -259,7 +261,7 @@ template<typename MatrixType_> class ComplexSchur
     friend struct internal::complex_schur_reduce_to_hessenberg<MatrixType, NumTraits<Scalar>::IsComplex>;
 };
 
-/** If m_matT(i+1,i) is neglegible in floating point arithmetic
+/** If m_matT(i+1,i) is negligible in floating point arithmetic
   * compared to m_matT(i,i) and m_matT(j,j), then set it to zero and
   * return true, else return false. */
 template<typename MatrixType>

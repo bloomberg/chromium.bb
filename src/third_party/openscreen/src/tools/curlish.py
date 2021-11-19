@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -8,12 +7,8 @@ needing CURL installed.
 """
 
 import os
-
-try:
-    from urllib2 import HTTPError, URLError, urlopen
-except ImportError:  # For Py3 compatibility
-    from urllib.error import HTTPError, URLError
-    from urllib.request import urlopen
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
 
 
 def curlish(download_url, output_path):
@@ -41,8 +36,7 @@ def curlish(download_url, output_path):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    script_file = open(output_path, 'w')
-    script_file.write(script_contents)
-    script_file.close()
+    with open(output_path, 'wb') as script_file:
+        script_file.write(script_contents)
 
     return True

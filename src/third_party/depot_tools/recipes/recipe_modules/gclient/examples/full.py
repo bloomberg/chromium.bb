@@ -28,6 +28,7 @@ TEST_CONFIGS = [
   'disable_syntax_validation',
   'emscripten_releases',
   'expect_tests',
+  'gerrit',
   'gerrit_plugins_binary_size',
   'gerrit_plugins_buildbucket',
   'gerrit_plugins_chromium_behavior',

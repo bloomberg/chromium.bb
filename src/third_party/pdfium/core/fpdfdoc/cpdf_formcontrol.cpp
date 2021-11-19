@@ -187,10 +187,10 @@ CPDF_DefaultAppearance CPDF_FormControl::GetDefaultAppearance() const {
   return CPDF_DefaultAppearance(pObj->GetString());
 }
 
-Optional<WideString> CPDF_FormControl::GetDefaultControlFontName() const {
+absl::optional<WideString> CPDF_FormControl::GetDefaultControlFontName() const {
   RetainPtr<CPDF_Font> pFont = GetDefaultControlFont();
   if (!pFont)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return WideString::FromDefANSI(pFont->GetBaseFontName().AsStringView());
 }
@@ -198,7 +198,7 @@ Optional<WideString> CPDF_FormControl::GetDefaultControlFontName() const {
 RetainPtr<CPDF_Font> CPDF_FormControl::GetDefaultControlFont() const {
   float fFontSize;
   CPDF_DefaultAppearance cDA = GetDefaultAppearance();
-  Optional<ByteString> csFontNameTag = cDA.GetFont(&fFontSize);
+  absl::optional<ByteString> csFontNameTag = cDA.GetFont(&fFontSize);
   if (!csFontNameTag.has_value() || csFontNameTag->IsEmpty())
     return nullptr;
 

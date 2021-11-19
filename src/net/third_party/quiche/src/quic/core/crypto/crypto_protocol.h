@@ -165,11 +165,13 @@ const QuicTag kB202 = TAG('B', '2', '0', '2');   // Do not exit PROBE_UP if
                                                  // inflight dips below 1.25*BW.
 const QuicTag kB203 = TAG('B', '2', '0', '3');   // Ignore inflight_hi until
                                                  // PROBE_UP is exited.
-const QuicTag kB206 = TAG('B', '2', '0', '6');   // Exit STARTUP after 2 losses.
 const QuicTag kB204 = TAG('B', '2', '0', '4');   // Reduce extra acked when
                                                  // MaxBW incrases.
 const QuicTag kB205 = TAG('B', '2', '0', '5');   // Add extra acked to CWND in
                                                  // STARTUP.
+const QuicTag kB206 = TAG('B', '2', '0', '6');   // Exit STARTUP after 2 losses.
+const QuicTag kB207 = TAG('B', '2', '0', '7');   // Exit STARTUP on persistent
+                                                 // queue
 const QuicTag kNTLP = TAG('N', 'T', 'L', 'P');   // No tail loss probe
 const QuicTag k1TLP = TAG('1', 'T', 'L', 'P');   // 1 tail loss probe
 const QuicTag k1RTO = TAG('1', 'R', 'T', 'O');   // Send 1 packet upon RTO
@@ -209,7 +211,7 @@ const QuicTag kCONH = TAG('C', 'O', 'N', 'H');   // Conservative Handshake
                                                  // Retransmissions.
 const QuicTag kLFAK = TAG('L', 'F', 'A', 'K');   // Don't invoke FACK on the
                                                  // first ack.
-const QuicTag kSTMP = TAG('S', 'T', 'M', 'P');   // Send and process timestamps
+const QuicTag kSTMP = TAG('S', 'T', 'M', 'P');   // DEPRECATED
 const QuicTag kEACK = TAG('E', 'A', 'C', 'K');   // Bundle ack-eliciting frame
                                                  // with an ACK after PTO/RTO
 
@@ -422,6 +424,9 @@ const QuicTag kIGNP = TAG('I', 'G', 'N', 'P');   // Do not use PING only packet
 const QuicTag kSRWP = TAG('S', 'R', 'W', 'P');   // Enable retransmittable on
                                                  // wire PING (ROWP) on the
                                                  // server side.
+
+// Client Hints triggers.
+const QuicTag kGWCH = TAG('G', 'W', 'C', 'H');
 
 // Rejection tags
 const QuicTag kRREJ = TAG('R', 'R', 'E', 'J');   // Reasons for server sending

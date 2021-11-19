@@ -121,9 +121,6 @@ void StreamingOpusEncoder::EncodeAndSend(const float* interleaved_samples,
     switch (sender_->EnqueueFrame(frame_)) {
       case Sender::OK:
         break;
-      case Sender::PAYLOAD_TOO_LARGE:
-        OSP_NOTREACHED();  // The Opus packet cannot possibly be too large.
-        break;
       case Sender::REACHED_ID_SPAN_LIMIT:
         OSP_LOG_WARN << "AUDIO[" << sender_->ssrc()
                      << "] Dropping: FrameId span limit reached.";
@@ -132,6 +129,8 @@ void StreamingOpusEncoder::EncodeAndSend(const float* interleaved_samples,
         OSP_LOG_INFO << "AUDIO[" << sender_->ssrc()
                      << "] Dropping: In-flight duration would be too high.";
         break;
+      case Sender::PAYLOAD_TOO_LARGE:
+        OSP_NOTREACHED();  // The Opus packet cannot possibly be too large.
     }
 
     frame_.rtp_timestamp += RtpTimeDelta::FromTicks(samples_per_cast_frame_);

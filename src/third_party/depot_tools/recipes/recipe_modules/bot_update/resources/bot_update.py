@@ -134,6 +134,7 @@ class RepeatingTimer(threading.Thread):
     self.kwargs = kwargs if kwargs is not None else {}
     self.cond = threading.Condition()
     self.is_shutdown = False
+    self.is_reset = False
 
   def reset(self):
     """Resets timer interval."""
@@ -164,9 +165,9 @@ def _print_pstree():
     subprocess.call(['ps', 'auxwwf'])
 
 
-def _terminate_process(proc):
-  print('Terminating stale process...')
-  proc.terminate()
+def _kill_process(proc):
+  print('Killing stale process...')
+  proc.kill()
 
 
 # TODO(crbug.com/1227140): Clean up when py2 is no longer supported.
@@ -191,6 +192,8 @@ def call(*args, **kwargs):  # pragma: no cover
   env = os.environ.copy()
   env.update(new_env)
   kwargs['env'] = env
+  stale_process_duration = env.get('STALE_PROCESS_DURATION',
+                                   STALE_PROCESS_DURATION)
 
   if new_env:
     print('===Injecting Environment Variables===')
@@ -200,40 +203,46 @@ def call(*args, **kwargs):  # pragma: no cover
   print('In directory: %s' % cwd)
   start_time = time.time()
   proc = subprocess.Popen(args, **kwargs)
-  if stdin_data:
-    proc.stdin.write(stdin_data)
-    proc.stdin.close()
-  stale_process_duration = env.get('STALE_PROCESS_DURATION',
-                                   STALE_PROCESS_DURATION)
   observers = [
       RepeatingTimer(300, _print_pstree),
-      RepeatingTimer(int(stale_process_duration), _terminate_process, [proc])]
+      RepeatingTimer(int(stale_process_duration), _kill_process, [proc])]
+
   for observer in observers:
     observer.start()
-  # This is here because passing 'sys.stdout' into stdout for proc will
-  # produce out of order output.
-  hanging_cr = False
-  while True:
-    for observer in observers:
-      observer.reset()
-    buf = proc.stdout.read(BUF_SIZE)
-    if not buf:
-      break
-    if hanging_cr:
-      buf = '\r' + buf
-    hanging_cr = buf.endswith('\r')
-    if hanging_cr:
-      buf = buf[:-1]
-    buf = buf.replace('\r\n', '\n').replace('\r', '\n')
-    _stdout_write(buf)
-    out.write(buf)
-  if hanging_cr:
-    _stdout_write('\n')
-    out.write('\n')
-  for observer in observers:
-    observer.shutdown()
 
-  code = proc.wait()
+  try:
+    # If there's an exception in this block, we need to stop all observers.
+    # Otherwise, observers will be spinning and main process won't exit while
+    # the main thread will be doing nothing.
+    if stdin_data:
+      proc.stdin.write(stdin_data)
+      proc.stdin.close()
+    # This is here because passing 'sys.stdout' into stdout for proc will
+    # produce out of order output.
+    hanging_cr = False
+    while True:
+      for observer in observers:
+        observer.reset()
+      buf = proc.stdout.read(BUF_SIZE)
+      if not buf:
+        break
+      if hanging_cr:
+        buf = '\r' + buf
+      hanging_cr = buf.endswith(b'\r')
+      if hanging_cr:
+        buf = buf[:-1]
+      buf = buf.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+      _stdout_write(buf)
+      out.write(buf)
+    if hanging_cr:
+      _stdout_write(b'\n')
+      out.write(b'\n')
+
+    code = proc.wait()
+  finally:
+    for observer in observers:
+      observer.shutdown()
+
   elapsed_time = ((time.time() - start_time) / 60.0)
   outval = out.getvalue().decode('utf-8')
   if code:
@@ -583,7 +592,11 @@ def _has_in_git_cache(revision_sha1, refs, git_cache_dir, url):
         'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
     if revision_sha1:
       git('cat-file', '-e', revision_sha1, cwd=mirror_dir)
-    for ref in refs:
+    # Don't check refspecs.
+    filtered_refs = [
+        r for r in refs if r not in [BRANCH_HEADS_REFSPEC, TAGS_REFSPEC]
+    ]
+    for ref in filtered_refs:
       git('cat-file', '-e', ref, cwd=mirror_dir)
     return True
   except SubprocessFailed:
@@ -628,7 +641,7 @@ def _set_git_config(fn):
     with git_config_if_not_set('user.name', 'chrome-bot'), \
          git_config_if_not_set('user.email', 'chrome-bot@chromium.org'), \
          git_config_if_not_set('fetch.uriprotocols', 'https'):
-        return fn(*args, **kwargs)
+      return fn(*args, **kwargs)
   return wrapper
 
 
@@ -683,28 +696,15 @@ def _git_checkout(sln, sln_dir, revisions, refs, no_fetch_tags, git_cache_dir,
   for ref in refs:
     populate_cmd.extend(['--ref', ref])
 
-  env = {}
-  if url == CHROMIUM_SRC_URL or url + '.git' == CHROMIUM_SRC_URL:
-    # This is for performance investigation of `git fetch` in chromium/src.
-    env = {
-        'GIT_TRACE': 'true',
-        'GIT_TRACE_PERFORMANCE': 'true',
-        'GIT_TRACE_CURL': 'true',
-        'GIT_TRACE_CURL_NO_DATA': 'true',
-        'GIT_REDACT_COOKIES': 'o,SSO,GSSO_UberProxy,__Secure-GSSO_UberProxy',
-    }
-
   # Step 1: populate/refresh cache, if necessary.
   if enforce_fetch or not pin:
-    git(*populate_cmd, env=env)
+    git(*populate_cmd)
 
   # If cache still doesn't have required pin/refs, try again and fetch pin/refs
   # directly.
   if not _has_in_git_cache(pin, refs, git_cache_dir, url):
     for attempt in range(3):
-      with git_config_if_not_set(
-          'http.extraheader', 'X-Return-Encrypted-Headers: all'):
-        git(*populate_cmd, env=env)
+      git(*populate_cmd)
       if _has_in_git_cache(pin, refs, git_cache_dir, url):
         break
       print('Some required refs/commits are still not present.')

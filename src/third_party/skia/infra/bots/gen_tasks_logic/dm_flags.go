@@ -292,14 +292,17 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 
 		// Graphite bot *only* runs the grmtl config
 		if b.extraConfig("Graphite") {
+			args = append(args, "--nogpu") // disable non-Graphite tests
+
+			// TODO: re-enable - currently fails with "Failed to make lazy image"
+			skip("_", "gm", "_", "image_subset")
+
 			if b.extraConfig("ASAN") {
-			    // skbug.com/12507 (Neon UB during JPEG compression on M1 ASAN Graphite bot)
-				skip("_", "gm", "_", "yuv420_odd_dim")  // Oddly enough yuv420_odd_dim_repeat doesn't crash
+				// skbug.com/12507 (Neon UB during JPEG compression on M1 ASAN Graphite bot)
+				skip("_", "gm", "_", "yuv420_odd_dim") // Oddly enough yuv420_odd_dim_repeat doesn't crash
 				skip("_", "gm", "_", "encode-alpha-jpeg")
 				skip("_", "gm", "_", "encode")
 				skip("_", "gm", "_", "jpg-color-cube")
-				// TODO: re-enable - currently fails with "Failed to make lazy image"
-				skip("_", "gm", "_", "image_subset")
 			}
 			configs = []string{"grmtl"}
 		}
@@ -357,7 +360,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		if b.model("Spin513") {
 			// skbug.com/11876
 			skip("_ test _ Programs")
-            // skbug.com/12486
+			// skbug.com/12486
 			skip("_ test _ TestMockContext")
 			skip("_ test _ TestGpuRenderingContexts")
 			skip("_ test _ TestGpuAllContexts")
@@ -449,6 +452,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 			// avoid tests that can generate slightly different pixels per run
 			skip("mtltestprecompile gm _ atlastext")
 			skip("mtltestprecompile gm _ circular_arcs_hairline")
+			skip("mtltestprecompile gm _ dashcircle")
 			skip("mtltestprecompile gm _ dftext")
 			skip("mtltestprecompile gm _ fontmgr_bounds")
 			skip("mtltestprecompile gm _ fontmgr_bounds_1_-0.25")
@@ -578,8 +582,13 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		removeFromArgs("colorImage")
 	}
 
-	if b.matchExtraConfig("DDL", "PDF", "Graphite") {
-		// The DDL, PDF and Graphite bots just render the large skps and the gms
+	if b.matchExtraConfig("Graphite") {
+		// The Graphite bots run the skps, gms and tests
+		removeFromArgs("image")
+		removeFromArgs("colorImage")
+		removeFromArgs("svg")
+	} else if b.matchExtraConfig("DDL", "PDF") {
+		// The DDL and PDF bots just render the large skps and the gms
 		removeFromArgs("tests")
 		removeFromArgs("image")
 		removeFromArgs("colorImage")
@@ -634,9 +643,14 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip("vkddl gm _ compressed_textures")
 	}
 
-	if b.model("TecnoSpark3Pro") {
+	if b.model("TecnoSpark3Pro", "Wembley") {
 		// skbug.com/9421
 		skip("_ test _ InitialTextureClear")
+	}
+
+	if b.model("Wembley") {
+		// These tests run forever on the Wembley.
+		skip("_ gm _ async_rescale_and_read")
 	}
 
 	if b.os("iOS") {
@@ -800,11 +814,15 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip("serialize-8888", "gm", "_", test)
 	}
 
-	// It looks like we skip these only for out-of-memory concerns.
+	// We skip these to avoid out-of-memory failures.
 	if b.matchOs("Win", "Android") {
 		for _, test := range []string{"verylargebitmap", "verylarge_picture_image"} {
 			skip("serialize-8888", "gm", "_", test)
 		}
+	}
+	if b.model("iPhone6") {
+		skip("_", "gm", "_", "verylargebitmap")
+		skip("_", "gm", "_", "verylarge_picture_image")
 	}
 	if b.matchOs("Mac") && b.cpu() {
 		// skia:6992
@@ -921,16 +939,33 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		skip("_", "tests", "_", "SkSLVectorToMatrixCast_GPU") // skia:12179
 	}
 
-	if ((b.extraConfig("Vulkan") && b.isLinux() && b.matchGpu("Intel")) ||
-        (b.extraConfig("ANGLE") && b.matchOs("Win") && b.matchGpu("IntelIris(540|655)"))) {
+	if b.matchGpu("Intel") && b.matchOs("Win") && !b.extraConfig("Vulkan") {
+		skip("_", "tests", "_", "SkSLReturnsValueOnEveryPathES3_GPU") // skia:12465
+	}
+
+	if (b.extraConfig("Vulkan") && b.isLinux() && b.matchGpu("Intel")) ||
+		(b.extraConfig("ANGLE") && b.matchOs("Win") && b.matchGpu("IntelIris(540|655)")) {
 		skip("_", "tests", "_", "SkSLSwitchDefaultOnly_GPU") // skia:12465
 	}
 
-	if (b.gpu("Tegra3")) { // Tegra3 fails to compile break stmts inside a for loop (skia:12477)
+	if b.gpu("Tegra3") {
+		// Tegra3 fails to compile break stmts inside a for loop (skia:12477)
 		skip("_", "tests", "_", "SkSLSwitch_GPU")
 		skip("_", "tests", "_", "SkSLSwitchDefaultOnly_GPU")
 		skip("_", "tests", "_", "SkSLSwitchWithFallthrough_GPU")
 		skip("_", "tests", "_", "SkSLSwitchWithLoops_GPU")
+	}
+
+	if !b.extraConfig("Vulkan") &&
+		(b.gpu("QuadroP400") || b.gpu("GTX660") || b.gpu("GTX960") || b.gpu("Tegra3")) {
+		// Various Nvidia GPUs crash or generate errors when assembling weird matrices (skia:12443)
+		skip("_", "tests", "_", "SkSLMatrixConstructorsES2_GPU")
+		skip("_", "tests", "_", "SkSLMatrixConstructorsES3_GPU")
+	}
+
+	if !b.extraConfig("Vulkan") && (b.gpu("RadeonR9M470X") || b.gpu("RadeonHD7770")) {
+		// Some AMD GPUs can get the wrong result when assembling non-square matrices (skia:12443)
+		skip("_", "tests", "_", "SkSLMatrixConstructorsES3_GPU")
 	}
 
 	if b.matchGpu("Intel") { // some Intel GPUs don't return zero for the derivative of a uniform
@@ -989,7 +1024,7 @@ func (b *taskBuilder) dmFlags(internalHardwareLabel string) {
 		match = append(match, "~Programs") // skia:7849
 	}
 
-	if b.model("TecnoSpark3Pro") {
+	if b.model("TecnoSpark3Pro", "Wembley") {
 		// skia:9814
 		match = append(match, "~Programs")
 		match = append(match, "~ProcessorCloneTest")

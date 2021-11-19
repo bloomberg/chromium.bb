@@ -41,24 +41,24 @@ namespace {
 /// expression
 template <typename F>
 void CollectSavedArrayIndices(const Program* program,
-                              ast::Expression* expr,
+                              const ast::Expression* expr,
                               F&& cb) {
   if (auto* a = expr->As<ast::ArrayAccessorExpression>()) {
-    CollectSavedArrayIndices(program, a->array(), cb);
+    CollectSavedArrayIndices(program, a->array, cb);
 
-    if (!a->idx_expr()->Is<ast::ScalarConstructorExpression>()) {
-      cb(a->idx_expr());
+    if (!a->index->Is<ast::ScalarConstructorExpression>()) {
+      cb(a->index);
     }
     return;
   }
 
   if (auto* m = expr->As<ast::MemberAccessorExpression>()) {
-    CollectSavedArrayIndices(program, m->structure(), cb);
+    CollectSavedArrayIndices(program, m->structure, cb);
     return;
   }
 
   if (auto* u = expr->As<ast::UnaryOpExpression>()) {
-    CollectSavedArrayIndices(program, u->expr(), cb);
+    CollectSavedArrayIndices(program, u->expr, cb);
     return;
   }
 
@@ -95,7 +95,7 @@ void InlinePointerLets::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   // * Sub-expressions inside the pointer-typed `let` initializer expression
   // that have been hoisted to a saved variable are replaced with the saved
   // variable identifier.
-  ctx.ReplaceAll([&](ast::Expression* expr) -> ast::Expression* {
+  ctx.ReplaceAll([&](const ast::Expression* expr) -> const ast::Expression* {
     if (current_ptr_let) {
       // We're currently processing the initializer expression of a
       // pointer-typed `let` declaration. Look to see if we need to swap this
@@ -119,7 +119,7 @@ void InlinePointerLets::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           // TINT_SCOPED_ASSIGNMENT provides a stack of PtrLet*, this is
           // required to handle the 'chaining' of inlined `let`s.
           TINT_SCOPED_ASSIGNMENT(current_ptr_let, ptr_let);
-          return ctx.Clone(var->constructor());
+          return ctx.Clone(var->constructor);
         }
       }
     }
@@ -131,11 +131,11 @@ void InlinePointerLets::Run(CloneContext& ctx, const DataMap&, DataMap&) {
   // permitted.
   for (auto* node : ctx.src->ASTNodes().Objects()) {
     if (auto* let = node->As<ast::VariableDeclStatement>()) {
-      if (!let->variable()->is_const()) {
+      if (!let->variable->is_const) {
         continue;  // Not a `let` declaration. Ignore.
       }
 
-      auto* var = ctx.src->Sem().Get(let->variable());
+      auto* var = ctx.src->Sem().Get(let->variable);
       if (!var->Type()->Is<sem::Pointer>()) {
         continue;  // Not a pointer type. Ignore.
       }
@@ -149,12 +149,12 @@ void InlinePointerLets::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       // Scan the initializer expression for array index expressions that need
       // to be hoist to temporary "saved" variables.
       CollectSavedArrayIndices(
-          ctx.src, var->Declaration()->constructor(),
-          [&](ast::Expression* idx_expr) {
+          ctx.src, var->Declaration()->constructor,
+          [&](const ast::Expression* idx_expr) {
             // We have a sub-expression that needs to be saved.
             // Create a new variable
             auto saved_name = ctx.dst->Symbols().New(
-                ctx.src->Symbols().NameFor(var->Declaration()->symbol()) +
+                ctx.src->Symbols().NameFor(var->Declaration()->symbol) +
                 "_save");
             auto* saved = ctx.dst->Decl(
                 ctx.dst->Const(saved_name, nullptr, ctx.Clone(idx_expr)));
@@ -165,7 +165,7 @@ void InlinePointerLets::Run(CloneContext& ctx, const DataMap&, DataMap&) {
             // Note that repeated calls to InsertAfter() with the same `after`
             // argument will result in nodes to inserted in the order the calls
             // are made (last call is inserted last).
-            ctx.InsertAfter(block->statements(), let, saved);
+            ctx.InsertAfter(block->statements, let, saved);
             // Record the substitution of `idx_expr` to the saved variable with
             // the symbol `saved_name`. This will be used by the ReplaceAll()
             // handler above.
@@ -174,7 +174,7 @@ void InlinePointerLets::Run(CloneContext& ctx, const DataMap&, DataMap&) {
 
       // Record the pointer-typed `let` declaration.
       // This will be used by the ReplaceAll() handler above.
-      ptr_lets.emplace(let->variable(), std::move(ptr_let));
+      ptr_lets.emplace(let->variable, std::move(ptr_let));
       // As the original `let` declaration will be fully inlined, there's no
       // need for the original declaration to exist. Remove it.
       RemoveStatement(ctx, let);

@@ -10,6 +10,8 @@
 #ifndef EIGEN_COMPLETEORTHOGONALDECOMPOSITION_H
 #define EIGEN_COMPLETEORTHOGONALDECOMPOSITION_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -377,9 +379,7 @@ template <typename MatrixType_> class CompleteOrthogonalDecomposition
 #endif
 
  protected:
-  static void check_template_parameters() {
-    EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar);
-  }
+  EIGEN_STATIC_ASSERT_NON_INTEGER(Scalar)
 
   template<bool Transpose_, typename Rhs>
   void _check_solve_assertion(const Rhs& b) const {
@@ -429,8 +429,6 @@ CompleteOrthogonalDecomposition<MatrixType>::logAbsDeterminant() const {
 template <typename MatrixType>
 void CompleteOrthogonalDecomposition<MatrixType>::computeInPlace()
 {
-  check_template_parameters();
-
   // the column permutation is stored as int indices, so just to be sure:
   eigen_assert(m_cpqr.cols() <= NumTraits<int>::highest());
 

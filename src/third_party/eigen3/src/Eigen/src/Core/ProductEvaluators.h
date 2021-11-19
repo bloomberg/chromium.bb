@@ -13,6 +13,8 @@
 #ifndef EIGEN_PRODUCTEVALUATORS_H
 #define EIGEN_PRODUCTEVALUATORS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -427,8 +429,8 @@ struct generic_product_impl<Lhs,Rhs,DenseShape,DenseShape,CoeffBasedProductMode>
   //  3 - it makes this fallback consistent with the heavy GEMM routine.
   //  4 - it fully by-passes huge stack allocation attempts when multiplying huge fixed-size matrices.
   //      (see https://stackoverflow.com/questions/54738495)
-  // For small fixed sizes matrices, howver, the gains are less obvious, it is sometimes x2 faster, but sometimes x3 slower,
-  // and the behavior depends also a lot on the compiler... This is why this re-writting strategy is currently
+  // For small fixed sizes matrices, however, the gains are less obvious, it is sometimes x2 faster, but sometimes x3 slower,
+  // and the behavior depends also a lot on the compiler... This is why this re-writing strategy is currently
   // enabled only when falling back from the main GEMM.
   template<typename Dst, typename Func>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE

@@ -161,7 +161,7 @@ bool CFXJSE_Engine::RunScript(CXFA_Script::Type eScriptType,
       m_FM2JSContext = std::make_unique<CFXJSE_FormCalcContext>(
           GetIsolate(), m_JsContext.get(), m_pDocument.Get());
     }
-    Optional<CFX_WideTextBuf> wsJavaScript =
+    absl::optional<CFX_WideTextBuf> wsJavaScript =
         CFXJSE_FormCalcContext::Translate(m_pDocument->GetHeap(), wsScript);
     if (!wsJavaScript.has_value()) {
       hRetValue->SetUndefined(GetIsolate());
@@ -179,7 +179,8 @@ bool CFXJSE_Engine::RunScript(CXFA_Script::Type eScriptType,
     pThisBinding = GetOrCreateJSBindingFromMap(pThisObject);
 
   IJS_Runtime::ScopedEventContext ctx(m_pSubordinateRuntime.Get());
-  return m_JsContext->ExecuteScript(btScript.c_str(), hRetValue, pThisBinding);
+  return m_JsContext->ExecuteScript(btScript.AsStringView(), hRetValue,
+                                    pThisBinding);
 }
 
 bool CFXJSE_Engine::QueryNodeByFlag(CXFA_Node* refNode,
@@ -189,7 +190,7 @@ bool CFXJSE_Engine::QueryNodeByFlag(CXFA_Node* refNode,
   if (!refNode)
     return false;
 
-  Optional<CFXJSE_Engine::ResolveResult> maybeResult =
+  absl::optional<CFXJSE_Engine::ResolveResult> maybeResult =
       ResolveObjects(refNode, propname, dwFlag);
   if (!maybeResult.has_value())
     return false;
@@ -216,7 +217,7 @@ bool CFXJSE_Engine::UpdateNodeByFlag(CXFA_Node* refNode,
   if (!refNode)
     return false;
 
-  Optional<CFXJSE_Engine::ResolveResult> maybeResult =
+  absl::optional<CFXJSE_Engine::ResolveResult> maybeResult =
       ResolveObjects(refNode, propname, dwFlag);
   if (!maybeResult.has_value())
     return false;
@@ -404,7 +405,7 @@ v8::Local<v8::Value> CFXJSE_Engine::NormalPropertyGetter(
                                          &pReturnValue)) {
     return pReturnValue;
   }
-  Optional<XFA_SCRIPTATTRIBUTEINFO> info = XFA_GetScriptAttributeByName(
+  absl::optional<XFA_SCRIPTATTRIBUTEINFO> info = XFA_GetScriptAttributeByName(
       pObject->GetElementType(), wsPropName.AsStringView());
   if (info.has_value()) {
     (*info.value().callback)(pIsolate, pObject->JSObject(), &pReturnValue,
@@ -442,7 +443,7 @@ void CFXJSE_Engine::NormalPropertySetter(v8::Isolate* pIsolate,
   CXFA_Object* pObject = pScriptContext->GetVariablesThis(pOriginalObject);
   WideString wsPropName = WideString::FromUTF8(szPropName);
   WideStringView wsPropNameView = wsPropName.AsStringView();
-  Optional<XFA_SCRIPTATTRIBUTEINFO> info =
+  absl::optional<XFA_SCRIPTATTRIBUTEINFO> info =
       XFA_GetScriptAttributeByName(pObject->GetElementType(), wsPropNameView);
   if (info.has_value()) {
     CJX_Object* jsObject = pObject->JSObject();
@@ -501,7 +502,7 @@ FXJSE_ClassPropType CFXJSE_Engine::NormalPropTypeGetter(
     return FXJSE_ClassPropType::kMethod;
 
   if (bQueryIn) {
-    Optional<XFA_SCRIPTATTRIBUTEINFO> maybe_info =
+    absl::optional<XFA_SCRIPTATTRIBUTEINFO> maybe_info =
         XFA_GetScriptAttributeByName(eType, wsPropName.AsStringView());
     if (!maybe_info.has_value())
       return FXJSE_ClassPropType::kNone;
@@ -580,7 +581,7 @@ bool CFXJSE_Engine::RunVariablesScript(CXFA_Node* pScriptNode) {
   if (!pTextNode)
     return false;
 
-  Optional<WideString> wsScript =
+  absl::optional<WideString> wsScript =
       pTextNode->JSObject()->TryCData(XFA_Attribute::Value, true);
   if (!wsScript.has_value())
     return false;
@@ -592,8 +593,8 @@ bool CFXJSE_Engine::RunVariablesScript(CXFA_Node* pScriptNode) {
       CreateVariablesContext(pScriptNode, pThisObject);
   AutoRestorer<cppgc::Persistent<CXFA_Object>> nodeRestorer(&m_pThisObject);
   m_pThisObject = pThisObject;
-  return pVariablesContext->ExecuteScript(btScript.c_str(), hRetValue.get(),
-                                          v8::Local<v8::Object>());
+  return pVariablesContext->ExecuteScript(
+      btScript.AsStringView(), hRetValue.get(), v8::Local<v8::Object>());
 }
 
 CFXJSE_Context* CFXJSE_Engine::VariablesContextForScriptNode(
@@ -657,20 +658,20 @@ void CFXJSE_Engine::RemoveBuiltInObjs(CFXJSE_Context* pContext) {
   fxv8::ReentrantDeleteObjectPropertyHelper(GetIsolate(), pObject, "Date");
 }
 
-Optional<CFXJSE_Engine::ResolveResult> CFXJSE_Engine::ResolveObjects(
+absl::optional<CFXJSE_Engine::ResolveResult> CFXJSE_Engine::ResolveObjects(
     CXFA_Object* refObject,
     WideStringView wsExpression,
     Mask<XFA_ResolveFlag> dwStyles) {
   return ResolveObjectsWithBindNode(refObject, wsExpression, dwStyles, nullptr);
 }
 
-Optional<CFXJSE_Engine::ResolveResult>
+absl::optional<CFXJSE_Engine::ResolveResult>
 CFXJSE_Engine::ResolveObjectsWithBindNode(CXFA_Object* refObject,
                                           WideStringView wsExpression,
                                           Mask<XFA_ResolveFlag> dwStyles,
                                           CXFA_Node* bindNode) {
   if (wsExpression.IsEmpty())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   const bool bParentOrSiblings =
       !!(dwStyles & Mask<XFA_ResolveFlag>{XFA_ResolveFlag::kParent,
@@ -831,12 +832,12 @@ CFXJSE_Engine::ResolveObjectsWithBindNode(CXFA_Object* refObject,
       result.type = ResolveResult::Type::kExistNodes;
 
     if (result.objects.empty())
-      return pdfium::nullopt;
+      return absl::nullopt;
 
     return result;
   }
   if (nNodes == 0)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return result;
 }

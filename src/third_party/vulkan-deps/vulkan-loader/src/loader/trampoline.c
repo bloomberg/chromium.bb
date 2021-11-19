@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2015-2016 The Khronos Group Inc.
- * Copyright (c) 2015-2016 Valve Corporation
- * Copyright (c) 2015-2016 LunarG, Inc.
+ * Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
  * Copyright (C) 2015 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,20 +21,20 @@
  * Author: Jon Ashburn <jon@lunarg.com>
  * Author: Tony Barbour <tony@LunarG.com>
  * Author: Chia-I Wu <olv@lunarg.com>
+ * Author: Charles Giessen <charles@lunarg.com>
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
 #include <stdlib.h>
 #include <string.h>
 
-#include "vk_loader_platform.h"
-#include "loader.h"
+#include "allocation.h"
 #include "debug_utils.h"
-#include "wsi.h"
-#include "vk_loader_extensions.h"
 #include "gpa_helper.h"
+#include "loader.h"
+#include "log.h"
+#include "vk_loader_extensions.h"
+#include "vk_loader_platform.h"
+#include "wsi.h"
 
 // Trampoline entrypoints are in this file for core Vulkan commands
 
@@ -46,20 +46,24 @@
 //    If instance is valid returns a trampoline entry point for all dispatchable Vulkan
 //    functions both core and extensions.
 LOADER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetInstanceProcAddr(VkInstance instance, const char *pName) {
-    void *addr;
-
-    addr = globalGetProcAddr(pName);
-    if (instance == VK_NULL_HANDLE || addr != NULL) {
-        return addr;
+    // Get entrypoint addresses that are global (no dispatchable object)
+    void *addr = globalGetProcAddr(pName);
+    if (addr != VK_NULL_HANDLE) {
+        // Make sure to only allow getting global functions if the instance handle is null
+        return (instance == VK_NULL_HANDLE) ? addr : NULL;
+    } else {
+        // All other functions require a valid instance handle to get
+        if (instance == VK_NULL_HANDLE) {
+            return NULL;
+        }
+        struct loader_instance *ptr_instance = loader_get_instance(instance);
+        if (ptr_instance == NULL) return NULL;
+        // Return trampoline code for non-global entrypoints including any extensions.
+        // Device extensions are returned if a layer or ICD supports the extension.
+        // Instance extensions are returned if the extension is enabled and the
+        // loader or someone else supports the extension
+        return trampoline_get_proc_addr(ptr_instance, pName);
     }
-
-    struct loader_instance *ptr_instance = loader_get_instance(instance);
-    if (ptr_instance == NULL) return NULL;
-    // Return trampoline code for non-global entrypoints including any extensions.
-    // Device extensions are returned if a layer or ICD supports the extension.
-    // Instance extensions are returned if the extension is enabled and the
-    // loader or someone else supports the extension
-    return trampolineGetProcAddr(ptr_instance, pName);
 }
 
 // Get a device level or global level entry point address.
@@ -97,7 +101,6 @@ LOADER_EXPORT VKAPI_ATTR PFN_vkVoidFunction VKAPI_CALL vkGetDeviceProcAddr(VkDev
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionProperties(const char *pLayerName,
                                                                                     uint32_t *pPropertyCount,
                                                                                     VkExtensionProperties *pProperties) {
-    tls_instance = NULL;
     LOADER_PLATFORM_THREAD_ONCE(&once_init, loader_initialize);
 
     // We know we need to call at least the terminator
@@ -117,7 +120,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropert
     // Get the implicit layers
     struct loader_layer_list layers;
     memset(&layers, 0, sizeof(layers));
-    loaderScanForImplicitLayers(NULL, &layers);
+    loader_scan_for_implicit_layers(NULL, &layers);
 
     // We'll need to save the dl handles so we can close them later
     loader_platform_dl_handle *libs = malloc(sizeof(loader_platform_dl_handle) * layers.count);
@@ -128,7 +131,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropert
 
     // Prepend layers onto the chain if they implement this entry point
     for (uint32_t i = 0; i < layers.count; ++i) {
-        if (!loaderImplicitLayerIsEnabled(NULL, layers.list + i) ||
+        if (!loader_implicit_layer_is_enabled(NULL, layers.list + i) ||
             layers.list[i].pre_instance_functions.enumerate_instance_extension_properties[0] == '\0') {
             continue;
         }
@@ -171,7 +174,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropert
     }
 
     // Free up the layers
-    loaderDeleteLayerListAndProperties(NULL, &layers);
+    loader_delete_layer_list_and_properties(NULL, &layers);
 
     // Tear down the chain
     while (chain_head != &chain_tail) {
@@ -191,7 +194,6 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceExtensionPropert
 
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(uint32_t *pPropertyCount,
                                                                                 VkLayerProperties *pProperties) {
-    tls_instance = NULL;
     LOADER_PLATFORM_THREAD_ONCE(&once_init, loader_initialize);
 
     // We know we need to call at least the terminator
@@ -211,7 +213,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
     // Get the implicit layers
     struct loader_layer_list layers;
     memset(&layers, 0, sizeof(layers));
-    loaderScanForImplicitLayers(NULL, &layers);
+    loader_scan_for_implicit_layers(NULL, &layers);
 
     // We'll need to save the dl handles so we can close them later
     loader_platform_dl_handle *libs = malloc(sizeof(loader_platform_dl_handle) * layers.count);
@@ -222,7 +224,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
 
     // Prepend layers onto the chain if they implement this entry point
     for (uint32_t i = 0; i < layers.count; ++i) {
-        if (!loaderImplicitLayerIsEnabled(NULL, layers.list + i) ||
+        if (!loader_implicit_layer_is_enabled(NULL, layers.list + i) ||
             layers.list[i].pre_instance_functions.enumerate_instance_layer_properties[0] == '\0') {
             continue;
         }
@@ -265,7 +267,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
     }
 
     // Free up the layers
-    loaderDeleteLayerListAndProperties(NULL, &layers);
+    loader_delete_layer_list_and_properties(NULL, &layers);
 
     // Tear down the chain
     while (chain_head != &chain_tail) {
@@ -284,7 +286,6 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceLayerProperties(
 }
 
 LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(uint32_t *pApiVersion) {
-    tls_instance = NULL;
     LOADER_PLATFORM_THREAD_ONCE(&once_init, loader_initialize);
 
     // We know we need to call at least the terminator
@@ -304,7 +305,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(uint32_t
     // Get the implicit layers
     struct loader_layer_list layers;
     memset(&layers, 0, sizeof(layers));
-    loaderScanForImplicitLayers(NULL, &layers);
+    loader_scan_for_implicit_layers(NULL, &layers);
 
     // We'll need to save the dl handles so we can close them later
     loader_platform_dl_handle *libs = malloc(sizeof(loader_platform_dl_handle) * layers.count);
@@ -315,7 +316,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(uint32_t
 
     // Prepend layers onto the chain if they implement this entry point
     for (uint32_t i = 0; i < layers.count; ++i) {
-        if (!loaderImplicitLayerIsEnabled(NULL, layers.list + i) ||
+        if (!loader_implicit_layer_is_enabled(NULL, layers.list + i) ||
             layers.list[i].pre_instance_functions.enumerate_instance_version[0] == '\0') {
             continue;
         }
@@ -356,7 +357,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumerateInstanceVersion(uint32_t
     }
 
     // Free up the layers
-    loaderDeleteLayerListAndProperties(NULL, &layers);
+    loader_delete_layer_list_and_properties(NULL, &layers);
 
     // Tear down the chain
     while (chain_head != &chain_tail) {
@@ -401,7 +402,6 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCr
         goto out;
     }
 
-    tls_instance = ptr_instance;
     loader_platform_thread_lock_mutex(&loader_lock);
     loaderLocked = true;
     memset(ptr_instance, 0, sizeof(struct loader_instance));
@@ -461,14 +461,14 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCr
 
     // Due to implicit layers need to get layer list even if
     // enabledLayerCount == 0 and VK_INSTANCE_LAYERS is unset. For now always
-    // get layer list via loaderScanForLayers().
+    // get layer list via loader_scan_for_layers().
     memset(&ptr_instance->instance_layer_list, 0, sizeof(ptr_instance->instance_layer_list));
-    loaderScanForLayers(ptr_instance, &ptr_instance->instance_layer_list);
+    loader_scan_for_layers(ptr_instance, &ptr_instance->instance_layer_list);
 
     // Validate the app requested layers to be enabled
     if (pCreateInfo->enabledLayerCount > 0) {
-        res = loaderValidateLayers(ptr_instance, pCreateInfo->enabledLayerCount, pCreateInfo->ppEnabledLayerNames,
-                                   &ptr_instance->instance_layer_list);
+        res = loader_validate_layers(ptr_instance, pCreateInfo->enabledLayerCount, pCreateInfo->ppEnabledLayerNames,
+                                     &ptr_instance->instance_layer_list);
         if (res != VK_SUCCESS) {
             goto out;
         }
@@ -513,7 +513,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCr
     loader.instances = ptr_instance;
 
     // Activate any layers on instance chain
-    res = loaderEnableInstanceLayers(ptr_instance, &ici, &ptr_instance->instance_layer_list);
+    res = loader_enable_instance_layers(ptr_instance, &ici, &ptr_instance->instance_layer_list);
     if (res != VK_SUCCESS) {
         goto out;
     }
@@ -538,7 +538,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkCreateInstance(const VkInstanceCr
         // the CreateInstance command go by. This allows the layer's
         // GetInstanceProcAddr functions to return valid extension functions
         // if enabled.
-        loaderActivateInstanceLayerExtensions(ptr_instance, *pInstance);
+        loader_activate_instance_layer_extensions(ptr_instance, *pInstance);
     }
 
 out:
@@ -567,13 +567,13 @@ out:
             }
 
             if (NULL != ptr_instance->expanded_activated_layer_list.list) {
-                loaderDeactivateLayers(ptr_instance, NULL, &ptr_instance->expanded_activated_layer_list);
+                loader_deactivate_layers(ptr_instance, NULL, &ptr_instance->expanded_activated_layer_list);
             }
             if (NULL != ptr_instance->app_activated_layer_list.list) {
-                loaderDestroyLayerList(ptr_instance, NULL, &ptr_instance->app_activated_layer_list);
+                loader_destroy_layer_list(ptr_instance, NULL, &ptr_instance->app_activated_layer_list);
             }
 
-            loaderDeleteLayerListAndProperties(ptr_instance, &ptr_instance->instance_layer_list);
+            loader_delete_layer_list_and_properties(ptr_instance, &ptr_instance->instance_layer_list);
             loader_scanned_icd_clear(ptr_instance, &ptr_instance->icd_tramp_list);
             loader_destroy_generic_list(ptr_instance, (struct loader_generic_list *)&ptr_instance->ext_list);
 
@@ -633,10 +633,10 @@ LOADER_EXPORT VKAPI_ATTR void VKAPI_CALL vkDestroyInstance(VkInstance instance, 
     disp->DestroyInstance(instance, pAllocator);
 
     if (NULL != ptr_instance->expanded_activated_layer_list.list) {
-        loaderDeactivateLayers(ptr_instance, NULL, &ptr_instance->expanded_activated_layer_list);
+        loader_deactivate_layers(ptr_instance, NULL, &ptr_instance->expanded_activated_layer_list);
     }
     if (NULL != ptr_instance->app_activated_layer_list.list) {
-        loaderDestroyLayerList(ptr_instance, NULL, &ptr_instance->app_activated_layer_list);
+        loader_destroy_layer_list(ptr_instance, NULL, &ptr_instance->app_activated_layer_list);
     }
 
     if (ptr_instance->phys_devs_tramp) {
@@ -698,7 +698,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumeratePhysicalDevices(VkInstan
     // Setup the trampoline loader physical devices.  This will actually
     // call down and setup the terminator loader physical devices during the
     // process.
-    VkResult setup_res = setupLoaderTrampPhysDevs(instance);
+    VkResult setup_res = setup_loader_tramp_phys_devs(instance);
     if (setup_res != VK_SUCCESS && setup_res != VK_INCOMPLETE) {
         res = setup_res;
         goto out;
@@ -707,7 +707,7 @@ LOADER_EXPORT VKAPI_ATTR VkResult VKAPI_CALL vkEnumeratePhysicalDevices(VkInstan
     count = inst->phys_dev_count_tramp;
 
     if (inst->phys_dev_count_tramp != inst->total_gpu_count) {
-        loader_log(inst, VULKAN_LOADER_WARN_BIT, 0,
+        loader_log(inst, VULKAN_LOADER_WARN_BIT | VULKAN_LOADER_LAYER_BIT, 0,
                    "vkEnumeratePhysicalDevices: One or more layers modified physical devices!"
                    "Count returned by ICDs = %d, count returned above layers = %d",
                    inst->total_gpu_count, inst->phys_dev_count_tramp);
@@ -2029,7 +2029,7 @@ VkResult setupLoaderTrampPhysDevGroups(VkInstance instance) {
     // Setup the trampoline loader physical devices.  This will actually
     // call down and setup the terminator loader physical devices during the
     // process.
-    VkResult setup_res = setupLoaderTrampPhysDevs(instance);
+    VkResult setup_res = setup_loader_tramp_phys_devs(instance);
     if (setup_res != VK_SUCCESS && setup_res != VK_INCOMPLETE) {
         res = setup_res;
         goto out;

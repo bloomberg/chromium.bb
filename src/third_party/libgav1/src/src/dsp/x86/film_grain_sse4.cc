@@ -132,6 +132,7 @@ inline __m128i GetScalingFactors(const int16_t* scaling_lut,
   static_assert(bitdepth <= kBitdepth10,
                 "SSE4 Film Grain is not yet implemented for 12bpp.");
   for (int i = 0; i < 8; ++i) {
+    assert(source[i] < kScalingLookupTableSize << (bitdepth - 2));
     start_vals[i] = scaling_lut[source[i]];
   }
   return LoadAligned16(start_vals);

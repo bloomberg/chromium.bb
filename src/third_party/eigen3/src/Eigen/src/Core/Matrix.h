@@ -11,6 +11,8 @@
 #ifndef EIGEN_MATRIX_H
 #define EIGEN_MATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -258,7 +260,6 @@ class Matrix
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Matrix() : Base()
     {
-      Base::_check_template_params();
       EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
     }
 
@@ -266,15 +267,12 @@ class Matrix
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     explicit Matrix(internal::constructor_without_unaligned_array_assert)
       : Base(internal::constructor_without_unaligned_array_assert())
-    { Base::_check_template_params(); EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED }
+    { EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED }
 
 #if EIGEN_HAS_RVALUE_REFERENCES
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Matrix(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
-      : Base(std::move(other))
-    {
-      Base::_check_template_params();
-    }
+      : Base(std::move(other)) {}
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Matrix& operator=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
     {
@@ -328,7 +326,6 @@ class Matrix
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     explicit Matrix(const T& x)
     {
-      Base::_check_template_params();
       Base::template _init1<T>(x);
     }
 
@@ -336,7 +333,6 @@ class Matrix
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Matrix(const T0& x, const T1& y)
     {
-      Base::_check_template_params();
       Base::template _init2<T0,T1>(x, y);
     }
 
@@ -388,7 +384,6 @@ class Matrix
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Matrix(const Scalar& x, const Scalar& y, const Scalar& z)
     {
-      Base::_check_template_params();
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(Matrix, 3)
       m_storage.data()[0] = x;
       m_storage.data()[1] = y;
@@ -400,7 +395,6 @@ class Matrix
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Matrix(const Scalar& x, const Scalar& y, const Scalar& z, const Scalar& w)
     {
-      Base::_check_template_params();
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(Matrix, 4)
       m_storage.data()[0] = x;
       m_storage.data()[1] = y;

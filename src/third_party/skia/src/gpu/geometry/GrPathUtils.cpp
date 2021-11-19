@@ -11,7 +11,7 @@
 #include "src/core/SkMathPriv.h"
 #include "src/core/SkPointPriv.h"
 #include "src/core/SkUtils.h"
-#include "src/gpu/geometry/GrWangsFormula.h"
+#include "src/gpu/tessellate/WangsFormula.h"
 
 static const SkScalar kMinCurveTol = 0.0001f;
 
@@ -64,7 +64,7 @@ SkScalar GrPathUtils::scaleToleranceToSrc(SkScalar devTol,
 }
 
 uint32_t GrPathUtils::quadraticPointCount(const SkPoint points[], SkScalar tol) {
-    return max_bezier_vertices(GrWangsFormula::quadratic_log2(
+    return max_bezier_vertices(skgpu::wangs_formula::quadratic_log2(
             tolerance_to_wangs_precision(tol), points));
 }
 
@@ -94,7 +94,7 @@ uint32_t GrPathUtils::generateQuadraticPoints(const SkPoint& p0,
 }
 
 uint32_t GrPathUtils::cubicPointCount(const SkPoint points[], SkScalar tol) {
-    return max_bezier_vertices(GrWangsFormula::cubic_log2(
+    return max_bezier_vertices(skgpu::wangs_formula::cubic_log2(
             tolerance_to_wangs_precision(tol), points));
 }
 
@@ -589,7 +589,7 @@ int GrPathUtils::findCubicConvex180Chops(const SkPoint pts[], float T[2], bool* 
     float2 D = p2 - p1;
     float2 E = p3 - p0;
     float2 B = D - C;
-    float2 A = grvx::fast_madd<2>(-3,D,E);
+    float2 A = -3*D + E;
 
     // Now find the cubic's inflection function. There are inflections where F' x F'' == 0.
     // We formulate this as a quadratic equation:  F' x F'' == aT^2 + bT + c == 0.

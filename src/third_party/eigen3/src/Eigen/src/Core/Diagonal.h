@@ -11,6 +11,8 @@
 #ifndef EIGEN_DIAGONAL_H
 #define EIGEN_DIAGONAL_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class Diagonal

@@ -64,7 +64,7 @@ std::unique_ptr<CPDFSDK_Annot> CPDFSDK_WidgetHandler::NewAnnot(
   auto pWidget = std::make_unique<CPDFSDK_Widget>(pAnnot, pPageView, pForm);
   pForm->AddMap(pCtrl, pWidget.get());
   if (pPDFForm->NeedConstructAP())
-    pWidget->ResetAppearance(pdfium::nullopt, CPDFSDK_Widget::kValueUnchanged);
+    pWidget->ResetAppearance(absl::nullopt, CPDFSDK_Widget::kValueUnchanged);
   return pWidget;
 }
 
@@ -86,7 +86,7 @@ void CPDFSDK_WidgetHandler::OnDraw(CPDFSDK_Annot* pAnnot,
   CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pAnnot);
   if (pWidget->IsSignatureWidget()) {
     pWidget->DrawAppearance(pDevice, mtUser2Device,
-                            CPDF_Annot::AppearanceMode::kNormal, nullptr);
+                            CPDF_Annot::AppearanceMode::kNormal);
   } else {
     GetFormFillEnvironment()->GetInteractiveFormFiller()->OnDraw(
         pWidget->GetPageView(), pWidget, pDevice, mtUser2Device);
@@ -211,13 +211,13 @@ void CPDFSDK_WidgetHandler::OnLoad(CPDFSDK_Annot* pAnnot) {
     return;
 
   if (!pWidget->IsAppearanceValid())
-    pWidget->ResetAppearance(pdfium::nullopt, CPDFSDK_Widget::kValueUnchanged);
+    pWidget->ResetAppearance(absl::nullopt, CPDFSDK_Widget::kValueUnchanged);
 
   FormFieldType fieldType = pWidget->GetFieldType();
   if (fieldType == FormFieldType::kTextField ||
       fieldType == FormFieldType::kComboBox) {
     ObservedPtr<CPDFSDK_Annot> pObserved(pWidget);
-    Optional<WideString> sValue = pWidget->OnFormat();
+    absl::optional<WideString> sValue = pWidget->OnFormat();
     if (!pObserved)
       return;
 

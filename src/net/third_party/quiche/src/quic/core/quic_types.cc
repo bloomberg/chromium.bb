@@ -8,6 +8,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "quic/core/quic_error_codes.h"
+#include "common/print_elements.h"
 
 namespace quic {
 
@@ -325,6 +326,25 @@ std::ostream& operator<<(std::ostream& os, EncryptionLevel level) {
   return os;
 }
 
+absl::string_view ClientCertModeToString(ClientCertMode mode) {
+#define RETURN_REASON_LITERAL(x) \
+  case ClientCertMode::x:        \
+    return #x
+  switch (mode) {
+    RETURN_REASON_LITERAL(kNone);
+    RETURN_REASON_LITERAL(kRequest);
+    RETURN_REASON_LITERAL(kRequire);
+    default:
+      return "<invalid>";
+  }
+#undef RETURN_REASON_LITERAL
+}
+
+std::ostream& operator<<(std::ostream& os, ClientCertMode mode) {
+  os << ClientCertModeToString(mode);
+  return os;
+}
+
 std::string QuicConnectionCloseTypeString(QuicConnectionCloseType type) {
   switch (type) {
     RETURN_STRING_LITERAL(GOOGLE_QUIC_CONNECTION_CLOSE);
@@ -379,6 +399,21 @@ std::string KeyUpdateReasonString(KeyUpdateReason reason) {
 
 std::ostream& operator<<(std::ostream& os, const KeyUpdateReason reason) {
   os << KeyUpdateReasonString(reason);
+  return os;
+}
+
+bool operator==(const ParsedClientHello& a, const ParsedClientHello& b) {
+  return a.sni == b.sni && a.uaid == b.uaid && a.alpns == b.alpns &&
+         a.legacy_version_encapsulation_inner_packet ==
+             b.legacy_version_encapsulation_inner_packet;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const ParsedClientHello& parsed_chlo) {
+  os << "{ sni:" << parsed_chlo.sni << ", uaid:" << parsed_chlo.uaid
+     << ", alpns:" << quiche::PrintElements(parsed_chlo.alpns)
+     << ", len(inner_packet):"
+     << parsed_chlo.legacy_version_encapsulation_inner_packet.size() << " }";
   return os;
 }
 

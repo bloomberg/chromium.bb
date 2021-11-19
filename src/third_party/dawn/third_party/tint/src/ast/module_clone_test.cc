@@ -48,10 +48,10 @@ type t1 = array<vec4<f32>>;
 var<private> g0 : u32 = 20u;
 var<private> g1 : f32 = 123.0;
 [[group(0), binding(0)]] var g2 : texture_2d<f32>;
-[[group(1), binding(0)]] var g3 : texture_storage_2d<r32uint, read>;
+[[group(1), binding(0)]] var g3 : texture_depth_2d;
 [[group(2), binding(0)]] var g4 : texture_storage_2d<rg32float, write>;
-[[group(3), binding(0)]] var g5 : texture_storage_2d<r32uint, read>;
-[[group(4), binding(0)]] var g6 : texture_storage_2d<rg32float, write>;
+[[group(3), binding(0)]] var g5 : texture_depth_cube_array;
+[[group(4), binding(0)]] var g6 : texture_external;
 
 var<private> g7 : vec3<f32>;
 [[group(0), binding(1)]] var<storage, write> g8 : S0;
@@ -103,7 +103,7 @@ fn f1(p0 : f32, p1 : i32) -> f32 {
 
 [[stage(fragment)]]
 fn main() {
-  ignore(f1(1.0, 2));
+  f1(1.0, 2);
 }
 
 let declaration_order_check_0 : i32 = 1;
@@ -128,8 +128,8 @@ let declaration_order_check_3 : i32 = 1;
 
   ASSERT_TRUE(dst.IsValid()) << diag::Formatter().format(dst.Diagnostics());
 
-  // Expect the AST printed with to_str() to match
-  EXPECT_EQ(src.to_str(), dst.to_str());
+  // Expect the printed strings to match
+  EXPECT_EQ(Program::printer(&src), Program::printer(&dst));
 
   // Check that none of the AST nodes or type pointers in dst are found in src
   std::unordered_set<ast::Node*> src_nodes;
@@ -141,10 +141,10 @@ let declaration_order_check_3 : i32 = 1;
     src_types.emplace(src_type);
   }
   for (auto* dst_node : dst.ASTNodes().Objects()) {
-    ASSERT_EQ(src_nodes.count(dst_node), 0u) << dst.str(dst_node);
+    ASSERT_EQ(src_nodes.count(dst_node), 0u);
   }
   for (auto* dst_type : dst.Types()) {
-    ASSERT_EQ(src_types.count(dst_type), 0u) << dst_type->type_name();
+    ASSERT_EQ(src_types.count(dst_type), 0u);
   }
 
   // Regenerate the wgsl for the src program. We use this instead of the

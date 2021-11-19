@@ -1014,6 +1014,7 @@ bool Tile::GetReferenceBlockPosition(
         (((height - 1) * step_y + (1 << kScaleSubPixelBits) - 1) >>
          kScaleSubPixelBits) +
         kSubPixelTaps;
+    *ref_block_end_x += kConvolveScaleBorderRight - kConvolveBorderRight;
     ref_block_end_y = *ref_block_start_y + block_height - 1;
   }
   // Determines if we need to extend beyond the left/right/top/bottom border.
@@ -1192,11 +1193,12 @@ bool Tile::BlockInterPrediction(
                     (ref_block_start_x + kConvolveBorderLeftTop) * pixel_size;
     }
   } else {
+    const int border_right =
+        is_scaled ? kConvolveScaleBorderRight : kConvolveBorderRight;
     // The block width can be at most 2 times as much as current
     // block's width because of scaling.
     auto block_extended_width = Align<ptrdiff_t>(
-        (2 * width + kConvolveBorderLeftTop + kConvolveBorderRight) *
-            pixel_size,
+        (2 * width + kConvolveBorderLeftTop + border_right) * pixel_size,
         kMaxAlignment);
     convolve_buffer_stride = block.scratch_buffer->convolve_block_buffer_stride;
 #if LIBGAV1_MAX_BITDEPTH >= 10

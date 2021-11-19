@@ -11,11 +11,17 @@
 #ifndef EIGEN_INDEXED_VIEW_HELPER_H
 #define EIGEN_INDEXED_VIEW_HELPER_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
 struct symbolic_last_tag {};
-}
+}  // namespace internal
+
+namespace placeholders {
+
+typedef symbolic::SymbolExpr<internal::symbolic_last_tag> last_t;
 
 /** \var last
   * \ingroup Core_Module
@@ -28,38 +34,20 @@ struct symbolic_last_tag {};
   * A typical usage example would be:
   * \code
   * using namespace Eigen;
-  * using Eigen::last;
+  * using Eigen::placeholders::last;
   * VectorXd v(n);
   * v(seq(2,last-2)).setOnes();
   * \endcode
   *
   * \sa end
   */
-static const symbolic::SymbolExpr<internal::symbolic_last_tag> last; // PLEASE use Eigen::last   instead of Eigen::placeholders::last
+static const last_t last;
 
-/** \var lastp1
-  * \ingroup Core_Module
-  *
-  * Can be used as a parameter to Eigen::seq and Eigen::seqN functions to symbolically
-  * reference the last+1 element/row/columns of the underlying vector or matrix once
-  * passed to DenseBase::operator()(const RowIndices&, const ColIndices&).
-  *
-  * This symbolic placeholder supports standard arithmetic operations.
-  * It is essentially an alias to last+fix<1>.
-  *
-  * \sa last
-  */
-#ifdef EIGEN_PARSED_BY_DOXYGEN
-static const auto lastp1 = last+fix<1>;
-#else
-// Using a FixedExpr<1> expression is important here to make sure the compiler
-// can fully optimize the computation starting indices with zero overhead.
-static const symbolic::AddExpr<symbolic::SymbolExpr<internal::symbolic_last_tag>,symbolic::ValueExpr<Eigen::internal::FixedInt<1> > > lastp1(last+fix<1>());
-#endif
+}  // namespace placeholders
 
 namespace internal {
 
- // Replace symbolic last/end "keywords" by their true runtime value
+// Replace symbolic last/end "keywords" by their true runtime value
 inline Index eval_expr_given_size(Index x, Index /* size */)   { return x; }
 
 template<int N>
@@ -68,7 +56,7 @@ FixedInt<N> eval_expr_given_size(FixedInt<N> x, Index /*size*/)   { return x; }
 template<typename Derived>
 Index eval_expr_given_size(const symbolic::BaseExpr<Derived> &x, Index size)
 {
-  return x.derived().eval(last=size-1);
+  return x.derived().eval(Eigen::placeholders::last=size-1);
 }
 
 // Extract increment/step at compile time
@@ -163,23 +151,44 @@ template<int Size> struct get_compile_time_incr<AllRange<Size> > {
 
 } // end namespace internal
 
+namespace placeholders {
+
+typedef symbolic::AddExpr<symbolic::SymbolExpr<internal::symbolic_last_tag>,symbolic::ValueExpr<Eigen::internal::FixedInt<1> > > lastp1_t;
+typedef Eigen::internal::all_t all_t;
+
+/** \var lastp1
+  * \ingroup Core_Module
+  *
+  * Can be used as a parameter to Eigen::seq and Eigen::seqN functions to symbolically
+  * reference the last+1 element/row/columns of the underlying vector or matrix once
+  * passed to DenseBase::operator()(const RowIndices&, const ColIndices&).
+  *
+  * This symbolic placeholder supports standard arithmetic operations.
+  * It is essentially an alias to last+fix<1>.
+  *
+  * \sa last
+  */
+#ifdef EIGEN_PARSED_BY_DOXYGEN
+static const auto lastp1 = last+fix<1>;
+#else
+// Using a FixedExpr<1> expression is important here to make sure the compiler
+// can fully optimize the computation starting indices with zero overhead.
+static const lastp1_t lastp1(last+fix<1>());
+#endif
+
+/** \var end
+  * \ingroup Core_Module
+  * \sa lastp1
+  */
+static const lastp1_t end = lastp1;
 
 /** \var all
   * \ingroup Core_Module
   * Can be used as a parameter to DenseBase::operator()(const RowIndices&, const ColIndices&) to index all rows or columns
   */
-static const Eigen::internal::all_t all; // PLEASE use Eigen::all instead of Eigen::placeholders::all
+static const Eigen::internal::all_t all;
 
-
-namespace placeholders {
-  typedef symbolic::SymbolExpr<internal::symbolic_last_tag> last_t;
-  typedef symbolic::AddExpr<symbolic::SymbolExpr<internal::symbolic_last_tag>,symbolic::ValueExpr<Eigen::internal::FixedInt<1> > > end_t;
-  typedef Eigen::internal::all_t all_t;
-
-  EIGEN_DEPRECATED static const all_t  all  = Eigen::all;    // PLEASE use Eigen::all    instead of Eigen::placeholders::all
-  EIGEN_DEPRECATED static const last_t last = Eigen::last;   // PLEASE use Eigen::last   instead of Eigen::placeholders::last
-  EIGEN_DEPRECATED static const end_t  end  = Eigen::lastp1; // PLEASE use Eigen::lastp1 instead of Eigen::placeholders::end
-}
+} // namespace placeholders
 
 } // end namespace Eigen
 

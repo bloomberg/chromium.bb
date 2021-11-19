@@ -58,8 +58,8 @@ const wchar_t* FX_wcsstr(const wchar_t* haystack,
   return nullptr;
 }
 
-Optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
-                                       va_list argList) {
+absl::optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
+                                             va_list argList) {
   size_t nMaxLen = 0;
   for (const wchar_t* pStr = pFormat; *pStr != 0; pStr++) {
     if (*pStr != '%' || *(pStr = pStr + 1) == '%') {
@@ -83,7 +83,7 @@ Optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
         ++pStr;
     }
     if (nWidth < 0 || nWidth > 128 * 1024)
-      return pdfium::nullopt;
+      return absl::nullopt;
     int nPrecision = 0;
     if (*pStr == '.') {
       pStr++;
@@ -97,7 +97,7 @@ Optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
       }
     }
     if (nPrecision < 0 || nPrecision > 128 * 1024)
-      return pdfium::nullopt;
+      return absl::nullopt;
     int nModifier = 0;
     if (*pStr == L'I' && *(pStr + 1) == L'6' && *(pStr + 2) == L'4') {
       pStr += 3;
@@ -250,11 +250,11 @@ Optional<size_t> GuessSizeForVSWPrintf(const wchar_t* pFormat,
 }
 
 // Returns string unless we ran out of space.
-Optional<WideString> TryVSWPrintf(size_t size,
-                                  const wchar_t* pFormat,
-                                  va_list argList) {
+absl::optional<WideString> TryVSWPrintf(size_t size,
+                                        const wchar_t* pFormat,
+                                        va_list argList) {
   if (!size)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   WideString str;
   {
@@ -272,7 +272,7 @@ Optional<WideString> TryVSWPrintf(size_t size,
 
     bool bSufficientBuffer = ret >= 0 || buffer[size - 1] == 0;
     if (!bSufficientBuffer)
-      return pdfium::nullopt;
+      return absl::nullopt;
   }
   str.ReleaseBuffer(str.GetStringLength());
   return str;
@@ -304,7 +304,7 @@ WideString WideString::FormatV(const wchar_t* format, va_list argList) {
 
   while (maxLen < 32 * 1024) {
     va_copy(argListCopy, argList);
-    Optional<WideString> ret =
+    absl::optional<WideString> ret =
         TryVSWPrintf(static_cast<size_t>(maxLen), format, argListCopy);
     va_end(argListCopy);
     if (ret.has_value())
@@ -704,6 +704,13 @@ WideString WideString::EncodeEntities() const {
   return ret;
 }
 
+WideString WideString::Substr(size_t offset) const {
+  if (offset >= GetLength())
+    return WideString();
+
+  return Substr(offset, GetLength() - offset);
+}
+
 WideString WideString::Substr(size_t first, size_t count) const {
   if (!m_pData)
     return WideString();
@@ -759,43 +766,46 @@ size_t WideString::Insert(size_t index, wchar_t ch) {
   return new_length;
 }
 
-Optional<size_t> WideString::Find(wchar_t ch, size_t start) const {
+absl::optional<size_t> WideString::Find(wchar_t ch, size_t start) const {
   if (!m_pData)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   if (!IsValidIndex(start))
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   const wchar_t* pStr =
       wmemchr(m_pData->m_String + start, ch, m_pData->m_nDataLength - start);
-  return pStr ? Optional<size_t>(static_cast<size_t>(pStr - m_pData->m_String))
-              : pdfium::nullopt;
+  return pStr ? absl::optional<size_t>(
+                    static_cast<size_t>(pStr - m_pData->m_String))
+              : absl::nullopt;
 }
 
-Optional<size_t> WideString::Find(WideStringView subStr, size_t start) const {
+absl::optional<size_t> WideString::Find(WideStringView subStr,
+                                        size_t start) const {
   if (!m_pData)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   if (!IsValidIndex(start))
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   const wchar_t* pStr =
       FX_wcsstr(m_pData->m_String + start, m_pData->m_nDataLength - start,
                 subStr.unterminated_c_str(), subStr.GetLength());
-  return pStr ? Optional<size_t>(static_cast<size_t>(pStr - m_pData->m_String))
-              : pdfium::nullopt;
+  return pStr ? absl::optional<size_t>(
+                    static_cast<size_t>(pStr - m_pData->m_String))
+              : absl::nullopt;
 }
 
-Optional<size_t> WideString::ReverseFind(wchar_t ch) const {
+absl::optional<size_t> WideString::ReverseFind(wchar_t ch) const {
   if (!m_pData)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   size_t nLength = m_pData->m_nDataLength;
   while (nLength--) {
     if (m_pData->m_String[nLength] == ch)
       return nLength;
   }
-  return pdfium::nullopt;
+  return absl::nullopt;
 }
 
 void WideString::MakeLower() {

@@ -195,16 +195,13 @@ void LoopingFileSender::OnError(SimulatedCapturer* capturer,
 }
 
 const char* LoopingFileSender::ToTrackName(SimulatedCapturer* capturer) const {
-  const char* which;
   if (capturer == &*audio_capturer_) {
-    which = "audio";
+    return "audio";
   } else if (capturer == &*video_capturer_) {
-    which = "video";
+    return "video";
   } else {
     OSP_NOTREACHED();
-    which = "";
   }
-  return which;
 }
 
 std::unique_ptr<StreamingVideoEncoder> LoopingFileSender::CreateVideoEncoder(

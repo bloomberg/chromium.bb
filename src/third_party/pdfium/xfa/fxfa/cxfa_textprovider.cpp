@@ -53,8 +53,9 @@ CXFA_Node* CXFA_TextProvider::GetTextNode(bool* bRichText) {
 
     CXFA_Node* pChildNode = pValueNode->GetFirstChild();
     if (pChildNode && pChildNode->GetElementType() == XFA_Element::ExData) {
-      Optional<WideString> contentType = pChildNode->JSObject()->TryAttribute(
-          XFA_Attribute::ContentType, false);
+      absl::optional<WideString> contentType =
+          pChildNode->JSObject()->TryAttribute(XFA_Attribute::ContentType,
+                                               false);
       if (contentType.has_value() &&
           contentType.value().EqualsASCII("text/html")) {
         *bRichText = true;
@@ -76,8 +77,9 @@ CXFA_Node* CXFA_TextProvider::GetTextNode(bool* bRichText) {
 
     CXFA_Node* pChildNode = pValueNode->GetFirstChild();
     if (pChildNode && pChildNode->GetElementType() == XFA_Element::ExData) {
-      Optional<WideString> contentType = pChildNode->JSObject()->TryAttribute(
-          XFA_Attribute::ContentType, false);
+      absl::optional<WideString> contentType =
+          pChildNode->JSObject()->TryAttribute(XFA_Attribute::ContentType,
+                                               false);
       if (contentType.has_value() &&
           contentType.value().EqualsASCII("text/html")) {
         *bRichText = true;
@@ -130,10 +132,10 @@ bool CXFA_TextProvider::IsCheckButtonAndAutoWidth() const {
   return !m_pNode->TryWidth().has_value();
 }
 
-Optional<WideString> CXFA_TextProvider::GetEmbeddedObj(
+absl::optional<WideString> CXFA_TextProvider::GetEmbeddedObj(
     const WideString& wsAttr) const {
   if (m_eType != Type::kText)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   CXFA_Node* pParent = m_pNode->GetParent();
   CXFA_Document* pDocument = m_pNode->GetDocument();
@@ -147,7 +149,7 @@ Optional<WideString> CXFA_TextProvider::GetEmbeddedObj(
         wsAttr.AsStringView());
   }
   if (!pIDNode || !pIDNode->IsWidgetReady())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return pIDNode->GetValue(XFA_ValuePicture::kDisplay);
 }

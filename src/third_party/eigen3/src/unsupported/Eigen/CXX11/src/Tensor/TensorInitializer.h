@@ -14,6 +14,8 @@
 
 #include <initializer_list>
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorInitializer

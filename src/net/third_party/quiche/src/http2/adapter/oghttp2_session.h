@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <list>
 
+#include "absl/strings/string_view.h"
 #include "http2/adapter/data_source.h"
 #include "http2/adapter/header_validator.h"
 #include "http2/adapter/http2_protocol.h"
@@ -18,6 +19,7 @@
 #include "spdy/core/http2_frame_decoder_adapter.h"
 #include "spdy/core/spdy_framer.h"
 #include "spdy/core/spdy_header_block.h"
+#include "spdy/core/spdy_protocol.h"
 
 namespace http2 {
 namespace adapter {
@@ -30,6 +32,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
  public:
   struct QUICHE_EXPORT_PRIVATE Options {
     Perspective perspective = Perspective::kClient;
+    // Whether to automatically send PING acks when receiving a PING.
+    bool auto_ping_ack = true;
   };
 
   OgHttp2Session(Http2VisitorInterface& visitor, Options options);
@@ -185,6 +189,8 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
     absl::optional<HeaderType> received_header_type;
     bool half_closed_local = false;
     bool half_closed_remote = false;
+    // Indicates that `outbound_body` temporarily cannot produce data.
+    bool data_deferred = false;
   };
   using StreamStateMap = absl::flat_hash_map<Http2StreamId, StreamState>;
 
@@ -234,6 +240,9 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // Queues the connection preface, if not already done.
   void MaybeSetupPreface();
 
+  // Fills the initial SETTINGS frame sent as part of the connection preface.
+  void FillInitialSettingsFrame(spdy::SpdySettingsIR& settings);
+
   void SendWindowUpdate(Http2StreamId stream_id, size_t update_delta);
 
   // Sends queued frames, returning true if all frames were flushed
@@ -277,7 +286,10 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   // Returns true if the session can create a new stream.
   bool CanCreateStream() const;
 
-  void LatchErrorAndNotify();
+  // Informs the visitor of the connection `error` and stops processing on the
+  // connection. If server-side, also sends a GOAWAY with `error_code`.
+  void LatchErrorAndNotify(Http2ErrorCode error_code,
+                           Http2VisitorInterface::ConnectionError error);
 
   // Receives events when inbound frames are parsed.
   Http2VisitorInterface& visitor_;
@@ -324,7 +336,11 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   MetadataSequence connection_metadata_;
 
   Http2StreamId next_stream_id_ = 1;
+  // The highest received stream ID is the highest stream ID in any frame read
+  // from the peer. The highest processed stream ID is the highest stream ID for
+  // which this endpoint created a stream in the stream map.
   Http2StreamId highest_received_stream_id_ = 0;
+  Http2StreamId highest_processed_stream_id_ = 0;
   Http2StreamId metadata_stream_id_ = 0;
   size_t metadata_length_ = 0;
   int32_t connection_send_window_ = kInitialFlowControlWindowSize;
@@ -338,6 +354,11 @@ class QUICHE_EXPORT_PRIVATE OgHttp2Session
   bool queued_preface_ = false;
   bool peer_supports_metadata_ = false;
   bool end_metadata_ = false;
+
+  // Recursion guard for ProcessBytes().
+  bool processing_bytes_ = false;
+  // Recursion guard for Send().
+  bool sending_ = false;
 
   // Replace this with a stream ID, for multiple GOAWAY support.
   bool queued_goaway_ = false;

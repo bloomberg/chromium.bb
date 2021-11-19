@@ -64,7 +64,6 @@
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/u2f/u2f_tab_helper.h"
-#import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
@@ -78,7 +77,6 @@
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
-#import "ios/chrome/browser/web/web_state_delegate_tab_helper.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/components/security_interstitials/legacy_tls/legacy_tls_tab_allow_list.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
@@ -98,8 +96,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   // IOSChromeSessionTabHelper sets up the session ID used by other helpers,
   // so it needs to be created before them.
   IOSChromeSessionTabHelper::CreateForWebState(web_state);
-
-  WebStateDelegateTabHelper::CreateForWebState(web_state);
 
   NSString* tab_id = TabIdTabHelper::FromWebState(web_state)->tab_id();
   VoiceSearchNavigationTabHelper::CreateForWebState(web_state);
@@ -138,10 +134,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     BreadcrumbManagerTabHelper::CreateForWebState(web_state);
   }
 
-  if (base::FeatureList::IsEnabled(kDownloadMobileConfigFile)) {
-    MobileConfigTabHelper::CreateForWebState(web_state);
-  }
-
+  MobileConfigTabHelper::CreateForWebState(web_state);
   SafeBrowsingQueryManager::CreateForWebState(web_state);
   SafeBrowsingTabHelper::CreateForWebState(web_state);
   SafeBrowsingUrlAllowList::CreateForWebState(web_state);

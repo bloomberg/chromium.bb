@@ -11,7 +11,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -421,6 +421,29 @@ TEST(OutgoingStreamTest, AbortWithWebTransportErrorWithCode) {
   auto* writer =
       outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
   writer->abort(script_state, ScriptValue(isolate, error), ASSERT_NO_EXCEPTION);
+}
+
+TEST(OutgoingStreamTest, CloseAndConnectionError) {
+  V8TestingScope scope;
+  StreamCreator stream_creator;
+  ScriptState* script_state = scope.GetScriptState();
+  v8::Isolate* isolate = scope.GetIsolate();
+
+  auto* outgoing_stream = stream_creator.Create(scope);
+
+  testing::InSequence s;
+  EXPECT_CALL(stream_creator.GetMockClient(), SendFin());
+  EXPECT_CALL(stream_creator.GetMockClient(), ForgetStream());
+
+  auto* writer =
+      outgoing_stream->Writable()->getWriter(script_state, ASSERT_NO_EXCEPTION);
+
+  // Run microtasks to ensure that the underlying sink's close function is
+  // called immediately.
+  v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
+
+  writer->close(script_state, ASSERT_NO_EXCEPTION);
+  outgoing_stream->Error(ScriptValue(isolate, v8::Undefined(isolate)));
 }
 
 }  // namespace

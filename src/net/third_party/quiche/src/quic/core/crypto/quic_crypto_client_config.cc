@@ -439,7 +439,9 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 
   out->SetVector(kPDMD, QuicTagVector{kX509});
 
-  if (common_cert_sets) {
+  if (GetQuicRestartFlag(quic_no_common_cert_set)) {
+    // Client only. No flag count.
+  } else if (common_cert_sets) {
     out->SetStringPiece(kCCS, common_cert_sets->GetCommonHashes());
   }
 
@@ -801,12 +803,12 @@ SessionCache* QuicCryptoClientConfig::session_cache() const {
   return session_cache_.get();
 }
 
-ProofSource* QuicCryptoClientConfig::proof_source() const {
+ClientProofSource* QuicCryptoClientConfig::proof_source() const {
   return proof_source_.get();
 }
 
 void QuicCryptoClientConfig::set_proof_source(
-    std::unique_ptr<ProofSource> proof_source) {
+    std::unique_ptr<ClientProofSource> proof_source) {
   proof_source_ = std::move(proof_source);
 }
 

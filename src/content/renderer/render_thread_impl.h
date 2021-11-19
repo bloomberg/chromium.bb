@@ -37,6 +37,7 @@
 #include "content/common/renderer_host.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/discardable_memory_utils.h"
+#include "content/services/shared_storage_worklet/public/mojom/shared_storage_worklet_service.mojom.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/media_buildflags.h"
@@ -404,6 +405,17 @@ class CONTENT_EXPORT RenderThreadImpl
     video_frame_compositor_task_runner_ = task_runner;
   }
 
+  void CreateSharedStorageWorkletService(
+      mojo::PendingReceiver<
+          shared_storage_worklet::mojom::SharedStorageWorkletService> receiver);
+
+  // The time the run loop started for this thread.
+  base::TimeTicks run_loop_start_time() const { return run_loop_start_time_; }
+
+  void set_run_loop_start_time(base::TimeTicks run_loop_start_time) {
+    run_loop_start_time_ = run_loop_start_time;
+  }
+
  private:
   friend class RenderThreadImplBrowserTest;
   friend class AgentSchedulingGroup;
@@ -615,6 +627,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // Delegate is expected to live as long as requests may be sent.
   blink::WebResourceRequestSenderDelegate* resource_request_sender_delegate_ =
       nullptr;
+
+  // Tracks the time the run loop started for this thread.
+  base::TimeTicks run_loop_start_time_;
 
   base::WeakPtrFactory<RenderThreadImpl> weak_factory_{this};
 };

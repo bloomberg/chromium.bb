@@ -13,7 +13,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -97,9 +97,6 @@ bool ChromeScanningAppDelegate::IsFilePathSupported(
 
 void ChromeScanningAppDelegate::OpenFilesInMediaApp(
     const std::vector<base::FilePath>& file_paths) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kScanAppMediaLink))
-    return;
-
   DCHECK(!file_paths.empty());
 
   web_app::SystemAppLaunchParams params;

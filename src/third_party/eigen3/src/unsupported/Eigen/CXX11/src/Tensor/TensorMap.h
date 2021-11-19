@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_MAP_H
 #define EIGEN_CXX11_TENSOR_TENSOR_MAP_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // FIXME use proper doxygen documentation (e.g. \tparam MakePointer_)

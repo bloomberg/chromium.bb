@@ -38,6 +38,8 @@
     }                                                                   \
   };
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 

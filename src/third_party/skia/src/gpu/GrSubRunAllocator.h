@@ -33,8 +33,6 @@ public:
         SkASSERT_RELEASE(0 <= requestedSize && requestedSize < kMaxByteSize);
         SkASSERT_RELEASE(SkIsPow2(assumedAlignment) && SkIsPow2(maxAlignment));
 
-        auto alignUp = [](int size, int alignment) {return (size + (alignment - 1)) & -alignment;};
-
         const int minAlignment = std::min(maxAlignment, assumedAlignment);
         // There are two cases, one easy and one subtle. The easy case is when minAlignment ==
         // maxAlignment. When that happens, the term maxAlignment - minAlignment is zero, and the
@@ -54,7 +52,7 @@ public:
         // Following this logic, the equation for the additional bytes is
         //   (maxAlignment/minAlignment - 1) * minAlignment
         //     = maxAlignment - minAlignment.
-        int minimumSize = alignUp(requestedSize, minAlignment)
+        int minimumSize = AlignUp(requestedSize, minAlignment)
                           + blockSize
                           + maxAlignment - minAlignment;
 
@@ -62,7 +60,7 @@ public:
         // maximum int. The > 32K heuristic is from the JEMalloc behavior.
         constexpr int k32K = (1 << 15);
         if (minimumSize >= k32K && minimumSize < std::numeric_limits<int>::max() - k4K) {
-            minimumSize = alignUp(minimumSize, k4K);
+            minimumSize = AlignUp(minimumSize, k4K);
         }
 
         return minimumSize;
@@ -87,21 +85,25 @@ public:
 private:
     // The maximum alignment supported by GrBagOfBytes. 16 seems to be a good number for alignment.
     // If a use case for larger alignments is found, we can turn this into a template parameter.
-    static constexpr int kMaxAlignment = std::max(16, (int)alignof(std::max_align_t));
+    inline static constexpr int kMaxAlignment = std::max(16, (int)alignof(std::max_align_t));
     // The largest size that can be allocated. In larger sizes, the block is rounded up to 4K
     // chunks. Leave a 4K of slop.
-    static constexpr int k4K = (1 << 12);
+    inline static constexpr int k4K = (1 << 12);
     // This should never overflow with the calculations done on the code.
-    static constexpr int kMaxByteSize = std::numeric_limits<int>::max() - k4K;
+    inline static constexpr int kMaxByteSize = std::numeric_limits<int>::max() - k4K;
     // The assumed alignment of new char[] given the platform.
     // There is a bug in Emscripten's allocator that make alignment different than max_align_t.
     // kAllocationAlignment accounts for this difference. For more information see:
     // https://github.com/emscripten-core/emscripten/issues/10072
     #if !defined(SK_FORCE_8_BYTE_ALIGNMENT)
-        static constexpr int kAllocationAlignment = alignof(std::max_align_t);
+        inline static constexpr int kAllocationAlignment = alignof(std::max_align_t);
     #else
-        static constexpr int kAllocationAlignment = 8;
+        inline static constexpr int kAllocationAlignment = 8;
     #endif
+
+    static constexpr size_t AlignUp(int size, int alignment) {
+        return (size + (alignment - 1)) & -alignment;
+    }
 
     // The Block starts at the location pointed to by fEndByte.
     // Beware. Order is important here. The destructor for fPrevious must be called first because

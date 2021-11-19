@@ -476,7 +476,7 @@ void ProgressiveDecoder::GifReadScanline(int32_t row_num, uint8_t* row_buf) {
   if (dest_row >= dest_top + dest_height)
     return;
 
-  ReSampleScanline(pDIBitmap, dest_row, m_DecodeBuf.data(), m_SrcFormat);
+  ResampleScanline(pDIBitmap, dest_row, m_DecodeBuf.data(), m_SrcFormat);
   if (scale_y > 1.0 && m_SrcPassNumber == 1) {
     ResampleVert(pDIBitmap, scale_y, dest_row);
     return;
@@ -534,7 +534,7 @@ void ProgressiveDecoder::BmpReadScanline(uint32_t row_num,
   if (dest_row >= dest_top + dest_height)
     return;
 
-  ReSampleScanline(pDIBitmap, dest_row, m_DecodeBuf.data(), m_SrcFormat);
+  ResampleScanline(pDIBitmap, dest_row, m_DecodeBuf.data(), m_SrcFormat);
   if (scale_y <= 1.0)
     return;
 
@@ -640,7 +640,7 @@ bool ProgressiveDecoder::BmpDetectImageTypeInBuffer(
     CFX_DIBAttribute* pAttribute) {
   std::unique_ptr<ProgressiveDecoderIface::Context> pBmpContext =
       BmpDecoder::StartDecode(this);
-  BmpDecoder::Input(pBmpContext.get(), m_pCodecMemory, nullptr);
+  BmpDecoder::Input(pBmpContext.get(), m_pCodecMemory);
 
   const std::vector<uint32_t>* palette;
   BmpDecoder::Status read_result = BmpDecoder::ReadHeader(
@@ -683,7 +683,7 @@ bool ProgressiveDecoder::BmpDetectImageTypeInBuffer(
 
   // Set to 0 to make CalculatePitchAndSize() calculate it.
   constexpr uint32_t kNoPitch = 0;
-  Optional<CFX_DIBitmap::PitchAndSize> needed_data =
+  absl::optional<CFX_DIBitmap::PitchAndSize> needed_data =
       CFX_DIBitmap::CalculatePitchAndSize(m_SrcWidth, m_SrcHeight, format,
                                           kNoPitch);
   if (!needed_data.has_value()) {
@@ -766,7 +766,7 @@ bool ProgressiveDecoder::GifReadMoreData(FXCODEC_STATUS* err_status) {
 
 bool ProgressiveDecoder::GifDetectImageTypeInBuffer() {
   m_pGifContext = GifDecoder::StartDecode(this);
-  GifDecoder::Input(m_pGifContext.get(), m_pCodecMemory, nullptr);
+  GifDecoder::Input(m_pGifContext.get(), m_pCodecMemory);
   m_SrcComponents = 1;
   GifDecoder::Status readResult =
       GifDecoder::ReadHeader(m_pGifContext.get(), &m_SrcWidth, &m_SrcHeight,
@@ -935,7 +935,7 @@ bool ProgressiveDecoder::JpegDetectImageTypeInBuffer(
     return false;
   }
   JpegProgressiveDecoder::GetInstance()->Input(m_pJpegContext.get(),
-                                               m_pCodecMemory, nullptr);
+                                               m_pCodecMemory);
 
   // Setting jump marker before calling ReadHeader, since a longjmp to
   // the marker indicates a fatal error.
@@ -1300,7 +1300,7 @@ FXCODEC_STATUS ProgressiveDecoder::TiffContinueDecode() {
       (m_clipBox.left == 0 && m_clipBox.top == 0 &&
        m_clipBox.right == m_SrcWidth && m_clipBox.bottom == m_SrcHeight)
           ? pDIBitmap
-          : pDIBitmap->Clone(&m_clipBox);
+          : pDIBitmap->ClipTo(m_clipBox);
   if (!pClipBitmap) {
     m_pDeviceBitmap = nullptr;
     m_pFile = nullptr;
@@ -1486,7 +1486,7 @@ bool ProgressiveDecoder::ReadMoreData(
     return false;
   }
   m_offSet += dwBytesToFetchFromFile;
-  return pModule->Input(pContext, m_pCodecMemory, nullptr);
+  return pModule->Input(pContext, m_pCodecMemory);
 }
 
 FXCODEC_STATUS ProgressiveDecoder::LoadImageInfo(
@@ -1682,15 +1682,14 @@ void ProgressiveDecoder::GetTransMethod(FXDIB_Format dest_format,
   }
 }
 
-void ProgressiveDecoder::ReSampleScanline(
+void ProgressiveDecoder::ResampleScanline(
     const RetainPtr<CFX_DIBitmap>& pDeviceBitmap,
     int dest_line,
     uint8_t* src_scan,
     FXCodec_Format src_format) {
   int src_left = m_clipBox.left;
   int dest_left = m_startX;
-  uint8_t* dest_scan =
-      pDeviceBitmap->GetBuffer() + dest_line * pDeviceBitmap->GetPitch();
+  uint8_t* dest_scan = pDeviceBitmap->GetWritableScanline(dest_line).data();
   int src_bytes_per_pixel = (src_format & 0xff) / 8;
   int dest_bytes_per_pixel = pDeviceBitmap->GetBPP() / 8;
   src_scan += src_left * src_bytes_per_pixel;
@@ -2035,7 +2034,7 @@ void ProgressiveDecoder::Resample(const RetainPtr<CFX_DIBitmap>& pDeviceBitmap,
     if (dest_row >= dest_top + dest_height)
       return;
 
-    ReSampleScanline(pDeviceBitmap, dest_row, m_DecodeBuf.data(), src_format);
+    ResampleScanline(pDeviceBitmap, dest_row, m_DecodeBuf.data(), src_format);
     if (scale_y > 1.0)
       ResampleVert(pDeviceBitmap, scale_y, dest_row);
   }

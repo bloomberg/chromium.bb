@@ -16,7 +16,7 @@
 #include "core/fxcrt/observed_ptr.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_Dictionary;
 class CPDF_Document;
@@ -59,11 +59,11 @@ class CPDF_Page final : public IPDF_Page, public CPDF_PageObjectHolder {
   float GetPageWidth() const override;
   float GetPageHeight() const override;
   CFX_Matrix GetDisplayMatrix(const FX_RECT& rect, int iRotate) const override;
-  Optional<CFX_PointF> DeviceToPage(
+  absl::optional<CFX_PointF> DeviceToPage(
       const FX_RECT& rect,
       int rotate,
       const CFX_PointF& device_point) const override;
-  Optional<CFX_PointF> PageToDevice(
+  absl::optional<CFX_PointF> PageToDevice(
       const FX_RECT& rect,
       int rotate,
       const CFX_PointF& page_point) const override;

@@ -8,6 +8,7 @@
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 
 #include "include/gpu/GrTypes.h"
+#include "include/private/SkMacros.h"
 #include "include/private/SkTo.h"
 #include "src/gpu/GrBlend.h"
 #include "src/gpu/GrCaps.h"
@@ -112,7 +113,7 @@ private:
 
         kLast_Property = kCanTweakAlphaForCoverage_Property
     };
-    GR_DECL_BITFIELD_OPS_FRIENDS(Properties)
+    SK_DECL_BITFIELD_OPS_FRIENDS(Properties)
 
     /**
      * Deduce the properties of a BlendFormula.
@@ -140,7 +141,7 @@ private:
 
 static_assert(4 == sizeof(BlendFormula));
 
-GR_MAKE_BITFIELD_OPS(BlendFormula::Properties)
+SK_MAKE_BITFIELD_OPS(BlendFormula::Properties)
 
 constexpr BlendFormula::Properties BlendFormula::GetProperties(OutputType PrimaryOut,
                                                                OutputType SecondaryOut,

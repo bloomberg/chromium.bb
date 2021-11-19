@@ -29,6 +29,7 @@
 #include "lib/jxl/luminance.h"
 
 namespace jxl {
+namespace extras {
 namespace {
 
 struct HeaderPNM {
@@ -352,60 +353,29 @@ Status EncodeHeader(const ImageBundle& ib, const size_t bits_per_sample,
   if (bits_per_sample == 32) {  // PFM
     const char type = ib.IsGray() ? 'f' : 'F';
     const double scale = little_endian ? -1.0 : 1.0;
-    snprintf(header, kMaxHeaderSize, "P%c\n%zu %zu\n%.1f\n%n", type,
-             ib.oriented_xsize(), ib.oriented_ysize(), scale, chars_written);
+    *chars_written =
+        snprintf(header, kMaxHeaderSize, "P%c\n%zu %zu\n%.1f\n", type,
+                 ib.oriented_xsize(), ib.oriented_ysize(), scale);
+    JXL_RETURN_IF_ERROR(static_cast<unsigned int>(*chars_written) <
+                        kMaxHeaderSize);
   } else if (bits_per_sample == 1) {  // PBM
     if (!ib.IsGray()) {
       return JXL_FAILURE("Cannot encode color as PBM");
     }
-    snprintf(header, kMaxHeaderSize, "P4\n%zu %zu\n%n", ib.oriented_xsize(),
-             ib.oriented_ysize(), chars_written);
+    *chars_written = snprintf(header, kMaxHeaderSize, "P4\n%zu %zu\n",
+                              ib.oriented_xsize(), ib.oriented_ysize());
+    JXL_RETURN_IF_ERROR(static_cast<unsigned int>(*chars_written) <
+                        kMaxHeaderSize);
   } else {  // PGM/PPM
     const uint32_t max_val = (1U << bits_per_sample) - 1;
     if (max_val >= 65536) return JXL_FAILURE("PNM cannot have > 16 bits");
     const char type = ib.IsGray() ? '5' : '6';
-    snprintf(header, kMaxHeaderSize, "P%c\n%zu %zu\n%u\n%n", type,
-             ib.oriented_xsize(), ib.oriented_ysize(), max_val, chars_written);
+    *chars_written =
+        snprintf(header, kMaxHeaderSize, "P%c\n%zu %zu\n%u\n", type,
+                 ib.oriented_xsize(), ib.oriented_ysize(), max_val);
+    JXL_RETURN_IF_ERROR(static_cast<unsigned int>(*chars_written) <
+                        kMaxHeaderSize);
   }
-  return true;
-}
-
-Status ApplyHints(const bool is_gray, CodecInOut* io) {
-  bool got_color_space = false;
-
-  JXL_RETURN_IF_ERROR(io->dec_hints.Foreach(
-      [is_gray, io, &got_color_space](const std::string& key,
-                                      const std::string& value) -> Status {
-        ColorEncoding* c_original = &io->metadata.m.color_encoding;
-        if (key == "color_space") {
-          if (!ParseDescription(value, c_original) ||
-              !c_original->CreateICC()) {
-            return JXL_FAILURE("PNM: Failed to apply color_space");
-          }
-
-          if (is_gray != io->metadata.m.color_encoding.IsGray()) {
-            return JXL_FAILURE(
-                "PNM: mismatch between file and color_space hint");
-          }
-
-          got_color_space = true;
-        } else if (key == "icc_pathname") {
-          PaddedBytes icc;
-          JXL_RETURN_IF_ERROR(ReadFile(value, &icc));
-          JXL_RETURN_IF_ERROR(c_original->SetICC(std::move(icc)));
-          got_color_space = true;
-        } else {
-          JXL_WARNING("PNM decoder ignoring %s hint", key.c_str());
-        }
-        return true;
-      }));
-
-  if (!got_color_space) {
-    JXL_WARNING("PNM: no color_space/icc_pathname given, assuming sRGB");
-    JXL_RETURN_IF_ERROR(io->metadata.m.color_encoding.SetSRGB(
-        is_gray ? ColorSpace::kGray : ColorSpace::kRGB));
-  }
-
   return true;
 }
 
@@ -432,7 +402,8 @@ void VerticallyFlipImage(Image3F* const image) {
 
 }  // namespace
 
-Status DecodeImagePNM(const Span<const uint8_t> bytes, ThreadPool* pool,
+Status DecodeImagePNM(const Span<const uint8_t> bytes,
+                      const ColorHints& color_hints, ThreadPool* pool,
                       CodecInOut* io) {
   Parser parser(bytes);
   HeaderPNM header = {};
@@ -445,7 +416,9 @@ Status DecodeImagePNM(const Span<const uint8_t> bytes, ThreadPool* pool,
     return JXL_FAILURE("PNM: bits_per_sample invalid");
   }
 
-  JXL_RETURN_IF_ERROR(ApplyHints(header.is_gray, io));
+  JXL_RETURN_IF_ERROR(ApplyColorHints(color_hints, /*color_already_set=*/false,
+                                      header.is_gray, io));
+
   if (header.floating_point) {
     io->metadata.m.SetFloat32Samples();
   } else {
@@ -492,13 +465,14 @@ Status DecodeImagePNM(const Span<const uint8_t> bytes, ThreadPool* pool,
     io->Main() = std::move(bundle);
   } else {
     const bool flipped_y = header.bits_per_sample == 32;  // PFMs are flipped
+    const bool float_in = header.bits_per_sample == 32;
     const Span<const uint8_t> span(pos, bytes.data() + bytes.size() - pos);
     JXL_RETURN_IF_ERROR(ConvertFromExternal(
         span, header.xsize, header.ysize, io->metadata.m.color_encoding,
         /*has_alpha=*/false, /*alpha_is_premultiplied=*/false,
         io->metadata.m.bit_depth.bits_per_sample,
         header.big_endian ? JXL_BIG_ENDIAN : JXL_LITTLE_ENDIAN, flipped_y, pool,
-        &io->Main()));
+        &io->Main(), float_in));
   }
   if (!header.floating_point) {
     io->metadata.m.bit_depth.bits_per_sample = io->Main().DetectRealBitdepth();
@@ -600,4 +574,5 @@ void TestCodecPNM() {
   JXL_CHECK(std::abs(d - -3.141592) < 1E-15);
 }
 
+}  // namespace extras
 }  // namespace jxl

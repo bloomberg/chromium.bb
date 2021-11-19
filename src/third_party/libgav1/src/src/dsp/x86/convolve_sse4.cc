@@ -1185,8 +1185,6 @@ void ConvolveScale2D_SSE4_1(const void* LIBGAV1_RESTRICT const reference,
   assert(step_x <= 2048);
   // The output of the horizontal filter, i.e. the intermediate_result, is
   // guaranteed to fit in int16_t.
-  // TODO(petersonab): Reduce intermediate block stride to width to make smaller
-  // blocks faster.
   alignas(16) int16_t
       intermediate_result[kIntermediateAllocWidth *
                           (2 * kIntermediateAllocWidth + kSubPixelTaps)];

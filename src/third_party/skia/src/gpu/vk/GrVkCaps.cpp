@@ -67,7 +67,7 @@ GrVkCaps::GrVkCaps(const GrContextOptions& contextOptions, const GrVkInterface* 
 
     fTextureBarrierSupport = true;
 
-    fShaderCaps.reset(new GrShaderCaps(contextOptions));
+    fShaderCaps = std::make_unique<GrShaderCaps>();
 
     this->init(contextOptions, vkInterface, physDev, features, physicalDeviceVersion, extensions,
                isProtected);
@@ -381,6 +381,10 @@ void GrVkCaps::init(const GrContextOptions& contextOptions, const GrVkInterface*
         fSupportsProtectedMemory = true;
         fAvoidUpdateBuffers = true;
         fShouldAlwaysUseDedicatedImageMemory = true;
+    }
+
+    if (extensions.hasExtension(VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME, 1)) {
+        fSupportsDRMFormatModifiers = true;
     }
 
     fMaxInputAttachmentDescriptors = properties.limits.maxDescriptorSetInputAttachments;
@@ -709,6 +713,7 @@ void GrVkCaps::initShaderCaps(const VkPhysicalDeviceProperties& properties,
     shaderCaps->fInverseHyperbolicSupport = true;
     shaderCaps->fVertexIDSupport = true;
     shaderCaps->fInfinitySupport = true;
+    shaderCaps->fNonconstantArrayIndexSupport = true;
     shaderCaps->fBitManipulationSupport = true;
 
     // Assume the minimum precisions mandated by the SPIR-V spec.

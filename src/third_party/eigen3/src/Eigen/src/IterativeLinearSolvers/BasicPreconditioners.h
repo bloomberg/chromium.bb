@@ -10,6 +10,8 @@
 #ifndef EIGEN_BASIC_PRECONDITIONERS_H
 #define EIGEN_BASIC_PRECONDITIONERS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \ingroup IterativeLinearSolvers_Module

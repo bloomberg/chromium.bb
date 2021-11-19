@@ -21,10 +21,10 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::ScalarConstructorExpression);
 namespace tint {
 namespace ast {
 
-ScalarConstructorExpression::ScalarConstructorExpression(ProgramID program_id,
-                                                         const Source& source,
-                                                         Literal* literal)
-    : Base(program_id, source), literal_(literal) {
+ScalarConstructorExpression::ScalarConstructorExpression(ProgramID pid,
+                                                         const Source& src,
+                                                         const Literal* lit)
+    : Base(pid, src), literal(lit) {
   TINT_ASSERT(AST, literal);
   TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, literal, program_id);
 }
@@ -34,20 +34,12 @@ ScalarConstructorExpression::ScalarConstructorExpression(
 
 ScalarConstructorExpression::~ScalarConstructorExpression() = default;
 
-ScalarConstructorExpression* ScalarConstructorExpression::Clone(
+const ScalarConstructorExpression* ScalarConstructorExpression::Clone(
     CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* lit = ctx->Clone(literal());
+  auto src = ctx->Clone(source);
+  auto* lit = ctx->Clone(literal);
   return ctx->dst->create<ScalarConstructorExpression>(src, lit);
-}
-
-void ScalarConstructorExpression::to_str(const sem::Info& sem,
-                                         std::ostream& out,
-                                         size_t indent) const {
-  make_indent(out, indent);
-  out << "ScalarConstructor[" << result_type_str(sem) << "]{"
-      << literal_->to_str(sem) << "}" << std::endl;
 }
 
 }  // namespace ast

@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_BROADCASTING_H
 #define EIGEN_CXX11_TENSOR_TENSOR_BROADCASTING_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorBroadcasting
@@ -105,7 +107,7 @@ struct TensorEvaluator<const TensorBroadcastingOp<Broadcast, ArgType>, Device>
   typedef typename XprType::CoeffReturnType CoeffReturnType;
   typedef typename PacketType<CoeffReturnType, Device>::type PacketReturnType;
   static const int PacketSize = PacketType<CoeffReturnType, Device>::size;
-  protected: //  all the non-static fields must have the same access control, otherwise the TensorEvaluator wont be standard layout;
+  protected: //  all the non-static fields must have the same access control, otherwise the TensorEvaluator won't be standard layout;
   bool isCopy, nByOne, oneByN;
   public:
   typedef StorageMemory<CoeffReturnType, Device> Storage;

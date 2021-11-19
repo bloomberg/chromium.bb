@@ -32,6 +32,7 @@ cc_library(
         "webrtc_socket_wrapper.h",
     ],
     compatible_with = ["//buildenv/target:non_prod"],
+    copts = ["-DCORE_ADAPTER_DLL"],
     visibility = [
         "//core/internal:__subpackages__",
     ],
@@ -60,7 +61,10 @@ cc_test(
         "signaling_frames_test.cc",
         "webrtc_socket_test.cc",
     ],
-    tags = ["notsan"],  # NOTE(b/139734036): known data race in usrsctplib.
+    tags = [
+        "notsan",  # NOTE(b/139734036): known data race in usrsctplib.
+        "requires-net:external",
+    ],
     deps = [
         ":webrtc",
         "//net/proto2/compat/public:proto2",

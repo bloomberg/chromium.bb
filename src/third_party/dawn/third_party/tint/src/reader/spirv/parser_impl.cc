@@ -262,7 +262,8 @@ TypedExpression::TypedExpression(const TypedExpression&) = default;
 
 TypedExpression& TypedExpression::operator=(const TypedExpression&) = default;
 
-TypedExpression::TypedExpression(const Type* type_in, ast::Expression* expr_in)
+TypedExpression::TypedExpression(const Type* type_in,
+                                 const ast::Expression* expr_in)
     : type(type_in), expr(expr_in) {}
 
 ParserImpl::ParserImpl(const std::vector<uint32_t>& spv_binary)
@@ -1200,7 +1201,7 @@ const Type* ParserImpl::ConvertType(
   auto* ast_struct = create<ast::Struct>(Source{}, sym, std::move(ast_members),
                                          std::move(ast_struct_decorations));
   if (num_non_writable_members == members.size()) {
-    read_only_struct_types_.insert(ast_struct->name());
+    read_only_struct_types_.insert(ast_struct->name);
   }
   AddTypeDecl(sym, ast_struct);
   const auto* result = ty_.Struct(sym, std::move(ast_member_types));
@@ -1208,7 +1209,7 @@ const Type* ParserImpl::ConvertType(
   return result;
 }
 
-void ParserImpl::AddTypeDecl(Symbol name, ast::TypeDecl* decl) {
+void ParserImpl::AddTypeDecl(Symbol name, const ast::TypeDecl* decl) {
   auto iter = declared_types_.insert(name);
   if (iter.second) {
     builder_.AST().AddTypeDecl(decl);
@@ -1521,7 +1522,7 @@ bool ParserImpl::EmitModuleScopeVariables() {
 
     auto* ast_store_type = ast_type->As<Pointer>()->type;
     auto ast_storage_class = ast_type->As<Pointer>()->storage_class;
-    ast::Expression* ast_constructor = nullptr;
+    const ast::Expression* ast_constructor = nullptr;
     if (var.NumInOperands() > 1) {
       // SPIR-V initializers are always constants.
       // (OpenCL also allows the ID of an OpVariable, but we don't handle that
@@ -1543,7 +1544,7 @@ bool ParserImpl::EmitModuleScopeVariables() {
     // Make sure the variable has a name.
     namer_.SuggestSanitizedName(builtin_position_.per_vertex_var_id,
                                 "gl_Position");
-    ast::Expression* ast_constructor = nullptr;
+    const ast::Expression* ast_constructor = nullptr;
     if (builtin_position_.per_vertex_var_init_id) {
       // The initializer is complex.
       const auto* init =
@@ -1603,7 +1604,7 @@ ast::Variable* ParserImpl::MakeVariable(uint32_t id,
                                         ast::StorageClass sc,
                                         const Type* storage_type,
                                         bool is_const,
-                                        ast::Expression* constructor,
+                                        const ast::Expression* constructor,
                                         ast::DecorationList decorations) {
   if (storage_type == nullptr) {
     Fail() << "internal error: can't make ast::Variable for null type";
@@ -1755,8 +1756,9 @@ DecorationList ParserImpl::GetMemberPipelineDecorations(
   return result;
 }
 
-ast::Decoration* ParserImpl::SetLocation(ast::DecorationList* decos,
-                                         ast::Decoration* replacement) {
+const ast::Decoration* ParserImpl::SetLocation(
+    ast::DecorationList* decos,
+    const ast::Decoration* replacement) {
   if (!replacement) {
     return nullptr;
   }
@@ -1765,7 +1767,7 @@ ast::Decoration* ParserImpl::SetLocation(ast::DecorationList* decos,
       // Replace this location decoration with the replacement.
       // The old one doesn't leak because it's kept in the builder's AST node
       // list.
-      ast::Decoration* result = nullptr;
+      const ast::Decoration* result = nullptr;
       result = deco;
       deco = replacement;
       return result;  // Assume there is only one such decoration.
@@ -2004,7 +2006,7 @@ TypedExpression ParserImpl::MakeConstantExpressionForScalarSpirvConstant(
   return {};
 }
 
-ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
+const ast::Expression* ParserImpl::MakeNullValue(const Type* type) {
   // TODO(dneto): Use the no-operands constructor syntax when it becomes
   // available in Tint.
   // https://github.com/gpuweb/gpuweb/issues/685
@@ -2131,8 +2133,8 @@ TypedExpression ParserImpl::RectifyOperandSignedness(
   }
   auto* type = expr.type;
   if (!type) {
-    Fail() << "internal error: unmapped type for: " << builder_.str(expr.expr)
-           << "\n";
+    Fail() << "internal error: unmapped type for: "
+           << expr.expr->TypeInfo().name << "\n";
     return {};
   }
   if (requires_unsigned) {
@@ -2537,7 +2539,7 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
 
     // WGSL textures are always formatted.  Unformatted textures are always
     // sampled.
-    if (usage.IsSampledTexture() ||
+    if (usage.IsSampledTexture() || usage.IsStorageReadTexture() ||
         (image_type->format() == SpvImageFormatUnknown)) {
       // Make a sampled texture type.
       auto* ast_sampled_component_type =
@@ -2566,8 +2568,7 @@ const Pointer* ParserImpl::GetTypeForHandleVar(
         ast_store_type = ty_.SampledTexture(dim, ast_sampled_component_type);
       }
     } else {
-      const auto access = usage.IsStorageReadTexture() ? ast::Access::kRead
-                                                       : ast::Access::kWrite;
+      const auto access = ast::Access::kWrite;
       const auto format = enum_converter_.ToImageFormat(image_type->format());
       if (format == ast::ImageFormat::kNone) {
         return nullptr;

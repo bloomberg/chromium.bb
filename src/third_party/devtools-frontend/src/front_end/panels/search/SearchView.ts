@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 
@@ -127,6 +128,9 @@ export class SearchView extends UI.Widget.VBox {
     this.visiblePane = null;
 
     this.contentElement.classList.add('search-view');
+    this.contentElement.addEventListener('keydown', event => {
+      this.onKeyDownOnPanel((event as KeyboardEvent));
+    });
 
     this.searchPanelElement = this.contentElement.createChild('div', 'search-drawer-header');
     this.searchResultsElement = this.contentElement.createChild('div');
@@ -428,6 +432,26 @@ export class SearchView extends UI.Widget.VBox {
     }
   }
 
+  private onKeyDownOnPanel(event: KeyboardEvent): void {
+    const isMac = Host.Platform.isMac();
+    // "Command + Alt + ]" for Mac
+    const shouldShowAllForMac = isMac && event.metaKey && !event.ctrlKey && event.altKey && event.key === ']';
+    // "Ctrl + Shift + }" for other platforms
+    const shouldShowAllForOtherPlatforms =
+        !isMac && event.ctrlKey && !event.metaKey && event.shiftKey && event.key === '}';
+    // "Command + Alt + [" for Mac
+    const shouldCollapseAllForMac = isMac && event.metaKey && !event.ctrlKey && event.altKey && event.key === '[';
+    // "Command + Alt + {" for other platforms
+    const shouldCollapseAllForOtherPlatforms =
+        !isMac && event.ctrlKey && !event.metaKey && event.shiftKey && event.key === '{';
+
+    if (shouldShowAllForMac || shouldShowAllForOtherPlatforms) {
+      this.searchResultsPane?.showAllMatches();
+    } else if (shouldCollapseAllForMac || shouldCollapseAllForOtherPlatforms) {
+      this.searchResultsPane?.collapseAllResults();
+    }
+  }
+
   private save(): void {
     this.advancedSearchConfig.set(this.buildSearchConfig().toPlainObject());
   }
@@ -440,8 +464,6 @@ export class SearchView extends UI.Widget.VBox {
   }
 
   private onAction(): void {
-    // Resetting alert variable to prime for next search query result.
-    UI.ARIAUtils.alert(' ');
     const searchConfig = this.buildSearchConfig();
     if (!searchConfig.query() || !searchConfig.query().length) {
       return;

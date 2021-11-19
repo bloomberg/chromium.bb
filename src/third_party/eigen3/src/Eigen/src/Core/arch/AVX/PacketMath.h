@@ -10,6 +10,8 @@
 #ifndef EIGEN_PACKET_MATH_AVX_H
 #define EIGEN_PACKET_MATH_AVX_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -1439,7 +1441,6 @@ EIGEN_STRONG_INLINE Packet8f Bf16ToF32(const Packet8bf& a) {
 
 // Convert float to bfloat16 according to round-to-nearest-even/denormals algorithm.
 EIGEN_STRONG_INLINE Packet8bf F32ToBf16(const Packet8f& a) {
-  Packet8bf r;
 
   __m256i input = _mm256_castps_si256(a);
 

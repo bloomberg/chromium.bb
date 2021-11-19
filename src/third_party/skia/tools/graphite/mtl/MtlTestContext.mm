@@ -14,7 +14,7 @@
 
 #import <Metal/Metal.h>
 
-namespace sk_graphite_test::mtl {
+namespace skiatest::graphite::mtl {
 
 std::unique_ptr<GraphiteTestContext> TestContext::Make() {
     sk_cfp<id<MTLDevice>> device;
@@ -42,7 +42,7 @@ std::unique_ptr<GraphiteTestContext> TestContext::Make() {
 
     skgpu::mtl::BackendContext backendContext = {};
     backendContext.fDevice.retain(device.get());
-    backendContext.fQueue.retain([*device newCommandQueue]);
+    backendContext.fQueue.reset([*device newCommandQueue]);
 
     return std::unique_ptr<GraphiteTestContext>(new TestContext(backendContext));
 }
@@ -51,6 +51,6 @@ sk_sp<skgpu::Context> TestContext::makeContext() {
     return skgpu::Context::MakeMetal(fMtl);
 }
 
-}  // namespace sk_graphite_test::mtl
+}  // namespace skiatest::graphite::mtl
 
 #endif // SK_METAL

@@ -10,6 +10,8 @@
 #ifndef EIGEN_KLUSUPPORT_H
 #define EIGEN_KLUSUPPORT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /* TODO extract L, extract U, compute det, etc... */

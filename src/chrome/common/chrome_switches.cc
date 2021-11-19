@@ -318,9 +318,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // whether or not it's actually the First Run (this overrides kNoFirstRun).
 const char kForceFirstRun[]                 = "force-first-run";
 
-// Forces Chrome to use a stacked tab strip layout.
-const char kForceStackedTabStripLayout[]    = "force-stacked-tab-strip-layout";
-
 // Does not show the crash restore bubble when the browser is started during the
 // system startup phase in ChromeOS, if the ChromeOS full restore feature is
 // enabled, because the ChromeOS full restore notification is shown for the user
@@ -629,6 +626,9 @@ const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 // Forces signin FRE flow.
 const char kForceEnableSigninFRE[] = "force-enable-signin-fre";
 
+// Forces the FRE to go through the legacy sync consent flow for testing.
+const char kForceDisableSigninFRE[] = "force-disable-signin-fre";
+
 // Forces the update menu type to a specific type.
 const char kForceUpdateMenuType[] = "force-update-menu-type";
 
@@ -692,9 +692,6 @@ const char kWmClass[]                       = "class";
 #if defined(OS_MAC)
 // Prevents Chrome from quitting when Chrome Apps are open.
 const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
-
-// Disables app shim creation for hosted apps on Mac.
-const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
 // Enable user metrics from within the installer.
 const char kEnableUserMetrics[] = "enable-user-metrics";

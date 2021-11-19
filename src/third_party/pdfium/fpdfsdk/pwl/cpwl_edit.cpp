@@ -198,7 +198,7 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
       path.AppendPoint(top, CFX_Path::Point::Type::kLine);
     }
     if (!path.GetPoints().empty()) {
-      pDevice->DrawPath(&path, &mtUser2Device, &gsd, 0,
+      pDevice->DrawPath(path, &mtUser2Device, &gsd, 0,
                         GetBorderColor().ToFXColor(255),
                         CFX_FillRenderOptions::EvenOddOptions());
     }
@@ -215,7 +215,6 @@ void CPWL_Edit::DrawThisAppearance(CFX_RenderDevice* pDevice,
       pDevice, mtUser2Device, GetTextColor().ToFXColor(GetTransparency()),
       rcClip, CFX_PointF(), pRange, GetSystemHandler(), GetAttachedData());
 }
-
 
 void CPWL_Edit::OnSetFocus() {
   ObservedPtr<CPWL_Edit> observed_ptr(this);

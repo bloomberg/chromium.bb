@@ -67,7 +67,7 @@ namespace dawn_native { namespace vulkan {
         // Two things are crucial if device initialization fails: the function pointers to destroy
         // objects, and the fence deleter that calls these functions. Do not do anything before
         // these two are set up, so that a failed initialization doesn't cause a crash in
-        // ShutDownImpl()
+        // DestroyImpl()
         {
             VkPhysicalDevice physicalDevice = ToBackend(GetAdapter())->GetPhysicalDevice();
 
@@ -100,7 +100,7 @@ namespace dawn_native { namespace vulkan {
     }
 
     Device::~Device() {
-        ShutDownBase();
+        Destroy();
     }
 
     ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
@@ -120,9 +120,9 @@ namespace dawn_native { namespace vulkan {
         const CommandBufferDescriptor* descriptor) {
         return CommandBuffer::Create(encoder, descriptor);
     }
-    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
+    Ref<ComputePipelineBase> Device::CreateUninitializedComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
-        return ComputePipeline::Create(this, descriptor);
+        return ComputePipeline::CreateUninitialized(this, descriptor);
     }
     ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
@@ -162,16 +162,15 @@ namespace dawn_native { namespace vulkan {
         const TextureViewDescriptor* descriptor) {
         return TextureView::Create(texture, descriptor);
     }
-    void Device::CreateComputePipelineAsyncImpl(const ComputePipelineDescriptor* descriptor,
-                                                size_t blueprintHash,
-                                                WGPUCreateComputePipelineAsyncCallback callback,
-                                                void* userdata) {
-        ComputePipeline::CreateAsync(this, descriptor, blueprintHash, callback, userdata);
+    void Device::InitializeComputePipelineAsyncImpl(Ref<ComputePipelineBase> computePipeline,
+                                                    WGPUCreateComputePipelineAsyncCallback callback,
+                                                    void* userdata) {
+        ComputePipeline::InitializeAsync(std::move(computePipeline), callback, userdata);
     }
     void Device::InitializeRenderPipelineAsyncImpl(Ref<RenderPipelineBase> renderPipeline,
                                                    WGPUCreateRenderPipelineAsyncCallback callback,
                                                    void* userdata) {
-        RenderPipeline::InitializeAsync(renderPipeline, callback, userdata);
+        RenderPipeline::InitializeAsync(std::move(renderPipeline), callback, userdata);
     }
 
     MaybeError Device::TickImpl() {
@@ -746,16 +745,16 @@ namespace dawn_native { namespace vulkan {
         }
 
         // Check services support this combination of handle type / image info
-        if (!mExternalSemaphoreService->Supported()) {
-            return DAWN_VALIDATION_ERROR("External semaphore usage not supported");
-        }
-        if (!mExternalMemoryService->SupportsImportMemory(
+        DAWN_INVALID_IF(!mExternalSemaphoreService->Supported(),
+                        "External semaphore usage not supported");
+
+        DAWN_INVALID_IF(
+            !mExternalMemoryService->SupportsImportMemory(
                 VulkanImageFormat(this, textureDescriptor->format), VK_IMAGE_TYPE_2D,
                 VK_IMAGE_TILING_OPTIMAL,
                 VulkanImageUsage(usage, GetValidInternalFormat(textureDescriptor->format)),
-                VK_IMAGE_CREATE_ALIAS_BIT_KHR)) {
-            return DAWN_VALIDATION_ERROR("External memory usage not supported");
-        }
+                VK_IMAGE_CREATE_ALIAS_BIT_KHR),
+            "External memory usage not supported");
 
         // Create an external semaphore to signal when the texture is done being used
         DAWN_TRY_ASSIGN(*outSignalSemaphore,
@@ -816,7 +815,9 @@ namespace dawn_native { namespace vulkan {
         if (ConsumedError(ValidateTextureDescriptor(this, textureDescriptor))) {
             return nullptr;
         }
-        if (ConsumedError(ValidateVulkanImageCanBeWrapped(this, textureDescriptor))) {
+        if (ConsumedError(ValidateVulkanImageCanBeWrapped(this, textureDescriptor),
+                          "validating that a Vulkan image can be wrapped with %s.",
+                          textureDescriptor)) {
             return nullptr;
         }
 
@@ -912,7 +913,7 @@ namespace dawn_native { namespace vulkan {
         return {};
     }
 
-    void Device::ShutDownImpl() {
+    void Device::DestroyImpl() {
         ASSERT(GetState() == State::Disconnected);
 
         // We failed during initialization so early that we don't even have a VkDevice. There is

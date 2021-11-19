@@ -7,8 +7,8 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EIGEN_ALIGNED_VECTOR3
-#define EIGEN_ALIGNED_VECTOR3
+#ifndef EIGEN_ALIGNED_VECTOR3_MODULE_H
+#define EIGEN_ALIGNED_VECTOR3_MODULE_H
 
 #include "../../Eigen/Geometry"
 
@@ -231,4 +231,4 @@ struct evaluator<AlignedVector3<Scalar> >
 
 #include "../../Eigen/src/Core/util/ReenableStupidWarnings.h"
 
-#endif // EIGEN_ALIGNED_VECTOR3
+#endif // EIGEN_ALIGNED_VECTOR3_MODULE_H

@@ -126,7 +126,9 @@ struct IMAGE_STATE_BP {
     IMAGE_STATE* image{nullptr};
 };
 
-struct PHYSICAL_DEVICE_STATE_BP {
+struct PHYSICAL_DEVICE_STATE_BP : public PHYSICAL_DEVICE_STATE {
+    PHYSICAL_DEVICE_STATE_BP(VkPhysicalDevice phys_dev) : PHYSICAL_DEVICE_STATE(phys_dev) {}
+
     // Track the call state and array sizes for various query functions
     CALL_STATE vkGetPhysicalDeviceQueueFamilyPropertiesState = UNCALLED;
     CALL_STATE vkGetPhysicalDeviceQueueFamilyProperties2State = UNCALLED;
@@ -137,6 +139,7 @@ struct PHYSICAL_DEVICE_STATE_BP {
     CALL_STATE vkGetPhysicalDeviceSurfaceCapabilitiesKHRState = UNCALLED;
     CALL_STATE vkGetPhysicalDeviceSurfacePresentModesKHRState = UNCALLED;
     CALL_STATE vkGetPhysicalDeviceSurfaceFormatsKHRState = UNCALLED;
+    uint32_t surface_formats_count = 0;
     CALL_STATE vkGetPhysicalDeviceDisplayPlanePropertiesKHRState = UNCALLED;
 };
 
@@ -203,7 +206,7 @@ class CMD_BUFFER_STATE_BP : public CMD_BUFFER_STATE {
     RenderPassState render_pass_state;
 
     CMD_BUFFER_STATE_BP(BestPractices* bp, VkCommandBuffer cb, const VkCommandBufferAllocateInfo* pCreateInfo,
-                        std::shared_ptr<COMMAND_POOL_STATE>& pool);
+                        const COMMAND_POOL_STATE* pool);
 };
 
 class BestPractices : public ValidationStateTracker {
@@ -234,8 +237,6 @@ class BestPractices : public ValidationStateTracker {
 
     bool PreCallValidateCreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator,
                                        VkInstance* pInstance) const override;
-    void PreCallRecordCreateInstance(const VkInstanceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator,
-                                     VkInstance* pInstance) override;
     bool PreCallValidateCreateDevice(VkPhysicalDevice physicalDevice, const VkDeviceCreateInfo* pCreateInfo,
                                      const VkAllocationCallbacks* pAllocator, VkDevice* pDevice) const override;
     bool PreCallValidateCreateBuffer(VkDevice device, const VkBufferCreateInfo* pCreateInfo,
@@ -535,9 +536,6 @@ class BestPractices : public ValidationStateTracker {
     void ManualPostCallRecordGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain, uint32_t* pSwapchainImageCount,
                                                    VkImage* pSwapchainImages, VkResult result);
 
-    void ManualPostCallRecordEnumeratePhysicalDevices(VkInstance instance, uint32_t* pPhysicalDeviceCount,
-                                                      VkPhysicalDevice* pPhysicalDevices, VkResult result);
-
     void ManualPostCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo* pCreateInfo,
                                           const VkAllocationCallbacks* pAllocator, VkDevice* pDevice, VkResult result);
 
@@ -619,11 +617,14 @@ class BestPractices : public ValidationStateTracker {
         return std::static_pointer_cast<SWAPCHAIN_NODE>(std::make_shared<SWAPCHAIN_STATE_BP>(this, create_info, swapchain));
     }
 
+    std::shared_ptr<PHYSICAL_DEVICE_STATE> CreatePhysicalDeviceState(VkPhysicalDevice phys_dev) final {
+        return std::static_pointer_cast<PHYSICAL_DEVICE_STATE>(std::make_shared<PHYSICAL_DEVICE_STATE_BP>(phys_dev));
+    }
+
 // Include code-generated functions
 #include "best_practices.h"
 
   private:
-    uint32_t instance_api_version = 0;
     uint32_t num_mem_objects = 0;
 
     // AMD tracked
@@ -672,18 +673,19 @@ class BestPractices : public ValidationStateTracker {
 
     void RecordCmdDrawTypeArm(RenderPassState& render_pass_state, uint32_t draw_count, const char* caller);
 
-    // Backing data for BP-specific state data
-    layer_data::unordered_map<VkPhysicalDevice, PHYSICAL_DEVICE_STATE_BP> phys_device_bp_state_map;
-    // Physical device state for this instance
-    PHYSICAL_DEVICE_STATE_BP* instance_device_bp_state = nullptr;
-
     // Get BestPractices-specific state for the given physical devices
-    PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP(const VkPhysicalDevice& phys_device);
-    const PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP(const VkPhysicalDevice& phys_device) const;
+    PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceState(const VkPhysicalDevice& phys_device) {
+        return static_cast<PHYSICAL_DEVICE_STATE_BP*>(Get<PHYSICAL_DEVICE_STATE>(phys_device));
+    }
+    const PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceState(const VkPhysicalDevice& phys_device) const {
+        return static_cast<const PHYSICAL_DEVICE_STATE_BP*>(Get<PHYSICAL_DEVICE_STATE>(phys_device));
+    }
 
     // Get BestPractices-specific for the current instance
-    PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP();
-    const PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceStateBP() const;
+    PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceState() { return static_cast<PHYSICAL_DEVICE_STATE_BP*>(physical_device_state); }
+    const PHYSICAL_DEVICE_STATE_BP* GetPhysicalDeviceState() const {
+        return static_cast<const PHYSICAL_DEVICE_STATE_BP*>(physical_device_state);
+    }
 
     IMAGE_STATE_BP* GetImageUsageState(VkImage image);
     void ReleaseImageUsageState(VkImage image);
@@ -709,6 +711,6 @@ class BestPractices : public ValidationStateTracker {
         return static_cast<CMD_BUFFER_STATE_BP*>(Get<CMD_BUFFER_STATE>(cb));
     }
     std::shared_ptr<CMD_BUFFER_STATE> CreateCmdBufferState(VkCommandBuffer cb, const VkCommandBufferAllocateInfo* create_info,
-                                                           std::shared_ptr<COMMAND_POOL_STATE>& pool) final;
+                                                           const COMMAND_POOL_STATE* pool) final;
 };
 

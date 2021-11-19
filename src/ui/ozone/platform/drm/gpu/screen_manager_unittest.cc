@@ -344,7 +344,10 @@ TEST_F(ScreenManagerTest, CheckMultipleDisplaysWithinModifiersLimit) {
 }
 
 TEST_F(ScreenManagerTest, CheckMultipleDisplaysOutsideModifiersLimit) {
-  int max_supported_displays_with_modifier = 2;
+  const int max_supported_displays_with_modifier = 2;
+  // b/197804801: external displays don't support RBC so act like everything is
+  // eDP.
+  drm_->set_connector_type(DRM_MODE_CONNECTOR_eDP);
   drm_->SetSystemLimitOfModifiers(modifiers_overhead_[DRM_FORMAT_MOD_LINEAR] *
                                   max_supported_displays_with_modifier);
 
@@ -375,6 +378,9 @@ TEST_F(ScreenManagerTest, CheckMultipleDisplaysOutsideModifiersLimit) {
 }
 
 TEST_F(ScreenManagerTest, CheckDisplaysWith0Limit) {
+  // b/197804801: external displays don't support RBC so act like everything is
+  // eDP.
+  drm_->set_connector_type(DRM_MODE_CONNECTOR_eDP);
   drm_->SetSystemLimitOfModifiers(0);
 
   InitializeDrmStateWithDefault(drm_.get(), /*is_atomic=*/true,
@@ -1237,10 +1243,6 @@ TEST_F(ScreenManagerTest, ShouldNotHardwareMirrorDifferentDrmDevices) {
   constexpr uint32_t kConnector2 = kSecondaryConnector;
 
   drmModeModeInfo k1920x1080Screen = ConstructMode(1920, 1080);
-  std::unique_ptr<drmModeModeInfo> primary_mode =
-      std::make_unique<drmModeModeInfo>(k1920x1080Screen);
-  std::unique_ptr<drmModeModeInfo> secondary_mode =
-      std::make_unique<drmModeModeInfo>(k1920x1080Screen);
 
   // Two displays on different DRM devices must not join a mirror pair.
   //

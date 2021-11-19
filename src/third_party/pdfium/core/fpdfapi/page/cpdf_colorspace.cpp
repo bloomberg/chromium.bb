@@ -126,8 +126,8 @@ class CPDF_CalGray final : public CPDF_ColorSpace {
   uint32_t v_Load(CPDF_Document* pDoc,
                   const CPDF_Array* pArray,
                   std::set<const CPDF_Object*>* pVisited) override;
-  void TranslateImageLine(uint8_t* pDestBuf,
-                          const uint8_t* pSrcBuf,
+  void TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                          pdfium::span<const uint8_t> src_span,
                           int pixels,
                           int image_width,
                           int image_height,
@@ -153,8 +153,8 @@ class CPDF_CalRGB final : public CPDF_ColorSpace {
               float* R,
               float* G,
               float* B) const override;
-  void TranslateImageLine(uint8_t* pDestBuf,
-                          const uint8_t* pSrcBuf,
+  void TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                          pdfium::span<const uint8_t> src_span,
                           int pixels,
                           int image_width,
                           int image_height,
@@ -191,8 +191,8 @@ class CPDF_LabCS final : public CPDF_ColorSpace {
                        float* value,
                        float* min,
                        float* max) const override;
-  void TranslateImageLine(uint8_t* pDestBuf,
-                          const uint8_t* pSrcBuf,
+  void TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                          pdfium::span<const uint8_t> src_span,
                           int pixels,
                           int image_width,
                           int image_height,
@@ -221,8 +221,8 @@ class CPDF_ICCBasedCS final : public CPDF_BasedCS {
               float* R,
               float* G,
               float* B) const override;
-  void TranslateImageLine(uint8_t* pDestBuf,
-                          const uint8_t* pSrcBuf,
+  void TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                          pdfium::span<const uint8_t> src_span,
                           int pixels,
                           int image_width,
                           int image_height,
@@ -608,12 +608,14 @@ void CPDF_ColorSpace::GetDefaultValue(int iComponent,
   *max = 1.0f;
 }
 
-void CPDF_ColorSpace::TranslateImageLine(uint8_t* dest_buf,
-                                         const uint8_t* src_buf,
+void CPDF_ColorSpace::TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                                         pdfium::span<const uint8_t> src_span,
                                          int pixels,
                                          int image_width,
                                          int image_height,
                                          bool bTransMask) const {
+  uint8_t* dest_buf = dest_span.data();
+  const uint8_t* src_buf = src_span.data();
   std::vector<float> src(m_nComponents);
   float R;
   float G;
@@ -687,16 +689,20 @@ bool CPDF_CalGray::GetRGB(pdfium::span<const float> pBuf,
   return true;
 }
 
-void CPDF_CalGray::TranslateImageLine(uint8_t* pDestBuf,
-                                      const uint8_t* pSrcBuf,
+void CPDF_CalGray::TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                                      pdfium::span<const uint8_t> src_span,
                                       int pixels,
                                       int image_width,
                                       int image_height,
                                       bool bTransMask) const {
+  uint8_t* pDestBuf = dest_span.data();
+  const uint8_t* pSrcBuf = src_span.data();
   for (int i = 0; i < pixels; i++) {
-    *pDestBuf++ = pSrcBuf[i];
-    *pDestBuf++ = pSrcBuf[i];
-    *pDestBuf++ = pSrcBuf[i];
+    // Compiler can not conclude that src/dest don't overlap.
+    const uint8_t pix = pSrcBuf[i];
+    *pDestBuf++ = pix;
+    *pDestBuf++ = pix;
+    *pDestBuf++ = pix;
   }
 }
 
@@ -762,12 +768,14 @@ bool CPDF_CalRGB::GetRGB(pdfium::span<const float> pBuf,
   return true;
 }
 
-void CPDF_CalRGB::TranslateImageLine(uint8_t* pDestBuf,
-                                     const uint8_t* pSrcBuf,
+void CPDF_CalRGB::TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                                     pdfium::span<const uint8_t> src_span,
                                      int pixels,
                                      int image_width,
                                      int image_height,
                                      bool bTransMask) const {
+  uint8_t* pDestBuf = dest_span.data();
+  const uint8_t* pSrcBuf = src_span.data();
   if (!bTransMask) {
     fxcodec::ReverseRGB(pDestBuf, pSrcBuf, pixels);
     return;
@@ -871,12 +879,14 @@ bool CPDF_LabCS::GetRGB(pdfium::span<const float> pBuf,
   return true;
 }
 
-void CPDF_LabCS::TranslateImageLine(uint8_t* pDestBuf,
-                                    const uint8_t* pSrcBuf,
+void CPDF_LabCS::TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                                    pdfium::span<const uint8_t> src_span,
                                     int pixels,
                                     int image_width,
                                     int image_height,
                                     bool bTransMask) const {
+  uint8_t* pDestBuf = dest_span.data();
+  const uint8_t* pSrcBuf = src_span.data();
   for (int i = 0; i < pixels; i++) {
     float lab[3];
     lab[0] = pSrcBuf[0] * 100 / 255.0f;
@@ -969,19 +979,19 @@ bool CPDF_ICCBasedCS::GetRGB(pdfium::span<const float> pBuf,
   return true;
 }
 
-void CPDF_ICCBasedCS::TranslateImageLine(uint8_t* pDestBuf,
-                                         const uint8_t* pSrcBuf,
+void CPDF_ICCBasedCS::TranslateImageLine(pdfium::span<uint8_t> dest_span,
+                                         pdfium::span<const uint8_t> src_span,
                                          int pixels,
                                          int image_width,
                                          int image_height,
                                          bool bTransMask) const {
   if (m_pProfile->IsSRGB()) {
-    fxcodec::ReverseRGB(pDestBuf, pSrcBuf, pixels);
+    fxcodec::ReverseRGB(dest_span.data(), src_span.data(), pixels);
     return;
   }
   if (!m_pProfile->transform()) {
     if (m_pBaseCS) {
-      m_pBaseCS->TranslateImageLine(pDestBuf, pSrcBuf, pixels, image_width,
+      m_pBaseCS->TranslateImageLine(dest_span, src_span, pixels, image_width,
                                     image_height, false);
     }
     return;
@@ -1002,7 +1012,7 @@ void CPDF_ICCBasedCS::TranslateImageLine(uint8_t* pDestBuf,
       bTranslate = nPixelCount.ValueOrDie() < nMaxColors * 3 / 2;
   }
   if (bTranslate && m_pProfile->transform()) {
-    m_pProfile->transform()->TranslateScanline(pDestBuf, pSrcBuf, pixels);
+    m_pProfile->transform()->TranslateScanline(dest_span, src_span, pixels);
     return;
   }
   if (m_pCache.empty()) {
@@ -1021,10 +1031,12 @@ void CPDF_ICCBasedCS::TranslateImageLine(uint8_t* pDestBuf,
       }
     }
     if (m_pProfile->transform()) {
-      m_pProfile->transform()->TranslateScanline(m_pCache.data(),
-                                                 temp_src.data(), nMaxColors);
+      m_pProfile->transform()->TranslateScanline(m_pCache, temp_src,
+                                                 nMaxColors);
     }
   }
+  uint8_t* pDestBuf = dest_span.data();
+  const uint8_t* pSrcBuf = src_span.data();
   for (int i = 0; i < pixels; i++) {
     int index = 0;
     for (uint32_t c = 0; c < nComponents; c++) {
@@ -1088,17 +1100,15 @@ RetainPtr<CPDF_ColorSpace> CPDF_ICCBasedCS::GetStockAlternateProfile(
 std::vector<float> CPDF_ICCBasedCS::GetRanges(const CPDF_Dictionary* pDict,
                                               uint32_t nComponents) {
   DCHECK(IsValidIccComponents(nComponents));
+  const CPDF_Array* pRanges = pDict->GetArrayFor("Range");
+  if (pRanges && pRanges->size() >= nComponents * 2)
+    return ReadArrayElementsToVector(pRanges, nComponents * 2);
 
   std::vector<float> ranges;
-  const CPDF_Array* pRanges = pDict->GetArrayFor("Range");
-  if (pRanges) {
-    ranges = ReadArrayElementsToVector(pRanges, nComponents * 2);
-  } else {
-    ranges.reserve(nComponents * 2);
-    for (uint32_t i = 0; i < nComponents; i++) {
-      ranges.push_back(0.0f);
-      ranges.push_back(1.0f);
-    }
+  ranges.reserve(nComponents * 2);
+  for (uint32_t i = 0; i < nComponents; i++) {
+    ranges.push_back(0.0f);
+    ranges.push_back(1.0f);
   }
   return ranges;
 }

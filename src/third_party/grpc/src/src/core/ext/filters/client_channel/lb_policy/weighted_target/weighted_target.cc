@@ -150,6 +150,7 @@ class WeightedTargetLb : public LoadBalancingPolicy {
                        const absl::Status& status,
                        std::unique_ptr<SubchannelPicker> picker) override;
       void RequestReresolution() override;
+      absl::string_view GetAuthority() override;
       void AddTraceEvent(TraceSeverity severity,
                          absl::string_view message) override;
 
@@ -387,12 +388,9 @@ void WeightedTargetLb::UpdateStateLocked() {
           absl::make_unique<QueuePicker>(Ref(DEBUG_LOCATION, "QueuePicker"));
       break;
     default:
-      grpc_error_handle error = grpc_error_set_int(
-          GRPC_ERROR_CREATE_FROM_STATIC_STRING(
-              "weighted_target: all children report state TRANSIENT_FAILURE"),
-          GRPC_ERROR_INT_GRPC_STATUS, GRPC_STATUS_UNAVAILABLE);
-      status = grpc_error_to_absl_status(error);
-      picker = absl::make_unique<TransientFailurePicker>(error);
+      status = absl::UnavailableError(
+          "weighted_target: all children report state TRANSIENT_FAILURE");
+      picker = absl::make_unique<TransientFailurePicker>(status);
   }
   channel_control_helper()->UpdateState(connectivity_state, status,
                                         std::move(picker));
@@ -567,7 +565,7 @@ void WeightedTargetLb::WeightedChild::DeactivateLocked() {
 void WeightedTargetLb::WeightedChild::OnDelayedRemovalTimer(
     void* arg, grpc_error_handle error) {
   WeightedChild* self = static_cast<WeightedChild*>(arg);
-  GRPC_ERROR_REF(error);  // ref owned by lambda
+  (void)GRPC_ERROR_REF(error);  // ref owned by lambda
   self->weighted_target_policy_->work_serializer()->Run(
       [self, error]() { self->OnDelayedRemovalTimerLocked(error); },
       DEBUG_LOCATION);
@@ -608,6 +606,11 @@ void WeightedTargetLb::WeightedChild::Helper::RequestReresolution() {
   if (weighted_child_->weighted_target_policy_->shutting_down_) return;
   weighted_child_->weighted_target_policy_->channel_control_helper()
       ->RequestReresolution();
+}
+
+absl::string_view WeightedTargetLb::WeightedChild::Helper::GetAuthority() {
+  return weighted_child_->weighted_target_policy_->channel_control_helper()
+      ->GetAuthority();
 }
 
 void WeightedTargetLb::WeightedChild::Helper::AddTraceEvent(
@@ -658,14 +661,8 @@ class WeightedTargetLbFactory : public LoadBalancingPolicyFactory {
         std::vector<grpc_error_handle> child_errors =
             ParseChildConfig(p.second, &child_config);
         if (!child_errors.empty()) {
-          // Can't use GRPC_ERROR_CREATE_FROM_VECTOR() here, because the error
-          // string is not static in this case.
-          grpc_error_handle error = GRPC_ERROR_CREATE_FROM_COPIED_STRING(
-              absl::StrCat("field:targets key:", p.first).c_str());
-          for (grpc_error_handle child_error : child_errors) {
-            error = grpc_error_add_child(error, child_error);
-          }
-          error_list.push_back(error);
+          error_list.push_back(GRPC_ERROR_CREATE_FROM_VECTOR_AND_CPP_STRING(
+              absl::StrCat("field:targets key:", p.first), &child_errors));
         } else {
           target_map[p.first] = std::move(child_config);
         }

@@ -29,7 +29,12 @@ class IFX_SeekableReadStream;
 
 class CPDF_SyntaxParser {
  public:
-  enum class ParseType { kStrict, kLoose };
+  enum class ParseType : bool { kStrict, kLoose };
+
+  struct WordResult {
+    ByteString word;
+    bool is_number;
+  };
 
   static std::unique_ptr<CPDF_SyntaxParser> CreateForTesting(
       const RetainPtr<IFX_SeekableReadStream>& pFileAccess,
@@ -61,8 +66,8 @@ class CPDF_SyntaxParser {
   FX_FILESIZE FindTag(ByteStringView tag);
   bool ReadBlock(uint8_t* pBuf, uint32_t size);
   bool GetCharAt(FX_FILESIZE pos, uint8_t& ch);
-  ByteString GetNextWord(bool* bIsNumber);
-  ByteString PeekNextWord(bool* bIsNumber);
+  WordResult GetNextWord();
+  ByteString PeekNextWord();
 
   const RetainPtr<CPDF_ReadValidator>& GetValidator() const {
     return m_pFileAccess;
@@ -86,6 +91,8 @@ class CPDF_SyntaxParser {
   }
 
  private:
+  enum class WordType : bool { kWord, kNumber };
+
   friend class CPDF_DataAvail;
   friend class cpdf_syntax_parser_ReadHexString_Test;
 
@@ -94,7 +101,7 @@ class CPDF_SyntaxParser {
 
   bool ReadBlockAt(FX_FILESIZE read_pos);
   bool GetCharAtBackward(FX_FILESIZE pos, uint8_t* ch);
-  void GetNextWordInternal(bool* bIsNumber);
+  WordType GetNextWordInternal();
   bool IsWholeWord(FX_FILESIZE startpos,
                    FX_FILESIZE limit,
                    ByteStringView tag,

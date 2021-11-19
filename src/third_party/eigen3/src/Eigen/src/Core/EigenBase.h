@@ -11,6 +11,8 @@
 #ifndef EIGEN_EIGENBASE_H
 #define EIGEN_EIGENBASE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class EigenBase

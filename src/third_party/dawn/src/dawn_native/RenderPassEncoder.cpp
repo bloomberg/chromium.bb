@@ -55,8 +55,14 @@ namespace dawn_native {
                                          Ref<AttachmentState> attachmentState,
                                          QuerySetBase* occlusionQuerySet,
                                          uint32_t renderTargetWidth,
-                                         uint32_t renderTargetHeight)
-        : RenderEncoderBase(device, encodingContext, std::move(attachmentState)),
+                                         uint32_t renderTargetHeight,
+                                         bool depthReadOnly,
+                                         bool stencilReadOnly)
+        : RenderEncoderBase(device,
+                            encodingContext,
+                            std::move(attachmentState),
+                            depthReadOnly,
+                            stencilReadOnly),
           mCommandEncoder(commandEncoder),
           mRenderTargetWidth(renderTargetWidth),
           mRenderTargetHeight(renderTargetHeight),
@@ -111,7 +117,7 @@ namespace dawn_native {
                                                               std::move(mIndirectDrawMetadata)));
                     return {};
                 },
-                "encoding EndPass().")) {
+                "encoding %s.EndPass().", this)) {
         }
     }
 
@@ -125,7 +131,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding SetStencilReference(%u)", reference);
+            "encoding %s.SetStencilReference(%u).", this, reference);
     }
 
     void RenderPassEncoder::APISetBlendConstant(const Color* color) {
@@ -138,7 +144,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding SetBlendConstant(%s).", color);
+            "encoding %s.SetBlendConstant(%s).", this, color);
     }
 
     void RenderPassEncoder::APISetViewport(float x,
@@ -189,7 +195,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding SetViewport(%f, %f, %f, %f, %f, %f).", x, y, width, height, minDepth,
+            "encoding %s.SetViewport(%f, %f, %f, %f, %f, %f).", this, x, y, width, height, minDepth,
             maxDepth);
     }
 
@@ -218,7 +224,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding SetScissorRect(%u, %u, %u, %u).", x, y, width, height);
+            "encoding %s.SetScissorRect(%u, %u, %u, %u).", this, x, y, width, height);
     }
 
     void RenderPassEncoder::APIExecuteBundles(uint32_t count,
@@ -227,15 +233,32 @@ namespace dawn_native {
             this,
             [&](CommandAllocator* allocator) -> MaybeError {
                 if (IsValidationEnabled()) {
+                    const AttachmentState* attachmentState = GetAttachmentState();
+                    bool depthReadOnlyInPass = IsDepthReadOnly();
+                    bool stencilReadOnlyInPass = IsStencilReadOnly();
                     for (uint32_t i = 0; i < count; ++i) {
                         DAWN_TRY(GetDevice()->ValidateObject(renderBundles[i]));
 
                         // TODO(dawn:563): Give more detail about why the states are incompatible.
                         DAWN_INVALID_IF(
-                            GetAttachmentState() != renderBundles[i]->GetAttachmentState(),
+                            attachmentState != renderBundles[i]->GetAttachmentState(),
                             "Attachment state of renderBundles[%i] (%s) is not compatible with "
                             "attachment state of %s.",
                             i, renderBundles[i], this);
+
+                        bool depthReadOnlyInBundle = renderBundles[i]->IsDepthReadOnly();
+                        DAWN_INVALID_IF(
+                            depthReadOnlyInPass != depthReadOnlyInBundle,
+                            "DepthReadOnly (%u) of renderBundle[%i] (%s) is not compatible "
+                            "with DepthReadOnly (%u) of %s.",
+                            depthReadOnlyInBundle, i, renderBundles[i], depthReadOnlyInPass, this);
+
+                        bool stencilReadOnlyInBundle = renderBundles[i]->IsStencilReadOnly();
+                        DAWN_INVALID_IF(stencilReadOnlyInPass != stencilReadOnlyInBundle,
+                                        "StencilReadOnly (%u) of renderBundle[%i] (%s) is not "
+                                        "compatible with StencilReadOnly (%u) of %s.",
+                                        stencilReadOnlyInBundle, i, renderBundles[i],
+                                        stencilReadOnlyInPass, this);
                     }
                 }
 
@@ -267,7 +290,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding ExecuteBundles(%u, ...)", count);
+            "encoding %s.ExecuteBundles(%u, ...).", this, count);
     }
 
     void RenderPassEncoder::APIBeginOcclusionQuery(uint32_t queryIndex) {
@@ -307,7 +330,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding BeginOcclusionQuery(%u)", queryIndex);
+            "encoding %s.BeginOcclusionQuery(%u).", this, queryIndex);
     }
 
     void RenderPassEncoder::APIEndOcclusionQuery() {
@@ -329,7 +352,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding EndOcclusionQuery()");
+            "encoding %s.EndOcclusionQuery().", this);
     }
 
     void RenderPassEncoder::APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex) {
@@ -354,7 +377,7 @@ namespace dawn_native {
 
                 return {};
             },
-            "encoding WriteTimestamp(%s, %u).", querySet, queryIndex);
+            "encoding %s.WriteTimestamp(%s, %u).", this, querySet, queryIndex);
     }
 
 }  // namespace dawn_native

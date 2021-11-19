@@ -32,35 +32,22 @@ class UnaryOpExpression : public Castable<UnaryOpExpression, Expression> {
   UnaryOpExpression(ProgramID program_id,
                     const Source& source,
                     UnaryOp op,
-                    Expression* expr);
+                    const Expression* expr);
   /// Move constructor
   UnaryOpExpression(UnaryOpExpression&&);
   ~UnaryOpExpression() override;
-
-  /// @returns the op
-  UnaryOp op() const { return op_; }
-  /// @returns the expression
-  Expression* expr() const { return expr_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  UnaryOpExpression* Clone(CloneContext* ctx) const override;
+  const UnaryOpExpression* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// The op
+  const UnaryOp op;
 
- private:
-  UnaryOpExpression(const UnaryOpExpression&) = delete;
-
-  UnaryOp const op_;
-  Expression* const expr_;
+  /// The expression
+  const Expression* const expr;
 };
 
 }  // namespace ast

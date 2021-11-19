@@ -25,6 +25,7 @@ extern "C" {
 
 #define GRPC_TRANSPORT_SECURITY_TYPE_PROPERTY_NAME "transport_security_type"
 #define GRPC_SSL_TRANSPORT_SECURITY_TYPE "ssl"
+#define GRPC_TLS_TRANSPORT_SECURITY_TYPE "tls"
 
 #define GRPC_X509_CN_PROPERTY_NAME "x509_common_name"
 #define GRPC_X509_SAN_PROPERTY_NAME "x509_subject_alternative_name"
@@ -45,6 +46,7 @@ extern "C" {
 #define GRPC_TRANSPORT_SECURITY_LEVEL_PROPERTY_NAME "security_level"
 #define GRPC_PEER_DNS_PROPERTY_NAME "peer_dns"
 #define GRPC_PEER_SPIFFE_ID_PROPERTY_NAME "peer_spiffe_id"
+#define GRPC_PEER_URI_PROPERTY_NAME "peer_uri"
 #define GRPC_PEER_EMAIL_PROPERTY_NAME "peer_email"
 #define GRPC_PEER_IP_PROPERTY_NAME "peer_ip"
 

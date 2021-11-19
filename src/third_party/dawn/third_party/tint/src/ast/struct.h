@@ -29,13 +29,13 @@ namespace ast {
 class Struct : public Castable<Struct, TypeDecl> {
  public:
   /// Create a new struct statement
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source The input source for the import statement
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node for the import statement
   /// @param name The name of the structure
   /// @param members The struct members
   /// @param decorations The struct decorations
-  Struct(ProgramID program_id,
-         const Source& source,
+  Struct(ProgramID pid,
+         const Source& src,
          Symbol name,
          StructMemberList members,
          DecorationList decorations);
@@ -44,17 +44,6 @@ class Struct : public Castable<Struct, TypeDecl> {
 
   ~Struct() override;
 
-  /// @returns the struct decorations
-  const DecorationList& decorations() const { return decorations_; }
-
-  /// @returns the members
-  const StructMemberList& members() const { return members_; }
-
-  /// Returns the struct member with the given symbol or nullptr if non exists.
-  /// @param symbol the symbol of the member
-  /// @returns the struct member or nullptr if not found
-  StructMember* get_member(const Symbol& symbol) const;
-
   /// @returns true if the struct is block decorated
   bool IsBlockDecorated() const;
 
@@ -62,24 +51,13 @@ class Struct : public Castable<Struct, TypeDecl> {
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  Struct* Clone(CloneContext* ctx) const override;
+  const Struct* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// The members
+  const StructMemberList members;
 
-  /// @returns the name for the type
-  std::string type_name() const override;
-
- private:
-  Struct(const Struct&) = delete;
-
-  StructMemberList const members_;
-  DecorationList const decorations_;
+  /// The struct decorations
+  const DecorationList decorations;
 };
 
 }  // namespace ast

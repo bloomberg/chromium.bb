@@ -203,25 +203,26 @@ Gdiplus::GpBrush* GdipCreateBrushImpl(DWORD argb) {
 
 void OutputImage(Gdiplus::GpGraphics* pGraphics,
                  const RetainPtr<CFX_DIBitmap>& pBitmap,
-                 const FX_RECT* pSrcRect,
+                 const FX_RECT& src_rect,
                  int dest_left,
                  int dest_top,
                  int dest_width,
                  int dest_height) {
-  int src_width = pSrcRect->Width(), src_height = pSrcRect->Height();
+  int src_width = src_rect.Width();
+  int src_height = src_rect.Height();
   const CGdiplusExt& GdiplusExt = GetGdiplusExt();
-  if (pBitmap->GetBPP() == 1 && (pSrcRect->left % 8)) {
+  if (pBitmap->GetBPP() == 1 && (src_rect.left % 8)) {
     FX_RECT new_rect(0, 0, src_width, src_height);
-    RetainPtr<CFX_DIBitmap> pCloned = pBitmap->Clone(pSrcRect);
+    RetainPtr<CFX_DIBitmap> pCloned = pBitmap->ClipTo(src_rect);
     if (!pCloned)
       return;
-    OutputImage(pGraphics, pCloned, &new_rect, dest_left, dest_top, dest_width,
+    OutputImage(pGraphics, pCloned, new_rect, dest_left, dest_top, dest_width,
                 dest_height);
     return;
   }
   int src_pitch = pBitmap->GetPitch();
-  uint8_t* scan0 = pBitmap->GetBuffer() + pSrcRect->top * src_pitch +
-                   pBitmap->GetBPP() * pSrcRect->left / 8;
+  uint8_t* scan0 = pBitmap->GetBuffer() + src_rect.top * src_pitch +
+                   pBitmap->GetBPP() * src_rect.left / 8;
   Gdiplus::GpBitmap* bitmap = nullptr;
   switch (pBitmap->GetFormat()) {
     case FXDIB_Format::kArgb:
@@ -372,7 +373,7 @@ Gdiplus::GpPen* GdipCreatePenImpl(const CFX_GraphStateData* pGraphState,
   return pPen;
 }
 
-Optional<std::pair<size_t, size_t>> IsSmallTriangle(
+absl::optional<std::pair<size_t, size_t>> IsSmallTriangle(
     pdfium::span<const Gdiplus::PointF> points,
     const CFX_Matrix* pMatrix) {
   static constexpr size_t kPairs[3][2] = {{1, 2}, {0, 2}, {0, 1}};
@@ -392,7 +393,7 @@ Optional<std::pair<size_t, size_t>> IsSmallTriangle(
     if (distance_square < 2.25f)
       return std::make_pair(i, pair1);
   }
-  return pdfium::nullopt;
+  return absl::nullopt;
 }
 
 class GpStream final : public IStream {
@@ -589,7 +590,7 @@ bool CGdiplusExt::StretchDIBits(HDC hDC,
                                        Gdiplus::InterpolationModeBilinear);
   }
   FX_RECT src_rect(0, 0, pBitmap->GetWidth(), pBitmap->GetHeight());
-  OutputImage(pGraphics, pBitmap, &src_rect, dest_left, dest_top, dest_width,
+  OutputImage(pGraphics, pBitmap, src_rect, dest_left, dest_top, dest_width,
               dest_height);
   CallFunc(GdipDeleteGraphics)(pGraphics);
   CallFunc(GdipDeleteGraphics)(pGraphics);
@@ -597,13 +598,13 @@ bool CGdiplusExt::StretchDIBits(HDC hDC,
 }
 
 bool CGdiplusExt::DrawPath(HDC hDC,
-                           const CFX_Path* pPath,
+                           const CFX_Path& path,
                            const CFX_Matrix* pObject2Device,
                            const CFX_GraphStateData* pGraphState,
                            uint32_t fill_argb,
                            uint32_t stroke_argb,
                            const CFX_FillRenderOptions& fill_options) {
-  pdfium::span<const CFX_Path::Point> points = pPath->GetPoints();
+  pdfium::span<const CFX_Path::Point> points = path.GetPoints();
   if (points.empty())
     return true;
 

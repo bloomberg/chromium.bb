@@ -21,71 +21,38 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::ForLoopStatement);
 namespace tint {
 namespace ast {
 
-ForLoopStatement::ForLoopStatement(ProgramID program_id,
-                                   const Source& source,
-                                   Statement* initializer,
-                                   Expression* condition,
-                                   Statement* continuing,
-                                   BlockStatement* body)
-    : Base(program_id, source),
-      initializer_(initializer),
-      condition_(condition),
-      continuing_(continuing),
-      body_(body) {
-  TINT_ASSERT(AST, body_);
+ForLoopStatement::ForLoopStatement(ProgramID pid,
+                                   const Source& src,
+                                   const Statement* init,
+                                   const Expression* cond,
+                                   const Statement* cont,
+                                   const BlockStatement* b)
+    : Base(pid, src),
+      initializer(init),
+      condition(cond),
+      continuing(cont),
+      body(b) {
+  TINT_ASSERT(AST, body);
 
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, initializer_, program_id);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, condition_, program_id);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, continuing_, program_id);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, body_, program_id);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, initializer, program_id);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, condition, program_id);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, continuing, program_id);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, body, program_id);
 }
 
 ForLoopStatement::ForLoopStatement(ForLoopStatement&&) = default;
 
 ForLoopStatement::~ForLoopStatement() = default;
 
-ForLoopStatement* ForLoopStatement::Clone(CloneContext* ctx) const {
+const ForLoopStatement* ForLoopStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
+  auto src = ctx->Clone(source);
 
-  auto* init = ctx->Clone(initializer_);
-  auto* cond = ctx->Clone(condition_);
-  auto* cont = ctx->Clone(continuing_);
-  auto* b = ctx->Clone(body_);
+  auto* init = ctx->Clone(initializer);
+  auto* cond = ctx->Clone(condition);
+  auto* cont = ctx->Clone(continuing);
+  auto* b = ctx->Clone(body);
   return ctx->dst->create<ForLoopStatement>(src, init, cond, cont, b);
-}
-
-void ForLoopStatement::to_str(const sem::Info& sem,
-                              std::ostream& out,
-                              size_t indent) const {
-  make_indent(out, indent);
-  out << "ForLoop {" << std::endl;
-
-  if (initializer_) {
-    make_indent(out, indent + 2);
-    out << "initializer:" << std::endl;
-    initializer_->to_str(sem, out, indent + 4);
-  }
-
-  if (condition_) {
-    make_indent(out, indent + 2);
-    out << "condition:" << std::endl;
-    condition_->to_str(sem, out, indent + 4);
-  }
-
-  if (continuing_) {
-    make_indent(out, indent + 2);
-    out << "continuing:" << std::endl;
-    continuing_->to_str(sem, out, indent + 4);
-  }
-
-  make_indent(out, indent + 2);
-  out << "body:" << std::endl;
-  for (auto* stmt : *body_) {
-    stmt->to_str(sem, out, indent + 4);
-  }
-
-  out << "}" << std::endl;
 }
 
 }  // namespace ast

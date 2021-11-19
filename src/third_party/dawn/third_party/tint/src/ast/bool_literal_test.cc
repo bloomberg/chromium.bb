@@ -23,23 +23,13 @@ using BoolLiteralTest = TestHelper;
 TEST_F(BoolLiteralTest, True) {
   auto* b = create<BoolLiteral>(true);
   ASSERT_TRUE(b->Is<BoolLiteral>());
-  ASSERT_TRUE(b->IsTrue());
-  ASSERT_FALSE(b->IsFalse());
+  ASSERT_TRUE(b->value);
 }
 
 TEST_F(BoolLiteralTest, False) {
   auto* b = create<BoolLiteral>(false);
   ASSERT_TRUE(b->Is<BoolLiteral>());
-  ASSERT_FALSE(b->IsTrue());
-  ASSERT_TRUE(b->IsFalse());
-}
-
-TEST_F(BoolLiteralTest, ToStr) {
-  auto* t = create<BoolLiteral>(true);
-  auto* f = create<BoolLiteral>(false);
-
-  EXPECT_EQ(str(t), "true");
-  EXPECT_EQ(str(f), "false");
+  ASSERT_FALSE(b->value);
 }
 
 }  // namespace

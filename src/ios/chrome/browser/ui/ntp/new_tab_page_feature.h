@@ -7,20 +7,23 @@
 
 #include "base/feature_list.h"
 
-// Feature flag to enable showing a live preview for discover feed when opening
+// Feature flag to enable showing a live preview for Discover feed when opening
 // the feed context menu.
 extern const base::Feature kEnableDiscoverFeedPreview;
+
+// Feature flag to enable shorter cache so that more ghost cards appear.
+extern const base::Feature kEnableDiscoverFeedShorterCache;
 
 // Feature flag to enable improving the usage of memory of the NTP.
 extern const base::Feature kEnableNTPMemoryEnhancement;
 
-// Feature flag to enable static resource serving for the discover feed.
+// Feature flag to enable static resource serving for the Discover feed.
 extern const base::Feature kEnableDiscoverFeedStaticResourceServing;
 
-// Feature flag to enable discofeed endpoint for the discover feed.
+// Feature flag to enable discofeed endpoint for the Discover feed.
 extern const base::Feature kEnableDiscoverFeedDiscoFeedEndpoint;
 
-// Feature flag to enable static resource serving for the discover feed.
+// Feature flag to enable static resource serving for the Discover feed.
 extern const base::Feature kEnableDiscoverFeedStaticResourceServing;
 
 // A parameter to indicate whether Reconstructed Templates is enabled for static
@@ -31,6 +34,12 @@ extern const char kDiscoverFeedSRSReconstructedTemplatesEnabled[];
 // resource serving.
 extern const char kDiscoverFeedSRSPreloadTemplatesEnabled[];
 
+// Feature flag to enable the Following feed in the NTP.
+// Use IsWebChannelsEnabled() instead of this constant directly.
+// TODO(crbug.com/1264872): move it to web_channels feature directory when there
+// has one since this feature will be used outside of NTP.
+extern const base::Feature kEnableWebChannels;
+
 // Feature flag to fix the NTP view hierarchy if it is broken before applying
 // constraints.
 // TODO(crbug.com/1262536): Remove this when it is fixed.
@@ -39,8 +48,14 @@ extern const base::Feature kNTPViewHierarchyRepair;
 // Whether the Discover feed content preview is shown in the context menu.
 bool IsDiscoverFeedPreviewEnabled();
 
-// Whether the discover feed appflows are enabled.
+// Whether the Discover feed appflows are enabled.
 bool IsDiscoverFeedAppFlowsEnabled();
+
+// Whether the Discover feed shorter cache is enabled.
+bool IsDiscoverFeedShorterCacheEnabled();
+
+// Whether the Following Feed is enabled on NTP.
+bool IsWebChannelsEnabled();
 
 // Whether the NTP view hierarchy repair is enabled.
 bool IsNTPViewHierarchyRepairEnabled();

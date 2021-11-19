@@ -15,11 +15,13 @@
 #ifndef PLATFORM_IMPL_WINDOWS_BLUETOOTH_CLASSIC_MEDIUM_H_
 #define PLATFORM_IMPL_WINDOWS_BLUETOOTH_CLASSIC_MEDIUM_H_
 
-#include <Windows.h>
-#include <stdio.h>
-
+#include "platform/api/bluetooth_classic.h"
+#include "platform/impl/windows/bluetooth_adapter.h"
 #include "platform/impl/windows/bluetooth_classic_device.h"
+#include "platform/impl/windows/bluetooth_classic_server_socket.h"
+#include "platform/impl/windows/bluetooth_classic_socket.h"
 #include "platform/impl/windows/generated/winrt/Windows.Devices.Enumeration.h"
+#include "platform/impl/windows/generated/winrt/Windows.Networking.Sockets.h"
 #include "platform/impl/windows/generated/winrt/base.h"
 
 namespace location {
@@ -69,6 +71,10 @@ using winrt::Windows::Devices::Bluetooth::Rfcomm::RfcommServiceId;
 //  https://docs.microsoft.com/en-us/uwp/api/windows.storage.streams.datareader?view=winrt-20348
 using winrt::Windows::Storage::Streams::DataReader;
 
+// Writes data to an output stream.
+// https://docs.microsoft.com/en-us/uwp/api/windows.storage.streams.datawriter?view=winrt-20348
+using winrt::Windows::Storage::Streams::DataWriter;
+
 // Bluetooth protocol ID = \"{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}\"
 // https://docs.microsoft.com/en-us/windows/uwp/devices-sensors/aep-service-class-ids
 #define BLUETOOTH_SELECTOR \
@@ -78,9 +84,8 @@ using winrt::Windows::Storage::Streams::DataReader;
 // medium.
 class BluetoothClassicMedium : public api::BluetoothClassicMedium {
  public:
-  explicit BluetoothClassicMedium();
+  BluetoothClassicMedium(api::BluetoothAdapter& bluetoothAdapter);
 
-  // TODO(b/184975123): replace with real implementation.
   ~BluetoothClassicMedium() override;
 
   // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter.html#startDiscovery()
@@ -91,7 +96,6 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium {
   // Returns true once discovery is well and truly stopped; after this returns,
   // there must be no more invocations of the DiscoveryCallback passed in to
   // StartDiscovery().
-  // TODO(b/184975123): replace with real implementation.
   bool StopDiscovery() override;
 
   // A combination of
@@ -120,12 +124,10 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium {
   // UUID.
   //
   //  Returns nullptr error.
-  // TODO(b/184975123): replace with real implementation.
   std::unique_ptr<api::BluetoothServerSocket> ListenForService(
       const std::string& service_name,
       const std::string& service_uuid) override;
 
-  // TODO(b/184975123): replace with real implementation.
   api::BluetoothDevice* GetRemoteDevice(
       const std::string& mac_address) override;
 
@@ -134,6 +136,8 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium {
   bool StopScanning();
   bool IsWatcherStarted();
   bool IsWatcherRunning();
+  void InitializeDeviceWatcher();
+  void OnScanModeChanged(BluetoothAdapter::ScanMode scanMode);
 
   // This is for a coroutine whose return type is winrt::fire_and_forget, which
   // handles async operations which don't have any dependencies.
@@ -151,27 +155,21 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium {
   bool HaveAccess(winrt::hstring deviceId);
 
   // Get the service requested
-  winrt::Windows::Devices::Bluetooth::Rfcomm::RfcommDeviceService
-  GetRequestedService(location::nearby::windows::BluetoothDevice* device,
-                      winrt::guid service);
+  RfcommDeviceService GetRequestedService(BluetoothDevice* device,
+                                          winrt::guid service);
 
   // Check to see that the device actually handles the requested service
-  bool CheckSdp(winrt::Windows::Devices::Bluetooth::Rfcomm::RfcommDeviceService
-                    requestedService);
+  bool CheckSdp(RfcommDeviceService requestedService);
 
   BluetoothClassicMedium::DiscoveryCallback discovery_callback_;
 
   DeviceWatcher device_watcher_ = nullptr;
 
-  // The Id of the Service Name SDP attribute
-  const uint16 SdpServiceNameAttributeId = 0x100;
+  std::unique_ptr<BluetoothSocket> bluetooth_socket_;
+  std::unique_ptr<BluetoothServerSocket> bluetooth_server_socket_;
 
-  // The SDP Type of the Service Name SDP attribute.
-  // The first byte in the SDP Attribute encodes the SDP Attribute Type as
-  // follows :
-  //    -  the Attribute Type size in the least significant 3 bits,
-  //    -  the SDP Attribute Type value in the most significant 5 bits.
-  const char SdpServiceNameAttributeType = (4 << 3) | 5;
+  std::string service_name_;
+  std::string service_uuid_;
 
   // hstring is the only type of string winrt understands.
   // https://docs.microsoft.com/en-us/uwp/cpp-ref-for-winrt/hstring
@@ -180,6 +178,10 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium {
   // CRITICAL_SECTION is a lightweight synchronization mechanism
   // https://docs.microsoft.com/en-us/windows/win32/sync/critical-section-objects
   CRITICAL_SECTION critical_section_;
+
+  BluetoothAdapter& bluetooth_adapter_;
+
+  BluetoothAdapter::ScanMode scan_mode_;
 };
 
 }  // namespace windows

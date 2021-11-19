@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
+#include "base/files/file_path.h"
 #include "base/notreached.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -130,12 +131,27 @@ bool MimeTypeMatched(const std::string& intent_mime_type,
   return true;
 }
 
-bool ExtensionMatched(const std::string& intent_extension,
+bool ExtensionMatched(const std::string& file_name,
                       const std::string& filter_extension) {
   if (filter_extension == kWildCardAny)
     return true;
-  return base::EndsWith(intent_extension, filter_extension,
-                        base::CompareCase::INSENSITIVE_ASCII);
+
+  // Normalise to have a preceding ".".
+  std::string normalised_extension = filter_extension;
+  if (filter_extension.length() > 0 && filter_extension[0] != '.') {
+    normalised_extension = '.' + normalised_extension;
+  }
+  base::FilePath::StringType handler_extension =
+      base::FilePath::FromUTF8Unsafe(normalised_extension).Extension();
+
+  base::FilePath file_path = base::FilePath::FromUTF8Unsafe(file_name);
+
+  // Accept files whose extension or combined extension (e.g. ".tar.gz")
+  // match the filter extension.
+  return base::FilePath::CompareEqualIgnoreCase(handler_extension,
+                                                file_path.Extension()) ||
+         base::FilePath::CompareEqualIgnoreCase(handler_extension,
+                                                file_path.FinalExtension());
 }
 
 }  // namespace
@@ -281,8 +297,10 @@ bool FileMatchesConditionValue(
     case apps::mojom::PatternMatchType::kMimeType:
       return file->mime_type.has_value() &&
              MimeTypeMatched(file->mime_type.value(), condition_value->value);
-    case apps::mojom::PatternMatchType::kFileExtension:
-      return ExtensionMatched(file->url.path(), condition_value->value);
+    case apps::mojom::PatternMatchType::kFileExtension: {
+      return ExtensionMatched(file->url.ExtractFileName(),
+                              condition_value->value);
+    }
     case apps::mojom::PatternMatchType::kIsDirectory:
       return file->is_directory == apps::mojom::OptionalBool::kTrue;
   }
@@ -761,6 +779,36 @@ std::string CalculateCommonMimeType(
     }
   }
   return common_type[0] + kMimeTypeSeparator + common_type[1];
+}
+
+SharedText ExtractSharedText(const std::string& share_text) {
+  SharedText shared_text;
+  std::string extracted_text = share_text;
+  GURL extracted_url;
+  size_t separator_pos = extracted_text.find_last_of(' ');
+  size_t newline_pos = extracted_text.find_last_of('\n');
+  if (newline_pos != std::string::npos &&
+      (separator_pos == std::string::npos || separator_pos < newline_pos)) {
+    separator_pos = newline_pos;
+  }
+
+  if (separator_pos == std::string::npos) {
+    extracted_url = GURL(extracted_text);
+    if (extracted_url.is_valid())
+      extracted_text.clear();
+  } else {
+    extracted_url = GURL(extracted_text.substr(separator_pos + 1));
+    if (extracted_url.is_valid())
+      extracted_text.erase(separator_pos);
+  }
+
+  if (!extracted_text.empty())
+    shared_text.text = extracted_text;
+
+  if (extracted_url.is_valid())
+    shared_text.url = extracted_url;
+
+  return shared_text;
 }
 
 }  // namespace apps_util

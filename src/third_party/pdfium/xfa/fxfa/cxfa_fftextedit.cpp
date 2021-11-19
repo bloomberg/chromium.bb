@@ -100,7 +100,7 @@ void CXFA_FFTextEdit::UpdateWidgetProperty() {
   if (eType == XFA_Element::ExData)
     iMaxChars = 0;
 
-  Optional<int32_t> numCells = m_pNode->GetNumberOfCells();
+  absl::optional<int32_t> numCells = m_pNode->GetNumberOfCells();
   if (!numCells.has_value()) {
     pWidget->SetLimit(iMaxChars);
   } else if (numCells == 0) {
@@ -179,13 +179,13 @@ bool CXFA_FFTextEdit::OnSetFocus(CXFA_FFWidget* pOldWidget) {
   if (!CXFA_FFWidget::OnSetFocus(pOldWidget))
     return false;
 
-  CFWL_MessageSetFocus msg(nullptr, GetNormalWidget());
+  CFWL_MessageSetFocus msg(GetNormalWidget());
   SendMessageToFWLWidget(&msg);
   return true;
 }
 
 bool CXFA_FFTextEdit::OnKillFocus(CXFA_FFWidget* pNewWidget) {
-  CFWL_MessageKillFocus msg(nullptr, GetNormalWidget());
+  CFWL_MessageKillFocus msg(GetNormalWidget());
   SendMessageToFWLWidget(&msg);
 
   GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus::kFocused);
@@ -401,11 +401,11 @@ bool CXFA_FFTextEdit::Redo() {
   return ToEdit(GetNormalWidget())->Redo();
 }
 
-Optional<WideString> CXFA_FFTextEdit::Copy() {
+absl::optional<WideString> CXFA_FFTextEdit::Copy() {
   return ToEdit(GetNormalWidget())->Copy();
 }
 
-Optional<WideString> CXFA_FFTextEdit::Cut() {
+absl::optional<WideString> CXFA_FFTextEdit::Cut() {
   return ToEdit(GetNormalWidget())->Cut();
 }
 

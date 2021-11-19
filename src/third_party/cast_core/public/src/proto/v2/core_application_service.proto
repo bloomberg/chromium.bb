@@ -17,9 +17,9 @@ syntax = "proto3";
 package cast.v2;
 
 import "proto/bindings/api_bindings.proto";
+import "proto/bindings/cast_channel.proto";
 import "proto/common/application_config.proto";
 import "proto/common/service_info.proto";
-import "proto/v2/cast_message.proto";
 import "proto/v2/url_rewrite.proto";
 import "proto/web/message_channel.proto";
 
@@ -35,7 +35,8 @@ service CoreApplicationService {
 
   // DEPRECATED
   // Send a Cast V2 message to core application.
-  rpc SendCastMessage(CastMessageRequest) returns (CastMessageResponse);
+  rpc SendCastMessage(cast.bindings.CastChannelMessage)
+      returns (cast.bindings.CastChannelResponse);
 
   // Notifies Cast Core on the application state changes. The callback must be
   // called by the Runtime whenever the internal state of the application

@@ -335,6 +335,15 @@ struct FeaturesVk : FeatureSetBase
         "Allocate a shadow buffer for GL buffer objects to reduce glMap* latency.", &members,
         "http://anglebug.com/4339"};
 
+    // When we update buffer data we usually face a choice to either clone a buffer and copy the
+    // data or stage a buffer update and use the GPU to do the copy. For some GPUs, a performance
+    // penalty to use the GPU to do copies. Setting this flag to true will always try to create a
+    // new buffer and use the CPU to copy data when possible.
+    Feature preferCPUForBufferSubData = {
+        "preferCPUForBufferSubData", FeatureCategory::VulkanFeatures,
+        "Prefer use CPU to do bufferSubData instead of staged update.", &members,
+        "http://issuetracker.google.com/200067929"};
+
     // Persistently map buffer memory until destroy, saves on map/unmap IOCTL overhead
     // for buffers that are updated frequently.
     Feature persistentlyMappedBuffers = {
@@ -506,11 +515,11 @@ struct FeaturesVk : FeatureSetBase
                                       "Emulate 270-degree prerotation.", &members,
                                       "http://anglebug.com/4901"};
 
-    // Whether SPIR-V should be generated directly instead of through glslang.  Transitory feature
-    // until the work is complete.
-    Feature directSPIRVGeneration = {"directSPIRVGeneration", FeatureCategory::VulkanFeatures,
-                                     "Direct translation to SPIR-V.", &members,
-                                     "http://anglebug.com/4889"};
+    // Whether SPIR-V should be generated through glslang.  Transitory feature while confidence is
+    // built on the SPIR-V generation code.
+    Feature generateSPIRVThroughGlslang = {
+        "generateSPIRVThroughGlslang", FeatureCategory::VulkanFeatures,
+        "Translate SPIR-V through glslang.", &members, "http://anglebug.com/4889"};
 
     // Whether we should use driver uniforms over specialization constants for some shader
     // modifications like yflip and rotation.

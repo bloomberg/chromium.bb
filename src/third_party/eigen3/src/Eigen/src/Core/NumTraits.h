@@ -10,6 +10,8 @@
 #ifndef EIGEN_NUMTRAITS_H
 #define EIGEN_NUMTRAITS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -89,11 +91,13 @@ EIGEN_STRONG_INLINE EIGEN_DEVICE_FUNC Tgt bit_cast(const Src& src) {
   EIGEN_STATIC_ASSERT(std::is_trivially_copyable<Tgt>::value && std::is_default_constructible<Tgt>::value,
                       THIS_TYPE_IS_NOT_SUPPORTED);
 #endif
-
   EIGEN_STATIC_ASSERT(sizeof(Src) == sizeof(Tgt), THIS_TYPE_IS_NOT_SUPPORTED);
+
   Tgt tgt;
+  // Load src into registers first. This allows the memcpy to be elided by CUDA.
+  const Src staged = src;
   EIGEN_USING_STD(memcpy)
-  memcpy(&tgt, &src, sizeof(Tgt));
+  memcpy(&tgt, &staged, sizeof(Tgt));
   return tgt;
 }
 }  // namespace numext

@@ -21,6 +21,7 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/web_approvals_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/content/content_infobar_manager.h"
@@ -200,7 +201,8 @@ std::string SupervisedUserInterstitial::GetHTMLContents(
   std::string profile_image_url2 = profile->GetPrefs()->GetString(
       prefs::kSupervisedUserSecondCustodianProfileImageURL);
 
-  bool allow_access_requests = supervised_user_service->AccessRequestsEnabled();
+  bool allow_access_requests = supervised_user_service->web_approvals_manager()
+                                   .AreRemoteApprovalRequestsEnabled();
 
   return supervised_user_error_page::BuildHtml(
       allow_access_requests, profile_image_url, profile_image_url2, custodian,
@@ -219,8 +221,8 @@ void SupervisedUserInterstitial::GoBack() {
   OnInterstitialDone();
 }
 
-void SupervisedUserInterstitial::RequestPermission(
-    base::OnceCallback<void(bool)> RequestCallback) {
+void SupervisedUserInterstitial::RequestUrlAccessRemote(
+    base::OnceCallback<void(bool)> callback) {
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.BlockingInterstitialCommand",
                             ACCESS_REQUEST, HISTOGRAM_BOUNDING_VALUE);
 
@@ -235,8 +237,18 @@ void SupervisedUserInterstitial::RequestPermission(
 
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  supervised_user_service->AddURLAccessRequest(url_,
-                                               std::move(RequestCallback));
+  supervised_user_service->web_approvals_manager().RequestRemoteApproval(
+      url_, std::move(callback));
+}
+
+void SupervisedUserInterstitial::RequestUrlAccessLocal(
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(b/195461480): Log metrics.
+
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+  supervised_user_service->web_approvals_manager().RequestLocalApproval(
+      url_, std::move(callback));
 }
 
 void SupervisedUserInterstitial::ShowFeedback() {

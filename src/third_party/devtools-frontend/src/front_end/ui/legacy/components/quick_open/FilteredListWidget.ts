@@ -13,6 +13,8 @@ import * as Diff from '../../../../third_party/diff/diff.js';
 import * as TextPrompt from '../../../../ui/components/text_prompt/text_prompt.js';
 import * as UI from '../../legacy.js';
 
+import filteredListWidgetStyles from './filteredListWidget.css.js';
+
 const UIStrings = {
   /**
   * @description Aria label for quick open dialog prompt
@@ -64,7 +66,6 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin<EventTyp
     const listener = (this.onKeyDown.bind(this) as (arg0: Event) => void);
     this.contentElement.addEventListener('keydown', listener, true);
     UI.ARIAUtils.markAsCombobox(this.contentElement);
-    this.registerRequiredCSS('ui/legacy/components/quick_open/filteredListWidget.css');
 
     this.inputBoxElement = new TextPrompt.TextPrompt.TextPrompt();
     this.inputBoxElement.data = {ariaLabel: i18nString(UIStrings.quickOpenPrompt), prefix: '', suggestion: ''};
@@ -84,6 +85,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin<EventTyp
     this.itemElementsContainer.classList.add('container');
     this.bottomElementsContainer.appendChild(this.itemElementsContainer);
     this.itemElementsContainer.addEventListener('click', this.onClick.bind(this), false);
+    this.itemElementsContainer.addEventListener('mouseover', this.onMouseOver.bind(this), false);
     UI.ARIAUtils.markAsListBox(this.itemElementsContainer);
     UI.ARIAUtils.setControls(this.inputBoxElement, this.itemElementsContainer);
     UI.ARIAUtils.setAutocomplete(this.inputBoxElement, UI.ARIAUtils.AutocompleteInteractionModel.list);
@@ -211,6 +213,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin<EventTyp
   }
 
   wasShown(): void {
+    this.registerCSSFiles([filteredListWidgetStyles]);
     this.attachProvider();
   }
 
@@ -304,6 +307,14 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin<EventTyp
     if (this.dialog) {
       this.dialog.hide();
     }
+  }
+
+  private onMouseOver(event: Event): void {
+    const item = this.list.itemForNode((event.target as Node | null));
+    if (item === null) {
+      return;
+    }
+    this.list.selectItem(item);
   }
 
   setQuery(query: string): void {

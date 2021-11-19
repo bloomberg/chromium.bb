@@ -933,8 +933,7 @@ namespace dawn_native { namespace metal {
                         if (@available(macos 10.15, iOS 14.0, *)) {
                             [commandContext->EnsureBlit()
                                   resolveCounters:querySet->GetCounterSampleBuffer()
-                                          inRange:NSMakeRange(cmd->firstQuery,
-                                                              cmd->firstQuery + cmd->queryCount)
+                                          inRange:NSMakeRange(cmd->firstQuery, cmd->queryCount)
                                 destinationBuffer:destination->GetMTLBuffer()
                                 destinationOffset:NSUInteger(cmd->destinationOffset)];
                         } else {
@@ -986,10 +985,6 @@ namespace dawn_native { namespace metal {
 
                     break;
                 }
-
-                case Command::SetValidatedBufferLocationsInternal:
-                    DoNextSetValidatedBufferLocationsInternal();
-                    break;
 
                 case Command::WriteBuffer: {
                     WriteBufferCmd* write = mCommands.NextCommand<WriteBufferCmd>();
@@ -1342,15 +1337,16 @@ namespace dawn_native { namespace metal {
                     bindGroups.Apply(encoder);
                     storageBufferLengths.Apply(encoder, lastPipeline, enableVertexPulling);
 
-                    ASSERT(!draw->indirectBufferLocation->IsNull());
-                    Buffer* buffer = ToBackend(draw->indirectBufferLocation->GetBuffer());
+                    Buffer* buffer = ToBackend(draw->indirectBuffer.Get());
+                    ASSERT(buffer != nullptr);
+
                     id<MTLBuffer> indirectBuffer = buffer->GetMTLBuffer();
                     [encoder drawIndexedPrimitives:lastPipeline->GetMTLPrimitiveTopology()
                                          indexType:indexBufferType
                                        indexBuffer:indexBuffer
                                  indexBufferOffset:indexBufferBaseOffset
                                     indirectBuffer:indirectBuffer
-                              indirectBufferOffset:draw->indirectBufferLocation->GetOffset()];
+                              indirectBufferOffset:draw->indirectOffset];
                     break;
                 }
 

@@ -15,6 +15,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/bubble/bubble_border.h"
 
 namespace views {
 class BoxLayout;

@@ -399,7 +399,7 @@ TEST_F(ResolverFunctionValidationTest, CannotCallEntryPoint) {
 
   Func("func", ast::VariableList{}, ty.void_(),
        {
-           create<ast::CallStatement>(Call(Source{{12, 34}}, "entrypoint")),
+           CallStmt(Call(Source{{12, 34}}, "entrypoint")),
        });
 
   EXPECT_FALSE(r()->Resolve());
@@ -808,7 +808,7 @@ struct TestParams {
 struct TestWithParams : resolver::ResolverTestWithParam<TestParams> {};
 
 using ResolverFunctionParameterValidationTest = TestWithParams;
-TEST_P(ResolverFunctionParameterValidationTest, SotrageClass) {
+TEST_P(ResolverFunctionParameterValidationTest, StorageClass) {
   auto& param = GetParam();
   auto* ptr_type = ty.pointer(Source{{12, 34}}, ty.i32(), param.storage_class);
   auto* arg = Param(Source{{12, 34}}, "p", ptr_type);

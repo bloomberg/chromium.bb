@@ -7,10 +7,19 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#define EIGEN_NO_STATIC_ASSERT
-
 #include "main.h"
 #include "random_without_cast_overflow.h"
+
+template <typename MatrixType>
+typename internal::enable_if<(MatrixType::RowsAtCompileTime==1 || MatrixType::ColsAtCompileTime==1),void>::type
+check_index(const MatrixType& m) {
+  VERIFY_RAISES_ASSERT(m[0]);
+  VERIFY_RAISES_ASSERT((m+m)[0]);
+}
+
+template <typename MatrixType>
+typename internal::enable_if<!(MatrixType::RowsAtCompileTime==1 || MatrixType::ColsAtCompileTime==1),void>::type
+check_index(const MatrixType& /*unused*/) {}
 
 template<typename MatrixType> void basicStuff(const MatrixType& m)
 {
@@ -101,8 +110,7 @@ template<typename MatrixType> void basicStuff(const MatrixType& m)
 
   if(cols!=1 && rows!=1)
   {
-    VERIFY_RAISES_ASSERT(m1[0]);
-    VERIFY_RAISES_ASSERT((m1+m1)[0]);
+    check_index(m1);
   }
 
   VERIFY_IS_APPROX(m3 = m1,m1);

@@ -16,6 +16,8 @@
 #define EIGEN_CXX11_TENSOR_TENSOR_DEVICE_SYCL_H
 #include <unordered_set>
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace TensorSycl {
@@ -244,7 +246,7 @@ class QueueInterface {
   }
 
   /// The memcpyHostToDevice is used to copy the data from host to device
-  /// The destination pointer could be deleted before the copy happend which is
+  /// The destination pointer could be deleted before the copy happened which is
   /// why a callback function is needed. By default if none is provided, the
   /// function is blocking.
   EIGEN_STRONG_INLINE void memcpyHostToDevice(
@@ -272,7 +274,7 @@ class QueueInterface {
   }
 
   /// The memcpyDeviceToHost is used to copy the data from device to host.
-  /// The source pointer could be deleted before the copy happend which is
+  /// The source pointer could be deleted before the copy happened which is
   /// why a callback function is needed. By default if none is provided, the
   /// function is blocking.
   EIGEN_STRONG_INLINE void memcpyDeviceToHost(
@@ -713,7 +715,7 @@ class QueueInterface {
   EIGEN_STRONG_INLINE int majorDeviceVersion() const { return 1; }
 
   EIGEN_STRONG_INLINE unsigned long maxSyclThreadsPerMultiProcessor() const {
-    // OpenCL doesnot have such concept
+    // OpenCL does not have such a concept
     return 2;
   }
 
@@ -1033,7 +1035,7 @@ struct SyclDevice : public SyclDeviceBase {
     return queue_stream()->maxWorkItemSizes();
   }
   EIGEN_STRONG_INLINE unsigned long maxSyclThreadsPerMultiProcessor() const {
-    // OpenCL doesnot have such concept
+    // OpenCL does not have such a concept
     return queue_stream()->maxSyclThreadsPerMultiProcessor();
   }
   EIGEN_STRONG_INLINE size_t sharedMemPerBlock() const {

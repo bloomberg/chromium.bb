@@ -64,6 +64,7 @@ declare namespace Protocol {
      * Enum of possible native property sources (as a subtype of a particular AXValueSourceType).
      */
     export const enum AXValueNativeSourceType {
+      Description = 'description',
       Figcaption = 'figcaption',
       Label = 'label',
       Labelfor = 'labelfor',
@@ -601,129 +602,6 @@ declare namespace Protocol {
   }
 
   /**
-   * The domain is deprecated as AppCache is being removed (see crbug.com/582750).
-   */
-  export namespace ApplicationCache {
-
-    /**
-     * Detailed application cache resource information.
-     */
-    export interface ApplicationCacheResource {
-      /**
-       * Resource url.
-       */
-      url: string;
-      /**
-       * Resource size.
-       */
-      size: integer;
-      /**
-       * Resource type.
-       */
-      type: string;
-    }
-
-    /**
-     * Detailed application cache information.
-     */
-    export interface ApplicationCache {
-      /**
-       * Manifest URL.
-       */
-      manifestURL: string;
-      /**
-       * Application cache size.
-       */
-      size: number;
-      /**
-       * Application cache creation time.
-       */
-      creationTime: number;
-      /**
-       * Application cache update time.
-       */
-      updateTime: number;
-      /**
-       * Application cache resources.
-       */
-      resources: ApplicationCacheResource[];
-    }
-
-    /**
-     * Frame identifier - manifest URL pair.
-     */
-    export interface FrameWithManifest {
-      /**
-       * Frame identifier.
-       */
-      frameId: Page.FrameId;
-      /**
-       * Manifest URL.
-       */
-      manifestURL: string;
-      /**
-       * Application cache status.
-       */
-      status: integer;
-    }
-
-    export interface GetApplicationCacheForFrameRequest {
-      /**
-       * Identifier of the frame containing document whose application cache is retrieved.
-       */
-      frameId: Page.FrameId;
-    }
-
-    export interface GetApplicationCacheForFrameResponse extends ProtocolResponseWithError {
-      /**
-       * Relevant application cache data for the document in given frame.
-       */
-      applicationCache: ApplicationCache;
-    }
-
-    export interface GetFramesWithManifestsResponse extends ProtocolResponseWithError {
-      /**
-       * Array of frame identifiers with manifest urls for each frame containing a document
-       * associated with some application cache.
-       */
-      frameIds: FrameWithManifest[];
-    }
-
-    export interface GetManifestForFrameRequest {
-      /**
-       * Identifier of the frame containing document whose manifest is retrieved.
-       */
-      frameId: Page.FrameId;
-    }
-
-    export interface GetManifestForFrameResponse extends ProtocolResponseWithError {
-      /**
-       * Manifest URL for document in the given frame.
-       */
-      manifestURL: string;
-    }
-
-    export interface ApplicationCacheStatusUpdatedEvent {
-      /**
-       * Identifier of the frame containing document whose application cache updated status.
-       */
-      frameId: Page.FrameId;
-      /**
-       * Manifest URL.
-       */
-      manifestURL: string;
-      /**
-       * Updated application cache status.
-       */
-      status: integer;
-    }
-
-    export interface NetworkStateUpdatedEvent {
-      isNowOnline: boolean;
-    }
-  }
-
-  /**
    * Audits domain allows investigation of page violations and possible improvements.
    */
   export namespace Audits {
@@ -931,6 +809,7 @@ declare namespace Protocol {
       KURLViolation = 'kURLViolation',
       KTrustedTypesSinkViolation = 'kTrustedTypesSinkViolation',
       KTrustedTypesPolicyViolation = 'kTrustedTypesPolicyViolation',
+      KWasmEvalViolation = 'kWasmEvalViolation',
     }
 
     export interface SourceCodeLocation {
@@ -1086,6 +965,26 @@ declare namespace Protocol {
     }
 
     /**
+     * This issue tracks information needed to print a deprecation message.
+     * The formatting is inherited from the old console.log version, see more at:
+     * https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/deprecation.cc
+     * TODO(crbug.com/1264960): Re-work format to add i18n support per:
+     * https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
+     */
+    export interface DeprecationIssueDetails {
+      affectedFrame?: AffectedFrame;
+      sourceCodeLocation: SourceCodeLocation;
+      /**
+       * The content of the deprecation issue (this won't be translated),
+       * e.g. "window.inefficientLegacyStorageMethod will be removed in M97,
+       * around January 2022. Please use Web Storage or Indexed Database
+       * instead. This standard was abandoned in January, 1970. See
+       * https://www.chromestatus.com/feature/5684870116278272 for more details."
+       */
+      message?: string;
+    }
+
+    /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
      * information about the kind of issue.
@@ -1105,6 +1004,7 @@ declare namespace Protocol {
       NavigatorUserAgentIssue = 'NavigatorUserAgentIssue',
       WasmCrossOriginModuleSharingIssue = 'WasmCrossOriginModuleSharingIssue',
       GenericIssue = 'GenericIssue',
+      DeprecationIssue = 'DeprecationIssue',
     }
 
     /**
@@ -1127,6 +1027,7 @@ declare namespace Protocol {
       navigatorUserAgentIssueDetails?: NavigatorUserAgentIssueDetails;
       wasmCrossOriginModuleSharingIssue?: WasmCrossOriginModuleSharingIssueDetails;
       genericIssueDetails?: GenericIssueDetails;
+      deprecationIssueDetails?: DeprecationIssueDetails;
     }
 
     /**
@@ -4196,6 +4097,29 @@ declare namespace Protocol {
   }
 
   /**
+   * EventBreakpoints permits setting breakpoints on particular operations and
+   * events in targets that run JavaScript but do not have a DOM.
+   * JavaScript execution will stop on these operations as if there was a regular
+   * breakpoint set.
+   */
+  export namespace EventBreakpoints {
+
+    export interface SetInstrumentationBreakpointRequest {
+      /**
+       * Instrumentation name to stop on.
+       */
+      eventName: string;
+    }
+
+    export interface RemoveInstrumentationBreakpointRequest {
+      /**
+       * Instrumentation name to stop on.
+       */
+      eventName: string;
+    }
+  }
+
+  /**
    * This domain facilitates obtaining document snapshots with DOM, layout, and style information.
    */
   export namespace DOMSnapshot {
@@ -7195,6 +7119,7 @@ declare namespace Protocol {
       RedirectContainsCredentials = 'RedirectContainsCredentials',
       InsecurePrivateNetwork = 'InsecurePrivateNetwork',
       InvalidPrivateNetworkAccess = 'InvalidPrivateNetworkAccess',
+      UnexpectedPrivateNetworkAccess = 'UnexpectedPrivateNetworkAccess',
       NoCorsRedirectModeNotFollow = 'NoCorsRedirectModeNotFollow',
     }
 
@@ -7886,6 +7811,8 @@ declare namespace Protocol {
       Allow = 'Allow',
       BlockFromInsecureToMorePrivate = 'BlockFromInsecureToMorePrivate',
       WarnFromInsecureToMorePrivate = 'WarnFromInsecureToMorePrivate',
+      PreflightBlock = 'PreflightBlock',
+      PreflightWarn = 'PreflightWarn',
     }
 
     export const enum IPAddressSpace {
@@ -8647,6 +8574,12 @@ declare namespace Protocol {
        */
       initiator: Initiator;
       /**
+       * In the case that redirectResponse is populated, this flag indicates whether
+       * requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted
+       * for the request which was just redirected.
+       */
+      redirectHasExtraInfo: boolean;
+      /**
        * Redirect response data.
        */
       redirectResponse?: Response;
@@ -8720,6 +8653,11 @@ declare namespace Protocol {
        * Response data.
        */
       response: Response;
+      /**
+       * Indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be
+       * or were emitted for this request.
+       */
+      hasExtraInfo: boolean;
       /**
        * Frame identifier.
        */
@@ -9929,6 +9867,7 @@ declare namespace Protocol {
       Hid = 'hid',
       IdleDetection = 'idle-detection',
       InterestCohort = 'interest-cohort',
+      KeyboardMap = 'keyboard-map',
       Magnetometer = 'magnetometer',
       Microphone = 'microphone',
       Midi = 'midi',
@@ -10609,7 +10548,6 @@ declare namespace Protocol {
       ContentWebUSB = 'ContentWebUSB',
       ContentMediaSession = 'ContentMediaSession',
       ContentMediaSessionService = 'ContentMediaSessionService',
-      ContentMediaPlay = 'ContentMediaPlay',
       EmbedderPopupBlockerTabHelper = 'EmbedderPopupBlockerTabHelper',
       EmbedderSafeBrowsingTriggeredPopupBlocker = 'EmbedderSafeBrowsingTriggeredPopupBlocker',
       EmbedderSafeBrowsingThreatDetails = 'EmbedderSafeBrowsingThreatDetails',
@@ -11309,10 +11247,6 @@ declare namespace Protocol {
        * Target lifecycle state
        */
       state: SetWebLifecycleStateRequestState;
-    }
-
-    export interface SetProduceCompilationCacheRequest {
-      enabled: boolean;
     }
 
     export interface ProduceCompilationCacheRequest {

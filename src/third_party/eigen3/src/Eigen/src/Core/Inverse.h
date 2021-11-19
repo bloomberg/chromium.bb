@@ -10,6 +10,8 @@
 #ifndef EIGEN_INVERSE_H
 #define EIGEN_INVERSE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename XprType,typename StorageKind> class InverseImpl;

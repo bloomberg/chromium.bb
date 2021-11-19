@@ -13,6 +13,8 @@
 // evaluator for thread pool device
 #ifdef EIGEN_USE_THREADS
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename Indices, typename LeftArgType, typename RightArgType, typename OutputKernelType>
@@ -96,7 +98,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
     //     context from the heap.
     //
     // (*) EvalParallelContext & EvalShardedByInnerDimContext owns all the state
-    // and temporary buffers, requried for executing the tensor contraction.
+    // and temporary buffers, required for executing the tensor contraction.
     // They are responsible for cleaning it up after contraction is done.
     static const bool IsEvalInSyncMode =
         std::is_same<DoneCallback, NoCallback>::value;
@@ -698,7 +700,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
           !is_rhs && std::is_same<BlockType, LhsBlock>::value;
       static const bool kIsRhs =
           is_rhs && std::is_same<BlockType, RhsBlock>::value;
-      static_assert(kIsLhs || kIsRhs, "Unkown block type");
+      static_assert(kIsLhs || kIsRhs, "Unknown block type");
 
       using Blocks = ThreadLocalBlocks<BlockType>;
 
@@ -895,7 +897,7 @@ struct TensorEvaluator<const TensorContractionOp<Indices, LeftArgType, RightArgT
         } else {
           // If we can't guarantee that all kernels in `k` slice will be
           // executed sequentially in current thread, it's no longer safe to use
-          // thread local memory in followig slices along the k dimensions.
+          // thread local memory in following slices along the k dimensions.
           eigen_assert(k > 0);
           can_use_thread_local_packed_[n].store(false,
                                                 std::memory_order_relaxed);

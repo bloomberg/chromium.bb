@@ -10,6 +10,8 @@
 #ifndef EIGEN_EULERSYSTEM_H
 #define EIGEN_EULERSYSTEM_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen
 {
   // Forward declarations

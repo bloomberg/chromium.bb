@@ -29,6 +29,7 @@ load("@stdlib//internal/graph.star", "graph")
 load("//project.star", "settings")
 load("./args.star", "args")
 load("./branches.star", "branches")
+load("./builder_config.star", "builder_config", "register_builder_config")
 load("./listify.star", "listify")
 
 ################################################################################
@@ -183,17 +184,27 @@ xcode = struct(
     x12d4e = xcode_enum("12d4e"),
     # Xcode 12.5. Requires Mac11+ OS.
     x12e262 = xcode_enum("12e262"),
-    # in use by ios-webkit-tot
-    x12e262wk = xcode_enum("12e262wk"),
     # Default Xcode 13 for chromium iOS (release candidate).
     x13main = xcode_enum("13a233"),
     # Xcode 13.0 latest beta (release candidate).
     x13latestbeta = xcode_enum("13a233"),
+    # in use by ios-webkit-tot
+    x13wk = xcode_enum("13a1030dwk"),
 )
 
 # Git revision of the compilator_watcher luciexe sub_build binary for chromium
 # orchestrators to use
 compilator_watcher_git_revision = "d5bee0e7798a40c3c6261c3dbc14becf1fbb693f"
+
+def builder_url(bucket, builder, project = None):
+    """A simple utility for constructing the milo URL for a builder."""
+    project = project or settings.project
+    url = "https://ci.chromium.org/p/%s/builders/%s/%s" % (
+        project,
+        bucket,
+        builder,
+    )
+    return url
 
 ################################################################################
 # Implementation details                                                       #
@@ -329,8 +340,6 @@ defaults = args.defaults(
     auto_builder_dimension = args.COMPUTE,
     builder_group = None,
     builderless = args.COMPUTE,
-    configure_kitchen = False,
-    kitchen_emulate_gce = False,
     cores = None,
     cpu = None,
     fully_qualified_builder_dimension = False,
@@ -384,6 +393,8 @@ def builder(
         cpu = args.DEFAULT,
         bootstrap = False,
         builder_group = args.DEFAULT,
+        builder_spec = None,
+        mirrors = None,
         pool = args.DEFAULT,
         ssd = args.DEFAULT,
         sheriff_rotations = None,
@@ -391,8 +402,6 @@ def builder(
         console_view_entry = None,
         list_view = args.DEFAULT,
         project_trigger_overrides = args.DEFAULT,
-        configure_kitchen = args.DEFAULT,
-        kitchen_emulate_gce = args.DEFAULT,
         goma_backend = args.DEFAULT,
         goma_debug = args.DEFAULT,
         goma_enable_ats = args.DEFAULT,
@@ -466,6 +475,10 @@ def builder(
         builder_group: a string with the group of the builder. Emits a property
             of the form 'builder_group:<builder_group>'. By default, considered
             None.
+        builder_spec: The spec describing the configuration for the builder.
+            Cannot be set if `mirrors` is set.
+        mirrors: References to the builders that the builder should mirror.
+            Cannot be set if `builder_spec` is set.
         cores: an int indicating the number of cores the builder requires for
             the machines that run it. Emits a dimension of the form
             'cores:<cores>' will be emitted. By default, considered None.
@@ -502,12 +515,6 @@ def builder(
             When this builder triggers another builder, if the BotSpec for that
             builder has a LUCI project that is a key in this mapping, the
             corresponding value will be used instead.
-        configure_kitchen: a boolean indicating whether to configure kitchen. If
-            True, emits a property to set the 'git_auth' and 'devshell' fields
-            of the '$kitchen' property. By default, considered False.
-        kitchen_emulate_gce: a boolean indicating whether to set 'emulate_gce'
-            of the '$kitchen' property. This is effective only when
-            configure_kitchen is True. By default, considered False.
         goma_backend: a member of the `goma.backend` enum indicating the goma
             backend the builder should use. Will be incorporated into the
             '$build/goma' property. By default, considered None.
@@ -583,15 +590,15 @@ def builder(
         fail("Explicit dimensions are not supported: " +
              "use builderless, cores, cpu, os or ssd instead")
 
+    if builder_spec and mirrors:
+        fail("Only one of builder_spec or mirrors can be set")
+
     dimensions = {}
 
     properties = kwargs.pop("properties", {})
     if "sheriff_rotations" in properties:
         fail('Setting "sheriff_rotations" property is not supported: ' +
              "use sheriff_rotations instead")
-    if "$kitchen" in properties:
-        fail('Setting "$kitchen" property is not supported: ' +
-             "use configure_kitchen instead")
     if "$build/goma" in properties:
         fail('Setting "$build/goma" property is not supported: ' +
              "use goma_backend, goma_dbug, goma_enable_ats and goma_jobs instead")
@@ -663,15 +670,6 @@ def builder(
     if ssd != None:
         dimensions["ssd"] = str(int(ssd))
 
-    configure_kitchen = defaults.get_value("configure_kitchen", configure_kitchen)
-    if configure_kitchen:
-        properties["$kitchen"] = {
-            "devshell": True,
-            "git_auth": True,
-        }
-        if defaults.get_value("kitchen_emulate_gce", kitchen_emulate_gce):
-            properties["$kitchen"]["emulate_gce"] = True
-
     chromium_tests = _chromium_tests_property(
         project_trigger_overrides = project_trigger_overrides,
     )
@@ -725,9 +723,6 @@ def builder(
     executable = defaults.get_value("executable", executable)
     if executable != args.COMPUTE:
         kwargs["executable"] = executable
-    triggered_by = defaults.get_value("triggered_by", triggered_by)
-    if triggered_by != args.COMPUTE:
-        kwargs["triggered_by"] = triggered_by
     xcode = defaults.get_value("xcode", xcode)
     if xcode:
         kwargs["caches"] = (kwargs.get("caches") or []) + [swarming.cache(
@@ -746,6 +741,15 @@ def builder(
             by_timestamp = resultdb_index_by_timestamp,
         )
 
+    if builder_spec and builder_spec.execution_mode == builder_config.execution_mode.TEST:
+        if triggered_by != args.DEFAULT:
+            fail("triggered testers cannot specify triggered_by")
+        triggered_by = [builder_spec.parent]
+
+    triggered_by = defaults.get_value("triggered_by", triggered_by)
+    if triggered_by != args.COMPUTE:
+        kwargs["triggered_by"] = triggered_by
+
     builder = branches.builder(
         name = name,
         branch_selector = branch_selector,
@@ -761,6 +765,13 @@ def builder(
         ),
         **kwargs
     )
+
+    # builder will be None if the builder isn't being defined due to the project
+    # settings and the branch selector
+    if builder == None:
+        return None
+
+    register_builder_config(bucket, name, builder_group, builder_spec, mirrors)
 
     # Add a bootstrap node for the builder so the _bootstrap_properties
     # generator can determine which builders are being bootstrapped
@@ -884,7 +895,7 @@ def _bootstrap_properties(ctx):
 
             properties_file = "builders/{}/{}/properties.textpb".format(bucket_name, builder_name)
             non_bootstrapped_properties = {
-                "$bootstrap": {
+                "$bootstrap/properties": {
                     "top_level_project": {
                         "repo": {
                             "host": "chromium.googlesource.com",
@@ -893,6 +904,8 @@ def _bootstrap_properties(ctx):
                         "ref": settings.ref,
                     },
                     "properties_file": "infra/config/generated/{}".format(properties_file),
+                },
+                "$bootstrap/exe": {
                     "exe": builder.exe,
                 },
                 "led_builder_is_bootstrapped": True,

@@ -38,7 +38,7 @@ class TestAppListClient : public AppListClient {
                         int suggestion_index,
                         bool launch_as_default) override;
   void InvokeSearchResultAction(const std::string& result_id,
-                                int action_index) override;
+                                SearchResultActionType action) override;
   void GetSearchResultContextMenuModel(
       const std::string& result_id,
       GetContextMenuModelCallback callback) override;
@@ -52,17 +52,11 @@ class TestAppListClient : public AppListClient {
                            GetContextMenuModelCallback callback) override;
   void OnAppListVisibilityWillChange(bool visible) override {}
   void OnAppListVisibilityChanged(bool visible) override {}
-  void OnItemAdded(int profile_id,
-                   std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnItemUpdated(int profile_id,
-                     std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnFolderDeleted(int profile_id,
-                       std::unique_ptr<AppListItemMetadata> item) override {}
-  void OnPageBreakItemDeleted(int profile_id, const std::string& id) override {}
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override {}
   void OnAppListSortRequested(int profile_id, AppListSortOrder order) override {
   }
+  void OnAppListSortRevertRequested(int profile_id) override {}
   void OnQuickSettingsChanged(
       const std::string& setting_name,
       const std::map<std::string, int>& values) override {}

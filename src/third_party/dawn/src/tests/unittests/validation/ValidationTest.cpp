@@ -63,7 +63,7 @@ void InitDawnValidationTestEnvironment(int argc, char** argv) {
                    "    [--enable-toggles=toggles] [--disable-toggles=toggles]\n"
                    "  -w, --use-wire: Run the tests through the wire (defaults to no wire)\n"
                    "  --enable-toggles: Comma-delimited list of Dawn toggles to enable.\n"
-                   "    ex.) skip_validation,use_tint_generator,disable_robustness,turn_off_vsync\n"
+                   "    ex.) skip_validation,disable_robustness,turn_off_vsync\n"
                    "  --disable-toggles: Comma-delimited list of Dawn toggles to disable\n";
             continue;
         }
@@ -177,6 +177,13 @@ bool ValidationTest::HasToggleEnabled(const char* toggle) const {
     return std::find_if(toggles.begin(), toggles.end(), [toggle](const char* name) {
                return strcmp(toggle, name) == 0;
            }) != toggles.end();
+}
+
+wgpu::SupportedLimits ValidationTest::GetSupportedLimits() {
+    WGPUSupportedLimits supportedLimits;
+    supportedLimits.nextInChain = nullptr;
+    dawn_native::GetProcs().deviceGetLimits(backendDevice, &supportedLimits);
+    return *reinterpret_cast<wgpu::SupportedLimits*>(&supportedLimits);
 }
 
 WGPUDevice ValidationTest::CreateTestDevice() {

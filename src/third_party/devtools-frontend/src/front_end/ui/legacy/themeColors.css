@@ -15,6 +15,8 @@
   --color-primary-variant: rgb(66 133 244);
   --color-background: rgb(255 255 255);
   --color-background-inverted: rgb(0 0 0);
+  --color-background-inverted-opacity-30: rgb(0 0 0 / 30%);
+  --color-background-inverted-opacity-50: rgb(0 0 0 / 50%);
   --color-background-opacity-50: rgb(255 255 255 / 50%);
   --color-background-opacity-80: rgb(255 255 255 / 80%);
   --color-background-elevation-0: rgb(248 249 249);
@@ -118,8 +120,10 @@
   --color-button-outline-focus: rgb(26 115 232 / 50%);
   --color-button-primary-background-hovering: rgb(77 134 225 / 100%);
   --color-button-primary-background-pressed: rgb(88 132 205);
+  --color-button-primary-text: rgb(255 255 255);
   --color-button-secondary-background-hovering: rgb(26 115 232 / 10%);
   --color-button-secondary-background-pressed: rgb(26 92 178 / 25%);
+  --color-button-secondary-border: rgb(218 220 224);
 
   /* Colors for file icons */
   --color-ic-file-document: rgb(39 116 240);
@@ -159,6 +163,8 @@
   --color-nonmatching-bracket-background: rgb(255 0 0 / 7%);
   --color-editor-selection: #cfe8fc;
   --color-editor-selection-blurred: #e0e0e0;
+  --color-selected-option: #fff;
+  --color-selected-option-background: #1a73e8;
   --color-highlighted-line: rgb(255 255 0 / 50%);
 }
 
@@ -167,6 +173,8 @@
   --color-primary-variant: rgb(102 157 246);
   --color-background: rgb(32 33 36);
   --color-background-inverted: rgb(255 255 255);
+  --color-background-inverted-opacity-30: rgb(255 255 255 / 30%);
+  --color-background-inverted-opacity-50: rgb(255 255 255 / 50%);
   --color-background-opacity-50: rgb(32 33 36 / 50%);
   --color-background-opacity-80: rgb(32 33 36 / 80%);
   --color-background-elevation-0: rgb(32 32 35);
@@ -225,6 +233,7 @@
   --color-error-text: hsl(0deg 100% 75%);
   --color-error-border: rgb(92 0 0);
   --color-error-background: hsl(0deg 100% 8%);
+  --color-checkbox-accent-color: rgb(255 165 0);
   /* Colors for styling inputs */
   --color-input-outline: rgb(189 193 198);
   --color-input-outline-active: rgb(138 180 248);
@@ -232,11 +241,13 @@
   --color-input-outline-disabled: rgba(189 193 198 / 20%);
   --color-input-text-disabled: rgba(128 134 139 / 70%);
   /* Colors for styling buttons */
-  --color-button-outline-focus: rgb(138 180 248 / 80%);
+  --color-button-outline-focus: rgb(138 180 248 / 75%);
   --color-button-primary-background-hovering: rgb(174 203 250 / 100%);
   --color-button-primary-background-pressed: rgb(210 227 252 / 100%);
+  --color-button-primary-text: rgb(0 0 0);
   --color-button-secondary-background-hovering: rgb(138 180 248 / 15%);
   --color-button-secondary-background-pressed: rgb(138 180 248 / 23%);
+  --color-button-secondary-border: rgb(60 61 65);
 
   /* Colors for file icons */
   --color-ic-file-document: rgb(39 116 240);
@@ -255,10 +266,10 @@
   --color-token-builtin: rgb(159 180 214);
   --color-token-variable-special: rgb(0 85 170);
   --color-token-keyword: rgb(154 127 213);
-  --color-token-number: var(--color-token-number);
   --color-token-string: rgb(242 139 84);
   --color-token-string-special: var(--color-token-string);
   --color-token-atom: rgb(161 247 181);
+  --color-token-number: var(--color-token-atom);
   --color-token-comment: rgb(137 137 137);
   --color-token-tag: rgb(93 176 215);
   --color-token-attribute: rgb(155 187 220);
@@ -274,5 +285,7 @@
   --color-nonmatching-bracket-background: initial;
   --color-editor-selection: hsl(207deg 88% 22%);
   --color-editor-selection-blurred: #454545;
+  --color-selected-option: #fff;
+  --color-selected-option-background: #0e639c;
   --color-highlighted-line: hsl(133deg 100% 30% / 50%);
 }

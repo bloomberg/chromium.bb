@@ -16,7 +16,7 @@ syntax = "proto3";
 
 package cast.v2;
 
-import "proto/v2/cast_message.proto";
+import "proto/bindings/cast_channel.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -24,5 +24,6 @@ option optimize_for = LITE_RUNTIME;
 // to communicate with the app.
 service CoreV2ApplicationService {
   // Send a Cast V2 message to core application.
-  rpc SendCastMessage(CastMessageRequest) returns (CastMessageResponse);
+  rpc SendCastMessage(cast.bindings.CastChannelMessage)
+      returns (cast.bindings.CastChannelResponse);
 }

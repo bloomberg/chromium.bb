@@ -295,6 +295,32 @@ class VkRenderFramework : public VkTestFramework {
     bool DeviceExtensionEnabled(const char *name);
     bool DeviceSimulation();
 
+    // Tracks ext_name to be enabled at device creation time and attempts to enable any required instance extensions.
+    // Returns true if all required instance extensions are supported or there are no required instance extensions, false
+    // otherwise.
+    // `ext_name` can refer to a device or instance extension.
+    bool AddRequiredExtensions(const char *ext_name);
+    // After instance and physical device creation (e.g., after InitFramework), returns true if all required extensions are
+    // available, false otherwise
+    bool AreRequestedExtensionsEnabled() const;
+
+    // Add ext_name, the names of all instance extensions required by ext_name, and return true if ext_name is supported. If the
+    // extension is not supported, no extension names are added for instance creation. `ext_name` can refer to a device or instance
+    // extension.
+    bool AddRequiredInstanceExtensions(const char *ext_name);
+    // Returns true if the instance extension inst_ext_name is enabled. This call is only valid _after_ previous
+    // `AddRequired*Extensions` calls and InitFramework has been called. `inst_ext_name` must be an instance extension name; false
+    // is returned for all device extension names.
+    bool CanEnableInstanceExtension(const std::string &inst_ext_name) const;
+    // Add dev_ext_name, then names of _device_ extensions required by dev_ext_name, and return true if dev_ext_name is supported.
+    // If the extension is not supported, no extension names are added for device creation. This function has no effect if
+    // dev_ext_name refers to an instance extension.
+    bool AddRequiredDeviceExtensions(const char *dev_ext_name);
+    // Returns true if the device extension is enabled. This call is only valid _after_ previous `AddRequired*Extensions` calls and
+    // InitFramework has been called.
+    // `dev_ext_name` msut be an instance extension name; false is returned for all instance extension names.
+    bool CanEnableDeviceExtension(const std::string &dev_ext_name) const;
+
   protected:
     VkRenderFramework();
     virtual ~VkRenderFramework() = 0;
@@ -326,6 +352,13 @@ class VkRenderFramework : public VkTestFramework {
 
     // WSI items
     VkSurfaceKHR m_surface;
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+    Display *m_surface_dpy;
+    Window m_surface_window;
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+    xcb_connection_t *m_surface_xcb_conn;
+#endif
     VkSwapchainKHR m_swapchain;
     VkSurfaceCapabilitiesKHR m_surface_capabilities;
     std::vector<VkSurfaceFormatKHR> m_surface_formats;
@@ -346,6 +379,7 @@ class VkRenderFramework : public VkTestFramework {
     uint32_t m_writeMask;
     uint32_t m_reference;
     bool m_addRenderPassSelfDependency;
+    std::vector<VkSubpassDependency> m_additionalSubpassDependencies;
     std::vector<VkClearValue> m_renderPassClearValues;
     VkRenderPassBeginInfo m_renderPassBeginInfo;
     std::vector<std::unique_ptr<VkImageObj>> m_renderTargets;
@@ -358,6 +392,9 @@ class VkRenderFramework : public VkTestFramework {
     uint32_t m_stencil_clear_color;
     VkDepthStencilObj *m_depthStencil;
 
+    // Requested extensions to enable at device creation time
+    std::vector<const char *> m_requested_extensions;
+    // Device extensions to enable
     std::vector<const char *> m_device_extension_names;
 };
 

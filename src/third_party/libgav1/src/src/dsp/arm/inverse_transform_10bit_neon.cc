@@ -169,8 +169,8 @@ LIBGAV1_ALWAYS_INLINE void HadamardRotation(int32x4_t* a, int32x4_t* b,
 }
 
 LIBGAV1_ALWAYS_INLINE void HadamardRotation(int32x4_t* a, int32x4_t* b,
-                                            bool flip, const int32x4_t* min,
-                                            const int32x4_t* max) {
+                                            bool flip, const int32x4_t min,
+                                            const int32x4_t max) {
   int32x4_t x, y;
   if (flip) {
     y = vqaddq_s32(*b, *a);
@@ -179,8 +179,8 @@ LIBGAV1_ALWAYS_INLINE void HadamardRotation(int32x4_t* a, int32x4_t* b,
     x = vqaddq_s32(*a, *b);
     y = vqsubq_s32(*a, *b);
   }
-  *a = vmaxq_s32(vminq_s32(x, *max), *min);
-  *b = vmaxq_s32(vminq_s32(y, *max), *min);
+  *a = vmaxq_s32(vminq_s32(x, max), min);
+  *b = vmaxq_s32(vminq_s32(y, max), min);
 }
 
 using ButterflyRotationFunc = void (*)(int32x4_t* a, int32x4_t* b, int angle,
@@ -249,8 +249,8 @@ LIBGAV1_ALWAYS_INLINE bool DctDcOnlyColumn(void* dest, int adjusted_tx_height,
 
 template <ButterflyRotationFunc butterfly_rotation,
           bool is_fast_butterfly = false>
-LIBGAV1_ALWAYS_INLINE void Dct4Stages(int32x4_t* s, const int32x4_t* min,
-                                      const int32x4_t* max,
+LIBGAV1_ALWAYS_INLINE void Dct4Stages(int32x4_t* s, const int32x4_t min,
+                                      const int32x4_t max,
                                       const bool is_last_stage) {
   // stage 12.
   if (is_fast_butterfly) {
@@ -294,7 +294,7 @@ LIBGAV1_ALWAYS_INLINE void Dct4_NEON(void* dest, int32_t step, bool is_row,
   s[2] = x[1];
   s[3] = x[3];
 
-  Dct4Stages<butterfly_rotation>(s, &min, &max, /*is_last_stage=*/true);
+  Dct4Stages<butterfly_rotation>(s, min, max, /*is_last_stage=*/true);
 
   if (is_row) {
     const int32x4_t v_row_shift = vdupq_n_s32(-row_shift);
@@ -308,8 +308,8 @@ LIBGAV1_ALWAYS_INLINE void Dct4_NEON(void* dest, int32_t step, bool is_row,
 
 template <ButterflyRotationFunc butterfly_rotation,
           bool is_fast_butterfly = false>
-LIBGAV1_ALWAYS_INLINE void Dct8Stages(int32x4_t* s, const int32x4_t* min,
-                                      const int32x4_t* max,
+LIBGAV1_ALWAYS_INLINE void Dct8Stages(int32x4_t* s, const int32x4_t min,
+                                      const int32x4_t max,
                                       const bool is_last_stage) {
   // stage 8.
   if (is_fast_butterfly) {
@@ -371,8 +371,8 @@ LIBGAV1_ALWAYS_INLINE void Dct8_NEON(void* dest, int32_t step, bool is_row,
   s[6] = x[3];
   s[7] = x[7];
 
-  Dct4Stages<butterfly_rotation>(s, &min, &max, /*is_last_stage=*/false);
-  Dct8Stages<butterfly_rotation>(s, &min, &max, /*is_last_stage=*/true);
+  Dct4Stages<butterfly_rotation>(s, min, max, /*is_last_stage=*/false);
+  Dct8Stages<butterfly_rotation>(s, min, max, /*is_last_stage=*/true);
 
   if (is_row) {
     const int32x4_t v_row_shift = vdupq_n_s32(-row_shift);
@@ -390,8 +390,8 @@ LIBGAV1_ALWAYS_INLINE void Dct8_NEON(void* dest, int32_t step, bool is_row,
 
 template <ButterflyRotationFunc butterfly_rotation,
           bool is_fast_butterfly = false>
-LIBGAV1_ALWAYS_INLINE void Dct16Stages(int32x4_t* s, const int32x4_t* min,
-                                       const int32x4_t* max,
+LIBGAV1_ALWAYS_INLINE void Dct16Stages(int32x4_t* s, const int32x4_t min,
+                                       const int32x4_t max,
                                        const bool is_last_stage) {
   // stage 5.
   if (is_fast_butterfly) {
@@ -488,9 +488,9 @@ LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, int32_t step, bool is_row,
   s[14] = x[7];
   s[15] = x[15];
 
-  Dct4Stages<butterfly_rotation>(s, &min, &max, /*is_last_stage=*/false);
-  Dct8Stages<butterfly_rotation>(s, &min, &max, /*is_last_stage=*/false);
-  Dct16Stages<butterfly_rotation>(s, &min, &max, /*is_last_stage=*/true);
+  Dct4Stages<butterfly_rotation>(s, min, max, /*is_last_stage=*/false);
+  Dct8Stages<butterfly_rotation>(s, min, max, /*is_last_stage=*/false);
+  Dct16Stages<butterfly_rotation>(s, min, max, /*is_last_stage=*/true);
 
   if (is_row) {
     const int32x4_t v_row_shift = vdupq_n_s32(-row_shift);
@@ -510,8 +510,8 @@ LIBGAV1_ALWAYS_INLINE void Dct16_NEON(void* dest, int32_t step, bool is_row,
 
 template <ButterflyRotationFunc butterfly_rotation,
           bool is_fast_butterfly = false>
-LIBGAV1_ALWAYS_INLINE void Dct32Stages(int32x4_t* s, const int32x4_t* min,
-                                       const int32x4_t* max,
+LIBGAV1_ALWAYS_INLINE void Dct32Stages(int32x4_t* s, const int32x4_t min,
+                                       const int32x4_t max,
                                        const bool is_last_stage) {
   // stage 3
   if (is_fast_butterfly) {
@@ -678,10 +678,10 @@ LIBGAV1_ALWAYS_INLINE void Dct32_NEON(void* dest, const int32_t step,
   s[30] = x[15];
   s[31] = x[31];
 
-  Dct4Stages<ButterflyRotation_4>(s, &min, &max, /*is_last_stage=*/false);
-  Dct8Stages<ButterflyRotation_4>(s, &min, &max, /*is_last_stage=*/false);
-  Dct16Stages<ButterflyRotation_4>(s, &min, &max, /*is_last_stage=*/false);
-  Dct32Stages<ButterflyRotation_4>(s, &min, &max, /*is_last_stage=*/true);
+  Dct4Stages<ButterflyRotation_4>(s, min, max, /*is_last_stage=*/false);
+  Dct8Stages<ButterflyRotation_4>(s, min, max, /*is_last_stage=*/false);
+  Dct16Stages<ButterflyRotation_4>(s, min, max, /*is_last_stage=*/false);
+  Dct32Stages<ButterflyRotation_4>(s, min, max, /*is_last_stage=*/true);
 
   if (is_row) {
     const int32x4_t v_row_shift = vdupq_n_s32(-row_shift);
@@ -765,13 +765,13 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
   s[62] = x[31];
 
   Dct4Stages<ButterflyRotation_4, /*is_fast_butterfly=*/true>(
-      s, &min, &max, /*is_last_stage=*/false);
+      s, min, max, /*is_last_stage=*/false);
   Dct8Stages<ButterflyRotation_4, /*is_fast_butterfly=*/true>(
-      s, &min, &max, /*is_last_stage=*/false);
+      s, min, max, /*is_last_stage=*/false);
   Dct16Stages<ButterflyRotation_4, /*is_fast_butterfly=*/true>(
-      s, &min, &max, /*is_last_stage=*/false);
+      s, min, max, /*is_last_stage=*/false);
   Dct32Stages<ButterflyRotation_4, /*is_fast_butterfly=*/true>(
-      s, &min, &max, /*is_last_stage=*/false);
+      s, min, max, /*is_last_stage=*/false);
 
   //-- start dct 64 stages
   // stage 2.
@@ -793,22 +793,22 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
   ButterflyRotation_FirstIsZero(&s[47], &s[48], 63 - 60, false);
 
   // stage 4.
-  HadamardRotation(&s[32], &s[33], false, &min, &max);
-  HadamardRotation(&s[34], &s[35], true, &min, &max);
-  HadamardRotation(&s[36], &s[37], false, &min, &max);
-  HadamardRotation(&s[38], &s[39], true, &min, &max);
-  HadamardRotation(&s[40], &s[41], false, &min, &max);
-  HadamardRotation(&s[42], &s[43], true, &min, &max);
-  HadamardRotation(&s[44], &s[45], false, &min, &max);
-  HadamardRotation(&s[46], &s[47], true, &min, &max);
-  HadamardRotation(&s[48], &s[49], false, &min, &max);
-  HadamardRotation(&s[50], &s[51], true, &min, &max);
-  HadamardRotation(&s[52], &s[53], false, &min, &max);
-  HadamardRotation(&s[54], &s[55], true, &min, &max);
-  HadamardRotation(&s[56], &s[57], false, &min, &max);
-  HadamardRotation(&s[58], &s[59], true, &min, &max);
-  HadamardRotation(&s[60], &s[61], false, &min, &max);
-  HadamardRotation(&s[62], &s[63], true, &min, &max);
+  HadamardRotation(&s[32], &s[33], false, min, max);
+  HadamardRotation(&s[34], &s[35], true, min, max);
+  HadamardRotation(&s[36], &s[37], false, min, max);
+  HadamardRotation(&s[38], &s[39], true, min, max);
+  HadamardRotation(&s[40], &s[41], false, min, max);
+  HadamardRotation(&s[42], &s[43], true, min, max);
+  HadamardRotation(&s[44], &s[45], false, min, max);
+  HadamardRotation(&s[46], &s[47], true, min, max);
+  HadamardRotation(&s[48], &s[49], false, min, max);
+  HadamardRotation(&s[50], &s[51], true, min, max);
+  HadamardRotation(&s[52], &s[53], false, min, max);
+  HadamardRotation(&s[54], &s[55], true, min, max);
+  HadamardRotation(&s[56], &s[57], false, min, max);
+  HadamardRotation(&s[58], &s[59], true, min, max);
+  HadamardRotation(&s[60], &s[61], false, min, max);
+  HadamardRotation(&s[62], &s[63], true, min, max);
 
   // stage 7.
   ButterflyRotation_4(&s[62], &s[33], 60 - 0, true);
@@ -821,22 +821,22 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
   ButterflyRotation_4(&s[49], &s[46], 60 - 48 + 64, true);
 
   // stage 11.
-  HadamardRotation(&s[32], &s[35], false, &min, &max);
-  HadamardRotation(&s[33], &s[34], false, &min, &max);
-  HadamardRotation(&s[36], &s[39], true, &min, &max);
-  HadamardRotation(&s[37], &s[38], true, &min, &max);
-  HadamardRotation(&s[40], &s[43], false, &min, &max);
-  HadamardRotation(&s[41], &s[42], false, &min, &max);
-  HadamardRotation(&s[44], &s[47], true, &min, &max);
-  HadamardRotation(&s[45], &s[46], true, &min, &max);
-  HadamardRotation(&s[48], &s[51], false, &min, &max);
-  HadamardRotation(&s[49], &s[50], false, &min, &max);
-  HadamardRotation(&s[52], &s[55], true, &min, &max);
-  HadamardRotation(&s[53], &s[54], true, &min, &max);
-  HadamardRotation(&s[56], &s[59], false, &min, &max);
-  HadamardRotation(&s[57], &s[58], false, &min, &max);
-  HadamardRotation(&s[60], &s[63], true, &min, &max);
-  HadamardRotation(&s[61], &s[62], true, &min, &max);
+  HadamardRotation(&s[32], &s[35], false, min, max);
+  HadamardRotation(&s[33], &s[34], false, min, max);
+  HadamardRotation(&s[36], &s[39], true, min, max);
+  HadamardRotation(&s[37], &s[38], true, min, max);
+  HadamardRotation(&s[40], &s[43], false, min, max);
+  HadamardRotation(&s[41], &s[42], false, min, max);
+  HadamardRotation(&s[44], &s[47], true, min, max);
+  HadamardRotation(&s[45], &s[46], true, min, max);
+  HadamardRotation(&s[48], &s[51], false, min, max);
+  HadamardRotation(&s[49], &s[50], false, min, max);
+  HadamardRotation(&s[52], &s[55], true, min, max);
+  HadamardRotation(&s[53], &s[54], true, min, max);
+  HadamardRotation(&s[56], &s[59], false, min, max);
+  HadamardRotation(&s[57], &s[58], false, min, max);
+  HadamardRotation(&s[60], &s[63], true, min, max);
+  HadamardRotation(&s[61], &s[62], true, min, max);
 
   // stage 16.
   ButterflyRotation_4(&s[61], &s[34], 56, true);
@@ -849,22 +849,22 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
   ButterflyRotation_4(&s[50], &s[45], 56 - 32 + 64, true);
 
   // stage 21.
-  HadamardRotation(&s[32], &s[39], false, &min, &max);
-  HadamardRotation(&s[33], &s[38], false, &min, &max);
-  HadamardRotation(&s[34], &s[37], false, &min, &max);
-  HadamardRotation(&s[35], &s[36], false, &min, &max);
-  HadamardRotation(&s[40], &s[47], true, &min, &max);
-  HadamardRotation(&s[41], &s[46], true, &min, &max);
-  HadamardRotation(&s[42], &s[45], true, &min, &max);
-  HadamardRotation(&s[43], &s[44], true, &min, &max);
-  HadamardRotation(&s[48], &s[55], false, &min, &max);
-  HadamardRotation(&s[49], &s[54], false, &min, &max);
-  HadamardRotation(&s[50], &s[53], false, &min, &max);
-  HadamardRotation(&s[51], &s[52], false, &min, &max);
-  HadamardRotation(&s[56], &s[63], true, &min, &max);
-  HadamardRotation(&s[57], &s[62], true, &min, &max);
-  HadamardRotation(&s[58], &s[61], true, &min, &max);
-  HadamardRotation(&s[59], &s[60], true, &min, &max);
+  HadamardRotation(&s[32], &s[39], false, min, max);
+  HadamardRotation(&s[33], &s[38], false, min, max);
+  HadamardRotation(&s[34], &s[37], false, min, max);
+  HadamardRotation(&s[35], &s[36], false, min, max);
+  HadamardRotation(&s[40], &s[47], true, min, max);
+  HadamardRotation(&s[41], &s[46], true, min, max);
+  HadamardRotation(&s[42], &s[45], true, min, max);
+  HadamardRotation(&s[43], &s[44], true, min, max);
+  HadamardRotation(&s[48], &s[55], false, min, max);
+  HadamardRotation(&s[49], &s[54], false, min, max);
+  HadamardRotation(&s[50], &s[53], false, min, max);
+  HadamardRotation(&s[51], &s[52], false, min, max);
+  HadamardRotation(&s[56], &s[63], true, min, max);
+  HadamardRotation(&s[57], &s[62], true, min, max);
+  HadamardRotation(&s[58], &s[61], true, min, max);
+  HadamardRotation(&s[59], &s[60], true, min, max);
 
   // stage 25.
   ButterflyRotation_4(&s[59], &s[36], 48, true);
@@ -877,22 +877,22 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
   ButterflyRotation_4(&s[52], &s[43], 112, true);
 
   // stage 28.
-  HadamardRotation(&s[32], &s[47], false, &min, &max);
-  HadamardRotation(&s[33], &s[46], false, &min, &max);
-  HadamardRotation(&s[34], &s[45], false, &min, &max);
-  HadamardRotation(&s[35], &s[44], false, &min, &max);
-  HadamardRotation(&s[36], &s[43], false, &min, &max);
-  HadamardRotation(&s[37], &s[42], false, &min, &max);
-  HadamardRotation(&s[38], &s[41], false, &min, &max);
-  HadamardRotation(&s[39], &s[40], false, &min, &max);
-  HadamardRotation(&s[48], &s[63], true, &min, &max);
-  HadamardRotation(&s[49], &s[62], true, &min, &max);
-  HadamardRotation(&s[50], &s[61], true, &min, &max);
-  HadamardRotation(&s[51], &s[60], true, &min, &max);
-  HadamardRotation(&s[52], &s[59], true, &min, &max);
-  HadamardRotation(&s[53], &s[58], true, &min, &max);
-  HadamardRotation(&s[54], &s[57], true, &min, &max);
-  HadamardRotation(&s[55], &s[56], true, &min, &max);
+  HadamardRotation(&s[32], &s[47], false, min, max);
+  HadamardRotation(&s[33], &s[46], false, min, max);
+  HadamardRotation(&s[34], &s[45], false, min, max);
+  HadamardRotation(&s[35], &s[44], false, min, max);
+  HadamardRotation(&s[36], &s[43], false, min, max);
+  HadamardRotation(&s[37], &s[42], false, min, max);
+  HadamardRotation(&s[38], &s[41], false, min, max);
+  HadamardRotation(&s[39], &s[40], false, min, max);
+  HadamardRotation(&s[48], &s[63], true, min, max);
+  HadamardRotation(&s[49], &s[62], true, min, max);
+  HadamardRotation(&s[50], &s[61], true, min, max);
+  HadamardRotation(&s[51], &s[60], true, min, max);
+  HadamardRotation(&s[52], &s[59], true, min, max);
+  HadamardRotation(&s[53], &s[58], true, min, max);
+  HadamardRotation(&s[54], &s[57], true, min, max);
+  HadamardRotation(&s[55], &s[56], true, min, max);
 
   // stage 30.
   ButterflyRotation_4(&s[55], &s[40], 32, true);
@@ -906,10 +906,10 @@ void Dct64_NEON(void* dest, int32_t step, bool is_row, int row_shift) {
 
   // stage 31.
   for (int i = 0; i < 32; i += 4) {
-    HadamardRotation(&s[i], &s[63 - i], false, &min, &max);
-    HadamardRotation(&s[i + 1], &s[63 - i - 1], false, &min, &max);
-    HadamardRotation(&s[i + 2], &s[63 - i - 2], false, &min, &max);
-    HadamardRotation(&s[i + 3], &s[63 - i - 3], false, &min, &max);
+    HadamardRotation(&s[i], &s[63 - i], false, min, max);
+    HadamardRotation(&s[i + 1], &s[63 - i - 1], false, min, max);
+    HadamardRotation(&s[i + 2], &s[63 - i - 2], false, min, max);
+    HadamardRotation(&s[i + 3], &s[63 - i - 3], false, min, max);
   }
   //-- end dct 64 stages
   if (is_row) {
@@ -1090,20 +1090,20 @@ LIBGAV1_ALWAYS_INLINE void Adst8_NEON(void* dest, int32_t step, bool is_row,
   butterfly_rotation(&s[6], &s[7], 60 - 48, true);
 
   // stage 3.
-  HadamardRotation(&s[0], &s[4], false, &min, &max);
-  HadamardRotation(&s[1], &s[5], false, &min, &max);
-  HadamardRotation(&s[2], &s[6], false, &min, &max);
-  HadamardRotation(&s[3], &s[7], false, &min, &max);
+  HadamardRotation(&s[0], &s[4], false, min, max);
+  HadamardRotation(&s[1], &s[5], false, min, max);
+  HadamardRotation(&s[2], &s[6], false, min, max);
+  HadamardRotation(&s[3], &s[7], false, min, max);
 
   // stage 4.
   butterfly_rotation(&s[4], &s[5], 48 - 0, true);
   butterfly_rotation(&s[7], &s[6], 48 - 32, true);
 
   // stage 5.
-  HadamardRotation(&s[0], &s[2], false, &min, &max);
-  HadamardRotation(&s[4], &s[6], false, &min, &max);
-  HadamardRotation(&s[1], &s[3], false, &min, &max);
-  HadamardRotation(&s[5], &s[7], false, &min, &max);
+  HadamardRotation(&s[0], &s[2], false, min, max);
+  HadamardRotation(&s[4], &s[6], false, min, max);
+  HadamardRotation(&s[1], &s[3], false, min, max);
+  HadamardRotation(&s[5], &s[7], false, min, max);
 
   // stage 6.
   butterfly_rotation(&s[2], &s[3], 32, true);
@@ -1290,14 +1290,14 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, int32_t step, bool is_row,
   butterfly_rotation(&s[14], &s[15], 62 - 56, true);
 
   // stage 3.
-  HadamardRotation(&s[0], &s[8], false, &min, &max);
-  HadamardRotation(&s[1], &s[9], false, &min, &max);
-  HadamardRotation(&s[2], &s[10], false, &min, &max);
-  HadamardRotation(&s[3], &s[11], false, &min, &max);
-  HadamardRotation(&s[4], &s[12], false, &min, &max);
-  HadamardRotation(&s[5], &s[13], false, &min, &max);
-  HadamardRotation(&s[6], &s[14], false, &min, &max);
-  HadamardRotation(&s[7], &s[15], false, &min, &max);
+  HadamardRotation(&s[0], &s[8], false, min, max);
+  HadamardRotation(&s[1], &s[9], false, min, max);
+  HadamardRotation(&s[2], &s[10], false, min, max);
+  HadamardRotation(&s[3], &s[11], false, min, max);
+  HadamardRotation(&s[4], &s[12], false, min, max);
+  HadamardRotation(&s[5], &s[13], false, min, max);
+  HadamardRotation(&s[6], &s[14], false, min, max);
+  HadamardRotation(&s[7], &s[15], false, min, max);
 
   // stage 4.
   butterfly_rotation(&s[8], &s[9], 56 - 0, true);
@@ -1306,14 +1306,14 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, int32_t step, bool is_row,
   butterfly_rotation(&s[15], &s[14], 8 + 32, true);
 
   // stage 5.
-  HadamardRotation(&s[0], &s[4], false, &min, &max);
-  HadamardRotation(&s[8], &s[12], false, &min, &max);
-  HadamardRotation(&s[1], &s[5], false, &min, &max);
-  HadamardRotation(&s[9], &s[13], false, &min, &max);
-  HadamardRotation(&s[2], &s[6], false, &min, &max);
-  HadamardRotation(&s[10], &s[14], false, &min, &max);
-  HadamardRotation(&s[3], &s[7], false, &min, &max);
-  HadamardRotation(&s[11], &s[15], false, &min, &max);
+  HadamardRotation(&s[0], &s[4], false, min, max);
+  HadamardRotation(&s[8], &s[12], false, min, max);
+  HadamardRotation(&s[1], &s[5], false, min, max);
+  HadamardRotation(&s[9], &s[13], false, min, max);
+  HadamardRotation(&s[2], &s[6], false, min, max);
+  HadamardRotation(&s[10], &s[14], false, min, max);
+  HadamardRotation(&s[3], &s[7], false, min, max);
+  HadamardRotation(&s[11], &s[15], false, min, max);
 
   // stage 6.
   butterfly_rotation(&s[4], &s[5], 48 - 0, true);
@@ -1322,14 +1322,14 @@ LIBGAV1_ALWAYS_INLINE void Adst16_NEON(void* dest, int32_t step, bool is_row,
   butterfly_rotation(&s[15], &s[14], 48 - 32, true);
 
   // stage 7.
-  HadamardRotation(&s[0], &s[2], false, &min, &max);
-  HadamardRotation(&s[4], &s[6], false, &min, &max);
-  HadamardRotation(&s[8], &s[10], false, &min, &max);
-  HadamardRotation(&s[12], &s[14], false, &min, &max);
-  HadamardRotation(&s[1], &s[3], false, &min, &max);
-  HadamardRotation(&s[5], &s[7], false, &min, &max);
-  HadamardRotation(&s[9], &s[11], false, &min, &max);
-  HadamardRotation(&s[13], &s[15], false, &min, &max);
+  HadamardRotation(&s[0], &s[2], false, min, max);
+  HadamardRotation(&s[4], &s[6], false, min, max);
+  HadamardRotation(&s[8], &s[10], false, min, max);
+  HadamardRotation(&s[12], &s[14], false, min, max);
+  HadamardRotation(&s[1], &s[3], false, min, max);
+  HadamardRotation(&s[5], &s[7], false, min, max);
+  HadamardRotation(&s[9], &s[11], false, min, max);
+  HadamardRotation(&s[13], &s[15], false, min, max);
 
   // stage 8.
   butterfly_rotation(&s[2], &s[3], 32, true);

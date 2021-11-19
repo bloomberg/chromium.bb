@@ -647,8 +647,7 @@ class Browser : public TabStripModelObserver,
                     const content::DropData& data,
                     blink::DragOperationsMask operations_allowed) override;
   blink::SecurityStyle GetSecurityStyle(
-      content::WebContents* web_contents,
-      content::SecurityStyleExplanations* security_style_explanations) override;
+      content::WebContents* web_contents) override;
   void CreateSmsPrompt(content::RenderFrameHost*,
                        const std::vector<url::Origin>&,
                        const std::string& one_time_code,
@@ -893,6 +892,8 @@ class Browser : public TabStripModelObserver,
   std::string GetDefaultMediaDeviceID(
       content::WebContents* web_contents,
       blink::mojom::MediaStreamType type) override;
+  std::string GetTitleForMediaControls(
+      content::WebContents* web_contents) override;
 
 #if BUILDFLAG(ENABLE_PRINTING)
   void PrintCrossProcessSubframe(

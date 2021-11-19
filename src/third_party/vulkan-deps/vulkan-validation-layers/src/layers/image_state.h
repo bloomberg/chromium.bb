@@ -87,13 +87,8 @@ class IMAGE_STATE : public BINDABLE {
   public:
     const safe_VkImageCreateInfo safe_create_info;
     const VkImageCreateInfo &createInfo;
-    bool valid;               // If this is a swapchain image backing memory track valid here as it doesn't have DEVICE_MEMORY_STATE
-    bool acquired;            // If this is a swapchain image, has it been acquired by the app.
     bool shared_presentable;  // True for a front-buffered swapchain image
     bool layout_locked;       // A front-buffered image that has been presented can never have layout transitioned
-    bool get_sparse_reqs_called;         // Track if GetImageSparseMemoryRequirements() has been called for this image
-    bool sparse_metadata_required;       // Track if sparse metadata aspect is required for this image
-    bool sparse_metadata_bound;          // Track if sparse metadata aspect is bound to this image
     const uint64_t ahb_format;           // External Android format, if provided
     const VkImageSubresourceRange full_range;  // The normalized ISR for all levels, layers, and aspects
     const VkSwapchainKHR create_from_swapchain;
@@ -101,21 +96,26 @@ class IMAGE_STATE : public BINDABLE {
     uint32_t swapchain_image_index;
     const VkFormatFeatureFlags format_features;
     // Need to memory requirments for each plane if image is disjoint
-    bool disjoint;  // True if image was created with VK_IMAGE_CREATE_DISJOINT_BIT
-    static const int MAX_PLANES = 3;
-    std::array<VkMemoryRequirements, MAX_PLANES> requirements;
+    const bool disjoint;  // True if image was created with VK_IMAGE_CREATE_DISJOINT_BIT
+    static constexpr int MAX_PLANES = 3;
+    using MemoryReqs = std::array<VkMemoryRequirements, MAX_PLANES>;
+    const MemoryReqs requirements;
     std::array<bool, MAX_PLANES> memory_requirements_checked;
+    using SparseReqs = std::vector<VkSparseImageMemoryRequirements>;
+    const SparseReqs sparse_requirements;
+    const bool sparse_metadata_required;  // Track if sparse metadata aspect is required for this image
+    bool get_sparse_reqs_called;          // Track if GetImageSparseMemoryRequirements() has been called for this image
+    bool sparse_metadata_bound;           // Track if sparse metadata aspect is bound to this image
 
     const image_layout_map::Encoder subresource_encoder;                             // Subresource resolution encoder
     std::unique_ptr<const subresource_adapter::ImageRangeEncoder> fragment_encoder;  // Fragment resolution encoder
     const VkDevice store_device_as_workaround;                                       // TODO REMOVE WHEN encoder can be const
 
-    std::vector<VkSparseImageMemoryRequirements> sparse_requirements;
     layer_data::unordered_set<IMAGE_STATE *> aliasing_images;
 
-    IMAGE_STATE(VkDevice dev, VkImage img, const VkImageCreateInfo *pCreateInfo, VkFormatFeatureFlags features);
-    IMAGE_STATE(VkDevice dev, VkImage img, const VkImageCreateInfo *pCreateInfo, VkSwapchainKHR swapchain, uint32_t swapchain_index,
-                VkFormatFeatureFlags features);
+    IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkFormatFeatureFlags features);
+    IMAGE_STATE(const ValidationStateTracker *dev_data, VkImage img, const VkImageCreateInfo *pCreateInfo, VkSwapchainKHR swapchain,
+                uint32_t swapchain_index, VkFormatFeatureFlags features);
     IMAGE_STATE(IMAGE_STATE const &rh_obj) = delete;
 
     VkImage image() const { return handle_.Cast<VkImage>(); }
@@ -232,6 +232,7 @@ class IMAGE_VIEW_STATE : public BASE_NODE {
 struct SWAPCHAIN_IMAGE {
     IMAGE_STATE *image_state = nullptr;
     VkDeviceSize fake_base_address = 0;
+    bool acquired = false;
 };
 
 // State for VkSwapchainKHR objects.
@@ -240,15 +241,16 @@ struct SWAPCHAIN_IMAGE {
 //    However, only 1 swapchain for each surface can be !retired.
 class SWAPCHAIN_NODE : public BASE_NODE {
   public:
-    safe_VkSwapchainCreateInfoKHR createInfo;
+    const safe_VkSwapchainCreateInfoKHR createInfo;
     std::vector<SWAPCHAIN_IMAGE> images;
-    bool retired;
+    bool retired = false;
     const bool shared_presentable;
-    uint32_t get_swapchain_image_count;
-    uint64_t max_present_id;
+    uint32_t get_swapchain_image_count = 0;
+    uint64_t max_present_id = 0;
     const safe_VkImageCreateInfo image_create_info;
     std::shared_ptr<SURFACE_STATE> surface;
     ValidationStateTracker *dev_data;
+    uint32_t acquired_images = 0;
 
     SWAPCHAIN_NODE(ValidationStateTracker *dev_data, const VkSwapchainCreateInfoKHR *pCreateInfo, VkSwapchainKHR swapchain);
 
@@ -295,10 +297,7 @@ struct hash<GpuQueue> {
 //    SURFACE_STATE -> nothing
 class SURFACE_STATE : public BASE_NODE {
   public:
-    SWAPCHAIN_NODE *swapchain;
-    layer_data::unordered_map<GpuQueue, bool> gpu_queue_support;
-
-    SURFACE_STATE(VkSurfaceKHR s) : BASE_NODE(s, kVulkanObjectTypeSurfaceKHR), swapchain(nullptr), gpu_queue_support() {}
+    SURFACE_STATE(VkSurfaceKHR s) : BASE_NODE(s, kVulkanObjectTypeSurfaceKHR) {}
 
     ~SURFACE_STATE() {
         if (!Destroyed()) {
@@ -313,4 +312,24 @@ class SURFACE_STATE : public BASE_NODE {
     VkImageCreateInfo GetImageCreateInfo() const;
 
     void RemoveParent(BASE_NODE *parent_node) override;
+
+    void SetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi, bool supported);
+    bool GetQueueSupport(VkPhysicalDevice phys_dev, uint32_t qfi) const;
+
+    void SetPresentModes(VkPhysicalDevice phys_dev, std::vector<VkPresentModeKHR> &&modes);
+    std::vector<VkPresentModeKHR> GetPresentModes(VkPhysicalDevice phys_dev) const;
+
+    void SetFormats(VkPhysicalDevice phys_dev, std::vector<VkSurfaceFormatKHR> &&fmts);
+    std::vector<VkSurfaceFormatKHR> GetFormats(VkPhysicalDevice phys_dev) const;
+
+    void SetCapabilities(VkPhysicalDevice phys_dev, const VkSurfaceCapabilitiesKHR &caps);
+    VkSurfaceCapabilitiesKHR GetCapabilities(VkPhysicalDevice phys_dev) const;
+
+    SWAPCHAIN_NODE *swapchain{nullptr};
+
+  private:
+    mutable layer_data::unordered_map<GpuQueue, bool> gpu_queue_support_;
+    mutable layer_data::unordered_map<VkPhysicalDevice, std::vector<VkPresentModeKHR>> present_modes_;
+    mutable layer_data::unordered_map<VkPhysicalDevice, std::vector<VkSurfaceFormatKHR>> formats_;
+    mutable layer_data::unordered_map<VkPhysicalDevice, VkSurfaceCapabilitiesKHR> capabilities_;
 };

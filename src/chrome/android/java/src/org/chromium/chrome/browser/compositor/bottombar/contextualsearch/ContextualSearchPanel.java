@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.components.browser_ui.widget.chips.Chip;
+import org.chromium.components.browser_ui.widget.chips.ChipProperties;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.base.LocalizationUtils;
@@ -498,8 +498,9 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
     @Override
     protected void animatePanelToState(
             @Nullable @PanelState Integer state, @StateChangeReason int reason, long duration) {
-        // If the in bar chip showing animation is running, do not run the new panel animation.
-        if (haveSearchBarControl()
+        // If the in bar chip showing animation is running, do not run the new panel animation
+        // unless it needs to animate to a different state.
+        if (state == getPanelState() && haveSearchBarControl()
                 && getSearchBarControl().inBarRelatedSearchesAnimationIsRunning()) {
             return;
         }
@@ -730,9 +731,9 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
             @Nullable List<String> relatedSearchesInContent, boolean showDefaultSearchInContent) {
         onSearchTermResolved(searchTerm, thumbnailUrl, quickActionUri, quickActionCategory,
                 cardTagEnum, relatedSearchesInBar, showDefaultSearchInBar,
-                Chip.SHOW_WHOLE_TEXT /* defaultQueryInBarTextMaxWidthPx */,
+                ChipProperties.SHOW_WHOLE_TEXT /* defaultQueryInBarTextMaxWidthPx */,
                 relatedSearchesInContent, showDefaultSearchInContent,
-                Chip.SHOW_WHOLE_TEXT /* defaultQueryInContentTextMaxWidthPx */);
+                ChipProperties.SHOW_WHOLE_TEXT /* defaultQueryInContentTextMaxWidthPx */);
     }
 
     /**

@@ -10,6 +10,8 @@
 #ifndef EIGEN_REAL_QZ_H
 #define EIGEN_REAL_QZ_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
   /** \eigenvalues_module \ingroup Eigenvalues_Module

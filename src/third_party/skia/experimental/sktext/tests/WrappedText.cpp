@@ -36,16 +36,6 @@ struct GrContextOptions;
 #define TestCanvasWidth 1000
 #define TestCanvasHeight 600
 
-#if !defined(SK_BUILD_FOR_UNIX)
-#undef DEF_TEST
-#define DEF_TEST(name, reporter)                                                          \
-    static void test_##name(skiatest::Reporter* reporter, const GrContextOptions&);       \
-    skiatest::TestRegistry name##TestRegistry(skiatest::Test(#name, false, test_##name)); \
-    void test_##name(skiatest::Reporter* reporter, const GrContextOptions&) {             \
-        /* SkDebugf("Disabled:"#name "\n"); */                                            \
-    }                                                                                     \
-    void disabled_##name(skiatest::Reporter* reporter, const GrContextOptions&)
-#endif
 using namespace skia::text;
 
 struct TestLine {
@@ -59,9 +49,9 @@ struct TestLine {
 
 struct TestRun {
     const SkFont& font;
-    TextRange textRange;        // Currently we make sure that the run edges are the grapheme cluster edges
+    DirTextRange dirTextRange;  // Currently we make sure that the run edges are the grapheme cluster edges
     SkRect bounds;              // bounds contains the physical boundaries of the run
-    int trailingSpaces;         // Depending of TextDirection it goes right to the end (LTR) or left to the start (RTL)
+    size_t trailingSpaces;      // Depending of TextDirection it goes right to the end (LTR) or left to the start (RTL)
     SkSpan<const uint16_t> glyphs;
     SkSpan<const SkPoint> positions;
     SkSpan<const TextIndex> clusters;
@@ -79,15 +69,15 @@ public:
         fTestLines.back().runRange.fEnd = fTestRuns.size();
     }
     void onGlyphRun(const SkFont& font,
-                    TextRange textRange,        // Currently we make sure that the run edges are the grapheme cluster edges
-                    SkRect bounds,              // bounds contains the physical boundaries of the run
-                    int trailingSpaces,         // Depending of TextDirection it goes right to the end (LTR) or left to the start (RTL)
-                    int glyphCount,             // Just the number of glyphs
+                    DirTextRange dirTextRange,
+                    SkRect bounds,
+                    TextIndex trailingSpaces,
+                    size_t glyphCount,            // Just the number of glyphs
                     const uint16_t glyphs[],
                     const SkPoint positions[],        // Positions relative to the line
                     const TextIndex clusters[]) override
     {
-        fTestRuns.push_back({font, textRange, bounds, trailingSpaces,
+        fTestRuns.push_back({font, dirTextRange, bounds, trailingSpaces,
                             SkSpan<const uint16_t>(&glyphs[0], glyphCount),
                             SkSpan<const SkPoint>(&positions[0], glyphCount + 1),
                             SkSpan<const TextIndex>(&clusters[0], glyphCount + 1),
@@ -99,8 +89,7 @@ public:
     std::vector<TestRun> fTestRuns;
 };
 
-
-DEF_TEST(SkText_WrappedText_Spaces, reporter) {
+UNIX_ONLY_TEST(SkText_WrappedText_Spaces, reporter) {
     sk_sp<TrivialFontChain> fontChain = sk_make_sp<TrivialFontChain>("Roboto", 40.0f, SkFontStyle::Normal());
     if (fontChain->empty()) return;
 
@@ -138,7 +127,7 @@ DEF_TEST(SkText_WrappedText_Spaces, reporter) {
         REPORTER_ASSERT(reporter, line.runRange == Range<RunIndex>(runIndex, runIndex + 1));
         REPORTER_ASSERT(reporter, line.runRange.width() == 1);
         auto& run = testVisitor.fTestRuns[runIndex];
-        REPORTER_ASSERT(reporter, line.lineText == run.textRange);
+        REPORTER_ASSERT(reporter, line.lineText == run.dirTextRange);
         REPORTER_ASSERT(reporter, runIndex <= 1 ? line.hardBreak : !line.hardBreak);
         REPORTER_ASSERT(reporter, SkScalarNearlyEqual(verticalOffset, line.bounds.fTop));
 
@@ -148,3 +137,29 @@ DEF_TEST(SkText_WrappedText_Spaces, reporter) {
         ++runIndex;
     }
 }
+
+UNIX_ONLY_TEST(SkText_WrappedText_LongRTL, reporter) {
+    sk_sp<TrivialFontChain> fontChain = sk_make_sp<TrivialFontChain>("Noto Naskh Arabic", 40.0f, SkFontStyle::Normal());
+    if (fontChain->empty()) return;
+
+    std::u16string utf16(u"يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُيَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُيَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ يَهْدِيْكُمُ اللَّهُ وَيُصْلِحُ بَالَكُمُ");
+    UnicodeText unicodeText(SkUnicode::Make(), SkSpan<uint16_t>((uint16_t*)utf16.data(), utf16.size()));
+    if (!unicodeText.getUnicode()) return;
+
+    FontBlock fontBlock(utf16.size(), fontChain);
+    auto fontResolvedText = unicodeText.resolveFonts(SkSpan<FontBlock>(&fontBlock, 1));
+    auto shapedText = fontResolvedText->shape(&unicodeText, TextDirection::kLtr);
+    auto wrappedText = shapedText->wrap(&unicodeText, 800.0f, 800.0f);
+
+    TestVisitor testVisitor;
+    wrappedText->visit(&testVisitor);
+
+    REPORTER_ASSERT(reporter, testVisitor.fTestLines.size() == 4);
+    REPORTER_ASSERT(reporter, testVisitor.fTestRuns.size() == 4);
+
+    REPORTER_ASSERT(reporter, testVisitor.fTestLines[0].trailingSpaces.width() == 1);
+    REPORTER_ASSERT(reporter, testVisitor.fTestLines[1].trailingSpaces.width() == 1);
+    REPORTER_ASSERT(reporter, testVisitor.fTestLines[2].trailingSpaces.width() == 1);
+    REPORTER_ASSERT(reporter, testVisitor.fTestLines[3].trailingSpaces.width() == 0);
+}
+

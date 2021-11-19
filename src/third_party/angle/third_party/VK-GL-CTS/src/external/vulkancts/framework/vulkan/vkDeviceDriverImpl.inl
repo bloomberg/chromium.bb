@@ -972,6 +972,21 @@ void DeviceDriver::cmdResolveImage2KHR (VkCommandBuffer commandBuffer, const VkR
 	m_vk.cmdResolveImage2KHR(commandBuffer, pResolveImageInfo);
 }
 
+void DeviceDriver::getDeviceBufferMemoryRequirementsKHR (VkDevice device, const VkDeviceBufferMemoryRequirementsKHR* pInfo, VkMemoryRequirements2* pMemoryRequirements) const
+{
+	m_vk.getDeviceBufferMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
+}
+
+void DeviceDriver::getDeviceImageMemoryRequirementsKHR (VkDevice device, const VkDeviceImageMemoryRequirementsKHR* pInfo, VkMemoryRequirements2* pMemoryRequirements) const
+{
+	m_vk.getDeviceImageMemoryRequirementsKHR(device, pInfo, pMemoryRequirements);
+}
+
+void DeviceDriver::getDeviceImageSparseMemoryRequirementsKHR (VkDevice device, const VkDeviceImageMemoryRequirementsKHR* pInfo, uint32_t* pSparseMemoryRequirementCount, VkSparseImageMemoryRequirements2* pSparseMemoryRequirements) const
+{
+	m_vk.getDeviceImageSparseMemoryRequirementsKHR(device, pInfo, pSparseMemoryRequirementCount, pSparseMemoryRequirements);
+}
+
 VkResult DeviceDriver::debugMarkerSetObjectTagEXT (VkDevice device, const VkDebugMarkerObjectTagInfoEXT* pTagInfo) const
 {
 	return m_vk.debugMarkerSetObjectTagEXT(device, pTagInfo);

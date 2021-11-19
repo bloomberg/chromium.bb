@@ -51,6 +51,8 @@
     } \
   };
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen
 {
   EIGEN_ARRAY_DECLARE_GLOBAL_UNARY(real,scalar_real_op,real part,\sa ArrayBase::real)

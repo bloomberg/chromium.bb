@@ -297,7 +297,7 @@ bool SourceLineResolverBase::IsModuleCorrupt(const CodeModule* module) {
 
 void SourceLineResolverBase::FillSourceLineInfo(
     StackFrame* frame,
-    std::vector<std::unique_ptr<StackFrame>>* inlined_frames) {
+    std::deque<std::unique_ptr<StackFrame>>* inlined_frames) {
   if (frame->module) {
     ModuleMap::const_iterator it = modules_->find(frame->module->code_file());
     if (it != modules_->end()) {

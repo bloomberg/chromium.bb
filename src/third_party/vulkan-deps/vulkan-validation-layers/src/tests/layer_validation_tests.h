@@ -262,8 +262,6 @@ class VkLayerTest : public VkRenderFramework {
     bool AddSwapchainDeviceExtension();
     VkCommandBufferObj *CommandBuffer();
     void OOBRayTracingShadersTestBody(bool gpu_assisted);
-    bool AddYCbCrDeviceExtensions();
-    bool AddImageDrmFormatModifierDeviceExtensions();
 
   protected:
     uint32_t m_instance_api_version = 0;
@@ -856,7 +854,7 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
                                     std::vector<const char *> &instance_extension_names,
                                     std::vector<const char *> &device_extension_names, void *user_data,
                                     bool need_gpu_validation = false, bool need_push_descriptors = false,
-                                    bool deferred_state_init = false);
+                                    bool deferred_state_init = false, VkPhysicalDeviceFeatures2KHR *features2 = nullptr);
 
 void GetSimpleGeometryForAccelerationStructureTests(const VkDeviceObj &device, VkBufferObj *vbo, VkBufferObj *ibo,
                                                     VkGeometryNV *geometry);

@@ -75,18 +75,24 @@ set(JPEGXL_ENABLE_FUZZERS ${ENABLE_FUZZERS_DEFAULT} CACHE BOOL
     "Build JPEGXL fuzzer targets.")
 set(JPEGXL_ENABLE_DEVTOOLS false CACHE BOOL
     "Build JPEGXL developer tools.")
+set(JPEGXL_ENABLE_TOOLS true CACHE BOOL
+    "Build JPEGXL user tools: cjxl and djxl.")
 set(JPEGXL_ENABLE_MANPAGES true CACHE BOOL
     "Build and install man pages for the command-line tools.")
 set(JPEGXL_ENABLE_BENCHMARK true CACHE BOOL
     "Build JPEGXL benchmark tools.")
 set(JPEGXL_ENABLE_EXAMPLES true CACHE BOOL
     "Build JPEGXL library usage examples.")
+set(JPEGXL_ENABLE_JNI true CACHE BOOL
+    "Build JPEGXL JNI Java wrapper, if Java dependencies are installed.")
 set(JPEGXL_ENABLE_SJPEG true CACHE BOOL
     "Build JPEGXL with support for encoding with sjpeg.")
 set(JPEGXL_ENABLE_OPENEXR true CACHE BOOL
     "Build JPEGXL with support for OpenEXR if available.")
 set(JPEGXL_ENABLE_SKCMS true CACHE BOOL
     "Build with skcms instead of lcms2.")
+set(JPEGXL_BUNDLE_SKCMS true CACHE BOOL
+    "When building with skcms, bundle it into libjxl.a.")
 set(JPEGXL_ENABLE_VIEWERS false CACHE BOOL
     "Build JPEGXL viewer tools for evaluation.")
 set(JPEGXL_ENABLE_TCMALLOC ${ENABLE_TCMALLOC_DEFAULT} CACHE BOOL
@@ -150,8 +156,20 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(JPEGXL_STATIC)
   set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
   set(BUILD_SHARED_LIBS 0)
-  set(CMAKE_EXE_LINKER_FLAGS
-      "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
+  # Clang developers say that in case to use "static" we have to build stdlib
+  # ourselves; for real use case we don't care about stdlib, as it is "granted",
+  # so just linking all other libraries is fine.
+  if (NOT APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS
+        "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
+  endif()
+endif()  # JPEGXL_STATIC
+
+# Threads
+set(THREADS_PREFER_PTHREAD_FLAG YES)
+find_package(Threads REQUIRED)
+
+if(JPEGXL_STATIC)
   if (MINGW)
     # In MINGW libstdc++ uses pthreads directly. When building statically a
     # program (regardless of whether the source code uses pthread or not) the
@@ -167,9 +185,22 @@ if(JPEGXL_STATIC)
     # will be discarded anyway.
     # This adds these flags as dependencies for *all* targets. Adding this to
     # CMAKE_EXE_LINKER_FLAGS instead would cause them to be included before any
-    # object files and therefore discarded.
+    # object files and therefore discarded. This should be set in the
+    # INTERFACE_LINK_LIBRARIES of Threads::Threads but some third_part targets
+    # don't depend on it.
     link_libraries(-Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
-  endif()  # MINGW
+  elseif(CMAKE_USE_PTHREADS_INIT)
+    # "whole-archive" is not supported on OSX.
+    if (NOT APPLE)
+      # Set pthreads as a whole-archive, otherwise weak symbols in the static
+      # libraries will discard pthreads symbols leading to segmentation fault at
+      # runtime.
+      message(STATUS "Using -lpthread as --whole-archive")
+      set_target_properties(Threads::Threads PROPERTIES
+        INTERFACE_LINK_LIBRARIES
+            "-Wl,--whole-archive;-lpthread;-Wl,--no-whole-archive")
+    endif()
+  endif()
 endif()  # JPEGXL_STATIC
 
 if (MSVC)
@@ -249,9 +280,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 add_subdirectory(third_party)
 
-set(THREADS_PREFER_PTHREAD_FLAG YES)
-find_package(Threads REQUIRED)
-
 # Copy the JXL license file to the output build directory.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
                ${PROJECT_BINARY_DIR}/LICENSE.jpeg-xl COPYONLY)
@@ -294,13 +322,31 @@ add_custom_target(doc false
 endif() # DOXYGEN_FOUND
 
 if(JPEGXL_ENABLE_MANPAGES)
-find_package(Python COMPONENTS Interpreter)
-if(Python_Interpreter_FOUND)
-  find_program(ASCIIDOC a2x)
-endif()
-if(NOT Python_Interpreter_FOUND OR "${ASCIIDOC}" STREQUAL "ASCIIDOC-NOTFOUND")
-  message(WARNING "asciidoc was not found, the man pages will not be installed.")
+find_program(ASCIIDOC a2x)
+if(NOT "${ASCIIDOC}" STREQUAL "ASCIIDOC-NOTFOUND")
+file(STRINGS "${ASCIIDOC}" ASCIIDOC_SHEBANG LIMIT_COUNT 1)
+if(ASCIIDOC_SHEBANG MATCHES "python2")
+  find_package(Python2 COMPONENTS Interpreter)
+  set(ASCIIDOC_PY_FOUND "${Python2_Interpreter_FOUND}")
+  set(ASCIIDOC_PY Python2::Interpreter)
+elseif(ASCIIDOC_SHEBANG MATCHES "python3")
+  find_package(Python3 COMPONENTS Interpreter)
+  set(ASCIIDOC_PY_FOUND "${Python3_Interpreter_FOUND}")
+  set(ASCIIDOC_PY Python3::Interpreter)
 else()
+  find_package(Python COMPONENTS Interpreter QUIET)
+  if(NOT Python_Interpreter_FOUND)
+    find_program(ASCIIDOC_PY python)
+    if(NOT ASCIIDOC_PY STREQUAL "ASCIIDOC_PY-NOTFOUND")
+      set(ASCIIDOC_PY_FOUND ON)
+    endif()
+  else()
+    set(ASCIIDOC_PY_FOUND "${Python_Interpreter_FOUND}")
+    set(ASCIIDOC_PY Python::Interpreter)
+  endif()
+endif()
+
+if (ASCIIDOC_PY_FOUND)
   set(MANPAGE_FILES "")
   set(MANPAGES "")
   foreach(PAGE IN ITEMS cjxl djxl)
@@ -309,7 +355,7 @@ else()
     # does not recognize it.
     add_custom_command(
       OUTPUT "${PAGE}.1"
-      COMMAND Python::Interpreter
+      COMMAND "${ASCIIDOC_PY}"
       ARGS "${ASCIIDOC}"
         --format manpage --destination-dir="${CMAKE_CURRENT_BINARY_DIR}"
         "${CMAKE_CURRENT_SOURCE_DIR}/doc/man/${PAGE}.txt"
@@ -319,12 +365,15 @@ else()
   endforeach()
   add_custom_target(manpages ALL DEPENDS ${MANPAGES})
   install(FILES ${MANPAGE_FILES} DESTINATION share/man/man1)
-endif()
-endif()
+endif()  # ASCIIDOC_PY_FOUND
+else()
+  message(WARNING "asciidoc was not found, the man pages will not be installed.")
+endif()  # ASCIIDOC != "ASCIIDOC-NOTFOUND"
+endif()  # JPEGXL_ENABLE_MANPAGES
 
 # Example usage code.
 if (${JPEGXL_ENABLE_EXAMPLES})
-add_subdirectory(examples)
+include(examples/examples.cmake)
 endif ()
 
 # Plugins for third-party software

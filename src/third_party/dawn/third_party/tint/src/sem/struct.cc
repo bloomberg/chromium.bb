@@ -51,7 +51,7 @@ Struct::~Struct() = default;
 
 const StructMember* Struct::FindMember(Symbol name) const {
   for (auto* member : members_) {
-    if (member->Declaration()->symbol() == name) {
+    if (member->Declaration()->symbol == name) {
       return member;
     }
   }
@@ -78,7 +78,7 @@ bool Struct::IsConstructible() const {
   return constructible_;
 }
 
-StructMember::StructMember(ast::StructMember* declaration,
+StructMember::StructMember(const ast::StructMember* declaration,
                            Symbol name,
                            sem::Type* type,
                            uint32_t index,

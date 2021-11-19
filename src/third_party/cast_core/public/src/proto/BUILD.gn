@@ -13,18 +13,4 @@ source_set("base_protos") {
     "//third_party/grpc:grpc_config"
   ]
   sources = []
-  public_deps = [ ":proto_files" ]
-}
-
-proto_library("proto_files") {
-  generate_python = false
-  proto_in_dir = "//third_party/protobuf/src"
-  proto_out_dir = rebase_path(".", "//")
-  sources = [
-    "//third_party/protobuf/src/google/protobuf/duration.proto",
-    "//third_party/protobuf/src/google/protobuf/empty.proto",
-    "//third_party/protobuf/src/google/protobuf/timestamp.proto",
-  ]
-  cc_generator_options = "lite"
-  extra_configs = [ ":force_local_well_known_protos" ]
 }

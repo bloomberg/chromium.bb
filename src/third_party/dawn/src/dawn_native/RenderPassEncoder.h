@@ -32,7 +32,9 @@ namespace dawn_native {
                           Ref<AttachmentState> attachmentState,
                           QuerySetBase* occlusionQuerySet,
                           uint32_t renderTargetWidth,
-                          uint32_t renderTargetHeight);
+                          uint32_t renderTargetHeight,
+                          bool depthReadOnly,
+                          bool stencilReadOnly);
 
         static RenderPassEncoder* MakeError(DeviceBase* device,
                                             CommandEncoder* commandEncoder,
@@ -79,9 +81,6 @@ namespace dawn_native {
         uint32_t mCurrentOcclusionQueryIndex = 0;
         bool mOcclusionQueryActive = false;
     };
-
-    // For the benefit of template generation.
-    using RenderPassEncoderBase = RenderPassEncoder;
 
 }  // namespace dawn_native
 

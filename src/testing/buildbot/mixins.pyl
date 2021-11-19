@@ -639,13 +639,6 @@
       },
     },
   },
-  'lollipop_generic': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'L',
-      },
-    },
-  },
   'mac-archive-rel-args': {
     'args': [
       'mac-release/sizes',
@@ -691,19 +684,19 @@
       },
     },
   },
-  'mac_11_beta_x64': {
-    'swarming': {
-      'dimensions': {
-        'cpu': 'x86-64',
-        'os': 'Mac-11.5',
-      },
-    },
-  },
   'mac_11_x64': {
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
         'os': 'Mac-11|Mac-10.16',
+      },
+    },
+  },
+  'mac_12_beta_arm64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-12',
       },
     },
   },
@@ -792,7 +785,7 @@
         'cpu': 'x86-64',
         'gpu': '1002:6821',
         'hidpi': '1',
-        'os': 'Mac-10.14.6|Mac-11.4',
+        'os': 'Mac-11.4',
         'pool': 'chromium.tests.gpu',
         'display_attached': '1',
       },
@@ -995,15 +988,6 @@
       },
     },
   },
-  'shamu': {
-    # Nexus 6
-    'swarming': {
-      'dimensions': {
-        'device_type': 'shamu',
-        'os': 'Android',
-      },
-    },
-  },
   'skia_gold_test': {
     '$mixin_append': {
       'args': [
@@ -1053,13 +1037,6 @@
     'swarming': {
       'dimensions': {
         'os': 'Windows-10-19042',
-      },
-    },
-  },
-  'win10-1703': {
-    'swarming': {
-      'dimensions': {
-        'os': 'Windows-10-15063',
       },
     },
   },

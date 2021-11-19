@@ -14,7 +14,7 @@
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_string.h"
 #include "core/fxcrt/retain_ptr.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 class CPDF_Array;
@@ -76,13 +76,13 @@ uint32_t FlateOrLZWDecode(bool bLZW,
                           std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                           uint32_t* dest_size);
 
-// Returns pdfium::nullopt if the filter in |pDict| is the wrong type or an
+// Returns absl::nullopt if the filter in |pDict| is the wrong type or an
 // invalid decoder pipeline.
 // Returns an empty vector if there is no filter, or if the filter is an empty
 // array.
 // Otherwise, returns a vector of decoders.
 using DecoderArray = std::vector<std::pair<ByteString, const CPDF_Object*>>;
-Optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict);
+absl::optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict);
 
 bool PDF_DataDecode(pdfium::span<const uint8_t> src_span,
                     uint32_t estimated_size,

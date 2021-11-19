@@ -10,6 +10,8 @@
 #ifndef EIGEN_BESSEL_FUNCTIONS_H
 #define EIGEN_BESSEL_FUNCTIONS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 
@@ -48,10 +50,10 @@ struct bessel_i0e_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_i0e {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -239,10 +241,10 @@ struct bessel_i1e_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type >
 struct generic_i1e {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -434,10 +436,10 @@ struct bessel_k0e_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_k0e {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -597,10 +599,10 @@ struct bessel_k0_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_k0 {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -769,10 +771,10 @@ struct bessel_k1e_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_k1e {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -925,10 +927,10 @@ struct bessel_k1_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_k1 {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -1091,10 +1093,10 @@ struct bessel_j0_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_j0 {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -1291,10 +1293,10 @@ struct bessel_y0_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_y0 {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -1489,10 +1491,10 @@ struct bessel_j1_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_j1 {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };
@@ -1680,10 +1682,10 @@ struct bessel_y1_retval {
 
 template <typename T, typename ScalarType = typename unpacket_traits<T>::type>
 struct generic_y1 {
-  EIGEN_DEVICE_FUNC
-  static EIGEN_STRONG_INLINE T run(const T&) {
-    EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
-                        THIS_TYPE_IS_NOT_SUPPORTED);
+  EIGEN_STATIC_ASSERT((internal::is_same<T, T>::value == false),
+                      THIS_TYPE_IS_NOT_SUPPORTED)
+
+  EIGEN_DEVICE_FUNC static EIGEN_STRONG_INLINE T run(const T&) {
     return ScalarType(0);
   }
 };

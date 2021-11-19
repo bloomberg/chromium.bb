@@ -468,18 +468,41 @@ static inline bool skpaint_to_grpaint_impl(GrRecordingContext* context,
                         std::move(paintFP), {paintAlpha, paintAlpha, paintAlpha, paintAlpha});
             }
         } else {
+#if defined(SK_SUPPORT_LEGACY_PAINT_ALPHA_MODULATION)
             grPaint->setColor4f(origColor.premul());
+#else
+            float paintAlpha = skPaint.getColor4f().fA;
+            if (paintAlpha != 1.0f) {
+                // This invokes the shader's FP tree with an opaque version of the paint color,
+                // then multiplies the final result by the incoming (paint) alpha.
+                // We're actually putting the *unpremul* paint color on the GrPaint. This is okay,
+                // because the shader is supposed to see the original (opaque) RGB from the paint.
+                // ApplyPaintAlpha then creates a valid premul color by applying the paint alpha.
+                // Think of this as equivalent to (but faster than) putting origColor.premul() on
+                // the GrPaint, and ApplyPaintAlpha unpremuling it before passing it to the child.
+                paintFP = GrFragmentProcessor::ApplyPaintAlpha(std::move(paintFP));
+                grPaint->setColor4f({origColor.fR, origColor.fG, origColor.fB, origColor.fA});
+            } else {
+                grPaint->setColor4f(origColor.premul());
+            }
+#endif
         }
     } else {
         if (primColorMode) {
-            // There is a blend between the primitive color and the paint color. The blend considers
-            // the opaque paint color. The paint's alpha is applied to the post-blended color.
-            SkPMColor4f opaqueColor = origColor.makeOpaque().premul();
-            paintFP = GrFragmentProcessor::MakeColor(opaqueColor);
-            paintFP = GrBlendFragmentProcessor::Make(std::move(paintFP),
-                                                     /*dst=*/nullptr,
-                                                     *primColorMode);
-            grPaint->setColor4f(opaqueColor);
+            // Examining all of the SkPaintToGrPaintFoo methods and their uses, it turns out that
+            // we can only encounter this code path when we're *just* using the primitive color.
+            // Literally no code path cares about blending the primitive color with the paint
+            // color. This makes sense, if you think about the SkCanvas draw calls that use
+            // primitive color - none of them are specified to do anything with paint color.
+            SkASSERT(*primColorMode == SkBlendMode::kDst);
+
+            // There is no "blend" - the output of that blend is just the primitive color.
+            // We still put the opaque paint color on the GrPaint.
+            // TODO: Is this even necessary? It seems entirely superfluous. Any op that uses this
+            // code path should be ignoring the paint color, right?
+            grPaint->setColor4f(origColor.makeOpaque().premul());
+
+            // The paint's *alpha* is applied to the primitive color:
 
             // We can ignore origColor here - alpha is unchanged by gamma
             float paintAlpha = skPaint.getColor4f().fA;
@@ -588,18 +611,6 @@ bool SkPaintToGrPaintReplaceShader(GrRecordingContext* context,
                                    /*primColorMode=*/nullptr, grPaint);
 }
 
-/** Ignores the SkShader (if any) on skPaint. */
-bool SkPaintToGrPaintNoShader(GrRecordingContext* context,
-                              const GrColorInfo& dstColorInfo,
-                              const SkPaint& skPaint,
-                              const SkMatrixProvider& matrixProvider,
-                              GrPaint* grPaint) {
-    // Use a ptr to a nullptr to to indicate that the SkShader is ignored and not replaced.
-    std::unique_ptr<GrFragmentProcessor> nullShaderFP(nullptr);
-    return skpaint_to_grpaint_impl(context, dstColorInfo, skPaint, matrixProvider, &nullShaderFP,
-                                   /*primColorMode=*/nullptr, grPaint);
-}
-
 /** Blends the SkPaint's shader (or color if no shader) with a per-primitive color which must
     be setup as a vertex attribute using the specified SkBlendMode. */
 bool SkPaintToGrPaintWithBlend(GrRecordingContext* context,
@@ -610,51 +621,4 @@ bool SkPaintToGrPaintWithBlend(GrRecordingContext* context,
                                GrPaint* grPaint) {
     return skpaint_to_grpaint_impl(context, dstColorInfo, skPaint, matrixProvider,
                                    /*shaderProcessor=*/nullptr, &primColorMode, grPaint);
-}
-
-/** Blends the passed-in shader with a per-primitive color which must be setup as a vertex attribute
-    using the specified SkBlendMode. */
-bool SkPaintToGrPaintWithBlendReplaceShader(GrRecordingContext* context,
-                                            const GrColorInfo& dstColorInfo,
-                                            const SkPaint& skPaint,
-                                            const SkMatrixProvider& matrixProvider,
-                                            std::unique_ptr<GrFragmentProcessor> shaderFP,
-                                            SkBlendMode primColorMode,
-                                            GrPaint* grPaint) {
-    if (!shaderFP) {
-        return false;
-    }
-    return skpaint_to_grpaint_impl(context, dstColorInfo, skPaint, matrixProvider, &shaderFP,
-                                   &primColorMode, grPaint);
-}
-
-bool SkPaintToGrPaintWithTexture(GrRecordingContext* context,
-                                 const GrColorInfo& dstColorInfo,
-                                 const SkPaint& paint,
-                                 const SkMatrixProvider& matrixProvider,
-                                 std::unique_ptr<GrFragmentProcessor> fp,
-                                 bool textureIsAlphaOnly,
-                                 GrPaint* grPaint) {
-    std::unique_ptr<GrFragmentProcessor> shaderFP;
-    if (textureIsAlphaOnly) {
-        if (const auto* shader = as_SB(paint.getShader())) {
-            shaderFP = shader->asFragmentProcessor(
-                    GrFPArgs(context, matrixProvider, &dstColorInfo));
-            if (!shaderFP) {
-                return false;
-            }
-            shaderFP = GrFragmentProcessor::Compose(std::move(fp), std::move(shaderFP));
-        } else {
-            shaderFP = GrFragmentProcessor::MakeInputPremulAndMulByOutput(std::move(fp));
-        }
-    } else {
-        if (paint.getColor4f().isOpaque()) {
-            shaderFP = GrFragmentProcessor::OverrideInput(std::move(fp), SK_PMColor4fWHITE, false);
-        } else {
-            shaderFP = GrFragmentProcessor::MulChildByInputAlpha(std::move(fp));
-        }
-    }
-
-    return SkPaintToGrPaintReplaceShader(context, dstColorInfo, paint, matrixProvider,
-                                         std::move(shaderFP), grPaint);
 }

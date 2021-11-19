@@ -19,7 +19,7 @@
 
 #include "absl/time/clock.h"
 #include "platform/api/submittable_executor.h"
-#include "platform/impl/g3/count_down_latch.h"
+#include "platform/impl/shared/count_down_latch.h"
 #include "thread/threadpool.h"
 
 namespace location {
@@ -46,11 +46,6 @@ class MultiThreadExecutor : public api::SubmittableExecutor {
   }
   void Shutdown() override { DoShutdown(); }
   ~MultiThreadExecutor() override { DoShutdown(); }
-
-  int GetTid(int index) const override {
-    const auto* thread = thread_pool_.thread(index);
-    return thread ? thread->tid() : 0;
-  }
 
   void ScheduleAfter(absl::Duration delay, Runnable&& runnable) {
     if (shutdown_) return;

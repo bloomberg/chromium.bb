@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -28,6 +29,7 @@
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/scrollbar_size.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -232,27 +234,106 @@ gfx::Rect AutofillPopupBaseView::GetContentAreaBounds() const {
   return gfx::Rect();
 }
 
+gfx::Rect AutofillPopupBaseView::GetTopWindowBounds() const {
+  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(
+      delegate()->container_view());
+  // Find root in window tree.
+  while (widget && widget->parent()) {
+    widget = widget->parent();
+  }
+  if (widget)
+    return widget->GetWindowBoundsInScreen();
+
+  // If the widget is null, simply return an empty rect. The most common reason
+  // to end up here is that the NativeView has been destroyed externally, which
+  // can happen at any time. This happens fairly commonly on Windows (e.g., at
+  // shutdown) in particular.
+  return gfx::Rect();
+}
+
+gfx::Rect AutofillPopupBaseView::GetOptionalPositionAndPlaceArrowOnBubble(
+    const gfx::Rect& element_bounds,
+    const gfx::Rect& max_bounds_for_popup,
+    const gfx::Size& preferred_size) {
+  views::BubbleBorder* border = static_cast<views::BubbleBorder*>(
+      GetWidget()->GetRootView()->GetBorder());
+  DCHECK(border);
+
+  gfx::Rect bubble_bounds;
+
+  // Deduce the arrow and the position.
+  views::BubbleBorder::Arrow arrow = GetOptimalBubblePlacement(
+      /*content_area_bounds=*/max_bounds_for_popup,
+      /*element_bounds=*/element_bounds,
+      /*bubble_preferred_size=*/preferred_size,
+      /*right_to_left=*/delegate()->IsRTL(),
+      /*scrollbar_width=*/gfx::scrollbar_size(),
+      /*maximum_pixel_offset_to_center=*/
+      autofill::features::kAutofillMaximumPixelsToMoveSuggestionopupToCenter
+          .Get(),
+      /*maximum_width_percentage_to_center=*/
+      autofill::features::
+          kAutofillMaxiumWidthPercentageToMoveSuggestionPopupToCenter.Get(),
+      /*bubble_bounds=*/bubble_bounds);
+
+  // Those values are not supported for adding an arrow.
+  // Currenrly, they can not be returned by GetOptimalBubblePlacement().
+  DCHECK(arrow != views::BubbleBorder::Arrow::NONE);
+  DCHECK(arrow != views::BubbleBorder::Arrow::FLOAT);
+
+  // Set the arrow position to the border.
+  border->set_arrow(arrow);
+  border->set_visible_arrow(true);
+  border->AddArrowToBubbleCornerAndPointTowardsAnchor(
+      element_bounds, /*move_bubble_to_add_arrow=*/true, bubble_bounds);
+
+  return bubble_bounds;
+}
+
 bool AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   gfx::Size preferred_size = GetPreferredSize();
+  const gfx::Rect content_area_bounds = GetContentAreaBounds();
+  // TODO(crbug.com/1262371) Once popups can render outside the main window on
+  // Linux, use the screen bounds.
+  const gfx::Rect top_window_bounds = GetTopWindowBounds();
+  const gfx::Rect& max_bounds_for_popup =
+      PopupMayExceedContentAreaBounds(delegate_->GetWebContents())
+          ? top_window_bounds
+          : content_area_bounds;
 
-  // When a bubble border is shown, the contents area (inside the shadow) is
-  // supposed to be aligned with input element boundaries.
   gfx::Rect element_bounds = gfx::ToEnclosingRect(delegate()->element_bounds());
+
+  // If the element exceeds the content area, ensure that the popup is still
+  // visually attached to the input element.
+  element_bounds.Intersect(content_area_bounds);
+  if (element_bounds.IsEmpty()) {
+    HideController(PopupHidingReason::kElementOutsideOfContentArea);
+    return false;
+  }
+
+  // Consider the element is |kElementBorderPadding| pixels larger at the top
+  // and at the bottom in order to reposition the dropdown, so that it doesn't
+  // look too close to the element.
   element_bounds.Inset(/*horizontal=*/0, /*vertical=*/-kElementBorderPadding);
 
   // At least one row of the popup should be shown in the bounds of the content
   // area so that the user notices the presence of the popup.
   int item_height =
       children().size() > 0 ? children()[0]->GetPreferredSize().height() : 0;
-  const gfx::Rect content_area_bounds = GetContentAreaBounds();
-  if (!CanShowDropdownHere(item_height, content_area_bounds, element_bounds)) {
+  if (!CanShowDropdownHere(item_height, max_bounds_for_popup, element_bounds)) {
     HideController(PopupHidingReason::kInsufficientSpace);
     return false;
   }
 
-  gfx::Rect popup_bounds = CalculatePopupBounds(
-      preferred_size, content_area_bounds, element_bounds, delegate()->IsRTL(),
-      /*horizontally_centered=*/false);
+  gfx::Rect popup_bounds =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillCenterAlignedSuggestions)
+          ? GetOptionalPositionAndPlaceArrowOnBubble(
+                element_bounds, max_bounds_for_popup, preferred_size)
+          : CalculatePopupBounds(preferred_size, max_bounds_for_popup,
+                                 element_bounds, delegate()->IsRTL(),
+                                 /*horizontally_centered=*/false);
+
   // Account for the scroll view's border so that the content has enough space.
   popup_bounds.Inset(-GetWidget()->GetRootView()->GetInsets());
   GetWidget()->SetBounds(popup_bounds);
@@ -261,6 +342,17 @@ bool AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   UpdateClipPath();
   SchedulePaint();
   return true;
+}
+
+std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
+  auto border = std::make_unique<views::BubbleBorder>(
+      views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
+      SK_ColorWHITE);
+  border->SetCornerRadius(GetCornerRadius());
+  border->set_md_shadow_elevation(
+      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
+          views::Emphasis::kMedium));
+  return border;
 }
 
 void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {
@@ -285,17 +377,6 @@ void AutofillPopupBaseView::HideController(PopupHidingReason reason) {
   // This will eventually result in the deletion of |this|, as the delegate
   // will hide |this|. See |DoHide| above for an explanation on why the precise
   // timing of that deletion is tricky.
-}
-
-std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
-  auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
-      SK_ColorWHITE);
-  border->SetCornerRadius(GetCornerRadius());
-  border->set_md_shadow_elevation(
-      ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::Emphasis::kMedium));
-  return border;
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {

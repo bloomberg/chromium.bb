@@ -397,9 +397,6 @@ void main()
 // Binds a storage buffer to slot 0, then binds a storage image to slot 0, then buffer again.
 TEST_P(ComputeShaderTest, BufferImageBuffer)
 {
-    // See http://anglebug.com/3536
-    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsWindows());
-
     constexpr char kCS0[] = R"(#version 310 es
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 layout(binding = 0, offset = 4) uniform atomic_uint ac[2];
@@ -469,9 +466,6 @@ void main()
 // buffer when it's mapped.
 TEST_P(ComputeShaderTest, BufferImageBufferMapWrite)
 {
-    // See http://anglebug.com/3536
-    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsWindows());
-
     constexpr char kCS0[] = R"(#version 310 es
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
 layout(binding = 0, offset = 4) uniform atomic_uint ac[2];
@@ -4744,6 +4738,9 @@ TEST_P(ComputeShaderTest, ImageBufferMapWriteAndBufferSubData)
     // 'GL_OES_texture_buffer' is not supported".  http://anglebug.com/5832
     ANGLE_SKIP_TEST_IF(IsQualcomm() && IsOpenGLES());
 
+    // angleporject:6545. Known bug.
+    ANGLE_SKIP_TEST_IF(IsVulkan());
+
     constexpr char kComputeImageBuffer[] = R"(#version 310 es
 #extension GL_OES_texture_buffer : require
 layout(local_size_x=1, local_size_y=1, local_size_z=1) in;
@@ -4803,8 +4800,8 @@ void main()
             // rendering result but just to have a unflushed rendering using the buffer so that it
             // will appears as pending.
             glFinish();
-            constexpr char kVS[] = R"(attribute vec3 in_attrib;
-                                    varying vec3 v_attrib;
+            constexpr char kVS[] = R"(attribute vec4 in_attrib;
+                                    varying vec4 v_attrib;
                                     void main()
                                     {
                                         v_attrib = in_attrib;
@@ -4812,22 +4809,23 @@ void main()
                                         gl_PointSize = 100.0;
                                     })";
             constexpr char kFS[] = R"(precision mediump float;
-                                    varying vec3 v_attrib;
+                                    varying vec4 v_attrib;
                                     void main()
                                     {
-                                        gl_FragColor = vec4(v_attrib, 1);
+                                        gl_FragColor = v_attrib;
                                     })";
-            GLuint program       = CompileProgram(kVS, kFS);
-            ASSERT_NE(program, 0U);
-            GLint attribLocation = glGetAttribLocation(program, "in_attrib");
+            GLuint readProgram   = CompileProgram(kVS, kFS);
+            ASSERT_NE(readProgram, 0U);
+            GLint attribLocation = glGetAttribLocation(readProgram, "in_attrib");
             ASSERT_NE(attribLocation, -1);
-            glUseProgram(program);
+            glUseProgram(readProgram);
             ASSERT_GL_NO_ERROR();
             glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT | GL_ELEMENT_ARRAY_BARRIER_BIT);
             glBindBuffer(GL_ARRAY_BUFFER, textureBufferStorage);
-            glVertexAttribPointer(attribLocation, 3, GL_UNSIGNED_BYTE, GL_TRUE, 3, nullptr);
+            glVertexAttribPointer(attribLocation, 4, GL_UNSIGNED_BYTE, GL_TRUE, 4, nullptr);
             glEnableVertexAttribArray(attribLocation);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, textureBufferStorage);
+            glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
             glDrawElements(GL_POINTS, 1, GL_UNSIGNED_INT, nullptr);
             ASSERT_GL_NO_ERROR();
         }
@@ -4869,7 +4867,7 @@ void main()
 }
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ComputeShaderTest);
-ANGLE_INSTANTIATE_TEST_ES31_AND(ComputeShaderTest, WithDirectSPIRVGeneration(ES31_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES31(ComputeShaderTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ComputeShaderTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(ComputeShaderTestES3);

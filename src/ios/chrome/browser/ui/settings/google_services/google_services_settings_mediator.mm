@@ -65,8 +65,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // List of items. For implementation details in
 // GoogleServicesSettingsViewController, two SyncSwitchItem items should not
 // share the same type. The cell UISwitch tag is used to save the item type, and
-// when the user taps on the switch, this tag is used to retreive the item based
-// on the type.
+// when the user taps on the switch, this tag is used to retrieve the item
+// based on the type.
 typedef NS_ENUM(NSInteger, ItemType) {
   AllowChromeSigninItemType = kItemTypeEnumZero,
   AutocompleteSearchesAndURLsItemType,
@@ -77,7 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ImproveChromeManagedItemType,
   BetterSearchAndBrowsingItemType,
   BetterSearchAndBrowsingManagedItemType,
-  ItemTypePasswordLeakCheckSwitch,
+  PasswordLeakCheckSwitchItemType,
 };
 
 // TODO(crbug.com/1244632): Use the Authentication Service sign-in status API
@@ -97,6 +97,21 @@ bool IsSigninControllableByUser() {
   }
   NOTREACHED();
   return true;
+}
+
+bool GetStatusForSigninPolicy() {
+  BrowserSigninMode policy_mode = static_cast<BrowserSigninMode>(
+      GetApplicationContext()->GetLocalState()->GetInteger(
+          prefs::kBrowserSigninPolicy));
+  switch (policy_mode) {
+    case BrowserSigninMode::kEnabled:
+    case BrowserSigninMode::kForced:
+      return true;
+    case BrowserSigninMode::kDisabled:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -220,7 +235,8 @@ bool IsSigninControllableByUser() {
                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_TEXT
                    detailStringID:
                        IDS_IOS_GOOGLE_SERVICES_SETTINGS_ALLOW_SIGNIN_DETAIL
-                           status:NO];
+                           status:GetStatusForSigninPolicy()
+                     controllable:IsSigninControllableByUser()];
 }
 
 #pragma mark - Load non personalized section
@@ -293,7 +309,7 @@ bool IsSigninControllableByUser() {
                 ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                 : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
         break;
-      case ItemTypePasswordLeakCheckSwitch:
+      case PasswordLeakCheckSwitchItemType:
         [self updateLeakCheckItem];
         break;
     }
@@ -330,7 +346,8 @@ bool IsSigninControllableByUser() {
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_TEXT
                        detailStringID:
                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_SEARCHES_AND_URLS_DETAIL
-                               status:self.autocompleteSearchPreference.value];
+                               status:self.autocompleteSearchPreference.value
+                         controllable:self.autocompleteSearchPreference.value];
       [items addObject:autocompleteItem];
     } else {
       SyncSwitchItem* autocompleteItem = [self
@@ -350,7 +367,8 @@ bool IsSigninControllableByUser() {
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_TEXT
                        detailStringID:
                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
-                               status:self.safeBrowsingPreference.value];
+                               status:self.safeBrowsingPreference.value
+                         controllable:self.safeBrowsingPreference.value];
       [items addObject:safeBrowsingManagedItem];
     } else {
       SyncSwitchItem* safeBrowsingItem = [self
@@ -373,7 +391,8 @@ bool IsSigninControllableByUser() {
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT
                        detailStringID:
                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_DETAIL
-                               status:self.sendDataUsagePreference];
+                               status:self.sendDataUsagePreference
+                         controllable:self.sendDataUsagePreference];
       [items addObject:improveChromeItem];
     } else {
       SyncSwitchItem* improveChromeItem = [self
@@ -393,7 +412,8 @@ bool IsSigninControllableByUser() {
                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
                        detailStringID:
                            IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL
-                               status:self.anonymizedDataCollectionPreference];
+                               status:self.anonymizedDataCollectionPreference
+                         controllable:self.anonymizedDataCollectionPreference];
       betterSearchAndBrowsingItem.accessibilityIdentifier =
           kBetterSearchAndBrowsingItemAccessibilityID;
       [items addObject:betterSearchAndBrowsingItem];
@@ -418,7 +438,7 @@ bool IsSigninControllableByUser() {
 - (SettingsSwitchItem*)passwordLeakCheckItem {
   if (!_passwordLeakCheckItem) {
     SettingsSwitchItem* passwordLeakCheckItem = [[SettingsSwitchItem alloc]
-        initWithType:ItemTypePasswordLeakCheckSwitch];
+        initWithType:PasswordLeakCheckSwitchItemType];
     passwordLeakCheckItem.text =
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
@@ -449,7 +469,8 @@ bool IsSigninControllableByUser() {
 - (TableViewInfoButtonItem*)TableViewInfoButtonItemType:(NSInteger)itemType
                                            textStringID:(int)textStringID
                                          detailStringID:(int)detailStringID
-                                                 status:(BOOL)status {
+                                                 status:(BOOL)status
+                                           controllable:(BOOL)controllable {
   TableViewInfoButtonItem* managedItem =
       [[TableViewInfoButtonItem alloc] initWithType:itemType];
   managedItem.text = GetNSString(textStringID);
@@ -458,7 +479,15 @@ bool IsSigninControllableByUser() {
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   if (!status) {
     managedItem.tintColor = [UIColor colorNamed:kGrey300Color];
-    managedItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  }
+
+  // When there is no knob (not controllable), then set the color opacity to
+  // 40%.
+  if (!controllable) {
+    managedItem.textColor =
+        [[UIColor colorNamed:kTextPrimaryColor] colorWithAlphaComponent:0.4f];
+    managedItem.detailTextColor =
+        [[UIColor colorNamed:kTextSecondaryColor] colorWithAlphaComponent:0.4f];
   }
   managedItem.accessibilityHint =
       l10n_util::GetNSString(IDS_IOS_TOGGLE_SETTING_MANAGED_ACCESSIBILITY_HINT);
@@ -506,6 +535,10 @@ bool IsSigninControllableByUser() {
           self, self.accountManagerService));
 }
 
+- (BOOL)isAllowChromeSigninItem:(int)type {
+  return type == AllowChromeSigninItemType;
+}
+
 #pragma mark - GoogleServicesSettingsServiceDelegate
 
 - (void)toggleSwitchItem:(TableViewItem*)item
@@ -551,7 +584,7 @@ bool IsSigninControllableByUser() {
     case BetterSearchAndBrowsingItemType:
       self.anonymizedDataCollectionPreference.value = value;
       break;
-    case ItemTypePasswordLeakCheckSwitch:
+    case PasswordLeakCheckSwitchItemType:
       // Update the pref.
       self.passwordLeakCheckEnabled.value = value;
       // Update the item.

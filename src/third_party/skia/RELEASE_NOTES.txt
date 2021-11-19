@@ -2,6 +2,30 @@ Skia Graphics Release Notes
 
 This file includes a list of high level updates for each milestone release.
 
+Milestone 97
+------------
+  * Added basic support for vulkan DRM modifiers. All of these are treated as read only textures
+    internally (versus querying specific modifier support). Clients can either pass a flag to Vulkan
+    GrBackendFormat to say it uses modifiers or pass the VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT
+    to a GrBackendTexture via the GrVkImageInfo struct.
+  * The following functions and methods are not defined in SkImage when SK_SUPPORT_GPU is 0:
+    MakeTextureFromCompressed, MakeFromTexture, MakeFromCompressedTexture,
+    MakeCrossContextFromPixmap, MakeFromAdoptedTexture, MakeFromYUVATextures,
+    MakeFromYUVAPixmaps, MakePromiseTexture, MakePromiseYUVATexture, MakeBackendTextureFromSkImage,
+    flush, flushAndSubmit, getBackendTexture, makeTextureImage.
+    These were all no-ops anyway when just the CPU backend was compiled in.
+
+* * *
+
+Milestone 96
+------------
+  * SkRuntimeEffect no longer clamps the RGB values of an effect's output to the range 0..A.
+    This makes it easier to use a hierarchy of SkSL shaders where intermediate values do not
+    represent colors but are, for example, non-color inputs to a lighting model.
+    http://review.skia.org/452558
+
+* * *
+
 Milestone 95
 ------------
   * Minimum supported iOS raised from 8 to 11. Skia may build back to iOS 9 but versions older

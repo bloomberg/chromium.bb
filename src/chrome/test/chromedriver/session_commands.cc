@@ -886,8 +886,7 @@ Status ExecuteSetTimeoutLegacy(Session* session,
     session->script_timeout = timeout;
   } else if (*type == "page load") {
     session->page_load_timeout =
-        ((timeout < base::TimeDelta()) ? Session::kDefaultPageLoadTimeout
-                                       : timeout);
+        ((timeout.is_negative()) ? Session::kDefaultPageLoadTimeout : timeout);
   } else {
     return Status(kInvalidArgument, "unknown type of timeout:" + *type);
   }
@@ -1269,6 +1268,26 @@ Status ExecuteUnimplementedCommand(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {
   return Status(kUnknownCommand);
+}
+
+Status ExecuteSetSPCTransactionMode(Session* session,
+                                    const base::DictionaryValue& params,
+                                    std::unique_ptr<base::Value>* value) {
+  WebView* web_view = nullptr;
+  Status status = session->GetTargetWindow(&web_view);
+  if (status.IsError())
+    return status;
+
+  const std::string* mode = params.FindStringKey("mode");
+  if (!mode)
+    return Status(kInvalidArgument, "missing parameter 'mode'");
+
+  base::Value body(base::Value::Type::DICTIONARY);
+  body.SetStringKey("mode", *mode);
+
+  return web_view->SendCommandAndGetResult("Page.setSPCTransactionMode",
+                                           base::Value::AsDictionaryValue(body),
+                                           value);
 }
 
 Status ExecuteGenerateTestReport(Session* session,

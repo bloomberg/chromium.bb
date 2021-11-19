@@ -1211,6 +1211,31 @@ template<> VkStructureType getStructureType<VkResolveImageInfo2KHR> (void)
 	return VK_STRUCTURE_TYPE_RESOLVE_IMAGE_INFO_2_KHR;
 }
 
+template<> VkStructureType getStructureType<VkFormatPropertiesExtendedKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_EXTENDED_KHR;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceMaintenance4FeaturesKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_FEATURES_KHR;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceMaintenance4PropertiesKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MAINTENANCE_4_PROPERTIES_KHR;
+}
+
+template<> VkStructureType getStructureType<VkDeviceBufferMemoryRequirementsKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_DEVICE_BUFFER_MEMORY_REQUIREMENTS_KHR;
+}
+
+template<> VkStructureType getStructureType<VkDeviceImageMemoryRequirementsKHR> (void)
+{
+	return VK_STRUCTURE_TYPE_DEVICE_IMAGE_MEMORY_REQUIREMENTS_KHR;
+}
+
 template<> VkStructureType getStructureType<VkDebugReportCallbackCreateInfoEXT> (void)
 {
 	return VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
@@ -2086,6 +2111,11 @@ template<> VkStructureType getStructureType<VkDeviceDeviceMemoryReportCreateInfo
 	return VK_STRUCTURE_TYPE_DEVICE_DEVICE_MEMORY_REPORT_CREATE_INFO_EXT;
 }
 
+template<> VkStructureType getStructureType<VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RGBA10X6_FORMATS_FEATURES_EXT;
+}
+
 template<> VkStructureType getStructureType<VkPhysicalDeviceRobustness2FeaturesEXT> (void)
 {
 	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ROBUSTNESS_2_FEATURES_EXT;
@@ -2299,6 +2329,16 @@ template<> VkStructureType getStructureType<VkPhysicalDeviceMultiDrawFeaturesEXT
 template<> VkStructureType getStructureType<VkPhysicalDeviceMultiDrawPropertiesEXT> (void)
 {
 	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTI_DRAW_PROPERTIES_EXT;
+}
+
+template<> VkStructureType getStructureType<VkPhysicalDeviceBorderColorSwizzleFeaturesEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BORDER_COLOR_SWIZZLE_FEATURES_EXT;
+}
+
+template<> VkStructureType getStructureType<VkSamplerBorderColorComponentMappingCreateInfoEXT> (void)
+{
+	return VK_STRUCTURE_TYPE_SAMPLER_BORDER_COLOR_COMPONENT_MAPPING_CREATE_INFO_EXT;
 }
 
 template<> VkStructureType getStructureType<VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT> (void)

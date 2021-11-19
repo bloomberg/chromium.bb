@@ -208,7 +208,8 @@ const std::u16string& SearchResultSuggestionChipView::GetText() const {
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
   if (!result()) {
     SetIcon(gfx::ImageSkia());
-    SetText(std::u16string());
+    if (!GetText().empty())
+      SetText(std::u16string());
     SetAccessibleName(std::u16string());
     return;
   }
@@ -255,8 +256,8 @@ void SearchResultSuggestionChipView::InitLayout() {
 void SearchResultSuggestionChipView::OnButtonPressed(const ui::Event& event) {
   DCHECK(result());
   LogAppLaunch(index_in_container());
-  RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
-                               view_delegate_->GetSearchModel());
+  RecordSearchResultOpenSource(result(), view_delegate_->GetAppListViewState(),
+                               view_delegate_->IsInTabletMode());
   view_delegate_->OpenSearchResult(
       result()->id(), result()->result_type(), event.flags(),
       AppListLaunchedFrom::kLaunchedFromSuggestionChip,

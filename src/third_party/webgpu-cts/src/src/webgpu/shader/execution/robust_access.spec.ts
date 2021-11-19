@@ -146,7 +146,16 @@ g.test('linear_memory')
       .expandWithParams(generateTypes)
   )
   .fn(async t => {
-    const { storageClass, storageMode, access, isAtomic, baseType, type, _kTypeInfo } = t.params;
+    const {
+      storageClass,
+      storageMode,
+      access,
+      isAtomic,
+      containerType,
+      baseType,
+      type,
+      _kTypeInfo,
+    } = t.params;
 
     assert(_kTypeInfo !== undefined, 'not an indexable type');
     assert('arrayLength' in _kTypeInfo);
@@ -264,7 +273,7 @@ g.test('linear_memory')
               {
                 const exprLoadElement = isAtomic ? `atomicLoad(&${exprElement})` : exprElement;
                 let condition = `${exprLoadElement} != ${exprZeroElement}`;
-                if ('innerLength' in _kTypeInfo) condition = `any(${condition})`;
+                if (containerType === 'matrix') condition = `any(${condition})`;
                 testFunctionSource += `
                   if (${condition}) { return ${nextErrorReturnValue()}; }`;
               }

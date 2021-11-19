@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_FORWARD_DECLARATIONS_H
 #define EIGEN_CXX11_TENSOR_TENSOR_FORWARD_DECLARATIONS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // MakePointer class is used as a container of the address space of the pointer
@@ -29,7 +31,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE T* constCast(const T* data) {
 }
 
 // The StorageMemory class is a container of the device specific pointer
-// used for refering to a Pointer on TensorEvaluator class. While the TensorExpression
+// used for referring to a Pointer on TensorEvaluator class. While the TensorExpression
 // is a device-agnostic type and need MakePointer class for type conversion,
 // the TensorEvaluator class can be specialized for a device, hence it is possible
 // to construct different types of temproray storage memory in TensorEvaluator

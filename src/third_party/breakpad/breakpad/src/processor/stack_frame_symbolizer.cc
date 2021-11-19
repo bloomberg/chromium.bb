@@ -58,7 +58,7 @@ StackFrameSymbolizer::SymbolizerResult StackFrameSymbolizer::FillSourceLineInfo(
     const CodeModules* unloaded_modules,
     const SystemInfo* system_info,
     StackFrame* frame,
-    std::vector<std::unique_ptr<StackFrame>>* inlined_frames) {
+    std::deque<std::unique_ptr<StackFrame>>* inlined_frames) {
   assert(frame);
 
   const CodeModule* module = NULL;

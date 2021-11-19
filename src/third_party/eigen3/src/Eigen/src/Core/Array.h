@@ -10,6 +10,8 @@
 #ifndef EIGEN_ARRAY_H
 #define EIGEN_ARRAY_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -131,7 +133,6 @@ class Array
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Array() : Base()
     {
-      Base::_check_template_params();
       EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
     }
 
@@ -142,7 +143,6 @@ class Array
     Array(internal::constructor_without_unaligned_array_assert)
       : Base(internal::constructor_without_unaligned_array_assert())
     {
-      Base::_check_template_params();
       EIGEN_INITIALIZE_COEFFS_IF_THAT_OPTION_IS_ENABLED
     }
 #endif
@@ -152,7 +152,6 @@ class Array
     Array(Array&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_constructible<Scalar>::value)
       : Base(std::move(other))
     {
-      Base::_check_template_params();
     }
     EIGEN_DEVICE_FUNC
     Array& operator=(Array&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
@@ -206,7 +205,6 @@ class Array
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE explicit Array(const T& x)
     {
-      Base::_check_template_params();
       Base::template _init1<T>(x);
     }
 
@@ -214,7 +212,6 @@ class Array
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Array(const T0& val0, const T1& val1)
     {
-      Base::_check_template_params();
       this->template _init2<T0,T1>(val0, val1);
     }
 
@@ -249,7 +246,6 @@ class Array
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Array(const Scalar& val0, const Scalar& val1, const Scalar& val2)
     {
-      Base::_check_template_params();
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(Array, 3)
       m_storage.data()[0] = val0;
       m_storage.data()[1] = val1;
@@ -261,7 +257,6 @@ class Array
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Array(const Scalar& val0, const Scalar& val1, const Scalar& val2, const Scalar& val3)
     {
-      Base::_check_template_params();
       EIGEN_STATIC_ASSERT_VECTOR_SPECIFIC_SIZE(Array, 4)
       m_storage.data()[0] = val0;
       m_storage.data()[1] = val1;

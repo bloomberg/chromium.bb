@@ -5,6 +5,15 @@
 import("//build/config/external_libraries.gni")
 import("//build_overrides/build.gni")
 
+config("ffmpeg_warnings") {
+  if (is_clang) {
+    cflags_cc = [
+      # ffmpeg's av_err2str macro uses C99 compound literals :-/
+      "-Wno-c99-extensions",
+    ]
+  }
+}
+
 # Define the executable target only when the build is configured to use the
 # standalone platform implementation; since this is itself a standalone
 # application.
@@ -86,7 +95,10 @@ if (!build_with_chromium) {
       }
     }
 
-    configs += [ "../common:certificate_config" ]
+    configs += [
+      "../common:certificate_config",
+      ":ffmpeg_warnings",
+    ]
 
     public_configs = [
       "../../build:openscreen_include_dirs",

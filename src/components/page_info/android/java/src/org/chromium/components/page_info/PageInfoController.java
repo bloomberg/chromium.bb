@@ -100,7 +100,7 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
     private boolean mIsInternalPage;
 
     // The security level of the page (a valid ConnectionSecurityLevel).
-    private int mSecurityLevel;
+    private @ConnectionSecurityLevel int mSecurityLevel;
 
     // Observer for dismissing dialog if web contents get destroyed, navigate etc.
     private WebContentsObserver mWebContentsObserver;
@@ -150,8 +150,8 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
      *                                 NO_HIGHLIGHTED_PERMISSION for no highlight.
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
-    public PageInfoController(WebContents webContents, int securityLevel, String publisher,
-            PageInfoControllerDelegate delegate,
+    public PageInfoController(WebContents webContents, @ConnectionSecurityLevel int securityLevel,
+            String publisher, PageInfoControllerDelegate delegate,
             @ContentSettingsType int highlightedPermission) {
         mWebContents = webContents;
         mSecurityLevel = securityLevel;
@@ -278,13 +278,15 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
                     });
         }
 
-        mAdditionalControllers = mDelegate.createAdditionalRowViews(this, mView.getRowWrapper());
         // TODO(crbug.com/1173154): Setup forget this site button after history delete is
         // implemented.
         // setupForgetSiteButton(mView.getForgetSiteButton());
 
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(mContext, mWindowAndroid);
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
+
+        // Additional controllers should be created after native is initialized.
+        mAdditionalControllers = mDelegate.createAdditionalRowViews(this, mView.getRowWrapper());
 
         mWebContentsObserver = new WebContentsObserver(webContents) {
             @Override
@@ -419,7 +421,9 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
     /**
      * Dismiss the popup, and then run a task after the animation has completed (if there is one).
      */
-    private void runAfterDismiss(Runnable task) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    public void runAfterDismiss(Runnable task) {
+        assert mPendingRunAfterDismissTask == null;
         mPendingRunAfterDismissTask = task;
         mDialog.dismiss(true);
     }
@@ -430,10 +434,6 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
     @Override
     public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {
         assert mNativePageInfoController != 0;
-        if (mPendingRunAfterDismissTask != null) {
-            mPendingRunAfterDismissTask.run();
-            mPendingRunAfterDismissTask = null;
-        }
         if (mSubpageController != null) {
             mSubpageController.onSubpageRemoved();
             mSubpageController = null;
@@ -443,13 +443,27 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         PageInfoControllerJni.get().destroy(mNativePageInfoController, PageInfoController.this);
         mNativePageInfoController = 0;
         mContext = null;
+        if (mPendingRunAfterDismissTask != null) {
+            mPendingRunAfterDismissTask.run();
+            mPendingRunAfterDismissTask = null;
+        }
     }
 
     @Override
     public void recordAction(@PageInfoAction int action) {
+        assert mNativePageInfoController != 0;
         if (mNativePageInfoController != 0) {
             PageInfoControllerJni.get().recordPageInfoAction(
                     mNativePageInfoController, PageInfoController.this, action);
+        }
+    }
+
+    @Override
+    public void setAboutThisSiteShown(boolean wasAboutThisSiteShown) {
+        assert mNativePageInfoController != 0;
+        if (mNativePageInfoController != 0) {
+            PageInfoControllerJni.get().setAboutThisSiteShown(
+                    mNativePageInfoController, PageInfoController.this, wasAboutThisSiteShown);
         }
     }
 
@@ -460,6 +474,11 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
             PageInfoControllerJni.get().updatePermissions(
                     mNativePageInfoController, PageInfoController.this);
         }
+    }
+
+    @Override
+    public @ConnectionSecurityLevel int getSecurityLevel() {
+        return mSecurityLevel;
     }
 
     private boolean isSheet(Context context) {
@@ -494,6 +513,8 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
             final String contentPublisher, @OpenedFromSource int source,
             PageInfoControllerDelegate delegate,
             @ContentSettingsType int highlightedPermission) {
+        // Don't show the dialog if this tab doesn't have an activity. See https://crbug.com/1267383
+        if (activity == null) return;
         // If the activity's decor view is not attached to window, we don't show the dialog because
         // the window manager might have revoked the window token for this activity. See
         // https://crbug.com/921450.
@@ -527,6 +548,8 @@ public class PageInfoController implements PageInfoMainController, ModalDialogPr
         void destroy(long nativePageInfoControllerAndroid, PageInfoController caller);
         void recordPageInfoAction(
                 long nativePageInfoControllerAndroid, PageInfoController caller, int action);
+        void setAboutThisSiteShown(long nativePageInfoControllerAndroid, PageInfoController caller,
+                boolean wasAboutThisSiteShown);
         void updatePermissions(long nativePageInfoControllerAndroid, PageInfoController caller);
     }
 

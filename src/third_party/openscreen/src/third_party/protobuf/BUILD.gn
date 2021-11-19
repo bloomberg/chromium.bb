@@ -30,6 +30,10 @@ config("protobuf_warnings") {
       "-Wno-unneeded-internal-declaration",
       "-Wno-unused-private-field",
       "-Wno-inconsistent-missing-override",
+      "-Wno-unreachable-code-return",
+      "-Wno-shadow",
+      "-Wno-implicit-int-float-conversion",
+      "-Wno-unreachable-code-break",
     ]
   }
 

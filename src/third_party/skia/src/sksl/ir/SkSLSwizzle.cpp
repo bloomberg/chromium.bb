@@ -5,12 +5,17 @@
  * found in the LICENSE file.
  */
 
+#include "src/sksl/ir/SkSLSwizzle.h"
+
 #include "include/private/SkTOptional.h"
+#include "include/sksl/SkSLErrorReporter.h"
+#include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLConstantFolder.h"
+#include "src/sksl/SkSLProgramSettings.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLConstructorScalarCast.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
-#include "src/sksl/ir/SkSLSwizzle.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 
 namespace SkSL {
 
@@ -346,6 +351,12 @@ std::unique_ptr<Expression> Swizzle::Convert(const Context& context,
 
     if (!foundXYZW) {
         context.fErrors->error(line, "swizzle must refer to base expression");
+        return nullptr;
+    }
+
+    // Coerce literals in expressions such as `(12345).xxx` to their actual type.
+    base = baseType.scalarTypeForLiteral().coerceExpression(std::move(base), context);
+    if (!base) {
         return nullptr;
     }
 
