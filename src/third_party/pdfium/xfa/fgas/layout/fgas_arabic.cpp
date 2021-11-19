@@ -212,9 +212,9 @@ wchar_t GetFormChar(const CFGAS_Char* cur,
   return (eNext < FX_CHARTYPE::kArabicAlef) ? ft->wFinal : ft->wMedial;
 }
 
-Optional<wchar_t> GetArabicFromShaddaTable(wchar_t shadda) {
+absl::optional<wchar_t> GetArabicFromShaddaTable(wchar_t shadda) {
   if (shadda < kFirstShaddaTableEntry || shadda > kLastShaddaTableEntry)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return kShaddaTable[shadda - kFirstShaddaTableEntry];
 }

@@ -122,6 +122,9 @@ class PageLoadMetricsUpdateDispatcher {
     virtual void OnSubframeMetadataChanged(
         content::RenderFrameHost* rfh,
         const mojom::FrameMetadata& metadata) = 0;
+    virtual void OnSubFrameInputTimingChanged(
+        content::RenderFrameHost* rfh,
+        const mojom::InputTiming& input_timing_delta) = 0;
     virtual void OnSubFrameRenderDataChanged(
         content::RenderFrameHost* rfh,
         const mojom::FrameRenderDataUpdate& render_data) = 0;
@@ -167,7 +170,7 @@ class PageLoadMetricsUpdateDispatcher {
       mojom::CpuTimingPtr new_cpu_timing,
       mojom::DeferredResourceCountsPtr new_deferred_resource_data,
       mojom::InputTimingPtr input_timing_delta,
-      const blink::MobileFriendliness& mobile_friendliness);
+      const absl::optional<blink::MobileFriendliness>& mobile_friendliness);
 
   void SetUpSharedMemoryForSmoothness(
       content::RenderFrameHost* render_frame_host,
@@ -216,8 +219,11 @@ class PageLoadMetricsUpdateDispatcher {
   const mojom::InputTiming& page_input_timing() const {
     return *page_input_timing_;
   }
-  const blink::MobileFriendliness& mobile_friendliness() const {
+  const absl::optional<blink::MobileFriendliness>& mobile_friendliness() const {
     return mobile_friendliness_;
+  }
+  void UpdateResponsivenessMetricsNormalizationForBfcache() {
+    responsiveness_metrics_normalization_.ClearAllUserInteractionLatencies();
   }
   void UpdateLayoutShiftNormalizationForBfcache() {
     cumulative_layout_shift_score_for_bfcache_ =
@@ -235,6 +241,8 @@ class PageLoadMetricsUpdateDispatcher {
                             mojom::PageLoadTimingPtr new_timing);
   void UpdateFrameCpuTiming(content::RenderFrameHost* render_frame_host,
                             mojom::CpuTimingPtr new_timing);
+  void UpdateSubFrameInputTiming(content::RenderFrameHost* render_frame_host,
+                                 const mojom::InputTiming& input_timing_delta);
 
   void UpdateMainFrameMetadata(content::RenderFrameHost* render_frame_host,
                                mojom::FrameMetadataPtr new_metadata);
@@ -295,7 +303,7 @@ class PageLoadMetricsUpdateDispatcher {
   mojom::InputTimingPtr page_input_timing_;
 
   // MobileFrienddliness data for current view.
-  blink::MobileFriendliness mobile_friendliness_;
+  absl::optional<blink::MobileFriendliness> mobile_friendliness_;
 
   // True if this page load started in prerender.
   const bool is_prerendered_page_load_;
@@ -338,7 +346,8 @@ class PageLoadMetricsUpdateDispatcher {
   bool has_seen_input_or_scroll_ = false;
 
   // Where we receive user interaction latencies from all renderer frames and
-  // calculate a few normalized responsiveness metrics.
+  // calculate a few normalized responsiveness metrics. It will be reset every
+  // time the page enters bfcache.
   ResponsivenessMetricsNormalization responsiveness_metrics_normalization_;
 };
 

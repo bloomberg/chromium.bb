@@ -43,7 +43,7 @@ class CFX_DIBAttribute;
 
 class Dummy {};  // Placeholder to work around C++ syntax issues
 
-class ProgressiveDecoder :
+class ProgressiveDecoder final :
 #ifdef PDF_ENABLE_XFA_BMP
     public BmpDecoder::Delegate,
 #endif  // PDF_ENABLE_XFA_BMP
@@ -203,7 +203,7 @@ class ProgressiveDecoder :
   int GetDownScale();
   void GetTransMethod(FXDIB_Format dest_format, FXCodec_Format src_format);
 
-  void ReSampleScanline(const RetainPtr<CFX_DIBitmap>& pDeviceBitmap,
+  void ResampleScanline(const RetainPtr<CFX_DIBitmap>& pDeviceBitmap,
                         int32_t dest_line,
                         uint8_t* src_scan,
                         FXCodec_Format src_format);

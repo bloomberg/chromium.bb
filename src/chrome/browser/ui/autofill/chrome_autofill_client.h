@@ -84,10 +84,20 @@ class ChromeAutofillClient
   CreateCreditCardInternalAuthenticator(content::RenderFrameHost* rfh) override;
 
   void ShowAutofillSettings(bool show_credit_card_settings) override;
+  void ShowCardUnmaskOtpInputDialog(
+      const size_t& otp_length,
+      base::WeakPtr<OtpUnmaskDelegate> delegate) override;
+  void OnUnmaskOtpVerificationResult(OtpUnmaskResult unmask_result) override;
   void ShowUnmaskPrompt(const CreditCard& card,
                         UnmaskCardReason reason,
                         base::WeakPtr<CardUnmaskDelegate> delegate) override;
   void OnUnmaskVerificationResult(PaymentsRpcResult result) override;
+  void ShowUnmaskAuthenticatorSelectionDialog(
+      const std::vector<CardUnmaskChallengeOption>& challenge_options,
+      base::OnceCallback<void(const std::string&)>
+          confirm_unmask_challenge_option_callback,
+      base::OnceClosure cancel_unmasking_closure) override;
+  void DismissUnmaskAuthenticatorSelectionDialog(bool server_success) override;
 #if !defined(OS_ANDROID)
   std::vector<std::string> GetAllowedMerchantsForVirtualCards() override;
   std::vector<std::string> GetAllowedBinRangesForVirtualCards() override;
@@ -183,7 +193,7 @@ class ChromeAutofillClient
       base::OnceCallback<void(const std::string&)> callback) override;
 
   // content::WebContentsObserver implementation.
-  void MainFrameWasResized(bool width_changed) override;
+  void PrimaryMainFrameWasResized(bool width_changed) override;
   void WebContentsDestroyed() override;
   void OnWebContentsFocused(
       content::RenderWidgetHost* render_widget_host) override;

@@ -8,8 +8,8 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifndef EIGEN_CORE_H
-#define EIGEN_CORE_H
+#ifndef EIGEN_CORE_MODULE_H
+#define EIGEN_CORE_MODULE_H
 
 // first thing Eigen does: stop the compiler from reporting useless warnings.
 #include "src/Core/util/DisableStupidWarnings.h"
@@ -166,6 +166,7 @@ using std::ptrdiff_t;
 #include "src/Core/util/XprHelper.h"
 #include "src/Core/util/Memory.h"
 #include "src/Core/util/IntegralConstant.h"
+#include "src/Core/util/Serializer.h"
 #include "src/Core/util/SymbolicIndex.h"
 
 #include "src/Core/NumTraits.h"
@@ -257,10 +258,9 @@ using std::ptrdiff_t;
 #include "src/Core/functors/StlFunctors.h"
 #include "src/Core/functors/AssignmentFunctors.h"
 
-// Specialized functors to enable the processing of complex numbers
-// on CUDA devices
-#ifdef EIGEN_CUDACC
-#include "src/Core/arch/CUDA/Complex.h"
+// Specialized functors for GPU.
+#ifdef EIGEN_GPUCC
+#include "src/Core/arch/GPU/Complex.h"
 #endif
 
 #include "src/Core/util/IndexedViewHelper.h"
@@ -382,4 +382,4 @@ using std::ptrdiff_t;
 
 #include "src/Core/util/ReenableStupidWarnings.h"
 
-#endif // EIGEN_CORE_H
+#endif // EIGEN_CORE_MODULE_H

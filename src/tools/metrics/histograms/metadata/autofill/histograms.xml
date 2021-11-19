@@ -11,10 +11,11 @@ along with a detailed description for each histogram.
 For best practices on writing histogram descriptions, see
 https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md
 
-Please send CLs to chromium-metrics-reviews@google.com rather than to specific
-individuals. These CLs will be automatically reassigned to a reviewer within
-about 5 minutes. This approach helps the metrics team to load-balance incoming
-reviews. Googlers can read more about this at go/gwsq-gerrit.
+Please follow the instructions in the OWNERS file in this directory to find a
+reviewer. If no OWNERS file exists, please consider signing up at
+go/reviewing-metrics (Googlers only), as all subdirectories are expected to
+have an OWNERS file. As a last resort you can send the CL to
+chromium-metrics-reviews@google.com.
 -->
 
 <histogram-configuration>
@@ -52,6 +53,13 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       summary="OTP fallback from FIDO authentication"/>
 </variants>
 
+<variants name="Autofill.DialogError">
+  <variant name="WithNoTemporaryError"
+      summary="No temporary error has been shown in the dialog"/>
+  <variant name="WithPreviousTemporaryError"
+      summary="A temporary error has been shown in the dialog"/>
+</variants>
+
 <variants name="Autofill.OfferNotification.Type">
   <variant name="CardLinkedOffer"
       summary="The bubble/infobar for an offer that is linked to a credit
@@ -59,6 +67,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <variant name="FreeListingCouponOffer"
       summary="The bubble/infobar for a merchant promo code offer sourced
                from the FreeListingCouponService."/>
+</variants>
+
+<variants name="Autofill.OtpAuth.Type">
+  <variant name="SmsOtp" summary="The OTP authentication with a SMS OTP."/>
 </variants>
 
 <variants name="Autofill.PaymentBubble.Show">
@@ -83,9 +95,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
       summary="Request failed in retrieving the virtual card information."/>
 </variants>
 
+<variants name="Autofill.ProgressDialog.FlowType">
+  <variant name="CardUnmask"
+      summary="Progress dialog for the VCN Card Unmask Flow"/>
+</variants>
+
 <variants name="Autofill.Snackbar.Type">
   <variant name="VirtualCard"
       summary="Snackbar shown after virtual card is autofilled."/>
+</variants>
+
+<variants name="Autofill.VirtualCardUnmaskFlowType">
+  <variant name="Fido" summary="FIDO authentication only"/>
+  <variant name="Otp" summary="OTP auth only"/>
+  <variant name="OtpFallbackFromFido"
+      summary="OTP fallback from FIDO authentication"/>
 </variants>
 
 <variants name="AutofillCreditCardWebauthnOptInOrigin">
@@ -675,7 +699,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.CardholderNameFixFlowPrompt.Events"
-    enum="AutofillCardholderNameFixFlowPromptEvent" expires_after="2021-11-30">
+    enum="AutofillCardholderNameFixFlowPromptEvent" expires_after="2022-09-30">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -687,7 +711,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.CardUnmask.CvcLength{AutofillCreditCardUnmaskReason}"
-    units="digits" expires_after="2022-06-01">
+    units="digits" expires_after="M96">
+  <obsolete>
+    Removed 10/2021 as analysis is complete.
+  </obsolete>
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -701,6 +728,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     <variant name=".ForAutofill" summary="Autofill"/>
     <variant name=".ForPaymentRequest" summary="Payment Request"/>
   </token>
+</histogram>
+
+<histogram name="Autofill.CardUnmaskAuthenticationSelectionDialog.Result"
+    enum="AutofillCardUnmaskAuthenticationSelectionDialogResult"
+    expires_after="2022-04-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>siashah@chromium.org</owner>
+  <summary>
+    Records the result of the Card Unmask Authentication Selection Dialog, such
+    as user cancelation before/after selecting a challenge option, or automatic
+    dismissal after a server success/failure for a selected option was returned.
+    The metric is recorded any time the dialog is dismissed.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.CardUnmaskAuthenticationSelectionDialog.Shown"
+    enum="BooleanShown" expires_after="2022-04-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>siashah@chromium.org</owner>
+  <summary>
+    Records true every time the card unmask challenge option selection dialog
+    was shown. This dialog is shown when a user needs to select a challenge
+    option to authenticate a card for payments autofill.
+  </summary>
 </histogram>
 
 <histogram name="Autofill.CardUploadDecisionMetric"
@@ -1213,7 +1266,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.FormEvents.CreditCard{AutofillDataAvailability}"
-    enum="AutofillFormEvent" expires_after="2021-12-12">
+    enum="AutofillFormEvent" expires_after="2022-10-31">
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1241,6 +1294,57 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
     Records whether the the form was successfully filled by Autofill on iOS.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.GetBrowserFormOfRendererForm.Duration"
+    units="microseconds" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the time it takes to retrieve a browser form for a given renderer
+    form. (A renderer form is a single frame's form, whereas a browser form may
+    or may not transcend multiple frames.) This corresponds to the duration of
+    FormForest::GetBrowserFormOfRendererForm() and is emitted per each
+    execution. Note that histogram samples for clients without high-resolution
+    clocks are dropped.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.GetRendererFormsOfBrowserForm.Duration"
+    units="microseconds" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the time it takes to retrieve the renderer forms for a given browser
+    form. (A renderer form is a single frame's form, whereas a browser form may
+    or may not transcend multiple frames.) This corresponds to the duration of
+    FormForest::GetRendererFormsOfBrowserForm() and is emitted per each
+    execution. Note that histogram samples for clients without high-resolution
+    clocks are dropped.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Duration"
+    units="microseconds" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records the time it takes to update Autofill's form/frame tree. This
+    corresponds to the duration of FormForest::UpdateTreeOfRendererForm() and is
+    emitted per each execution. Note that histogram samples for clients without
+    high-resolution clocks are dropped.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FormForest.UpdateTreeOfRendererForm.Visits"
+    units="node-visits" expires_after="2022-10-31">
+  <owner>schwering@google.com</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    Records nodes visited on a form/frame tree. This is emitted per each call of
+    FormForest::UpdateTreeOfRendererForm() that actually does an entire tree
+    traversal.
   </summary>
 </histogram>
 
@@ -1398,6 +1502,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Autofill.HadUserOptedIn_To_WalletSyncTransportServerCards"
     enum="BooleanOptedIn" expires_after="2021-11-30">
+  <obsolete>
+    Removed 10/2021 as it is no longer needed for analysis.
+  </obsolete>
   <owner>jsaul@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1984,6 +2091,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <token key="ShowType" variants="Autofill.PaymentBubble.Show"/>
 </histogram>
 
+<histogram name="Autofill.OfferNotificationBubbleSuppressed.{BubbleType}"
+    enum="BooleanSuppressed" expires_after="2022-04-01">
+  <owner>jsaul@google.com</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <summary>
+    Records when the offer notification bubble should show but gets suppressed
+    due to reasons like show frequency rate control. The subhistogram is the
+    type of offer shown, such as GPay promo code offer or free-listing coupon
+    offer.
+  </summary>
+  <token key="BubbleType" variants="Autofill.OfferNotification.Type"/>
+</histogram>
+
 <histogram name="Autofill.OfferNotificationInfoBarOffer.{OfferType}"
     enum="BooleanShown" expires_after="2022-04-01">
   <owner>siashah@chromium.org</owner>
@@ -2006,6 +2128,115 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     {OfferType}. Recorded when the infobar is closed.
   </summary>
   <token key="OfferType" variants="Autofill.OfferNotification.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpAuth.{OtpAuthType}.Attempt"
+    enum="BooleanAttempted" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when an OTP authentication starts and does not emit any value
+    otherwise.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram
+    name="Autofill.OtpAuth.{OtpAuthType}.RequestLatency.SelectChallengeOptionRequest"
+    units="ms" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the roundtrip latency of the SelectChallengeOptionRequest in the OTP
+    authentication.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram
+    name="Autofill.OtpAuth.{OtpAuthType}.RequestLatency.UnmaskCardRequest"
+    units="ms" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the roundtrip latency of the UnmaskCardRequest in the OTP
+    authentication.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpAuth.{OtpAuthType}.Result"
+    enum="AutofillOtpAuthEvent" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>Logs the result of the OTP authentication.</summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpAuth.{OtpAuthType}.RetriableError"
+    enum="AutofillOtpAuthEvent" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs any retriable failure before the OTP authentication completes.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.ErrorMessageShown"
+    enum="AutofillOtpInputDialogError" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the type of the error when any temporary error is shown in the card
+    unmask OTP dialog.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.NewOtpRequested"
+    enum="BooleanRequested" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when the &quot;Get New Code&quot; button is clicked and a new OTP
+    is requested. Doesn't emit any other value.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.Result"
+    enum="AutofillOtpInputDialogResult" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the reason of the closure when the card unmask OTP dialog is closed.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.Result.{WithError}"
+    enum="AutofillOtpInputDialogResult" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the reason of the closure when the card unmask OTP dialog is closed.
+    This breaks down on whether any temporary error happened before the card
+    unmask OTP dialog was closed.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
+  <token key="WithError" variants="Autofill.DialogError"/>
+</histogram>
+
+<histogram name="Autofill.OtpInputDialog.{OtpAuthType}.Shown"
+    enum="BooleanShown" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when the card unmask OTP dialog is shown. Doesn't emit any other
+    value.
+  </summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
 </histogram>
 
 <histogram name="Autofill.PageTranslationStatus" enum="Boolean"
@@ -2059,7 +2290,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileEditedType"
-    enum="AutofillSettingsVisibleTypes" expires_after="M100">
+    enum="AutofillSettingsVisibleTypes" expires_after="2022-04-24">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2071,7 +2302,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.ProfileImport.NewProfileNumberOfEditedFields"
-    units="fields" expires_after="M100">
+    units="fields" expires_after="2022-04-24">
   <owner>koerber@google.com</owner>
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
@@ -2108,7 +2339,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
     Logs that a specific type was changed in a profile update process that was
-    shown to the user when a profile similar to an already exisintg profile was
+    shown to the user when a profile similar to an already existing profile was
     observed in a form submission. This metric is emitted only when the user
     accepts the update without further edits.
   </summary>
@@ -2175,7 +2406,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>src/components/autofill/OWNERS</owner>
   <summary>
     Logs that a specific type was edited in a profile update prompt that was
-    shown to the user when a profile similar to an already exisintg profile was
+    shown to the user when a profile similar to an already existing profile was
     observed in a form submission. This metric is emitted once the user-provided
     import decision is final.
   </summary>
@@ -2255,6 +2486,41 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     experiment is enabled and profile suggestions are available. This metric
     measures how often suggestions were created with and without a formatter.
   </summary>
+</histogram>
+
+<histogram name="Autofill.ProgressDialog.{FlowType}.Result"
+    enum="BooleanCanceled" expires_after="2022-04-01">
+  <owner>siashah@chromium.org</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records the result of the progress dialog, which can either be canceled
+    (user canceled while it was in progress) or not canceled (user waited until
+    confirmation). This dialog is shown in between other dialogs in a flow to
+    provide a progress state to the user. If the user does not cancel it, after
+    its related background task completes it moves on to the next dialog in the
+    flow that it is a part of. The metric is recorded when this dialog is
+    dismissed, and the result that gets logged is false if the user waited until
+    confirmation or true if the user canceled the dialog.
+  </summary>
+  <token key="FlowType" variants="Autofill.ProgressDialog.FlowType"/>
+</histogram>
+
+<histogram name="Autofill.ProgressDialog.{FlowType}.Shown" enum="BooleanShown"
+    expires_after="2022-04-01">
+  <owner>siashah@chromium.org</owner>
+  <owner>siyua@chromium.org</owner>
+  <owner>jsaul@google.com</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Records true every time the progress dialog is shown. This dialog is shown
+    in between other dialogs in a payments autofill flow to provide a progress
+    state to the user. If the user does not cancel it, after its related
+    background task completes it moves on to the next dialog in the flow that it
+    is a part of.
+  </summary>
+  <token key="FlowType" variants="Autofill.ProgressDialog.FlowType"/>
 </histogram>
 
 <histogram name="Autofill.QueriedCreditCardFormIsSecure" enum="BooleanSecure"
@@ -2449,6 +2715,42 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Autofill.ServerCardUnmask.{CardType}.Attempt"
+    enum="BooleanAttempted" expires_after="2022-04-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when a server card unmasking process starts and does not emit any
+    value otherwise.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
+<histogram name="Autofill.ServerCardUnmask.{CardType}.FormSubmission"
+    enum="BooleanSubmitted" expires_after="2022-04-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Emits true when a form is submitted with information fetched in a server
+    card unmasking process, and does not emit any value otherwise.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+</histogram>
+
+<histogram name="Autofill.ServerCardUnmask.{CardType}.Result.{FlowType}"
+    enum="AutofillServerCardUnmaskResult" expires_after="2022-04-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>
+    Logs the result of a server card unmasking process when the unmasking is
+    finished (whether it succeeded or otherwise reason of the failure). It
+    includes the type of the card to be unmasked and the flow type (what
+    authentication used) in the unmasking.
+  </summary>
+  <token key="CardType" variants="Autofill.PaymentsRpcCardType"/>
+  <token key="FlowType" variants="Autofill.VirtualCardUnmaskFlowType"/>
+</histogram>
+
 <histogram name="Autofill.ServerQueryResponse" enum="AutofillQueryResult"
     expires_after="2022-12-12">
   <owner>battre@chromium.org</owner>
@@ -2501,7 +2803,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.StoredCreditCardCount.Server.WithCardArtImage"
-    units="units" expires_after="M98">
+    units="units" expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -2511,7 +2813,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.StoredCreditCardCount.Server.WithVirtualCardMetadata"
-    units="units" expires_after="2022-04-10">
+    units="units" expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3031,7 +3333,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.UsedCachedServerCard" units="uses"
-    expires_after="2022-02-20">
+    expires_after="2022-04-24">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3044,7 +3346,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.UsedCachedVirtualCard" units="uses"
-    expires_after="2021-12-20">
+    expires_after="2022-04-01">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3071,7 +3373,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.VirtualCard.MetadataSynced" enum="BooleanExists"
-    expires_after="M98">
+    expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
   <summary>
@@ -3083,7 +3385,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Autofill.VirtualCardManualFallbackBubble.FieldClicked"
     enum="AutofillVirtualCardManualFallbackBubbleFieldClicked"
-    expires_after="2022-05-31">
+    expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3096,7 +3398,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Autofill.VirtualCardManualFallbackBubble.Result.{ShowType}"
     enum="AutofillVirtualCardManualFallbackBubbleResult"
-    expires_after="2022-05-31">
+    expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3108,7 +3410,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Autofill.VirtualCardManualFallbackBubble.Shown"
-    enum="BooleanPreviouslyShown" expires_after="2022-05-31">
+    enum="BooleanPreviouslyShown" expires_after="2022-04-01">
   <owner>siyua@chromium.org</owner>
   <owner>jsaul@google.com</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -3286,6 +3588,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <owner>michaelbai@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Whether the user changed autofilled field.</summary>
+</histogram>
+
+<histogram name="Autofill.{OtpAuthType}.OtpInputDialog.Shown"
+    enum="AutofillOtpAuthEvent" expires_after="2022-05-01">
+  <owner>siyua@chromium.org</owner>
+  <owner>payments-autofill-team@google.com</owner>
+  <summary>Logs when the OTP input dialog was shown.</summary>
+  <token key="OtpAuthType" variants="Autofill.OtpAuth.Type"/>
 </histogram>
 
 </histograms>

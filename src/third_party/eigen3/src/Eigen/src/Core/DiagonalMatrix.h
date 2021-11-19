@@ -11,6 +11,8 @@
 #ifndef EIGEN_DIAGONALMATRIX_H
 #define EIGEN_DIAGONALMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 #ifndef EIGEN_PARSED_BY_DOXYGEN

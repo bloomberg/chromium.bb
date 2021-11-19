@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2015-2017 The Khronos Group Inc.
- * Copyright (c) 2015-2017 Valve Corporation
- * Copyright (c) 2015-2017 LunarG, Inc.
+ * Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,23 @@
  *
  * Author: Mark Young <marky@lunarg.com>
  * Author: Lenny Komow <lenny@lunarg.com>
+ * Author: Charles Giessen <charles@lunarg.com>
  */
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
+#include "extension_manual.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "vk_loader_platform.h"
-#include "loader.h"
-#include "vk_loader_extensions.h"
+
 #include <vulkan/vk_icd.h>
-#include "wsi.h"
+
 #include "debug_utils.h"
+#include "loader.h"
+#include "log.h"
+#include "vk_loader_extensions.h"
+#include "vk_loader_platform.h"
+#include "wsi.h"
 
 // ---- Manually added trampoline/terminator functions
 
@@ -157,6 +160,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_ReleaseDisplayEXT(VkPhysicalDevice phy
                    "ICD \"%s\" associated with VkPhysicalDevice does not support vkReleaseDisplayEXT - Consequently, the call is "
                    "invalid because it should not be possible to acquire a display on this device",
                    icd_term->scanned_icd->lib_name);
+        abort();
     }
     return icd_term->dispatch.ReleaseDisplayEXT(phys_dev_term->phys_dev, display);
 }
@@ -238,6 +242,7 @@ VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceSurfacePresentModes2E
     if (NULL == icd_term->dispatch.GetPhysicalDeviceSurfacePresentModes2EXT) {
         loader_log(icd_term->this_instance, VULKAN_LOADER_ERROR_BIT, 0,
                    "ICD associated with VkPhysicalDevice does not support GetPhysicalDeviceSurfacePresentModes2EXT");
+        abort();
     }
     VkIcdSurface *icd_surface = (VkIcdSurface *)(pSurfaceInfo->surface);
     uint8_t icd_index = phys_dev_term->icd_index;
@@ -296,5 +301,6 @@ VKAPI_ATTR VkResult VKAPI_CALL GetPhysicalDeviceToolPropertiesEXT(VkPhysicalDevi
 
 VKAPI_ATTR VkResult VKAPI_CALL terminator_GetPhysicalDeviceToolPropertiesEXT(VkPhysicalDevice physicalDevice, uint32_t *pToolCount,
                                                                              VkPhysicalDeviceToolPropertiesEXT *pToolProperties) {
+   *pToolCount = 0;
     return VK_SUCCESS;
 }

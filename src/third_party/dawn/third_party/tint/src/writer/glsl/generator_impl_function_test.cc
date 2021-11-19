@@ -292,6 +292,7 @@ void main() {
   col1 = outputs.col1;
   col2 = outputs.col2;
   gl_Position = outputs.pos;
+  gl_Position.y = -gl_Position.y;
 }
 
 
@@ -433,11 +434,10 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-struct UBO {
-  vec4 coord;
-};
 
-uniform UBO ubo;
+layout (binding = 0) uniform UBO_1 {
+  vec4 coord;
+} ubo;
 
 float sub_func(float param) {
   return ubo.coord.x;
@@ -484,11 +484,10 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-struct Uniforms {
-  vec4 coord;
-};
 
-uniform Uniforms uniforms;
+layout (binding = 0) uniform Uniforms_1 {
+  vec4 coord;
+} uniforms;
 
 void frag_main() {
   float v = uniforms.coord.x;
@@ -537,7 +536,10 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 
-Data coord : register(u0, space1);
+layout (binding = 0) buffer Data_1 {
+  int a;
+  float b;
+} coord;
 
 void frag_main() {
   float v = coord.b;
@@ -586,7 +588,10 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 
-Data coord : register(t0, space1);
+layout (binding = 0) buffer Data_1 {
+  int a;
+  float b;
+} coord;
 
 void frag_main() {
   float v = coord.b;
@@ -631,7 +636,10 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 
-Data coord : register(u0, space1);
+layout (binding = 0) buffer Data_1 {
+  int a;
+  float b;
+} coord;
 
 void frag_main() {
   coord.b = 2.0f;
@@ -677,7 +685,10 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 
-Data coord : register(u0, space1);
+layout (binding = 0) buffer Data_1 {
+  int a;
+  float b;
+} coord;
 
 void frag_main() {
   coord.b = 2.0f;
@@ -724,11 +735,10 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-struct S {
-  float x;
-};
 
-uniform S coord;
+layout (binding = 0) uniform S_1 {
+  float x;
+} coord;
 
 float sub_func(float param) {
   return coord.x;
@@ -782,7 +792,9 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 
-S coord : register(u0, space1);
+layout (binding = 0) buffer S_1 {
+  float x;
+} coord;
 
 float sub_func(float param) {
   return coord.x;
@@ -837,7 +849,7 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Decoration_EntryPoint_Compute) {
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-[numthreads(1, 1, 1)]
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main() {
   return;
 }
@@ -863,7 +875,7 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-[numthreads(2, 4, 6)]
+layout(local_size_x = 2, local_size_y = 4, local_size_z = 6) in;
 void main() {
   return;
 }
@@ -892,11 +904,11 @@ TEST_F(GlslGeneratorImplTest_Function,
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-static const int width = int(2);
-static const int height = int(3);
-static const int depth = int(4);
+const int width = int(2);
+const int height = int(3);
+const int depth = int(4);
 
-[numthreads(2, 3, 4)]
+layout(local_size_x = 2, local_size_y = 3, local_size_z = 4) in;
 void main() {
   return;
 }
@@ -928,17 +940,17 @@ precision mediump float;
 #ifndef WGSL_SPEC_CONSTANT_7
 #define WGSL_SPEC_CONSTANT_7 int(2)
 #endif
-static const int width = WGSL_SPEC_CONSTANT_7;
+const int width = WGSL_SPEC_CONSTANT_7;
 #ifndef WGSL_SPEC_CONSTANT_8
 #define WGSL_SPEC_CONSTANT_8 int(3)
 #endif
-static const int height = WGSL_SPEC_CONSTANT_8;
+const int height = WGSL_SPEC_CONSTANT_8;
 #ifndef WGSL_SPEC_CONSTANT_9
 #define WGSL_SPEC_CONSTANT_9 int(4)
 #endif
-static const int depth = WGSL_SPEC_CONSTANT_9;
+const int depth = WGSL_SPEC_CONSTANT_9;
 
-[numthreads(WGSL_SPEC_CONSTANT_7, WGSL_SPEC_CONSTANT_8, WGSL_SPEC_CONSTANT_9)]
+layout(local_size_x = WGSL_SPEC_CONSTANT_7, local_size_y = WGSL_SPEC_CONSTANT_8, local_size_z = WGSL_SPEC_CONSTANT_9) in;
 void main() {
   return;
 }
@@ -980,8 +992,7 @@ TEST_F(GlslGeneratorImplTest_Function, Emit_Function_WithArrayReturn) {
   EXPECT_EQ(gen.result(), R"(#version 310 es
 precision mediump float;
 
-typedef float my_func_ret[5];
-my_func_ret my_func() {
+float[5] my_func() {
   return float[5](0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 }
 )");
@@ -1047,9 +1058,11 @@ TEST_F(GlslGeneratorImplTest_Function,
 precision mediump float;
 
 
-Data data : register(u0, space0);
+layout (binding = 0) buffer Data_1 {
+  float d;
+} data;
 
-[numthreads(1, 1, 1)]
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void a() {
   float v = data.d;
   return;
@@ -1060,7 +1073,7 @@ void main() {
 
 
 
-[numthreads(1, 1, 1)]
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void b() {
   float v = data.d;
   return;

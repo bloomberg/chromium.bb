@@ -35,6 +35,9 @@ class IFX_SeekableReadStream;
 
 class CPDF_Parser {
  public:
+  using ObjectType = CPDF_CrossRefTable::ObjectType;
+  using ObjectInfo = CPDF_CrossRefTable::ObjectInfo;
+
   class ParsedObjectsHolder : public CPDF_IndirectObjectHolder {
    public:
     virtual bool TryInit() = 0;
@@ -124,19 +127,15 @@ class CPDF_Parser {
       std::unique_ptr<CPDF_LinearizedHeader> pLinearized);
 
  protected:
-  using ObjectType = CPDF_CrossRefTable::ObjectType;
-  using ObjectInfo = CPDF_CrossRefTable::ObjectInfo;
-
   bool LoadCrossRefV4(FX_FILESIZE pos, bool bSkip);
   bool RebuildCrossRef();
+  Error StartParseInternal();
+  FX_FILESIZE ParseStartXRef();
+  std::unique_ptr<CPDF_LinearizedHeader> ParseLinearizedHeader();
 
-  std::unique_ptr<CPDF_SyntaxParser> m_pSyntax;
+  void SetSyntaxParserForTesting(std::unique_ptr<CPDF_SyntaxParser> parser);
 
  private:
-  friend class cpdf_parser_BadStartXrefShouldNotBuildCrossRefTable_Test;
-  friend class cpdf_parser_ParseStartXRefWithHeaderOffset_Test;
-  friend class cpdf_parser_ParseStartXRef_Test;
-  friend class cpdf_parser_ParseLinearizedWithHeaderOffset_Test;
   friend class CPDF_DataAvail;
 
   struct CrossRefObjData {
@@ -144,11 +143,12 @@ class CPDF_Parser {
     ObjectInfo info;
   };
 
-  Error StartParseInternal();
-  FX_FILESIZE ParseStartXRef();
   bool LoadAllCrossRefV4(FX_FILESIZE xref_offset);
   bool LoadAllCrossRefV5(FX_FILESIZE xref_offset);
   bool LoadCrossRefV5(FX_FILESIZE* pos, bool bMainXRef);
+  void ProcessCrossRefV5Entry(pdfium::span<const uint8_t> entry_span,
+                              pdfium::span<const uint32_t> field_widths,
+                              uint32_t obj_num);
   RetainPtr<CPDF_Dictionary> LoadTrailerV4();
   Error SetEncryptHandler();
   void ReleaseEncryptHandler();
@@ -156,7 +156,6 @@ class CPDF_Parser {
   bool LoadLinearizedAllCrossRefV5(FX_FILESIZE main_xref_offset);
   Error LoadLinearizedMainXRefTable();
   const CPDF_ObjectStream* GetObjectStream(uint32_t object_number);
-  std::unique_ptr<CPDF_LinearizedHeader> ParseLinearizedHeader();
   void ShrinkObjectMap(uint32_t size);
   // A simple check whether the cross reference table matches with
   // the objects.
@@ -175,9 +174,8 @@ class CPDF_Parser {
   bool ParseFileVersion();
 
   ObjectType GetObjectType(uint32_t objnum) const;
-  ObjectType GetObjectTypeFromCrossRefStreamType(
-      uint32_t cross_ref_stream_type) const;
 
+  std::unique_ptr<CPDF_SyntaxParser> m_pSyntax;
   std::unique_ptr<ParsedObjectsHolder> m_pOwnedObjectsHolder;
   UnownedPtr<ParsedObjectsHolder> m_pObjectsHolder;
 

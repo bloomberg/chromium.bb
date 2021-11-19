@@ -10,9 +10,11 @@
     - apt-get install --no-install-recommends -y ${EIGEN_CI_CXX_COMPILER}
       ${EIGEN_CI_CC_COMPILER} cmake ninja-build xsltproc
   script:
+    - export NPROC=`nproc`
+    - echo ${NPROC}
     - export CXX=${EIGEN_CI_CXX_COMPILER}
     - export CC=${EIGEN_CI_CC_COMPILER}
-    - cd ${BUILDDIR} && ctest --output-on-failure --no-compress-output
+    - cd ${BUILDDIR} && ctest -j${NPROC} --output-on-failure --no-compress-output
       --build-no-clean -T test -L ${EIGEN_CI_TEST_LABEL}
   after_script:
     - apt-get update -y
@@ -115,6 +117,28 @@ test:x86-64:linux:clang-10:cxx11-on:official:
 
 test:x86-64:linux:clang-10:cxx11-on:unsupported:
   extends: .test:x86-64:linux:clang-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+    
+.test:x86-64:linux:clang-10:cxx11-on:avx512:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:x86-64:linux:clang-10:cxx11-on:avx512" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+    - avx512
+
+test:x86-64:linux:clang-10:cxx11-on:avx512:official:
+  extends: .test:x86-64:linux:clang-10:cxx11-on:avx512
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:clang-10:cxx11-on:avx512:unsupported:
+  extends: .test:x86-64:linux:clang-10:cxx11-on:avx512
   variables:
     EIGEN_CI_TEST_LABEL: "Unsupported"
 

@@ -18,6 +18,7 @@
 /third_party/markupsafe
 /third_party/nasm
 /third_party/skia
+/third_party/test_fonts
 /third_party/zlib
 /tools/clang
 /tools/code_coverage
@@ -25,6 +26,8 @@
 /tools/skia_goldctl
 /v8
 /xcodebuild
+.vscode/
+.vscode-server/
 .DS_Store
 .gclient
 .gclient_entries

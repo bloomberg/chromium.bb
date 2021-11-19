@@ -9,7 +9,7 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "fxjs/gc/heap.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "v8/include/cppgc/member.h"
 #include "v8/include/cppgc/visitor.h"
@@ -37,7 +37,7 @@ class CXFA_TextProvider : public cppgc::GarbageCollected<CXFA_TextProvider> {
   CXFA_Para* GetParaIfExists();
   CXFA_Font* GetFontIfExists();
   bool IsCheckButtonAndAutoWidth() const;
-  Optional<WideString> GetEmbeddedObj(const WideString& wsAttr) const;
+  absl::optional<WideString> GetEmbeddedObj(const WideString& wsAttr) const;
 
  private:
   CXFA_TextProvider(CXFA_Node* pNode, Type eType);

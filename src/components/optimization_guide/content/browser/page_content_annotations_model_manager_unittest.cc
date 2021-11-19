@@ -49,15 +49,15 @@ class ModelObserverTracker : public TestOptimizationGuideModelProvider {
 class FakePageEntitiesModelExecutor : public PageEntitiesModelExecutor {
  public:
   explicit FakePageEntitiesModelExecutor(
-      const base::flat_map<std::string,
-                           std::vector<tflite::task::core::Category>>& entries,
+      const base::flat_map<std::string, std::vector<ScoredEntityMetadata>>&
+          entries,
       const base::flat_map<std::string, EntityMetadata>& entity_metadata)
       : entries_(entries), entity_metadata_(entity_metadata) {}
   ~FakePageEntitiesModelExecutor() override = default;
 
-  void ExecuteModelWithInput(
+  void HumanReadableExecuteModelWithInput(
       const std::string& text,
-      PageEntitiesModelExecutedCallback callback) override {
+      PageEntitiesMetadataModelExecutedCallback callback) override {
     auto it = entries_.find(text);
     std::move(callback).Run(
         it != entries_.end() ? absl::make_optional(it->second) : absl::nullopt);
@@ -73,8 +73,7 @@ class FakePageEntitiesModelExecutor : public PageEntitiesModelExecutor {
   }
 
  private:
-  base::flat_map<std::string, std::vector<tflite::task::core::Category>>
-      entries_;
+  base::flat_map<std::string, std::vector<ScoredEntityMetadata>> entries_;
   base::flat_map<std::string, EntityMetadata> entity_metadata_;
 };
 
@@ -121,8 +120,8 @@ class PageContentAnnotationsModelManagerTest : public testing::Test {
   }
 
   void SetPageEntitiesModelExecutor(
-      const base::flat_map<std::string,
-                           std::vector<tflite::task::core::Category>>& entries,
+      const base::flat_map<std::string, std::vector<ScoredEntityMetadata>>&
+          entries,
       const base::flat_map<std::string, EntityMetadata>& entity_metadata) {
     model_manager()->OverridePageEntitiesModelExecutorForTesting(
         std::make_unique<FakePageEntitiesModelExecutor>(entries,
@@ -454,6 +453,128 @@ TEST_F(PageContentAnnotationsModelManagerTest,
   EXPECT_FALSE(GetMetadataForEntityId("someid").has_value());
 }
 
+TEST_F(PageContentAnnotationsModelManagerTest, BatchAnnotate_PageTopics) {
+  base::RunLoop run_loop;
+  std::vector<BatchAnnotationResult> result;
+  BatchAnnotationCallback callback = base::BindOnce(
+      [](base::RunLoop* run_loop,
+         std::vector<BatchAnnotationResult>* out_result,
+         const std::vector<BatchAnnotationResult>& in_result) {
+        *out_result = in_result;
+        run_loop->Quit();
+      },
+      &run_loop, &result);
+
+  model_manager()->Annotate(std::move(callback), {"input"},
+                            AnnotationType::kPageTopics);
+  run_loop.Run();
+
+  // TODO(crbug/1249632): Check the corresponding output once the model is being
+  // run.
+  ASSERT_EQ(result.size(), 1U);
+  EXPECT_EQ(result[0].input(), "input");
+  EXPECT_EQ(result[0].topics(), absl::nullopt);
+  EXPECT_EQ(result[0].entities(), absl::nullopt);
+  EXPECT_EQ(result[0].visibility_score(), absl::nullopt);
+}
+
+TEST_F(PageContentAnnotationsModelManagerTest, BatchAnnotate_PageEntities) {
+  base::RunLoop run_loop;
+  std::vector<BatchAnnotationResult> result;
+  BatchAnnotationCallback callback = base::BindOnce(
+      [](base::RunLoop* run_loop,
+         std::vector<BatchAnnotationResult>* out_result,
+         const std::vector<BatchAnnotationResult>& in_result) {
+        *out_result = in_result;
+        run_loop->Quit();
+      },
+      &run_loop, &result);
+
+  model_manager()->Annotate(std::move(callback), {"input"},
+                            AnnotationType::kPageEntities);
+  run_loop.Run();
+
+  // TODO(crbug/1249632): Check the corresponding output once the model is being
+  // run.
+  ASSERT_EQ(result.size(), 1U);
+  EXPECT_EQ(result[0].input(), "input");
+  EXPECT_EQ(result[0].topics(), absl::nullopt);
+  EXPECT_EQ(result[0].entities(), absl::nullopt);
+  EXPECT_EQ(result[0].visibility_score(), absl::nullopt);
+}
+
+TEST_F(PageContentAnnotationsModelManagerTest,
+       BatchAnnotate_ContentVisibility) {
+  base::RunLoop run_loop;
+  std::vector<BatchAnnotationResult> result;
+  BatchAnnotationCallback callback = base::BindOnce(
+      [](base::RunLoop* run_loop,
+         std::vector<BatchAnnotationResult>* out_result,
+         const std::vector<BatchAnnotationResult>& in_result) {
+        *out_result = in_result;
+        run_loop->Quit();
+      },
+      &run_loop, &result);
+
+  model_manager()->Annotate(std::move(callback), {"input"},
+                            AnnotationType::kContentVisibility);
+  run_loop.Run();
+
+  // TODO(crbug/1249632): Check the corresponding output once the model is being
+  // run.
+  ASSERT_EQ(result.size(), 1U);
+  EXPECT_EQ(result[0].input(), "input");
+  EXPECT_EQ(result[0].topics(), absl::nullopt);
+  EXPECT_EQ(result[0].entities(), absl::nullopt);
+  EXPECT_EQ(result[0].visibility_score(), absl::nullopt);
+}
+
+TEST_F(PageContentAnnotationsModelManagerTest, BatchAnnotate_CalledTwice) {
+  base::RunLoop run_loop1;
+  std::vector<BatchAnnotationResult> result1;
+  BatchAnnotationCallback callback1 = base::BindOnce(
+      [](base::RunLoop* run_loop,
+         std::vector<BatchAnnotationResult>* out_result,
+         const std::vector<BatchAnnotationResult>& in_result) {
+        *out_result = in_result;
+        run_loop->Quit();
+      },
+      &run_loop1, &result1);
+
+  model_manager()->Annotate(std::move(callback1), {"input1"},
+                            AnnotationType::kPageTopics);
+
+  base::RunLoop run_loop2;
+  std::vector<BatchAnnotationResult> result2;
+  BatchAnnotationCallback callback2 = base::BindOnce(
+      [](base::RunLoop* run_loop,
+         std::vector<BatchAnnotationResult>* out_result,
+         const std::vector<BatchAnnotationResult>& in_result) {
+        *out_result = in_result;
+        run_loop->Quit();
+      },
+      &run_loop2, &result2);
+
+  model_manager()->Annotate(std::move(callback2), {"input2"},
+                            AnnotationType::kPageEntities);
+
+  run_loop1.Run();
+  run_loop2.Run();
+
+  // TODO(crbug/1249632): Check the corresponding output once the model is being
+  // run.
+  ASSERT_EQ(result1.size(), 1U);
+  EXPECT_EQ(result1[0].input(), "input1");
+  EXPECT_EQ(result1[0].topics(), absl::nullopt);
+  EXPECT_EQ(result1[0].entities(), absl::nullopt);
+  EXPECT_EQ(result1[0].visibility_score(), absl::nullopt);
+  ASSERT_EQ(result2.size(), 1U);
+  EXPECT_EQ(result2[0].input(), "input2");
+  EXPECT_EQ(result2[0].topics(), absl::nullopt);
+  EXPECT_EQ(result2[0].entities(), absl::nullopt);
+  EXPECT_EQ(result2[0].visibility_score(), absl::nullopt);
+}
+
 class PageContentAnnotationsModelManagerEntitiesOnlyTest
     : public PageContentAnnotationsModelManagerTest {
  public:
@@ -484,14 +605,16 @@ TEST_F(PageContentAnnotationsModelManagerEntitiesOnlyTest,
 
 TEST_F(PageContentAnnotationsModelManagerEntitiesOnlyTest,
        AnnotateNoModelsFinishedExecuting) {
-  SetPageEntitiesModelExecutor({{"sometext",
-                                 {{"entity1", 0.1},
-                                  {"entity2", 0.2},
-                                  {"entity3", 0.3},
-                                  {"entity4", 0.4},
-                                  {"entity5", 0.5},
-                                  {"entity6", 0.6}}}},
-                               /*entity_metadata=*/{});
+  SetPageEntitiesModelExecutor(
+      {{"sometext",
+        {
+            ScoredEntityMetadata(0.6, EntityMetadata("entity6", "entity6", {})),
+            ScoredEntityMetadata(0.5, EntityMetadata("entity5", "entity5", {})),
+            ScoredEntityMetadata(0.4, EntityMetadata("entity4", "entity4", {})),
+            ScoredEntityMetadata(0.3, EntityMetadata("entity3", "entity3", {})),
+            ScoredEntityMetadata(0.2, EntityMetadata("entity2", "entity2", {})),
+        }}},
+      /*entity_metadata=*/{});
 
   absl::optional<history::VisitContentModelAnnotations> annotations =
       Annotate("sometext");
@@ -551,14 +674,16 @@ class PageContentAnnotationsModelManagerMultipleModelsTest
 
 TEST_F(PageContentAnnotationsModelManagerMultipleModelsTest,
        AnnotateRequestBothModels) {
-  SetPageEntitiesModelExecutor({{"sometext",
-                                 {{"entity1", 0.1},
-                                  {"entity2", 0.2},
-                                  {"entity3", 0.3},
-                                  {"entity4", 0.4},
-                                  {"entity5", 0.5},
-                                  {"entity6", 0.6}}}},
-                               /*entity_metadata=*/{});
+  SetPageEntitiesModelExecutor(
+      {{"sometext",
+        {
+            ScoredEntityMetadata(0.6, EntityMetadata("entity6", "entity6", {})),
+            ScoredEntityMetadata(0.5, EntityMetadata("entity5", "entity5", {})),
+            ScoredEntityMetadata(0.4, EntityMetadata("entity4", "entity4", {})),
+            ScoredEntityMetadata(0.3, EntityMetadata("entity3", "entity3", {})),
+            ScoredEntityMetadata(0.2, EntityMetadata("entity2", "entity2", {})),
+        }}},
+      /*entity_metadata=*/{});
 
   Annotate("sometext");
 

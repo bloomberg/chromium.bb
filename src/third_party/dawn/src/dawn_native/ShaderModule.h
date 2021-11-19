@@ -32,6 +32,7 @@
 #include <bitset>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 namespace tint {
@@ -200,19 +201,35 @@ namespace dawn_native {
             // Match tint::inspector::OverridableConstant::Type
             // Bool is defined as a macro on linux X11 and cannot compile
             enum class Type { Boolean, Float32, Uint32, Int32 } type;
+
+            // If the constant doesn't not have an initializer in the shader
+            // Then it is required for the pipeline stage to have a constant record to initialize a
+            // value
+            bool isInitialized;
         };
 
-        // Store overridableConstants from tint program
+        // Map identifier to overridable constant
+        // Identifier is unique: either the variable name or the numeric ID if specified
         std::unordered_map<std::string, OverridableConstant> overridableConstants;
+
+        // Overridable constants that are not initialized in shaders
+        // They need value initialization from pipeline stage or it is a validation error
+        std::unordered_set<std::string> uninitializedOverridableConstants;
+
+        bool usesNumWorkgroups = false;
     };
 
     class ShaderModuleBase : public ApiObjectBase, public CachedObject {
       public:
+        ShaderModuleBase(DeviceBase* device,
+                         const ShaderModuleDescriptor* descriptor,
+                         ApiObjectBase::UntrackedByDeviceTag tag);
         ShaderModuleBase(DeviceBase* device, const ShaderModuleDescriptor* descriptor);
         ~ShaderModuleBase() override;
 
         static Ref<ShaderModuleBase> MakeError(DeviceBase* device);
 
+        bool DestroyApiObject() override;
         ObjectType GetType() const override;
 
         // Return true iff the program has an entrypoint called `entryPoint`.
@@ -239,6 +256,9 @@ namespace dawn_native {
         OwnedCompilationMessages* GetCompilationMessages() const;
 
       protected:
+        // Constructor used only for mocking and testing.
+        ShaderModuleBase(DeviceBase* device);
+
         MaybeError InitializeBase(ShaderModuleParseResult* parseResult);
 
       private:

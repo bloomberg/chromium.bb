@@ -102,6 +102,45 @@ const char* GetSuperResDigest8bpp(int id, int plane) {
   return kDigestSuperRes[id][plane];
 }
 
+#if LIBGAV1_MAX_BITDEPTH >= 10
+const char* GetSuperResDigest10bpp(int id, int plane) {
+  // Digests are in Y/U/V order.
+  static const char* const kDigestSuperRes[][kMaxPlanes] = {
+      {
+          // all input is 0.
+          "fccb1f57b252b1a86d335aea929d1d58",
+          "2f244a56091c9705794e92e6bcc38058",
+          "2f244a56091c9705794e92e6bcc38058",
+      },
+      {
+          // all input is 1.
+          "de8556204999d6e4bf74cfdde61a095b",
+          "e7d0f4ce6df81c46de95da7790a67384",
+          "e7d0f4ce6df81c46de95da7790a67384",
+      },
+      {
+          // all input is 512.
+          "d3b6980363eb9b808885537b3485af87",
+          "bcffddb26210da6861e7b31414e58b77",
+          "bcffddb26210da6861e7b31414e58b77",
+      },
+      {
+          // all input is 1023.
+          "ce0762aeee1cdef1db101e4ca39bcbd6",
+          "33aeaa7f5d7c032e3dfda43925c3dcb2",
+          "33aeaa7f5d7c032e3dfda43925c3dcb2",
+      },
+      {
+          // random input.
+          "63c701bceb187ffa535be15ae58f8171",
+          "f570e30e9ea8d2a1e6d99202cd2f8994",
+          "f570e30e9ea8d2a1e6d99202cd2f8994",
+      },
+  };
+  return kDigestSuperRes[id][plane];
+}
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
 }  // namespace
 
 // This type is used to parameterize the tests so is defined outside the
@@ -532,7 +571,19 @@ void PostFilterSuperResTest<bitdepth, Pixel>::TestApplySuperRes(
     const std::string digest = test_utils::GetMd5Sum(
         output.data(), upscaled_width[plane] * height[plane] * sizeof(Pixel));
     printf("MD5: %s\n", digest.c_str());
-    EXPECT_STREQ(digest.c_str(), GetSuperResDigest8bpp(id, plane));
+    const char* expected_digest = nullptr;
+    switch (bitdepth) {
+      case 8:
+        expected_digest = GetSuperResDigest8bpp(id, plane);
+        break;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+      case 10:
+        expected_digest = GetSuperResDigest10bpp(id, plane);
+        break;
+#endif
+    }
+    ASSERT_NE(expected_digest, nullptr);
+    EXPECT_STREQ(digest.c_str(), expected_digest);
   }
 }
 
@@ -592,6 +643,28 @@ INSTANTIATE_TEST_SUITE_P(PostFilterHelperFuncTestInstance,
                          testing::ValuesIn(kTestParamExtendFrame));
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
+using PostFilterSuperResTest10bpp = PostFilterSuperResTest<10, uint16_t>;
+
+TEST_P(PostFilterSuperResTest10bpp, ApplySuperRes) {
+  TestApplySuperRes(true, 0, 0, false);
+  TestApplySuperRes(true, 1, 1, false);
+  TestApplySuperRes(true, 1 << 9, 2, false);
+  TestApplySuperRes(true, (1 << 10) - 1, 3, false);
+  TestApplySuperRes(false, 0, 4, false);
+}
+
+TEST_P(PostFilterSuperResTest10bpp, ApplySuperResThreaded) {
+  TestApplySuperRes(true, 0, 0, true);
+  TestApplySuperRes(true, 1, 1, true);
+  TestApplySuperRes(true, 1 << 9, 2, true);
+  TestApplySuperRes(true, (1 << 10) - 1, 3, true);
+  TestApplySuperRes(false, 0, 4, true);
+}
+
+INSTANTIATE_TEST_SUITE_P(PostFilterSuperResTestInstance,
+                         PostFilterSuperResTest10bpp,
+                         testing::ValuesIn(kTestParamSuperRes));
+
 using PostFilterHelperFuncTest10bpp = PostFilterHelperFuncTest<10, uint16_t>;
 
 TEST_P(PostFilterHelperFuncTest10bpp, ExtendFrame) {

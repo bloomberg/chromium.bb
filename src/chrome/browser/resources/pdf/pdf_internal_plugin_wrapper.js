@@ -15,6 +15,7 @@ channel.port1.onmessage = e => {
       URL.revokeObjectURL(plugin.src);
     }
     plugin.src = URL.createObjectURL(new Blob([e.data.dataToLoad]));
+    plugin.setAttribute('has-edits', '');
   } else {
     plugin.postMessage(e.data);
   }
@@ -51,8 +52,16 @@ for (const type of ['pinchstart', 'pinchupdate', 'pinchend']) {
 
 document.addEventListener('keydown', e => {
   // Only forward potential shortcut keys.
-  if (!e.ctrlKey && !e.metaKey && e.key !== ' ') {
-    return;
+  switch (e.key) {
+    case ' ':
+    case 'ArrowLeft':
+    case 'ArrowRight':
+      break;
+    default:
+      if (e.ctrlKey || e.metaKey) {
+        break;
+      }
+      return;
   }
 
   // Take over Ctrl+A, but not other shortcuts, such as zoom or print.

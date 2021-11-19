@@ -421,7 +421,7 @@ void CPDFSDK_FormFillEnvironment::OnFormat(ObservedPtr<CPDFSDK_Annot>& pAnnot) {
   CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pAnnot.Get());
   DCHECK(pWidget);
 
-  Optional<WideString> sValue =
+  absl::optional<WideString> sValue =
       m_pInteractiveForm->OnFormat(pWidget->GetFormField());
   if (!pAnnot)
     return;
@@ -730,11 +730,10 @@ CPDFSDK_InteractiveForm* CPDFSDK_FormFillEnvironment::GetInteractiveForm() {
   return m_pInteractiveForm.get();
 }
 
-void CPDFSDK_FormFillEnvironment::UpdateAllViews(CPDFSDK_PageView* pSender,
-                                                 CPDFSDK_Annot* pAnnot) {
+void CPDFSDK_FormFillEnvironment::UpdateAllViews(CPDFSDK_Annot* pAnnot) {
   for (const auto& it : m_PageMap) {
     CPDFSDK_PageView* pPageView = it.second.get();
-    if (pPageView != pSender)
+    if (pPageView)
       pPageView->UpdateView(pAnnot);
   }
 }

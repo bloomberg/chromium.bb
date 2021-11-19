@@ -6,6 +6,7 @@
  */
 
 #define SK_OPTS_NS skslc_standalone
+#include "src/core/SkOpts.h"
 #include "src/opts/SkChecksum_opts.h"
 #include "src/opts/SkVM_opts.h"
 
@@ -13,12 +14,12 @@
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLDehydrator.h"
 #include "src/sksl/SkSLFileOutputStream.h"
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLStringStream.h"
 #include "src/sksl/SkSLUtil.h"
 #include "src/sksl/codegen/SkSLPipelineStageCodeGenerator.h"
 #include "src/sksl/codegen/SkSLVMCodeGenerator.h"
 #include "src/sksl/ir/SkSLUnresolvedFunction.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
 
 #include "spirv-tools/libspirv.hpp"
 
@@ -114,10 +115,6 @@ static bool detect_shader_settings(const SkSL::String& text,
                 if (settingsText.consumeSuffix(" AddAndTrueToLoopCondition")) {
                     static auto s_addAndTrueCaps = Factory::AddAndTrueToLoopCondition();
                     *caps = s_addAndTrueCaps.get();
-                }
-                if (settingsText.consumeSuffix(" BlendModesFailRandomlyForAllZeroVec")) {
-                    static auto s_blendZeroCaps = Factory::BlendModesFailRandomlyForAllZeroVec();
-                    *caps = s_blendZeroCaps.get();
                 }
                 if (settingsText.consumeSuffix(" CannotUseFractForNegativeValues")) {
                     static auto s_negativeFractCaps = Factory::CannotUseFractForNegativeValues();
@@ -294,7 +291,8 @@ ResultCode processCommand(std::vector<SkSL::String>& args) {
     }
 
     SkSL::Program::Settings settings;
-    const SkSL::ShaderCapsClass* caps = &SkSL::standaloneCaps;
+    SkSL::StandaloneShaderCaps standaloneCaps;
+    const SkSL::ShaderCapsClass* caps = &standaloneCaps;
     if (honorSettings) {
         if (!detect_shader_settings(text, &settings, &caps)) {
             return ResultCode::kInputError;

@@ -224,7 +224,9 @@ void MvProjectionSingleHighPrecision_SSE4_1(
   } while (i < count);
 }
 
-void Init8bpp() {
+}  // namespace
+
+void MotionVectorSearchInit_SSE4_1() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->mv_projection_compound[0] = MvProjectionCompoundLowPrecision_SSE4_1;
@@ -233,28 +235,6 @@ void Init8bpp() {
   dsp->mv_projection_single[0] = MvProjectionSingleLowPrecision_SSE4_1;
   dsp->mv_projection_single[1] = MvProjectionSingleForceInteger_SSE4_1;
   dsp->mv_projection_single[2] = MvProjectionSingleHighPrecision_SSE4_1;
-}
-
-#if LIBGAV1_MAX_BITDEPTH >= 10
-void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
-  assert(dsp != nullptr);
-  dsp->mv_projection_compound[0] = MvProjectionCompoundLowPrecision_SSE4_1;
-  dsp->mv_projection_compound[1] = MvProjectionCompoundForceInteger_SSE4_1;
-  dsp->mv_projection_compound[2] = MvProjectionCompoundHighPrecision_SSE4_1;
-  dsp->mv_projection_single[0] = MvProjectionSingleLowPrecision_SSE4_1;
-  dsp->mv_projection_single[1] = MvProjectionSingleForceInteger_SSE4_1;
-  dsp->mv_projection_single[2] = MvProjectionSingleHighPrecision_SSE4_1;
-}
-#endif
-
-}  // namespace
-
-void MotionVectorSearchInit_SSE4_1() {
-  Init8bpp();
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  Init10bpp();
-#endif
 }
 
 }  // namespace dsp

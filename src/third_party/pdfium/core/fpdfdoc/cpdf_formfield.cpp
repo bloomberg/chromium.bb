@@ -50,12 +50,12 @@ const CPDF_Object* GetFieldAttrRecursive(const CPDF_Dictionary* pFieldDict,
 }  // namespace
 
 // static
-Optional<FormFieldType> CPDF_FormField::IntToFormFieldType(int value) {
+absl::optional<FormFieldType> CPDF_FormField::IntToFormFieldType(int value) {
   if (value >= static_cast<int>(FormFieldType::kUnknown) &&
       value < static_cast<int>(kFormFieldTypeCount)) {
     return static_cast<FormFieldType>(value);
   }
-  return pdfium::nullopt;
+  return absl::nullopt;
 }
 
 // static
@@ -856,7 +856,7 @@ void CPDF_FormField::LoadDA() {
     return;
 
   CPDF_DefaultAppearance appearance(DA);
-  Optional<ByteString> font_name = appearance.GetFont(&m_FontSize);
+  absl::optional<ByteString> font_name = appearance.GetFont(&m_FontSize);
   if (!font_name.has_value())
     return;
 

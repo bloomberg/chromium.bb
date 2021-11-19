@@ -36,6 +36,7 @@
 #ifndef EIGEN_HALF_H
 #define EIGEN_HALF_H
 
+#include "../../InternalHeaderCheck.h"
 #include <sstream>
 
 #if defined(EIGEN_HAS_GPU_FP16) || defined(EIGEN_HAS_ARM64_FP16_SCALAR_ARITHMETIC)
@@ -261,7 +262,7 @@ namespace half_impl {
 #if (defined(EIGEN_HAS_CUDA_FP16) && defined(EIGEN_CUDA_ARCH) && \
      EIGEN_CUDA_ARCH >= 530) ||                                  \
     (defined(EIGEN_HAS_HIP_FP16) && defined(HIP_DEVICE_COMPILE))
-// Note: We deliberatly do *not* define this to 1 even if we have Arm's native
+// Note: We deliberately do *not* define this to 1 even if we have Arm's native
 // fp16 type since GPU halfs are rather different from native CPU halfs.
 // TODO: Rename to something like EIGEN_HAS_NATIVE_GPU_FP16
 #define EIGEN_HAS_NATIVE_FP16

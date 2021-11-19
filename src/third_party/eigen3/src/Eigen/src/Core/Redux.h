@@ -11,6 +11,8 @@
 #ifndef EIGEN_REDUX_H
 #define EIGEN_REDUX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

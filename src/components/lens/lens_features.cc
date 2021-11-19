@@ -16,6 +16,9 @@ const base::Feature kLensStandalone{"LensStandalone",
 const base::Feature kLensRegionSearch{"LensRegionSearch",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::FeatureParam<bool> kRegionSearchMacCursorFix{
+    &kLensRegionSearch, "region-search-mac-cursor-fix", true};
+
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText1{
     &kLensRegionSearch, "use-menu-item-alt-text-1", false};
 
@@ -50,10 +53,11 @@ constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
     &kLensStandalone, "dimensions-max-pixels", 1000};
 
 constexpr base::FeatureParam<std::string> kHomepageURLForImageSearch{
-    &kLensStandalone, "region-search-lens-homepage-url", "https://lens.google.com/"};
+    &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
 
 constexpr base::FeatureParam<std::string> kHomepageURLForRegionSearch{
-    &kLensRegionSearch, "lens-homepage-url", "https://lens.google.com/"};
+    &kLensRegionSearch, "region-search-lens-homepage-url",
+    "https://lens.google.com/"};
 
 bool GetEnableUKMLoggingForRegionSearch() {
   return kEnableUKMLoggingForRegionSearch.Get();

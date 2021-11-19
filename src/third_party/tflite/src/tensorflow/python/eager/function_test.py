@@ -115,7 +115,7 @@ def _example_indexed_slices_without_dense_shape():
 
 def _spec_for_value(value):
   """Returns the (nested) TypeSpec for a value."""
-  if nest.is_sequence(value):
+  if nest.is_nested(value):
     return nest.map_structure(_spec_for_value, value)
   elif isinstance(value, (ops.Tensor, composite_tensor.CompositeTensor)):
     return type_spec.type_spec_from_value(value)
@@ -666,7 +666,15 @@ class FunctionTest(test.TestCase, parameterized.TestCase):
     def f(_):
       return 1.0
 
-    with self.assertRaisesRegex(ValueError, r'got.*set'):
+    # TODO(b/201533914): Remove this flag.
+    if function.USE_FULL_TRACE_TYPE:
+      expected_error = errors.InvalidArgumentError
+      expected_message = r'could not be represented through the generic tracing'
+    else:
+      expected_error = ValueError
+      expected_message = r'got.*set'
+
+    with self.assertRaisesRegex(expected_error, expected_message):
       f(set([]))
 
   def testFuncName(self):
@@ -4873,7 +4881,7 @@ class FunctionTest(test.TestCase, parameterized.TestCase):
         return script_ops.eager_py_func(
             func=lambda: array_ops.constant([2.]), inp=(), Tout=dtypes.int32)
 
-    error_pattern = re.compile(r'originated from.*func=lambda', re.DOTALL)
+    error_pattern = re.compile(r'Graph execution error.*func=lambda', re.DOTALL)
     with self.assertRaisesRegex(errors.InvalidArgumentError, error_pattern):
       test_fn()
 

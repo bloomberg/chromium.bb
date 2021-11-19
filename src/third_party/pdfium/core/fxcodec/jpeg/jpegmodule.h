@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 #if defined(OS_WIN)
@@ -42,7 +42,8 @@ class JpegModule {
       int nComps,
       bool ColorTransform);
 
-  static Optional<ImageInfo> LoadInfo(pdfium::span<const uint8_t> src_span);
+  static absl::optional<ImageInfo> LoadInfo(
+      pdfium::span<const uint8_t> src_span);
 
 #if defined(OS_WIN)
   static bool JpegEncode(const RetainPtr<CFX_DIBBase>& pSource,

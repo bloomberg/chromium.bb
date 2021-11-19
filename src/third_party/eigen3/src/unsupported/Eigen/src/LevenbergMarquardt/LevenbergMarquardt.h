@@ -20,6 +20,8 @@
 #define EIGEN_LEVENBERGMARQUARDT_H
 
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace LevenbergMarquardtSpace {
     enum Status {

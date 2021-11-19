@@ -518,6 +518,12 @@ typedef enum InterceptId{
     InterceptIdPreCallValidateCmdDecodeVideoKHR,
     InterceptIdPreCallRecordCmdDecodeVideoKHR,
     InterceptIdPostCallRecordCmdDecodeVideoKHR,
+    InterceptIdPreCallValidateCmdBeginRenderingKHR,
+    InterceptIdPreCallRecordCmdBeginRenderingKHR,
+    InterceptIdPostCallRecordCmdBeginRenderingKHR,
+    InterceptIdPreCallValidateCmdEndRenderingKHR,
+    InterceptIdPreCallRecordCmdEndRenderingKHR,
+    InterceptIdPostCallRecordCmdEndRenderingKHR,
     InterceptIdPreCallValidateGetDeviceGroupPeerMemoryFeaturesKHR,
     InterceptIdPreCallRecordGetDeviceGroupPeerMemoryFeaturesKHR,
     InterceptIdPostCallRecordGetDeviceGroupPeerMemoryFeaturesKHR,
@@ -725,6 +731,15 @@ typedef enum InterceptId{
     InterceptIdPreCallValidateCmdResolveImage2KHR,
     InterceptIdPreCallRecordCmdResolveImage2KHR,
     InterceptIdPostCallRecordCmdResolveImage2KHR,
+    InterceptIdPreCallValidateGetDeviceBufferMemoryRequirementsKHR,
+    InterceptIdPreCallRecordGetDeviceBufferMemoryRequirementsKHR,
+    InterceptIdPostCallRecordGetDeviceBufferMemoryRequirementsKHR,
+    InterceptIdPreCallValidateGetDeviceImageMemoryRequirementsKHR,
+    InterceptIdPreCallRecordGetDeviceImageMemoryRequirementsKHR,
+    InterceptIdPostCallRecordGetDeviceImageMemoryRequirementsKHR,
+    InterceptIdPreCallValidateGetDeviceImageSparseMemoryRequirementsKHR,
+    InterceptIdPreCallRecordGetDeviceImageSparseMemoryRequirementsKHR,
+    InterceptIdPostCallRecordGetDeviceImageSparseMemoryRequirementsKHR,
     InterceptIdPreCallValidateDebugMarkerSetObjectTagEXT,
     InterceptIdPreCallRecordDebugMarkerSetObjectTagEXT,
     InterceptIdPostCallRecordDebugMarkerSetObjectTagEXT,
@@ -1064,6 +1079,21 @@ typedef enum InterceptId{
     InterceptIdPreCallValidateGetSemaphoreZirconHandleFUCHSIA,
     InterceptIdPreCallRecordGetSemaphoreZirconHandleFUCHSIA,
     InterceptIdPostCallRecordGetSemaphoreZirconHandleFUCHSIA,
+    InterceptIdPreCallValidateCreateBufferCollectionFUCHSIA,
+    InterceptIdPreCallRecordCreateBufferCollectionFUCHSIA,
+    InterceptIdPostCallRecordCreateBufferCollectionFUCHSIA,
+    InterceptIdPreCallValidateSetBufferCollectionImageConstraintsFUCHSIA,
+    InterceptIdPreCallRecordSetBufferCollectionImageConstraintsFUCHSIA,
+    InterceptIdPostCallRecordSetBufferCollectionImageConstraintsFUCHSIA,
+    InterceptIdPreCallValidateSetBufferCollectionBufferConstraintsFUCHSIA,
+    InterceptIdPreCallRecordSetBufferCollectionBufferConstraintsFUCHSIA,
+    InterceptIdPostCallRecordSetBufferCollectionBufferConstraintsFUCHSIA,
+    InterceptIdPreCallValidateDestroyBufferCollectionFUCHSIA,
+    InterceptIdPreCallRecordDestroyBufferCollectionFUCHSIA,
+    InterceptIdPostCallRecordDestroyBufferCollectionFUCHSIA,
+    InterceptIdPreCallValidateGetBufferCollectionPropertiesFUCHSIA,
+    InterceptIdPreCallRecordGetBufferCollectionPropertiesFUCHSIA,
+    InterceptIdPostCallRecordGetBufferCollectionPropertiesFUCHSIA,
     InterceptIdPreCallValidateGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
     InterceptIdPreCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
     InterceptIdPostCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI,
@@ -1100,6 +1130,9 @@ typedef enum InterceptId{
     InterceptIdPreCallValidateCmdDrawMultiIndexedEXT,
     InterceptIdPreCallRecordCmdDrawMultiIndexedEXT,
     InterceptIdPostCallRecordCmdDrawMultiIndexedEXT,
+    InterceptIdPreCallValidateSetDeviceMemoryPriorityEXT,
+    InterceptIdPreCallRecordSetDeviceMemoryPriorityEXT,
+    InterceptIdPostCallRecordSetDeviceMemoryPriorityEXT,
     InterceptIdPreCallValidateCreateAccelerationStructureKHR,
     InterceptIdPreCallRecordCreateAccelerationStructureKHR,
     InterceptIdPostCallRecordCreateAccelerationStructureKHR,
@@ -1759,6 +1792,12 @@ void ValidationObject::InitObjectDispatchVectors() {
     BUILD_DISPATCH_VECTOR(PreCallRecordCmdDecodeVideoKHR);
     BUILD_DISPATCH_VECTOR(PostCallRecordCmdDecodeVideoKHR);
 #endif
+    BUILD_DISPATCH_VECTOR(PreCallValidateCmdBeginRenderingKHR);
+    BUILD_DISPATCH_VECTOR(PreCallRecordCmdBeginRenderingKHR);
+    BUILD_DISPATCH_VECTOR(PostCallRecordCmdBeginRenderingKHR);
+    BUILD_DISPATCH_VECTOR(PreCallValidateCmdEndRenderingKHR);
+    BUILD_DISPATCH_VECTOR(PreCallRecordCmdEndRenderingKHR);
+    BUILD_DISPATCH_VECTOR(PostCallRecordCmdEndRenderingKHR);
     BUILD_DISPATCH_VECTOR(PreCallValidateGetDeviceGroupPeerMemoryFeaturesKHR);
     BUILD_DISPATCH_VECTOR(PreCallRecordGetDeviceGroupPeerMemoryFeaturesKHR);
     BUILD_DISPATCH_VECTOR(PostCallRecordGetDeviceGroupPeerMemoryFeaturesKHR);
@@ -1980,6 +2019,15 @@ void ValidationObject::InitObjectDispatchVectors() {
     BUILD_DISPATCH_VECTOR(PreCallValidateCmdResolveImage2KHR);
     BUILD_DISPATCH_VECTOR(PreCallRecordCmdResolveImage2KHR);
     BUILD_DISPATCH_VECTOR(PostCallRecordCmdResolveImage2KHR);
+    BUILD_DISPATCH_VECTOR(PreCallValidateGetDeviceBufferMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PreCallRecordGetDeviceBufferMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PostCallRecordGetDeviceBufferMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PreCallValidateGetDeviceImageMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PreCallRecordGetDeviceImageMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PostCallRecordGetDeviceImageMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PreCallValidateGetDeviceImageSparseMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PreCallRecordGetDeviceImageSparseMemoryRequirementsKHR);
+    BUILD_DISPATCH_VECTOR(PostCallRecordGetDeviceImageSparseMemoryRequirementsKHR);
     BUILD_DISPATCH_VECTOR(PreCallValidateDebugMarkerSetObjectTagEXT);
     BUILD_DISPATCH_VECTOR(PreCallRecordDebugMarkerSetObjectTagEXT);
     BUILD_DISPATCH_VECTOR(PostCallRecordDebugMarkerSetObjectTagEXT);
@@ -2365,6 +2413,31 @@ void ValidationObject::InitObjectDispatchVectors() {
     BUILD_DISPATCH_VECTOR(PreCallRecordGetSemaphoreZirconHandleFUCHSIA);
     BUILD_DISPATCH_VECTOR(PostCallRecordGetSemaphoreZirconHandleFUCHSIA);
 #endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    BUILD_DISPATCH_VECTOR(PreCallValidateCreateBufferCollectionFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PreCallRecordCreateBufferCollectionFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PostCallRecordCreateBufferCollectionFUCHSIA);
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    BUILD_DISPATCH_VECTOR(PreCallValidateSetBufferCollectionImageConstraintsFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PreCallRecordSetBufferCollectionImageConstraintsFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PostCallRecordSetBufferCollectionImageConstraintsFUCHSIA);
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    BUILD_DISPATCH_VECTOR(PreCallValidateSetBufferCollectionBufferConstraintsFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PreCallRecordSetBufferCollectionBufferConstraintsFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PostCallRecordSetBufferCollectionBufferConstraintsFUCHSIA);
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    BUILD_DISPATCH_VECTOR(PreCallValidateDestroyBufferCollectionFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PreCallRecordDestroyBufferCollectionFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PostCallRecordDestroyBufferCollectionFUCHSIA);
+#endif
+#ifdef VK_USE_PLATFORM_FUCHSIA
+    BUILD_DISPATCH_VECTOR(PreCallValidateGetBufferCollectionPropertiesFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PreCallRecordGetBufferCollectionPropertiesFUCHSIA);
+    BUILD_DISPATCH_VECTOR(PostCallRecordGetBufferCollectionPropertiesFUCHSIA);
+#endif
     BUILD_DISPATCH_VECTOR(PreCallValidateGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI);
     BUILD_DISPATCH_VECTOR(PreCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI);
     BUILD_DISPATCH_VECTOR(PostCallRecordGetDeviceSubpassShadingMaxWorkgroupSizeHUAWEI);
@@ -2405,6 +2478,9 @@ void ValidationObject::InitObjectDispatchVectors() {
     BUILD_DISPATCH_VECTOR(PreCallValidateCmdDrawMultiIndexedEXT);
     BUILD_DISPATCH_VECTOR(PreCallRecordCmdDrawMultiIndexedEXT);
     BUILD_DISPATCH_VECTOR(PostCallRecordCmdDrawMultiIndexedEXT);
+    BUILD_DISPATCH_VECTOR(PreCallValidateSetDeviceMemoryPriorityEXT);
+    BUILD_DISPATCH_VECTOR(PreCallRecordSetDeviceMemoryPriorityEXT);
+    BUILD_DISPATCH_VECTOR(PostCallRecordSetDeviceMemoryPriorityEXT);
     BUILD_DISPATCH_VECTOR(PreCallValidateCreateAccelerationStructureKHR);
     BUILD_DISPATCH_VECTOR(PreCallRecordCreateAccelerationStructureKHR);
     BUILD_DISPATCH_VECTOR(PostCallRecordCreateAccelerationStructureKHR);

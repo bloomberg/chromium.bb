@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/view.h"
 
@@ -98,15 +99,13 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void set_fast_resize(bool fast_resize) { fast_resize_ = fast_resize; }
   bool fast_resize() const { return fast_resize_; }
 
-  // Sets the color to paint the background during a resize that involves a
-  // clip. This is white by default.
-  void set_resize_background_color(SkColor resize_background_color) {
-    resize_background_color_ = resize_background_color;
-  }
-
   gfx::NativeView native_view() const { return native_view_; }
 
   void NativeViewDestroyed();
+
+  // Sets the desired background color for repainting when the view is clipped.
+  // Defaults to transparent color if unset.
+  void SetBackgroundColorWhenClipped(absl::optional<SkColor> color);
 
   // Overridden from View:
   void Layout() override;
@@ -116,6 +115,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
   void SetVisible(bool visible) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
 
  protected:
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override;
@@ -150,8 +150,8 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // in the setter/accessor above.
   bool fast_resize_ = false;
 
-  // Color to paint in the background while resizing.
-  SkColor resize_background_color_ = SK_ColorWHITE;
+  // The color to use for repainting the background when the view is clipped.
+  absl::optional<SkColor> background_color_when_clipped_;
 };
 
 }  // namespace views

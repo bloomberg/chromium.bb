@@ -11,6 +11,8 @@
 #define EIGEN_GENERAL_BLOCK_PANEL_H
 
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -795,7 +797,7 @@ public:
   typedef typename conditional<Vectorizable,ScalarPacket,Scalar>::type ResPacket;
   typedef typename conditional<Vectorizable,DoublePacketType,Scalar>::type AccPacket;
 
-  // this actualy holds 8 packets!
+  // this actually holds 8 packets!
   typedef QuadPacket<RhsPacket> RhsPacketx4;
   
   EIGEN_STRONG_INLINE void initAcc(Scalar& p) { p = Scalar(0); }

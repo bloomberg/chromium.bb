@@ -69,6 +69,7 @@
 <translation id="1354356357730355833">ចម្លង</translation>
 <translation id="135978014023467274">អ្នកបានដំឡើងជំនាន់ទៅ ChromeVox 63 ហើយ!</translation>
 <translation id="1360699455582016846">ចុចធាតុ​ខាងក្រោម​គ្រាប់ចុច​នាំផ្លូវ <ph name="ROUTING_KEY_NUMBER" /></translation>
+<translation id="1376703628032300005">ផ្លាស់ទីទៅតួអក្សរបន្ទាប់</translation>
 <translation id="1377925789329510816">នេះគឺជាចំណងជើងចុងក្រោយ។ ចុច Search+H ដើម្បីតម្រឹមចំណងជើងដំបូង ឬចុច Search+Shift+H ដើម្បីចូលទៅកាន់ចំណងជើងទីពីរនៅលើទំព័រនេះ។</translation>
 <translation id="138218114945450791">ខៀវខ្ចី</translation>
 <translation id="1383876407941801731">ស្វែងរក</translation>
@@ -213,6 +214,7 @@
 <translation id="2450814015951372393">ប្រអប់ធីក</translation>
 <translation id="2461822463642141190">បច្ចុប្បន្ន</translation>
 <translation id="2462626033734746142">ប៊ូតុងក្រុមវិទ្យុ</translation>
+<translation id="2467741090055146971">ដក​ការ​ជ្រើសរើស</translation>
 <translation id="2471138580042810658">ផ្នែកក្បាល 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{សញ្ញាផ្កាយ}other{# សញ្ញាផ្កាយ}}</translation>
 <translation id="2490721194269245365">ត្នោតខ្ចី</translation>
@@ -565,6 +567,7 @@
 <translation id="4854380505292502090">គ្មានធាតុ​ក្រាហ្វិកមេឌៀមុនទេ</translation>
 <translation id="4855927945655956315">គ្រាប់ចុច​ចាំបាច់៖ Control</translation>
 <translation id="4862744964787595316">មិនដិត​</translation>
+<translation id="4865995900839719272">ផ្លាស់ទីទៅជួរមុន</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">បើកដំណើរការកត់ត្រា TTS</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -607,7 +610,6 @@
 <translation id="5138912041966667164">ស្វាយខ្ចី</translation>
 <translation id="5140016802771803559">ស្វាយ</translation>
 <translation id="5142101052131610456">មេរៀន​ទាំងអស់</translation>
-<translation id="5152605892605507188">ផ្លាស់ទី​ទៅស្តាំ</translation>
 <translation id="5158275234811857234">គម្រប</translation>
 <translation id="516076699907426116">ដើម្បីបន្ត សូមរកមើល​ដោយប៉ះ ដើម្បីស្វែងរក​ប៊ូតុង​មេរៀនបន្ទាប់។ បន្ទាប់មក​ចុចពីរដង ដើម្បីបន្ត។</translation>
 <translation id="5170206230005240598">បានបើកអក្សររត់ជាអក្សរស្ទាប</translation>
@@ -624,6 +626,7 @@
 <translation id="5304943142864553931"><ph name="TITLE" /> ផ្ទាំង</translation>
 <translation id="5308380583665731573">ភ្ជាប់</translation>
 <translation id="5310788376443009632">បានដកចេញ៖</translation>
+<translation id="5316825363044614340">ផ្លាស់ទីទៅជួរបន្ទាប់</translation>
 <translation id="5320727453979144100">របៀបស្អិតបានបើកដំណើរការ</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{សញ្ញាក្បៀស}other{# សញ្ញាក្បៀស}}</translation>
 <translation id="532485153932049746">ការកែទម្រង់អក្សរ
@@ -741,6 +744,7 @@
 <translation id="6034000775414344507">ប្រផេះ​ខ្ចី</translation>
 <translation id="6036135911048686884">រុករកដោយការចុច</translation>
 <translation id="6037602951055904232">អូសទៅមុខ</translation>
+<translation id="604240746417122825">កំហុស​វេយ្យាករណ៍</translation>
 <translation id="6082768461603900813">ការរុករកមូលដ្ឋាន</translation>
 <translation id="609281021724813947">គ្មានរបាររំកិលមុនទេ</translation>
 <translation id="6100239002225743044">ផ្លាស់ទី​ឡើងលើ​មួយជួរ</translation>
@@ -751,7 +755,6 @@
 <translation id="6142308968191113180">ផ្នែកក្បាល 4</translation>
 <translation id="6150023170003443621">បៃតងខ្ចី</translation>
 <translation id="6158882249329863701">ជួរដេកទី <ph name="TABLECELLROWINDEX" /> ជួរឈរទី <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">ផ្លាស់ទី​ទៅឆ្វេង</translation>
 <translation id="6164829606128959761">ម៉ែត្រ</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
 <translation id="6166362019018438352">បានបិទអក្សររត់ជាអក្សរស្ទាប</translation>
@@ -798,6 +801,7 @@
 <translation id="6544923685317771506">លឿង​ស្រគាំ</translation>
 <translation id="6551185905438378412">ពណ៌​សំបក​ពងមាន់</translation>
 <translation id="6561818612645211875">ទៅកាន់ផ្នែកចាប់ផ្តើមនៃជួរដេកបច្ចុប្បន្ន</translation>
+<translation id="6563126228219321999">គ្មានធាតុដែលមិនត្រឹមត្រូវទេ</translation>
 <translation id="6579990219486187401">ផ្កាឈូកខ្ចី</translation>
 <translation id="6583174818554398774">រំកិលទៅចំណុចបន្ទាប់​ក្នុងកម្រិតលម្អិត</translation>
 <translation id="6584162722998608255">បន្ទាប់មកទៀត អ្នកនឹង​ស្វែងយល់​ពីរបៀបផ្លាស់ទី​ជុំវិញ​អេក្រង់។ អ្នកអាច​អូសម្រាមដៃមួយពីឆ្វេងទៅស្ដាំ ដើម្បី​ទៅកាន់​ធាតុបន្ទាប់។ សាកល្បង​ឥឡូវនេះ ដើម្បីទៅកាន់​ជំហានបន្ទាប់។</translation>
@@ -828,6 +832,7 @@
 <translation id="6815255864998354418">លឿង​ស្រាល</translation>
 <translation id="6816066673340002913">ទឹកមាសស្រាល</translation>
 <translation id="6826226459053491773">អូសម្រាមដៃពីរចុះក្រោម</translation>
+<translation id="6826669432862053130">ធាតុដែលមិនត្រឹមត្រូវបន្ទាប់</translation>
 <translation id="6833103209700200188">ផ្នែកខាងក្រោម</translation>
 <translation id="6837853484260746864">ជ្រើសរើស​សំឡេង៖</translation>
 <translation id="6858047746862060282">អារម្ភ​កថា</translation>
@@ -842,7 +847,6 @@
 <translation id="6910969481785184048">បើក បិទ និងឈប់</translation>
 <translation id="6919104639734799681">បង្ហាញបញ្ជីតារាង</translation>
 <translation id="692135145298539227">លុប</translation>
-<translation id="6935674530832500465">ផ្លាស់ទី​ចុះក្រោម</translation>
 <translation id="6945221475159498467">ជ្រើសរើស</translation>
 <translation id="6949846980769640811">បៃតងស្រាល</translation>
 <translation id="6951482098621102657">គ្មានផ្នែកក្បាលកម្រិតទី 5 បន្ទាប់ទេ</translation>
@@ -902,6 +906,7 @@
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
 <translation id="7308519659008003150">គ្មានកន្លែងបញ្ចូលទម្រង់បែបបទ​មុនទេ</translation>
 <translation id="731121099745151312">tritm</translation>
+<translation id="7313717760367325059">ជំនួយ</translation>
 <translation id="7317017974771324508">បានជ្រើសរើស​មួយផ្នែក</translation>
 <translation id="7322442671176251901">រកមើលដោយប៉ះ</translation>
 <translation id="7344012264516629579">គ្រាប់ចុចបញ្ជាឱ្យរំលង​បន្ថែម​រួមបញ្ចូល​ការរំលង​រវាងតំណ ប៊ូតុង និង​ប្រអប់ធីក​ជាដើម​។ បញ្ជី​ពេញលេញ​អំពី​គ្រាប់ចុចបញ្ជាឱ្យរំលង​មាននៅក្នុង​ម៉ឺនុយ ChromeVox ដែលអាចបើក​ដោយចុច​គ្រាប់ចុចស្វែងរក + សញ្ញាចុច។</translation>
@@ -1018,6 +1023,7 @@
 <translation id="8126386426083591964">គ្មានផ្នែកក្បាលកម្រិតទី 5 មុនទេ</translation>
 <translation id="812886159861361726">បាន​បញ្ឈប់​ការទាញយក <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">គ្មានក្រឡាខាងលើទេ</translation>
+<translation id="8132248161074464367">ធាតុដែលមិនត្រឹមត្រូវមុន</translation>
 <translation id="8138880386467279117">ប៉ះ</translation>
 <translation id="8146613869421949343">បន្ទាប់មកទៀត អ្នក​នឹងស្វែងយល់​អំពី​គ្រាប់ចុច​ស្វែងរក​។ គ្រាប់ចុច​ស្វែងរក​ត្រូវបានប្រើ​រួមគ្នា​ជាមួយ​គ្រាប់ចុច​ផ្សេងទៀត​សម្រាប់​ការបញ្ជា​នៅលើ ChromeVox។ គ្រាប់ចុច​ស្វែងរក​ស្ថិតនៅ​ចំពីលើ​គ្រាប់ចុច​ប្ដូរ (Shift) ខាងឆ្វេង។ ដើម្បី​បន្ត សូមចុច​គ្រាប់ចុច​ស្វែងរក​។</translation>
 <translation id="8158033275290782295">ជ្រើសរើស​ទាំងអស់</translation>
@@ -1039,14 +1045,12 @@
 <translation id="826825447994856889">សេចក្ដី​ផ្ដើម</translation>
 <translation id="827266600368092403">ចាប់ផ្តើម ឬបញ្ចប់ការជ្រើសរើស</translation>
 <translation id="827422111966801947">ទឹកប៊ិក</translation>
-<translation id="827496561804786391">ផ្លាស់ទី​ឡើងលើ</translation>
 <translation id="8276439074553447000">លោតទៅរបស់ដែលអាចផ្តោតបានពីមុន</translation>
 <translation id="8279039817939141096">ចុច​គ្រាប់ចុច qwerty, គ្រាប់ចុច​អក្សរស្ទាបដែលអាច​ផ្ទុកឡើងវិញបាន ឬ​ចលនាចុច ដើម្បី​ស្វែងយល់អំពី​មុខងាររបស់វា។ ចុច control ជាមួយ w, space ជាមួយ Z, អូសទៅឆ្វេង​ដោយប្រើ​ម្រាមដៃពីរ ឬ escape ដើម្បី​ចាកចេញ។</translation>
 <translation id="8283603667300770666">ប្រអប់បែបបទបន្ទាប់។</translation>
 <translation id="8310185481635255431">គ្មានតំណបន្ទាប់ទេ</translation>
 <translation id="831207808878314375">និយមន័យ</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8314546933558091113">ដកការជ្រើសរើស​ទាំងអស់</translation>
 <translation id="8316881042119029234">លឿងស្រាល</translation>
 <translation id="8324974933005349667">កំណត់ការកំណត់ការបំប្លែងអត្ថបទទៅជាការនិយាយឱ្យ​ស្រប​នឹងអ្នក</translation>
 <translation id="8326783648485765113">បៃតងខ្ចី</translation>
@@ -1130,6 +1134,7 @@
 <translation id="9014206344398081366">មេរៀន​អំពី ChromeVox</translation>
 <translation id="9040132695316389094">ផ្នែកក្បាល 1</translation>
 <translation id="9061884144798498064">ជ្រើសរើស​តារាង​ប្រែល 8 ចំណុច៖</translation>
+<translation id="9063946545000394379">ផ្លាស់ទីទៅតួអក្សរមុន</translation>
 <translation id="9065283790526219006">+ការលេចឡើង</translation>
 <translation id="9065912140022662363">គ្មានប៊ូតុងមូលបន្ទាប់ទេ</translation>
 <translation id="9067522039955793016">បំបែក​ទំព័រ</translation>

@@ -46,6 +46,7 @@ export function registerCommands(inspectorBackend) {
     RelatedElement: 'relatedElement'
   });
   inspectorBackend.registerEnum('Accessibility.AXValueNativeSourceType', {
+    Description: 'description',
     Figcaption: 'figcaption',
     Label: 'label',
     Labelfor: 'labelfor',
@@ -172,19 +173,6 @@ export function registerCommands(inspectorBackend) {
       ],
       []);
 
-  // ApplicationCache.
-  inspectorBackend.registerEvent(
-      'ApplicationCache.applicationCacheStatusUpdated', ['frameId', 'manifestURL', 'status']);
-  inspectorBackend.registerEvent('ApplicationCache.networkStateUpdated', ['isNowOnline']);
-  inspectorBackend.registerCommand('ApplicationCache.enable', [], []);
-  inspectorBackend.registerCommand(
-      'ApplicationCache.getApplicationCacheForFrame', [{'name': 'frameId', 'type': 'string', 'optional': false}],
-      ['applicationCache']);
-  inspectorBackend.registerCommand('ApplicationCache.getFramesWithManifests', [], ['frameIds']);
-  inspectorBackend.registerCommand(
-      'ApplicationCache.getManifestForFrame', [{'name': 'frameId', 'type': 'string', 'optional': false}],
-      ['manifestURL']);
-
   // Audits.
   inspectorBackend.registerEnum('Audits.SameSiteCookieExclusionReason', {
     ExcludeSameSiteUnspecifiedTreatedAsLax: 'ExcludeSameSiteUnspecifiedTreatedAsLax',
@@ -255,7 +243,8 @@ export function registerCommands(inspectorBackend) {
     KEvalViolation: 'kEvalViolation',
     KURLViolation: 'kURLViolation',
     KTrustedTypesSinkViolation: 'kTrustedTypesSinkViolation',
-    KTrustedTypesPolicyViolation: 'kTrustedTypesPolicyViolation'
+    KTrustedTypesPolicyViolation: 'kTrustedTypesPolicyViolation',
+    KWasmEvalViolation: 'kWasmEvalViolation'
   });
   inspectorBackend.registerEnum(
       'Audits.SharedArrayBufferIssueType', {TransferIssue: 'TransferIssue', CreationIssue: 'CreationIssue'});
@@ -287,7 +276,8 @@ export function registerCommands(inspectorBackend) {
     QuirksModeIssue: 'QuirksModeIssue',
     NavigatorUserAgentIssue: 'NavigatorUserAgentIssue',
     WasmCrossOriginModuleSharingIssue: 'WasmCrossOriginModuleSharingIssue',
-    GenericIssue: 'GenericIssue'
+    GenericIssue: 'GenericIssue',
+    DeprecationIssue: 'DeprecationIssue'
   });
   inspectorBackend.registerEvent('Audits.issueAdded', ['issue']);
   inspectorBackend.registerEnum('Audits.GetEncodedResponseRequestEncoding', {Webp: 'webp', Jpeg: 'jpeg', Png: 'png'});
@@ -900,6 +890,14 @@ export function registerCommands(inspectorBackend) {
       'DOMDebugger.setInstrumentationBreakpoint', [{'name': 'eventName', 'type': 'string', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'DOMDebugger.setXHRBreakpoint', [{'name': 'url', 'type': 'string', 'optional': false}], []);
+
+  // EventBreakpoints.
+  inspectorBackend.registerCommand(
+      'EventBreakpoints.setInstrumentationBreakpoint', [{'name': 'eventName', 'type': 'string', 'optional': false}],
+      []);
+  inspectorBackend.registerCommand(
+      'EventBreakpoints.removeInstrumentationBreakpoint', [{'name': 'eventName', 'type': 'string', 'optional': false}],
+      []);
 
   // DOMSnapshot.
   inspectorBackend.registerCommand('DOMSnapshot.disable', [], []);
@@ -1539,6 +1537,7 @@ export function registerCommands(inspectorBackend) {
     RedirectContainsCredentials: 'RedirectContainsCredentials',
     InsecurePrivateNetwork: 'InsecurePrivateNetwork',
     InvalidPrivateNetworkAccess: 'InvalidPrivateNetworkAccess',
+    UnexpectedPrivateNetworkAccess: 'UnexpectedPrivateNetworkAccess',
     NoCorsRedirectModeNotFollow: 'NoCorsRedirectModeNotFollow'
   });
   inspectorBackend.registerEnum(
@@ -1608,7 +1607,9 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerEnum('Network.PrivateNetworkRequestPolicy', {
     Allow: 'Allow',
     BlockFromInsecureToMorePrivate: 'BlockFromInsecureToMorePrivate',
-    WarnFromInsecureToMorePrivate: 'WarnFromInsecureToMorePrivate'
+    WarnFromInsecureToMorePrivate: 'WarnFromInsecureToMorePrivate',
+    PreflightBlock: 'PreflightBlock',
+    PreflightWarn: 'PreflightWarn'
   });
   inspectorBackend.registerEnum(
       'Network.IPAddressSpace', {Local: 'Local', Private: 'Private', Public: 'Public', Unknown: 'Unknown'});
@@ -1638,13 +1639,14 @@ export function registerCommands(inspectorBackend) {
   ]);
   inspectorBackend.registerEvent('Network.requestServedFromCache', ['requestId']);
   inspectorBackend.registerEvent('Network.requestWillBeSent', [
-    'requestId', 'loaderId', 'documentURL', 'request', 'timestamp', 'wallTime', 'initiator', 'redirectResponse', 'type',
-    'frameId', 'hasUserGesture'
+    'requestId', 'loaderId', 'documentURL', 'request', 'timestamp', 'wallTime', 'initiator', 'redirectHasExtraInfo',
+    'redirectResponse', 'type', 'frameId', 'hasUserGesture'
   ]);
   inspectorBackend.registerEvent('Network.resourceChangedPriority', ['requestId', 'newPriority', 'timestamp']);
   inspectorBackend.registerEvent('Network.signedExchangeReceived', ['requestId', 'info']);
   inspectorBackend.registerEvent(
-      'Network.responseReceived', ['requestId', 'loaderId', 'timestamp', 'type', 'response', 'frameId']);
+      'Network.responseReceived',
+      ['requestId', 'loaderId', 'timestamp', 'type', 'response', 'hasExtraInfo', 'frameId']);
   inspectorBackend.registerEvent('Network.webSocketClosed', ['requestId', 'timestamp']);
   inspectorBackend.registerEvent('Network.webSocketCreated', ['requestId', 'url', 'initiator']);
   inspectorBackend.registerEvent('Network.webSocketFrameError', ['requestId', 'timestamp', 'errorMessage']);
@@ -1991,6 +1993,7 @@ export function registerCommands(inspectorBackend) {
     Hid: 'hid',
     IdleDetection: 'idle-detection',
     InterestCohort: 'interest-cohort',
+    KeyboardMap: 'keyboard-map',
     Magnetometer: 'magnetometer',
     Microphone: 'microphone',
     Midi: 'midi',
@@ -2183,7 +2186,6 @@ export function registerCommands(inspectorBackend) {
     ContentWebUSB: 'ContentWebUSB',
     ContentMediaSession: 'ContentMediaSession',
     ContentMediaSessionService: 'ContentMediaSessionService',
-    ContentMediaPlay: 'ContentMediaPlay',
     EmbedderPopupBlockerTabHelper: 'EmbedderPopupBlockerTabHelper',
     EmbedderSafeBrowsingTriggeredPopupBlocker: 'EmbedderSafeBrowsingTriggeredPopupBlocker',
     EmbedderSafeBrowsingThreatDetails: 'EmbedderSafeBrowsingThreatDetails',
@@ -2443,8 +2445,6 @@ export function registerCommands(inspectorBackend) {
   inspectorBackend.registerCommand(
       'Page.setWebLifecycleState', [{'name': 'state', 'type': 'string', 'optional': false}], []);
   inspectorBackend.registerCommand('Page.stopScreencast', [], []);
-  inspectorBackend.registerCommand(
-      'Page.setProduceCompilationCache', [{'name': 'enabled', 'type': 'boolean', 'optional': false}], []);
   inspectorBackend.registerCommand(
       'Page.produceCompilationCache', [{'name': 'scripts', 'type': 'object', 'optional': false}], []);
   inspectorBackend.registerCommand(

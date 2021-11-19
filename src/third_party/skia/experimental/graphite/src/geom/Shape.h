@@ -12,11 +12,12 @@
 #include "include/core/SkPath.h"
 #include "include/core/SkRRect.h"
 #include "include/core/SkRect.h"
-#include "include/core/SkSpan.h"
+
+#include "experimental/graphite/src/geom/Rect.h"
 
 #include <array>
 
-namespace skgpu::geom {
+namespace skgpu {
 
 /**
  * Shape is effectively a std::variant over different geometric shapes, with the most complex
@@ -24,18 +25,23 @@ namespace skgpu::geom {
  * point containment, or iteration.
  */
 class Shape {
+public:
     enum class Type : uint8_t {
-        kEmpty, kRect, kRRect, kPath
+        kEmpty, kLine, kRect, kRRect, kPath
     };
-    static constexpr int kTypeCount = static_cast<int>(Type::kPath) + 1;
+    inline static constexpr int kTypeCount = static_cast<int>(Type::kPath) + 1;
 
     Shape() {}
     Shape(const Shape& shape)            { *this = shape; }
     Shape(Shape&&) = delete;
 
-    explicit Shape(const SkRect& rect)   { this->setRect(rect); }
+    Shape(SkPoint p0, SkPoint p1)        { this->setLine(p0, p1); }
+    Shape(SkV2 p0, SkV2 p1)              { this->setLine(p0, p1); }
+    Shape(float2 p0, float2 p1)          { this->setLine(p0, p1); }
+    explicit Shape(const Rect& rect)     { this->setRect(rect);   }
+    explicit Shape(const SkRect& rect)   { this->setRect(rect);   }
     explicit Shape(const SkRRect& rrect) { this->setRRect(rrect); }
-    explicit Shape(const SkPath& path)   { this->setPath(path); }
+    explicit Shape(const SkPath& path)   { this->setPath(path);   }
 
     ~Shape() { this->reset(); }
 
@@ -49,10 +55,11 @@ class Shape {
     // corners is kRRect and not kRect).
     Type type() const { return fType; }
 
-    bool isEmpty()    const { return fType == Type::kEmpty; }
-    bool isRect()     const { return fType == Type::kRect; }
-    bool isRRect()    const { return fType == Type::kRRect; }
-    bool isPath()     const { return fType == Type::kPath; }
+    bool isEmpty() const { return fType == Type::kEmpty; }
+    bool isLine()  const { return fType == Type::kLine;  }
+    bool isRect()  const { return fType == Type::kRect;  }
+    bool isRRect() const { return fType == Type::kRRect; }
+    bool isPath()  const { return fType == Type::kPath;  }
 
     bool inverted() const {
         SkASSERT(fType != Type::kPath || fInverted == fPath.isInverseFillType());
@@ -76,8 +83,8 @@ class Shape {
 
     // True if the given bounding box is completely inside the shape, if it's conservatively treated
     // as a filled, closed shape.
-    bool conservativeContains(const SkRect& rect) const;
-    bool conservativeContains(const SkV2& point) const;
+    bool conservativeContains(const Rect& rect) const;
+    bool conservativeContains(float2 point) const;
 
     // True if the underlying geometry represents a closed shape, without the need for an
     // implicit close.
@@ -88,23 +95,37 @@ class Shape {
     bool convex(bool simpleFill = true) const;
 
     // The bounding box of the shape.
-    SkRect bounds() const;
+    Rect bounds() const;
 
     // Convert the shape into a path that describes the same geometry.
     SkPath asPath() const;
 
     // Access the actual geometric description of the shape. May only access the appropriate type
     // based on what was last set.
-    const SkRect&      rect()        const { SkASSERT(this->isRect()); return fRect; }
-    const SkRRect&     rrect()       const { SkASSERT(this->isRRect()); return fRRect; }
-    const SkPath&      path()        const { SkASSERT(this->isPath()); return fPath; }
+    float2         p0()    const { SkASSERT(this->isLine());  return fRect.topLeft();  }
+    float2         p1()    const { SkASSERT(this->isLine());  return fRect.botRight(); }
+    const Rect&    rect()  const { SkASSERT(this->isRect());  return fRect;            }
+    const SkRRect& rrect() const { SkASSERT(this->isRRect()); return fRRect;           }
+    const SkPath&  path()  const { SkASSERT(this->isPath());  return fPath;            }
 
     // Update the geometry stored in the Shape and update its associated type to match. This
     // performs no simplification, so calling setRRect() with a round rect that has isRect() return
     // true will still be considered an rrect by Shape.
     //
     // These reset inversion to the default for the geometric type.
-    void setRect(const SkRect& rect) {
+    void setLine(SkPoint p0, SkPoint p1) {
+        this->setLine(float2{p0.fX, p0.fY}, float2{p1.fX, p1.fY});
+    }
+    void setLine(SkV2 p0, SkV2 p1) {
+        this->setLine(float2{p0.x, p0.y}, float2{p1.x, p1.y});
+    }
+    void setLine(float2 p0, float2 p1) {
+        this->setType(Type::kLine);
+        fRect = Rect(p0, p1);
+        fInverted = false;
+    }
+    void setRect(const SkRect& rect) { this->setRect(Rect(rect)); }
+    void setRect(const Rect& rect) {
         this->setType(Type::kRect);
         fRect = rect;
         fInverted = false;
@@ -140,15 +161,15 @@ private:
     }
 
     union {
-        SkRect  fRect;
+        Rect    fRect; // p0 = top-left, p1 = bot-right if type is kLine (may be unsorted)
         SkRRect fRRect;
         SkPath  fPath;
     };
 
-    Type    fType        = Type::kEmpty;
-    bool    fInverted    = false;
+    Type    fType     = Type::kEmpty;
+    bool    fInverted = false;
 };
 
-} // namespace skgpu::geom
+} // namespace skgpu
 
 #endif // skgpu_geom_Shape_DEFINED

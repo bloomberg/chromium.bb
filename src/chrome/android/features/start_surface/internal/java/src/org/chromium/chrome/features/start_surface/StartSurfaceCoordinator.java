@@ -119,7 +119,7 @@ public class StartSurfaceCoordinator implements StartSurface {
 
     // Non-null in SurfaceMode.SINGLE_PANE modes.
     @Nullable
-    private ExploreSurfaceCoordinator mExploreSurfaceCoordinator;
+    private ExploreSurfaceCoordinatorFactory mExploreSurfaceCoordinatorFactory;
 
     // Non-null in SurfaceMode.SINGLE_PANE modes.
     // TODO(crbug.com/982018): Get rid of this reference since the mediator keeps a reference to it.
@@ -236,7 +236,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 new FeedLaunchReliabilityLoggingState(SurfaceType.START_SURFACE, System.nanoTime());
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
-        mIsStartSurfaceEnabled = ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled();
+        mIsStartSurfaceEnabled = ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity);
         mBottomSheetController = sheetController;
         mParentTabSupplier = parentTabSupplier;
         mWindowAndroid = windowAndroid;
@@ -285,6 +285,7 @@ public class StartSurfaceCoordinator implements StartSurface {
             mFeedPlaceholderCoordinator = new FeedPlaceholderCoordinator(
                     mActivity, mTasksSurface.getBodyViewContainer(), false);
             mFeedPlaceholderCoordinator.setUpPlaceholderView();
+            mStartSurfaceMediator.setFeedPlaceholderHasShown();
         }
         startSurfaceOneshotSupplier.set(this);
     }
@@ -385,18 +386,15 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         mIsInitializedWithNative = true;
         if (mIsStartSurfaceEnabled) {
-            mExploreSurfaceCoordinator = new ExploreSurfaceCoordinator(mActivity,
-                    mTasksSurface.getBodyViewContainer(), mPropertyModel, true,
-                    mBottomSheetController, mParentTabSupplier,
-                    new ScrollableContainerDelegateImpl(), mSnackbarManager, mShareDelegateSupplier,
-                    mWindowAndroid, mTabModelSelector, mToolbarSupplier,
+            mExploreSurfaceCoordinatorFactory = new ExploreSurfaceCoordinatorFactory(mActivity,
+                    mTasksSurface.getBodyViewContainer(), mPropertyModel, mBottomSheetController,
+                    mParentTabSupplier, new ScrollableContainerDelegateImpl(), mSnackbarManager,
+                    mShareDelegateSupplier, mWindowAndroid, mTabModelSelector, mToolbarSupplier,
                     mFeedLaunchReliabilityLoggingState, mSwipeRefreshLayout);
         }
         mStartSurfaceMediator.initWithNative(
                 mIsStartSurfaceEnabled ? mOmniboxStubSupplier.get() : null,
-                mExploreSurfaceCoordinator != null
-                        ? mExploreSurfaceCoordinator.getFeedSurfaceController()
-                        : null,
+                mExploreSurfaceCoordinatorFactory,
                 UserPrefs.get(Profile.getLastUsedRegularProfile()));
 
         if (mTabSwitcher != null) {
@@ -480,7 +478,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (StartSurfaceConfiguration.CHECK_SYNC_BEFORE_SHOW_START_AT_STARTUP.getValue()) {
             ReturnToChromeExperimentsUtil.cachePrimaryAccountSyncStatus();
         }
-        if (ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()) {
+        if (ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity)) {
             Log.i(TAG, "Recorded %s = %b", START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);
             RecordHistogram.recordBooleanHistogram(
                     START_SHOWN_AT_STARTUP_UMA, isOverviewShownOnStartup);

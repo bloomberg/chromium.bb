@@ -1151,7 +1151,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Returns true if ack_alarm_ is set.
   bool HasPendingAcks() const;
 
-  void OnUserAgentIdKnown() { sent_packet_manager_.OnUserAgentIdKnown(); }
+  virtual void OnUserAgentIdKnown(const std::string& user_agent_id);
 
   // Enables Legacy Version Encapsulation using |server_name| as SNI.
   // Can only be set if this is a client connection.
@@ -1346,6 +1346,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     default_path_.bytes_received_before_address_validation += length;
   }
 
+  void set_validate_client_addresses(bool value) {
+    validate_client_addresses_ = value;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
 
@@ -1361,14 +1365,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
               const QuicSocketAddress& alternative_peer_address,
               const QuicConnectionId& client_connection_id,
               const QuicConnectionId& server_connection_id,
-              bool stateless_reset_token_received,
-              StatelessResetToken stateless_reset_token)
+              absl::optional<StatelessResetToken> stateless_reset_token)
         : self_address(alternative_self_address),
           peer_address(alternative_peer_address),
           client_connection_id(client_connection_id),
           server_connection_id(server_connection_id),
-          stateless_reset_token(stateless_reset_token),
-          stateless_reset_token_received(stateless_reset_token_received) {}
+          stateless_reset_token(stateless_reset_token) {}
 
     PathState(PathState&& other);
 
@@ -1382,8 +1384,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     QuicSocketAddress peer_address;
     QuicConnectionId client_connection_id;
     QuicConnectionId server_connection_id;
-    StatelessResetToken stateless_reset_token;
-    bool stateless_reset_token_received = false;
+    absl::optional<StatelessResetToken> stateless_reset_token;
     // True if the peer address has been validated. Address is considered
     // validated when 1) an address token of the peer address is received and
     // validated, or 2) a HANDSHAKE packet has been successfully processed on
@@ -1520,12 +1521,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // client connection ID used on default/alternative path. If not, find if
   // there is an unused connection ID.
   void FindMatchingOrNewClientConnectionIdOrToken(
-      const PathState& default_path,
-      const PathState& alternative_path,
+      const PathState& default_path, const PathState& alternative_path,
       const QuicConnectionId& server_connection_id,
       QuicConnectionId* client_connection_id,
-      bool* stateless_reset_token_received,
-      StatelessResetToken* stateless_reset_token);
+      absl::optional<StatelessResetToken>* stateless_reset_token);
 
   // Returns true and sets connection IDs if (self_address, peer_address)
   // corresponds to either the default path or alternative path. Returns false
@@ -2278,9 +2277,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   const bool reset_per_packet_state_for_undecryptable_packets_ =
       GetQuicReloadableFlag(
           quic_reset_per_packet_state_for_undecryptable_packets);
-
-  const bool add_missing_update_ack_timeout_ =
-      GetQuicReloadableFlag(quic_add_missing_update_ack_timeout);
 };
 
 }  // namespace quic

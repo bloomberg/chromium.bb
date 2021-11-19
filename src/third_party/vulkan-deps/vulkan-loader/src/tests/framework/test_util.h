@@ -39,7 +39,6 @@
  * ostream overload for VkResult - prettifies googletest output
  * VulkanFunctions - loads vulkan functions for tests to use
  * Instance & Device create info helpers
- * InstWrapper & DeviceWrapper - for easier test writing
  * operator == overloads for many vulkan structs - more concise tests
  */
 #pragma once
@@ -70,7 +69,7 @@
 #include <direct.h>
 #include <windows.h>
 #include <strsafe.h>
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -99,16 +98,25 @@
 #define FRAMEWORK_EXPORT
 #endif
 
+/*
+ * Common Environment Variable operations
+ * These operate on the actual environemnt, they are not shims.
+ * set_env_var - sets the env-var with `name` to `value`.
+ * remove_env_var - unsets the env-var `name`. Different than set_env_var(name, "");
+ * get_env_var - returns a std::string of `name`. if report_failure is true, then it will log to stderr that it didn't find the
+ *     env-var
+ */
+
 #if defined(WIN32)
 bool set_env_var(std::string const& name, std::string const& value);
 bool remove_env_var(std::string const& name);
 #define ENV_VAR_BUFFER_SIZE 4096
-std::string get_env_var(std::string const& name);
+std::string get_env_var(std::string const& name, bool report_failure = true);
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 bool set_env_var(std::string const& name, std::string const& value);
 bool remove_env_var(std::string const& name);
-std::string get_env_var(std::string const& name);
+std::string get_env_var(std::string const& name, bool report_failure = true);
 #endif
 
 // Windows specific error handling logic
@@ -126,102 +134,8 @@ enum class DebugMode {
                // deleted
 };
 
-inline std::string version_to_string(uint32_t version) {
-    return std::to_string(VK_VERSION_MAJOR(version)) + "." + std::to_string(VK_VERSION_MINOR(version)) + "." +
-           std::to_string(VK_VERSION_PATCH(version));
-}
-
-struct ManifestVersion {
-    uint32_t major = 1;
-    uint32_t minor = 0;
-    uint32_t patch = 0;
-    explicit ManifestVersion() noexcept {};
-    explicit ManifestVersion(uint32_t major, uint32_t minor, uint32_t patch) noexcept : major(major), minor(minor), patch(patch){};
-
-    std::string get_version_str() const noexcept {
-        return std::string("\"file_format_version\": \"") + std::to_string(major) + "." + std::to_string(minor) + "." +
-               std::to_string(patch) + "\",";
-    }
-};
-
-struct ManifestICD {
-    ManifestVersion file_format_version = ManifestVersion();
-    uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
-    std::string lib_path;
-
-    std::string get_manifest_str() const;
-};
-
-struct ManifestLayer {
-    struct LayerDescription {
-        enum class Type { INSTANCE, GLOBAL, DEVICE };
-        std::string get_type_str(Type type) const {
-            if (type == Type::GLOBAL)
-                return "GLOBAL";
-            else if (type == Type::DEVICE)
-                return "DEVICE";
-            else  // default
-                return "INSTANCE";
-        }
-        struct FunctionOverride {
-            std::string vk_func;
-            std::string override_name;
-            std::string get_manifest_str() const { return std::string("{ \"") + vk_func + "\":\"" + override_name + "\" }"; }
-        };
-        struct Extension {
-            Extension() noexcept {}
-            Extension(std::string name, uint32_t spec_version = 0, std::vector<std::string> entrypoints = {}) noexcept
-                : name(name), spec_version(spec_version), entrypoints(entrypoints) {}
-            std::string name;
-            uint32_t spec_version = 0;
-            std::vector<std::string> entrypoints;
-            std::string get_manifest_str() const;
-        };
-        std::string name;
-        Type type = Type::INSTANCE;
-        std::string lib_path;
-        uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
-        uint32_t implementation_version = 0;
-        std::string description;
-        std::vector<FunctionOverride> functions;
-        std::vector<Extension> instance_extensions;
-        std::vector<Extension> device_extensions;
-        std::string enable_environment;
-        std::string disable_environment;
-        std::vector<std::string> component_layers;
-        std::vector<std::string> pre_instance_functions;
-
-        std::string get_manifest_str() const;
-        VkLayerProperties get_layer_properties() const;
-    };
-    ManifestVersion file_format_version;
-    std::vector<LayerDescription> layers;
-
-    std::string get_manifest_str() const;
-};
-
-struct Extension {
-    std::string extensionName;
-    uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0);
-
-    Extension(std::string extensionName, uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0))
-        : extensionName(extensionName), specVersion(specVersion) {}
-
-    VkExtensionProperties get() const noexcept {
-        VkExtensionProperties props{};
-        std::strncpy(props.extensionName, extensionName.c_str(), VK_MAX_EXTENSION_NAME_SIZE);
-        props.specVersion = specVersion;
-        return props;
-    }
-};
-
-struct MockQueueFamilyProperties {
-    MockQueueFamilyProperties(VkQueueFamilyProperties properties, bool support_present = false)
-        : properties(properties), support_present(support_present) {}
-    VkQueueFamilyProperties properties{};
-    bool support_present = false;
-    VkQueueFamilyProperties get() const noexcept { return properties; }
-};
+struct ManifestICD;    // forward declaration for FolderManager::write
+struct ManifestLayer;  // forward declaration for FolderManager::write
 
 namespace fs {
 std::string make_native(std::string const&);
@@ -230,7 +144,7 @@ struct path {
    private:
 #if defined(WIN32)
     static const char path_separator = '\\';
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     static const char path_separator = '/';
 #endif
 
@@ -309,6 +223,22 @@ class FolderManager {
 };
 }  // namespace fs
 
+// copy the contents of a std::string into a char array and add a null terminator at the end
+// src - std::string to read from
+// dst - char array to write to
+// size_dst - number of characters in the dst array
+inline void copy_string_to_char_array(std::string const& src, char* dst, size_t size_dst) {
+// Creates a spurious C4996 Warning in VS 2015 - ignore it
+#if defined(WIN32)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
+    dst[src.copy(dst, size_dst - 1)] = 0;
+#if defined(WIN32)
+#pragma warning(pop)
+#endif
+}
+
 #if defined(WIN32)
 typedef HMODULE loader_platform_dl_handle;
 static loader_platform_dl_handle loader_platform_open_library(const char* lib_path) {
@@ -320,37 +250,37 @@ static loader_platform_dl_handle loader_platform_open_library(const char* lib_pa
     }
     return lib_handle;
 }
-static char* loader_platform_open_library_error(const char* libPath) {
+inline char* loader_platform_open_library_error(const char* libPath) {
     static char errorMsg[164];
     (void)snprintf(errorMsg, 163, "Failed to open dynamic library \"%s\" with error %lu", libPath, GetLastError());
     return errorMsg;
 }
-static void loader_platform_close_library(loader_platform_dl_handle library) { FreeLibrary(library); }
-static void* loader_platform_get_proc_address(loader_platform_dl_handle library, const char* name) {
+inline void loader_platform_close_library(loader_platform_dl_handle library) { FreeLibrary(library); }
+inline void* loader_platform_get_proc_address(loader_platform_dl_handle library, const char* name) {
     assert(library);
     assert(name);
     return (void*)GetProcAddress(library, name);
 }
-static char* loader_platform_get_proc_address_error(const char* name) {
+inline char* loader_platform_get_proc_address_error(const char* name) {
     static char errorMsg[120];
     (void)snprintf(errorMsg, 119, "Failed to find function \"%s\" in dynamic library", name);
     return errorMsg;
 }
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 
 typedef void* loader_platform_dl_handle;
-static inline loader_platform_dl_handle loader_platform_open_library(const char* libPath) {
+inline loader_platform_dl_handle loader_platform_open_library(const char* libPath) {
     return dlopen(libPath, RTLD_LAZY | RTLD_LOCAL);
 }
-static inline const char* loader_platform_open_library_error(const char* libPath) { return dlerror(); }
-static inline void loader_platform_close_library(loader_platform_dl_handle library) { dlclose(library); }
-static inline void* loader_platform_get_proc_address(loader_platform_dl_handle library, const char* name) {
+inline const char* loader_platform_open_library_error(const char* libPath) { return dlerror(); }
+inline void loader_platform_close_library(loader_platform_dl_handle library) { dlclose(library); }
+inline void* loader_platform_get_proc_address(loader_platform_dl_handle library, const char* name) {
     assert(library);
     assert(name);
     return dlsym(library, name);
 }
-static inline const char* loader_platform_get_proc_address_error(const char* name) { return dlerror(); }
+inline const char* loader_platform_get_proc_address_error(const char* name) { return dlerror(); }
 #endif
 
 struct LibraryWrapper {
@@ -518,6 +448,103 @@ inline std::ostream& operator<<(std::ostream& os, const VkResult& result) {
 bool string_eq(const char* a, const char* b) noexcept;
 bool string_eq(const char* a, const char* b, size_t len) noexcept;
 
+inline std::string version_to_string(uint32_t version) {
+    return std::to_string(VK_VERSION_MAJOR(version)) + "." + std::to_string(VK_VERSION_MINOR(version)) + "." +
+           std::to_string(VK_VERSION_PATCH(version));
+}
+
+struct ManifestVersion {
+    uint32_t major = 1;
+    uint32_t minor = 0;
+    uint32_t patch = 0;
+    explicit ManifestVersion() noexcept {};
+    explicit ManifestVersion(uint32_t major, uint32_t minor, uint32_t patch) noexcept : major(major), minor(minor), patch(patch){};
+
+    std::string get_version_str() const noexcept {
+        return std::string("\"file_format_version\": \"") + std::to_string(major) + "." + std::to_string(minor) + "." +
+               std::to_string(patch) + "\",";
+    }
+};
+
+struct ManifestICD {
+    ManifestVersion file_format_version = ManifestVersion();
+    uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
+    std::string lib_path;
+
+    std::string get_manifest_str() const;
+};
+
+struct ManifestLayer {
+    struct LayerDescription {
+        enum class Type { INSTANCE, GLOBAL, DEVICE };
+        std::string get_type_str(Type layer_type) const {
+            if (layer_type == Type::GLOBAL)
+                return "GLOBAL";
+            else if (layer_type == Type::DEVICE)
+                return "DEVICE";
+            else  // default
+                return "INSTANCE";
+        }
+        struct FunctionOverride {
+            std::string vk_func;
+            std::string override_name;
+            std::string get_manifest_str() const { return std::string("{ \"") + vk_func + "\":\"" + override_name + "\" }"; }
+        };
+        struct Extension {
+            Extension() noexcept {}
+            Extension(std::string name, uint32_t spec_version = 0, std::vector<std::string> entrypoints = {}) noexcept
+                : name(name), spec_version(spec_version), entrypoints(entrypoints) {}
+            std::string name;
+            uint32_t spec_version = 0;
+            std::vector<std::string> entrypoints;
+            std::string get_manifest_str() const;
+        };
+        std::string name;
+        Type type = Type::INSTANCE;
+        fs::path lib_path;
+        uint32_t api_version = VK_MAKE_VERSION(1, 0, 0);
+        uint32_t implementation_version = 0;
+        std::string description;
+        std::vector<FunctionOverride> functions;
+        std::vector<Extension> instance_extensions;
+        std::vector<Extension> device_extensions;
+        std::string enable_environment;
+        std::string disable_environment;
+        std::vector<std::string> component_layers;
+        std::vector<std::string> pre_instance_functions;
+
+        std::string get_manifest_str() const;
+        VkLayerProperties get_layer_properties() const;
+    };
+    ManifestVersion file_format_version;
+    std::vector<LayerDescription> layers;
+
+    std::string get_manifest_str() const;
+};
+
+struct Extension {
+    std::string extensionName;
+    uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0);
+
+    Extension(std::string extensionName, uint32_t specVersion = VK_MAKE_VERSION(1, 0, 0))
+        : extensionName(extensionName), specVersion(specVersion) {}
+
+    VkExtensionProperties get() const noexcept {
+        VkExtensionProperties props{};
+        copy_string_to_char_array(extensionName, &props.extensionName[0], VK_MAX_EXTENSION_NAME_SIZE);
+        props.specVersion = specVersion;
+        return props;
+    }
+};
+
+struct MockQueueFamilyProperties {
+    MockQueueFamilyProperties(VkQueueFamilyProperties properties, bool support_present = false)
+        : properties(properties), support_present(support_present) {}
+    VkQueueFamilyProperties properties{};
+    bool support_present = false;
+    VkQueueFamilyProperties get() const noexcept { return properties; }
+};
+
 struct VulkanFunctions {
     LibraryWrapper loader;
 
@@ -600,6 +627,7 @@ struct InstanceCreateInfo {
     InstanceCreateInfo& set_app_version(uint32_t app_version);
     InstanceCreateInfo& set_engine_version(uint32_t engine_version);
     InstanceCreateInfo& set_api_version(uint32_t api_version);
+    InstanceCreateInfo& set_api_version(uint32_t major, uint32_t minor, uint32_t patch);
     InstanceCreateInfo& add_layer(const char* layer_name);
     InstanceCreateInfo& add_extension(const char* ext_name);
 };
@@ -624,134 +652,6 @@ struct DeviceCreateInfo {
     DeviceCreateInfo& add_extension(const char* ext_name);
     DeviceCreateInfo& add_device_queue(DeviceQueueCreateInfo queue_info_detail);
 };
-
-struct InstWrapper {
-    InstWrapper(VulkanFunctions& functions, VkAllocationCallbacks* callbacks = nullptr) noexcept
-        : functions(&functions), callbacks(callbacks) {}
-    InstWrapper(VulkanFunctions& functions, VkInstance inst, VkAllocationCallbacks* callbacks = nullptr) noexcept
-        : functions(&functions), inst(inst), callbacks(callbacks) {}
-    ~InstWrapper() {
-        if (inst != VK_NULL_HANDLE) functions->vkDestroyInstance(inst, callbacks);
-    }
-
-    // Immoveable object
-    InstWrapper(InstWrapper const&) = delete;
-    InstWrapper& operator=(InstWrapper const&) = delete;
-    InstWrapper(InstWrapper&&) = delete;
-    InstWrapper& operator=(InstWrapper&&) = delete;
-
-    // Convenience
-    operator VkInstance() { return inst; }
-    VulkanFunctions* operator->() { return functions; }
-
-    VulkanFunctions* functions = nullptr;
-    VkInstance inst = VK_NULL_HANDLE;
-    VkAllocationCallbacks* callbacks = nullptr;
-};
-
-VkResult CreateInst(InstWrapper& inst, InstanceCreateInfo& inst_info);
-VkResult CreatePhysDevs(InstWrapper& inst, uint32_t phys_dev_count, std::vector<VkPhysicalDevice>& physical_devices);
-VkResult CreatePhysDev(InstWrapper& inst, VkPhysicalDevice& physical_device);
-
-struct DeviceWrapper {
-    DeviceWrapper(){};
-    DeviceWrapper(InstWrapper& inst_wrapper, VkAllocationCallbacks* callbacks = nullptr)
-        : functions(inst_wrapper.functions), callbacks(callbacks){};
-    DeviceWrapper(VulkanFunctions& functions, VkAllocationCallbacks* callbacks = nullptr)
-        : functions(&functions), callbacks(callbacks){};
-    ~DeviceWrapper() { functions->vkDestroyDevice(dev, callbacks); }
-
-    // Immoveable object
-    DeviceWrapper(DeviceWrapper const&) = delete;
-    DeviceWrapper& operator=(DeviceWrapper const&) = delete;
-    DeviceWrapper(DeviceWrapper&&) = delete;
-    DeviceWrapper& operator=(DeviceWrapper&&) = delete;
-
-    // Convenience
-    operator VkDevice() { return dev; }
-    VulkanFunctions* operator->() { return functions; }
-
-    VulkanFunctions* functions = nullptr;
-    VkDevice dev = VK_NULL_HANDLE;
-    VkAllocationCallbacks* callbacks = nullptr;
-};
-VkResult CreateDevice(VkPhysicalDevice phys_dev, DeviceWrapper& dev, DeviceCreateInfo& dev_info);
-
-struct DebugUtilsLogger {
-    static VkBool32 VKAPI_PTR DebugUtilsMessengerLoggerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                                VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-                                                                const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                                void* pUserData) {
-        DebugUtilsLogger* debug = reinterpret_cast<DebugUtilsLogger*>(pUserData);
-        debug->returned_output += pCallbackData->pMessage;
-        debug->returned_output += '\n';
-        return VK_FALSE;
-    }
-    DebugUtilsLogger(VkDebugUtilsMessageSeverityFlagsEXT severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                                                    VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-        returned_output.reserve(4096);  // output can be very noisy, reserving should help prevent many small allocations
-        create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        create_info.pNext = nullptr;
-        create_info.messageSeverity = severity;
-        create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        create_info.pfnUserCallback = DebugUtilsMessengerLoggerCallback;
-        create_info.pUserData = this;
-    }
-
-    // Immoveable object
-    DebugUtilsLogger(DebugUtilsLogger const&) = delete;
-    DebugUtilsLogger& operator=(DebugUtilsLogger const&) = delete;
-    DebugUtilsLogger(DebugUtilsLogger&&) = delete;
-    DebugUtilsLogger& operator=(DebugUtilsLogger&&) = delete;
-
-    bool find(std::string const& search_text) { return returned_output.find(search_text) != std::string::npos; }
-
-    VkDebugUtilsMessengerCreateInfoEXT* get() noexcept { return &create_info; }
-    VkDebugUtilsMessengerCreateInfoEXT create_info{};
-    std::string returned_output;
-};
-
-struct DebugUtilsWrapper {
-    DebugUtilsWrapper() noexcept {}
-    DebugUtilsWrapper(InstWrapper& inst_wrapper,
-                      VkDebugUtilsMessageSeverityFlagsEXT severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-                      VkAllocationCallbacks* callbacks = nullptr)
-        : logger(severity), inst(inst_wrapper.inst), callbacks(callbacks) {
-        vkCreateDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-            inst_wrapper.functions->vkGetInstanceProcAddr(inst_wrapper.inst, "vkCreateDebugUtilsMessengerEXT"));
-        vkDestroyDebugUtilsMessengerEXT = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
-            inst_wrapper.functions->vkGetInstanceProcAddr(inst_wrapper.inst, "vkDestroyDebugUtilsMessengerEXT"));
-    };
-    ~DebugUtilsWrapper() noexcept {
-        if (messenger) {
-            vkDestroyDebugUtilsMessengerEXT(inst, messenger, callbacks);
-        }
-    }
-    // Immoveable object
-    DebugUtilsWrapper(DebugUtilsWrapper const&) = delete;
-    DebugUtilsWrapper& operator=(DebugUtilsWrapper const&) = delete;
-    DebugUtilsWrapper(DebugUtilsWrapper&&) = delete;
-    DebugUtilsWrapper& operator=(DebugUtilsWrapper&&) = delete;
-
-    bool find(std::string const& search_text) { return logger.find(search_text); }
-    VkDebugUtilsMessengerCreateInfoEXT* get() noexcept { return logger.get(); }
-
-    DebugUtilsLogger logger;
-    VkInstance inst;
-    VkAllocationCallbacks* callbacks = nullptr;
-    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
-    PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT = nullptr;
-    VkDebugUtilsMessengerEXT messenger = VK_NULL_HANDLE;
-};
-
-VkResult CreateDebugUtilsMessenger(DebugUtilsWrapper& debug_utils);
-
-// Helper that adds the debug utils extension name and sets the pNext chain up
-// NOTE: Ignores existing pNext chains
-void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsLogger& logger);
-void FillDebugUtilsCreateDetails(InstanceCreateInfo& create_info, DebugUtilsWrapper& wrapper);
 
 inline bool operator==(const VkExtent3D& a, const VkExtent3D& b) {
     return a.width == b.width && a.height == b.height && a.depth == b.depth;

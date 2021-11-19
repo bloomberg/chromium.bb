@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "cef/libcef/features/runtime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/plugin_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -40,13 +39,6 @@ void PluginUtils::GetPluginContentSetting(
     ContentSetting* setting,
     bool* is_default,
     bool* is_managed) {
-  // Not JS means Flash. Flash is deprecated.
-  if (!ShouldUseJavaScriptSettingForPlugin(plugin)) {
-    *is_default = true;
-    *setting = CONTENT_SETTING_BLOCK;
-    return;
-  }
-
   GURL main_frame_url = main_frame_origin.GetURL();
   std::unique_ptr<base::Value> value;
   content_settings::SettingInfo info;

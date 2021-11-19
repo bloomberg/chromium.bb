@@ -607,7 +607,6 @@
 <translation id="5138912041966667164">Średni niebieski łupkowy</translation>
 <translation id="5140016802771803559">Fioletowy Rebecca</translation>
 <translation id="5142101052131610456">Wszystkie lekcje</translation>
-<translation id="5152605892605507188">przejdź w prawo</translation>
 <translation id="5158275234811857234">Okładka</translation>
 <translation id="516076699907426116">Aby przejść dalej, użyj funkcji Czytanie dotykiem i znajdź przycisk Następna lekcja. Potem dotknij dwukrotnie ekranu, aby przejść dalej.</translation>
 <translation id="5170206230005240598">Napisy brajlowskie włączone</translation>
@@ -741,6 +740,7 @@
 <translation id="6034000775414344507">Jasnoszary</translation>
 <translation id="6036135911048686884">Dotknij, by poznać.</translation>
 <translation id="6037602951055904232">Przesuń do przodu</translation>
+<translation id="604240746417122825">błąd gramatyczny</translation>
 <translation id="6082768461603900813">Podstawowa nawigacja</translation>
 <translation id="609281021724813947">Nie ma poprzedniego suwaka</translation>
 <translation id="6100239002225743044">Przejdź jeden wiersz wyżej</translation>
@@ -751,7 +751,6 @@
 <translation id="6142308968191113180">Nagłówek 4</translation>
 <translation id="6150023170003443621">Żółtozielony</translation>
 <translation id="6158882249329863701">wiersz <ph name="TABLECELLROWINDEX" />, kolumna <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">przejdź w lewo</translation>
 <translation id="6164829606128959761">miernik</translation>
 <translation id="6165508094623778733">Dowiedz się więcej</translation>
 <translation id="6166362019018438352">Napisy brajlowskie wyłączone</translation>
@@ -798,6 +797,7 @@
 <translation id="6544923685317771506">Muszla morska</translation>
 <translation id="6551185905438378412">Kość słoniowa</translation>
 <translation id="6561818612645211875">Przejdź na początek bieżącego wiersza</translation>
+<translation id="6563126228219321999">Brak nieprawidłowych elementów</translation>
 <translation id="6579990219486187401">Jasnoróżowy</translation>
 <translation id="6583174818554398774">Przejdź do następnego elementu na tym poziomie szczegółowości</translation>
 <translation id="6584162722998608255">Teraz dowiesz się, jak poruszać się po ekranie. Możesz przesunąć jednym palcem z lewej do prawej, aby przejść do następnego elementu. Zrób to teraz, aby przejść do następnego kroku.</translation>
@@ -828,6 +828,7 @@
 <translation id="6815255864998354418">Szyfonowy cytrynowy</translation>
 <translation id="6816066673340002913">Bladozłoty</translation>
 <translation id="6826226459053491773">Przesuń dwoma palcami w dół</translation>
+<translation id="6826669432862053130">Następny nieprawidłowy element</translation>
 <translation id="6833103209700200188">Stopka</translation>
 <translation id="6837853484260746864">Wybierz głos:</translation>
 <translation id="6858047746862060282">Prolog</translation>
@@ -842,7 +843,6 @@
 <translation id="6910969481785184048">Włączanie, wyłączanie i wstrzymywanie</translation>
 <translation id="6919104639734799681">Pokaż listę tabel.</translation>
 <translation id="692135145298539227">usuń</translation>
-<translation id="6935674530832500465">przesuń w dół</translation>
 <translation id="6945221475159498467">Wybierz</translation>
 <translation id="6949846980769640811">Średnia akwamaryna</translation>
 <translation id="6951482098621102657">Nie ma następnego nagłówka poziomu 5</translation>
@@ -1017,6 +1017,7 @@
 <translation id="8126386426083591964">Nie ma poprzedniego nagłówka poziomu 5</translation>
 <translation id="812886159861361726">Zatrzymano pobieranie pliku <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">Nie ma komórki powyżej</translation>
+<translation id="8132248161074464367">Poprzedni nieprawidłowy element</translation>
 <translation id="8138880386467279117">Kliknij</translation>
 <translation id="8146613869421949343">Teraz zajmiemy się klawiszem wyszukiwania Klawisza wyszukiwania używa się w połączeniu z innymi klawiszami do wydawania poleceń w ChromeVox. Klawisz wyszukiwania znajduje się tuż nad lewym klawiszem Shift. Aby przejść dalej, naciśnij klawisz wyszukiwania.</translation>
 <translation id="8158033275290782295">wybierz wszystko</translation>
@@ -1038,14 +1039,12 @@
 <translation id="826825447994856889">Wprowadzenie</translation>
 <translation id="827266600368092403">Rozpocznij lub zakończ wybieranie</translation>
 <translation id="827422111966801947">Indygo</translation>
-<translation id="827496561804786391">przesuń w górę</translation>
 <translation id="8276439074553447000">Przejdź do poprzedniego elementu, który można zaznaczyć</translation>
 <translation id="8279039817939141096">Naciśnij klawisz na klawiaturze QWERTY lub na monitorze brajlowskim albo wykonaj gest dotykowy, aby poznać jego funkcję. Aby wyjść, naciśnij Ctrl + W lub spację + Z, przesuń dwoma palcami w lewo albo naciśnij Escape.</translation>
 <translation id="8283603667300770666">Następne pole formularza</translation>
 <translation id="8310185481635255431">Nie ma następnego linku</translation>
 <translation id="831207808878314375">Definicja</translation>
 <translation id="8313653172105209786">dir</translation>
-<translation id="8314546933558091113">anuluj wybór wszystkiego</translation>
 <translation id="8316881042119029234">Stare koronki</translation>
 <translation id="8324974933005349667">Dostosuj ustawienia zamiany tekstu na mowę</translation>
 <translation id="8326783648485765113">Zielony trawiasty</translation>
@@ -1121,7 +1120,7 @@
 <translation id="8946628535652548639">w<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">Nie ma poprzedniej opcji</translation>
 <translation id="8970172509886453271">Nie ma poprzedniej sekcji</translation>
-<translation id="89720367119469899">Ucieczka</translation>
+<translation id="89720367119469899">Escape</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Zapomnij</translation>
 <translation id="8989104346085848538">Aby zatrzymać odczytywanie w ChromeVox, naciśnij klawisz Ctrl.</translation>

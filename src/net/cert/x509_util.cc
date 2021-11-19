@@ -385,6 +385,13 @@ bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBuffer(
                         data.size(), GetBufferPool()));
 }
 
+bssl::UniquePtr<CRYPTO_BUFFER> CreateCryptoBufferFromStaticDataUnsafe(
+    base::span<const uint8_t> data) {
+  return bssl::UniquePtr<CRYPTO_BUFFER>(
+      CRYPTO_BUFFER_new_from_static_data_unsafe(data.data(), data.size(),
+                                                GetBufferPool()));
+}
+
 bool CryptoBufferEqual(const CRYPTO_BUFFER* a, const CRYPTO_BUFFER* b) {
   DCHECK(a && b);
   if (a == b)
@@ -398,6 +405,10 @@ base::StringPiece CryptoBufferAsStringPiece(const CRYPTO_BUFFER* buffer) {
   return base::StringPiece(
       reinterpret_cast<const char*>(CRYPTO_BUFFER_data(buffer)),
       CRYPTO_BUFFER_len(buffer));
+}
+
+base::span<const uint8_t> CryptoBufferAsSpan(const CRYPTO_BUFFER* buffer) {
+  return base::make_span(CRYPTO_BUFFER_data(buffer), CRYPTO_BUFFER_len(buffer));
 }
 
 scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(

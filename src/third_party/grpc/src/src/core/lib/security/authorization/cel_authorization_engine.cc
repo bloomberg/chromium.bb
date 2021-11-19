@@ -14,9 +14,11 @@
 
 #include <grpc/support/port_platform.h>
 
+#include "src/core/lib/security/authorization/cel_authorization_engine.h"
+
 #include "absl/memory/memory.h"
 
-#include "src/core/lib/security/authorization/cel_authorization_engine.h"
+#include "src/core/lib/address_utils/sockaddr_utils.h"
 
 namespace grpc_core {
 
@@ -132,7 +134,7 @@ std::unique_ptr<mock_cel::Activation> CelAuthorizationEngine::CreateActivation(
       activation->InsertValue(kHeaders,
                               mock_cel::CelValue::CreateMap(headers_.get()));
     } else if (elem == kSourceAddress) {
-      absl::string_view source_address(args.GetPeerAddress());
+      absl::string_view source_address(args.GetPeerAddressString());
       if (!source_address.empty()) {
         activation->InsertValue(
             kSourceAddress,
@@ -142,7 +144,7 @@ std::unique_ptr<mock_cel::Activation> CelAuthorizationEngine::CreateActivation(
       activation->InsertValue(
           kSourcePort, mock_cel::CelValue::CreateInt64(args.GetPeerPort()));
     } else if (elem == kDestinationAddress) {
-      absl::string_view destination_address(args.GetLocalAddress());
+      absl::string_view destination_address(args.GetLocalAddressString());
       if (!destination_address.empty()) {
         activation->InsertValue(
             kDestinationAddress,

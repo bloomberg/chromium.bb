@@ -10,6 +10,8 @@
 #ifndef EIGEN_PACKET_MATH_AVX512_H
 #define EIGEN_PACKET_MATH_AVX512_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -2202,7 +2204,6 @@ EIGEN_STRONG_INLINE void pstoreu<bfloat16>(bfloat16* to,
 
 template<> EIGEN_STRONG_INLINE Packet16bf
 ploaddup<Packet16bf>(const bfloat16* from) {
-  Packet16bf r;
   unsigned short a = from[0].value;
   unsigned short b = from[1].value;
   unsigned short c = from[2].value;
@@ -2216,7 +2217,6 @@ ploaddup<Packet16bf>(const bfloat16* from) {
 
 template<> EIGEN_STRONG_INLINE Packet16bf
 ploadquad(const bfloat16* from) {
-  Packet16bf r;
   unsigned short a = from[0].value;
   unsigned short b = from[1].value;
   unsigned short c = from[2].value;
@@ -2234,7 +2234,7 @@ EIGEN_STRONG_INLINE Packet16bf F32ToBf16(const Packet16f& a) {
 
 #if defined(EIGEN_VECTORIZE_AVX512BF16) && EIGEN_GNUC_AT_LEAST(10, 1)
   // Since GCC 10.1 supports avx512bf16 and C style explicit cast
-  // (C++ static_cast is not supported yet), do converion via intrinsic
+  // (C++ static_cast is not supported yet), do conversion via intrinsic
   // and register path for performance.
   r = (__m256i)(_mm512_cvtneps_pbh(a));
 

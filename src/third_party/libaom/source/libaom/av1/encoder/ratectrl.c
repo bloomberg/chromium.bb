@@ -2303,11 +2303,15 @@ static void set_baseline_gf_interval(AV1_COMP *cpi, FRAME_TYPE frame_type) {
     av1_cyclic_refresh_set_golden_update(cpi);
   else
     p_rc->baseline_gf_interval = FIXED_GF_INTERVAL;
-  if (p_rc->baseline_gf_interval > rc->frames_to_key)
+  if (p_rc->baseline_gf_interval > rc->frames_to_key &&
+      cpi->oxcf.kf_cfg.auto_key)
     p_rc->baseline_gf_interval = rc->frames_to_key;
   p_rc->gfu_boost = DEFAULT_GF_BOOST_RT;
   p_rc->constrained_gf_group =
-      (p_rc->baseline_gf_interval >= rc->frames_to_key) ? 1 : 0;
+      (p_rc->baseline_gf_interval >= rc->frames_to_key &&
+       cpi->oxcf.kf_cfg.auto_key)
+          ? 1
+          : 0;
   rc->frames_till_gf_update_due = p_rc->baseline_gf_interval;
   cpi->gf_frame_index = 0;
   // SVC does not use GF as periodic boost.
@@ -2346,6 +2350,8 @@ void av1_adjust_gf_refresh_qp_one_pass_rt(AV1_COMP *cpi) {
     // period) based on QP. Look into add info on segment deltaq.
     PRIMARY_RATE_CONTROL *p_rc = &cpi->ppi->p_rc;
     const int avg_qp = p_rc->avg_frame_qindex[INTER_FRAME];
+    const int allow_gf_update =
+        rc->frames_till_gf_update_due <= (p_rc->baseline_gf_interval - 10);
     int gf_update_changed = 0;
     int thresh = 87;
     if (rc->frames_till_gf_update_due == 1 &&
@@ -2353,10 +2359,11 @@ void av1_adjust_gf_refresh_qp_one_pass_rt(AV1_COMP *cpi) {
       // Disable GF refresh since QP is above the runninhg average QP.
       svc->refresh[svc->gld_idx_1layer] = 0;
       gf_update_changed = 1;
-    } else if (rc->frames_till_gf_update_due <
-                   (p_rc->baseline_gf_interval >> 1) &&
-               cm->quant_params.base_qindex < thresh * avg_qp / 100) {
-      // Force refresh since QP is well below average QP.
+    } else if (allow_gf_update &&
+               ((cm->quant_params.base_qindex < thresh * avg_qp / 100) ||
+                (rc->avg_frame_low_motion < 20))) {
+      // Force refresh since QP is well below average QP or this is a high
+      // motion frame.
       svc->refresh[svc->gld_idx_1layer] = 1;
       gf_update_changed = 1;
     }
@@ -2745,6 +2752,30 @@ static void dynamic_resize_one_pass_cbr(AV1_COMP *cpi) {
   return;
 }
 
+static INLINE int set_key_frame(AV1_COMP *cpi, unsigned int frame_flags) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  AV1_COMMON *const cm = &cpi->common;
+  SVC *const svc = &cpi->svc;
+
+  // Very first frame has to be key frame.
+  if (cm->current_frame.frame_number == 0) return 1;
+  // Set key frame if forced by frame flags.
+  if (frame_flags & FRAMEFLAGS_KEY) return 1;
+  if (!cpi->ppi->use_svc) {
+    // Non-SVC
+    if (cpi->oxcf.kf_cfg.auto_key && rc->frames_to_key == 0) return 1;
+  } else {
+    // SVC
+    if (svc->spatial_layer_id == 0 &&
+        (cpi->oxcf.kf_cfg.auto_key &&
+         (cpi->oxcf.kf_cfg.key_freq_max == 0 ||
+          svc->current_superframe % cpi->oxcf.kf_cfg.key_freq_max == 0)))
+      return 1;
+  }
+
+  return 0;
+}
+
 void av1_get_one_pass_rt_params(AV1_COMP *cpi,
                                 EncodeFrameParams *const frame_params,
                                 unsigned int frame_flags) {
@@ -2766,11 +2797,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     av1_restore_layer_context(cpi);
   }
   // Set frame type.
-  if ((!cpi->ppi->use_svc && rc->frames_to_key == 0) ||
-      (cpi->ppi->use_svc && svc->spatial_layer_id == 0 &&
-       (cpi->oxcf.kf_cfg.key_freq_max == 0 ||
-        svc->current_superframe % cpi->oxcf.kf_cfg.key_freq_max == 0)) ||
-      (frame_flags & FRAMEFLAGS_KEY)) {
+  if (set_key_frame(cpi, frame_flags)) {
     frame_params->frame_type = KEY_FRAME;
     p_rc->this_key_frame_forced =
         cm->current_frame.frame_number != 0 && rc->frames_to_key == 0;

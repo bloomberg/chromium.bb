@@ -51,17 +51,17 @@ namespace {
 /// offsets for storage and uniform buffer accesses.
 struct Offset : Castable<Offset> {
   /// @returns builds and returns the ast::Expression in `ctx.dst`
-  virtual ast::Expression* Build(CloneContext& ctx) const = 0;
+  virtual const ast::Expression* Build(CloneContext& ctx) const = 0;
 };
 
 /// OffsetExpr is an implementation of Offset that clones and casts the given
 /// expression to `u32`.
 struct OffsetExpr : Offset {
-  ast::Expression* const expr = nullptr;
+  const ast::Expression* const expr = nullptr;
 
-  explicit OffsetExpr(ast::Expression* e) : expr(e) {}
+  explicit OffsetExpr(const ast::Expression* e) : expr(e) {}
 
-  ast::Expression* Build(CloneContext& ctx) const override {
+  const ast::Expression* Build(CloneContext& ctx) const override {
     auto* type = ctx.src->Sem().Get(expr)->Type()->UnwrapRef();
     auto* res = ctx.Clone(expr);
     if (!type->Is<sem::U32>()) {
@@ -78,7 +78,7 @@ struct OffsetLiteral : Castable<OffsetLiteral, Offset> {
 
   explicit OffsetLiteral(uint32_t lit) : literal(lit) {}
 
-  ast::Expression* Build(CloneContext& ctx) const override {
+  const ast::Expression* Build(CloneContext& ctx) const override {
     return ctx.dst->Expr(literal);
   }
 };
@@ -90,7 +90,7 @@ struct OffsetBinOp : Offset {
   Offset const* lhs = nullptr;
   Offset const* rhs = nullptr;
 
-  ast::Expression* Build(CloneContext& ctx) const override {
+  const ast::Expression* Build(CloneContext& ctx) const override {
     return ctx.dst->create<ast::BinaryExpression>(op, lhs->Build(ctx),
                                                   rhs->Build(ctx));
   }
@@ -304,9 +304,9 @@ struct DecomposeMemoryAccess::State {
   /// expressions chain the access.
   /// Subset of #expression_order, as expressions are not removed from
   /// #expression_order.
-  std::unordered_map<ast::Expression*, BufferAccess> accesses;
+  std::unordered_map<const ast::Expression*, BufferAccess> accesses;
   /// The visited order of AST expressions (superset of #accesses)
-  std::vector<ast::Expression*> expression_order;
+  std::vector<const ast::Expression*> expression_order;
   /// [buffer-type, element-type] -> load function name
   std::unordered_map<LoadStoreKey, Symbol, LoadStoreKey::Hasher> load_funcs;
   /// [buffer-type, element-type] -> store function name
@@ -330,13 +330,13 @@ struct DecomposeMemoryAccess::State {
 
   /// @param expr the expression to convert to an Offset
   /// @returns an Offset for the given ast::Expression
-  const Offset* ToOffset(ast::Expression* expr) {
+  const Offset* ToOffset(const ast::Expression* expr) {
     if (auto* scalar = expr->As<ast::ScalarConstructorExpression>()) {
-      if (auto* u32 = scalar->literal()->As<ast::UintLiteral>()) {
-        return offsets_.Create<OffsetLiteral>(u32->value());
-      } else if (auto* i32 = scalar->literal()->As<ast::SintLiteral>()) {
-        if (i32->value() > 0) {
-          return offsets_.Create<OffsetLiteral>(i32->value());
+      if (auto* u32 = scalar->literal->As<ast::UintLiteral>()) {
+        return offsets_.Create<OffsetLiteral>(u32->value);
+      } else if (auto* i32 = scalar->literal->As<ast::SintLiteral>()) {
+        if (i32->value > 0) {
+          return offsets_.Create<OffsetLiteral>(i32->value);
         }
       }
     }
@@ -415,7 +415,7 @@ struct DecomposeMemoryAccess::State {
   /// to #expression_order.
   /// @param expr the expression that performs the access
   /// @param access the access
-  void AddAccess(ast::Expression* expr, const BufferAccess& access) {
+  void AddAccess(const ast::Expression* expr, const BufferAccess& access) {
     TINT_ASSERT(Transform, access.type);
     accesses.emplace(expr, access);
     expression_order.emplace_back(expr);
@@ -426,7 +426,7 @@ struct DecomposeMemoryAccess::State {
   /// `node`, an invalid BufferAccess is returned.
   /// @param node the expression that performed an access
   /// @return the BufferAccess for the given expression
-  BufferAccess TakeAccess(ast::Expression* node) {
+  BufferAccess TakeAccess(const ast::Expression* node) {
     auto lhs_it = accesses.find(node);
     if (lhs_it == accesses.end()) {
       return {};
@@ -451,10 +451,8 @@ struct DecomposeMemoryAccess::State {
     return utils::GetOrCreate(
         load_funcs, LoadStoreKey{storage_class, buf_ty, el_ty}, [&] {
           auto* buf_ast_ty = CreateASTTypeFor(ctx, buf_ty);
-          auto* disable_validation =
-              b.ASTNodes().Create<ast::DisableValidationDecoration>(
-                  b.ID(), ast::DisabledValidation::
-                              kIgnoreConstructibleFunctionParameter);
+          auto* disable_validation = b.Disable(
+              ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
 
           ast::VariableList params = {
               // Note: The buffer parameter requires the StorageClass in
@@ -476,8 +474,7 @@ struct DecomposeMemoryAccess::State {
                 name, params, el_ast_ty, nullptr,
                 ast::DecorationList{
                     intrinsic,
-                    b.ASTNodes().Create<ast::DisableValidationDecoration>(
-                        b.ID(), ast::DisabledValidation::kFunctionHasNoBody),
+                    b.Disable(ast::DisabledValidation::kFunctionHasNoBody),
                 },
                 ast::DecorationList{});
             b.AST().AddFunction(func);
@@ -554,10 +551,8 @@ struct DecomposeMemoryAccess::State {
         store_funcs, LoadStoreKey{storage_class, buf_ty, el_ty}, [&] {
           auto* buf_ast_ty = CreateASTTypeFor(ctx, buf_ty);
           auto* el_ast_ty = CreateASTTypeFor(ctx, el_ty);
-          auto* disable_validation =
-              b.ASTNodes().Create<ast::DisableValidationDecoration>(
-                  b.ID(), ast::DisabledValidation::
-                              kIgnoreConstructibleFunctionParameter);
+          auto* disable_validation = b.Disable(
+              ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
           ast::VariableList params{
               // Note: The buffer parameter requires the StorageClass in
               // order for HLSL to emit this as a ByteAddressBuffer.
@@ -578,8 +573,7 @@ struct DecomposeMemoryAccess::State {
                 name, params, b.ty.void_(), nullptr,
                 ast::DecorationList{
                     intrinsic,
-                    b.ASTNodes().Create<ast::DisableValidationDecoration>(
-                        b.ID(), ast::DisabledValidation::kFunctionHasNoBody),
+                    b.Disable(ast::DisabledValidation::kFunctionHasNoBody),
                 },
                 ast::DecorationList{});
             b.AST().AddFunction(func);
@@ -606,8 +600,8 @@ struct DecomposeMemoryAccess::State {
               auto* arr_el = b.IndexAccessor(array, i);
               auto* el_offset =
                   b.Add(b.Expr("offset"), b.Mul(i, arr_ty->Stride()));
-              auto* store_stmt = b.create<ast::CallStatement>(
-                  b.Call(store, "buffer", el_offset, arr_el));
+              auto* store_stmt =
+                  b.CallStmt(b.Call(store, "buffer", el_offset, arr_el));
               auto* for_loop =
                   b.For(for_init, for_cond, for_cont, b.Block(store_stmt));
 
@@ -619,17 +613,17 @@ struct DecomposeMemoryAccess::State {
                 auto* offset = b.Add("offset", i * mat_ty->ColumnStride());
                 auto* access = b.IndexAccessor("value", i);
                 auto* call = b.Call(store, "buffer", offset, access);
-                body.emplace_back(b.create<ast::CallStatement>(call));
+                body.emplace_back(b.CallStmt(call));
               }
             } else if (auto* str = el_ty->As<sem::Struct>()) {
               for (auto* member : str->Members()) {
                 auto* offset = b.Add("offset", member->Offset());
                 auto* access = b.MemberAccessor(
-                    "value", ctx.Clone(member->Declaration()->symbol()));
+                    "value", ctx.Clone(member->Declaration()->symbol));
                 Symbol store =
                     StoreFunc(buf_ty, member->Type()->UnwrapRef(), var_user);
                 auto* call = b.Call(store, "buffer", offset, access);
-                body.emplace_back(b.create<ast::CallStatement>(call));
+                body.emplace_back(b.CallStmt(call));
               }
             }
             b.Func(name, params, b.ty.void_(), body);
@@ -655,10 +649,8 @@ struct DecomposeMemoryAccess::State {
     auto op = intrinsic->Type();
     return utils::GetOrCreate(atomic_funcs, AtomicKey{buf_ty, el_ty, op}, [&] {
       auto* buf_ast_ty = CreateASTTypeFor(ctx, buf_ty);
-      auto* disable_validation =
-          b.ASTNodes().Create<ast::DisableValidationDecoration>(
-              b.ID(),
-              ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
+      auto* disable_validation = b.Disable(
+          ast::DisabledValidation::kIgnoreConstructibleFunctionParameter);
       // The first parameter to all WGSL atomics is the expression to the
       // atomic. This is replaced with two parameters: the buffer and offset.
 
@@ -691,22 +683,21 @@ struct DecomposeMemoryAccess::State {
           b.Sym(), params, ret_ty, nullptr,
           ast::DecorationList{
               atomic,
-              b.ASTNodes().Create<ast::DisableValidationDecoration>(
-                  b.ID(), ast::DisabledValidation::kFunctionHasNoBody),
+              b.Disable(ast::DisabledValidation::kFunctionHasNoBody),
           },
           ast::DecorationList{});
 
       b.AST().AddFunction(func);
-      return func->symbol();
+      return func->symbol;
     });
   }
 };
 
-DecomposeMemoryAccess::Intrinsic::Intrinsic(ProgramID program_id,
+DecomposeMemoryAccess::Intrinsic::Intrinsic(ProgramID pid,
                                             Op o,
                                             ast::StorageClass sc,
                                             DataType ty)
-    : Base(program_id), op(o), storage_class(sc), type(ty) {}
+    : Base(pid), op(o), storage_class(sc), type(ty) {}
 DecomposeMemoryAccess::Intrinsic::~Intrinsic() = default;
 std::string DecomposeMemoryAccess::Intrinsic::InternalName() const {
   std::stringstream ss;
@@ -793,7 +784,7 @@ std::string DecomposeMemoryAccess::Intrinsic::InternalName() const {
   return ss.str();
 }
 
-DecomposeMemoryAccess::Intrinsic* DecomposeMemoryAccess::Intrinsic::Clone(
+const DecomposeMemoryAccess::Intrinsic* DecomposeMemoryAccess::Intrinsic::Clone(
     CloneContext* ctx) const {
   return ctx->dst->ASTNodes().Create<DecomposeMemoryAccess::Intrinsic>(
       ctx->dst->ID(), op, storage_class, type);
@@ -837,7 +828,7 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       auto* accessor_sem = sem.Get(accessor);
       if (auto* swizzle = accessor_sem->As<sem::Swizzle>()) {
         if (swizzle->Indices().size() == 1) {
-          if (auto access = state.TakeAccess(accessor->structure())) {
+          if (auto access = state.TakeAccess(accessor->structure)) {
             auto* vec_ty = access.type->As<sem::Vector>();
             auto* offset =
                 state.Mul(vec_ty->type()->Size(), swizzle->Indices()[0]);
@@ -849,9 +840,9 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           }
         }
       } else {
-        if (auto access = state.TakeAccess(accessor->structure())) {
+        if (auto access = state.TakeAccess(accessor->structure)) {
           auto* str_ty = access.type->As<sem::Struct>();
-          auto* member = str_ty->FindMember(accessor->member()->symbol());
+          auto* member = str_ty->FindMember(accessor->member->symbol);
           auto offset = member->Offset();
           state.AddAccess(accessor, {
                                         access.var,
@@ -864,10 +855,10 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
     }
 
     if (auto* accessor = node->As<ast::ArrayAccessorExpression>()) {
-      if (auto access = state.TakeAccess(accessor->array())) {
+      if (auto access = state.TakeAccess(accessor->array)) {
         // X[Y]
         if (auto* arr = access.type->As<sem::Array>()) {
-          auto* offset = state.Mul(arr->Stride(), accessor->idx_expr());
+          auto* offset = state.Mul(arr->Stride(), accessor->index);
           state.AddAccess(accessor, {
                                         access.var,
                                         state.Add(access.offset, offset),
@@ -876,8 +867,7 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           continue;
         }
         if (auto* vec_ty = access.type->As<sem::Vector>()) {
-          auto* offset =
-              state.Mul(vec_ty->type()->Size(), accessor->idx_expr());
+          auto* offset = state.Mul(vec_ty->type()->Size(), accessor->index);
           state.AddAccess(accessor, {
                                         access.var,
                                         state.Add(access.offset, offset),
@@ -886,8 +876,7 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           continue;
         }
         if (auto* mat_ty = access.type->As<sem::Matrix>()) {
-          auto* offset =
-              state.Mul(mat_ty->ColumnStride(), accessor->idx_expr());
+          auto* offset = state.Mul(mat_ty->ColumnStride(), accessor->index);
           state.AddAccess(accessor, {
                                         access.var,
                                         state.Add(access.offset, offset),
@@ -899,9 +888,9 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
     }
 
     if (auto* op = node->As<ast::UnaryOpExpression>()) {
-      if (op->op() == ast::UnaryOp::kAddressOf) {
+      if (op->op == ast::UnaryOp::kAddressOf) {
         // &X
-        if (auto access = state.TakeAccess(op->expr())) {
+        if (auto access = state.TakeAccess(op->expr)) {
           // HLSL does not support pointers, so just take the access from the
           // reference and place it on the pointer.
           state.AddAccess(op, access);
@@ -913,7 +902,7 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
     if (auto* assign = node->As<ast::AssignmentStatement>()) {
       // X = Y
       // Move the LHS access to a store.
-      if (auto lhs = state.TakeAccess(assign->lhs())) {
+      if (auto lhs = state.TakeAccess(assign->lhs)) {
         state.stores.emplace_back(Store{assign, lhs});
       }
     }
@@ -921,14 +910,14 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
     if (auto* call_expr = node->As<ast::CallExpression>()) {
       auto* call = sem.Get(call_expr);
       if (auto* intrinsic = call->Target()->As<sem::Intrinsic>()) {
-        if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {
+        if (intrinsic->Type() == sem::IntrinsicType::kIgnore) {  // [DEPRECATED]
           // ignore(X)
           // If X is an memory access, don't transform it into a load, as it
           // may refer to a structure holding a runtime array, which cannot be
           // loaded. Instead replace X with the underlying storage / uniform
           // buffer variable.
-          if (auto access = state.TakeAccess(call_expr->params()[0])) {
-            ctx.Replace(call_expr->params()[0], [=, &ctx] {
+          if (auto access = state.TakeAccess(call_expr->args[0])) {
+            ctx.Replace(call_expr->args[0], [=, &ctx] {
               return ctx.CloneWithoutTransform(access.var->Declaration());
             });
           }
@@ -938,11 +927,11 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
           // arrayLength(X)
           // Don't convert X into a load, this intrinsic actually requires the
           // real pointer.
-          state.TakeAccess(call_expr->params()[0]);
+          state.TakeAccess(call_expr->args[0]);
           continue;
         }
         if (intrinsic->IsAtomic()) {
-          if (auto access = state.TakeAccess(call_expr->params()[0])) {
+          if (auto access = state.TakeAccess(call_expr->args[0])) {
             // atomic___(X)
             ctx.Replace(call_expr, [=, &ctx, &state] {
               auto* buf = access.var->Declaration();
@@ -954,8 +943,8 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
                                    access.var->As<sem::VariableUser>());
 
               ast::ExpressionList args{ctx.Clone(buf), offset};
-              for (size_t i = 1; i < call_expr->params().size(); i++) {
-                auto* arg = call_expr->params()[i];
+              for (size_t i = 1; i < call_expr->args.size(); i++) {
+                auto* arg = call_expr->args[i];
                 args.emplace_back(ctx.Clone(arg));
               }
               return ctx.dst->Call(func, args);
@@ -992,12 +981,12 @@ void DecomposeMemoryAccess::Run(CloneContext& ctx, const DataMap&, DataMap&) {
       auto* offset = store.target.offset->Build(ctx);
       auto* buf_ty = store.target.var->Type()->UnwrapRef();
       auto* el_ty = store.target.type->UnwrapRef();
-      auto* value = store.assignment->rhs();
+      auto* value = store.assignment->rhs;
       Symbol func = state.StoreFunc(buf_ty, el_ty,
                                     store.target.var->As<sem::VariableUser>());
       auto* call = ctx.dst->Call(func, ctx.CloneWithoutTransform(buf), offset,
                                  ctx.Clone(value));
-      return ctx.dst->create<ast::CallStatement>(call);
+      return ctx.dst->CallStmt(call);
     });
   }
 

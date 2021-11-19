@@ -24,20 +24,14 @@ using ScalarConstructorExpressionTest = TestHelper;
 TEST_F(ScalarConstructorExpressionTest, Creation) {
   auto* b = create<BoolLiteral>(true);
   auto* c = create<ScalarConstructorExpression>(b);
-  EXPECT_EQ(c->literal(), b);
+  EXPECT_EQ(c->literal, b);
 }
 
 TEST_F(ScalarConstructorExpressionTest, Creation_WithSource) {
   SetSource(Source{Source::Location{20, 2}});
-  auto src = Expr(true)->source();
+  auto src = Expr(true)->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
-}
-
-TEST_F(ScalarConstructorExpressionTest, ToStr) {
-  auto* c = Expr(true);
-  EXPECT_EQ(str(c), R"(ScalarConstructor[not set]{true}
-)");
 }
 
 TEST_F(ScalarConstructorExpressionTest, Assert_DifferentProgramID_Literal) {

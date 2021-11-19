@@ -57,7 +57,13 @@ export const tabMovesFocus = DynamicSetting.bool('textEditorTabMovesFocus', CM.k
   shift: (view: CM.EditorView): boolean => view.state.doc.length ? CM.indentLess(view) : false,
 }]));
 
+export const autocompletion = CM.autocompletion({icons: false});
+
+export const sourcesAutocompletion = DynamicSetting.bool('textEditorAutocompletion', autocompletion);
+
 export const bracketMatching = DynamicSetting.bool('textEditorBracketMatching', CM.bracketMatching());
+
+export const codeFolding = DynamicSetting.bool('textEditorCodeFolding', [CM.foldGutter(), CM.keymap.of(CM.foldKeymap)]);
 
 export function guessIndent(doc: CM.Text): string {
   const values: {[indent: string]: number} = Object.create(null);
@@ -160,6 +166,7 @@ function detectLineSeparator(text: string): CM.Extension {
 }
 
 const baseKeymap = CM.keymap.of([
+  {key: 'Tab', run: CM.acceptCompletion},
   {key: 'Ctrl-m', run: CM.cursorMatchingBracket, shift: CM.selectMatchingBracket},
   {key: 'Mod-/', run: CM.toggleComment},
   {key: 'Mod-d', run: CM.selectNextOccurrence},
@@ -194,8 +201,42 @@ export function baseConfiguration(text: string): CM.Extension {
     indentUnit,
     CM.Prec.fallback(CM.EditorView.contentAttributes.of({'aria-label': i18nString(UIStrings.codeEditor)})),
     detectLineSeparator(text),
-    CM.tooltips({position: 'absolute'}),
+    autocompletion,
+    CM.tooltips({parent: getTooltipHost() as unknown as HTMLElement}),
   ];
+}
+
+// Root editor tooltips at the top of the document, creating a special
+// element with the editor styles mounted in it for them. This is
+// annoying, but necessary because a scrollable parent node clips them
+// otherwise, `position: fixed` doesn't work due to `contain` styles,
+// and appending them diretly to `document.body` doesn't work because
+// the necessary style sheets aren't available there.
+let tooltipHost: ShadowRoot|null = null;
+
+function getTooltipHost(): ShadowRoot {
+  if (!tooltipHost) {
+    const styleModules = CM.EditorState
+                             .create({
+                               extensions: [
+                                 editorTheme,
+                                 themeIsDark() ? dummyDarkTheme : [],
+                                 CodeHighlighter.CodeHighlighter.getHighlightStyle(CM),
+                                 CM.showTooltip.of({
+                                   pos: 0,
+                                   create() {
+                                     return {dom: document.createElement('div')};
+                                   },
+                                 }),
+                               ],
+                             })
+                             .facet(CM.EditorView.styleModule);
+    const host = document.body.appendChild(document.createElement('div'));
+    host.className = 'editor-tooltip-host';
+    tooltipHost = host.attachShadow({mode: 'open'});
+    CM.StyleModule.mount(tooltipHost, styleModules);
+  }
+  return tooltipHost;
 }
 
 class CompletionHint extends CM.WidgetType {

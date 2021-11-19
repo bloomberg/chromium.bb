@@ -26,30 +26,20 @@ namespace ast {
 class FloatLiteral : public Castable<FloatLiteral, Literal> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the input source
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param value the float literals value
-  FloatLiteral(ProgramID program_id, const Source& source, float value);
+  FloatLiteral(ProgramID pid, const Source& src, float value);
   ~FloatLiteral() override;
-
-  /// @returns the float literal value
-  float value() const { return value_; }
-
-  /// @returns the name for this literal. This name is unique to this value.
-  std::string name() const override;
-
-  /// @param sem the semantic info for the program
-  /// @returns the literal as a string
-  std::string to_str(const sem::Info& sem) const override;
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  FloatLiteral* Clone(CloneContext* ctx) const override;
+  const FloatLiteral* Clone(CloneContext* ctx) const override;
 
- private:
-  float const value_;
+  /// The float literal value
+  const float value;
 };
 
 }  // namespace ast

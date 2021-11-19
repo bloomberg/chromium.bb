@@ -18,9 +18,6 @@
 
 namespace optimization_guide {
 
-// The returned string is used to record histograms for the optimization type.
-// Also add the string to OptimizationGuide_OptimizationTypes histogram suffix
-// in histogram_suffixes_list.xml.
 std::string GetStringNameForOptimizationType(
     proto::OptimizationType optimization_type) {
   switch (optimization_type) {
@@ -62,7 +59,14 @@ std::string GetStringNameForOptimizationType(
       return "BloomFilterValidation";
     case proto::OptimizationType::ABOUT_THIS_SITE:
       return "AboutThisSite";
+    case proto::OptimizationType::MERCHANT_TRUST_SIGNALS_V2:
+      return "MerchantTrustSignalsV2";
   }
+
+  // The returned string is used to record histograms for the optimization type.
+  // Also add the string to OptimizationGuide_OptimizationTypes histogram suffix
+  // in histogram_suffixes_list.xml. Needs to update enums.xml when adding new
+  // value in OptimizationType.
   NOTREACHED();
   return std::string();
 }

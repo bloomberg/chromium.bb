@@ -33,7 +33,8 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       starting_sandbox_flags(network::mojom::WebSandboxFlags::kNone),
       delegate_view(nullptr),
       is_never_visible(false),
-      creator_location(creator_location) {}
+      creator_location(creator_location),
+      enable_wake_locks(true) {}
 
 WebContents::CreateParams::CreateParams(const CreateParams& other) = default;
 

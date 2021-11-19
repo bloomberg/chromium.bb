@@ -1290,6 +1290,7 @@ std::vector<std::string> DisplayExtensions::getStrings() const
     InsertExtensionString("EGL_KHR_mutable_render_buffer",                       mutableRenderBufferKHR,             &extensionStrings);
     InsertExtensionString("EGL_EXT_protected_content",                           protectedContentEXT,                &extensionStrings);
     InsertExtensionString("EGL_ANGLE_create_surface_swap_interval",              createSurfaceSwapIntervalANGLE,     &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_context_virtualization",                    contextVirtualizationANGLE,         &extensionStrings);
     // clang-format on
 
     return extensionStrings;
@@ -1307,6 +1308,7 @@ std::vector<std::string> DeviceExtensions::getStrings() const
     InsertExtensionString("EGL_ANGLE_device_cgl",                          deviceCGL,                      &extensionStrings);
     InsertExtensionString("EGL_ANGLE_device_eagl",                         deviceEAGL,                     &extensionStrings);
     InsertExtensionString("EGL_ANGLE_device_metal",                        deviceMetal,                    &extensionStrings);
+    InsertExtensionString("EGL_ANGLE_device_vulkan",                       deviceVulkan,                   &extensionStrings);
 
     // clang-format on
 
@@ -1335,7 +1337,6 @@ std::vector<std::string> ClientExtensions::getStrings() const
     InsertExtensionString("EGL_ANGLE_platform_angle_null",                    platformANGLENULL,                  &extensionStrings);
     InsertExtensionString("EGL_ANGLE_platform_angle_vulkan",                  platformANGLEVulkan,                &extensionStrings);
     InsertExtensionString("EGL_ANGLE_platform_angle_metal",                   platformANGLEMetal,                 &extensionStrings);
-    InsertExtensionString("EGL_ANGLE_platform_angle_context_virtualization",  platformANGLEContextVirtualization, &extensionStrings);
     InsertExtensionString("EGL_ANGLE_platform_device_context_volatile_eagl",  platformANGLEDeviceContextVolatileEagl, &extensionStrings);
     InsertExtensionString("EGL_ANGLE_platform_device_context_volatile_cgl",   platformANGLEDeviceContextVolatileCgl, &extensionStrings);
     InsertExtensionString("EGL_ANGLE_device_creation",                        deviceCreation,                     &extensionStrings);

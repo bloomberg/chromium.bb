@@ -765,7 +765,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_DeviceToPage(FPDF_PAGE page,
 
   IPDF_Page* pPage = IPDFPageFromFPDFPage(page);
   const FX_RECT rect(start_x, start_y, start_x + size_x, start_y + size_y);
-  Optional<CFX_PointF> pos =
+  absl::optional<CFX_PointF> pos =
       pPage->DeviceToPage(rect, rotate, CFX_PointF(device_x, device_y));
   if (!pos.has_value())
     return false;
@@ -791,7 +791,8 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_PageToDevice(FPDF_PAGE page,
   IPDF_Page* pPage = IPDFPageFromFPDFPage(page);
   const FX_RECT rect(start_x, start_y, start_x + size_x, start_y + size_y);
   CFX_PointF page_point(static_cast<float>(page_x), static_cast<float>(page_y));
-  Optional<CFX_PointF> pos = pPage->PageToDevice(rect, rotate, page_point);
+  absl::optional<CFX_PointF> pos =
+      pPage->PageToDevice(rect, rotate, page_point);
   if (!pos.has_value())
     return false;
 
@@ -1023,7 +1024,7 @@ FPDF_VIEWERREF_GetName(FPDF_DOCUMENT document,
     return 0;
 
   CPDF_ViewerPreferences viewRef(pDoc);
-  Optional<ByteString> bsVal = viewRef.GenericName(key);
+  absl::optional<ByteString> bsVal = viewRef.GenericName(key);
   if (!bsVal.has_value())
     return 0;
 
@@ -1261,34 +1262,33 @@ FPDF_GetTrailerEnds(FPDF_DOCUMENT document,
   // Traverse the document.
   syntax->SetPos(0);
   while (1) {
-    bool number;
-    ByteString word = syntax->GetNextWord(&number);
-    if (number) {
+    CPDF_SyntaxParser::WordResult word_result = syntax->GetNextWord();
+    if (word_result.is_number) {
       // The object number was read. Read the generation number.
-      word = syntax->GetNextWord(&number);
-      if (!number)
+      word_result = syntax->GetNextWord();
+      if (!word_result.is_number)
         break;
 
-      word = syntax->GetNextWord(nullptr);
-      if (word != "obj")
+      word_result = syntax->GetNextWord();
+      if (word_result.word != "obj")
         break;
 
       syntax->GetObjectBody(nullptr);
 
-      word = syntax->GetNextWord(nullptr);
-      if (word != "endobj")
+      word_result = syntax->GetNextWord();
+      if (word_result.word != "endobj")
         break;
-    } else if (word == "trailer") {
+    } else if (word_result.word == "trailer") {
       syntax->GetObjectBody(nullptr);
-    } else if (word == "startxref") {
-      syntax->GetNextWord(nullptr);
-    } else if (word == "xref") {
+    } else if (word_result.word == "startxref") {
+      syntax->GetNextWord();
+    } else if (word_result.word == "xref") {
       while (1) {
-        word = syntax->GetNextWord(nullptr);
-        if (word.IsEmpty() || word == "startxref")
+        word_result = syntax->GetNextWord();
+        if (word_result.word.IsEmpty() || word_result.word == "startxref")
           break;
       }
-      syntax->GetNextWord(nullptr);
+      syntax->GetNextWord();
     } else {
       break;
     }

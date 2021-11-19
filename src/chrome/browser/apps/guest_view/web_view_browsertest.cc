@@ -17,13 +17,14 @@
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/test/with_feature_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -116,11 +117,13 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "pdf/pdf_features.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_switches.h"
@@ -231,7 +234,8 @@ class EmbedderWebContentsObserver : public content::WebContentsObserver {
       delete;
 
   // WebContentsObserver.
-  void RenderProcessGone(base::TerminationStatus status) override {
+  void PrimaryMainFrameRenderProcessGone(
+      base::TerminationStatus status) override {
     terminated_ = true;
     if (message_loop_runner_.get())
       message_loop_runner_->Quit();
@@ -546,7 +550,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+    command_line->AppendSwitchASCII(blink::switches::kJavaScriptFlags,
+                                    "--expose-gc");
 
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
   }
@@ -1840,6 +1845,14 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
       content::CollectAllRenderFrameHosts(embedder_main_frame),
       testing::UnorderedElementsAre(embedder_main_frame, other_guest_main_frame,
                                     unattached_guest_main_frame));
+
+  // In either case, GetParentOrOuterDocument does not escape GuestViews.
+  EXPECT_EQ(nullptr, other_guest_main_frame->GetParentOrOuterDocument());
+  EXPECT_EQ(nullptr, unattached_guest_main_frame->GetParentOrOuterDocument());
+  EXPECT_EQ(other_guest_main_frame,
+            other_guest_main_frame->GetOutermostMainFrame());
+  EXPECT_EQ(unattached_guest_main_frame,
+            unattached_guest_main_frame->GetOutermostMainFrame());
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
@@ -2633,7 +2646,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuInspectElement) {
   ASSERT_TRUE(guest_web_contents);
 
   content::ContextMenuParams params;
-  TestRenderViewContextMenu menu(guest_web_contents->GetMainFrame(), params);
+  TestRenderViewContextMenu menu(*guest_web_contents->GetMainFrame(), params);
   menu.Init();
 
   // Expect "Inspect" to be shown as we are running webview in a chrome app.
@@ -3871,8 +3884,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFocusWhileFocused) {
   TestHelper("testFocusWhileFocused", "web_view/shim", NO_TEST_SERVER);
 }
 
-// TODO(crbug.com/776539): Disabled due to being flaky.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_NestedGuestContainerBounds) {
+class WebViewTestWithUnseasonedOverride
+    : public base::test::WithFeatureOverride,
+      public WebViewTest {
+ public:
+  WebViewTestWithUnseasonedOverride()
+      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
+};
+
+IN_PROC_BROWSER_TEST_P(WebViewTestWithUnseasonedOverride,
+                       NestedGuestContainerBounds) {
   TestHelper("testPDFInWebview", "web_view/shim", NO_TEST_SERVER);
 
   std::vector<content::WebContents*> guest_web_contents_list;
@@ -3895,7 +3916,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_NestedGuestContainerBounds) {
 
 // Test that context menu Back/Forward items in a MimeHandlerViewGuest affect
 // the embedder WebContents. See crbug.com/587355.
-IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuNavigationInMimeHandlerView) {
+IN_PROC_BROWSER_TEST_P(WebViewTestWithUnseasonedOverride,
+                       ContextMenuNavigationInMimeHandlerView) {
   TestHelper("testNavigateToPDFInWebview", "web_view/shim", NO_TEST_SERVER);
 
   std::vector<content::WebContents*> guest_web_contents_list;
@@ -3913,7 +3935,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuNavigationInMimeHandlerView) {
   // Open a context menu for the MimeHandlerViewGuest. Since the <webview> can
   // navigate back, the Back item should be enabled.
   content::ContextMenuParams params;
-  TestRenderViewContextMenu menu(mime_handler_view_contents->GetMainFrame(),
+  TestRenderViewContextMenu menu(*mime_handler_view_contents->GetMainFrame(),
                                  params);
   menu.Init();
   ASSERT_TRUE(menu.IsCommandIdEnabled(IDC_BACK));
@@ -3927,9 +3949,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuNavigationInMimeHandlerView) {
             web_view_contents->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDialogInPdf) {
+IN_PROC_BROWSER_TEST_P(WebViewTestWithUnseasonedOverride,
+                       Shim_TestDialogInPdf) {
   TestHelper("testDialogInPdf", "web_view/shim", NO_TEST_SERVER);
 }
+
+INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(WebViewTestWithUnseasonedOverride);
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestMailtoLink) {
   TestHelper("testMailtoLink", "web_view/shim", NEEDS_TEST_SERVER);
@@ -3983,7 +4008,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadWebviewAccessibleResource) {
   ASSERT_TRUE(web_view_contents);
 
   GURL embedder_url(embedder_contents->GetLastCommittedURL());
-  GURL webview_url(embedder_url.GetOrigin().spec() + "assets/foo.html");
+  GURL webview_url(embedder_url.DeprecatedGetOriginAsURL().spec() +
+                   "assets/foo.html");
 
   EXPECT_EQ(webview_url, web_view_contents->GetLastCommittedURL());
 }
@@ -4001,7 +4027,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, BlobInWebviewAccessibleResource) {
   ASSERT_TRUE(web_view_contents);
 
   GURL embedder_url(embedder_contents->GetLastCommittedURL());
-  GURL webview_url(embedder_url.GetOrigin().spec() + "assets/foo.html");
+  GURL webview_url(embedder_url.DeprecatedGetOriginAsURL().spec() +
+                   "assets/foo.html");
 
   EXPECT_EQ(webview_url, web_view_contents->GetLastCommittedURL());
 
@@ -4032,7 +4059,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewInaccessibleResource) {
   // Check that the webview stays at the first page that it loaded (foo.html),
   // and does not commit inaccessible.html.
   GURL embedder_url(embedder_contents->GetLastCommittedURL());
-  GURL foo_url(embedder_url.GetOrigin().spec() + "assets/foo.html");
+  GURL foo_url(embedder_url.DeprecatedGetOriginAsURL().spec() +
+               "assets/foo.html");
 
   EXPECT_EQ(foo_url, web_view_contents->GetLastCommittedURL());
 }

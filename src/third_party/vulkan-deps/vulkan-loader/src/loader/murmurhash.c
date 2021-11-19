@@ -3,9 +3,9 @@
  * `murmurhash.h' - murmurhash
  *
  * copyright (c) 2014 joseph werle <joseph.werle@gmail.com>
- * Copyright (c) 2015-2017 The Khronos Group Inc.
- * Copyright (c) 2015-2017 Valve Corporation
- * Copyright (c) 2015-2017 LunarG, Inc.
+ * Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and/or associated documentation files (the "Materials"), to
@@ -27,10 +27,11 @@
  * USE OR OTHER DEALINGS IN THE MATERIALS.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdint.h>
 #include "murmurhash.h"
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 uint32_t murmurhash(const char *key, size_t len, uint32_t seed) {
     uint32_t c1 = 0xcc9e2d51;

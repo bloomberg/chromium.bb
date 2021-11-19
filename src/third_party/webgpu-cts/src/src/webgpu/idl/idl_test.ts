@@ -1,4 +1,5 @@
 import { Fixture } from '../../common/framework/fixture.js';
+import { getGPU } from '../../common/util/navigator_gpu.js';
 import { assert } from '../../common/util/util.js';
 
 interface UnknownObject {
@@ -10,6 +11,11 @@ interface UnknownObject {
  */
 export class IDLTest extends Fixture {
   // TODO: add a helper to check prototype chains
+
+  async init(): Promise<void> {
+    // Ensure the GPU provider is initialized
+    getGPU();
+  }
 
   /**
    * Asserts that a member of an IDL interface has the expected value.

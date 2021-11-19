@@ -498,16 +498,13 @@ TEST_F(EntryPointParameterDecorationTest, DuplicateDecoration) {
 }
 
 TEST_F(EntryPointParameterDecorationTest, DuplicateInternalDecoration) {
-  auto* s =
-      Param("s", ty.sampler(ast::SamplerKind::kSampler),
-            ast::DecorationList{
-                create<ast::BindingDecoration>(0),
-                create<ast::GroupDecoration>(0),
-                ASTNodes().Create<ast::DisableValidationDecoration>(
-                    ID(), ast::DisabledValidation::kBindingPointCollision),
-                ASTNodes().Create<ast::DisableValidationDecoration>(
-                    ID(), ast::DisabledValidation::kEntryPointParameter),
-            });
+  auto* s = Param("s", ty.sampler(ast::SamplerKind::kSampler),
+                  ast::DecorationList{
+                      create<ast::BindingDecoration>(0),
+                      create<ast::GroupDecoration>(0),
+                      Disable(ast::DisabledValidation::kBindingPointCollision),
+                      Disable(ast::DisabledValidation::kEntryPointParameter),
+                  });
   Func("f", {s}, ty.void_(), {}, {Stage(ast::PipelineStage::kFragment)});
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -531,10 +528,8 @@ TEST_F(EntryPointReturnTypeDecorationTest, DuplicateDecoration) {
 TEST_F(EntryPointReturnTypeDecorationTest, DuplicateInternalDecoration) {
   Func("f", {}, ty.i32(), {Return(1)}, {Stage(ast::PipelineStage::kFragment)},
        ast::DecorationList{
-           ASTNodes().Create<ast::DisableValidationDecoration>(
-               ID(), ast::DisabledValidation::kBindingPointCollision),
-           ASTNodes().Create<ast::DisableValidationDecoration>(
-               ID(), ast::DisabledValidation::kEntryPointParameter),
+           Disable(ast::DisabledValidation::kBindingPointCollision),
+           Disable(ast::DisabledValidation::kEntryPointParameter),
        });
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
@@ -1156,7 +1151,6 @@ TEST_F(ResourceDecorationTest, BindingPointOnNonResource) {
 }  // namespace
 }  // namespace ResourceTests
 
-
 namespace InvariantDecorationTests {
 namespace {
 using InvariantDecorationTests = ResolverTest;
@@ -1286,6 +1280,58 @@ TEST_P(InterpolateParameterTest, All) {
   }
 }
 
+TEST_P(InterpolateParameterTest, IntegerScalar) {
+  auto& params = GetParam();
+
+  Func("main",
+       ast::VariableList{Param(
+           "a", ty.i32(),
+           {Location(0),
+            Interpolate(Source{{12, 34}}, params.type, params.sampling)})},
+       ty.void_(), {},
+       ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
+
+  if (params.type != ast::InterpolationType::kFlat) {
+    EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: interpolation type must be 'flat' for integral "
+              "user-defined IO types");
+  } else if (params.should_pass) {
+    EXPECT_TRUE(r()->Resolve()) << r()->error();
+  } else {
+    EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: flat interpolation attribute must not have a "
+              "sampling parameter");
+  }
+}
+
+TEST_P(InterpolateParameterTest, IntegerVector) {
+  auto& params = GetParam();
+
+  Func("main",
+       ast::VariableList{Param(
+           "a", ty.vec4<u32>(),
+           {Location(0),
+            Interpolate(Source{{12, 34}}, params.type, params.sampling)})},
+       ty.void_(), {},
+       ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
+
+  if (params.type != ast::InterpolationType::kFlat) {
+    EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: interpolation type must be 'flat' for integral "
+              "user-defined IO types");
+  } else if (params.should_pass) {
+    EXPECT_TRUE(r()->Resolve()) << r()->error();
+  } else {
+    EXPECT_FALSE(r()->Resolve());
+    EXPECT_EQ(r()->error(),
+              "12:34 error: flat interpolation attribute must not have a "
+              "sampling parameter");
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ResolverDecorationValidationTest,
     InterpolateParameterTest,
@@ -1315,33 +1361,35 @@ INSTANTIATE_TEST_SUITE_P(
                     Params{ast::InterpolationType::kFlat,
                            ast::InterpolationSampling::kSample, false}));
 
-TEST_F(InterpolateTest, Parameter_NotFloatingPoint) {
+TEST_F(InterpolateTest, FragmentInput_Integer_MissingFlatInterpolation) {
   Func("main",
-       ast::VariableList{
-           Param("a", ty.i32(),
-                 {Location(0),
-                  Interpolate(Source{{12, 34}}, ast::InterpolationType::kFlat,
-                              ast::InterpolationSampling::kNone)})},
+       ast::VariableList{Param(Source{{12, 34}}, "a", ty.i32(), {Location(0)})},
        ty.void_(), {},
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
-  EXPECT_FALSE(r()->Resolve());
+  // TODO(crbug.com/tint/1224): Make this an error.
+  EXPECT_TRUE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: store type of interpolate attribute must be floating "
-            "point scalar or vector");
+            "12:34 warning: integral user-defined fragment inputs must have a "
+            "flat interpolation attribute");
 }
 
-TEST_F(InterpolateTest, ReturnType_NotFloatingPoint) {
-  Func(
-      "main", {}, ty.i32(), {Return(1)},
-      ast::DecorationList{Stage(ast::PipelineStage::kFragment)},
-      {Location(0), Interpolate(Source{{12, 34}}, ast::InterpolationType::kFlat,
-                                ast::InterpolationSampling::kNone)});
+TEST_F(InterpolateTest, VertexOutput_Integer_MissingFlatInterpolation) {
+  auto* s = Structure(
+      "S",
+      {
+          Member("pos", ty.vec4<f32>(), {Builtin(ast::Builtin::kPosition)}),
+          Member(Source{{12, 34}}, "u", ty.u32(), {Location(0)}),
+      },
+      {});
+  Func("main", {}, ty.Of(s), {Return(Construct(ty.Of(s)))},
+       ast::DecorationList{Stage(ast::PipelineStage::kVertex)});
 
-  EXPECT_FALSE(r()->Resolve());
+  // TODO(crbug.com/tint/1224): Make this an error.
+  EXPECT_TRUE(r()->Resolve());
   EXPECT_EQ(r()->error(),
-            "12:34 error: store type of interpolate attribute must be floating "
-            "point scalar or vector");
+            "12:34 warning: integral user-defined vertex outputs must have a "
+            "flat interpolation attribute");
 }
 
 }  // namespace

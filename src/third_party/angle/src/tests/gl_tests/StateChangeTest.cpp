@@ -802,7 +802,7 @@ TEST_P(StateChangeRenderTest, GenerateMipmap)
     drawQuad(mProgram, "position", 0.5f);
     EXPECT_PIXEL_COLOR_EQ(0, 0, red);
 
-    // This will trigger the texture to be re-created on FL9_3.
+    // This may trigger the texture to be re-created internally.
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // Explictly check FBO status sync in some versions of ANGLE no_error skips FBO checks.
@@ -6905,7 +6905,7 @@ void main()
         EGLConfig config           = window->getConfig();
         EGLint pbufferAttributes[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE, EGL_NONE};
         EGLSurface surface         = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
-        EGLContext ctx             = window->createContext(EGL_NO_CONTEXT);
+        EGLContext ctx             = window->createContext(EGL_NO_CONTEXT, nullptr);
         EXPECT_EGL_SUCCESS();
         std::thread flushThread = std::thread([&]() {
             EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));
@@ -7034,6 +7034,147 @@ void main()
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, nullptr);
     ASSERT_GL_NO_ERROR();
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::red);
+}
+
+// Covers a bug where we would use a stale cache variable in the Vulkan back-end.
+TEST_P(SimpleStateChangeTestES3, DeleteFramebufferBeforeQuery)
+{
+    ANGLE_GL_PROGRAM(testProgram, essl1_shaders::vs::Zero(), essl1_shaders::fs::Red());
+    glUseProgram(testProgram);
+
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH32F_STENCIL8, 16, 16);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    GLfloat floatArray[] = {1, 2, 3, 4};
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLfloat) * 4, floatArray, GL_DYNAMIC_COPY);
+    glDrawElements(GL_TRIANGLE_FAN, 5, GL_UNSIGNED_SHORT, 0);
+
+    fbo.reset();
+
+    GLQuery query2;
+    glBeginQuery(GL_ANY_SAMPLES_PASSED_CONSERVATIVE, query2);
+
+    ASSERT_GL_NO_ERROR();
+}
+
+// Covers an edge case
+TEST_P(SimpleStateChangeTestES3, TextureTypeConflictAfterDraw)
+{
+    constexpr char kVS[] = R"(precision highp float;
+attribute vec4 a_position;
+void main()
+{
+    gl_Position = a_position;
+}
+)";
+
+    constexpr char kFS[] = R"(precision highp float;
+uniform sampler2D u_2d1;
+uniform samplerCube u_Cube1;
+void main()
+{
+    gl_FragColor = texture2D(u_2d1, vec2(0.0, 0.0)) + textureCube(u_Cube1, vec3(0.0, 0.0, 0.0));
+}
+)";
+
+    ANGLE_GL_PROGRAM(testProgram, kVS, kFS);
+    glUseProgram(testProgram);
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 4, GL_SRGB8, 1268, 614);
+
+    GLint uniformloc = glGetUniformLocation(testProgram, "u_Cube1");
+    ASSERT_NE(-1, uniformloc);
+    glUniform1i(uniformloc, 1);
+
+    glDrawArrays(GL_POINTS, 0, 1);
+    ASSERT_GL_NO_ERROR();
+
+    // Trigger the state update.
+    glLinkProgram(testProgram);
+    texture.reset();
+
+    // The texture types are now conflicting, and draws should fail.
+    glDrawArrays(GL_POINTS, 0, 1);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
+}
+
+// Regression test for a bug where the framebuffer binding was not synced during invalidate when a
+// clear operation was deferred.
+TEST_P(SimpleStateChangeTestES3, ChangeFramebufferThenInvalidateWithClear)
+{
+    // Clear the default framebuffer.
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Start rendering to another framebuffer
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
+
+    GLRenderbuffer rbo;
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, 16, 16);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo);
+
+    ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Passthrough(), essl1_shaders::fs::Red());
+    glUseProgram(program);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // Switch back to the default framebuffer
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+    // Invalidate it.  Don't invalidate color, as that's the one being cleared.
+    constexpr GLenum kAttachment = GL_DEPTH;
+    glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &kAttachment);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Test that clear / invalidate / clear works.  The invalidate is for a target that's not cleared.
+// Regression test for a bug where invalidate() would start a render pass to perform the first
+// clear, while the second clear didn't expect a render pass opened without any draw calls in it.
+TEST_P(SimpleStateChangeTestES3, ClearColorInvalidateDepthClearColor)
+{
+    // Clear color.
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Invalidate depth.
+    constexpr GLenum kAttachment = GL_DEPTH;
+    glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &kAttachment);
+    EXPECT_GL_NO_ERROR();
+
+    // Clear color again.
+    glClear(GL_COLOR_BUFFER_BIT);
+    ASSERT_GL_NO_ERROR();
+}
+
+// Regression test for a bug where glInvalidateFramebuffer(GL_FRAMEBUFFER, ...) was invalidating
+// both the draw and read framebuffers.
+TEST_P(SimpleStateChangeTestES3, InvalidateFramebufferShouldntInvalidateReadFramebuffer)
+{
+    // Create an invalid read framebuffer.
+    GLFramebuffer fbo;
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+    glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_R8, 1, 1, 1);
+    glFramebufferTextureLayer(GL_READ_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, tex, 0, 5);
+
+    // Invalidate using GL_FRAMEBUFFER.  If GL_READ_FRAMEBUFFER was used, validation would fail due
+    // to the framebuffer not being complete.  A bug here was attempting to invalidate the read
+    // framebuffer given GL_FRAMEBUFFER anyway.
+    constexpr std::array<GLenum, 2> kAttachments = {GL_DEPTH, GL_STENCIL};
+    glInvalidateFramebuffer(GL_FRAMEBUFFER, 2, kAttachments.data());
+    EXPECT_GL_NO_ERROR();
 }
 }  // anonymous namespace
 

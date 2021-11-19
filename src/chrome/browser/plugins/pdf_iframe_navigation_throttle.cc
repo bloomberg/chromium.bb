@@ -24,6 +24,7 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
 #endif
 
 namespace {
@@ -65,7 +66,7 @@ bool IsPDFPluginEnabled(content::NavigationHandle* navigation_handle,
 
   content::WebPluginInfo plugin_info;
   return content::PluginService::GetInstance()->GetPluginInfo(
-      process_id, routing_id, navigation_handle->GetURL(), false,
+      process_id, routing_id, navigation_handle->GetURL(),
       web_contents->GetMainFrame()->GetLastCommittedOrigin(), kPDFMimeType,
       false /* allow_wildcard */, is_stale, &plugin_info,
       nullptr /* actual_mime_type */);

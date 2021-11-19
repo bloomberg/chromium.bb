@@ -54,6 +54,8 @@ const char kAttemptsBeforeSuccessHistogram[] =
 const char kHttpRespCodeHistogram[] = "Availability.Prober.ResponseCode";
 const char kNetErrorHistogram[] = "Availability.Prober.NetError";
 const char kCacheEntryAgeHistogram[] = "Availability.Prober.CacheEntryAge";
+const char kGenerateCacheKeyHistogram[] =
+    "Availability.Prober.GenerateCacheKey";
 
 // Please keep this up to date with logged histogram suffix
 // |Availability.Prober.Clients| in tools/metrics/histograms/histograms.xml.
@@ -632,7 +634,7 @@ absl::optional<bool> AvailabilityProber::LastProbeWasSuccessful() {
   // Check if the cache entry should be revalidated because it has expired or
   // cache_entry_age is negative because the clock was moved back.
   if (cache_entry_age >= revalidate_cache_after_ ||
-      cache_entry_age < base::TimeDelta()) {
+      cache_entry_age.is_negative()) {
     SendNowIfInactive(false);
   }
 
@@ -707,9 +709,13 @@ void AvailabilityProber::RunCallback(bool success) {
 
 std::string AvailabilityProber::GetCacheKeyForCurrentNetwork() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::StringPrintf(
+  base::Time start(clock_->Now());
+  std::string key = base::StringPrintf(
       "%s;%s:%d", GenerateNetworkID(network_connection_tracker_).c_str(),
       url_.host().c_str(), url_.EffectiveIntPort());
+  UmaHistogramTimes(AppendNameToHistogram(kGenerateCacheKeyHistogram),
+                    clock_->Now() - start);
+  return key;
 }
 
 std::string AvailabilityProber::AppendNameToHistogram(

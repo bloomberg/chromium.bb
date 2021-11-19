@@ -43,10 +43,10 @@ namespace dawn_native {
 
         const CommandBufferResourceUsage& GetResourceUsages() const;
 
+        CommandIterator* GetCommandIteratorForTesting();
+
       protected:
         ~CommandBufferBase() override;
-
-        void DoNextSetValidatedBufferLocationsInternal();
 
         CommandIterator mCommands;
 

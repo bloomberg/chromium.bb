@@ -9,7 +9,7 @@
 
 #include <map>
 
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace fxcodec {
 
@@ -30,10 +30,10 @@ void ReverseRGB(uint8_t* pDestBuf, const uint8_t* pSrcBuf, int pixels);
 
 uint32_t CalculatePitch8OrDie(uint32_t bpc, uint32_t components, int width);
 uint32_t CalculatePitch32OrDie(int bpp, int width);
-Optional<uint32_t> CalculatePitch8(uint32_t bpc,
-                                   uint32_t components,
-                                   int width);
-Optional<uint32_t> CalculatePitch32(int bpp, int width);
+absl::optional<uint32_t> CalculatePitch8(uint32_t bpc,
+                                         uint32_t components,
+                                         int width);
+absl::optional<uint32_t> CalculatePitch32(int bpp, int width);
 
 }  // namespace fxcodec
 

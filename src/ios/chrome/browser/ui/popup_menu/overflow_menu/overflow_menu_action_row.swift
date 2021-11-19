@@ -10,10 +10,19 @@ struct OverflowMenuActionRow: View {
   @ObservedObject var action: OverflowMenuAction
 
   var body: some View {
+    let enabled = action.enabled && !action.enterpriseDisabled
     HStack {
       Text(action.name)
+        .opacity(enabled ? 1 : 0.5)
       Spacer()
       action.image
+        .opacity(enabled ? 1 : 0.5)
+    }
+    .contentShape(Rectangle())
+    .onTapGesture {
+      if enabled {
+        action.handler()
+      }
     }
   }
 }

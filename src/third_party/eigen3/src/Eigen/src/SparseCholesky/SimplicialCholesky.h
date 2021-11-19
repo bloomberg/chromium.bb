@@ -10,6 +10,8 @@
 #ifndef EIGEN_SIMPLICIAL_CHOLESKY_H
 #define EIGEN_SIMPLICIAL_CHOLESKY_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 enum SimplicialCholeskyMode {

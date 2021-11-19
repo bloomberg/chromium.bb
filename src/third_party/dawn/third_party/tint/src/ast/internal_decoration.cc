@@ -19,20 +19,12 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::InternalDecoration);
 namespace tint {
 namespace ast {
 
-InternalDecoration::InternalDecoration(ProgramID program_id)
-    : Base(program_id, Source{}) {}
+InternalDecoration::InternalDecoration(ProgramID pid) : Base(pid, Source{}) {}
 
 InternalDecoration::~InternalDecoration() = default;
 
-std::string InternalDecoration::name() const {
+std::string InternalDecoration::Name() const {
   return "internal";
-}
-
-void InternalDecoration::to_str(const sem::Info&,
-                                std::ostream& out,
-                                size_t indent) const {
-  make_indent(out, indent);
-  out << "tint_internal(" << InternalName() << ")";
 }
 
 }  // namespace ast

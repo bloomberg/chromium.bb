@@ -607,7 +607,6 @@
 <translation id="5138912041966667164">Bleu ardoise moyen</translation>
 <translation id="5140016802771803559">Violet Rebecca</translation>
 <translation id="5142101052131610456">Toutes les leçons</translation>
-<translation id="5152605892605507188">déplacer vers la droite</translation>
 <translation id="5158275234811857234">Couverture</translation>
 <translation id="516076699907426116">Servez-vous de la fonctionnalité Explorer au toucher pour repérer le bouton Prochaine leçon. Pour continuer, touchez deux fois.</translation>
 <translation id="5170206230005240598">Sous-titres en braille activés</translation>
@@ -741,6 +740,7 @@
 <translation id="6034000775414344507">Gris pâle</translation>
 <translation id="6036135911048686884">Touchez Explorer</translation>
 <translation id="6037602951055904232">Panoramique vers l'avant</translation>
+<translation id="604240746417122825">faute de grammaire</translation>
 <translation id="6082768461603900813">Navigation de base</translation>
 <translation id="609281021724813947">Aucun curseur précédent</translation>
 <translation id="6100239002225743044">Déplacer d'une ligne vers le haut</translation>
@@ -751,7 +751,6 @@
 <translation id="6142308968191113180">En-tête 4</translation>
 <translation id="6150023170003443621">Jaune-vert</translation>
 <translation id="6158882249329863701">rangée <ph name="TABLECELLROWINDEX" /> colonne <ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="6159796324830296161">déplacer vers la gauche</translation>
 <translation id="6164829606128959761">outil de mesure</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6166362019018438352">Sous-titres braille désactivés</translation>
@@ -798,6 +797,7 @@
 <translation id="6544923685317771506">Coquille</translation>
 <translation id="6551185905438378412">Ivoire</translation>
 <translation id="6561818612645211875">Aller au début de la rangée actuelle</translation>
+<translation id="6563126228219321999">Aucun élément incorrect</translation>
 <translation id="6579990219486187401">Rose clair</translation>
 <translation id="6583174818554398774">Accéder au niveau suivant de granularité</translation>
 <translation id="6584162722998608255">Vous apprendrez maintenant comment vous déplacer sur l'écran. Pour passer à l'élément suivant, vous pouvez balayer l'écran de gauche à droite avec un doigt. Essayez ce geste maintenant pour passer à la prochaine étape.</translation>
@@ -828,6 +828,7 @@
 <translation id="6815255864998354418">Mousseline au citron</translation>
 <translation id="6816066673340002913">Or pâle</translation>
 <translation id="6826226459053491773">Faites glisser deux doigts vers le bas</translation>
+<translation id="6826669432862053130">Élément incorrect suivant</translation>
 <translation id="6833103209700200188">Bas de page</translation>
 <translation id="6837853484260746864">Sélectionner une voix :</translation>
 <translation id="6858047746862060282">Prologue</translation>
@@ -842,7 +843,6 @@
 <translation id="6910969481785184048">Activer, Désactiver et Arrêter</translation>
 <translation id="6919104639734799681">Afficher la liste des tableaux</translation>
 <translation id="692135145298539227">supprimer</translation>
-<translation id="6935674530832500465">déplacer vers le bas</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6949846980769640811">Aigue-marine moyen</translation>
 <translation id="6951482098621102657">Aucun en-tête de niveau 5 suivant</translation>
@@ -1018,6 +1018,7 @@
 <translation id="8126386426083591964">Aucun en-tête de niveau 5 précédent</translation>
 <translation id="812886159861361726">Le téléchargement du fichier <ph name="FILE_NAME" /> a été arrêté</translation>
 <translation id="8129445297241948503">Aucune cellule au-dessus</translation>
+<translation id="8132248161074464367">Élément incorrect précédent</translation>
 <translation id="8138880386467279117">Tactile</translation>
 <translation id="8146613869421949343">Vous allez à présent découvrir l'utilisation de la touche Recherche. La touche Recherche est associée à d'autres touches pour effectuer des commandes ChromeVox. Cette touche se trouve juste au-dessus de la touche Majuscule de gauche. Pour continuer, appuyez sur la touche Recherche.</translation>
 <translation id="8158033275290782295">tout sélectionner</translation>
@@ -1039,14 +1040,12 @@
 <translation id="826825447994856889">Introduction</translation>
 <translation id="827266600368092403">Commencer ou terminer la sélection</translation>
 <translation id="827422111966801947">Indigo</translation>
-<translation id="827496561804786391">déplacer vers le haut</translation>
 <translation id="8276439074553447000">Aller à l'élément activable précédent</translation>
 <translation id="8279039817939141096">Appuyez sur une touche du clavier ou sur une touche braille actualisable, ou encore faites un geste tactile pour apprendre son fonctionnement. Appuyez sur les touches Contrôle et W en même temps, sur la barre d'espacement et la touche Z, balayez vers la gauche avec deux doigts ou appuyez sur la touche Échap. pour quitter.</translation>
 <translation id="8283603667300770666">Champ de formulaire suivant</translation>
 <translation id="8310185481635255431">Aucun lien suivant</translation>
 <translation id="831207808878314375">Définition</translation>
 <translation id="8313653172105209786">Répertoire</translation>
-<translation id="8314546933558091113">tout désélectionner</translation>
 <translation id="8316881042119029234">Vieille dentelle</translation>
 <translation id="8324974933005349667">Personnaliser les paramètres de synthèse vocale</translation>
 <translation id="8326783648485765113">Vert gazon</translation>

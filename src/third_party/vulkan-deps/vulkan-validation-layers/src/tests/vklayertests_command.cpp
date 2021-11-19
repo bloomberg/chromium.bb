@@ -839,8 +839,7 @@ TEST_F(VkLayerTest, CommandBufferPrimaryFlags) {
 TEST_F(VkLayerTest, ClearColorAttachmentsOutsideRenderPass) {
     // Call CmdClearAttachmentss outside of an active RenderPass
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
-                                         "vkCmdClearAttachments(): This call must be issued inside an active render pass");
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "vkCmdClearAttachments: This call must be issued inside an active render pass");
 
     ASSERT_NO_FATAL_FAILURE(Init());
     ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
@@ -1469,8 +1468,8 @@ TEST_F(VkLayerTest, CopyImageLayerCountMismatch) {
         "Try to copy between images with the source subresource having a different layerCount than the destination subresource");
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
     bool maintenance1 = false;
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         maintenance1 = true;
     }
     ASSERT_NO_FATAL_FAILURE(InitState());
@@ -1807,12 +1806,12 @@ TEST_F(VkLayerTest, ImageBufferCopyTests) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor, nullptr));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -2558,8 +2557,8 @@ TEST_F(VkLayerTest, MiscImageLayerTests) {
     blitRegion.dstOffsets[1] = {128, 128, 1};
 
     // Look for NULL-blit warning
-    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "vkCmdBlitImage(): pRegions[0].srcOffsets specify a zero-volume area.");
-    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "vkCmdBlitImage(): pRegions[0].dstOffsets specify a zero-volume area.");
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "vkCmdBlitImage: pRegions[0].srcOffsets specify a zero-volume area.");
+    m_errorMonitor->SetDesiredFailureMsg(kWarningBit, "vkCmdBlitImage: pRegions[0].dstOffsets specify a zero-volume area.");
     vk::CmdBlitImage(m_commandBuffer->handle(), intImage1.handle(), intImage1.Layout(), intImage2.handle(), intImage2.Layout(), 1,
                      &blitRegion, VK_FILTER_LINEAR);
     m_errorMonitor->VerifyFound();
@@ -2876,8 +2875,8 @@ TEST_F(VkLayerTest, CopyImageTypeExtentMismatch) {
 TEST_F(VkLayerTest, CopyImageTypeExtentMismatchMaintenance1) {
     // Image copy tests where format type and extents don't match and the Maintenance1 extension is enabled
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     } else {
         printf("%s Maintenance1 extension cannot be enabled, test skipped.\n", kSkipPrefix);
         return;
@@ -3167,12 +3166,12 @@ TEST_F(VkLayerTest, CopyImageSinglePlane422Alignment) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -3280,12 +3279,12 @@ TEST_F(VkLayerTest, CopyImageMultiplaneAspectBits) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -3572,12 +3571,12 @@ TEST_F(VkLayerTest, CopyImageMultiPlaneSizeExceeded) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions == true) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -3724,12 +3723,12 @@ TEST_F(VkLayerTest, CopyImageFormatSizeMismatch) {
         m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions == true) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -4069,12 +4068,12 @@ TEST_F(VkLayerTest, CopyImageAspectMismatch) {
     }
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -5371,8 +5370,8 @@ TEST_F(VkLayerTest, SetDynViewportParamMaintenance1Tests) {
 
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME)) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     } else {
         printf("%s VK_KHR_maintenance1 extension not supported -- skipping test\n", kSkipPrefix);
         return;
@@ -5647,7 +5646,7 @@ TEST_F(VkLayerTest, PushDescriptorSetCmdPushBadArgs) {
     // This is a test for VUID-vkCmdPushDescriptorSetKHR-commandBuffer-recording
     // TODO: Add VALIDATION_ERROR_ code support to core_validation::ValidateCmd
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit,
-                                         "You must call vkBeginCommandBuffer() before this call to vkCmdPushDescriptorSetKHR()");
+                                         "You must call vkBeginCommandBuffer() before this call to vkCmdPushDescriptorSetKHR");
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkWriteDescriptorSet-descriptorType-00330");
     vkCmdPushDescriptorSetKHR(m_commandBuffer->handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout.handle(), 0, 1,
                               &descriptor_write);
@@ -6945,12 +6944,12 @@ TEST_F(VkLayerTest, CreateSamplerYcbcrConversionEnable) {
     }
     SetTargetApiVersion(VK_API_VERSION_1_1);
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
-    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+    mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
     mp_extensions = mp_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
     if (mp_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
@@ -8486,11 +8485,10 @@ TEST_F(VkLayerTest, VerifyFilterCubicSamplerInCmdDraw) {
 
 TEST_F(VkLayerTest, VerifyImgFilterCubicSamplerInCmdDraw) {
     TEST_DESCRIPTION("Verify if sampler is filter cubic with the VK_IMG_filter cubic extension that it's a valid ImageViewType.");
-    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    if (DeviceExtensionSupported(gpu(), nullptr, VK_IMG_FILTER_CUBIC_EXTENSION_NAME)) {
-        m_device_extension_names.push_back(VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
-    } else {
+    AddRequiredExtensions(VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!AreRequestedExtensionsEnabled()) {
         printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_IMG_FILTER_CUBIC_EXTENSION_NAME);
         return;
     }
@@ -8500,8 +8498,17 @@ TEST_F(VkLayerTest, VerifyImgFilterCubicSamplerInCmdDraw) {
 
     VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-    auto image_ci = VkImageObj::ImageCreateInfo2D(128, 128, 1, 1, format, usage, VK_IMAGE_TILING_OPTIMAL);
-    VkImageViewType imageViewType = VK_IMAGE_VIEW_TYPE_2D;
+    auto image_ci = vk_testing::Image::create_info();
+    image_ci.imageType = VK_IMAGE_TYPE_3D;
+    image_ci.format = format;
+    image_ci.extent.width = 128;
+    image_ci.extent.height = 128;
+    image_ci.mipLevels = 1;
+    image_ci.arrayLayers = 1;
+    image_ci.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_ci.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image_ci.usage = usage;
+    VkImageViewType imageViewType = VK_IMAGE_VIEW_TYPE_3D;
 
     VkImageObj image(m_device);
     image.Init(image_ci);
@@ -8514,7 +8521,15 @@ TEST_F(VkLayerTest, VerifyImgFilterCubicSamplerInCmdDraw) {
     VkSampler sampler;
     vk::CreateSampler(m_device->device(), &sampler_ci, NULL, &sampler);
 
-    VkShaderObj fs(m_device, bindStateFragSamplerShaderText, VK_SHADER_STAGE_FRAGMENT_BIT, this);
+    static const char fs_src[] = R"glsl(
+        #version 450
+        layout(set=0, binding=0) uniform sampler3D s;
+        layout(location=0) out vec4 x;
+        void main(){
+            x = texture(s, vec3(1));
+        }
+    )glsl";
+    VkShaderObj fs(m_device, fs_src, VK_SHADER_STAGE_FRAGMENT_BIT, this);
 
     CreatePipelineHelper g_pipe(*this);
     g_pipe.InitInfo();
@@ -8609,14 +8624,14 @@ TEST_F(VkLayerTest, InvalidSetFragmentShadingRateValues) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
     if (fsr_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
@@ -8693,14 +8708,14 @@ TEST_F(VkLayerTest, InvalidSetFragmentShadingRateValuesNoFeatures) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
     if (fsr_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
@@ -8739,14 +8754,14 @@ TEST_F(VkLayerTest, InvalidSetFragmentShadingRateCombinerOpsNoFeatures) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
     if (fsr_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
@@ -8803,14 +8818,14 @@ TEST_F(VkLayerTest, InvalidSetFragmentShadingRateCombinerOpsNoPipelineRate) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
     if (fsr_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
@@ -8871,14 +8886,14 @@ TEST_F(VkLayerTest, InvalidSetFragmentShadingRateCombinerOpsLimit) {
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
     if (fsr_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
@@ -8955,14 +8970,14 @@ TEST_F(VkLayerTest, InvalidPrimitiveFragmentShadingRateWriteMultiViewportLimitDy
     }
     ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
 
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+    fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     fsr_extensions = fsr_extensions && DeviceExtensionSupported(gpu(), nullptr, VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
     if (fsr_extensions) {
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_1_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         m_device_extension_names.push_back(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME);
@@ -9443,6 +9458,225 @@ TEST_F(VkLayerTest, DrawBlendEnabledFormatFeatures) {
 
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdDraw-blendEnable-04727");
     vk::CmdDraw(m_commandBuffer->handle(), 3, 1, 0, 0);
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->EndRenderPass();
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, InvalidEndConditionalRendering) {
+    TEST_DESCRIPTION("Invalid calls to vkCmdEndConditionalRenderingEXT.");
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME)) {
+        printf("%s Did not find required device extension %s; test skipped.\n", kSkipPrefix, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_EXT_CONDITIONAL_RENDERING_EXTENSION_NAME);
+    ASSERT_NO_FATAL_FAILURE(InitState());
+
+    VkAttachmentDescription attach[] = {
+        {0, VK_FORMAT_R8G8B8A8_UNORM, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE,
+         VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED,
+         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+    };
+    VkAttachmentReference ref = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+    VkSubpassDescription subpasses[] = {
+        {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &ref, nullptr, nullptr, 0, nullptr},
+        {0, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, nullptr, 1, &ref, nullptr, nullptr, 0, nullptr},
+    };
+
+    VkSubpassDependency dep = {0,
+                               1,
+                               VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                               VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                               VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+                               VK_DEPENDENCY_BY_REGION_BIT};
+
+    VkRenderPassCreateInfo rpci = LvlInitStruct<VkRenderPassCreateInfo>();
+    rpci.attachmentCount = 1;
+    rpci.pAttachments = attach;
+    rpci.subpassCount = 2;
+    rpci.pSubpasses = subpasses;
+    rpci.dependencyCount = 1;
+    rpci.pDependencies = &dep;
+
+    vk_testing::RenderPass render_pass;
+    render_pass.init(*m_device, rpci);
+
+    VkImageObj image(m_device);
+    image.InitNoLayout(32, 32, 1, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_TILING_OPTIMAL, 0);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
+
+    VkFramebufferCreateInfo fbci = LvlInitStruct<VkFramebufferCreateInfo>();
+    fbci.renderPass = render_pass.handle();
+    fbci.attachmentCount = 1;
+    fbci.pAttachments = &imageView;
+    fbci.width = 32;
+    fbci.height = 32;
+    fbci.layers = 1;
+    VkFramebuffer framebuffer;
+    vk::CreateFramebuffer(device(), &fbci, nullptr, &framebuffer);
+
+    PFN_vkCmdBeginConditionalRenderingEXT vkCmdBeginConditionalRenderingEXT =
+        (PFN_vkCmdBeginConditionalRenderingEXT)vk::GetDeviceProcAddr(m_device->handle(), "vkCmdBeginConditionalRenderingEXT");
+    PFN_vkCmdEndConditionalRenderingEXT vkCmdEndConditionalRenderingEXT =
+        (PFN_vkCmdEndConditionalRenderingEXT)vk::GetDeviceProcAddr(m_device->handle(), "vkCmdEndConditionalRenderingEXT");
+
+    VkBufferCreateInfo buffer_create_info = LvlInitStruct<VkBufferCreateInfo>();
+    buffer_create_info.size = 32;
+    buffer_create_info.usage = VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT;
+    VkBufferObj buffer;
+    buffer.init(*m_device, buffer_create_info);
+
+    VkConditionalRenderingBeginInfoEXT conditional_rendering_begin = LvlInitStruct<VkConditionalRenderingBeginInfoEXT>();
+    conditional_rendering_begin.buffer = buffer.handle();
+
+    VkClearValue clear_value;
+    clear_value.color = m_clear_color;
+
+    VkRenderPassBeginInfo rpbi = LvlInitStruct<VkRenderPassBeginInfo>();
+    rpbi.renderPass = render_pass.handle();
+    rpbi.framebuffer = framebuffer;
+    rpbi.renderArea = {{0, 0}, {32, 32}};
+    rpbi.clearValueCount = 1;
+    rpbi.pClearValues = &clear_value;
+
+    m_commandBuffer->begin();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndConditionalRenderingEXT-None-01985");
+    vkCmdEndConditionalRenderingEXT(m_commandBuffer->handle());
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndConditionalRenderingEXT-None-01986");
+    vkCmdBeginConditionalRenderingEXT(m_commandBuffer->handle(), &conditional_rendering_begin);
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdEndConditionalRenderingEXT(m_commandBuffer->handle());
+    vk::CmdNextSubpass(m_commandBuffer->handle(), VK_SUBPASS_CONTENTS_INLINE);
+    vk::CmdEndRenderPass(m_commandBuffer->handle());
+    vkCmdEndConditionalRenderingEXT(m_commandBuffer->handle());
+    m_errorMonitor->VerifyFound();
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdEndConditionalRenderingEXT-None-01987");
+    vk::CmdBeginRenderPass(m_commandBuffer->handle(), &rpbi, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginConditionalRenderingEXT(m_commandBuffer->handle(), &conditional_rendering_begin);
+    vk::CmdNextSubpass(m_commandBuffer->handle(), VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdEndConditionalRenderingEXT(m_commandBuffer->handle());
+    vk::CmdEndRenderPass(m_commandBuffer->handle());
+    m_errorMonitor->VerifyFound();
+
+    m_commandBuffer->end();
+}
+
+TEST_F(VkLayerTest, InvalidBeginTransformFeedbackInMultiviewRenderPass) {
+    TEST_DESCRIPTION("Test beginning transform feedback in a render pass with multiview enabled");
+
+    if (!InstanceExtensionSupported(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
+        printf("%s Did not find required instance extension %s; skipped.\n", kSkipPrefix,
+               VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+        return;
+    }
+    m_instance_extension_names.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_KHR_MULTIVIEW_EXTENSION_NAME);
+        return;
+    }
+    if (!DeviceExtensionSupported(gpu(), nullptr, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME)) {
+        printf("%s %s Extension not supported, skipping tests\n", kSkipPrefix, VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+        return;
+    }
+    m_device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
+    m_device_extension_names.push_back(VK_EXT_TRANSFORM_FEEDBACK_EXTENSION_NAME);
+
+    auto tf_features = LvlInitStruct<VkPhysicalDeviceTransformFeedbackFeaturesEXT>();
+    auto pd_features = LvlInitStruct<VkPhysicalDeviceFeatures2>(&tf_features);
+
+    PFN_vkGetPhysicalDeviceFeatures2KHR vkGetPhysicalDeviceFeatures2KHR =
+        (PFN_vkGetPhysicalDeviceFeatures2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceFeatures2KHR");
+    ASSERT_TRUE(vkGetPhysicalDeviceFeatures2KHR != nullptr);
+    vkGetPhysicalDeviceFeatures2KHR(gpu(), &pd_features);
+
+    if (!tf_features.transformFeedback) {
+        printf("%s transformFeedback not supported; skipped.\n", kSkipPrefix);
+        return;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &pd_features));
+    ASSERT_NO_FATAL_FAILURE(InitRenderTarget());
+
+    VkAttachmentDescription attachmentDescription = {};
+    attachmentDescription.format = VK_FORMAT_R8G8B8A8_UNORM;
+    attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+    VkAttachmentReference colorAttachmentReference = {};
+    colorAttachmentReference.layout = VK_IMAGE_LAYOUT_GENERAL;
+    colorAttachmentReference.attachment = 0;
+
+    VkSubpassDescription subpassDescription = {};
+    subpassDescription.colorAttachmentCount = 1;
+    subpassDescription.pColorAttachments = &colorAttachmentReference;
+
+    uint32_t viewMask = 0x1u;
+    VkRenderPassMultiviewCreateInfo renderPassMultiviewCreateInfo = LvlInitStruct<VkRenderPassMultiviewCreateInfo>();
+    renderPassMultiviewCreateInfo.subpassCount = 1;
+    renderPassMultiviewCreateInfo.pViewMasks = &viewMask;
+
+    VkRenderPassCreateInfo renderPassCreateInfo = LvlInitStruct<VkRenderPassCreateInfo>(&renderPassMultiviewCreateInfo);
+    renderPassCreateInfo.attachmentCount = 1;
+    renderPassCreateInfo.pAttachments = &attachmentDescription;
+    renderPassCreateInfo.subpassCount = 1;
+    renderPassCreateInfo.pSubpasses = &subpassDescription;
+
+    vk_testing::RenderPass render_pass;
+    render_pass.init(*m_device, renderPassCreateInfo);
+
+    VkImageCreateInfo image_create_info = LvlInitStruct<VkImageCreateInfo>();
+    image_create_info.imageType = VK_IMAGE_TYPE_2D;
+    image_create_info.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image_create_info.extent.width = 32;
+    image_create_info.extent.height = 32;
+    image_create_info.extent.depth = 1;
+    image_create_info.mipLevels = 1;
+    image_create_info.arrayLayers = 4;
+    image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+    image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image_create_info.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image_create_info.flags = 0;
+
+    VkImageObj image(m_device);
+    image.Init(image_create_info);
+    VkImageView imageView = image.targetView(VK_FORMAT_R8G8B8A8_UNORM);
+
+    VkFramebufferCreateInfo framebufferCreateInfo = LvlInitStruct<VkFramebufferCreateInfo>();
+    framebufferCreateInfo.width = 32;
+    framebufferCreateInfo.height = 32;
+    framebufferCreateInfo.layers = 1;
+    framebufferCreateInfo.renderPass = render_pass.handle();
+    framebufferCreateInfo.attachmentCount = 1;
+    framebufferCreateInfo.pAttachments = &imageView;
+
+    vk_testing::Framebuffer framebuffer;
+    framebuffer.init(*m_device, framebufferCreateInfo);
+
+    VkRenderPassBeginInfo render_pass_begin_info = LvlInitStruct<VkRenderPassBeginInfo>();
+    render_pass_begin_info.renderPass = render_pass.handle();
+    render_pass_begin_info.framebuffer = framebuffer.handle();
+    render_pass_begin_info.renderArea.extent.width = 32;
+    render_pass_begin_info.renderArea.extent.height = 32;
+
+    auto vkCmdBeginTransformFeedbackEXT =
+        (PFN_vkCmdBeginTransformFeedbackEXT)vk::GetDeviceProcAddr(m_device->device(), "vkCmdBeginTransformFeedbackEXT");
+    ASSERT_TRUE(vkCmdBeginTransformFeedbackEXT != nullptr);
+
+    m_commandBuffer->begin();
+    m_commandBuffer->BeginRenderPass(render_pass_begin_info);
+
+    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkCmdBeginTransformFeedbackEXT-None-02373");
+    vkCmdBeginTransformFeedbackEXT(m_commandBuffer->handle(), 0, 1, nullptr, nullptr);
     m_errorMonitor->VerifyFound();
 
     m_commandBuffer->EndRenderPass();

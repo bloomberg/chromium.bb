@@ -23,9 +23,10 @@ import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.j
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
-import {Route, RouteObserverBehavior, Router} from '../../router.js';
+import {Route, Router} from '../../router.js';
 import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
 import {routes} from '../os_route.m.js';
+import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
 import {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, AboutPageUpdateInfo, BrowserChannel, browserChannelToI18nId, ChannelInfo, isTargetChannelMoreStable, RegulatoryInfo, TPMFirmwareUpdateStatusChangedEvent, UpdateStatus, UpdateStatusChangedEvent, VersionInfo} from './about_page_browser_proxy.js';
 import {DeviceNameBrowserProxy, DeviceNameBrowserProxyImpl, DeviceNameMetadata} from './device_name_browser_proxy.js';
@@ -167,7 +168,7 @@ Polymer({
       this.channelInfo_ = info;
       // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(
-          'aboutCurrentlyOnChannel',
+          'aboutCurrentlyOnChannelInfo',
           this.i18n(browserChannelToI18nId(info.targetChannel, info.isLts)));
     });
   },

@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.url.GURL;
 
@@ -33,8 +34,20 @@ public interface PageInfoMainController {
      */
     void recordAction(@PageInfoAction int action);
 
+    /**
+     * Inform the native controller that the AboutThisSite section was shown.
+     * This signal is used for metrics.
+     *
+     * @param wasAboutThisSiteShown Whether the section was shown.
+     */
+    void setAboutThisSiteShown(boolean wasAboutThisSiteShown);
+
     /** Refreshes the permissions of the page info. */
     void refreshPermissions();
+
+    /** Returns a valid ConnectionSecurityLevel. */
+    @ConnectionSecurityLevel
+    int getSecurityLevel();
 
     /** @return A BrowserContext for this dialog. */
     BrowserContextHandle getBrowserContext();
@@ -45,4 +58,7 @@ public interface PageInfoMainController {
 
     /** @return The GURL of the page associated with the controller. */
     GURL getURL();
+
+    /** Dismiss the page info dialog. */
+    void dismiss();
 }

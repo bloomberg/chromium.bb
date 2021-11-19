@@ -46,8 +46,10 @@
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
 #include "pdf/paint_ready_rect.h"
+#include "pdf/pdf_engine.h"
 #include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/ppapi_migration/image.h"
 #include "pdf/ppapi_migration/result_codes.h"
 #include "pdf/ppapi_migration/url_loader.h"
@@ -421,7 +423,7 @@ void PdfViewPluginBase::DocumentLoadComplete() {
   RecordDocumentMetrics();
 
   // Clear the focus state for on-screen keyboards.
-  FormTextFieldFocusChange(false);
+  FormFieldFocusChange(PDFEngine::FocusFieldType::kNoFocus);
 
   if (IsPrintPreview())
     OnPrintPreviewLoaded();
@@ -494,13 +496,13 @@ void PdfViewPluginBase::DocumentLoadProgress(uint32_t available,
   SendLoadingProgress(progress);
 }
 
-void PdfViewPluginBase::FormTextFieldFocusChange(bool in_focus) {
+void PdfViewPluginBase::FormFieldFocusChange(PDFEngine::FocusFieldType type) {
   base::Value message(base::Value::Type::DICTIONARY);
   message.SetStringKey("type", "formFocusChange");
-  message.SetBoolKey("focused", in_focus);
+  message.SetBoolKey("focused", type != PDFEngine::FocusFieldType::kNoFocus);
   SendMessage(std::move(message));
 
-  SetFormFieldInFocus(in_focus);
+  SetFormTextFieldInFocus(type == PDFEngine::FocusFieldType::kText);
 }
 
 bool PdfViewPluginBase::IsPrintPreview() const {
@@ -637,6 +639,9 @@ void PdfViewPluginBase::SaveToBuffer(const std::string& token) {
   message.SetStringKey("token", token);
   message.SetStringKey("fileName", GetFileNameForSaveFromUrl(url_));
 
+  // Expose `edit_mode_` state for integration testing.
+  message.SetBoolKey("editModeForTesting", edit_mode_);
+
   base::Value data_to_save;
   if (edit_mode_) {
     base::Value::BlobStorage data = engine()->GetSaveData();
@@ -768,6 +773,12 @@ void PdfViewPluginBase::InitializeEngineForTesting(
     std::unique_ptr<PDFiumEngine> engine) {
   DCHECK(engine);
   engine_ = std::move(engine);
+}
+
+std::unique_ptr<PDFiumEngine> PdfViewPluginBase::CreateEngine(
+    PDFEngine::Client* client,
+    PDFiumFormFiller::ScriptOption script_option) {
+  return std::make_unique<PDFiumEngine>(client, script_option);
 }
 
 void PdfViewPluginBase::DestroyEngine() {
@@ -1177,8 +1188,13 @@ void PdfViewPluginBase::HandleResetPrintPreviewModeMessage(
   document_load_state_ = DocumentLoadState::kLoading;
   LoadUrl(GetURL(), /*is_print_preview=*/false);
   preview_engine_.reset();
-  engine_ = std::make_unique<PDFiumEngine>(
-      this, PDFiumFormFiller::ScriptOption::kNoJavaScript);
+
+  // TODO(crbug.com/1237952): Figure out a more consistent way to preserve
+  // engine settings across a Print Preview reset.
+  engine_ = CreateEngine(this, PDFiumFormFiller::ScriptOption::kNoJavaScript);
+  engine()->ZoomUpdated(zoom_ * device_scale_);
+  engine()->PageOffsetUpdated(available_area_.OffsetFromOrigin());
+  engine()->PluginSizeUpdated(available_area_.size());
   engine()->SetGrayscale(is_grayscale);
 
   paint_manager_.InvalidateRect(gfx::Rect(plugin_rect().size()));
@@ -1703,8 +1719,8 @@ void PdfViewPluginBase::DidOpenPreview(std::unique_ptr<UrlLoader> loader,
                                        int32_t result) {
   DCHECK_EQ(result, kSuccess);
   preview_client_ = std::make_unique<PreviewModeClient>(this);
-  preview_engine_ = std::make_unique<PDFiumEngine>(
-      preview_client_.get(), PDFiumFormFiller::ScriptOption::kNoJavaScript);
+  preview_engine_ = CreateEngine(preview_client_.get(),
+                                 PDFiumFormFiller::ScriptOption::kNoJavaScript);
   preview_engine_->PluginSizeUpdated({});
   preview_engine_->HandleDocumentLoad(std::move(loader), GetURL());
 }

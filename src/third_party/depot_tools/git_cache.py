@@ -35,6 +35,12 @@ GC_AUTOPACKLIMIT = 50
 
 GIT_CACHE_CORRUPT_MESSAGE = 'WARNING: The Git cache is corrupt.'
 
+# gsutil creates many processes and threads. Creating too many gsutil cp
+# processes may result in running out of resources, and may perform worse due to
+# contextr switching. This limits how many concurrent gsutil cp processes
+# git_cache runs.
+GSUTIL_CP_SEMAPHORE = threading.Semaphore(2)
+
 try:
   # pylint: disable=undefined-variable
   WinErr = WindowsError
@@ -225,11 +231,12 @@ class Mirror(object):
         name='rename [%s] => [%s]' % (src, dst),
         printerr=self.print)
 
-  def RunGit(self, cmd, **kwargs):
+  def RunGit(self, cmd, print_stdout=True, **kwargs):
     """Run git in a subprocess."""
     cwd = kwargs.setdefault('cwd', self.mirror_path)
     kwargs.setdefault('print_stdout', False)
-    kwargs.setdefault('filter_fn', self.print)
+    if print_stdout:
+      kwargs.setdefault('filter_fn', self.print)
     env = kwargs.get('env') or kwargs.setdefault('env', os.environ.copy())
     env.setdefault('GIT_ASKPASS', 'true')
     env.setdefault('SSH_ASKPASS', 'true')
@@ -306,14 +313,15 @@ class Mirror(object):
       self.print('Downloading files in %s/* into %s.' %
                  (latest_dir, tempdir))
       with self.print_duration_of('download'):
-        code = gsutil.call('-m', 'cp', '-r', latest_dir + "/*",
-                           tempdir)
+        with GSUTIL_CP_SEMAPHORE:
+          code = gsutil.call('-m', 'cp', '-r', latest_dir + "/*",
+                             tempdir)
       if code:
         return False
       # Set HEAD to main.
       self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/main'], cwd=tempdir)
       # A quick validation that all references are valid.
-      self.RunGit(['for-each-ref'], cwd=tempdir)
+      self.RunGit(['for-each-ref'], print_stdout=False, cwd=tempdir)
     except Exception as e:
       self.print('Encountered error: %s' % str(e), file=sys.stderr)
       gclient_utils.rmtree(tempdir)
@@ -390,6 +398,10 @@ class Mirror(object):
       if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
         logging.warning(
             'Shallow fetch requested, but repo cache already exists.')
+      # Old boostraps may have old default HEAD, so this ensures main is always
+      # used.
+      self.RunGit(['symbolic-ref', 'HEAD', 'refs/heads/main'],
+                  cwd=self.mirror_path)
       return
 
     if not self.exists():

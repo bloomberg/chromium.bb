@@ -458,6 +458,14 @@ class Interpreter {
   /// WARNING: Experimental interface, subject to change
   TfLiteStatus ReleaseNonPersistentMemory();
 
+  /// WARNING: This is an experimental API and subject to change.
+  /// Force all intermediate dynamic tensors to be released once they are not
+  /// used by the model. Please use this configuration with caution, since it
+  /// might reduce the peak memory usage of the model at the cost of a slower
+  /// inference speed. `AllocateTensors` needs to be called right after this
+  /// API.
+  void EnsureDynamicTensorsAreReleased();
+
   // Update allocations for all tensors. This will redim dependent tensors
   // using the input tensor dimensionality as given. This is relatively
   // expensive. This *must be* called after the interpreter has been created
@@ -673,14 +681,6 @@ class Interpreter {
       int64_t flags = kTfLiteCustomAllocationFlagsNone);
 
 #ifndef DOXYGEN_SKIP
-  /// Adds `subgraphs_to_add` subgraphs, preserving pre-existing Subgraph
-  /// entries. The value pointed to by `first_new_subgraph_index` will be set to
-  /// the index of the first new subgraph if `first_new_subgraph_index` is
-  /// non-null.
-  /// WARNING: This is an experimental API and subject to change.
-  void AddSubgraphs(int subgraphs_to_add,
-                    int* first_new_subgraph_index = nullptr);
-
   /// Return the number of subgraphs in the model.
   /// WARNING: This is an experimental API and subject to change.
   size_t subgraphs_size() const { return subgraphs_.size(); }
@@ -784,6 +784,13 @@ class Interpreter {
   // Sets model metadata as a mapping of name (key) and buffer (value) strings.
   // Used by InterpreterBuilder, should be called after setting up subgraphs.
   TfLiteStatus SetMetadata(const std::map<std::string, std::string>& metadata);
+
+  /// Adds `subgraphs_to_add` subgraphs, preserving pre-existing Subgraph
+  /// entries. The value pointed to by `first_new_subgraph_index` will be set to
+  /// the index of the first new subgraph if `first_new_subgraph_index` is
+  /// non-null.
+  void AddSubgraphs(int subgraphs_to_add,
+                    int* first_new_subgraph_index = nullptr);
 
   // A pure C data structure used to communicate with the pure C plugin
   // interface. To avoid copying tensor metadata, this is also the definitive

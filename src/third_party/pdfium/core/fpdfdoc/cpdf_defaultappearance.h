@@ -9,7 +9,7 @@
 
 #include "core/fxcrt/fx_string.h"
 #include "core/fxge/cfx_color.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CPDF_SimpleParser;
 
@@ -20,10 +20,10 @@ class CPDF_DefaultAppearance {
   CPDF_DefaultAppearance(const CPDF_DefaultAppearance& cDA);
   ~CPDF_DefaultAppearance();
 
-  Optional<ByteString> GetFont(float* fFontSize);
+  absl::optional<ByteString> GetFont(float* fFontSize);
 
-  Optional<CFX_Color> GetColor() const;
-  Optional<CFX_Color::TypeAndARGB> GetColorARGB() const;
+  absl::optional<CFX_Color> GetColor() const;
+  absl::optional<CFX_Color::TypeAndARGB> GetColorARGB() const;
 
   bool FindTagParamFromStartForTesting(CPDF_SimpleParser* parser,
                                        ByteStringView token,

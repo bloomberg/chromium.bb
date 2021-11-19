@@ -11,6 +11,8 @@
 #ifndef EIGEN_PARTIAL_REDUX_H
 #define EIGEN_PARTIAL_REDUX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class PartialReduxExpr
@@ -594,7 +596,7 @@ template<typename ExpressionType, int Direction> class VectorwiseOp
       return m_matrix += extendedTo(other.derived());
     }
 
-    /** Substracts the vector \a other to each subvector of \c *this */
+    /** Subtracts the vector \a other to each subvector of \c *this */
     template<typename OtherDerived>
     EIGEN_DEVICE_FUNC
     ExpressionType& operator-=(const DenseBase<OtherDerived>& other)
@@ -604,7 +606,7 @@ template<typename ExpressionType, int Direction> class VectorwiseOp
       return m_matrix -= extendedTo(other.derived());
     }
 
-    /** Multiples each subvector of \c *this by the vector \a other */
+    /** Multiplies each subvector of \c *this by the vector \a other */
     template<typename OtherDerived>
     EIGEN_DEVICE_FUNC
     ExpressionType& operator*=(const DenseBase<OtherDerived>& other)

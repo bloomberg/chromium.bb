@@ -20,7 +20,7 @@ The build stage consists of the following jobs:
 
 In principle every build-job has a corresponding test-job, however testing supported and unsupported modules is divided into separate jobs. The test jobs in detail:
 
-### Job dependecies
+### Job dependencies
 
 | Job Name                                            | Arch      | OS             | Compiler   | C++11   | Module
 |-----------------------------------------------------|-----------|----------------|------------|---------|--------

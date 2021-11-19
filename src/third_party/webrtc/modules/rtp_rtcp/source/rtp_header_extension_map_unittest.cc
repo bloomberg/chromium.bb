@@ -77,8 +77,8 @@ TEST(RtpHeaderExtensionTest, Idempotent) {
   EXPECT_TRUE(map.Register<TransmissionOffset>(3));
   EXPECT_TRUE(map.Register<TransmissionOffset>(3));
 
-  map.Deregister(TransmissionOffset::kId);
-  map.Deregister(TransmissionOffset::kId);
+  map.Deregister(TransmissionOffset::Uri());
+  map.Deregister(TransmissionOffset::Uri());
 }
 
 TEST(RtpHeaderExtensionTest, NonUniqueId) {
@@ -104,6 +104,12 @@ TEST(RtpHeaderExtensionTest, GetId) {
   EXPECT_TRUE(map.Register<TransmissionOffset>(3));
 
   EXPECT_EQ(3, map.GetId(TransmissionOffset::kId));
+}
+
+TEST(RtpHeaderExtensionTest, RemapFails) {
+  RtpHeaderExtensionMap map;
+  EXPECT_TRUE(map.Register<TransmissionOffset>(3));
+  EXPECT_FALSE(map.Register<TransmissionOffset>(4));
 }
 
 }  // namespace webrtc

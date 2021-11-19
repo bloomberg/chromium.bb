@@ -34,10 +34,10 @@ TEST_F(CaseStatementTest, Creation_i32) {
   auto* body = create<BlockStatement>(StatementList{discard});
 
   auto* c = create<CaseStatement>(b, body);
-  ASSERT_EQ(c->selectors().size(), 1u);
-  EXPECT_EQ(c->selectors()[0], selector);
-  ASSERT_EQ(c->body()->size(), 1u);
-  EXPECT_EQ(c->body()->get(0), discard);
+  ASSERT_EQ(c->selectors.size(), 1u);
+  EXPECT_EQ(c->selectors[0], selector);
+  ASSERT_EQ(c->body->statements.size(), 1u);
+  EXPECT_EQ(c->body->statements[0], discard);
 }
 
 TEST_F(CaseStatementTest, Creation_u32) {
@@ -49,10 +49,10 @@ TEST_F(CaseStatementTest, Creation_u32) {
   auto* body = create<BlockStatement>(StatementList{discard});
 
   auto* c = create<CaseStatement>(b, body);
-  ASSERT_EQ(c->selectors().size(), 1u);
-  EXPECT_EQ(c->selectors()[0], selector);
-  ASSERT_EQ(c->body()->size(), 1u);
-  EXPECT_EQ(c->body()->get(0), discard);
+  ASSERT_EQ(c->selectors.size(), 1u);
+  EXPECT_EQ(c->selectors[0], selector);
+  ASSERT_EQ(c->body->statements.size(), 1u);
+  EXPECT_EQ(c->body->statements[0], discard);
 }
 
 TEST_F(CaseStatementTest, Creation_WithSource) {
@@ -63,7 +63,7 @@ TEST_F(CaseStatementTest, Creation_WithSource) {
       create<DiscardStatement>(),
   });
   auto* c = create<CaseStatement>(Source{Source::Location{20, 2}}, b, body);
-  auto src = c->source();
+  auto src = c->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -129,64 +129,6 @@ TEST_F(CaseStatementTest, Assert_DifferentProgramID_Selector) {
                                  b1.create<BlockStatement>(StatementList{}));
       },
       "internal compiler error");
-}
-
-TEST_F(CaseStatementTest, ToStr_WithSelectors_i32) {
-  CaseSelectorList b;
-  b.push_back(create<SintLiteral>(-2));
-
-  auto* body = create<BlockStatement>(StatementList{
-      create<DiscardStatement>(),
-  });
-  auto* c = create<CaseStatement>(CaseSelectorList{b}, body);
-
-  EXPECT_EQ(str(c), R"(Case -2{
-  Discard{}
-}
-)");
-}
-
-TEST_F(CaseStatementTest, ToStr_WithSelectors_u32) {
-  CaseSelectorList b;
-  b.push_back(create<UintLiteral>(2));
-
-  auto* body = create<BlockStatement>(StatementList{
-      create<DiscardStatement>(),
-  });
-  auto* c = create<CaseStatement>(CaseSelectorList{b}, body);
-
-  EXPECT_EQ(str(c), R"(Case 2u{
-  Discard{}
-}
-)");
-}
-
-TEST_F(CaseStatementTest, ToStr_WithMultipleSelectors) {
-  CaseSelectorList b;
-  b.push_back(create<SintLiteral>(1));
-  b.push_back(create<SintLiteral>(2));
-
-  auto* body = create<BlockStatement>(StatementList{
-      create<DiscardStatement>(),
-  });
-  auto* c = create<CaseStatement>(b, body);
-
-  EXPECT_EQ(str(c), R"(Case 1, 2{
-  Discard{}
-}
-)");
-}
-
-TEST_F(CaseStatementTest, ToStr_WithoutSelectors) {
-  auto* body = create<BlockStatement>(StatementList{
-      create<DiscardStatement>(),
-  });
-  auto* c = create<CaseStatement>(CaseSelectorList{}, body);
-
-  EXPECT_EQ(str(c), R"(Default{
-  Discard{}
-}
-)");
 }
 
 }  // namespace

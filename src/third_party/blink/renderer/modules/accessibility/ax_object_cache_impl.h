@@ -192,7 +192,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   const AtomicString& ComputedRoleForNode(Node*) override;
   String ComputedNameForNode(Node*) override;
 
-  void OnTouchAccessibilityHover(const IntPoint&) override;
+  void OnTouchAccessibilityHover(const gfx::Point&) override;
 
   AXObject* ObjectFromAXID(AXID id) const {
     auto it = objects_.find(id);
@@ -347,6 +347,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   static bool IsRelevantPseudoElement(const Node& node);
   static bool IsRelevantPseudoElementDescendant(
       const LayoutObject& layout_object);
+  static bool IsRelevantSlotElement(const HTMLSlotElement& slot);
 
 #if DCHECK_IS_ON()
   bool HasBeenDisposed() { return has_been_disposed_; }

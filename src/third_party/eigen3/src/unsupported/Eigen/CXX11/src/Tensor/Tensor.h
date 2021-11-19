@@ -11,6 +11,8 @@
 #ifndef EIGEN_CXX11_TENSOR_TENSOR_H
 #define EIGEN_CXX11_TENSOR_TENSOR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class Tensor

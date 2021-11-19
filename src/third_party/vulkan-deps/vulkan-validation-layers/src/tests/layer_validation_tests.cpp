@@ -658,8 +658,6 @@ void CreateImageTest(VkLayerTest &test, const VkImageCreateInfo *pCreateInfo, st
     VkImage image = VK_NULL_HANDLE;
     if (code.length()) {
         test.Monitor().SetDesiredFailureMsg(kErrorBit, code);
-        // Very possible a test didn't check for VK_ERROR_FORMAT_NOT_SUPPORTED
-        test.Monitor().SetUnexpectedError("UNASSIGNED-CoreValidation-Image-FormatNotSupported");
     } else {
         test.Monitor().ExpectSuccess();
     }
@@ -757,7 +755,7 @@ VkImageViewCreateInfo SafeSaneImageViewCreateInfo(const VkImageObj &image, VkFor
 bool CheckCreateRenderPass2Support(VkRenderFramework *renderFramework, std::vector<const char *> &device_extension_names) {
     if (renderFramework->DeviceExtensionSupported(renderFramework->gpu(), nullptr, VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME)) {
         device_extension_names.push_back(VK_KHR_MULTIVIEW_EXTENSION_NAME);
-        device_extension_names.push_back(VK_KHR_MAINTENANCE2_EXTENSION_NAME);
+        device_extension_names.push_back(VK_KHR_MAINTENANCE_2_EXTENSION_NAME);
         device_extension_names.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
         return true;
     }
@@ -774,11 +772,11 @@ bool CheckDescriptorIndexingSupportAndInitFramework(VkRenderFramework *renderFra
     }
     renderFramework->InitFramework(userData, features);
     descriptor_indexing = descriptor_indexing && renderFramework->DeviceExtensionSupported(renderFramework->gpu(), nullptr,
-                                                                                           VK_KHR_MAINTENANCE3_EXTENSION_NAME);
+                                                                                           VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
     descriptor_indexing = descriptor_indexing && renderFramework->DeviceExtensionSupported(
                                                      renderFramework->gpu(), nullptr, VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
     if (descriptor_indexing) {
-        device_extension_names.push_back(VK_KHR_MAINTENANCE3_EXTENSION_NAME);
+        device_extension_names.push_back(VK_KHR_MAINTENANCE_3_EXTENSION_NAME);
         device_extension_names.push_back(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME);
         return true;
     }
@@ -1505,7 +1503,7 @@ OneOffDescriptorSet::OneOffDescriptorSet(VkDeviceObj *device, const Bindings &bi
                                          VkDescriptorSetLayoutCreateFlags layout_flags, void *layout_pnext,
                                          VkDescriptorPoolCreateFlags poolFlags, void *allocate_pnext, int buffer_info_size,
                                          int image_info_size, int buffer_view_size)
-    : device_{device}, pool_{}, layout_(device, bindings, layout_flags, layout_pnext), set_{} {
+    : device_{device}, pool_{}, layout_(device, bindings, layout_flags, layout_pnext), set_(VK_NULL_HANDLE) {
     VkResult err;
     buffer_infos.reserve(buffer_info_size);
     image_infos.reserve(image_info_size);
@@ -2063,7 +2061,7 @@ void CreateNVRayTracingPipelineHelper::InitNVRayTracingPipelineInfo() {
 }
 
 void CreateNVRayTracingPipelineHelper::InitKHRRayTracingPipelineInfo() {
-    rp_ci_KHR_.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_NV;
+    rp_ci_KHR_.sType = VK_STRUCTURE_TYPE_RAY_TRACING_PIPELINE_CREATE_INFO_KHR;
     rp_ci_KHR_.maxPipelineRayRecursionDepth = 0;
     rp_ci_KHR_.stageCount = shader_stages_.size();
     rp_ci_KHR_.pStages = shader_stages_.data();
@@ -2329,7 +2327,7 @@ void Barrier2QueueFamilyTestHelper::operator()(std::string img_err, std::string 
 bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isKHR,
                                     std::vector<const char *> &instance_extension_names,
                                     std::vector<const char *> &device_extension_names, void *user_data, bool need_gpu_validation,
-                                    bool need_push_descriptors, bool deferred_state_init) {
+                                    bool need_push_descriptors, bool deferred_state_init, VkPhysicalDeviceFeatures2KHR *features2) {
     const std::array<const char *, 1> required_instance_extensions = {{VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME}};
     for (const char *required_instance_extension : required_instance_extensions) {
         if (renderFramework->InstanceExtensionSupported(required_instance_extension)) {
@@ -2387,7 +2385,14 @@ bool InitFrameworkForRayTracingTest(VkRenderFramework *renderFramework, bool isK
             return false;
         }
     }
-    if (!deferred_state_init) renderFramework->InitState();
+    if (features2) {
+        // extension enabled as dependency of RT extension
+        auto vkGetPhysicalDeviceFeatures2KHR = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2KHR>(
+            vk::GetInstanceProcAddr(renderFramework->instance(), "vkGetPhysicalDeviceFeatures2KHR"));
+        assert(vkGetPhysicalDeviceFeatures2KHR);
+        vkGetPhysicalDeviceFeatures2KHR(renderFramework->gpu(), features2);
+    }
+    if (!deferred_state_init) renderFramework->InitState(nullptr, features2);
     return true;
 }
 
@@ -3450,32 +3455,6 @@ void VkLayerTest::OOBRayTracingShadersTestBody(bool gpu_assisted) {
         }
         vk::DestroyPipeline(m_device->handle(), pipeline, nullptr);
     }
-}
-
-bool VkLayerTest::AddYCbCrDeviceExtensions() {
-    const bool supported = DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME) &&
-                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_BIND_MEMORY_2_EXTENSION_NAME) &&
-                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_MAINTENANCE1_EXTENSION_NAME) &&
-                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-    if (supported) {
-        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_MAINTENANCE1_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME);
-    }
-    return supported;
-}
-
-bool VkLayerTest::AddImageDrmFormatModifierDeviceExtensions() {
-    const bool supported = AddYCbCrDeviceExtensions() &&
-                           DeviceExtensionSupported(gpu(), nullptr, VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME) &&
-                           DeviceExtensionSupported(gpu(), nullptr, VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
-    if (supported) {
-        m_device_extension_names.push_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
-        m_device_extension_names.push_back(VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME);
-    }
-    return supported;
 }
 
 void VkSyncValTest::InitSyncValFramework() {

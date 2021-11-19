@@ -11,6 +11,8 @@
 #ifndef EIGEN_RESHAPED_HELPER_H
 #define EIGEN_RESHAPED_HELPER_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 enum AutoSize_t   { AutoSize };

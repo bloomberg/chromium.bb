@@ -19,7 +19,7 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/cfx_face.h"
 #include "core/fxge/fx_freetype.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFGAS_GEFont;
 class IFX_SeekableReadStream;
@@ -128,7 +128,6 @@ class CFGAS_FontMgr {
 
 #else   // defined(OS_WIN)
   bool EnumFontsFromFontMapper();
-  bool EnumFontsFromFiles();
   void RegisterFace(RetainPtr<CFX_Face> pFace, const WideString* pFaceName);
   void RegisterFaces(const RetainPtr<IFX_SeekableReadStream>& pFontStream,
                      const WideString* pFaceName);
@@ -147,7 +146,7 @@ class CFGAS_FontMgr {
   std::deque<FX_FONTDESCRIPTOR> m_FontFaces;
 #else
   std::vector<std::unique_ptr<CFGAS_FontDescriptor>> m_InstalledFonts;
-  std::map<uint32_t, Optional<std::vector<CFGAS_FontDescriptorInfo>>>
+  std::map<uint32_t, absl::optional<std::vector<CFGAS_FontDescriptorInfo>>>
       m_Hash2CandidateList;
 #endif  // defined(OS_WIN)
 };

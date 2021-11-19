@@ -14,6 +14,7 @@
 
 #include "dawn_native/vulkan/AdapterVk.h"
 
+#include "dawn_native/Limits.h"
 #include "dawn_native/vulkan/BackendVk.h"
 #include "dawn_native/vulkan/DeviceVk.h"
 
@@ -39,9 +40,8 @@ namespace dawn_native { namespace vulkan {
         return mBackend;
     }
 
-    MaybeError Adapter::Initialize() {
+    MaybeError Adapter::InitializeImpl() {
         DAWN_TRY_ASSIGN(mDeviceInfo, GatherDeviceInfo(*this));
-        DAWN_TRY(CheckCoreWebGPUSupport());
 
         if (mDeviceInfo.HasExt(DeviceExt::DriverProperties)) {
             mDriverDescription = mDeviceInfo.driverProperties.driverName;
@@ -52,8 +52,6 @@ namespace dawn_native { namespace vulkan {
             mDriverDescription =
                 "Vulkan driver version: " + std::to_string(mDeviceInfo.properties.driverVersion);
         }
-
-        InitializeSupportedFeatures();
 
         mPCIInfo.deviceId = mDeviceInfo.properties.deviceID;
         mPCIInfo.vendorId = mDeviceInfo.properties.vendorID;
@@ -77,7 +75,7 @@ namespace dawn_native { namespace vulkan {
         return {};
     }
 
-    MaybeError Adapter::CheckCoreWebGPUSupport() {
+    MaybeError Adapter::InitializeSupportedFeaturesImpl() {
         // Needed for viewport Y-flip.
         if (!mDeviceInfo.HasExt(DeviceExt::Maintenance1)) {
             return DAWN_INTERNAL_ERROR("Vulkan 1.1 or Vulkan 1.0 with KHR_Maintenance1 required.");
@@ -116,148 +114,7 @@ namespace dawn_native { namespace vulkan {
             return DAWN_INTERNAL_ERROR("Vulkan sampleRateShading feature required.");
         }
 
-        // Check base WebGPU limits are supported.
-        const VkPhysicalDeviceLimits& limits = mDeviceInfo.properties.limits;
-        if (limits.maxImageDimension1D < kMaxTextureDimension1D) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxTextureDimension1D");
-        }
-        if (limits.maxImageDimension2D < kMaxTextureDimension2D ||
-            limits.maxImageDimensionCube < kMaxTextureDimension2D ||
-            limits.maxFramebufferWidth < kMaxTextureDimension2D ||
-            limits.maxFramebufferHeight < kMaxTextureDimension2D ||
-            limits.maxViewportDimensions[0] < kMaxTextureDimension2D ||
-            limits.maxViewportDimensions[1] < kMaxTextureDimension2D ||
-            limits.viewportBoundsRange[1] < kMaxTextureDimension2D) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxTextureDimension2D");
-        }
-        if (limits.maxImageDimension3D < kMaxTextureDimension3D) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxTextureDimension3D");
-        }
-        if (limits.maxImageArrayLayers < kMaxTextureArrayLayers) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxTextureArrayLayers");
-        }
-        if (limits.maxBoundDescriptorSets < kMaxBindGroups) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxBindGroups");
-        }
-        if (limits.maxDescriptorSetUniformBuffersDynamic <
-            kMaxDynamicUniformBuffersPerPipelineLayout) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxDynamicUniformBuffersPerPipelineLayout");
-        }
-        if (limits.maxDescriptorSetStorageBuffersDynamic <
-            kMaxDynamicStorageBuffersPerPipelineLayout) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxDynamicStorageBuffersPerPipelineLayout");
-        }
-        if (limits.maxPerStageDescriptorSampledImages < kMaxSampledTexturesPerShaderStage) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxSampledTexturesPerShaderStage");
-        }
-        if (limits.maxPerStageDescriptorSamplers < kMaxSamplersPerShaderStage) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxSamplersPerShaderStage");
-        }
-        if (limits.maxPerStageDescriptorStorageBuffers < kMaxStorageBuffersPerShaderStage) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxStorageBuffersPerShaderStage");
-        }
-        if (limits.maxPerStageDescriptorStorageImages < kMaxStorageTexturesPerShaderStage) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxStorageTexturesPerShaderStage");
-        }
-        if (limits.maxPerStageDescriptorUniformBuffers < kMaxUniformBuffersPerShaderStage) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxUniformBuffersPerShaderStage");
-        }
-        if (limits.maxUniformBufferRange < kMaxUniformBufferBindingSize) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxUniformBufferBindingSize");
-        }
-        if (limits.maxStorageBufferRange < kMaxStorageBufferBindingSize) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxStorageBufferBindingSize");
-        }
-        if (limits.minUniformBufferOffsetAlignment > kMinUniformBufferOffsetAlignment) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for minUniformBufferOffsetAlignment");
-        }
-        if (limits.minStorageBufferOffsetAlignment > kMinStorageBufferOffsetAlignment) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for minStorageBufferOffsetAlignment");
-        }
-        if (limits.maxVertexInputBindings < kMaxVertexBuffers) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxVertexBuffers");
-        }
-        if (limits.maxVertexInputAttributes < kMaxVertexAttributes) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxVertexAttributes");
-        }
-        if (limits.maxVertexInputBindingStride < kMaxVertexBufferArrayStride ||
-            limits.maxVertexInputAttributeOffset < kMaxVertexBufferArrayStride - 1) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxVertexBufferArrayStride");
-        }
-        if (limits.maxVertexOutputComponents < kMaxInterStageShaderComponents ||
-            limits.maxFragmentInputComponents < kMaxInterStageShaderComponents) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxInterStageShaderComponents");
-        }
-        if (limits.maxComputeSharedMemorySize < kMaxComputeWorkgroupStorageSize) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxComputeWorkgroupStorageSize");
-        }
-        if (limits.maxComputeWorkGroupInvocations < kMaxComputeWorkgroupInvocations) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxComputeWorkgroupInvocations");
-        }
-        if (limits.maxComputeWorkGroupSize[0] < kMaxComputeWorkgroupSizeX ||
-            limits.maxComputeWorkGroupSize[1] < kMaxComputeWorkgroupSizeY ||
-            limits.maxComputeWorkGroupSize[2] < kMaxComputeWorkgroupSizeZ) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxComputeWorkgroupSize");
-        }
-        if (limits.maxComputeWorkGroupCount[0] < kMaxComputePerDimensionDispatchSize ||
-            limits.maxComputeWorkGroupCount[1] < kMaxComputePerDimensionDispatchSize ||
-            limits.maxComputeWorkGroupCount[2] < kMaxComputePerDimensionDispatchSize) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for maxComputePerDimensionDispatchSize");
-        }
-        if (limits.maxColorAttachments < kMaxColorAttachments) {
-            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxColorAttachments");
-        }
-        if (!IsSubset(VkSampleCountFlags(VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT),
-                      limits.framebufferColorSampleCounts)) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for framebufferColorSampleCounts");
-        }
-        if (!IsSubset(VkSampleCountFlags(VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT),
-                      limits.framebufferDepthSampleCounts)) {
-            return DAWN_INTERNAL_ERROR(
-                "Insufficient Vulkan limits for framebufferDepthSampleCounts");
-        }
-
-        // Only check maxFragmentCombinedOutputResources on mobile GPUs. Desktop GPUs drivers seem
-        // to put incorrect values for this limit with things like 8 or 16 when they can do bindless
-        // storage buffers.
-        uint32_t vendorId = mDeviceInfo.properties.vendorID;
-        if (!gpu_info::IsAMD(vendorId) && !gpu_info::IsIntel(vendorId) &&
-            !gpu_info::IsNvidia(vendorId)) {
-            if (limits.maxFragmentCombinedOutputResources < kMaxColorAttachments +
-                                                                kMaxStorageTexturesPerShaderStage +
-                                                                kMaxStorageBuffersPerShaderStage) {
-                return DAWN_INTERNAL_ERROR(
-                    "Insufficient Vulkan maxFragmentCombinedOutputResources limit");
-            }
-        }
-
-        return {};
-    }
-
-    bool Adapter::SupportsExternalImages() const {
-        // Via dawn_native::vulkan::WrapVulkanImage
-        return external_memory::Service::CheckSupport(mDeviceInfo) &&
-               external_semaphore::Service::CheckSupport(mDeviceInfo, mPhysicalDevice,
-                                                         mBackend->GetFunctions());
-    }
-
-    void Adapter::InitializeSupportedFeatures() {
+        // Initialize supported extensions
         if (mDeviceInfo.features.textureCompressionBC == VK_TRUE) {
             mSupportedFeatures.EnableFeature(Feature::TextureCompressionBC);
         }
@@ -281,6 +138,186 @@ namespace dawn_native { namespace vulkan {
         if (mDeviceInfo.properties.limits.timestampComputeAndGraphics == VK_TRUE) {
             mSupportedFeatures.EnableFeature(Feature::TimestampQuery);
         }
+
+        return {};
+    }
+
+    MaybeError Adapter::InitializeSupportedLimitsImpl(CombinedLimits* limits) {
+        GetDefaultLimits(&limits->v1);
+        CombinedLimits baseLimits = *limits;
+
+        const VkPhysicalDeviceLimits& vkLimits = mDeviceInfo.properties.limits;
+
+#define CHECK_AND_SET_V1_LIMIT_IMPL(vulkanName, webgpuName, compareOp, msgSegment)   \
+    do {                                                                             \
+        if (vkLimits.vulkanName compareOp baseLimits.v1.webgpuName) {                \
+            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for " #webgpuName \
+                                       "."                                           \
+                                       " VkPhysicalDeviceLimits::" #vulkanName       \
+                                       " must be at " msgSegment " " +               \
+                                       std::to_string(baseLimits.v1.webgpuName));    \
+        }                                                                            \
+        limits->v1.webgpuName = vkLimits.vulkanName;                                 \
+    } while (false)
+
+#define CHECK_AND_SET_V1_MAX_LIMIT(vulkanName, webgpuName) \
+    CHECK_AND_SET_V1_LIMIT_IMPL(vulkanName, webgpuName, <, "least")
+#define CHECK_AND_SET_V1_MIN_LIMIT(vulkanName, webgpuName) \
+    CHECK_AND_SET_V1_LIMIT_IMPL(vulkanName, webgpuName, >, "most")
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxImageDimension1D, maxTextureDimension1D);
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxImageDimension2D, maxTextureDimension2D);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxImageDimensionCube, maxTextureDimension2D);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxFramebufferWidth, maxTextureDimension2D);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxFramebufferHeight, maxTextureDimension2D);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxViewportDimensions[0], maxTextureDimension2D);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxViewportDimensions[1], maxTextureDimension2D);
+        CHECK_AND_SET_V1_MAX_LIMIT(viewportBoundsRange[1], maxTextureDimension2D);
+        limits->v1.maxTextureDimension2D = std::min({
+            static_cast<uint32_t>(vkLimits.maxImageDimension2D),
+            static_cast<uint32_t>(vkLimits.maxImageDimensionCube),
+            static_cast<uint32_t>(vkLimits.maxFramebufferWidth),
+            static_cast<uint32_t>(vkLimits.maxFramebufferHeight),
+            static_cast<uint32_t>(vkLimits.maxViewportDimensions[0]),
+            static_cast<uint32_t>(vkLimits.maxViewportDimensions[1]),
+            static_cast<uint32_t>(vkLimits.viewportBoundsRange[1]),
+        });
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxImageDimension3D, maxTextureDimension3D);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxImageArrayLayers, maxTextureArrayLayers);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxBoundDescriptorSets, maxBindGroups);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxDescriptorSetUniformBuffersDynamic,
+                                   maxDynamicUniformBuffersPerPipelineLayout);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxDescriptorSetStorageBuffersDynamic,
+                                   maxDynamicStorageBuffersPerPipelineLayout);
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxPerStageDescriptorSampledImages,
+                                   maxSampledTexturesPerShaderStage);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxPerStageDescriptorSamplers, maxSamplersPerShaderStage);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxPerStageDescriptorStorageBuffers,
+                                   maxStorageBuffersPerShaderStage);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxPerStageDescriptorStorageImages,
+                                   maxStorageTexturesPerShaderStage);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxPerStageDescriptorUniformBuffers,
+                                   maxUniformBuffersPerShaderStage);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxUniformBufferRange, maxUniformBufferBindingSize);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxStorageBufferRange, maxStorageBufferBindingSize);
+
+        CHECK_AND_SET_V1_MIN_LIMIT(minUniformBufferOffsetAlignment,
+                                   minUniformBufferOffsetAlignment);
+        CHECK_AND_SET_V1_MIN_LIMIT(minStorageBufferOffsetAlignment,
+                                   minStorageBufferOffsetAlignment);
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxVertexInputBindings, maxVertexBuffers);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxVertexInputAttributes, maxVertexAttributes);
+
+        if (vkLimits.maxVertexInputBindingStride < baseLimits.v1.maxVertexBufferArrayStride ||
+            vkLimits.maxVertexInputAttributeOffset < baseLimits.v1.maxVertexBufferArrayStride - 1) {
+            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxVertexBufferArrayStride");
+        }
+        limits->v1.maxVertexBufferArrayStride = std::min(
+            vkLimits.maxVertexInputBindingStride, vkLimits.maxVertexInputAttributeOffset + 1);
+
+        if (vkLimits.maxVertexOutputComponents < baseLimits.v1.maxInterStageShaderComponents ||
+            vkLimits.maxFragmentInputComponents < baseLimits.v1.maxInterStageShaderComponents) {
+            return DAWN_INTERNAL_ERROR(
+                "Insufficient Vulkan limits for maxInterStageShaderComponents");
+        }
+        limits->v1.maxInterStageShaderComponents =
+            std::min(vkLimits.maxVertexOutputComponents, vkLimits.maxFragmentInputComponents);
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeSharedMemorySize, maxComputeWorkgroupStorageSize);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupInvocations,
+                                   maxComputeInvocationsPerWorkgroup);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupSize[0], maxComputeWorkgroupSizeX);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupSize[1], maxComputeWorkgroupSizeY);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupSize[2], maxComputeWorkgroupSizeZ);
+
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupCount[0], maxComputeWorkgroupsPerDimension);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupCount[1], maxComputeWorkgroupsPerDimension);
+        CHECK_AND_SET_V1_MAX_LIMIT(maxComputeWorkGroupCount[2], maxComputeWorkgroupsPerDimension);
+        limits->v1.maxComputeWorkgroupsPerDimension = std::min({
+            vkLimits.maxComputeWorkGroupCount[0],
+            vkLimits.maxComputeWorkGroupCount[1],
+            vkLimits.maxComputeWorkGroupCount[2],
+        });
+
+        if (vkLimits.maxColorAttachments < kMaxColorAttachments) {
+            return DAWN_INTERNAL_ERROR("Insufficient Vulkan limits for maxColorAttachments");
+        }
+        if (!IsSubset(VkSampleCountFlags(VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT),
+                      vkLimits.framebufferColorSampleCounts)) {
+            return DAWN_INTERNAL_ERROR(
+                "Insufficient Vulkan limits for framebufferColorSampleCounts");
+        }
+        if (!IsSubset(VkSampleCountFlags(VK_SAMPLE_COUNT_1_BIT | VK_SAMPLE_COUNT_4_BIT),
+                      vkLimits.framebufferDepthSampleCounts)) {
+            return DAWN_INTERNAL_ERROR(
+                "Insufficient Vulkan limits for framebufferDepthSampleCounts");
+        }
+
+        // Only check maxFragmentCombinedOutputResources on mobile GPUs. Desktop GPUs drivers seem
+        // to put incorrect values for this limit with things like 8 or 16 when they can do bindless
+        // storage buffers.
+        uint32_t vendorId = mDeviceInfo.properties.vendorID;
+        if (!gpu_info::IsAMD(vendorId) && !gpu_info::IsIntel(vendorId) &&
+            !gpu_info::IsNvidia(vendorId)) {
+            if (vkLimits.maxFragmentCombinedOutputResources <
+                kMaxColorAttachments + baseLimits.v1.maxStorageTexturesPerShaderStage +
+                    baseLimits.v1.maxStorageBuffersPerShaderStage) {
+                return DAWN_INTERNAL_ERROR(
+                    "Insufficient Vulkan maxFragmentCombinedOutputResources limit");
+            }
+
+            uint32_t maxFragmentCombinedOutputResources =
+                kMaxColorAttachments + limits->v1.maxStorageTexturesPerShaderStage +
+                limits->v1.maxStorageBuffersPerShaderStage;
+
+            if (maxFragmentCombinedOutputResources > vkLimits.maxFragmentCombinedOutputResources) {
+                // WebGPU's maxFragmentCombinedOutputResources exceeds the Vulkan limit.
+                // Decrease |maxStorageTexturesPerShaderStage| and |maxStorageBuffersPerShaderStage|
+                // to fit within the Vulkan limit.
+                uint32_t countOverLimit = maxFragmentCombinedOutputResources -
+                                          vkLimits.maxFragmentCombinedOutputResources;
+
+                uint32_t maxStorageTexturesOverBase =
+                    limits->v1.maxStorageTexturesPerShaderStage -
+                    baseLimits.v1.maxStorageTexturesPerShaderStage;
+                uint32_t maxStorageBuffersOverBase = limits->v1.maxStorageBuffersPerShaderStage -
+                                                     baseLimits.v1.maxStorageBuffersPerShaderStage;
+
+                // Reduce the number of resources by half the overage count, but clamp to
+                // to ensure we don't go below the base limits.
+                uint32_t numFewerStorageTextures =
+                    std::min(countOverLimit / 2, maxStorageTexturesOverBase);
+                uint32_t numFewerStorageBuffers =
+                    std::min((countOverLimit + 1) / 2, maxStorageBuffersOverBase);
+
+                if (numFewerStorageTextures == maxStorageTexturesOverBase) {
+                    // If |numFewerStorageTextures| was clamped, subtract the remaining
+                    // from the storage buffers.
+                    numFewerStorageBuffers = countOverLimit - numFewerStorageTextures;
+                    ASSERT(numFewerStorageBuffers <= maxStorageBuffersOverBase);
+                } else if (numFewerStorageBuffers == maxStorageBuffersOverBase) {
+                    // If |numFewerStorageBuffers| was clamped, subtract the remaining
+                    // from the storage textures.
+                    numFewerStorageTextures = countOverLimit - numFewerStorageBuffers;
+                    ASSERT(numFewerStorageTextures <= maxStorageTexturesOverBase);
+                }
+                limits->v1.maxStorageTexturesPerShaderStage -= numFewerStorageTextures;
+                limits->v1.maxStorageBuffersPerShaderStage -= numFewerStorageBuffers;
+            }
+        }
+
+        return {};
+    }
+
+    bool Adapter::SupportsExternalImages() const {
+        // Via dawn_native::vulkan::WrapVulkanImage
+        return external_memory::Service::CheckSupport(mDeviceInfo) &&
+               external_semaphore::Service::CheckSupport(mDeviceInfo, mPhysicalDevice,
+                                                         mBackend->GetFunctions());
     }
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {

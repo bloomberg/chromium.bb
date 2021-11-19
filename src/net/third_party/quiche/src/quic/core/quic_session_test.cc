@@ -145,6 +145,11 @@ class TestCryptoStream : public QuicCryptoStream, public QuicCryptoHandshaker {
   bool ValidateAddressToken(absl::string_view /*token*/) const override {
     return true;
   }
+  const CachedNetworkParameters* PreviousCachedNetworkParams() const override {
+    return nullptr;
+  }
+  void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters /*cached_network_params*/) override {}
   HandshakeState GetHandshakeState() const override {
     return one_rtt_keys_available() ? HANDSHAKE_COMPLETE : HANDSHAKE_START;
   }
@@ -1803,7 +1808,9 @@ TEST_P(QuicSessionTestServer, DrainingStreamsDoNotCountAsOpenedOutgoing) {
   QuicStreamId stream_id = stream->id();
   QuicStreamFrame data1(stream_id, true, 0, absl::string_view("HT"));
   session_.OnStreamFrame(data1);
-  EXPECT_CALL(session_, OnCanCreateNewOutgoingStream(false)).Times(1);
+  if (!VersionHasIetfQuicFrames(transport_version())) {
+    EXPECT_CALL(session_, OnCanCreateNewOutgoingStream(false)).Times(1);
+  }
   session_.StreamDraining(stream_id, /*unidirectional=*/false);
 }
 

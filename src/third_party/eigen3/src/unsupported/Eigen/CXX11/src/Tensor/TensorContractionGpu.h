@@ -14,6 +14,8 @@
 
 #if defined(EIGEN_USE_GPU) && defined(EIGEN_GPUCC)
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename Scalar, typename Index, typename LhsMapper,

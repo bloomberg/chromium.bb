@@ -23,6 +23,10 @@ if (build_with_chromium) {
     if (is_mac) {
       cflags += [ "-Wno-range-loop-analysis" ]
     }
+
+    if (target_cpu == "arm" || target_cpu == "arm64") {
+      cflags += [ "-Wno-implicit-int-float-conversion" ]
+    }
   }
 
   # NOTE: StrFormat is specifically excluded from the Abseil source set due

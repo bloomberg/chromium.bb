@@ -37,7 +37,8 @@ static bool SimpleBinding(const IMAGE_STATE &image_state) {
     return simple;
 }
 
-const static std::array<AccessAddressType, static_cast<size_t>(AccessAddressType::kTypeCount)> kAddressTypes = {
+static const ResourceAccessRange kFullRange(std::numeric_limits<VkDeviceSize>::min(), std::numeric_limits<VkDeviceSize>::max());
+static const std::array<AccessAddressType, static_cast<size_t>(AccessAddressType::kTypeCount)> kAddressTypes = {
     AccessAddressType::kLinear, AccessAddressType::kIdealized};
 
 static constexpr AccessAddressType GetAccessAddressType(const BUFFER_STATE &) { return AccessAddressType::kLinear; };
@@ -165,7 +166,7 @@ static std::string string_SyncStageAccessFlags(const SyncStageAccessFlags &flags
     return out_str;
 }
 
-static std::string string_UsageTag(const ResourceUsageTag &tag) {
+static std::string string_UsageTag(const ResourceUsageRecord &tag) {
     std::stringstream out;
 
     out << "command: " << CommandTypeString(tag.command);
@@ -173,6 +174,72 @@ static std::string string_UsageTag(const ResourceUsageTag &tag) {
     if (tag.sub_command != 0) {
         out << ", subcmd: " << tag.sub_command;
     }
+    return out.str();
+}
+static std::string string_UsageIndex(SyncStageAccessIndex usage_index) {
+    const char *stage_access_name = "INVALID_STAGE_ACCESS";
+    if (usage_index < static_cast<SyncStageAccessIndex>(syncStageAccessInfoByStageAccessIndex.size())) {
+        stage_access_name = syncStageAccessInfoByStageAccessIndex[usage_index].name;
+    }
+    return std::string(stage_access_name);
+}
+
+struct NoopBarrierAction {
+    explicit NoopBarrierAction() {}
+    void operator()(ResourceAccessState *access) const {}
+    const bool layout_transition = false;
+};
+
+// NOTE: Make sure the proxy doesn't outlive from, as the proxy is pointing directly to access contexts owned by from.
+CommandBufferAccessContext::CommandBufferAccessContext(const CommandBufferAccessContext &from, AsProxyContext dummy)
+    : CommandBufferAccessContext(from.sync_state_) {
+    // Copy only the needed fields out of from for a temporary, proxy command buffer context
+    cb_state_ = from.cb_state_;
+    queue_flags_ = from.queue_flags_;
+    destroyed_ = from.destroyed_;
+    access_log_ = from.access_log_;  // potentially large, but no choice given tagging lookup.
+    command_number_ = from.command_number_;
+    subcommand_number_ = from.subcommand_number_;
+    reset_count_ = from.reset_count_;
+
+    const auto *from_context = from.GetCurrentAccessContext();
+    assert(from_context);
+
+    // Construct a fully resolved single access context out of from
+    const NoopBarrierAction noop_barrier;
+    for (AccessAddressType address_type : kAddressTypes) {
+        from_context->ResolveAccessRange(address_type, kFullRange, noop_barrier,
+                                         &cb_access_context_.GetAccessStateMap(address_type), nullptr);
+    }
+    // The proxy has flatten the current render pass context (if any), but the async contexts are needed for hazard detection
+    cb_access_context_.ImportAsyncContexts(*from_context);
+
+    events_context_ = from.events_context_;
+
+    // We don't want to copy the full render_pass_context_ history just for the proxy.
+}
+
+std::string CommandBufferAccessContext::FormatUsage(const ResourceUsageTag tag) const {
+    std::stringstream out;
+    assert(tag < access_log_.size());
+    const auto &record = access_log_[tag];
+    out << string_UsageTag(record);
+    if (record.cb_state != cb_state_.get()) {
+        out << ", command_buffer: " << sync_state_->report_data->FormatHandle(record.cb_state->commandBuffer()).c_str();
+        if (record.cb_state->Destroyed()) {
+            out << " (destroyed)";
+        }
+
+        out << ", reset_no: " << std::to_string(record.reset_count);
+    } else {
+        out << ", reset_no: " << std::to_string(reset_count_);
+    }
+    return out.str();
+}
+std::string CommandBufferAccessContext::FormatUsage(const ResourceFirstAccess &access) const {
+    std::stringstream out;
+    out << "(recorded_usage: " << string_UsageIndex(access.usage_index);
+    out << ", " << FormatUsage(access.tag) << ")";
     return out.str();
 }
 
@@ -183,7 +250,12 @@ std::string CommandBufferAccessContext::FormatUsage(const HazardResult &hazard) 
     std::stringstream out;
     const auto *info = SyncStageAccessInfoFromMask(hazard.prior_access);
     const char *stage_access_name = info ? info->name : "INVALID_STAGE_ACCESS";
-    out << "(usage: " << usage_info.name << ", prior_usage: " << stage_access_name;
+    out << "(";
+    if (!hazard.recorded_access.get()) {
+        // if we have a recorded usage the usage is reported from the recorded contexts point of view
+        out << "usage: " << usage_info.name << ", ";
+    }
+    out << "prior_usage: " << stage_access_name;
     if (IsHazardVsRead(hazard.hazard)) {
         const auto barriers = hazard.access_state->GetReadBarriers(hazard.prior_access);
         out << ", read_barriers: " << string_VkPipelineStageFlags2KHR(barriers);
@@ -192,8 +264,8 @@ std::string CommandBufferAccessContext::FormatUsage(const HazardResult &hazard) 
         out << ", write_barriers: " << string_SyncStageAccessFlags(write_barrier);
     }
 
-    // PHASE2 TODO -- add comand buffer and reset from secondary if applicable
-    out << ", " << string_UsageTag(tag) << ", reset_no: " << reset_count_ << ")";
+    assert(tag < access_log_.size());
+    out << ", " << FormatUsage(tag) << ")";
     return out.str();
 }
 
@@ -222,8 +294,7 @@ ResourceAccessState::OrderingBarriers ResourceAccessState::kOrderingRules = {
      {kRasterAttachmentExecScope, kRasterAttachmentAccessScope}}};
 
 // Sometimes we have an internal access conflict, and we using the kCurrentCommandTag to set and detect in temporary/proxy contexts
-static const ResourceUsageTag kCurrentCommandTag(ResourceUsageTag::kMaxIndex, ResourceUsageTag::kMaxCount,
-                                                 ResourceUsageTag::kMaxCount, CMD_NONE);
+static const ResourceUsageTag kCurrentCommandTag(ResourceUsageRecord::kMaxIndex);
 
 static VkDeviceSize ResourceBaseAddress(const BINDABLE &bindable) { return bindable.GetFakeBaseAddress(); }
 
@@ -282,55 +353,85 @@ class SingleRangeGenerator {
     KeyType current_;
 };
 
-// Generate the ranges that are the intersection of range and the entries in the FilterMap
-template <typename FilterMap, typename KeyType = typename FilterMap::key_type>
-class FilteredRangeGenerator {
+// Generate the ranges that are the intersection of range and the entries in the RangeMap
+template <typename RangeMap, typename KeyType = typename RangeMap::key_type>
+class MapRangesRangeGenerator {
   public:
     // Default constructed is safe to dereference for "empty" test, but for no other operation.
-    FilteredRangeGenerator() : range_(), filter_(nullptr), filter_pos_(), current_() {
+    MapRangesRangeGenerator() : range_(), map_(nullptr), map_pos_(), current_() {
         // Default construction for KeyType *must* be empty range
         assert(current_.empty());
     }
-    FilteredRangeGenerator(const FilterMap &filter, const KeyType &range)
-        : range_(range), filter_(&filter), filter_pos_(), current_() {
+    MapRangesRangeGenerator(const RangeMap &filter, const KeyType &range) : range_(range), map_(&filter), map_pos_(), current_() {
         SeekBegin();
     }
-    FilteredRangeGenerator(const FilteredRangeGenerator &from) = default;
+    MapRangesRangeGenerator(const MapRangesRangeGenerator &from) = default;
 
     const KeyType &operator*() const { return current_; }
     const KeyType *operator->() const { return &current_; }
-    FilteredRangeGenerator &operator++() {
-        ++filter_pos_;
+    MapRangesRangeGenerator &operator++() {
+        ++map_pos_;
         UpdateCurrent();
         return *this;
     }
 
-    bool operator==(const FilteredRangeGenerator &other) const { return current_ == other.current_; }
+    bool operator==(const MapRangesRangeGenerator &other) const { return current_ == other.current_; }
 
-  private:
+  protected:
     void UpdateCurrent() {
-        if (filter_pos_ != filter_->cend()) {
-            current_ = range_ & filter_pos_->first;
+        if (map_pos_ != map_->cend()) {
+            current_ = range_ & map_pos_->first;
         } else {
             current_ = KeyType();
         }
     }
     void SeekBegin() {
-        filter_pos_ = filter_->lower_bound(range_);
+        map_pos_ = map_->lower_bound(range_);
         UpdateCurrent();
     }
+
+    // Adding this functionality here, to avoid gratuitous Base:: qualifiers in the derived class
+    // Note: Not exposed in this classes public interface to encourage using a consistent ++/empty generator semantic
+    template <typename Pred>
+    MapRangesRangeGenerator &PredicatedIncrement(Pred &pred) {
+        do {
+            ++map_pos_;
+        } while (map_pos_ != map_->cend() && map_pos_->first.intersects(range_) && !pred(map_pos_));
+        UpdateCurrent();
+        return *this;
+    }
+
     const KeyType range_;
-    const FilterMap *filter_;
-    typename FilterMap::const_iterator filter_pos_;
+    const RangeMap *map_;
+    typename RangeMap::const_iterator map_pos_;
     KeyType current_;
 };
 using SingleAccessRangeGenerator = SingleRangeGenerator<ResourceAccessRange>;
-using EventSimpleRangeGenerator = FilteredRangeGenerator<SyncEventState::ScopeMap>;
+using EventSimpleRangeGenerator = MapRangesRangeGenerator<SyncEventState::ScopeMap>;
 
-// Templated to allow for different Range generators or map sources...
+// Generate the ranges for entries meeting the predicate that are the intersection of range and the entries in the RangeMap
+template <typename RangeMap, typename Predicate, typename KeyType = typename RangeMap::key_type>
+class PredicatedMapRangesRangeGenerator : public MapRangesRangeGenerator<RangeMap, KeyType> {
+  public:
+    using Base = MapRangesRangeGenerator<RangeMap, KeyType>;
+    // Default constructed is safe to dereference for "empty" test, but for no other operation.
+    PredicatedMapRangesRangeGenerator() : Base(), pred_() {}
+    PredicatedMapRangesRangeGenerator(const RangeMap &filter, const KeyType &range, Predicate pred)
+        : Base(filter, range), pred_(pred) {}
+    PredicatedMapRangesRangeGenerator(const PredicatedMapRangesRangeGenerator &from) = default;
+
+    PredicatedMapRangesRangeGenerator &operator++() {
+        Base::PredicatedIncrement(pred_);
+        return *this;
+    }
+
+  protected:
+    Predicate pred_;
+};
 
 // Generate the ranges that are the intersection of the RangeGen ranges and the entries in the FilterMap
-template <typename FilterMap, typename RangeGen, typename KeyType = typename FilterMap::key_type>
+// Templated to allow for different Range generators or map sources...
+template <typename RangeMap, typename RangeGen, typename KeyType = typename RangeMap::key_type>
 class FilteredGeneratorGenerator {
   public:
     // Default constructed is safe to dereference for "empty" test, but for no other operation.
@@ -338,7 +439,7 @@ class FilteredGeneratorGenerator {
         // Default construction for KeyType *must* be empty range
         assert(current_.empty());
     }
-    FilteredGeneratorGenerator(const FilterMap &filter, RangeGen &gen) : filter_(&filter), gen_(gen), filter_pos_(), current_() {
+    FilteredGeneratorGenerator(const RangeMap &filter, RangeGen &gen) : filter_(&filter), gen_(gen), filter_pos_(), current_() {
         SeekBegin();
     }
     FilteredGeneratorGenerator(const FilteredGeneratorGenerator &from) = default;
@@ -423,15 +524,14 @@ class FilteredGeneratorGenerator {
         }
     }
 
-    const FilterMap *filter_;
+    const RangeMap *filter_;
     RangeGen gen_;
-    typename FilterMap::const_iterator filter_pos_;
+    typename RangeMap::const_iterator filter_pos_;
     KeyType current_;
 };
 
 using EventImageRangeGenerator = FilteredGeneratorGenerator<SyncEventState::ScopeMap, subresource_adapter::ImageRangeGenerator>;
 
-static const ResourceAccessRange kFullRange(std::numeric_limits<VkDeviceSize>::min(), std::numeric_limits<VkDeviceSize>::max());
 
 ResourceAccessRange GetBufferRange(VkDeviceSize offset, VkDeviceSize buf_whole_size, uint32_t first_index, uint32_t count,
                                    VkDeviceSize stride) {
@@ -605,7 +705,7 @@ class ValidateResolveAction {
 // Update action for resolve operations
 class UpdateStateResolveAction {
   public:
-    UpdateStateResolveAction(AccessContext &context, const ResourceUsageTag &tag) : context_(context), tag_(tag) {}
+    UpdateStateResolveAction(AccessContext &context, ResourceUsageTag tag) : context_(context), tag_(tag) {}
     void operator()(const char *, const char *, uint32_t, uint32_t, const AttachmentViewGen &view_gen,
                     AttachmentViewGen::Gen gen_type, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule) {
         // Ignores validation only arguments...
@@ -614,16 +714,20 @@ class UpdateStateResolveAction {
 
   private:
     AccessContext &context_;
-    const ResourceUsageTag &tag_;
+    const ResourceUsageTag tag_;
 };
 
 void HazardResult::Set(const ResourceAccessState *access_state_, SyncStageAccessIndex usage_index_, SyncHazard hazard_,
-                       const SyncStageAccessFlags &prior_, const ResourceUsageTag &tag_) {
-    access_state = std::unique_ptr<const ResourceAccessState>(new ResourceAccessState(*access_state_));
+                       const SyncStageAccessFlags &prior_, const ResourceUsageTag tag_) {
+    access_state = layer_data::make_unique<const ResourceAccessState>(*access_state_);
     usage_index = usage_index_;
     hazard = hazard_;
     prior_access = prior_;
     tag = tag_;
+}
+
+void HazardResult::AddRecordedAccess(const ResourceFirstAccess &first_access) {
+    recorded_access = layer_data::make_unique<const ResourceFirstAccess>(first_access);
 }
 
 AccessContext::AccessContext(uint32_t subpass, VkQueueFlags queue_flags,
@@ -1143,7 +1247,7 @@ class HazardDetector {
 
   public:
     HazardResult Detect(const ResourceAccessRangeMap::const_iterator &pos) const { return pos->second.DetectHazard(usage_index_); }
-    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, const ResourceUsageTag &start_tag) const {
+    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, ResourceUsageTag start_tag) const {
         return pos->second.DetectAsyncHazard(usage_index_, start_tag);
     }
     explicit HazardDetector(SyncStageAccessIndex usage) : usage_index_(usage) {}
@@ -1157,7 +1261,7 @@ class HazardDetectorWithOrdering {
     HazardResult Detect(const ResourceAccessRangeMap::const_iterator &pos) const {
         return pos->second.DetectHazard(usage_index_, ordering_rule_);
     }
-    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, const ResourceUsageTag &start_tag) const {
+    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, ResourceUsageTag start_tag) const {
         return pos->second.DetectAsyncHazard(usage_index_, start_tag);
     }
     HazardDetectorWithOrdering(SyncStageAccessIndex usage, SyncOrdering ordering) : usage_index_(usage), ordering_rule_(ordering) {}
@@ -1253,7 +1357,7 @@ class BarrierHazardDetector {
     HazardResult Detect(const ResourceAccessRangeMap::const_iterator &pos) const {
         return pos->second.DetectBarrierHazard(usage_index_, src_exec_scope_, src_access_scope_);
     }
-    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, const ResourceUsageTag &start_tag) const {
+    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, ResourceUsageTag start_tag) const {
         // Async barrier hazard detection can use the same path as the usage index is not IsRead, but is IsWrite
         return pos->second.DetectAsyncHazard(usage_index_, start_tag);
     }
@@ -1268,7 +1372,7 @@ class EventBarrierHazardDetector {
   public:
     EventBarrierHazardDetector(SyncStageAccessIndex usage_index, VkPipelineStageFlags2KHR src_exec_scope,
                                SyncStageAccessFlags src_access_scope, const SyncEventState::ScopeMap &event_scope,
-                               const ResourceUsageTag &scope_tag)
+                               ResourceUsageTag scope_tag)
         : usage_index_(usage_index),
           src_exec_scope_(src_exec_scope),
           src_access_scope_(src_access_scope),
@@ -1290,7 +1394,7 @@ class EventBarrierHazardDetector {
         // Some portion of this pos is in the event_scope, so check for a barrier hazard
         return pos->second.DetectBarrierHazard(usage_index_, src_exec_scope_, src_access_scope_, scope_tag_);
     }
-    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, const ResourceUsageTag &start_tag) const {
+    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, ResourceUsageTag start_tag) const {
         // Async barrier hazard detection can use the same path as the usage index is not IsRead, but is IsWrite
         return pos->second.DetectAsyncHazard(usage_index_, start_tag);
     }
@@ -1302,7 +1406,7 @@ class EventBarrierHazardDetector {
     const SyncEventState::ScopeMap &event_scope_;
     SyncEventState::ScopeMap::const_iterator scope_pos_;
     SyncEventState::ScopeMap::const_iterator scope_end_;
-    const ResourceUsageTag &scope_tag_;
+    const ResourceUsageTag scope_tag_;
 };
 
 HazardResult AccessContext::DetectImageBarrierHazard(const IMAGE_STATE &image, VkPipelineStageFlags2KHR src_exec_scope,
@@ -1453,13 +1557,13 @@ struct UpdateMemoryAccessStateFunctor {
     }
 
     UpdateMemoryAccessStateFunctor(AccessAddressType type_, const AccessContext &context_, SyncStageAccessIndex usage_,
-                                   SyncOrdering ordering_rule_, const ResourceUsageTag &tag_)
+                                   SyncOrdering ordering_rule_, ResourceUsageTag tag_)
         : type(type_), context(context_), usage(usage_), ordering_rule(ordering_rule_), tag(tag_) {}
     const AccessAddressType type;
     const AccessContext &context;
     const SyncStageAccessIndex usage;
     const SyncOrdering ordering_rule;
-    const ResourceUsageTag &tag;
+    const ResourceUsageTag tag;
 };
 
 // The barrier operation for pipeline and subpass dependencies`
@@ -1474,28 +1578,33 @@ struct PipelineBarrierOp {
 };
 // The barrier operation for wait events
 struct WaitEventBarrierOp {
-    const ResourceUsageTag *scope_tag;
+    ResourceUsageTag scope_tag;
     SyncBarrier barrier;
     bool layout_transition;
-    WaitEventBarrierOp(const ResourceUsageTag &scope_tag_, const SyncBarrier &barrier_, bool layout_transition_)
-        : scope_tag(&scope_tag_), barrier(barrier_), layout_transition(layout_transition_) {}
+    WaitEventBarrierOp(const ResourceUsageTag scope_tag_, const SyncBarrier &barrier_, bool layout_transition_)
+        : scope_tag(scope_tag_), barrier(barrier_), layout_transition(layout_transition_) {}
     WaitEventBarrierOp() = default;
-    void operator()(ResourceAccessState *access_state) const {
-        assert(scope_tag);  // Not valid to have a non-scope op executed, default construct included for std::vector support
-        access_state->ApplyBarrier(*scope_tag, barrier, layout_transition);
-    }
+    void operator()(ResourceAccessState *access_state) const { access_state->ApplyBarrier(scope_tag, barrier, layout_transition); }
 };
 
 // This functor applies a collection of barriers, updating the "pending state" in each touched memory range, and optionally
 // resolves the pending state. Suitable for processing Global memory barriers, or Subpass Barriers when the "final" barrier
 // of a collection is known/present.
-template <typename BarrierOp>
+template <typename BarrierOp, typename OpVector = std::vector<BarrierOp>>
 class ApplyBarrierOpsFunctor {
   public:
     using Iterator = ResourceAccessRangeMap::iterator;
-    inline Iterator Infill(ResourceAccessRangeMap *accesses, Iterator pos, ResourceAccessRange range) const { return pos; }
+    // Only called with a gap, and pos at the lower_bound(range)
+    inline Iterator Infill(ResourceAccessRangeMap *accesses, const Iterator &pos, const ResourceAccessRange &range) const {
+        if (!infill_default_) {
+            return pos;
+        }
+        ResourceAccessState default_state;
+        auto inserted = accesses->insert(pos, std::make_pair(range, default_state));
+        return inserted;
+    }
 
-    Iterator operator()(ResourceAccessRangeMap *accesses, Iterator pos) const {
+    Iterator operator()(ResourceAccessRangeMap *accesses, const Iterator &pos) const {
         auto &access_state = pos->second;
         for (const auto &op : barrier_ops_) {
             op(&access_state);
@@ -1510,64 +1619,48 @@ class ApplyBarrierOpsFunctor {
     }
 
     // A valid tag is required IFF layout_transition is true, as transitions are write ops
-    ApplyBarrierOpsFunctor(bool resolve, size_t size_hint, const ResourceUsageTag &tag)
-        : resolve_(resolve), barrier_ops_(), tag_(tag) {
+    ApplyBarrierOpsFunctor(bool resolve, typename OpVector::size_type size_hint, ResourceUsageTag tag)
+        : resolve_(resolve), infill_default_(false), barrier_ops_(), tag_(tag) {
         barrier_ops_.reserve(size_hint);
     }
-    void EmplaceBack(const BarrierOp &op) { barrier_ops_.emplace_back(op); }
+    void EmplaceBack(const BarrierOp &op) {
+        barrier_ops_.emplace_back(op);
+        infill_default_ |= op.layout_transition;
+    }
 
   private:
     bool resolve_;
-    std::vector<BarrierOp> barrier_ops_;
-    const ResourceUsageTag &tag_;
+    bool infill_default_;
+    OpVector barrier_ops_;
+    const ResourceUsageTag tag_;
 };
 
 // This functor applies a single barrier, updating the "pending state" in each touched memory range, but does not
 // resolve the pendinging state. Suitable for processing Image and Buffer barriers from PipelineBarriers or Events
 template <typename BarrierOp>
-class ApplyBarrierFunctor {
+class ApplyBarrierFunctor : public ApplyBarrierOpsFunctor<BarrierOp, small_vector<BarrierOp, 1>> {
+    using Base = ApplyBarrierOpsFunctor<BarrierOp, small_vector<BarrierOp, 1>>;
+
   public:
-    using Iterator = ResourceAccessRangeMap::iterator;
-    inline Iterator Infill(ResourceAccessRangeMap *accesses, Iterator pos, ResourceAccessRange range) const { return pos; }
-
-    Iterator operator()(ResourceAccessRangeMap *accesses, Iterator pos) const {
-        auto &access_state = pos->second;
-        barrier_op_(&access_state);
-        return pos;
-    }
-
-    ApplyBarrierFunctor(const BarrierOp &barrier_op) : barrier_op_(barrier_op) {}
-
-  private:
-    BarrierOp barrier_op_;
+    ApplyBarrierFunctor(const BarrierOp &barrier_op) : Base(false, 1, kCurrentCommandTag) { Base::EmplaceBack(barrier_op); }
 };
 
 // This functor resolves the pendinging state.
-class ResolvePendingBarrierFunctor {
+class ResolvePendingBarrierFunctor : public ApplyBarrierOpsFunctor<NoopBarrierAction, small_vector<NoopBarrierAction, 1>> {
+    using Base = ApplyBarrierOpsFunctor<NoopBarrierAction, small_vector<NoopBarrierAction, 1>>;
+
   public:
-    using Iterator = ResourceAccessRangeMap::iterator;
-    inline Iterator Infill(ResourceAccessRangeMap *accesses, Iterator pos, ResourceAccessRange range) const { return pos; }
-
-    Iterator operator()(ResourceAccessRangeMap *accesses, Iterator pos) const {
-        auto &access_state = pos->second;
-        access_state.ApplyPendingBarriers(tag_);
-        return pos;
-    }
-
-    ResolvePendingBarrierFunctor(const ResourceUsageTag &tag) : tag_(tag) {}
-
-  private:
-    const ResourceUsageTag &tag_;
+    ResolvePendingBarrierFunctor(ResourceUsageTag tag) : Base(true, 0, tag) {}
 };
 
 void AccessContext::UpdateAccessState(AccessAddressType type, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
-                                      const ResourceAccessRange &range, const ResourceUsageTag &tag) {
+                                      const ResourceAccessRange &range, const ResourceUsageTag tag) {
     UpdateMemoryAccessStateFunctor action(type, *this, current_usage, ordering_rule, tag);
     UpdateMemoryAccessState(&GetAccessStateMap(type), range, action);
 }
 
 void AccessContext::UpdateAccessState(const BUFFER_STATE &buffer, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
-                                      const ResourceAccessRange &range, const ResourceUsageTag &tag) {
+                                      const ResourceAccessRange &range, const ResourceUsageTag tag) {
     if (!SimpleBinding(buffer)) return;
     const auto base_address = ResourceBaseAddress(buffer);
     UpdateAccessState(AccessAddressType::kLinear, current_usage, ordering_rule, range + base_address, tag);
@@ -1584,7 +1677,7 @@ void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessI
 }
 void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
                                       const VkImageSubresourceRange &subresource_range, const VkOffset3D &offset,
-                                      const VkExtent3D &extent, const ResourceUsageTag &tag) {
+                                      const VkExtent3D &extent, const ResourceUsageTag tag) {
     if (!SimpleBinding(image)) return;
     const auto base_address = ResourceBaseAddress(image);
     subresource_adapter::ImageRangeGenerator range_gen(*image.fragment_encoder.get(), subresource_range, offset, extent,
@@ -1595,7 +1688,7 @@ void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessI
 }
 
 void AccessContext::UpdateAccessState(const AttachmentViewGen &view_gen, AttachmentViewGen::Gen gen_type,
-                                      SyncStageAccessIndex current_usage, SyncOrdering ordering_rule, const ResourceUsageTag &tag) {
+                                      SyncStageAccessIndex current_usage, SyncOrdering ordering_rule, const ResourceUsageTag tag) {
     const ImageRangeGen *gen = view_gen.GetRangeGen(gen_type);
     if (!gen) return;
     subresource_adapter::ImageRangeGenerator range_gen(*gen);
@@ -1606,7 +1699,7 @@ void AccessContext::UpdateAccessState(const AttachmentViewGen &view_gen, Attachm
 
 void AccessContext::UpdateAccessState(const IMAGE_STATE &image, SyncStageAccessIndex current_usage, SyncOrdering ordering_rule,
                                       const VkImageSubresourceLayers &subresource, const VkOffset3D &offset,
-                                      const VkExtent3D &extent, const ResourceUsageTag &tag) {
+                                      const VkExtent3D &extent, const ResourceUsageTag tag) {
     VkImageSubresourceRange subresource_range = {subresource.aspectMask, subresource.mipLevel, 1, subresource.baseArrayLayer,
                                                  subresource.layerCount};
     UpdateAccessState(image, current_usage, ordering_rule, subresource_range, offset, extent, tag);
@@ -1627,13 +1720,13 @@ void AccessContext::ApplyUpdateAction(const AttachmentViewGen &view_gen, Attachm
 
 void AccessContext::UpdateAttachmentResolveAccess(const RENDER_PASS_STATE &rp_state,
                                                   const AttachmentViewGenVector &attachment_views, uint32_t subpass,
-                                                  const ResourceUsageTag &tag) {
+                                                  const ResourceUsageTag tag) {
     UpdateStateResolveAction update(*this, tag);
     ResolveOperation(update, rp_state, attachment_views, subpass);
 }
 
 void AccessContext::UpdateAttachmentStoreAccess(const RENDER_PASS_STATE &rp_state, const AttachmentViewGenVector &attachment_views,
-                                                uint32_t subpass, const ResourceUsageTag &tag) {
+                                                uint32_t subpass, const ResourceUsageTag tag) {
     const auto *attachment_ci = rp_state.createInfo.pAttachments;
 
     for (uint32_t i = 0; i < rp_state.createInfo.attachmentCount; i++) {
@@ -1683,6 +1776,9 @@ void AccessContext::ResolveChildContexts(const std::vector<AccessContext> &conte
     }
 }
 
+// Caller must ensure that lifespan of this is less than from
+void AccessContext::ImportAsyncContexts(const AccessContext &from) { async_ = from.async_; }
+
 // Suitable only for *subpass* access contexts
 HazardResult AccessContext::DetectSubpassTransitionHazard(const TrackBack &track_back, const AttachmentViewGen &attach_view) const {
     if (!attach_view.IsValid()) return HazardResult();
@@ -1703,7 +1799,7 @@ HazardResult AccessContext::DetectSubpassTransitionHazard(const TrackBack &track
 }
 
 void AccessContext::RecordLayoutTransitions(const RENDER_PASS_STATE &rp_state, uint32_t subpass,
-                                            const AttachmentViewGenVector &attachment_views, const ResourceUsageTag &tag) {
+                                            const AttachmentViewGenVector &attachment_views, const ResourceUsageTag tag) {
     const auto &transitions = rp_state.subpass_transitions[subpass];
     const ResourceAccessState empty_infill;
     for (const auto &transition : transitions) {
@@ -1732,21 +1828,10 @@ void AccessContext::RecordLayoutTransitions(const RENDER_PASS_STATE &rp_state, u
 }
 
 void CommandBufferAccessContext::ApplyGlobalBarriersToEvents(const SyncExecScope &src, const SyncExecScope &dst) {
-    const bool all_commands_bit = 0 != (src.mask_param & VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
     auto *events_context = GetCurrentEventsContext();
     assert(events_context);
-    for (auto &event_pair : *events_context) {
-        assert(event_pair.second);  // Shouldn't be storing empty
-        auto &sync_event = *event_pair.second;
-        // Events don't happen at a stage, so we need to check and store the unexpanded ALL_COMMANDS if set for inter-event-calls
-        if ((sync_event.barriers & src.exec_scope) || all_commands_bit) {
-            sync_event.barriers |= dst.exec_scope;
-            sync_event.barriers |= dst.mask_param & VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-        }
-    }
+    events_context->ApplyBarrier(src, dst);
 }
-
 
 bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBindPoint pipelineBindPoint,
                                                                    const char *func_name) const {
@@ -1886,7 +1971,7 @@ bool CommandBufferAccessContext::ValidateDispatchDrawDescriptorSet(VkPipelineBin
 }
 
 void CommandBufferAccessContext::RecordDispatchDrawDescriptorSet(VkPipelineBindPoint pipelineBindPoint,
-                                                                 const ResourceUsageTag &tag) {
+                                                                 const ResourceUsageTag tag) {
     const PIPELINE_STATE *pipe = nullptr;
     const std::vector<LAST_BOUND_STATE::PER_SET> *per_sets = nullptr;
     cb_state_->GetCurrentPipelineAndDesriptorSets(pipelineBindPoint, &pipe, &per_sets);
@@ -2005,7 +2090,7 @@ bool CommandBufferAccessContext::ValidateDrawVertex(uint32_t vertexCount, uint32
     return skip;
 }
 
-void CommandBufferAccessContext::RecordDrawVertex(uint32_t vertexCount, uint32_t firstVertex, const ResourceUsageTag &tag) {
+void CommandBufferAccessContext::RecordDrawVertex(uint32_t vertexCount, uint32_t firstVertex, const ResourceUsageTag tag) {
     const auto *pipe = cb_state_->GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
     if (!pipe) {
         return;
@@ -2053,7 +2138,7 @@ bool CommandBufferAccessContext::ValidateDrawVertexIndex(uint32_t indexCount, ui
     return skip;
 }
 
-void CommandBufferAccessContext::RecordDrawVertexIndex(uint32_t indexCount, uint32_t firstIndex, const ResourceUsageTag &tag) {
+void CommandBufferAccessContext::RecordDrawVertexIndex(uint32_t indexCount, uint32_t firstIndex, const ResourceUsageTag tag) {
     if (cb_state_->index_buffer_binding.buffer_state == nullptr || cb_state_->index_buffer_binding.buffer_state->Destroyed()) return;
 
     auto *index_buf_state = cb_state_->index_buffer_binding.buffer_state.get();
@@ -2074,7 +2159,7 @@ bool CommandBufferAccessContext::ValidateDrawSubpassAttachment(const char *func_
     return skip;
 }
 
-void CommandBufferAccessContext::RecordDrawSubpassAttachment(const ResourceUsageTag &tag) {
+void CommandBufferAccessContext::RecordDrawSubpassAttachment(const ResourceUsageTag tag) {
     if (current_renderpass_context_) {
         current_renderpass_context_->RecordDrawSubpassAttachment(*cb_state_.get(), tag);
     }
@@ -2082,7 +2167,7 @@ void CommandBufferAccessContext::RecordDrawSubpassAttachment(const ResourceUsage
 
 void CommandBufferAccessContext::RecordBeginRenderPass(const RENDER_PASS_STATE &rp_state, const VkRect2D &render_area,
                                                        const std::vector<const IMAGE_VIEW_STATE *> &attachment_views,
-                                                       const ResourceUsageTag &tag) {
+                                                       const ResourceUsageTag tag) {
     // Create an access context the current renderpass.
     render_pass_contexts_.emplace_back(rp_state, render_area, GetQueueFlags(), attachment_views, &cb_access_context_);
     current_renderpass_context_ = &render_pass_contexts_.back();
@@ -2090,19 +2175,17 @@ void CommandBufferAccessContext::RecordBeginRenderPass(const RENDER_PASS_STATE &
     current_context_ = &current_renderpass_context_->CurrentContext();
 }
 
-void CommandBufferAccessContext::RecordNextSubpass(CMD_TYPE command) {
+void CommandBufferAccessContext::RecordNextSubpass(ResourceUsageTag prev_tag, ResourceUsageTag next_tag) {
     assert(current_renderpass_context_);
-    auto prev_tag = NextCommandTag(command);
-    auto next_tag = NextSubcommandTag(command);
     current_renderpass_context_->RecordNextSubpass(prev_tag, next_tag);
     current_context_ = &current_renderpass_context_->CurrentContext();
 }
 
-void CommandBufferAccessContext::RecordEndRenderPass(CMD_TYPE command) {
+void CommandBufferAccessContext::RecordEndRenderPass(const ResourceUsageTag tag) {
     assert(current_renderpass_context_);
     if (!current_renderpass_context_) return;
 
-    current_renderpass_context_->RecordEndRenderPass(&cb_access_context_, NextCommandTag(command));
+    current_renderpass_context_->RecordEndRenderPass(&cb_access_context_, tag);
     current_context_ = &cb_access_context_;
     current_renderpass_context_ = nullptr;
 }
@@ -2113,6 +2196,126 @@ void CommandBufferAccessContext::RecordDestroyEvent(VkEvent event) {
     if (event_state) {
         GetCurrentEventsContext()->Destroy(event_state);
     }
+}
+
+// The is the recorded cb context
+bool CommandBufferAccessContext::ValidateFirstUse(CommandBufferAccessContext *proxy_context, const char *func_name,
+                                                  uint32_t index) const {
+    assert(proxy_context);
+    auto *events_context = proxy_context->GetCurrentEventsContext();
+    auto *access_context = proxy_context->GetCurrentAccessContext();
+    const ResourceUsageTag base_tag = proxy_context->GetTagLimit();
+    bool skip = false;
+    ResourceUsageRange tag_range = {0, 0};
+    const AccessContext *recorded_context = GetCurrentAccessContext();
+    assert(recorded_context);
+    HazardResult hazard;
+    auto log_msg = [this](const HazardResult &hazard, const CommandBufferAccessContext &active_context, const char *func_name,
+                          uint32_t index) {
+        const auto cb_handle = active_context.cb_state_->commandBuffer();
+        const auto recorded_handle = cb_state_->commandBuffer();
+        const auto *report_data = sync_state_->report_data;
+        return sync_state_->LogError(cb_handle, string_SyncHazardVUID(hazard.hazard),
+                                     "%s: Hazard %s for entry %" PRIu32 ", %s, Recorded access info %s. Access info %s.", func_name,
+                                     string_SyncHazard(hazard.hazard), index, report_data->FormatHandle(recorded_handle).c_str(),
+                                     FormatUsage(*hazard.recorded_access).c_str(), active_context.FormatUsage(hazard).c_str());
+    };
+    for (const auto &sync_op : sync_ops_) {
+        // we update the range to any include layout transition first use writes,
+        // as they are stored along with the source scope (as effective barrier) when recorded
+        tag_range.end = sync_op.tag + 1;
+        skip |= sync_op.sync_op->ReplayValidate(sync_op.tag, *this, base_tag, proxy_context);
+
+        hazard = recorded_context->DetectFirstUseHazard(tag_range, *access_context);
+        if (hazard.hazard) {
+            skip |= log_msg(hazard, *proxy_context, func_name, index);
+        }
+        // NOTE: Add call to replay validate here when we add support for syncop with non-trivial replay
+        // Record the barrier into the proxy context.
+        sync_op.sync_op->DoRecord(base_tag + sync_op.tag, access_context, events_context);
+        tag_range.begin = tag_range.end;
+    }
+
+    // and anything after the last syncop
+    tag_range.end = ResourceUsageRecord::kMaxIndex;
+    hazard = recorded_context->DetectFirstUseHazard(tag_range, *access_context);
+    if (hazard.hazard) {
+        skip |= log_msg(hazard, *proxy_context, func_name, index);
+    }
+
+    return skip;
+}
+
+void CommandBufferAccessContext::RecordExecutedCommandBuffer(const CommandBufferAccessContext &recorded_cb_context, CMD_TYPE cmd) {
+    auto *events_context = GetCurrentEventsContext();
+    auto *access_context = GetCurrentAccessContext();
+    const AccessContext *recorded_context = recorded_cb_context.GetCurrentAccessContext();
+    assert(recorded_context);
+
+    // Just run through the barriers ignoring the usage from the recorded context, as Resolve will overwrite outdated state
+    const ResourceUsageTag base_tag = GetTagLimit();
+    for (const auto &sync_op : recorded_cb_context.sync_ops_) {
+        // we update the range to any include layout transition first use writes,
+        // as they are stored along with the source scope (as effective barrier) when recorded
+        sync_op.sync_op->DoRecord(base_tag + sync_op.tag, access_context, events_context);
+    }
+
+    ResourceUsageRange tag_range = ImportRecordedAccessLog(recorded_cb_context);
+    assert(base_tag == tag_range.begin);  // to ensure the to offset calculation agree
+    ResolveRecordedContext(*recorded_context, tag_range.begin);
+}
+
+void CommandBufferAccessContext::ResolveRecordedContext(const AccessContext &recorded_context, ResourceUsageTag offset) {
+    auto tag_offset = [offset](ResourceAccessState *access) { access->OffsetTag(offset); };
+
+    auto *access_context = GetCurrentAccessContext();
+    for (auto address_type : kAddressTypes) {
+        recorded_context.ResolveAccessRange(address_type, kFullRange, tag_offset, &access_context->GetAccessStateMap(address_type),
+                                            nullptr, false);
+    }
+}
+
+ResourceUsageRange CommandBufferAccessContext::ImportRecordedAccessLog(const CommandBufferAccessContext &recorded_context) {
+    // The execution references ensure lifespan for the referenced child CB's...
+    ResourceUsageRange tag_range(GetTagLimit(), 0);
+    cbs_referenced_.emplace(recorded_context.cb_state_);
+    access_log_.insert(access_log_.end(), recorded_context.access_log_.cbegin(), recorded_context.access_log_.end());
+    tag_range.end = access_log_.size();
+    return tag_range;
+}
+
+class HazardDetectFirstUse {
+  public:
+    HazardDetectFirstUse(const ResourceAccessState &recorded_use, const ResourceUsageRange &tag_range)
+        : recorded_use_(recorded_use), tag_range_(tag_range) {}
+    HazardResult Detect(const ResourceAccessRangeMap::const_iterator &pos) const {
+        return pos->second.DetectHazard(recorded_use_, tag_range_);
+    }
+    HazardResult DetectAsync(const ResourceAccessRangeMap::const_iterator &pos, ResourceUsageTag start_tag) const {
+        return pos->second.DetectAsyncHazard(recorded_use_, tag_range_, start_tag);
+    }
+
+  private:
+    const ResourceAccessState &recorded_use_;
+    const ResourceUsageRange &tag_range_;
+};
+
+// This is called with the *recorded* command buffers access context, with the *active* access context pass in, againsts which
+// hazards will be detected
+HazardResult AccessContext::DetectFirstUseHazard(const ResourceUsageRange &tag_range, const AccessContext &access_context) const {
+    HazardResult hazard;
+    for (const auto address_type : kAddressTypes) {
+        const auto &recorded_access_map = GetAccessStateMap(address_type);
+        for (const auto &recorded_access : recorded_access_map) {
+            // Cull any entries not in the current tag range
+            if (!recorded_access.second.FirstAccessInTagRange(tag_range)) continue;
+            HazardDetectFirstUse detector(recorded_access.second, tag_range);
+            hazard = access_context.DetectHazard(address_type, detector, recorded_access.first, DetectOptions::kDetectAll);
+            if (hazard.hazard) break;
+        }
+    }
+
+    return hazard;
 }
 
 bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecutionContext &ex_context, const CMD_BUFFER_STATE &cmd,
@@ -2214,7 +2417,7 @@ bool RenderPassAccessContext::ValidateDrawSubpassAttachment(const CommandExecuti
     return skip;
 }
 
-void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE &cmd, const ResourceUsageTag &tag) {
+void RenderPassAccessContext::RecordDrawSubpassAttachment(const CMD_BUFFER_STATE &cmd, const ResourceUsageTag tag) {
     const auto *pipe = cmd.GetCurrentPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS);
     if (!pipe) {
         return;
@@ -2359,12 +2562,12 @@ bool RenderPassAccessContext::ValidateFinalSubpassLayoutTransitions(const Comman
     return skip;
 }
 
-void RenderPassAccessContext::RecordLayoutTransitions(const ResourceUsageTag &tag) {
+void RenderPassAccessContext::RecordLayoutTransitions(const ResourceUsageTag tag) {
     // Add layout transitions...
     subpass_contexts_[current_subpass_].RecordLayoutTransitions(*rp_state_, current_subpass_, attachment_views_, tag);
 }
 
-void RenderPassAccessContext::RecordLoadOperations(const ResourceUsageTag &tag) {
+void RenderPassAccessContext::RecordLoadOperations(const ResourceUsageTag tag) {
     const auto *attachment_ci = rp_state_->createInfo.pAttachments;
     auto &subpass_context = subpass_contexts_[current_subpass_];
 
@@ -2426,15 +2629,14 @@ RenderPassAccessContext::RenderPassAccessContext(const RENDER_PASS_STATE &rp_sta
     }
     attachment_views_ = CreateAttachmentViewGen(render_area, attachment_views);
 }
-void RenderPassAccessContext::RecordBeginRenderPass(const ResourceUsageTag &tag) {
+void RenderPassAccessContext::RecordBeginRenderPass(const ResourceUsageTag tag) {
     assert(0 == current_subpass_);
     subpass_contexts_[current_subpass_].SetStartTag(tag);
     RecordLayoutTransitions(tag);
     RecordLoadOperations(tag);
 }
 
-void RenderPassAccessContext::RecordNextSubpass(const ResourceUsageTag &prev_subpass_tag,
-                                                const ResourceUsageTag &next_subpass_tag) {
+void RenderPassAccessContext::RecordNextSubpass(const ResourceUsageTag prev_subpass_tag, const ResourceUsageTag next_subpass_tag) {
     // Resolves are against *prior* subpass context and thus *before* the subpass increment
     CurrentContext().UpdateAttachmentResolveAccess(*rp_state_, attachment_views_, current_subpass_, prev_subpass_tag);
     CurrentContext().UpdateAttachmentStoreAccess(*rp_state_, attachment_views_, current_subpass_, prev_subpass_tag);
@@ -2448,7 +2650,7 @@ void RenderPassAccessContext::RecordNextSubpass(const ResourceUsageTag &prev_sub
     RecordLoadOperations(next_subpass_tag);
 }
 
-void RenderPassAccessContext::RecordEndRenderPass(AccessContext *external_context, const ResourceUsageTag &tag) {
+void RenderPassAccessContext::RecordEndRenderPass(AccessContext *external_context, const ResourceUsageTag tag) {
     // Add the resolve and store accesses
     CurrentContext().UpdateAttachmentResolveAccess(*rp_state_, attachment_views_, current_subpass_, tag);
     CurrentContext().UpdateAttachmentStoreAccess(*rp_state_, attachment_views_, current_subpass_, tag);
@@ -2550,7 +2752,7 @@ void ResourceAccessState::ApplyBarriers(const std::vector<SyncBarrier> &barriers
 // ApplyBarriers is design for *fully* inclusive barrier lists without layout tranistions.  Designed use was for
 // inter-subpass barriers for lazy-evaluation of parent context memory ranges.  Subpass layout transistions are *not* done
 // lazily, s.t. no previous access reports should need layout transitions.
-void ResourceAccessState::ApplyBarriers(const std::vector<SyncBarrier> &barriers, const ResourceUsageTag &tag) {
+void ResourceAccessState::ApplyBarriers(const std::vector<SyncBarrier> &barriers, const ResourceUsageTag tag) {
     assert(!pending_layout_transition);  // This should never be call in the middle of another barrier application
     assert(pending_write_barriers.none());
     assert(!pending_write_dep_chain);
@@ -2592,8 +2794,12 @@ HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index)
     return hazard;
 }
 
-HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index, const SyncOrdering &ordering_rule) const {
+HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index, const SyncOrdering ordering_rule) const {
     const auto &ordering = GetOrderingRules(ordering_rule);
+    return DetectHazard(usage_index, ordering);
+}
+
+HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index, const OrderingBarrier &ordering) const {
     // The ordering guarantees act as barriers to the last accesses, independent of synchronization operations
     HazardResult hazard;
     const auto usage_bit = FlagBit(usage_index);
@@ -2619,6 +2825,9 @@ HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index,
         if (is_raw_hazard) {
             hazard.Set(this, usage_index, READ_AFTER_WRITE, last_write, write_tag);
         }
+    } else if (usage_index == SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION) {
+        // For Image layout transitions, the barrier represents the first synchronization/access scope of the layout transition
+        return DetectBarrierHazard(usage_index, ordering.exec_scope, ordering.access_scope);
     } else {
         // Only check for WAW if there are no reads since last_write
         bool usage_write_is_ordered = (usage_bit & ordering.access_scope).any();
@@ -2639,8 +2848,14 @@ HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index,
                     }
                 }
             }
-        } else if (!(last_write_is_ordered && usage_write_is_ordered)) {
-            if (last_write.any() && IsWriteHazard(usage_bit)) {
+        } else if (last_write.any() && !(last_write_is_ordered && usage_write_is_ordered)) {
+            bool ilt_ilt_hazard = false;
+            if ((usage_index == SYNC_IMAGE_LAYOUT_TRANSITION) && (usage_bit == last_write)) {
+                // ILT after ILT is a special case where we check the 2nd access scope of the first ILT against the first access
+                // scope of the second ILT, which has been passed (smuggled?) in the ordering barrier
+                ilt_ilt_hazard = !(write_barriers & ordering.access_scope).any();
+            }
+            if (ilt_ilt_hazard || IsWriteHazard(usage_bit)) {
                 hazard.Set(this, usage_index, WRITE_AFTER_WRITE, last_write, write_tag);
             }
         }
@@ -2648,28 +2863,100 @@ HazardResult ResourceAccessState::DetectHazard(SyncStageAccessIndex usage_index,
     return hazard;
 }
 
+HazardResult ResourceAccessState::DetectHazard(const ResourceAccessState &recorded_use, const ResourceUsageRange &tag_range) const {
+    HazardResult hazard;
+    using Size = FirstAccesses::size_type;
+    const auto &recorded_accesses = recorded_use.first_accesses_;
+    Size count = recorded_accesses.size();
+    if (count) {
+        const auto &last_access = recorded_accesses.back();
+        bool do_write_last = IsWrite(last_access.usage_index);
+        if (do_write_last) --count;
+
+        for (Size i = 0; i < count; ++count) {
+            const auto &first = recorded_accesses[i];
+            // Skip and quit logic
+            if (first.tag < tag_range.begin) continue;
+            if (first.tag >= tag_range.end) {
+                do_write_last = false;  // ignore last since we know it can't be in tag_range
+                break;
+            }
+
+            hazard = DetectHazard(first.usage_index, first.ordering_rule);
+            if (hazard.hazard) {
+                hazard.AddRecordedAccess(first);
+                break;
+            }
+        }
+
+        if (do_write_last && tag_range.includes(last_access.tag)) {
+            // Writes are a bit special... both for the "most recent" access logic, and layout transition specific logic
+            OrderingBarrier barrier = GetOrderingRules(last_access.ordering_rule);
+            if (last_access.usage_index == SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION) {
+                // Or in the layout first access scope as a barrier... IFF the usage is an ILT
+                // this was saved off in the "apply barriers" logic to simplify ILT access checks as they straddle
+                // the barrier that applies them
+                barrier |= recorded_use.first_write_layout_ordering_;
+            }
+            // Any read stages present in the recorded context (this) are most recent to the write, and thus mask those stages in
+            // the active context
+            if (recorded_use.first_read_stages_) {
+                // we need to ignore the first use read stage in the active context (so we add them to the ordering rule),
+                // reads in the active context are not "most recent" as all recorded context operations are *after* them
+                // This supresses only RAW checks for stages present in the recorded context, but not those only present in the
+                // active context.
+                barrier.exec_scope |= recorded_use.first_read_stages_;
+                // if there are any first use reads, we suppress WAW by injecting the active context write in the ordering rule
+                barrier.access_scope |= FlagBit(last_access.usage_index);
+            }
+            hazard = DetectHazard(last_access.usage_index, barrier);
+            if (hazard.hazard) {
+                hazard.AddRecordedAccess(last_access);
+            }
+        }
+    }
+    return hazard;
+}
+
 // Asynchronous Hazards occur between subpasses with no connection through the DAG
-HazardResult ResourceAccessState::DetectAsyncHazard(SyncStageAccessIndex usage_index, const ResourceUsageTag &start_tag) const {
+HazardResult ResourceAccessState::DetectAsyncHazard(SyncStageAccessIndex usage_index, const ResourceUsageTag start_tag) const {
     HazardResult hazard;
     auto usage = FlagBit(usage_index);
     // Async checks need to not go back further than the start of the subpass, as we only want to find hazards between the async
     // subpasses.  Anything older than that should have been checked at the start of each subpass, taking into account all of
     // the raster ordering rules.
     if (IsRead(usage)) {
-        if (last_write.any() && (write_tag.index >= start_tag.index)) {
+        if (last_write.any() && (write_tag >= start_tag)) {
             hazard.Set(this, usage_index, READ_RACING_WRITE, last_write, write_tag);
         }
     } else {
-        if (last_write.any() && (write_tag.index >= start_tag.index)) {
+        if (last_write.any() && (write_tag >= start_tag)) {
             hazard.Set(this, usage_index, WRITE_RACING_WRITE, last_write, write_tag);
         } else if (last_reads.size() > 0) {
             // Any reads during the other subpass will conflict with this write, so we need to check them all.
             for (const auto &read_access : last_reads) {
-                if (read_access.tag.index >= start_tag.index) {
+                if (read_access.tag >= start_tag) {
                     hazard.Set(this, usage_index, WRITE_RACING_READ, read_access.access, read_access.tag);
                     break;
                 }
             }
+        }
+    }
+    return hazard;
+}
+
+HazardResult ResourceAccessState::DetectAsyncHazard(const ResourceAccessState &recorded_use, const ResourceUsageRange &tag_range,
+                                                    ResourceUsageTag start_tag) const {
+    HazardResult hazard;
+    for (const auto &first : recorded_use.first_accesses_) {
+        // Skip and quit logic
+        if (first.tag < tag_range.begin) continue;
+        if (first.tag >= tag_range.end) break;
+
+        hazard = DetectAsyncHazard(first.usage_index, start_tag);
+        if (hazard.hazard) {
+            hazard.AddRecordedAccess(first);
+            break;
         }
     }
     return hazard;
@@ -2699,7 +2986,7 @@ HazardResult ResourceAccessState::DetectBarrierHazard(SyncStageAccessIndex usage
 
 HazardResult ResourceAccessState::DetectBarrierHazard(SyncStageAccessIndex usage_index, VkPipelineStageFlags2KHR src_exec_scope,
                                                       const SyncStageAccessFlags &src_access_scope,
-                                                      const ResourceUsageTag &event_tag) const {
+                                                      const ResourceUsageTag event_tag) const {
     // Only supporting image layout transitions for now
     assert(usage_index == SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION);
     HazardResult hazard;
@@ -2710,7 +2997,7 @@ HazardResult ResourceAccessState::DetectBarrierHazard(SyncStageAccessIndex usage
         // Look at the reads if any... if reads exist, they are either the resaon the access is in the event
         // first scope, or they are a hazard.
         for (const auto &read_access : last_reads) {
-            if (read_access.tag.IsBefore(event_tag)) {
+            if (read_access.tag < event_tag) {
                 // The read is in the events first synchronization scope, so we use a barrier hazard check
                 // If the read stage is not in the src sync scope
                 // *AND* not execution chained with an existing sync barrier (that's the or)
@@ -2726,7 +3013,7 @@ HazardResult ResourceAccessState::DetectBarrierHazard(SyncStageAccessIndex usage
         }
     } else if (last_write.any()) {
         // if there are no reads, the write is either the reason the access is in the event scope... they are a hazard
-        if (write_tag.IsBefore(event_tag)) {
+        if (write_tag < event_tag) {
             // The write is in the first sync scope of the event (sync their aren't any reads to be the reason)
             // So do a normal barrier hazard check
             if (IsWriteBarrierHazard(src_exec_scope, src_access_scope)) {
@@ -2745,17 +3032,18 @@ HazardResult ResourceAccessState::DetectBarrierHazard(SyncStageAccessIndex usage
 // tranistive hazard can exists with a hazard between the earlier operations.  Yes, an early hazard can mask that another
 // exists, but if you fix *that* hazard it either fixes or unmasks the subsequent ones.
 void ResourceAccessState::Resolve(const ResourceAccessState &other) {
-    if (write_tag.IsBefore(other.write_tag)) {
+    if (write_tag < other.write_tag) {
         // If this is a later write, we've reported any exsiting hazard, and we can just overwrite as the more recent
         // operation
         *this = other;
-    } else if (!other.write_tag.IsBefore(write_tag)) {
-        // This is the *equals* case for write operations, we merged the write barriers and the read state (but without the
+    } else if (other.write_tag == write_tag) {
+        // In the *equals* case for write operations, we merged the write barriers and the read state (but without the
         // dependency chaining logic or any stage expansion)
         write_barriers |= other.write_barriers;
         pending_write_barriers |= other.pending_write_barriers;
         pending_layout_transition |= other.pending_layout_transition;
         pending_write_dep_chain |= other.pending_write_dep_chain;
+        pending_layout_ordering_ |= other.pending_layout_ordering_;
 
         // Merge the read states
         const auto pre_merge_count = last_reads.size();
@@ -2769,7 +3057,7 @@ void ResourceAccessState::Resolve(const ResourceAccessState &other) {
                 for (uint32_t my_read_index = 0; my_read_index < pre_merge_count; my_read_index++) {
                     auto &my_read = last_reads[my_read_index];
                     if (other_read.stage == my_read.stage) {
-                        if (my_read.tag.IsBefore(other_read.tag)) {
+                        if (my_read.tag < other_read.tag) {
                             // Other is more recent, copy in the state
                             my_read.access = other_read.access;
                             my_read.tag = other_read.tag;
@@ -2782,7 +3070,7 @@ void ResourceAccessState::Resolve(const ResourceAccessState &other) {
                                 // as this is the only stage that affects it.
                                 input_attachment_read = other.input_attachment_read;
                             }
-                        } else if (other_read.tag.IsBefore(my_read.tag)) {
+                        } else if (other_read.tag == my_read.tag) {
                             // The read tags match so merge the barriers
                             my_read.barriers |= other_read.barriers;
                             my_read.pending_dep_chain |= other_read.pending_dep_chain;
@@ -2815,8 +3103,8 @@ void ResourceAccessState::Resolve(const ResourceAccessState &other) {
         auto a = firsts.begin();
         auto a_end = firsts.end();
         for (auto &b : other.first_accesses_) {
-            // TODO: Determine whether "IsBefore" or "IsGloballyBefore" is needed...
-            while (a != a_end && a->tag.IsBefore(b.tag)) {
+            // TODO: Determine whether some tag offset will be needed for PHASE II
+            while ((a != a_end) && (a->tag < b.tag)) {
                 UpdateFirst(a->tag, a->usage_index, a->ordering_rule);
                 ++a;
             }
@@ -2828,7 +3116,7 @@ void ResourceAccessState::Resolve(const ResourceAccessState &other) {
     }
 }
 
-void ResourceAccessState::Update(SyncStageAccessIndex usage_index, SyncOrdering ordering_rule, const ResourceUsageTag &tag) {
+void ResourceAccessState::Update(SyncStageAccessIndex usage_index, SyncOrdering ordering_rule, const ResourceUsageTag tag) {
     // Move this logic in the ResourceStateTracker as methods, thereof (or we'll repeat it for every flavor of resource...
     const auto usage_bit = FlagBit(usage_index);
     if (IsRead(usage_index)) {
@@ -2865,7 +3153,7 @@ void ResourceAccessState::Update(SyncStageAccessIndex usage_index, SyncOrdering 
 // We can overwrite them as *this* write is now after them.
 //
 // Note: intentionally ignore pending barriers and chains (i.e. don't apply or clear them), let ApplyPendingBarriers handle them.
-void ResourceAccessState::SetWrite(const SyncStageAccessFlags &usage_bit, const ResourceUsageTag &tag) {
+void ResourceAccessState::SetWrite(const SyncStageAccessFlags &usage_bit, const ResourceUsageTag tag) {
     last_reads.clear();
     last_read_stages = 0;
     read_execution_barriers = 0;
@@ -2891,6 +3179,9 @@ void ResourceAccessState::ApplyBarrier(const SyncBarrier &barrier, bool layout_t
     if (layout_transition || WriteInSourceScopeOrChain(barrier.src_exec_scope.exec_scope, barrier.src_access_scope)) {
         pending_write_barriers |= barrier.dst_access_scope;
         pending_write_dep_chain |= barrier.dst_exec_scope.exec_scope;
+        if (layout_transition) {
+            pending_layout_ordering_ |= OrderingBarrier(barrier.src_exec_scope.exec_scope, barrier.src_access_scope);
+        }
     }
     // Track layout transistion as pending as we can't modify last_write until all barriers processed
     pending_layout_transition |= layout_transition;
@@ -2909,16 +3200,19 @@ void ResourceAccessState::ApplyBarrier(const SyncBarrier &barrier, bool layout_t
 
 // Apply the tag scoped memory barrier without updating the existing barriers.  The execution barrier
 // changes the "chaining" state, but to keep barriers independent. See discussion above.
-void ResourceAccessState::ApplyBarrier(const ResourceUsageTag &scope_tag, const SyncBarrier &barrier, bool layout_transition) {
+void ResourceAccessState::ApplyBarrier(const ResourceUsageTag scope_tag, const SyncBarrier &barrier, bool layout_transition) {
     // The scope logic for events is, if we're here, the resource usage was flagged as "in the first execution scope" at
     // the time of the SetEvent, thus all we need check is whether the access is the same one (i.e. before the scope tag
     // in order to know if it's in the excecution scope
     // Notice that the layout transition sets the pending barriers *regardless*, as any lack of src_access_scope to
     // guard against the layout transition should be reported in the detect barrier hazard phase, and we only report
     // errors w.r.t. "most recent" accesses.
-    if (layout_transition || ((write_tag.IsBefore(scope_tag)) && (barrier.src_access_scope & last_write).any())) {
+    if (layout_transition || ((write_tag < scope_tag) && (barrier.src_access_scope & last_write).any())) {
         pending_write_barriers |= barrier.dst_access_scope;
         pending_write_dep_chain |= barrier.dst_exec_scope.exec_scope;
+        if (layout_transition) {
+            pending_layout_ordering_ |= OrderingBarrier(barrier.src_exec_scope.exec_scope, barrier.src_access_scope);
+        }
     }
     // Track layout transistion as pending as we can't modify last_write until all barriers processed
     pending_layout_transition |= layout_transition;
@@ -2934,23 +3228,24 @@ void ResourceAccessState::ApplyBarrier(const ResourceUsageTag &scope_tag, const 
             // positive in the case of Set; SomeBarrier; Wait; we'll live with it until we can add more state to the first scope
             // capture (the specific write and read stages that *were* in scope at the moment of SetEvents.
             // TODO: eliminate the false positive by including write/read-stages "in scope" information in SetEvents first_scope
-            if (read_access.tag.IsBefore(scope_tag) &&
-                (barrier.src_exec_scope.exec_scope & (read_access.stage | read_access.barriers))) {
+            if ((read_access.tag < scope_tag) && (barrier.src_exec_scope.exec_scope & (read_access.stage | read_access.barriers))) {
                 read_access.pending_dep_chain |= barrier.dst_exec_scope.exec_scope;
             }
         }
     }
 }
-void ResourceAccessState::ApplyPendingBarriers(const ResourceUsageTag &tag) {
+void ResourceAccessState::ApplyPendingBarriers(const ResourceUsageTag tag) {
     if (pending_layout_transition) {
-        // SetWrite clobbers the read count, and thus we don't have to clear the read_state out.
+        // SetWrite clobbers the last_reads array, and thus we don't have to clear the read_state out.
         SetWrite(SYNC_IMAGE_LAYOUT_TRANSITION_BIT, tag);  // Side effect notes below
         UpdateFirst(tag, SYNC_IMAGE_LAYOUT_TRANSITION, SyncOrdering::kNonAttachment);
+        TouchupFirstForLayoutTransition(tag, pending_layout_ordering_);
+        pending_layout_ordering_ = OrderingBarrier();
         pending_layout_transition = false;
     }
 
     // Apply the accumulate execution barriers (and thus update chaining information)
-    // for layout transition, read count is zeroed by SetWrite, so this will be skipped.
+    // for layout transition, last_reads is reset by SetWrite, so this will be skipped.
     for (auto &read_access : last_reads) {
         read_access.barriers |= read_access.pending_dep_chain;
         read_execution_barriers |= read_access.barriers;
@@ -2962,6 +3257,12 @@ void ResourceAccessState::ApplyPendingBarriers(const ResourceUsageTag &tag) {
     write_barriers |= pending_write_barriers;
     pending_write_dep_chain = 0;
     pending_write_barriers = 0;
+}
+
+bool ResourceAccessState::FirstAccessInTagRange(const ResourceUsageRange &tag_range) const {
+    if (!first_accesses_.size()) return false;
+    const ResourceUsageRange first_access_range = {first_accesses_.front().tag, first_accesses_.back().tag + 1};
+    return tag_range.intersects(first_access_range);
 }
 
 // This should be just Bits or Index, but we don't have an invalid state for Index
@@ -3001,15 +3302,29 @@ VkPipelineStageFlags2KHR ResourceAccessState::GetOrderedStages(const OrderingBar
     return ordered_stages;
 }
 
-void ResourceAccessState::UpdateFirst(const ResourceUsageTag &tag, SyncStageAccessIndex usage_index, SyncOrdering ordering_rule) {
+void ResourceAccessState::UpdateFirst(const ResourceUsageTag tag, SyncStageAccessIndex usage_index, SyncOrdering ordering_rule) {
     // Only record until we record a write.
     if (first_accesses_.empty() || IsRead(first_accesses_.back().usage_index)) {
         const VkPipelineStageFlags2KHR usage_stage = IsRead(usage_index) ? PipelineStageBit(usage_index) : 0U;
         if (0 == (usage_stage & first_read_stages_)) {
             // If this is a read we haven't seen or a write, record.
+            // We always need to know what stages were found prior to write
             first_read_stages_ |= usage_stage;
-            first_accesses_.emplace_back(tag, usage_index, ordering_rule);
+            if (0 == (read_execution_barriers & usage_stage)) {
+                // If this stage isn't masked then we add it (since writes map to usage_stage 0, this also records writes)
+                first_accesses_.emplace_back(tag, usage_index, ordering_rule);
+            }
         }
+    }
+}
+
+void ResourceAccessState::TouchupFirstForLayoutTransition(ResourceUsageTag tag, const OrderingBarrier &layout_ordering) {
+    // Only call this after recording an image layout transition
+    assert(first_accesses_.size());
+    if (first_accesses_.back().tag == tag) {
+        // If this layout transition is the the first write, add the additional ordering rules that guard the ILT
+        assert(first_accesses_.back().usage_index == SyncStageAccessIndex::SYNC_IMAGE_LAYOUT_TRANSITION);
+        first_write_layout_ordering_ = layout_ordering;
     }
 }
 
@@ -3024,6 +3339,7 @@ void SyncValidator::FreeCommandBufferCallback(VkCommandBuffer command_buffer) {
     auto access_found = cb_access_state.find(command_buffer);
     if (access_found != cb_access_state.end()) {
         access_found->second->Reset();
+        access_found->second->MarkDestroyed();
         cb_access_state.erase(access_found);
     }
 }
@@ -3331,11 +3647,10 @@ void SyncValidator::PreCallRecordCmdPipelineBarrier(VkCommandBuffer commandBuffe
     assert(cb_access_context);
     if (!cb_access_context) return;
 
-    SyncOpPipelineBarrier pipeline_barrier(CMD_PIPELINEBARRIER, *this, cb_access_context->GetQueueFlags(), srcStageMask,
-                                           dstStageMask, dependencyFlags, memoryBarrierCount, pMemoryBarriers,
-                                           bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount,
-                                           pImageMemoryBarriers);
-    pipeline_barrier.Record(cb_access_context);
+    cb_access_context->RecordSyncOp<SyncOpPipelineBarrier>(CMD_PIPELINEBARRIER, *this, cb_access_context->GetQueueFlags(),
+                                                           srcStageMask, dstStageMask, dependencyFlags, memoryBarrierCount,
+                                                           pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers,
+                                                           imageMemoryBarrierCount, pImageMemoryBarriers);
 }
 
 bool SyncValidator::PreCallValidateCmdPipelineBarrier2KHR(VkCommandBuffer commandBuffer,
@@ -3355,8 +3670,8 @@ void SyncValidator::PreCallRecordCmdPipelineBarrier2KHR(VkCommandBuffer commandB
     assert(cb_access_context);
     if (!cb_access_context) return;
 
-    SyncOpPipelineBarrier pipeline_barrier(CMD_PIPELINEBARRIER2KHR, *this, cb_access_context->GetQueueFlags(), *pDependencyInfo);
-    pipeline_barrier.Record(cb_access_context);
+    cb_access_context->RecordSyncOp<SyncOpPipelineBarrier>(CMD_PIPELINEBARRIER2KHR, *this, cb_access_context->GetQueueFlags(),
+                                                           *pDependencyInfo);
 }
 
 void SyncValidator::PostCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDeviceCreateInfo *pCreateInfo,
@@ -3380,11 +3695,11 @@ void SyncValidator::PostCallRecordCreateDevice(VkPhysicalDevice gpu, const VkDev
 }
 
 bool SyncValidator::ValidateBeginRenderPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo *pRenderPassBegin,
-                                            const VkSubpassBeginInfo *pSubpassBeginInfo, CMD_TYPE cmd, const char *cmd_name) const {
+                                            const VkSubpassBeginInfo *pSubpassBeginInfo, CMD_TYPE cmd) const {
     bool skip = false;
     auto cb_context = GetAccessContext(commandBuffer);
     if (cb_context) {
-        SyncOpBeginRenderPass sync_op(cmd, *this, pRenderPassBegin, pSubpassBeginInfo, cmd_name);
+        SyncOpBeginRenderPass sync_op(cmd, *this, pRenderPassBegin, pSubpassBeginInfo);
         skip = sync_op.Validate(*cb_context);
     }
     return skip;
@@ -3406,13 +3721,11 @@ bool SyncValidator::PreCallValidateCmdBeginRenderPass2(VkCommandBuffer commandBu
     return skip;
 }
 
-static const char *kBeginRenderPass2KhrName = "vkCmdBeginRenderPass2KHR";
 bool SyncValidator::PreCallValidateCmdBeginRenderPass2KHR(VkCommandBuffer commandBuffer,
                                                           const VkRenderPassBeginInfo *pRenderPassBegin,
                                                           const VkSubpassBeginInfo *pSubpassBeginInfo) const {
     bool skip = StateTracker::PreCallValidateCmdBeginRenderPass2KHR(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
-    skip |=
-        ValidateBeginRenderPass(commandBuffer, pRenderPassBegin, pSubpassBeginInfo, CMD_BEGINRENDERPASS2, kBeginRenderPass2KhrName);
+    skip |= ValidateBeginRenderPass(commandBuffer, pRenderPassBegin, pSubpassBeginInfo, CMD_BEGINRENDERPASS2KHR);
     return skip;
 }
 
@@ -3428,10 +3741,10 @@ void SyncValidator::PostCallRecordBeginCommandBuffer(VkCommandBuffer commandBuff
 }
 
 void SyncValidator::RecordCmdBeginRenderPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo *pRenderPassBegin,
-                                             const VkSubpassBeginInfo *pSubpassBeginInfo, CMD_TYPE cmd, const char *cmd_name) {
+                                             const VkSubpassBeginInfo *pSubpassBeginInfo, CMD_TYPE cmd) {
     auto cb_context = GetAccessContext(commandBuffer);
     if (cb_context) {
-        SyncOpBeginRenderPass sync_op(cmd, *this, pRenderPassBegin, pSubpassBeginInfo, cmd_name);
+        SyncOpBeginRenderPass sync_op(cmd, *this, pRenderPassBegin, pSubpassBeginInfo);
         sync_op.Record(cb_context);
     }
 }
@@ -3454,17 +3767,17 @@ void SyncValidator::PostCallRecordCmdBeginRenderPass2KHR(VkCommandBuffer command
                                                          const VkRenderPassBeginInfo *pRenderPassBegin,
                                                          const VkSubpassBeginInfo *pSubpassBeginInfo) {
     StateTracker::PostCallRecordCmdBeginRenderPass2KHR(commandBuffer, pRenderPassBegin, pSubpassBeginInfo);
-    RecordCmdBeginRenderPass(commandBuffer, pRenderPassBegin, pSubpassBeginInfo, CMD_BEGINRENDERPASS2, kBeginRenderPass2KhrName);
+    RecordCmdBeginRenderPass(commandBuffer, pRenderPassBegin, pSubpassBeginInfo, CMD_BEGINRENDERPASS2KHR);
 }
 
 bool SyncValidator::ValidateCmdNextSubpass(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo *pSubpassBeginInfo,
-                                           const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd, const char *cmd_name) const {
+                                           const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd) const {
     bool skip = false;
 
     auto cb_context = GetAccessContext(commandBuffer);
     assert(cb_context);
     if (!cb_context) return skip;
-    SyncOpNextSubpass sync_op(cmd, *this, pSubpassBeginInfo, pSubpassEndInfo, cmd_name);
+    SyncOpNextSubpass sync_op(cmd, *this, pSubpassBeginInfo, pSubpassEndInfo);
     return sync_op.Validate(*cb_context);
 }
 
@@ -3478,11 +3791,10 @@ bool SyncValidator::PreCallValidateCmdNextSubpass(VkCommandBuffer commandBuffer,
     return skip;
 }
 
-static const char *kNextSubpass2KhrName = "vkCmdNextSubpass2KHR";
 bool SyncValidator::PreCallValidateCmdNextSubpass2KHR(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo *pSubpassBeginInfo,
                                                       const VkSubpassEndInfo *pSubpassEndInfo) const {
     bool skip = StateTracker::PreCallValidateCmdNextSubpass2KHR(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
-    skip |= ValidateCmdNextSubpass(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo, CMD_NEXTSUBPASS2, kNextSubpass2KhrName);
+    skip |= ValidateCmdNextSubpass(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo, CMD_NEXTSUBPASS2KHR);
     return skip;
 }
 
@@ -3494,12 +3806,12 @@ bool SyncValidator::PreCallValidateCmdNextSubpass2(VkCommandBuffer commandBuffer
 }
 
 void SyncValidator::RecordCmdNextSubpass(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo *pSubpassBeginInfo,
-                                         const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd, const char *cmd_name) {
+                                         const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd) {
     auto cb_context = GetAccessContext(commandBuffer);
     assert(cb_context);
     if (!cb_context) return;
 
-    SyncOpNextSubpass sync_op(cmd, *this, pSubpassBeginInfo, pSubpassEndInfo, cmd_name);
+    SyncOpNextSubpass sync_op(cmd, *this, pSubpassBeginInfo, pSubpassEndInfo);
     sync_op.Record(cb_context);
 }
 
@@ -3519,18 +3831,18 @@ void SyncValidator::PostCallRecordCmdNextSubpass2(VkCommandBuffer commandBuffer,
 void SyncValidator::PostCallRecordCmdNextSubpass2KHR(VkCommandBuffer commandBuffer, const VkSubpassBeginInfo *pSubpassBeginInfo,
                                                      const VkSubpassEndInfo *pSubpassEndInfo) {
     StateTracker::PostCallRecordCmdNextSubpass2KHR(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo);
-    RecordCmdNextSubpass(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo, CMD_NEXTSUBPASS2, kNextSubpass2KhrName);
+    RecordCmdNextSubpass(commandBuffer, pSubpassBeginInfo, pSubpassEndInfo, CMD_NEXTSUBPASS2KHR);
 }
 
-bool SyncValidator::ValidateCmdEndRenderPass(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd,
-                                             const char *cmd_name) const {
+bool SyncValidator::ValidateCmdEndRenderPass(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo,
+                                             CMD_TYPE cmd) const {
     bool skip = false;
 
     auto cb_context = GetAccessContext(commandBuffer);
     assert(cb_context);
     if (!cb_context) return skip;
 
-    SyncOpEndRenderPass sync_op(cmd, *this, pSubpassEndInfo, cmd_name);
+    SyncOpEndRenderPass sync_op(cmd, *this, pSubpassEndInfo);
     skip |= sync_op.Validate(*cb_context);
     return skip;
 }
@@ -3547,22 +3859,20 @@ bool SyncValidator::PreCallValidateCmdEndRenderPass2(VkCommandBuffer commandBuff
     return skip;
 }
 
-const static char *kEndRenderPass2KhrName = "vkEndRenderPass2KHR";
 bool SyncValidator::PreCallValidateCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer,
                                                         const VkSubpassEndInfo *pSubpassEndInfo) const {
     bool skip = StateTracker::PreCallValidateCmdEndRenderPass2KHR(commandBuffer, pSubpassEndInfo);
-    skip |= ValidateCmdEndRenderPass(commandBuffer, pSubpassEndInfo, CMD_ENDRENDERPASS2, kEndRenderPass2KhrName);
+    skip |= ValidateCmdEndRenderPass(commandBuffer, pSubpassEndInfo, CMD_ENDRENDERPASS2KHR);
     return skip;
 }
 
-void SyncValidator::RecordCmdEndRenderPass(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd,
-                                           const char *cmd_name) {
+void SyncValidator::RecordCmdEndRenderPass(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo, CMD_TYPE cmd) {
     // Resolve the all subpass contexts to the command buffer contexts
     auto cb_context = GetAccessContext(commandBuffer);
     assert(cb_context);
     if (!cb_context) return;
 
-    SyncOpEndRenderPass sync_op(cmd, *this, pSubpassEndInfo, cmd_name);
+    SyncOpEndRenderPass sync_op(cmd, *this, pSubpassEndInfo);
     sync_op.Record(cb_context);
     return;
 }
@@ -3586,7 +3896,7 @@ void SyncValidator::PostCallRecordCmdEndRenderPass2(VkCommandBuffer commandBuffe
 }
 
 void SyncValidator::PostCallRecordCmdEndRenderPass2KHR(VkCommandBuffer commandBuffer, const VkSubpassEndInfo *pSubpassEndInfo) {
-    RecordCmdEndRenderPass(commandBuffer, pSubpassEndInfo, CMD_ENDRENDERPASS2, kEndRenderPass2KhrName);
+    RecordCmdEndRenderPass(commandBuffer, pSubpassEndInfo, CMD_ENDRENDERPASS2KHR);
     StateTracker::PostCallRecordCmdEndRenderPass2KHR(commandBuffer, pSubpassEndInfo);
 }
 
@@ -3971,7 +4281,7 @@ bool SyncValidator::ValidateIndirectBuffer(const CommandBufferAccessContext &cb_
     return skip;
 }
 
-void SyncValidator::RecordIndirectBuffer(AccessContext &context, const ResourceUsageTag &tag, const VkDeviceSize struct_size,
+void SyncValidator::RecordIndirectBuffer(AccessContext &context, const ResourceUsageTag tag, const VkDeviceSize struct_size,
                                          const VkBuffer buffer, const VkDeviceSize offset, const uint32_t drawCount,
                                          uint32_t stride) {
     const auto *buf_state = Get<BUFFER_STATE>(buffer);
@@ -4006,7 +4316,7 @@ bool SyncValidator::ValidateCountBuffer(const CommandBufferAccessContext &cb_con
     return skip;
 }
 
-void SyncValidator::RecordCountBuffer(AccessContext &context, const ResourceUsageTag &tag, VkBuffer buffer, VkDeviceSize offset) {
+void SyncValidator::RecordCountBuffer(AccessContext &context, const ResourceUsageTag tag, VkBuffer buffer, VkDeviceSize offset) {
     const auto *count_buf_state = Get<BUFFER_STATE>(buffer);
     const ResourceAccessRange range = MakeRange(offset, 4);
     context.UpdateAccessState(*count_buf_state, SYNC_DRAW_INDIRECT_INDIRECT_COMMAND_READ, SyncOrdering::kNonAttachment, range, tag);
@@ -4229,14 +4539,12 @@ bool SyncValidator::PreCallValidateCmdDrawIndirectCount(VkCommandBuffer commandB
                                         "vkCmdDrawIndirectCount");
 }
 
-void SyncValidator::PreCallRecordCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
-                                                      VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
-                                                      uint32_t stride) {
-    StateTracker::PreCallRecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount,
-                                                    stride);
+void SyncValidator::RecordCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
+                                               VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
+                                               uint32_t stride, CMD_TYPE cmd_type) {
     auto *cb_access_context = GetAccessContext(commandBuffer);
     assert(cb_access_context);
-    const auto tag = cb_access_context->NextCommandTag(CMD_DRAWINDIRECTCOUNT);
+    const auto tag = cb_access_context->NextCommandTag(cmd_type);
     auto *context = cb_access_context->GetCurrentAccessContext();
     assert(context);
 
@@ -4251,6 +4559,14 @@ void SyncValidator::PreCallRecordCmdDrawIndirectCount(VkCommandBuffer commandBuf
     cb_access_context->RecordDrawVertex(UINT32_MAX, 0, tag);
 }
 
+void SyncValidator::PreCallRecordCmdDrawIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
+                                                      VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
+                                                      uint32_t stride) {
+    StateTracker::PreCallRecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount,
+                                                    stride);
+    RecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride,
+                               CMD_DRAWINDIRECTCOUNT);
+}
 bool SyncValidator::PreCallValidateCmdDrawIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
                                                            VkBuffer countBuffer, VkDeviceSize countBufferOffset,
                                                            uint32_t maxDrawCount, uint32_t stride) const {
@@ -4263,7 +4579,8 @@ void SyncValidator::PreCallRecordCmdDrawIndirectCountKHR(VkCommandBuffer command
                                                          uint32_t maxDrawCount, uint32_t stride) {
     StateTracker::PreCallRecordCmdDrawIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount,
                                                        stride);
-    PreCallRecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+    RecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride,
+                               CMD_DRAWINDIRECTCOUNTKHR);
 }
 
 bool SyncValidator::PreCallValidateCmdDrawIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
@@ -4278,7 +4595,8 @@ void SyncValidator::PreCallRecordCmdDrawIndirectCountAMD(VkCommandBuffer command
                                                          uint32_t maxDrawCount, uint32_t stride) {
     StateTracker::PreCallRecordCmdDrawIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount,
                                                        stride);
-    PreCallRecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+    RecordCmdDrawIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride,
+                               CMD_DRAWINDIRECTCOUNTAMD);
 }
 
 bool SyncValidator::ValidateCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
@@ -4313,14 +4631,12 @@ bool SyncValidator::PreCallValidateCmdDrawIndexedIndirectCount(VkCommandBuffer c
                                                "vkCmdDrawIndexedIndirectCount");
 }
 
-void SyncValidator::PreCallRecordCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
-                                                             VkBuffer countBuffer, VkDeviceSize countBufferOffset,
-                                                             uint32_t maxDrawCount, uint32_t stride) {
-    StateTracker::PreCallRecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset,
-                                                           maxDrawCount, stride);
+void SyncValidator::RecordCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
+                                                      VkBuffer countBuffer, VkDeviceSize countBufferOffset, uint32_t maxDrawCount,
+                                                      uint32_t stride, CMD_TYPE cmd_type) {
     auto *cb_access_context = GetAccessContext(commandBuffer);
     assert(cb_access_context);
-    const auto tag = cb_access_context->NextCommandTag(CMD_DRAWINDEXEDINDIRECTCOUNT);
+    const auto tag = cb_access_context->NextCommandTag(cmd_type);
     auto *context = cb_access_context->GetCurrentAccessContext();
     assert(context);
 
@@ -4333,6 +4649,15 @@ void SyncValidator::PreCallRecordCmdDrawIndexedIndirectCount(VkCommandBuffer com
     //       VkDrawIndexedIndirectCommand buffer could be changed until SubmitQueue.
     //       We will update the index and vertex buffer in SubmitQueue in the future.
     cb_access_context->RecordDrawVertexIndex(UINT32_MAX, 0, tag);
+}
+
+void SyncValidator::PreCallRecordCmdDrawIndexedIndirectCount(VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset,
+                                                             VkBuffer countBuffer, VkDeviceSize countBufferOffset,
+                                                             uint32_t maxDrawCount, uint32_t stride) {
+    StateTracker::PreCallRecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset,
+                                                           maxDrawCount, stride);
+    RecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride,
+                                      CMD_DRAWINDEXEDINDIRECTCOUNT);
 }
 
 bool SyncValidator::PreCallValidateCmdDrawIndexedIndirectCountKHR(VkCommandBuffer commandBuffer, VkBuffer buffer,
@@ -4348,7 +4673,8 @@ void SyncValidator::PreCallRecordCmdDrawIndexedIndirectCountKHR(VkCommandBuffer 
                                                                 uint32_t maxDrawCount, uint32_t stride) {
     StateTracker::PreCallRecordCmdDrawIndexedIndirectCountKHR(commandBuffer, buffer, offset, countBuffer, countBufferOffset,
                                                               maxDrawCount, stride);
-    PreCallRecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+    RecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride,
+                                      CMD_DRAWINDEXEDINDIRECTCOUNTKHR);
 }
 
 bool SyncValidator::PreCallValidateCmdDrawIndexedIndirectCountAMD(VkCommandBuffer commandBuffer, VkBuffer buffer,
@@ -4364,7 +4690,8 @@ void SyncValidator::PreCallRecordCmdDrawIndexedIndirectCountAMD(VkCommandBuffer 
                                                                 uint32_t maxDrawCount, uint32_t stride) {
     StateTracker::PreCallRecordCmdDrawIndexedIndirectCountAMD(commandBuffer, buffer, offset, countBuffer, countBufferOffset,
                                                               maxDrawCount, stride);
-    PreCallRecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride);
+    RecordCmdDrawIndexedIndirectCount(commandBuffer, buffer, offset, countBuffer, countBufferOffset, maxDrawCount, stride,
+                                      CMD_DRAWINDEXEDINDIRECTCOUNTAMD);
 }
 
 bool SyncValidator::PreCallValidateCmdClearColorImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout imageLayout,
@@ -4800,8 +5127,7 @@ void SyncValidator::PostCallRecordCmdSetEvent(VkCommandBuffer commandBuffer, VkE
     auto *cb_context = GetAccessContext(commandBuffer);
     assert(cb_context);
     if (!cb_context) return;
-    SyncOpSetEvent set_event_op(CMD_SETEVENT, *this, cb_context->GetQueueFlags(), event, stageMask);
-    set_event_op.Record(cb_context);
+    cb_context->RecordSyncOp<SyncOpSetEvent>(CMD_SETEVENT, *this, cb_context->GetQueueFlags(), event, stageMask);
 }
 
 bool SyncValidator::PreCallValidateCmdSetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event,
@@ -4822,8 +5148,7 @@ void SyncValidator::PostCallRecordCmdSetEvent2KHR(VkCommandBuffer commandBuffer,
     assert(cb_context);
     if (!cb_context || !pDependencyInfo) return;
 
-    SyncOpSetEvent set_event_op(CMD_SETEVENT2KHR, *this, cb_context->GetQueueFlags(), event, *pDependencyInfo);
-    set_event_op.Record(cb_context);
+    cb_context->RecordSyncOp<SyncOpSetEvent>(CMD_SETEVENT2KHR, *this, cb_context->GetQueueFlags(), event, *pDependencyInfo);
 }
 
 bool SyncValidator::PreCallValidateCmdResetEvent(VkCommandBuffer commandBuffer, VkEvent event,
@@ -4843,8 +5168,7 @@ void SyncValidator::PostCallRecordCmdResetEvent(VkCommandBuffer commandBuffer, V
     assert(cb_context);
     if (!cb_context) return;
 
-    SyncOpResetEvent reset_event_op(CMD_RESETEVENT, *this, cb_context->GetQueueFlags(), event, stageMask);
-    reset_event_op.Record(cb_context);
+    cb_context->RecordSyncOp<SyncOpResetEvent>(CMD_RESETEVENT, *this, cb_context->GetQueueFlags(), event, stageMask);
 }
 
 bool SyncValidator::PreCallValidateCmdResetEvent2KHR(VkCommandBuffer commandBuffer, VkEvent event,
@@ -4865,8 +5189,7 @@ void SyncValidator::PostCallRecordCmdResetEvent2KHR(VkCommandBuffer commandBuffe
     assert(cb_context);
     if (!cb_context) return;
 
-    SyncOpResetEvent reset_event_op(CMD_RESETEVENT2KHR, *this, cb_context->GetQueueFlags(), event, stageMask);
-    reset_event_op.Record(cb_context);
+    cb_context->RecordSyncOp<SyncOpResetEvent>(CMD_RESETEVENT2KHR, *this, cb_context->GetQueueFlags(), event, stageMask);
 }
 
 bool SyncValidator::PreCallValidateCmdWaitEvents(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent *pEvents,
@@ -4902,10 +5225,9 @@ void SyncValidator::PostCallRecordCmdWaitEvents(VkCommandBuffer commandBuffer, u
     assert(cb_context);
     if (!cb_context) return;
 
-    SyncOpWaitEvents wait_events_op(CMD_WAITEVENTS, *this, cb_context->GetQueueFlags(), eventCount, pEvents, srcStageMask,
-                                    dstStageMask, memoryBarrierCount, pMemoryBarriers, bufferMemoryBarrierCount,
-                                    pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
-    return wait_events_op.Record(cb_context);
+    cb_context->RecordSyncOp<SyncOpWaitEvents>(
+        CMD_WAITEVENTS, *this, cb_context->GetQueueFlags(), eventCount, pEvents, srcStageMask, dstStageMask, memoryBarrierCount,
+        pMemoryBarriers, bufferMemoryBarrierCount, pBufferMemoryBarriers, imageMemoryBarrierCount, pImageMemoryBarriers);
 }
 
 bool SyncValidator::PreCallValidateCmdWaitEvents2KHR(VkCommandBuffer commandBuffer, uint32_t eventCount, const VkEvent *pEvents,
@@ -4928,8 +5250,8 @@ void SyncValidator::PostCallRecordCmdWaitEvents2KHR(VkCommandBuffer commandBuffe
     assert(cb_context);
     if (!cb_context) return;
 
-    SyncOpWaitEvents wait_events_op(CMD_WAITEVENTS2KHR, *this, cb_context->GetQueueFlags(), eventCount, pEvents, pDependencyInfos);
-    wait_events_op.Record(cb_context);
+    cb_context->RecordSyncOp<SyncOpWaitEvents>(CMD_WAITEVENTS2KHR, *this, cb_context->GetQueueFlags(), eventCount, pEvents,
+                                               pDependencyInfos);
 }
 
 void SyncEventState::ResetFirstScope() {
@@ -4937,6 +5259,8 @@ void SyncEventState::ResetFirstScope() {
         first_scope[static_cast<size_t>(address_type)].clear();
     }
     scope = SyncExecScope();
+    first_scope_set = false;
+    first_scope_tag = 0;
 }
 
 // Keep the "ignore this event" logic in same place for ValidateWait and RecordWait to use
@@ -4949,7 +5273,7 @@ SyncEventState::IgnoreReason SyncEventState::IsIgnoredByWait(CMD_TYPE cmd, VkPip
         reason = (last_command == CMD_RESETEVENT) ? ResetWaitRace : Reset2WaitRace;
     } else if (unsynchronized_set) {
         reason = SetRace;
-    } else {
+    } else if (first_scope_set) {
         const VkPipelineStageFlags2KHR missing_bits = scope.mask_param & ~srcStageMask;
         if (missing_bits) reason = MissingStageBits;
     }
@@ -5056,7 +5380,7 @@ struct SyncOpPipelineBarrierFunctorFactory {
     ApplyFunctor MakeApplyFunctor(const SyncBarrier &barrier, bool layout_transition) const {
         return ApplyFunctor(BarrierOpFunctor(barrier, layout_transition));
     }
-    GlobalApplyFunctor MakeGlobalApplyFunctor(size_t size_hint, const ResourceUsageTag &tag) const {
+    GlobalApplyFunctor MakeGlobalApplyFunctor(size_t size_hint, ResourceUsageTag tag) const {
         return GlobalApplyFunctor(true /* resolve */, size_hint, tag);
     }
     GlobalBarrierOpFunctor MakeGlobalBarrierOpFunctor(const SyncBarrier &barrier) const {
@@ -5079,7 +5403,7 @@ struct SyncOpPipelineBarrierFunctorFactory {
 };
 
 template <typename Barriers, typename FunctorFactory>
-void SyncOpBarriers::ApplyBarriers(const Barriers &barriers, const FunctorFactory &factory, const ResourceUsageTag &tag,
+void SyncOpBarriers::ApplyBarriers(const Barriers &barriers, const FunctorFactory &factory, const ResourceUsageTag tag,
                                    AccessContext *context) {
     for (const auto &barrier : barriers) {
         const auto *state = barrier.GetState();
@@ -5093,7 +5417,7 @@ void SyncOpBarriers::ApplyBarriers(const Barriers &barriers, const FunctorFactor
 }
 
 template <typename Barriers, typename FunctorFactory>
-void SyncOpBarriers::ApplyGlobalBarriers(const Barriers &barriers, const FunctorFactory &factory, const ResourceUsageTag &tag,
+void SyncOpBarriers::ApplyGlobalBarriers(const Barriers &barriers, const FunctorFactory &factory, const ResourceUsageTag tag,
                                          AccessContext *access_context) {
     auto barriers_functor = factory.MakeGlobalApplyFunctor(barriers.size(), tag);
     for (const auto &barrier : barriers) {
@@ -5105,25 +5429,37 @@ void SyncOpBarriers::ApplyGlobalBarriers(const Barriers &barriers, const Functor
     }
 }
 
-void SyncOpPipelineBarrier::Record(CommandBufferAccessContext *cb_context) const {
-    SyncOpPipelineBarrierFunctorFactory factory;
+ResourceUsageTag SyncOpPipelineBarrier::Record(CommandBufferAccessContext *cb_context) const {
     auto *access_context = cb_context->GetCurrentAccessContext();
+    auto *events_context = cb_context->GetCurrentEventsContext();
     const auto tag = cb_context->NextCommandTag(cmd_);
+    DoRecord(tag, access_context, events_context);
+    return tag;
+}
 
+void SyncOpPipelineBarrier::DoRecord(const ResourceUsageTag tag, AccessContext *access_context,
+                                     SyncEventsContext *events_context) const {
+    SyncOpPipelineBarrierFunctorFactory factory;
     // Pipeline barriers only have a single barrier set, unlike WaitEvents2
     assert(barriers_.size() == 1);
     const auto &barrier_set = barriers_[0];
     ApplyBarriers(barrier_set.buffer_memory_barriers, factory, tag, access_context);
     ApplyBarriers(barrier_set.image_memory_barriers, factory, tag, access_context);
     ApplyGlobalBarriers(barrier_set.memory_barriers, factory, tag, access_context);
-
     if (barrier_set.single_exec_scope) {
-        cb_context->ApplyGlobalBarriersToEvents(barrier_set.src_exec_scope, barrier_set.dst_exec_scope);
+        events_context->ApplyBarrier(barrier_set.src_exec_scope, barrier_set.dst_exec_scope);
     } else {
         for (const auto &barrier : barrier_set.memory_barriers) {
-            cb_context->ApplyGlobalBarriersToEvents(barrier.src_exec_scope, barrier.dst_exec_scope);
+            events_context->ApplyBarrier(barrier.src_exec_scope, barrier.dst_exec_scope);
         }
     }
+}
+
+bool SyncOpPipelineBarrier::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                           ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    // No Validation for replay, as the layout transition accesses are checked directly, and the src*Mask ordering is captured
+    // with first access information.
+    return false;
 }
 
 void SyncOpBarriers::BarrierSet::MakeMemoryBarriers(const SyncExecScope &src, const SyncExecScope &dst,
@@ -5249,12 +5585,14 @@ SyncOpWaitEvents::SyncOpWaitEvents(CMD_TYPE cmd, const SyncValidator &sync_state
     assert(events_.size() == barriers_.size());  // Just so nobody gets clever and decides to cull the event or barrier arrays
 }
 
+const char *const SyncOpWaitEvents::kIgnored = "Wait operation is ignored for this event.";
+
 bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) const {
-    const char *const ignored = "Wait operation is ignored for this event.";
     bool skip = false;
     const auto &sync_state = cb_context.GetSyncState();
     const auto command_buffer_handle = cb_context.GetCBState().commandBuffer();
 
+    // This is only interesting at record and not replay (Execute/Submit) time.
     for (size_t barrier_set_index = 0; barrier_set_index < barriers_.size(); barrier_set_index++) {
         const auto &barrier_set = barriers_[barrier_set_index];
         if (barrier_set.single_exec_scope) {
@@ -5281,6 +5619,15 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
         }
     }
 
+    // The rest is common to record time and replay time.
+    skip |= DoValidate(cb_context, ResourceUsageRecord::kMaxIndex);
+    return skip;
+}
+
+bool SyncOpWaitEvents::DoValidate(const CommandBufferAccessContext &cb_context, const ResourceUsageTag base_tag) const {
+    bool skip = false;
+    const auto &sync_state = cb_context.GetSyncState();
+
     VkPipelineStageFlags2KHR event_stage_masks = 0U;
     VkPipelineStageFlags2KHR barrier_mask_params = 0U;
     bool events_not_found = false;
@@ -5288,105 +5635,112 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
     assert(events_context);
     size_t barrier_set_index = 0;
     size_t barrier_set_incr = (barriers_.size() == 1) ? 0 : 1;
-    for (size_t event_index = 0; event_index < events_.size(); event_index++)
-        for (const auto &event : events_) {
-            const auto *sync_event = events_context->Get(event.get());
-            const auto &barrier_set = barriers_[barrier_set_index];
-            if (!sync_event) {
-                // NOTE PHASE2: This is where we'll need queue submit time validation to come back and check the srcStageMask bits
-                //              or solve this with replay creating the SyncEventState in the queue context... also this will be a
-                //              new validation error... wait without previously submitted set event...
-                events_not_found = true;  // Demote "extra_stage_bits" error to warning, to avoid false positives at *record time*
-                barrier_set_index += barrier_set_incr;
-                continue;  // Core, Lifetimes, or Param check needs to catch invalid events.
-            }
-            const auto event_handle = sync_event->event->event();
-            // TODO add "destroyed" checks
-
-            barrier_mask_params |= barrier_set.src_exec_scope.mask_param;
-            const auto &src_exec_scope = barrier_set.src_exec_scope;
-            event_stage_masks |= sync_event->scope.mask_param;
-            const auto ignore_reason = sync_event->IsIgnoredByWait(cmd_, src_exec_scope.mask_param);
-            if (ignore_reason) {
-                switch (ignore_reason) {
-                    case SyncEventState::ResetWaitRace:
-                    case SyncEventState::Reset2WaitRace: {
-                        // Four permuations of Reset and Wait calls...
-                        const char *vuid =
-                            (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent-event-03834" : "VUID-vkCmdResetEvent-event-03835";
-                        if (ignore_reason == SyncEventState::Reset2WaitRace) {
-                            vuid =
-                                (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent2KHR-event-03831" : "VUID-vkCmdResetEvent2KHR-event-03832";
-                        }
-                        const char *const message =
-                            "%s: %s %s operation following %s without intervening execution barrier, may cause race condition. %s";
-                        skip |= sync_state.LogError(event_handle, vuid, message, CmdName(),
-                                                    sync_state.report_data->FormatHandle(event_handle).c_str(), CmdName(),
-                                                    CommandTypeString(sync_event->last_command), ignored);
-                        break;
-                    }
-                    case SyncEventState::SetRace: {
-                        // Issue error message that Wait is waiting on an signal subject to race condition, and is thus ignored for
-                        // this event
-                        const char *const vuid = "SYNC-vkCmdWaitEvents-unsynchronized-setops";
-                        const char *const message =
-                            "%s: %s Unsychronized %s calls result in race conditions w.r.t. event signalling, %s %s";
-                        const char *const reason = "First synchronization scope is undefined.";
-                        skip |= sync_state.LogError(event_handle, vuid, message, CmdName(),
-                                                    sync_state.report_data->FormatHandle(event_handle).c_str(),
-                                                    CommandTypeString(sync_event->last_command), reason, ignored);
-                        break;
-                    }
-                    case SyncEventState::MissingStageBits: {
-                        const auto missing_bits = sync_event->scope.mask_param & ~src_exec_scope.mask_param;
-                        // Issue error message that event waited for is not in wait events scope
-                        const char *const vuid = "VUID-vkCmdWaitEvents-srcStageMask-01158";
-                        const char *const message =
-                            "%s: %s stageMask %" PRIx64 " includes bits not present in srcStageMask 0x%" PRIx64
-                            ". Bits missing from srcStageMask %s. %s";
-                        skip |= sync_state.LogError(event_handle, vuid, message, CmdName(),
-                                                    sync_state.report_data->FormatHandle(event_handle).c_str(),
-                                                    sync_event->scope.mask_param, src_exec_scope.mask_param,
-                                                    sync_utils::StringPipelineStageFlags(missing_bits).c_str(), ignored);
-                        break;
-                    }
-                    case SyncEventState::SetVsWait2: {
-                        skip |= sync_state.LogError(event_handle, "VUID-vkCmdWaitEvents2KHR-pEvents-03837",
-                                                    "%s: Follows set of %s by %s. Disallowed.", CmdName(),
-                                                    sync_state.report_data->FormatHandle(event_handle).c_str(),
-                                                    CommandTypeString(sync_event->last_command));
-                        break;
-                    }
-                    default:
-                        assert(ignore_reason == SyncEventState::NotIgnored);
-                }
-            } else if (barrier_set.image_memory_barriers.size()) {
-                const auto &image_memory_barriers = barrier_set.image_memory_barriers;
-                const auto *context = cb_context.GetCurrentAccessContext();
-                assert(context);
-                for (const auto &image_memory_barrier : image_memory_barriers) {
-                    if (image_memory_barrier.old_layout == image_memory_barrier.new_layout) continue;
-                    const auto *image_state = image_memory_barrier.image.get();
-                    if (!image_state) continue;
-                    const auto &subresource_range = image_memory_barrier.range;
-                    const auto &src_access_scope = image_memory_barrier.barrier.src_access_scope;
-                    const auto hazard =
-                        context->DetectImageBarrierHazard(*image_state, sync_event->scope.exec_scope, src_access_scope,
-                                                          subresource_range, *sync_event, AccessContext::DetectOptions::kDetectAll);
-                    if (hazard.hazard) {
-                        skip |= sync_state.LogError(image_state->image(), string_SyncHazardVUID(hazard.hazard),
-                                                    "%s: Hazard %s for image barrier %" PRIu32 " %s. Access info %s.", CmdName(),
-                                                    string_SyncHazard(hazard.hazard), image_memory_barrier.index,
-                                                    sync_state.report_data->FormatHandle(image_state->image()).c_str(),
-                                                    cb_context.FormatUsage(hazard).c_str());
-                        break;
-                    }
-                }
-            }
-            // TODO:  Add infrastructure for checking pDependencyInfo's vs. CmdSetEvent2 VUID - vkCmdWaitEvents2KHR - pEvents -
-            // 03839
+    for (const auto &event : events_) {
+        const auto *sync_event = events_context->Get(event.get());
+        const auto &barrier_set = barriers_[barrier_set_index];
+        if (!sync_event) {
+            // NOTE PHASE2: This is where we'll need queue submit time validation to come back and check the srcStageMask bits
+            //              or solve this with replay creating the SyncEventState in the queue context... also this will be a
+            //              new validation error... wait without previously submitted set event...
+            events_not_found = true;  // Demote "extra_stage_bits" error to warning, to avoid false positives at *record time*
             barrier_set_index += barrier_set_incr;
+            continue;  // Core, Lifetimes, or Param check needs to catch invalid events.
         }
+
+        // For replay calls, don't revalidate "same command buffer" events
+        if (sync_event->last_command_tag > base_tag) continue;
+
+        const auto event_handle = sync_event->event->event();
+        // TODO add "destroyed" checks
+
+        if (sync_event->first_scope_set) {
+            // Only accumulate barrier and event stages if there is a pending set in the current context
+            barrier_mask_params |= barrier_set.src_exec_scope.mask_param;
+            event_stage_masks |= sync_event->scope.mask_param;
+        }
+
+        const auto &src_exec_scope = barrier_set.src_exec_scope;
+
+        const auto ignore_reason = sync_event->IsIgnoredByWait(cmd_, src_exec_scope.mask_param);
+        if (ignore_reason) {
+            switch (ignore_reason) {
+                case SyncEventState::ResetWaitRace:
+                case SyncEventState::Reset2WaitRace: {
+                    // Four permuations of Reset and Wait calls...
+                    const char *vuid =
+                        (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent-event-03834" : "VUID-vkCmdResetEvent-event-03835";
+                    if (ignore_reason == SyncEventState::Reset2WaitRace) {
+                        vuid = (cmd_ == CMD_WAITEVENTS) ? "VUID-vkCmdResetEvent2KHR-event-03831"
+                                                        : "VUID-vkCmdResetEvent2KHR-event-03832";
+                    }
+                    const char *const message =
+                        "%s: %s %s operation following %s without intervening execution barrier, may cause race condition. %s";
+                    skip |= sync_state.LogError(event_handle, vuid, message, CmdName(),
+                                                sync_state.report_data->FormatHandle(event_handle).c_str(), CmdName(),
+                                                CommandTypeString(sync_event->last_command), kIgnored);
+                    break;
+                }
+                case SyncEventState::SetRace: {
+                    // Issue error message that Wait is waiting on an signal subject to race condition, and is thus ignored for
+                    // this event
+                    const char *const vuid = "SYNC-vkCmdWaitEvents-unsynchronized-setops";
+                    const char *const message =
+                        "%s: %s Unsychronized %s calls result in race conditions w.r.t. event signalling, %s %s";
+                    const char *const reason = "First synchronization scope is undefined.";
+                    skip |= sync_state.LogError(event_handle, vuid, message, CmdName(),
+                                                sync_state.report_data->FormatHandle(event_handle).c_str(),
+                                                CommandTypeString(sync_event->last_command), reason, kIgnored);
+                    break;
+                }
+                case SyncEventState::MissingStageBits: {
+                    const auto missing_bits = sync_event->scope.mask_param & ~src_exec_scope.mask_param;
+                    // Issue error message that event waited for is not in wait events scope
+                    const char *const vuid = "VUID-vkCmdWaitEvents-srcStageMask-01158";
+                    const char *const message = "%s: %s stageMask %" PRIx64 " includes bits not present in srcStageMask 0x%" PRIx64
+                                                ". Bits missing from srcStageMask %s. %s";
+                    skip |= sync_state.LogError(event_handle, vuid, message, CmdName(),
+                                                sync_state.report_data->FormatHandle(event_handle).c_str(),
+                                                sync_event->scope.mask_param, src_exec_scope.mask_param,
+                                                sync_utils::StringPipelineStageFlags(missing_bits).c_str(), kIgnored);
+                    break;
+                }
+                case SyncEventState::SetVsWait2: {
+                    skip |= sync_state.LogError(event_handle, "VUID-vkCmdWaitEvents2KHR-pEvents-03837",
+                                                "%s: Follows set of %s by %s. Disallowed.", CmdName(),
+                                                sync_state.report_data->FormatHandle(event_handle).c_str(),
+                                                CommandTypeString(sync_event->last_command));
+                    break;
+                }
+                default:
+                    assert(ignore_reason == SyncEventState::NotIgnored);
+            }
+        } else if (barrier_set.image_memory_barriers.size()) {
+            const auto &image_memory_barriers = barrier_set.image_memory_barriers;
+            const auto *context = cb_context.GetCurrentAccessContext();
+            assert(context);
+            for (const auto &image_memory_barrier : image_memory_barriers) {
+                if (image_memory_barrier.old_layout == image_memory_barrier.new_layout) continue;
+                const auto *image_state = image_memory_barrier.image.get();
+                if (!image_state) continue;
+                const auto &subresource_range = image_memory_barrier.range;
+                const auto &src_access_scope = image_memory_barrier.barrier.src_access_scope;
+                const auto hazard =
+                    context->DetectImageBarrierHazard(*image_state, sync_event->scope.exec_scope, src_access_scope,
+                                                      subresource_range, *sync_event, AccessContext::DetectOptions::kDetectAll);
+                if (hazard.hazard) {
+                    skip |= sync_state.LogError(image_state->image(), string_SyncHazardVUID(hazard.hazard),
+                                                "%s: Hazard %s for image barrier %" PRIu32 " %s. Access info %s.", CmdName(),
+                                                string_SyncHazard(hazard.hazard), image_memory_barrier.index,
+                                                sync_state.report_data->FormatHandle(image_state->image()).c_str(),
+                                                cb_context.FormatUsage(hazard).c_str());
+                    break;
+                }
+            }
+        }
+        // TODO:  Add infrastructure for checking pDependencyInfo's vs. CmdSetEvent2 VUID - vkCmdWaitEvents2KHR - pEvents -
+        // 03839
+        barrier_set_index += barrier_set_incr;
+    }
 
     // Note that we can't check for HOST in pEvents as we don't track that set event type
     const auto extra_stage_bits = (barrier_mask_params & ~VK_PIPELINE_STAGE_2_HOST_BIT_KHR) & ~event_stage_masks;
@@ -5397,6 +5751,7 @@ bool SyncOpWaitEvents::Validate(const CommandBufferAccessContext &cb_context) co
             (CMD_WAITEVENTS == cmd_) ? "VUID-vkCmdWaitEvents-srcStageMask-01158" : "VUID-vkCmdWaitEvents2KHR-pEvents-03838";
         const char *const message =
             "%s: srcStageMask 0x%" PRIx64 " contains stages not present in pEvents stageMask. Extra stages are %s.%s";
+        const auto command_buffer_handle = cb_context.GetCBState().commandBuffer();
         if (events_not_found) {
             skip |= sync_state.LogInfo(command_buffer_handle, vuid, message, CmdName(), barrier_mask_params,
                                        sync_utils::StringPipelineStageFlags(extra_stage_bits).c_str(),
@@ -5429,7 +5784,7 @@ struct SyncOpWaitEventsFunctorFactory {
         auto barrier = RestrictToEvent(barrier_arg);
         return ApplyFunctor(BarrierOpFunctor(sync_event->first_scope_tag, barrier, layout_transition));
     }
-    GlobalApplyFunctor MakeGlobalApplyFunctor(size_t size_hint, const ResourceUsageTag &tag) const {
+    GlobalApplyFunctor MakeGlobalApplyFunctor(size_t size_hint, ResourceUsageTag tag) const {
         return GlobalApplyFunctor(false /* don't resolve */, size_hint, tag);
     }
     GlobalBarrierOpFunctor MakeGlobalBarrierOpFunctor(const SyncBarrier &barrier_arg) const {
@@ -5460,22 +5815,25 @@ struct SyncOpWaitEventsFunctorFactory {
     SyncEventState *sync_event;
 };
 
-void SyncOpWaitEvents::Record(CommandBufferAccessContext *cb_context) const {
+ResourceUsageTag SyncOpWaitEvents::Record(CommandBufferAccessContext *cb_context) const {
     const auto tag = cb_context->NextCommandTag(cmd_);
     auto *access_context = cb_context->GetCurrentAccessContext();
     assert(access_context);
-    if (!access_context) return;
+    if (!access_context) return tag;
     auto *events_context = cb_context->GetCurrentEventsContext();
     assert(events_context);
-    if (!events_context) return;
+    if (!events_context) return tag;
 
+    DoRecord(tag, access_context, events_context);
+    return tag;
+}
+
+void SyncOpWaitEvents::DoRecord(ResourceUsageTag tag, AccessContext *access_context, SyncEventsContext *events_context) const {
     // Unlike PipelineBarrier, WaitEvent is *not* limited to accesses within the current subpass (if any) and thus needs to import
     // all accesses. Can instead import for all first_scopes, or a union of them, if this becomes a performance/memory issue,
     // but with no idea of the performance of the union, nor of whether it even matters... take the simplest approach here,
     access_context->ResolvePreviousAccesses();
 
-    // TODO... this needs change the SyncEventContext it's using depending on whether this is replay... the recorded
-    // sync_event will be in the recorded context, but we need to update the sync_events in the current context....
     size_t barrier_set_index = 0;
     size_t barrier_set_incr = (barriers_.size() == 1) ? 0 : 1;
     assert(barriers_.size() == 1 || (barriers_.size() == events_.size()));
@@ -5484,6 +5842,7 @@ void SyncOpWaitEvents::Record(CommandBufferAccessContext *cb_context) const {
         auto *sync_event = events_context->GetFromShared(event_shared);
 
         sync_event->last_command = cmd_;
+        sync_event->last_command_tag = tag;
 
         const auto &barrier_set = barriers_[barrier_set_index];
         const auto &dst = barrier_set.dst_exec_scope;
@@ -5512,6 +5871,11 @@ void SyncOpWaitEvents::Record(CommandBufferAccessContext *cb_context) const {
     access_context->ApplyToContext(apply_pending_action);
 }
 
+bool SyncOpWaitEvents::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                      ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    return DoValidate(*active_context, base_tag);
+}
+
 bool SyncValidator::PreCallValidateCmdWriteBufferMarker2AMD(VkCommandBuffer commandBuffer, VkPipelineStageFlags2KHR pipelineStage,
                                                             VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) const {
     bool skip = false;
@@ -5532,7 +5896,7 @@ bool SyncValidator::PreCallValidateCmdWriteBufferMarker2AMD(VkCommandBuffer comm
             skip |= LogError(dstBuffer, string_SyncHazardVUID(hazard.hazard),
                              "vkCmdWriteBufferMarkerAMD2: Hazard %s for dstBuffer %s. Access info %s.",
                              string_SyncHazard(hazard.hazard), report_data->FormatHandle(dstBuffer).c_str(),
-                             string_UsageTag(hazard.tag).c_str());
+                             cb_access_context->FormatUsage(hazard).c_str());
         }
     }
     return skip;
@@ -5551,7 +5915,11 @@ SyncOpResetEvent::SyncOpResetEvent(CMD_TYPE cmd, const SyncValidator &sync_state
       event_(sync_state.GetShared<EVENT_STATE>(event)),
       exec_scope_(SyncExecScope::MakeSrc(queue_flags, stageMask)) {}
 
-bool SyncOpResetEvent::Validate(const CommandBufferAccessContext &cb_context) const {
+bool SyncOpResetEvent::Validate(const CommandBufferAccessContext& cb_context) const {
+    return DoValidate(cb_context, ResourceUsageRecord::kMaxIndex);
+}
+
+bool SyncOpResetEvent::DoValidate(const CommandBufferAccessContext & cb_context, const ResourceUsageTag base_tag) const {
     auto *events_context = cb_context.GetCurrentEventsContext();
     assert(events_context);
     bool skip = false;
@@ -5560,6 +5928,8 @@ bool SyncOpResetEvent::Validate(const CommandBufferAccessContext &cb_context) co
     const auto &sync_state = cb_context.GetSyncState();
     const auto *sync_event = events_context->Get(event_);
     if (!sync_event) return skip;  // Core, Lifetimes, or Param check needs to catch invalid events.
+
+    if (sync_event->last_command_tag > base_tag) return skip;  // if we validated this in recording of the secondary, don't repeat
 
     const char *const set_wait =
         "%s: %s %s operation following %s without intervening execution barrier, is a race condition and may result in data "
@@ -5594,20 +5964,31 @@ bool SyncOpResetEvent::Validate(const CommandBufferAccessContext &cb_context) co
     return skip;
 }
 
-void SyncOpResetEvent::Record(CommandBufferAccessContext *cb_context) const {
+ResourceUsageTag SyncOpResetEvent::Record(CommandBufferAccessContext *cb_context) const {
+    const auto tag = cb_context->NextCommandTag(cmd_);
     auto *events_context = cb_context->GetCurrentEventsContext();
     assert(events_context);
-    if (!events_context) return;
+    if (!events_context) return tag;
 
     auto *sync_event = events_context->GetFromShared(event_);
-    if (!sync_event) return;  // Core, Lifetimes, or Param check needs to catch invalid events.
+    if (!sync_event) return tag;  // Core, Lifetimes, or Param check needs to catch invalid events.
 
     // Update the event state
     sync_event->last_command = cmd_;
+    sync_event->last_command_tag = tag;
     sync_event->unsynchronized_set = CMD_NONE;
     sync_event->ResetFirstScope();
     sync_event->barriers = 0U;
+
+    return tag;
 }
+
+bool SyncOpResetEvent::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                      ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    return DoValidate(*active_context, base_tag);
+}
+
+void SyncOpResetEvent::DoRecord(ResourceUsageTag tag, AccessContext *access_context, SyncEventsContext *events_context) const {}
 
 SyncOpSetEvent::SyncOpSetEvent(CMD_TYPE cmd, const SyncValidator &sync_state, VkQueueFlags queue_flags, VkEvent event,
                                VkPipelineStageFlags2KHR stageMask)
@@ -5624,7 +6005,15 @@ SyncOpSetEvent::SyncOpSetEvent(CMD_TYPE cmd, const SyncValidator &sync_state, Vk
       dep_info_(new safe_VkDependencyInfoKHR(&dep_info)) {}
 
 bool SyncOpSetEvent::Validate(const CommandBufferAccessContext &cb_context) const {
-    // I'll put this here just in case we need to pass this in for future extension support
+    return DoValidate(cb_context, ResourceUsageRecord::kMaxIndex);
+}
+bool SyncOpSetEvent::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                    ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    assert(active_context);
+    return DoValidate(*active_context, base_tag);
+}
+
+bool SyncOpSetEvent::DoValidate(const CommandBufferAccessContext &cb_context, const ResourceUsageTag base_tag) const {
     bool skip = false;
 
     const auto &sync_state = cb_context.GetSyncState();
@@ -5634,6 +6023,8 @@ bool SyncOpSetEvent::Validate(const CommandBufferAccessContext &cb_context) cons
 
     const auto *sync_event = events_context->Get(event_);
     if (!sync_event) return skip;  // Core, Lifetimes, or Param check needs to catch invalid events.
+
+    if (sync_event->last_command_tag >= base_tag) return skip;  // for replay we don't want to revalidate internal "last commmand"
 
     const char *const reset_set =
         "%s: %s %s operation following %s without intervening execution barrier, is a race condition and may result in data "
@@ -5681,13 +6072,18 @@ bool SyncOpSetEvent::Validate(const CommandBufferAccessContext &cb_context) cons
     return skip;
 }
 
-void SyncOpSetEvent::Record(CommandBufferAccessContext *cb_context) const {
+ResourceUsageTag SyncOpSetEvent::Record(CommandBufferAccessContext *cb_context) const {
     const auto tag = cb_context->NextCommandTag(cmd_);
     auto *events_context = cb_context->GetCurrentEventsContext();
     auto *access_context = cb_context->GetCurrentAccessContext();
     assert(events_context);
-    if (!events_context) return;
+    if (access_context && events_context) {
+        DoRecord(tag, access_context, events_context);
+    }
+    return tag;
+}
 
+void SyncOpSetEvent::DoRecord(ResourceUsageTag tag, AccessContext *access_context, SyncEventsContext *events_context) const {
     auto *sync_event = events_context->GetFromShared(event_);
     if (!sync_event) return;  // Core, Lifetimes, or Param check needs to catch invalid events.
 
@@ -5703,7 +6099,7 @@ void SyncOpSetEvent::Record(CommandBufferAccessContext *cb_context) const {
     if (!sync_event->HasBarrier(src_exec_scope_.mask_param, src_exec_scope_.exec_scope)) {
         sync_event->unsynchronized_set = sync_event->last_command;
         sync_event->ResetFirstScope();
-    } else if (sync_event->scope.exec_scope == 0) {
+    } else if (!sync_event->first_scope_set) {
         // We only set the scope if there isn't one
         sync_event->scope = src_exec_scope_;
 
@@ -5715,17 +6111,19 @@ void SyncOpSetEvent::Record(CommandBufferAccessContext *cb_context) const {
         };
         access_context->ForAll(set_scope);
         sync_event->unsynchronized_set = CMD_NONE;
+        sync_event->first_scope_set = true;
         sync_event->first_scope_tag = tag;
     }
     // TODO: Store dep_info_ shared ptr in sync_state for WaitEvents2 validation
     sync_event->last_command = cmd_;
+    sync_event->last_command_tag = tag;
     sync_event->barriers = 0U;
 }
 
 SyncOpBeginRenderPass::SyncOpBeginRenderPass(CMD_TYPE cmd, const SyncValidator &sync_state,
                                              const VkRenderPassBeginInfo *pRenderPassBegin,
-                                             const VkSubpassBeginInfo *pSubpassBeginInfo, const char *cmd_name)
-    : SyncOpBase(cmd, cmd_name) {
+                                             const VkSubpassBeginInfo *pSubpassBeginInfo)
+    : SyncOpBase(cmd) {
     if (pRenderPassBegin) {
         rp_state_ = sync_state.GetShared<RENDER_PASS_STATE>(pRenderPassBegin->renderPass);
         renderpass_begin_info_ = safe_VkRenderPassBeginInfo(pRenderPassBegin);
@@ -5781,17 +6179,27 @@ bool SyncOpBeginRenderPass::Validate(const CommandBufferAccessContext &cb_contex
     return skip;
 }
 
-void SyncOpBeginRenderPass::Record(CommandBufferAccessContext *cb_context) const {
+ResourceUsageTag SyncOpBeginRenderPass::Record(CommandBufferAccessContext *cb_context) const {
+    const auto tag = cb_context->NextCommandTag(cmd_);
     // TODO PHASE2 need to have a consistent way to record to either command buffer or queue contexts
     assert(rp_state_.get());
-    if (nullptr == rp_state_.get()) return;
-    const auto tag = cb_context->NextCommandTag(cmd_);
+    if (nullptr == rp_state_.get()) return tag;
     cb_context->RecordBeginRenderPass(*rp_state_.get(), renderpass_begin_info_.renderArea, attachments_, tag);
+
+    return tag;
+}
+
+bool SyncOpBeginRenderPass::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                           ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    return false;
+}
+
+void SyncOpBeginRenderPass::DoRecord(ResourceUsageTag tag, AccessContext *access_context, SyncEventsContext *events_context) const {
 }
 
 SyncOpNextSubpass::SyncOpNextSubpass(CMD_TYPE cmd, const SyncValidator &sync_state, const VkSubpassBeginInfo *pSubpassBeginInfo,
-                                     const VkSubpassEndInfo *pSubpassEndInfo, const char *name_override)
-    : SyncOpBase(cmd, name_override) {
+                                     const VkSubpassEndInfo *pSubpassEndInfo)
+    : SyncOpBase(cmd) {
     if (pSubpassBeginInfo) {
         subpass_begin_info_.initialize(pSubpassBeginInfo);
     }
@@ -5809,18 +6217,30 @@ bool SyncOpNextSubpass::Validate(const CommandBufferAccessContext &cb_context) c
     return skip;
 }
 
-void SyncOpNextSubpass::Record(CommandBufferAccessContext *cb_context) const {
+ResourceUsageTag SyncOpNextSubpass::Record(CommandBufferAccessContext *cb_context) const {
     // TODO PHASE2 need to have a consistent way to record to either command buffer or queue contexts
-    cb_context->RecordNextSubpass(cmd_);
+    // TODO PHASE2 Need to fix renderpass tagging/segregation of barrier and access operations for QueueSubmit time validation
+    auto prev_tag = cb_context->NextCommandTag(cmd_);
+    auto next_tag = cb_context->NextSubcommandTag(cmd_);
+
+    cb_context->RecordNextSubpass(prev_tag, next_tag);
+    // TODO PHASE2 This needs to be the tag of the barrier operations
+    return prev_tag;
 }
 
-SyncOpEndRenderPass::SyncOpEndRenderPass(CMD_TYPE cmd, const SyncValidator &sync_state, const VkSubpassEndInfo *pSubpassEndInfo,
-                                         const char *name_override)
-    : SyncOpBase(cmd, name_override) {
+bool SyncOpNextSubpass::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                       ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    return false;
+}
+
+SyncOpEndRenderPass::SyncOpEndRenderPass(CMD_TYPE cmd, const SyncValidator &sync_state, const VkSubpassEndInfo *pSubpassEndInfo)
+    : SyncOpBase(cmd) {
     if (pSubpassEndInfo) {
         subpass_end_info_.initialize(pSubpassEndInfo);
     }
 }
+
+void SyncOpNextSubpass::DoRecord(ResourceUsageTag tag, AccessContext *access_context, SyncEventsContext *events_context) const {}
 
 bool SyncOpEndRenderPass::Validate(const CommandBufferAccessContext &cb_context) const {
     bool skip = false;
@@ -5831,10 +6251,19 @@ bool SyncOpEndRenderPass::Validate(const CommandBufferAccessContext &cb_context)
     return skip;
 }
 
-void SyncOpEndRenderPass::Record(CommandBufferAccessContext *cb_context) const {
+ResourceUsageTag SyncOpEndRenderPass::Record(CommandBufferAccessContext *cb_context) const {
     // TODO PHASE2 need to have a consistent way to record to either command buffer or queue contexts
-    cb_context->RecordEndRenderPass(cmd_);
+    const auto tag = cb_context->NextCommandTag(cmd_);
+    cb_context->RecordEndRenderPass(tag);
+    return tag;
 }
+
+bool SyncOpEndRenderPass::ReplayValidate(ResourceUsageTag recorded_tag, const CommandBufferAccessContext &recorded_context,
+                                         ResourceUsageTag base_tag, CommandBufferAccessContext *active_context) const {
+    return false;
+}
+
+void SyncOpEndRenderPass::DoRecord(ResourceUsageTag tag, AccessContext *access_context, SyncEventsContext *events_context) const {}
 
 void SyncValidator::PreCallRecordCmdWriteBufferMarker2AMD(VkCommandBuffer commandBuffer, VkPipelineStageFlags2KHR pipelineStage,
                                                           VkBuffer dstBuffer, VkDeviceSize dstOffset, uint32_t marker) {
@@ -5850,6 +6279,50 @@ void SyncValidator::PreCallRecordCmdWriteBufferMarker2AMD(VkCommandBuffer comman
     if (dst_buffer) {
         const ResourceAccessRange range = MakeRange(dstOffset, 4);
         context->UpdateAccessState(*dst_buffer, SYNC_COPY_TRANSFER_WRITE, SyncOrdering::kNonAttachment, range, tag);
+    }
+}
+
+bool SyncValidator::PreCallValidateCmdExecuteCommands(VkCommandBuffer commandBuffer, uint32_t commandBufferCount,
+                                                      const VkCommandBuffer *pCommandBuffers) const {
+    bool skip = StateTracker::PreCallValidateCmdExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers);
+    const char *func_name = "vkCmdExecuteCommands";
+    const auto *cb_context = GetAccessContext(commandBuffer);
+    assert(cb_context);
+
+    // Heavyweight, but we need a proxy copy of the active command buffer access context
+    CommandBufferAccessContext proxy_cb_context(*cb_context, CommandBufferAccessContext::AsProxyContext());
+
+    // Make working copies of the access and events contexts
+    proxy_cb_context.NextCommandTag(CMD_EXECUTECOMMANDS);
+
+    for (uint32_t cb_index = 0; cb_index < commandBufferCount; ++cb_index) {
+        proxy_cb_context.NextSubcommandTag(CMD_EXECUTECOMMANDS);
+        const auto *recorded_cb_context = GetAccessContext(pCommandBuffers[cb_index]);
+        if (!recorded_cb_context) continue;
+
+        const auto *recorded_context = recorded_cb_context->GetCurrentAccessContext();
+        assert(recorded_context);
+        skip |= recorded_cb_context->ValidateFirstUse(&proxy_cb_context, func_name, cb_index);
+
+        // The barriers have already been applied in ValidatFirstUse
+        ResourceUsageRange tag_range = proxy_cb_context.ImportRecordedAccessLog(*recorded_cb_context);
+        proxy_cb_context.ResolveRecordedContext(*recorded_context, tag_range.begin);
+    }
+
+    return skip;
+}
+
+void SyncValidator::PreCallRecordCmdExecuteCommands(VkCommandBuffer commandBuffer, uint32_t commandBufferCount,
+                                                    const VkCommandBuffer *pCommandBuffers) {
+    StateTracker::PreCallRecordCmdExecuteCommands(commandBuffer, commandBufferCount, pCommandBuffers);
+    auto *cb_context = GetAccessContext(commandBuffer);
+    assert(cb_context);
+    cb_context->NextCommandTag(CMD_EXECUTECOMMANDS);
+    for (uint32_t cb_index = 0; cb_index < commandBufferCount; ++cb_index) {
+        cb_context->NextSubcommandTag(CMD_EXECUTECOMMANDS);
+        const auto *recorded_cb_context = GetAccessContext(pCommandBuffers[cb_index]);
+        if (!recorded_cb_context) continue;
+        cb_context->RecordExecutedCommandBuffer(*recorded_cb_context, CMD_EXECUTECOMMANDS);
     }
 }
 
@@ -5925,3 +6398,16 @@ AttachmentViewGen::Gen AttachmentViewGen::GetDepthStencilRenderAreaGenType(bool 
 }
 
 AccessAddressType AttachmentViewGen::GetAddressType() const { return AccessContext::ImageAddressType(*view_->image_state); }
+
+void SyncEventsContext::ApplyBarrier(const SyncExecScope &src, const SyncExecScope &dst) {
+    const bool all_commands_bit = 0 != (src.mask_param & VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+    for (auto &event_pair : map_) {
+        assert(event_pair.second);  // Shouldn't be storing empty
+        auto &sync_event = *event_pair.second;
+        // Events don't happen at a stage, so we need to check and store the unexpanded ALL_COMMANDS if set for inter-event-calls
+        if ((sync_event.barriers & src.exec_scope) || all_commands_bit) {
+            sync_event.barriers |= dst.exec_scope;
+            sync_event.barriers |= dst.mask_param & VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        }
+    }
+}

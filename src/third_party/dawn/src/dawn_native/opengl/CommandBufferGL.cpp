@@ -645,10 +645,10 @@ namespace dawn_native { namespace opengl {
                     auto& dst = copy->destination;
                     Buffer* buffer = ToBackend(src.buffer.Get());
 
-                    if (dst.aspect == Aspect::Stencil) {
-                        return DAWN_VALIDATION_ERROR(
-                            "Copies to stencil textures unsupported on OpenGL");
-                    }
+                    DAWN_INVALID_IF(
+                        dst.aspect == Aspect::Stencil,
+                        "Copies to stencil textures are unsupported on the OpenGL backend.");
+
                     ASSERT(dst.aspect == Aspect::Color);
 
                     buffer->EnsureDataInitialized();
@@ -843,10 +843,6 @@ namespace dawn_native { namespace opengl {
                     SkipCommand(&mCommands, type);
                     break;
                 }
-
-                case Command::SetValidatedBufferLocationsInternal:
-                    DoNextSetValidatedBufferLocationsInternal();
-                    break;
 
                 case Command::WriteBuffer: {
                     WriteBufferCmd* write = mCommands.NextCommand<WriteBufferCmd>();
@@ -1187,17 +1183,17 @@ namespace dawn_native { namespace opengl {
 
                 case Command::DrawIndexedIndirect: {
                     DrawIndexedIndirectCmd* draw = iter->NextCommand<DrawIndexedIndirectCmd>();
-                    ASSERT(!draw->indirectBufferLocation->IsNull());
 
                     vertexStateBufferBindingTracker.Apply(gl);
                     bindGroupTracker.Apply(gl);
 
-                    Buffer* indirectBuffer = ToBackend(draw->indirectBufferLocation->GetBuffer());
+                    Buffer* indirectBuffer = ToBackend(draw->indirectBuffer.Get());
+                    ASSERT(indirectBuffer != nullptr);
+
                     gl.BindBuffer(GL_DRAW_INDIRECT_BUFFER, indirectBuffer->GetHandle());
                     gl.DrawElementsIndirect(
                         lastPipeline->GetGLPrimitiveTopology(), indexBufferFormat,
-                        reinterpret_cast<void*>(
-                            static_cast<intptr_t>(draw->indirectBufferLocation->GetOffset())));
+                        reinterpret_cast<void*>(static_cast<intptr_t>(draw->indirectOffset)));
                     break;
                 }
 

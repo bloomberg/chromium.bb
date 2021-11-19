@@ -108,15 +108,17 @@ class BasicSourceLineResolver::Module : public SourceLineResolverBase::Module {
   // with the result.
   virtual void LookupAddress(
       StackFrame* frame,
-      std::vector<std::unique_ptr<StackFrame>>* inlined_frame) const;
+      std::deque<std::unique_ptr<StackFrame>>* inlined_frame) const;
 
-  // Construct inlined frame for frame and return inlined function call site
-  // source line. If failed to construct inlined frame, return -1.
-  virtual int ConstructInlineFrames(
+  // Recursively construct inlined frames for |frame| and store them in
+  // |inline_frames|. |frame|'s source line and source file name may be updated
+  // if an inlined frame is found inside |frame|. As a result, the innermost
+  // inlined frame will be the first one in |inline_frames|.
+  virtual void ConstructInlineFrames(
       StackFrame* frame,
       MemAddr address,
       const RangeMap<uint64_t, linked_ptr<Inline>>& inlines,
-      std::vector<std::unique_ptr<StackFrame>>* inline_frames) const;
+      std::deque<std::unique_ptr<StackFrame>>* inline_frames) const;
 
   // If Windows stack walking information is available covering ADDRESS,
   // return a WindowsFrameInfo structure describing it. If the information

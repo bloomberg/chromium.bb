@@ -11,6 +11,8 @@
 #ifndef EIGEN_GMRES_H
 #define EIGEN_GMRES_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

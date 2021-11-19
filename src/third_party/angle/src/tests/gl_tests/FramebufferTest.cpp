@@ -623,20 +623,18 @@ TEST_P(FramebufferTest_ES3, TextureAttachmentMipLevels)
 
 TEST_P(FramebufferTest_ES3, TextureAttachmentMipLevelsReadBack)
 {
-#if defined(ADDRESS_SANITIZER)
-    // http://anglebug.com/4737
-    ANGLE_SKIP_TEST_IF(IsOSX());
-#endif
-
     GLFramebuffer framebuffer;
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    const std::array<GLColor, 2 * 2> mip0Data = {GLColor::red, GLColor::red, GLColor::red,
-                                                 GLColor::red};
-    const std::array<GLColor, 1 * 1> mip1Data = {GLColor::green};
+    const std::array<GLColor, 4 * 4> mip0Data = {
+        GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red,
+        GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red,
+        GLColor::red, GLColor::red, GLColor::red, GLColor::red};
+    const std::array<GLColor, 2 * 2> mip1Data = {GLColor::green, GLColor::green, GLColor::green,
+                                                 GLColor::green};
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, mip0Data.data());
     glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, mip1Data.data());
@@ -656,11 +654,6 @@ TEST_P(FramebufferTest_ES3, TextureAttachmentMipLevelsReadBack)
 // and Vulkan level in referring to that rendertarget.
 TEST_P(FramebufferTest_ES3, TextureAttachmentMipLevelsReadBackWithDraw)
 {
-#if defined(ADDRESS_SANITIZER)
-    // http://anglebug.com/4737
-    ANGLE_SKIP_TEST_IF(IsOSX());
-#endif
-
     ANGLE_GL_PROGRAM(greenProgram, essl1_shaders::vs::Simple(), essl1_shaders::fs::Green());
 
     GLFramebuffer framebuffer;
@@ -669,9 +662,12 @@ TEST_P(FramebufferTest_ES3, TextureAttachmentMipLevelsReadBackWithDraw)
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    const std::array<GLColor, 2 * 2> mip0Data = {GLColor::red, GLColor::red, GLColor::red,
-                                                 GLColor::red};
-    const std::array<GLColor, 1 * 1> mip1Data = {GLColor::green};
+    const std::array<GLColor, 4 * 4> mip0Data = {
+        GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red,
+        GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red, GLColor::red,
+        GLColor::red, GLColor::red, GLColor::red, GLColor::red};
+    const std::array<GLColor, 2 * 2> mip1Data = {GLColor::green, GLColor::green, GLColor::green,
+                                                 GLColor::green};
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 4, 4, 0, GL_RGBA, GL_UNSIGNED_BYTE, mip0Data.data());
     glTexImage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, mip1Data.data());
@@ -745,6 +741,42 @@ TEST_P(FramebufferTest_ES3, AttachmentWith3DLayers)
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texA, 0);
     glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, texB, 0, 0);
     ASSERT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Check that invalid layer is detected in framebuffer completeness check.
+TEST_P(FramebufferTest_ES3, 3DAttachmentInvalidLayer)
+{
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_3D, tex);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, 4, 4, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0, 2);
+    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+                     glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0, 1);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
+    EXPECT_GL_NO_ERROR();
+}
+
+// Check that invalid layer is detected in framebuffer completeness check.
+TEST_P(FramebufferTest_ES3, 2DArrayInvalidLayer)
+{
+    GLTexture tex;
+    glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, 4, 4, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0, 2);
+    EXPECT_GLENUM_EQ(GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+                     glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex, 0, 1);
+    EXPECT_GL_FRAMEBUFFER_COMPLETE(GL_FRAMEBUFFER);
     EXPECT_GL_NO_ERROR();
 }
 
@@ -3913,9 +3945,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(FramebufferTest_ES3);
 ANGLE_INSTANTIATE_TEST_ES3_AND(FramebufferTest_ES3,
                                WithEmulatedPrerotation(ES3_VULKAN(), 90),
                                WithEmulatedPrerotation(ES3_VULKAN(), 180),
-                               WithEmulatedPrerotation(ES3_VULKAN(), 270),
-                               WithDirectSPIRVGeneration(WithEmulatedPrerotation(ES3_VULKAN(),
-                                                                                 90)));
+                               WithEmulatedPrerotation(ES3_VULKAN(), 270));
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(FramebufferTest_ES31);
 ANGLE_INSTANTIATE_TEST_ES31(FramebufferTest_ES31);

@@ -140,41 +140,29 @@ std::ostream& operator<<(std::ostream& out, ImageFormat format) {
   return out;
 }
 
-StorageTexture::StorageTexture(ProgramID program_id,
-                               const Source& source,
-                               TextureDimension dim,
-                               ImageFormat format,
-                               Type* subtype,
-                               Access access)
-    : Base(program_id, source, dim),
-      image_format_(format),
-      subtype_(subtype),
-      access_(access) {}
+StorageTexture::StorageTexture(ProgramID pid,
+                               const Source& src,
+                               TextureDimension d,
+                               ImageFormat fmt,
+                               const Type* subtype,
+                               Access ac)
+    : Base(pid, src, d), format(fmt), type(subtype), access(ac) {}
 
 StorageTexture::StorageTexture(StorageTexture&&) = default;
 
 StorageTexture::~StorageTexture() = default;
 
-std::string StorageTexture::type_name() const {
-  std::ostringstream out;
-  out << "__storage_texture_" << dim() << "_" << image_format_ << "_"
-      << access_;
-  return out.str();
-}
-
 std::string StorageTexture::FriendlyName(const SymbolTable&) const {
   std::ostringstream out;
-  out << "texture_storage_" << dim() << "<" << image_format_ << ", " << access_
-      << ">";
+  out << "texture_storage_" << dim << "<" << format << ", " << access << ">";
   return out.str();
 }
 
-StorageTexture* StorageTexture::Clone(CloneContext* ctx) const {
+const StorageTexture* StorageTexture::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* ty = ctx->Clone(type());
-  return ctx->dst->create<StorageTexture>(src, dim(), image_format(), ty,
-                                          access());
+  auto src = ctx->Clone(source);
+  auto* ty = ctx->Clone(type);
+  return ctx->dst->create<StorageTexture>(src, dim, format, ty, access);
 }
 
 Type* StorageTexture::SubtypeFor(ImageFormat format, ProgramBuilder& builder) {

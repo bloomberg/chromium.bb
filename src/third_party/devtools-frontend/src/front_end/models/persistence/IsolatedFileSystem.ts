@@ -81,7 +81,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
 
   constructor(
       manager: IsolatedFileSystemManager, path: string, embedderPath: string, domFileSystem: FileSystem, type: string) {
-    super(path, type);
+    // TODO(crbug.com/1253323): Cast to UrlString will be removed when migration to branded types is complete.
+    super(path as Platform.DevToolsPath.UrlString, type);
     this.manager = manager;
     this.embedderPathInternal = embedderPath;
     this.domFileSystem = domFileSystem;
@@ -173,8 +174,9 @@ export class IsolatedFileSystem extends PlatformFileSystem {
               this.initialGitFoldersInternal.add(parentFolder);
             }
             if (this.isFileExcluded(entry.fullPath + '/')) {
-              this.excludedEmbedderFolders.push(
-                  Common.ParsedURL.ParsedURL.urlToPlatformPath(this.path() + entry.fullPath, Host.Platform.isWin()));
+              // TODO(crbug.com/1253323): Cast to RawPathString will be removed when migration to branded types is complete.
+              this.excludedEmbedderFolders.push(Common.ParsedURL.ParsedURL.capFilePrefix(
+                  this.path() + entry.fullPath as Platform.DevToolsPath.RawPathString, Host.Platform.isWin()));
               continue;
             }
             ++pendingRequests;
@@ -510,8 +512,8 @@ export class IsolatedFileSystem extends PlatformFileSystem {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(
           requestId, this.embedderPathInternal, query);
 
-      function innerCallback(files: string[]): void {
-        resolve(files.map(path => Common.ParsedURL.ParsedURL.platformPathToURL(path)));
+      function innerCallback(files: Platform.DevToolsPath.RawPathString[]): void {
+        resolve(files.map(path => Common.ParsedURL.ParsedURL.rawPathToUrlString(path)));
         progress.incrementWorked(1);
       }
     });
@@ -550,9 +552,9 @@ export class IsolatedFileSystem extends PlatformFileSystem {
                                              Common.ResourceType.resourceTypes.Document;
   }
 
-  tooltipForURL(url: string): string {
-    const path = Platform.StringUtilities.trimMiddle(
-        Common.ParsedURL.ParsedURL.urlToPlatformPath(url, Host.Platform.isWin()), 150);
+  tooltipForURL(url: Platform.DevToolsPath.RawPathString): string {
+    const path =
+        Platform.StringUtilities.trimMiddle(Common.ParsedURL.ParsedURL.capFilePrefix(url, Host.Platform.isWin()), 150);
     return i18nString(UIStrings.linkedToS, {PH1: path});
   }
 

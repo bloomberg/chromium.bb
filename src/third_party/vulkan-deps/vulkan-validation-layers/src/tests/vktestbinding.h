@@ -270,7 +270,7 @@ class Device : public internal::Handle<VkDevice> {
         QUEUE_COUNT,
     };
 
-    void init_queues();
+    void init_queues(const VkDeviceCreateInfo &info);
     void init_formats();
 
     PhysicalDevice phy_;
@@ -596,6 +596,8 @@ class Image : public internal::NonDispHandle<VkImage> {
 
 class ImageView : public internal::NonDispHandle<VkImageView> {
   public:
+    explicit ImageView() = default;
+    explicit ImageView(const Device &dev, const VkImageViewCreateInfo &info) { init(dev, info); }
     ~ImageView() NOEXCEPT;
 
     // vkCreateImageView()

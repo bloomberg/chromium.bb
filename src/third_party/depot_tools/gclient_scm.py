@@ -32,12 +32,6 @@ import shutil
 import subprocess2
 
 
-THIS_FILE_PATH = os.path.abspath(__file__)
-
-GSUTIL_DEFAULT_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
-
-
 class NoUsableRevError(gclient_utils.Error):
   """Raised if requested revision isn't found in checkout."""
 

@@ -5,7 +5,6 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import type * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Root from '../../core/root/root.js';
 
 import type * as ReportRenderer from './LighthouseReporterTypes.js';
 
@@ -35,10 +34,7 @@ export class ProtocolService {
   }
 
   getLocales(): readonly string[] {
-    if (Root.Runtime.experiments.isEnabled(Root.Runtime.ExperimentName.LOCALIZED_DEVTOOLS)) {
-      return [i18n.DevToolsLocale.DevToolsLocale.instance().locale];
-    }
-    return navigator.languages;
+    return [i18n.DevToolsLocale.DevToolsLocale.instance().locale];
   }
 
   startLighthouse(auditURL: string, categoryIDs: string[], flags: Object): Promise<ReportRenderer.RunnerResult> {
@@ -90,8 +86,13 @@ export class ProtocolService {
 
   private initWorker(): Promise<Worker> {
     this.lighthouseWorkerPromise = new Promise<Worker>(resolve => {
-      const worker = new Worker(
-          new URL('../../entrypoints/lighthouse_worker/lighthouse_worker.js', import.meta.url), {type: 'module'});
+      const workerUrl = new URL('../../entrypoints/lighthouse_worker/lighthouse_worker.js', import.meta.url);
+      const remoteBaseSearchParam = new URL(self.location.href).searchParams.get('remoteBase');
+      if (remoteBaseSearchParam) {
+        // Allows Lighthouse worker to fetch remote locale files.
+        workerUrl.searchParams.set('remoteBase', remoteBaseSearchParam);
+      }
+      const worker = new Worker(workerUrl, {type: 'module'});
 
       worker.addEventListener('message', event => {
         if (event.data === 'workerReady') {

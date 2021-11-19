@@ -39,8 +39,9 @@ CFWL_DateTimePicker::CFWL_DateTimePicker(CFWL_App* app)
   m_pMonthCal->SetWidgetRect(
       CFX_RectF(0, 0, m_pMonthCal->GetAutosizedWidgetRect().Size()));
 
-  RegisterEventTarget(m_pMonthCal);
-  RegisterEventTarget(m_pEdit);
+  CFWL_NoteDriver* pNoteDriver = GetFWLApp()->GetNoteDriver();
+  pNoteDriver->RegisterEventTarget(this, m_pMonthCal);
+  pNoteDriver->RegisterEventTarget(this, m_pEdit);
 }
 
 CFWL_DateTimePicker::~CFWL_DateTimePicker() = default;
@@ -216,7 +217,7 @@ void CFWL_DateTimePicker::ShowMonthCalendar() {
   m_pMonthCal->Update();
   m_pMonthCal->RemoveStates(FWL_STATE_WGT_Invisible);
 
-  CFWL_MessageSetFocus msg(m_pEdit, m_pMonthCal);
+  CFWL_MessageSetFocus msg(m_pMonthCal);
   m_pEdit->GetDelegate()->OnProcessMessage(&msg);
   RepaintInflatedMonthCalRect();
 }
@@ -368,10 +369,8 @@ void CFWL_DateTimePicker::OnFocusLost(CFWL_Message* pMsg) {
   m_Properties.m_dwStates &= ~FWL_STATE_WGT_Focused;
   m_BtnRect = CFX_RectF();
   HideMonthCalendar();
-  if (m_pEdit->GetStates() & FWL_STATE_WGT_Focused) {
-    pMsg->SetSrcTarget(m_pEdit);
+  if (m_pEdit->GetStates() & FWL_STATE_WGT_Focused)
     m_pEdit->GetDelegate()->OnProcessMessage(pMsg);
-  }
   rtInvalidate.Inflate(2, 2);
   RepaintRect(rtInvalidate);
 }
@@ -436,11 +435,11 @@ void CFWL_DateTimePicker::ClearSelection() {
   m_pEdit->ClearSelection();
 }
 
-Optional<WideString> CFWL_DateTimePicker::Copy() {
+absl::optional<WideString> CFWL_DateTimePicker::Copy() {
   return m_pEdit->Copy();
 }
 
-Optional<WideString> CFWL_DateTimePicker::Cut() {
+absl::optional<WideString> CFWL_DateTimePicker::Cut() {
   return m_pEdit->Cut();
 }
 

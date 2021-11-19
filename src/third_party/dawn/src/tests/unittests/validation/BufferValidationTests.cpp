@@ -219,13 +219,21 @@ TEST_F(BufferValidationTest, MapAsync_OffsetSizeOOB) {
     // Valid case: empty range at the end of the buffer is ok.
     {
         wgpu::Buffer buffer = CreateMapReadBuffer(8);
-        buffer.MapAsync(wgpu::MapMode::Read, 8, 0, nullptr, nullptr);
+        // Currently using size=0 will cause a deprecation warning, and result in default size.
+        // After the deprecation is finished, size=0 will result in a mapping with zero size
+        // exactly.
+        // TODO(dawn:1058): Remove the deprecation warning expection after the removal.
+        EXPECT_DEPRECATION_WARNING(buffer.MapAsync(wgpu::MapMode::Read, 8, 0, nullptr, nullptr));
     }
 
     // Error case, offset is larger than the buffer size (even if size is 0).
     {
         wgpu::Buffer buffer = CreateMapReadBuffer(12);
-        AssertMapAsyncError(buffer, wgpu::MapMode::Read, 16, 0);
+        // Currently using size=0 will cause a deprecation warning, and result in default size.
+        // After the deprecation is finished, size=0 will result in a mapping with zero size
+        // exactly.
+        // TODO(dawn:1058): Remove the deprecation warning expection after the removal.
+        EXPECT_DEPRECATION_WARNING(AssertMapAsyncError(buffer, wgpu::MapMode::Read, 16, 0));
     }
 
     // Error case, offset + size is larger than the buffer
@@ -459,7 +467,18 @@ TEST_F(BufferValidationTest, MappedAtCreationSizeAlignment) {
     ASSERT_DEVICE_ERROR(BufferMappedAtCreation(2, wgpu::BufferUsage::MapWrite));
 }
 
-// Test that it is valid to destroy an unmapped buffer
+// Test that it is valid to destroy an error buffer
+TEST_F(BufferValidationTest, DestroyErrorBuffer) {
+    wgpu::BufferDescriptor desc;
+    desc.size = 4;
+    desc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite;
+    wgpu::Buffer buf;
+    ASSERT_DEVICE_ERROR(buf = device.CreateBuffer(&desc));
+
+    buf.Destroy();
+}
+
+// Test that it is valid to Destroy an unmapped buffer
 TEST_F(BufferValidationTest, DestroyUnmappedBuffer) {
     {
         wgpu::Buffer buf = CreateMapReadBuffer(4);
@@ -476,6 +495,17 @@ TEST_F(BufferValidationTest, DestroyDestroyedBuffer) {
     wgpu::Buffer buf = CreateMapWriteBuffer(4);
     buf.Destroy();
     buf.Destroy();
+}
+
+// Test that it is invalid to Unmap an error buffer
+TEST_F(BufferValidationTest, UnmapErrorBuffer) {
+    wgpu::BufferDescriptor desc;
+    desc.size = 4;
+    desc.usage = wgpu::BufferUsage::MapRead | wgpu::BufferUsage::MapWrite;
+    wgpu::Buffer buf;
+    ASSERT_DEVICE_ERROR(buf = device.CreateBuffer(&desc));
+
+    ASSERT_DEVICE_ERROR(buf.Unmap());
 }
 
 // Test that it is invalid to Unmap a destroyed buffer
@@ -819,7 +849,7 @@ TEST_F(BufferValidationTest, GetMappedRange_OffsetSizeOOB) {
     // Valid case: full range is ok with defaulted MapAsync size
     {
         wgpu::Buffer buffer = CreateMapWriteBuffer(8);
-        buffer.MapAsync(wgpu::MapMode::Write, 0, 0, nullptr, nullptr);
+        buffer.MapAsync(wgpu::MapMode::Write, 0, wgpu::kWholeMapSize, nullptr, nullptr);
         WaitForAllOperations(device);
         EXPECT_NE(buffer.GetMappedRange(0, 8), nullptr);
     }

@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2015-2018 The Khronos Group Inc.
- * Copyright (c) 2015-2018 Valve Corporation
- * Copyright (c) 2015-2018 LunarG, Inc.
+ * Copyright (c) 2015-2021 The Khronos Group Inc.
+ * Copyright (c) 2015-2021 Valve Corporation
+ * Copyright (c) 2015-2021 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,38 +19,91 @@
  * Author: Ian Elliot <ian@lunarg.com>
  * Author: Jon Ashburn <jon@lunarg.com>
  * Author: Lenny Komow <lenny@lunarg.com>
+ * Author: Charles Giessen <charles@lunarg.com>
  *
  */
 #pragma once
+
+#if defined(__FreeBSD__)
+#include <sys/types.h>
+#include <sys/select.h>
+#endif
 
 #if defined(_WIN32)
 // WinSock2.h must be included *BEFORE* windows.h
 #include <winsock2.h>
 #endif  // _WIN32
 
+#include <assert.h>
+#include <string.h>
+#include <stdbool.h>
+
 #if defined(__Fuchsia__)
 #include "dlopen_fuchsia.h"
 #endif  // defined(__Fuchsia__)
 
-#include "vulkan/vk_platform.h"
-#include "vulkan/vk_sdk_platform.h"
-
-#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__) || defined(__QNXNTO__)
-/* Linux-specific common code: */
-
-// Headers:
-//#ifndef _GNU_SOURCE
-//#define _GNU_SOURCE 1
-//#endif
+#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__) || defined(__QNXNTO__) || defined(__FreeBSD__)
 #include <unistd.h>
 // Note: The following file is for dynamic loading:
 #include <dlfcn.h>
 #include <pthread.h>
-#include <assert.h>
-#include <string.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <libgen.h>
+
+#elif defined(_WIN32)  // defined(__linux__)
+/* Windows-specific common code: */
+// WinBase.h defines CreateSemaphore and synchapi.h defines CreateEvent
+//  undefine them to avoid conflicts with VkLayerDispatchTable struct members.
+#ifdef CreateSemaphore
+#undef CreateSemaphore
+#endif
+#ifdef CreateEvent
+#undef CreateEvent
+#endif
+#include <stdio.h>
+#include <io.h>
+#include <shlwapi.h>
+#include <direct.h>
+#endif  // defined(_WIN32)
+
+#include "vulkan/vk_platform.h"
+#include "vulkan/vk_sdk_platform.h"
+#include <vulkan/vulkan.h>
+#include <vulkan/vk_layer.h>
+#include <vulkan/vk_icd.h>
+
+#include "vk_loader_layer.h"
+#include "vk_layer_dispatch_table.h"
+#include "vk_loader_extensions.h"
+
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define LOADER_EXPORT __attribute__((visibility("default")))
+#elif defined(__SUNPRO_C) && (__SUNPRO_C >= 0x590)
+#define LOADER_EXPORT __attribute__((visibility("default")))
+#else
+#define LOADER_EXPORT
+#endif
+
+// A debug option to disable allocators at compile time to investigate future issues.
+#define DEBUG_DISABLE_APP_ALLOCATORS 0
+
+#define MAX_STRING_SIZE 1024
+
+// This is defined in vk_layer.h, but if there's problems we need to create the define
+// here.
+#ifndef MAX_NUM_UNKNOWN_EXTS
+#define MAX_NUM_UNKNOWN_EXTS 250
+#endif
+
+// Environment Variable information
+#define VK_ICD_FILENAMES_ENV_VAR "VK_ICD_FILENAMES"
+#define VK_LAYER_PATH_ENV_VAR "VK_LAYER_PATH"
+
+// Override layer information
+#define VK_OVERRIDE_LAYER_NAME "VK_LAYER_LUNARG_override"
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__Fuchsia__) || defined(__QNXNTO__) || defined(__FreeBSD__)
+/* Linux-specific common code: */
 
 // VK Library Filenames, Paths, etc.:
 #define PATH_SEPARATOR ':'
@@ -113,13 +166,33 @@ static inline char *loader_platform_executable_path(char *buffer, size_t size) {
     buffer[count] = '\0';
     return buffer;
 }
-#elif defined(__APPLE__)  // defined(__linux__)
+#elif defined(__APPLE__) // defined(__linux__)
 #include <libproc.h>
 static inline char *loader_platform_executable_path(char *buffer, size_t size) {
     pid_t pid = getpid();
     int ret = proc_pidpath(pid, buffer, size);
     if (ret <= 0) return NULL;
     buffer[ret] = '\0';
+    return buffer;
+}
+#elif defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)
+#include <sys/sysctl.h>
+static inline char *loader_platform_executable_path(char *buffer, size_t size) {
+    int mib[] = {
+        CTL_KERN,
+#if defined(__NetBSD__)
+        KERN_PROC_ARGS,
+        -1,
+        KERN_PROC_PATHNAME,
+#else
+        KERN_PROC,
+        KERN_PROC_PATHNAME,
+        -1,
+#endif
+    };
+    if (sysctl(mib, sizeof(mib) / sizeof(mib[0]), buffer, &size, NULL, 0) < 0)
+        return NULL;
+
     return buffer;
 }
 #elif defined(__Fuchsia__)
@@ -197,7 +270,6 @@ static inline const char *loader_platform_get_proc_address_error(const char *nam
 
 // Threads:
 typedef pthread_t loader_platform_thread;
-#define THREAD_LOCAL_DECL __thread
 
 // The once init functionality is not used on Linux
 #define LOADER_PLATFORM_THREAD_ONCE_DECLARATION(var)
@@ -221,29 +293,7 @@ static inline void loader_platform_thread_cond_wait(loader_platform_thread_cond 
 }
 static inline void loader_platform_thread_cond_broadcast(loader_platform_thread_cond *pCond) { pthread_cond_broadcast(pCond); }
 
-#define loader_stack_alloc(size) alloca(size)
-
 #elif defined(_WIN32)  // defined(__linux__)
-/* Windows-specific common code: */
-// WinBase.h defines CreateSemaphore and synchapi.h defines CreateEvent
-//  undefine them to avoid conflicts with VkLayerDispatchTable struct members.
-#ifdef CreateSemaphore
-#undef CreateSemaphore
-#endif
-#ifdef CreateEvent
-#undef CreateEvent
-#endif
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <io.h>
-#include <stdbool.h>
-#include <shlwapi.h>
-#include <direct.h>
-#ifdef __cplusplus
-#include <iostream>
-#include <string>
-#endif  // __cplusplus
 
 // VK Library Filenames, Paths, etc.:
 #define PATH_SEPARATOR ';'
@@ -396,23 +446,6 @@ static char *loader_platform_get_proc_address_error(const char *name) {
 // Threads:
 typedef HANDLE loader_platform_thread;
 
-// __declspec(thread) is not supported by MinGW compiler (ignored with warning or
-//                    cause error depending on compiler switches)
-//
-// __thread should be used instead
-//
-// __MINGW32__ defined for both 32 and 64 bit MinGW compilers, so it is enough to
-// detect any (32 or 64) flavor of MinGW compiler.
-//
-// @note __GNUC__ could be used as a more generic way to detect _any_
-//       GCC[-compatible] compiler on Windows, but this fix was tested
-//       only with MinGW, so keep it explicit at the moment.
-#if defined(__MINGW32__)
-#define THREAD_LOCAL_DECL __thread
-#else
-#define THREAD_LOCAL_DECL __declspec(thread)
-#endif
-
 // The once init functionality is not used when building a DLL on Windows. This is because there is no way to clean up the
 // resources allocated by anything allocated by once init. This isn't a problem for static libraries, but it is for dynamic
 // ones. When building a DLL, we use DllMain() instead to allow properly cleaning up resources.
@@ -436,8 +469,6 @@ static void loader_platform_thread_cond_wait(loader_platform_thread_cond *pCond,
     SleepConditionVariableCS(pCond, pMutex, INFINITE);
 }
 static void loader_platform_thread_cond_broadcast(loader_platform_thread_cond *pCond) { WakeAllConditionVariable(pCond); }
-
-#define loader_stack_alloc(size) _alloca(size)
 #else  // defined(_WIN32)
 
 #error The "loader_platform.h" file must be modified for this OS.

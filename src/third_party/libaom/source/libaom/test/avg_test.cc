@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <ostream>
 #include <tuple>
 
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -527,6 +528,10 @@ template <typename SatdFuncType>
 struct SatdTestParam {
   SatdTestParam(int s, SatdFuncType f1, SatdFuncType f2)
       : satd_size(s), func_ref(f1), func_simd(f2) {}
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const SatdTestParam<SatdFuncType> &param) {
+    return os << "satd_size: " << param.satd_size;
+  }
   int satd_size;
   SatdFuncType func_ref;
   SatdFuncType func_simd;

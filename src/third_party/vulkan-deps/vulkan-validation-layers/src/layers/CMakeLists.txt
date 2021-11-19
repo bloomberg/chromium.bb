@@ -135,7 +135,7 @@ endif()
 
 # Clang warns about unused const variables. Generated files may purposely contain unused consts, so silence this warning in Clang
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    set_source_files_properties(parameter_validation.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-const-variable")
+    set_source_files_properties(generated/parameter_validation.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-const-variable")
 endif()
 
 set(CHASSIS_LIBRARY_FILES
@@ -165,12 +165,15 @@ set(CORE_VALIDATION_LIBRARY_FILES
     device_memory_state.h
     device_memory_state.cpp
     buffer_state.h
+    buffer_state.cpp
     cmd_buffer_state.h
     cmd_buffer_state.cpp
     image_state.h
     image_state.cpp
     pipeline_state.h
     pipeline_state.cpp
+    queue_state.h
+    queue_state.cpp
     query_state.h
     ray_tracing_state.h
     render_pass_state.h
@@ -189,6 +192,7 @@ set(CORE_VALIDATION_LIBRARY_FILES
     sync_vuid_maps.cpp
     sync_vuid_maps.h
     generated/spirv_validation_helper.cpp
+    generated/spirv_grammar_helper.cpp
     generated/command_validation.cpp
     generated/synchronization_validation_types.cpp
     gpu_validation.cpp

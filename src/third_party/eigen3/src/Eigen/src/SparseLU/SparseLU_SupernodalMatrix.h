@@ -11,6 +11,8 @@
 #ifndef EIGEN_SPARSELU_SUPERNODAL_MATRIX_H
 #define EIGEN_SPARSELU_SUPERNODAL_MATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 namespace internal {
 

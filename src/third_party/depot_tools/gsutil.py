@@ -79,7 +79,7 @@ def download_gsutil(version, target_dir):
 
 @contextlib.contextmanager
 def temporary_directory(base):
-  tmpdir = tempfile.mkdtemp(prefix='gsutil_py', dir=base)
+  tmpdir = tempfile.mkdtemp(prefix='t', dir=base)
   try:
     yield tmpdir
   finally:
@@ -122,7 +122,7 @@ def ensure_gsutil(version, target, clean):
     if cleanup_path:
       shutil.rmtree(cleanup_path)
 
-    download_dir = os.path.join(instance_dir, 'download')
+    download_dir = os.path.join(instance_dir, 'd')
     target_zip_filename = download_gsutil(version, instance_dir)
     with zipfile.ZipFile(target_zip_filename, 'r') as target_zip:
       target_zip.extractall(download_dir)

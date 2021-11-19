@@ -205,9 +205,14 @@ class F extends CopyToTextureUtils {
           rgba.B /= rgba.A;
         }
 
+        // WebGL readPixel returns pixels from bottom-left origin. Using CopyExternalImageToTexture
+        // to copy from WebGL Canvas keeps top-left origin. So the expectation from webgl.readPixel should
+        // be flipped.
+        const dstPixelPos = contextType === 'gl' ? (height - i - 1) * width + j : pixelPos;
+
         memcpy(
           { src: rep.pack(rep.encode(rgba)) },
-          { dst: expectedPixels, start: pixelPos * bytesPerPixel }
+          { dst: expectedPixels, start: dstPixelPos * bytesPerPixel }
         );
       }
     }

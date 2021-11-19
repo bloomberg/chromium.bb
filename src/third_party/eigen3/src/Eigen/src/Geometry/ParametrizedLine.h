@@ -11,6 +11,8 @@
 #ifndef EIGEN_PARAMETRIZEDLINE_H
 #define EIGEN_PARAMETRIZEDLINE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \geometry_module \ingroup Geometry_Module

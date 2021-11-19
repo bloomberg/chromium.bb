@@ -48,6 +48,7 @@ experimental domain Accessibility
   # Enum of possible native property sources (as a subtype of a particular AXValueSourceType).
   type AXValueNativeSourceType extends string
     enum
+      description
       figcaption
       label
       labelfor
@@ -408,86 +409,6 @@ experimental domain Animation
       # Animation that was started.
       Animation animation
 
-# The domain is deprecated as AppCache is being removed (see crbug.com/582750).
-experimental deprecated domain ApplicationCache
-  depends on Page
-
-  # Detailed application cache resource information.
-  type ApplicationCacheResource extends object
-    properties
-      # Resource url.
-      string url
-      # Resource size.
-      integer size
-      # Resource type.
-      string type
-
-  # Detailed application cache information.
-  type ApplicationCache extends object
-    properties
-      # Manifest URL.
-      string manifestURL
-      # Application cache size.
-      number size
-      # Application cache creation time.
-      number creationTime
-      # Application cache update time.
-      number updateTime
-      # Application cache resources.
-      array of ApplicationCacheResource resources
-
-  # Frame identifier - manifest URL pair.
-  type FrameWithManifest extends object
-    properties
-      # Frame identifier.
-      Page.FrameId frameId
-      # Manifest URL.
-      string manifestURL
-      # Application cache status.
-      integer status
-
-  # Enables application cache domain notifications.
-  command enable
-
-  # Returns relevant application cache data for the document in given frame.
-  command getApplicationCacheForFrame
-    parameters
-      # Identifier of the frame containing document whose application cache is retrieved.
-      Page.FrameId frameId
-    returns
-      # Relevant application cache data for the document in given frame.
-      ApplicationCache applicationCache
-
-  # Returns array of frame identifiers with manifest urls for each frame containing a document
-  # associated with some application cache.
-  command getFramesWithManifests
-    returns
-      # Array of frame identifiers with manifest urls for each frame containing a document
-      # associated with some application cache.
-      array of FrameWithManifest frameIds
-
-  # Returns manifest URL for document in the given frame.
-  command getManifestForFrame
-    parameters
-      # Identifier of the frame containing document whose manifest is retrieved.
-      Page.FrameId frameId
-    returns
-      # Manifest URL for document in the given frame.
-      string manifestURL
-
-  event applicationCacheStatusUpdated
-    parameters
-      # Identifier of the frame containing document whose application cache updated status.
-      Page.FrameId frameId
-      # Manifest URL.
-      string manifestURL
-      # Updated application cache status.
-      integer status
-
-  event networkStateUpdated
-    parameters
-      boolean isNowOnline
-
 # Audits domain allows investigation of page violations and possible improvements.
 experimental domain Audits
   depends on Network
@@ -658,6 +579,7 @@ experimental domain Audits
       kURLViolation
       kTrustedTypesSinkViolation
       kTrustedTypesPolicyViolation
+      kWasmEvalViolation
 
   type SourceCodeLocation extends object
     properties
@@ -787,6 +709,22 @@ experimental domain Audits
       GenericIssueErrorType errorType
       optional Page.FrameId frameId
 
+  # This issue tracks information needed to print a deprecation message.
+  # The formatting is inherited from the old console.log version, see more at:
+  # https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/frame/deprecation.cc
+  # TODO(crbug.com/1264960): Re-work format to add i18n support per:
+  # https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/devtools_protocol/README.md
+  type DeprecationIssueDetails extends object
+    properties
+      optional AffectedFrame affectedFrame
+      SourceCodeLocation sourceCodeLocation
+      # The content of the deprecation issue (this won't be translated),
+      # e.g. "window.inefficientLegacyStorageMethod will be removed in M97,
+      # around January 2022. Please use Web Storage or Indexed Database
+      # instead. This standard was abandoned in January, 1970. See
+      # https://www.chromestatus.com/feature/5684870116278272 for more details."
+      deprecated optional string message
+
   # A unique identifier for the type of issue. Each type may use one of the
   # optional fields in InspectorIssueDetails to convey more specific
   # information about the kind of issue.
@@ -806,6 +744,7 @@ experimental domain Audits
       NavigatorUserAgentIssue
       WasmCrossOriginModuleSharingIssue
       GenericIssue
+      DeprecationIssue
 
   # This struct holds a list of optional fields with additional information
   # specific to the kind of issue. When adding a new issue code, please also
@@ -826,6 +765,7 @@ experimental domain Audits
       optional NavigatorUserAgentIssueDetails navigatorUserAgentIssueDetails
       optional WasmCrossOriginModuleSharingIssueDetails wasmCrossOriginModuleSharingIssue
       optional GenericIssueDetails genericIssueDetails
+      optional DeprecationIssueDetails deprecationIssueDetails
 
   # A unique id for a DevTools inspector issue. Allows other entities (e.g.
   # exceptions, CDP message, console messages, etc.) to reference an issue.
@@ -2902,6 +2842,23 @@ domain DOMDebugger
       # Resource URL substring. All XHRs having this substring in the URL will get stopped upon.
       string url
 
+# EventBreakpoints permits setting breakpoints on particular operations and
+# events in targets that run JavaScript but do not have a DOM.
+# JavaScript execution will stop on these operations as if there was a regular
+# breakpoint set.
+experimental domain EventBreakpoints
+  # Sets breakpoint on particular native event.
+  command setInstrumentationBreakpoint
+    parameters
+      # Instrumentation name to stop on.
+      string eventName
+
+  # Removes breakpoint on particular native event.
+  command removeInstrumentationBreakpoint
+    parameters
+      # Instrumentation name to stop on.
+      string eventName
+
 # This domain facilitates obtaining document snapshots with DOM, layout, and style information.
 experimental domain DOMSnapshot
   depends on CSS
@@ -4916,8 +4873,14 @@ domain Network
       MethodDisallowedByPreflightResponse
       HeaderDisallowedByPreflightResponse
       RedirectContainsCredentials
+      # Request was a private network request initiated by a non-secure context.
       InsecurePrivateNetwork
+      # Request carried a target IP address space property that did not match
+      # the target resource's address space.
       InvalidPrivateNetworkAccess
+      # Request was a private network request yet did not carry a target IP
+      # address space.
+      UnexpectedPrivateNetworkAccess
       NoCorsRedirectModeNotFollow
 
   type CorsErrorStatus extends object
@@ -5801,6 +5764,10 @@ domain Network
       TimeSinceEpoch wallTime
       # Request initiator.
       Initiator initiator
+      # In the case that redirectResponse is populated, this flag indicates whether
+      # requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be or were emitted
+      # for the request which was just redirected.
+      experimental boolean redirectHasExtraInfo
       # Redirect response data.
       optional Response redirectResponse
       # Type of this resource.
@@ -5841,6 +5808,9 @@ domain Network
       ResourceType type
       # Response data.
       Response response
+      # Indicates whether requestWillBeSentExtraInfo and responseReceivedExtraInfo events will be
+      # or were emitted for this request.
+      experimental boolean hasExtraInfo
       # Frame identifier.
       optional Page.FrameId frameId
 
@@ -5947,6 +5917,8 @@ domain Network
       Allow
       BlockFromInsecureToMorePrivate
       WarnFromInsecureToMorePrivate
+      PreflightBlock
+      PreflightWarn
 
   experimental type IPAddressSpace extends string
     enum
@@ -6790,6 +6762,7 @@ domain Page
       hid
       idle-detection
       interest-cohort
+      keyboard-map
       magnetometer
       microphone
       midi
@@ -7650,18 +7623,9 @@ domain Page
   # Stops sending each frame in the `screencastFrame`.
   experimental command stopScreencast
 
-  # Forces compilation cache to be generated for every subresource script.
-  # See also: `Page.produceCompilationCache`.
-  experimental command setProduceCompilationCache
-    parameters
-      boolean enabled
-
   # Requests backend to produce compilation cache for the specified scripts.
-  # Unlike setProduceCompilationCache, this allows client to only produce cache
-  # for specific scripts. `scripts` are appeneded to the list of scripts
-  # for which the cache for would produced. Disabling compilation cache with
-  # `setProduceCompilationCache` would reset all pending cache requests.
-  # The list may also be reset during page navigation.
+  # `scripts` are appeneded to the list of scripts for which the cache
+  # would be produced. The list may be reset during page navigation.
   # When script with a matching URL is encountered, the cache is optionally
   # produced upon backend discretion, based on internal heuristics.
   # See also: `Page.compilationCacheProduced`.
@@ -7985,7 +7949,6 @@ domain Page
       ContentWebUSB
       ContentMediaSession
       ContentMediaSessionService
-      ContentMediaPlay
 
       # See components/back_forward_cache/back_forward_cache_disable.h for explanations.
       EmbedderPopupBlockerTabHelper
@@ -8907,7 +8870,7 @@ domain Target
       # Frame height in DIP (headless chrome only).
       optional integer height
       # The browser context to create the page in.
-      optional Browser.BrowserContextID browserContextId
+      experimental optional Browser.BrowserContextID browserContextId
       # Whether BeginFrames for this target will be controlled via DevTools (headless chrome only,
       # not supported on MacOS yet, false by default).
       experimental optional boolean enableBeginFrameControl

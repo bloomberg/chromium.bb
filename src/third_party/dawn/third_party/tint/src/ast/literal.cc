@@ -19,17 +19,9 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::Literal);
 namespace tint {
 namespace ast {
 
-Literal::Literal(ProgramID program_id, const Source& source)
-    : Base(program_id, source) {}
+Literal::Literal(ProgramID pid, const Source& src) : Base(pid, src) {}
 
 Literal::~Literal() = default;
-
-void Literal::to_str(const sem::Info& sem,
-                     std::ostream& out,
-                     size_t indent) const {
-  make_indent(out, indent);
-  out << to_str(sem);
-}
 
 }  // namespace ast
 }  // namespace tint

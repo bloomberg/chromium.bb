@@ -11,6 +11,8 @@
 #ifndef EIGEN_CWISE_BINARY_OP_H
 #define EIGEN_CWISE_BINARY_OP_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -95,6 +97,9 @@ class CwiseBinaryOp :
                                                       BinaryOp>::ret>::Base Base;
     EIGEN_GENERIC_PUBLIC_INTERFACE(CwiseBinaryOp)
 
+    EIGEN_CHECK_BINARY_COMPATIBILIY(BinaryOp,typename Lhs::Scalar,typename Rhs::Scalar)
+    EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE(Lhs, Rhs)
+
     typedef typename internal::ref_selector<LhsType>::type LhsNested;
     typedef typename internal::ref_selector<RhsType>::type RhsNested;
     typedef typename internal::remove_reference<LhsNested>::type _LhsNested;
@@ -110,9 +115,6 @@ class CwiseBinaryOp :
     CwiseBinaryOp(const Lhs& aLhs, const Rhs& aRhs, const BinaryOp& func = BinaryOp())
       : m_lhs(aLhs), m_rhs(aRhs), m_functor(func)
     {
-      EIGEN_CHECK_BINARY_COMPATIBILIY(BinaryOp,typename Lhs::Scalar,typename Rhs::Scalar);
-      // require the sizes to match
-      EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE(Lhs, Rhs)
       eigen_assert(aLhs.rows() == aRhs.rows() && aLhs.cols() == aRhs.cols());
     }
 

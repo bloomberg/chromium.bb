@@ -18,6 +18,8 @@
   #define EIGEN_INTERNAL_DENSE_STORAGE_CTOR_PLUGIN(X)
 #endif
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

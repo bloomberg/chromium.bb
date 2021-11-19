@@ -128,7 +128,7 @@ match i32_texel_format:
 match u32_texel_format:
   rgba8uint | rgba16uint | r32uint | rg32uint | rgba32uint
 
-match read_or_write: read | write
+match write_only: write
 
 match function_private_workgroup: function | private | workgroup
 match workgroup_or_storage: workgroup | storage
@@ -267,7 +267,9 @@ fn abs<T: fiu32>(T) -> T
 fn abs<N: num, T: fiu32>(vec<N, T>) -> vec<N, T>
 fn acos(f32) -> f32
 fn acos<N: num>(vec<N, f32>) -> vec<N, f32>
+fn all(bool) -> bool
 fn all<N: num>(vec<N, bool>) -> bool
+fn any(bool) -> bool
 fn any<N: num>(vec<N, bool>) -> bool
 fn arrayLength<T, A: access>(ptr<storage, array<T>, A>) -> u32
 fn asin(f32) -> f32
@@ -314,8 +316,6 @@ fn fma(f32, f32, f32) -> f32
 fn fma<N: num>(vec<N, f32>, vec<N, f32>, vec<N, f32>) -> vec<N, f32>
 fn fract(f32) -> f32
 fn fract<N: num>(vec<N, f32>) -> vec<N, f32>
-[[deprecated]] fn frexp<S: function_private_workgroup, A: access>(f32, ptr<S, i32, A>) -> f32
-[[deprecated]] fn frexp<N: num, S: function_private_workgroup, A: access>(vec<N, f32>, ptr<S, vec<N, i32>, A>) -> vec<N, f32>
 fn frexp(f32) -> _frexp_result
 fn frexp<N: num>(vec<N, f32>) -> _frexp_result_vec<N>
 [[stage("fragment")]] fn fwidth(f32) -> f32
@@ -324,7 +324,7 @@ fn frexp<N: num>(vec<N, f32>) -> _frexp_result_vec<N>
 [[stage("fragment")]] fn fwidthCoarse<N: num>(vec<N, f32>) -> vec<N, f32>
 [[stage("fragment")]] fn fwidthFine(f32) -> f32
 [[stage("fragment")]] fn fwidthFine<N: num>(vec<N, f32>) -> vec<N, f32>
-fn ignore<T>(T)
+[[deprecated]] fn ignore<T>(T)
 fn inverseSqrt(f32) -> f32
 fn inverseSqrt<N: num>(vec<N, f32>) -> vec<N, f32>
 fn isFinite(f32) -> bool
@@ -350,8 +350,6 @@ fn min<N: num, T: fiu32>(vec<N, T>, vec<N, T>) -> vec<N, T>
 fn mix(f32, f32, f32) -> f32
 fn mix<N: num>(vec<N, f32>, vec<N, f32>, vec<N, f32>) -> vec<N, f32>
 fn mix<N: num>(vec<N, f32>, vec<N, f32>, f32) -> vec<N, f32>
-[[deprecated]] fn modf<S: function_private_workgroup, A: access>(f32, ptr<S, f32, A>) -> f32
-[[deprecated]] fn modf<N: num, S: function_private_workgroup, A: access>(vec<N, f32>, ptr<S, vec<N, f32>, A>) -> vec<N, f32>
 fn modf(f32) -> _modf_result
 fn modf<N: num>(vec<N, f32>) -> _modf_result_vec<N>
 fn normalize<N: num>(vec<N, f32>) -> vec<N, f32>
@@ -420,16 +418,16 @@ fn textureDimensions(texture: texture_depth_cube, level: i32) -> vec2<i32>
 fn textureDimensions(texture: texture_depth_cube_array) -> vec2<i32>
 fn textureDimensions(texture: texture_depth_cube_array, level: i32) -> vec2<i32>
 fn textureDimensions(texture: texture_depth_multisampled_2d) -> vec2<i32>
-fn textureDimensions<F: texel_format, A: read_or_write>(texture: texture_storage_1d<F, A>) -> i32
-fn textureDimensions<F: texel_format, A: read_or_write>(texture: texture_storage_2d<F, A>) -> vec2<i32>
-fn textureDimensions<F: texel_format, A: read_or_write>(texture: texture_storage_2d_array<F, A>) -> vec2<i32>
-fn textureDimensions<F: texel_format, A: read_or_write>(texture: texture_storage_3d<F, A>) -> vec3<i32>
+fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_1d<F, A>) -> i32
+fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_2d<F, A>) -> vec2<i32>
+fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_2d_array<F, A>) -> vec2<i32>
+fn textureDimensions<F: texel_format, A: write_only>(texture: texture_storage_3d<F, A>) -> vec3<i32>
 fn textureDimensions(texture: texture_external) -> vec2<i32>
 fn textureNumLayers<T: fiu32>(texture: texture_2d_array<T>) -> i32
 fn textureNumLayers<T: fiu32>(texture: texture_cube_array<T>) -> i32
 fn textureNumLayers(texture: texture_depth_2d_array) -> i32
 fn textureNumLayers(texture: texture_depth_cube_array) -> i32
-fn textureNumLayers<F: texel_format, A: read_or_write>(texture: texture_storage_2d_array<F, A>) -> i32
+fn textureNumLayers<F: texel_format, A: write_only>(texture: texture_storage_2d_array<F, A>) -> i32
 fn textureNumLevels<T: fiu32>(texture: texture_1d<T>) -> i32
 fn textureNumLevels<T: fiu32>(texture: texture_2d<T>) -> i32
 fn textureNumLevels<T: fiu32>(texture: texture_2d_array<T>) -> i32
@@ -520,18 +518,6 @@ fn textureLoad<T: fiu32>(texture: texture_multisampled_2d<T>, coords: vec2<i32>,
 fn textureLoad(texture: texture_depth_2d, coords: vec2<i32>, level: i32) -> f32
 fn textureLoad(texture: texture_depth_2d_array, coords: vec2<i32>, array_index: i32, level: i32) -> f32
 fn textureLoad(texture: texture_depth_multisampled_2d, coords: vec2<i32>, sample_index: i32) -> f32
-[[deprecated]] fn textureLoad(texture: texture_storage_1d<f32_texel_format, read>, coords: i32) -> vec4<f32>
-[[deprecated]] fn textureLoad(texture: texture_storage_2d<f32_texel_format, read>, coords: vec2<i32>) -> vec4<f32>
-[[deprecated]] fn textureLoad(texture: texture_storage_2d_array<f32_texel_format, read>, coords: vec2<i32>, array_index: i32) -> vec4<f32>
-[[deprecated]] fn textureLoad(texture: texture_storage_3d<f32_texel_format, read>, coords: vec3<i32>) -> vec4<f32>
-[[deprecated]] fn textureLoad(texture: texture_storage_1d<i32_texel_format, read>, coords: i32) -> vec4<i32>
-[[deprecated]] fn textureLoad(texture: texture_storage_2d<i32_texel_format, read>, coords: vec2<i32>) -> vec4<i32>
-[[deprecated]] fn textureLoad(texture: texture_storage_2d_array<i32_texel_format, read>, coords: vec2<i32>, array_index: i32) -> vec4<i32>
-[[deprecated]] fn textureLoad(texture: texture_storage_3d<i32_texel_format, read>, coords: vec3<i32>) -> vec4<i32>
-[[deprecated]] fn textureLoad(texture: texture_storage_1d<u32_texel_format, read>, coords: i32) -> vec4<u32>
-[[deprecated]] fn textureLoad(texture: texture_storage_2d<u32_texel_format, read>, coords: vec2<i32>) -> vec4<u32>
-[[deprecated]] fn textureLoad(texture: texture_storage_2d_array<u32_texel_format, read>, coords: vec2<i32>, array_index: i32) -> vec4<u32>
-[[deprecated]] fn textureLoad(texture: texture_storage_3d<u32_texel_format, read>, coords: vec3<i32>) -> vec4<u32>
 fn textureLoad(texture: texture_external, coords: vec2<i32>) -> vec4<f32>
 
 [[stage("fragment", "compute")]] fn atomicLoad<T: iu32, S: workgroup_or_storage>(ptr<S, atomic<T>, read_write>) -> T

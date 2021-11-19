@@ -42,7 +42,7 @@ export function onboardingUpdatePageTest() {
 
     // Initialize the fake data.
     service.setGetCurrentOsVersionResult(version);
-    service.setCheckForOsUpdatesResult(updateAvailable);
+    service.setCheckForOsUpdatesResult(updateAvailable, 'fake version');
     service.setUpdateOsResult(updateAvailable);
 
     component = /** @type {!OnboardingUpdatePageElement} */ (
@@ -56,19 +56,9 @@ export function onboardingUpdatePageTest() {
   /**
    * @return {!Promise}
    */
-  function clickCheckUpdateButton() {
-    const checkUpdateButton =
-        component.shadowRoot.querySelector('#checkUpdate');
-    checkUpdateButton.click();
-    return flushTasks();
-  }
-
-  /**
-   * @return {!Promise}
-   */
   function clickPerformUpdateButton() {
     const performUpdateButton =
-        component.shadowRoot.querySelector('#performUpdate');
+        component.shadowRoot.querySelector('#performUpdateButton');
     performUpdateButton.click();
     return flushTasks();
   }
@@ -80,7 +70,8 @@ export function onboardingUpdatePageTest() {
     return initializeUpdatePage(version, update).then(() => {
       const versionComponent =
           component.shadowRoot.querySelector('#versionInfo');
-      const updateButton = component.shadowRoot.querySelector('#performUpdate');
+      const updateButton =
+          component.shadowRoot.querySelector('#performUpdateButton');
       assertTrue(versionComponent.textContent.trim().indexOf(version) !== -1);
       assertTrue(updateButton.hidden);
     });
@@ -98,13 +89,10 @@ export function onboardingUpdatePageTest() {
         .then(() => {
           const networkUnavailable =
               component.shadowRoot.querySelector('#networkUnavailable');
-          const checkUpdateButton =
-              component.shadowRoot.querySelector('#checkUpdate');
           const updateButton =
-              component.shadowRoot.querySelector('#performUpdate');
+              component.shadowRoot.querySelector('#performUpdateButton');
 
           assertFalse(networkUnavailable.hidden);
-          assertTrue(checkUpdateButton.hidden);
           assertTrue(updateButton.hidden);
         });
   });
@@ -118,7 +106,6 @@ export function onboardingUpdatePageTest() {
           component.networkAvailable = true;
           return flushTasks();
         })
-        .then(() => clickCheckUpdateButton())
         .then(() => {
           const versionComponent =
               component.shadowRoot.querySelector('#versionInfo');
@@ -138,7 +125,6 @@ export function onboardingUpdatePageTest() {
           component.networkAvailable = true;
           return flushTasks();
         })
-        .then(() => clickCheckUpdateButton())
         .then(() => {
           const versionComponent =
               component.shadowRoot.querySelector('#versionInfo');
@@ -149,7 +135,7 @@ export function onboardingUpdatePageTest() {
         })
         .then(() => {
           const updateButton =
-              component.shadowRoot.querySelector('#performUpdate');
+              component.shadowRoot.querySelector('#performUpdateButton');
           assertFalse(updateButton.hidden);
         });
   });
@@ -163,7 +149,6 @@ export function onboardingUpdatePageTest() {
           component.networkAvailable = true;
           return flushTasks();
         })
-        .then(() => clickCheckUpdateButton())
         .then(() => {
           const versionComponent =
               component.shadowRoot.querySelector('#versionInfo');
@@ -172,7 +157,7 @@ export function onboardingUpdatePageTest() {
           assertTrue(
               versionComponent.textContent.trim().indexOf(uptoDateMsg) !== -1);
           const updateButton =
-              component.shadowRoot.querySelector('#performUpdate');
+              component.shadowRoot.querySelector('#performUpdateButton');
           assertFalse(updateButton.disabled);
           assertFalse(updateButton.hidden);
         })
@@ -180,7 +165,7 @@ export function onboardingUpdatePageTest() {
         .then(() => {
           // A successfully started update should disable the update button.
           const updateButton =
-              component.shadowRoot.querySelector('#performUpdate');
+              component.shadowRoot.querySelector('#performUpdateButton');
           assertTrue(updateButton.disabled);
         });
   });
@@ -192,13 +177,14 @@ export function onboardingUpdatePageTest() {
 
     const progressComponent =
         component.shadowRoot.querySelector('#progressMessage');
-    assertEquals('', progressComponent.textContent);
+    assertEquals('', progressComponent.textContent.trim());
+    await clickPerformUpdateButton();
 
     service.triggerOsUpdateObserver(OsUpdateOperation.kDownloading, 0.5, 0);
     await flushTasks();
 
     // TODO(gavindodd): update with i18n string
-    assertTrue(progressComponent.textContent.startsWith(
+    assertTrue(progressComponent.textContent.trim().startsWith(
         'OS update progress received '));
   });
 }

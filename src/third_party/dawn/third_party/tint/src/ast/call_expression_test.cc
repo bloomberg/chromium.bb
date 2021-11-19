@@ -28,9 +28,9 @@ TEST_F(CallExpressionTest, Creation) {
   params.push_back(Expr("param2"));
 
   auto* stmt = create<CallExpression>(func, params);
-  EXPECT_EQ(stmt->func(), func);
+  EXPECT_EQ(stmt->func, func);
 
-  const auto& vec = stmt->params();
+  const auto& vec = stmt->args;
   ASSERT_EQ(vec.size(), 2u);
   EXPECT_EQ(vec[0], params[0]);
   EXPECT_EQ(vec[1], params[1]);
@@ -40,7 +40,7 @@ TEST_F(CallExpressionTest, Creation_WithSource) {
   auto* func = Expr("func");
   auto* stmt = create<CallExpression>(Source{Source::Location{20, 2}}, func,
                                       ExpressionList{});
-  auto src = stmt->source();
+  auto src = stmt->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -92,34 +92,6 @@ TEST_F(CallExpressionTest, Assert_DifferentProgramID_Param) {
                                   ExpressionList{b2.Expr("param1")});
       },
       "internal compiler error");
-}
-
-TEST_F(CallExpressionTest, ToStr_NoParams) {
-  auto* func = Expr("func");
-  auto* stmt = create<CallExpression>(func, ExpressionList{});
-  EXPECT_EQ(str(stmt), R"(Call[not set]{
-  Identifier[not set]{func}
-  (
-  )
-}
-)");
-}
-
-TEST_F(CallExpressionTest, ToStr_WithParams) {
-  auto* func = Expr("func");
-  ExpressionList params;
-  params.push_back(Expr("param1"));
-  params.push_back(Expr("param2"));
-
-  auto* stmt = create<CallExpression>(func, params);
-  EXPECT_EQ(str(stmt), R"(Call[not set]{
-  Identifier[not set]{func}
-  (
-    Identifier[not set]{param1}
-    Identifier[not set]{param2}
-  )
-}
-)");
 }
 
 }  // namespace

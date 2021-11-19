@@ -45,54 +45,6 @@ const char* kUnsupportedDisplay =
     "Element has unsupported display type (display: contents).";
 }  // namespace rejection_names
 
-void RecordActivationReason(Document* document,
-                            DisplayLockActivationReason reason) {
-  int ordered_reason = -1;
-
-  // IMPORTANT: This number needs to be bumped up when adding
-  // new reasons.
-  static const int number_of_reasons = 9;
-
-  switch (reason) {
-    case DisplayLockActivationReason::kAccessibility:
-      ordered_reason = 0;
-      break;
-    case DisplayLockActivationReason::kFindInPage:
-      ordered_reason = 1;
-      break;
-    case DisplayLockActivationReason::kFragmentNavigation:
-      ordered_reason = 2;
-      break;
-    case DisplayLockActivationReason::kScriptFocus:
-      ordered_reason = 3;
-      break;
-    case DisplayLockActivationReason::kScrollIntoView:
-      ordered_reason = 4;
-      break;
-    case DisplayLockActivationReason::kSelection:
-      ordered_reason = 5;
-      break;
-    case DisplayLockActivationReason::kSimulatedClick:
-      ordered_reason = 6;
-      break;
-    case DisplayLockActivationReason::kUserFocus:
-      ordered_reason = 7;
-      break;
-    case DisplayLockActivationReason::kViewportIntersection:
-      ordered_reason = 8;
-      break;
-    case DisplayLockActivationReason::kViewport:
-    case DisplayLockActivationReason::kAny:
-      NOTREACHED();
-      break;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Blink.Render.DisplayLockActivationReason",
-                            ordered_reason, number_of_reasons);
-
-  if (document && reason == DisplayLockActivationReason::kFindInPage)
-    document->MarkHasFindInPageContentVisibilityActiveMatch();
-}
-
 ScrollableArea* GetScrollableArea(Node* node) {
   if (!node)
     return nullptr;
@@ -112,6 +64,7 @@ DisplayLockContext::DisplayLockContext(Element* element)
   document_->GetDisplayLockDocumentState().AddDisplayLockContext(this);
   DetermineIfSubtreeHasFocus();
   DetermineIfSubtreeHasSelection();
+  DetermineIfSubtreeHasTopLayerElement();
 }
 
 void DisplayLockContext::SetRequestedState(EContentVisibility state) {
@@ -131,7 +84,7 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
     case EContentVisibility::kHidden:
       UseCounter::Count(document_, WebFeature::kContentVisibilityHidden);
       RequestLock(
-          activate_for_find_in_page_
+          is_hidden_until_found_ || is_details_slot_
               ? static_cast<uint16_t>(DisplayLockActivationReason::kFindInPage)
               : 0u);
       break;
@@ -261,7 +214,9 @@ void DisplayLockContext::UpdateActivationObservationIfNeeded() {
 bool DisplayLockContext::NeedsLifecycleNotifications() const {
   return needs_deferred_not_intersecting_signal_ ||
          render_affecting_state_[static_cast<int>(
-             RenderAffectingState::kAutoStateUnlockedUntilLifecycle)];
+             RenderAffectingState::kAutoStateUnlockedUntilLifecycle)] ||
+         has_pending_subtree_checks_ || has_pending_clear_has_top_layer_ ||
+         has_pending_top_layer_check_;
 }
 
 void DisplayLockContext::UpdateLifecycleNotificationRegistration() {
@@ -331,6 +286,10 @@ void DisplayLockContext::Lock() {
   if (AXObjectCache* cache = element_->GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(element_);
 
+  // If we have top layer elements in our subtree, we have to detach their
+  // layout objects, since otherwise they would be hoisted out of our subtree.
+  DetachDescendantTopLayerElements();
+
   if (!element_->GetLayoutObject())
     return;
 
@@ -377,8 +336,6 @@ void DisplayLockContext::DidStyleChildren() {
   // TODO(vmpstr): Is this needed here?
   if (element_->ChildNeedsReattachLayoutTree())
     element_->MarkAncestorsWithChildNeedsReattachLayoutTree();
-
-  blocked_child_recalc_change_ = StyleRecalcChange();
 }
 
 bool DisplayLockContext::ShouldLayoutChildren() const {
@@ -440,7 +397,8 @@ void DisplayLockContext::CommitForActivationWithSignal(
     SetKeepUnlockedUntilLifecycleCount(2);
   }
 
-  RecordActivationReason(document_, reason);
+  if (reason == DisplayLockActivationReason::kFindInPage)
+    document_->MarkHasFindInPageContentVisibilityActiveMatch();
 }
 
 void DisplayLockContext::SetKeepUnlockedUntilLifecycleCount(int count) {
@@ -520,8 +478,8 @@ void DisplayLockContext::NotifyForcedUpdateScopeStarted(ForcedPhase phase) {
     // of this, since |forced_info_| doesn't force paint to happen. See
     // ShouldPaint(). Also, we could have forced a lock from SetRequestedState
     // during a style update. If that's the case, don't mark style as dirty
-    // from within style recalc. We rely on `AdjustStyleRecalcChangeForChildren`
-    // instead.
+    // from within style recalc. We rely on `TakeBlockedStyleRecalcChange`
+    // to be called from self style recalc.
     if (CanDirtyStyle() &&
         forced_info_.is_forced(ForcedPhase::kStyleAndLayoutTree)) {
       MarkForStyleRecalcIfNeeded();
@@ -563,8 +521,15 @@ void DisplayLockContext::Unlock() {
 
     // Also propagate any dirty bits that we have previously blocked.
     // If we're in style recalc, this will be handled by
-    // `AdjustStyleRecalcChangeForChildren()`.
+    // `TakeBlockedStyleRecalcChange()` call from self style recalc.
     MarkForStyleRecalcIfNeeded();
+  } else if (SubtreeHasTopLayerElement()) {
+    // TODO(vmpstr): This seems like a big hammer, but it's unclear to me how we
+    // can mark the dirty bits from the descendant top layer node up to this
+    // display lock on the ancestor chain while we're in the middle of style
+    // recalc. It seems plausible, but we have to be careful.
+    blocked_child_recalc_change_ =
+        blocked_child_recalc_change_.ForceRecalcDescendants();
   }
 
   // We also need to notify the AX cache (if it exists) to update the childrens
@@ -585,16 +550,13 @@ void DisplayLockContext::Unlock() {
   MarkNeedsCullRectUpdate();
 }
 
-StyleRecalcChange DisplayLockContext::AdjustStyleRecalcChangeForChildren(
-    StyleRecalcChange change) {
-  return change.Combine(blocked_child_recalc_change_);
-}
-
 bool DisplayLockContext::CanDirtyStyle() const {
   return !set_requested_state_scope_ && !document_->InStyleRecalc();
 }
 
 bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
+  DCHECK(CanDirtyStyle());
+
   if (IsElementDirtyForStyleRecalc()) {
     // Propagate to the ancestors, since the dirty bit in a locked subtree is
     // stopped at the locked ancestor.
@@ -603,6 +565,22 @@ bool DisplayLockContext::MarkForStyleRecalcIfNeeded() {
         kLocalStyleChange,
         StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
     element_->MarkAncestorsWithChildNeedsStyleRecalc();
+
+    // When we're forcing a lock, which is done in a CanDirtyStyle context, we
+    // mark the top layers that don't have a computed style as needing a style
+    // recalc. This is a heuristic since if a top layer doesn't have a computed
+    // style then it is possibly under a content-visibility skipped subtree. The
+    // alternative is to figure out exactly which top layer element is under
+    // this lock and only dirty those, but that seems unnecessary. If the top
+    // layer element is locked under a different lock, then the dirty bit
+    // wouldn't propagate anyway.
+    for (auto top_layer_element : document_->TopLayerElements()) {
+      if (!top_layer_element->GetComputedStyle()) {
+        top_layer_element->SetNeedsStyleRecalc(
+            kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                   style_change_reason::kDisplayLock));
+      }
+    }
     return true;
   }
   return false;
@@ -779,7 +757,7 @@ bool DisplayLockContext::IsElementDirtyForStyleRecalc() const {
   return element_->IsDirtyForStyleRecalc() ||
          element_->ChildNeedsStyleRecalc() ||
          element_->ChildNeedsReattachLayoutTree() ||
-         !blocked_child_recalc_change_.IsEmpty();
+         !blocked_child_recalc_change_.IsEmpty() || SubtreeHasTopLayerElement();
 }
 
 bool DisplayLockContext::IsElementDirtyForLayout() const {
@@ -844,6 +822,7 @@ void DisplayLockContext::DidMoveToNewDocument(Document& old_document) {
 
   DetermineIfSubtreeHasFocus();
   DetermineIfSubtreeHasSelection();
+  DetermineIfSubtreeHasTopLayerElement();
 }
 
 void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
@@ -861,6 +840,8 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
   if (needs_deferred_not_intersecting_signal_)
     NotifyIsNotIntersectingViewport();
 
+  bool update_registration = false;
+
   // If we're keeping this context unlocked, update the values.
   if (keep_unlocked_count_) {
     if (--keep_unlocked_count_) {
@@ -868,12 +849,35 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
     } else {
       SetRenderAffectingState(
           RenderAffectingState::kAutoStateUnlockedUntilLifecycle, false);
-      UpdateLifecycleNotificationRegistration();
+      update_registration = true;
     }
   } else {
     DCHECK(!render_affecting_state_[static_cast<int>(
         RenderAffectingState::kAutoStateUnlockedUntilLifecycle)]);
   }
+
+  if (has_pending_subtree_checks_ || has_pending_top_layer_check_) {
+    DetermineIfSubtreeHasTopLayerElement();
+    has_pending_top_layer_check_ = false;
+  }
+
+  if (has_pending_subtree_checks_) {
+    DetermineIfSubtreeHasFocus();
+    DetermineIfSubtreeHasSelection();
+
+    has_pending_subtree_checks_ = false;
+    update_registration = true;
+  }
+
+  if (has_pending_clear_has_top_layer_) {
+    SetRenderAffectingState(RenderAffectingState::kSubtreeHasTopLayerElement,
+                            false);
+    has_pending_clear_has_top_layer_ = false;
+    update_registration = true;
+  }
+
+  if (update_registration)
+    UpdateLifecycleNotificationRegistration();
 }
 
 void DisplayLockContext::NotifyWillDisconnect() {
@@ -893,13 +897,38 @@ void DisplayLockContext::ElementDisconnected() {
   // the context.
   DCHECK(!element_->GetComputedStyle());
   SetRequestedState(EContentVisibility::kVisible);
+
+  // blocked_child_recalc_change_ must be cleared because things can be in an
+  // inconsistent state when we add the element back (e.g. crbug.com/1262742).
+  blocked_child_recalc_change_ = StyleRecalcChange();
 }
 
 void DisplayLockContext::ElementConnected() {
   // When connecting the element, we should not have a style.
   DCHECK(!element_->GetComputedStyle());
-  DetermineIfSubtreeHasFocus();
-  DetermineIfSubtreeHasSelection();
+
+  // We can't check for subtree selection / focus here, since we are likely in
+  // slot reassignment forbidden scope. However, walking the subtree may need
+  // this reassignment. This is fine, since the state check can be deferred
+  // until the beginning of the next frame.
+  has_pending_subtree_checks_ = true;
+  UpdateLifecycleNotificationRegistration();
+  ScheduleAnimation();
+}
+
+void DisplayLockContext::ScheduleTopLayerCheck() {
+  has_pending_top_layer_check_ = true;
+  UpdateLifecycleNotificationRegistration();
+  ScheduleAnimation();
+}
+
+void DisplayLockContext::DetachLayoutTree() {
+  // When |element_| is removed from the flat tree, we need to set this context
+  // to visible.
+  if (!element_->GetComputedStyle()) {
+    SetRequestedState(EContentVisibility::kVisible);
+    blocked_child_recalc_change_ = StyleRecalcChange();
+  }
 }
 
 void DisplayLockContext::ScheduleAnimation() {
@@ -1037,6 +1066,67 @@ void DisplayLockContext::DetermineIfSubtreeHasFocus() {
                           subtree_has_focus);
 }
 
+void DisplayLockContext::DetermineIfSubtreeHasTopLayerElement() {
+  if (!ConnectedToView())
+    return;
+
+  ClearHasTopLayerElement();
+
+  // Iterate up the ancestor chain from each top layer element.
+  // Note that this walk is searching for just the |element_| associated with
+  // this lock. The walk in DisplayLockDocumentState walks from top layer
+  // elements all the way to the ancestors searching for display locks, so if we
+  // have nested display locks that walk is more optimal.
+  for (auto top_layer_element : document_->TopLayerElements()) {
+    auto* ancestor = top_layer_element.Get();
+    while ((ancestor = FlatTreeTraversal::ParentElement(*ancestor))) {
+      if (ancestor == element_) {
+        NotifyHasTopLayerElement();
+        return;
+      }
+    }
+  }
+}
+
+void DisplayLockContext::ClearHasTopLayerElement() {
+  // Note that this is asynchronous because it can happen during a layout detach
+  // which is a bad time to relock a content-visibility auto element (since it
+  // causes us to potentially access layout objects which are in a state of
+  // being destroyed).
+  has_pending_clear_has_top_layer_ = true;
+  UpdateLifecycleNotificationRegistration();
+  ScheduleAnimation();
+}
+
+void DisplayLockContext::NotifyHasTopLayerElement() {
+  has_pending_clear_has_top_layer_ = false;
+  SetRenderAffectingState(RenderAffectingState::kSubtreeHasTopLayerElement,
+                          true);
+  UpdateLifecycleNotificationRegistration();
+}
+
+bool DisplayLockContext::SubtreeHasTopLayerElement() const {
+  return render_affecting_state_[static_cast<int>(
+      RenderAffectingState::kSubtreeHasTopLayerElement)];
+}
+
+void DisplayLockContext::DetachDescendantTopLayerElements() {
+  if (!ConnectedToView() || !SubtreeHasTopLayerElement())
+    return;
+
+  // Detach all top layer elements contained by the element inducing this
+  // display lock.
+  for (auto top_layer_element : document_->TopLayerElements()) {
+    auto* ancestor = top_layer_element.Get();
+    while ((ancestor = FlatTreeTraversal::ParentElement(*ancestor))) {
+      if (ancestor == element_) {
+        top_layer_element->DetachLayoutTree();
+        break;
+      }
+    }
+  }
+}
+
 void DisplayLockContext::NotifySubtreeGainedSelection() {
   SetRenderAffectingState(RenderAffectingState::kSubtreeHasSelection, true);
 }
@@ -1104,7 +1194,7 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
   // - We are not in 'auto' mode (meaning 'hidden') or
   // - We are in 'auto' mode and nothing blocks locking: viewport is
   //   not intersecting, subtree doesn't have focus, and subtree doesn't have
-  //   selection.
+  //   selection, etc. See the condition for the full list.
   bool should_be_locked =
       state(RenderAffectingState::kLockRequested) &&
       (state_ != EContentVisibility::kAuto ||
@@ -1112,7 +1202,8 @@ void DisplayLockContext::NotifyRenderAffectingStateChanged() {
         !state(RenderAffectingState::kSubtreeHasFocus) &&
         !state(RenderAffectingState::kSubtreeHasSelection) &&
         !state(RenderAffectingState::kAutoStateUnlockedUntilLifecycle) &&
-        !state(RenderAffectingState::kAutoUnlockedForPrint)));
+        !state(RenderAffectingState::kAutoUnlockedForPrint) &&
+        !state(RenderAffectingState::kSubtreeHasTopLayerElement)));
 
   if (should_be_locked && !IsLocked())
     Lock();
@@ -1143,6 +1234,8 @@ const char* DisplayLockContext::RenderAffectingStateName(int state) const {
       return "AutoStateUnlockedUntilLifecycle";
     case RenderAffectingState::kAutoUnlockedForPrint:
       return "AutoUnlockedForPrint";
+    case RenderAffectingState::kSubtreeHasTopLayerElement:
+      return "SubtreeHasTopLayerElement";
     case RenderAffectingState::kNumRenderAffectingStates:
       break;
   }

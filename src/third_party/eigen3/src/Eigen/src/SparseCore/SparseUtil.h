@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSEUTIL_H
 #define EIGEN_SPARSEUTIL_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 #ifdef NDEBUG

@@ -19,6 +19,10 @@
 
 #include "main.h"
 
+using Eigen::placeholders::last;
+using Eigen::placeholders::lastp1;
+using Eigen::placeholders::all;
+
 template<typename T1,typename T2>
 bool is_same_symb(const T1& a, const T2& b, Index size)
 {

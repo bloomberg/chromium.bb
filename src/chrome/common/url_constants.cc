@@ -350,8 +350,6 @@ const char kChromeOSGestureEducationHelpURL[] =
 const char kChromePaletteHelpURL[] =
     "https://support.google.com/chromebook?p=stylus_help";
 
-const char kCrosScheme[] = "cros";
-
 const char kCupsPrintLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_printing";
 
@@ -393,6 +391,9 @@ const char kAndroidMessagesLearnMoreURL[] =
 
 const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chromebook/answer/1059490";
+
+const char kLanguagePacksLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=language_packs";
 
 const char kLearnMoreEnterpriseURL[] =
     "https://support.google.com/chromebook/?p=managed";

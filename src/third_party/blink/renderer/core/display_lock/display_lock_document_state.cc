@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 
@@ -170,6 +171,62 @@ DisplayLockDocumentState::GetScopedForceActivatableLocks() {
 
 bool DisplayLockDocumentState::ActivatableDisplayLocksForced() const {
   return activatable_display_locks_forced_;
+}
+
+void DisplayLockDocumentState::ElementAddedToTopLayer(Element* element) {
+  // If flat tree traversal is forbidden, then we need to schedule an event to
+  // do this work later.
+  if (document_->IsFlatTreeTraversalForbidden() ||
+      document_->GetSlotAssignmentEngine().HasPendingSlotAssignmentRecalc()) {
+    for (auto context : display_lock_contexts_) {
+      // If making every DisplayLockContext check whether its in the top layer
+      // is too slow, then we could actually repeat
+      // MarkAncestorContextsHaveTopLayerElement in the next frame instead.
+      context->ScheduleTopLayerCheck();
+    }
+    return;
+  }
+
+  if (MarkAncestorContextsHaveTopLayerElement(element))
+    element->DetachLayoutTree();
+}
+
+void DisplayLockDocumentState::ElementRemovedFromTopLayer(Element*) {
+  // If flat tree traversal is forbidden, then we need to schedule an event to
+  // do this work later.
+  if (document_->IsFlatTreeTraversalForbidden() ||
+      document_->GetSlotAssignmentEngine().HasPendingSlotAssignmentRecalc()) {
+    for (auto context : display_lock_contexts_) {
+      // If making every DisplayLockContext check whether its in the top layer
+      // is too slow, then we could actually repeat
+      // MarkAncestorContextsHaveTopLayerElement in the next frame instead.
+      context->ScheduleTopLayerCheck();
+    }
+    return;
+  }
+
+  for (auto context : display_lock_contexts_)
+    context->ClearHasTopLayerElement();
+  // We don't use the given element here, but rather all elements that are still
+  // in the top layer.
+  for (auto element : document_->TopLayerElements())
+    MarkAncestorContextsHaveTopLayerElement(element.Get());
+}
+
+bool DisplayLockDocumentState::MarkAncestorContextsHaveTopLayerElement(
+    Element* element) {
+  if (display_lock_contexts_.IsEmpty())
+    return false;
+
+  bool had_locked_ancestor = false;
+  auto* ancestor = element;
+  while ((ancestor = FlatTreeTraversal::ParentElement(*ancestor))) {
+    if (auto* context = ancestor->GetDisplayLockContext()) {
+      context->NotifyHasTopLayerElement();
+      had_locked_ancestor |= context->IsLocked();
+    }
+  }
+  return had_locked_ancestor;
 }
 
 void DisplayLockDocumentState::NotifySelectionRemoved() {

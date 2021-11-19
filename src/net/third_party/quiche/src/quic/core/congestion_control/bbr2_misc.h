@@ -95,9 +95,13 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   // If false, exit STARTUP on loss only if bandwidth is below threshold.
   bool always_exit_startup_on_excess_loss = false;
 
-  // If true, inclue extra acked during STARTUP and proactively reduce extra
+  // If true, include extra acked during STARTUP and proactively reduce extra
   // acked when bandwidth increases.
   bool startup_include_extra_acked = false;
+
+  // If true, exit STARTUP if bytes in flight has not gone below 2 * BDP at
+  // any point in the last round.
+  bool exit_startup_on_persistent_queue = false;
 
   /*
    * DRAIN parameters.
@@ -312,12 +316,6 @@ struct QUIC_EXPORT_PRIVATE Bbr2CongestionEvent {
   // Whether acked_packets indicates the end of a round trip.
   bool end_of_round_trip = false;
 
-  // TODO(wub): After deprecating --quic_one_bw_sample_per_ack_event, use
-  // last_packet_send_state.is_app_limited instead of this field.
-  // Whether the last bandwidth sample from acked_packets is app limited.
-  // false if acked_packets is empty.
-  bool last_sample_is_app_limited = false;
-
   // When the event happened, whether the sender is probing for bandwidth.
   bool is_probing_for_bandwidth = false;
 
@@ -403,6 +401,11 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
     return bandwidth_sampler_.max_ack_height();
   }
 
+  // 2 packets.  Used to indicate the typical number of bytes ACKed at once.
+  QuicByteCount QueueingThresholdExtraBytes() const {
+    return 2 * kDefaultTCPMSS;
+  }
+
   bool cwnd_limited_before_aggregation_epoch() const {
     return cwnd_limited_before_aggregation_epoch_;
   }
@@ -454,22 +457,16 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   bool IsInflightTooHigh(const Bbr2CongestionEvent& congestion_event,
                          int64_t max_loss_events) const;
 
-  enum BandwidthGrowth {
-    APP_LIMITED = 0,
-    NO_GROWTH = 1,
-    GROWTH = 2,
-    EXIT = 3,  // Too many rounds without bandwidth growth.
-  };
-
   // Check bandwidth growth in the past round. Must be called at the end of a
-  // round.
-  // Return APP_LIMITED if the bandwidth sample was app-limited.
-  // Return GROWTH if the bandwidth grew as expected.
-  // Return NO_GROWTH if the bandwidth didn't increase enough.
-  // Return TOO_MANY_ROUNDS_WITH_NO_GROWTH if enough rounds have elapsed without
-  // growth, also sets |full_bandwidth_reached_| to true.
-  BandwidthGrowth CheckBandwidthGrowth(
-      const Bbr2CongestionEvent& congestion_event);
+  // round. Returns true if there was sufficient bandwidth growth and false
+  // otherwise.  If it's been too many rounds without growth, also sets
+  // |full_bandwidth_reached_| to true.
+  bool HasBandwidthGrowth(const Bbr2CongestionEvent& congestion_event);
+
+  // Returns true if the minimum bytes in flight during the round is greater
+  // than the BDP * |bdp_gain|.
+  bool CheckPersistentQueue(const Bbr2CongestionEvent& congestion_event,
+                            float bdp_gain);
 
   QuicPacketNumber last_sent_packet() const {
     return round_trip_counter_.last_sent_packet();

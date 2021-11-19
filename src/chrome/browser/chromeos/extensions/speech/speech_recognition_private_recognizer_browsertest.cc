@@ -18,7 +18,7 @@ const char kFrenchLocale[] = "fr-FR";
 namespace extensions {
 
 class FakeSpeechRecognitionPrivateDelegate
-    : public SpeechRecogntionPrivateDelegate {
+    : public SpeechRecognitionPrivateDelegate {
  public:
   void HandleSpeechRecognitionStopped(const std::string& key) override {
     handled_stop_ = true;
@@ -56,10 +56,10 @@ class SpeechRecognitionPrivateRecognizerTest
       const SpeechRecognitionPrivateRecognizerTest&) = delete;
 
   void SetUpOnMainThread() override {
+    SpeechRecognitionPrivateBaseTest::SetUpOnMainThread();
     delegate_ = std::make_unique<FakeSpeechRecognitionPrivateDelegate>();
     recognizer_ = std::make_unique<SpeechRecognitionPrivateRecognizer>(
-        delegate_.get(), "example_id");
-    SpeechRecognitionPrivateBaseTest::SetUpOnMainThread();
+        delegate_.get(), profile(), "example_id");
   }
 
   void TearDownOnMainThread() override {
@@ -161,11 +161,11 @@ class SpeechRecognitionPrivateRecognizerTest
 
 INSTANTIATE_TEST_SUITE_P(Network,
                          SpeechRecognitionPrivateRecognizerTest,
-                         ::testing::Values(kNetworkRecognition));
+                         ::testing::Values(SpeechRecognitionType::kNetwork));
 
 INSTANTIATE_TEST_SUITE_P(OnDevice,
                          SpeechRecognitionPrivateRecognizerTest,
-                         ::testing::Values(kOnDeviceRecognition));
+                         ::testing::Values(SpeechRecognitionType::kOnDevice));
 
 IN_PROC_BROWSER_TEST_P(SpeechRecognitionPrivateRecognizerTest,
                        MaybeUpdateProperties) {

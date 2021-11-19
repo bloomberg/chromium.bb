@@ -154,7 +154,7 @@ deps = {
 
   'third_party/modp_b64': {
     'url': Var('chromium_git') + '/chromium/src/third_party/modp_b64'
-    '@' + '85754265d3847383704d19232e1ab873547cda9d',
+    '@' + 'ca6144fbeb44934d474cc8030a64de21947e2550',
     'condition': 'not build_with_chromium',
   },
 
@@ -170,7 +170,7 @@ hooks = [
     'name': 'clang_update_script',
     'pattern': '.',
     'condition': 'not build_with_chromium',
-    'action': [ 'python', 'tools/download-clang-update-script.py',
+    'action': [ 'tools/download-clang-update-script.py',
                 '--output', 'tools/clang/scripts/update.py' ],
     # NOTE: This file appears in .gitignore, as it is not a part of the
     # openscreen repo.
@@ -179,19 +179,19 @@ hooks = [
     'name': 'yajsv_update_script',
     'pattern': '.',
     'condition': 'not build_with_chromium',
-    'action': [ 'python', 'tools/download-yajsv.py' ],
+    'action': [ 'tools/download-yajsv.py' ],
   },
   {
     'name': 'update_clang',
     'pattern': '.',
     'condition': 'not build_with_chromium',
-    'action': [ 'python', 'tools/clang/scripts/update.py' ],
+    'action': [ 'python3', 'tools/clang/scripts/update.py' ],
   },
   {
     'name': 'clang_coverage_tools',
     'pattern': '.',
     'condition': 'not build_with_chromium and checkout_clang_coverage_tools',
-    'action': ['python', 'tools/clang/scripts/update.py',
+    'action': ['python3', 'tools/clang/scripts/update.py',
                '--package=coverage_tools'],
   },
   {
@@ -215,7 +215,6 @@ hooks = [
 recursedeps = [
   'third_party/chromium_quic/src',
   'cast',
-  'buildtools',
 ]
 
 include_rules = [

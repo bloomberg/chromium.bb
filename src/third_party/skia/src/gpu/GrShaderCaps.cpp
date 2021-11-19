@@ -9,11 +9,10 @@
 #include "src/gpu/GrShaderCaps.h"
 
 #include "include/gpu/GrContextOptions.h"
-#include "src/utils/SkJSONWriter.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
+GrShaderCaps::GrShaderCaps() {
     fGLSLGeneration = k330_GrGLSLGeneration;
     fShaderDerivativeSupport = false;
     fDstReadInShaderSupport = false;
@@ -34,7 +33,6 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fRequiresLocalOutputColorForFBFetch = false;
     fMustObfuscateUniformColor = false;
     fMustGuardDivisionEvenAfterExplicitZeroCheck = false;
-    fInBlendModesFailRandomlyForAllZeroVec = false;
     fCanUseFragCoord = true;
     fIncompleteShortIntPrecision = false;
     fAddAndTrueToLoopCondition = false;
@@ -54,6 +52,7 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
     fExternalTextureSupport = false;
     fVertexIDSupport = false;
     fInfinitySupport = false;
+    fNonconstantArrayIndexSupport = false;
     fBitManipulationSupport = false;
     fFloatIs32Bits = true;
     fHalfIs32Bits = false;
@@ -83,6 +82,8 @@ GrShaderCaps::GrShaderCaps(const GrContextOptions& options) {
 }
 
 #ifdef SK_ENABLE_DUMP_GPU
+#include "src/utils/SkJSONWriter.h"
+
 void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->beginObject();
 
@@ -116,9 +117,6 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("Must obfuscate uniform color", fMustObfuscateUniformColor);
     writer->appendBool("Must guard division even after explicit zero check",
                        fMustGuardDivisionEvenAfterExplicitZeroCheck);
-    writer->appendBool(
-            "src-in and dst-in blend modes may return (0,0,0,1) when dst/src is all zeros",
-            fInBlendModesFailRandomlyForAllZeroVec);
     writer->appendBool("Can use gl_FragCoord", fCanUseFragCoord);
     writer->appendBool("Incomplete short int precision", fIncompleteShortIntPrecision);
     writer->appendBool("Add and true to loops workaround", fAddAndTrueToLoopCondition);
@@ -139,6 +137,7 @@ void GrShaderCaps::dumpJSON(SkJSONWriter* writer) const {
     writer->appendBool("External texture support", fExternalTextureSupport);
     writer->appendBool("sk_VertexID support", fVertexIDSupport);
     writer->appendBool("Infinity support", fInfinitySupport);
+    writer->appendBool("Non-constant array index support", fNonconstantArrayIndexSupport);
     writer->appendBool("Bit manipulation support", fBitManipulationSupport);
     writer->appendBool("float == fp32", fFloatIs32Bits);
     writer->appendBool("half == fp32", fHalfIs32Bits);
@@ -172,7 +171,6 @@ void GrShaderCaps::applyOptionsOverrides(const GrContextOptions& options) {
         SkASSERT(!fRequiresLocalOutputColorForFBFetch);
         SkASSERT(!fMustObfuscateUniformColor);
         SkASSERT(!fMustGuardDivisionEvenAfterExplicitZeroCheck);
-        SkASSERT(!fInBlendModesFailRandomlyForAllZeroVec);
         SkASSERT(fCanUseFragCoord);
         SkASSERT(!fIncompleteShortIntPrecision);
         SkASSERT(!fAddAndTrueToLoopCondition);

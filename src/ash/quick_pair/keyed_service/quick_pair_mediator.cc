@@ -4,6 +4,7 @@
 
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 
+#include <cstdint>
 #include <memory>
 
 #include "ash/quick_pair/common/device.h"
@@ -13,6 +14,7 @@
 #include "ash/quick_pair/feature_status_tracker/quick_pair_feature_status_tracker_impl.h"
 #include "ash/quick_pair/keyed_service/quick_pair_metrics_logger.h"
 #include "ash/quick_pair/pairing/pairer_broker_impl.h"
+#include "ash/quick_pair/repository/fast_pair/pending_write_store.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
 #include "ash/quick_pair/repository/fast_pair_repository_impl.h"
 #include "ash/quick_pair/scanning/scanner_broker_impl.h"
@@ -20,6 +22,7 @@
 #include "ash/quick_pair/ui/ui_broker_impl.h"
 #include "ash/services/quick_pair/quick_pair_process.h"
 #include "ash/services/quick_pair/quick_pair_process_manager_impl.h"
+#include "chromeos/services/bluetooth_config/fast_pair_delegate.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace ash {
@@ -84,6 +87,12 @@ Mediator::~Mediator() {
 void Mediator::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   FastPairPrefEnabledProvider::RegisterProfilePrefs(registry);
   SavedDeviceRegistry::RegisterProfilePrefs(registry);
+  PendingWriteStore::RegisterProfilePrefs(registry);
+}
+
+chromeos::bluetooth_config::FastPairDelegate* Mediator::GetFastPairDelegate() {
+  // TODO: Implementation of the delegate and returning the real instance here.
+  return nullptr;
 }
 
 void Mediator::OnFastPairEnabledChanged(bool is_enabled) {
@@ -104,9 +113,9 @@ void Mediator::SetFastPairState(bool is_enabled) {
   QP_LOG(VERBOSE) << __func__ << ": " << is_enabled;
 
   if (is_enabled)
-    scanner_broker_->StartScanning(Protocol::kFastPair);
+    scanner_broker_->StartScanning(Protocol::kFastPairInitial);
   else
-    scanner_broker_->StopScanning(Protocol::kFastPair);
+    scanner_broker_->StopScanning(Protocol::kFastPairInitial);
 }
 
 void Mediator::OnDevicePaired(scoped_refptr<Device> device) {
@@ -130,10 +139,20 @@ void Mediator::OnDiscoveryAction(scoped_refptr<Device> device,
   QP_LOG(INFO) << __func__ << ": Device=" << device << ", Action=" << action;
 
   switch (action) {
-    case DiscoveryAction::kPairToDevice:
-      ui_broker_->ShowPairing(device);
+    case DiscoveryAction::kPairToDevice: {
+      absl::optional<std::vector<uint8_t>> additional_data =
+          device->GetAdditionalData(
+              Device::AdditionalDataType::kFastPairVersion);
+
+      // Skip showing the in-progress UI for Fast Pair v1 because that pairing
+      // is not handled by us E2E.
+      if (!additional_data.has_value() || additional_data->size() != 1 ||
+          (*additional_data)[0] != 1) {
+        ui_broker_->ShowPairing(device);
+      }
+
       pairer_broker_->PairDevice(device);
-      break;
+    } break;
     case DiscoveryAction::kDismissedByUser:
     case DiscoveryAction::kDismissed:
       break;

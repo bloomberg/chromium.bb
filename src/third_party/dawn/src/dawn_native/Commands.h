@@ -19,7 +19,6 @@
 
 #include "dawn_native/AttachmentState.h"
 #include "dawn_native/BindingInfo.h"
-#include "dawn_native/BufferLocation.h"
 #include "dawn_native/Texture.h"
 
 #include "dawn_native/dawn_platform.h"
@@ -63,7 +62,6 @@ namespace dawn_native {
         SetBlendConstant,
         SetBindGroup,
         SetIndexBuffer,
-        SetValidatedBufferLocationsInternal,
         SetVertexBuffer,
         WriteBuffer,
         WriteTimestamp,
@@ -92,6 +90,8 @@ namespace dawn_native {
         wgpu::StoreOp stencilStoreOp;
         float clearDepth;
         uint32_t clearStencil;
+        bool depthReadOnly;
+        bool stencilReadOnly;
     };
 
     struct BeginRenderPassCmd {
@@ -179,7 +179,8 @@ namespace dawn_native {
     };
 
     struct DrawIndexedIndirectCmd {
-        Ref<BufferLocation> indirectBufferLocation;
+        Ref<BufferBase> indirectBuffer;
+        uint64_t indirectOffset;
     };
 
     struct EndComputePassCmd {};
@@ -223,16 +224,6 @@ namespace dawn_native {
 
     struct SetStencilReferenceCmd {
         uint32_t reference;
-    };
-
-    struct DeferredBufferLocationUpdate {
-        Ref<BufferLocation> location;
-        Ref<BufferBase> buffer;
-        uint64_t offset;
-    };
-
-    struct SetValidatedBufferLocationsInternalCmd {
-        std::vector<DeferredBufferLocationUpdate> updates;
     };
 
     struct SetViewportCmd {

@@ -27,41 +27,27 @@ class ArrayAccessorExpression
   /// Constructor
   /// @param program_id the identifier of the program that owns this node
   /// @param source the array accessor source
-  /// @param array the array
-  /// @param idx_expr the index expression
+  /// @param arr the array
+  /// @param idx the index expression
   ArrayAccessorExpression(ProgramID program_id,
                           const Source& source,
-                          Expression* array,
-                          Expression* idx_expr);
+                          const Expression* arr,
+                          const Expression* idx);
   /// Move constructor
   ArrayAccessorExpression(ArrayAccessorExpression&&);
   ~ArrayAccessorExpression() override;
-
-  /// @returns the array
-  Expression* array() const { return array_; }
-
-  /// @returns the index expression
-  Expression* idx_expr() const { return idx_expr_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  ArrayAccessorExpression* Clone(CloneContext* ctx) const override;
+  const ArrayAccessorExpression* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
+  /// the array
+  const Expression* const array;
 
- private:
-  ArrayAccessorExpression(const ArrayAccessorExpression&) = delete;
-
-  Expression* const array_;
-  Expression* const idx_expr_;
+  /// the index expression
+  const Expression* const index;
 };
 
 }  // namespace ast

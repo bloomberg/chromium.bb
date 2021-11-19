@@ -92,3 +92,39 @@ export const DefaultLimits = {
   maxComputeWorkgroupsPerDimension: 65535,
 };
 checkType<Omit<GPUSupportedLimits, '__brand'>>(DefaultLimits);
+
+const kMaxUnsignedLongValue = 4294967295;
+const kMaxUnsignedLongLongValue = Number.MAX_SAFE_INTEGER;
+export const LimitMaximum = {
+  maxTextureDimension1D: kMaxUnsignedLongValue,
+  maxTextureDimension2D: kMaxUnsignedLongValue,
+  maxTextureDimension3D: kMaxUnsignedLongValue,
+  maxTextureArrayLayers: kMaxUnsignedLongValue,
+
+  maxBindGroups: kMaxUnsignedLongValue,
+  maxDynamicUniformBuffersPerPipelineLayout: kMaxUnsignedLongValue,
+  maxDynamicStorageBuffersPerPipelineLayout: kMaxUnsignedLongValue,
+  maxSampledTexturesPerShaderStage: kMaxUnsignedLongValue,
+  maxSamplersPerShaderStage: kMaxUnsignedLongValue,
+  maxStorageBuffersPerShaderStage: kMaxUnsignedLongValue,
+  maxStorageTexturesPerShaderStage: kMaxUnsignedLongValue,
+  maxUniformBuffersPerShaderStage: kMaxUnsignedLongValue,
+
+  maxUniformBufferBindingSize: kMaxUnsignedLongLongValue,
+  maxStorageBufferBindingSize: kMaxUnsignedLongLongValue,
+  minUniformBufferOffsetAlignment: kMaxUnsignedLongValue,
+  minStorageBufferOffsetAlignment: kMaxUnsignedLongValue,
+
+  maxVertexBuffers: kMaxUnsignedLongValue,
+  maxVertexAttributes: kMaxUnsignedLongValue,
+  maxVertexBufferArrayStride: kMaxUnsignedLongValue,
+  maxInterStageShaderComponents: kMaxUnsignedLongValue,
+
+  maxComputeWorkgroupStorageSize: kMaxUnsignedLongValue,
+  maxComputeInvocationsPerWorkgroup: kMaxUnsignedLongValue,
+  maxComputeWorkgroupSizeX: kMaxUnsignedLongValue,
+  maxComputeWorkgroupSizeY: kMaxUnsignedLongValue,
+  maxComputeWorkgroupSizeZ: kMaxUnsignedLongValue,
+  maxComputeWorkgroupsPerDimension: kMaxUnsignedLongValue,
+};
+checkType<Omit<GPUSupportedLimits, '__brand'>>(LimitMaximum);

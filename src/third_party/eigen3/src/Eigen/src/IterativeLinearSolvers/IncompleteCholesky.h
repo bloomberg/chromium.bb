@@ -14,6 +14,8 @@
 #include <vector>
 #include <list>
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 /**
   * \brief Modified Incomplete Cholesky with dual threshold

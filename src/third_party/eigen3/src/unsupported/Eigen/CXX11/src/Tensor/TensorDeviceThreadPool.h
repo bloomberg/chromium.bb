@@ -10,6 +10,8 @@
 #if defined(EIGEN_USE_THREADS) && !defined(EIGEN_CXX11_TENSOR_TENSOR_DEVICE_THREAD_POOL_H)
 #define EIGEN_CXX11_TENSOR_TENSOR_DEVICE_THREAD_POOL_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 // Runs an arbitrary function and then calls Notify() on the passed in

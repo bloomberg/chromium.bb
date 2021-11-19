@@ -54,6 +54,7 @@
 #include "quic/test_tools/quic_server_peer.h"
 #include "quic/test_tools/quic_session_peer.h"
 #include "quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_spdy_stream_peer.h"
 #include "quic/test_tools/quic_stream_id_manager_peer.h"
 #include "quic/test_tools/quic_stream_peer.h"
 #include "quic/test_tools/quic_stream_sequencer_peer.h"
@@ -136,7 +137,10 @@ void WriteHeadersOnStream(QuicSpdyStream* stream) {
   // Since QuicSpdyStream uses QuicHeaderList::empty() to detect too large
   // headers, it also fails when receiving empty headers.
   SpdyHeaderBlock headers;
-  headers["foo"] = "bar";
+  headers[":authority"] = "test.example.com:443";
+  headers[":path"] = "/path";
+  headers[":method"] = "GET";
+  headers[":scheme"] = "https";
   stream->WriteHeaders(std::move(headers), /* fin = */ false, nullptr);
 }
 
@@ -226,6 +230,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     client->UseClientConnectionIdLength(override_client_connection_id_length_);
     client->client()->set_connection_debug_visitor(connection_debug_visitor_);
     client->client()->set_enable_web_transport(enable_web_transport_);
+    client->client()->set_use_datagram_contexts(use_datagram_contexts_);
     client->Connect();
     return client;
   }
@@ -364,6 +369,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   bool Initialize() {
     if (enable_web_transport_) {
       memory_cache_backend_.set_enable_webtransport(true);
+    }
+    if (use_datagram_contexts_) {
+      memory_cache_backend_.set_use_datagram_contexts(true);
     }
 
     QuicTagVector copt;
@@ -544,8 +552,12 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
           EXPECT_EQ(0u, server_stats.packets_lost);
         }
         EXPECT_EQ(0u, server_stats.packets_discarded);
-        EXPECT_EQ(server_session->user_agent_id().value_or("MissingUserAgent"),
-                  kTestUserAgentId);
+        if (!GetQuicReloadableFlag(
+                quic_ignore_user_agent_transport_parameter)) {
+          EXPECT_EQ(
+              server_session->user_agent_id().value_or("MissingUserAgent"),
+              kTestUserAgentId);
+        }
       } else {
         ADD_FAILURE() << "Missing server connection";
       }
@@ -682,8 +694,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     return WaitForFooResponseAndCheckIt(client_.get());
   }
 
-  WebTransportHttp3* CreateWebTransportSession(const std::string& path,
-                                               bool wait_for_server_response) {
+  WebTransportHttp3* CreateWebTransportSession(
+      const std::string& path, bool wait_for_server_response,
+      QuicSpdyStream** connect_stream_out = nullptr) {
     // Wait until we receive the settings from the server indicating
     // WebTransport support.
     client_->WaitUntil(
@@ -714,6 +727,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
       client_->WaitUntil(-1,
                          [stream]() { return stream->headers_decompressed(); });
       EXPECT_TRUE(session->ready());
+    }
+    if (connect_stream_out != nullptr) {
+      *connect_stream_out = stream;
     }
     return session;
   }
@@ -822,6 +838,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
   int override_client_connection_id_length_ = -1;
   uint8_t expected_server_connection_id_length_;
   bool enable_web_transport_ = false;
+  bool use_datagram_contexts_ = false;
   std::vector<std::string> received_webtransport_unidirectional_streams_;
 };
 
@@ -5591,8 +5608,10 @@ TEST_P(EndToEndTest, CustomTransportParameters) {
   QuicConfig* server_config = nullptr;
   if (server_session != nullptr) {
     server_config = server_session->config();
-    EXPECT_EQ(server_session->user_agent_id().value_or("MissingUserAgent"),
-              kTestUserAgentId);
+    if (!GetQuicReloadableFlag(quic_ignore_user_agent_transport_parameter)) {
+      EXPECT_EQ(server_session->user_agent_id().value_or("MissingUserAgent"),
+                kTestUserAgentId);
+    }
   } else {
     ADD_FAILURE() << "Missing server session";
   }
@@ -6338,11 +6357,7 @@ TEST_P(EndToEndTest, WebTransportDatagrams) {
 
   SimpleBufferAllocator allocator;
   for (int i = 0; i < 10; i++) {
-    absl::string_view datagram = "test";
-    auto buffer = MakeUniqueBuffer(&allocator, datagram.size());
-    memcpy(buffer.get(), datagram.data(), datagram.size());
-    QuicMemSlice slice(std::move(buffer), datagram.size());
-    session->SendOrQueueDatagram(std::move(slice));
+    session->SendOrQueueDatagram(MemSliceFromString("test"));
   }
 
   int received = 0;
@@ -6351,6 +6366,37 @@ TEST_P(EndToEndTest, WebTransportDatagrams) {
   });
   client_->WaitUntil(5000, [&received]() { return received > 0; });
   EXPECT_GT(received, 0);
+}
+
+TEST_P(EndToEndTest, WebTransportDatagramsWithContexts) {
+  enable_web_transport_ = true;
+  use_datagram_contexts_ = true;
+  SetPacketLossPercentage(30);
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+
+  QuicSpdyStream* connect_stream = nullptr;
+  WebTransportHttp3* session = CreateWebTransportSession(
+      "/echo", /*wait_for_server_response=*/true, &connect_stream);
+  ASSERT_TRUE(session != nullptr);
+  ASSERT_TRUE(connect_stream != nullptr);
+  NiceMock<MockClientVisitor>& visitor = SetupWebTransportVisitor(session);
+
+  SimpleBufferAllocator allocator;
+  for (int i = 0; i < 10; i++) {
+    session->SendOrQueueDatagram(MemSliceFromString("test"));
+  }
+
+  int received = 0;
+  EXPECT_CALL(visitor, OnDatagramReceived(_)).WillRepeatedly([&received]() {
+    received++;
+  });
+  client_->WaitUntil(5000, [&received]() { return received > 0; });
+  EXPECT_GT(received, 0);
+  EXPECT_TRUE(QuicSpdyStreamPeer::use_datagram_contexts(connect_stream));
 }
 
 TEST_P(EndToEndTest, WebTransportSessionClose) {
@@ -6528,6 +6574,58 @@ TEST_P(EndToEndTest, WebTransportSession404) {
     return GetClientSession()->GetOrCreateSpdyDataStream(connect_stream_id) ==
            nullptr;
   }));
+}
+
+TEST_P(EndToEndTest, InvalidExtendedConnect) {
+  SetQuicReloadableFlag(quic_verify_request_headers, true);
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+  // Missing :path header.
+  spdy::SpdyHeaderBlock headers;
+  headers[":scheme"] = "https";
+  headers[":authority"] = "localhost";
+  headers[":method"] = "CONNECT";
+  headers[":protocol"] = "webtransport";
+
+  client_->SendMessage(headers, "", /*fin=*/false);
+  client_->WaitForResponse();
+  // An early response should be received.
+  CheckResponseHeaders("400");
+}
+
+TEST_P(EndToEndTest, RejectExtendedConnect) {
+  SetQuicReloadableFlag(quic_verify_request_headers, true);
+  // Disable extended CONNECT.
+  memory_cache_backend_.set_enable_extended_connect(false);
+  ASSERT_TRUE(Initialize());
+
+  if (!version_.UsesHttp3()) {
+    return;
+  }
+  // This extended CONNECT should be rejected.
+  spdy::SpdyHeaderBlock headers;
+  headers[":scheme"] = "https";
+  headers[":authority"] = "localhost";
+  headers[":method"] = "CONNECT";
+  headers[":path"] = "/echo";
+  headers[":protocol"] = "webtransport";
+
+  client_->SendMessage(headers, "", /*fin=*/false);
+  client_->WaitForResponse();
+  CheckResponseHeaders("400");
+
+  // Vanilla CONNECT should be accepted.
+  spdy::SpdyHeaderBlock headers2;
+  headers2[":authority"] = "localhost";
+  headers2[":method"] = "CONNECT";
+
+  client_->SendMessage(headers2, "body", /*fin=*/true);
+  client_->WaitForResponse();
+  // No :path header, so 404.
+  CheckResponseHeaders("404");
 }
 
 }  // namespace

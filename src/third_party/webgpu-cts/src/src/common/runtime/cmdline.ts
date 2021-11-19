@@ -6,6 +6,7 @@ import { Logger } from '../internal/logging/logger.js';
 import { LiveTestCaseResult } from '../internal/logging/result.js';
 import { parseQuery } from '../internal/query/parseQuery.js';
 import { parseExpectationsForTestQuery } from '../internal/query/query.js';
+import { setGPUProvider } from '../util/navigator_gpu.js';
 import { assert, unreachable } from '../util/util.js';
 
 import sys from './helper/sys.js';
@@ -15,10 +16,15 @@ function usage(rc: number): never {
   console.log(`  tools/run_${sys.type} [OPTIONS...] QUERIES...`);
   console.log(`  tools/run_${sys.type} 'unittests:*' 'webgpu:buffers,*'`);
   console.log('Options:');
-  console.log('  --verbose       Print result/log of every test as it runs.');
-  console.log('  --debug         Include debug messages in logging.');
-  console.log('  --print-json    Print the complete result JSON in the output.');
-  console.log('  --expectations  Path to expectations file.');
+  console.log('  --verbose            Print result/log of every test as it runs.');
+  console.log(
+    '  --list               Print all testcase names that match the given query and exit.'
+  );
+  console.log('  --debug              Include debug messages in logging.');
+  console.log('  --print-json         Print the complete result JSON in the output.');
+  console.log('  --expectations       Path to expectations file.');
+  console.log('  --gpu-provider       Path to node module that provides the GPU implementation.');
+  console.log('  --gpu-provider-flag  Flag to set on the gpu-provider as <flag>=<value>');
   return sys.exit(rc);
 }
 
@@ -27,17 +33,26 @@ if (!sys.existsSync('src/common/runtime/cmdline.ts')) {
   usage(1);
 }
 
+interface GPUProviderModule {
+  create(flags: string[]): GPU;
+}
+
 let verbose = false;
+let listTestcases = false;
 let debug = false;
 let printJSON = false;
 let loadWebGPUExpectations: Promise<unknown> | undefined = undefined;
+let gpuProviderModule: GPUProviderModule | undefined = undefined;
 
 const queries: string[] = [];
+const gpuProviderFlags: string[] = [];
 for (let i = 0; i < sys.args.length; ++i) {
   const a = sys.args[i];
   if (a.startsWith('-')) {
     if (a === '--verbose') {
       verbose = true;
+    } else if (a === '--list') {
+      listTestcases = true;
     } else if (a === '--debug') {
       debug = true;
     } else if (a === '--print-json') {
@@ -45,7 +60,13 @@ for (let i = 0; i < sys.args.length; ++i) {
     } else if (a === '--expectations') {
       const expectationsFile = new URL(sys.args[++i], `file://${sys.cwd()}`).pathname;
       loadWebGPUExpectations = import(expectationsFile).then(m => m.expectations);
+    } else if (a === '--gpu-provider') {
+      const modulePath = sys.args[++i];
+      gpuProviderModule = require(modulePath);
+    } else if (a === '--gpu-provider-flag') {
+      gpuProviderFlags.push(sys.args[++i]);
     } else {
+      console.log('unrecognized flag: ', a);
       usage(1);
     }
   } else {
@@ -53,7 +74,12 @@ for (let i = 0; i < sys.args.length; ++i) {
   }
 }
 
+if (gpuProviderModule) {
+  setGPUProvider(() => gpuProviderModule!.create(gpuProviderFlags));
+}
+
 if (queries.length === 0) {
+  console.log('no queries specified');
   usage(0);
 }
 
@@ -78,6 +104,11 @@ if (queries.length === 0) {
 
   for (const testcase of testcases) {
     const name = testcase.query.toString();
+    if (listTestcases) {
+      console.log(name);
+      continue;
+    }
+
     const [rec, res] = log.record(name);
     await testcase.run(rec, expectations);
 
@@ -101,6 +132,10 @@ if (queries.length === 0) {
       default:
         unreachable('unrecognized status');
     }
+  }
+
+  if (listTestcases) {
+    return;
   }
 
   assert(total > 0, 'found no tests!');

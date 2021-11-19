@@ -9,8 +9,48 @@
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 
 class BackForwardCachePageLoadMetricsObserverTest;
+namespace base {
+class TickClock;
+}
 
 namespace internal {
+
+extern const char
+    kAverageUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kSlowUserInteractionLatencyOverBudgetHighPercentile_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kSlowUserInteractionLatencyOverBudgetHighPercentile2_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kSumOfUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kWorstUserInteractionLatency_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kWorstUserInteractionLatencyOverBudget_MaxEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kAverageUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kSlowUserInteractionLatencyOverBudgetHighPercentile_TotalEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kSlowUserInteractionLatencyOverBudgetHighPercentile2_TotalEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kSumOfUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kWorstUserInteractionLatency_TotalEventDuration_AfterBackForwardCacheRestore
+        [];
+extern const char
+    kWorstUserInteractionLatencyOverBudget_TotalEventDuration_AfterBackForwardCacheRestore
+        [];
 
 extern const char kHistogramFirstPaintAfterBackForwardCacheRestore[];
 extern const char
@@ -91,6 +131,7 @@ class BackForwardCachePageLoadMetricsObserver
   // back forward cache at least once.
   // Does nothing if the page has never been restored.
   void MaybeRecordForegroundDurationAfterBackForwardCacheRestore(
+      const base::TickClock* clock,
       bool app_entering_background) const;
 
   // Records a page end reason when the page is navigated away from or closed,
@@ -98,6 +139,13 @@ class BackForwardCachePageLoadMetricsObserver
   // Does nothing if the page has never been restored.
   void MaybeRecordPageEndAfterBackForwardCacheRestore(
       bool app_entering_background);
+
+  // Recorded normalized responsiveness metrics after the page is restored from
+  // the back-forward cache. This is called when the page is navigated away,
+  // i.e., when the page enters to the cache, or the page is closed. In the
+  // first call, as the page has not been in the back-forward cache yet, this
+  // doesn't record the scores.
+  void MaybeRecordNormalizedResponsivenessMetrics();
 
   // Returns the UKM source ID for index-th back-foward restore navigation.
   int64_t GetUkmSourceIdForBackForwardCacheRestore(size_t index) const;
@@ -115,6 +163,12 @@ class BackForwardCachePageLoadMetricsObserver
   // cache, or was ever hidden. Resets to false if the page re-enters the
   // back-forward cache.
   bool was_hidden_ = false;
+
+  // Whether the current set of page metrics (CLS, LCP, etc) have already been
+  // logged due to the page being backgrounded. Used to avoid double-logging
+  // these metrics. This value gets re-set to false if the page is restored
+  // from the BFCache.
+  bool page_metrics_logged_due_to_backgrounding_ = false;
 
   // The layout shift score. These are recorded when the page is navigated away.
   // These serve as "deliminators" between back-forward cache navigations.

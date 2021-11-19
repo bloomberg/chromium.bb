@@ -12,6 +12,8 @@
 
 // clang-format off
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \class TensorBase

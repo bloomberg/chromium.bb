@@ -73,23 +73,16 @@ contains the Vulkan API definition files (registry) that are required to build
 the loader. You must also take note of the headers install directory and pass
 it on the CMake command line for building this repository, as described below.
 
-#### Google Test
+#### Test Dependencies
 
-The loader tests depend on the [Google Test](https://github.com/google/googletest)
-framework and do not build unless this framework is downloaded into the
-repository's `external` directory.
+The loader tests depend on the [Google Test](https://github.com/google/googletest) library and
+on Windows platforms depends on the [Microsoft Detours](https://github.com/microsoft/Detours) library.
 
-To obtain the framework, change your current directory to the top of your
-Vulkan-Loader repository and run:
-
-    git clone https://github.com/google/googletest.git external/googletest
-    cd external/googletest
-    git checkout tags/release-1.10.0
-
-before configuring your build with CMake.
-
-If you do not need the loader tests, there is no need to download this
-framework.
+To build the tests, pass the `DUPDATE_DEPS=ON` and `-DBUILD_TESTS=ON` options when generating the project:
+```bash
+cmake ... -DUPDATE_DEPS=ON -DBUILD_TESTS=ON ...
+```
+This will ensure googletest and detours is downloaded and the appropriate version is used.
 
 ### Build and Install Directories
 
@@ -186,9 +179,9 @@ The following is a table of all string options currently supported by this repos
 | CMAKE_OSX_DEPLOYMENT_TARGET | MacOS | `10.12` | The minimum version of MacOS for loader deployment. |
 | FALLBACK_CONFIG_DIRS | Linux/MacOS | `/etc/xdg` | Configuration path(s) to use instead of `XDG_CONFIG_DIRS` if that environment variable is unavailable. The default setting is freedesktop compliant. |
 | FALLBACK_DATA_DIRS | Linux/MacOS | `/usr/local/share:/usr/share` | Configuration path(s) to use instead of `XDG_DATA_DIRS` if that environment variable is unavailable. The default setting is freedesktop compliant. |
+| BUILD_DLL_VERSIONINFO | Windows | `""` (empty string) | Allows setting the Windows specific version information for the Loader DLL. Format is "major.minor.patch.build". |
 
-These variables should be set using the `-D` option when invoking
-CMake to generate the native platform files.
+These variables should be set using the `-D` option when invoking CMake to generate the native platform files.
 
 ## Building On Windows
 

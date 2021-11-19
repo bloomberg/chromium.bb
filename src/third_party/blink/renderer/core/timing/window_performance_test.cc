@@ -84,8 +84,7 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void SimulateSwapPromise(base::TimeTicks timestamp) {
-    performance_->ReportEventTimings(frame_counter++, WebSwapResult::kDidSwap,
-                                     timestamp);
+    performance_->ReportEventTimings(frame_counter++, timestamp);
   }
 
   void SimulateInteractionId(
@@ -756,7 +755,7 @@ TEST_F(WindowPerformanceTest, Drag) {
                        pointer_id);
   SimulateSwapPromise(swap_time_pointerdown);
   // Notify drag.
-  performance_->NotifyPotentialDrag();
+  performance_->NotifyPotentialDrag(pointer_id);
   // Pointerup
   base::TimeTicks pointerup_timestamp = GetTimeStamp(3);
   base::TimeTicks processing_start_pointerup = GetTimeStamp(5);
@@ -856,87 +855,13 @@ TEST_F(WindowPerformanceTest, TouchesWithoutClick) {
   EXPECT_EQ(0u, entries.size());
 }
 
-// For multi-touch, we only record the innermost pair of pointerdown and
-// pointerup.
-// TODO(hbsong): Record each touch by pointer_id separately.
-TEST_F(WindowPerformanceTest, MultiTouch) {
-  // First Pointerdown
-  base::TimeTicks pointerdown_timestamp = GetTimeOrigin();
-  base::TimeTicks processing_start_pointerdown = GetTimeStamp(1);
-  base::TimeTicks processing_end_pointerdown = GetTimeStamp(2);
-  base::TimeTicks swap_time_pointerdown = GetTimeStamp(5);
-  PointerId pointer_id_1 = 4;
-  RegisterPointerEvent("pointerdown", pointerdown_timestamp,
-                       processing_start_pointerdown, processing_end_pointerdown,
-                       pointer_id_1);
-  SimulateSwapPromise(swap_time_pointerdown);
-  // Second Pointerdown
-  pointerdown_timestamp = GetTimeOrigin();
-  processing_start_pointerdown = GetTimeStamp(1);
-  processing_end_pointerdown = GetTimeStamp(2);
-  swap_time_pointerdown = GetTimeStamp(6);
-  PointerId pointer_id_2 = 6;
-  RegisterPointerEvent("pointerdown", pointerdown_timestamp,
-                       processing_start_pointerdown, processing_end_pointerdown,
-                       pointer_id_2);
-  SimulateSwapPromise(swap_time_pointerdown);
-
-  // First Pointerup
-  base::TimeTicks pointerup_timestamp = GetTimeStamp(3);
-  base::TimeTicks processing_start_pointerup = GetTimeStamp(5);
-  base::TimeTicks processing_end_pointerup = GetTimeStamp(6);
-  base::TimeTicks swap_time_pointerup = GetTimeStamp(9);
-  RegisterPointerEvent("pointerup", pointerup_timestamp,
-                       processing_start_pointerup, processing_end_pointerup,
-                       pointer_id_2);
-  SimulateSwapPromise(swap_time_pointerup);
-
-  // Second Pointerup
-  pointerup_timestamp = GetTimeStamp(5);
-  processing_start_pointerup = GetTimeStamp(6);
-  processing_end_pointerup = GetTimeStamp(7);
-  swap_time_pointerup = GetTimeStamp(13);
-  RegisterPointerEvent("pointerup", pointerup_timestamp,
-                       processing_start_pointerup, processing_end_pointerup,
-                       pointer_id_1);
-  SimulateSwapPromise(swap_time_pointerup);
-
-  // Click
-  base::TimeTicks click_timestamp = GetTimeStamp(13);
-  base::TimeTicks processing_start_click = GetTimeStamp(15);
-  base::TimeTicks processing_end_click = GetTimeStamp(16);
-  base::TimeTicks swap_time_click = GetTimeStamp(20);
-  RegisterPointerEvent("click", click_timestamp, processing_start_click,
-                       processing_end_click, pointer_id_2);
-  SimulateSwapPromise(swap_time_click);
-
-  // Flush UKM logging mojo request.
-  RunPendingTasks();
-
-  // Check UKM recording.
-  auto entries = GetUkmRecorder()->GetEntriesByName(
-      ukm::builders::Responsiveness_UserInteraction::kEntryName);
-  EXPECT_EQ(1u, entries.size());
-  const ukm::mojom::UkmEntry* entry = entries[0];
-  GetUkmRecorder()->ExpectEntryMetric(
-      entry,
-      ukm::builders::Responsiveness_UserInteraction::kMaxEventDurationName, 7);
-  GetUkmRecorder()->ExpectEntryMetric(
-      entry,
-      ukm::builders::Responsiveness_UserInteraction::kTotalEventDurationName,
-      16);
-  GetUkmRecorder()->ExpectEntryMetric(
-      entry,
-      ukm::builders::Responsiveness_UserInteraction::kInteractionTypeName, 1);
-}
-
 TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   using trace_analyzer::Query;
   trace_analyzer::Start("*");
   // |element| needs to be non-null to prevent a crash.
   performance_->AddElementTiming(
-      "image-paint", "url", FloatRect(10, 20, 30, 40), GetTimeStamp(2000),
-      GetTimeStamp(1000), "identifier", IntSize(200, 300), "id",
+      "image-paint", "url", gfx::RectF(10, 20, 30, 40), GetTimeStamp(2000),
+      GetTimeStamp(1000), "identifier", gfx::Size(200, 300), "id",
       /*element*/ page_holder_->GetDocument().documentElement());
   auto analyzer = trace_analyzer::Stop();
   trace_analyzer::TraceEventVector events;
@@ -954,12 +879,8 @@ TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   std::string element_type;
   EXPECT_TRUE(arg_dict->GetString("elementType", &element_type));
   EXPECT_EQ(element_type, "image-paint");
-  int load_time;
-  EXPECT_TRUE(arg_dict->GetInteger("loadTime", &load_time));
-  EXPECT_EQ(load_time, 1000);
-  int render_time;
-  EXPECT_TRUE(arg_dict->GetInteger("renderTime", &render_time));
-  EXPECT_EQ(render_time, 2000);
+  EXPECT_EQ(arg_dict->FindIntKey("loadTime").value_or(-1), 1000);
+  EXPECT_EQ(arg_dict->FindIntKey("renderTime").value_or(-1), 2000);
   EXPECT_EQ(arg_dict->FindDoubleKey("rectLeft").value_or(-1), 10);
   EXPECT_EQ(arg_dict->FindDoubleKey("rectTop").value_or(-1), 20);
   EXPECT_EQ(arg_dict->FindDoubleKey("rectWidth").value_or(-1), 30);
@@ -967,12 +888,8 @@ TEST_F(WindowPerformanceTest, ElementTimingTraceEvent) {
   std::string identifier;
   EXPECT_TRUE(arg_dict->GetString("identifier", &identifier));
   EXPECT_EQ(identifier, "identifier");
-  int natural_width;
-  EXPECT_TRUE(arg_dict->GetInteger("naturalWidth", &natural_width));
-  EXPECT_EQ(natural_width, 200);
-  int natural_height;
-  EXPECT_TRUE(arg_dict->GetInteger("naturalHeight", &natural_height));
-  EXPECT_EQ(natural_height, 300);
+  EXPECT_EQ(arg_dict->FindIntKey("naturalWidth").value_or(-1), 200);
+  EXPECT_EQ(arg_dict->FindIntKey("naturalHeight").value_or(-1), 300);
   std::string element_id;
   EXPECT_TRUE(arg_dict->GetString("elementId", &element_id));
   EXPECT_EQ(element_id, "id");
@@ -995,32 +912,34 @@ TEST_F(WindowPerformanceTest, InteractionID) {
   EXPECT_GT(keydown_entry->interactionId(), 0u);
 
   // Tap or Click with max duration 70, total duration 90.
+  PointerId pointer_id_1 = 10;
   PerformanceEventTiming* pointerdown_entry =
       CreatePerformanceEventTiming(event_type_names::kPointerdown);
-  SimulateInteractionId(pointerdown_entry, absl::nullopt, 10, GetTimeStamp(100),
-                        GetTimeStamp(120));
+  SimulateInteractionId(pointerdown_entry, absl::nullopt, pointer_id_1,
+                        GetTimeStamp(100), GetTimeStamp(120));
   PerformanceEventTiming* pointerup_entry =
       CreatePerformanceEventTiming(event_type_names::kPointerup);
-  SimulateInteractionId(pointerup_entry, absl::nullopt, 10, GetTimeStamp(130),
-                        GetTimeStamp(150));
+  SimulateInteractionId(pointerup_entry, absl::nullopt, pointer_id_1,
+                        GetTimeStamp(130), GetTimeStamp(150));
   PerformanceEventTiming* click_entry =
       CreatePerformanceEventTiming(event_type_names::kClick);
-  SimulateInteractionId(click_entry, absl::nullopt, 10, GetTimeStamp(130),
-                        GetTimeStamp(200));
+  SimulateInteractionId(click_entry, absl::nullopt, pointer_id_1,
+                        GetTimeStamp(130), GetTimeStamp(200));
   EXPECT_GT(pointerdown_entry->interactionId(), 0u);
   EXPECT_EQ(pointerdown_entry->interactionId(),
             pointerup_entry->interactionId());
   EXPECT_EQ(pointerup_entry->interactionId(), click_entry->interactionId());
 
   // Drag with max duration 50, total duration 80.
+  PointerId pointer_id_2 = 20;
   pointerdown_entry =
       CreatePerformanceEventTiming(event_type_names::kPointerdown);
-  SimulateInteractionId(pointerdown_entry, absl::nullopt, 20, GetTimeStamp(150),
-                        GetTimeStamp(200));
-  performance_->NotifyPotentialDrag();
+  SimulateInteractionId(pointerdown_entry, absl::nullopt, pointer_id_2,
+                        GetTimeStamp(150), GetTimeStamp(200));
+  performance_->NotifyPotentialDrag(20);
   pointerup_entry = CreatePerformanceEventTiming(event_type_names::kPointerup);
-  SimulateInteractionId(pointerup_entry, absl::nullopt, 20, GetTimeStamp(200),
-                        GetTimeStamp(230));
+  SimulateInteractionId(pointerup_entry, absl::nullopt, pointer_id_2,
+                        GetTimeStamp(200), GetTimeStamp(230));
   EXPECT_GT(pointerdown_entry->interactionId(), 0u);
   EXPECT_EQ(pointerdown_entry->interactionId(),
             pointerup_entry->interactionId());
@@ -1028,11 +947,11 @@ TEST_F(WindowPerformanceTest, InteractionID) {
   // Scroll should not be reported in ukm.
   pointerdown_entry =
       CreatePerformanceEventTiming(event_type_names::kPointerdown);
-  SimulateInteractionId(pointerdown_entry, absl::nullopt, 5, GetTimeStamp(300),
-                        GetTimeStamp(315));
+  SimulateInteractionId(pointerdown_entry, absl::nullopt, pointer_id_2,
+                        GetTimeStamp(300), GetTimeStamp(315));
   PerformanceEventTiming* pointercancel_entry =
       CreatePerformanceEventTiming(event_type_names::kPointercancel);
-  SimulateInteractionId(pointercancel_entry, absl::nullopt, 5,
+  SimulateInteractionId(pointercancel_entry, absl::nullopt, pointer_id_2,
                         GetTimeStamp(310), GetTimeStamp(330));
   EXPECT_EQ(pointerdown_entry->interactionId(), 0u);
   EXPECT_EQ(pointercancel_entry->interactionId(), 0u);
@@ -1369,6 +1288,109 @@ TEST_F(InteractionIdTest, SmartSuggestion) {
   CheckUKMValues({{9, 9, UserInteractionType::kKeyboard},
                   {14, 14, UserInteractionType::kKeyboard},
                   {43, 70, UserInteractionType::kKeyboard}});
+}
+
+TEST_F(InteractionIdTest, TapWithoutClick) {
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kPointerdown, absl::nullopt, 1, GetTimeStamp(100),
+       GetTimeStamp(140)},
+      {event_type_names::kPointerup, absl::nullopt, 1, GetTimeStamp(120),
+       GetTimeStamp(150)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  EXPECT_GT(ids[0], 0u) << "Nonzero interaction id";
+  EXPECT_EQ(ids[0], ids[1])
+      << "Pointerdown and pointerup have same interaction id";
+  // No UKM value, since we are waiting for click.
+  RunPendingTasks();
+  auto entries = GetUkmRecorder()->GetEntriesByName(
+      ukm::builders::Responsiveness_UserInteraction::kEntryName);
+  EXPECT_EQ(entries.size(), 0u);
+
+  // After a wait, we should see the UKM.
+  test::RunDelayedTasks(base::Seconds(1));
+  CheckUKMValues({{40, 50, UserInteractionType::kTapOrClick}});
+}
+
+TEST_F(InteractionIdTest, PointerupClick) {
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kPointerup, absl::nullopt, 1, GetTimeStamp(100),
+       GetTimeStamp(140)},
+      {event_type_names::kClick, absl::nullopt, 1, GetTimeStamp(120),
+       GetTimeStamp(150)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  EXPECT_GT(ids[0], 0u) << "Nonzero interaction id";
+  EXPECT_EQ(ids[0], ids[1]) << "Pointerup and click have same interaction id";
+  // Flush UKM logging mojo request.
+  RunPendingTasks();
+  CheckUKMValues({{40, 50, UserInteractionType::kTapOrClick}});
+}
+
+TEST_F(InteractionIdTest, JustClick) {
+  // Hitting enter on a keyboard may cause just a trusted click event.
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kClick, absl::nullopt, -1, GetTimeStamp(120),
+       GetTimeStamp(150)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  EXPECT_GT(ids[0], 0u) << "Nonzero interaction id";
+  // Flush UKM logging mojo request.
+  RunPendingTasks();
+  CheckUKMValues({{30, 30, UserInteractionType::kTapOrClick}});
+}
+
+TEST_F(InteractionIdTest, PointerdownClick) {
+  // Contextmenus may cause us to only see pointerdown and click (no pointerup).
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kPointerdown, absl::nullopt, 1, GetTimeStamp(100),
+       GetTimeStamp(140)},
+      {event_type_names::kClick, absl::nullopt, 1, GetTimeStamp(120),
+       GetTimeStamp(150)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  EXPECT_GT(ids[0], 0u) << "Nonzero interaction id";
+  EXPECT_EQ(ids[0], ids[1]) << "Pointerdown and click have same interaction id";
+  // Flush UKM logging mojo request.
+  RunPendingTasks();
+  CheckUKMValues({{40, 50, UserInteractionType::kTapOrClick}});
+}
+
+TEST_F(InteractionIdTest, MultiTouch) {
+  // In multitouch, we report an interaction per pointerId. We do not see
+  // clicks.
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kPointerdown, absl::nullopt, 1, GetTimeStamp(100),
+       GetTimeStamp(110)},
+      {event_type_names::kPointerdown, absl::nullopt, 2, GetTimeStamp(120),
+       GetTimeStamp(140)},
+      {event_type_names::kPointerup, absl::nullopt, 2, GetTimeStamp(200),
+       GetTimeStamp(230)},
+      {event_type_names::kPointerup, absl::nullopt, 1, GetTimeStamp(200),
+       GetTimeStamp(250)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  for (uint32_t id : ids) {
+    EXPECT_GT(id, 0u);
+  }
+  // Interaction ids should match by PointerId.
+  EXPECT_EQ(ids[0], ids[3]);
+  EXPECT_EQ(ids[1], ids[2]);
+  // After a wait, flush UKM logging mojo request.
+  test::RunDelayedTasks(base::Seconds(1));
+  CheckUKMValues({{50, 60, UserInteractionType::kTapOrClick},
+                  {30, 50, UserInteractionType::kTapOrClick}});
+}
+
+TEST_F(InteractionIdTest, ClickIncorrectPointerId) {
+  // On mobile, in cases where touchstart is skipped, click does not get the
+  // correct pointerId. See crbug.com/1264930 for more details.
+  std::vector<EventForInteraction> events = {
+      {event_type_names::kPointerup, absl::nullopt, 1, GetTimeStamp(100),
+       GetTimeStamp(130)},
+      {event_type_names::kClick, absl::nullopt, 0, GetTimeStamp(120),
+       GetTimeStamp(160)}};
+  std::vector<uint32_t> ids = SimulateInteractionIds(events);
+  EXPECT_GT(ids[0], 0u) << "Nonzero interaction id";
+  EXPECT_EQ(ids[0], ids[1]) << "Pointerup and click have same interaction id";
+  // Flush UKM logging mojo request.
+  RunPendingTasks();
+  CheckUKMValues({{40, 60, UserInteractionType::kTapOrClick}});
 }
 
 }  // namespace blink

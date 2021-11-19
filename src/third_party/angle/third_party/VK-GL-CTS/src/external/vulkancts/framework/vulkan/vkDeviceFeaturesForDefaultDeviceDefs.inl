@@ -7,6 +7,7 @@ const VkPhysicalDevice8BitStorageFeatures&							get8BitStorageFeatures							(v
 const VkPhysicalDeviceAccelerationStructureFeaturesKHR&				getAccelerationStructureFeatures				(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceAccelerationStructureFeaturesKHR>();				}
 const VkPhysicalDeviceASTCDecodeFeaturesEXT&						getASTCDecodeFeaturesEXT						(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceASTCDecodeFeaturesEXT>();							}
 const VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT&			getBlendOperationAdvancedFeaturesEXT			(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceBlendOperationAdvancedFeaturesEXT>();				}
+const VkPhysicalDeviceBorderColorSwizzleFeaturesEXT&				getBorderColorSwizzleFeaturesEXT				(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceBorderColorSwizzleFeaturesEXT>();					}
 const VkPhysicalDeviceBufferDeviceAddressFeatures&					getBufferDeviceAddressFeatures					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceBufferDeviceAddressFeatures>();					}
 const VkPhysicalDeviceBufferDeviceAddressFeaturesEXT&				getBufferDeviceAddressFeaturesEXT				(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceBufferDeviceAddressFeaturesEXT>();				}
 const VkPhysicalDeviceCoherentMemoryFeaturesAMD&					getCoherentMemoryFeaturesAMD					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceCoherentMemoryFeaturesAMD>();						}
@@ -42,6 +43,7 @@ const VkPhysicalDeviceInheritedViewportScissorFeaturesNV&			getInheritedViewport
 const VkPhysicalDeviceInlineUniformBlockFeaturesEXT&				getInlineUniformBlockFeaturesEXT				(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceInlineUniformBlockFeaturesEXT>();					}
 const VkPhysicalDeviceInvocationMaskFeaturesHUAWEI&					getInvocationMaskFeaturesHUAWEI					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceInvocationMaskFeaturesHUAWEI>();					}
 const VkPhysicalDeviceLineRasterizationFeaturesEXT&					getLineRasterizationFeaturesEXT					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceLineRasterizationFeaturesEXT>();					}
+const VkPhysicalDeviceMaintenance4FeaturesKHR&						getMaintenance4Features							(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceMaintenance4FeaturesKHR>();						}
 const VkPhysicalDeviceMemoryPriorityFeaturesEXT&					getMemoryPriorityFeaturesEXT					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceMemoryPriorityFeaturesEXT>();						}
 const VkPhysicalDeviceMeshShaderFeaturesNV&							getMeshShaderFeatures							(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceMeshShaderFeaturesNV>();							}
 const VkPhysicalDeviceMultiviewFeatures&							getMultiviewFeatures							(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceMultiviewFeatures>();								}
@@ -62,6 +64,7 @@ const VkPhysicalDeviceRayQueryFeaturesKHR&							getRayQueryFeatures								(voi
 const VkPhysicalDeviceRayTracingMotionBlurFeaturesNV&				getRayTracingMotionBlurFeatures					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceRayTracingMotionBlurFeaturesNV>();				}
 const VkPhysicalDeviceRayTracingPipelineFeaturesKHR&				getRayTracingPipelineFeatures					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceRayTracingPipelineFeaturesKHR>();					}
 const VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV&			getRepresentativeFragmentTestFeatures			(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceRepresentativeFragmentTestFeaturesNV>();			}
+const VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT&					getRGBA10X6FormatsFeaturesEXT					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT>();					}
 const VkPhysicalDeviceRobustness2FeaturesEXT&						getRobustness2FeaturesEXT						(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceRobustness2FeaturesEXT>();						}
 const VkPhysicalDeviceSamplerYcbcrConversionFeatures&				getSamplerYcbcrConversionFeatures				(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceSamplerYcbcrConversionFeatures>();				}
 const VkPhysicalDeviceScalarBlockLayoutFeatures&					getScalarBlockLayoutFeatures					(void) const { return m_deviceFeatures.getFeatureType<VkPhysicalDeviceScalarBlockLayoutFeatures>();						}

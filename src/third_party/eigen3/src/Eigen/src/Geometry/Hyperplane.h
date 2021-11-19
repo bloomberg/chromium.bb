@@ -11,6 +11,8 @@
 #ifndef EIGEN_HYPERPLANE_H
 #define EIGEN_HYPERPLANE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \geometry_module \ingroup Geometry_Module

@@ -937,13 +937,11 @@ void CPDF_GenerateAP::GenerateFormAP(CPDF_Document* pDoc,
   CPDF_DefaultAppearance appearance(DA);
 
   float fFontSize = 0;
-  Optional<ByteString> font = appearance.GetFont(&fFontSize);
+  absl::optional<ByteString> font = appearance.GetFont(&fFontSize);
   if (!font.has_value())
     return;
 
   ByteString font_name = font.value();
-  if (!CPDF_Dictionary::IsValidKey(font_name))
-    return;
 
   CFX_Color crText = fpdfdoc::CFXColorFromString(DA);
   CPDF_Dictionary* pDRDict = pFormDict->GetDictFor("DR");

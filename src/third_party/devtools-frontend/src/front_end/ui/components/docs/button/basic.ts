@@ -15,6 +15,14 @@ function appendButton(button: Buttons.Button.Button): void {
   document.querySelector('#container')?.appendChild(button);
 }
 
+function appendToToolbar(element: HTMLElement): void {
+  document.querySelector('#toolbar')?.appendChild(element);
+}
+
+function appendToSmallToolbar(element: HTMLElement): void {
+  document.querySelector('#small-toolbar')?.appendChild(element);
+}
+
 // Primary
 const primaryButton = new Buttons.Button.Button();
 primaryButton.data = {
@@ -32,6 +40,26 @@ secondaryButton.data = {
   variant: Buttons.Button.Variant.SECONDARY,
 };
 appendButton(secondaryButton);
+
+// Primary
+const disabledPrimaryButtons = new Buttons.Button.Button();
+disabledPrimaryButtons.data = {
+  variant: Buttons.Button.Variant.PRIMARY,
+  disabled: true,
+};
+disabledPrimaryButtons.innerText = 'Cannot click me';
+disabledPrimaryButtons.onclick = () => alert('clicked');
+appendButton(disabledPrimaryButtons);
+
+// Secondary
+const disabledSecondaryButton = new Buttons.Button.Button();
+disabledSecondaryButton.innerText = 'Cannot click me';
+disabledSecondaryButton.onclick = () => alert('clicked');
+disabledSecondaryButton.data = {
+  variant: Buttons.Button.Variant.SECONDARY,
+  disabled: true,
+};
+appendButton(disabledSecondaryButton);
 
 // Primary Icon
 const primaryIconButton = new Buttons.Button.Button();
@@ -62,13 +90,13 @@ primaryIconOnlyButton.data = {
   iconUrl: testIcon,
 };
 primaryIconOnlyButton.onclick = () => alert('clicked');
-primaryIconOnlyButton.style.width = '25px';
+primaryIconOnlyButton.style.width = '24px';
 appendButton(primaryIconOnlyButton);
 
 // Secondary Icon Only
 const secondaryIconOnlyButton = new Buttons.Button.Button();
 secondaryIconOnlyButton.onclick = () => alert('clicked');
-secondaryIconOnlyButton.style.width = '25px';
+secondaryIconOnlyButton.style.width = '24px';
 secondaryIconOnlyButton.data = {
   variant: Buttons.Button.Variant.SECONDARY,
   iconUrl: testIcon,
@@ -96,3 +124,70 @@ smallSecondaryIconOnlyButton.data = {
   size: Buttons.Button.Size.SMALL,
 };
 appendButton(smallSecondaryIconOnlyButton);
+
+// Disabled Primary Icon
+const disabledPrimaryIconButton = new Buttons.Button.Button();
+disabledPrimaryIconButton.innerText = 'Cannot click me';
+disabledPrimaryIconButton.data = {
+  variant: Buttons.Button.Variant.PRIMARY,
+  iconUrl: testIcon,
+  size: Buttons.Button.Size.SMALL,
+  disabled: true,
+};
+disabledPrimaryIconButton.onclick = () => alert('clicked');
+appendButton(disabledPrimaryIconButton);
+
+// Disabled Secondary Icon Only
+const disabledSecondaryIconOnlyButton = new Buttons.Button.Button();
+disabledSecondaryIconOnlyButton.onclick = () => alert('clicked');
+disabledSecondaryIconOnlyButton.style.width = '18px';
+disabledSecondaryIconOnlyButton.data = {
+  variant: Buttons.Button.Variant.SECONDARY,
+  iconUrl: testIcon,
+  size: Buttons.Button.Size.SMALL,
+  disabled: true,
+};
+appendButton(disabledSecondaryIconOnlyButton);
+
+for (let i = 0; i < 6; i++) {
+  // Regular Toolbar Button
+  const toolbarButton = new Buttons.Button.Button();
+  toolbarButton.onclick = () => alert('clicked');
+  toolbarButton.data = {
+    variant: Buttons.Button.Variant.TOOLBAR,
+    iconUrl: testIcon,
+  };
+  appendToToolbar(toolbarButton);
+  if (i % 3 === 1) {
+    const sep = document.createElement('div');
+    sep.classList.add('separator');
+    appendToToolbar(sep);
+  }
+}
+
+// Disabled Toolbar Button
+const toolbarButton = new Buttons.Button.Button();
+toolbarButton.onclick = () => alert('clicked');
+toolbarButton.data = {
+  variant: Buttons.Button.Variant.TOOLBAR,
+  iconUrl: testIcon,
+  disabled: true,
+};
+appendToToolbar(toolbarButton);
+
+for (let i = 0; i < 6; i++) {
+  // Small Toolbar Button
+  const smallToolbarButton = new Buttons.Button.Button();
+  smallToolbarButton.onclick = () => alert('clicked');
+  smallToolbarButton.data = {
+    variant: Buttons.Button.Variant.TOOLBAR,
+    size: Buttons.Button.Size.SMALL,
+    iconUrl: testIcon,
+  };
+  appendToSmallToolbar(smallToolbarButton);
+  if (i % 3 === 1) {
+    const sep = document.createElement('div');
+    sep.classList.add('separator');
+    appendToSmallToolbar(sep);
+  }
+}

@@ -18,6 +18,7 @@ cast_core_grpc_library("platform_service") {
         "platform_service.proto",
     ]
     deps = [
+        "//third_party/cast_core/public/src/proto/common:duration_proto",
         "//third_party/cast_core/public/src/proto/common:service_info_proto",
     ]
 }

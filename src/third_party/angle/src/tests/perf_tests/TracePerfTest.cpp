@@ -690,6 +690,12 @@ TracePerfTest::TracePerfTest(const TracePerfParams &params)
 
         // TODO: http://anglebug.com/4731 This extension is missing on older Intel drivers.
         addExtensionPrerequisite("GL_OES_EGL_image_external");
+
+        // Flaky on Intel/windows http://anglebug.com/6568
+        if (IsWindows() && IsIntel())
+        {
+            mSkipTest = true;
+        }
     }
 
     if (traceNameIs("brawl_stars"))
@@ -1088,6 +1094,38 @@ TracePerfTest::TracePerfTest(const TracePerfParams &params)
         // TODO: http://anglebug.com/6443 Vulkan Test failure on Pixel4XL due to vulkan validation
         // error VUID-vkDestroyBuffer-buffer-00922
         if (IsQualcomm() && mParams.isVulkan())
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (traceNameIs("pokemon_unite"))
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+
+        // http://anglebug.com/6548 - nondeterministic on Intel+Windows
+        // Crashes on Linux Intel
+        if (IsIntel())
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (traceNameIs("world_cricket_championship_2"))
+    {
+        addExtensionPrerequisite("GL_KHR_texture_compression_astc_ldr");
+
+        // http://anglebug.com/6657 - Native test timing out on Intel Linux
+        if (IsLinux() && IsIntel() && mParams.driver == GLESDriverType::SystemWGL)
+        {
+            mSkipTest = true;
+        }
+    }
+
+    if (traceNameIs("zillow"))
+    {
+        // http://anglebug.com/6658 - Crashing in Vulkan backend
+        if ((IsLinux() || IsWindows()) && IsNVIDIA() && mParams.driver == GLESDriverType::AngleEGL)
         {
             mSkipTest = true;
         }

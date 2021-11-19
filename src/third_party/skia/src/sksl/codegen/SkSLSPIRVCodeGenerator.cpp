@@ -13,12 +13,34 @@
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/SkSLThreadContext.h"
+#include "src/sksl/ir/SkSLBinaryExpression.h"
 #include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLConstructorArrayCast.h"
+#include "src/sksl/ir/SkSLConstructorCompound.h"
+#include "src/sksl/ir/SkSLConstructorCompoundCast.h"
+#include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
+#include "src/sksl/ir/SkSLConstructorMatrixResize.h"
+#include "src/sksl/ir/SkSLConstructorScalarCast.h"
+#include "src/sksl/ir/SkSLConstructorSplat.h"
+#include "src/sksl/ir/SkSLDoStatement.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLExtension.h"
 #include "src/sksl/ir/SkSLField.h"
+#include "src/sksl/ir/SkSLFieldAccess.h"
+#include "src/sksl/ir/SkSLForStatement.h"
+#include "src/sksl/ir/SkSLFunctionCall.h"
+#include "src/sksl/ir/SkSLFunctionDeclaration.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
+#include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
+#include "src/sksl/ir/SkSLInterfaceBlock.h"
+#include "src/sksl/ir/SkSLPostfixExpression.h"
+#include "src/sksl/ir/SkSLPrefixExpression.h"
+#include "src/sksl/ir/SkSLReturnStatement.h"
+#include "src/sksl/ir/SkSLSwitchStatement.h"
+#include "src/sksl/ir/SkSLSwizzle.h"
+#include "src/sksl/ir/SkSLTernaryExpression.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
 #ifdef SK_VULKAN
@@ -1095,8 +1117,8 @@ SpvId SPIRVCodeGenerator::writeSpecialIntrinsic(const FunctionCall& c, SpecialIn
             this->writeWord(fn, out);
             this->addRTFlipUniform(c.fLine);
             using namespace dsl;
-            DSLExpression rtFlip(ThreadContext::IRGenerator().convertIdentifier(/*line=*/-1,
-                                                                                SKSL_RTFLIP_NAME));
+            DSLExpression rtFlip(ThreadContext::Compiler().convertIdentifier(/*line=*/-1,
+                    SKSL_RTFLIP_NAME));
             SpvId rtFlipY = this->vectorize(*rtFlip.y().release(), callType.columns(), out);
             SpvId flipped = this->nextId(&callType);
             this->writeInstruction(SpvOpFMul, this->getType(callType), flipped, result, rtFlipY,
@@ -2076,7 +2098,7 @@ std::unique_ptr<SPIRVCodeGenerator::LValue> SPIRVCodeGenerator::getLValue(const 
             // expr isn't actually an lvalue, create a placeholder variable for it. This case
             // happens due to the need to store values in temporary variables during function
             // calls (see comments in getFunctionType); erroneous uses of rvalues as lvalues
-            // should have been caught by IRGenerator
+            // should have been caught before code generation
             SpvId result = this->nextId(nullptr);
             SpvId pointerType = this->getPointerType(type, SpvStorageClassFunction);
             this->writeInstruction(SpvOpVariable, pointerType, result, SpvStorageClassFunction,
@@ -2115,8 +2137,8 @@ SpvId SPIRVCodeGenerator::writeVariableReference(const VariableReference& ref, O
         // Use a uniform to flip the Y coordinate. The new expression will be written in
         // terms of __device_FragCoords, which is a fake variable that means "access the
         // underlying fragcoords directly without flipping it".
-        DSLExpression rtFlip(ThreadContext::IRGenerator().convertIdentifier(/*line=*/-1,
-                                                                            SKSL_RTFLIP_NAME));
+        DSLExpression rtFlip(ThreadContext::Compiler().convertIdentifier(/*line=*/-1,
+                SKSL_RTFLIP_NAME));
         if (!symbols[DEVICE_COORDS_NAME]) {
             AutoAttachPoolToThread attach(fProgram.fPool.get());
             Modifiers modifiers;
@@ -2150,8 +2172,8 @@ SpvId SPIRVCodeGenerator::writeVariableReference(const VariableReference& ref, O
         // Use a uniform to flip the Y coordinate. The new expression will be written in
         // terms of __device_Clockwise, which is a fake variable that means "access the
         // underlying FrontFacing directly".
-        DSLExpression rtFlip(ThreadContext::IRGenerator().convertIdentifier(/*line=*/-1,
-                                                                            SKSL_RTFLIP_NAME));
+        DSLExpression rtFlip(ThreadContext::Compiler().convertIdentifier(/*line=*/-1,
+                SKSL_RTFLIP_NAME));
         if (!symbols[DEVICE_CLOCKWISE_NAME]) {
             AutoAttachPoolToThread attach(fProgram.fPool.get());
             Modifiers modifiers;
@@ -3102,15 +3124,12 @@ bool SPIRVCodeGenerator::isDead(const Variable& var) const {
 
 void SPIRVCodeGenerator::writeGlobalVar(ProgramKind kind, const VarDeclaration& varDecl) {
     const Variable& var = varDecl.var();
-    // 9999 is a sentinel value used in our built-in modules that causes us to ignore these
-    // declarations, beyond adding them to the symbol table.
-    constexpr int kBuiltinIgnore = 9999;
-    if (var.modifiers().fLayout.fBuiltin == kBuiltinIgnore) {
-        return;
-    }
     if (var.modifiers().fLayout.fBuiltin == SK_FRAGCOLOR_BUILTIN &&
         kind != ProgramKind::kFragment) {
         SkASSERT(!fProgram.fConfig->fSettings.fFragColorIsInOut);
+        return;
+    }
+    if (var.modifiers().fLayout.fBuiltin == SK_SECONDARYFRAGCOLOR_BUILTIN) {
         return;
     }
     if (this->isDead(var)) {

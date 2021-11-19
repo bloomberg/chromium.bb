@@ -68,8 +68,8 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'specifiers': ['Trusty', 'Release']
             },
             'Fake Test Mac11.0': {
-                'port_name': 'mac-mac11.0',
-                'specifiers': ['Mac11.0', 'Release']
+                'port_name': 'mac-mac11',
+                'specifiers': ['Mac11', 'Release']
             },
             'Fake Test Mac10.15': {
                 'port_name': 'mac-mac10.15',
@@ -93,7 +93,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         # tests need to be adjusted accordingly.
         self.assertEqual(sorted(self.host.port_factory.all_port_names()), [
             'linux-trusty', 'mac-mac10.12', 'mac-mac10.13', 'mac-mac10.14',
-            'mac-mac10.15', 'mac-mac11.0', 'win-win10.20h2'
+            'mac-mac10.15', 'mac-mac11', 'win-win10.20h2'
         ])
 
     def _assert_optimization(self,
@@ -565,12 +565,12 @@ class ResultDigestTest(unittest.TestCase):
         self.fs.write_text_file('/all-pass/bar-expected.txt',
                                 ALL_PASS_TESTHARNESS_RESULT2)
         self.fs.write_text_file('/failures/baz-expected.txt', 'failure')
-        self.fs.write_binary_file('/others/reftest-expected.png', 'extra')
-        self.fs.write_binary_file('/others/reftest2-expected.png', 'extra2')
+        self.fs.write_binary_file('/others/reftest-expected.png', b'extra')
+        self.fs.write_binary_file('/others/reftest2-expected.png', b'extra2')
         self.fs.write_text_file('/others/empty-expected.txt', '')
         self.fs.write_binary_file('/others/something-expected.png',
-                                  'Something')
-        self.fs.write_binary_file('/others/empty-expected.png', '')
+                                  b'Something')
+        self.fs.write_binary_file('/others/empty-expected.png', b'')
 
     def test_all_pass_testharness_result(self):
         self.assertTrue(

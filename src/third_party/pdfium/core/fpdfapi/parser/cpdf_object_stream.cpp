@@ -16,11 +16,11 @@
 #include "core/fxcrt/cfx_readonlymemorystream.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "third_party/base/check.h"
-#include "third_party/base/containers/contains.h"
 #include "third_party/base/ptr_util.h"
 
-// static
-bool CPDF_ObjectStream::IsObjectsStreamObject(const CPDF_Object* object) {
+namespace {
+
+bool IsObjectStream(const CPDF_Object* object) {
   const CPDF_Stream* stream = ToStream(object);
   if (!stream)
     return false;
@@ -51,10 +51,12 @@ bool CPDF_ObjectStream::IsObjectsStreamObject(const CPDF_Object* object) {
   return true;
 }
 
+}  // namespace
+
 //  static
 std::unique_ptr<CPDF_ObjectStream> CPDF_ObjectStream::Create(
     const CPDF_Stream* stream) {
-  if (!IsObjectsStreamObject(stream))
+  if (!IsObjectStream(stream))
     return nullptr;
 
   // Protected constructor.
@@ -62,34 +64,28 @@ std::unique_ptr<CPDF_ObjectStream> CPDF_ObjectStream::Create(
 }
 
 CPDF_ObjectStream::CPDF_ObjectStream(const CPDF_Stream* obj_stream)
-    : obj_num_(obj_stream->GetObjNum()),
-      first_object_offset_(obj_stream->GetDict()->GetIntegerFor("First")) {
-  DCHECK(IsObjectsStreamObject(obj_stream));
-  if (const auto* extends_ref =
-          ToReference(obj_stream->GetDict()->GetObjectFor("Extends"))) {
-    extends_obj_num_ = extends_ref->GetRefObjNum();
-  }
+    : first_object_offset_(obj_stream->GetDict()->GetIntegerFor("First")) {
+  DCHECK(IsObjectStream(obj_stream));
   Init(obj_stream);
 }
 
 CPDF_ObjectStream::~CPDF_ObjectStream() = default;
 
-bool CPDF_ObjectStream::HasObject(uint32_t obj_number) const {
-  return pdfium::Contains(objects_offsets_, obj_number);
-}
-
 RetainPtr<CPDF_Object> CPDF_ObjectStream::ParseObject(
     CPDF_IndirectObjectHolder* pObjList,
-    uint32_t obj_number) const {
-  const auto it = objects_offsets_.find(obj_number);
-  if (it == objects_offsets_.end())
+    uint32_t obj_number,
+    uint32_t archive_obj_index) const {
+  if (archive_obj_index >= object_info_.size())
     return nullptr;
 
-  RetainPtr<CPDF_Object> result = ParseObjectAtOffset(pObjList, it->second);
-  if (!result)
+  const auto& info = object_info_[archive_obj_index];
+  if (info.obj_num != obj_number)
     return nullptr;
 
-  result->SetObjNum(obj_number);
+  RetainPtr<CPDF_Object> result =
+      ParseObjectAtOffset(pObjList, info.obj_offset);
+  if (result)
+    result->SetObjNum(obj_number);
   return result;
 }
 
@@ -113,7 +109,7 @@ void CPDF_ObjectStream::Init(const CPDF_Stream* stream) {
     if (!obj_num)
       continue;
 
-    objects_offsets_[obj_num] = obj_offset;
+    object_info_.push_back({obj_num, obj_offset});
   }
 }
 

@@ -135,10 +135,12 @@
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/banners/android/chrome_app_banner_manager_android.h"
+#include "chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.h"
 #include "chrome/browser/video_tutorials/video_tutorial_tab_helper.h"
+#include "content/public/common/content_features.h"
 #else
 #include "chrome/browser/accuracy_tips/accuracy_service_factory.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
@@ -157,7 +159,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/child_accounts/time_limits/web_time_navigation_observer.h"
-#include "chrome/browser/ash/policy/dlp/dlp_content_tab_helper.h"
 #include "chrome/browser/ui/app_list/search/cros_action_history/cros_action_recorder_tab_tracker.h"
 #endif
 
@@ -165,10 +166,16 @@
 #include "chrome/browser/lacros/web_contents_can_go_back_observer.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/dlp/dlp_content_tab_helper.h"
+#endif
+
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hats/hats_helper.h"
+#include "chrome/browser/ui/shared_highlighting/shared_highlighting_promo.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -326,6 +333,12 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   PrefsTabHelper::CreateForWebContents(web_contents);
   prerender::NoStatePrefetchTabHelper::CreateForWebContents(web_contents);
   RecentlyAudibleHelper::CreateForWebContents(web_contents);
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kRequestDesktopSiteGlobal)) {
+    RequestDesktopSiteWebContentsObserverAndroid::CreateForWebContents(
+        web_contents);
+  }
+#endif  // defined(OS_ANDROID)
   // TODO(siggi): Remove this once the Resource Coordinator refactoring is done.
   //     See https://crbug.com/910288.
   resource_coordinator::ResourceCoordinatorTabHelper::CreateForWebContents(
@@ -432,7 +445,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   app_list::CrOSActionRecorderTabTracker::CreateForWebContents(web_contents);
   ash::app_time::WebTimeNavigationObserver::MaybeCreateForWebContents(
       web_contents);
-  policy::DlpContentTabHelper::MaybeCreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -440,6 +452,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if defined(OS_CHROMEOS)
+  policy::DlpContentTabHelper::MaybeCreateForWebContents(web_contents);
   webapps::PreRedirectionURLObserver::CreateForWebContents(web_contents);
 #endif
 
@@ -458,6 +471,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       base::FeatureList::IsEnabled(
           accuracy_tips::features::kAccuracyTipsSurveyFeature)) {
     HatsHelper::CreateForWebContents(web_contents);
+  }
+#endif
+
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  if (Browser* browser = chrome::FindBrowserWithProfile(profile)) {
+    SharedHighlightingPromo::CreateForWebContents(web_contents, browser);
   }
 #endif
 

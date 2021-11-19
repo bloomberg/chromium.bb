@@ -7,6 +7,9 @@ import * as CM from '../../../third_party/codemirror.next/codemirror.next.js';
 export const editorTheme = CM.EditorView.theme({
   '&.cm-editor': {
     color: 'color: var(--color-text-primary)',
+    '&.cm-focused': {
+      outline: 'none',
+    },
   },
 
   '.cm-scroller': {
@@ -54,6 +57,11 @@ export const editorTheme = CM.EditorView.theme({
     padding: '0 3px 0 9px',
   },
 
+  '.cm-matchingBracket, .cm-nonmatchingBracket': {
+    background: 'transparent',
+    borderBottom: 'none',
+  },
+
   '&:focus-within .cm-matchingBracket': {
     color: 'inherit',
     backgroundColor: 'var(--color-matching-bracket-background)',
@@ -96,6 +104,25 @@ export const editorTheme = CM.EditorView.theme({
 
   '.cm-completionHint': {
     color: 'var(--color-text-secondary)',
+  },
+
+  '.cm-argumentHints': {
+    pointerEvents: 'none',
+    padding: '0 4px',
+    whiteSpace: 'nowrap',
+    lineHeight: '20px',
+    marginBottom: '4px',
+    boxShadow: 'var(--drop-shadow)',
+    backgroundColor: 'var(--color-background)',
+    width: 'fit-content',
+  },
+
+  '.cm-tooltip.cm-tooltip-autocomplete > ul': {
+    minWidth: '16em',
+    '& > li[aria-selected]': {
+      backgroundColor: 'var(--color-selected-option-background)',
+      color: 'var(--color-selected-option)',
+    },
   },
 
   '.cm-highlightedLine': {

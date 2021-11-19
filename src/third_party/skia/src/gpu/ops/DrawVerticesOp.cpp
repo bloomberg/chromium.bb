@@ -13,16 +13,18 @@
 #include "src/core/SkDevice.h"
 #include "src/core/SkMatrixPriv.h"
 #include "src/core/SkVerticesPriv.h"
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/SkGr.h"
 #include "src/gpu/glsl/GrGLSLColorSpaceXformHelper.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrSimpleMeshDrawOpHelper.h"
+
+namespace skgpu::v1::DrawVerticesOp {
 
 namespace {
 
@@ -401,9 +403,9 @@ void DrawVerticesOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
     size_t vertexStride = this->vertexStride();
     sk_sp<const GrBuffer> vertexBuffer;
     int firstVertex = 0;
-    GrVertexWriter verts{
+    VertexWriter verts{
             target->makeVertexSpace(vertexStride, fVertexCount, &vertexBuffer, &firstVertex)};
-    if (!verts.fPtr) {
+    if (!verts) {
         SkDebugf("Could not allocate vertices\n");
         return;
     }
@@ -444,15 +446,15 @@ void DrawVerticesOpImpl::onPrepareDraws(GrMeshDrawTarget* target) {
         // TODO4F: Preserve float colors
         GrColor meshColor = mesh.fColor.toBytes_RGBA();
 
-        SkPoint* posBase = (SkPoint*)verts.fPtr;
+        SkPoint* posBase = (SkPoint*)verts.ptr();
 
         for (int i = 0; i < vertexCount; ++i) {
-            verts.write(positions[i]);
+            verts << positions[i];
             if (hasColorAttribute) {
-                verts.write(mesh.hasPerVertexColors() ? colors[i] : meshColor);
+                verts << (mesh.hasPerVertexColors() ? colors[i] : meshColor);
             }
             if (hasLocalCoordsAttribute) {
-                verts.write(localCoords[i]);
+                verts << localCoords[i];
             }
         }
 
@@ -580,8 +582,6 @@ static GrPrimitiveType SkVertexModeToGrPrimitiveType(SkVertices::VertexMode mode
 }
 
 } // anonymous namespace
-
-namespace skgpu::v1::DrawVerticesOp {
 
 GrOp::Owner Make(GrRecordingContext* context,
                  GrPaint&& paint,

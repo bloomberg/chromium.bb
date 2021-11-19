@@ -36,26 +36,25 @@ class HelperFileOutputGeneratorOptions(GeneratorOptions):
                  filename = None,
                  directory = '.',
                  genpath = None,
-                 apiname = None,
+                 apiname = 'vulkan',
                  profile = None,
                  versions = '.*',
                  emitversions = '.*',
-                 defaultExtensions = None,
+                 defaultExtensions = 'vulkan',
                  addExtensions = None,
                  removeExtensions = None,
                  emitExtensions = None,
                  emitSpirv = None,
                  sortProcedure = regSortFeatures,
-                 prefixText = "",
                  genFuncPointers = True,
                  protectFile = True,
                  protectFeature = True,
-                 apicall = '',
-                 apientry = '',
-                 apientryp = '',
-                 alignFuncParam = 0,
+                 apicall = 'VKAPI_ATTR ',
+                 apientry = 'VKAPI_CALL ',
+                 apientryp = 'VKAPI_PTR *',
+                 alignFuncParam = 48,
                  library_name = '',
-                 expandEnumerants = True,
+                 expandEnumerants = False,
                  helper_file_type = '',
                  valid_usage_path = ''):
         GeneratorOptions.__init__(self,
@@ -73,7 +72,6 @@ class HelperFileOutputGeneratorOptions(GeneratorOptions):
                 emitExtensions = emitExtensions,
                 emitSpirv = emitSpirv,
                 sortProcedure = sortProcedure)
-        self.prefixText       = prefixText
         self.genFuncPointers  = genFuncPointers
         self.protectFile      = protectFile
         self.protectFeature   = protectFeature
@@ -225,10 +223,6 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
         if interface.tag != 'extension':
             return
         name = self.featureName
-        nameElem = interface[0][1]
-        name_define = nameElem.get('name')
-        if 'EXTENSION_NAME' not in name_define:
-            print("Error in vk.xml file -- extension name is not available")
         requires = interface.get('requires')
         if requires is not None:
             required_extensions = requires.split(',')
@@ -237,7 +231,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
         requiresCore = interface.get('requiresCore')
         if requiresCore is not None:
             required_extensions.append('VK_VERSION_%s' % ('_'.join(requiresCore.split('.'))))
-        info = { 'define': name_define, 'ifdef':self.featureExtraProtect, 'reqs':required_extensions }
+        info = { 'define': GetNameDefine(interface), 'ifdef':self.featureExtraProtect, 'reqs':required_extensions }
         if interface.get('type') == 'instance':
             self.instance_extension_info[name] = info
         else:
@@ -832,23 +826,15 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
             '    kEnabledByApiLevel,',
             '};',
             '',
-            'static bool DECORATE_UNUSED IsExtEnabled(ExtEnabled feature) {',
-            '    if (feature == kNotEnabled) return false;',
-            '    return true;',
+            'static bool DECORATE_UNUSED IsExtEnabled(ExtEnabled extension) {',
+            '    return (extension != kNotEnabled);',
             '};',
             '',
-            'static bool DECORATE_UNUSED IsExtEnabledByCreateinfo(ExtEnabled feature) {',
-            '    if (feature == kEnabledByCreateinfo) return true;',
-            '    return false;',
+            'static bool DECORATE_UNUSED IsExtEnabledByCreateinfo(ExtEnabled extension) {',
+            '    return (extension == kEnabledByCreateinfo);',
             '};',
             '#define VK_VERSION_1_2_NAME "VK_VERSION_1_2"',
             '']
-
-        def guarded(ifdef, value):
-            if ifdef is not None:
-                return '\n'.join([ '#ifdef %s' % ifdef, value, '#endif' ])
-            else:
-                return value
 
         for type in ['Instance', 'Device']:
             struct_type = '%sExtensions' % type
@@ -925,7 +911,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                 reqs = req_join.join([req_format % (field_name[req], extension_dict[req]['define']) for req in info['reqs']])
                 return info_format % (info['define'], field_name[ext_name], '{%s}' % (req_indent + reqs) if reqs else '')
 
-            struct.extend([guarded(info['ifdef'], format_info(ext_name, info)) for ext_name, info in extension_items])
+            struct.extend([Guarded(info['ifdef'], format_info(ext_name, info)) for ext_name, info in extension_items])
             struct.extend([
                 '        };',
                 '',
@@ -1011,7 +997,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
 
             # Output reference lists of instance/device extension names
             struct.extend(['', 'static const std::set<std::string> k%sExtensionNames = {' % type])
-            struct.extend([guarded(info['ifdef'], '    %s,' % info['define']) for ext_name, info in extension_items])
+            struct.extend([Guarded(info['ifdef'], '    %s,' % info['define']) for ext_name, info in extension_items])
             struct.extend(['};', ''])
             output.extend(struct)
 
@@ -1395,6 +1381,24 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                        'VkMetalSurfaceCreateInfoEXT'
                        ]
 
+        member_init_transforms = {
+            'queueFamilyIndexCount': lambda m: f'{m.name}(0)'
+        }
+
+        def qfi_construct(item, member):
+            true_index_setter = lambda i: f'{i}queueFamilyIndexCount = in_struct->queueFamilyIndexCount;\n'
+            false_index_setter = lambda i: f'{i}queueFamilyIndexCount = 0;\n'
+            if item.name == 'VkSwapchainCreateInfoKHR':
+                return (f'(in_struct->imageSharingMode == VK_SHARING_MODE_CONCURRENT) && in_struct->{member.name}', true_index_setter, false_index_setter)
+            else:
+                return (f'(in_struct->sharingMode == VK_SHARING_MODE_CONCURRENT) && in_struct->{member.name}', true_index_setter, false_index_setter)
+
+        # map of:
+        #  <member name>: function(item, member) -> (condition, true statement, false statement)
+        member_construct_conditions = {
+            'pQueueFamilyIndices': qfi_construct
+        }
+
         # For abstract types just want to save the pointer away
         # since we cannot make a copy.
         abstract_types = ['AHardwareBuffer',
@@ -1681,7 +1685,7 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     '             delete ppGeometries[i];\n'
                     '        }\n'
                     '        delete[] ppGeometries;\n'
-                    '    } else {\n'
+                    '    } else if(pGeometries) {\n'
                     '        delete[] pGeometries;\n'
                     '    }\n'
            }
@@ -1744,15 +1748,17 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                                 decorated_length = member.len
                                 for other_member in item.members:
                                     decorated_length = re.sub(r'\b({})\b'.format(other_member.name), r'in_struct->\1', decorated_length)
-                                concurrent_clause = ''
-                                sharing_mode_name = 's'
-                                if member.name == 'pQueueFamilyIndices':
-                                    if item.name == 'VkSwapchainCreateInfoKHR':
-                                        sharing_mode_name = 'imageS'
-                                    concurrent_clause = '(in_struct->%sharingMode == VK_SHARING_MODE_CONCURRENT) && ' % sharing_mode_name
-                                construct_txt += '    if (%sin_struct->%s) {\n' % (concurrent_clause, member.name)
+                                try:
+                                    concurrent_clause = member_construct_conditions[member.name](item, member)
+                                except:
+                                    concurrent_clause = (f'in_struct->{member.name}', lambda x: '')
+                                construct_txt += f'    if ({concurrent_clause[0]}) {{' + '\n'
                                 construct_txt += '        %s = new %s[%s];\n' % (member.name, m_type, decorated_length)
                                 construct_txt += '        memcpy ((void *)%s, (void *)in_struct->%s, sizeof(%s)*%s);\n' % (member.name, member.name, m_type, decorated_length)
+                                construct_txt += concurrent_clause[1]('        ')
+                                if len(concurrent_clause) > 2:
+                                    construct_txt += '    } else {\n'
+                                    construct_txt += concurrent_clause[2]('        ')
                                 construct_txt += '    }\n'
                                 destruct_txt += '    if (%s)\n' % member.name
                                 destruct_txt += '        delete[] %s;\n' % member.name
@@ -1796,8 +1802,11 @@ void CoreChecksOptickInstrumented::PreCallRecordQueuePresentKHR(VkQueue queue, c
                     init_list += '\n    %s(&in_struct->%s),' % (member.name, member.name)
                     init_func_txt += '    %s.initialize(&in_struct->%s);\n' % (member.name, member.name)
                 else:
-                    init_list += '\n    %s(in_struct->%s),' % (member.name, member.name)
-                    init_func_txt += '    %s = in_struct->%s;\n' % (member.name, member.name)
+                    try:
+                        init_list += f'\n    {member_init_transforms[member.name](member)},'
+                    except:
+                        init_list += '\n    %s(in_struct->%s),' % (member.name, member.name)
+                        init_func_txt += '    %s = in_struct->%s;\n' % (member.name, member.name)
             if '' != init_list:
                 init_list = init_list[:-1] # hack off final comma
 

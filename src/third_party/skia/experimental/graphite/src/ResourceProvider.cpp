@@ -7,6 +7,7 @@
 
 #include "experimental/graphite/src/ResourceProvider.h"
 
+#include "experimental/graphite/src/Buffer.h"
 #include "experimental/graphite/src/CommandBuffer.h"
 #include "experimental/graphite/src/RenderPipeline.h"
 #include "experimental/graphite/src/Texture.h"
@@ -21,17 +22,17 @@ ResourceProvider::~ResourceProvider() {
     fRenderPipelineCache.release();
 }
 
-RenderPipeline* ResourceProvider::findOrCreateRenderPipeline(const RenderPipelineDesc& desc) {
+sk_sp<RenderPipeline> ResourceProvider::findOrCreateRenderPipeline(const RenderPipelineDesc& desc) {
     return fRenderPipelineCache->refPipeline(desc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct ResourceProvider::RenderPipelineCache::Entry {
-    Entry(std::unique_ptr<RenderPipeline> pipeline)
+    Entry(sk_sp<RenderPipeline> pipeline)
             : fPipeline(std::move(pipeline)) {}
 
-    std::unique_ptr<RenderPipeline> fPipeline;
+    sk_sp<RenderPipeline> fPipeline;
 };
 
 ResourceProvider::RenderPipelineCache::RenderPipelineCache(ResourceProvider* resourceProvider)
@@ -46,7 +47,7 @@ void ResourceProvider::RenderPipelineCache::release() {
     fMap.reset();
 }
 
-RenderPipeline* ResourceProvider::RenderPipelineCache::refPipeline(
+sk_sp<RenderPipeline> ResourceProvider::RenderPipelineCache::refPipeline(
         const RenderPipelineDesc& desc) {
     std::unique_ptr<Entry>* entry = fMap.find(desc);
 
@@ -57,11 +58,18 @@ RenderPipeline* ResourceProvider::RenderPipelineCache::refPipeline(
         }
         entry = fMap.insert(desc, std::unique_ptr<Entry>(new Entry(std::move(pipeline))));
     }
-    return (*entry)->fPipeline.get();
+    return (*entry)->fPipeline;
 }
 
 sk_sp<Texture> ResourceProvider::findOrCreateTexture(SkISize dimensions, const TextureInfo& info) {
     return this->createTexture(dimensions, info);
 }
+
+sk_sp<Buffer> ResourceProvider::findOrCreateBuffer(size_t size,
+                                                   BufferType type,
+                                                   PrioritizeGpuReads prioritizeGpuReads) {
+    return this->createBuffer(size, type, prioritizeGpuReads);
+}
+
 
 } // namespace skgpu

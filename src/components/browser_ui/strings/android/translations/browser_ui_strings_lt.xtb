@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">Paklausti prieš leidžiant svetainėms prisijungti prie įrenginio (rekomenduojama)</translation>
 <translation id="1779089405699405702">Vaizdų dekoderis</translation>
 <translation id="1818308510395330587">Norėdami leisti „<ph name="APP_NAME" />“ naudoti AR, taip pat įjunkite fotoaparatą <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
+<translation id="1864927262126810325">Iš „<ph name="SOURCE_NAME" />“</translation>
 <translation id="1887786770086287077">Vietos prieiga išjungta šiame įrenginyje. Įjunkite ją skiltyje <ph name="BEGIN_LINK" />„Android“ nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Skelbimai</translation>
 <translation id="1919950603503897840">Kontaktų pasirinkimas</translation>
@@ -55,6 +56,7 @@
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{Leidžiama: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ir dar <ph name="NUM_MORE" />}one{Leidžiama: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ir dar <ph name="NUM_MORE" />}few{Leidžiama: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ir dar <ph name="NUM_MORE" />}many{Leidžiama: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ir dar <ph name="NUM_MORE" />}other{Leidžiama: <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> ir dar <ph name="NUM_MORE" />}}</translation>
 <translation id="2434158240863470628">Atsisiųsta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2442870161001914531">Visada galite pateikti užklausą dėl svetainės staliniams kompiuteriams</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
 <translation id="2485422356828889247">Pašalinti</translation>
 <translation id="2490684707762498678">Tvarko „<ph name="APP_NAME" />“</translation>
@@ -94,6 +96,7 @@
 <translation id="3328801116991980348">Svetainės informacija</translation>
 <translation id="3333961966071413176">Visi kontaktai</translation>
 <translation id="3386292677130313581">Klausti prieš leidžiant svetainėms žinoti vietą (rekomenduojama)</translation>
+<translation id="3517437118288792304">Visada galite pateikti užklausą dėl konkrečios svetainės rodinio versijos staliniams kompiuteriams.</translation>
 <translation id="3538390592868664640">Blokuoti, kad svetainės nekurtų jūsų aplinkos 3D žemėlapio ir nestebėtų kameros padėties</translation>
 <translation id="3551268116566418498">Išjungti inkognito režimą?</translation>
 <translation id="3586500876634962664">Kameros ir mikrofono naudojimas</translation>
@@ -116,7 +119,6 @@
 <translation id="4008040567710660924">Leisti konkrečios svetainės slapukus.</translation>
 <translation id="4046123991198612571">Kitas takelis</translation>
 <translation id="4165986682804962316">Svetainės nustatymai</translation>
-<translation id="4176463684765177261">Išjungta</translation>
 <translation id="4200726100658658164">Atidaryti vietovės nustatymus</translation>
 <translation id="4226663524361240545">Gavus pranešimą įrenginys gali vibruoti</translation>
 <translation id="4259722352634471385">Naršymas užblokuotas: <ph name="URL" /></translation>
@@ -124,6 +126,7 @@
 <translation id="429312253194641664">Svetainėje leidžiama medija</translation>
 <translation id="42981349822642051">Išskleisti</translation>
 <translation id="4336434711095810371">Išvalyti visus duomenis</translation>
+<translation id="4353125860368453721">Visada galite pateikti užklausą dėl konkrečios svetainės rodinio versijos mobiliesiems.</translation>
 <translation id="4402755511846832236">Neleisti svetainėms žinoti, kada aktyviai naudojate šį įrenginį</translation>
 <translation id="4434045419905280838">Iššok. langai ir peradresavimai</translation>
 <translation id="445467742685312942">Leisti svetainėms leisti saugomą turinį</translation>
@@ -148,8 +151,10 @@
 <translation id="5048398596102334565">Leidžiama svetainėms pasiekti judesio jutiklius (rekomenduojama)</translation>
 <translation id="5050380848339752099">Šioje svetainėje ketinama bendrinti informaciją su programa ne inkognito režimu.</translation>
 <translation id="5063480226653192405">Naudojimas</translation>
+<translation id="509133520954049755">Pateikti užklausą dėl rodinio versijos staliniams kompiuteriams</translation>
 <translation id="5100237604440890931">Sutraukta – spustelėkite, kad išskleistumėte</translation>
 <translation id="5123685120097942451">Inkognito skirtukas</translation>
+<translation id="5134599672855298214">Pateikti užklausą dėl rodinio versijos mobiliesiems (rekomenduojama)</translation>
 <translation id="5186036860380548585">Parinktis pasiekiama netoli ekrano viršaus</translation>
 <translation id="5197729504361054390">Pasirinkti kontaktai bus bendrinami su <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Paskutinį kartą lankytasi šiandien</translation>
@@ -185,7 +190,6 @@
 <translation id="5876056640971328065">Pristabdyti vaizdo įrašą</translation>
 <translation id="5887687176710214216">Paskutinį kartą lankytasi vakar</translation>
 <translation id="5916664084637901428">Įjungta</translation>
-<translation id="59174027418879706">Įjungta</translation>
 <translation id="5922853908706496913">Bendrinamas ekranas</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
 <translation id="5975083100439434680">Tolinti</translation>
@@ -202,7 +206,6 @@
 <translation id="6196640612572343990">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="6216432067784365534">„<ph name="NAME_OF_LIST_ITEM" />“ parinktys</translation>
 <translation id="6231752747840485235">Pašalinti „<ph name="APP_NAME" />“?</translation>
-<translation id="6233545266937675277">Pateikti svetainių peržiūros staliniams kompiuteriams užklausą</translation>
 <translation id="6262279340360821358">Užblokuota: <ph name="PERMISSION_1" /> ir <ph name="PERMISSION_2" /></translation>
 <translation id="6270391203985052864">Svetainės gali prašyti siųsti pranešimus</translation>
 <translation id="6295158916970320988">Visos svetainės</translation>
@@ -238,6 +241,7 @@
 <translation id="7016516562562142042">Leidžiama dabartiniam paieškos varikliui</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Pasirinktas 1 elementas}one{Pasirinktas # elementas}few{Pasirinkti # elementai}many{Pasirinkta # elemento}other{Pasirinkta # elementų}}</translation>
+<translation id="7070090581017165256">Apie šią svetainę</translation>
 <translation id="7087918508125750058">Pasirinkta: <ph name="ITEM_COUNT" />. Parinktys pasiekiamos netoli ekrano viršaus</translation>
 <translation id="7141896414559753902">Blokuoti, kad svetainėse nebūtų rodomi iššokantieji langai ir peradresavimai (rekomenduojama)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
@@ -286,7 +290,6 @@
 <translation id="8211406090763984747">Ryšys saugus</translation>
 <translation id="8249310407154411074">Perkelti į viršų</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
-<translation id="8267092878336850213">Pateikti svetainių peržiūros mobiliesiems užklausą</translation>
 <translation id="8300705686683892304">Valdo programa</translation>
 <translation id="8324158725704657629">Daugiau neklausti</translation>
 <translation id="8372893542064058268">Leisti fono sinchronizavimą konkrečioje svetainėje.</translation>
@@ -300,6 +303,7 @@
 <translation id="8447861592752582886">Anuliuoti įrenginio leidimą</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{Naudojamas 1 slapukas}one{Naudojamas # slapukas}few{Naudojami # slapukai}many{Naudojama # slapuko}other{Naudojama # slapukų}}</translation>
 <translation id="8487700953926739672">Pasiekiama neprisijungus</translation>
+<translation id="848952951823693243">Visada galite pateikti užklausą dėl svetainės mobiliesiems</translation>
 <translation id="851751545965956758">Blokuoti svetaines, kad nebūtų galima prisijungti prie įrenginių</translation>
 <translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="857943718398505171">Leidžiama (rekomenduojama)</translation>

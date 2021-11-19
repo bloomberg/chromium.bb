@@ -1803,7 +1803,6 @@ void Init8bpp() {
       DirDefs::_64x64::Horizontal;
 #endif
 }  // NOLINT(readability/fn_size)
-// TODO(petersonab): Split Init8bpp function into family-specific files.
 
 }  // namespace
 }  // namespace low_bitdepth

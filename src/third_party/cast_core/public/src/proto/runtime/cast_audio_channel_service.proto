@@ -16,7 +16,7 @@ syntax = "proto3";
 
 package cast.media;
 
-import "google/protobuf/duration.proto";
+import "proto/common/duration.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -305,13 +305,13 @@ message MediaTime {
 
   // Capture time with respect to CLOCK_MONOTONIC_RAW at which the delay
   // measurement was taken.
-  google.protobuf.Duration capture_time = 3;
+  cast.common.Duration capture_time = 3;
 }
 
 message TimestampInfo {
   // System timestamp with respect to CLOCK_MONOTONIC_RAW at which the
   // corresponding buffer is expected to be rendered.
-  google.protobuf.Duration system_timestamp = 1;
+  cast.common.Duration system_timestamp = 1;
 
   // AudioDecoderBuffer.id associated with the |system_timestamp|.
   int64 buffer_id = 2;

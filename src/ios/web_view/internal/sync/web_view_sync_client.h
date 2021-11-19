@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/browser_sync/browser_sync_client.h"
 #include "components/browser_sync/profile_sync_components_factory_impl.h"
@@ -80,6 +80,7 @@ class WebViewSyncClient : public browser_sync::BrowserSyncClient {
 
   std::unique_ptr<browser_sync::ProfileSyncComponentsFactoryImpl>
       component_factory_;
+  std::unique_ptr<syncer::TrustedVaultClient> trusted_vault_client_;
 };
 
 }  // namespace ios_web_view

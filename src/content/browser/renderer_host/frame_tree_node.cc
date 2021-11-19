@@ -52,6 +52,9 @@ class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
   OpenerDestroyedObserver(FrameTreeNode* owner, bool observing_original_opener)
       : owner_(owner), observing_original_opener_(observing_original_opener) {}
 
+  OpenerDestroyedObserver(const OpenerDestroyedObserver&) = delete;
+  OpenerDestroyedObserver& operator=(const OpenerDestroyedObserver&) = delete;
+
   // FrameTreeNode::Observer
   void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
     if (observing_original_opener_) {
@@ -72,8 +75,6 @@ class FrameTreeNode::OpenerDestroyedObserver : public FrameTreeNode::Observer {
  private:
   FrameTreeNode* owner_;
   bool observing_original_opener_;
-
-  DISALLOW_COPY_AND_ASSIGN(OpenerDestroyedObserver);
 };
 
 const int FrameTreeNode::kFrameTreeNodeInvalidId = -1;
@@ -319,12 +320,12 @@ void FrameTreeNode::SetOriginalOpener(FrameTreeNode* opener) {
 }
 
 void FrameTreeNode::SetCurrentURL(const GURL& url) {
-  if (!has_committed_real_load_ && !url.IsAboutBlank()) {
-    has_committed_real_load_ = true;
-    is_on_initial_empty_document_or_subsequent_empty_documents_ = false;
-  }
   current_frame_host()->SetLastCommittedUrl(url);
   blame_context_.TakeSnapshot();
+}
+
+void FrameTreeNode::DidCommitNonInitialEmptyDocument() {
+  is_on_initial_empty_document_ = false;
 }
 
 void FrameTreeNode::SetCurrentOrigin(
@@ -353,6 +354,12 @@ void FrameTreeNode::SetCollapsed(bool collapsed) {
 void FrameTreeNode::SetFrameTree(FrameTree& frame_tree) {
   DCHECK(blink::features::IsPrerender2Enabled());
   frame_tree_ = &frame_tree;
+  DCHECK(current_frame_host());
+  current_frame_host()->SetFrameTree(frame_tree);
+  RenderFrameHostImpl* speculative_frame_host =
+      render_manager_.speculative_frame_host();
+  if (speculative_frame_host)
+    speculative_frame_host->SetFrameTree(frame_tree);
 }
 
 void FrameTreeNode::SetFrameName(const std::string& name,
@@ -421,14 +428,6 @@ void FrameTreeNode::SetPendingFramePolicy(blink::FramePolicy frame_policy) {
   }
 }
 
-FrameTreeNode* FrameTreeNode::PreviousSibling() const {
-  return GetSibling(-1);
-}
-
-FrameTreeNode* FrameTreeNode::NextSibling() const {
-  return GetSibling(1);
-}
-
 bool FrameTreeNode::IsLoading() const {
   RenderFrameHostImpl* current_frame_host =
       render_manager_.current_frame_host();
@@ -466,6 +465,12 @@ bool FrameTreeNode::HasPendingCrossDocumentNavigation() const {
 
 bool FrameTreeNode::CommitFramePolicy(
     const blink::FramePolicy& new_frame_policy) {
+  // Documents create iframes, iframes host new documents. Both are associated
+  // with sandbox flags. They are required to be stricter or equal to their
+  // owner when they change, as we go down.
+  // TODO(https://crbug.com/1262061). Enforce the invariant mentioned above,
+  // once the interactions with FencedIframe has been tested and clarified.
+
   bool did_change_flags = new_frame_policy.sandbox_flags !=
                           replication_state_->frame_policy.sandbox_flags;
   bool did_change_container_policy =
@@ -728,24 +733,6 @@ void FrameTreeNode::OnSetHadStickyUserActivationBeforeNavigation(bool value) {
   replication_state_->has_received_user_gesture_before_nav = value;
 }
 
-FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {
-  if (!parent_ || !parent_->child_count())
-    return nullptr;
-
-  for (size_t i = 0; i < parent_->child_count(); ++i) {
-    if (parent_->child_at(i) == this) {
-      if ((relative_offset < 0 && static_cast<size_t>(-relative_offset) > i) ||
-          i + relative_offset >= parent_->child_count()) {
-        return nullptr;
-      }
-      return parent_->child_at(i + relative_offset);
-    }
-  }
-
-  NOTREACHED() << "FrameTreeNode not found in its parent's children.";
-  return nullptr;
-}
-
 bool FrameTreeNode::UpdateFramePolicyHeaders(
     network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedPermissionsPolicy& parsed_header) {
@@ -791,13 +778,13 @@ void FrameTreeNode::SetIsAdSubframe(bool is_ad_subframe) {
 
 void FrameTreeNode::SetInitialPopupURL(const GURL& initial_popup_url) {
   DCHECK(initial_popup_url_.is_empty());
-  DCHECK(!has_committed_real_load_);
+  DCHECK(is_on_initial_empty_document_);
   initial_popup_url_ = initial_popup_url;
 }
 
 void FrameTreeNode::SetPopupCreatorOrigin(
     const url::Origin& popup_creator_origin) {
-  DCHECK(!has_committed_real_load_);
+  DCHECK(is_on_initial_empty_document_);
   popup_creator_origin_ = popup_creator_origin;
 }
 

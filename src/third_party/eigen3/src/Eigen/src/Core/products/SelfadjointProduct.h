@@ -16,6 +16,8 @@
 * It corresponds to the level 3 SYRK and level 2 SYR Blas routines.
 **********************************************************************/
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 

@@ -10,6 +10,8 @@
 #ifndef KDBVH_H_INCLUDED
 #define KDBVH_H_INCLUDED
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

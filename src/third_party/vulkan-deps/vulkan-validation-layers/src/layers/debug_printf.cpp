@@ -315,7 +315,7 @@ bool DebugPrintf::InstrumentShader(const VkShaderModuleCreateInfo *pCreateInfo, 
     // Use the unique_shader_module_id as a shader ID so we can look up its handle later in the shader_map.
     // If descriptor indexing is enabled, enable length checks and updated descriptor checks
     using namespace spvtools;
-    spv_target_env target_env = PickSpirvEnv(api_version, (device_extensions.vk_khr_spirv_1_4 != kNotEnabled));
+    spv_target_env target_env = PickSpirvEnv(api_version, IsExtEnabled(device_extensions.vk_khr_spirv_1_4));
     spvtools::ValidatorOptions val_options;
     AdjustValidatorOptions(device_extensions, enabled_features, val_options);
     spvtools::OptimizerOptions opt_options;
@@ -460,8 +460,7 @@ std::vector<DPFSubstring> DebugPrintf::ParseFormatString(const std::string forma
 
 std::string DebugPrintf::FindFormatString(std::vector<unsigned int> pgm, uint32_t string_id) {
     std::string format_string;
-    SHADER_MODULE_STATE shader;
-    shader.words = pgm;
+    SHADER_MODULE_STATE shader(pgm);
     if (shader.words.size() > 0) {
         for (const auto &insn : shader) {
             if (insn.opcode() == spv::OpString) {
@@ -975,13 +974,12 @@ void DebugPrintf::AllocateDebugPrintfResources(const VkCommandBuffer cmd_buffer,
 
 std::shared_ptr<CMD_BUFFER_STATE> DebugPrintf::CreateCmdBufferState(VkCommandBuffer cb,
                                                                     const VkCommandBufferAllocateInfo *pCreateInfo,
-                                                                    std::shared_ptr<COMMAND_POOL_STATE> &pool) {
+                                                                    const COMMAND_POOL_STATE *pool) {
     return std::static_pointer_cast<CMD_BUFFER_STATE>(std::make_shared<CMD_BUFFER_STATE_PRINTF>(this, cb, pCreateInfo, pool));
 }
 
 CMD_BUFFER_STATE_PRINTF::CMD_BUFFER_STATE_PRINTF(DebugPrintf *dp, VkCommandBuffer cb,
-                                                 const VkCommandBufferAllocateInfo *pCreateInfo,
-                                                 std::shared_ptr<COMMAND_POOL_STATE> &pool)
+                                                 const VkCommandBufferAllocateInfo *pCreateInfo, const COMMAND_POOL_STATE *pool)
     : CMD_BUFFER_STATE(dp, cb, pCreateInfo, pool) {}
 
 void CMD_BUFFER_STATE_PRINTF::Reset() {

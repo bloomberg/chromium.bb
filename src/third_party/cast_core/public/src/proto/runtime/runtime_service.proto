@@ -16,8 +16,8 @@ syntax = "proto3";
 
 package cast.runtime;
 
-import "google/protobuf/duration.proto";
 import "proto/common/application_config.proto";
+import "proto/common/duration.proto";
 import "proto/common/service_info.proto";
 import "proto/v2/url_rewrite.proto";
 
@@ -126,7 +126,7 @@ message StopApplicationResponse {
 message HeartbeatRequest {
   // Period between two heartbeat responses. The Core will wait for double of
   // this time to avoid network glitches. The minimum value is 5 seconds.
-  google.protobuf.Duration heartbeat_period = 1;
+  cast.common.Duration heartbeat_period = 1;
 }
 
 message HeartbeatResponse {}

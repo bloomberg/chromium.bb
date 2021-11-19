@@ -57,11 +57,12 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE, true)
                     .put(ChromeFeatureList.EARLY_LIBRARY_LOAD, false)
                     .put(ChromeFeatureList.ELASTIC_OVERSCROLL, true)
+                    .put(ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS,
+                            false)
                     .put(ChromeFeatureList.ELIDE_TAB_PRELOAD_AT_STARTUP, false)
                     .put(ChromeFeatureList
                                     .GIVE_JAVA_UI_THREAD_DEFAULT_TASK_TRAITS_USER_BLOCKING_PRIORITY,
                             false)
-                    .put(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS, true)
                     .put(ChromeFeatureList.IMMERSIVE_UI_MODE, false)
                     .put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT, true)
                     .put(ChromeFeatureList.START_SURFACE_ANDROID, false)
@@ -99,6 +100,7 @@ public class CachedFeatureFlags {
                     .put(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES, false)
                     .put(ChromeFeatureList.INSTANCE_SWITCHER, true)
                     .put(ChromeFeatureList.WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT, true)
+                    .put(ChromeFeatureList.FEED_LOADING_PLACEHOLDER, false)
                     .build();
 
     /**
@@ -119,8 +121,6 @@ public class CachedFeatureFlags {
                             ChromePreferenceKeys.FLAGS_CACHED_COMMAND_LINE_ON_NON_ROOTED_ENABLED)
                     .put(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,
                             ChromePreferenceKeys.FLAGS_CACHED_DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE)
-                    .put(ChromeFeatureList.PRIORITIZE_BOOTSTRAP_TASKS,
-                            ChromePreferenceKeys.FLAGS_CACHED_PRIORITIZE_BOOTSTRAP_TASKS)
                     .put(ChromeFeatureList.IMMERSIVE_UI_MODE,
                             ChromePreferenceKeys.FLAGS_CACHED_IMMERSIVE_UI_MODE_ENABLED)
                     .put(ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
@@ -456,6 +456,18 @@ public class CachedFeatureFlags {
         sValuesReturned = new ValuesReturned();
         sValuesOverridden.clear();
         sSafeMode.clearMemoryForTesting();
+    }
+
+    @VisibleForTesting
+    public static void resetDiskForTesting() {
+        for (Map.Entry<String, Boolean> e : sDefaults.entrySet()) {
+            String prefKey = ChromePreferenceKeys.FLAGS_CACHED.createKey(e.getKey());
+            SharedPreferencesManager.getInstance().removeKey(prefKey);
+        }
+        for (Map.Entry<String, String> e : sNonDynamicPrefKeys.entrySet()) {
+            String prefKey = e.getValue();
+            SharedPreferencesManager.getInstance().removeKey(prefKey);
+        }
     }
 
     @VisibleForTesting

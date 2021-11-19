@@ -24,6 +24,16 @@ TEST(CastStreamingAppIdsTest, Test) {
   EXPECT_TRUE(IsCastStreamingAudioOnlyAppId("85CDB22F"));
   EXPECT_FALSE(IsCastStreamingAudioOnlyAppId("DEADBEEF"));
 
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("0F5096E8"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("85CDB22F"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("674A0243"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("8E6C866D"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("96084372"));
+  EXPECT_TRUE(IsCastStreamingReceiverAppId("BFD92C23"));
+  EXPECT_FALSE(IsCastStreamingReceiverAppId("DEADBEEF"));
+  EXPECT_FALSE(IsCastStreamingReceiverAppId(""));
+  EXPECT_FALSE(IsCastStreamingReceiverAppId("foo"));
+
   std::vector<std::string> app_ids(GetCastStreamingAppIds());
   EXPECT_EQ(static_cast<size_t>(2), app_ids.size());
   EXPECT_TRUE(std::find(app_ids.begin(), app_ids.end(), "0F5096E8") !=
@@ -33,6 +43,10 @@ TEST(CastStreamingAppIdsTest, Test) {
 
   EXPECT_STREQ("0F5096E8", GetCastStreamingAudioVideoAppId());
   EXPECT_STREQ("85CDB22F", GetCastStreamingAudioOnlyAppId());
+  EXPECT_STREQ("674A0243", GetAndroidMirroringAudioVideoAppId());
+  EXPECT_STREQ("8E6C866D", GetAndroidMirroringAudioOnlyAppId());
+  EXPECT_STREQ("96084372", GetAndroidAppStreamingAudioVideoAppId());
+  EXPECT_STREQ("BFD92C23", GetIosAppStreamingAudioVideoAppId());
 }
 
 }  // namespace cast

@@ -2660,12 +2660,47 @@ TEST_P(Texture2DTest, TextureKHRDebugLabelWithCopyTexImage2D)
 {
     GLTexture texture2D;
     glBindTexture(GL_TEXTURE_2D, texture2D);
+
     // Create a texture and copy into, to initialize storage object.
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 32, 32, 0);
 
     // Set KHR Debug Label.
-    const std::string &label = "TestKHR.DebugLabel";
+    std::string label = "TestKHR.DebugLabel";
     glObjectLabelKHR(GL_TEXTURE, texture2D, -1, label.c_str());
+
+    std::vector<char> labelBuf(label.length() + 1);
+    GLsizei labelLengthBuf = 0;
+
+    glGetObjectLabelKHR(GL_TEXTURE, texture2D, static_cast<GLsizei>(labelBuf.size()),
+                        &labelLengthBuf, labelBuf.data());
+
+    EXPECT_EQ(static_cast<GLsizei>(label.length()), labelLengthBuf);
+    EXPECT_STREQ(label.c_str(), labelBuf.data());
+
+    // Delete the texture.
+    texture2D.reset();
+    EXPECT_GL_NO_ERROR();
+
+    glObjectLabelKHR(GL_TEXTURE, texture2D, -1, label.c_str());
+    EXPECT_GL_ERROR(GL_INVALID_VALUE);
+
+    glGetObjectLabelKHR(GL_TEXTURE, texture2D, static_cast<GLsizei>(labelBuf.size()),
+                        &labelLengthBuf, labelBuf.data());
+    EXPECT_GL_ERROR(GL_INVALID_VALUE);
+}
+
+// Test to call labeling API before the storage texture is created.
+TEST_P(Texture2DTest, CallKHRDebugLabelBeforeTexStorageCreation)
+{
+    GLTexture texture2D;
+    glBindTexture(GL_TEXTURE_2D, texture2D);
+
+    // Set label before texture storage creation.
+    std::string label = "TestKHR.DebugLabel";
+    glObjectLabelKHR(GL_TEXTURE, texture2D, -1, label.c_str());
+
+    // Create a texture and copy into, to initialize storage object.
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 32, 32, 0);
 
     std::vector<char> labelBuf(label.length() + 1);
     GLsizei labelLengthBuf = 0;
@@ -3103,9 +3138,6 @@ TEST_P(Texture2DTest, CopySubImageFloat_RGB_RGB)
     // TODO(cwallez): Fix on Linux Intel drivers (http://anglebug.com/1346)
     ANGLE_SKIP_TEST_IF(IsIntel() && IsLinux() && IsOpenGL());
 
-    // Ignore SDK layers messages on D3D11 FL 9.3 (http://anglebug.com/1284)
-    ANGLE_SKIP_TEST_IF(IsD3D11_FL93());
-
     testFloatCopySubImage(3, 3);
 }
 
@@ -3121,17 +3153,11 @@ TEST_P(Texture2DTest, CopySubImageFloat_RGBA_RG)
 
 TEST_P(Texture2DTest, CopySubImageFloat_RGBA_RGB)
 {
-    // Ignore SDK layers messages on D3D11 FL 9.3 (http://anglebug.com/1284)
-    ANGLE_SKIP_TEST_IF(IsD3D11_FL93());
-
     testFloatCopySubImage(4, 3);
 }
 
 TEST_P(Texture2DTest, CopySubImageFloat_RGBA_RGBA)
 {
-    // Ignore SDK layers messages on D3D11 FL 9.3 (http://anglebug.com/1284)
-    ANGLE_SKIP_TEST_IF(IsD3D11_FL93());
-
     testFloatCopySubImage(4, 4);
 }
 
@@ -8925,6 +8951,12 @@ TEST_P(Texture2DTestES3, NonZeroBaseEmulatedClear)
     // Tests behavior of the Vulkan backend with emulated formats.
     ANGLE_SKIP_TEST_IF(!IsVulkan());
 
+    // This test assumes GL_RGB is always emulated, which overrides the WithAllocateNonZeroMemory
+    // memory feature, clearing the memory to zero. However, if the format is *not* emulated and the
+    // feature WithAllocateNonZeroMemory is enabled, the texture memory will contain non-zero
+    // memory, which means the color is not black (causing the test to fail).
+    ANGLE_SKIP_TEST_IF(isAllocateNonZeroMemoryEnabled());
+
     setUpProgram();
 
     glActiveTexture(GL_TEXTURE0);
@@ -9788,12 +9820,11 @@ void main()
     WithEmulateCopyTexImage2DFromRenderbuffers(ES3_OPENGL()), \
         WithEmulateCopyTexImage2DFromRenderbuffers(ES3_OPENGLES())
 ANGLE_INSTANTIATE_TEST(Texture2DTest, ANGLE_ALL_TEST_PLATFORMS_ES2, ES2_EMULATE_COPY_TEX_IMAGE());
-ANGLE_INSTANTIATE_TEST_ES2_AND(TextureCubeTest, WithDirectSPIRVGeneration(ES2_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES2(TextureCubeTest);
 ANGLE_INSTANTIATE_TEST_ES2(Texture2DTestWithDrawScale);
 ANGLE_INSTANTIATE_TEST_ES2(Sampler2DAsFunctionParameterTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerArrayTest);
-ANGLE_INSTANTIATE_TEST_ES2_AND(SamplerArrayAsFunctionParameterTest,
-                               WithDirectSPIRVGeneration(ES2_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES2(SamplerArrayAsFunctionParameterTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DTestES3);
 ANGLE_INSTANTIATE_TEST_ES3_AND(Texture2DTestES3, WithAllocateNonZeroMemory(ES3_VULKAN()));
@@ -9807,7 +9838,7 @@ ANGLE_INSTANTIATE_TEST_ES3(Texture2DBaseMaxTestES3);
 ANGLE_INSTANTIATE_TEST_ES2(Texture3DTestES2);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture3DTestES3);
-ANGLE_INSTANTIATE_TEST_ES3_AND(Texture3DTestES3, WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(Texture3DTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DIntegerAlpha1TestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DIntegerAlpha1TestES3);
@@ -9816,18 +9847,16 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DUnsignedIntegerAlpha1Test
 ANGLE_INSTANTIATE_TEST_ES3(Texture2DUnsignedIntegerAlpha1TestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ShadowSamplerPlusSampler3DTestES3);
-ANGLE_INSTANTIATE_TEST_ES3_AND(ShadowSamplerPlusSampler3DTestES3,
-                               WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(ShadowSamplerPlusSampler3DTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SamplerTypeMixTestES3);
-ANGLE_INSTANTIATE_TEST_ES3_AND(SamplerTypeMixTestES3, WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(SamplerTypeMixTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DArrayTestES3);
-ANGLE_INSTANTIATE_TEST_ES3_AND(Texture2DArrayTestES3, WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(Texture2DArrayTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureSizeTextureArrayTest);
-ANGLE_INSTANTIATE_TEST_ES3_AND(TextureSizeTextureArrayTest,
-                               WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(TextureSizeTextureArrayTest);
 
 ANGLE_INSTANTIATE_TEST_ES2(SamplerInStructTest);
 ANGLE_INSTANTIATE_TEST_ES2(SamplerInStructAsFunctionParameterTest);
@@ -9872,24 +9901,22 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureCubeIntegerEdgeTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(TextureCubeIntegerEdgeTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DIntegerProjectiveOffsetTestES3);
-ANGLE_INSTANTIATE_TEST_ES3_AND(Texture2DIntegerProjectiveOffsetTestES3,
-                               WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(Texture2DIntegerProjectiveOffsetTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture2DArrayIntegerTestES3);
-ANGLE_INSTANTIATE_TEST_ES3_AND(Texture2DArrayIntegerTestES3,
-                               WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES3(Texture2DArrayIntegerTestES3);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(Texture3DIntegerTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(Texture3DIntegerTestES3);
 
-ANGLE_INSTANTIATE_TEST_ES2_AND_ES3_AND(Texture2DDepthTest, WithDirectSPIRVGeneration(ES3_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(Texture2DDepthTest);
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(PBOCompressedTextureTest);
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(ETC1CompressedTextureTest);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(TextureBufferTestES31);
-ANGLE_INSTANTIATE_TEST_ES31_AND(TextureBufferTestES31, WithDirectSPIRVGeneration(ES31_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES31(TextureBufferTestES31);
 
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CopyImageTestES31);
-ANGLE_INSTANTIATE_TEST_ES31_AND(CopyImageTestES31, WithDirectSPIRVGeneration(ES31_VULKAN()));
+ANGLE_INSTANTIATE_TEST_ES31(CopyImageTestES31);
 
 }  // anonymous namespace

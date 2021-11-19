@@ -14,6 +14,8 @@
 // * Eigen/Core
 // * Eigen/src/PolynomialSolver.h
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

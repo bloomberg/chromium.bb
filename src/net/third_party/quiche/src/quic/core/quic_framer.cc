@@ -4457,6 +4457,26 @@ bool QuicFramer::DoKeyUpdate(KeyUpdateReason reason) {
   previous_decrypter_ = std::move(decrypter_[ENCRYPTION_FORWARD_SECURE]);
   decrypter_[ENCRYPTION_FORWARD_SECURE] = std::move(next_decrypter_);
   encrypter_[ENCRYPTION_FORWARD_SECURE] = std::move(next_encrypter);
+  switch (reason) {
+    case KeyUpdateReason::kInvalid:
+      QUIC_CODE_COUNT(quic_key_update_invalid);
+      break;
+    case KeyUpdateReason::kRemote:
+      QUIC_CODE_COUNT(quic_key_update_remote);
+      break;
+    case KeyUpdateReason::kLocalForTests:
+      QUIC_CODE_COUNT(quic_key_update_local_for_tests);
+      break;
+    case KeyUpdateReason::kLocalForInteropRunner:
+      QUIC_CODE_COUNT(quic_key_update_local_for_interop_runner);
+      break;
+    case KeyUpdateReason::kLocalAeadConfidentialityLimit:
+      QUIC_CODE_COUNT(quic_key_update_local_aead_confidentiality_limit);
+      break;
+    case KeyUpdateReason::kLocalKeyUpdateLimitOverride:
+      QUIC_CODE_COUNT(quic_key_update_local_limit_override);
+      break;
+  }
   visitor_->OnKeyUpdate(reason);
   return true;
 }
@@ -6591,16 +6611,12 @@ void QuicFramer::EnableMultiplePacketNumberSpacesSupport() {
 QuicErrorCode QuicFramer::ParsePublicHeaderDispatcher(
     const QuicEncryptedPacket& packet,
     uint8_t expected_destination_connection_id_length,
-    PacketHeaderFormat* format,
-    QuicLongHeaderType* long_packet_type,
-    bool* version_present,
-    bool* has_length_prefix,
-    QuicVersionLabel* version_label,
-    ParsedQuicVersion* parsed_version,
+    PacketHeaderFormat* format, QuicLongHeaderType* long_packet_type,
+    bool* version_present, bool* has_length_prefix,
+    QuicVersionLabel* version_label, ParsedQuicVersion* parsed_version,
     QuicConnectionId* destination_connection_id,
     QuicConnectionId* source_connection_id,
-    bool* retry_token_present,
-    absl::string_view* retry_token,
+    absl::optional<absl::string_view>* retry_token,
     std::string* detailed_error) {
   QuicDataReader reader(packet.data(), packet.length());
   if (reader.IsDoneReading()) {
@@ -6629,14 +6645,18 @@ QuicErrorCode QuicFramer::ParsePublicHeaderDispatcher(
   const bool ietf_format = QuicUtils::IsIetfPacketHeader(first_byte);
   uint8_t unused_first_byte;
   QuicVariableLengthIntegerLength retry_token_length_length;
+  absl::string_view maybe_retry_token;
   QuicErrorCode error_code = ParsePublicHeader(
       &reader, expected_destination_connection_id_length, ietf_format,
       &unused_first_byte, format, version_present, has_length_prefix,
       version_label, parsed_version, destination_connection_id,
       source_connection_id, long_packet_type, &retry_token_length_length,
-      retry_token, detailed_error);
-  *retry_token_present =
-      retry_token_length_length != VARIABLE_LENGTH_INTEGER_LENGTH_0;
+      &maybe_retry_token, detailed_error);
+  if (retry_token_length_length != VARIABLE_LENGTH_INTEGER_LENGTH_0) {
+    *retry_token = maybe_retry_token;
+  } else {
+    retry_token->reset();
+  }
   return error_code;
 }
 

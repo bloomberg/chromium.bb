@@ -12,9 +12,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string_piece.h"
-#include "chrome/android/chrome_jni_headers/FeedStream_jni.h"
 #include "chrome/browser/feed/android/feed_reliability_logging_bridge.h"
 #include "chrome/browser/feed/android/feed_service_factory.h"
+#include "chrome/browser/feed/android/jni_headers/FeedStream_jni.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
@@ -172,8 +172,18 @@ void FeedStream::SurfaceClosed(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 bool FeedStream::IsActivityLoggingEnabled(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
+  // Currently, the UI side isn't able to query streams independently for their
+  // logging activity state, and they will always ask for kForYouStream.
+  //
+  // We expect logging state to be in the same state for both streams, but we
+  // won't have this information if the stream isn't yet loaded.
+  // For this reason, we consider logging enabled as 'true' if it's enabled for
+  // either stream type.
+  // TODO(crbug.com/1262376): Improve this.
+
   return feed_stream_api_ &&
-         feed_stream_api_->IsActivityLoggingEnabled(GetStreamType());
+         (feed_stream_api_->IsActivityLoggingEnabled(kForYouStream) ||
+          feed_stream_api_->IsActivityLoggingEnabled(kWebFeedStream));
 }
 
 void FeedStream::ReportOpenAction(JNIEnv* env,
@@ -260,6 +270,42 @@ jlong FeedStream::GetLastFetchTimeMs(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   return feed_stream_api_->GetLastFetchTime(GetStreamType()).ToDoubleT() * 1000;
+}
+
+void FeedStream::ReportNoticeCreated(JNIEnv* env,
+                                     const JavaParamRef<jobject>& obj,
+                                     const JavaParamRef<jstring>& key) {
+  if (!feed_stream_api_)
+    return;
+  feed_stream_api_->ReportNoticeCreated(
+      GetStreamType(), base::android::ConvertJavaStringToUTF8(env, key));
+}
+
+void FeedStream::ReportNoticeViewed(JNIEnv* env,
+                                    const JavaParamRef<jobject>& obj,
+                                    const JavaParamRef<jstring>& key) {
+  if (!feed_stream_api_)
+    return;
+  feed_stream_api_->ReportNoticeViewed(
+      GetStreamType(), base::android::ConvertJavaStringToUTF8(env, key));
+}
+
+void FeedStream::ReportNoticeOpenAction(JNIEnv* env,
+                                        const JavaParamRef<jobject>& obj,
+                                        const JavaParamRef<jstring>& key) {
+  if (!feed_stream_api_)
+    return;
+  feed_stream_api_->ReportNoticeOpenAction(
+      GetStreamType(), base::android::ConvertJavaStringToUTF8(env, key));
+}
+
+void FeedStream::ReportNoticeDismissed(JNIEnv* env,
+                                       const JavaParamRef<jobject>& obj,
+                                       const JavaParamRef<jstring>& key) {
+  if (!feed_stream_api_)
+    return;
+  feed_stream_api_->ReportNoticeDismissed(
+      GetStreamType(), base::android::ConvertJavaStringToUTF8(env, key));
 }
 
 }  // namespace android

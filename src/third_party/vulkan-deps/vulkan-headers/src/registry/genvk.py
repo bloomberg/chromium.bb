@@ -20,6 +20,7 @@ from generator import write
 from spirvcapgenerator import SpirvCapabilityOutputGenerator
 from hostsyncgenerator import HostSynchronizationOutputGenerator
 from pygenerator import PyOutputGenerator
+from rubygenerator import RubyOutputGenerator
 from reflib import logDiag, logWarn, setLogFile
 from reg import Registry
 from validitygenerator import ValidityOutputGenerator
@@ -182,7 +183,32 @@ def makeGenOpts(args):
             reparentEnums     = False)
         ]
 
+    # Ruby representation of API information, used by scripts that
+    # don't need to load the full XML.
+    genOpts['api.rb'] = [
+          RubyOutputGenerator,
+          DocGeneratorOptions(
+            conventions       = conventions,
+            filename          = 'api.rb',
+            directory         = directory,
+            genpath           = None,
+            apiname           = 'vulkan',
+            profile           = None,
+            versions          = featuresPat,
+            emitversions      = featuresPat,
+            defaultExtensions = None,
+            addExtensions     = addExtensionsPat,
+            removeExtensions  = removeExtensionsPat,
+            emitExtensions    = emitExtensionsPat,
+            reparentEnums     = False)
+        ]
+
+
     # API validity files for spec
+    #
+    # requireCommandAliases is set to True because we need validity files
+    # for the command something is promoted to even when the promoted-to
+    # feature is not included. This avoids wordy includes of validity files.
     genOpts['validinc'] = [
           ValidityOutputGenerator,
           DocGeneratorOptions(
@@ -197,7 +223,9 @@ def makeGenOpts(args):
             defaultExtensions = None,
             addExtensions     = addExtensionsPat,
             removeExtensions  = removeExtensionsPat,
-            emitExtensions    = emitExtensionsPat)
+            emitExtensions    = emitExtensionsPat,
+            requireCommandAliases = True,
+            )
         ]
 
     # API host sync table files for spec
@@ -307,6 +335,7 @@ def makeGenOpts(args):
         'VK_EXT_video_decode_h264',
         'VK_EXT_video_decode_h265',
         'VK_EXT_video_encode_h264',
+        'VK_EXT_video_encode_h265',
     ]
 
     betaSuppressExtensions = []
@@ -314,10 +343,13 @@ def makeGenOpts(args):
     platforms = [
         [ 'vulkan_android.h',     [ 'VK_KHR_android_surface',
                                     'VK_ANDROID_external_memory_android_hardware_buffer'
-                                                                  ], commonSuppressExtensions ],
+                                                                  ], commonSuppressExtensions +
+                                                                     [ 'VK_KHR_format_feature_flags2',
+                                                                     ] ],
         [ 'vulkan_fuchsia.h',     [ 'VK_FUCHSIA_imagepipe_surface',
                                     'VK_FUCHSIA_external_memory',
-                                    'VK_FUCHSIA_external_semaphore' ], commonSuppressExtensions ],
+                                    'VK_FUCHSIA_external_semaphore',
+                                    'VK_FUCHSIA_buffer_collection' ], commonSuppressExtensions ],
         [ 'vulkan_ggp.h',         [ 'VK_GGP_stream_descriptor_surface',
                                     'VK_GGP_frame_token'          ], commonSuppressExtensions ],
         [ 'vulkan_ios.h',         [ 'VK_MVK_ios_surface'          ], commonSuppressExtensions ],
@@ -634,6 +666,10 @@ if __name__ == '__main__':
         diag = open(args.diagfile, 'w', encoding='utf-8')
     else:
         diag = None
+
+    if args.time:
+        # Log diagnostics and warnings
+        setLogFile(setDiag = True, setWarn = True, filename = '-')
 
     (gen, options) = (None, None)
     if not args.validate:

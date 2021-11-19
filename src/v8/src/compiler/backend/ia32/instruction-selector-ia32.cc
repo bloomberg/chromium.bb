@@ -99,11 +99,14 @@ class IA32OperandGenerator final : public OperandGenerator {
   bool CanBeImmediate(Node* node) {
     switch (node->opcode()) {
       case IrOpcode::kInt32Constant:
-      case IrOpcode::kNumberConstant:
       case IrOpcode::kExternalConstant:
       case IrOpcode::kRelocatableInt32Constant:
       case IrOpcode::kRelocatableInt64Constant:
         return true;
+      case IrOpcode::kNumberConstant: {
+        const double value = OpParameter<double>(node->op());
+        return bit_cast<int64_t>(value) == 0;
+      }
       case IrOpcode::kHeapConstant: {
 // TODO(bmeurer): We must not dereference handles concurrently. If we
 // really have to this here, then we need to find a way to put this
@@ -273,6 +276,7 @@ ArchOpcode GetLoadOpcode(LoadRepresentation load_rep) {
       break;
     case MachineRepresentation::kCompressedPointer:  // Fall through.
     case MachineRepresentation::kCompressed:         // Fall through.
+    case MachineRepresentation::kCagedPointer:       // Fall through.
     case MachineRepresentation::kWord64:             // Fall through.
     case MachineRepresentation::kMapWord:            // Fall through.
     case MachineRepresentation::kNone:
@@ -616,6 +620,7 @@ ArchOpcode GetStoreOpcode(MachineRepresentation rep) {
       return kIA32Movdqu;
     case MachineRepresentation::kCompressedPointer:  // Fall through.
     case MachineRepresentation::kCompressed:         // Fall through.
+    case MachineRepresentation::kCagedPointer:       // Fall through.
     case MachineRepresentation::kWord64:             // Fall through.
     case MachineRepresentation::kMapWord:            // Fall through.
     case MachineRepresentation::kNone:
@@ -2494,15 +2499,9 @@ void InstructionSelector::VisitI64x2Mul(Node* node) {
   IA32OperandGenerator g(this);
   InstructionOperand temps[] = {g.TempSimd128Register(),
                                 g.TempSimd128Register()};
-  if (IsSupported(AVX)) {
-    Emit(kIA32I64x2Mul, g.DefineAsRegister(node),
-         g.UseUniqueRegister(node->InputAt(0)),
-         g.UseUniqueRegister(node->InputAt(1)), arraysize(temps), temps);
-  } else {
-    Emit(kIA32I64x2Mul, g.DefineSameAsFirst(node),
-         g.UseUniqueRegister(node->InputAt(0)),
-         g.UseUniqueRegister(node->InputAt(1)), arraysize(temps), temps);
-  }
+  Emit(kIA32I64x2Mul, g.DefineAsRegister(node),
+       g.UseUniqueRegister(node->InputAt(0)),
+       g.UseUniqueRegister(node->InputAt(1)), arraysize(temps), temps);
 }
 
 void InstructionSelector::VisitF32x4Splat(Node* node) {

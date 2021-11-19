@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSEPRODUCT_H
 #define EIGEN_SPARSEPRODUCT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \returns an expression of the product of two sparse matrices.

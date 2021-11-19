@@ -10,6 +10,8 @@
 #ifndef EIGEN_ROTATIONBASE_H
 #define EIGEN_ROTATIONBASE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 // forward declaration

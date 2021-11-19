@@ -249,6 +249,7 @@ class OutputSPIRVTraverser : public TIntermTraverser
                             const SpirvTypeSpec &typeSpec) const;
     void nodeDataInitRValue(NodeData *data, spirv::IdRef baseId, spirv::IdRef typeId) const;
 
+    void declareConst(TIntermDeclaration *decl);
     void declareSpecConst(TIntermDeclaration *decl);
     spirv::IdRef createConstant(const TType &type,
                                 TBasicType expectedBasicType,
@@ -1117,6 +1118,41 @@ spirv::IdRef OutputSPIRVTraverser::getAccessChainTypeId(NodeData *data)
     return accessChain.preSwizzleTypeId;
 }
 
+void OutputSPIRVTraverser::declareConst(TIntermDeclaration *decl)
+{
+    const TIntermSequence &sequence = *decl->getSequence();
+    ASSERT(sequence.size() == 1);
+
+    TIntermBinary *assign = sequence.front()->getAsBinaryNode();
+    ASSERT(assign != nullptr && assign->getOp() == EOpInitialize);
+
+    TIntermSymbol *symbol = assign->getLeft()->getAsSymbolNode();
+    ASSERT(symbol != nullptr && symbol->getType().getQualifier() == EvqConst);
+
+    TIntermTyped *initializer = assign->getRight();
+    ASSERT(initializer->getAsConstantUnion() != nullptr || initializer->hasConstantValue());
+
+    const TType &type         = symbol->getType();
+    const TVariable *variable = &symbol->variable();
+
+    const spirv::IdRef typeId = mBuilder.getTypeData(type, {}).id;
+    const spirv::IdRef constId =
+        createConstant(type, type.getBasicType(), initializer->getConstantValue(),
+                       initializer->isConstantNullValue());
+
+    // Remember the id of the variable for future look up.
+    ASSERT(mSymbolIdMap.count(&symbol->variable()) == 0);
+    mSymbolIdMap[&symbol->variable()] = constId;
+
+    mBuilder.declareNamedConst(constId, mBuilder.hashName(variable).data());
+
+    if (!mInGlobalScope)
+    {
+        mNodeData.emplace_back();
+        nodeDataInitRValue(&mNodeData.back(), constId, typeId);
+    }
+}
+
 void OutputSPIRVTraverser::declareSpecConst(TIntermDeclaration *decl)
 {
     const TIntermSequence &sequence = *decl->getSequence();
@@ -1167,7 +1203,21 @@ spirv::IdRef OutputSPIRVTraverser::createConstant(const TType &type,
         return mBuilder.getNullConstant(typeId);
     }
 
-    if (type.getBasicType() == EbtStruct)
+    if (type.isArray())
+    {
+        TType elementType(type);
+        elementType.toArrayElementType();
+
+        // If it's an array constant, get the constant id of each element.
+        for (unsigned int elementIndex = 0; elementIndex < type.getOutermostArraySize();
+             ++elementIndex)
+        {
+            componentIds.push_back(
+                createConstant(elementType, expectedBasicType, constUnion, false));
+            constUnion += elementType.getObjectSize();
+        }
+    }
+    else if (type.getBasicType() == EbtStruct)
     {
         // If it's a struct constant, get the constant id for each field.
         for (const TField *field : type.getStruct()->fields())
@@ -1216,7 +1266,7 @@ spirv::IdRef OutputSPIRVTraverser::createConstant(const TType &type,
     }
 
     // If this is a composite, create a composite constant from the components.
-    if (type.getBasicType() == EbtStruct || componentIds.size() > 1)
+    if (type.isArray() || type.getBasicType() == EbtStruct || componentIds.size() > 1)
     {
         return createComplexConstant(type, typeId, componentIds);
     }
@@ -1230,6 +1280,8 @@ spirv::IdRef OutputSPIRVTraverser::createComplexConstant(const TType &type,
                                                          spirv::IdRef typeId,
                                                          const spirv::IdRefList &parameters)
 {
+    ASSERT(!type.isScalar());
+
     if (type.isMatrix() && !type.isArray())
     {
         // Matrices are constructed from their columns.
@@ -1259,9 +1311,9 @@ spirv::IdRef OutputSPIRVTraverser::createConstructor(TIntermAggregate *node, spi
     const TIntermSequence &arguments = *node->getSequence();
     const TType &arg0Type            = arguments[0]->getAsTyped()->getType();
 
-    // In some cases, constructors with constant value are not folded.  If the constructor is a null
-    // value, use OpConstantNull to avoid creating a bunch of instructions.  Otherwise, the constant
-    // is created below.
+    // In some cases, constructors-with-constant values are not folded.  If the constructor is a
+    // null value, use OpConstantNull to avoid creating a bunch of instructions.  Otherwise, the
+    // constant is created below.
     if (node->isConstantNullValue())
     {
         return mBuilder.getNullConstant(typeId);
@@ -1303,10 +1355,22 @@ spirv::IdRef OutputSPIRVTraverser::createConstructor(TIntermAggregate *node, spi
     // Additionally, array and structs are constructed by OpCompositeConstruct followed by ids of
     // each parameter which must enumerate every individual element / field.
 
-    // In some cases, constructors with constant value are not folded.  That is handled here.
+    // In some cases, constructors-with-constant values are not folded such as for large constants.
+    // Some transformations may also produce constructors-with-constants instead of constants even
+    // for basic types.  These are handled here.
     if (node->hasConstantValue())
     {
-        return createComplexConstant(node->getType(), typeId, parameters);
+        if (!type.isScalar())
+        {
+            return createComplexConstant(node->getType(), typeId, parameters);
+        }
+
+        // If a transformation creates scalar(constant), return the constant as-is.
+        // visitConstantUnion has already cast it to the right type.
+        if (arguments[0]->getAsConstantUnion() != nullptr)
+        {
+            return parameters[0];
+        }
     }
 
     if (type.isArray() || type.getStruct() != nullptr)
@@ -2881,8 +2945,11 @@ spirv::IdRef OutputSPIRVTraverser::visitOperator(TIntermOperator *node, spirv::I
 
         const SpirvDecorations operandDecorations = mBuilder.getDecorations(firstOperandType);
 
+        const TType &matrixType =
+            firstOperandType.isMatrix() ? firstOperandType : secondChild->getType();
+
         const spirv::IdRef columnTypeId =
-            mBuilder.getBasicTypeId(firstOperandType.getBasicType(), firstOperandType.getRows());
+            mBuilder.getBasicTypeId(matrixType.getBasicType(), matrixType.getRows());
 
         if (binarySwapOperands)
         {
@@ -2895,7 +2962,7 @@ spirv::IdRef OutputSPIRVTraverser::visitOperator(TIntermOperator *node, spirv::I
         }
 
         // Extract and apply the operator to each column.
-        for (int columnIndex = 0; columnIndex < firstOperandType.getCols(); ++columnIndex)
+        for (int columnIndex = 0; columnIndex < matrixType.getCols(); ++columnIndex)
         {
             spirv::IdRef columnIdA = parameters[0];
             if (firstOperandType.isMatrix())
@@ -4723,9 +4790,10 @@ void OutputSPIRVTraverser::visitSymbol(TIntermSymbol *node)
 
     const spirv::IdRef typeId = mBuilder.getTypeData(type, typeSpec).id;
 
-    // If the symbol is a const variable, such as a const function parameter or specialization
-    // constant, create an rvalue.
-    if (type.getQualifier() == EvqParamConst || type.getQualifier() == EvqSpecConst)
+    // If the symbol is a const variable, a const function parameter or specialization constant,
+    // create an rvalue.
+    if (type.getQualifier() == EvqConst || type.getQualifier() == EvqParamConst ||
+        type.getQualifier() == EvqSpecConst)
     {
         ASSERT(interfaceBlock == nullptr);
         ASSERT(mSymbolIdMap.count(symbol) > 0);
@@ -4776,17 +4844,18 @@ void OutputSPIRVTraverser::visitConstantUnion(TIntermConstantUnion *node)
     {
         TIntermAggregate *parentAggregate = parent->getAsAggregate();
 
-        // There are three possibilities:
+        // Note that only constructors can cast a type.  There are two possibilities:
         //
         // - It's a struct constructor: The basic type must match that of the corresponding field of
         //   the struct.
         // - It's a non struct constructor: The basic type must match that of the type being
         //   constructed.
-        // - It's a function call: The basic type must match that of the corresponding argument.
         if (parentAggregate->isConstructor())
         {
-            const TStructure *structure = parentAggregate->getType().getStruct();
-            if (structure != nullptr)
+            const TType &parentType     = parentAggregate->getType();
+            const TStructure *structure = parentType.getStruct();
+
+            if (structure != nullptr && !parentType.isArray())
             {
                 expectedBasicType = structure->fields()[childIndex]->type()->getBasicType();
             }
@@ -4795,13 +4864,7 @@ void OutputSPIRVTraverser::visitConstantUnion(TIntermConstantUnion *node)
                 expectedBasicType = parentAggregate->getType().getBasicType();
             }
         }
-        else
-        {
-            expectedBasicType =
-                parentAggregate->getFunction()->getParam(childIndex)->getType().getBasicType();
-        }
     }
-    // TODO: other node types such as binary, ternary etc.  http://anglebug.com/4889
 
     const spirv::IdRef typeId  = mBuilder.getTypeData(type, {}).id;
     const spirv::IdRef constId = createConstant(type, expectedBasicType, node->getConstantValue(),
@@ -4985,7 +5048,6 @@ bool OutputSPIRVTraverser::visitBinary(Visit visit, TIntermBinary *node)
             const spirv::IdRef result = visitOperator(node, resultTypeId);
             mNodeData.pop_back();
             nodeDataInitRValue(&mNodeData.back(), result, resultTypeId);
-            // TODO: Handle NoContraction decoration.  http://anglebug.com/4889
             break;
     }
 
@@ -5757,6 +5819,12 @@ bool OutputSPIRVTraverser::visitDeclaration(Visit visit, TIntermDeclaration *nod
     if (qualifier == EvqSpecConst)
     {
         declareSpecConst(node);
+        return false;
+    }
+    // Similarly, constant declarations are turned into actual constants.
+    if (qualifier == EvqConst)
+    {
+        declareConst(node);
         return false;
     }
 

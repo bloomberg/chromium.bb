@@ -13,6 +13,8 @@
 #include "SkylineStorage.h"
 #include "SkylineMatrixBase.h"
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \ingroup Skyline_Module

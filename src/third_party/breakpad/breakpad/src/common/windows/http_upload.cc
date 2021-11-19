@@ -262,7 +262,7 @@ namespace {
         NULL,    // password
         INTERNET_SERVICE_HTTP,
         0,       // flags
-        NULL));  // context
+        0));  // context
     if (!connection.get()) {
       return false;
     }
@@ -276,7 +276,7 @@ namespace {
         NULL,    // referer
         NULL,    // agent type
         http_open_flags,
-        NULL));  // context
+        0));  // context
     if (!request.get()) {
       return false;
     }

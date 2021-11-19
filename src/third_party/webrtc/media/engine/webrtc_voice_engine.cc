@@ -609,10 +609,6 @@ bool WebRtcVoiceEngine::ApplyOptions(const AudioOptions& options_in) {
     apm_config.gain_controller1.mode =
         apm_config.gain_controller1.kAdaptiveAnalog;
 #endif
-    constexpr int kMinVolumeLevel = 0;
-    constexpr int kMaxVolumeLevel = 255;
-    apm_config.gain_controller1.analog_level_minimum = kMinVolumeLevel;
-    apm_config.gain_controller1.analog_level_maximum = kMaxVolumeLevel;
   }
   if (options.tx_agc_target_dbov) {
     apm_config.gain_controller1.target_level_dbfs = *options.tx_agc_target_dbov;
@@ -666,12 +662,10 @@ WebRtcVoiceEngine::GetRtpHeaderExtensions() const {
   RTC_DCHECK(signal_thread_checker_.IsCurrent());
   std::vector<webrtc::RtpHeaderExtensionCapability> result;
   int id = 1;
-  for (const auto& uri :
-       {webrtc::RtpExtension::kAudioLevelUri,
-        webrtc::RtpExtension::kAbsSendTimeUri,
-        webrtc::RtpExtension::kTransportSequenceNumberUri,
-        webrtc::RtpExtension::kMidUri, webrtc::RtpExtension::kRidUri,
-        webrtc::RtpExtension::kRepairedRidUri}) {
+  for (const auto& uri : {webrtc::RtpExtension::kAudioLevelUri,
+                          webrtc::RtpExtension::kAbsSendTimeUri,
+                          webrtc::RtpExtension::kTransportSequenceNumberUri,
+                          webrtc::RtpExtension::kMidUri}) {
     result.emplace_back(uri, id++, webrtc::RtpTransceiverDirection::kSendRecv);
   }
   return result;
@@ -1384,7 +1378,7 @@ bool WebRtcVoiceMediaChannel::SetSendParameters(
     return false;
   }
 
-  if (!ValidateRtpExtensions(params.extensions)) {
+  if (!ValidateRtpExtensions(params.extensions, send_rtp_extensions_)) {
     return false;
   }
 
@@ -1430,7 +1424,7 @@ bool WebRtcVoiceMediaChannel::SetRecvParameters(
     return false;
   }
 
-  if (!ValidateRtpExtensions(params.extensions)) {
+  if (!ValidateRtpExtensions(params.extensions, recv_rtp_extensions_)) {
     return false;
   }
   std::vector<webrtc::RtpExtension> filtered_extensions = FilterRtpExtensions(

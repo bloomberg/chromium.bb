@@ -11,6 +11,8 @@
 #ifndef EIGEN_BIDIAGONALIZATION_H
 #define EIGEN_BIDIAGONALIZATION_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

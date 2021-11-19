@@ -23,28 +23,19 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::GroupDecoration);
 namespace tint {
 namespace ast {
 
-GroupDecoration::GroupDecoration(ProgramID program_id,
-                                 const Source& source,
-                                 uint32_t val)
-    : Base(program_id, source), value_(val) {}
+GroupDecoration::GroupDecoration(ProgramID pid, const Source& src, uint32_t val)
+    : Base(pid, src), value(val) {}
 
 GroupDecoration::~GroupDecoration() = default;
 
-std::string GroupDecoration::name() const {
+std::string GroupDecoration::Name() const {
   return "group";
 }
 
-void GroupDecoration::to_str(const sem::Info&,
-                             std::ostream& out,
-                             size_t indent) const {
-  make_indent(out, indent);
-  out << "GroupDecoration{" << value_ << "}" << std::endl;
-}
-
-GroupDecoration* GroupDecoration::Clone(CloneContext* ctx) const {
+const GroupDecoration* GroupDecoration::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<GroupDecoration>(src, value_);
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<GroupDecoration>(src, value);
 }
 
 }  // namespace ast

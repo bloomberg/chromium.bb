@@ -27,6 +27,8 @@
 #define eigen_internal_assert(X) assert(X);
 #endif
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 #ifdef EIGEN_BDCSVD_DEBUG_VERBOSE

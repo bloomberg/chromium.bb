@@ -148,8 +148,17 @@ VkFormat GetImageFormat(const VkImageCreateInfo *pCreateInfo)
 			}
 			break;
 #endif
+		// We support these extensions, but they don't affect the image format.
+		case VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO:
+		case VK_STRUCTURE_TYPE_IMAGE_SWAPCHAIN_CREATE_INFO_KHR:
+		case VK_STRUCTURE_TYPE_IMAGE_FORMAT_LIST_CREATE_INFO:
+		case VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_CREATE_INFO:
+			break;
+		case VK_STRUCTURE_TYPE_MAX_ENUM:
+			// dEQP tests that this value is ignored.
+			break;
 		default:
-			LOG_TRAP("pCreateInfo->pNext->sType = %s", vk::Stringify(nextInfo->sType).c_str());
+			UNSUPPORTED("pCreateInfo->pNext->sType = %s", vk::Stringify(nextInfo->sType).c_str());
 			break;
 		}
 
@@ -346,6 +355,27 @@ void Image::getSubresourceLayout(const VkImageSubresource *pSubresource, VkSubre
 }
 
 void Image::copyTo(Image *dstImage, const VkImageCopy &region) const
+{
+	static constexpr VkImageAspectFlags CombinedDepthStencilAspects =
+	    VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+	if((region.srcSubresource.aspectMask == CombinedDepthStencilAspects) &&
+	   (region.dstSubresource.aspectMask == CombinedDepthStencilAspects))
+	{
+		// Depth and stencil can be specified together, copy each separately
+		VkImageCopy singleAspectRegion = region;
+		singleAspectRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		singleAspectRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		copySingleAspectTo(dstImage, singleAspectRegion);
+		singleAspectRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		singleAspectRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_STENCIL_BIT;
+		copySingleAspectTo(dstImage, singleAspectRegion);
+		return;
+	}
+
+	copySingleAspectTo(dstImage, region);
+}
+
+void Image::copySingleAspectTo(Image *dstImage, const VkImageCopy &region) const
 {
 	// Image copy does not perform any conversion, it simply copies memory from
 	// an image to another image that has the same number of bytes per pixel.
@@ -988,7 +1018,9 @@ const Image *Image::getSampledImage(const vk::Format &imageViewFormat) const
 
 void Image::blitTo(Image *dstImage, const VkImageBlit &region, VkFilter filter) const
 {
-	device->getBlitter()->blit(this, dstImage, region, filter);
+	prepareForSampling({ region.srcSubresource.aspectMask, region.srcSubresource.mipLevel, 1,
+	                     region.srcSubresource.baseArrayLayer, region.srcSubresource.layerCount });
+	device->getBlitter()->blit(decompressedImage ? decompressedImage : this, dstImage, region, filter);
 }
 
 void Image::copyTo(uint8_t *dst, unsigned int dstPitch) const
@@ -1138,7 +1170,7 @@ void Image::contentsChanged(const VkImageSubresourceRange &subresourceRange, Con
 	}
 }
 
-void Image::prepareForSampling(const VkImageSubresourceRange &subresourceRange)
+void Image::prepareForSampling(const VkImageSubresourceRange &subresourceRange) const
 {
 	// If this isn't a cube or a compressed image, there's nothing to do
 	if(!requiresPreprocessing())
@@ -1229,7 +1261,7 @@ void Image::prepareForSampling(const VkImageSubresourceRange &subresourceRange)
 	}
 }
 
-void Image::decompress(const VkImageSubresource &subresource)
+void Image::decompress(const VkImageSubresource &subresource) const
 {
 	switch(format)
 	{
@@ -1299,7 +1331,7 @@ void Image::decompress(const VkImageSubresource &subresource)
 	}
 }
 
-void Image::decodeETC2(const VkImageSubresource &subresource)
+void Image::decodeETC2(const VkImageSubresource &subresource) const
 {
 	ASSERT(decompressedImage);
 
@@ -1337,7 +1369,7 @@ void Image::decodeETC2(const VkImageSubresource &subresource)
 	}
 }
 
-void Image::decodeBC(const VkImageSubresource &subresource)
+void Image::decodeBC(const VkImageSubresource &subresource) const
 {
 	ASSERT(decompressedImage);
 
@@ -1360,7 +1392,7 @@ void Image::decodeBC(const VkImageSubresource &subresource)
 	}
 }
 
-void Image::decodeASTC(const VkImageSubresource &subresource)
+void Image::decodeASTC(const VkImageSubresource &subresource) const
 {
 	ASSERT(decompressedImage);
 

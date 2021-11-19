@@ -10,8 +10,8 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/sequence_manager/sequence_manager.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
@@ -232,15 +232,17 @@ BrowserTaskQueues::CreateBrowserTaskRunners() const {
 }
 
 void BrowserTaskQueues::PostFeatureListInitializationSetup() {
-  if (base::FeatureList::IsEnabled(features::kPrioritizeBootstrapTasks)) {
-    GetBrowserTaskQueue(QueueType::kBootstrap)
-        ->SetQueuePriority(QueuePriority::kHighestPriority);
+  // NOTE: This queue will not be used if the |kTreatBootstrapAsDefault|
+  // feature is enabled (see browser_task_executor.cc).
+  GetBrowserTaskQueue(QueueType::kBootstrap)
+      ->SetQueuePriority(QueuePriority::kHighestPriority);
 
-    // Navigation and preconnection tasks are also important during startup so
-    // prioritize them too.
-    GetBrowserTaskQueue(QueueType::kPreconnection)
-        ->SetQueuePriority(QueuePriority::kHighPriority);
-  }
+  // Preconnection tasks are also important during startup so prioritize this
+  // queue too. NOTE: This queue will not be used if the
+  // |kTreatPreconnectAsDefault| feature is enabled (see
+  // browser_task_executor.cc).
+  GetBrowserTaskQueue(QueueType::kPreconnection)
+      ->SetQueuePriority(QueuePriority::kHighPriority);
 }
 
 void BrowserTaskQueues::EnableAllQueues() {

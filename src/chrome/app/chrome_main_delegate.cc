@@ -22,6 +22,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/threading/hang_watcher.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -131,6 +132,7 @@
 #include "chromeos/memory/kstaled.h"
 #include "chromeos/memory/memory.h"
 #include "chromeos/memory/swap_configuration.h"
+#include "ui/lottie/resource.h"  // nogncheck
 #endif
 
 #if defined(OS_ANDROID)
@@ -723,6 +725,9 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
 #endif
 
   base::HangWatcher::InitializeOnMainThread();
+
+  base::sequence_manager::internal::SequenceManagerImpl::
+      MaybeSetNoWakeUpsForCanceledTasks();
 }
 
 #if defined(OS_WIN)
@@ -735,7 +740,7 @@ bool ChromeMainDelegate::ShouldHandleConsoleControlEvents() {
 
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::BootTimesRecorder::Get()->SaveChromeMainStats();
+  ash::BootTimesRecorder::Get()->SaveChromeMainStats();
 #endif
 
   const base::CommandLine& command_line =
@@ -1094,6 +1099,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
       // See comment at ReadAppLocale() for why we do this.
       locale = chromeos::startup_settings_cache::ReadAppLocale();
     }
+
+    ui::ResourceBundle::SetParseLottieAsStillImage(
+        &lottie::ParseLottieAsStillImage);
 #endif
 #if defined(OS_ANDROID)
     // The renderer sandbox prevents us from accessing our .pak files directly.

@@ -831,6 +831,11 @@ class MockQuicCryptoStream : public QuicCryptoStream {
   bool ValidateAddressToken(absl::string_view /*token*/) const override {
     return true;
   }
+  const CachedNetworkParameters* PreviousCachedNetworkParams() const override {
+    return nullptr;
+  }
+  void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters /*cached_network_params*/) override {}
   void OnConnectionClosed(QuicErrorCode /*error*/,
                           ConnectionCloseSource /*source*/) override {}
   HandshakeState GetHandshakeState() const override { return HANDSHAKE_START; }
@@ -1023,10 +1028,20 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
     if (early_data_enabled_.has_value()) {
       ssl_config.early_data_enabled = *early_data_enabled_;
     }
+    if (client_cert_mode_.has_value()) {
+      ssl_config.client_cert_mode = *client_cert_mode_;
+    }
+
     return ssl_config;
   }
 
   void set_early_data_enabled(bool enabled) { early_data_enabled_ = enabled; }
+
+  void set_client_cert_mode(ClientCertMode mode) {
+    if (support_client_cert()) {
+      client_cert_mode_ = mode;
+    }
+  }
 
  private:
   MockQuicSessionVisitor visitor_;
@@ -1034,6 +1049,9 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   // If not nullopt, override the early_data_enabled value from base class'
   // ssl_config.
   absl::optional<bool> early_data_enabled_;
+  // If not nullopt, override the client_cert_mode value from base class'
+  // ssl_config.
+  absl::optional<ClientCertMode> client_cert_mode_;
 };
 
 // A test implementation of QuicClientPushPromiseIndex::Delegate.

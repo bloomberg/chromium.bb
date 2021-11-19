@@ -59,13 +59,13 @@ struct EGLPlatformParameters
     auto tie() const
     {
         return std::tie(renderer, majorVersion, minorVersion, deviceType, presentPath,
-                        debugLayersEnabled, contextVirtualization, transformFeedbackFeature,
-                        allocateNonZeroMemoryFeature, emulateCopyTexImage2DFromRenderbuffers,
-                        shaderStencilOutputFeature, genMultipleMipsPerPassFeature, platformMethods,
-                        robustness, emulatedPrerotation, asyncCommandQueueFeatureVulkan,
+                        debugLayersEnabled, transformFeedbackFeature, allocateNonZeroMemoryFeature,
+                        emulateCopyTexImage2DFromRenderbuffers, shaderStencilOutputFeature,
+                        genMultipleMipsPerPassFeature, platformMethods, robustness,
+                        emulatedPrerotation, asyncCommandQueueFeatureVulkan,
                         hasExplicitMemBarrierFeatureMtl, hasCheapRenderPassFeatureMtl,
                         forceBufferGPUStorageFeatureMtl, supportsVulkanViewportFlip, emulatedVAOs,
-                        directSPIRVGeneration, captureLimits, forceRobustResourceInit,
+                        generateSPIRVThroughGlslang, captureLimits, forceRobustResourceInit,
                         directMetalGeneration, forceInitShaderVariables, forceVulkanFallbackFormat);
     }
 
@@ -75,7 +75,6 @@ struct EGLPlatformParameters
     EGLint deviceType                             = EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE;
     EGLint presentPath                            = EGL_DONT_CARE;
     EGLint debugLayersEnabled                     = EGL_DONT_CARE;
-    EGLint contextVirtualization                  = EGL_DONT_CARE;
     EGLint robustness                             = EGL_DONT_CARE;
     EGLint transformFeedbackFeature               = EGL_DONT_CARE;
     EGLint allocateNonZeroMemoryFeature           = EGL_DONT_CARE;
@@ -89,7 +88,7 @@ struct EGLPlatformParameters
     EGLint forceBufferGPUStorageFeatureMtl        = EGL_DONT_CARE;
     EGLint supportsVulkanViewportFlip             = EGL_DONT_CARE;
     EGLint emulatedVAOs                           = EGL_DONT_CARE;
-    EGLint directSPIRVGeneration                  = EGL_DONT_CARE;
+    EGLint generateSPIRVThroughGlslang            = EGL_DONT_CARE;
     EGLint captureLimits                          = EGL_DONT_CARE;
     EGLint forceRobustResourceInit                = EGL_DONT_CARE;
     EGLint directMetalGeneration                  = EGL_DONT_CARE;

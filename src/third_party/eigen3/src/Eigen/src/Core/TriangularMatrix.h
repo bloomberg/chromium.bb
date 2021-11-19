@@ -11,6 +11,8 @@
 #ifndef EIGEN_TRIANGULARMATRIX_H
 #define EIGEN_TRIANGULARMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

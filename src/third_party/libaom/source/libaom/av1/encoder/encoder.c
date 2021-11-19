@@ -760,12 +760,17 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf,
         aom_memalign(32, MAX_SB_SIZE * MAX_SB_SIZE * sizeof(*x->tmp_conv_dst)));
     x->e_mbd.tmp_conv_dst = x->tmp_conv_dst;
   }
-  for (int i = 0; i < 2; ++i) {
-    if (x->tmp_pred_bufs[i] == NULL) {
-      CHECK_MEM_ERROR(cm, x->tmp_pred_bufs[i],
-                      aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
-                                           sizeof(*x->tmp_pred_bufs[i])));
-      x->e_mbd.tmp_obmc_bufs[i] = x->tmp_pred_bufs[i];
+  // The buffers 'tmp_pred_bufs[]' are used in inter frames to store temporary
+  // prediction results. Hence, the memory allocation is avoided for allintra
+  // encode.
+  if (cpi->oxcf.kf_cfg.key_freq_max != 0) {
+    for (int i = 0; i < 2; ++i) {
+      if (x->tmp_pred_bufs[i] == NULL) {
+        CHECK_MEM_ERROR(cm, x->tmp_pred_bufs[i],
+                        aom_memalign(32, 2 * MAX_MB_PLANE * MAX_SB_SQUARE *
+                                             sizeof(*x->tmp_pred_bufs[i])));
+        x->e_mbd.tmp_obmc_bufs[i] = x->tmp_pred_bufs[i];
+      }
     }
   }
 
@@ -2074,10 +2079,7 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
   if (!is_stat_generation_stage(cpi)) av1_init_cdef_worker(cpi);
 
 #if !CONFIG_REALTIME_ONLY
-  const int use_restoration = cm->seq_params->enable_restoration &&
-                              !cm->features.all_lossless &&
-                              !cm->tiles.large_scale;
-  if (use_restoration) {
+  if (is_restoration_used(cm)) {
     const int frame_width = cm->superres_upscaled_width;
     const int frame_height = cm->superres_upscaled_height;
     set_restoration_unit_size(frame_width, frame_height,
@@ -2209,9 +2211,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
       !cm->features.coded_lossless && !cm->tiles.large_scale;
   const int use_cdef = cm->seq_params->enable_cdef &&
                        !cm->features.coded_lossless && !cm->tiles.large_scale;
-  const int use_restoration = cm->seq_params->enable_restoration &&
-                              !cm->features.all_lossless &&
-                              !cm->tiles.large_scale;
+  const int use_restoration = is_restoration_used(cm);
   const int cur_width = cm->cur_frame->width;
   const int cur_height = cm->cur_frame->height;
   const int cur_width_mib = cm->mi_params.mi_cols * MI_SIZE;
@@ -2305,8 +2305,7 @@ static int encode_without_recode(AV1_COMP *cpi) {
     variance_partition_alloc(cpi);
 
   if (cm->current_frame.frame_type == KEY_FRAME ||
-      ((sf->inter_sf.extra_prune_warped &&
-        cm->current_frame.refresh_frame_flags & (1 << GOLDEN_FRAME))))
+      ((sf->inter_sf.extra_prune_warped && cpi->refresh_frame.golden_frame)))
     copy_frame_prob_info(cpi);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
@@ -2432,16 +2431,16 @@ static int encode_without_recode(AV1_COMP *cpi) {
   // transform / motion compensation build reconstruction frame
   av1_encode_frame(cpi);
 
+  // Update some stats from cyclic refresh.
+  if (q_cfg->aq_mode == CYCLIC_REFRESH_AQ && !frame_is_intra_only(cm))
+    av1_cyclic_refresh_postencode(cpi);
+
   // Adjust the refresh of the golden (longer-term) reference based on QP
   // selected for this frame. This is for CBR with 1 layer/non-svc RTC mode.
   if (!frame_is_intra_only(cm) && cpi->oxcf.rc_cfg.mode == AOM_CBR &&
       cpi->oxcf.mode == REALTIME && svc->number_spatial_layers == 1 &&
       svc->number_temporal_layers == 1)
     av1_adjust_gf_refresh_qp_one_pass_rt(cpi);
-
-  // Update some stats from cyclic refresh.
-  if (q_cfg->aq_mode == CYCLIC_REFRESH_AQ && !frame_is_intra_only(cm))
-    av1_cyclic_refresh_postencode(cpi);
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, av1_encode_frame_time);
@@ -3144,6 +3143,33 @@ static int encode_with_and_without_superres(AV1_COMP *cpi, size_t *size,
   return err;
 }
 
+// Conditions to disable cdf_update mode in selective mode for real-time.
+// Handle case for layers, scene change, and resizing.
+static int selective_disable_cdf_rtc(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  RATE_CONTROL *const rc = &cpi->rc;
+  // For single layer.
+  if (cpi->svc.number_spatial_layers == 1 &&
+      cpi->svc.number_temporal_layers == 1) {
+    // Don't disable on intra_only, scene change (high_source_sad = 1),
+    // or resized frame. Don't disable for some consecutive frames after
+    // key, or for some consecutive frames before the golden_refresh
+    // (cpi->rc.frames_till_gf_update_due < 6).
+    // To avoid quality loss for now, force enable at every x frames.
+    if (frame_is_intra_only(cm) || is_frame_resize_pending(cpi) ||
+        rc->high_source_sad || rc->frames_since_key < 10 ||
+        rc->frames_till_gf_update_due < 5 ||
+        cm->current_frame.frame_number % 10 == 0)
+      return 0;
+    else
+      return 1;
+  } else if (cpi->svc.number_temporal_layers > 1) {
+    // Disable only on top temporal enhancement layer for now.
+    return cpi->svc.temporal_layer_id == cpi->svc.number_temporal_layers - 1;
+  }
+  return 1;
+}
+
 #if !CONFIG_REALTIME_ONLY
 static void subtract_stats(FIRSTPASS_STATS *section,
                            const FIRSTPASS_STATS *frame) {
@@ -3361,7 +3387,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // Never drop on key frame.
   if (has_no_stats_stage(cpi) && oxcf->rc_cfg.mode == AOM_CBR &&
       current_frame->frame_type != KEY_FRAME) {
-    if (av1_rc_drop_frame(cpi)) {
+    if (cpi->oxcf.rc_cfg.target_bandwidth == 0 || av1_rc_drop_frame(cpi)) {
       av1_setup_frame_size(cpi);
       av1_rc_postencode_update_drop_frame(cpi);
       release_scaled_references(cpi);
@@ -3436,21 +3462,12 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     case 2:
       // Strategically determine at which frames to do CDF update.
       // Currently only enable CDF update for all-intra and no-show frames(1.5%
-      // compression loss).
-      // TODO(huisu@google.com): design schemes for various trade-offs between
-      // compression quality and decoding speed.
+      // compression loss) for good qualiy or allintra mode.
       if (oxcf->mode == GOOD || oxcf->mode == ALLINTRA) {
         features->disable_cdf_update =
             (frame_is_intra_only(cm) || !cm->show_frame) ? 0 : 1;
       } else {
-        if (cpi->svc.number_spatial_layers == 1 &&
-            cpi->svc.number_temporal_layers == 1)
-          features->disable_cdf_update =
-              !((cm->current_frame.frame_number % 2) == 0);
-        else if (cpi->svc.number_temporal_layers > 1)
-          // Disable only on top temporal enhancement layer for now.
-          features->disable_cdf_update = (cpi->svc.temporal_layer_id ==
-                                          cpi->svc.number_temporal_layers - 1);
+        features->disable_cdf_update = selective_disable_cdf_rtc(cpi);
       }
       break;
   }
@@ -4097,10 +4114,33 @@ static void update_end_of_frame_stats(AV1_COMP *cpi) {
 }
 #endif
 
+// Updates frame level stats related to global motion
+static AOM_INLINE void update_gm_stats(AV1_COMP *cpi) {
+  FRAME_UPDATE_TYPE update_type =
+      cpi->ppi->gf_group.update_type[cpi->gf_frame_index];
+  int i, is_gm_present = 0;
+
+  // Check if the current frame has any valid global motion model across its
+  // reference frames
+  for (i = 0; i < REF_FRAMES; i++) {
+    if (cpi->common.global_motion[i].wmtype != IDENTITY) {
+      is_gm_present = 1;
+      break;
+    }
+  }
+  if (cpi->ppi->valid_gm_model_found[update_type] == INT32_MAX) {
+    cpi->ppi->valid_gm_model_found[update_type] = is_gm_present;
+  } else {
+    cpi->ppi->valid_gm_model_found[update_type] |= is_gm_present;
+  }
+}
+
 void av1_post_encode_updates(AV1_COMP *const cpi,
                              const AV1_COMP_DATA *const cpi_data) {
   AV1_PRIMARY *const ppi = cpi->ppi;
   AV1_COMMON *const cm = &cpi->common;
+
+  update_gm_stats(cpi);
 
 #if !CONFIG_REALTIME_ONLY
   // Update the total stats remaining structure.

@@ -27,9 +27,9 @@
 #include "fxjs/cjs_icon.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/js_resources.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
-#include "third_party/base/optional.h"
 #include "v8/include/v8-container.h"
 
 namespace {
@@ -63,7 +63,7 @@ void UpdateFormField(CPDFSDK_FormFillEnvironment* pFormFillEnv,
     if (IsComboBoxOrTextField(pFormField)) {
       for (auto& pObserved : widgets) {
         if (pObserved) {
-          Optional<WideString> sValue =
+          absl::optional<WideString> sValue =
               ToCPDFSDKWidget(pObserved.Get())->OnFormat();
           if (pObserved) {  // Not redundant, may be clobbered by OnFormat.
             auto* pWidget = ToCPDFSDKWidget(pObserved.Get());
@@ -75,7 +75,7 @@ void UpdateFormField(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       for (auto& pObserved : widgets) {
         if (pObserved) {
           auto* pWidget = ToCPDFSDKWidget(pObserved.Get());
-          pWidget->ResetAppearance(pdfium::nullopt,
+          pWidget->ResetAppearance(absl::nullopt,
                                    CPDFSDK_Widget::kValueUnchanged);
         }
       }
@@ -96,7 +96,7 @@ void UpdateFormField(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       if (pObserved) {
         CPDFSDK_Widget* pWidget = ToCPDFSDKWidget(pObserved.Get());
         pWidget->GetInteractiveForm()->GetFormFillEnv()->UpdateAllViews(
-            nullptr, pWidget);
+            pWidget);
       }
     }
   }
@@ -121,12 +121,12 @@ void UpdateFormControl(CPDFSDK_FormFillEnvironment* pFormFillEnv,
       FormFieldType fieldType = pWidget->GetFieldType();
       if (fieldType == FormFieldType::kComboBox ||
           fieldType == FormFieldType::kTextField) {
-        Optional<WideString> sValue = pWidget->OnFormat();
+        absl::optional<WideString> sValue = pWidget->OnFormat();
         if (!observed_widget)
           return;
         pWidget->ResetAppearance(sValue, CPDFSDK_Widget::kValueUnchanged);
       } else {
-        pWidget->ResetAppearance(pdfium::nullopt,
+        pWidget->ResetAppearance(absl::nullopt,
                                  CPDFSDK_Widget::kValueUnchanged);
       }
       if (!observed_widget)
@@ -135,7 +135,7 @@ void UpdateFormControl(CPDFSDK_FormFillEnvironment* pFormFillEnv,
 
     if (bRefresh) {
       CPDFSDK_InteractiveForm* pWidgetForm = pWidget->GetInteractiveForm();
-      pWidgetForm->GetFormFillEnv()->UpdateAllViews(nullptr, pWidget);
+      pWidgetForm->GetFormFillEnv()->UpdateAllViews(pWidget);
     }
   }
 
@@ -151,7 +151,7 @@ struct FieldNameData {
   int control_index;
 };
 
-Optional<FieldNameData> ParseFieldName(const WideString& field_name) {
+absl::optional<FieldNameData> ParseFieldName(const WideString& field_name) {
   auto reverse_it = field_name.rbegin();
   while (reverse_it != field_name.rend()) {
     if (*reverse_it == L'.')
@@ -159,14 +159,14 @@ Optional<FieldNameData> ParseFieldName(const WideString& field_name) {
     ++reverse_it;
   }
   if (reverse_it == field_name.rend()) {
-    return pdfium::nullopt;
+    return absl::nullopt;
   }
   WideString suffixal = field_name.Last(reverse_it - field_name.rbegin());
   int control_index = FXSYS_wtoi(suffixal.c_str());
   if (control_index == 0) {
     suffixal.TrimRight(L' ');
     if (suffixal != L"0") {
-      return pdfium::nullopt;
+      return absl::nullopt;
     }
   }
   return FieldNameData(field_name.First(field_name.rend() - reverse_it - 1),
@@ -655,7 +655,7 @@ bool CJS_Field::AttachField(CJS_Document* pDocument,
   swFieldNameTemp.Replace(L"..", L".");
 
   if (pForm->CountFields(swFieldNameTemp) <= 0) {
-    Optional<FieldNameData> parsed_data = ParseFieldName(swFieldNameTemp);
+    absl::optional<FieldNameData> parsed_data = ParseFieldName(swFieldNameTemp);
     if (!parsed_data.has_value())
       return false;
 
@@ -1918,7 +1918,7 @@ CJS_Result CJS_Field::get_text_color(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   CPDF_DefaultAppearance FieldAppearance = pFormControl->GetDefaultAppearance();
-  Optional<CFX_Color::TypeAndARGB> maybe_type_argb_pair =
+  absl::optional<CFX_Color::TypeAndARGB> maybe_type_argb_pair =
       FieldAppearance.GetColorARGB();
 
   CFX_Color crRet;
@@ -1969,7 +1969,8 @@ CJS_Result CJS_Field::get_text_font(CJS_Runtime* pRuntime) {
     return CJS_Result::Failure(JSMessage::kObjectTypeError);
   }
 
-  Optional<WideString> wsFontName = pFormControl->GetDefaultControlFontName();
+  absl::optional<WideString> wsFontName =
+      pFormControl->GetDefaultControlFontName();
   if (!wsFontName.has_value())
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
@@ -2085,7 +2086,7 @@ CJS_Result CJS_Field::get_value(CJS_Runtime* pRuntime) {
           iIndex = pFormField->GetSelectedIndex(i);
           ElementValue = pRuntime->NewString(
               pFormField->GetOptionValue(iIndex).AsStringView());
-          if (wcslen(pRuntime->ToWideString(ElementValue).c_str()) == 0) {
+          if (pRuntime->ToWideString(ElementValue).IsEmpty()) {
             ElementValue = pRuntime->NewString(
                 pFormField->GetOptionLabel(iIndex).AsStringView());
           }
@@ -2263,7 +2264,8 @@ CJS_Result CJS_Field::buttonGetIcon(
   if (pObj.IsEmpty())
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  auto* pJS_Icon = static_cast<CJS_Icon*>(CFXJS_Engine::GetObjectPrivate(pObj));
+  auto* pJS_Icon = static_cast<CJS_Icon*>(
+      CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pObj));
   return pJS_Icon ? CJS_Result::Success(pJS_Icon->ToV8Object())
                   : CJS_Result::Failure(JSMessage::kBadObjectError);
 }
@@ -2376,8 +2378,8 @@ CJS_Result CJS_Field::getArray(
     if (pObj.IsEmpty())
       return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-    auto* pJSField =
-        static_cast<CJS_Field*>(CFXJS_Engine::GetObjectPrivate(pObj));
+    auto* pJSField = static_cast<CJS_Field*>(
+        CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pObj));
     pJSField->AttachField(m_pJSDoc.Get(), *pStr);
     pRuntime->PutArrayElement(FormFieldArray, j++,
                               pJSField

@@ -429,34 +429,35 @@ WideString CPDFSDK_Widget::GetName() const {
 }
 #endif  // PDF_ENABLE_XFA
 
-Optional<FX_COLORREF> CPDFSDK_Widget::GetFillColor() const {
+absl::optional<FX_COLORREF> CPDFSDK_Widget::GetFillColor() const {
   CFX_Color::TypeAndARGB type_argb_pair =
       GetFormControl()->GetColorARGB(pdfium::appearance::kBG);
 
   if (type_argb_pair.color_type == CFX_Color::Type::kTransparent)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return ArgbToColorRef(type_argb_pair.argb);
 }
 
-Optional<FX_COLORREF> CPDFSDK_Widget::GetBorderColor() const {
+absl::optional<FX_COLORREF> CPDFSDK_Widget::GetBorderColor() const {
   CFX_Color::TypeAndARGB type_argb_pair =
       GetFormControl()->GetColorARGB(pdfium::appearance::kBC);
   if (type_argb_pair.color_type == CFX_Color::Type::kTransparent)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return ArgbToColorRef(type_argb_pair.argb);
 }
 
-Optional<FX_COLORREF> CPDFSDK_Widget::GetTextColor() const {
+absl::optional<FX_COLORREF> CPDFSDK_Widget::GetTextColor() const {
   CPDF_DefaultAppearance da = GetFormControl()->GetDefaultAppearance();
-  Optional<CFX_Color::TypeAndARGB> maybe_type_argb_pair = da.GetColorARGB();
+  absl::optional<CFX_Color::TypeAndARGB> maybe_type_argb_pair =
+      da.GetColorARGB();
 
   if (!maybe_type_argb_pair.has_value())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   if (maybe_type_argb_pair.value().color_type == CFX_Color::Type::kTransparent)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return ArgbToColorRef(maybe_type_argb_pair.value().argb);
 }
@@ -612,13 +613,13 @@ void CPDFSDK_Widget::ResetXFAAppearance(ValueChanged bValueChanged) {
       break;
     }
     default:
-      ResetAppearance(pdfium::nullopt, kValueUnchanged);
+      ResetAppearance(absl::nullopt, kValueUnchanged);
       break;
   }
 }
 #endif  // PDF_ENABLE_XFA
 
-void CPDFSDK_Widget::ResetAppearance(Optional<WideString> sValue,
+void CPDFSDK_Widget::ResetAppearance(absl::optional<WideString> sValue,
                                      ValueChanged bValueChanged) {
   SetAppModified();
 
@@ -653,7 +654,7 @@ void CPDFSDK_Widget::ResetAppearance(Optional<WideString> sValue,
   m_pAnnot->ClearCachedAP();
 }
 
-Optional<WideString> CPDFSDK_Widget::OnFormat() {
+absl::optional<WideString> CPDFSDK_Widget::OnFormat() {
   CPDF_FormField* pFormField = GetFormField();
   DCHECK(pFormField);
   return m_pInteractiveForm->OnFormat(pFormField);
@@ -662,13 +663,12 @@ Optional<WideString> CPDFSDK_Widget::OnFormat() {
 void CPDFSDK_Widget::ResetFieldAppearance() {
   CPDF_FormField* pFormField = GetFormField();
   DCHECK(pFormField);
-  m_pInteractiveForm->ResetFieldAppearance(pFormField, pdfium::nullopt);
+  m_pInteractiveForm->ResetFieldAppearance(pFormField, absl::nullopt);
 }
 
 void CPDFSDK_Widget::DrawAppearance(CFX_RenderDevice* pDevice,
                                     const CFX_Matrix& mtUser2Device,
-                                    CPDF_Annot::AppearanceMode mode,
-                                    const CPDF_RenderOptions* pOptions) {
+                                    CPDF_Annot::AppearanceMode mode) {
   FormFieldType fieldType = GetFieldType();
 
   if ((fieldType == FormFieldType::kCheckBox ||
@@ -680,10 +680,10 @@ void CPDFSDK_Widget::DrawAppearance(CFX_RenderDevice* pDevice,
 
     CFX_Path path;
     path.AppendFloatRect(GetRect());
-    pDevice->DrawPath(&path, &mtUser2Device, &gsd, 0, 0xFFAAAAAA,
+    pDevice->DrawPath(path, &mtUser2Device, &gsd, 0, 0xFFAAAAAA,
                       CFX_FillRenderOptions::EvenOddOptions());
   } else {
-    CPDFSDK_BAAnnot::DrawAppearance(pDevice, mtUser2Device, mode, pOptions);
+    CPDFSDK_BAAnnot::DrawAppearance(pDevice, mtUser2Device, mode);
   }
 }
 
@@ -781,7 +781,8 @@ CFX_Matrix CPDFSDK_Widget::GetMatrix() const {
 
 CFX_Color CPDFSDK_Widget::GetTextPWLColor() const {
   CPDF_FormControl* pFormCtrl = GetFormControl();
-  Optional<CFX_Color> crText = pFormCtrl->GetDefaultAppearance().GetColor();
+  absl::optional<CFX_Color> crText =
+      pFormCtrl->GetDefaultAppearance().GetColor();
   return crText.value_or(CFX_Color(CFX_Color::Type::kGray, 0));
 }
 

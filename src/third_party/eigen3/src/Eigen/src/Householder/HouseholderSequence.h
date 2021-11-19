@@ -11,6 +11,8 @@
 #ifndef EIGEN_HOUSEHOLDER_SEQUENCE_H
 #define EIGEN_HOUSEHOLDER_SEQUENCE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \ingroup Householder_Module

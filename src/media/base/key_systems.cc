@@ -33,6 +33,8 @@ const char kClearKeyKeySystem[] = "org.w3.clearkey";
 // These names are used by UMA. Do not change them!
 const char kClearKeyKeySystemNameForUMA[] = "ClearKey";
 const char kUnknownKeySystemNameForUMA[] = "Unknown";
+const char kHardwareSecureForUMA[] = "HardwareSecure";
+const char kSoftwareSecureForUMA[] = "SoftwareSecure";
 
 enum KeySystemForUkm {
   // These values reported to UKM. Do not change their ordinal values.
@@ -235,6 +237,9 @@ class KeySystemsImpl : public KeySystems {
  public:
   static KeySystemsImpl* GetInstance();
 
+  KeySystemsImpl(const KeySystemsImpl&) = delete;
+  KeySystemsImpl& operator=(const KeySystemsImpl&) = delete;
+
   // These two functions are for testing purpose only.
   void AddCodecMaskForTesting(EmeMediaType media_type,
                               const std::string& codec,
@@ -326,8 +331,6 @@ class KeySystemsImpl : public KeySystems {
 
   // Makes sure all methods are called from the same thread.
   base::ThreadChecker thread_checker_;
-
-  DISALLOW_COPY_AND_ASSIGN(KeySystemsImpl);
 };
 
 KeySystemsImpl* KeySystemsImpl::GetInstance() {
@@ -774,12 +777,24 @@ bool IsSupportedKeySystemWithInitDataType(const std::string& key_system,
                                                                 init_data_type);
 }
 
-std::string GetKeySystemNameForUMA(const std::string& key_system) {
+std::string GetKeySystemNameForUMA(const std::string& key_system,
+                                   absl::optional<bool> use_hw_secure_codecs) {
   // Here we maintain a short list of known key systems to facilitate UMA
   // reporting. Mentioned key systems are not necessarily supported by
   // the current platform.
-  if (key_system == kWidevineKeySystem)
-    return kWidevineKeySystemNameForUMA;
+
+  if (key_system == kWidevineKeySystem) {
+    std::string key_system_name = kWidevineKeySystemNameForUMA;
+    if (use_hw_secure_codecs.has_value()) {
+      key_system_name += ".";
+      key_system_name += (use_hw_secure_codecs.value() ? kHardwareSecureForUMA
+                                                       : kSoftwareSecureForUMA);
+    }
+    return key_system_name;
+  }
+
+  // For Clear Key and unknown key systems we don't to differentiate between
+  // software and hardware security.
 
   if (key_system == kClearKeyKeySystem)
     return kClearKeyKeySystemNameForUMA;

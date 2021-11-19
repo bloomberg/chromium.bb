@@ -95,7 +95,7 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git udiff = upstream-diff
+  udiff = upstream-diff
 ----
 
 SEE ALSO

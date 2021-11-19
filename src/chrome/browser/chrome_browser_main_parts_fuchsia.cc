@@ -14,8 +14,10 @@
 #include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
+#include "base/fuchsia/process_lifecycle.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/notreached.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 
 namespace {
@@ -53,7 +55,7 @@ class ViewProviderScenic : public fuchsia::ui::app::ViewProvider {
     scenic_session_.set_event_handler(
         fit::bind_member(this, &ViewProviderScenic::OnScenicEvents));
   }
-  ~ViewProviderScenic() override = default;
+  ~ViewProviderScenic() override { scenic_.Unbind(); }
 
   // fuchsia::ui::app::ViewProvider overrides.
   void CreateView(
@@ -200,6 +202,8 @@ ChromeBrowserMainPartsFuchsia::ChromeBrowserMainPartsFuchsia(
     StartupData* startup_data)
     : ChromeBrowserMainParts(parameters, startup_data) {}
 
+ChromeBrowserMainPartsFuchsia::~ChromeBrowserMainPartsFuchsia() = default;
+
 void ChromeBrowserMainPartsFuchsia::ShowMissingLocaleMessageBox() {
   // Locale data should be bundled for all possible platform locales,
   // so crash here to make missing-locale states more visible.
@@ -216,5 +220,21 @@ int ChromeBrowserMainPartsFuchsia::PreMainMessageLoopRun() {
       base::ComponentContextForProcess()->outgoing()->ServeFromStartupInfo();
   ZX_CHECK(status == ZX_OK, status);
 
+  // Publish the fuchsia.process.lifecycle.Lifecycle service to allow graceful
+  // teardown. If there is a |ui_task| then this is a browser-test and graceful
+  // shutdown is not required.
+  if (!parameters().ui_task) {
+    lifecycle_ = std::make_unique<base::ProcessLifecycle>(
+        base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
+  }
+
   return ChromeBrowserMainParts::PreMainMessageLoopRun();
+}
+
+void ChromeBrowserMainPartsFuchsia::PostMainMessageLoopRun() {
+  // ViewProviderScenic owns the Scenic channel and its lifetime is bound
+  // to this callback so replacing it will unnbind the scenic channel.
+  ui::fuchsia::SetScenicViewPresenter(ui::fuchsia::PresentViewCallback());
+
+  ChromeBrowserMainParts::PostMainMessageLoopRun();
 }

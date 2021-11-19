@@ -10,6 +10,8 @@
 #ifndef EIGEN_LEAST_SQUARE_CONJUGATE_GRADIENT_H
 #define EIGEN_LEAST_SQUARE_CONJUGATE_GRADIENT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

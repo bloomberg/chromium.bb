@@ -26,15 +26,12 @@ namespace ast {
 class Void : public Castable<Void, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
-  Void(ProgramID program_id, const Source& source);
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
+  Void(ProgramID pid, const Source& src);
   /// Move constructor
   Void(Void&&);
   ~Void() override;
-
-  /// @returns the name for this type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -44,7 +41,7 @@ class Void : public Castable<Void, Type> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  Void* Clone(CloneContext* ctx) const override;
+  const Void* Clone(CloneContext* ctx) const override;
 };
 
 }  // namespace ast

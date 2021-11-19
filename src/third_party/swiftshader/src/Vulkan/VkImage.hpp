@@ -59,7 +59,7 @@ public:
 	size_t getSizeInBytes(const VkImageSubresourceRange &subresourceRange) const;
 	void getSubresourceLayout(const VkImageSubresource *pSubresource, VkSubresourceLayout *pLayout) const;
 	void bind(DeviceMemory *pDeviceMemory, VkDeviceSize pMemoryOffset);
-	void copyTo(Image *dstImage, const VkImageCopy &pRegion) const;
+	void copyTo(Image *dstImage, const VkImageCopy &region) const;
 	void copyTo(Buffer *dstBuffer, const VkBufferImageCopy &region);
 	void copyFrom(Buffer *srcBuffer, const VkBufferImageCopy &region);
 
@@ -97,7 +97,7 @@ public:
 	VkDeviceSize getMipLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	bool canBindToMemory(DeviceMemory *pDeviceMemory) const;
 
-	void prepareForSampling(const VkImageSubresourceRange &subresourceRange);
+	void prepareForSampling(const VkImageSubresourceRange &subresourceRange) const;
 	enum ContentsChangedContext
 	{
 		DIRECT_MEMORY_ACCESS = 0,
@@ -120,6 +120,7 @@ public:
 
 private:
 	void copy(Buffer *buffer, const VkBufferImageCopy &region, bool bufferIsSource);
+	void copySingleAspectTo(Image *dstImage, const VkImageCopy &region) const;
 	VkDeviceSize getStorageSize(VkImageAspectFlags flags) const;
 	VkDeviceSize getMultiSampledLevelSize(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
 	VkDeviceSize getLayerOffset(VkImageAspectFlagBits aspect, uint32_t mipLevel) const;
@@ -135,10 +136,10 @@ private:
 	int borderSize() const;
 
 	bool requiresPreprocessing() const;
-	void decompress(const VkImageSubresource &subresource);
-	void decodeETC2(const VkImageSubresource &subresource);
-	void decodeBC(const VkImageSubresource &subresource);
-	void decodeASTC(const VkImageSubresource &subresource);
+	void decompress(const VkImageSubresource &subresource) const;
+	void decodeETC2(const VkImageSubresource &subresource) const;
+	void decodeBC(const VkImageSubresource &subresource) const;
+	void decodeASTC(const VkImageSubresource &subresource) const;
 
 	const Device *const device = nullptr;
 	VkDeviceSize memoryOffset = 0;
@@ -188,8 +189,8 @@ private:
 		VkImageSubresource subresource;
 	};
 
-	marl::mutex mutex;
-	std::unordered_set<Subresource, Subresource> dirtySubresources GUARDED_BY(mutex);
+	mutable marl::mutex mutex;
+	mutable std::unordered_set<Subresource, Subresource> dirtySubresources GUARDED_BY(mutex);
 };
 
 static inline Image *Cast(VkImage object)

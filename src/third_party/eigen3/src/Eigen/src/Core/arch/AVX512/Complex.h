@@ -10,6 +10,8 @@
 #ifndef EIGEN_COMPLEX_AVX512_H
 #define EIGEN_COMPLEX_AVX512_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -97,7 +99,9 @@ template<> EIGEN_STRONG_INLINE Packet8cf ploadu<Packet8cf>(const std::complex<fl
 
 template<> EIGEN_STRONG_INLINE Packet8cf pset1<Packet8cf>(const std::complex<float>& from)
 {
-  return Packet8cf(_mm512_castpd_ps(pload1<Packet8d>((const double*)(const void*)&from)));
+  const float re = std::real(from);
+  const float im = std::imag(from);
+  return Packet8cf(_mm512_set_ps(im, re, im, re, im, re, im, re, im, re, im, re, im, re, im, re));
 }
 
 template<> EIGEN_STRONG_INLINE Packet8cf ploaddup<Packet8cf>(const std::complex<float>* from)

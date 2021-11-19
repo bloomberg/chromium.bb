@@ -502,6 +502,17 @@ def ReadHttpJsonResponse(conn, accept_statuses=frozenset([200])):
   return json.loads(s)
 
 
+def CallGerritApi(host, path, **kwargs):
+  """Helper for calling a Gerrit API that returns a JSON response."""
+  conn_kwargs = {}
+  conn_kwargs.update(
+      (k, kwargs[k]) for k in ['reqtype', 'headers', 'body'] if k in kwargs)
+  conn = CreateHttpConn(host, path, **conn_kwargs)
+  read_kwargs = {}
+  read_kwargs.update((k, kwargs[k]) for k in ['accept_statuses'] if k in kwargs)
+  return ReadHttpJsonResponse(conn, **read_kwargs)
+
+
 def QueryChanges(host, params, first_param=None, limit=None, o_params=None,
                  start=None):
   """
@@ -1013,6 +1024,23 @@ def CreateGerritBranch(host, project, branch, commit):
   if response:
     return response
   raise GerritError(200, 'Unable to create gerrit branch')
+
+
+def CreateGerritTag(host, project, tag, commit):
+  """Creates a new tag at the given commit.
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#create-tag
+
+  Returns:
+    A JSON object with 'ref' key.
+  """
+  path = 'projects/%s/tags/%s' % (project, tag)
+  body = {'revision': commit}
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  response = ReadHttpJsonResponse(conn, accept_statuses=[201])
+  if response:
+    return response
+  raise GerritError(200, 'Unable to create gerrit tag')
 
 
 def GetHead(host, project):

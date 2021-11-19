@@ -18,11 +18,14 @@ from absl.testing import parameterized
 import numpy as np
 
 from tensorflow.python.eager import context
+from tensorflow.python.eager import def_function
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
+from tensorflow.python.framework import errors_impl
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import tensor_spec
+from tensorflow.python.framework import tensor_util
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops.ragged import row_partition
@@ -529,6 +532,10 @@ class RowPartitionTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     rp_with_nrows = rp.with_precomputed_nrows()
     self.assertTrue(rp_with_nrows.has_precomputed_nrows())
 
+    self.assertFalse(rp.has_precomputed_nvals())
+    rp_with_nvals = rp.with_precomputed_nvals()
+    self.assertTrue(rp_with_nvals.has_precomputed_nvals())
+
   @parameterized.named_parameters([
       dict(
           testcase_name='FromRowSplitsAndRowSplits',
@@ -639,15 +646,15 @@ class RowPartitionTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
   @parameterized.named_parameters([
       dict(
-          testcase_name='NRowsMismatch',
-          x=lambda: RowPartition.from_uniform_row_length(5, nvals=20),
-          y=lambda: RowPartition.from_uniform_row_length(5, nvals=15),
+          testcase_name='NRowsMismatchAlt',
+          x=lambda: RowPartition.from_uniform_row_length(5, nrows=4, nvals=20),
+          y=lambda: RowPartition.from_uniform_row_length(5, nrows=3, nvals=15),
           message='incompatible nrows'),
       dict(
           testcase_name='UniformRowLengthMismatch',
           x=lambda: RowPartition.from_uniform_row_length(5, nvals=20),
           y=lambda: RowPartition.from_uniform_row_length(2, nvals=8),
-          message='incompatible uniform_row_length'),
+          message='incompatible (nvals|uniform_row_length)'),
       dict(
           testcase_name='RowSplitMismatch',
           x=lambda: RowPartition.from_row_splits([0, 3, 8]),
@@ -657,7 +664,7 @@ class RowPartitionTest(test_util.TensorFlowTestCase, parameterized.TestCase):
           testcase_name='RowLengthMismatch',
           x=lambda: RowPartition.from_row_lengths([2, 0, 2]),
           y=lambda: RowPartition.from_row_lengths([0, 0, 2]),
-          message='incompatible row_splits'),  # row_splits is checked first
+          message='incompatible (row_splits|nvals)'),
       dict(
           testcase_name='ValueRowIdMismatch',
           x=lambda: RowPartition.from_value_rowids([0, 3, 3]),
@@ -671,6 +678,28 @@ class RowPartitionTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     with self.assertRaisesRegex(errors.InvalidArgumentError, message):
       self.evaluate(x.merge_precomputed_encodings(y).row_splits())
     with self.assertRaisesRegex(errors.InvalidArgumentError, message):
+      self.evaluate(y.merge_precomputed_encodings(x).row_splits())
+
+  @parameterized.named_parameters([
+      # It throws the right error, but it still complains.
+      dict(
+          testcase_name='NRowsMismatch',
+          x=lambda: RowPartition.from_uniform_row_length(5, nvals=20),
+          y=lambda: RowPartition.from_uniform_row_length(5, nvals=15),
+          message='incompatible nvals',
+          emessage='incompatible nrows'),
+  ])
+  def testMergePrecomputedEncodingStaticErrors2(self, x, y,
+                                                message, emessage):
+    # Message error and type varies depending upon eager execution.
+    x = x()
+    y = y()
+
+    error_type = errors_impl.InvalidArgumentError
+    expected_message = emessage if context.executing_eagerly() else message
+    with self.assertRaisesRegex(error_type, expected_message):
+      self.evaluate(x.merge_precomputed_encodings(y).row_splits())
+    with self.assertRaisesRegex(error_type, expected_message):
       self.evaluate(y.merge_precomputed_encodings(x).row_splits())
 
   @parameterized.named_parameters([
@@ -714,6 +743,104 @@ class RowPartitionTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     actual = x.offsets_in_rows()
     self.assertAllEqual(expected, actual)
 
+  def testFromUniformRowLengthBugConvertToTensor(self):
+    # This originally failed to run because nrows was dtypes.int32. I think
+    # we may need to consider the semantics of the type of a RowPartition
+    # if preferred_dtype is unspecified. Also, looking at convert_to_tensor:
+    # dtype specifies the type of the output.
+    # preferred_dtype/dtype_hint is a suggestion, and dtype_hint is the new
+    # name.
+    nrows = constant_op.constant(3, dtype=dtypes.int32)
+    nvals = constant_op.constant(12, dtype=dtypes.int64)
+    row_length = constant_op.constant(4, dtype=dtypes.int64)
+    rp = RowPartition.from_uniform_row_length(row_length, nvals=nvals,
+                                              nrows=nrows, dtype=dtypes.int64)
+    self.assertEqual(rp.nrows().dtype, dtypes.int64)
+
+  def testFromUniformRowLengthNvalDynamic(self):
+    # A key question is whether if nrows and uniform_row_length are known,
+    # and nvals is given but not known statically, should we determine nvals?
+    @def_function.function(
+        input_signature=[tensor_spec.TensorSpec(None, dtypes.int32)])
+    def foo(nvals):
+      rp = RowPartition.from_uniform_row_length(12, nvals=nvals, nrows=3)
+      nval_output = tensor_util.constant_value(rp.nvals())
+      self.assertEqual(nval_output, 36)
+    foo(constant_op.constant(36, dtype=dtypes.int32))
+
+  def testFromUniformRowLengthNvalDynamicNoValidate(self):
+    # A key question is whether if nrows and uniform_row_length are known,
+    # and nvals is given but not known statically, should we determine nvals?
+    @def_function.function(
+        input_signature=[tensor_spec.TensorSpec(None, dtypes.int32)])
+    def foo(nvals):
+      rp = RowPartition.from_uniform_row_length(12, nvals=nvals, nrows=3,
+                                                validate=False)
+      nval_output = tensor_util.constant_value(rp.nvals())
+      self.assertEqual(nval_output, 36)
+    foo(constant_op.constant(36, dtype=dtypes.int32))
+
+  def testFromUniformRowLengthNvalDynamicWrong(self):
+    # A key question is whether if nrows and uniform_row_length are known,
+    # and nvals is given but not known statically and WRONG,
+    # what should we do? We add a check, but checks are only checked for
+    # row_splits.
+    @def_function.function(
+        input_signature=[tensor_spec.TensorSpec(None, dtypes.int32)])
+    def foo(nvals):
+      rp = RowPartition.from_uniform_row_length(12, nvals=nvals, nrows=3)
+      return rp.nvals()
+
+    with self.assertRaises(errors.InvalidArgumentError):
+      nvals = foo(constant_op.constant(7, dtype=dtypes.int32))
+      self.evaluate(nvals)
+
+  def testFromUniformRowLengthNvalDynamicWrongRowSplits(self):
+    # A key question is whether if nrows and uniform_row_length are known,
+    # and nvals is given but not known statically and WRONG,
+    # what should we do?
+    # A key question is whether if nrows and uniform_row_length are known,
+    # and nvals is given but not known statically and WRONG,
+    # what should we do? We add a check, but checks are only checked for
+    # row_splits.
+    @def_function.function(
+        input_signature=[tensor_spec.TensorSpec(None, dtypes.int32)])
+    def foo(nvals):
+      rp = RowPartition.from_uniform_row_length(12, nvals=nvals, nrows=3)
+      return rp.row_splits()
+
+    with self.assertRaises(errors.InvalidArgumentError):
+      rs = foo(constant_op.constant(7, dtype=dtypes.int32))
+      self.evaluate(rs)
+
+  def testFromUniformRowPartitionNrows(self):
+    rp = RowPartition.from_uniform_row_length(3, nrows=4)
+    self.assertAllEqual(4, rp.nrows())
+    self.assertAllEqual(3, rp.uniform_row_length())
+    self.assertAllEqual(12, rp.static_nvals)
+
+  def testFromUniformRowPartitionNvalsStatic(self):
+    rp = RowPartition.from_uniform_row_length(3, nvals=12)
+    self.assertAllEqual(4, rp.static_nrows)
+    self.assertAllEqual(3, rp.static_uniform_row_length)
+    self.assertAllEqual(12, rp.static_nvals)
+
+  def testFromUniformRowPartitionNvalsStaticNoValidate(self):
+    rp = RowPartition.from_uniform_row_length(3, nrows=4, nvals=12,
+                                              validate=False)
+    self.assertAllEqual(4, rp.static_nrows)
+    self.assertAllEqual(3, rp.static_uniform_row_length)
+    self.assertAllEqual(12, rp.static_nvals)
+
+  def testFromUniformRowPartitionNvalsIs(self):
+    nvals = constant_op.constant(12)
+    rp = RowPartition.from_uniform_row_length(3, nvals=nvals)
+    self.assertIs(rp.nvals(), nvals)
+
+  def testFromUniformRowPartitionRowStartsStatic(self):
+    rp = RowPartition.from_row_starts([0, 3, 6], nvals=12)
+    self.assertAllEqual(12, rp.static_nvals)
+
 
 @test_util.run_all_in_graph_and_eager_modes
 class RowPartitionSpecTest(test_util.TensorFlowTestCase,
@@ -721,9 +848,9 @@ class RowPartitionSpecTest(test_util.TensorFlowTestCase,
 
   def testDefaultConstruction(self):
     spec = RowPartitionSpec()
-    self.assertEqual(spec.nrows, None)
-    self.assertEqual(spec.nvals, None)
-    self.assertEqual(spec.uniform_row_length, None)
+    self.assertIsNone(spec.nrows)
+    self.assertIsNone(spec.nvals)
+    self.assertIsNone(spec.uniform_row_length)
     self.assertEqual(spec.dtype, dtypes.int64)
 
   @parameterized.parameters([
@@ -890,6 +1017,12 @@ class RowPartitionSpecTest(test_util.TensorFlowTestCase,
   def testMostSpecificCompatibleTypeError(self, spec1, spec2):
     with self.assertRaisesRegex(ValueError, 'Encountered incompatible types'):
       spec1.most_specific_compatible_type(spec2)
+
+  def testNumRowsInt64(self):
+    row_splits = array_ops.constant([0, 2, 3, 5], dtype=dtypes.int64)
+    values = RowPartition.from_row_splits(row_splits)
+    nrows = values.nrows()
+    self.assertEqual(dtypes.int64, nrows.dtype)
 
   def testFromValue(self):
     self.assertEqual(

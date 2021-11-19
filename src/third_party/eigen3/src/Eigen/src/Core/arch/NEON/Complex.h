@@ -11,6 +11,8 @@
 #ifndef EIGEN_COMPLEX_NEON_H
 #define EIGEN_COMPLEX_NEON_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSEREDUX_H
 #define EIGEN_SPARSEREDUX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 template<typename Derived>

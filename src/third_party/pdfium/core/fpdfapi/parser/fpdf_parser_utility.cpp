@@ -74,18 +74,18 @@ const char PDF_CharType[256] = {
     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R', 'R',
     'R', 'R', 'R', 'R', 'R', 'R', 'R', 'W'};
 
-Optional<FX_FILESIZE> GetHeaderOffset(
+absl::optional<FX_FILESIZE> GetHeaderOffset(
     const RetainPtr<IFX_SeekableReadStream>& pFile) {
   static constexpr size_t kBufSize = 4;
   uint8_t buf[kBufSize];
   for (FX_FILESIZE offset = 0; offset <= 1024; ++offset) {
     if (!pFile->ReadBlockAtOffset(buf, offset, kBufSize))
-      return pdfium::nullopt;
+      return absl::nullopt;
 
     if (memcmp(buf, "%PDF", 4) == 0)
       return offset;
   }
-  return pdfium::nullopt;
+  return absl::nullopt;
 }
 
 int32_t GetDirectInteger(const CPDF_Dictionary* pDict, const ByteString& key) {

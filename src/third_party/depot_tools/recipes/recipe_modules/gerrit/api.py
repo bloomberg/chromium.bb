@@ -29,6 +29,35 @@ class GerritApi(recipe_api.RecipeApi):
                            venv=True,
                            **kwargs)
 
+  def call_raw_api(self,
+                   host,
+                   path,
+                   method=None,
+                   body=None,
+                   accept_statuses=None,
+                   name=None,
+                   **kwargs):
+    """Call an arbitrary Gerrit API that returns a JSON response.
+
+    Returns:
+      The JSON response data.
+    """
+    args = [
+        'rawapi', '--host', host, '--path', path, '--json_file',
+        self.m.json.output()
+    ]
+    if method:
+      args.extend(['--method', method])
+    if body:
+      args.extend(['--body', self.m.json.dumps(body)])
+    if accept_statuses:
+      args.extend(
+          ['--accept_status', ','.join(str(i) for i in accept_statuses)])
+
+    step_name = name or 'call_raw_api (%s)' % path
+    step_result = self(step_name, args, **kwargs)
+    return step_result.json.output
+
   def create_gerrit_branch(self, host, project, branch, commit, **kwargs):
     """Creates a new branch from given project and commit
 
@@ -44,6 +73,25 @@ class GerritApi(recipe_api.RecipeApi):
         '--json_file', self.m.json.output()
     ]
     step_name = 'create_gerrit_branch (%s %s)' % (project, branch)
+    step_result = self(step_name, args, **kwargs)
+    ref = step_result.json.output.get('ref')
+    return ref
+
+  def create_gerrit_tag(self, host, project, tag, commit, **kwargs):
+    """Creates a new tag at the given commit.
+
+    Returns:
+      The ref of the tag created.
+    """
+    args = [
+        'tag',
+        '--host', host,
+        '--project', project,
+        '--tag', tag,
+        '--commit', commit,
+        '--json_file', self.m.json.output()
+    ]
+    step_name = 'create_gerrit_tag (%s %s)' % (project, tag)
     step_result = self(step_name, args, **kwargs)
     ref = step_result.json.output.get('ref')
     return ref
@@ -275,7 +323,8 @@ class GerritApi(recipe_api.RecipeApi):
                    new_contents_by_file_path,
                    commit_msg,
                    params=frozenset(['status=NEW']),
-                   submit=False):
+                   submit=False,
+                   submit_later=False):
     """Update a set of files by creating and submitting a Gerrit CL.
 
     Args:
@@ -288,6 +337,9 @@ class GerritApi(recipe_api.RecipeApi):
       * params: A list of additional ChangeInput specifiers, with format
           'key=value'.
       * submit: Should land this CL instantly.
+      * submit_later: If this change has related CLs, we may want to commit
+           them in a chain. So only set Bot-Commit+1, making it ready for
+           submit together. Ignored if submit is True.
 
     Returns:
       A ChangeInfo dictionary as documented here:
@@ -342,7 +394,7 @@ class GerritApi(recipe_api.RecipeApi):
         change,
     ])
 
-    if submit:
+    if submit or submit_later:
       self('set Bot-Commit+1 for change %d' % change, [
           'setbotcommit',
           '--host',
@@ -350,6 +402,7 @@ class GerritApi(recipe_api.RecipeApi):
           '--change',
           change,
       ])
+    if submit:
       submit_cmd = [
           'submitchange',
           '--host',

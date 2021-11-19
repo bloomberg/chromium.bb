@@ -1570,7 +1570,7 @@ TEST_F(Specifications, InterCU) {
   vector<Module::Function*> functions;
   m.GetFunctions(&functions, functions.end());
   EXPECT_EQ(1U, functions.size());
-  EXPECT_STREQ("class_A::member_func_B", functions[0]->name.c_str());
+  EXPECT_STREQ("class_A::member_func_B", functions[0]->name.str().c_str());
 }
 
 TEST_F(Specifications, UnhandledInterCU) {

@@ -10,6 +10,8 @@
 #ifndef EIGEN_RANDOM_H
 #define EIGEN_RANDOM_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

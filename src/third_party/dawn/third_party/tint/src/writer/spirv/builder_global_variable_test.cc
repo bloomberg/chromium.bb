@@ -167,6 +167,24 @@ TEST_F(BuilderTest, GlobalVar_Override_Bool) {
 )");
 }
 
+TEST_F(BuilderTest, GlobalVar_Override_Bool_ZeroValue) {
+  auto* v = GlobalConst("var", ty.bool_(), Construct<bool>(),
+                        ast::DecorationList{
+                            create<ast::OverrideDecoration>(1200),
+                        });
+
+  spirv::Builder& b = Build();
+
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %2 "var"
+)");
+  EXPECT_EQ(DumpInstructions(b.annots()), R"(OpDecorate %2 SpecId 1200
+)");
+  EXPECT_EQ(DumpInstructions(b.types()), R"(%1 = OpTypeBool
+%2 = OpSpecConstantFalse %1
+)");
+}
+
 TEST_F(BuilderTest, GlobalVar_Override_Bool_NoConstructor) {
   auto* v = GlobalConst("var", ty.bool_(), nullptr,
                         ast::DecorationList{
@@ -200,6 +218,24 @@ TEST_F(BuilderTest, GlobalVar_Override_Scalar) {
 )");
   EXPECT_EQ(DumpInstructions(b.types()), R"(%1 = OpTypeFloat 32
 %2 = OpSpecConstant %1 2
+)");
+}
+
+TEST_F(BuilderTest, GlobalVar_Override_Scalar_ZeroValue) {
+  auto* v = GlobalConst("var", ty.f32(), Construct<f32>(),
+                        ast::DecorationList{
+                            create<ast::OverrideDecoration>(0),
+                        });
+
+  spirv::Builder& b = Build();
+
+  EXPECT_TRUE(b.GenerateGlobalVariable(v)) << b.error();
+  EXPECT_EQ(DumpInstructions(b.debug()), R"(OpName %2 "var"
+)");
+  EXPECT_EQ(DumpInstructions(b.annots()), R"(OpDecorate %2 SpecId 0
+)");
+  EXPECT_EQ(DumpInstructions(b.types()), R"(%1 = OpTypeFloat 32
+%2 = OpSpecConstant %1 0
 )");
 }
 
@@ -506,34 +542,6 @@ OpName %5 "c"
 )");
 }
 
-TEST_F(BuilderTest, GlobalVar_TextureStorageReadOnly) {
-  // var<uniform_constant> a : texture_storage_2d<r32uint, read>;
-
-  auto* type =
-      ty.storage_texture(ast::TextureDimension::k2d, ast::ImageFormat::kR32Uint,
-                         ast::Access::kRead);
-
-  auto* var_a = Global("a", type,
-                       ast::DecorationList{
-                           create<ast::BindingDecoration>(0),
-                           create<ast::GroupDecoration>(0),
-                       });
-
-  spirv::Builder& b = Build();
-
-  EXPECT_TRUE(b.GenerateGlobalVariable(var_a)) << b.error();
-
-  EXPECT_EQ(DumpInstructions(b.annots()), R"(OpDecorate %1 NonWritable
-OpDecorate %1 Binding 0
-OpDecorate %1 DescriptorSet 0
-)");
-  EXPECT_EQ(DumpInstructions(b.types()), R"(%4 = OpTypeInt 32 0
-%3 = OpTypeImage %4 2D 0 0 0 2 R32ui
-%2 = OpTypePointer UniformConstant %3
-%1 = OpVariable %2 UniformConstant
-)");
-}
-
 TEST_F(BuilderTest, GlobalVar_TextureStorageWriteOnly) {
   // var<uniform_constant> a : texture_storage_2d<r32uint, write>;
 
@@ -564,13 +572,15 @@ OpDecorate %1 DescriptorSet 0
 
 // Check that multiple texture_storage types with different access modifiers
 // only produces a single OpTypeImage.
-TEST_F(BuilderTest, GlobalVar_TextureStorageWithDifferentAccess) {
-  // var<uniform_constant> a : texture_storage_2d<r32uint, read>;
+// Test disabled as storage textures currently only support 'write' access. In
+// the future we'll likely support read_write.
+TEST_F(BuilderTest, DISABLED_GlobalVar_TextureStorageWithDifferentAccess) {
+  // var<uniform_constant> a : texture_storage_2d<r32uint, read_write>;
   // var<uniform_constant> b : texture_storage_2d<r32uint, write>;
 
   auto* type_a =
       ty.storage_texture(ast::TextureDimension::k2d, ast::ImageFormat::kR32Uint,
-                         ast::Access::kRead);
+                         ast::Access::kReadWrite);
   auto* var_a = Global("a", type_a, ast::StorageClass::kNone,
                        ast::DecorationList{
                            create<ast::BindingDecoration>(0),

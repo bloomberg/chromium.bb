@@ -44,6 +44,7 @@ import org.chromium.base.Promise;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.firstrun.FirstRunActivityTestObserver.ScopedObserverData;
+import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -74,6 +76,7 @@ import org.chromium.components.policy.AbstractAppRestrictionsProvider;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.ChildAccountStatus.Status;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -91,6 +94,7 @@ import java.util.concurrent.TimeoutException;
  * Integration test suite for the first run experience.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
+@CommandLineFlags.Add({ChromeSwitches.FORCE_DISABLE_SIGNIN_FRE})
 public class FirstRunIntegrationTest {
     private static final String TEST_URL = "https://test.com";
     private static final String FOO_URL = "https://foo.com";
@@ -605,12 +609,12 @@ public class FirstRunIntegrationTest {
         waitForActivity(ChromeTabbedActivity.class);
 
         checkRecordedProgressSteps(BitSet.valueOf(new long[] {
-                FirstRunActivity.MobileFreProgress.STARTED,
-                FirstRunActivity.MobileFreProgress.WELCOME_SHOWN,
-                FirstRunActivity.MobileFreProgress.DATA_SAVER_SHOWN,
-                FirstRunActivity.MobileFreProgress.SYNC_CONSENT_SHOWN,
-                FirstRunActivity.MobileFreProgress.COMPLETED_SYNC,
-                FirstRunActivity.MobileFreProgress.DEFAULT_SEARCH_ENGINE_SHOWN,
+                MobileFreProgress.STARTED,
+                MobileFreProgress.WELCOME_SHOWN,
+                MobileFreProgress.DATA_SAVER_SHOWN,
+                MobileFreProgress.SYNC_CONSENT_SHOWN,
+                MobileFreProgress.SYNC_CONSENT_ACCEPTED,
+                MobileFreProgress.DEFAULT_SEARCH_ENGINE_SHOWN,
         }));
     }
 
@@ -628,15 +632,14 @@ public class FirstRunIntegrationTest {
         waitForActivity(ChromeTabbedActivity.class);
 
         checkRecordedProgressSteps(BitSet.valueOf(new long[] {
-                FirstRunActivity.MobileFreProgress.STARTED,
-                FirstRunActivity.MobileFreProgress.WELCOME_SHOWN,
-                FirstRunActivity.MobileFreProgress.COMPLETED_NOT_SYNC,
+                MobileFreProgress.STARTED,
+                MobileFreProgress.WELCOME_SHOWN,
+                MobileFreProgress.SYNC_CONSENT_DISMISSED,
         }));
     }
 
     private void checkRecordedProgressSteps(BitSet bucketsRecorded) {
-        for (int bucket = FirstRunActivity.MobileFreProgress.STARTED;
-                bucket < FirstRunActivity.MobileFreProgress.MAX; ++bucket) {
+        for (int bucket = MobileFreProgress.STARTED; bucket < MobileFreProgress.MAX; ++bucket) {
             int recordedValue = RecordHistogram.getHistogramValueCountForTesting(
                     FRE_PROGRESS_MAIN_INTENT_HISTOGRAM, bucket);
             if (bucketsRecorded.get(bucket)) {
@@ -1481,7 +1484,8 @@ public class FirstRunIntegrationTest {
         }
 
         @Override
-        public boolean shouldShowSyncConsentPage(Activity activity, List<Account> accounts) {
+        public boolean shouldShowSyncConsentPage(
+                Activity activity, List<Account> accounts, @Status int childAccountStatus) {
             return mTestCase.showSigninPromo();
         }
 

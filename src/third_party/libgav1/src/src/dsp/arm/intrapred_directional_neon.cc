@@ -663,12 +663,6 @@ inline void DirectionalZone2_8(
   assert(xstep >= 3);
   const int min_top_only_x = std::min((height * xstep) >> 6, width);
 
-  // For steep angles, the source pixels from |left_column| may not fit in a
-  // 16-byte load for shuffling.
-  // TODO(petersonab): Find a more precise formula for this subject to x.
-  const int max_shuffle_height =
-      std::min(kDirectionalZone2ShuffleInvalidHeight[ystep >> 6], height);
-
   // Offsets the original zone bound value to simplify x < (y+1)*xstep/64 -1
   int xstep_bounds_base = (xstep == 64) ? 0 : xstep - 1;
 
@@ -691,12 +685,21 @@ inline void DirectionalZone2_8(
   // blocks that have a mixture of values computed from top or left. The final
   // stage covers blocks that are only computed from the left.
   int x = 0;
+  // For steep angles, the source pixels from |left_column| may not fit in a
+  // 16-byte load for shuffling. |d| represents the number of pixels that can
+  // fit in one contiguous vector when stepping by |ystep|. For a given x
+  // position, the left column values can be obtained by VTBL as long as the
+  // values at row[x + d] and beyond come from the top row. However, this does
+  // not guarantee that the vector will also contain all of the values needed
+  // from top row.
+  const int d = 16 / ((ystep >> 6) + 1);
   for (int left_offset = -left_base_increment; x < min_top_only_x; x += 8,
            xstep_bounds_base -= (8 << 6),
            left_y = vsubq_s16(left_y, increment_left8),
            left_offset -= left_base_increment8) {
     uint8_t* dst_x = dst + x;
-
+    const int max_shuffle_height =
+        std::min(((x + d) << 6) / xstep, height) & ~7;
     // Round down to the nearest multiple of 8.
     const int max_top_only_y = std::min(((x + 1) << 6) / xstep, height) & ~7;
     DirectionalZone1_WxH<8>(dst_x, stride, max_top_only_y,

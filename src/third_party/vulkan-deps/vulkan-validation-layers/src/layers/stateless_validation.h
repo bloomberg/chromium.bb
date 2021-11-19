@@ -98,8 +98,8 @@ class StatelessValidation : public ValidationObject {
 
     // Override chassis read/write locks for this validation object
     // This override takes a deferred lock. i.e. it is not acquired.
-    read_lock_guard_t read_lock() override;
-    write_lock_guard_t write_lock() override;
+    ReadLockGuard ReadLock() override;
+    WriteLockGuard WriteLock() override;
 
     // Device extension properties -- storing properties gathered from VkPhysicalDeviceProperties2::pNext chain
     struct DeviceExtensionProperties {
@@ -530,7 +530,7 @@ class StatelessValidation : public ValidationObject {
     bool SupportedByPdev(const VkPhysicalDevice physical_device, const std::string ext_name) const;
 
     bool ValidatePnextStructContents(const char *api_name, const ParameterName &parameter_name, const VkBaseOutStructure *header,
-                                     const char *pnext_vuid) const;
+                                     const char *pnext_vuid, bool is_physdev_api = false, bool is_const_param = true) const;
 
     /**
      * Validate a structure's pNext member.
@@ -550,7 +550,8 @@ class StatelessValidation : public ValidationObject {
      */
     bool validate_struct_pnext(const char *api_name, const ParameterName &parameter_name, const char *allowed_struct_names,
                                const void *next, size_t allowed_type_count, const VkStructureType *allowed_types,
-                               uint32_t header_version, const char *pnext_vuid, const char *stype_vuid) const {
+                               uint32_t header_version, const char *pnext_vuid, const char *stype_vuid,
+                               const bool is_physdev_api = false, const bool is_const_param = true) const {
         bool skip_call = false;
 
         if (next != nullptr) {
@@ -616,7 +617,8 @@ class StatelessValidation : public ValidationObject {
                                                           allowed_struct_names, header_version, parameter_name.get_name().c_str());
                                 }
                             }
-                            skip_call |= ValidatePnextStructContents(api_name, parameter_name, current, pnext_vuid);
+                            skip_call |= ValidatePnextStructContents(api_name, parameter_name, current, pnext_vuid, is_physdev_api,
+                                                                     is_const_param);
                         }
                     }
                     current = reinterpret_cast<const VkBaseOutStructure *>(current->pNext);
@@ -1418,6 +1420,9 @@ class StatelessValidation : public ValidationObject {
 
     bool manual_PreCallValidateCreateSampler(VkDevice device, const VkSamplerCreateInfo *pCreateInfo,
                                              const VkAllocationCallbacks *pAllocator, VkSampler *pSampler) const;
+    bool ValidateMutableDescriptorTypeCreateInfo(const VkDescriptorSetLayoutCreateInfo &create_info,
+                                                 const VkMutableDescriptorTypeCreateInfoVALVE &mutable_create_info,
+                                                 const char *func_name) const;
     bool manual_PreCallValidateCreateDescriptorSetLayout(VkDevice device, const VkDescriptorSetLayoutCreateInfo *pCreateInfo,
                                                          const VkAllocationCallbacks *pAllocator,
                                                          VkDescriptorSetLayout *pSetLayout) const;
@@ -1775,7 +1780,10 @@ class StatelessValidation : public ValidationObject {
     bool manual_PreCallValidateCmdSetDiscardRectangleEXT(VkCommandBuffer commandBuffer, uint32_t firstDiscardRectangle,
                                                          uint32_t discardRectangleCount, const VkRect2D *pDiscardRectangles) const;
     bool manual_PreCallValidateGetQueryPoolResults(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount,
-                                                   size_t dataSize, void *pData, VkDeviceSize stride, VkQueryResultFlags flags) const;
+                                                   size_t dataSize, void *pData, VkDeviceSize stride,
+                                                   VkQueryResultFlags flags) const;
+    bool manual_PreCallValidateCmdBeginConditionalRenderingEXT(
+        VkCommandBuffer commandBuffer, const VkConditionalRenderingBeginInfoEXT *pConditionalRenderingBegin) const;
 
 #include "parameter_validation.h"
 };  // Class StatelessValidation

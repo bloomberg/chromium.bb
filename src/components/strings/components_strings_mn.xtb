@@ -42,7 +42,6 @@
 <translation id="1103523840287552314"><ph name="LANGUAGE" />-ийг үргэлж орчуулах</translation>
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" />-д зөвшөөрөл сонгох</translation>
 <translation id="1113869188872983271">&amp; Дахин эрэмбэлэх үйлдлийг буцаах</translation>
-<translation id="1115795617528746272"><ph name="CLOSE_INCOGNITO_WINDOWS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Одоогоор нээлттэй байгаа бүх нууцлалтай цонхыг хаахын тулд tab, дараа нь Enter дээр дарна уу.</translation>
 <translation id="1123753900084781868">Шууд тайлбар яг одоо боломжгүй байна</translation>
 <translation id="1125573121925420732">Вебсайт аюулгүй байдлаа шинэчлэх үед анхааруулга гарч ирж болзошгүй. Үүнийг удахгүй сайжруулах болно.</translation>
 <translation id="112840717907525620">Тохиргооны кэш болж байна</translation>
@@ -83,6 +82,7 @@
 <translation id="124116460088058876">Бусад хэл</translation>
 <translation id="1243027604378859286">Зохиогч:</translation>
 <translation id="1246424317317450637">Тод</translation>
+<translation id="1248573052514400575"><ph name="MANAGE_CHROMEOS_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome үйлдлийн системийн тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд эхлээд tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="1250759482327835220">Дараагийн удаа төлбөрөө хурдан төлөхийн тулд Google Бүртгэлдээ карт, нэр болон тооцооны хаягаа хадгална уу.</translation>
 <translation id="1252799212227771492">Хүснэгт үүсгэх товчлуур, шинэ Google Хүснэгт шуурхай үүсгэхийн тулд Enter дээр дарна уу</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (синк хийсэн)</translation>
@@ -108,7 +108,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Күүкигээ устгана уу<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Аюулгүй DNS тохиргоогоо шалгана уу</translation>
 <translation id="1307966114820526988">Хуучирсан онцлог</translation>
-<translation id="1308113895091915999">Санал боломжтой байна</translation>
+<translation id="1308113895091915999">Боломжит саналууд</translation>
 <translation id="1312803275555673949">Үүнийг ямар нотолгоо дэмждэг вэ?</translation>
 <translation id="131405271941274527">Таныг NFC төхөөрөмж дээр утсаараа товших үед <ph name="URL" /> нь мэдээлэл илгээх, хүлээн авах хүсэлтэй байна</translation>
 <translation id="1314509827145471431">Баруун ирмэг дагуу үдэж хавтаслах</translation>
@@ -217,6 +217,7 @@
 <translation id="160851722280695521">Chrome-д Dino Run тоглоомыг тоглох</translation>
 <translation id="161042844686301425">Шар хөх өнгө</translation>
 <translation id="1611101756749861742">Хоёр дахь хуйлмал</translation>
+<translation id="1615402009686901181">Администраторын бодлого нь нууцлалтай контентыг харагдаж байх үед дэлгэцийн зураг авахыг идэвхгүй болгодог</translation>
 <translation id="1620510694547887537">Камер</translation>
 <translation id="1623104350909869708">Энэ хуудсыг нэмэлт хэлэлцүүлэг үүсгэхээс нь урьдчилан сэргийлэх</translation>
 <translation id="16338877384480380">Архитектур-B</translation>
@@ -300,6 +301,7 @@
 <translation id="1842969606798536927">Төлөх</translation>
 <translation id="1856713167556118146">Нууцлалтай горимын хийдэггүй зүйлс</translation>
 <translation id="1863257867908022953">Тавиур 12</translation>
+<translation id="1864927262126810325"><ph name="SOURCE_NAME" />-с</translation>
 <translation id="1871208020102129563">Төлөөлөх сервер нь a .pac script URL биш харин тухайлан сонгосон төлөөлөх сервер ашиглах тохиргоотой байдаг.</translation>
 <translation id="1871284979644508959">Заавал бөглөх хэсэг</translation>
 <translation id="1875025161375567525">Зургийн тавиур</translation>
@@ -321,6 +323,7 @@
 <translation id="192020519938775529">{COUNT,plural, =0{Байхгүй}=1{1 сайт}other{# сайт}}</translation>
 <translation id="1923390796829649802">Хандалтын тохиргоог удирдах товчлуур, Chrome үйлдлийн системийн тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд Enter дээр дарна уу</translation>
 <translation id="1924727005275031552">Шинэ</translation>
+<translation id="1927439593081478069">Chrome-н аюулгүй байдлын шалгалтыг ажиллуулах товчлуур, Chrome-н тохиргоонд аюулгүй байдлын шалгалтыг ажиллуулахын тулд Enter дээр дарна уу</translation>
 <translation id="1939175642807587452">Мэдэгдэл илгээхийг хүсэх боломжтой</translation>
 <translation id="1945968466830820669">Та байгууллагынхаа бүртгэлд хандах эрх эсвэл нууц үгээ бусдад алдаж болзошгүй. Chromium-с таныг нууц үгээ өөрчлөхийг зөвлөж байна.</translation>
 <translation id="1947454675006758438">Баруун дээд буланд үдэх</translation>
@@ -340,12 +343,14 @@
 <translation id="2003709556000175978">Нууц үгээ одоо шинэчлэх</translation>
 <translation id="2003775180883135320">Дээд буланд дөрвөн нүх цоолох</translation>
 <translation id="201174227998721785">Chrome-н тохиргоонд сайтууд дээр хадгалсан зөвшөөрөл болон өгөгдлийг удирдана уу</translation>
+<translation id="2019607688127825327">Хандалтын тохиргоог удирдах товчлуур, Chrome-н тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд Enter дээр дарна уу</translation>
 <translation id="2025115093177348061">Өргөтгөсөн бодит орчин</translation>
 <translation id="2025186561304664664">Поксиг авто-тохиргоонд тохируулсан.</translation>
 <translation id="2025891858974379949">Аюултай контент</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Прокси болон галт ханыг шалгаж байна<ph name="END_LINK" /></translation>
 <translation id="2034971124472263449">Ямартай ч хадгалах</translation>
 <translation id="2036983605131262583">Өөр хуйлмал</translation>
+<translation id="2040894699575719559">Байршлыг блоклосон</translation>
 <translation id="2042213636306070719">Гарах цаасны тавиур 7</translation>
 <translation id="204357726431741734">Google Бүртгэлдээ хадгалсан нууц үгсийг ашиглахын тулд нэвтрэх</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> хэл дээрх хуудсыг орчуулахгүй.</translation>
@@ -408,6 +413,7 @@
 <translation id="2241693394036365668">Файлыг татдаг</translation>
 <translation id="2248949050832152960">WebAuthn ашиглах</translation>
 <translation id="2250931979407627383">Зүүн ирмэгийг нь нийлүүлж үдэх</translation>
+<translation id="2251943122176102076">Администратор авсан нууцлалтай контентын улмаас дэлгэцийн агшин авах эсвэл бичлэг хийхийг зөвлөдөггүй:</translation>
 <translation id="225207911366869382">Энэ бодлогын хувьд энэхүү утга нь хуучирсан байна.</translation>
 <translation id="2258928405015593961">Ирээдүйд дуусах огноо оруулаад дахин оролдоно уу</translation>
 <translation id="225943865679747347">Алдааны код: <ph name="ERROR_CODE" /></translation>
@@ -468,7 +474,6 @@
 <translation id="2465655957518002998">Хүртгэлтийн арга сонгох</translation>
 <translation id="2465688316154986572">Үдэх</translation>
 <translation id="2465914000209955735">Chrome-д татсан файлуудаа удирдана уу</translation>
-<translation id="246725142101294240"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome-н тохиргоонд Аюулгүй үзэх болон бусад тохиргоогоо удирдахын тулд Tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Сүлжээний оношилгоог ажиллуулж байна<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">1-с N хүртэлх дараалал</translation>
 <translation id="2470767536994572628">Та тэмдэглэгээг засах үед энэ документ нэг хуудсаар харах горим болон анхны эргүүлэлт рүүгээ буцна</translation>
@@ -504,6 +509,7 @@
 <translation id="2556876185419854533">&amp; Засварлах үйлдлийг буцаах</translation>
 <translation id="2570734079541893434">Тохиргоог удирдах</translation>
 <translation id="257674075312929031">Бүлэг</translation>
+<translation id="2576880857912732701">Аюулгүй байдлын тохиргоог удирдах товчлуур, Chrome-н тохиргоонд Аюулгүй үзэх болон бусад тохиргоогоо удирдахын тулд Enter дээр дарна уу</translation>
 <translation id="2586657967955657006">Түр санах ой</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" />-н энэ болон бусад <ph name="OTHER_ARTICLE_COUNT" /> нийтлэлийг уншина уу.</translation>
 <translation id="2587841377698384444">Хадгалалтын сангийн API ID:</translation>
@@ -548,6 +554,7 @@
 <translation id="2713444072780614174">Цагаан</translation>
 <translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргоон дээр төлбөр болон кредит картынхаа мэдээллийг удирдахын тулд эхлээд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="2721148159707890343">Хүсэлт амжилттай боллоо.</translation>
+<translation id="2723669454293168317">Chrome-н тохиргоонд аюулгүй байдлын шалгалтыг ажиллуулна уу</translation>
 <translation id="2726001110728089263">Хажуугийн тавиур</translation>
 <translation id="2728127805433021124">Серверийн гэрчилгээнд сул гарын үсгийн алгоритмаар нэвтэрч байна.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Холболтын оношилгоог ажиллуулж байна<ph name="END_LINK" /></translation>
@@ -571,12 +578,14 @@
 <translation id="2824775600643448204">Хаяг ба хайлтын цонх</translation>
 <translation id="2826760142808435982">Энэхүү холболтыг <ph name="CIPHER" /> ашиглаж шифрлэж таниулсан бөгөөд энэ нь түлхүүр солилцох  механизмын дагуу <ph name="KX" />-ыг ашигладаг.</translation>
 <translation id="2835170189407361413">Маягтыг цэвэрлэх</translation>
+<translation id="2839032553903800133">Мэдэгдлийг хориглосон</translation>
 <translation id="2839501879576190149">Хуурамч сайт байна</translation>
 <translation id="2850739647070081192">Урилга (Дугтуй)</translation>
 <translation id="2856444702002559011">Халдагчид <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />-с таны нууц үг, мессеж, кредит карт зэрэг мэдээллийг хулгайлахаар оролдож байж болзошгүй. <ph name="BEGIN_LEARN_MORE_LINK" />Дэлгэрэнгүй үзэх<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2859806420264540918">Энэ сайт төвөгтэй эсвэл хуурамч зар харуулдаг.</translation>
 <translation id="287596039013813457">Нөхөрсөг</translation>
 <translation id="2876489322757410363">Гадны аппликэйшнээр төлбөр төлөхийн тулд Нууцлалтай горимоос гарч байна. Үргэлжлүүлэх үү?</translation>
+<translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome-н тохиргоонд Аюулгүй үзэх болон бусад тохиргоогоо удирдахын тулд Tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="2878197950673342043">Постерын нугалаа</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2880660355386638022">Цонх байршуулалт</translation>
@@ -631,7 +640,6 @@
 <translation id="3041612393474885105">Гэрчилгээний мэдээлэл</translation>
 <translation id="3044034790304486808">Судалгаагаа үргэлжлүүлэх</translation>
 <translation id="3060227939791841287">C9 (Дугтуй)</translation>
-<translation id="3060557858482803256"><ph name="RUN_CHROME_SAFETY_CHECK_FOCUSED_FRIENDLY_MATCH_TEXT" />. Chrome-н тохиргоо хэсэгт Аюулгүй байдлын шалгалтыг ажиллуулахын тулд Tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="3061707000357573562">Patch үйлчилгээ</translation>
 <translation id="306573536155379004">Тоглоом эхэллээ.</translation>
 <translation id="3080254622891793721">График</translation>
@@ -684,6 +692,7 @@
 <translation id="3229041911291329567">Таны төхөөрөмж болон хөтчийн хувилбарын талаарх мэдээлэл</translation>
 <translation id="323107829343500871"><ph name="CREDIT_CARD" />-н карт баталгаажуулалтын кодыг оруулна уу</translation>
 <translation id="3234666976984236645">Чухал агуулга бүхий мэдээллийг үргэлж илрүүлэх</translation>
+<translation id="3240683217920639535"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, Хөтчийнхөө харагдах байдлыг өөрчлөхийн тулд tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="3240791268468473923">Тохирох мандат үнэмлэхгүй аюулгүй төлбөрийн мандат үнэмлэхийн хүснэгтийг нээсэн</translation>
 <translation id="3249845759089040423">Дэгжин</translation>
 <translation id="3252266817569339921">Франц</translation>
@@ -711,7 +720,6 @@
 <translation id="3329013043687509092">Өнгөний нэвчилт</translation>
 <translation id="3333762389743153920">Виртуал картын эрхгүй байна</translation>
 <translation id="3338095232262050444">Аюулгүй</translation>
-<translation id="3344575302477361573">Нууцлалтай цонхнуудыг хаах товчлуур, одоогоор нээлттэй байгаа бүх нууцлалтай цонхыг хаахын тулд Enter дээр дарна уу.</translation>
 <translation id="3355823806454867987">Прокси-ийн тохиргоонуудыг өөрчлөх ...</translation>
 <translation id="3360103848165129075">Төлбөр хариуцагчийн хүснэгт</translation>
 <translation id="3361596688432910856">Chrome дараах мэдээллийг <ph name="BEGIN_EMPHASIS" />хадгалахгүй<ph name="END_EMPHASIS" />:
@@ -728,6 +736,7 @@
       • Таны эргэн тойрны 3D газрын зургийг үүсгэж, камерын байршлыг хянах
       • Таны камерыг ашиглах</translation>
 <translation id="337363190475750230">Хадгалагдаагүй</translation>
+<translation id="3375754925484257129">Chrome-н аюулгүй байдлын шалгалтыг ажиллуулах</translation>
 <translation id="3377144306166885718">Сервер TLS-н хуучирсан хувилбарыг ашигласан.</translation>
 <translation id="3377188786107721145">Тохиргооны задаргааны алдаа</translation>
 <translation id="3377736046129930310">Картуудыг илүү хурдан баталгаажуулахын тулд дэлгэцийн түгжээг ашиглах</translation>
@@ -768,6 +777,7 @@
 <translation id="3462200631372590220">Дэлгэрэнгүй мэдээллийг нуух</translation>
 <translation id="3467763166455606212">Карт эзэмшигчийн нэр шаардлагатай</translation>
 <translation id="3468054117417088249"><ph name="TAB_SWITCH_SUFFIX" /> одоогоор нээлттэй байна. Нээлттэй таб руу сэлгэхийн тулд эхлээд Tab, дараа нь Enter дээр дарна уу</translation>
+<translation id="3470563864795286535"><ph name="CLOSE_INCOGNITO_WINDOWS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Одоогоор нээлттэй байгаа бүх нууцлалтай цонхыг хаахын тулд tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="3479552764303398839">Одоо биш</translation>
 <translation id="3484560055331845446">Та Google Бүртгэлийнхээ хандалтыг алдаж болзошгүй. Chrome таныг нууц үгээ одоо солихыг зөвлөж байна. Танаас нэвтрэхийг асууна.</translation>
 <translation id="3487845404393360112">Гарах цаасны тавиур 4</translation>
@@ -806,6 +816,7 @@
 <translation id="3611395257124510155"><ph name="CARD_IDENTIFIER" />-н виртуал карт</translation>
 <translation id="3614103345592970299">Хэмжээ 2</translation>
 <translation id="361438452008624280">Жагсаалтын оролт "<ph name="LANGUAGE_ID" />": Энэ хэлийг танихгүй эсвэл дэмжээгүй байна.</translation>
+<translation id="3614934205542186002"><ph name="RUN_CHROME_SAFETY_CHECK_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргоонд аюулгүй байдлын шалгалтыг ажиллуулахын тулд Tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="3615877443314183785">Дуусах огноог зөв оруулна уу</translation>
 <translation id="36224234498066874">Хайлтын өгөгдлийг устгах...</translation>
 <translation id="362276910939193118">Түүхийг бүрнээр нь харуул</translation>
@@ -860,7 +871,6 @@
 <translation id="3765588406864124894">Шуудангийн хайрцаг 9</translation>
 <translation id="3767485424735936570">Энэ контентыг <ph name="VM_NAME" /> руу хуулаад буулгахыг администраторын бодлогоор санал болгодоггүй</translation>
 <translation id="377451872037045164"><ph name="CREATE_GOOGLE_KEEP_NOTE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Keep-д шинэ тэмдэглэл шуурхай үүсгэхийн тулд эхлээд Tab, дараа нь Enter дээр дарна уу</translation>
-<translation id="3776257069753764304">Chrome-д таталтууд удирдах товчлуур, Chrome-д татсан файлуудаа удирдахын тулд Enter дээр дарна уу.</translation>
 <translation id="3778403066972421603">Та энэ картын дугаарыг Google бүртгэлдээ болон энэ төхөөрөмжид хадгалах уу?</translation>
 <translation id="3780694243617746492">Гарах цаасны сав</translation>
 <translation id="3781428340399460090">Тод ягаан</translation>
@@ -917,11 +927,7 @@
 <translation id="3969052498612555048">Кодоо олж чадахгүй байна уу? <ph name="BEGIN_LINK" />Шинэ код авах<ph name="END_LINK" /></translation>
 <translation id="397105322502079400">Тооцоолж байна ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" />-г блоклосон байна</translation>
-<translation id="3973357910713125165">Chrome-н Аюулгүй байдлын шалгалтыг ажиллуулах товчлуур. Chrome-н тохиргоо хэсэгт Аюулгүй байдлын шалгалтыг ажиллуулахын тулд Enter дээр дарна уу</translation>
 <translation id="3986705137476756801">Одоохондоо Шууд тайлбарыг унтраах</translation>
-<translation id="3987405730340719549">Энэ сайт нь хуурамч эсвэл залилангийн шинжтэй байж болно гэж Chrome тодорхойлсон.
-
-    Хэрэв та үүнийг харуулсан нь алдаа гэж үзэж байвал https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals-р зочлоорой.</translation>
 <translation id="3987940399970879459">1 МБ-аас бага</translation>
 <translation id="3990250421422698716">Шилжүүлэн байрлуулах оффсет</translation>
 <translation id="3996311196211510766"><ph name="ORIGIN" /> сайт үндсэн удирдамжийг
@@ -947,6 +953,7 @@
 <translation id="4088981014127559358">Хуудасны нүүрэн тал дээр Y тэнхлэгийн дагуу зураг шилжүүлэх</translation>
 <translation id="4089152113577680600">Тавиур 14</translation>
 <translation id="4098354747657067197">Сэжиг бүхий сайт байна</translation>
+<translation id="4099048595830172239">Администраторын бодлого нь нууцлалтай контент харагдаж байх үед дэлгэцээ <ph name="APPLICATION_TITLE" />-тай хуваалцахыг санал болгодоггүй:</translation>
 <translation id="4099391883283080991"><ph name="CUSTOMIZE_CHROME_FONTS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-д фонтын хэмжээ болон үсгийн хэлбэр өөрчлөхийн тулд эхлээд tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="4101413244023615925">Текст болон график</translation>
 <translation id="4103249731201008433">Төхөөрөмжийн сериал дугаар буруу байна</translation>
@@ -959,9 +966,9 @@
 <translation id="4117700440116928470">Журмын хамрах хүрээг дэмждэггүй.</translation>
 <translation id="4121428309786185360">-д хугацаа нь дуусна</translation>
 <translation id="4123572138124678573">Доод буланд гурван нүх цоолох</translation>
+<translation id="4127575959421463246">ChromeOS дарцгуудыг хайж байна уу? Зочлох</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 бусад}other{# бусад}}</translation>
 <translation id="4130226655945681476">Сүлжээний кабель, модем болон чиглүүлэгчийг шалгаж байна</translation>
-<translation id="4133224101597112888">Энэ табыг хуваалцах товчлуур, энэ табыг холбоос хуваалцаж, QR код үүсгэж, дамжуулж мөн бусад зүйлийг хийснээр хуваалцахын тулд Enter дээр дарна уу.</translation>
 <translation id="4134123981501319574">Документ үүсгэх</translation>
 <translation id="413544239732274901">Дэлгэрэнгүй үзэх</translation>
 <translation id="4142935452406587478">Гарах цаасны тавиур 10</translation>
@@ -988,6 +995,7 @@
     <ph name="SITE" />-д зочлох таны хүсэлтийг гүйцэтгэхэд хөтчид саад болох
      удирдамжийг хүргэж чадсангүй. Үндсэн удирдамжийг
     сайтад зориулж аюулгүй байдал болон бусад шинж чанарыг тохируулахад сайтын оператор ашиглаж болно.</translation>
+<translation id="4210602799576081649">Баталгаажуулах кодын хугацаа дууссан. Шинэ код хүснэ үү</translation>
 <translation id="421066178035138955">Виртуал бодит байдлын төхөөрөмжүүд болон өгөгдлийг ашиглах</translation>
 <translation id="4214357935346142455">нэвтрэх дэлгэцийн профайл</translation>
 <translation id="4215751373031079683">7x9 (Дугтуй)</translation>
@@ -1011,7 +1019,6 @@
     &lt;h4&gt;Алхам 5: Нэмэлт тусламж авах&lt;/h4&gt;
     &lt;p&gt;Хэрэв та тус алдааг харсаар байвал вебсайтын эзэмшигчтэй холбогдоно уу.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Сүлжээний оношилгоог ажиллуулж үзнэ үү<ph name="END_LINK" />.</translation>
-<translation id="4229544452621580519">Chrome-н тохиргоо хэсэгт Аюулгүй байдлын шалгалтыг ажиллуулна уу</translation>
 <translation id="4230204356098880324">Таны камерыг ашиглах болон хөдөлгөхийг хүсэх боломжтой</translation>
 <translation id="4234495348042597185"><ph name="BEGIN_LINK" /><ph name="SITE" /> руу үргэлжлүүлэх<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Хүчинтэй</translation>
@@ -1084,6 +1091,7 @@
 <translation id="4460315069258617173">Таны энэ сайтын табуудыг хаах хүртэл зөвшөөрсөн</translation>
 <translation id="4464826014807964867">Танай байгууллагын мэдээлэлтэй вебсайтууд</translation>
 <translation id="4465818729556336129">Энэ документ нь нууцлалтай бөгөөд танай администратораас хэвлэхийг зөвлөдөггүй.</translation>
+<translation id="447665707681730621"><ph name="BUBBLE_MESSAGE" />. <ph name="LEARN_MORE_TEXT" /></translation>
 <translation id="4476953670630786061">Энэ маягт аюултай байна. Автоматаар бөглөх хэсгийг унтраасан байна.</translation>
 <translation id="4477350412780666475">Дараагийн бичлэг</translation>
 <translation id="4481251927743463293">Нууцлалтай горимын хийдэг зүйлс</translation>
@@ -1129,6 +1137,7 @@
 <translation id="4606870351894164739">Нөлөөтэй</translation>
 <translation id="4607603470419975064">Chrome-н зөвлөгөө харах товчлуур, Chrome-н онцлогуудын талаар мэдэж авахын тулд Enter дээр дарна уу</translation>
 <translation id="4607608436550361748">Chrome-н зөвлөгөөг харах</translation>
+<translation id="4627675673814409125">Энэ бодлогыг Chrome-н профайлын түвшинд тохируулах боломжгүй бөгөөд үл хэрэгсэнэ.</translation>
 <translation id="4628948037717959914">Зураг</translation>
 <translation id="4631649115723685955">Бэлэн мөнгө олгох маягтыг холбосон</translation>
 <translation id="4636930964841734540">Мэдээлэл</translation>
@@ -1173,7 +1182,6 @@
 <translation id="4757993714154412917">Та дөнгөж сая сэжигтэй сайтад нууц үгээ орууллаа. Бүртгэлүүдээ хамгаалахын тулд Chromium хадгалсан нууц үгнүүдээ шалгахыг зөвлөж байна.</translation>
 <translation id="4758311279753947758">Харилцагчийн мэдээлэл нэмэх</translation>
 <translation id="4761104368405085019">Микрофоноо ашигла</translation>
-<translation id="4761869838909035636">Chrome-н Аюулгүй байдлын шалгалтыг ажиллуулах</translation>
 <translation id="4764776831041365478"><ph name="URL" /> холбоос бүхий веб хуудас нь түр хугацаагаар ажиллахгүй эсвэл шинэ веб хаягтай болсон байна.</translation>
 <translation id="4766713847338118463">Доод буланд хоёр удаа үдэх</translation>
 <translation id="4771973620359291008">Үл мэдэгдэх алдаа гарлаа.</translation>
@@ -1201,6 +1209,7 @@
           <ph name="LIST_ITEM" />Интернэт үйлчилгээ нийлүүлэгч вебийн ачааллыг хянаж магадгүй<ph name="END_LIST_ITEM" />
         <ph name="END_LIST" /></translation>
 <translation id="483241715238664915">Сануулгыг асаах</translation>
+<translation id="4834718916855725099">Администратор дэлгэц дээрх нууцлалтай контентын улмаас дэлгэцийн агшин авах эсвэл бичлэг хийхийг зөвлөдөггүй:</translation>
 <translation id="4838327282952368871">Зүүд шиг</translation>
 <translation id="4840250757394056958">Chrome-н түүхээ үзэх</translation>
 <translation id="484462545196658690">Автомат</translation>
@@ -1234,7 +1243,6 @@
 <translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />, хайхын тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="4930153903256238152">Их багтаамжтай</translation>
 <translation id="4943872375798546930">Илэрц байхгүй байна</translation>
-<translation id="4946982471994930967">Хандалтын тохиргоог удирдах товчлуур, Chrome-н тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд Enter дээр дарна уу.</translation>
 <translation id="4950898438188848926">Таб сэлгэх товчлуур, нээлттэй таб <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> руу сэлгэхийн тулд Enter дээр дарна уу</translation>
 <translation id="495170559598752135">Авах арга хэмжээ</translation>
 <translation id="4953689047182316270">Хүртээмжийн үйл ажиллагаанд хариу өгөх</translation>
@@ -1293,12 +1301,12 @@
 <translation id="5115216390227830982">Европ-Edp</translation>
 <translation id="5115232566827194440">Хязгаарласан хяналттай зочны сургалтыг дарах механизм</translation>
 <translation id="5115563688576182185">(64-бит)</translation>
-<translation id="5116898824332672776"><ph name="MANAGE_CHROMEOS_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome үйлдлийн системийн тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд эхлээд tab, дараа нь Enter дээр дарна уу.</translation>
 <translation id="5123063207673082822">Амралтын өдөр</translation>
 <translation id="5125394840236832993">B-Нэмэх</translation>
 <translation id="5126510351761255129">Картаа баталгаажуулах</translation>
 <translation id="512670116361803001"><ph name="APP_NAME" />-н хэмжээ сайн өөрчлөгдөхгүй байж магадгүй. Аппыг асуудалтай тулгарахаас сэргийлэхийн тулд урьдчилан тохируулсан цонхны хэмжээг ашиглана уу.</translation>
 <translation id="5135404736266831032">Хаягийг удирдах...</translation>
+<translation id="5136841603454277753">Зөв код оруулна уу</translation>
 <translation id="5138014172396933048">Виртуал карт яг одоо боломжгүй байна. Банктайгаа холбогдоно уу</translation>
 <translation id="5138227688689900538">Хураангуйлж харуулах</translation>
 <translation id="5145883236150621069">удирдамжийн хариулт дахь алдааны код</translation>
@@ -1330,6 +1338,7 @@
 <translation id="5230733896359313003">Хүргэлтийн хаяг</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
+<translation id="5234764350956374838">Хэрэгсэхгүй болго</translation>
 <translation id="5250209940322997802">"Сүлжээнд холбогдох"</translation>
 <translation id="52517543715119994">Chrome-н онцлогуудын талаар мэдэж аваарай</translation>
 <translation id="5251803541071282808">Cloud</translation>
@@ -1338,7 +1347,6 @@
 <translation id="5254958791078852567">E1</translation>
 <translation id="5255690596502591079">Ямартай ч зургийг нь авах</translation>
 <translation id="5266128565379329178">Дээд булан дагуу үдэж хавтаслах</translation>
-<translation id="5269124652893918188"><ph name="MANAGE_CHROME_THEMES_FOCUSED_FRIENDLY_MATCH_TEXT" />, Хөтчийнхөө харагдах байдлыг өөрчлөхийн тулд tab, дараа нь Enter дээр дарна уу.</translation>
 <translation id="5269225904387178860">Доод буланд дөрвөн нүх цоолох</translation>
 <translation id="5269999699920406580">Системийн хэмжээнд ашиглаж болохуйц онцлогийг зөвхөн өмчлөгч л тохируулж болно: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="5273658854610202413">Анхааруулга: Энэ удирдамж нь нэгтгэж болдог толь бичгийн удирдамжийн нэг хэсэг биш тул үүнийг PolicyDictionaryMultipleSourceMergeList удирдамжид тодорхойлсны дагуу нэгтгэж чадсангүй.</translation>
@@ -1391,7 +1399,6 @@
 <translation id="5426179911063097041"><ph name="SITE" /> танд мэдэгдэл илгээх хүсэлтэй байна</translation>
 <translation id="5428105026674456456">Испани</translation>
 <translation id="5430298929874300616">Хавчуургыг устга</translation>
-<translation id="5434889539950523874"><ph name="SHARE_THIS_PAGE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Энэ табыг холбоос хуваалцаж, QR код үүсгэж, дамжуулж мөн бусад зүйлийг хийснээр хуваалцахын тулд tab, дараа нь Enter дээр дарна уу.</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />":<ph name="ERROR" /> дэх схемийн баталгаажуулахад гарсан алдаа</translation>
 <translation id="5443468954631487277">Нүүрээр нь дээш харуулж, хуудасны урвуу дарааллаар</translation>
 <translation id="5447765697759493033">Энэ сайтыг орчуулахгүй</translation>
@@ -1424,7 +1431,6 @@
 <translation id="5540224163453853">Хүссэн өгүүлэлийг олж чадсангүй.</translation>
 <translation id="5541086400771735334">Шуудангийн хайрцаг 7</translation>
 <translation id="5541546772353173584">Имэйл нэмэх</translation>
-<translation id="5542280138350899197">Аюулгүй байдлын тохиргоог удирдах товч. Chrome-н тохиргоонд Аюулгүй үзэх болон бусад тохиргоогоо удирдахын тулд Enter дээр дарна уу</translation>
 <translation id="5545756402275714221">Танд зориулсан нийтлэл</translation>
 <translation id="5552137475244467770">Chrome нь таны нууц үгийг онлайнаар нийтэлсэн жагсаалтуудтай үе үе харьцуулж шалгадаг. Үүнийг хийх үед таны нууц үг болон хэрэглэгчийн нэр кодчилогдсон байх бөгөөд ингэснээр Google-г оролцуулаад хэн ч тэдгээрийг унших боломжгүй болно.</translation>
 <translation id="5556459405103347317">Дахин ачаал</translation>
@@ -1490,6 +1496,8 @@
 <translation id="5785756445106461925">Цаашилбал, энэ хуудас нь аюултай бусад үүсвэрүүдийг агуулж байна. Ийм төрлийн үүсвэрүүдийг дамжуулж байх явцад бусад хүмүүс харах, мөн халдагч нар хуусанд нөлөөлөхүйц байдлаар өөрчилж болдог.</translation>
 <translation id="5786044859038896871">Картын мэдээллээ бөглөх үү?</translation>
 <translation id="578633867165174378">Chrome таны дөнгөж сая ашигласан нууц үгийг өгөгдлийн зөрчлөөс оллоо. Бид энэ нууц үгийг одоо өөрчлөхийг зөвлөж байна.</translation>
+<translation id="5789643057113097023">.</translation>
+<translation id="5797429178165847917">Нууцлалтай контентын зураг авах</translation>
 <translation id="5803412860119678065">Та <ph name="CARD_DETAIL" />-г бөглөх үү?</translation>
 <translation id="5804241973901381774">Зөвшөөрлүүд</translation>
 <translation id="5810442152076338065">Таны <ph name="DOMAIN" />-тай холбогдох холболтыг хоцрогдсон шифр ашиглан шифрлэсэн байна.</translation>
@@ -1501,9 +1509,6 @@
 <translation id="5830698870816298009">камерын ашиглалт болон хөдөлгөөн</translation>
 <translation id="5838278095973806738">Энэ сайтын мэдээллийг халдагч этгээд хулгайлж болзошгүй тул чухал мэдээллээ бүү оруулна уу (жишээ нь нууц үг, кредит карт зэрэг).</translation>
 <translation id="5851548754964597211">Цонхны жагсаалт</translation>
-<translation id="5855253129151731373">Энэ сайтын хостны нэр <ph name="LOOKALIKE_DOMAIN" />-тай төстэй байна. Халдагч этгээдүүд заримдаа харахад хэцүү, бага зэргийн өөрчлөлтийг домайн нэрд оруулах замаар сайтыг дуурайдаг.
-
-    Хэрэв та үүнийг харуулсан нь алдаа гэж үзэж байвал https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals-р зочлоорой.</translation>
 <translation id="5860033963881614850">Идэвхгүй байна</translation>
 <translation id="5862579898803147654">Гарах цаасыг зэрэгцүүлэх тавцан 8</translation>
 <translation id="5863847714970149516">Дараагийн хуудас танд төлбөр ногдуулж болзошгүй</translation>
@@ -1579,6 +1584,7 @@
 <translation id="6080696365213338172">Та админ-аас өгсөн гэрчилгээг ашиглан контент руу нэвтэрсэн байна. Таны <ph name="DOMAIN" /> руу оруулсан өгөгдлийг админаас хориглож болно.</translation>
 <translation id="6087312102907839798">Холбоотой хайлтууд</translation>
 <translation id="6094273045989040137">Тэмдэглэгээ хийх</translation>
+<translation id="6094290315941448991">Администраторын бодлого нь нууцлалтай контентыг харагдаж байх үед дэлгэцийн үйлдэл бичихийг идэвхгүй болгодог</translation>
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="6105460996796456817">Сайт үүсгэх</translation>
 <translation id="6106989379647458772"><ph name="PAGE" />-ын веб хуудас түр хугацаанд ажиллахгүй, эсвэл шинэ хуудас болон бүрмөсөн солигдсон байж болзошгүй.</translation>
@@ -1605,6 +1611,7 @@
 <translation id="6218753634732582820">Хаягийг Chromium-с устгах уу?</translation>
 <translation id="622039917539443112">Зэрэгцээ нугалаа</translation>
 <translation id="6221345481584921695"><ph name="SITE" />-д <ph name="BEGIN_LINK" />вирус<ph name="END_LINK" /> байгааг Google-ийн Аюулгүй Хайлт олж ирлрүүллээ. Ихэвчлэн аюулгүй байдаг веб сайтууд заримдаа вирусд өртөх тохиолдол байдаг бөгөөд энэхүү зар сурталчилгааны агуулга бүхий мэдээлэлүүд нь вирус тараагчаар танигдсан <ph name="SUBRESOURCE_HOST" />-аас ирдэг.</translation>
+<translation id="6226163402662242066"><ph name="MANAGE_CHROME_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд эхлээд tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="6234122620015464377">Документ бүрийн дараа тайрах</translation>
 <translation id="6240447795304464094">Google Pay-н лого</translation>
 <translation id="6241121617266208201">Зөвлөмжийг нуух</translation>
@@ -1623,6 +1630,7 @@
 <translation id="6279098320682980337">Виртуал картын дугаарыг бөглөөгүй байна уу? Хуулахын тулд картын дэлгэрэнгүйг товшино уу</translation>
 <translation id="6280223929691119688">Энэ хаяг руу хүргэх боломжгүй тул өөр хаяг сонгоно уу.</translation>
 <translation id="6282194474023008486">Шуудангийн код</translation>
+<translation id="6285507000506177184">Chrome-д таталтуудыг удирдах товчлуур, Chrome-д татсан файлуудаа удирдахын тулд Enter дээр дарна уу</translation>
 <translation id="6289939620939689042">Хуудасны өнгө</translation>
 <translation id="6290238015253830360">Таны санал болгосон нийтлэл энд харагдана</translation>
 <translation id="6293309776179964942">JIS B5</translation>
@@ -1683,7 +1691,6 @@
 <translation id="647261751007945333">Төхөөрөмжийн тохиргоонууд</translation>
 <translation id="6476284679642588870">Төлбөрийн хэрэгсэл удирдах</translation>
 <translation id="6489534406876378309">Гэмтлүүдийг ачаалж эхэл</translation>
-<translation id="6493328574149990106"><ph name="MANAGE_CHROME_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргоонд хандалтын хэрэгслээ хувийн болгохын тулд эхлээд tab, дараа нь Enter дээр дарна уу.</translation>
 <translation id="6493924760403974580">Энэ апп зөвхөн энэ хэмжээг дэмждэг.</translation>
 <translation id="6494750904506170417">попап болон дахин чиглүүлэлт</translation>
 <translation id="6499038740797743453">Нууц үгийг шинэчлэх үү?</translation>
@@ -1739,6 +1746,7 @@
 <translation id="6689249931105087298">Хар цэгийн шахалттай харьцангуй</translation>
 <translation id="6689271823431384964">Та нэвтэрсэн тул Chrome таны картыг таны Google бүртгэлд хадгалахыг санал болгож байна. Та энэ ажиллах төлөвийг тохиргоонд өөрчилж болно. Карт эзэмшигчийн нэр таны бүртгэлээс гаралтай.</translation>
 <translation id="6694681292321232194"><ph name="FIND_MY_PHONE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Бүртгэлээс төхөөрөмжөө олохын тулд Tab, дараа нь Enter дээр дарна уу</translation>
+<translation id="6696588630955820014">Энэ табыг хуваалцах товчлуур, энэ табыг холбоос хуваалцаж, QR код үүсгэж, дамжуулж мөн бусад зүйлийг хийснээр хуваалцахын тулд Enter дээр дарна уу</translation>
 <translation id="6698381487523150993">Үүсгэсэн:</translation>
 <translation id="6702919718839027939">Үзүүлэн</translation>
 <translation id="6710213216561001401">Өмнөх</translation>
@@ -1753,6 +1761,7 @@
 <translation id="674375294223700098">Серверийн гэрчилгээний алдаа танигдахгүй байна.</translation>
 <translation id="6744009308914054259">Холболтыг хүлээх явцад та офлайн нийтлэлүүдийг уншихын тулд татаж авсан хэсэгт зочлох боломжтой.</translation>
 <translation id="6753269504797312559">Тохиргооны утга</translation>
+<translation id="6755241357817244406">chrome://flags</translation>
 <translation id="6757797048963528358">Таны төхөөрөмж идэвхгүй болсон байна.</translation>
 <translation id="6767985426384634228">Хаягийг шинэчлэх үү?</translation>
 <translation id="6768213884286397650">Хагаки (Ил захидал)</translation>
@@ -1840,6 +1849,7 @@
 <translation id="706295145388601875">Chrome-н тохиргоонд хаяг нэмж мөн удирдана уу</translation>
 <translation id="7064851114919012435">Харилцагчийн мэдээлэл</translation>
 <translation id="7068733155164172741"><ph name="OTP_LENGTH" /> оронтой кодыг оруулна уу</translation>
+<translation id="7070090581017165256">Энэ сайтын талаар</translation>
 <translation id="70705239631109039">Таны холболт бүрэн аюулгүй биш байна</translation>
 <translation id="7075452647191940183">Хүсэлт хэт том байна</translation>
 <translation id="7079718277001814089">Энэ сайт хортой код агуулж байна</translation>
@@ -1942,6 +1952,7 @@
 <translation id="7392089738299859607">Хаягийг шинэчлэх</translation>
 <translation id="7399802613464275309">Аюулгүй байдлын шалгалт</translation>
 <translation id="7400418766976504921">URL</translation>
+<translation id="7403392780200267761">Энэ табыг холбоос хуваалцаж, QR код үүсгэж, дамжуулж мөн бусад зүйлийг хийснээр хуваалцаарай</translation>
 <translation id="7403591733719184120">Таны <ph name="DEVICE_NAME" />-г удирдаж байна</translation>
 <translation id="7407424307057130981">&lt;p&gt;Таны Windows компьютерт Superfish программ хангамж байгаа тохиолдолд та тус алдааг харах болно.&lt;/p&gt;
       &lt;p&gt;Тус программ хангамжийг түр хугацаанд идэвхгүй болгохын тулд эдгээр алхмыг дагаснаар та вебэд хандах боломжтой болно. Танд админы эрх шаардлагатай.&lt;/p&gt;
@@ -2022,7 +2033,6 @@
 <translation id="7638605456503525968">Цуваа порт</translation>
 <translation id="7639968568612851608">Хар саарал</translation>
 <translation id="7647206758853451655">Хэвлэлийн чанар</translation>
-<translation id="7648685412377719625">Одоогоор нээлттэй байгаа бүх нууцлалтай цонхыг хаана.</translation>
 <translation id="7648992873808071793">Энэхүү төхөөрөмж дээр файлуудыг хадгалах</translation>
 <translation id="7653957176542370971">Төлбөр хариуцагчийн хүснэгт хаалттай байна</translation>
 <translation id="7654909834015434372">Тэмдэглэгээг засахад энэ документ анхны эргүүлэлт рүүгээ буцна</translation>
@@ -2084,6 +2094,7 @@
 <translation id="7813600968533626083">Chrome-оос санал болгож буй зүйлийг устгах уу?</translation>
 <translation id="781440967107097262">Түр санах ойг хуваалцах уу?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />'-н <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> олдсон</translation>
+<translation id="782125616001965242">Энэ сайтын талаарх мэдээллийг харуулах</translation>
 <translation id="782886543891417279">Таны ашиглаж буй Wi-Fi (<ph name="WIFI_NAME" />) сүлжээ таныг нэвтрэх хуудаст орохыг шаардах магадлалтай.</translation>
 <translation id="7836231406687464395">Postfix (Дугтуй)</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Байхгүй}=1{1 апп (<ph name="EXAMPLE_APP_1" />)}=2{2 апп (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# апп (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
@@ -2105,7 +2116,6 @@
 <translation id="7932579305932748336">Хамгаалалтын өнгөлгөө хийх</translation>
 <translation id="79338296614623784">Зөв утасны дугаар оруулна уу</translation>
 <translation id="7934414805353235750"><ph name="URL" /> хамгаалсан агуулгыг тоглуулах хүсэлтэй байна. Таны төхөөрөмжийн таниулбарыг Google-с баталгаажуулна.</translation>
-<translation id="7935031712718413217">Залилангийн байж болох URL</translation>
 <translation id="7935318582918952113">DOM цэвэршүүлэгч</translation>
 <translation id="7937554595067888181"><ph name="EXPIRATION_DATE_ABBR" />-д дуусна</translation>
 <translation id="7938958445268990899">Серверийн гэрчилгээ хараахан хүчин төгөлдөр биш байна.</translation>
@@ -2116,7 +2126,6 @@
 <translation id="7950027195171824198">Chrome-н тохиргоонд күүкиний сонголтоо удирдана уу</translation>
 <translation id="7951415247503192394">(32-бит)</translation>
 <translation id="7953569069500808819">Дээд буланг нь нийлүүлж үдэх</translation>
-<translation id="7954041596401851904">Энэ табыг холбоос хуваалцаж, QR код үүсгэж, дамжуулж мөн бусад зүйлийг хийснээр хуваалцаарай.</translation>
 <translation id="7956713633345437162">Гар утасны хавчуурга</translation>
 <translation id="7961015016161918242">Хэзээ ч</translation>
 <translation id="7966803981046576691">Ажилтай холбоотой бүртгэлийн төрөл</translation>
@@ -2173,6 +2182,7 @@
 <translation id="810875025413331850">Ойролцоох төхөөрөмж олдсонгүй.</translation>
 <translation id="8116925261070264013">Дууг хаасан</translation>
 <translation id="8118489163946903409">Төлбөрийн хэрэгсэл</translation>
+<translation id="8124639700796374294">Chrome-г өөрчлөх товчлуур, хөтчийнхөө харагдах байдлыг өөрчлөхийн тулд Enter дээр дарна уу</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />"-г таны компьютер эсвэл сүлжээнд зөв суулгаагүй байна. Энэ асуудлыг шийдвэрлэхийн тулд админтайгаа холбогдоно уу.</translation>
 <translation id="8131740175452115882">Батлах</translation>
 <translation id="8148608574971654810">PDF хувилбар:</translation>
@@ -2190,7 +2200,6 @@
 <translation id="8202370299023114387">Зөрчил</translation>
 <translation id="8206978196348664717">Prc4 (Дугтуй)</translation>
 <translation id="8211406090763984747">Холболт аюулгүй байна</translation>
-<translation id="8215696832828595581">Chrome-г өөрчлөх товчлуур, хөтчийнхөө харагдах байдлыг өөрчлөхийн тулд Enter дээр дарна уу.</translation>
 <translation id="8218327578424803826">Заасан байршил:</translation>
 <translation id="8220146938470311105">C7/C6 (Дугтуй)</translation>
 <translation id="8225771182978767009">Энэ компьютерийг тохиуулсан хүн энэ сайтыг блоклосон байна.</translation>
@@ -2220,7 +2229,6 @@
 <translation id="8282947398454257691">Төхөөрөмжийнхөө тусгай дугаарыг мэдэж аваарай</translation>
 <translation id="8284769179630993263">Chrome-н тохиргоонд Аюулгүй үзэх болон бусад тохиргоогоо удирдана уу</translation>
 <translation id="8286036467436129157">Нэвтрэх</translation>
-<translation id="8287501787477690853">Администратор авсан нууцлалтай контентын улмаас дэлгэцийн агшин авах эсвэл бичлэг хийхийг зөвлөдөггүй.</translation>
 <translation id="8288807391153049143">Гэрчилгээг харуулах</translation>
 <translation id="8289355894181816810">Хэрэв та үүнийг юу гэсэн үг болохыг сайн мэдэхгүй байгаа бол сүлжээнийхээ админтай холбоо барина уу.</translation>
 <translation id="8293206222192510085">Хадгалагдсан хуудас нэмэх</translation>
@@ -2232,7 +2240,6 @@
 <translation id="830498451218851433">Хагас нугалаа</translation>
 <translation id="8307358339886459768">Жижиг-Зураг</translation>
 <translation id="8307888238279532626">Суулгасан аппууд болон тэдгээрийг ашигладаг давтамж</translation>
-<translation id="831207732689920588">Энэ хуудас сэжигтэй байна (Chrome-с дарцагласан).</translation>
 <translation id="831997045666694187">Үдэш</translation>
 <translation id="8321476692217554900">мэдэгдэл</translation>
 <translation id="8328484624016508118">Бүх нууцлалтай табыг хаасны дараа Chrome дараахыг арилгана:
@@ -2275,6 +2282,7 @@
 <translation id="8438476240229491014">Энэ тохиргоог сануулах</translation>
 <translation id="8438786541497918448">Камер, микрофон ашиглах уу?</translation>
 <translation id="8446884382197647889">Дэлгэрэнгүй мэдээлэл</translation>
+<translation id="8449836157089738489">Бүгдийг шинэ табын бүлэгт нээх</translation>
 <translation id="8457125768502047971">Тодорхойгүй</translation>
 <translation id="8461694314515752532">Синк хийсэн өгөгдлийг синкийн нэвтрэх үгээрээ шифрлэх</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредит карт}other{# кредит карт}}</translation>
@@ -2291,7 +2299,6 @@
 <translation id="8507227106804027148">Тушаалын мөр</translation>
 <translation id="8508648098325802031">Хайлтын дүрс тэмдэг</translation>
 <translation id="8511402995811232419">Күүки удирдах</translation>
-<translation id="8519478486928352883">Администратор дэлгэц дээрх нууцлалтай контентын улмаас дэлгэцийн агшин авах эсвэл бичлэг хийхийг зөвлөдөггүй.</translation>
 <translation id="8522552481199248698">Chrome танд Google Бүртгэлээ хамгаалах болон нууц үгээ солиход туслах боломжтой.</translation>
 <translation id="8530813470445476232">Chrome тохиргооноос хөтчийн түүх, күүки, завсрын санах ой болон бусад зүйлийг устгах</translation>
 <translation id="8533619373899488139">Системийн администраторынхаа хэрэгжүүлдэг блоклосон URL-үүдийн болон бусад удирдамжийн жагсаалтыг харахын тулд &lt;strong&gt; chrome://policy&lt;/strong&gt;-д зочилно уу.</translation>
@@ -2299,6 +2306,7 @@
 <translation id="8541158209346794904">Bluetooth төхөөрөмж</translation>
 <translation id="8542014550340843547">Доод буланд гурван удаа үдэх</translation>
 <translation id="8543181531796978784">Та <ph name="BEGIN_ERROR_LINK" />илрүүлсэн асуудлаа мэдээлж болно<ph name="END_ERROR_LINK" /> эсвэл учирч болох эрсдлийг ойлгож байгаа бол <ph name="BEGIN_LINK" />энэхүү хамгаалалтгүй сайтад зочлоорой<ph name="END_LINK" />.</translation>
+<translation id="8554010658308662631">Илүү ихийг ачаалах</translation>
 <translation id="8554912124839363479">{NUM_PERMISSIONS,plural, =1{Зөвшөөрлийг шинэчлэх}other{Зөвшөөрлүүдийг шинэчлэх}}</translation>
 <translation id="8555010941760982128">Тооцоо хийхдээ энэ кодыг ашиглаарай</translation>
 <translation id="8557066899867184262">Карт баталгаажуулалтын код таны картын ард байрладаг.</translation>
@@ -2357,6 +2365,7 @@
 <translation id="87601671197631245">Энэ сайт аюулгүй байдлын хуучирсан тохируулга ашиглаж байгаа тул таны мэдээллийг (жишээлбэл нууц үг, мессеж эсвэл кредит карт) энэ сайт руу илгээх үед задруулж болзошгүй.</translation>
 <translation id="8761567432415473239">Google-ийн Аюулгүй хайлт нь саяхан <ph name="SITE" /> дээр <ph name="BEGIN_LINK" />гэмтэл үүсгэж болох программ илрүүллээ<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB төхөөрөмж</translation>
+<translation id="8763986294015493060">Одоогоор нээлттэй байгаа бүх нууцлалтай цонхыг хаагаарай</translation>
 <translation id="8766943070169463815">Аюулгүй төлбөрийн мандат үнэмлэхийг баталгаажуулах хүснэгтийг нээсэн</translation>
 <translation id="877985182522063539">A4</translation>
 <translation id="8790007591277257123">&amp; Устгах үйлдлийг дахин хийх</translation>
@@ -2364,11 +2373,13 @@
 <translation id="8792626944327216835">микрофон</translation>
 <translation id="8793655568873652685"><ph name="ENROLLMENT_DOMAIN" /> нь Chrome Enterprise Connectors-г таны хөтөч дээр асаасан. Эдгээр холбогч нь таны зарим өгөгдөлд хандах эрхтэй.</translation>
 <translation id="8798099450830957504">Гэрээ үл биелүүлэх</translation>
+<translation id="8798739476508189189">Хөтчийн дарцгуудыг хайж байна уу? Зочлох</translation>
 <translation id="8805819170075074995">Жагсаалтын оролт "<ph name="LANGUAGE_ID" />": Энэ оролт SpellcheckLanguage удирдамжид мөн адил багтсан тул үүнийг үл хэрэгссэн болно.</translation>
 <translation id="8807160976559152894">Хуудас бүрийн дараа тайрах</translation>
 <translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргооноосоо Chrome-г шинэчлэхийн тулд эхлээд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="8820817407110198400">Хавчуургууд</translation>
 <translation id="882338992931677877">Гараар оруулах оролт</translation>
+<translation id="8834380158646307944">Нууцлалтай цонхнуудыг хаах товчлуур, одоогоор нээлттэй байгаа бүх нууцлалтай цонхыг хаахын тулд Enter дээр дарна уу</translation>
 <translation id="883848425547221593">Бусад хадгалагдсан хуудсууд</translation>
 <translation id="884264119367021077">Илгээх хаяг</translation>
 <translation id="884923133447025588">Хүчингүй болгох арга олдсонгүй.</translation>
@@ -2382,6 +2393,7 @@
 <translation id="8870494189203302833">Нүүрээр нь доош харуулж, хуудасны дарааллын дагуу</translation>
 <translation id="8871553383647848643">Хөтчийнхөө харагдах байдлыг өөрчлөх</translation>
 <translation id="8874824191258364635">Зөв картны дугаар оруулна уу</translation>
+<translation id="8884537526797090108">Нууцлалтай контентыг бичих боломжгүй</translation>
 <translation id="8891727572606052622">Орлон ашиглах горим хүчингүй байна</translation>
 <translation id="8894794286471754040">Эхлээд урт зах</translation>
 <translation id="8903921497873541725">Томруулж харах</translation>
@@ -2389,7 +2401,6 @@
 <translation id="890493561996401738">Зөвлөмж устгах товчлуур, устгахын тулд Enter дээр дарна уу, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8912362522468806198">Google Бүртгэл</translation>
 <translation id="8913778647360618320">Төлбөрийн хэрэгслүүдийг удирдах товч, Chrome-н тохиргоон дээр төлбөр болон кредит картынхаа мэдээллийг удирдахын тулд Enter дарна уу</translation>
-<translation id="8918231688545606538">Энэ хуудас сэжигтэй байна</translation>
 <translation id="8922013791253848639">Энэ сайтад зарыг үргэлж зөвшөөрөх</translation>
 <translation id="892588693504540538">Баруун дээд буланд нэг нүх цоолох</translation>
 <translation id="8931333241327730545">Та картаа өөрийн Google Бүртгэлд хадгалах уу?</translation>
@@ -2422,6 +2433,7 @@
 <translation id="9020200922353704812">Картын нэхэмжлэлийн хаяг шаардлагатай</translation>
 <translation id="9020542370529661692">Энэ хуудсыг <ph name="TARGET_LANGUAGE" /> руу хөрвүүлсэн байна.</translation>
 <translation id="9020742383383852663">A8</translation>
+<translation id="9021429684248523859"><ph name="SHARE_THIS_PAGE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Энэ табыг холбоос хуваалцаж, QR код үүсгэж, дамжуулж мөн бусад зүйлийг хийснээр хуваалцахын тулд tab, дараа нь Enter дээр дарна уу</translation>
 <translation id="9025348182339809926">(Хүчингүй)</translation>
 <translation id="9030265603405983977">Дан өнгөтэй</translation>
 <translation id="9035022520814077154">Аюулгүй байдлын алдаа</translation>
@@ -2436,6 +2448,7 @@
 <translation id="9050666287014529139">Нэвтрэх хэллэг</translation>
 <translation id="9056953843249698117">Дэлгүүр</translation>
 <translation id="9062620674789239642">Үүнийг зөөсөн, зассан эсвэл устгасан байж болзошгүй.</translation>
+<translation id="9063800855227801443">Нууцлалтай контентын зургийг авах боломжгүй</translation>
 <translation id="9065203028668620118">Засварлах</translation>
 <translation id="9065745800631924235">Түүх дэх <ph name="TEXT" />-н хайлт</translation>
 <translation id="9069693763241529744">Өргөтгөл блоклосон</translation>
@@ -2467,6 +2480,7 @@
 <translation id="9157595877708044936">Тохиргоог хийж байна ...</translation>
 <translation id="9158625974267017556">C6 (Дугтуй)</translation>
 <translation id="9164029392738894042">Нарийвчлалын шалгалт</translation>
+<translation id="9164742147345933553">os://flags</translation>
 <translation id="9168814207360376865">Танд хадгалсан төлбөрийн хэрэгсэл байгаа эсэхийг шалгахыг сайтуудад зөвшөөрөх</translation>
 <translation id="9169664750068251925">Энэ сайт дээр үргэлж хориглох</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />-г Үндсэн нүүрэнд нэмэх</translation>

@@ -221,8 +221,9 @@ bool WriteStructEqualityOperator(int fd,
     } else {
       dprintf(fd, " &&\n         ");
     }
-    auto name = ToUnderscoreId(type.struct_type.members[i].name);
-    dprintf(fd, "this->%s == other.%s", name.c_str(), name.c_str());
+    const auto member_name = ToUnderscoreId(type.struct_type.members[i].name);
+    dprintf(fd, "this->%s == other.%s", member_name.c_str(),
+            member_name.c_str());
   }
   dprintf(fd, ";\n}");
   dprintf(fd, "\nbool %s::operator!=(const %s& other) const {\n", name.c_str(),

@@ -15,7 +15,7 @@
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/cfx_imagerenderer.h"
 #include "core/fxge/dib/fx_dib.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_DIBBase;
 class CFX_DefaultRenderDevice;
@@ -73,7 +73,7 @@ class CPDF_ImageRenderer {
                           const FX_RECT& rect) const;
   const CPDF_RenderOptions& GetRenderOptions() const;
   void HandleFilters();
-  Optional<FX_RECT> GetUnitRect() const;
+  absl::optional<FX_RECT> GetUnitRect() const;
   bool GetDimensionsFromUnitRect(const FX_RECT& rect,
                                  int* left,
                                  int* top,

@@ -71,6 +71,20 @@ build:x86-64:linux:clang-10:cxx11-on:
     - linux
     - x86-64
 
+# Clang-10, AVX512
+build:x86-64:linux:clang-10:cxx11-on:avx512:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "on"
+    EIGEN_TEST_AVX512DQ: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+    - avx512
+
 ######## AArch64 ###############################################################
 # GCC-10
 build:aarch64:linux:gcc-10:cxx11-on:
@@ -107,6 +121,7 @@ build:ppc64le:linux:gcc-10:cxx11-on:
     EIGEN_CI_CXX_COMPILER: "g++-10"
     EIGEN_CI_CC_COMPILER: "gcc-10"
     EIGEN_TEST_CXX11: "on"
+    EIGEN_CI_ADDITIONAL_ARGS: "-DCMAKE_CXX_FLAGS='-DEIGEN_ALTIVEC_DISABLE_MMA'"
   tags:
     - eigen-runner
     - linux

@@ -15,18 +15,19 @@ TextGlyphPos::TextGlyphPos(const TextGlyphPos&) = default;
 
 TextGlyphPos::~TextGlyphPos() = default;
 
-Optional<CFX_Point> TextGlyphPos::GetOrigin(const CFX_Point& offset) const {
+absl::optional<CFX_Point> TextGlyphPos::GetOrigin(
+    const CFX_Point& offset) const {
   FX_SAFE_INT32 left = m_Origin.x;
   left += m_pGlyph->left();
   left -= offset.x;
   if (!left.IsValid())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   FX_SAFE_INT32 top = m_Origin.y;
   top -= m_pGlyph->top();
   top -= offset.y;
   if (!top.IsValid())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return CFX_Point(left.ValueOrDie(), top.ValueOrDie());
 }

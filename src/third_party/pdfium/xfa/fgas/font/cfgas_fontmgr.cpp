@@ -24,6 +24,7 @@
 #include "third_party/base/check.h"
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/cxx17_backports.h"
+#include "third_party/base/span.h"
 #include "xfa/fgas/font/cfgas_gefont.h"
 #include "xfa/fgas/font/fgas_fontutils.h"
 
@@ -333,11 +334,9 @@ uint16_t FX_GetUnicodeBit(wchar_t wcUnicode) {
   return x ? x->wBitField : 999;
 }
 
-inline uint8_t GetUInt8(const uint8_t* p) {
-  return p[0];
-}
-
-inline uint16_t GetUInt16(const uint8_t* p) {
+uint16_t ReadUInt16FromSpanAtOffset(pdfium::span<const uint8_t> data,
+                                    size_t offset) {
+  const uint8_t* p = &data[offset];
   return FXSYS_UINT16_GET_MSBFIRST(p);
 }
 
@@ -362,37 +361,36 @@ void ftStreamClose(FXFT_StreamRec* stream) {}
 
 }  // extern "C"
 
-// TODO(thestig): Pass in |name_table| as a std::vector?
-std::vector<WideString> GetNames(const uint8_t* name_table) {
+std::vector<WideString> GetNames(pdfium::span<const uint8_t> name_table) {
   std::vector<WideString> results;
-  if (!name_table)
+  if (name_table.empty())
     return results;
 
-  const uint8_t* pTable = name_table;
-  WideString wsFamily;
-  const uint8_t* sp = pTable + 2;
-  const uint8_t* pNameRecord = pTable + 6;
-  uint16_t nNameCount = GetUInt16(sp);
-  const uint8_t* pStr = pTable + GetUInt16(sp + 2);
-  for (uint16_t j = 0; j < nNameCount; j++) {
-    uint16_t nNameID = GetUInt16(pNameRecord + j * 12 + 6);
+  uint16_t nNameCount = ReadUInt16FromSpanAtOffset(name_table, 2);
+  pdfium::span<const uint8_t> str =
+      name_table.subspan(ReadUInt16FromSpanAtOffset(name_table, 4));
+  pdfium::span<const uint8_t> name_record = name_table.subspan(6);
+  for (uint16_t i = 0; i < nNameCount; ++i) {
+    uint16_t nNameID = ReadUInt16FromSpanAtOffset(name_table, i * 12 + 6);
     if (nNameID != 1)
       continue;
 
-    uint16_t nPlatformID = GetUInt16(pNameRecord + j * 12 + 0);
-    uint16_t nNameLength = GetUInt16(pNameRecord + j * 12 + 8);
-    uint16_t nNameOffset = GetUInt16(pNameRecord + j * 12 + 10);
-    wsFamily.clear();
+    uint16_t nPlatformID = ReadUInt16FromSpanAtOffset(name_record, i * 12);
+    uint16_t nNameLength = ReadUInt16FromSpanAtOffset(name_record, i * 12 + 8);
+    uint16_t nNameOffset = ReadUInt16FromSpanAtOffset(name_record, i * 12 + 10);
     if (nPlatformID != 1) {
-      for (uint16_t k = 0; k < nNameLength / 2; k++) {
-        wchar_t wcTemp = GetUInt16(pStr + nNameOffset + k * 2);
+      WideString wsFamily;
+      for (uint16_t j = 0; j < nNameLength / 2; ++j) {
+        wchar_t wcTemp = ReadUInt16FromSpanAtOffset(str, nNameOffset + j * 2);
         wsFamily += wcTemp;
       }
       results.push_back(wsFamily);
       continue;
     }
-    for (uint16_t k = 0; k < nNameLength; k++) {
-      wchar_t wcTemp = GetUInt8(pStr + nNameOffset + k);
+
+    WideString wsFamily;
+    for (uint16_t j = 0; j < nNameLength; ++j) {
+      wchar_t wcTemp = str[nNameOffset + j];
       wsFamily += wcTemp;
     }
     results.push_back(wsFamily);
@@ -443,7 +441,7 @@ uint32_t GetFlags(FXFT_FaceRec* pFace) {
 }
 
 RetainPtr<IFX_SeekableReadStream> CreateFontStream(CFX_FontMapper* pFontMapper,
-                                                   uint32_t index) {
+                                                   size_t index) {
   size_t dwFileSize = 0;
   std::unique_ptr<uint8_t, FxFreeDeleter> pBuffer =
       pFontMapper->RawBytesForIndex(index, &dwFileSize);
@@ -459,7 +457,7 @@ RetainPtr<IFX_SeekableReadStream> CreateFontStream(
   CFX_FontMapper* pFontMapper = pFontMgr->GetBuiltinMapper();
   pFontMapper->LoadInstalledFonts();
 
-  for (int32_t i = 0; i < pFontMapper->GetFaceSize(); ++i) {
+  for (size_t i = 0; i < pFontMapper->GetFaceSize(); ++i) {
     if (pFontMapper->GetFaceName(i) == bsFaceName)
       return CreateFontStream(pFontMapper, i);
   }
@@ -616,7 +614,7 @@ bool CFGAS_FontMgr::EnumFontsFromFontMapper() {
       CFX_GEModule::Get()->GetFontMgr()->GetBuiltinMapper();
   pFontMapper->LoadInstalledFonts();
 
-  for (int32_t i = 0; i < pFontMapper->GetFaceSize(); ++i) {
+  for (size_t i = 0; i < pFontMapper->GetFaceSize(); ++i) {
     RetainPtr<IFX_SeekableReadStream> pFontStream =
         CreateFontStream(pFontMapper, i);
     if (!pFontStream)
@@ -718,7 +716,7 @@ void CFGAS_FontMgr::RegisterFace(RetainPtr<CFX_Face> pFace,
     if (FT_Load_Sfnt_Table(pFace->GetRec(), dwTag, 0, table.data(), nullptr))
       table.clear();
   }
-  pFont->m_wsFamilyNames = GetNames(table.empty() ? nullptr : table.data());
+  pFont->m_wsFamilyNames = GetNames(table);
   pFont->m_wsFamilyNames.push_back(
       WideString::FromUTF8(pFace->GetRec()->family_name));
   pFont->m_wsFaceName =

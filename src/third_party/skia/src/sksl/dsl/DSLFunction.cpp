@@ -10,10 +10,10 @@
 #include "include/sksl/DSLVar.h"
 #include "src/sksl/SkSLAnalysis.h"
 #include "src/sksl/SkSLCompiler.h"
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
 #include "src/sksl/ir/SkSLFunctionPrototype.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 
@@ -96,8 +96,6 @@ void DSLFunction::define(DSLBlock block, PositionInfo pos) {
         block.release();
         return;
     }
-    // Append sk_Position fixup to the bottom of main() if this is a vertex program.
-    ThreadContext::IRGenerator().appendRTAdjustFixupToVertexMain(*fDecl, body.get());
     std::unique_ptr<FunctionDefinition> function = FunctionDefinition::Convert(
             ThreadContext::Context(),
             pos.line(),

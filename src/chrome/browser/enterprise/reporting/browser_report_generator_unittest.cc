@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
@@ -21,13 +22,13 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/enterprise/browser/reporting/browser_report_generator.h"
+#include "components/enterprise/browser/reporting/report_util.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_task_environment.h"
 #include "device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler_test.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -150,8 +151,7 @@ class BrowserReportGeneratorTest : public ::testing::Test {
  public:
   BrowserReportGeneratorTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
-        generator_(&delegate_factory_) {
-  }
+        generator_(&delegate_factory_) {}
 
   BrowserReportGeneratorTest(const BrowserReportGeneratorTest&) = delete;
   BrowserReportGeneratorTest& operator=(const BrowserReportGeneratorTest&) =
@@ -203,13 +203,6 @@ class BrowserReportGeneratorTest : public ::testing::Test {
   }
 
 #if !defined(OS_ANDROID)
-  void InitializeExtensionRequest() {
-    throttler()->AddProfile(
-        profile_manager()->profiles_dir().AppendASCII(kProfileId));
-    throttler()->AddProfile(
-        profile_manager()->profiles_dir().AppendASCII("deleted_profile"));
-  }
-
   void InitializeUpdate() {
     auto* build_state = g_browser_process->GetBuildState();
     build_state->SetUpdate(BuildState::UpdateType::kNormalUpdate,
@@ -223,8 +216,10 @@ class BrowserReportGeneratorTest : public ::testing::Test {
         ReportType::kFull,
         base::BindLambdaForTesting(
             [&run_loop](std::unique_ptr<em::BrowserReport> report) {
-              EXPECT_TRUE(report.get());
-              EXPECT_NE(std::string(), report->executable_path());
+              ASSERT_TRUE(report.get());
+              EXPECT_EQ(
+                  base::PathService::CheckedGet(base::DIR_EXE).AsUTF8Unsafe(),
+                  report->executable_path());
 
               VerifyBrowserVersionAndChannel(report.get());
               VerifyBuildState(report.get());
@@ -237,37 +232,29 @@ class BrowserReportGeneratorTest : public ::testing::Test {
     run_loop.Run();
   }
 
-#if !defined(OS_ANDROID)
-  void GenerateExtensinRequestReportAndVerify(
-      const std::vector<std::string>& expected_request_profile_ids) {
+  void GenerateProfileReportAndVerify() {
     base::RunLoop run_loop;
     generator_.Generate(
-        ReportType::kExtensionRequest,
+        ReportType::kProfileReport,
         base::BindLambdaForTesting(
-            [&run_loop, &expected_request_profile_ids](
-                std::unique_ptr<em::BrowserReport> report) {
-              EXPECT_TRUE(report.get());
-              EXPECT_NE(std::string(), report->executable_path());
-              EXPECT_FALSE(report->has_browser_version());
-              EXPECT_FALSE(report->has_channel());
-              EXPECT_FALSE(report->has_installed_browser_version());
-              EXPECT_EQ(expected_request_profile_ids.size(),
-                        static_cast<size_t>(
-                            report->chrome_user_profile_infos_size()));
-              if (expected_request_profile_ids.size() > 0 &&
-                  report->chrome_user_profile_infos_size() > 0) {
-                EXPECT_EQ(expected_request_profile_ids[0],
-                          report->chrome_user_profile_infos(0).id());
-              }
-              EXPECT_EQ(0, report->plugins_size());
+            [&run_loop](std::unique_ptr<em::BrowserReport> report) {
+              ASSERT_TRUE(report.get());
+              EXPECT_EQ(
+                  ObfuscateFilePath(base::PathService::CheckedGet(base::DIR_EXE)
+                                        .AsUTF8Unsafe()),
+                  report->executable_path());
+
+              VerifyBrowserVersionAndChannel(report.get());
+              VerifyBuildState(report.get());
+              VerifyExtendedStableChannel(report.get());
+              VerifyPlugins(report.get());
+
+              // There should be no profile information.
+              EXPECT_EQ(0, report->chrome_user_profile_infos_size());
               run_loop.Quit();
-              ExtensionRequestReportThrottler::Get()->Disable();
             }));
     run_loop.Run();
   }
-
-  ExtensionRequestReportThrottler* throttler() { return throttler_.Get(); }
-#endif  // !defined(OS_ANDROID)
 
   TestingProfileManager* profile_manager() { return &profile_manager_; }
 
@@ -276,10 +263,6 @@ class BrowserReportGeneratorTest : public ::testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   BrowserReportGenerator generator_;
-
-#if !defined(OS_ANDROID)
-  ScopedExtensionRequestReportThrottler throttler_;
-#endif  // !defined(OS_ANDROID)
 };
 
 TEST_F(BrowserReportGeneratorTest, GenerateBasicReport) {
@@ -287,6 +270,13 @@ TEST_F(BrowserReportGeneratorTest, GenerateBasicReport) {
   InitializeIrregularProfiles();
   InitializePlugin();
   GenerateAndVerify();
+}
+
+TEST_F(BrowserReportGeneratorTest, GenerateBasicReportForProfileReporting) {
+  InitializeProfile();
+  InitializeIrregularProfiles();
+  InitializePlugin();
+  GenerateProfileReportAndVerify();
 }
 
 #if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -313,31 +303,5 @@ TEST_F(BrowserReportGeneratorTest, ExtendedStableChannel) {
 }
 #endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH) &&
         // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-#if !defined(OS_ANDROID)
-TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnly) {
-  InitializeUpdate();
-  InitializeProfile();
-  InitializeIrregularProfiles();
-  InitializePlugin();
-  InitializeExtensionRequest();
-  GenerateExtensinRequestReportAndVerify({profile_manager()
-                                              ->profiles_dir()
-                                              .AppendASCII(kProfileId)
-                                              .AsUTF8Unsafe()});
-}
-
-// It's possible that the extension request report is delayed and by the time
-// report is generated, the extension request report throttler is disabled.
-TEST_F(BrowserReportGeneratorTest, ExtensionRequestOnlyWithoutThrottler) {
-  InitializeUpdate();
-  InitializeProfile();
-  InitializeIrregularProfiles();
-  InitializePlugin();
-  InitializeExtensionRequest();
-  throttler()->Disable();
-  GenerateExtensinRequestReportAndVerify({});
-}
-#endif  // !defined(OS_ANDROID)
 
 }  // namespace enterprise_reporting

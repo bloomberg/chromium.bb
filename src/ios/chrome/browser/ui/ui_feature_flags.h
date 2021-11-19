@@ -8,6 +8,11 @@
 #include "Availability.h"
 #include "base/feature_list.h"
 
+// Allows the user to track product prices through Chrome.
+// Use IsPriceAlertsEnabled in price_alert_util rather than depending
+// on this directly.
+extern const base::Feature kCommercePriceTracking;
+
 // Feature to open tab switcher after sliding down the toolbar.
 extern const base::Feature kExpandedTabStrip;
 
@@ -19,11 +24,9 @@ extern const base::Feature kTestFeature;
 // Feature flag to enable Shared Highlighting (Link to Text).
 extern const base::Feature kSharedHighlightingIOS;
 
-// Feature flag that enables 'default browser' screen in FRE to suggest the
-// users to update the default browser in the Settings.app.
-extern const base::Feature kEnableFREDefaultBrowserScreen;
-
-// Feature flag for testing 'kEnableFREDefaultBrowserScreen' experiment.
+// Feature flag for testing the 'default browser' screen in FRE and different
+// experiments to suggest the users to update the default browser in the
+// Settings.app.
 extern const base::Feature kEnableFREDefaultBrowserScreenTesting;
 
 // Feature flag that enables using the FRE UI module to show first run screens.
@@ -42,9 +45,6 @@ extern const base::Feature kIncognitoBrandConsistencyForIOS;
 
 // Feature flag to enable revamped Incognito NTP page.
 extern const base::Feature kIncognitoNtpRevamp;
-
-// Feature flag that experiments with new location permissions user experiences.
-extern const base::Feature kLocationPermissionsPrompt;
 
 // Feature flag that experiments with the default browser fullscreen promo UI.
 extern const base::Feature kDefaultBrowserFullscreenPromoExperiment;
@@ -75,6 +75,9 @@ extern const base::Feature kUseLensToSearchForImage;
 // Feature flag to enable promotional view for Passwords In Other Apps in
 // Settings.
 extern const base::Feature kCredentialProviderExtensionPromo;
+
+// Feature flag to enable duplicate NTP cleanup.
+extern const base::Feature kRemoveExcessNTPs;
 
 // Whether the ContextMenuActionsRefresh flag is enabled.
 bool IsContextMenuActionsRefreshEnabled();

@@ -260,8 +260,8 @@ CJS_Result CJS_Document::getField(
   if (pFieldObj.IsEmpty())
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  auto* pJSField =
-      static_cast<CJS_Field*>(CFXJS_Engine::GetObjectPrivate(pFieldObj));
+  auto* pJSField = static_cast<CJS_Field*>(
+      CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pFieldObj));
   if (!pJSField)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
@@ -947,9 +947,10 @@ CJS_Result CJS_Document::get_document_file_name(CJS_Runtime* pRuntime) {
     if (wsFilePath[i - 1] == L'\\' || wsFilePath[i - 1] == L'/')
       break;
   }
-  if (i > 0 && i < wsFilePath.GetLength())
-    return CJS_Result::Success(pRuntime->NewString(wsFilePath.c_str() + i));
-
+  if (i > 0 && i < wsFilePath.GetLength()) {
+    return CJS_Result::Success(
+        pRuntime->NewString(wsFilePath.AsStringView().Substr(i)));
+  }
   return CJS_Result::Success(pRuntime->NewString(""));
 }
 
@@ -1038,8 +1039,8 @@ CJS_Result CJS_Document::getAnnot(
   if (pObj.IsEmpty())
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  auto* pJS_Annot =
-      static_cast<CJS_Annot*>(CFXJS_Engine::GetObjectPrivate(pObj));
+  auto* pJS_Annot = static_cast<CJS_Annot*>(
+      CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pObj));
   if (!pJS_Annot)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
@@ -1073,8 +1074,8 @@ CJS_Result CJS_Document::getAnnots(
       if (pObj.IsEmpty())
         return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-      auto* pJS_Annot =
-          static_cast<CJS_Annot*>(CFXJS_Engine::GetObjectPrivate(pObj));
+      auto* pJS_Annot = static_cast<CJS_Annot*>(
+          CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pObj));
       pJS_Annot->SetSDKAnnot(pSDKAnnotCur->AsBAAnnot());
       pRuntime->PutArrayElement(
           annots, i,
@@ -1119,7 +1120,7 @@ CJS_Result CJS_Document::addIcon(
     return CJS_Result::Failure(JSMessage::kTypeError);
 
   v8::Local<v8::Object> pObj = pRuntime->ToObject(params[1]);
-  if (!JSGetObject<CJS_Icon>(pObj))
+  if (!JSGetObject<CJS_Icon>(pRuntime->GetIsolate(), pObj))
     return CJS_Result::Failure(JSMessage::kTypeError);
 
   WideString swIconName = pRuntime->ToWideString(params[0]);
@@ -1141,8 +1142,8 @@ CJS_Result CJS_Document::get_icons(CJS_Runtime* pRuntime) {
     if (pObj.IsEmpty())
       return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-    auto* pJS_Icon =
-        static_cast<CJS_Icon*>(CFXJS_Engine::GetObjectPrivate(pObj));
+    auto* pJS_Icon = static_cast<CJS_Icon*>(
+        CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pObj));
     pJS_Icon->SetIconName(name);
     pRuntime->PutArrayElement(Icons, i++,
                               pJS_Icon
@@ -1173,7 +1174,8 @@ CJS_Result CJS_Document::getIcon(
   if (pObj.IsEmpty())
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
-  auto* pJSIcon = static_cast<CJS_Icon*>(CFXJS_Engine::GetObjectPrivate(pObj));
+  auto* pJSIcon = static_cast<CJS_Icon*>(
+      CFXJS_Engine::GetObjectPrivate(pRuntime->GetIsolate(), pObj));
   if (!pJSIcon)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 

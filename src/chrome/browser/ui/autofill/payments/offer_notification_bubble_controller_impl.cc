@@ -6,6 +6,10 @@
 
 #include <string>
 
+#include "chrome/browser/commerce/commerce_feature_list.h"
+#include "chrome/browser/commerce/coupons/coupon_service.h"
+#include "chrome/browser/commerce/coupons/coupon_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_base.h"
 #include "chrome/browser/ui/autofill/autofill_bubble_handler.h"
 #include "chrome/browser/ui/browser.h"
@@ -45,7 +49,9 @@ OfferNotificationBubbleController* OfferNotificationBubbleController::Get(
 
 OfferNotificationBubbleControllerImpl::OfferNotificationBubbleControllerImpl(
     content::WebContents* web_contents)
-    : AutofillBubbleControllerBase(web_contents) {}
+    : AutofillBubbleControllerBase(web_contents),
+      coupon_service_(CouponServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {}
 
 std::u16string OfferNotificationBubbleControllerImpl::GetWindowTitle() const {
   switch (offer_->GetOfferType()) {
@@ -154,6 +160,23 @@ void OfferNotificationBubbleControllerImpl::ShowOfferNotificationIfApplicable(
   if (card)
     card_ = *card;
 
+  if (offer->GetOfferType() ==
+      AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER) {
+    base::Time last_display_time =
+        coupon_service_->GetCouponDisplayTimestamp(*offer);
+    if (!last_display_time.is_null() &&
+        (base::Time::Now() - last_display_time) <
+            commerce::kCouponDisplayInterval.Get()) {
+      UpdatePageActionIcon();
+      AutofillMetrics::LogOfferNotificationBubbleSuppressed(
+          AutofillOfferData::OfferType::FREE_LISTING_COUPON_OFFER);
+      return;
+    }
+    // This will update the offer's last shown time both in cache layer and
+    // storage.
+    coupon_service_->RecordCouponDisplayTimestamp(*offer);
+  }
+
   is_user_gesture_ = false;
   Show();
 }
@@ -167,22 +190,13 @@ void OfferNotificationBubbleControllerImpl::ReshowBubble() {
   Show();
 }
 
-void OfferNotificationBubbleControllerImpl::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
-  if (!navigation_handle->IsInPrimaryMainFrame() ||
-      !navigation_handle->HasCommitted())
-    return;
-
-  // Don't react to same-document (fragment) navigations.
-  if (navigation_handle->IsSameDocument())
-    return;
-
+void OfferNotificationBubbleControllerImpl::PrimaryPageChanged(
+    content::Page& page) {
   // Don't do anything if user is still on an eligible origin for this offer.
   if (base::ranges::count(origins_to_display_bubble_,
-                          navigation_handle->GetURL().GetOrigin())) {
+                          page.GetMainDocument()
+                              .GetLastCommittedURL()
+                              .DeprecatedGetOriginAsURL())) {
     return;
   }
 

@@ -10,6 +10,8 @@
 #ifndef EIGEN_CXX11_TENSORSYMMETRY_TEMPLATEGROUPTHEORY_H
 #define EIGEN_CXX11_TENSORSYMMETRY_TEMPLATEGROUPTHEORY_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

@@ -906,6 +906,8 @@ static void set_good_speed_features_framesize_independent(
 
     sf->fp_sf.skip_motion_search_threshold = 25;
 
+    sf->gm_sf.disable_gm_search_based_on_stats = 1;
+
     sf->part_sf.reuse_best_prediction_for_part_ab =
         !frame_is_intra_only(&cpi->common);
 
@@ -1215,6 +1217,7 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
       sf->rt_sf.use_nonrd_altref_frame = 1;
     }
     if (speed >= 9) {
+      sf->rt_sf.gf_length_lvl = 1;
       sf->rt_sf.skip_cdef_sb = 1;
     }
   }
@@ -1415,6 +1418,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
         cm->width * cm->height > 640 * 480)
       sf->rt_sf.use_temporal_noise_estimate = 1;
     sf->rt_sf.skip_tx_no_split_var_based_partition = 1;
+    sf->rt_sf.skip_newmv_mode_based_on_sse = 1;
 
     // For SVC: use better mv search on base temporal layers, and only
     // on base spatial layer if highest resolution is above 640x360.
@@ -1584,6 +1588,7 @@ static AOM_INLINE void init_gm_sf(GLOBAL_MOTION_SPEED_FEATURES *gm_sf) {
   gm_sf->gm_search_type = GM_FULL_SEARCH;
   gm_sf->prune_ref_frame_for_gm_search = 0;
   gm_sf->prune_zero_mv_with_sse = 0;
+  gm_sf->disable_gm_search_based_on_stats = 0;
 }
 
 static AOM_INLINE void init_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
@@ -1840,6 +1845,8 @@ static AOM_INLINE void init_rt_sf(REAL_TIME_SPEED_FEATURES *rt_sf) {
   rt_sf->skip_cdef_sb = 0;
   rt_sf->force_large_partition_blocks_intra = 0;
   rt_sf->skip_tx_no_split_var_based_partition = 0;
+  rt_sf->skip_newmv_mode_based_on_sse = 0;
+  rt_sf->gf_length_lvl = 0;
 }
 
 void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi, int speed) {
@@ -2051,6 +2058,12 @@ void av1_set_speed_features_qindex_dependent(AV1_COMP *cpi, int speed) {
           frame_is_intra_only(cm)
               ? 0
               : cm->quant_params.base_qindex > qindex_thresh;
+    }
+    if (speed >= 10) {
+      sf->rt_sf.source_metrics_sb_nonrd =
+          (cm->quant_params.base_qindex > 150 && cpi->rc.avg_source_sad > 20000)
+              ? 1
+              : 0;
     }
     return;
   }

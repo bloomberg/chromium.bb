@@ -620,6 +620,9 @@ void av1_fill_coeff_costs(CoeffCosts *coeff_costs, FRAME_CONTEXT *fc,
 
 void av1_fill_mv_costs(const nmv_context *nmvc, int integer_mv, int usehp,
                        MvCosts *mv_costs) {
+  // Avoid accessing 'mv_costs' when it is not allocated.
+  if (mv_costs == NULL) return;
+
   mv_costs->nmv_cost[0] = &mv_costs->nmv_cost_alloc[0][MV_MAX];
   mv_costs->nmv_cost[1] = &mv_costs->nmv_cost_alloc[1][MV_MAX];
   mv_costs->nmv_cost_hp[0] = &mv_costs->nmv_cost_hp_alloc[0][MV_MAX];

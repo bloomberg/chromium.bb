@@ -19,6 +19,7 @@ cast_core_grpc_library("runtime_service") {
     ]
     deps = [
         "//third_party/cast_core/public/src/proto/common:application_config_proto",
+        "//third_party/cast_core/public/src/proto/common:duration_proto",
         "//third_party/cast_core/public/src/proto/common:service_info_proto",
         "//third_party/cast_core/public/src/proto/v2:url_rewrite_proto",
     ]
@@ -27,5 +28,8 @@ cast_core_grpc_library("runtime_service") {
 cast_core_grpc_library("media_service") {
     sources = [
         "cast_audio_channel_service.proto",
+    ]
+    deps = [
+        "//third_party/cast_core/public/src/proto/common:duration_proto",
     ]
 }

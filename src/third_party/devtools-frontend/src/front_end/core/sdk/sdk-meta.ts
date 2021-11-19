@@ -331,12 +331,14 @@ const str_ = i18n.i18n.registerUIStrings('core/sdk/sdk-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'skipStackFramesPattern',
   settingType: Common.Settings.SettingType.REGEX,
   defaultValue: '',
 });
 
 Common.Settings.registerSettingExtension({
+  storageType: Common.Settings.SettingStorageType.Synced,
   settingName: 'skipContentScripts',
   settingType: Common.Settings.SettingType.BOOLEAN,
   defaultValue: false,
@@ -433,6 +435,7 @@ Common.Settings.registerSettingExtension({
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.ELEMENTS,
+  storageType: Common.Settings.SettingStorageType.Synced,
   title: i18nLazyString(UIStrings.showRulers),
   settingName: 'showMetricsRulers',
   settingType: Common.Settings.SettingType.BOOLEAN,

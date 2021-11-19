@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache v2
+licenses(["notice"])
 
 load("//bazel:grpc_build_system.bzl", "grpc_cc_binary", "grpc_cc_library", "grpc_cc_test", "grpc_package")
 
@@ -33,6 +33,22 @@ grpc_cc_test(
         "//:grpc++",
         "//:grpc++_test",
         "//src/proto/grpc/testing:echo_proto",
+        "//test/core/util:grpc_test_util",
+        "//test/cpp/util:test_util",
+    ],
+)
+
+grpc_cc_test(
+    name = "client_context_test_peer_test",
+    srcs = ["client_context_test_peer_test.cc"],
+    external_deps = [
+        "gtest",
+    ],
+    deps = [
+        "//:gpr",
+        "//:grpc",
+        "//:grpc++",
+        "//:grpc++_test",
         "//test/core/util:grpc_test_util",
         "//test/cpp/util:test_util",
     ],

@@ -20,9 +20,9 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_data_template.h"
 #include "core/fxcrt/string_view_template.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -167,13 +167,14 @@ class ByteString {
   pdfium::span<char> GetBuffer(size_t nMinBufLength);
   void ReleaseBuffer(size_t nNewLength);
 
+  ByteString Substr(size_t offset) const;
   ByteString Substr(size_t first, size_t count) const;
   ByteString First(size_t count) const;
   ByteString Last(size_t count) const;
 
-  Optional<size_t> Find(ByteStringView subStr, size_t start = 0) const;
-  Optional<size_t> Find(char ch, size_t start = 0) const;
-  Optional<size_t> ReverseFind(char ch) const;
+  absl::optional<size_t> Find(ByteStringView subStr, size_t start = 0) const;
+  absl::optional<size_t> Find(char ch, size_t start = 0) const;
+  absl::optional<size_t> ReverseFind(char ch) const;
 
   bool Contains(ByteStringView lpszSub, size_t start = 0) const {
     return Find(lpszSub, start).has_value();

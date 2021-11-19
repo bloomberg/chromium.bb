@@ -16,10 +16,10 @@
 #include "base/metrics/histogram_macros_local.h"
 #include "base/notreached.h"
 #include "base/rand_util.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/optimization_guide/core/bloom_filter.h"
@@ -567,12 +567,9 @@ void HintsManager::OnComponentHintsUpdated(base::OnceClosure update_closure,
       optimization_guide::kComponentHintsUpdatedResultHistogramString,
       hints_updated);
 
-  bool shouldInitiateFetchScheduling = true;
-#if defined(OS_ANDROID)
-  shouldInitiateFetchScheduling = optimization_guide::switches::
-      DisableFetchHintsForActiveTabsOnDeferredStartup();
-#endif
-  if (shouldInitiateFetchScheduling)
+  // Initiate the hints fetch scheduling if deferred startup handling is not
+  // enabled. Otherwise OnDeferredStartup() will iniitate it.
+  if (!features::ShouldDeferStartupActiveTabsHintsFetch())
     InitiateHintsFetchScheduling();
   MaybeRunUpdateClosure(std::move(update_closure));
 }
@@ -583,8 +580,7 @@ void HintsManager::InitiateHintsFetchScheduling() {
     SetLastHintsFetchAttemptTime(clock_->Now());
 
     if (optimization_guide::switches::ShouldOverrideFetchHintsTimer() ||
-        !optimization_guide::switches::
-            DisableFetchHintsForActiveTabsOnDeferredStartup()) {
+        features::ShouldDeferStartupActiveTabsHintsFetch()) {
       FetchHintsForActiveTabs();
     } else if (!active_tabs_hints_fetch_timer_.IsRunning()) {
       // Batch update hints with a random delay.
@@ -721,7 +717,8 @@ void HintsManager::FetchHintsForActiveTabs() {
 
   batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
       top_hosts, active_tab_urls_to_refresh, registered_optimization_types_,
-      optimization_guide::proto::CONTEXT_BATCH_UPDATE, application_locale_,
+      optimization_guide::proto::CONTEXT_BATCH_UPDATE_ACTIVE_TABS,
+      application_locale_,
       base::BindOnce(&HintsManager::OnHintsForActiveTabsFetched,
                      weak_ptr_factory_.GetWeakPtr(), top_hosts_set,
                      base::flat_set<GURL>(active_tab_urls_to_refresh.begin(),
@@ -852,7 +849,8 @@ void HintsManager::LoadHintForHost(const std::string& host,
                                              std::move(callback)));
 }
 
-void HintsManager::FetchHintsForURLs(std::vector<GURL> target_urls) {
+void HintsManager::FetchHintsForURLs(std::vector<GURL> target_urls,
+                                     proto::RequestContext request_context) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Collect hosts, stripping duplicates, but preserving the ordering.
@@ -875,7 +873,7 @@ void HintsManager::FetchHintsForURLs(std::vector<GURL> target_urls) {
   // returned, we pass this through to the page navigation callback.
   batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
       target_hosts.vector(), target_urls, registered_optimization_types_,
-      optimization_guide::proto::CONTEXT_BATCH_UPDATE, application_locale_,
+      request_context, application_locale_,
       base::BindOnce(&HintsManager::OnPageNavigationHintsFetched,
                      weak_ptr_factory_.GetWeakPtr(), nullptr, absl::nullopt,
                      target_urls, target_hosts.set()));
@@ -1372,7 +1370,8 @@ void HintsManager::OnNavigationFinish(
 }
 
 void HintsManager::OnDeferredStartup() {
-  InitiateHintsFetchScheduling();
+  if (features::ShouldDeferStartupActiveTabsHintsFetch())
+    InitiateHintsFetchScheduling();
 }
 
 optimization_guide::OptimizationGuideStore* HintsManager::hint_store() {

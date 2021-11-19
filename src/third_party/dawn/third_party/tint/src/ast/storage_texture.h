@@ -74,41 +74,22 @@ std::ostream& operator<<(std::ostream& out, ImageFormat format);
 class StorageTexture : public Castable<StorageTexture, Texture> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param dim the dimensionality of the texture
   /// @param format the image format of the texture
   /// @param subtype the storage subtype. Use SubtypeFor() to calculate this.
   /// @param access_control the access control for the texture.
-  StorageTexture(ProgramID program_id,
-                 const Source& source,
+  StorageTexture(ProgramID pid,
+                 const Source& src,
                  TextureDimension dim,
                  ImageFormat format,
-                 Type* subtype,
+                 const Type* subtype,
                  Access access_control);
 
   /// Move constructor
   StorageTexture(StorageTexture&&);
   ~StorageTexture() override;
-
-  /// @returns the image format
-  ImageFormat image_format() const { return image_format_; }
-
-  /// @returns the storage subtype
-  Type* type() const { return subtype_; }
-
-  /// @returns the access control
-  Access access() const { return access_; }
-
-  /// @returns true if the access control is read only
-  bool is_read_only() const { return access_ == Access::kRead; }
-  /// @returns true if the access control is write only
-  bool is_write_only() const { return access_ == Access::kWrite; }
-  /// @returns true if the access control is read/write
-  bool is_read_write() const { return access_ == Access::kReadWrite; }
-
-  /// @returns the name for this type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -118,17 +99,21 @@ class StorageTexture : public Castable<StorageTexture, Texture> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  StorageTexture* Clone(CloneContext* ctx) const override;
+  const StorageTexture* Clone(CloneContext* ctx) const override;
 
   /// @param format the storage texture image format
   /// @param builder the ProgramBuilder used to build the returned type
   /// @returns the storage texture subtype for the given ImageFormat
   static Type* SubtypeFor(ImageFormat format, ProgramBuilder& builder);
 
- private:
-  ImageFormat const image_format_;
-  Type* const subtype_;
-  Access const access_;
+  /// The image format
+  const ImageFormat format;
+
+  /// The storage subtype
+  const Type* const type;
+
+  /// The access control
+  const Access access;
 };
 
 }  // namespace ast

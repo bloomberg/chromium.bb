@@ -13,6 +13,8 @@
 // This file contains many lightweight helper classes used to
 // implement and control fast level 2 and level 3 BLAS-like routines.
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

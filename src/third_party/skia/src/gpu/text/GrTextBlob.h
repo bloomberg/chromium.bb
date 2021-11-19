@@ -23,9 +23,7 @@
 #include "src/core/SkTLazy.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrSubRunAllocator.h"
-#if SK_GPU_V1
 #include "src/gpu/ops/GrOp.h"
-#endif
 
 class GrAtlasManager;
 class GrDeferredUploadTarget;
@@ -41,6 +39,14 @@ class SkTextBlobRunIterator;
 
 namespace skgpu { namespace v1 { class SurfaceDrawContext; }}
 
+// -- SubRun Discussion ----------------------------------------------------------------------------
+// There are two distinct types of SubRun, those that the GrTextBlob hold in the GrTextBlobCache,
+// and those that are not cached at all. The type of SubRun that is not cached has NoCache
+// appended to their name such as DirectMaskSubRunNoCache. The type of SubRun that is cached
+// provides two interfaces the GrSubRun interface which used by the text blob caching system, and
+// the GrAtlasSubRun which allows drawing by the AtlasTextOp system. The *NoCache SubRuns only
+// provide the GrAtlasSubRun interface.
+
 // -- GrAtlasSubRun --------------------------------------------------------------------------------
 // GrAtlasSubRun is the API that AtlasTextOp uses to generate vertex data for drawing.
 //     There are three different ways GrAtlasSubRun is specialized.
@@ -49,23 +55,24 @@ namespace skgpu { namespace v1 { class SurfaceDrawContext; }}
 //        SubRun are in device space. This SubRun handles color glyphs.
 //      * TransformedMaskSubRun - handles glyph where the image in the atlas needs to be
 //        transformed to the screen. It is usually used for large color glyph which can't be
-//        drawn with paths or scaled distance fields. The destination rectangles are in source
-//        space.
+//        drawn with paths or scaled distance fields, but will be used to draw bitmap glyphs to
+//        the screen, if the matrix does not map 1:1 to the screen. The destination rectangles
+//        are in source space.
 //      * SDFTSubRun - scaled distance field text handles largish single color glyphs that still
 //        can fit in the atlas; the sizes between direct SubRun, and path SubRun. The destination
+//        rectangles are in source space.
 
 class GrAtlasSubRun;
 using GrAtlasSubRunOwner = std::unique_ptr<GrAtlasSubRun, GrSubRunAllocator::Destroyer>;
 class GrAtlasSubRun  {
 public:
-    static constexpr int kVerticesPerGlyph = 4;
+    inline static constexpr int kVerticesPerGlyph = 4;
 
     virtual ~GrAtlasSubRun() = default;
 
     virtual size_t vertexStride(const SkMatrix& drawMatrix) const = 0;
     virtual int glyphCount() const = 0;
 
-#if SK_GPU_V1
     virtual std::tuple<const GrClip*, GrOp::Owner>
     makeAtlasTextOp(
             const GrClip*,
@@ -74,7 +81,6 @@ public:
             const SkPaint&,
             skgpu::v1::SurfaceDrawContext*,
             GrAtlasSubRunOwner subRun) const = 0;
-#endif
 
     virtual void fillVertexData(
             void* vertexDst, int offset, int count,
@@ -90,28 +96,25 @@ public:
 };
 
 // -- GrSubRun -------------------------------------------------------------------------------------
-// GrSubRun is the API the GrTextBlob uses for the SubRun.
+// GrSubRun provides an interface used by GrTextBlob to manage the caching system.
 // There are several types of SubRun, which can be broken into five classes:
 //   * PathSubRun - handle very large single color glyphs using paths to render the glyph.
 //   * DirectMaskSubRun - handle the majority of the glyphs where the cache entry's pixels are in
 //     1:1 correspondence to the device pixels.
 //   * TransformedMaskSubRun - handle large bitmap/argb glyphs that need to be scaled to the screen.
 //   * SDFTSubRun - use signed distance fields to draw largish glyphs to the screen.
-//   * GrAtlasSubRun - this is an abstract class used for atlas drawing.
 class GrSubRun;
 using GrSubRunOwner = std::unique_ptr<GrSubRun, GrSubRunAllocator::Destroyer>;
 class GrSubRun {
 public:
     virtual ~GrSubRun() = default;
 
-#if SK_GPU_V1
     // Produce GPU ops for this subRun.
     virtual void draw(const GrClip*,
                       const SkMatrixProvider& viewMatrix,
                       const SkGlyphRunList&,
                       const SkPaint&,
                       skgpu::v1::SurfaceDrawContext*) const = 0;
-#endif
 
     // Given an already cached subRun, can this subRun handle this combination paint, matrix, and
     // position.
@@ -160,7 +163,7 @@ struct GrSubRunList {
 };
 
 // A GrTextBlob contains a fully processed SkTextBlob, suitable for nearly immediate drawing
-// on the GPU.  These are initially created with valid positions and colors, but invalid
+// on the GPU.  These are initially created with valid positions and colors, but with invalid
 // texture coordinates.
 //
 // A GrTextBlob contains a number of SubRuns that are created in the blob's arena. Each SubRun
@@ -170,9 +173,9 @@ struct GrSubRunList {
 //  GrGlyph*... | vertexData... | SubRun | GrGlyph*... | vertexData... | SubRun  etc.
 //
 // In these classes, I'm trying to follow the convention about matrices and origins.
-// * draw Matrix|Origin    - describes the current draw command.
+// * drawMatrix and drawOrigin    - describes transformations for the current draw command.
 // * initial Matrix - describes the combined initial matrix and origin the GrTextBlob was created
-//   with.
+//                    with.
 //
 //
 class GrTextBlob final : public SkNVRefCnt<GrTextBlob>, public SkGlyphRunPainterInterface {
@@ -231,18 +234,13 @@ public:
     bool hasPerspective() const;
     const SkMatrix& initialMatrix() const { return fInitialMatrix; }
 
-    std::tuple<SkScalar, SkScalar> scaleBounds() const {
-        return {fMaxMinScale, fMinMaxScale};
-    }
-
+    std::tuple<SkScalar, SkScalar> scaleBounds() const { return {fMaxMinScale, fMinMaxScale}; }
     bool canReuse(const SkPaint& paint, const SkMatrix& drawMatrix) const;
 
     const Key& key() const;
     size_t size() const;
 
-    const GrSubRunList& subRunList() const {
-        return fSubRunList;
-    }
+    const GrSubRunList& subRunList() const { return fSubRunList; }
 
 private:
     GrTextBlob(int allocSize, const SkMatrix& drawMatrix, SkColor initialLuminance);
@@ -253,13 +251,13 @@ private:
             const SkZip<SkGlyphVariant, SkPoint>& drawables,
             const SkStrikeSpec& strikeSpec);
 
-#if SK_GPU_V1
     // Methods to satisfy SkGlyphRunPainterInterface
     void processDeviceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                             const SkStrikeSpec& strikeSpec) override;
     void processSourcePaths(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                             const SkFont& runFont,
-                            const SkStrikeSpec& strikeSpec) override;
+                            const SkStrikeSpec& strikeSpec,
+                            SkScalar strikeToSourceScale) override;
     void processSourceSDFT(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                            const SkStrikeSpec& strikeSpec,
                            const SkFont& runFont,
@@ -267,7 +265,6 @@ private:
                            SkScalar maxScale) override;
     void processSourceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                             const SkStrikeSpec& strikeSpec) override;
-#endif // SK_GPU_V1
 
     // The allocator must come first because it needs to be destroyed last. Other fields of this
     // structure may have pointers into it.
@@ -296,7 +293,6 @@ private:
     bool fSomeGlyphsExcluded{false};
 };
 
-#if SK_GPU_V1
 class GrSubRunNoCachePainter : public SkGlyphRunPainterInterface {
 public:
     GrSubRunNoCachePainter(skgpu::v1::SurfaceDrawContext*,
@@ -310,7 +306,8 @@ public:
     void processSourceMasks(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                             const SkStrikeSpec& strikeSpec) override;
     void processSourcePaths(const SkZip<SkGlyphVariant, SkPoint>& drawables,
-                            const SkFont& runFont, const SkStrikeSpec& strikeSpec) override;
+                            const SkFont& runFont, const SkStrikeSpec& strikeSpec,
+                            SkScalar strikeToSourceScale) override;
     void processSourceSDFT(const SkZip<SkGlyphVariant, SkPoint>& drawables,
                            const SkStrikeSpec& strikeSpec, const SkFont& runFont,
                            SkScalar minScale, SkScalar maxScale) override;
@@ -327,6 +324,5 @@ private:
     const SkGlyphRunList& fGlyphRunList;
     const SkPaint& fPaint;
 };
-#endif // SK_GPU_V1
 
 #endif  // GrTextBlob_DEFINED

@@ -377,7 +377,7 @@ gl::Version DisplayMtl::getMaxSupportedESVersion() const
 
 gl::Version DisplayMtl::getMaxConformantESVersion() const
 {
-    return std::min(getMaxSupportedESVersion(), gl::Version(2, 0));
+    return std::min(getMaxSupportedESVersion(), gl::Version(3, 0));
 }
 
 EGLSyncImpl *DisplayMtl::createSync(const egl::AttributeMap &attribs)
@@ -992,8 +992,9 @@ void DisplayMtl::initializeFeatures()
 
     ANGLE_FEATURE_CONDITION((&mFeatures), allowRuntimeSamplerCompareMode,
                             supportsEitherGPUFamily(3, 1));
+    // AMD does not support sample_compare_grad
     ANGLE_FEATURE_CONDITION((&mFeatures), allowSamplerCompareGradient,
-                            supportsEitherGPUFamily(3, 1));
+                            supportsEitherGPUFamily(3, 1) && !isAMD());
     ANGLE_FEATURE_CONDITION((&mFeatures), allowSamplerCompareLod, supportsEitherGPUFamily(3, 1));
 
     // http://anglebug.com/4919

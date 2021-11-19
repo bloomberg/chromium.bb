@@ -310,7 +310,7 @@ TEST_P(OcclusionQueryTests, ResolveSparseQueries) {
     // TODO(hao.x.li@intel.com): Investigate why it's failed on D3D12 on Nvidia when running with
     // the previous occlusion tests. Expect resolve to 0 for these unwritten queries but the
     // occlusion result of the previous tests is got.
-    DAWN_SUPPRESS_TEST_IF(IsD3D12() & IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsNvidia());
 
     constexpr uint32_t kQueryCount = 7;
 
@@ -370,7 +370,7 @@ TEST_P(OcclusionQueryTests, ResolveWithoutWritten) {
     // TODO(hao.x.li@intel.com): Investigate why it's failed on D3D12 on Nvidia when running with
     // the previous occlusion tests. Expect resolve to 0 but the occlusion result of the previous
     // tests is got.
-    DAWN_SUPPRESS_TEST_IF(IsD3D12() & IsNvidia());
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() && IsNvidia());
 
     constexpr uint32_t kQueryCount = 1;
 
@@ -454,13 +454,13 @@ class PipelineStatisticsQueryTests : public QueryTests {
         DawnTest::SetUp();
 
         // Skip all tests if pipeline statistics feature is not supported
-        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"pipeline_statistics_query"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"pipeline-statistics-query"}));
     }
 
     std::vector<const char*> GetRequiredFeatures() override {
         std::vector<const char*> requiredFeatures = {};
-        if (SupportsFeatures({"pipeline_statistics_query"})) {
-            requiredFeatures.push_back("pipeline_statistics_query");
+        if (SupportsFeatures({"pipeline-statistics-query"})) {
+            requiredFeatures.push_back("pipeline-statistics-query");
         }
 
         return requiredFeatures;
@@ -523,13 +523,13 @@ class TimestampQueryTests : public QueryTests {
         DawnTest::SetUp();
 
         // Skip all tests if timestamp feature is not supported
-        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"timestamp_query"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsFeatures({"timestamp-query"}));
     }
 
     std::vector<const char*> GetRequiredFeatures() override {
         std::vector<const char*> requiredFeatures = {};
-        if (SupportsFeatures({"timestamp_query"})) {
-            requiredFeatures.push_back("timestamp_query");
+        if (SupportsFeatures({"timestamp-query"})) {
+            requiredFeatures.push_back("timestamp-query");
         }
         return requiredFeatures;
     }

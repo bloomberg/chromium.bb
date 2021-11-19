@@ -160,6 +160,18 @@ const UIStrings = {
   *@description Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel
   */
   newStyleRule: 'New Style Rule',
+  /**
+  *@description Text that is announced by the screen reader when the user focuses on an input field for entering the name of a CSS property in the Styles panel
+  */
+  cssPropertyName: '`CSS` property name',
+  /**
+  *@description Text that is announced by the screen reader when the user focuses on an input field for entering the value of a CSS property in the Styles panel
+  */
+  cssPropertyValue: '`CSS` property value',
+  /**
+  *@description Text that is announced by the screen reader when the user focuses on an input field for editing the name of a CSS selector in the Styles panel
+  */
+  cssSelector: '`CSS` selector',
 };
 
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylesSidebarPane.ts', UIStrings);
@@ -799,6 +811,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin<EventType
       this.lastRevealedProperty = null;
     }
 
+    this.swatchPopoverHelper().reposition();
+
     // Record the elements tool load time after the sidepane has loaded.
     Host.userMetrics.panelLoaded('elements', 'DevTools.Launch.Elements');
 
@@ -1233,6 +1247,7 @@ export class StylePropertiesSection {
 
     const selectorContainer = document.createElement('div');
     this.selectorElement = document.createElement('span');
+    UI.ARIAUtils.setAccessibleName(this.selectorElement, i18nString(UIStrings.cssSelector));
     this.selectorElement.classList.add('selector');
     this.selectorElement.textContent = this.headerText();
     selectorContainer.appendChild(this.selectorElement);
@@ -1947,7 +1962,6 @@ export class StylePropertiesSection {
     } else {
       this.showAllButton.classList.add('hidden');
     }
-    this.parentPane.swatchPopoverHelper().reposition();
   }
 
   isPropertyOverloaded(property: SDK.CSSProperty.CSSProperty): boolean {
@@ -2984,6 +2998,7 @@ export class StylesSidebarPropertyRenderer {
 
   renderName(): Element {
     const nameElement = document.createElement('span');
+    UI.ARIAUtils.setAccessibleName(nameElement, i18nString(UIStrings.cssPropertyName));
     nameElement.className = 'webkit-css-property';
     nameElement.textContent = this.propertyName;
     nameElement.normalize();
@@ -2992,6 +3007,7 @@ export class StylesSidebarPropertyRenderer {
 
   renderValue(): Element {
     const valueElement = document.createElement('span');
+    UI.ARIAUtils.setAccessibleName(valueElement, i18nString(UIStrings.cssPropertyValue));
     valueElement.className = 'value';
     if (!this.propertyValue) {
       return valueElement;
@@ -3039,7 +3055,7 @@ export class StylesSidebarPropertyRenderer {
       }
       processors.push(this.fontHandler);
     }
-    if (this.lengthHandler) {
+    if (Root.Runtime.experiments.isEnabled('cssTypeComponentLength') && this.lengthHandler) {
       // TODO(changhaohan): crbug.com/1138628 refactor this to handle unitless 0 cases
       regexes.push(InlineEditor.CSSLengthUtils.CSSLengthRegex);
       processors.push(this.lengthHandler);
@@ -3084,6 +3100,7 @@ export class StylesSidebarPropertyRenderer {
           className: undefined,
           lineNumber: undefined,
           columnNumber: undefined,
+          showColumnNumber: false,
           inlineFrameIndex: 0,
           maxLength: undefined,
           tabStop: undefined,

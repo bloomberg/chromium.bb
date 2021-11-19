@@ -259,7 +259,7 @@ bool ValidateConfigAttribute(const ValidationContext *val,
             break;
 
         default:
-            val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04X", attribute);
+            val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04" PRIxPTR "X", attribute);
             return false;
     }
 
@@ -695,31 +695,6 @@ bool ValidateGetPlatformDisplayCommon(const ValidationContext *val,
                     }
                     break;
 
-                case EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE:
-                    if (!clientExtensions.platformANGLEContextVirtualization)
-                    {
-                        val->setError(EGL_BAD_ATTRIBUTE,
-                                      "EGL_ANGLE_platform_angle_context_"
-                                      "virtualization extension not active");
-                        return false;
-                    }
-
-                    switch (value)
-                    {
-                        case EGL_DONT_CARE:
-                        case EGL_FALSE:
-                        case EGL_TRUE:
-                            break;
-
-                        default:
-                            val->setError(EGL_BAD_ATTRIBUTE,
-                                          "Invalid value for "
-                                          "EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_"
-                                          "ANGLE attrib");
-                            return false;
-                    }
-                    break;
-
                 case EGL_PLATFORM_ANGLE_D3D_LUID_HIGH_ANGLE:
                 case EGL_PLATFORM_ANGLE_D3D_LUID_LOW_ANGLE:
                     luidSpecified = true;
@@ -1060,8 +1035,7 @@ bool ValidateDisplayPointer(const ValidationContext *val, const Display *display
     {
         if (val)
         {
-            val->setError(EGL_BAD_DISPLAY, "display is not a valid display: 0x%04" PRIXPTR,
-                          display);
+            val->setError(EGL_BAD_DISPLAY, "display is not a valid display: 0x%p", display);
         }
         return false;
     }
@@ -2005,8 +1979,18 @@ bool ValidateCreateContext(const ValidationContext *val,
                 }
                 break;
 
+            case EGL_CONTEXT_VIRTUALIZATION_GROUP_ANGLE:
+                if (!display->getExtensions().contextVirtualizationANGLE)
+                {
+                    val->setError(EGL_BAD_ATTRIBUTE,
+                                  "Attribute EGL_CONTEXT_VIRTUALIZATION_GROUP_ANGLE requires "
+                                  "extension EGL_ANGLE_context_virtualization.");
+                    return false;
+                }
+                break;
+
             default:
-                val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04X", attribute);
+                val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04" PRIxPTR "X", attribute);
                 return false;
         }
     }
@@ -2061,7 +2045,12 @@ bool ValidateCreateContext(const ValidationContext *val,
                 gl::Version(static_cast<GLuint>(clientMajorVersion),
                             static_cast<GLuint>(clientMinorVersion)))
             {
-                val->setError(EGL_BAD_ATTRIBUTE, "Requested GLES version is not supported.");
+                gl::Version max = display->getMaxSupportedESVersion();
+                val->setError(EGL_BAD_ATTRIBUTE,
+                              "Requested GLES version (%" PRIxPTR ".%" PRIxPTR
+                              ") is greater than "
+                              "max supported (%d, %d).",
+                              clientMajorVersion, clientMinorVersion, max.major, max.minor);
                 return false;
             }
             break;
@@ -2816,7 +2805,7 @@ bool ValidateCreatePixmapSurface(const ValidationContext *val,
                 break;
 
             default:
-                val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute");
+                val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04" PRIxPTR "X", attribute);
                 return false;
         }
     }
@@ -3179,7 +3168,7 @@ bool ValidateCreateImage(const ValidationContext *val,
                 break;
 
             default:
-                val->setError(EGL_BAD_PARAMETER, "invalid attribute: 0x%X", attribute);
+                val->setError(EGL_BAD_PARAMETER, "invalid attribute: 0x%04" PRIxPTR "X", attribute);
                 return false;
         }
     }
@@ -5282,7 +5271,7 @@ bool ValidateQueryDebugKHR(const ValidationContext *val, EGLint attribute, const
             break;
 
         default:
-            val->setError(EGL_BAD_ATTRIBUTE, "unknown attribute.");
+            val->setError(EGL_BAD_ATTRIBUTE, "Unknown attribute: 0x%04X", attribute);
             return false;
     }
 
@@ -5819,6 +5808,17 @@ bool ValidateQueryDeviceAttribEXT(const ValidationContext *val,
             break;
         case EGL_METAL_DEVICE_ANGLE:
             if (!device->getExtensions().deviceMetal)
+            {
+                val->setError(EGL_BAD_ATTRIBUTE);
+                return false;
+            }
+            break;
+        case EGL_VULKAN_DEVICE_ANGLE:
+        case EGL_VULKAN_EXTENSIONS_ANGLE:
+        case EGL_VULKAN_PHYSICAL_DEVICE_ANGLE:
+        case EGL_VULKAN_QUEUE_ANGLE:
+        case EGL_VULKAN_QUEUE_FAMILIY_INDEX_ANGLE:
+            if (!device->getExtensions().deviceVulkan)
             {
                 val->setError(EGL_BAD_ATTRIBUTE);
                 return false;

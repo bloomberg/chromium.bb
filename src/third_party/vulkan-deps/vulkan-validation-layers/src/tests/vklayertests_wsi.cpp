@@ -27,6 +27,7 @@
  */
 
 #include "layer_validation_tests.h"
+#include "core_validation_error_enums.h"
 
 TEST_F(VkLayerTest, BindImageMemorySwapchain) {
     TEST_DESCRIPTION("Invalid bind image with a swapchain");
@@ -90,12 +91,13 @@ TEST_F(VkLayerTest, BindImageMemorySwapchain) {
     alloc_info.memoryTypeIndex = 0;
     alloc_info.allocationSize = mem_reqs.size;
 
+    VkDeviceMemory mem = VK_NULL_HANDLE;
     bool pass = m_device->phy().set_memory_type(mem_reqs.memoryTypeBits, &alloc_info, 0);
-    ASSERT_TRUE(pass);
-
-    VkDeviceMemory mem;
-    err = vk::AllocateMemory(m_device->device(), &alloc_info, NULL, &mem);
-    ASSERT_VK_SUCCESS(err);
+    // some devices don't give us good memory requirements for the swapchain image
+    if (pass) {
+        err = vk::AllocateMemory(m_device->device(), &alloc_info, NULL, &mem);
+        ASSERT_VK_SUCCESS(err);
+    }
 
     auto bind_info = LvlInitStruct<VkBindImageMemoryInfo>();
     bind_info.image = image_from_swapchain;
@@ -120,13 +122,17 @@ TEST_F(VkLayerTest, BindImageMemorySwapchain) {
     bind_swapchain_info.swapchain = m_swapchain;
     bind_swapchain_info.imageIndex = UINT32_MAX;
 
-    m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryInfo-pNext-01631");
+    if (mem) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemoryInfo-pNext-01631");
+    }
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkBindImageMemorySwapchainInfoKHR-imageIndex-01644");
     vk::BindImageMemory2(m_device->device(), 1, &bind_info);
     m_errorMonitor->VerifyFound();
 
     vk::DestroyImage(m_device->device(), image_from_swapchain, NULL);
-    vk::FreeMemory(m_device->device(), mem, NULL);
+    if (mem) {
+        vk::FreeMemory(m_device->device(), mem, NULL);
+    }
     DestroySwapchain();
 }
 
@@ -744,8 +750,8 @@ TEST_F(VkLayerTest, GetSwapchainImageAndTryDestroy) {
     DestroySwapchain();
 }
 
-TEST_F(VkLayerTest, NotCheckingForSurfaceSupport) {
-    TEST_DESCRIPTION("Test not calling GetPhysicalDeviceSurfaceSupportKHR");
+TEST_F(VkLayerTest, SwapchainNotSupported) {
+    TEST_DESCRIPTION("Test creating a swapchain when GetPhysicalDeviceSurfaceSupportKHR returns VK_FALSE");
 
     if (!AddSurfaceInstanceExtension()) {
         printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
@@ -769,13 +775,52 @@ TEST_F(VkLayerTest, NotCheckingForSurfaceSupport) {
         return;
     }
 
-    ASSERT_NO_FATAL_FAILURE(InitState());
+    m_errorMonitor->ExpectSuccess();
     if (!InitSurface()) {
         printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
         return;
     }
     InitSwapchainInfo();
 
+    std::vector<VkQueueFamilyProperties> queue_families;
+    uint32_t count = 0;
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpu(), &count, nullptr);
+    queue_families.resize(count);
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpu(), &count, queue_families.data());
+
+    bool found = false;
+    uint32_t qfi = 0;
+    for (uint32_t i = 0; i < queue_families.size(); i++) {
+        VkBool32 supported = VK_FALSE;
+        vk::GetPhysicalDeviceSurfaceSupportKHR(gpu(), i, m_surface, &supported);
+        if (!supported) {
+            found = true;
+            qfi = i;
+            break;
+        }
+    }
+    m_errorMonitor->VerifyNotFound();
+
+    if (!found) {
+        printf("%s All queues support surface present, skipping test\n", kSkipPrefix);
+        return;
+    }
+    float queue_priority = 1.0f;
+    auto queue_create_info = LvlInitStruct<VkDeviceQueueCreateInfo>();
+    queue_create_info.queueFamilyIndex = qfi;
+    queue_create_info.queueCount = 1;
+    queue_create_info.pQueuePriorities = &queue_priority;
+
+    auto device_create_info = LvlInitStruct<VkDeviceCreateInfo>();
+    device_create_info.queueCreateInfoCount = 1;
+    device_create_info.pQueueCreateInfos = &queue_create_info;
+    device_create_info.enabledExtensionCount = m_device_extension_names.size();
+    device_create_info.ppEnabledExtensionNames = m_device_extension_names.data();
+
+    vk_testing::Device test_device(gpu());
+    test_device.init(device_create_info);
+
+    // try creating a swapchain, using surface info queried from the default device
     VkSwapchainCreateInfoKHR swapchain_create_info = {};
     swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     swapchain_create_info.pNext = nullptr;
@@ -794,9 +839,8 @@ TEST_F(VkLayerTest, NotCheckingForSurfaceSupport) {
     swapchain_create_info.clipped = VK_FALSE;
     swapchain_create_info.oldSwapchain = 0;
 
-    // Never called GetPhysicalDeviceSurfaceSupportKHR
     m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-VkSwapchainCreateInfoKHR-surface-01270");
-    vk::CreateSwapchainKHR(device(), &swapchain_create_info, nullptr, &m_swapchain);
+    vk::CreateSwapchainKHR(test_device.handle(), &swapchain_create_info, nullptr, &m_swapchain);
     m_errorMonitor->VerifyFound();
 }
 
@@ -1729,7 +1773,7 @@ TEST_F(VkLayerTest, DeviceGroupSubmitInfoSemaphoreCount) {
     ASSERT_NO_FATAL_FAILURE(InitState(nullptr, &create_device_pnext, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT));
 
     VkDeviceGroupCommandBufferBeginInfo dev_grp_cmd_buf_info = LvlInitStruct<VkDeviceGroupCommandBufferBeginInfo>();
-    dev_grp_cmd_buf_info.deviceMask = 0x00000000;
+    dev_grp_cmd_buf_info.deviceMask = 0x1;
     VkCommandBufferBeginInfo cmd_buf_info = LvlInitStruct<VkCommandBufferBeginInfo>(&dev_grp_cmd_buf_info);
 
     VkSemaphoreCreateInfo semaphore_create_info = LvlInitStruct<VkSemaphoreCreateInfo>();
@@ -2122,6 +2166,164 @@ TEST_F(VkLayerTest, GetSwapchainImagesCountButNotImages) {
     m_errorMonitor->VerifyFound();
 }
 
+TEST_F(VkLayerTest, TestSurfaceSupportByPhysicalDevice) {
+    TEST_DESCRIPTION("Test if physical device supports surface.");
+    SetTargetApiVersion(VK_API_VERSION_1_1);
+    if (!AddSurfaceInstanceExtension()) {
+        printf("%s surface extensions not supported, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    bool get_surface_capabilities2 = false;
+    bool swapchain = false;
+    bool display_surface_counter = false;
+
+    if (InstanceExtensionSupported(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME)) {
+        m_instance_extension_names.push_back(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
+        get_surface_capabilities2 = true;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitFramework(m_errorMonitor));
+    if (DeviceValidationVersion() < VK_API_VERSION_1_1) {
+        printf("%s Test requires Vulkan 1.1+, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+        swapchain = true;
+    }
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    bool full_screen_exclusive = false;
+    if (get_surface_capabilities2 && swapchain &&
+        DeviceExtensionSupported(gpu(), nullptr, VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME);
+        full_screen_exclusive = true;
+    }
+#endif
+
+    if (DeviceExtensionSupported(gpu(), nullptr, VK_EXT_DISPLAY_SURFACE_COUNTER_EXTENSION_NAME)) {
+        m_device_extension_names.push_back(VK_KHR_DISPLAY_EXTENSION_NAME);
+        m_device_extension_names.push_back(VK_EXT_DISPLAY_SURFACE_COUNTER_EXTENSION_NAME);
+        display_surface_counter = true;
+    }
+
+    ASSERT_NO_FATAL_FAILURE(InitState());
+    if (!InitSurface()) {
+        printf("%s Cannot create surface, skipping test\n", kSkipPrefix);
+        return;
+    }
+
+    uint32_t queueFamilyPropertyCount;
+    vk::GetPhysicalDeviceQueueFamilyProperties(gpu(), &queueFamilyPropertyCount, nullptr);
+
+    VkBool32 supported = VK_FALSE;
+    for (uint32_t i = 0; i < queueFamilyPropertyCount; ++i) {
+        vk::GetPhysicalDeviceSurfaceSupportKHR(gpu(), i, m_surface, &supported);
+        if (supported) {
+            break;
+        }
+    }
+    if (supported) {
+        printf("%s Physical device supports present, skipping", kSkipPrefix);
+        return;
+    }
+
+#ifdef VK_USE_PLATFORM_WIN32_KHR
+    if (full_screen_exclusive) {
+        VkPhysicalDeviceSurfaceInfo2KHR surface_info = LvlInitStruct<VkPhysicalDeviceSurfaceInfo2KHR>();
+        surface_info.surface = m_surface;
+        VkDeviceGroupPresentModeFlagsKHR flags = VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR;
+
+        PFN_vkGetDeviceGroupSurfacePresentModes2EXT vkGetDeviceGroupSurfacePresentModes2EXT =
+            reinterpret_cast<PFN_vkGetDeviceGroupSurfacePresentModes2EXT>(
+                vk::GetInstanceProcAddr(instance(), "vkGetDeviceGroupSurfacePresentModes2EXT"));
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetDeviceGroupSurfacePresentModes2EXT-pSurfaceInfo-06213");
+        vkGetDeviceGroupSurfacePresentModes2EXT(device(), &surface_info, &flags);
+        m_errorMonitor->VerifyFound();
+
+        PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT vkGetPhysicalDeviceSurfacePresentModes2EXT =
+            (PFN_vkGetPhysicalDeviceSurfacePresentModes2EXT)vk::GetInstanceProcAddr(instance(),
+                                                                                    "vkGetPhysicalDeviceSurfacePresentModes2EXT");
+
+        uint32_t count;
+        vkGetPhysicalDeviceSurfacePresentModes2EXT(gpu(), &surface_info, &count, nullptr);
+    }
+#endif
+
+    if (swapchain) {
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetDeviceGroupSurfacePresentModesKHR-surface-06212");
+        VkDeviceGroupPresentModeFlagsKHR flags = VK_DEVICE_GROUP_PRESENT_MODE_LOCAL_BIT_KHR;
+        vk::GetDeviceGroupSurfacePresentModesKHR(device(), m_surface, &flags);
+        m_errorMonitor->VerifyFound();
+
+        uint32_t count;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPhysicalDevicePresentRectanglesKHR-surface-06211");
+        vk::GetPhysicalDevicePresentRectanglesKHR(gpu(), m_surface, &count, nullptr);
+        m_errorMonitor->VerifyFound();
+    }
+
+    if (display_surface_counter) {
+        PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT vkGetPhysicalDeviceSurfaceCapabilities2EXT =
+            (PFN_vkGetPhysicalDeviceSurfaceCapabilities2EXT)vk::GetInstanceProcAddr(instance(),
+                                                                                    "vkGetPhysicalDeviceSurfaceCapabilities2EXT");
+
+        VkSurfaceCapabilities2EXT capabilities = LvlInitStruct<VkSurfaceCapabilities2EXT>();
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPhysicalDeviceSurfaceCapabilities2EXT-surface-06211");
+        vkGetPhysicalDeviceSurfaceCapabilities2EXT(gpu(), m_surface, &capabilities);
+        m_errorMonitor->VerifyFound();
+    }
+
+    if (get_surface_capabilities2) {
+        PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR vkGetPhysicalDeviceSurfaceCapabilities2KHR =
+            (PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR)vk::GetInstanceProcAddr(instance(),
+                                                                                    "vkGetPhysicalDeviceSurfaceCapabilities2KHR");
+
+        VkPhysicalDeviceSurfaceInfo2KHR surface_info = LvlInitStruct<VkPhysicalDeviceSurfaceInfo2KHR>();
+        surface_info.surface = m_surface;
+        VkSurfaceCapabilities2KHR capabilities = LvlInitStruct<VkSurfaceCapabilities2KHR>();
+
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPhysicalDeviceSurfaceCapabilities2KHR-pSurfaceInfo-06210");
+        vkGetPhysicalDeviceSurfaceCapabilities2KHR(gpu(), &surface_info, &capabilities);
+        m_errorMonitor->VerifyFound();
+    }
+
+    {
+        VkSurfaceCapabilitiesKHR capabilities;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPhysicalDeviceSurfaceCapabilitiesKHR-surface-06211");
+        vk::GetPhysicalDeviceSurfaceCapabilitiesKHR(gpu(), m_surface, &capabilities);
+        m_errorMonitor->VerifyFound();
+    }
+
+    if (get_surface_capabilities2) {
+        PFN_vkGetPhysicalDeviceSurfaceFormats2KHR vkGetPhysicalDeviceSurfaceFormats2KHR =
+            (PFN_vkGetPhysicalDeviceSurfaceFormats2KHR)vk::GetInstanceProcAddr(instance(), "vkGetPhysicalDeviceSurfaceFormats2KHR");
+
+        VkPhysicalDeviceSurfaceInfo2KHR surface_info = LvlInitStruct<VkPhysicalDeviceSurfaceInfo2KHR>();
+        surface_info.surface = m_surface;
+        uint32_t count;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPhysicalDeviceSurfaceFormats2KHR-pSurfaceInfo-06210");
+        vkGetPhysicalDeviceSurfaceFormats2KHR(gpu(), &surface_info, &count, nullptr);
+        m_errorMonitor->VerifyFound();
+    }
+
+    {
+        uint32_t count;
+        m_errorMonitor->SetDesiredFailureMsg(kErrorBit, "VUID-vkGetPhysicalDeviceSurfaceFormatsKHR-surface-06211");
+        vk::GetPhysicalDeviceSurfaceFormatsKHR(gpu(), m_surface, &count, nullptr);
+        m_errorMonitor->VerifyFound();
+    }
+
+    {
+        uint32_t count;
+        vk::GetPhysicalDeviceSurfacePresentModesKHR(gpu(), m_surface, &count, nullptr);
+    }
+}
+
+#ifdef VVL_TESTS_ENABLE_EXCLUSIVE_FULLSCREEN
 TEST_F(VkLayerTest, TestvkAcquireFullScreenExclusiveModeEXT) {
     TEST_DESCRIPTION("Test vkAcquireFullScreenExclusiveModeEXT.");
 
@@ -2217,3 +2419,4 @@ TEST_F(VkLayerTest, TestvkAcquireFullScreenExclusiveModeEXT) {
     vk::DestroySwapchainKHR(device(), swapchain_two, nullptr);
 #endif
 }
+#endif

@@ -62,6 +62,8 @@ module.exports = function (grunt) {
           'node_modules/typescript/lib/tsc.js',
           '--project', 'node.tsconfig.json',
           '--outDir', 'out-node/',
+          '--incremental', 'true',
+          '--tsBuildInfoFile', 'out-node/build.tsbuildinfo',
           '--noEmit', 'false',
           '--declaration', 'false'
         ],
@@ -100,6 +102,11 @@ module.exports = function (grunt) {
         cmd: 'node',
         args: ['node_modules/typedoc/bin/typedoc'],
       },
+
+      serve: {
+        cmd: 'node',
+        args: ['node_modules/http-server/bin/http-server', '-p8080', '-a127.0.0.1', '-c-1']
+      }
     },
 
     copy: {
@@ -116,15 +123,6 @@ module.exports = function (grunt) {
       },
     },
 
-    'http-server': {
-      '.': {
-        root: '.',
-        port: 8080,
-        host: '127.0.0.1',
-        cache: -1,
-      },
-    },
-
     ts: {
       check: {
         tsconfig: {
@@ -137,7 +135,6 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-http-server');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-ts');
 
@@ -208,7 +205,7 @@ module.exports = function (grunt) {
     'ts:check',
   ]);
 
-  registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);
+  registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080 (does NOT compile source)', ['run:serve']);
   registerTaskAndAddToHelp('fix', 'Fix lint and formatting', ['run:fix']);
 
   addExistingTaskToHelp('clean', 'Clean out/ and out-wpt/');

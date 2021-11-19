@@ -12,6 +12,8 @@
 #ifndef KRONECKER_TENSOR_PRODUCT_H
 #define KRONECKER_TENSOR_PRODUCT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /*!

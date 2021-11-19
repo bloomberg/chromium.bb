@@ -26,37 +26,24 @@ class ScalarConstructorExpression
     : public Castable<ScalarConstructorExpression, ConstructorExpression> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the constructor source
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param literal the const literal
-  ScalarConstructorExpression(ProgramID program_id,
-                              const Source& source,
-                              Literal* literal);
+  ScalarConstructorExpression(ProgramID pid,
+                              const Source& src,
+                              const Literal* literal);
   /// Move constructor
   ScalarConstructorExpression(ScalarConstructorExpression&&);
   ~ScalarConstructorExpression() override;
-
-  /// @returns the literal value
-  Literal* literal() const { return literal_; }
 
   /// Clones this node and all transitive child nodes using the `CloneContext`
   /// `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned node
-  ScalarConstructorExpression* Clone(CloneContext* ctx) const override;
+  const ScalarConstructorExpression* Clone(CloneContext* ctx) const override;
 
-  /// Writes a representation of the node to the output stream
-  /// @param sem the semantic info for the program
-  /// @param out the stream to write to
-  /// @param indent number of spaces to indent the node when writing
-  void to_str(const sem::Info& sem,
-              std::ostream& out,
-              size_t indent) const override;
-
- private:
-  ScalarConstructorExpression(const ScalarConstructorExpression&) = delete;
-
-  Literal* const literal_;
+  /// The literal value
+  const Literal* const literal;
 };
 
 }  // namespace ast

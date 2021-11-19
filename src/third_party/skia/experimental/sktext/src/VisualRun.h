@@ -11,15 +11,23 @@ namespace text {
 
 class VisualRun {
     public:
-    VisualRun(TextRange textRange, GlyphIndex trailingSpacesStart, const TextMetrics& metrics, SkScalar runOffsetInLine,
+    VisualRun(TextRange textRange, GlyphIndex trailingSpacesStart, const SkFont& font, SkScalar lineBaseLine,
+              SkPoint runOffset,
+              bool leftToRight,
               SkSpan<SkPoint> positions, SkSpan<SkGlyphID> glyphs, SkSpan<uint32_t> clusters)
-        : fTextMetrics(metrics)
-        , fUtf16Range(textRange)
+        : fFont(font)
+        , fTextMetrics(TextMetrics(fFont))
+        , fLineBaseLine(lineBaseLine)
+        , fDirTextRange(textRange, leftToRight)
         , fTrailingSpacesStart(trailingSpacesStart) {
+        if (positions.size() == 0) {
+            SkASSERT(false);
+            return;
+        }
         fPositions.reserve_back(positions.size());
-        runOffsetInLine -= positions[0].fX;
+        runOffset -= SkPoint::Make(positions[0].fX, - fLineBaseLine);
         for (auto& pos : positions) {
-            fPositions.emplace_back(pos + SkPoint::Make(runOffsetInLine, 0));
+            fPositions.emplace_back(pos + runOffset);
         }
         fGlyphs.reserve_back(glyphs.size());
         for (auto glyph : glyphs) {
@@ -29,9 +37,7 @@ class VisualRun {
         for (auto cluster : clusters) {
             fClusters.emplace_back(SkToU16(cluster));
         }
-
-        fAdvance.fX = calculateWidth(0, glyphs.size());
-        fAdvance.fY = metrics.height();
+        fAdvance= SkVector::Make(this->calculateWidth(0, glyphs.size()), fTextMetrics.height());
     }
 
     SkScalar calculateWidth(GlyphRange glyphRange) const {
@@ -42,37 +48,36 @@ class VisualRun {
       return calculateWidth(GlyphRange(start, end));
     }
     SkScalar width() const { return fAdvance.fX; }
+    SkScalar height() const { return fAdvance.fY; }
     SkScalar firstGlyphPosition() const { return fPositions[0].fX; }
-
-    bool leftToRight() const { return fBidiLevel % 2 == 0; }
-    uint8_t bidiLevel() const { return fBidiLevel; }
-    size_t size() const { return fGlyphs.size(); }
     TextMetrics textMetrics() const { return fTextMetrics; }
+
+    bool leftToRight() const { return fDirTextRange.fLeftToRight; }
+    size_t size() const { return fGlyphs.size(); }
+    SkScalar baseLine() const { return fLineBaseLine; }
     GlyphIndex trailingSpacesStart() const { return fTrailingSpacesStart; }
-    TextRange textRange() const { return fUtf16Range; }
+    DirTextRange dirTextRange() const { return fDirTextRange; }
 
     template <typename Callback>
-    void forEachTextChunkInGlyphRange(SkSpan<TextIndex> textChunks, Callback&& callback) const {
+    void forEachTextBlockInGlyphRange(SkSpan<TextIndex> textBlock, Callback&& callback) const {
         if (this->leftToRight()) {
-            TextIndex currentIndex = 0;
-            TextRange textRange(fUtf16Range.fStart, fUtf16Range.fStart);
-            for (auto currentTextChunk : textChunks) {
-                if (currentIndex >= fUtf16Range.fEnd) {
+            DirTextRange dirTextRange(fDirTextRange.fStart, fDirTextRange.fStart, fDirTextRange.fLeftToRight);
+            for (auto currentIndex : textBlock) {
+                if (currentIndex >= fDirTextRange.fEnd) {
                     break;
                 }
-                currentIndex += currentTextChunk;
-                if (currentIndex < fUtf16Range.fStart) {
+                if (currentIndex < fDirTextRange.fStart) {
                     continue;
                 }
-                textRange.fStart = textRange.fEnd;
-                textRange.fEnd += currentTextChunk;
-                textRange.fEnd = std::min(fUtf16Range.fEnd, textRange.fEnd);
+                dirTextRange.fStart = dirTextRange.fEnd;
+                dirTextRange.fEnd = currentIndex;
+                dirTextRange.fEnd = std::min(fDirTextRange.fEnd, dirTextRange.fEnd);
 
-                callback(textRange);
+                callback(dirTextRange);
             }
         } else {
-            // TODO: Implement RTL
-            SkASSERT(false);
+            // Revert chunks
+            std::vector<TextIndex> revertedChunks;
         }
     }
 
@@ -80,17 +85,14 @@ class VisualRun {
     friend class WrappedText;
     SkFont fFont;
     TextMetrics fTextMetrics;
+    SkScalar fLineBaseLine;
 
     SkVector fAdvance;
-    SkShaper::RunHandler::Range fUtf8Range;
-    TextRange fUtf16Range;
-    TextIndex fRunStart;
-    SkScalar  fRunOffset;
+    DirTextRange fDirTextRange;
     SkSTArray<128, SkGlyphID, true> fGlyphs;
     SkSTArray<128, SkPoint, true> fPositions;
     SkSTArray<128, TextIndex, true> fClusters;
     GlyphIndex fTrailingSpacesStart;
-    uint8_t fBidiLevel;
 };
 
 class VisualLine {

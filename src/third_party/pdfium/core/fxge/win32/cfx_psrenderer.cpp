@@ -44,17 +44,17 @@ bool CanEmbed(CFX_Font* font) {
                     FT_FSTYPE_BITMAP_EMBEDDING_ONLY)) == 0;
 }
 
-Optional<ByteString> GenerateType42SfntData(
+absl::optional<ByteString> GenerateType42SfntData(
     const ByteString& psname,
     pdfium::span<const uint8_t> font_data) {
   if (font_data.empty())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   // Per Type 42 font spec.
   constexpr size_t kMaxSfntStringSize = 65535;
   if (font_data.size() > kMaxSfntStringSize) {
     // TODO(thestig): Fonts that are too big need to be written out in sections.
-    return pdfium::nullopt;
+    return absl::nullopt;
   }
 
   // Each byte is written as 2 ASCIIHex characters, so really 64 chars per line.
@@ -169,7 +169,7 @@ ByteString GenerateType42FontData(const CFX_Font* font) {
   const ByteString psname = font->GetPsName();
   DCHECK(!psname.IsEmpty());
 
-  Optional<ByteString> sfnt_data =
+  absl::optional<ByteString> sfnt_data =
       GenerateType42SfntData(psname, font->GetFontSpan());
   if (!sfnt_data.has_value())
     return ByteString();
@@ -195,7 +195,7 @@ struct CFX_PSRenderer::Glyph {
 
   UnownedPtr<CFX_Font> const font;
   const uint32_t glyph_index;
-  Optional<std::array<float, 4>> adjust_matrix;
+  absl::optional<std::array<float, 4>> adjust_matrix;
 };
 
 CFX_PSRenderer::CFX_PSRenderer(CFX_PSFontTracker* font_tracker,
@@ -204,7 +204,9 @@ CFX_PSRenderer::CFX_PSRenderer(CFX_PSFontTracker* font_tracker,
   DCHECK(m_pFontTracker);
 }
 
-CFX_PSRenderer::~CFX_PSRenderer() = default;
+CFX_PSRenderer::~CFX_PSRenderer() {
+  EndRendering();
+}
 
 void CFX_PSRenderer::Init(const RetainPtr<IFX_RetainableWriteStream>& pStream,
                           RenderingLevel level,
@@ -283,15 +285,15 @@ void CFX_PSRenderer::RestoreState(bool bKeepSaved) {
     m_ClipBoxStack.pop_back();
 }
 
-void CFX_PSRenderer::OutputPath(const CFX_Path* pPath,
+void CFX_PSRenderer::OutputPath(const CFX_Path& path,
                                 const CFX_Matrix* pObject2Device) {
   std::ostringstream buf;
-  size_t size = pPath->GetPoints().size();
+  size_t size = path.GetPoints().size();
 
   for (size_t i = 0; i < size; i++) {
-    CFX_Path::Point::Type type = pPath->GetType(i);
-    bool closing = pPath->IsClosingFigure(i);
-    CFX_PointF pos = pPath->GetPoint(i);
+    CFX_Path::Point::Type type = path.GetType(i);
+    bool closing = path.IsClosingFigure(i);
+    CFX_PointF pos = path.GetPoint(i);
     if (pObject2Device)
       pos = pObject2Device->Transform(pos);
 
@@ -306,8 +308,8 @@ void CFX_PSRenderer::OutputPath(const CFX_Path* pPath,
           buf << "h ";
         break;
       case CFX_Path::Point::Type::kBezier: {
-        CFX_PointF pos1 = pPath->GetPoint(i + 1);
-        CFX_PointF pos2 = pPath->GetPoint(i + 2);
+        CFX_PointF pos1 = path.GetPoint(i + 1);
+        CFX_PointF pos2 = path.GetPoint(i + 2);
         if (pObject2Device) {
           pos1 = pObject2Device->Transform(pos1);
           pos2 = pObject2Device->Transform(pos2);
@@ -326,12 +328,12 @@ void CFX_PSRenderer::OutputPath(const CFX_Path* pPath,
 }
 
 void CFX_PSRenderer::SetClip_PathFill(
-    const CFX_Path* pPath,
+    const CFX_Path& path,
     const CFX_Matrix* pObject2Device,
     const CFX_FillRenderOptions& fill_options) {
   StartRendering();
-  OutputPath(pPath, pObject2Device);
-  CFX_FloatRect rect = pPath->GetBoundingBox();
+  OutputPath(path, pObject2Device);
+  CFX_FloatRect rect = path.GetBoundingBox();
   if (pObject2Device)
     rect = pObject2Device->TransformRect(rect);
 
@@ -346,7 +348,7 @@ void CFX_PSRenderer::SetClip_PathFill(
   WriteString(" n\n");
 }
 
-void CFX_PSRenderer::SetClip_PathStroke(const CFX_Path* pPath,
+void CFX_PSRenderer::SetClip_PathStroke(const CFX_Path& path,
                                         const CFX_Matrix* pObject2Device,
                                         const CFX_GraphStateData* pGraphState) {
   StartRendering();
@@ -358,15 +360,15 @@ void CFX_PSRenderer::SetClip_PathStroke(const CFX_Path* pPath,
       << pObject2Device->e << " " << pObject2Device->f << "]cm ";
   WriteStream(buf);
 
-  OutputPath(pPath, nullptr);
-  CFX_FloatRect rect = pPath->GetBoundingBoxForStrokePath(
+  OutputPath(path, nullptr);
+  CFX_FloatRect rect = path.GetBoundingBoxForStrokePath(
       pGraphState->m_LineWidth, pGraphState->m_MiterLimit);
   m_ClipBox.Intersect(pObject2Device->TransformRect(rect).GetOuterRect());
 
   WriteString("strokepath W n sm\n");
 }
 
-bool CFX_PSRenderer::DrawPath(const CFX_Path* pPath,
+bool CFX_PSRenderer::DrawPath(const CFX_Path& path,
                               const CFX_Matrix* pObject2Device,
                               const CFX_GraphStateData* pGraphState,
                               uint32_t fill_color,
@@ -393,7 +395,7 @@ bool CFX_PSRenderer::DrawPath(const CFX_Path* pPath,
     }
   }
 
-  OutputPath(pPath, stroke_alpha ? nullptr : pObject2Device);
+  OutputPath(path, stroke_alpha ? nullptr : pObject2Device);
   if (fill_options.fill_type != CFX_FillRenderOptions::FillType::kNoFill &&
       fill_alpha) {
     SetColor(fill_color);
@@ -543,11 +545,11 @@ bool CFX_PSRenderer::DrawDIBits(const RetainPtr<CFX_DIBBase>& pSource,
     switch (pSource->GetFormat()) {
       case FXDIB_Format::k1bppRgb:
       case FXDIB_Format::kRgb32:
-        pConverted = pConverted->CloneConvert(FXDIB_Format::kRgb);
+        pConverted = pConverted->ConvertTo(FXDIB_Format::kRgb);
         break;
       case FXDIB_Format::k8bppRgb:
         if (pSource->HasPalette())
-          pConverted = pConverted->CloneConvert(FXDIB_Format::kRgb);
+          pConverted = pConverted->ConvertTo(FXDIB_Format::kRgb);
         break;
       default:
         break;
@@ -847,8 +849,8 @@ void CFX_PSRenderer::PSCompressData(uint8_t* src_buf,
   if (m_Level.value() == RenderingLevel::kLevel3 ||
       m_Level.value() == RenderingLevel::kLevel3Type42) {
     std::unique_ptr<uint8_t, FxFreeDeleter> dest_buf_unique;
-    if (m_pEncoderIface->pFlateEncodeFunc(src_buf, src_size, &dest_buf_unique,
-                                          &dest_size)) {
+    if (m_pEncoderIface->pFlateEncodeFunc(pdfium::make_span(src_buf, src_size),
+                                          &dest_buf_unique, &dest_size)) {
       dest_buf = dest_buf_unique.release();
       *filter = "/FlateDecode filter ";
     }
@@ -893,7 +895,7 @@ void CFX_PSRenderer::WriteString(ByteStringView str) {
 }
 
 // static
-Optional<ByteString> CFX_PSRenderer::GenerateType42SfntDataForTesting(
+absl::optional<ByteString> CFX_PSRenderer::GenerateType42SfntDataForTesting(
     const ByteString& psname,
     pdfium::span<const uint8_t> font_data) {
   return GenerateType42SfntData(psname, font_data);

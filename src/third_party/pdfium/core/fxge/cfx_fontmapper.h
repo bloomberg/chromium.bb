@@ -18,7 +18,7 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_face.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class CFX_FontMgr;
 class CFX_SubstFont;
@@ -43,11 +43,12 @@ class CFX_FontMapper {
     kDingbats,
     kLast = kDingbats
   };
+  static constexpr int kNumStandardFonts = 14;
 
   explicit CFX_FontMapper(CFX_FontMgr* mgr);
   ~CFX_FontMapper();
 
-  static Optional<StandardFont> GetStandardFontName(ByteString* name);
+  static absl::optional<StandardFont> GetStandardFontName(ByteString* name);
   static bool IsStandardFontName(const ByteString& name);
   static bool IsSymbolicFont(StandardFont font);
   static bool IsFixedFont(StandardFont font);
@@ -68,29 +69,25 @@ class CFX_FontMapper {
                                     FX_CodePage code_page,
                                     CFX_SubstFont* pSubstFont);
 
-  bool IsBuiltinFace(const RetainPtr<CFX_Face>& face) const;
-  int GetFaceSize() const;
-  ByteString GetFaceName(int index) const { return m_FaceArray[index].name; }
+  size_t GetFaceSize() const;
+  ByteString GetFaceName(size_t index) const { return m_FaceArray[index].name; }
   bool HasInstalledFont(ByteStringView name) const;
   bool HasLocalizedFont(ByteStringView name) const;
 
 #if defined(OS_WIN)
-  Optional<ByteString> InstalledFontNameStartingWith(
+  absl::optional<ByteString> InstalledFontNameStartingWith(
       const ByteString& name) const;
-  Optional<ByteString> LocalizedFontNameStartingWith(
+  absl::optional<ByteString> LocalizedFontNameStartingWith(
       const ByteString& name) const;
 #endif  // defined(OS_WIN)
 
 #ifdef PDF_ENABLE_XFA
   std::unique_ptr<uint8_t, FxFreeDeleter> RawBytesForIndex(
-      uint32_t index,
+      size_t index,
       size_t* returned_length);
 #endif  // PDF_ENABLE_XFA
 
  private:
-  static constexpr size_t MM_FACE_COUNT = 2;
-  static constexpr size_t FOXIT_FACE_COUNT = 14;
-
   uint32_t GetChecksumFromTT(void* hFont);
   ByteString GetPSNameFromTT(void* hFont);
   ByteString MatchInstalledFonts(const ByteString& norm_name);
@@ -120,8 +117,9 @@ class CFX_FontMapper {
   UnownedPtr<CFX_FontMgr> const m_pFontMgr;
   std::vector<ByteString> m_InstalledTTFonts;
   std::vector<std::pair<ByteString, ByteString>> m_LocalizedTTFonts;
-  RetainPtr<CFX_Face> m_MMFaces[MM_FACE_COUNT];
-  RetainPtr<CFX_Face> m_FoxitFaces[FOXIT_FACE_COUNT];
+  RetainPtr<CFX_Face> m_StandardFaces[kNumStandardFonts];
+  RetainPtr<CFX_Face> m_GenericSansFace;
+  RetainPtr<CFX_Face> m_GenericSerifFace;
 };
 
 #endif  // CORE_FXGE_CFX_FONTMAPPER_H_

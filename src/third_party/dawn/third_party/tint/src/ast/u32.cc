@@ -21,23 +21,18 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::U32);
 namespace tint {
 namespace ast {
 
-U32::U32(ProgramID program_id, const Source& source)
-    : Base(program_id, source) {}
+U32::U32(ProgramID pid, const Source& src) : Base(pid, src) {}
 
 U32::~U32() = default;
 
 U32::U32(U32&&) = default;
 
-std::string U32::type_name() const {
-  return "__u32";
-}
-
 std::string U32::FriendlyName(const SymbolTable&) const {
   return "u32";
 }
 
-U32* U32::Clone(CloneContext* ctx) const {
-  auto src = ctx->Clone(source());
+const U32* U32::Clone(CloneContext* ctx) const {
+  auto src = ctx->Clone(source);
   return ctx->dst->create<U32>(src);
 }
 

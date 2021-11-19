@@ -23,6 +23,12 @@
 #include "common/entry_points_enum_autogen.h"
 #include "common/platform.h"
 
+#if defined(ANGLE_PLATFORM_WINDOWS)
+#    include <sal.h>
+typedef unsigned long DWORD;
+typedef _Return_type_success_(return >= 0) long HRESULT;
+#endif
+
 #if !defined(TRACE_OUTPUT_FILE)
 #    define TRACE_OUTPUT_FILE "angle_debug.txt"
 #endif
@@ -439,16 +445,6 @@ std::ostream &FmtHex(std::ostream &os, T value)
 #else
 #    define ANGLE_DISABLE_DESTRUCTOR_OVERRIDE_WARNING
 #    define ANGLE_REENABLE_DESTRUCTOR_OVERRIDE_WARNING
-#endif
-
-#if defined(__clang__)
-#    define ANGLE_DISABLE_WEAK_TEMPLATE_VTABLES_WARNING \
-        _Pragma("clang diagnostic push")                \
-            _Pragma("clang diagnostic ignored \"-Wweak-template-vtables\"")
-#    define ANGLE_REENABLE_WEAK_TEMPLATE_VTABLES_WARNING _Pragma("clang diagnostic pop")
-#else
-#    define ANGLE_DISABLE_WEAK_TEMPLATE_VTABLES_WARNING
-#    define ANGLE_REENABLE_WEAK_TEMPLATE_VTABLES_WARNING
 #endif
 
 #if defined(__clang__)

@@ -16,7 +16,7 @@ syntax = "proto3";
 
 package cast.platform;
 
-import "google/protobuf/duration.proto";
+import "proto/common/duration.proto";
 import "proto/common/service_info.proto";
 
 option optimize_for = LITE_RUNTIME;
@@ -38,6 +38,12 @@ service PlatformService {
   // 'unavailable' if heartbeats time out or the streaming connection is
   // terminated, and will unregister all the runtimes.
   rpc Heartbeat(HeartbeatRequest) returns (stream HeartbeatResponse);
+
+  // Brings the runtime to the foreground on the screen. This method can be
+  // called for a runtime that is already in foreground in which case the OK
+  // status must be returned.
+  rpc BringToForeground(BringToForegroundRequest)
+      returns (BringToForegroundResponse);
 }
 
 message StartRuntimeRequest {
@@ -64,7 +70,14 @@ message GetDeviceInfoResponse {
 message HeartbeatRequest {
   // Period between two heartbeat responses. The Core will wait for double of
   // this time to avoid network glitches. The minimum value is 5 seconds.
-  google.protobuf.Duration heartbeat_period = 1;
+  cast.common.Duration heartbeat_period = 1;
 }
 
 message HeartbeatResponse {}
+
+message BringToForegroundRequest {
+  // Cast Runtime ID assigned in CastCoreService.RegisterRuntime.
+  string runtime_id = 1;
+}
+
+message BringToForegroundResponse {}

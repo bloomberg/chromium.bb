@@ -366,13 +366,13 @@ uint32_t FlateOrLZWDecode(bool bLZW,
                                        estimated_size, dest_buf, dest_size);
 }
 
-Optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict) {
+absl::optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict) {
   const CPDF_Object* pFilter = pDict->GetDirectObjectFor("Filter");
   if (!pFilter)
     return DecoderArray();
 
   if (!pFilter->IsArray() && !pFilter->IsName())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   const CPDF_Object* pParams =
       pDict->GetDirectObjectFor(pdfium::stream::kDecodeParms);
@@ -380,7 +380,7 @@ Optional<DecoderArray> GetDecoderArray(const CPDF_Dictionary* pDict) {
   DecoderArray decoder_array;
   if (const CPDF_Array* pDecoders = pFilter->AsArray()) {
     if (!ValidateDecoderPipeline(pDecoders))
-      return pdfium::nullopt;
+      return absl::nullopt;
 
     const CPDF_Array* pParamsArray = ToArray(pParams);
     for (size_t i = 0; i < pDecoders->size(); ++i) {
@@ -599,8 +599,7 @@ ByteString PDF_HexEncodeString(const ByteString& src) {
 bool FlateEncode(pdfium::span<const uint8_t> src_span,
                  std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                  uint32_t* dest_size) {
-  return FlateModule::Encode(src_span.data(), src_span.size(), dest_buf,
-                             dest_size);
+  return FlateModule::Encode(src_span, dest_buf, dest_size);
 }
 
 uint32_t FlateDecode(pdfium::span<const uint8_t> src_span,

@@ -224,7 +224,7 @@ export function uint32ToInt32(u32: number): number {
 }
 
 /** A type of number representable by NumberRepr. */
-type NumberType =
+export type NumberType =
   | 'f64'
   | 'f32'
   | 'f16'
@@ -326,5 +326,21 @@ export class NumberRepr<T extends NumberType> {
   /** Create a u8 from a numeric value, a JS `number`. */
   static fromU8(value: number) {
     return new NumberRepr<'u8'>(value, new Uint8Array(value));
+  }
+
+  /** Create a u32 from a bit representation, a uint32 represented as a JS `number`. */
+  static fromU32Bits(bits: number) {
+    const abv = new Uint32Array([bits]);
+    return new NumberRepr<'u32'>(new Uint32Array(abv.buffer)[0], abv);
+  }
+  /** Create a u16 from a bit representation, a uint16 represented as a JS `number`. */
+  static fromU16Bits(bits: number) {
+    const abv = new Uint16Array([bits]);
+    return new NumberRepr<'u16'>(new Uint16Array(abv.buffer)[0], abv);
+  }
+  /** Create a u8 from a bit representation, a uint8 represented as a JS `number`. */
+  static fromU8Bits(bits: number) {
+    const abv = new Uint8Array([bits]);
+    return new NumberRepr<'u8'>(new Uint8Array(abv.buffer)[0], abv);
   }
 }

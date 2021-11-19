@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "base/sequenced_task_runner.h"
+#include "base/task/sequenced_task_runner.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
@@ -79,7 +79,6 @@ class SyncEngineImpl : public SyncEngine,
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase) override;
   void SetDecryptionPassphrase(const std::string& passphrase) override;
-  void SetKeystoreEncryptionBootstrapToken(const std::string& token) override;
   void AddTrustedVaultDecryptionKeys(
       const std::vector<std::vector<uint8_t>>& keys,
       base::OnceClosure done_cb) override;

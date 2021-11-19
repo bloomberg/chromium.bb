@@ -36,6 +36,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActionModeHandler;
 import org.chromium.chrome.browser.ChromePowerModeVoter;
+import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
@@ -82,6 +83,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.share.qrcode.QrCodeDialog;
+import org.chromium.chrome.browser.share.scroll_capture.ScrollCaptureManager;
 import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.AutofillSessionLifetimeController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -172,7 +174,7 @@ public class RootUiCoordinator
     private OverlayPanelManager.OverlayPanelManagerObserver mOverlayPanelManagerObserver;
 
     private OneshotSupplier<LayoutStateProvider> mLayoutStateProviderOneShotSupplier;
-    private LayoutStateProvider mLayoutStateProvider;
+    protected LayoutStateProvider mLayoutStateProvider;
     private LayoutStateProvider.LayoutStateObserver mLayoutStateObserver;
 
     /** A means of providing the theme color to different features. */
@@ -225,6 +227,7 @@ public class RootUiCoordinator
     @Nullable
     private VoiceRecognitionHandler.Observer mMicStateObserver;
     private MediaCaptureOverlayController mCaptureController;
+    private @Nullable ScrollCaptureManager mScrollCaptureManager;
     protected final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final ObservableSupplier<LayoutManagerImpl> mLayoutManagerSupplier;
     protected final ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
@@ -244,6 +247,8 @@ public class RootUiCoordinator
     private final StatusBarColorProvider mStatusBarColorProvider;
     private final Supplier<TabContentManager> mTabContentManagerSupplier;
     private final IntentRequestTracker mIntentRequestTracker;
+    private final OneshotSupplier<TabReparentingController> mTabReparentingControllerSupplier;
+    private final boolean mInitializeUiWithIncognitoColors;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -283,6 +288,8 @@ public class RootUiCoordinator
      * @param appMenuDelegate The app menu delegate.
      * @param statusBarColorProvider Provides the status bar color.
      * @param intentRequestTracker Tracks intent requests.
+     * @param tabReparentingControllerSupplier Supplier of the {@link TabReparentingController}.
+     * @param initializeUiWithIncognitoColors Whether to initialize the UI with incognito colors.
      */
     public RootUiCoordinator(@NonNull AppCompatActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
@@ -316,7 +323,9 @@ public class RootUiCoordinator
             @NonNull Supplier<Boolean> isWarmOnResumeSupplier,
             @NonNull AppMenuDelegate appMenuDelegate,
             @NonNull StatusBarColorProvider statusBarColorProvider,
-            @NonNull IntentRequestTracker intentRequestTracker) {
+            @NonNull IntentRequestTracker intentRequestTracker,
+            @NonNull OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
+            boolean initializeUiWithIncognitoColors) {
         mJankTracker = jankTracker;
         mCallbackController = new CallbackController();
         mActivity = activity;
@@ -342,6 +351,8 @@ public class RootUiCoordinator
         mAppMenuDelegate = appMenuDelegate;
         mStatusBarColorProvider = statusBarColorProvider;
         mIntentRequestTracker = intentRequestTracker;
+        mTabReparentingControllerSupplier = tabReparentingControllerSupplier;
+        mInitializeUiWithIncognitoColors = initializeUiWithIncognitoColors;
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
@@ -520,6 +531,11 @@ public class RootUiCoordinator
             mMerchantTrustSignalsCoordinatorSupplier.set(null);
         }
 
+        if (mScrollCaptureManager != null) {
+            mScrollCaptureManager.destroy();
+            mScrollCaptureManager = null;
+        }
+
         mActivity = null;
     }
 
@@ -632,7 +648,7 @@ public class RootUiCoordinator
             mMessageQueueMediator = new ChromeMessageQueueMediator(mBrowserControlsManager,
                     mMessageContainerCoordinator, mActivityTabProvider,
                     mLayoutStateProviderOneShotSupplier, mModalDialogManagerSupplier,
-                    mMessageDispatcher);
+                    mActivityLifecycleDispatcher, mMessageDispatcher);
             mMessageDispatcher.setDelegate(mMessageQueueMediator);
             MessagesFactory.attachMessageDispatcher(mWindowAndroid, mMessageDispatcher);
         }
@@ -640,6 +656,7 @@ public class RootUiCoordinator
                 () -> mMessageDispatcher, mModalDialogManagerSupplier.get(), mActivityTabProvider);
 
         initMerchantTrustSignals();
+        initScrollCapture();
     }
 
     private void initMerchantTrustSignals() {
@@ -652,6 +669,15 @@ public class RootUiCoordinator
                             mProfileSupplier, new MerchantTrustMetrics(), mIntentRequestTracker);
             mMerchantTrustSignalsCoordinatorSupplier.set(merchantTrustSignalsCoordinator);
         }
+    }
+
+    private void initScrollCapture() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.SCROLL_CAPTURE)) {
+            return;
+        }
+
+        mScrollCaptureManager = new ScrollCaptureManager(mActivityTabProvider);
     }
 
     /**
@@ -904,7 +930,8 @@ public class RootUiCoordinator
                     mBottomSheetController, mIsWarmOnResumeSupplier,
                     mTabContentManagerSupplier.get(), mTabCreatorManagerSupplier.get(),
                     mOverviewModeBehaviorSupplier, mSnackbarManagerSupplier.get(), mJankTracker,
-                    getMerchantTrustSignalsCoordinatorSupplier());
+                    getMerchantTrustSignalsCoordinatorSupplier(), mTabReparentingControllerSupplier,
+                    mInitializeUiWithIncognitoColors);
             if (!mSupportsAppMenuSupplier.getAsBoolean()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -939,7 +966,7 @@ public class RootUiCoordinator
                         R.color.omnibox_focused_fading_background_color));
     }
 
-    private void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
+    protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {
         assert layoutStateProvider != null;
         assert mLayoutStateProvider == null : "The LayoutStateProvider should set at most once.";
 
@@ -1193,5 +1220,12 @@ public class RootUiCoordinator
     @VisibleForTesting
     public ScrimCoordinator getScrimCoordinatorForTesting() {
         return mScrimCoordinator;
+    }
+
+    @VisibleForTesting
+    public void destroyActivityForTesting() {
+        // Actually destroying or finishing the activity hinders the shutdown process after
+        // a test is done. Just null it out to give an effect of |onDestroy| being invoked.
+        mActivity = null;
     }
 }

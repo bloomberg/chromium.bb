@@ -10,19 +10,38 @@
 #include "src/core/SkScopeExit.h"
 #include "src/sksl/SkSLCompiler.h"
 #include "src/sksl/SkSLMemoryLayout.h"
+#include "src/sksl/ir/SkSLBinaryExpression.h"
+#include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLConstructorArray.h"
 #include "src/sksl/ir/SkSLConstructorArrayCast.h"
+#include "src/sksl/ir/SkSLConstructorCompound.h"
 #include "src/sksl/ir/SkSLConstructorCompoundCast.h"
 #include "src/sksl/ir/SkSLConstructorDiagonalMatrix.h"
 #include "src/sksl/ir/SkSLConstructorMatrixResize.h"
 #include "src/sksl/ir/SkSLConstructorSplat.h"
 #include "src/sksl/ir/SkSLConstructorStruct.h"
+#include "src/sksl/ir/SkSLDoStatement.h"
 #include "src/sksl/ir/SkSLExpressionStatement.h"
 #include "src/sksl/ir/SkSLExtension.h"
+#include "src/sksl/ir/SkSLFieldAccess.h"
+#include "src/sksl/ir/SkSLForStatement.h"
+#include "src/sksl/ir/SkSLFunctionCall.h"
+#include "src/sksl/ir/SkSLFunctionDeclaration.h"
+#include "src/sksl/ir/SkSLFunctionDefinition.h"
+#include "src/sksl/ir/SkSLFunctionPrototype.h"
+#include "src/sksl/ir/SkSLIfStatement.h"
 #include "src/sksl/ir/SkSLIndexExpression.h"
+#include "src/sksl/ir/SkSLInterfaceBlock.h"
 #include "src/sksl/ir/SkSLModifiersDeclaration.h"
 #include "src/sksl/ir/SkSLNop.h"
+#include "src/sksl/ir/SkSLPostfixExpression.h"
+#include "src/sksl/ir/SkSLPrefixExpression.h"
+#include "src/sksl/ir/SkSLReturnStatement.h"
+#include "src/sksl/ir/SkSLSetting.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
+#include "src/sksl/ir/SkSLSwitchStatement.h"
+#include "src/sksl/ir/SkSLSwizzle.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
 #include <algorithm>
@@ -89,19 +108,9 @@ String MetalCodeGenerator::typeName(const Type& type) {
                                   to_string(type.rows());
 
         case Type::TypeKind::kSampler:
-            return "texture2d<float>"; // FIXME - support other texture types
+            return "texture2d<half>"; // FIXME - support other texture types
 
         default:
-            // We currently only support full-precision types in MSL to avoid type coercion issues.
-            if (type == *fContext.fTypes.fHalf) {
-                return "float";
-            }
-            if (type == *fContext.fTypes.fShort) {
-                return "int";
-            }
-            if (type == *fContext.fTypes.fUShort) {
-                return "uint";
-            }
             return String(type.name());
     }
 }
@@ -129,7 +138,7 @@ void MetalCodeGenerator::writeExpression(const Expression& expr, Precedence pare
             this->writeAnyConstructor(expr.asAnyConstructor(), "{", "}", parentPrecedence);
             break;
         case Expression::Kind::kConstructorArrayCast:
-            this->writeExpression(*expr.as<ConstructorArrayCast>().argument(), parentPrecedence);
+            this->writeConstructorArrayCast(expr.as<ConstructorArrayCast>(), parentPrecedence);
             break;
         case Expression::Kind::kConstructorCompound:
             this->writeConstructorCompound(expr.as<ConstructorCompound>(), parentPrecedence);
@@ -375,61 +384,64 @@ void MetalCodeGenerator::writeFunctionCall(const FunctionCall& c) {
 }
 
 static constexpr char kInverse2x2[] = R"(
-float2x2 float2x2_inverse(float2x2 m) {
-    return float2x2(m[1][1], -m[0][1], -m[1][0], m[0][0]) * (1/determinant(m));
+template <typename T>
+matrix<T, 2, 2> mat2_inverse(matrix<T, 2, 2> m) {
+    return matrix<T, 2, 2>(m[1][1], -m[0][1], -m[1][0], m[0][0]) * (1/determinant(m));
 }
 )";
 
 static constexpr char kInverse3x3[] = R"(
-float3x3 float3x3_inverse(float3x3 m) {
-    float a00 = m[0][0], a01 = m[0][1], a02 = m[0][2];
-    float a10 = m[1][0], a11 = m[1][1], a12 = m[1][2];
-    float a20 = m[2][0], a21 = m[2][1], a22 = m[2][2];
-    float b01 =  a22*a11 - a12*a21;
-    float b11 = -a22*a10 + a12*a20;
-    float b21 =  a21*a10 - a11*a20;
-    float det = a00*b01 + a01*b11 + a02*b21;
-    return float3x3(b01, (-a22*a01 + a02*a21), ( a12*a01 - a02*a11),
-                    b11, ( a22*a00 - a02*a20), (-a12*a00 + a02*a10),
-                    b21, (-a21*a00 + a01*a20), ( a11*a00 - a01*a10)) * (1/det);
+template <typename T>
+matrix<T, 3, 3> mat3_inverse(matrix<T, 3, 3> m) {
+    T a00 = m[0][0], a01 = m[0][1], a02 = m[0][2];
+    T a10 = m[1][0], a11 = m[1][1], a12 = m[1][2];
+    T a20 = m[2][0], a21 = m[2][1], a22 = m[2][2];
+    T b01 =  a22*a11 - a12*a21;
+    T b11 = -a22*a10 + a12*a20;
+    T b21 =  a21*a10 - a11*a20;
+    T det = a00*b01 + a01*b11 + a02*b21;
+    return matrix<T, 3, 3>(b01, (-a22*a01 + a02*a21), ( a12*a01 - a02*a11),
+                           b11, ( a22*a00 - a02*a20), (-a12*a00 + a02*a10),
+                           b21, (-a21*a00 + a01*a20), ( a11*a00 - a01*a10)) * (1/det);
 }
 )";
 
 static constexpr char kInverse4x4[] = R"(
-float4x4 float4x4_inverse(float4x4 m) {
-    float a00 = m[0][0], a01 = m[0][1], a02 = m[0][2], a03 = m[0][3];
-    float a10 = m[1][0], a11 = m[1][1], a12 = m[1][2], a13 = m[1][3];
-    float a20 = m[2][0], a21 = m[2][1], a22 = m[2][2], a23 = m[2][3];
-    float a30 = m[3][0], a31 = m[3][1], a32 = m[3][2], a33 = m[3][3];
-    float b00 = a00*a11 - a01*a10;
-    float b01 = a00*a12 - a02*a10;
-    float b02 = a00*a13 - a03*a10;
-    float b03 = a01*a12 - a02*a11;
-    float b04 = a01*a13 - a03*a11;
-    float b05 = a02*a13 - a03*a12;
-    float b06 = a20*a31 - a21*a30;
-    float b07 = a20*a32 - a22*a30;
-    float b08 = a20*a33 - a23*a30;
-    float b09 = a21*a32 - a22*a31;
-    float b10 = a21*a33 - a23*a31;
-    float b11 = a22*a33 - a23*a32;
-    float det = b00*b11 - b01*b10 + b02*b09 + b03*b08 - b04*b07 + b05*b06;
-    return float4x4(a11*b11 - a12*b10 + a13*b09,
-                    a02*b10 - a01*b11 - a03*b09,
-                    a31*b05 - a32*b04 + a33*b03,
-                    a22*b04 - a21*b05 - a23*b03,
-                    a12*b08 - a10*b11 - a13*b07,
-                    a00*b11 - a02*b08 + a03*b07,
-                    a32*b02 - a30*b05 - a33*b01,
-                    a20*b05 - a22*b02 + a23*b01,
-                    a10*b10 - a11*b08 + a13*b06,
-                    a01*b08 - a00*b10 - a03*b06,
-                    a30*b04 - a31*b02 + a33*b00,
-                    a21*b02 - a20*b04 - a23*b00,
-                    a11*b07 - a10*b09 - a12*b06,
-                    a00*b09 - a01*b07 + a02*b06,
-                    a31*b01 - a30*b03 - a32*b00,
-                    a20*b03 - a21*b01 + a22*b00) * (1/det);
+template <typename T>
+matrix<T, 4, 4> mat4_inverse(matrix<T, 4, 4> m) {
+    T a00 = m[0][0], a01 = m[0][1], a02 = m[0][2], a03 = m[0][3];
+    T a10 = m[1][0], a11 = m[1][1], a12 = m[1][2], a13 = m[1][3];
+    T a20 = m[2][0], a21 = m[2][1], a22 = m[2][2], a23 = m[2][3];
+    T a30 = m[3][0], a31 = m[3][1], a32 = m[3][2], a33 = m[3][3];
+    T b00 = a00*a11 - a01*a10;
+    T b01 = a00*a12 - a02*a10;
+    T b02 = a00*a13 - a03*a10;
+    T b03 = a01*a12 - a02*a11;
+    T b04 = a01*a13 - a03*a11;
+    T b05 = a02*a13 - a03*a12;
+    T b06 = a20*a31 - a21*a30;
+    T b07 = a20*a32 - a22*a30;
+    T b08 = a20*a33 - a23*a30;
+    T b09 = a21*a32 - a22*a31;
+    T b10 = a21*a33 - a23*a31;
+    T b11 = a22*a33 - a23*a32;
+    T det = b00*b11 - b01*b10 + b02*b09 + b03*b08 - b04*b07 + b05*b06;
+    return matrix<T, 4, 4>(a11*b11 - a12*b10 + a13*b09,
+                           a02*b10 - a01*b11 - a03*b09,
+                           a31*b05 - a32*b04 + a33*b03,
+                           a22*b04 - a21*b05 - a23*b03,
+                           a12*b08 - a10*b11 - a13*b07,
+                           a00*b11 - a02*b08 + a03*b07,
+                           a32*b02 - a30*b05 - a33*b01,
+                           a20*b05 - a22*b02 + a23*b01,
+                           a10*b10 - a11*b08 + a13*b06,
+                           a01*b08 - a00*b10 - a03*b06,
+                           a30*b04 - a31*b02 + a33*b00,
+                           a21*b02 - a20*b04 - a23*b00,
+                           a11*b07 - a10*b09 - a12*b06,
+                           a00*b09 - a01*b07 + a02*b06,
+                           a31*b01 - a30*b03 - a32*b00,
+                           a20*b03 - a21*b01 + a22*b00) * (1/det);
 }
 )";
 
@@ -439,7 +451,7 @@ String MetalCodeGenerator::getInversePolyfill(const ExpressionArray& arguments) 
         const Type& type = arguments.front()->type();
         if (type.isMatrix() && type.rows() == type.columns()) {
             // Inject the correct polyfill based on the matrix size.
-            String name = this->typeName(type) + "_inverse";
+            auto name = String::printf("mat%d_inverse", type.columns());
             auto [iter, didInsert] = fWrittenIntrinsics.insert(name);
             if (didInsert) {
                 switch (type.rows()) {
@@ -463,8 +475,8 @@ String MetalCodeGenerator::getInversePolyfill(const ExpressionArray& arguments) 
 
 void MetalCodeGenerator::writeMatrixCompMult() {
     static constexpr char kMatrixCompMult[] = R"(
-template <int C, int R>
-matrix<float, C, R> matrixCompMult(matrix<float, C, R> a, const matrix<float, C, R> b) {
+template <typename T, int C, int R>
+matrix<T, C, R> matrixCompMult(matrix<T, C, R> a, const matrix<T, C, R> b) {
     for (int c = 0; c < C; ++c) {
         a[c] *= b[c];
     }
@@ -481,9 +493,9 @@ matrix<float, C, R> matrixCompMult(matrix<float, C, R> a, const matrix<float, C,
 
 void MetalCodeGenerator::writeOuterProduct() {
     static constexpr char kOuterProduct[] = R"(
-template <int C, int R>
-matrix<float, C, R> outerProduct(const vec<float, R> a, const vec<float, C> b) {
-    matrix<float, C, R> result;
+template <typename T, int C, int R>
+matrix<T, C, R> outerProduct(const vec<T, R> a, const vec<T, C> b) {
+    matrix<T, C, R> result;
     for (int c = 0; c < C; ++c) {
         result[c] = a * b[c];
     }
@@ -695,8 +707,9 @@ bool MetalCodeGenerator::writeIntrinsicCall(const FunctionCall& c, IntrinsicKind
             return true;
         }
         case k_dFdy_IntrinsicKind: {
-            this->write(fRTFlipName + ".y*dfdy");
+            this->write("(" + fRTFlipName + ".y * dfdy");
             this->writeArgumentList(c.arguments());
+            this->write(")");
             return true;
         }
         case k_inverse_IntrinsicKind: {
@@ -1060,16 +1073,6 @@ String MetalCodeGenerator::getMatrixConstructHelper(const AnyConstructor& c) {
     return name;
 }
 
-bool MetalCodeGenerator::canCoerce(const Type& t1, const Type& t2) {
-    if (t1.columns() != t2.columns() || t1.rows() != t2.rows()) {
-        return false;
-    }
-    if (t1.columns() > 1) {
-        return this->canCoerce(t1.componentType(), t2.componentType());
-    }
-    return t1.isFloat() && t2.isFloat();
-}
-
 bool MetalCodeGenerator::matrixConstructHelperIsNeeded(const ConstructorCompound& c) {
     SkASSERT(c.type().isMatrix());
 
@@ -1133,6 +1136,37 @@ void MetalCodeGenerator::writeConstructorCompound(const ConstructorCompound& c,
     } else {
         fContext.fErrors->error(c.fLine, "unsupported compound constructor");
     }
+}
+
+void MetalCodeGenerator::writeConstructorArrayCast(const ConstructorArrayCast& c,
+                                                   Precedence parentPrecedence) {
+    const Type& inType = c.argument()->type().componentType();
+    const Type& outType = c.type().componentType();
+    String inTypeName = this->typeName(inType);
+    String outTypeName = this->typeName(outType);
+
+    String name = "array_of_" + outTypeName + "_from_" + inTypeName;
+    auto [iter, didInsert] = fHelpers.insert(name);
+    if (didInsert) {
+        fExtraFunctions.printf(R"(
+template <size_t N>
+array<%s, N> %s(thread const array<%s, N>& x) {
+    array<%s, N> result;
+    for (int i = 0; i < N; ++i) {
+        result[i] = %s(x[i]);
+    }
+    return result;
+}
+)",
+                               outTypeName.c_str(), name.c_str(), inTypeName.c_str(),
+                               outTypeName.c_str(),
+                               outTypeName.c_str());
+    }
+
+    this->write(name);
+    this->write("(");
+    this->writeExpression(*c.argument(), Precedence::kSequence);
+    this->write(")");
 }
 
 String MetalCodeGenerator::getVectorFromMat2x2ConstructorHelper(const Type& matrixType) {
@@ -1245,15 +1279,6 @@ void MetalCodeGenerator::writeCastConstructor(const AnyConstructor& c,
                                               const char* leftBracket,
                                               const char* rightBracket,
                                               Precedence parentPrecedence) {
-    // If the type is coercible, emit it directly without the cast.
-    auto args = c.argumentSpan();
-    if (args.size() == 1) {
-        if (this->canCoerce(c.type(), args.front()->type())) {
-            this->writeExpression(*args.front(), parentPrecedence);
-            return;
-        }
-    }
-
     return this->writeAnyConstructor(c, leftBracket, rightBracket, parentPrecedence);
 }
 
@@ -1680,13 +1705,18 @@ void MetalCodeGenerator::writeLiteral(const Literal& l) {
     const Type& type = l.type();
     if (type.isFloat()) {
         this->write(to_string(l.floatValue()));
+        if (!l.type().highPrecision()) {
+            this->write("h");
+        }
         return;
     }
     if (type.isInteger()) {
         if (type == *fContext.fTypes.fUInt) {
-            this->write(to_string(l.intValue() & 0xffffffff) + "u");
+            this->write(to_string(l.intValue() & 0xffffffff));
+            this->write("u");
         } else if (type == *fContext.fTypes.fUShort) {
-            this->write(to_string(l.intValue() & 0xffff) + "u");
+            this->write(to_string(l.intValue() & 0xffff));
+            this->write("u");
         } else {
             this->write(to_string(l.intValue()));
         }
@@ -1807,7 +1837,7 @@ bool MetalCodeGenerator::writeFunctionDeclaration(const FunctionDeclaration& f) 
                         fContext.fErrors->error(decls.fLine, "Unsupported texture dimensions");
                         return false;
                     }
-                    this->write(", texture2d<float> ");
+                    this->write(", texture2d<half> ");
                     this->writeName(var.var().name());
                     this->write("[[texture(");
                     this->write(to_string(var.var().modifiers().fLayout.fBinding));
@@ -2299,7 +2329,7 @@ void MetalCodeGenerator::writeOutputStruct() {
     if (fProgram.fConfig->fKind == ProgramKind::kVertex) {
         this->write("    float4 sk_Position [[position]];\n");
     } else if (fProgram.fConfig->fKind == ProgramKind::kFragment) {
-        this->write("    float4 sk_FragColor [[color(0)]];\n");
+        this->write("    half4 sk_FragColor [[color(0)]];\n");
     }
     for (const ProgramElement* e : fProgram.elements()) {
         if (e->is<GlobalVarDeclaration>()) {

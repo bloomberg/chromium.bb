@@ -42,8 +42,8 @@ int32_t RangeCheckValue(int32_t value, int8_t range) {
 #if defined(LIBGAV1_ENABLE_TRANSFORM_RANGE_CHECK) && \
     LIBGAV1_ENABLE_TRANSFORM_RANGE_CHECK
   assert(range <= 32);
-  const int32_t min = -(1 << (range - 1));
-  const int32_t max = (1 << (range - 1)) - 1;
+  const auto min = static_cast<int32_t>(-(uint32_t{1} << (range - 1)));
+  const auto max = static_cast<int32_t>((uint32_t{1} << (range - 1)) - 1);
   if (min > value || value > max) {
     LIBGAV1_DLOG(ERROR, "coeff out of bit range, value: %d bit range %d\n",
                  value, range);

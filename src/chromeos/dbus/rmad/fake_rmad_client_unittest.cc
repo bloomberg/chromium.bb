@@ -78,11 +78,8 @@ class TestObserver : public RmadClient::Observer {
     return last_calibration_overall_status_;
   }
   int num_provisioning_progress() const { return num_provisioning_progress_; }
-  rmad::ProvisionDeviceState::ProvisioningStep last_provisioning_step() const {
-    return last_provisioning_step_;
-  }
-  float last_provisioning_progress() const {
-    return last_provisioning_progress_;
+  rmad::ProvisionStatus last_provisioning_status() const {
+    return last_provisioning_status_;
   }
   int num_hardware_write_protection_state() {
     return num_hardware_write_protection_state_;
@@ -122,11 +119,9 @@ class TestObserver : public RmadClient::Observer {
   }
 
   // Called when provisioning progress is updated.
-  void ProvisioningProgress(rmad::ProvisionDeviceState::ProvisioningStep step,
-                            double progress) override {
+  void ProvisioningProgress(const rmad::ProvisionStatus& status) override {
     num_provisioning_progress_++;
-    last_provisioning_step_ = step;
-    last_provisioning_progress_ = progress;
+    last_provisioning_status_ = status;
   }
 
   // Called when hardware write protection state changes.
@@ -159,9 +154,7 @@ class TestObserver : public RmadClient::Observer {
   rmad::CalibrationOverallStatus last_calibration_overall_status_ =
       rmad::CalibrationOverallStatus::RMAD_CALIBRATION_OVERALL_UNKNOWN;
   int num_provisioning_progress_ = 0;
-  rmad::ProvisionDeviceState::ProvisioningStep last_provisioning_step_ =
-      rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_UNKNOWN;
-  float last_provisioning_progress_ = 0.0f;
+  rmad::ProvisionStatus last_provisioning_status_;
   int num_hardware_write_protection_state_ = 0;
   bool last_hardware_write_protection_state_ = true;
   int num_power_cable_state_ = 0;
@@ -474,12 +467,17 @@ TEST_F(FakeRmadClientTest, Abortable_SetTrue_Ok) {
   run_loop.RunUntilIdle();
 }
 
-TEST_F(FakeRmadClientTest, GetLogPath) {
+TEST_F(FakeRmadClientTest, GetLog) {
   base::RunLoop run_loop;
-  client_->GetLogPath(
+  client_->GetLog(
       base::BindLambdaForTesting([&](absl::optional<std::string> response) {
         EXPECT_TRUE(response.has_value());
-        EXPECT_EQ(*response, "fake/log/path.log");
+        EXPECT_EQ(
+            *response,
+            "This is a log.\nIt has multiple lines.\nSome of which are very, "
+            "very long so that the log window can be tested. I mean really "
+            "long, much longer than you expect. It just keeps going on and "
+            "on, until it just stops.");
         run_loop.Quit();
       }));
   run_loop.RunUntilIdle();
@@ -532,11 +530,11 @@ TEST_F(FakeRmadClientTest, ProvisioningProgressObservation) {
   TestObserver observer_1(client_);
 
   fake_client_()->TriggerProvisioningProgressObservation(
-      rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_IN_PROGRESS, 0.25);
+      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS, 0.25);
   EXPECT_EQ(1, observer_1.num_provisioning_progress());
-  EXPECT_EQ(rmad::ProvisionDeviceState::RMAD_PROVISIONING_STEP_IN_PROGRESS,
-            observer_1.last_provisioning_step());
-  EXPECT_EQ(0.25, observer_1.last_provisioning_progress());
+  EXPECT_EQ(rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS,
+            observer_1.last_provisioning_status().status());
+  EXPECT_EQ(0.25, observer_1.last_provisioning_status().progress());
 }
 
 // Tests that synchronous observers are notified about provisioning progress.

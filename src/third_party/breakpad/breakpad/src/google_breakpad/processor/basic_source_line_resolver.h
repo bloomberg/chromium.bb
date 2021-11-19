@@ -98,28 +98,35 @@ class SymbolParseHelper {
                         char** filename);  // out
 
   // Parses a |inline_origin_line| declaration.  Returns true on success.
-  // Format: INLINE_ORIGIN <origin_id> <file_id> <name>.
+  // Old Format: INLINE_ORIGIN <origin_id> <file_id> <name>.
+  // New Format: INLINE_ORIGIN <origin_id> <name>.
   // Notice, that this method modifies the input |inline_origin_line| which is
-  // why it can't be const.  On success, <origin_id>, <file_id> and <name> are
-  // stored in |*origin_id|, |*file_id|, and |*name|.  No allocation is
-  // done, |*name| simply points inside |inline_origin_line|.
+  // why it can't be const.  On success, <has_file_id>, <origin_id>, <file_id>
+  // and <name> are stored in |*has_file_id*|, |*origin_id|, |*file_id|, and
+  // |*name|.  No allocation is done, |*name| simply points inside
+  // |inline_origin_line|.
   static bool ParseInlineOrigin(char* inline_origin_line,  // in
+                                bool* has_file_id,       // out
                                 long* origin_id,           // out
                                 long* file_id,             // out
                                 char** name);              // out
 
   // Parses a |inline| declaration.  Returns true on success.
-  // Format: INLINE <inline_nest_level> <call_site_line> <origin_id> <address>
-  // <size> ....
+  // Old Format: INLINE <inline_nest_level> <call_site_line> <origin_id>
+  // [<address> <size>]+
+  // New Format: INLINE <inline_nest_level> <call_site_line> <call_site_file_id>
+  // <origin_id> [<address> <size>]+
   // Notice, that this method modifies the input |inline|
-  // which is why it can't be const.  On success, <inline_nest_level>,
-  // <call_site_line> and <origin_id> are stored in |*inline_nest_level|,
-  // |*call_site_line|, and |*origin_id|, and all pairs of (<address>, <size>)
-  // are added into ranges .
+  // which is why it can't be const.  On success, <has_call_site_file_id>,
+  // <inline_nest_level>, <call_site_line> and <origin_id> are stored in
+  // |*has_call_site_file_id*|, |*inline_nest_level|, |*call_site_line|, and
+  // |*origin_id|, and all pairs of (<address>, <size>) are added into ranges.
   static bool ParseInline(
       char* inline_line,                                  // in
+      bool* has_call_site_file_id,                        // out
       long* inline_nest_level,                            // out
       long* call_site_line,                               // out
+      long* call_site_file_id,                            // out
       long* origin_id,                                    // out
       std::vector<std::pair<MemAddr, MemAddr>>* ranges);  // out
 

@@ -32,8 +32,6 @@ from common_codegen import *
 # layer chassis dispatch file generation.
 #
 # Additional members
-#   prefixText - list of strings to prefix generated header with
-#     (usually a copyright statement + calling convention macros).
 #   protectFile - True if multiple inclusion protection should be
 #     generated (based on the filename) around the entire header.
 #   protectFeature - True if #ifndef..#endif protection should be
@@ -65,27 +63,26 @@ class LayerChassisDispatchGeneratorOptions(GeneratorOptions):
                  filename = None,
                  directory = '.',
                  genpath = None,
-                 apiname = None,
+                 apiname = 'vulkan',
                  profile = None,
                  versions = '.*',
                  emitversions = '.*',
-                 defaultExtensions = None,
+                 defaultExtensions = 'vulkan',
                  addExtensions = None,
                  removeExtensions = None,
                  emitExtensions = None,
                  emitSpirv = None,
                  sortProcedure = regSortFeatures,
-                 prefixText = "",
                  genFuncPointers = True,
                  protectFile = True,
-                 protectFeature = True,
-                 apicall = '',
-                 apientry = '',
-                 apientryp = '',
+                 protectFeature = False,
+                 apicall = 'VKAPI_ATTR ',
+                 apientry = 'VKAPI_CALL ',
+                 apientryp = 'VKAPI_PTR *',
                  indentFuncProto = True,
                  indentFuncPointer = False,
-                 alignFuncParam = 0,
-                 expandEnumerants = True):
+                 alignFuncParam = 48,
+                 expandEnumerants = False):
         GeneratorOptions.__init__(self,
                 conventions = conventions,
                 filename = filename,
@@ -101,7 +98,6 @@ class LayerChassisDispatchGeneratorOptions(GeneratorOptions):
                 emitExtensions = emitExtensions,
                 emitSpirv = emitSpirv,
                 sortProcedure = sortProcedure)
-        self.prefixText      = prefixText
         self.genFuncPointers = genFuncPointers
         self.protectFile     = protectFile
         self.protectFeature  = protectFeature
@@ -179,7 +175,7 @@ VkResult DispatchCreateGraphicsPipelines(VkDevice device, VkPipelineCache pipeli
     safe_VkGraphicsPipelineCreateInfo *local_pCreateInfos = nullptr;
     if (pCreateInfos) {
         local_pCreateInfos = new safe_VkGraphicsPipelineCreateInfo[createInfoCount];
-        read_lock_guard_t lock(dispatch_lock);
+        ReadLockGuard lock(dispatch_lock);
         for (uint32_t idx0 = 0; idx0 < createInfoCount; ++idx0) {
             bool uses_color_attachment = false;
             bool uses_depthstencil_attachment = false;
@@ -262,7 +258,7 @@ VkResult DispatchCreateRenderPass(VkDevice device, const VkRenderPassCreateInfo 
     VkResult result = layer_data->device_dispatch_table.CreateRenderPass(device, pCreateInfo, pAllocator, pRenderPass);
     if (!wrap_handles) return result;
     if (VK_SUCCESS == result) {
-        write_lock_guard_t lock(dispatch_lock);
+        WriteLockGuard lock(dispatch_lock);
         UpdateCreateRenderPassState(layer_data, pCreateInfo, *pRenderPass);
         *pRenderPass = layer_data->WrapNew(*pRenderPass);
     }
@@ -275,7 +271,7 @@ VkResult DispatchCreateRenderPass2KHR(VkDevice device, const VkRenderPassCreateI
     VkResult result = layer_data->device_dispatch_table.CreateRenderPass2KHR(device, pCreateInfo, pAllocator, pRenderPass);
     if (!wrap_handles) return result;
     if (VK_SUCCESS == result) {
-        write_lock_guard_t lock(dispatch_lock);
+        WriteLockGuard lock(dispatch_lock);
         UpdateCreateRenderPassState(layer_data, pCreateInfo, *pRenderPass);
         *pRenderPass = layer_data->WrapNew(*pRenderPass);
     }
@@ -288,7 +284,7 @@ VkResult DispatchCreateRenderPass2(VkDevice device, const VkRenderPassCreateInfo
     VkResult result = layer_data->device_dispatch_table.CreateRenderPass2(device, pCreateInfo, pAllocator, pRenderPass);
     if (!wrap_handles) return result;
     if (VK_SUCCESS == result) {
-        write_lock_guard_t lock(dispatch_lock);
+        WriteLockGuard lock(dispatch_lock);
         UpdateCreateRenderPassState(layer_data, pCreateInfo, *pRenderPass);
         *pRenderPass = layer_data->WrapNew(*pRenderPass);
     }
@@ -309,7 +305,7 @@ void DispatchDestroyRenderPass(VkDevice device, VkRenderPass renderPass, const V
 
     layer_data->device_dispatch_table.DestroyRenderPass(device, renderPass, pAllocator);
 
-    write_lock_guard_t lock(dispatch_lock);
+    WriteLockGuard lock(dispatch_lock);
     layer_data->renderpasses_states.erase(renderPass);
 }
 
@@ -380,7 +376,7 @@ VkResult DispatchGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain
         layer_data->device_dispatch_table.GetSwapchainImagesKHR(device, swapchain, pSwapchainImageCount, pSwapchainImages);
     if ((VK_SUCCESS == result) || (VK_INCOMPLETE == result)) {
         if ((*pSwapchainImageCount > 0) && pSwapchainImages) {
-            write_lock_guard_t lock(dispatch_lock);
+            WriteLockGuard lock(dispatch_lock);
             auto &wrapped_swapchain_image_handles = layer_data->swapchain_wrapped_image_handle_map[wrapped_swapchain_handle];
             for (uint32_t i = static_cast<uint32_t>(wrapped_swapchain_image_handles.size()); i < *pSwapchainImageCount; i++) {
                 wrapped_swapchain_image_handles.emplace_back(layer_data->WrapNew(pSwapchainImages[i]));
@@ -396,7 +392,7 @@ VkResult DispatchGetSwapchainImagesKHR(VkDevice device, VkSwapchainKHR swapchain
 void DispatchDestroySwapchainKHR(VkDevice device, VkSwapchainKHR swapchain, const VkAllocationCallbacks *pAllocator) {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!wrap_handles) return layer_data->device_dispatch_table.DestroySwapchainKHR(device, swapchain, pAllocator);
-    write_lock_guard_t lock(dispatch_lock);
+    WriteLockGuard lock(dispatch_lock);
 
     auto &image_array = layer_data->swapchain_wrapped_image_handle_map[swapchain];
     for (auto &image_handle : image_array) {
@@ -452,7 +448,7 @@ VkResult DispatchQueuePresentKHR(VkQueue queue, const VkPresentInfoKHR *pPresent
 void DispatchDestroyDescriptorPool(VkDevice device, VkDescriptorPool descriptorPool, const VkAllocationCallbacks *pAllocator) {
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!wrap_handles) return layer_data->device_dispatch_table.DestroyDescriptorPool(device, descriptorPool, pAllocator);
-    write_lock_guard_t lock(dispatch_lock);
+    WriteLockGuard lock(dispatch_lock);
 
     // remove references to implicitly freed descriptor sets
     for(auto descriptor_set : layer_data->pool_descriptor_sets_map[descriptorPool]) {
@@ -482,7 +478,7 @@ VkResult DispatchResetDescriptorPool(VkDevice device, VkDescriptorPool descripto
     }
     VkResult result = layer_data->device_dispatch_table.ResetDescriptorPool(device, local_descriptor_pool, flags);
     if (VK_SUCCESS == result) {
-        write_lock_guard_t lock(dispatch_lock);
+        WriteLockGuard lock(dispatch_lock);
         // remove references to implicitly freed descriptor sets
         for(auto descriptor_set : layer_data->pool_descriptor_sets_map[descriptorPool]) {
             unique_id_mapping.erase(reinterpret_cast<uint64_t &>(descriptor_set));
@@ -517,7 +513,7 @@ VkResult DispatchAllocateDescriptorSets(VkDevice device, const VkDescriptorSetAl
         delete local_pAllocateInfo;
     }
     if (VK_SUCCESS == result) {
-        write_lock_guard_t lock(dispatch_lock);
+        WriteLockGuard lock(dispatch_lock);
         auto &pool_descriptor_sets = layer_data->pool_descriptor_sets_map[pAllocateInfo->descriptorPool];
         for (uint32_t index0 = 0; index0 < pAllocateInfo->descriptorSetCount; index0++) {
             pDescriptorSets[index0] = layer_data->WrapNew(pDescriptorSets[index0]);
@@ -547,7 +543,7 @@ VkResult DispatchFreeDescriptorSets(VkDevice device, VkDescriptorPool descriptor
                                                                            (const VkDescriptorSet *)local_pDescriptorSets);
     if (local_pDescriptorSets) delete[] local_pDescriptorSets;
     if ((VK_SUCCESS == result) && (pDescriptorSets)) {
-        write_lock_guard_t lock(dispatch_lock);
+        WriteLockGuard lock(dispatch_lock);
         auto &pool_descriptor_sets = layer_data->pool_descriptor_sets_map[descriptorPool];
         for (uint32_t index0 = 0; index0 < descriptorSetCount; index0++) {
             VkDescriptorSet handle = pDescriptorSets[index0];
@@ -586,7 +582,7 @@ VkResult DispatchCreateDescriptorUpdateTemplate(VkDevice device, const VkDescrip
 
         // Shadow template createInfo for later updates
         if (local_pCreateInfo) {
-            write_lock_guard_t lock(dispatch_lock);
+            WriteLockGuard lock(dispatch_lock);
             std::unique_ptr<TEMPLATE_STATE> template_state(new TEMPLATE_STATE(*pDescriptorUpdateTemplate, local_pCreateInfo));
             layer_data->desc_template_createinfo_map[(uint64_t)*pDescriptorUpdateTemplate] = std::move(template_state);
         }
@@ -622,7 +618,7 @@ VkResult DispatchCreateDescriptorUpdateTemplateKHR(VkDevice device, const VkDesc
 
         // Shadow template createInfo for later updates
         if (local_pCreateInfo) {
-            write_lock_guard_t lock(dispatch_lock);
+            WriteLockGuard lock(dispatch_lock);
             std::unique_ptr<TEMPLATE_STATE> template_state(new TEMPLATE_STATE(*pDescriptorUpdateTemplate, local_pCreateInfo));
             layer_data->desc_template_createinfo_map[(uint64_t)*pDescriptorUpdateTemplate] = std::move(template_state);
         }
@@ -636,7 +632,7 @@ void DispatchDestroyDescriptorUpdateTemplate(VkDevice device, VkDescriptorUpdate
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!wrap_handles)
         return layer_data->device_dispatch_table.DestroyDescriptorUpdateTemplate(device, descriptorUpdateTemplate, pAllocator);
-    write_lock_guard_t lock(dispatch_lock);
+    WriteLockGuard lock(dispatch_lock);
     uint64_t descriptor_update_template_id = reinterpret_cast<uint64_t &>(descriptorUpdateTemplate);
     layer_data->desc_template_createinfo_map.erase(descriptor_update_template_id);
     lock.unlock();
@@ -657,7 +653,7 @@ void DispatchDestroyDescriptorUpdateTemplateKHR(VkDevice device, VkDescriptorUpd
     auto layer_data = GetLayerDataPtr(get_dispatch_key(device), layer_data_map);
     if (!wrap_handles)
         return layer_data->device_dispatch_table.DestroyDescriptorUpdateTemplateKHR(device, descriptorUpdateTemplate, pAllocator);
-    write_lock_guard_t lock(dispatch_lock);
+    WriteLockGuard lock(dispatch_lock);
     uint64_t descriptor_update_template_id = reinterpret_cast<uint64_t &>(descriptorUpdateTemplate);
     layer_data->desc_template_createinfo_map.erase(descriptor_update_template_id);
     lock.unlock();
@@ -797,7 +793,7 @@ void DispatchUpdateDescriptorSetWithTemplate(VkDevice device, VkDescriptorSet de
     uint64_t template_handle = reinterpret_cast<uint64_t &>(descriptorUpdateTemplate);
     void *unwrapped_buffer = nullptr;
     {
-        read_lock_guard_t lock(dispatch_lock);
+        ReadLockGuard lock(dispatch_lock);
         descriptorSet = layer_data->Unwrap(descriptorSet);
         descriptorUpdateTemplate = (VkDescriptorUpdateTemplate)layer_data->Unwrap(descriptorUpdateTemplate);
         unwrapped_buffer = BuildUnwrappedUpdateTemplateBuffer(layer_data, template_handle, pData);
@@ -815,7 +811,7 @@ void DispatchUpdateDescriptorSetWithTemplateKHR(VkDevice device, VkDescriptorSet
     uint64_t template_handle = reinterpret_cast<uint64_t &>(descriptorUpdateTemplate);
     void *unwrapped_buffer = nullptr;
     {
-        read_lock_guard_t lock(dispatch_lock);
+        ReadLockGuard lock(dispatch_lock);
         descriptorSet = layer_data->Unwrap(descriptorSet);
         descriptorUpdateTemplate = layer_data->Unwrap(descriptorUpdateTemplate);
         unwrapped_buffer = BuildUnwrappedUpdateTemplateBuffer(layer_data, template_handle, pData);
@@ -834,7 +830,7 @@ void DispatchCmdPushDescriptorSetWithTemplateKHR(VkCommandBuffer commandBuffer,
     uint64_t template_handle = reinterpret_cast<uint64_t &>(descriptorUpdateTemplate);
     void *unwrapped_buffer = nullptr;
     {
-        read_lock_guard_t lock(dispatch_lock);
+        ReadLockGuard lock(dispatch_lock);
         descriptorUpdateTemplate = layer_data->Unwrap(descriptorUpdateTemplate);
         layout = layer_data->Unwrap(layout);
         unwrapped_buffer = BuildUnwrappedUpdateTemplateBuffer(layer_data, template_handle, pData);
@@ -1083,12 +1079,12 @@ layer_data::unordered_map<VkCommandBuffer, VkCommandPool> secondary_cb_map{};
 
 ReadWriteLock dispatch_secondary_cb_map_mutex;
 
-read_lock_guard_t dispatch_cb_read_lock() {
-    return read_lock_guard_t(dispatch_secondary_cb_map_mutex);
+ReadLockGuard dispatch_cb_read_lock() {
+    return ReadLockGuard(dispatch_secondary_cb_map_mutex);
 }
 
-write_lock_guard_t dispatch_cb_write_lock() {
-    return write_lock_guard_t(dispatch_secondary_cb_map_mutex);
+WriteLockGuard dispatch_cb_write_lock() {
+    return WriteLockGuard(dispatch_secondary_cb_map_mutex);
 }
 
 VkResult DispatchAllocateCommandBuffers(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers) {

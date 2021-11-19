@@ -11,6 +11,8 @@
 #ifndef EIGEN_SUITESPARSEQRSUPPORT_H
 #define EIGEN_SUITESPARSEQRSUPPORT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
   
   template<typename MatrixType> class SPQR; 

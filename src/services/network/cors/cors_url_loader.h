@@ -24,6 +24,8 @@
 
 namespace network {
 
+class URLLoaderFactory;
+
 namespace cors {
 
 class OriginAccessList;
@@ -51,10 +53,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       mojo::PendingRemote<mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
+      URLLoaderFactory* sync_network_loader_factory,
       const OriginAccessList* origin_access_list,
       PreflightController* preflight_controller,
       const base::flat_set<std::string>* allowed_exempt_headers,
       bool allow_any_cors_exempt_header,
+      NonWildcardRequestHeadersSupport non_wildcard_request_headers_support,
       const net::IsolationInfo& isolation_info,
       mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer);
 
@@ -148,9 +152,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   // This raw URLLoaderFactory pointer is shared with the CorsURLLoaderFactory
   // that created and owns this object.
   mojom::URLLoaderFactory* network_loader_factory_;
+  // This has the same lifetime as |network_loader_factory_|, and should be used
+  // when non-null to create optimized URLLoaders which can call URLLoaderClient
+  // methods synchronously.
+  URLLoaderFactory* sync_network_loader_factory_;
 
   // For the actual request.
   mojo::Remote<mojom::URLLoader> network_loader_;
+  // |sync_client_receiver_factory_| should be invalidated if this is ever
+  // reset.
   mojo::Receiver<mojom::URLLoaderClient> network_client_receiver_{this};
   ResourceRequest request_;
 
@@ -198,6 +208,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
 
   const bool allow_any_cors_exempt_header_;
 
+  const NonWildcardRequestHeadersSupport non_wildcard_request_headers_support_;
+
   net::IsolationInfo isolation_info_;
 
   bool has_authorization_covered_by_wildcard_ = false;
@@ -205,6 +217,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   mojo::Remote<mojom::DevToolsObserver> devtools_observer_;
 
   net::NetLogWithSource net_log_;
+
+  // Used to provide weak pointers of this class for synchronously calling
+  // URLLoaderClient methods. This should be reset any time
+  // |network_client_receiver_| is reset.
+  base::WeakPtrFactory<CorsURLLoader> sync_client_receiver_factory_{this};
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CorsURLLoader> weak_factory_{this};

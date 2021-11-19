@@ -145,7 +145,8 @@ Element* FrameSelection::RootEditableElementOrDocumentElement() const {
   return selection_root ? selection_root : GetDocument().documentElement();
 }
 
-wtf_size_t FrameSelection::CharacterIndexForPoint(const IntPoint& point) const {
+wtf_size_t FrameSelection::CharacterIndexForPoint(
+    const gfx::Point& point) const {
   const EphemeralRange range = GetFrame()->GetEditor().RangeForPoint(point);
   if (range.IsNull())
     return kNotFound;
@@ -160,19 +161,21 @@ VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTreeDeprecated()
   // to caller. See http://crbug.com/590369 for more details.
   Position base = GetSelectionInDOMTree().Base();
   Position extent = GetSelectionInDOMTree().Extent();
-  if (base.ComputeContainerNode() && extent.ComputeContainerNode()) {
-    DisplayLockUtilities::ScopedForcedUpdate force_locks(
+  absl::optional<DisplayLockUtilities::ScopedForcedUpdate> force_locks;
+  if (base != extent && base.ComputeContainerNode() &&
+      extent.ComputeContainerNode()) {
+    force_locks = DisplayLockUtilities::ScopedForcedUpdate(
         MakeGarbageCollected<Range>(GetDocument(), base, extent),
         DisplayLockContext::ForcedPhase::kLayout);
-    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
-    return ComputeVisibleSelectionInDOMTree();
   } else {
-    GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
-    return ComputeVisibleSelectionInDOMTree();
+    force_locks = DisplayLockUtilities::ScopedForcedUpdate(
+        base.AnchorNode(), DisplayLockContext::ForcedPhase::kLayout);
   }
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kSelection);
+  return ComputeVisibleSelectionInDOMTree();
 }
 
-void FrameSelection::MoveCaretSelection(const IntPoint& point) {
+void FrameSelection::MoveCaretSelection(const gfx::Point& point) {
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
   Element* const editable =
@@ -1198,7 +1201,8 @@ GranularityStrategy* FrameSelection::GetGranularityStrategy() {
   return granularity_strategy_.get();
 }
 
-void FrameSelection::MoveRangeSelectionExtent(const IntPoint& contents_point) {
+void FrameSelection::MoveRangeSelectionExtent(
+    const gfx::Point& contents_point) {
   if (ComputeVisibleSelectionInDOMTree().IsNone())
     return;
 
@@ -1215,8 +1219,8 @@ void FrameSelection::MoveRangeSelectionExtent(const IntPoint& contents_point) {
           .Build());
 }
 
-void FrameSelection::MoveRangeSelection(const IntPoint& base_point,
-                                        const IntPoint& extent_point,
+void FrameSelection::MoveRangeSelection(const gfx::Point& base_point,
+                                        const gfx::Point& extent_point,
                                         TextGranularity granularity) {
   const VisiblePosition& base_position =
       CreateVisiblePosition(PositionForContentsPointRespectingEditingBoundary(

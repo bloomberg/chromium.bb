@@ -8,12 +8,16 @@
 #ifndef skgpu_ResourceProvider_DEFINED
 #define skgpu_ResourceProvider_DEFINED
 
+#include "experimental/graphite/include/private/GraphiteTypesPriv.h"
+#include "experimental/graphite/src/CommandBuffer.h"
+#include "experimental/graphite/src/RenderPipeline.h"
 #include "experimental/graphite/src/RenderPipelineDesc.h"
 #include "include/core/SkSize.h"
 #include "src/core/SkLRUCache.h"
 
 namespace skgpu {
 
+class Buffer;
 class CommandBuffer;
 class Gpu;
 class RenderPipeline;
@@ -24,22 +28,23 @@ class ResourceProvider {
 public:
     virtual ~ResourceProvider();
 
-    virtual std::unique_ptr<CommandBuffer> createCommandBuffer() { return nullptr; }
-    RenderPipeline* findOrCreateRenderPipeline(const RenderPipelineDesc&);
+    virtual sk_sp<CommandBuffer> createCommandBuffer() = 0;
+
+    sk_sp<RenderPipeline> findOrCreateRenderPipeline(const RenderPipelineDesc&);
 
     sk_sp<Texture> findOrCreateTexture(SkISize, const TextureInfo&);
+
+    sk_sp<Buffer> findOrCreateBuffer(size_t size, BufferType type, PrioritizeGpuReads);
 
 protected:
     ResourceProvider(const Gpu* gpu);
 
-    virtual std::unique_ptr<RenderPipeline> onCreateRenderPipeline(const RenderPipelineDesc&) {
-        return nullptr;
-    }
-
     const Gpu* fGpu;
 
 private:
+    virtual sk_sp<RenderPipeline> onCreateRenderPipeline(const RenderPipelineDesc&) = 0;
     virtual sk_sp<Texture> createTexture(SkISize, const TextureInfo&) = 0;
+    virtual sk_sp<Buffer> createBuffer(size_t size, BufferType type, PrioritizeGpuReads) = 0;
 
     class RenderPipelineCache {
     public:
@@ -47,7 +52,7 @@ private:
         ~RenderPipelineCache();
 
         void release();
-        RenderPipeline* refPipeline(const RenderPipelineDesc&);
+        sk_sp<RenderPipeline> refPipeline(const RenderPipelineDesc&);
 
     private:
         struct Entry;

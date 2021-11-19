@@ -15,17 +15,19 @@ import '../site_favicon.js';
 
 import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl} from './search_engines_browser_proxy.js';
 
-const SettingsSearchEngineEntryElementBase =
-    mixinBehaviors([FocusRowBehavior], PolymerElement) as
-    {new (): PolymerElement & FocusRowBehavior};
+export interface SettingsSearchEngineEntryElement {
+  $: {
+    delete: HTMLButtonElement,
+    makeDefault: HTMLButtonElement,
+    edit: HTMLButtonElement,
+  };
+}
 
-class SettingsSearchEngineEntryElement extends
-    SettingsSearchEngineEntryElementBase {
+export class SettingsSearchEngineEntryElement extends PolymerElement {
   static get is() {
     return 'settings-search-engine-entry';
   }
@@ -50,10 +52,10 @@ class SettingsSearchEngineEntryElement extends
         computed: 'computeIsDefault_(engine)'
       },
 
-      showMenuButton: {
+      disableMenuButton: {
         reflectToAttribute: true,
         type: Boolean,
-        computed: 'computeShowMenuButton_(engine)'
+        computed: 'computeDisableMenuButton_(engine)'
       },
 
     };
@@ -64,7 +66,7 @@ class SettingsSearchEngineEntryElement extends
   showQueryUrl: boolean;
   isActiveSearchEnginesFlagEnabled: boolean;
   isDefault: boolean;
-  showMenuButton: boolean;
+  disableMenuButton: boolean;
   private browserProxy_: SearchEnginesBrowserProxy =
       SearchEnginesBrowserProxyImpl.getInstance();
 
@@ -76,8 +78,8 @@ class SettingsSearchEngineEntryElement extends
     return this.engine.default;
   }
 
-  private computeShowMenuButton_(): boolean {
-    return !this.isActiveSearchEnginesFlagEnabled || !this.engine.default;
+  private computeDisableMenuButton_(): boolean {
+    return this.isActiveSearchEnginesFlagEnabled && this.engine.default;
   }
 
   private onDeleteTap_() {
@@ -123,6 +125,12 @@ class SettingsSearchEngineEntryElement extends
     this.closePopupMenu_();
     this.browserProxy_.setIsActiveSearchEngine(
         this.engine.modelIndex, /*is_active=*/ false);
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'settings-search-engine-entry': SettingsSearchEngineEntryElement;
   }
 }
 

@@ -225,8 +225,8 @@ Polymer({
     if (!this.networkState) {
       return false;
     }
-    return OncMojo.connectionStateIsConnected(
-               this.networkState.connectionState) &&
+    return !this.showRoaming_() &&
+        OncMojo.connectionStateIsConnected(this.networkState.connectionState) &&
         this.getTechnology_() !== '' && this.showTechnologyBadge;
   },
 
@@ -309,4 +309,13 @@ Polymer({
     return this.networkState.type === mojom.NetworkType.kCellular &&
         this.networkState.typeState.cellular.roaming;
   },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  showIcon_() {
+    return !!this.networkState;
+  },
+
 });

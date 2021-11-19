@@ -17,11 +17,14 @@ export type CheckElementsPredicate = (index: number, value: number) => boolean;
  * Provides a pretty-printing implementation for a particular CheckElementsPredicate.
  * This is an array; each element provides info to print an additional row in the error message.
  */
-export type CheckElementsSupplementalTableRows = ReadonlyArray<{
+export type CheckElementsSupplementalTableRows = Array<{
   /** Row header. */
   leftHeader: string;
-  /** Get the value for a cell in the table with TypedArray element index `index`. */
-  getValueForCell: (index: number) => number;
+  /**
+   * Get the value for a cell in the table with element index `index`.
+   * May be a string or a number; a number will be formatted according to the TypedArray type used.
+   */
+  getValueForCell: (index: number) => number | string;
 }>;
 
 /**
@@ -39,21 +42,21 @@ export function checkElementsEqual(
 
 /**
  * Check whether each value in a `TypedArray` is between the two corresponding "expected" values
- * (either `a[i] <= actual[i] <= b[i]` or `a[i] >= actual[i] => b[i]`).
+ * (either `a(i) <= actual[i] <= b(i)` or `a(i) >= actual[i] => b(i)`).
  */
 export function checkElementsBetween(
   actual: TypedArrayBufferView,
-  expected: readonly [TypedArrayBufferView, TypedArrayBufferView]
+  expected: readonly [CheckElementsGenerator, CheckElementsGenerator]
 ): ErrorWithExtra | undefined {
   const error = checkElementsPassPredicate(
     actual,
     (index, value) =>
-      value >= Math.min(expected[0][index], expected[1][index]) &&
-      value <= Math.max(expected[0][index], expected[1][index]),
+      value >= Math.min(expected[0](index), expected[1](index)) &&
+      value <= Math.max(expected[0](index), expected[1](index)),
     {
       predicatePrinter: [
-        { leftHeader: 'between', getValueForCell: index => expected[0][index] },
-        { leftHeader: 'and', getValueForCell: index => expected[1][index] },
+        { leftHeader: 'between', getValueForCell: index => expected[0](index) },
+        { leftHeader: 'and', getValueForCell: index => expected[1](index) },
       ],
     }
   );

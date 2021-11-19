@@ -50,6 +50,8 @@ namespace dawn_native {
 
     class PipelineBase : public ApiObjectBase, public CachedObject {
       public:
+        ~PipelineBase() override;
+
         PipelineLayoutBase* GetLayout();
         const PipelineLayoutBase* GetLayout() const;
         const RequiredBufferSizes& GetMinBufferSizes() const;
@@ -66,12 +68,18 @@ namespace dawn_native {
         // Implementation of the API entrypoint. Do not use in a reentrant manner.
         BindGroupLayoutBase* APIGetBindGroupLayout(uint32_t groupIndex);
 
+        // Initialize() should only be called once by the frontend.
+        virtual MaybeError Initialize() = 0;
+
       protected:
         PipelineBase(DeviceBase* device,
                      PipelineLayoutBase* layout,
                      const char* label,
                      std::vector<StageAndDescriptor> stages);
         PipelineBase(DeviceBase* device, ObjectBase::ErrorTag tag);
+
+        // Constructor used only for mocking and testing.
+        PipelineBase(DeviceBase* device);
 
       private:
         MaybeError ValidateGetBindGroupLayout(uint32_t group);

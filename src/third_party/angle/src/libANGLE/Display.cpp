@@ -536,7 +536,7 @@ void ShareGroup::finishAllContexts()
 {
     for (gl::Context *shareContext : mContexts)
     {
-        if (shareContext->hasBeenCurrent())
+        if (shareContext->hasBeenCurrent() && !shareContext->isDestroyed())
         {
             shareContext->finish();
         }
@@ -1733,9 +1733,6 @@ static ClientExtensions GenerateClientExtensions()
 
 #if defined(ANGLE_ENABLE_OPENGL)
     extensions.platformANGLEOpenGL = true;
-
-    // Selecting context virtualization is currently only supported in the OpenGL backend.
-    extensions.platformANGLEContextVirtualization = true;
 #endif
 
 #if defined(ANGLE_ENABLE_NULL)

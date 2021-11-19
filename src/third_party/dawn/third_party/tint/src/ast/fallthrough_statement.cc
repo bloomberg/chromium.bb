@@ -21,25 +21,18 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::FallthroughStatement);
 namespace tint {
 namespace ast {
 
-FallthroughStatement::FallthroughStatement(ProgramID program_id,
-                                           const Source& source)
-    : Base(program_id, source) {}
+FallthroughStatement::FallthroughStatement(ProgramID pid, const Source& src)
+    : Base(pid, src) {}
 
 FallthroughStatement::FallthroughStatement(FallthroughStatement&&) = default;
 
 FallthroughStatement::~FallthroughStatement() = default;
 
-FallthroughStatement* FallthroughStatement::Clone(CloneContext* ctx) const {
+const FallthroughStatement* FallthroughStatement::Clone(
+    CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
+  auto src = ctx->Clone(source);
   return ctx->dst->create<FallthroughStatement>(src);
-}
-
-void FallthroughStatement::to_str(const sem::Info&,
-                                  std::ostream& out,
-                                  size_t indent) const {
-  make_indent(out, indent);
-  out << "Fallthrough{}" << std::endl;
 }
 
 }  // namespace ast

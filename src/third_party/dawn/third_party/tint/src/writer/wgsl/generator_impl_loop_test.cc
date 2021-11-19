@@ -43,7 +43,7 @@ TEST_F(WgslGeneratorImplTest, Emit_LoopWithContinuing) {
   Func("a_statement", {}, ty.void_(), {});
 
   auto* body = Block(create<ast::DiscardStatement>());
-  auto* continuing = Block(create<ast::CallStatement>(Call("a_statement")));
+  auto* continuing = Block(CallStmt(Call("a_statement")));
   auto* l = Loop(body, continuing);
 
   WrapInFunction(l);
@@ -79,8 +79,8 @@ TEST_F(WgslGeneratorImplTest, Emit_ForLoopWithMultiStmtInit) {
 
   ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
   EXPECT_EQ(gen.result(), R"(  for({
-    ignore(1);
-    ignore(2);
+    _ = 1;
+    _ = 2;
   }; ; ) {
     return;
   }
@@ -143,8 +143,8 @@ TEST_F(WgslGeneratorImplTest, Emit_ForLoopWithMultiStmtCont) {
 
   ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
   EXPECT_EQ(gen.result(), R"(  for(; ; {
-    ignore(1);
-    ignore(2);
+    _ = 1;
+    _ = 2;
   }) {
     return;
   }
@@ -188,11 +188,11 @@ TEST_F(WgslGeneratorImplTest, Emit_ForLoopWithMultiStmtInitCondCont) {
 
   ASSERT_TRUE(gen.EmitStatement(f)) << gen.error();
   EXPECT_EQ(gen.result(), R"(  for({
-    ignore(1);
-    ignore(2);
+    _ = 1;
+    _ = 2;
   }; true; {
-    ignore(3);
-    ignore(4);
+    _ = 3;
+    _ = 4;
   }) {
     return;
   }

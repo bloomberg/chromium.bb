@@ -51,11 +51,6 @@ export class LighthouseReportRenderer extends LighthouseReport.ReportRenderer {
     if (!container) {
       return;
     }
-    const disclaimerEl = container.querySelector('.lh-metrics__disclaimer');
-    // If it was a PWA-only run, we'd have a trace but no perf category to add the button to
-    if (!disclaimerEl) {
-      return;
-    }
 
     const defaultPassTrace = artifacts.traces.defaultPass;
     const text = simulated ? i18nString(UIStrings.viewOriginalTrace) : i18nString(UIStrings.viewTrace);
@@ -130,6 +125,7 @@ export class LighthouseReportRenderer extends LighthouseReport.ReportRenderer {
       const element = await Components.Linkifier.Linkifier.linkifyURL(url, {
         lineNumber: line,
         columnNumber: column,
+        showColumnNumber: false,
         inlineFrameIndex: 0,
         maxLength: MaxLengthForLinks,
         bypassURLTrimming: undefined,

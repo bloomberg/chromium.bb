@@ -25,18 +25,15 @@ namespace ast {
 
 namespace {
 // Returns the string representation of an array size expression.
-std::string SizeExprToString(const ast::Expression* size,
-                             const SymbolTable* symbols = nullptr) {
-  if (auto* ident = size->As<ast::IdentifierExpression>()) {
-    if (symbols) {
-      return symbols->NameFor(ident->symbol());
-    } else {
-      return ident->symbol().to_str();
-    }
-  } else if (auto* scalar = size->As<ast::ScalarConstructorExpression>()) {
-    auto* literal = scalar->literal()->As<ast::IntLiteral>();
+std::string SizeExprToString(const Expression* size,
+                             const SymbolTable& symbols) {
+  if (auto* ident = size->As<IdentifierExpression>()) {
+    return symbols.NameFor(ident->symbol);
+  }
+  if (auto* scalar = size->As<ScalarConstructorExpression>()) {
+    auto* literal = scalar->literal->As<IntLiteral>();
     if (literal) {
-      return std::to_string(literal->value_as_u32());
+      return std::to_string(literal->ValueAsU32());
     }
   }
   // This will never be exposed to the user as the Resolver will reject this
@@ -45,58 +42,39 @@ std::string SizeExprToString(const ast::Expression* size,
 }
 }  // namespace
 
-Array::Array(ProgramID program_id,
-             const Source& source,
-             Type* subtype,
-             ast::Expression* size,
-             ast::DecorationList decorations)
-    : Base(program_id, source),
-      subtype_(subtype),
-      size_(size),
-      decos_(decorations) {}
+Array::Array(ProgramID pid,
+             const Source& src,
+             const Type* subtype,
+             const Expression* cnt,
+             DecorationList decos)
+    : Base(pid, src), type(subtype), count(cnt), decorations(decos) {}
 
 Array::Array(Array&&) = default;
 
 Array::~Array() = default;
 
-std::string Array::type_name() const {
-  TINT_ASSERT(AST, subtype_);
-
-  std::string type_name = "__array" + subtype_->type_name();
-  if (!IsRuntimeArray()) {
-    type_name += "_" + SizeExprToString(size_);
-  }
-  for (auto* deco : decos_) {
-    if (auto* stride = deco->As<ast::StrideDecoration>()) {
-      type_name += "_stride_" + std::to_string(stride->stride());
-    }
-  }
-
-  return type_name;
-}
-
 std::string Array::FriendlyName(const SymbolTable& symbols) const {
   std::ostringstream out;
-  for (auto* deco : decos_) {
+  for (auto* deco : decorations) {
     if (auto* stride = deco->As<ast::StrideDecoration>()) {
-      out << "[[stride(" << stride->stride() << ")]] ";
+      out << "[[stride(" << stride->stride << ")]] ";
     }
   }
-  out << "array<" << subtype_->FriendlyName(symbols);
+  out << "array<" << type->FriendlyName(symbols);
   if (!IsRuntimeArray()) {
-    out << ", " << SizeExprToString(size_, &symbols);
+    out << ", " << SizeExprToString(count, symbols);
   }
   out << ">";
   return out.str();
 }
 
-Array* Array::Clone(CloneContext* ctx) const {
+const Array* Array::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* ty = ctx->Clone(type());
-  auto* size = ctx->Clone(Size());
-  auto decos = ctx->Clone(decorations());
-  return ctx->dst->create<Array>(src, ty, size, decos);
+  auto src = ctx->Clone(source);
+  auto* ty = ctx->Clone(type);
+  auto* cnt = ctx->Clone(count);
+  auto decos = ctx->Clone(decorations);
+  return ctx->dst->create<Array>(src, ty, cnt, decos);
 }
 
 }  // namespace ast

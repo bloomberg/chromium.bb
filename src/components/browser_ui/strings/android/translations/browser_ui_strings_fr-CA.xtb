@@ -29,6 +29,7 @@
 <translation id="1743802530341753419">Demander avant d'autoriser des sites à se connecter à un appareil (recommandé)</translation>
 <translation id="1779089405699405702">Décodeur d’image</translation>
 <translation id="1818308510395330587">Pour autoriser <ph name="APP_NAME" /> à utiliser la RA, activez aussi l'accès à l'appareil photo dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
+<translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="1887786770086287077">L'accès à la localisation est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="1919345977826869612">Annonces</translation>
 <translation id="1919950603503897840">Sélectionner des contacts</translation>
@@ -116,7 +117,6 @@
 <translation id="4008040567710660924">Autoriser les témoins pour un site en particulier.</translation>
 <translation id="4046123991198612571">Chanson suivante</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
-<translation id="4176463684765177261">Désactivé</translation>
 <translation id="4200726100658658164">Ouvrir les paramètres de localisation</translation>
 <translation id="4226663524361240545">Les notifications peuvent faire vibrer l'appareil</translation>
 <translation id="4259722352634471385">Navigation bloquée : <ph name="URL" /></translation>
@@ -148,8 +148,10 @@
 <translation id="5048398596102334565">Autoriser les sites à accéder à vos capteurs de mouvements (recommandé)</translation>
 <translation id="5050380848339752099">Ce site est sur le point de partager des renseignements avec une application à l'extérieur du mode de navigation privée.</translation>
 <translation id="5063480226653192405">Utilisation</translation>
+<translation id="509133520954049755">Demandez l'affichage sur ordinateur de bureau</translation>
 <translation id="5100237604440890931">Réduit : cliquer pour développer</translation>
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
+<translation id="5134599672855298214">Demandez l'affichage sur appareil mobile (recommandé)</translation>
 <translation id="5186036860380548585">Option accessible près du haut de l'écran</translation>
 <translation id="5197729504361054390">Les contacts que vous sélectionnez seront partagés avec <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Dernière visite : aujourd'hui</translation>
@@ -185,7 +187,6 @@
 <translation id="5876056640971328065">Suspendre la vidéo</translation>
 <translation id="5887687176710214216">Dernière visite : hier.</translation>
 <translation id="5916664084637901428">Activé</translation>
-<translation id="59174027418879706">Activé</translation>
 <translation id="5922853908706496913">Partage de votre écran en cours…</translation>
 <translation id="5939518447894949180">Recommencer</translation>
 <translation id="5975083100439434680">Zoom arrière</translation>
@@ -202,7 +203,6 @@
 <translation id="6196640612572343990">Bloquer les témoins de tiers</translation>
 <translation id="6216432067784365534">Options de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Désinstaller « <ph name="APP_NAME" /> »?</translation>
-<translation id="6233545266937675277">Demandez l'affichage pour ordinateur de bureau des sites</translation>
 <translation id="6262279340360821358">Autorisations <ph name="PERMISSION_1" /> et <ph name="PERMISSION_2" /> bloquées</translation>
 <translation id="6270391203985052864">Les sites peuvent vous demander l'autorisation d'envoyer des notifications</translation>
 <translation id="6295158916970320988">Tous les sites</translation>
@@ -238,6 +238,7 @@
 <translation id="7016516562562142042">Autorisée pour le moteur de recherche actuel</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 élément sélectionné}one{# élément sélectionné}other{# éléments sélectionnés}}</translation>
+<translation id="7070090581017165256">À propos de ce site</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> élément(s) sélectionné(s). Options disponibles vers le haut de l'écran</translation>
 <translation id="7141896414559753902">Bloquer l'affichage de fenêtres contextuelles et de redirections à partir des sites (recommandé)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ko</translation>
@@ -286,7 +287,6 @@
 <translation id="8211406090763984747">Connexion sécurisée</translation>
 <translation id="8249310407154411074">Placer en première position</translation>
 <translation id="8261506727792406068">Supprimer</translation>
-<translation id="8267092878336850213">Demandez l'affichage pour appareil mobile des sites</translation>
 <translation id="8300705686683892304">Gérés par une application</translation>
 <translation id="8324158725704657629">Ne plus me demander</translation>
 <translation id="8372893542064058268">Autorisez la synchronisation en arrière-plan pour un site en particulier.</translation>

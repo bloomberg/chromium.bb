@@ -153,14 +153,15 @@ Error StreamSocketPosix::Connect(const IPEndpoint& remote_endpoint) {
       return CloseOnError(Error::Code::kSocketInvalidState);
     }
 
-    struct sockaddr_in6 address;
-    socklen_t size = sizeof(address);
-    if (getsockname(handle_.fd, reinterpret_cast<struct sockaddr*>(&address),
+    struct sockaddr_in6 address_in6;
+    socklen_t size = sizeof(address_in6);
+    if (getsockname(handle_.fd,
+                    reinterpret_cast<struct sockaddr*>(&address_in6),
                     &size) != 0) {
       return CloseOnError(Error::Code::kSocketConnectFailure);
     }
 
-    local_address_.emplace(reinterpret_cast<struct sockaddr&>(address));
+    local_address_.emplace(reinterpret_cast<struct sockaddr&>(address_in6));
     is_bound_ = true;
   }
 

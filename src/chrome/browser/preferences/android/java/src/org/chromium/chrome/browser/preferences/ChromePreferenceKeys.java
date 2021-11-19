@@ -52,9 +52,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String ACCESSIBILITY_TAB_SWITCHER = "accessibility_tab_switcher";
 
-    public static final String ACCOUNT_PICKER_BOTTOM_SHEET_ACTIVE_DISMISSAL_COUNT =
-            "Chrome.AccountPickerBottomSheet.ConsecutiveActiveDismissalCount";
-
     /** Whether the current adaptive toolbar customization is enabled. */
     public static final String ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED =
             "Chrome.AdaptiveToolbarCustomization.Enabled";
@@ -93,6 +90,10 @@ public final class ChromePreferenceKeys {
 
     /** Assistant voice search keys. */
     public static final String ASSISTANT_VOICE_SEARCH_ENABLED = "Chrome.Assistant.Enabled";
+
+    /** The last time the browser was started for the Attribution Provider. */
+    public static final String ATTRIBUTION_PROVIDER_LAST_BROWSER_START =
+            "Chrome.Attribution.LastBrowserStart";
 
     /** Whether Autofill Assistant is enabled */
     public static final String AUTOFILL_ASSISTANT_ENABLED = "autofill_assistant_switch";
@@ -284,13 +285,6 @@ public final class ChromePreferenceKeys {
     public static final String CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED =
             "Chrome.Contextmenu.OpenInEphemeralTabClicked";
 
-    /**
-     * Key used to save the context menu item order for the "Open in new tab" item and
-     * the "Open in new tab in group" item.
-     */
-    public static final String CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST =
-            "Chrome.ContextMenu.OpenNewTabInGroupFirst";
-
     public static final String CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED =
             "Chrome.ContextMenu.SearchWithGoogleLensClicked";
 
@@ -476,12 +470,6 @@ public final class ChromePreferenceKeys {
     public static final String FLAGS_CACHED_NETWORK_SERVICE_WARM_UP_ENABLED =
             "network_service_warm_up_enabled";
     /**
-     * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
-     * experiment is enabled). Default value is true.
-     */
-    public static final String FLAGS_CACHED_PRIORITIZE_BOOTSTRAP_TASKS =
-            "prioritize_bootstrap_tasks";
-    /**
      * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
      * Default value is false.
      */
@@ -526,6 +514,8 @@ public final class ChromePreferenceKeys {
     public static final String HOMEPAGE_ENABLED = "homepage";
     public static final String HOMEPAGE_USE_CHROME_NTP = "Chrome.Homepage.UseNTP";
     public static final String HOMEPAGE_USE_DEFAULT_URI = "homepage_partner_enabled";
+    public static final String HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI =
+            "Chrome.Homepage.PartnerCustomizedDefaultUri";
 
     /**
      * Key used to save homepage location set by enterprise policy
@@ -981,6 +971,9 @@ public final class ChromePreferenceKeys {
     public static final String WEB_FEED_INTRO_LAST_SHOWN_TIME_MS =
             "Chrome.WebFeed.IntroLastShownTimeMs";
 
+    public static final String WEB_SIGNIN_ACCOUNT_PICKER_ACTIVE_DISMISSAL_COUNT =
+            "Chrome.AccountPickerBottomSheet.ConsecutiveActiveDismissalCount";
+
     /**
      * Key used to save the time in milliseconds since epoch that the WebFeed intro for the WebFeed
      * ID was last shown.
@@ -1036,11 +1029,11 @@ public final class ChromePreferenceKeys {
     static List<String> getKeysInUse() {
         // clang-format off
         return Arrays.asList(
-                ACCOUNT_PICKER_BOTTOM_SHEET_ACTIVE_DISMISSAL_COUNT,
                 ADAPTIVE_TOOLBAR_CUSTOMIZATION_ENABLED,
                 ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS,
                 ASSISTANT_VOICE_CONSENT_OUTSIDE_TAPS,
                 ASSISTANT_VOICE_SEARCH_ENABLED,
+                ATTRIBUTION_PROVIDER_LAST_BROWSER_START,
                 AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER,
                 AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED,
                 AUTOFILL_ASSISTANT_PROACTIVE_HELP,
@@ -1060,7 +1053,6 @@ public final class ChromePreferenceKeys {
                 CONDITIONAL_TAB_STRIP_OPT_OUT,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
-                CONTEXT_MENU_OPEN_NEW_TAB_IN_GROUP_ITEM_FIRST,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,
                 CONTEXT_MENU_SHOP_IMAGE_WITH_GOOGLE_LENS_CLICKED,
                 CONTINUOUS_SEARCH_DISMISSAL_COUNT,
@@ -1080,6 +1072,7 @@ public final class ChromePreferenceKeys {
                 FLAGS_LAST_CACHED_MINIMAL_BROWSER_FLAGS_TIME_MILLIS,
                 HOMEPAGE_LOCATION_POLICY,
                 HOMEPAGE_USE_CHROME_NTP,
+            HOMEPAGE_PARTNER_CUSTOMIZED_DEFAULT_URI,
                 IMAGE_DESCRIPTIONS_JUST_ONCE_COUNT,
                 IMAGE_DESCRIPTIONS_DONT_ASK_AGAIN,
                 ISOLATED_SPLITS_DEX_COMPILE_VERSION,
@@ -1140,7 +1133,8 @@ public final class ChromePreferenceKeys {
                 TWA_DISCLOSURE_SEEN_PACKAGES,
                 VIDEO_TUTORIALS_SHARE_URL_SET,
                 WEB_FEED_INTRO_LAST_SHOWN_TIME_MS,
-                WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_TIME_MS_PREFIX.pattern()
+                WEB_FEED_INTRO_WEB_FEED_ID_SHOWN_TIME_MS_PREFIX.pattern(),
+                WEB_SIGNIN_ACCOUNT_PICKER_ACTIVE_DISMISSAL_COUNT
         );
         // clang-format on
     }

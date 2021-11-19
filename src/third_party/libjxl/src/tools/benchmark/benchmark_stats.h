@@ -45,11 +45,10 @@ struct BenchmarkStats {
   void Assimilate(const BenchmarkStats& victim);
 
   std::vector<ColumnValue> ComputeColumns(const std::string& codec_desc,
-                                          size_t corpus_size,
-                                          size_t num_threads) const;
+                                          size_t corpus_size) const;
 
-  std::string PrintLine(const std::string& codec_desc, size_t corpus_size,
-                        size_t num_threads) const;
+  std::string PrintLine(const std::string& codec_desc,
+                        size_t corpus_size) const;
 
   void PrintMoreStats() const;
 
@@ -70,10 +69,11 @@ struct BenchmarkStats {
   std::vector<float> extra_metrics;
 };
 
-std::string PrintHeader();
+std::string PrintHeader(const std::vector<std::string>& extra_metrics_names);
 
 // Given the rows of all printed statistics, print an aggregate row.
 std::string PrintAggregate(
+    size_t num_extra_metrics,
     const std::vector<std::vector<ColumnValue>>& aggregate);
 
 }  // namespace jxl

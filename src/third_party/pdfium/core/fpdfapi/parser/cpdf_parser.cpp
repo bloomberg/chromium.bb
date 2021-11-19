@@ -35,6 +35,7 @@
 #include "third_party/base/check_op.h"
 #include "third_party/base/containers/contains.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/span.h"
 
 namespace {
 
@@ -45,11 +46,71 @@ const int32_t kMaxXRefSize = 1048576;
 // "%PDF-1.7\n"
 constexpr FX_FILESIZE kPDFHeaderSize = 9;
 
-uint32_t GetVarInt(const uint8_t* p, int32_t n) {
+// The required number of fields in a /W array in a cross-reference stream
+// dictionary.
+constexpr size_t kMinFieldCount = 3;
+
+struct CrossRefV5IndexEntry {
+  uint32_t start_obj_num;
+  uint32_t obj_count;
+};
+
+CPDF_Parser::ObjectType GetObjectTypeFromCrossRefStreamType(
+    uint32_t cross_ref_stream_type) {
+  switch (cross_ref_stream_type) {
+    case 0:
+      return CPDF_Parser::ObjectType::kFree;
+    case 1:
+      return CPDF_Parser::ObjectType::kNotCompressed;
+    case 2:
+      return CPDF_Parser::ObjectType::kCompressed;
+    default:
+      return CPDF_Parser::ObjectType::kNull;
+  }
+}
+
+uint32_t GetVarInt(pdfium::span<const uint8_t> input) {
   uint32_t result = 0;
-  for (int32_t i = 0; i < n; ++i)
-    result = result * 256 + p[i];
+  for (uint8_t c : input)
+    result = result * 256 + c;
   return result;
+}
+
+std::vector<CrossRefV5IndexEntry> GetCrossRefV5Indices(const CPDF_Array* array,
+                                                       uint32_t size) {
+  std::vector<CrossRefV5IndexEntry> indices;
+  if (array) {
+    for (size_t i = 0; i < array->size() / 2; i++) {
+      const CPDF_Number* pStartNumObj = ToNumber(array->GetObjectAt(i * 2));
+      const CPDF_Number* pCountObj = ToNumber(array->GetObjectAt(i * 2 + 1));
+
+      if (!pStartNumObj || !pCountObj)
+        continue;
+
+      int nStartNum = pStartNumObj->GetInteger();
+      int nCount = pCountObj->GetInteger();
+      if (nStartNum < 0 || nCount <= 0)
+        continue;
+
+      indices.push_back(
+          {static_cast<uint32_t>(nStartNum), static_cast<uint32_t>(nCount)});
+    }
+  }
+
+  if (indices.empty())
+    indices.push_back({0, size});
+  return indices;
+}
+
+std::vector<uint32_t> GetFieldWidths(const CPDF_Array* array) {
+  std::vector<uint32_t> results;
+  if (!array)
+    return results;
+
+  CPDF_ArrayLocker locker(array);
+  for (const auto& obj : locker)
+    results.push_back(obj->GetInteger());
+  return results;
 }
 
 class ObjectsHolderStub final : public CPDF_Parser::ParsedObjectsHolder {
@@ -120,7 +181,7 @@ void CPDF_Parser::ShrinkObjectMap(uint32_t size) {
 
 bool CPDF_Parser::InitSyntaxParser(
     const RetainPtr<CPDF_ReadValidator>& validator) {
-  const Optional<FX_FILESIZE> header_offset = GetHeaderOffset(validator);
+  const absl::optional<FX_FILESIZE> header_offset = GetHeaderOffset(validator);
   if (!header_offset.has_value())
     return false;
   if (validator->GetSize() < header_offset.value() + kPDFHeaderSize)
@@ -228,12 +289,12 @@ FX_FILESIZE CPDF_Parser::ParseStartXRef() {
   m_pSyntax->GetKeyword();
 
   // Read XRef offset.
-  bool bNumber;
-  const ByteString xref_offset_str = m_pSyntax->GetNextWord(&bNumber);
-  if (!bNumber || xref_offset_str.IsEmpty())
+  const CPDF_SyntaxParser::WordResult xref_offset_result =
+      m_pSyntax->GetNextWord();
+  if (!xref_offset_result.is_number || xref_offset_result.word.IsEmpty())
     return 0;
 
-  const FX_SAFE_FILESIZE result = FXSYS_atoi64(xref_offset_str.c_str());
+  const FX_SAFE_FILESIZE result = FXSYS_atoi64(xref_offset_result.word.c_str());
   if (!result.IsValid() || result.ValueOrDie() >= m_pSyntax->GetDocumentSize())
     return 0;
 
@@ -275,11 +336,10 @@ bool CPDF_Parser::VerifyCrossRefV4() {
     // Find the first non-zero position.
     FX_FILESIZE SavedPos = m_pSyntax->GetPos();
     m_pSyntax->SetPos(it.second.pos);
-    bool is_num = false;
-    ByteString num_str = m_pSyntax->GetNextWord(&is_num);
+    CPDF_SyntaxParser::WordResult word_result = m_pSyntax->GetNextWord();
     m_pSyntax->SetPos(SavedPos);
-    if (!is_num || num_str.IsEmpty() ||
-        FXSYS_atoui(num_str.c_str()) != it.first) {
+    if (!word_result.is_number || word_result.word.IsEmpty() ||
+        FXSYS_atoui(word_result.word.c_str()) != it.first) {
       // If the object number read doesn't match the one stored,
       // something is wrong with the cross reference table.
       return false;
@@ -511,12 +571,12 @@ bool CPDF_Parser::ParseCrossRefV4(std::vector<CrossRefObjData>* out_objects) {
   std::vector<CrossRefObjData> result_objects;
   while (1) {
     FX_FILESIZE saved_pos = m_pSyntax->GetPos();
-    bool bIsNumber;
-    ByteString word = m_pSyntax->GetNextWord(&bIsNumber);
+    CPDF_SyntaxParser::WordResult word_result = m_pSyntax->GetNextWord();
+    const ByteString& word = word_result.word;
     if (word.IsEmpty())
       return false;
 
-    if (!bIsNumber) {
+    if (!word_result.is_number) {
       m_pSyntax->SetPos(saved_pos);
       break;
     }
@@ -561,7 +621,8 @@ void CPDF_Parser::MergeCrossRefObjectsData(
         m_CrossRefTable->AddNormal(obj.obj_num, obj.info.gennum, obj.info.pos);
         break;
       case ObjectType::kCompressed:
-        m_CrossRefTable->AddCompressed(obj.obj_num, obj.info.archive_obj_num);
+        m_CrossRefTable->AddCompressed(obj.obj_num, obj.info.archive.obj_num,
+                                       obj.info.archive.obj_index);
         break;
       default:
         NOTREACHED();
@@ -595,11 +656,11 @@ bool CPDF_Parser::RebuildCrossRef() {
   m_pSyntax->SetReadBufferSize(kBufferSize);
   m_pSyntax->SetPos(0);
 
-  bool bIsNumber;
   std::vector<std::pair<uint32_t, FX_FILESIZE>> numbers;
-  for (ByteString word = m_pSyntax->GetNextWord(&bIsNumber); !word.IsEmpty();
-       word = m_pSyntax->GetNextWord(&bIsNumber)) {
-    if (bIsNumber) {
+  for (CPDF_SyntaxParser::WordResult result = m_pSyntax->GetNextWord();
+       !result.word.IsEmpty(); result = m_pSyntax->GetNextWord()) {
+    const ByteString& word = result.word;
+    if (result.is_number) {
       numbers.emplace_back(FXSYS_atoui(word.c_str()),
                            m_pSyntax->GetPos() - word.GetLength());
       if (numbers.size() > 2u)
@@ -639,11 +700,13 @@ bool CPDF_Parser::RebuildCrossRef() {
 
       if (obj_num < kMaxObjectNumber) {
         cross_ref_table->AddNormal(obj_num, gen_num, obj_pos);
-        if (const auto object_stream =
-                CPDF_ObjectStream::Create(pStream.Get())) {
-          for (const auto& it : object_stream->objects_offsets()) {
-            if (it.first < kMaxObjectNumber)
-              cross_ref_table->AddCompressed(it.first, obj_num);
+        const auto object_stream = CPDF_ObjectStream::Create(pStream.Get());
+        if (object_stream) {
+          const auto& object_info = object_stream->object_info();
+          for (size_t i = 0; i < object_info.size(); ++i) {
+            const auto& info = object_info[i];
+            if (info.obj_num < kMaxObjectNumber)
+              cross_ref_table->AddCompressed(info.obj_num, obj_num, i);
           }
         }
       }
@@ -668,7 +731,7 @@ bool CPDF_Parser::LoadCrossRefV5(FX_FILESIZE* pos, bool bMainXRef) {
   if (!pStream)
     return false;
 
-  CPDF_Dictionary* pDict = pStream->GetDict();
+  const CPDF_Dictionary* pDict = pStream->GetDict();
   *pos = pDict->GetIntegerFor("Prev");
   int32_t size = pDict->GetIntegerFor("Size");
   if (size < 0)
@@ -685,118 +748,106 @@ bool CPDF_Parser::LoadCrossRefV5(FX_FILESIZE* pos, bool bMainXRef) {
         std::move(m_CrossRefTable));
   }
 
-  std::vector<std::pair<int32_t, int32_t>> arrIndex;
-  CPDF_Array* pArray = pDict->GetArrayFor("Index");
-  if (pArray) {
-    for (size_t i = 0; i < pArray->size() / 2; i++) {
-      CPDF_Object* pStartNumObj = pArray->GetObjectAt(i * 2);
-      CPDF_Object* pCountObj = pArray->GetObjectAt(i * 2 + 1);
+  std::vector<CrossRefV5IndexEntry> indices =
+      GetCrossRefV5Indices(pDict->GetArrayFor("Index"), size);
 
-      if (ToNumber(pStartNumObj) && ToNumber(pCountObj)) {
-        int nStartNum = pStartNumObj->GetInteger();
-        int nCount = pCountObj->GetInteger();
-        if (nStartNum >= 0 && nCount > 0)
-          arrIndex.push_back(std::make_pair(nStartNum, nCount));
-      }
-    }
-  }
-
-  if (arrIndex.empty())
-    arrIndex.push_back(std::make_pair(0, size));
-
-  pArray = pDict->GetArrayFor("W");
-  if (!pArray)
+  std::vector<uint32_t> field_widths = GetFieldWidths(pDict->GetArrayFor("W"));
+  if (field_widths.size() < kMinFieldCount)
     return false;
 
-  std::vector<uint32_t> WidthArray;
-  FX_SAFE_UINT32 dwAccWidth = 0;
-  for (size_t i = 0; i < pArray->size(); ++i) {
-    WidthArray.push_back(pArray->GetIntegerAt(i));
-    dwAccWidth += WidthArray[i];
-  }
-
-  if (!dwAccWidth.IsValid() || WidthArray.size() < 3)
+  FX_SAFE_UINT32 dwAccWidth;
+  for (uint32_t width : field_widths)
+    dwAccWidth += width;
+  if (!dwAccWidth.IsValid())
     return false;
 
-  uint32_t totalWidth = dwAccWidth.ValueOrDie();
+  uint32_t total_width = dwAccWidth.ValueOrDie();
   auto pAcc = pdfium::MakeRetain<CPDF_StreamAcc>(pStream);
   pAcc->LoadAllDataFiltered();
 
-  const uint8_t* pData = pAcc->GetData();
-  uint32_t dwTotalSize = pAcc->GetSize();
+  pdfium::span<const uint8_t> data_span = pAcc->GetSpan();
   uint32_t segindex = 0;
-  for (const auto& index : arrIndex) {
-    const int32_t startnum = index.first;
-    if (startnum < 0)
+  for (const auto& index : indices) {
+    if (index.start_obj_num < 0)
       continue;
 
-    uint32_t count = pdfium::base::checked_cast<uint32_t>(index.second);
-    FX_SAFE_UINT32 dwCaculatedSize = segindex;
-    dwCaculatedSize += count;
-    dwCaculatedSize *= totalWidth;
-    if (!dwCaculatedSize.IsValid() ||
-        dwCaculatedSize.ValueOrDie() > dwTotalSize) {
+    FX_SAFE_UINT32 seg_end = segindex;
+    seg_end += index.obj_count;
+    seg_end *= total_width;
+    if (!seg_end.IsValid() || seg_end.ValueOrDie() > data_span.size())
       continue;
-    }
 
-    const uint8_t* segstart = pData + segindex * totalWidth;
-    FX_SAFE_UINT32 dwMaxObjNum = startnum;
-    dwMaxObjNum += count;
+    pdfium::span<const uint8_t> seg_span = data_span.subspan(
+        segindex * total_width, index.obj_count * total_width);
+    FX_SAFE_UINT32 dwMaxObjNum = index.start_obj_num;
+    dwMaxObjNum += index.obj_count;
     uint32_t dwV5Size =
         m_CrossRefTable->objects_info().empty() ? 0 : GetLastObjNum() + 1;
     if (!dwMaxObjNum.IsValid() || dwMaxObjNum.ValueOrDie() > dwV5Size)
       continue;
 
-    for (uint32_t i = 0; i < count; i++) {
-      ObjectType type = ObjectType::kNotCompressed;
-      const uint8_t* entrystart = segstart + i * totalWidth;
-      if (WidthArray[0]) {
-        const uint32_t cross_ref_stream_obj_type =
-            GetVarInt(entrystart, WidthArray[0]);
-        type = GetObjectTypeFromCrossRefStreamType(cross_ref_stream_obj_type);
-        if (type == ObjectType::kNull)
-          continue;
-      }
+    for (uint32_t i = 0; i < index.obj_count; ++i) {
+      const uint32_t obj_num = index.start_obj_num + i;
+      if (obj_num >= CPDF_Parser::kMaxObjectNumber)
+        break;
 
-      const uint32_t objnum = startnum + i;
-      if (objnum >= CPDF_Parser::kMaxObjectNumber)
-        continue;
-
-      const ObjectType existing_type = GetObjectType(objnum);
-      if (existing_type == ObjectType::kNull) {
-        uint32_t offset = GetVarInt(entrystart + WidthArray[0], WidthArray[1]);
-        if (pdfium::base::IsValueInRangeForNumericType<FX_FILESIZE>(offset))
-          m_CrossRefTable->AddNormal(objnum, 0, offset);
-        continue;
-      }
-
-      if (existing_type != ObjectType::kFree)
-        continue;
-
-      if (type == ObjectType::kFree) {
-        m_CrossRefTable->SetFree(objnum);
-        continue;
-      }
-
-      const uint32_t entry_value =
-          GetVarInt(entrystart + WidthArray[0], WidthArray[1]);
-      if (type == ObjectType::kNotCompressed) {
-        const uint32_t offset = entry_value;
-        if (pdfium::base::IsValueInRangeForNumericType<FX_FILESIZE>(offset))
-          m_CrossRefTable->AddNormal(objnum, 0, offset);
-        continue;
-      }
-
-      DCHECK_EQ(type, ObjectType::kCompressed);
-      const uint32_t archive_obj_num = entry_value;
-      if (!IsValidObjectNumber(archive_obj_num))
-        return false;
-
-      m_CrossRefTable->AddCompressed(objnum, archive_obj_num);
+      ProcessCrossRefV5Entry(seg_span.subspan(i * total_width, total_width),
+                             field_widths, obj_num);
     }
-    segindex += count;
+
+    segindex += index.obj_count;
   }
   return true;
+}
+
+void CPDF_Parser::ProcessCrossRefV5Entry(
+    pdfium::span<const uint8_t> entry_span,
+    pdfium::span<const uint32_t> field_widths,
+    uint32_t obj_num) {
+  DCHECK_GE(field_widths.size(), kMinFieldCount);
+  ObjectType type = ObjectType::kNotCompressed;
+  if (field_widths[0]) {
+    const uint32_t cross_ref_stream_obj_type =
+        GetVarInt(entry_span.first(field_widths[0]));
+    type = GetObjectTypeFromCrossRefStreamType(cross_ref_stream_obj_type);
+    if (type == ObjectType::kNull)
+      return;
+  }
+
+  const ObjectType existing_type = GetObjectType(obj_num);
+  if (existing_type == ObjectType::kNull) {
+    uint32_t offset =
+        GetVarInt(entry_span.subspan(field_widths[0], field_widths[1]));
+    if (pdfium::base::IsValueInRangeForNumericType<FX_FILESIZE>(offset))
+      m_CrossRefTable->AddNormal(obj_num, 0, offset);
+    return;
+  }
+
+  if (existing_type != ObjectType::kFree)
+    return;
+
+  if (type == ObjectType::kFree) {
+    m_CrossRefTable->SetFree(obj_num);
+    return;
+  }
+
+  const uint32_t entry_value =
+      GetVarInt(entry_span.subspan(field_widths[0], field_widths[1]));
+  if (type == ObjectType::kNotCompressed) {
+    const uint32_t offset = entry_value;
+    if (pdfium::base::IsValueInRangeForNumericType<FX_FILESIZE>(offset))
+      m_CrossRefTable->AddNormal(obj_num, 0, offset);
+    return;
+  }
+
+  DCHECK_EQ(type, ObjectType::kCompressed);
+  const uint32_t archive_obj_num = entry_value;
+  if (!IsValidObjectNumber(archive_obj_num))
+    return;
+
+  const uint32_t archive_obj_index = GetVarInt(
+      entry_span.subspan(field_widths[0] + field_widths[1], field_widths[2]));
+  m_CrossRefTable->AddCompressed(obj_num, archive_obj_num, archive_obj_index);
 }
 
 const CPDF_Array* CPDF_Parser::GetIDArray() const {
@@ -879,12 +930,13 @@ RetainPtr<CPDF_Object> CPDF_Parser::ParseIndirectObject(uint32_t objnum) {
   if (GetObjectType(objnum) != ObjectType::kCompressed)
     return nullptr;
 
-  const CPDF_ObjectStream* pObjStream =
-      GetObjectStream(m_CrossRefTable->GetObjectInfo(objnum)->archive_obj_num);
+  const ObjectInfo& info = *m_CrossRefTable->GetObjectInfo(objnum);
+  const CPDF_ObjectStream* pObjStream = GetObjectStream(info.archive.obj_num);
   if (!pObjStream)
     return nullptr;
 
-  return pObjStream->ParseObject(m_pObjectsHolder.Get(), objnum);
+  return pObjStream->ParseObject(m_pObjectsHolder.Get(), objnum,
+                                 info.archive.obj_index);
 }
 
 const CPDF_ObjectStream* CPDF_Parser::GetObjectStream(uint32_t object_number) {
@@ -1085,16 +1137,7 @@ CPDF_Parser::Error CPDF_Parser::LoadLinearizedMainXRefTable() {
   return SUCCESS;
 }
 
-CPDF_Parser::ObjectType CPDF_Parser::GetObjectTypeFromCrossRefStreamType(
-    uint32_t cross_ref_stream_type) const {
-  switch (cross_ref_stream_type) {
-    case 0:
-      return CPDF_Parser::ObjectType::kFree;
-    case 1:
-      return CPDF_Parser::ObjectType::kNotCompressed;
-    case 2:
-      return CPDF_Parser::ObjectType::kCompressed;
-    default:
-      return CPDF_Parser::ObjectType::kNull;
-  }
+void CPDF_Parser::SetSyntaxParserForTesting(
+    std::unique_ptr<CPDF_SyntaxParser> parser) {
+  m_pSyntax = std::move(parser);
 }

@@ -11,6 +11,8 @@
 #ifndef EIGEN_GENERAL_PRODUCT_H
 #define EIGEN_GENERAL_PRODUCT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 enum {

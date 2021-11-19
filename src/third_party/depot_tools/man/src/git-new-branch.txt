@@ -76,8 +76,8 @@ include::_aliases.txt[]
 
 ----
 [alias]
-  git nb = new-branch
-  git tb = new-branch --upstream_current  <1>
+  nb = new-branch
+  tb = new-branch --upstream_current  <1>
 ----
 <1> mnemonic: tb -> "track branch"
 

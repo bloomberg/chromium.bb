@@ -46,7 +46,7 @@ void StreamingVideoEncoder::UpdateSpeedSettingForNextFrame(const Stats& stats) {
   // exponentially-decaying weighted average is used here to smooth-out noise.
   // The weight is based on the duration of the frame that was encoded.
   constexpr Clock::duration kDecayHalfLife = milliseconds(120);
-  const double ticks = stats.frame_duration.count();
+  const double ticks = static_cast<double>(stats.frame_duration.count());
   const double weight = ticks / (ticks + kDecayHalfLife.count());
   ideal_speed_setting_ =
       weight * perfect_speed + (1.0 - weight) * ideal_speed_setting_;

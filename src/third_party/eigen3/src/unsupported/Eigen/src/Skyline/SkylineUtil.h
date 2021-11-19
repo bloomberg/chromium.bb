@@ -10,6 +10,8 @@
 #ifndef EIGEN_SKYLINEUTIL_H
 #define EIGEN_SKYLINEUTIL_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 #ifdef NDEBUG

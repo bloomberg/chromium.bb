@@ -47,8 +47,8 @@ enum ColumnType {
 };
 
 struct ColumnDescriptor {
-  // Column name, printed across two lines.
-  std::string label[2];
+  // Column name
+  std::string label;
   // Total width to render the values of this column. If t his is a floating
   // point value, make sure this is large enough to contain a space and the
   // point, plus precision digits after the point, plus the max amount of
@@ -60,39 +60,48 @@ struct ColumnDescriptor {
   bool more;  // Whether to print only if more_columns is enabled
 };
 
+static const ColumnDescriptor ExtraMetricDescriptor() {
+  ColumnDescriptor d{{"DO NOT USE"}, 12, 4, TYPE_POSITIVE_FLOAT, false};
+  return d;
+}
+
 // To add or change a column to the benchmark ASCII table output, add/change
 // an entry here with table header line 1, table header line 2, width of the
 // column, precision after the point in case of floating point, and the
 // data type. Then add/change the corresponding formula or formatting in
 // the function ComputeColumns.
-const std::vector<ColumnDescriptor>& GetColumnDescriptors() {
+std::vector<ColumnDescriptor> GetColumnDescriptors(size_t num_extra_metrics) {
   // clang-format off
-  static const std::vector<ColumnDescriptor> result = {
-      {{"Compr", "Method"}, ComputeLargestCodecName() + 1, 0, TYPE_STRING, false},
-      {{"Input", "Pixels"},         13,  0, TYPE_SIZE, false},
-      {{"Compr", "Size"},            9,  0, TYPE_SIZE, false},
-      {{"Compr", "BPP"},            17, 11, TYPE_POSITIVE_FLOAT, false},
-      {{"", "#"},                    4,  0, TYPE_STRING, false},
-      {{"Compr", "MP/s"},            8,  3, TYPE_POSITIVE_FLOAT, false},
-      {{"Decomp", "MP/s"},           8,  3, TYPE_POSITIVE_FLOAT, false},
-      {{"Butteraugli", "Distance"}, 13,  8, TYPE_POSITIVE_FLOAT, false},
-      {{"", "Error p norm"},        16, 11, TYPE_POSITIVE_FLOAT, false},
-      {{"", "PSNR"},                 7,  2, TYPE_POSITIVE_FLOAT, true},
-      {{"", "QABPP"},                8,  3, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT2"},                 9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT4"},                 9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT4X8"},               9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "AFV"},                  9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT8"},                 9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT8X16"},              9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT8X32"},              9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT16"},                9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT16X32"},             9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "DCT32"},                9,  7, TYPE_POSITIVE_FLOAT, true},
-      {{"", "BPP*pnorm"},           20, 16, TYPE_POSITIVE_FLOAT, false},
-      {{"", "Errors"},               9,  7, TYPE_COUNT, false},
+  std::vector<ColumnDescriptor> result = {
+      {{"Encoding"}, ComputeLargestCodecName() + 1, 0, TYPE_STRING, false},
+      {{"kPixels"},        10,  0, TYPE_SIZE, false},
+      {{"Bytes"},           9,  0, TYPE_SIZE, false},
+      {{"BPP"},            13,  7, TYPE_POSITIVE_FLOAT, false},
+      {{"E MP/s"},          8,  3, TYPE_POSITIVE_FLOAT, false},
+      {{"D MP/s"},          8,  3, TYPE_POSITIVE_FLOAT, false},
+      {{"Max norm"},       13,  8, TYPE_POSITIVE_FLOAT, false},
+      {{"pnorm"},          13,  8, TYPE_POSITIVE_FLOAT, false},
+      {{"PSNR"},            7,  2, TYPE_POSITIVE_FLOAT, true},
+      {{"QABPP"},           8,  3, TYPE_POSITIVE_FLOAT, true},
+      {{"SmallB"},          8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"DCT4x8"},          8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"AFV"},             8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"DCT8x8"},          8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"8x16"},            8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"8x32"},            8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"16"},              8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"16x32"},           8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"32"},              8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"32x64"},           8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"64"},              8,  4, TYPE_POSITIVE_FLOAT, true},
+      {{"BPP*pnorm"},      16, 12, TYPE_POSITIVE_FLOAT, false},
+      {{"Bugs"},            7,  5, TYPE_COUNT, false},
   };
   // clang-format on
+
+  for (size_t i = 0; i < num_extra_metrics; i++) {
+    result.push_back(ExtraMetricDescriptor());
+  }
 
   return result;
 }
@@ -145,6 +154,12 @@ void BenchmarkStats::Assimilate(const BenchmarkStats& victim) {
                    victim.distances.end());
   total_errors += victim.total_errors;
   jxl_stats.Assimilate(victim.jxl_stats);
+  if (extra_metrics.size() < victim.extra_metrics.size()) {
+    extra_metrics.resize(victim.extra_metrics.size());
+  }
+  for (size_t i = 0; i < victim.extra_metrics.size(); i++) {
+    extra_metrics[i] += victim.extra_metrics[i];
+  }
 }
 
 void BenchmarkStats::PrintMoreStats() const {
@@ -162,8 +177,7 @@ void BenchmarkStats::PrintMoreStats() const {
 }
 
 std::vector<ColumnValue> BenchmarkStats::ComputeColumns(
-    const std::string& codec_desc, size_t corpus_size,
-    size_t num_threads) const {
+    const std::string& codec_desc, size_t corpus_size) const {
   JXL_CHECK(total_input_files == corpus_size);
   const double comp_bpp = total_compressed_size * 8.0 / total_input_pixels;
   const double adj_comp_bpp =
@@ -175,58 +189,62 @@ std::vector<ColumnValue> BenchmarkStats::ComputeColumns(
       ComputeSpeed(total_input_pixels, total_time_decode);
   // Already weighted, no need to divide by #channels.
   const double rmse = std::sqrt(distance_2 / total_input_pixels);
-  const double psnr =
-      total_compressed_size == 0
-          ? 0.0
-          : (distance_2 == 0) ? 99.99 : (20 * std::log10(1 / rmse));
+  const double psnr = total_compressed_size == 0 ? 0.0
+                      : (distance_2 == 0)        ? 99.99
+                                                 : (20 * std::log10(1 / rmse));
   const double p_norm = distance_p_norm / total_input_pixels;
   const double bpp_p_norm = p_norm * comp_bpp;
 
-  std::vector<ColumnValue> values(GetColumnDescriptors().size());
+  std::vector<ColumnValue> values(
+      GetColumnDescriptors(extra_metrics.size()).size());
 
   values[0].s = codec_desc;
-  values[1].i = total_input_pixels;
+  values[1].i = total_input_pixels / 1000;
   values[2].i = total_compressed_size;
   values[3].f = comp_bpp;
-  values[4].s = StringPrintf("%zu", num_threads);
-  values[5].f = compression_speed;
-  values[6].f = decompression_speed;
-  values[7].f = static_cast<double>(max_distance);
-  values[8].f = p_norm;
-  values[9].f = psnr;
-  values[10].f = adj_comp_bpp;
+  values[4].f = compression_speed;
+  values[5].f = decompression_speed;
+  values[6].f = static_cast<double>(max_distance);
+  values[7].f = p_norm;
+  values[8].f = psnr;
+  values[9].f = adj_comp_bpp;
   // The DCT2, DCT4, AFV and DCT4X8 are applied to an 8x8 block by having 4x4
   // DCT2X2s, 2x2 DCT4x4s/AFVs, or 2x1 DCT4X8s, filling the whole 8x8 blocks.
   // Thus we need to multiply the block count by 8.0 * 8.0 pixels for these
   // transforms.
-  values[11].f =
-      jxl_stats.aux_out.num_dct2_blocks * 8.0 * 8.0 / total_input_pixels;
+  values[10].f = 100.f * jxl_stats.aux_out.num_small_blocks * 8.0 * 8.0 /
+                 total_input_pixels;
+  values[11].f = 100.f * jxl_stats.aux_out.num_dct4x8_blocks * 8.0 * 8.0 /
+                 total_input_pixels;
   values[12].f =
-      jxl_stats.aux_out.num_dct4_blocks * 8.0 * 8.0 / total_input_pixels;
-  values[13].f =
-      jxl_stats.aux_out.num_dct4x8_blocks * 8.0 * 8.0 / total_input_pixels;
-  values[14].f =
-      jxl_stats.aux_out.num_afv_blocks * 8.0 * 8.0 / total_input_pixels;
-  values[15].f =
-      jxl_stats.aux_out.num_dct8_blocks * 8.0 * 8.0 / total_input_pixels;
-  values[16].f =
-      jxl_stats.aux_out.num_dct8x16_blocks * 8.0 * 16.0 / total_input_pixels;
-  values[17].f =
-      jxl_stats.aux_out.num_dct8x32_blocks * 8.0 * 32.0 / total_input_pixels;
-  values[18].f =
-      jxl_stats.aux_out.num_dct16_blocks * 16.0 * 16.0 / total_input_pixels;
-  values[19].f =
-      jxl_stats.aux_out.num_dct16x32_blocks * 16.0 * 32.0 / total_input_pixels;
-  values[20].f =
-      jxl_stats.aux_out.num_dct32_blocks * 32.0 * 32.0 / total_input_pixels;
+      100.f * jxl_stats.aux_out.num_afv_blocks * 8.0 * 8.0 / total_input_pixels;
+  values[13].f = 100.f * jxl_stats.aux_out.num_dct8_blocks * 8.0 * 8.0 /
+                 total_input_pixels;
+  values[14].f = 100.f * jxl_stats.aux_out.num_dct8x16_blocks * 8.0 * 16.0 /
+                 total_input_pixels;
+  values[15].f = 100.f * jxl_stats.aux_out.num_dct8x32_blocks * 8.0 * 32.0 /
+                 total_input_pixels;
+  values[16].f = 100.f * jxl_stats.aux_out.num_dct16_blocks * 16.0 * 16.0 /
+                 total_input_pixels;
+  values[17].f = 100.f * jxl_stats.aux_out.num_dct16x32_blocks * 16.0 * 32.0 /
+                 total_input_pixels;
+  values[18].f = 100.f * jxl_stats.aux_out.num_dct32_blocks * 32.0 * 32.0 /
+                 total_input_pixels;
+  values[19].f = 100.f * jxl_stats.aux_out.num_dct32x64_blocks * 32.0 * 64.0 /
+                 total_input_pixels;
+  values[20].f = 100.f * jxl_stats.aux_out.num_dct64_blocks * 64.0 * 64.0 /
+                 total_input_pixels;
   values[21].f = bpp_p_norm;
   values[22].i = total_errors;
+  for (size_t i = 0; i < extra_metrics.size(); i++) {
+    values[23 + i].f = extra_metrics[i] / total_input_files;
+  }
   return values;
 }
 
 static std::string PrintFormattedEntries(
-    const std::vector<ColumnValue>& values) {
-  const auto& descriptors = GetColumnDescriptors();
+    size_t num_extra_metrics, const std::vector<ColumnValue>& values) {
+  const auto& descriptors = GetColumnDescriptors(num_extra_metrics);
 
   std::string out;
   for (size_t i = 0; i < descriptors.size(); i++) {
@@ -257,38 +275,44 @@ static std::string PrintFormattedEntries(
 }
 
 std::string BenchmarkStats::PrintLine(const std::string& codec_desc,
-                                      size_t corpus_size,
-                                      size_t num_threads) const {
-  std::vector<ColumnValue> values =
-      ComputeColumns(codec_desc, corpus_size, num_threads);
-  return PrintFormattedEntries(values);
+                                      size_t corpus_size) const {
+  std::vector<ColumnValue> values = ComputeColumns(codec_desc, corpus_size);
+  return PrintFormattedEntries(extra_metrics.size(), values);
 }
 
-std::string PrintHeader() {
+std::string PrintHeader(const std::vector<std::string>& extra_metrics_names) {
   std::string out;
-  const auto& descriptors = GetColumnDescriptors();
-  for (int row = 0; row < 2; row++) {
-    for (size_t i = 0; i < descriptors.size(); i++) {
-      if (!Args()->more_columns && descriptors[i].more) continue;
-      const std::string& label = descriptors[i].label[row];
-      int numspaces = descriptors[i].width - label.size();
-      // All except the first one are right-aligned.
-      if (i == 0) out += label.c_str();
-      out += std::string(numspaces, ' ');
-      if (i != 0) out += label.c_str();
-    }
-    out += '\n';
+  // Extra metrics are handled separately.
+  const auto& descriptors = GetColumnDescriptors(0);
+  for (size_t i = 0; i < descriptors.size(); i++) {
+    if (!Args()->more_columns && descriptors[i].more) continue;
+    const std::string& label = descriptors[i].label;
+    int numspaces = descriptors[i].width - label.size();
+    // All except the first one are right-aligned.
+    if (i == 0) out += label.c_str();
+    out += std::string(numspaces, ' ');
+    if (i != 0) out += label.c_str();
   }
+  for (const std::string& em : extra_metrics_names) {
+    int numspaces = ExtraMetricDescriptor().width - em.size();
+    JXL_CHECK(numspaces >= 1);
+    out += std::string(numspaces, ' ');
+    out += em;
+  }
+  out += '\n';
   for (const auto& descriptor : descriptors) {
     if (!Args()->more_columns && descriptor.more) continue;
     out += std::string(descriptor.width, '-');
   }
+  out += std::string(ExtraMetricDescriptor().width * extra_metrics_names.size(),
+                     '-');
   return out + "\n";
 }
 
 std::string PrintAggregate(
+    size_t num_extra_metrics,
     const std::vector<std::vector<ColumnValue>>& aggregate) {
-  const auto& descriptors = GetColumnDescriptors();
+  const auto& descriptors = GetColumnDescriptors(num_extra_metrics);
 
   for (size_t i = 0; i < aggregate.size(); i++) {
     // Check when statistics has wrong amount of column entries
@@ -338,7 +362,7 @@ std::string PrintAggregate(
     }
   }
 
-  return PrintFormattedEntries(result);
+  return PrintFormattedEntries(num_extra_metrics, result);
 }
 
 }  // namespace jxl

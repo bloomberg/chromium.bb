@@ -11,6 +11,8 @@
 #ifndef EIGEN_HESSENBERGDECOMPOSITION_H
 #define EIGEN_HESSENBERGDECOMPOSITION_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

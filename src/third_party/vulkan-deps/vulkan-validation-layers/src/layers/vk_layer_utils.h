@@ -213,6 +213,23 @@ static inline VkDeviceSize GetIndexAlignment(VkIndexType indexType) {
     }
 }
 
+// Perform a zero-tolerant modulo operation
+static inline VkDeviceSize SafeModulo(VkDeviceSize dividend, VkDeviceSize divisor) {
+    VkDeviceSize result = 0;
+    if (divisor != 0) {
+        result = dividend % divisor;
+    }
+    return result;
+}
+
+static inline VkDeviceSize SafeDivision(VkDeviceSize dividend, VkDeviceSize divisor) {
+    VkDeviceSize result = 0;
+    if (divisor != 0) {
+        result = dividend / divisor;
+    }
+    return result;
+}
+
 extern "C" {
 #endif
 
@@ -250,27 +267,43 @@ static inline int u_ffs(int val) {
 }
 #endif
 
+#ifdef __cplusplus
+// clang sets _MSC_VER to 1800 and _MSC_FULL_VER to 180000000, but we only want to clean up after MSVC.
+#if defined(_MSC_FULL_VER) && !defined(__clang__)
 // Minimum Visual Studio 2015 Update 2, or libc++ with C++17
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
+// But, before Visual Studio 2017 version 15.7, __cplusplus is not set
+// correctly. See:
+//   https://docs.microsoft.com/en-us/cpp/build/reference/zc-cplusplus?view=msvc-160
+// Also, according to commit e2a6c442cb1e4, SDKs older than NTDDI_WIN10_RS2 do not
+// support shared_mutex.
+#if _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
+#define VVL_USE_SHARED_MUTEX 1
+#endif
+#elif __cplusplus >= 201703
+#define VVL_USE_SHARED_MUTEX 1
+#elif __cplusplus >= 201402
+#define VVL_USE_SHARED_TIMED_MUTEX 1
+#endif
+
+#if defined(VVL_USE_SHARED_MUTEX) || defined(VVL_USE_SHARED_TIMED_MUTEX)
 #include <shared_mutex>
 #endif
 
 class ReadWriteLock {
   private:
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
-    typedef std::shared_mutex lock_t;
+#if defined(VVL_USE_SHARED_MUTEX)
+    typedef std::shared_mutex Lock;
+#elif defined(VVL_USE_SHARED_TIMED_MUTEX)
+    typedef std::shared_timed_mutex Lock;
 #else
-    typedef std::mutex lock_t;
+    typedef std::mutex Lock;
 #endif
 
   public:
     void lock() { m_lock.lock(); }
     bool try_lock() { return m_lock.try_lock(); }
     void unlock() { m_lock.unlock(); }
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
+#if defined(VVL_USE_SHARED_MUTEX) || defined(VVL_USE_SHARED_TIMED_MUTEX)
     void lock_shared() { m_lock.lock_shared(); }
     bool try_lock_shared() { return m_lock.try_lock_shared(); }
     void unlock_shared() { m_lock.unlock_shared(); }
@@ -280,17 +313,15 @@ class ReadWriteLock {
     void unlock_shared() { unlock(); }
 #endif
   private:
-    lock_t m_lock;
+    Lock m_lock;
 };
 
-#if defined(_MSC_FULL_VER) && _MSC_FULL_VER >= 190023918 && NTDDI_VERSION > NTDDI_WIN10_RS2 && \
-    (!defined(_LIBCPP_VERSION) || __cplusplus >= 201703)
-typedef std::shared_lock<ReadWriteLock> read_lock_guard_t;
-typedef std::unique_lock<ReadWriteLock> write_lock_guard_t;
+#if defined(VVL_USE_SHARED_MUTEX) || defined(VVL_USE_SHARED_TIMED_MUTEX)
+typedef std::shared_lock<ReadWriteLock> ReadLockGuard;
 #else
-typedef std::unique_lock<ReadWriteLock> read_lock_guard_t;
-typedef std::unique_lock<ReadWriteLock> write_lock_guard_t;
+typedef std::unique_lock<ReadWriteLock> ReadLockGuard;
 #endif
+typedef std::unique_lock<ReadWriteLock> WriteLockGuard;
 
 // Limited concurrent_unordered_map that supports internally-synchronized
 // insert/erase/access. Splits locking across N buckets and uses shared_mutex
@@ -321,13 +352,13 @@ class vl_concurrent_unordered_map {
   public:
     void insert_or_assign(const Key &key, const T &value) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
+        WriteLockGuard lock(locks[h].lock);
         maps[h][key] = value;
     }
 
     bool insert(const Key &key, const T &value) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
+        WriteLockGuard lock(locks[h].lock);
         auto ret = maps[h].emplace(key, value);
         return ret.second;
     }
@@ -335,13 +366,13 @@ class vl_concurrent_unordered_map {
     // returns size_type
     size_t erase(const Key &key) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
+        WriteLockGuard lock(locks[h].lock);
         return maps[h].erase(key);
     }
 
     bool contains(const Key &key) const {
         uint32_t h = ConcurrentMapHashObject(key);
-        read_lock_guard_t lock(locks[h].lock);
+        ReadLockGuard lock(locks[h].lock);
         return maps[h].count(key) != 0;
     }
 
@@ -374,7 +405,7 @@ class vl_concurrent_unordered_map {
 
     FindResult find(const Key &key) const {
         uint32_t h = ConcurrentMapHashObject(key);
-        read_lock_guard_t lock(locks[h].lock);
+        ReadLockGuard lock(locks[h].lock);
 
         auto itr = maps[h].find(key);
         bool found = itr != maps[h].end();
@@ -388,7 +419,7 @@ class vl_concurrent_unordered_map {
 
     FindResult pop(const Key &key) {
         uint32_t h = ConcurrentMapHashObject(key);
-        write_lock_guard_t lock(locks[h].lock);
+        WriteLockGuard lock(locks[h].lock);
 
         auto itr = maps[h].find(key);
         bool found = itr != maps[h].end();
@@ -405,7 +436,7 @@ class vl_concurrent_unordered_map {
     std::vector<std::pair<const Key, T>> snapshot(std::function<bool(T)> f = nullptr) const {
         std::vector<std::pair<const Key, T>> ret;
         for (int h = 0; h < BUCKETS; ++h) {
-            read_lock_guard_t lock(locks[h].lock);
+            ReadLockGuard lock(locks[h].lock);
             for (const auto &j : maps[h]) {
                 if (!f || f(j.second)) {
                     ret.emplace_back(j.first, j.second);
@@ -433,3 +464,4 @@ class vl_concurrent_unordered_map {
         return hash;
     }
 };
+#endif

@@ -64,11 +64,10 @@ namespace dawn_native {
                         mFakeMappedData =
                             std::unique_ptr<uint8_t[]>(AllocNoThrow<uint8_t>(descriptor->size));
                     }
+                    // Since error buffers in this case may allocate memory, we need to track them
+                    // for destruction on the device.
+                    TrackInDevice();
                 }
-            }
-
-            void ClearMappedData() {
-                mFakeMappedData.reset();
             }
 
           private:
@@ -83,14 +82,17 @@ namespace dawn_native {
             MaybeError MapAsyncImpl(wgpu::MapMode mode, size_t offset, size_t size) override {
                 UNREACHABLE();
             }
+
             void* GetMappedPointerImpl() override {
                 return mFakeMappedData.get();
             }
+
             void UnmapImpl() override {
-                UNREACHABLE();
+                mFakeMappedData.reset();
             }
-            void DestroyImpl() override {
-                UNREACHABLE();
+
+            void DestroyApiObjectImpl() override {
+                mFakeMappedData.reset();
             }
 
             std::unique_ptr<uint8_t[]> mFakeMappedData;
@@ -108,15 +110,17 @@ namespace dawn_native {
             wgpu::BufferUsage::MapWrite | wgpu::BufferUsage::CopySrc;
         DAWN_INVALID_IF(
             usage & wgpu::BufferUsage::MapWrite && !IsSubset(usage, kMapWriteAllowedUsages),
-            "Buffer usages (%s) contains %s but is not a subset of %s.", usage,
-            wgpu::BufferUsage::MapWrite, kMapWriteAllowedUsages);
+            "Buffer usages (%s) is invalid. If a buffer usage contains %s the only other allowed "
+            "usage is %s.",
+            usage, wgpu::BufferUsage::MapWrite, wgpu::BufferUsage::CopySrc);
 
         const wgpu::BufferUsage kMapReadAllowedUsages =
             wgpu::BufferUsage::MapRead | wgpu::BufferUsage::CopyDst;
         DAWN_INVALID_IF(
             usage & wgpu::BufferUsage::MapRead && !IsSubset(usage, kMapReadAllowedUsages),
-            "Buffer usages (%s) contains %s but is not a subset of %s.", usage,
-            wgpu::BufferUsage::MapRead, kMapReadAllowedUsages);
+            "Buffer usages (%s) is invalid. If a buffer usage contains %s the only other allowed "
+            "usage is %s.",
+            usage, wgpu::BufferUsage::MapRead, wgpu::BufferUsage::CopyDst);
 
         DAWN_INVALID_IF(descriptor->mappedAtCreation && descriptor->size % 4 != 0,
                         "Buffer is mapped at creation but its size (%u) is not a multiple of 4.",
@@ -153,6 +157,8 @@ namespace dawn_native {
         if ((mUsage & wgpu::BufferUsage::Indirect) && device->IsValidationEnabled()) {
             mUsage |= kInternalStorageBuffer;
         }
+
+        TrackInDevice();
     }
 
     BufferBase::BufferBase(DeviceBase* device,
@@ -166,11 +172,34 @@ namespace dawn_native {
         }
     }
 
+    BufferBase::BufferBase(DeviceBase* device, BufferState state)
+        : ApiObjectBase(device, kLabelNotImplemented), mState(state) {
+        TrackInDevice();
+    }
+
     BufferBase::~BufferBase() {
-        if (mState == BufferState::Mapped) {
-            ASSERT(!IsError());
-            CallMapCallback(mLastMapID, WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
+        ASSERT(mState == BufferState::Unmapped || mState == BufferState::Destroyed);
+    }
+
+    bool BufferBase::DestroyApiObject() {
+        bool marked = MarkDestroyed();
+        if (!marked) {
+            return false;
         }
+
+        if (mState == BufferState::Mapped) {
+            UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
+        } else if (mState == BufferState::MappedAtCreation) {
+            if (mStagingBuffer != nullptr) {
+                mStagingBuffer.reset();
+            } else if (mSize != 0) {
+                UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
+            }
+        }
+
+        DestroyApiObjectImpl();
+        mState = BufferState::Destroyed;
+        return true;
     }
 
     // static
@@ -298,13 +327,24 @@ namespace dawn_native {
         // Handle the defaulting of size required by WebGPU, even if in webgpu_cpp.h it is not
         // possible to default the function argument (because there is the callback later in the
         // argument list)
-        if (size == 0 && offset < mSize) {
+        if (size == 0) {
+            // Using 0 to indicating default size is deprecated.
+            // Temporarily treat 0 as undefined for size, and give a warning
+            // TODO(dawn:1058): Remove this if block
+            size = wgpu::kWholeMapSize;
+            GetDevice()->EmitDeprecationWarning(
+                "Using size=0 to indicate default mapping size for mapAsync "
+                "is deprecated. In the future it will result in a zero-size mapping. "
+                "Use `undefined` (wgpu::kWholeMapSize) or just omit the parameter instead.");
+        }
+
+        if ((size == wgpu::kWholeMapSize) && (offset <= mSize)) {
             size = mSize - offset;
         }
 
         WGPUBufferMapAsyncStatus status;
         if (GetDevice()->ConsumedError(ValidateMapAsync(mode, offset, size, &status),
-                                       "calling %s.MapAsync(%s, %u, %u, ...)", this, mode, offset,
+                                       "calling %s.MapAsync(%s, %u, %u, ...).", this, mode, offset,
                                        size)) {
             if (callback) {
                 callback(status, userdata);
@@ -355,29 +395,7 @@ namespace dawn_native {
     }
 
     void BufferBase::APIDestroy() {
-        if (IsError()) {
-            // It is an error to call Destroy() on an ErrorBuffer, but we still need to reclaim the
-            // fake mapped staging data.
-            static_cast<ErrorBuffer*>(this)->ClearMappedData();
-            mState = BufferState::Destroyed;
-        }
-        if (GetDevice()->ConsumedError(ValidateDestroy(), "calling %s.Destroy()", this)) {
-            return;
-        }
-        ASSERT(!IsError());
-
-        if (mState == BufferState::Mapped) {
-            UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
-        } else if (mState == BufferState::MappedAtCreation) {
-            if (mStagingBuffer != nullptr) {
-                mStagingBuffer.reset();
-            } else if (mSize != 0) {
-                ASSERT(IsCPUWritableAtCreation());
-                UnmapInternal(WGPUBufferMapAsyncStatus_DestroyedBeforeCallback);
-            }
-        }
-
-        DestroyInternal();
+        DestroyApiObject();
     }
 
     MaybeError BufferBase::CopyFromStagingBuffer() {
@@ -398,6 +416,9 @@ namespace dawn_native {
     }
 
     void BufferBase::APIUnmap() {
+        if (GetDevice()->ConsumedError(ValidateUnmap(), "calling %s.Unmap().", this)) {
+            return;
+        }
         Unmap();
     }
 
@@ -406,17 +427,6 @@ namespace dawn_native {
     }
 
     void BufferBase::UnmapInternal(WGPUBufferMapAsyncStatus callbackStatus) {
-        if (IsError()) {
-            // It is an error to call Unmap() on an ErrorBuffer, but we still need to reclaim the
-            // fake mapped staging data.
-            static_cast<ErrorBuffer*>(this)->ClearMappedData();
-            mState = BufferState::Unmapped;
-        }
-        if (GetDevice()->ConsumedError(ValidateUnmap(), "calling %s.Unmap()", this)) {
-            return;
-        }
-        ASSERT(!IsError());
-
         if (mState == BufferState::Mapped) {
             // A map request can only be called once, so this will fire only if the request wasn't
             // completed before the Unmap.
@@ -427,12 +437,10 @@ namespace dawn_native {
 
             mMapCallback = nullptr;
             mMapUserdata = 0;
-
         } else if (mState == BufferState::MappedAtCreation) {
             if (mStagingBuffer != nullptr) {
                 GetDevice()->ConsumedError(CopyFromStagingBuffer());
             } else if (mSize != 0) {
-                ASSERT(IsCPUWritableAtCreation());
                 UnmapImpl();
             }
         }
@@ -450,10 +458,14 @@ namespace dawn_native {
         *status = WGPUBufferMapAsyncStatus_Error;
         DAWN_TRY(GetDevice()->ValidateObject(this));
 
+        DAWN_INVALID_IF(uint64_t(offset) > mSize,
+                        "Mapping offset (%u) is larger than the size (%u) of %s.", offset, mSize,
+                        this);
+
         DAWN_INVALID_IF(offset % 8 != 0, "Offset (%u) must be a multiple of 8.", offset);
         DAWN_INVALID_IF(size % 4 != 0, "Size (%u) must be a multiple of 4.", size);
 
-        DAWN_INVALID_IF(uint64_t(offset) > mSize || uint64_t(size) > mSize - uint64_t(offset),
+        DAWN_INVALID_IF(uint64_t(size) > mSize - uint64_t(offset),
                         "Mapping range (offset:%u, size: %u) doesn't fit in the size (%u) of %s.",
                         offset, size, mSize, this);
 
@@ -528,7 +540,6 @@ namespace dawn_native {
 
     MaybeError BufferBase::ValidateUnmap() const {
         DAWN_TRY(GetDevice()->ValidateIsAlive());
-        DAWN_TRY(GetDevice()->ValidateObject(this));
 
         switch (mState) {
             case BufferState::Mapped:
@@ -542,18 +553,6 @@ namespace dawn_native {
                 return DAWN_FORMAT_VALIDATION_ERROR("%s is destroyed.", this);
         }
         UNREACHABLE();
-    }
-
-    MaybeError BufferBase::ValidateDestroy() const {
-        DAWN_TRY(GetDevice()->ValidateObject(this));
-        return {};
-    }
-
-    void BufferBase::DestroyInternal() {
-        if (mState != BufferState::Destroyed) {
-            DestroyImpl();
-        }
-        mState = BufferState::Destroyed;
     }
 
     void BufferBase::OnMapRequestCompleted(MapRequestID mapID, WGPUBufferMapAsyncStatus status) {

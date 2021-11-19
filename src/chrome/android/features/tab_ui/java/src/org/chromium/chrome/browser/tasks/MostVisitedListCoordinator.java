@@ -94,7 +94,7 @@ class MostVisitedListCoordinator implements TileGroup.Observer {
         // If it's a cold start and Instant Start is turned on, we render MV tiles placeholder here
         // pre-native.
         if (!mInitializationComplete
-                && ReturnToChromeExperimentsUtil.isStartSurfaceHomepageEnabled()
+                && ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(mActivity)
                 && TabUiFeatureUtilities.supportInstantStart(
                         DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity), mActivity)) {
             try {
@@ -201,14 +201,6 @@ class MostVisitedListCoordinator implements TileGroup.Observer {
         @Override
         public boolean isOpenInNewTabInGroupEnabled() {
             return false;
-        }
-
-        @Override
-        public void navigateToHelpPage() {
-            // TODO(dgn): Use the standard Help UI rather than a random link to online help?
-            ReturnToChromeExperimentsUtil.handleLoadUrlFromStartSurface(
-                    new LoadUrlParams(NEW_TAB_URL_HELP, PageTransition.AUTO_BOOKMARK),
-                    true /*incognito*/, mParentTabSupplier.get());
         }
 
         /**

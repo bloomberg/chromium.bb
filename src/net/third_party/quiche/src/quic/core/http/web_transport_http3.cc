@@ -42,7 +42,8 @@ class QUIC_NO_EXPORT NoopWebTransportVisitor : public WebTransportVisitor {
 
 WebTransportHttp3::WebTransportHttp3(QuicSpdySession* session,
                                      QuicSpdyStream* connect_stream,
-                                     WebTransportSessionId id)
+                                     WebTransportSessionId id,
+                                     bool attempt_to_use_datagram_contexts)
     : session_(session),
       connect_stream_(connect_stream),
       id_(id),
@@ -50,10 +51,14 @@ WebTransportHttp3::WebTransportHttp3(QuicSpdySession* session,
   QUICHE_DCHECK(session_->SupportsWebTransport());
   QUICHE_DCHECK(IsValidWebTransportSessionId(id, session_->version()));
   QUICHE_DCHECK_EQ(connect_stream_->id(), id);
-  connect_stream_->RegisterHttp3DatagramRegistrationVisitor(this);
+  connect_stream_->RegisterHttp3DatagramRegistrationVisitor(
+      this, attempt_to_use_datagram_contexts);
   if (session_->perspective() == Perspective::IS_CLIENT) {
     context_is_known_ = true;
     context_currently_registered_ = true;
+    if (attempt_to_use_datagram_contexts) {
+      context_id_ = connect_stream_->GetNextDatagramContextId();
+    }
   }
 }
 
@@ -174,6 +179,7 @@ void WebTransportHttp3::HeadersReceived(const spdy::SpdyHeaderBlock& headers) {
       QUIC_DVLOG(1) << ENDPOINT
                     << "Received WebTransport headers from server without "
                        "a valid status code, rejecting.";
+      rejection_reason_ = WebTransportHttp3RejectionReason::kNoStatusCode;
       return;
     }
     bool valid_status = status_code >= 200 && status_code <= 299;
@@ -182,7 +188,31 @@ void WebTransportHttp3::HeadersReceived(const spdy::SpdyHeaderBlock& headers) {
                     << "Received WebTransport headers from server with "
                        "status code "
                     << status_code << ", rejecting.";
+      rejection_reason_ = WebTransportHttp3RejectionReason::kWrongStatusCode;
       return;
+    }
+    bool should_validate_version =
+        session_->http_datagram_support() != HttpDatagramSupport::kDraft00 &&
+        session_->ShouldValidateWebTransportVersion();
+    if (should_validate_version) {
+      auto draft_version_it = headers.find("sec-webtransport-http3-draft");
+      if (draft_version_it == headers.end()) {
+        QUIC_DVLOG(1) << ENDPOINT
+                      << "Received WebTransport headers from server without "
+                         "a draft version, rejecting.";
+        rejection_reason_ =
+            WebTransportHttp3RejectionReason::kMissingDraftVersion;
+        return;
+      }
+      if (draft_version_it->second != "draft02") {
+        QUIC_DVLOG(1) << ENDPOINT
+                      << "Received WebTransport headers from server with "
+                         "an unknown draft version ("
+                      << draft_version_it->second << "), rejecting.";
+        rejection_reason_ =
+            WebTransportHttp3RejectionReason::kUnsupportedDraftVersion;
+        return;
+      }
     }
   }
 

@@ -27,6 +27,7 @@
 #include "net/reporting/reporting_uploader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 
@@ -66,10 +67,11 @@ class ReportingServiceImpl : public ReportingService {
       const IsolationInfo& isolation_info,
       const base::flat_map<std::string, std::string>& endpoints) override {
     DCHECK(!reporting_source.is_empty());
-    DoOrBacklogTask(
-        base::BindOnce(&ReportingServiceImpl::DoSetDocumentReportingEndpoints,
-                       base::Unretained(this), reporting_source, isolation_info,
-                       origin, std::move(endpoints)));
+    DoOrBacklogTask(base::BindOnce(
+        &ReportingServiceImpl::DoSetDocumentReportingEndpoints,
+        base::Unretained(this), reporting_source, isolation_info,
+        FixupNetworkIsolationKey(isolation_info.network_isolation_key()),
+        origin, std::move(endpoints)));
   }
 
   void SendReportsAndRemoveSource(
@@ -112,7 +114,7 @@ class ReportingServiceImpl : public ReportingService {
         depth, queued_ticks));
   }
 
-  void ProcessReportToHeader(const GURL& url,
+  void ProcessReportToHeader(const url::Origin& origin,
                              const NetworkIsolationKey& network_isolation_key,
                              const std::string& header_string) override {
     if (header_string.size() > kMaxJsonSize)
@@ -124,10 +126,10 @@ class ReportingServiceImpl : public ReportingService {
     if (!header_value)
       return;
 
-    DVLOG(1) << "Received Reporting policy for " << url.GetOrigin();
+    DVLOG(1) << "Received Reporting policy for " << origin;
     DoOrBacklogTask(base::BindOnce(
         &ReportingServiceImpl::DoProcessReportToHeader, base::Unretained(this),
-        FixupNetworkIsolationKey(network_isolation_key), url,
+        FixupNetworkIsolationKey(network_isolation_key), origin,
         std::move(header_value)));
   }
 
@@ -212,22 +214,23 @@ class ReportingServiceImpl : public ReportingService {
   }
 
   void DoProcessReportToHeader(const NetworkIsolationKey& network_isolation_key,
-                               const GURL& url,
+                               const url::Origin& origin,
                                std::unique_ptr<base::Value> header_value) {
     DCHECK(initialized_);
     ReportingHeaderParser::ParseReportToHeader(
-        context_.get(), network_isolation_key, url, std::move(header_value));
+        context_.get(), network_isolation_key, origin, std::move(header_value));
   }
 
   void DoSetDocumentReportingEndpoints(
       const base::UnguessableToken& reporting_source,
       const IsolationInfo& isolation_info,
+      const NetworkIsolationKey& network_isolation_key,
       const url::Origin& origin,
       base::flat_map<std::string, std::string> header_value) {
     DCHECK(initialized_);
     ReportingHeaderParser::ProcessParsedReportingEndpointsHeader(
-        context_.get(), reporting_source, isolation_info, origin,
-        std::move(header_value));
+        context_.get(), reporting_source, isolation_info, network_isolation_key,
+        origin, std::move(header_value));
   }
 
   void DoRemoveBrowsingData(

@@ -19,6 +19,7 @@
 #include <grpc/support/port_platform.h>
 
 #include <inttypes.h>
+
 #include <climits>
 #include <cstring>
 
@@ -47,8 +48,6 @@
 namespace grpc_core {
 
 namespace {
-
-const char kDefaultPort[] = "https";
 
 class NativeDnsResolver : public Resolver {
  public:
@@ -150,7 +149,7 @@ void NativeDnsResolver::ShutdownLocked() {
 
 void NativeDnsResolver::OnNextResolution(void* arg, grpc_error_handle error) {
   NativeDnsResolver* r = static_cast<NativeDnsResolver*>(arg);
-  GRPC_ERROR_REF(error);  // ref owned by lambda
+  (void)GRPC_ERROR_REF(error);  // ref owned by lambda
   r->work_serializer_->Run([r, error]() { r->OnNextResolutionLocked(error); },
                            DEBUG_LOCATION);
 }
@@ -166,7 +165,7 @@ void NativeDnsResolver::OnNextResolutionLocked(grpc_error_handle error) {
 
 void NativeDnsResolver::OnResolved(void* arg, grpc_error_handle error) {
   NativeDnsResolver* r = static_cast<NativeDnsResolver*>(arg);
-  GRPC_ERROR_REF(error);  // owned by lambda
+  (void)GRPC_ERROR_REF(error);  // owned by lambda
   r->work_serializer_->Run([r, error]() { r->OnResolvedLocked(error); },
                            DEBUG_LOCATION);
 }
@@ -276,7 +275,7 @@ void NativeDnsResolver::StartResolvingLocked() {
   addresses_ = nullptr;
   GRPC_CLOSURE_INIT(&on_resolved_, NativeDnsResolver::OnResolved, this,
                     grpc_schedule_on_exec_ctx);
-  grpc_resolve_address(name_to_resolve_.c_str(), kDefaultPort,
+  grpc_resolve_address(name_to_resolve_.c_str(), kDefaultSecurePort,
                        interested_parties_, &on_resolved_, &addresses_);
   last_resolution_timestamp_ = grpc_core::ExecCtx::Get()->Now();
 }
@@ -290,6 +289,10 @@ class NativeDnsResolverFactory : public ResolverFactory {
   bool IsValidUri(const URI& uri) const override {
     if (GPR_UNLIKELY(!uri.authority().empty())) {
       gpr_log(GPR_ERROR, "authority based dns uri's not supported");
+      return false;
+    }
+    if (absl::StripPrefix(uri.path(), "/").empty()) {
+      gpr_log(GPR_ERROR, "no server name supplied in dns URI");
       return false;
     }
     return true;

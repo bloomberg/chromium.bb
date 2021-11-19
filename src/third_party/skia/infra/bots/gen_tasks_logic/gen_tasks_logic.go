@@ -599,7 +599,7 @@ func (b *taskBuilder) kitchenTaskNoBundle(recipe string, outputDir string) {
 	}
 
 	// Attempts.
-	if !b.role("Build", "Upload") && b.extraConfig("ASAN", "MSAN", "TSAN", "Valgrind") {
+	if !b.role("Build", "Upload") && b.extraConfig("ASAN", "HWASAN", "MSAN", "TSAN", "Valgrind") {
 		// Sanitizers often find non-deterministic issues that retries would hide.
 		b.attempts(1)
 	} else {
@@ -793,16 +793,24 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				"Pixel2XL":        {"taimen", "PPR1.180610.009"},
 				"Pixel3":          {"blueline", "PQ1A.190105.004"},
 				"Pixel3a":         {"sargo", "QP1A.190711.020"},
-				"Pixel4":          {"flame", "RPB2.200611.009"}, // R Preview
+				"Pixel4":          {"flame", "RPB2.200611.009"},       // R Preview
+				"Pixel4a":         {"sunfish", "AOSP.MASTER_7819821"}, // Pixel4a flashed with an Android HWASan build.
 				"Pixel4XL":        {"coral", "QD1A.190821.011.C4"},
 				"Pixel5":          {"redfin", "RD1A.200810.022.A4"},
 				"TecnoSpark3Pro":  {"TECNO-KB8", "PPR1.180610.011"},
+				"Wembley":         {"wembley", "SP2A.211004.001"},
 			}[b.parts["model"]]
 			if !ok {
 				log.Fatalf("Entry %q not found in Android mapping.", b.parts["model"])
 			}
 			d["device_type"] = deviceInfo[0]
 			d["device_os"] = deviceInfo[1]
+
+			// Tests using Android's HWAddress Sanitizer require an HWASan build of Android.
+			// See https://developer.android.com/ndk/guides/hwasan.
+			if b.extraConfig("HWASAN") {
+				d["android_hwasan_build"] = "1"
+			}
 		} else if b.os("iOS") {
 			device, ok := map[string]string{
 				"iPadMini4": "iPad5,1",
@@ -816,9 +824,6 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 				log.Fatalf("Entry %q not found in iOS mapping.", b.parts["model"])
 			}
 			d["device_type"] = device
-			// Temporarily use this dimension to ensure we only use the new libimobiledevice, since the
-			// old version won't work with current recipes.
-			d["libimobiledevice"] = "1582155448"
 		} else if b.cpu() || b.extraConfig("CanvasKit", "Docker", "SwiftShader") {
 			modelMapping, ok := map[string]map[string]string{
 				"AppleM1": {
@@ -924,6 +929,7 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 					"IntelUHDGraphics605": "14233.0.0",
 					"RadeonVega3":         "14233.0.0",
 					"Adreno618":           "14150.39.0",
+					"MaliT860":            "14092.77.0",
 				}[b.parts["cpu_or_gpu_value"]]
 				if !ok {
 					log.Fatalf("Entry %q not found in ChromeOS GPU mapping.", b.parts["cpu_or_gpu_value"])
@@ -950,8 +956,10 @@ func (b *taskBuilder) defaultSwarmDimensions() {
 			// Use many-core machines for Build tasks.
 			d["machine_type"] = MACHINE_TYPE_LARGE
 		} else if d["os"] == DEFAULT_OS_MAC {
-			// Mac CPU bots.
-			d["cpu"] = "x86-64-E5-2697_v2"
+			// Mac CPU bots are no longer VMs.
+			d["cpu"] = "x86-64"
+			d["cores"] = "12"
+			delete(d, "gpu")
 		}
 	}
 
@@ -1239,12 +1247,6 @@ func (b *jobBuilder) compile() string {
 				}
 				if b.extraConfig("iOS") {
 					b.asset("provisioning_profile_ios")
-				}
-				// See skbug.com/11129 for more
-				if b.compiler("Xcode11.4.1") {
-					b.dimension("reserved_for_xcode_version:11.4.1")
-				} else {
-					b.dimension("reserved_for_xcode_version:newest")
 				}
 			}
 		})
@@ -1612,6 +1614,7 @@ func (b *jobBuilder) fm() {
 			"--task_id", specs.PLACEHOLDER_TASK_ID,
 			"--bot", b.Name,
 			"--gold="+strconv.FormatBool(!b.matchExtraConfig("SAN")),
+			"--gold_hashes_url", b.cfg.GoldHashesURL,
 			"build/fm${EXECUTABLE_SUFFIX}")
 		b.serviceAccount(b.cfg.ServiceAccountUploadGM)
 		b.swarmDimensions()
@@ -1957,6 +1960,7 @@ func (b *jobBuilder) runWasmGMTests() {
 			"--resource_path", "./resources",
 			"--work_path", "./wasm_gm/work",
 			"--gold_ctl_path", "./cipd_bin_packages/goldctl",
+			"--gold_hashes_url", b.cfg.GoldHashesURL,
 			"--git_commit", specs.PLACEHOLDER_REVISION,
 			"--changelist_id", specs.PLACEHOLDER_ISSUE,
 			"--patchset_order", specs.PLACEHOLDER_PATCHSET,

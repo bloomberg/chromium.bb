@@ -319,6 +319,10 @@ bool FilmGrain<bitdepth>::Init() {
   //
   // Note: Although it does not seem to make sense, there are test vectors
   // with chroma_scaling_from_luma=true and params_.num_y_points=0.
+#if LIBGAV1_MSAN
+  // Quiet film grain / md5 msan warnings.
+  memset(scaling_lut_y_, 0, sizeof(scaling_lut_y_));
+#endif
   if (use_luma || params_.chroma_scaling_from_luma) {
     dsp.film_grain.initialize_scaling_lut(
         params_.num_y_points, params_.point_y_value, params_.point_y_scaling,
@@ -338,6 +342,10 @@ bool FilmGrain<bitdepth>::Init() {
       if (scaling_lut_chroma_buffer_ == nullptr) return false;
 
       int16_t* buffer = scaling_lut_chroma_buffer_.get();
+#if LIBGAV1_MSAN
+      // Quiet film grain / md5 msan warnings.
+      memset(buffer, 0, buffer_size * 2);
+#endif
       if (params_.num_u_points > 0) {
         scaling_lut_u_ = buffer;
         dsp.film_grain.initialize_scaling_lut(
@@ -460,22 +468,25 @@ bool FilmGrain<bitdepth>::AllocateNoiseStripes() {
 
 template <int bitdepth>
 bool FilmGrain<bitdepth>::AllocateNoiseImage() {
+  // When LIBGAV1_MSAN is enabled, zero initialize to quiet optimized film grain
+  // msan warnings.
+  constexpr bool zero_initialize = LIBGAV1_MSAN == 1;
   if (params_.num_y_points > 0 &&
       !noise_image_[kPlaneY].Reset(height_, width_ + kNoiseImagePadding,
-                                   /*zero_initialize=*/false)) {
+                                   zero_initialize)) {
     return false;
   }
   if (!is_monochrome_) {
     if (!noise_image_[kPlaneU].Reset(
             (height_ + subsampling_y_) >> subsampling_y_,
             ((width_ + subsampling_x_) >> subsampling_x_) + kNoiseImagePadding,
-            /*zero_initialize=*/false)) {
+            zero_initialize)) {
       return false;
     }
     if (!noise_image_[kPlaneV].Reset(
             (height_ + subsampling_y_) >> subsampling_y_,
             ((width_ + subsampling_x_) >> subsampling_x_) + kNoiseImagePadding,
-            /*zero_initialize=*/false)) {
+            zero_initialize)) {
       return false;
     }
   }

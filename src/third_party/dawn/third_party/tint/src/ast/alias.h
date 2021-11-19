@@ -26,36 +26,26 @@ namespace ast {
 class Alias : public Castable<Alias, TypeDecl> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param name the symbol for the alias
   /// @param subtype the alias'd type
-  Alias(ProgramID program_id,
-        const Source& source,
+  Alias(ProgramID pid,
+        const Source& src,
         const Symbol& name,
-        Type* subtype);
+        const Type* subtype);
   /// Move constructor
   Alias(Alias&&);
   /// Destructor
   ~Alias() override;
 
-  /// [DEPRECATED] use name()
-  /// @returns the alias symbol
-  Symbol symbol() const { return name(); }
-  /// @returns the alias type
-  Type* type() const { return subtype_; }
-
-  /// @returns the type_name for this type
-  std::string type_name() const override;
-
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  Alias* Clone(CloneContext* ctx) const override;
+  const Alias* Clone(CloneContext* ctx) const override;
 
- private:
-  Type* const subtype_;
-  std::string const type_name_;
+  /// the alias type
+  const Type* const type;
 };
 
 }  // namespace ast

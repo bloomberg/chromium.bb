@@ -10,6 +10,8 @@
 #ifndef EIGEN_SYMBOLIC_INDEX_H
 #define EIGEN_SYMBOLIC_INDEX_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \namespace Eigen::symbolic
@@ -35,7 +37,9 @@ namespace Eigen {
   * std::cout << expr98.eval(x=6) << "\n";
   * \endcode
   *
-  * It is currently only used internally to define and manipulate the Eigen::last and Eigen::lastp1 symbols in Eigen::seq and Eigen::seqN.
+  * It is currently only used internally to define and manipulate the
+  * Eigen::placeholders::last and Eigen::placeholders::lastp1 symbols in
+  * Eigen::seq and Eigen::seqN.
   *
   */
 namespace symbolic {

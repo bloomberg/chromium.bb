@@ -247,10 +247,13 @@ Frame* FrameTree::FindFrameForNavigationInternal(const AtomicString& name,
     return this_frame_;
 
   if (EqualIgnoringASCIICase(name, "_top"))
-    return &Top();
+    return &Top(FrameTreeBoundary::kFenced);
 
-  if (EqualIgnoringASCIICase(name, "_parent"))
-    return Parent() ? Parent() : this_frame_.Get();
+  if (EqualIgnoringASCIICase(name, "_parent")) {
+    return Parent(FrameTreeBoundary::kFenced)
+               ? Parent(FrameTreeBoundary::kFenced)
+               : this_frame_.Get();
+  }
 
   // Since "_blank" should never be any frame's name, the following just amounts
   // to an optimization.

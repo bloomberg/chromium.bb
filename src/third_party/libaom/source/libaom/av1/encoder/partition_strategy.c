@@ -115,6 +115,7 @@ static void write_features_to_file(const char *const path,
   snprintf(filename, sizeof(filename), "%s/%s", path,
            get_feature_file_name(id));
   FILE *pfile = fopen(filename, "a");
+  if (pfile == NULL) return;
   if (!is_test_mode) {
     fprintf(pfile, "%d,%d,%d,%d,%d\n", id, bsize, mi_row, mi_col, feature_size);
   }

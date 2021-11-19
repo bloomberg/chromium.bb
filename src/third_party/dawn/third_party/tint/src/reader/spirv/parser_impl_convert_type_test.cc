@@ -596,7 +596,7 @@ TEST_F(SpvParserTest, ConvertType_StructTwoMembers) {
 
   auto* str = type->Build(p->builder());
   Program program = p->program();
-  EXPECT_THAT(program.str(str), Eq(R"(__type_name_S)"));
+  EXPECT_EQ(test::ToString(program, str), "S");
 }
 
 TEST_F(SpvParserTest, ConvertType_StructWithBlockDecoration) {
@@ -614,7 +614,7 @@ TEST_F(SpvParserTest, ConvertType_StructWithBlockDecoration) {
 
   auto* str = type->Build(p->builder());
   Program program = p->program();
-  EXPECT_THAT(program.str(str), Eq(R"(__type_name_S)"));
+  EXPECT_EQ(test::ToString(program, str), "S");
 }
 
 TEST_F(SpvParserTest, ConvertType_StructWithMemberDecorations) {
@@ -636,7 +636,7 @@ TEST_F(SpvParserTest, ConvertType_StructWithMemberDecorations) {
 
   auto* str = type->Build(p->builder());
   Program program = p->program();
-  EXPECT_THAT(program.str(str), Eq(R"(__type_name_S)"));
+  EXPECT_EQ(test::ToString(program, str), "S");
 }
 
 TEST_F(SpvParserTest, ConvertType_Struct_NoDeduplication) {
@@ -695,7 +695,7 @@ TEST_F(SpvParserTest, ConvertType_Array_NoDeduplication) {
 
 TEST_F(SpvParserTest, ConvertType_RuntimeArray_NoDeduplication) {
   // Prove that distinct SPIR-V runtime arrays map to distinct WGSL types.
-  // The implementation already deduplciates them because it knows
+  // The implementation already de-duplicates them because it knows
   // runtime-arrays normally have stride decorations.
   auto assembly = Preamble() + R"(
     %uint = OpTypeInt 32 0
@@ -706,7 +706,6 @@ TEST_F(SpvParserTest, ConvertType_RuntimeArray_NoDeduplication) {
     %22 = OpTypeRuntimeArray %10
   )" + MainBody();
   auto p = parser(test::Assemble(assembly));
-  std::cout << assembly << std::endl;
   EXPECT_TRUE(p->BuildAndParseInternalModule());
 
   auto* type20 = p->ConvertType(20);

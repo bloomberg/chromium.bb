@@ -140,8 +140,7 @@ class Port(object):
         ('mac10.13', 'x86'),
         ('mac10.14', 'x86'),
         ('mac10.15', 'x86'),
-        ('mac11.0', 'x86'),
-        ('mac11.5', 'x86'),
+        ('mac11', 'x86'),
         ('mac11-arm64', 'arm64'),
         ('win7', 'x86'),
         ('win10.20h2', 'x86'),
@@ -151,8 +150,8 @@ class Port(object):
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': [
-            'mac10.12', 'mac10.13', 'mac10.14', 'mac10.15', 'mac11.0',
-            'mac11.5', 'mac11-arm64'
+            'mac10.12', 'mac10.13', 'mac10.14', 'mac10.15', 'mac11',
+            'mac11-arm64'
         ],
         'win': ['win7', 'win10.20h2'],
         'linux': ['trusty'],
@@ -357,6 +356,8 @@ class Port(object):
                 '--run-web-tests',
                 '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
                 ',' + SXG_FINGERPRINT + ',' + SXG_WPT_FINGERPRINT,
+                # Required for WebTransport tests.
+                '--origin-to-force-quic-on=web-platform.test:11000',
                 '--user-data-dir'
             ]
             if self.get_option('nocheck_sys_deps', False):
@@ -1296,11 +1297,16 @@ class Port(object):
 
         This exists because Windows has inconsistent behavior between the bots
         and local developer machines, such that determining which python3 name
-        to use is non-trivial. See https://crbug.com/155616.
+        to use is non-trivial. See https://crbug.com/1155616.
 
         Once blinkpy runs under python3, this can be removed in favour of
         callers using sys.executable.
         """
+        if six.PY3:
+            # Prefer sys.executable when the current script runs under python3.
+            # The current script might be running with vpython3 and in that case
+            # using the same executable will share the same virtualenv.
+            return sys.executable
         return 'python3'
 
     def get_option(self, name, default_value=None):

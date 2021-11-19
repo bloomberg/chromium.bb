@@ -25,15 +25,8 @@ using InterpolateDecorationTest = TestHelper;
 TEST_F(InterpolateDecorationTest, Creation) {
   auto* d = create<InterpolateDecoration>(InterpolationType::kLinear,
                                           InterpolationSampling::kCenter);
-  EXPECT_EQ(InterpolationType::kLinear, d->type());
-  EXPECT_EQ(InterpolationSampling::kCenter, d->sampling());
-}
-
-TEST_F(InterpolateDecorationTest, ToStr) {
-  auto* d = create<InterpolateDecoration>(InterpolationType::kPerspective,
-                                          InterpolationSampling::kSample);
-  EXPECT_EQ(str(d), R"(InterpolateDecoration{perspective sample}
-)");
+  EXPECT_EQ(InterpolationType::kLinear, d->type);
+  EXPECT_EQ(InterpolationSampling::kCenter, d->sampling);
 }
 
 }  // namespace

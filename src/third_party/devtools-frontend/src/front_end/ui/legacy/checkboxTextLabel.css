@@ -61,7 +61,7 @@ input.dt-checkbox-themed:checked::after {
 }
 
 :host-context(.-theme-with-dark-background) input:not(.dt-checkbox-themed) {
-  filter: invert(80%);
+  accent-color: var(--color-checkbox-accent-color);
 }
 
 .dt-checkbox-text {

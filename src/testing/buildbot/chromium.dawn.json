@@ -1041,7 +1041,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1070,7 +1070,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1099,7 +1099,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1128,7 +1128,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1156,7 +1156,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1182,7 +1182,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1215,7 +1215,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1227,7 +1227,7 @@
         "args": [
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1248,7 +1248,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1262,7 +1262,7 @@
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--time-out-ms=30000",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1283,7 +1283,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1484,7 +1484,7 @@
         "args": [
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1517,7 +1517,7 @@
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--time-out-ms=30000",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1782,7 +1782,7 @@
         "args": [
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1816,7 +1816,7 @@
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--time-out-ms=30000",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -1867,7 +1867,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1896,7 +1896,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1925,7 +1925,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1954,7 +1954,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -1982,7 +1982,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2008,7 +2008,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2041,7 +2041,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2053,7 +2053,7 @@
         "args": [
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2074,7 +2074,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2088,7 +2088,7 @@
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--time-out-ms=30000",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2109,7 +2109,7 @@
               "display_attached": "1",
               "gpu": "1002:6821",
               "hidpi": "1",
-              "os": "Mac-10.14.6|Mac-11.4",
+              "os": "Mac-11.4",
               "pool": "chromium.tests.gpu"
             }
           ],
@@ -2310,7 +2310,7 @@
         "args": [
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2343,7 +2343,7 @@
           "--initialize-webgpu-adapter-at-startup-timeout-ms=60000",
           "--flag-specific=webgpu-with-backend-validation",
           "--time-out-ms=30000",
-          "--platform=mac-mac11.5"
+          "--platform=mac-mac11"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {

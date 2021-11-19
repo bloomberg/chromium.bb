@@ -40,6 +40,10 @@ void ModelTypeRegistry::ConnectDataType(
   DCHECK(ProtocolTypes().Has(type));
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
+  DCHECK(activation_response);
+  DCHECK(!activation_response->skip_engine_connection);
+  DCHECK(activation_response->type_processor);
+
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   auto worker = std::make_unique<ModelTypeWorker>(
@@ -154,8 +158,7 @@ void ModelTypeRegistry::OnTrustedVaultKeyRequired() {}
 void ModelTypeRegistry::OnTrustedVaultKeyAccepted() {}
 
 void ModelTypeRegistry::OnBootstrapTokenUpdated(
-    const std::string& bootstrap_token,
-    BootstrapTokenType type) {}
+    const std::string& bootstrap_token) {}
 
 void ModelTypeRegistry::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                                 bool encrypt_everything) {

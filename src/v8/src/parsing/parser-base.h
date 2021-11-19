@@ -920,10 +920,16 @@ class ParserBase {
     }
 
     if (scanner()->current_token() == Token::AWAIT && !is_async_function()) {
-      ReportMessageAt(scanner()->location(),
-                      flags().allow_harmony_top_level_await()
-                          ? MessageTemplate::kAwaitNotInAsyncContext
-                          : MessageTemplate::kAwaitNotInAsyncFunction);
+      if (flags().parsing_while_debugging() == ParsingWhileDebugging::kYes) {
+        ReportMessageAt(scanner()->location(),
+                        MessageTemplate::kAwaitNotInDebugEvaluate);
+      } else if (flags().allow_harmony_top_level_await()) {
+        ReportMessageAt(scanner()->location(),
+                        MessageTemplate::kAwaitNotInAsyncContext);
+      } else {
+        ReportMessageAt(scanner()->location(),
+                        MessageTemplate::kAwaitNotInAsyncFunction);
+      }
       return;
     }
 
@@ -1799,6 +1805,7 @@ bool ParserBase<Impl>::ValidateRegExpLiteral(const AstRawString* pattern,
   // TODO(jgruber): If already validated in the preparser, skip validation in
   // the parser.
   DisallowGarbageCollection no_gc;
+  ZoneScope zone_scope(zone());  // Free regexp parser memory after use.
   const unsigned char* d = pattern->raw_data();
   if (pattern->is_one_byte()) {
     return RegExp::VerifySyntax(zone(), stack_limit(),
@@ -5322,7 +5329,7 @@ typename ParserBase<Impl>::BlockT ParserBase<Impl>::ParseBlock(
     body->set_scope(scope()->FinalizeBlockScope());
   }
 
-  body->InitializeStatements(statements, zone_);
+  body->InitializeStatements(statements, zone());
   return body;
 }
 

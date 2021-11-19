@@ -19,8 +19,7 @@ class Texture;
 
 class TextureProxy : public SkRefCnt {
 public:
-    TextureProxy(SkISize dimensions, const TextureInfo& info)
-            : fDimensions(dimensions), fInfo(info) {}
+    TextureProxy(SkISize dimensions, const TextureInfo& info);
 
     ~TextureProxy() override;
 
@@ -31,6 +30,7 @@ public:
     const TextureInfo& textureInfo() const { return fInfo; }
 
     bool instantiate(ResourceProvider*);
+    sk_sp<Texture> refTexture() const;
 
 private:
 #ifdef SK_DEBUG

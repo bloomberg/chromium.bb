@@ -31,6 +31,7 @@ list(APPEND AOM_DSP_COMMON_SOURCES
             "${AOM_ROOT}/aom_dsp/entcode.h"
             "${AOM_ROOT}/aom_dsp/fft.c"
             "${AOM_ROOT}/aom_dsp/fft_common.h"
+            "${AOM_ROOT}/aom_dsp/grain_params.h"
             "${AOM_ROOT}/aom_dsp/intrapred.c"
             "${AOM_ROOT}/aom_dsp/intrapred_common.h"
             "${AOM_ROOT}/aom_dsp/loopfilter.c"
@@ -163,9 +164,7 @@ if(CONFIG_AV1_DECODER)
               "${AOM_ROOT}/aom_dsp/binary_codes_reader.h"
               "${AOM_ROOT}/aom_dsp/bitreader.c"
               "${AOM_ROOT}/aom_dsp/bitreader.h" "${AOM_ROOT}/aom_dsp/entdec.c"
-              "${AOM_ROOT}/aom_dsp/entdec.h"
-              "${AOM_ROOT}/aom_dsp/grain_synthesis.c"
-              "${AOM_ROOT}/aom_dsp/grain_synthesis.h")
+              "${AOM_ROOT}/aom_dsp/entdec.h")
 endif()
 
 if(CONFIG_AV1_ENCODER)

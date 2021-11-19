@@ -74,16 +74,6 @@ void CustomCallFail(float*, float** in, XlaCustomCallStatus* status) {
   XlaCustomCallStatusSetFailure(status, msg.data(), msg.length());
 }
 
-void CustomCallFailOnNonZero(float* out, float** in,
-                             XlaCustomCallStatus* status) {
-  if (in[0][0] == 0) {
-    out[0] = 1;
-  } else {
-    auto msg = absl::StrFormat("Failed: %.1f", in[0][0]);
-    XlaCustomCallStatusSetFailure(status, msg.data(), msg.length());
-  }
-}
-
 }  // namespace
 
 XLA_CPU_REGISTER_CUSTOM_CALL_TARGET(R0F32Add2);
@@ -92,7 +82,6 @@ XLA_CPU_REGISTER_CUSTOM_CALL_TARGET(Add1ToValues);
 XLA_CPU_REGISTER_CUSTOM_CALL_TARGET(F32TupleSwap);
 XLA_CPU_REGISTER_CUSTOM_CALL_TARGET(R0F32Add2Succeed);
 XLA_CPU_REGISTER_CUSTOM_CALL_TARGET(CustomCallFail);
-XLA_CPU_REGISTER_CUSTOM_CALL_TARGET(CustomCallFailOnNonZero);
 
 namespace xla {
 namespace {
@@ -274,15 +263,38 @@ XLA_TEST_F(CustomCallTest, ReportsFirstFailure) {
   auto constant_2 = builder.AddInstruction(
       HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(2.0f)));
   auto res_1 = builder.AddInstruction(HloInstruction::CreateCustomCall(
-      ShapeUtil::MakeShape(F32, {1}), {constant_1}, "CustomCallFail",
+      ShapeUtil::MakeShape(F32, {}), {constant_1}, "CustomCallFail",
       /*opaque=*/"", CustomCallApiVersion::API_VERSION_STATUS_RETURNING));
   auto res_2 = builder.AddInstruction(HloInstruction::CreateCustomCall(
-      ShapeUtil::MakeShape(F32, {1}), {constant_2}, "CustomCallFail",
+      ShapeUtil::MakeShape(F32, {}), {constant_2}, "CustomCallFail",
       /*opaque=*/"", CustomCallApiVersion::API_VERSION_STATUS_RETURNING));
   builder.AddInstruction(HloInstruction::CreateBinary(
-      ShapeUtil::MakeShape(F32, {1}), HloOpcode::kAdd, res_1, res_2));
+      ShapeUtil::MakeShape(F32, {}), HloOpcode::kAdd, res_1, res_2));
 
   module->AddEntryComputation(builder.Build());
+
+  auto status = Execute(std::move(module), {}).status();
+  EXPECT_EQ(status.code(), tensorflow::error::Code::INTERNAL);
+  EXPECT_THAT(status.error_message(), ::testing::HasSubstr("Failed: 1.0"));
+}
+
+XLA_TEST_F(CustomCallTest, TransitiveCustomCallReportsFirstFailure) {
+  const char* const kModuleStr = R"(
+    HloModule m
+    sub {
+      p0 = f32[] parameter(0)
+      ROOT custom-call = f32[] custom-call(f32[] %p0), custom_call_target="CustomCallFail", api_version=API_VERSION_STATUS_RETURNING
+    }
+    ENTRY test {
+      c0 = f32[] constant(1.0)
+      c1 = f32[] constant(2.0)
+      call0 = f32[] call(f32[] %c0), to_apply=sub
+      call1 = f32[] call(f32[] %c1), to_apply=sub
+      ROOT sum = f32[] add(%call0, %call1)
+    }
+  )";
+  TF_ASSERT_OK_AND_ASSIGN(auto module,
+                          ParseAndReturnVerifiedModule(kModuleStr));
 
   auto status = Execute(std::move(module), {}).status();
   EXPECT_EQ(status.code(), tensorflow::error::Code::INTERNAL);

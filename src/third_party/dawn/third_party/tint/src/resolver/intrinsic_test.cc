@@ -107,8 +107,21 @@ INSTANTIATE_TEST_SUITE_P(ResolverTest,
                                          "fwidthCoarse",
                                          "fwidthFine"));
 
-using ResolverIntrinsic = ResolverTestWithParam<std::string>;
-TEST_P(ResolverIntrinsic, Test) {
+using ResolverIntrinsicTest_BoolMethod = ResolverTestWithParam<std::string>;
+TEST_P(ResolverIntrinsicTest_BoolMethod, Scalar) {
+  auto name = GetParam();
+
+  Global("my_var", ty.bool_(), ast::StorageClass::kPrivate);
+
+  auto* expr = Call(name, "my_var");
+  WrapInFunction(expr);
+
+  EXPECT_TRUE(r()->Resolve()) << r()->error();
+
+  ASSERT_NE(TypeOf(expr), nullptr);
+  EXPECT_TRUE(TypeOf(expr)->Is<sem::Bool>());
+}
+TEST_P(ResolverIntrinsicTest_BoolMethod, Vector) {
   auto name = GetParam();
 
   Global("my_var", ty.vec3<bool>(), ast::StorageClass::kPrivate);
@@ -122,7 +135,7 @@ TEST_P(ResolverIntrinsic, Test) {
   EXPECT_TRUE(TypeOf(expr)->Is<sem::Bool>());
 }
 INSTANTIATE_TEST_SUITE_P(ResolverTest,
-                         ResolverIntrinsic,
+                         ResolverIntrinsicTest_BoolMethod,
                          testing::Values("any", "all"));
 
 using ResolverIntrinsicTest_FloatMethod = ResolverTestWithParam<std::string>;
@@ -224,7 +237,8 @@ class ResolverIntrinsicTest_TextureOperation
   /// @param dim dimensionality of the texture being sampled
   /// @param scalar the scalar type
   /// @returns a pointer to a type appropriate for the coord param
-  ast::Type* GetCoordsType(ast::TextureDimension dim, ast::Type* scalar) {
+  const ast::Type* GetCoordsType(ast::TextureDimension dim,
+                                 const ast::Type* scalar) {
     switch (dim) {
       case ast::TextureDimension::k1d:
         return scalar;
@@ -244,7 +258,7 @@ class ResolverIntrinsicTest_TextureOperation
   void add_call_param(std::string name,
                       const ast::Type* type,
                       ast::ExpressionList* call_params) {
-    if (type->UnwrapAll()->is_handle()) {
+    if (type->IsAnyOf<ast::Texture, ast::Sampler>()) {
       Global(name, type,
              ast::DecorationList{
                  create<ast::BindingDecoration>(0),
@@ -257,7 +271,7 @@ class ResolverIntrinsicTest_TextureOperation
 
     call_params->push_back(Expr(name));
   }
-  ast::Type* subtype(Texture type) {
+  const ast::Type* subtype(Texture type) {
     if (type == Texture::kF32) {
       return ty.f32();
     }
@@ -267,71 +281,6 @@ class ResolverIntrinsicTest_TextureOperation
     return ty.u32();
   }
 };
-
-using ResolverIntrinsicTest_StorageTextureOperation =
-    ResolverIntrinsicTest_TextureOperation;
-TEST_P(ResolverIntrinsicTest_StorageTextureOperation, TextureLoadRo) {
-  auto dim = GetParam().dim;
-  auto type = GetParam().type;
-  auto format = GetParam().format;
-
-  auto* coords_type = GetCoordsType(dim, ty.i32());
-  auto* texture_type = ty.storage_texture(dim, format, ast::Access::kRead);
-
-  ast::ExpressionList call_params;
-
-  add_call_param("texture", texture_type, &call_params);
-  add_call_param("coords", coords_type, &call_params);
-
-  if (ast::IsTextureArray(dim)) {
-    add_call_param("array_index", ty.i32(), &call_params);
-  }
-
-  auto* expr = Call("textureLoad", call_params);
-  WrapInFunction(expr);
-
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-
-  ASSERT_NE(TypeOf(expr), nullptr);
-  ASSERT_TRUE(TypeOf(expr)->Is<sem::Vector>());
-  if (type == Texture::kF32) {
-    EXPECT_TRUE(TypeOf(expr)->As<sem::Vector>()->type()->Is<sem::F32>());
-  } else if (type == Texture::kI32) {
-    EXPECT_TRUE(TypeOf(expr)->As<sem::Vector>()->type()->Is<sem::I32>());
-  } else {
-    EXPECT_TRUE(TypeOf(expr)->As<sem::Vector>()->type()->Is<sem::U32>());
-  }
-  EXPECT_EQ(TypeOf(expr)->As<sem::Vector>()->Width(), 4u);
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    ResolverTest,
-    ResolverIntrinsicTest_StorageTextureOperation,
-    testing::Values(
-        TextureTestParams{ast::TextureDimension::k1d, Texture::kF32,
-                          ast::ImageFormat::kR32Float},
-        TextureTestParams{ast::TextureDimension::k1d, Texture::kI32,
-                          ast::ImageFormat::kR32Sint},
-        TextureTestParams{ast::TextureDimension::k1d, Texture::kF32,
-                          ast::ImageFormat::kRgba8Unorm},
-        TextureTestParams{ast::TextureDimension::k2d, Texture::kF32,
-                          ast::ImageFormat::kR32Float},
-        TextureTestParams{ast::TextureDimension::k2d, Texture::kI32,
-                          ast::ImageFormat::kR32Sint},
-        TextureTestParams{ast::TextureDimension::k2d, Texture::kF32,
-                          ast::ImageFormat::kRgba8Unorm},
-        TextureTestParams{ast::TextureDimension::k2dArray, Texture::kF32,
-                          ast::ImageFormat::kR32Float},
-        TextureTestParams{ast::TextureDimension::k2dArray, Texture::kI32,
-                          ast::ImageFormat::kR32Sint},
-        TextureTestParams{ast::TextureDimension::k2dArray, Texture::kF32,
-                          ast::ImageFormat::kRgba8Unorm},
-        TextureTestParams{ast::TextureDimension::k3d, Texture::kF32,
-                          ast::ImageFormat::kR32Float},
-        TextureTestParams{ast::TextureDimension::k3d, Texture::kI32,
-                          ast::ImageFormat::kR32Sint},
-        TextureTestParams{ast::TextureDimension::k3d, Texture::kF32,
-                          ast::ImageFormat::kRgba8Unorm}));
 
 using ResolverIntrinsicTest_SampledTextureOperation =
     ResolverIntrinsicTest_TextureOperation;
@@ -557,7 +506,7 @@ TEST_P(ResolverIntrinsicTest_Barrier, InferType) {
   auto param = GetParam();
 
   auto* call = Call(param.name);
-  WrapInFunction(create<ast::CallStatement>(call));
+  WrapInFunction(CallStmt(call));
 
   EXPECT_TRUE(r()->Resolve()) << r()->error();
   ASSERT_NE(TypeOf(call), nullptr);
@@ -568,7 +517,7 @@ TEST_P(ResolverIntrinsicTest_Barrier, Error_TooManyParams) {
   auto param = GetParam();
 
   auto* call = Call(param.name, vec4<f32>(1.f, 2.f, 3.f, 4.f), 1.0f);
-  WrapInFunction(create<ast::CallStatement>(call));
+  WrapInFunction(CallStmt(call));
 
   EXPECT_FALSE(r()->Resolve());
 
@@ -828,29 +777,6 @@ TEST_F(ResolverIntrinsicDataTest, Normalize_Error_NoParams) {
 )");
 }
 
-TEST_F(ResolverIntrinsicDataTest, DEPRECATED_FrexpScalar) {
-  Global("exp", ty.i32(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("frexp", 1.0f, AddressOf("exp"));
-  WrapInFunction(call);
-
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-
-  ASSERT_NE(TypeOf(call), nullptr);
-  EXPECT_TRUE(TypeOf(call)->Is<sem::F32>());
-}
-
-TEST_F(ResolverIntrinsicDataTest, DEPRECATED_FrexpVector) {
-  Global("exp", ty.vec3<i32>(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("frexp", vec3<f32>(1.0f, 2.0f, 3.0f), AddressOf("exp"));
-  WrapInFunction(call);
-
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-
-  ASSERT_NE(TypeOf(call), nullptr);
-  EXPECT_TRUE(TypeOf(call)->Is<sem::Vector>());
-  EXPECT_TRUE(TypeOf(call)->As<sem::Vector>()->type()->Is<sem::F32>());
-}
-
 TEST_F(ResolverIntrinsicDataTest, FrexpScalar) {
   auto* call = Call("frexp", 1.0f);
   WrapInFunction(call);
@@ -924,9 +850,7 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_FirstParamInt) {
       r()->error(),
       R"(error: no matching call to frexp(i32, ptr<workgroup, i32, read_write>)
 
-4 candidate functions:
-  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
-  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+2 candidate functions:
   frexp(f32) -> _frexp_result
   frexp(vecN<f32>) -> _frexp_result_vecN
 )");
@@ -943,10 +867,8 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamFloatPtr) {
       r()->error(),
       R"(error: no matching call to frexp(f32, ptr<workgroup, f32, read_write>)
 
-4 candidate functions:
-  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
+2 candidate functions:
   frexp(f32) -> _frexp_result
-  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
   frexp(vecN<f32>) -> _frexp_result_vecN
 )");
 }
@@ -959,10 +881,8 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_SecondParamNotAPointer) {
 
   EXPECT_EQ(r()->error(), R"(error: no matching call to frexp(f32, i32)
 
-4 candidate functions:
-  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
+2 candidate functions:
   frexp(f32) -> _frexp_result
-  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
   frexp(vecN<f32>) -> _frexp_result_vecN
 )");
 }
@@ -978,35 +898,10 @@ TEST_F(ResolverIntrinsicDataTest, Frexp_Error_VectorSizesDontMatch) {
       r()->error(),
       R"(error: no matching call to frexp(vec2<f32>, ptr<workgroup, vec4<i32>, read_write>)
 
-4 candidate functions:
-  frexp(vecN<f32>, ptr<S, vecN<i32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+2 candidate functions:
   frexp(vecN<f32>) -> _frexp_result_vecN
-  frexp(f32, ptr<S, i32, A>) -> f32  where: S is function, private or workgroup
   frexp(f32) -> _frexp_result
 )");
-}
-
-TEST_F(ResolverIntrinsicDataTest, DEPRECATED_ModfScalar) {
-  Global("whole", ty.f32(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("modf", 1.0f, AddressOf("whole"));
-  WrapInFunction(call);
-
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-
-  ASSERT_NE(TypeOf(call), nullptr);
-  EXPECT_TRUE(TypeOf(call)->Is<sem::F32>());
-}
-
-TEST_F(ResolverIntrinsicDataTest, DEPRECATED_ModfVector) {
-  Global("whole", ty.vec3<f32>(), ast::StorageClass::kWorkgroup);
-  auto* call = Call("modf", vec3<f32>(1.0f, 2.0f, 3.0f), AddressOf("whole"));
-  WrapInFunction(call);
-
-  EXPECT_TRUE(r()->Resolve()) << r()->error();
-
-  ASSERT_NE(TypeOf(call), nullptr);
-  EXPECT_TRUE(TypeOf(call)->Is<sem::Vector>());
-  EXPECT_TRUE(TypeOf(call)->As<sem::Vector>()->type()->Is<sem::F32>());
 }
 
 TEST_F(ResolverIntrinsicDataTest, ModfScalar) {
@@ -1082,9 +977,7 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_FirstParamInt) {
       r()->error(),
       R"(error: no matching call to modf(i32, ptr<workgroup, f32, read_write>)
 
-4 candidate functions:
-  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
-  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+2 candidate functions:
   modf(f32) -> _modf_result
   modf(vecN<f32>) -> _modf_result_vecN
 )");
@@ -1101,10 +994,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamIntPtr) {
       r()->error(),
       R"(error: no matching call to modf(f32, ptr<workgroup, i32, read_write>)
 
-4 candidate functions:
-  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
+2 candidate functions:
   modf(f32) -> _modf_result
-  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
   modf(vecN<f32>) -> _modf_result_vecN
 )");
 }
@@ -1117,10 +1008,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_SecondParamNotAPointer) {
 
   EXPECT_EQ(r()->error(), R"(error: no matching call to modf(f32, f32)
 
-4 candidate functions:
-  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
+2 candidate functions:
   modf(f32) -> _modf_result
-  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
   modf(vecN<f32>) -> _modf_result_vecN
 )");
 }
@@ -1136,10 +1025,8 @@ TEST_F(ResolverIntrinsicDataTest, Modf_Error_VectorSizesDontMatch) {
       r()->error(),
       R"(error: no matching call to modf(vec2<f32>, ptr<workgroup, vec4<f32>, read_write>)
 
-4 candidate functions:
-  modf(vecN<f32>, ptr<S, vecN<f32>, A>) -> vecN<f32>  where: S is function, private or workgroup
+2 candidate functions:
   modf(vecN<f32>) -> _modf_result_vecN
-  modf(f32, ptr<S, f32, A>) -> f32  where: S is function, private or workgroup
   modf(f32) -> _modf_result
 )");
 }
@@ -1868,10 +1755,6 @@ const char* expected_texture_overload(
     case ValidTextureOverload::kDimensionsDepthCube:
     case ValidTextureOverload::kDimensionsDepthCubeArray:
     case ValidTextureOverload::kDimensionsDepthMultisampled2d:
-    case ValidTextureOverload::kDimensionsStorageRO1d:
-    case ValidTextureOverload::kDimensionsStorageRO2d:
-    case ValidTextureOverload::kDimensionsStorageRO2dArray:
-    case ValidTextureOverload::kDimensionsStorageRO3d:
     case ValidTextureOverload::kDimensionsStorageWO1d:
     case ValidTextureOverload::kDimensionsStorageWO2d:
     case ValidTextureOverload::kDimensionsStorageWO2dArray:
@@ -2043,28 +1926,6 @@ const char* expected_texture_overload(
       return R"(textureLoad(texture, coords, sample_index))";
     case ValidTextureOverload::kLoadDepth2dArrayLevelF32:
       return R"(textureLoad(texture, coords, array_index, level))";
-    case ValidTextureOverload::kLoadStorageRO1dRgba32float:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8unorm:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8snorm:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8uint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba8sint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba16uint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba16sint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba16float:
-    case ValidTextureOverload::kLoadStorageRO2dR32uint:
-    case ValidTextureOverload::kLoadStorageRO2dR32sint:
-    case ValidTextureOverload::kLoadStorageRO2dR32float:
-    case ValidTextureOverload::kLoadStorageRO2dRg32uint:
-    case ValidTextureOverload::kLoadStorageRO2dRg32sint:
-    case ValidTextureOverload::kLoadStorageRO2dRg32float:
-    case ValidTextureOverload::kLoadStorageRO2dRgba32uint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba32sint:
-    case ValidTextureOverload::kLoadStorageRO2dRgba32float:
-      return R"(textureLoad(texture, coords))";
-    case ValidTextureOverload::kLoadStorageRO2dArrayRgba32float:
-      return R"(textureLoad(texture, coords, array_index))";
-    case ValidTextureOverload::kLoadStorageRO3dRgba32float:
-      return R"(textureLoad(texture, coords))";
     case ValidTextureOverload::kStoreWO1dRgba32float:
     case ValidTextureOverload::kStoreWO2dRgba32float:
     case ValidTextureOverload::kStoreWO3dRgba32float:
@@ -2078,13 +1939,11 @@ const char* expected_texture_overload(
 TEST_P(ResolverIntrinsicTest_Texture, Call) {
   auto param = GetParam();
 
-  param.buildTextureVariable(this);
-  param.buildSamplerVariable(this);
+  param.BuildTextureVariable(this);
+  param.BuildSamplerVariable(this);
 
   auto* call = Call(param.function, param.args(this));
-  auto* stmt = ast::intrinsic::test::ReturnsVoid(param.overload)
-                   ? create<ast::CallStatement>(call)
-                   : Ignore(call);
+  auto* stmt = CallStmt(call);
   Func("func", {}, ty.void_(), {stmt}, {Stage(ast::PipelineStage::kFragment)});
 
   ASSERT_TRUE(r()->Resolve()) << r()->error();

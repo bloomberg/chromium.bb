@@ -296,7 +296,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // UnregisterHttp3DatagramRegistrationVisitor. |visitor| must be valid until a
   // corresponding call to UnregisterHttp3DatagramRegistrationVisitor.
   void RegisterHttp3DatagramRegistrationVisitor(
-      Http3DatagramRegistrationVisitor* visitor);
+      Http3DatagramRegistrationVisitor* visitor,
+      bool use_datagram_contexts = false);
 
   // Unregisters for HTTP/3 datagram context registrations. Must not be called
   // unless previously registered.
@@ -371,6 +372,11 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
 
   void OnWriteSideInDataRecvdState() override;
 
+  virtual bool AreHeadersValid(const QuicHeaderList& header_list) const;
+
+  // Reset stream upon invalid request headers.
+  virtual void OnInvalidHeaders();
+
  private:
   friend class test::QuicSpdyStreamPeer;
   friend class test::QuicStreamPeer;
@@ -421,6 +427,9 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   // Called when a datagram frame or capsule is received.
   void HandleReceivedDatagram(absl::optional<QuicDatagramContextId> context_id,
                               absl::string_view payload);
+
+  // Whether datagram contexts should be used on this stream.
+  bool ShouldUseDatagramContexts() const;
 
   QuicSpdySession* spdy_session_;
 
@@ -500,6 +509,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream
   QuicDatagramContextId datagram_next_available_context_id_;
   absl::flat_hash_map<QuicDatagramContextId, Http3DatagramVisitor*>
       datagram_context_visitors_;
+  bool use_datagram_contexts_ = false;
 };
 
 }  // namespace quic

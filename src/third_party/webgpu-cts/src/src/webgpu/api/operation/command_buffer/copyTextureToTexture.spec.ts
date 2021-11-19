@@ -1108,7 +1108,7 @@ g.test('copy_multisampled_color')
     t.queue.submit([copyEncoder.finish()]);
 
     // Verify if all the sub-pixel values at the same location of sourceTexture and
-    // destinationTextureare equal.
+    // destinationTexture are equal.
     const renderPipelineForValidation = t.device.createRenderPipeline({
       vertex: {
         module: t.device.createShaderModule({
@@ -1187,6 +1187,162 @@ g.test('copy_multisampled_color')
     t.queue.submit([validationEncoder.finish()]);
 
     t.expectSingleColor(expectedOutputTexture, 'rgba8unorm', {
+      size: [textureSize[0], textureSize[1], textureSize[2]],
+      exp: { R: 0.0, G: 1.0, B: 0.0, A: 1.0 },
+    });
+  });
+
+g.test('copy_multisampled_depth')
+  .desc(
+    `
+  Validate the correctness of copyTextureToTexture() with multisampled depth formats.
+
+  - Initialize the source texture with a triangle in a render pass.
+  - Copy from the source texture into the destination texture with CopyTextureToTexture().
+  - Validate the content in the destination texture with the depth comparation function 'equal'.
+  - Note that in current WebGPU SPEC the mipmap level count and array layer count of a multisampled
+    texture can only be 1.
+  `
+  )
+  .fn(async t => {
+    const textureSize = [32, 16, 1] as const;
+    const kDepthFormat = 'depth24plus';
+    const kSampleCount = 4;
+
+    const sourceTexture = t.device.createTexture({
+      format: kDepthFormat,
+      size: textureSize,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+      sampleCount: kSampleCount,
+    });
+    const destinationTexture = t.device.createTexture({
+      format: kDepthFormat,
+      size: textureSize,
+      usage: GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+      sampleCount: kSampleCount,
+    });
+
+    const vertexState: GPUVertexState = {
+      module: t.device.createShaderModule({
+        code: `
+          [[stage(vertex)]]
+          fn main([[builtin(vertex_index)]] VertexIndex : u32)-> [[builtin(position)]] vec4<f32> {
+            var pos : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
+                vec3<f32>(-1.0,  1.0, 0.5),
+                vec3<f32>(-1.0, -1.0, 0.0),
+                vec3<f32>( 1.0,  1.0, 1.0),
+                vec3<f32>(-1.0, -1.0, 0.0),
+                vec3<f32>( 1.0,  1.0, 1.0),
+                vec3<f32>( 1.0, -1.0, 0.5));
+            return vec4<f32>(pos[VertexIndex], 1.0);
+          }`,
+      }),
+      entryPoint: 'main',
+    };
+
+    // Initialize the depth aspect of source texture with a draw call
+    const renderPipelineForInit = t.device.createRenderPipeline({
+      vertex: vertexState,
+      depthStencil: {
+        format: kDepthFormat,
+        depthCompare: 'always',
+        depthWriteEnabled: true,
+      },
+      multisample: {
+        count: kSampleCount,
+      },
+    });
+
+    const encoderForInit = t.device.createCommandEncoder();
+    const renderPassForInit = encoderForInit.beginRenderPass({
+      colorAttachments: [],
+      depthStencilAttachment: {
+        view: sourceTexture.createView(),
+        depthLoadValue: 0.0,
+        depthStoreOp: 'store',
+        stencilLoadValue: 0,
+        stencilStoreOp: 'store',
+      },
+    });
+    renderPassForInit.setPipeline(renderPipelineForInit);
+    renderPassForInit.draw(6);
+    renderPassForInit.endPass();
+    t.queue.submit([encoderForInit.finish()]);
+
+    // Do the texture-to-texture copy
+    const copyEncoder = t.device.createCommandEncoder();
+    copyEncoder.copyTextureToTexture(
+      {
+        texture: sourceTexture,
+      },
+      {
+        texture: destinationTexture,
+      },
+      textureSize
+    );
+    t.queue.submit([copyEncoder.finish()]);
+
+    // Verify the depth values in destinationTexture are what we expected with
+    // depthCompareFunction == 'equal' and depthWriteEnabled == false in the render pipeline
+    const kColorFormat = 'rgba8unorm';
+    const renderPipelineForVerify = t.device.createRenderPipeline({
+      vertex: vertexState,
+      fragment: {
+        module: t.device.createShaderModule({
+          code: `
+          [[stage(fragment)]]
+          fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+          }`,
+        }),
+        entryPoint: 'main',
+        targets: [{ format: kColorFormat }],
+      },
+      depthStencil: {
+        format: kDepthFormat,
+        depthCompare: 'equal',
+        depthWriteEnabled: false,
+      },
+      multisample: {
+        count: kSampleCount,
+      },
+    });
+    const multisampledColorTexture = t.device.createTexture({
+      format: kColorFormat,
+      size: textureSize,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+      sampleCount: kSampleCount,
+    });
+    const colorTextureAsResolveTarget = t.device.createTexture({
+      format: kColorFormat,
+      size: textureSize,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
+    });
+
+    const encoderForVerify = t.device.createCommandEncoder();
+    const renderPassForVerify = encoderForVerify.beginRenderPass({
+      colorAttachments: [
+        {
+          view: multisampledColorTexture.createView(),
+          loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          storeOp: 'discard',
+          resolveTarget: colorTextureAsResolveTarget.createView(),
+        },
+      ],
+      depthStencilAttachment: {
+        view: destinationTexture.createView(),
+        depthLoadValue: 'load',
+        depthStoreOp: 'store',
+        stencilLoadValue: 0,
+        stencilStoreOp: 'store',
+      },
+    });
+    renderPassForVerify.setPipeline(renderPipelineForVerify);
+    renderPassForVerify.draw(6);
+    renderPassForVerify.endPass();
+    t.queue.submit([encoderForVerify.finish()]);
+
+    t.expectSingleColor(colorTextureAsResolveTarget, kColorFormat, {
       size: [textureSize[0], textureSize[1], textureSize[2]],
       exp: { R: 0.0, G: 1.0, B: 0.0, A: 1.0 },
     });

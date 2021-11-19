@@ -10,11 +10,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/rand_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -683,7 +683,7 @@ void IsHandledBySafePlugin(int render_process_id,
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
   bool plugin_found = plugin_service->GetPluginInfo(
-      render_process_id, routing_id, url, true, url::Origin(), mime_type, false,
+      render_process_id, routing_id, url, url::Origin(), mime_type, false,
       &is_stale, &plugin_info, &actual_mime_type);
   if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
     // The GetPlugins call causes the plugin list to be refreshed. Once that's

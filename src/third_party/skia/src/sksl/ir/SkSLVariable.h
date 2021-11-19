@@ -40,7 +40,7 @@ class Variable final : public Symbol {
 public:
     using Storage = VariableStorage;
 
-    static constexpr Kind kSymbolKind = Kind::kVariable;
+    inline static constexpr Kind kSymbolKind = Kind::kVariable;
 
     Variable(int line, const Modifiers* modifiers, skstd::string_view name, const Type* type,
              bool builtin, Storage storage)
@@ -50,6 +50,14 @@ public:
     , fBuiltin(builtin) {}
 
     ~Variable() override;
+
+    static std::unique_ptr<Variable> Convert(const Context& context, int line,
+            const Modifiers& modifiers, const Type* baseType, skstd::string_view name, bool isArray,
+            std::unique_ptr<Expression> arraySize, Variable::Storage storage);
+
+    static std::unique_ptr<Variable> Make(const Context& context, int line,
+            const Modifiers& modifiers, const Type* baseType, skstd::string_view name, bool isArray,
+            std::unique_ptr<Expression> arraySize, Variable::Storage storage);
 
     /**
      * Creates a local scratch variable and the associated VarDeclaration statement.

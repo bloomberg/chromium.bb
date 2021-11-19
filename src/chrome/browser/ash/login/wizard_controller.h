@@ -57,14 +57,6 @@
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/geolocation/geoposition.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/geolocation/simple_geolocation_provider.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/timezone/timezone_provider.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/timezone/timezone_request.h"
 #include "components/account_id/account_id.h"
 
 class PrefService;
@@ -73,6 +65,10 @@ namespace ash {
 class BaseScreen;
 class DemoSetupController;
 class ErrorScreen;
+struct Geoposition;
+class SimpleGeolocationProvider;
+class TimeZoneProvider;
+struct TimeZoneResponseData;
 enum class KioskAppType;
 
 namespace login {
@@ -167,8 +163,9 @@ class WizardController {
   // Advances to login/update screen. Should be used in for testing only.
   void SkipToLoginForTesting();
 
-  // Forces to exit wizard after accepting terms of service.
-  void EndOnboardingAfterToS();
+  OobeScreenId get_screen_after_managed_tos_for_testing() {
+    return wizard_context_->screen_after_managed_tos;
+  }
 
   // Returns current DemoSetupController if demo setup flow is in progress or
   // nullptr otherwise.

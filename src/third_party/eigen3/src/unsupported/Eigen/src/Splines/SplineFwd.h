@@ -10,6 +10,7 @@
 #ifndef EIGEN_SPLINES_FWD_H
 #define EIGEN_SPLINES_FWD_H
 
+#include "./InternalHeaderCheck.h"
 #include "../../../../Eigen/Core"
 
 namespace Eigen

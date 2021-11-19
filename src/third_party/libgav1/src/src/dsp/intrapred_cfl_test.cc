@@ -28,6 +28,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/cpu.h"
 #include "src/utils/memory.h"
@@ -352,6 +353,10 @@ void CflSubsamplerTest<bitdepth, Pixel, subsampling_type>::TestSpeed(
   const int width = GetLumaWidth(block_width_, subsampling_type);
   const int height = GetLumaHeight(block_height_, subsampling_type);
   Pixel* src = intra_pred_mem_.ref_src;
+#if LIBGAV1_MSAN
+  // Quiet 10bpp CflSubsampler420_NEON() msan warning.
+  memset(src, 0, sizeof(intra_pred_mem_.ref_src));
+#endif
   for (int i = 0; i < height; ++i) {
     for (int j = 0; j < width; ++j) {
       src[j] = rnd.RandRange(1 << bitdepth);

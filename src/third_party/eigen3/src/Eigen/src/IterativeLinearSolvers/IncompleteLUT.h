@@ -12,6 +12,8 @@
 #define EIGEN_INCOMPLETE_LUT_H
 
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

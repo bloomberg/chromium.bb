@@ -30,17 +30,6 @@ namespace {
 
 uint32_t grsltype_to_alignment_mask(GrSLType type) {
     switch(type) {
-        case kByte_GrSLType: // fall through
-        case kUByte_GrSLType:
-            return 0x0;
-        case kByte2_GrSLType: // fall through
-        case kUByte2_GrSLType:
-            return 0x1;
-        case kByte3_GrSLType: // fall through
-        case kByte4_GrSLType:
-        case kUByte3_GrSLType:
-        case kUByte4_GrSLType:
-            return 0x3;
         case kShort_GrSLType: // fall through
         case kUShort_GrSLType:
             return 0x1;
@@ -53,15 +42,15 @@ uint32_t grsltype_to_alignment_mask(GrSLType type) {
         case kUShort4_GrSLType:
             return 0x7;
         case kInt_GrSLType:
-        case kUint_GrSLType:
+        case kUInt_GrSLType:
             return 0x3;
         case kInt2_GrSLType:
-        case kUint2_GrSLType:
+        case kUInt2_GrSLType:
             return 0x7;
         case kInt3_GrSLType:
-        case kUint3_GrSLType:
+        case kUInt3_GrSLType:
         case kInt4_GrSLType:
-        case kUint4_GrSLType:
+        case kUInt4_GrSLType:
             return 0xF;
         case kHalf_GrSLType: // fall through
         case kFloat_GrSLType:
@@ -104,18 +93,6 @@ uint32_t grsltype_to_alignment_mask(GrSLType type) {
 
 static inline uint32_t grsltype_to_size(GrSLType type) {
     switch(type) {
-        case kByte_GrSLType:
-        case kUByte_GrSLType:
-            return 1;
-        case kByte2_GrSLType:
-        case kUByte2_GrSLType:
-            return 2;
-        case kByte3_GrSLType:
-        case kUByte3_GrSLType:
-            return 3;
-        case kByte4_GrSLType:
-        case kUByte4_GrSLType:
-            return 4;
         case kShort_GrSLType:
             return sizeof(int16_t);
         case kShort2_GrSLType:
@@ -145,16 +122,16 @@ static inline uint32_t grsltype_to_size(GrSLType type) {
         case kFloat4_GrSLType:
             return 4 * sizeof(float);
         case kInt_GrSLType: // fall through
-        case kUint_GrSLType:
+        case kUInt_GrSLType:
             return sizeof(int32_t);
         case kInt2_GrSLType: // fall through
-        case kUint2_GrSLType:
+        case kUInt2_GrSLType:
             return 2 * sizeof(int32_t);
         case kInt3_GrSLType: // fall through
-        case kUint3_GrSLType:
+        case kUInt3_GrSLType:
             return 3 * sizeof(int32_t);
         case kInt4_GrSLType: // fall through
-        case kUint4_GrSLType:
+        case kUInt4_GrSLType:
             return 4 * sizeof(int32_t);
         case kHalf2x2_GrSLType: // fall through
         case kFloat2x2_GrSLType:
@@ -226,17 +203,23 @@ GrGLSLUniformHandler::UniformHandle GrSPIRVUniformHandler::internalAddUniformArr
     SkString layoutQualifier;
     layoutQualifier.appendf("offset = %d", offset);
 
-    UniformInfo& info = fUniforms.push_back(SPIRVUniformInfo{
-        {
-            GrShaderVar{std::move(resolvedName), type, GrShaderVar::TypeModifier::None, arrayCount,
-                        std::move(layoutQualifier), SkString()},
-            visibility, owner, SkString(name)
-        },
-        offset
-    });
+    SPIRVUniformInfo tempInfo;
+    tempInfo.fVariable = GrShaderVar{std::move(resolvedName),
+                                     type,
+                                     GrShaderVar::TypeModifier::None,
+                                     arrayCount,
+                                     std::move(layoutQualifier),
+                                     SkString()};
+
+    tempInfo.fVisibility = visibility;
+    tempInfo.fOwner      = owner;
+    tempInfo.fRawName    = SkString(name);
+    tempInfo.fUBOOffset  = offset;
+
+    fUniforms.push_back(tempInfo);
 
     if (outName) {
-        *outName = info.fVariable.c_str();
+        *outName = fUniforms.back().fVariable.c_str();
     }
     return GrGLSLUniformHandler::UniformHandle(fUniforms.count() - 1);
 }
@@ -251,35 +234,39 @@ GrGLSLUniformHandler::SamplerHandle GrSPIRVUniformHandler::addSampler(const GrBa
     SkString mangleName = fProgramBuilder->nameVariable('s', name, /*mangle=*/true);
     SkString layoutQualifier;
     layoutQualifier.appendf("set = %d, binding = %d", kSamplerTextureDescriptorSet, binding);
-    SPIRVUniformInfo& info = fSamplers.push_back(SPIRVUniformInfo{
-        {
-            GrShaderVar{std::move(mangleName), kSampler_GrSLType,
-                        GrShaderVar::TypeModifier::Uniform, GrShaderVar::kNonArray,
-                        std::move(layoutQualifier), SkString()},
-            kFragment_GrShaderFlag, nullptr, SkString(name)
-        },
-        0
-    });
 
+    SPIRVUniformInfo tempInfo;
+    tempInfo.fVariable = GrShaderVar{std::move(mangleName),
+                                     kSampler_GrSLType,
+                                     GrShaderVar::TypeModifier::Uniform,
+                                     GrShaderVar::kNonArray,
+                                     std::move(layoutQualifier),
+                                     SkString()};
+
+    tempInfo.fVisibility = kFragment_GrShaderFlag;
+    tempInfo.fOwner      = nullptr;
+    tempInfo.fRawName    = SkString(name);
+    tempInfo.fUBOOffset  = 0;
+
+    fSamplers.push_back(tempInfo);
     fSamplerSwizzles.push_back(swizzle);
     SkASSERT(fSamplerSwizzles.count() == fSamplers.count());
 
     SkString mangleTexName = fProgramBuilder->nameVariable('t', name, /*mangle=*/true);
     SkString texLayoutQualifier;
     texLayoutQualifier.appendf("set = %d, binding = %d", kSamplerTextureDescriptorSet, binding + 1);
-    UniformInfo& texInfo = fTextures.push_back(SPIRVUniformInfo{
-        {
-            GrShaderVar{std::move(mangleTexName), kTexture2D_GrSLType,
-                        GrShaderVar::TypeModifier::Uniform, GrShaderVar::kNonArray,
-                        std::move(texLayoutQualifier), SkString()},
-            kFragment_GrShaderFlag, nullptr, SkString(name)
-        },
-        0
-    });
+    tempInfo.fVariable = GrShaderVar{std::move(mangleTexName),
+                                     kTexture2D_GrSLType,
+                                     GrShaderVar::TypeModifier::Uniform,
+                                     GrShaderVar::kNonArray,
+                                     std::move(texLayoutQualifier),
+                                     SkString()};
+    fTextures.push_back(tempInfo);
 
     SkString reference;
-    reference.printf("makeSampler2D(%s, %s)", texInfo.fVariable.getName().c_str(),
-                                              info.fVariable.getName().c_str());
+    reference.printf("makeSampler2D(%s, %s)",
+                     fTextures.back().fVariable.getName().c_str(),
+                     fSamplers.back().fVariable.getName().c_str());
     fSamplerReferences.emplace_back(std::move(reference));
     return GrGLSLUniformHandler::SamplerHandle(fSamplers.count() - 1);
 }

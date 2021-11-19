@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSEMATRIX_H
 #define EIGEN_SPARSEMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \ingroup SparseCore_Module
@@ -665,7 +667,6 @@ class SparseMatrix
     inline SparseMatrix()
       : m_outerSize(-1), m_innerSize(0), m_outerIndex(0), m_innerNonZeros(0)
     {
-      check_template_parameters();
       resize(0, 0);
     }
 
@@ -673,7 +674,6 @@ class SparseMatrix
     inline SparseMatrix(Index rows, Index cols)
       : m_outerSize(0), m_innerSize(0), m_outerIndex(0), m_innerNonZeros(0)
     {
-      check_template_parameters();
       resize(rows, cols);
     }
 
@@ -684,7 +684,6 @@ class SparseMatrix
     {
       EIGEN_STATIC_ASSERT((internal::is_same<Scalar, typename OtherDerived::Scalar>::value),
         YOU_MIXED_DIFFERENT_NUMERIC_TYPES__YOU_NEED_TO_USE_THE_CAST_METHOD_OF_MATRIXBASE_TO_CAST_NUMERIC_TYPES_EXPLICITLY)
-      check_template_parameters();
       const bool needToTranspose = (Flags & RowMajorBit) != (internal::evaluator<OtherDerived>::Flags & RowMajorBit);
       if (needToTranspose)
         *this = other.derived();
@@ -696,13 +695,12 @@ class SparseMatrix
         internal::call_assignment_no_alias(*this, other.derived());
       }
     }
-    
+
     /** Constructs a sparse matrix from the sparse selfadjoint view \a other */
     template<typename OtherDerived, unsigned int UpLo>
     inline SparseMatrix(const SparseSelfAdjointView<OtherDerived, UpLo>& other)
       : m_outerSize(0), m_innerSize(0), m_outerIndex(0), m_innerNonZeros(0)
     {
-      check_template_parameters();
       Base::operator=(other);
     }
 
@@ -710,7 +708,6 @@ class SparseMatrix
     inline SparseMatrix(const SparseMatrix& other)
       : Base(), m_outerSize(0), m_innerSize(0), m_outerIndex(0), m_innerNonZeros(0)
     {
-      check_template_parameters();
       *this = other.derived();
     }
 
@@ -719,17 +716,15 @@ class SparseMatrix
     SparseMatrix(const ReturnByValue<OtherDerived>& other)
       : Base(), m_outerSize(0), m_innerSize(0), m_outerIndex(0), m_innerNonZeros(0)
     {
-      check_template_parameters();
       initAssignment(other);
       other.evalTo(*this);
     }
-    
+
     /** \brief Copy constructor with in-place evaluation */
     template<typename OtherDerived>
     explicit SparseMatrix(const DiagonalBase<OtherDerived>& other)
       : Base(), m_outerSize(0), m_innerSize(0), m_outerIndex(0), m_innerNonZeros(0)
     {
-      check_template_parameters();
       *this = other.derived();
     }
 
@@ -1013,11 +1008,8 @@ protected:
     }
 
 private:
-  static void check_template_parameters()
-  {
-    EIGEN_STATIC_ASSERT(NumTraits<StorageIndex>::IsSigned,THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE);
-    EIGEN_STATIC_ASSERT((Options&(ColMajor|RowMajor))==Options,INVALID_MATRIX_TEMPLATE_PARAMETERS);
-  }
+  EIGEN_STATIC_ASSERT(NumTraits<StorageIndex>::IsSigned,THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE)
+  EIGEN_STATIC_ASSERT((Options&(ColMajor|RowMajor))==Options,INVALID_MATRIX_TEMPLATE_PARAMETERS)
 
   struct default_prunning_func {
     default_prunning_func(const Scalar& ref, const RealScalar& eps) : reference(ref), epsilon(eps) {}

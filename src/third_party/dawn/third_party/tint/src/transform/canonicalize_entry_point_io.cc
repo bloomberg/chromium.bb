@@ -40,24 +40,24 @@ namespace {
 // those with builtin attributes.
 bool StructMemberComparator(const ast::StructMember* a,
                             const ast::StructMember* b) {
-  auto* a_loc = ast::GetDecoration<ast::LocationDecoration>(a->decorations());
-  auto* b_loc = ast::GetDecoration<ast::LocationDecoration>(b->decorations());
-  auto* a_blt = ast::GetDecoration<ast::BuiltinDecoration>(a->decorations());
-  auto* b_blt = ast::GetDecoration<ast::BuiltinDecoration>(b->decorations());
+  auto* a_loc = ast::GetDecoration<ast::LocationDecoration>(a->decorations);
+  auto* b_loc = ast::GetDecoration<ast::LocationDecoration>(b->decorations);
+  auto* a_blt = ast::GetDecoration<ast::BuiltinDecoration>(a->decorations);
+  auto* b_blt = ast::GetDecoration<ast::BuiltinDecoration>(b->decorations);
   if (a_loc) {
     if (!b_loc) {
       // `a` has location attribute and `b` does not: `a` goes first.
       return true;
     }
     // Both have location attributes: smallest goes first.
-    return a_loc->value() < b_loc->value();
+    return a_loc->value < b_loc->value;
   } else {
     if (b_loc) {
       // `b` has location attribute and `a` does not: `b` goes first.
       return false;
     }
     // Both are builtins: order doesn't matter, just use enum value.
-    return a_blt->value() < b_blt->value();
+    return a_blt->builtin < b_blt->builtin;
   }
 }
 
@@ -70,7 +70,7 @@ bool IsShaderIODecoration(const ast::Decoration* deco) {
 // Returns true if `decos` contains a `sample_mask` builtin.
 bool HasSampleMask(const ast::DecorationList& decos) {
   auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(decos);
-  return builtin && builtin->value() == ast::Builtin::kSampleMask;
+  return builtin && builtin->builtin == ast::Builtin::kSampleMask;
 }
 
 }  // namespace
@@ -82,11 +82,11 @@ struct CanonicalizeEntryPointIO::State {
     /// The name of the output value.
     std::string name;
     /// The type of the output value.
-    ast::Type* type;
+    const ast::Type* type;
     /// The shader IO attributes.
     ast::DecorationList attributes;
     /// The value itself.
-    ast::Expression* value;
+    const ast::Expression* value;
   };
 
   /// The clone context.
@@ -94,9 +94,9 @@ struct CanonicalizeEntryPointIO::State {
   /// The transform config.
   CanonicalizeEntryPointIO::Config const cfg;
   /// The entry point function (AST).
-  ast::Function* func_ast;
+  const ast::Function* func_ast;
   /// The entry point function (SEM).
-  sem::Function const* func_sem;
+  const sem::Function* func_sem;
 
   /// The new entry point wrapper function's parameters.
   ast::VariableList wrapper_ep_parameters;
@@ -121,7 +121,7 @@ struct CanonicalizeEntryPointIO::State {
   /// @param function the entry point function
   State(CloneContext& context,
         const CanonicalizeEntryPointIO::Config& config,
-        ast::Function* function)
+        const ast::Function* function)
       : ctx(context),
         cfg(config),
         func_ast(function),
@@ -154,34 +154,37 @@ struct CanonicalizeEntryPointIO::State {
   /// @param type the type of the shader input
   /// @param attributes the attributes to apply to the shader input
   /// @returns an expression which evaluates to the value of the shader input
-  ast::Expression* AddInput(std::string name,
-                            ast::Type* type,
-                            ast::DecorationList attributes) {
+  const ast::Expression* AddInput(std::string name,
+                                  const sem::Type* type,
+                                  ast::DecorationList attributes) {
+    auto* ast_type = CreateASTTypeFor(ctx, type);
     if (cfg.shader_style == ShaderStyle::kSpirv) {
       // Vulkan requires that integer user-defined fragment inputs are
       // always decorated with `Flat`.
+      // TODO(crbug.com/tint/1224): Remove this once a flat interpolation
+      // attribute is required for integers.
       if (type->is_integer_scalar_or_vector() &&
           ast::HasDecoration<ast::LocationDecoration>(attributes) &&
-          func_ast->pipeline_stage() == ast::PipelineStage::kFragment) {
+          !ast::HasDecoration<ast::InterpolateDecoration>(attributes) &&
+          func_ast->PipelineStage() == ast::PipelineStage::kFragment) {
         attributes.push_back(ctx.dst->Interpolate(
             ast::InterpolationType::kFlat, ast::InterpolationSampling::kNone));
       }
 
       // Disable validation for use of the `input` storage class.
       attributes.push_back(
-          ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
-              ctx.dst->ID(), ast::DisabledValidation::kIgnoreStorageClass));
+          ctx.dst->Disable(ast::DisabledValidation::kIgnoreStorageClass));
 
       // Create the global variable and use its value for the shader input.
       auto symbol = ctx.dst->Symbols().New(name);
-      ast::Expression* value = ctx.dst->Expr(symbol);
+      const ast::Expression* value = ctx.dst->Expr(symbol);
       if (HasSampleMask(attributes)) {
         // Vulkan requires the type of a SampleMask builtin to be an array.
         // Declare it as array<u32, 1> and then load the first element.
-        type = ctx.dst->ty.array(type, 1);
+        ast_type = ctx.dst->ty.array(ast_type, 1);
         value = ctx.dst->IndexAccessor(value, 0);
       }
-      ctx.dst->Global(symbol, type, ast::StorageClass::kInput,
+      ctx.dst->Global(symbol, ast_type, ast::StorageClass::kInput,
                       std::move(attributes));
       return value;
     } else if (cfg.shader_style == ShaderStyle::kMsl &&
@@ -192,7 +195,7 @@ struct CanonicalizeEntryPointIO::State {
                           ? ctx.dst->Symbols().Register(name)
                           : ctx.dst->Symbols().New(name);
       wrapper_ep_parameters.push_back(
-          ctx.dst->Param(symbol, type, std::move(attributes)));
+          ctx.dst->Param(symbol, ast_type, std::move(attributes)));
       return ctx.dst->Expr(symbol);
     } else {
       // Otherwise, move it to the new structure member list.
@@ -200,7 +203,7 @@ struct CanonicalizeEntryPointIO::State {
                           ? ctx.dst->Symbols().Register(name)
                           : ctx.dst->Symbols().New(name);
       wrapper_struct_param_members.push_back(
-          ctx.dst->Member(symbol, type, std::move(attributes)));
+          ctx.dst->Member(symbol, ast_type, std::move(attributes)));
       return ctx.dst->MemberAccessor(InputStructSymbol(), symbol);
     }
   }
@@ -211,22 +214,25 @@ struct CanonicalizeEntryPointIO::State {
   /// @param attributes the attributes to apply to the shader output
   /// @param value the value of the shader output
   void AddOutput(std::string name,
-                 ast::Type* type,
+                 const sem::Type* type,
                  ast::DecorationList attributes,
-                 ast::Expression* value) {
+                 const ast::Expression* value) {
     // Vulkan requires that integer user-defined vertex outputs are
     // always decorated with `Flat`.
+    // TODO(crbug.com/tint/1224): Remove this once a flat interpolation
+    // attribute is required for integers.
     if (cfg.shader_style == ShaderStyle::kSpirv &&
         type->is_integer_scalar_or_vector() &&
         ast::HasDecoration<ast::LocationDecoration>(attributes) &&
-        func_ast->pipeline_stage() == ast::PipelineStage::kVertex) {
+        !ast::HasDecoration<ast::InterpolateDecoration>(attributes) &&
+        func_ast->PipelineStage() == ast::PipelineStage::kVertex) {
       attributes.push_back(ctx.dst->Interpolate(
           ast::InterpolationType::kFlat, ast::InterpolationSampling::kNone));
     }
 
     OutputValue output;
     output.name = name;
-    output.type = type;
+    output.type = CreateASTTypeFor(ctx, type);
     output.attributes = std::move(attributes);
     output.value = value;
     wrapper_output_values.push_back(output);
@@ -241,16 +247,15 @@ struct CanonicalizeEntryPointIO::State {
     // Remove the shader IO attributes from the inner function parameter, and
     // attach them to the new object instead.
     ast::DecorationList attributes;
-    for (auto* deco : param->Declaration()->decorations()) {
+    for (auto* deco : param->Declaration()->decorations) {
       if (IsShaderIODecoration(deco)) {
-        ctx.Remove(param->Declaration()->decorations(), deco);
+        ctx.Remove(param->Declaration()->decorations, deco);
         attributes.push_back(ctx.Clone(deco));
       }
     }
 
-    auto name = ctx.src->Symbols().NameFor(param->Declaration()->symbol());
-    auto* type = ctx.Clone(param->Declaration()->type());
-    auto* input_expr = AddInput(name, type, std::move(attributes));
+    auto name = ctx.src->Symbols().NameFor(param->Declaration()->symbol);
+    auto* input_expr = AddInput(name, param->Type(), std::move(attributes));
     inner_call_parameters.push_back(input_expr);
   }
 
@@ -272,16 +277,15 @@ struct CanonicalizeEntryPointIO::State {
       }
 
       auto* member_ast = member->Declaration();
-      auto name = ctx.src->Symbols().NameFor(member_ast->symbol());
-      auto* type = ctx.Clone(member_ast->type());
-      auto attributes = CloneShaderIOAttributes(member_ast->decorations());
-      auto* input_expr = AddInput(name, type, std::move(attributes));
+      auto name = ctx.src->Symbols().NameFor(member_ast->symbol);
+      auto attributes = CloneShaderIOAttributes(member_ast->decorations);
+      auto* input_expr = AddInput(name, member->Type(), std::move(attributes));
       inner_struct_values.push_back(input_expr);
     }
 
     // Construct the original structure using the new shader input objects.
     inner_call_parameters.push_back(ctx.dst->Construct(
-        ctx.Clone(param->Declaration()->type()), inner_struct_values));
+        ctx.Clone(param->Declaration()->type), inner_struct_values));
   }
 
   /// Process the entry point return type.
@@ -299,21 +303,19 @@ struct CanonicalizeEntryPointIO::State {
         }
 
         auto* member_ast = member->Declaration();
-        auto name = ctx.src->Symbols().NameFor(member_ast->symbol());
-        auto* type = ctx.Clone(member_ast->type());
-        auto attributes = CloneShaderIOAttributes(member_ast->decorations());
+        auto name = ctx.src->Symbols().NameFor(member_ast->symbol);
+        auto attributes = CloneShaderIOAttributes(member_ast->decorations);
 
         // Extract the original structure member.
-        AddOutput(name, type, std::move(attributes),
+        AddOutput(name, member->Type(), std::move(attributes),
                   ctx.dst->MemberAccessor(original_result, name));
       }
     } else if (!inner_ret_type->Is<sem::Void>()) {
-      auto* type = ctx.Clone(func_ast->return_type());
       auto attributes =
-          CloneShaderIOAttributes(func_ast->return_type_decorations());
+          CloneShaderIOAttributes(func_ast->return_type_decorations);
 
       // Propagate the non-struct return value as is.
-      AddOutput("value", type, std::move(attributes),
+      AddOutput("value", func_sem->ReturnType(), std::move(attributes),
                 ctx.dst->Expr(original_result));
     }
   }
@@ -333,7 +335,7 @@ struct CanonicalizeEntryPointIO::State {
 
     // No existing sample mask builtin was found, so create a new output value
     // using the fixed sample mask.
-    AddOutput("fixed_sample_mask", ctx.dst->ty.u32(),
+    AddOutput("fixed_sample_mask", ctx.dst->create<sem::U32>(),
               {ctx.dst->Builtin(ast::Builtin::kSampleMask)},
               ctx.dst->Expr(cfg.fixed_sample_mask));
   }
@@ -341,7 +343,7 @@ struct CanonicalizeEntryPointIO::State {
   /// Add a point size builtin to the wrapper function output.
   void AddVertexPointSize() {
     // Create a new output value and assign it a literal 1.0 value.
-    AddOutput("vertex_point_size", ctx.dst->ty.f32(),
+    AddOutput("vertex_point_size", ctx.dst->create<sem::F32>(),
               {ctx.dst->Builtin(ast::Builtin::kPointSize)}, ctx.dst->Expr(1.f));
   }
 
@@ -399,7 +401,7 @@ struct CanonicalizeEntryPointIO::State {
 
     // Create the output struct object, assign its members, and return it.
     auto* result_object =
-        ctx.dst->Var(wrapper_result, ctx.dst->ty.type_name(out_struct->name()));
+        ctx.dst->Var(wrapper_result, ctx.dst->ty.type_name(out_struct->name));
     wrapper_body.push_back(ctx.dst->Decl(result_object));
     wrapper_body.insert(wrapper_body.end(), assignments.begin(),
                         assignments.end());
@@ -414,13 +416,12 @@ struct CanonicalizeEntryPointIO::State {
       // Disable validation for use of the `output` storage class.
       ast::DecorationList attributes = std::move(outval.attributes);
       attributes.push_back(
-          ctx.dst->ASTNodes().Create<ast::DisableValidationDecoration>(
-              ctx.dst->ID(), ast::DisabledValidation::kIgnoreStorageClass));
+          ctx.dst->Disable(ast::DisabledValidation::kIgnoreStorageClass));
 
       // Create the global variable and assign it the output value.
       auto name = ctx.dst->Symbols().New(outval.name);
       auto* type = outval.type;
-      ast::Expression* lhs = ctx.dst->Expr(name);
+      const ast::Expression* lhs = ctx.dst->Expr(name);
       if (HasSampleMask(attributes)) {
         // Vulkan requires the type of a SampleMask builtin to be an array.
         // Declare it as array<u32, 1> and then store to the first element.
@@ -435,34 +436,34 @@ struct CanonicalizeEntryPointIO::State {
 
   // Recreate the original function without entry point attributes and call it.
   /// @returns the inner function call expression
-  ast::CallExpression* CallInnerFunction() {
+  const ast::CallExpression* CallInnerFunction() {
     // Add a suffix to the function name, as the wrapper function will take the
     // original entry point name.
-    auto ep_name = ctx.src->Symbols().NameFor(func_ast->symbol());
+    auto ep_name = ctx.src->Symbols().NameFor(func_ast->symbol);
     auto inner_name = ctx.dst->Symbols().New(ep_name + "_inner");
 
     // Clone everything, dropping the function and return type attributes.
     // The parameter attributes will have already been stripped during
     // processing.
     auto* inner_function = ctx.dst->create<ast::Function>(
-        inner_name, ctx.Clone(func_ast->params()),
-        ctx.Clone(func_ast->return_type()), ctx.Clone(func_ast->body()),
+        inner_name, ctx.Clone(func_ast->params),
+        ctx.Clone(func_ast->return_type), ctx.Clone(func_ast->body),
         ast::DecorationList{}, ast::DecorationList{});
     ctx.Replace(func_ast, inner_function);
 
     // Call the function.
-    return ctx.dst->Call(inner_function->symbol(), inner_call_parameters);
+    return ctx.dst->Call(inner_function->symbol, inner_call_parameters);
   }
 
   /// Process the entry point function.
   void Process() {
     bool needs_fixed_sample_mask = false;
     bool needs_vertex_point_size = false;
-    if (func_ast->pipeline_stage() == ast::PipelineStage::kFragment &&
+    if (func_ast->PipelineStage() == ast::PipelineStage::kFragment &&
         cfg.fixed_sample_mask != 0xFFFFFFFF) {
       needs_fixed_sample_mask = true;
     }
-    if (func_ast->pipeline_stage() == ast::PipelineStage::kVertex &&
+    if (func_ast->PipelineStage() == ast::PipelineStage::kVertex &&
         cfg.emit_vertex_point_size) {
       needs_vertex_point_size = true;
     }
@@ -495,12 +496,12 @@ struct CanonicalizeEntryPointIO::State {
     auto* call_inner = CallInnerFunction();
 
     // Process the return type, and start building the wrapper function body.
-    std::function<ast::Type*()> wrapper_ret_type = [&] {
+    std::function<const ast::Type*()> wrapper_ret_type = [&] {
       return ctx.dst->ty.void_();
     };
     if (func_sem->ReturnType()->Is<sem::Void>()) {
       // The function call is just a statement with no result.
-      wrapper_body.push_back(ctx.dst->create<ast::CallStatement>(call_inner));
+      wrapper_body.push_back(ctx.dst->CallStmt(call_inner));
     } else {
       // Capture the result of calling the original function.
       auto* inner_result = ctx.dst->Const(
@@ -509,7 +510,7 @@ struct CanonicalizeEntryPointIO::State {
 
       // Process the original return type to determine the outputs that the
       // outer function needs to produce.
-      ProcessReturnType(func_sem->ReturnType(), inner_result->symbol());
+      ProcessReturnType(func_sem->ReturnType(), inner_result->symbol);
     }
 
     // Add a fixed sample mask, if necessary.
@@ -529,17 +530,17 @@ struct CanonicalizeEntryPointIO::State {
       } else {
         auto* output_struct = CreateOutputStruct();
         wrapper_ret_type = [&, output_struct] {
-          return ctx.dst->ty.type_name(output_struct->name());
+          return ctx.dst->ty.type_name(output_struct->name);
         };
       }
     }
 
     // Create the wrapper entry point function.
     // Take the name of the original entry point function.
-    auto name = ctx.Clone(func_ast->symbol());
+    auto name = ctx.Clone(func_ast->symbol);
     auto* wrapper_func = ctx.dst->create<ast::Function>(
         name, wrapper_ep_parameters, wrapper_ret_type(),
-        ctx.dst->Block(wrapper_body), ctx.Clone(func_ast->decorations()),
+        ctx.dst->Block(wrapper_body), ctx.Clone(func_ast->decorations),
         ast::DecorationList{});
     ctx.InsertAfter(ctx.src->AST().GlobalDeclarations(), func_ast,
                     wrapper_func);
@@ -561,10 +562,10 @@ void CanonicalizeEntryPointIO::Run(CloneContext& ctx,
   // New structures will be created for each entry point, as necessary.
   for (auto* ty : ctx.src->AST().TypeDecls()) {
     if (auto* struct_ty = ty->As<ast::Struct>()) {
-      for (auto* member : struct_ty->members()) {
-        for (auto* deco : member->decorations()) {
+      for (auto* member : struct_ty->members) {
+        for (auto* deco : member->decorations) {
           if (IsShaderIODecoration(deco)) {
-            ctx.Remove(member->decorations(), deco);
+            ctx.Remove(member->decorations, deco);
           }
         }
       }

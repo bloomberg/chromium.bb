@@ -523,29 +523,35 @@ inline void Filter8(const uint8x8_t p3q3, const uint8x8_t p2q2,
                     const uint8x8_t p1q1, const uint8x8_t p0q0,
                     uint8x8_t* const p2q2_output, uint8x8_t* const p1q1_output,
                     uint8x8_t* const p0q0_output) {
-  // Sum p2 and q2 output from opposite directions
+  // Sum p2 and q2 output from opposite directions.
+  // The formula is regrouped to allow 2 doubling operations to be combined.
   // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
   //      ^^^^^^^^
   // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
   //                                ^^^^^^^^
-  uint16x8_t sum = vaddw_u8(vaddl_u8(p3q3, p3q3), p3q3);
+  // p2q2 = p3q3 + 2 * (p3q3 + p2q2) + p1q1 + p0q0 + q0p0
+  //                    ^^^^^^^^^^^
+  const uint16x8_t p23q23 = vaddl_u8(p3q3, p2q2);
 
-  // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
-  //                 ^^^^^^^^
-  // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
-  //                     ^^^^^^^^
-  sum = vaddq_u16(vaddl_u8(p2q2, p2q2), sum);
+  // p2q2 = p3q3 + 2 * (p3q3 + p2q2) + p1q1 + p0q0 + q0p0
+  //               ^^^^^
+  uint16x8_t sum = vshlq_n_u16(p23q23, 1);
 
-  // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
-  //                            ^^^^^^^
-  // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
-  //           ^^^^^^^
-  sum = vaddq_u16(vaddl_u8(p1q1, p0q0), sum);
+  // Add two other terms to make dual issue with shift more likely.
+  // p2q2 = p3q3 + 2 * (p3q3 + p2q2) + p1q1 + p0q0 + q0p0
+  //                                   ^^^^^^^^^^^
+  const uint16x8_t p01q01 = vaddl_u8(p0q0, p1q1);
 
-  // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
-  //                                      ^^
-  // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)
-  //      ^^
+  // p2q2 = p3q3 + 2 * (p3q3 + p2q2) + p1q1 + p0q0 + q0p0
+  //                                 ^^^^^^^^^^^^^
+  sum = vaddq_u16(sum, p01q01);
+
+  // p2q2 = p3q3 + 2 * (p3q3 + p2q2) + p1q1 + p0q0 + q0p0
+  //        ^^^^^^
+  sum = vaddw_u8(sum, p3q3);
+
+  // p2q2 = p3q3 + 2 * (p3q3 + p2q2) + p1q1 + p0q0 + q0p0
+  //                                               ^^^^^^
   const uint8x8_t q0p0 = Transpose32(p0q0);
   sum = vaddw_u8(sum, q0p0);
 
@@ -554,9 +560,9 @@ inline void Filter8(const uint8x8_t p3q3, const uint8x8_t p2q2,
   // Convert to p1 and q1 output:
   // p1 = p2 - p3 - p2 + p1 + q1
   // q1 = q2 - q3 - q2 + q0 + p1
-  sum = vsubq_u16(sum, vaddl_u8(p3q3, p2q2));
+  sum = vsubq_u16(sum, p23q23);
   const uint8x8_t q1p1 = Transpose32(p1q1);
-  sum = vaddq_u16(vaddl_u8(p1q1, q1p1), sum);
+  sum = vaddq_u16(sum, vaddl_u8(p1q1, q1p1));
 
   *p1q1_output = vrshrn_n_u16(sum, 3);
 
@@ -565,7 +571,7 @@ inline void Filter8(const uint8x8_t p3q3, const uint8x8_t p2q2,
   // q0 = q1 - q3 - q1 + q0 + p2
   sum = vsubq_u16(sum, vaddl_u8(p3q3, p1q1));
   const uint8x8_t q2p2 = Transpose32(p2q2);
-  sum = vaddq_u16(vaddl_u8(p0q0, q2p2), sum);
+  sum = vaddq_u16(sum, vaddl_u8(p0q0, q2p2));
 
   *p0q0_output = vrshrn_n_u16(sum, 3);
 }
@@ -1513,7 +1519,6 @@ inline void Filter6(const uint16x8_t p2q2, const uint16x8_t p1q1,
                     uint16x8_t* const p0q0_output) {
   // Sum p1 and q1 output from opposite directions.
   // The formula is regrouped to allow 3 doubling operations to be combined.
-  // TODO(petersonab): Apply grouping to 8bpp.
   //
   // p1 = (3 * p2) + (2 * p1) + (2 * p0) + q0
   //      ^^^^^^^^
@@ -1746,7 +1751,6 @@ inline void Filter8(const uint16x8_t p3q3, const uint16x8_t p2q2,
                     uint16x8_t* const p0q0_output) {
   // Sum p2 and q2 output from opposite directions.
   // The formula is regrouped to allow 2 doubling operations to be combined.
-  // TODO(petersonab): Apply grouping to 8bpp.
   // p2 = (3 * p3) + (2 * p2) + p1 + p0 + q0
   //      ^^^^^^^^
   // q2 = p0 + q0 + q1 + (2 * q2) + (3 * q3)

@@ -11,6 +11,8 @@
 #ifndef EIGEN_COMPLEX32_ALTIVEC_H
 #define EIGEN_COMPLEX32_ALTIVEC_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

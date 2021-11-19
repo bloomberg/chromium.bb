@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ash/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
@@ -45,36 +44,41 @@
 #include "chromeos/disks/disk.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/arc/arc_prefs.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/mojom/intent_common.mojom.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
+#include "components/arc/session/arc_service_manager.h"
+#include "components/arc/session/connection_holder.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/value_builder.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/features.h"
+#include "third_party/skia/include/core/SkTypes.h"
 #include "url/gurl.h"
+
+namespace ash {
 
 namespace app_runtime = extensions::api::app_runtime;
 
-using arc::mojom::IntentHandlerInfo;
-using arc::mojom::IntentHandlerInfoPtr;
-using base::HistogramTester;
-using HandledIntent = arc::FakeIntentHelperInstance::HandledIntent;
-
-namespace chromeos {
-
+using ::arc::mojom::IntentHandlerInfo;
+using ::arc::mojom::IntentHandlerInfoPtr;
+using ::base::HistogramTester;
+using HandledIntent = ::arc::FakeIntentHelperInstance::HandledIntent;
 using LaunchResult = NoteTakingHelper::LaunchResult;
 
 namespace {
@@ -249,7 +253,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
 
     if (flags & ENABLE_PALETTE) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshForceEnableStylusTools);
+          switches::kAshForceEnableStylusTools);
     }
 
     // TODO(derat): Sigh, something in ArcAppTest appears to be re-enabling ARC.
@@ -737,42 +741,9 @@ TEST_F(NoteTakingHelperTest, CustomChromeApps) {
                    NoteTakingLockScreenSupport::kNotSupported}}));
 }
 
-// Web apps with or without a note_taking_new_note_url are not listed when
-// `kWebAppNoteTaking` is disabled.
-TEST_F(NoteTakingHelperTest, CustomWebApps_FlagDisabled) {
-  Init(ENABLE_PALETTE);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(blink::features::kWebAppNoteTaking);
-
-  {
-    auto app_info = std::make_unique<WebApplicationInfo>();
-    app_info->start_url = GURL("http://some1.url");
-    app_info->scope = GURL("http://some1.url");
-    app_info->title = u"Web App 1";
-    web_app::test::InstallWebApp(profile(), std::move(app_info));
-  }
-  {
-    auto app_info = std::make_unique<WebApplicationInfo>();
-    app_info->start_url = GURL("http://some2.url");
-    app_info->scope = GURL("http://some2.url");
-    app_info->title = u"Web App 2";
-    // Set a note_taking_new_note_url on one app.
-    app_info->note_taking_new_note_url = GURL("http://some2.url/new-note");
-    web_app::test::InstallWebApp(profile(), std::move(app_info));
-  }
-  // Check apps were installed.
-  auto* provider = web_app::WebAppProvider::GetForTest(profile());
-  EXPECT_EQ(provider->registrar().CountUserInstalledApps(), 2);
-
-  // Apps with note_taking_new_note_url are not yet supported.
-  EXPECT_TRUE(AvailableAppsMatch(profile(), {}));
-}
-
-// Web apps with a note_taking_new_note_url show as available note-taking apps
-// when `kWebAppNoteTaking` is enabled.
+// Web apps with a note_taking_new_note_url show as available note-taking apps.
 TEST_F(NoteTakingHelperTest, CustomWebApps_FlagEnabled) {
   Init(ENABLE_PALETTE);
-  base::test::ScopedFeatureList features(blink::features::kWebAppNoteTaking);
 
   {
     auto app_info = std::make_unique<WebApplicationInfo>();
@@ -870,7 +841,7 @@ TEST_F(NoteTakingHelperTest, LaunchHardcodedWebApp) {
   // Fire a "Create Note" action and check the app is launched.
   HistogramTester histogram_tester;
   SetNoteTakingClientProfile(profile());
-  ash::NoteTakingClient::GetInstance()->CreateNote();
+  NoteTakingClient::GetInstance()->CreateNote();
   base::RunLoop().RunUntilIdle();
 
   // Web app, so no launched_chrome_apps.
@@ -890,7 +861,6 @@ TEST_F(NoteTakingHelperTest, LaunchHardcodedWebApp) {
 
 TEST_F(NoteTakingHelperTest, LaunchWebApp) {
   Init(ENABLE_PALETTE);
-  base::test::ScopedFeatureList features(blink::features::kWebAppNoteTaking);
 
   // Install a web app with a note_taking_new_note_url.
   GURL new_note_url("http://some.url/new-note");
@@ -906,7 +876,7 @@ TEST_F(NoteTakingHelperTest, LaunchWebApp) {
   // Fire a "Create Note" action and check the app is launched.
   HistogramTester histogram_tester;
   SetNoteTakingClientProfile(profile());
-  ash::NoteTakingClient::GetInstance()->CreateNote();
+  NoteTakingClient::GetInstance()->CreateNote();
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectUniqueSample(
@@ -1682,7 +1652,7 @@ TEST_F(NoteTakingHelperTest, NoteTakingControllerClient) {
   Init(ENABLE_PALETTE);
 
   auto has_note_taking_apps = [&]() {
-    auto* client = ash::NoteTakingClient::GetInstance();
+    auto* client = NoteTakingClient::GetInstance();
     return client && client->CanCreateNote();
   };
 
@@ -1725,7 +1695,7 @@ TEST_F(NoteTakingHelperTest, NoteTakingControllerClient) {
   SetNoteTakingClientProfile(profile());
   EXPECT_TRUE(has_note_taking_apps());
 
-  ash::NoteTakingClient::GetInstance()->CreateNote();
+  NoteTakingClient::GetInstance()->CreateNote();
   ASSERT_EQ(1u, launched_chrome_apps_.size());
   ASSERT_EQ(NoteTakingHelper::kProdKeepExtensionId,
             launched_chrome_apps_[0].id);
@@ -1736,4 +1706,4 @@ TEST_F(NoteTakingHelperTest, NoteTakingControllerClient) {
   profile_manager()->DeleteTestingProfile(kSecondProfileName);
 }
 
-}  // namespace chromeos
+}  // namespace ash

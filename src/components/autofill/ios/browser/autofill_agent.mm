@@ -72,6 +72,7 @@ using base::NumberToString;
 using base::SysNSStringToUTF8;
 using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
+using autofill::FormGlobalId;
 using autofill::FormRendererId;
 using autofill::FieldDataManager;
 using autofill::FieldRendererId;
@@ -237,10 +238,13 @@ void GetFormField(autofill::FormFieldData* field,
 // Notifies the autofill manager when forms are detected on a page.
 - (void)notifyBrowserAutofillManager:
             (autofill::BrowserAutofillManager*)autofillManager
-                         ofFormsSeen:(const FormDataVector&)forms {
+                         ofFormsSeen:(const FormDataVector&)updated_forms {
   DCHECK(autofillManager);
-  DCHECK(!forms.empty());
-  autofillManager->OnFormsSeen(forms);
+  DCHECK(!updated_forms.empty());
+  // TODO(crbug.com/1215337): Notify |autofillManager| about deleted fields.
+  std::vector<FormGlobalId> removed_forms;
+  autofillManager->OnFormsSeen(/*updated_forms=*/updated_forms,
+                               /*removed_forms=*/removed_forms);
 }
 
 // Notifies the autofill manager when forms are submitted.
@@ -278,7 +282,8 @@ void GetFormField(autofill::FormFieldData* field,
   // Necessary so the values can be used inside a block.
   std::u16string formNameCopy = formName;
   GURL pageURL = _webState->GetLastCommittedURL();
-  GURL frameOrigin = frame ? frame->GetSecurityOrigin() : pageURL.GetOrigin();
+  GURL frameOrigin =
+      frame ? frame->GetSecurityOrigin() : pageURL.DeprecatedGetOriginAsURL();
   autofill::AutofillJavaScriptFeature::GetInstance()->FetchForms(
       frame, requiredFieldsCount, base::BindOnce(^(NSString* formJSON) {
         std::vector<autofill::FormData> formData;

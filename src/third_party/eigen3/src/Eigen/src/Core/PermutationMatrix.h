@@ -11,6 +11,8 @@
 #ifndef EIGEN_PERMUTATIONMATRIX_H
 #define EIGEN_PERMUTATIONMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

@@ -60,10 +60,9 @@ CPDF_Annot::Subtype CPDFSDK_BAAnnot::GetAnnotSubtype() const {
 
 void CPDFSDK_BAAnnot::DrawAppearance(CFX_RenderDevice* pDevice,
                                      const CFX_Matrix& mtUser2Device,
-                                     CPDF_Annot::AppearanceMode mode,
-                                     const CPDF_RenderOptions* pOptions) {
+                                     CPDF_Annot::AppearanceMode mode) {
   m_pAnnot->DrawAppearance(m_pPageView->GetPDFPage(), pDevice, mtUser2Device,
-                           mode, pOptions);
+                           mode);
 }
 
 bool CPDFSDK_BAAnnot::IsAppearanceValid() {
@@ -225,7 +224,7 @@ CPDF_Dest CPDFSDK_BAAnnot::GetDestination() const {
     return CPDF_Dest(nullptr);
 
   // Link annotations can have "Dest" entry defined as an explicit array.
-  // https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf#page=373
+  // See ISO 32000-1:2008 spec, section 12.3.2.1.
   return CPDF_Dest::Create(m_pPageView->GetPDFDocument(),
                            GetAnnotDict()->GetDirectObjectFor("Dest"));
 }

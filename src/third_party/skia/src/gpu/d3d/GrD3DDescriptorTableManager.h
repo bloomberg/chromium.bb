@@ -9,6 +9,7 @@
 #define GrD3DGpuDescriptorTableManager_DEFINED
 
 #include "src/gpu/d3d/GrD3DDescriptorHeap.h"
+#include <vector>
 
 class GrD3DCommandList;
 class GrD3DDirectCommandList;
@@ -108,7 +109,7 @@ private:
         void prepForSubmit(GrD3DGpu* gpu);
 
     private:
-        static constexpr int kInitialHeapDescriptorCount = 256;
+        inline static constexpr int kInitialHeapDescriptorCount = 256;
 
         std::vector<sk_sp<Heap>> fDescriptorHeaps;
         D3D12_DESCRIPTOR_HEAP_TYPE fHeapType;

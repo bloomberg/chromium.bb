@@ -21,15 +21,15 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::ArrayAccessorExpression);
 namespace tint {
 namespace ast {
 
-ArrayAccessorExpression::ArrayAccessorExpression(ProgramID program_id,
-                                                 const Source& source,
-                                                 Expression* array,
-                                                 Expression* idx_expr)
-    : Base(program_id, source), array_(array), idx_expr_(idx_expr) {
-  TINT_ASSERT(AST, array_);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, array_, program_id);
-  TINT_ASSERT(AST, idx_expr_);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, idx_expr_, program_id);
+ArrayAccessorExpression::ArrayAccessorExpression(ProgramID pid,
+                                                 const Source& src,
+                                                 const Expression* arr,
+                                                 const Expression* idx)
+    : Base(pid, src), array(arr), index(idx) {
+  TINT_ASSERT(AST, array);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, array, program_id);
+  TINT_ASSERT(AST, idx);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, idx, program_id);
 }
 
 ArrayAccessorExpression::ArrayAccessorExpression(ArrayAccessorExpression&&) =
@@ -37,24 +37,13 @@ ArrayAccessorExpression::ArrayAccessorExpression(ArrayAccessorExpression&&) =
 
 ArrayAccessorExpression::~ArrayAccessorExpression() = default;
 
-ArrayAccessorExpression* ArrayAccessorExpression::Clone(
+const ArrayAccessorExpression* ArrayAccessorExpression::Clone(
     CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* arr = ctx->Clone(array_);
-  auto* idx = ctx->Clone(idx_expr_);
+  auto src = ctx->Clone(source);
+  auto* arr = ctx->Clone(array);
+  auto* idx = ctx->Clone(index);
   return ctx->dst->create<ArrayAccessorExpression>(src, arr, idx);
-}
-
-void ArrayAccessorExpression::to_str(const sem::Info& sem,
-                                     std::ostream& out,
-                                     size_t indent) const {
-  make_indent(out, indent);
-  out << "ArrayAccessor[" << result_type_str(sem) << "]{" << std::endl;
-  array_->to_str(sem, out, indent + 2);
-  idx_expr_->to_str(sem, out, indent + 2);
-  make_indent(out, indent);
-  out << "}" << std::endl;
 }
 
 }  // namespace ast

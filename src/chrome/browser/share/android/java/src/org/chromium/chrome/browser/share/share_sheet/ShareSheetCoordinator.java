@@ -40,6 +40,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -138,6 +140,15 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
                 } else {
                     mBottomSheet.getContentView().removeOnLayoutChangeListener(
                             ShareSheetCoordinator.this::onLayoutChange);
+                }
+            }
+
+            @Override
+            public void onSheetStateChanged(@SheetState int state, @StateChangeReason int reason) {
+                if (state == SheetState.HIDDEN) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "Sharing.SharingHubAndroid.CloseReason", reason,
+                            StateChangeReason.MAX_VALUE + 1);
                 }
             }
         };
@@ -409,7 +420,12 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
                 ShareHelper.createShareFileAppCompatibilityIntent(params.getFileContentType()), 0));
 
         List<String> availableActivities = new ArrayList<String>();
-        Map<String, PropertyModel> models = new HashMap<String, PropertyModel>();
+        Map<String, ResolveInfo> resolveInfos = new HashMap<String, ResolveInfo>();
+
+        // The system can return ResolveInfos which refer to activities exported
+        // by Chrome - especially the Print activity. We don't want to offer
+        // these as "third party" targets, so filter them out.
+        availableResolveInfos = filterOutOwnResolveInfos(availableResolveInfos);
 
         // Sort the resolve infos by package name: on the backend, we store them by activity name,
         // but there's no particular reason activity names would be unique, and when we get them
@@ -417,16 +433,15 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         // unique) so that the user always gets a consistent option in a given slot.
         Collections.sort(availableResolveInfos, new ResolveInfoPackageNameComparator());
 
+        // Accumulate the ResolveInfos for every package available on the system, but do not
+        // construct their PropertyModels yet - there may be many packages but we will only show a
+        // handful of them, and constructing a PropertyModel involves multiple synchronous calls to
+        // the PackageManager which can be quite slow.
         for (ResolveInfo r : availableResolveInfos) {
             String name = r.activityInfo.packageName + "/" + r.activityInfo.name;
             availableActivities.add(name);
-            models.put(name,
-                    mPropertyModelBuilder.buildThirdPartyAppModel(mBottomSheet, params, r,
-                            saveLastUsed, mShareStartTime, NO_LOG_INDEX,
-                            mLinkGenerationStatusForMetrics, mLinkToggleMetricsDetails));
+            resolveInfos.put(name, r);
         }
-
-        models.put(MORE_TARGET_NAME, createMorePropertyModel(activity, params, saveLastUsed));
 
         int length = numberOf3PTilesToShow(activity);
 
@@ -434,15 +449,35 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
         // into our ranking?
         boolean persist = !profile.isOffTheRecord() && saveLastUsed;
 
-        ShareRankingBridge.rank(profile, type, availableActivities, length, persist,
-                ranking -> { onThirdPartyShareTargetsReceived(callback, models, ranking); });
+        ShareRankingBridge.rank(profile, type, availableActivities, length, persist, ranking -> {
+            onThirdPartyShareTargetsReceived(
+                    callback, resolveInfos, activity, params, saveLastUsed, ranking);
+        });
+    }
+
+    // Returns a new list of ResovleInfos containing only the elements of the
+    // supplied list which are not references to activities from the current
+    // package.
+    private List<ResolveInfo> filterOutOwnResolveInfos(List<ResolveInfo> infos) {
+        String currentPackageName = ContextUtils.getApplicationContext().getPackageName();
+        List<ResolveInfo> remaining = new ArrayList<ResolveInfo>();
+        for (ResolveInfo info : infos) {
+            if (!info.activityInfo.packageName.equals(currentPackageName)) {
+                remaining.add(info);
+            }
+        }
+        return remaining;
     }
 
     private int numberOf3PTilesToShow(Activity activity) {
         final boolean shouldFixMore =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_USAGE_RANKING_FIXED_MORE);
 
-        if (!shouldFixMore) return ShareSheetPropertyModelBuilder.MAX_NUM_APPS;
+        if (!shouldFixMore) {
+            // + 1 to allow for the More item, which takes up an app slot in
+            // the share ranking backend.
+            return ShareSheetPropertyModelBuilder.MAX_NUM_APPS + 1;
+        }
 
         int screenWidth =
                 ContextUtils.getApplicationContext().getResources().getDisplayMetrics().widthPixels;
@@ -470,10 +505,20 @@ public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptio
     }
 
     private void onThirdPartyShareTargetsReceived(Callback<List<PropertyModel>> callback,
-            Map<String, PropertyModel> modelMap, List<String> targets) {
+            Map<String, ResolveInfo> resolveInfos, Activity activity, ShareParams params,
+            boolean saveLastUsed, List<String> targets) {
+        // Build PropertyModels for all the ResolveInfos that correspond to
+        // actual targets, in the order that we're going to show them.
         List<PropertyModel> models = new ArrayList<PropertyModel>();
         for (String target : targets) {
-            models.add(modelMap.get(target));
+            if (target.equals(MORE_TARGET_NAME)) {
+                models.add(createMorePropertyModel(activity, params, saveLastUsed));
+            } else if (!target.equals("")) {
+                assert resolveInfos.get(target) != null;
+                models.add(mPropertyModelBuilder.buildThirdPartyAppModel(mBottomSheet, params,
+                        resolveInfos.get(target), saveLastUsed, mShareStartTime, NO_LOG_INDEX,
+                        mLinkGenerationStatusForMetrics, mLinkToggleMetricsDetails));
+            }
         }
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(models));
     }

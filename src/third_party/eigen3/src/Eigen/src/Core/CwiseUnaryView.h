@@ -10,6 +10,8 @@
 #ifndef EIGEN_CWISE_UNARY_VIEW_H
 #define EIGEN_CWISE_UNARY_VIEW_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

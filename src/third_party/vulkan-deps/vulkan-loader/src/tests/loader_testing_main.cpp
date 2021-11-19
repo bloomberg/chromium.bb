@@ -48,6 +48,23 @@ int main(int argc, char** argv) {
     fs::delete_folder(fs::path(FRAMEWORK_BUILD_DIRECTORY) / "explicit_layer_manifests");
     fs::delete_folder(fs::path(FRAMEWORK_BUILD_DIRECTORY) / "implicit_layer_manifests");
 
+    // make sure the tests don't find these env-vars if they were set on the system
+    remove_env_var("VK_ICD_FILENAMES");
+    remove_env_var("VK_LAYER_PATH");
+    remove_env_var("VK_INSTANCE_LAYERS");
+    remove_env_var("VK_LOADER_DEBUG");
+    remove_env_var("VK_LOADER_DISABLE_INST_EXT_FILTER");
+
+#if defined(__linux__) || defined(__FreeBSD__)
+    set_env_var("XDG_CONFIG_HOME", "/etc");
+    set_env_var("XDG_CONFIG_DIRS", "/etc");
+    set_env_var("XDG_DATA_HOME", "/etc");
+    set_env_var("XDG_DATA_DIRS", "/etc");
+#endif
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    set_env_var("HOME", "/home/fake_home");
+#endif
+
     ::testing::InitGoogleTest(&argc, argv);
 
     int result = RUN_ALL_TESTS();

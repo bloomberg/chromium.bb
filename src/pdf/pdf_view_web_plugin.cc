@@ -13,10 +13,12 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/debug/crash_logging.h"
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/string_search.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
@@ -79,6 +81,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -308,9 +311,19 @@ bool PdfViewWebPlugin::InitializeCommon(
   if (!params.has_value())
     return false;
 
-  PerProcessInitializer::GetInstance().Acquire();
+  // Sets crash keys like `ppapi::proxy::PDFResource::SetCrashData()`. Note that
+  // we don't set the active URL from the top-level URL, as unlike within a
+  // plugin process, the active URL changes frequently within a renderer process
+  // (see crbug.com/1266050 for details).
+  //
+  // TODO(crbug.com/1266087): If multiple PDF plugin instances share the same
+  // renderer process, the crash key will be overwritten by the newest value.
+  static base::debug::CrashKeyString* subresource_url =
+      base::debug::AllocateCrashKeyString("subresource_url",
+                                          base::debug::CrashKeySize::Size256);
+  base::debug::SetCrashKeyString(subresource_url, params->original_url);
 
-  // TODO(crbug.com/1257666): Implement "has-edits" support.
+  PerProcessInitializer::GetInstance().Acquire();
   InitializeBase(
       engine ? std::move(engine)
              : std::make_unique<PDFiumEngine>(this, params->script_option),
@@ -318,9 +331,8 @@ bool PdfViewWebPlugin::InitializeCommon(
       /*src_url=*/params->src_url,
       /*original_url=*/params->original_url,
       /*full_frame=*/params->full_frame,
-      /*background_color=*/
-      params->background_color.value_or(SK_ColorTRANSPARENT),
-      /*has_edits=*/false);
+      /*background_color=*/params->background_color,
+      /*has_edits=*/params->has_edits);
   return true;
 }
 
@@ -382,10 +394,21 @@ void PdfViewWebPlugin::Paint(cc::PaintCanvas* canvas, const gfx::Rect& rect) {
     return;
   }
 
+  // Layer translate is independent of scaling, so apply first.
+  if (!total_translate_.IsZero())
+    canvas->translate(total_translate_.x(), total_translate_.y());
+
   if (device_to_css_scale_ != 1.0f)
     canvas->scale(device_to_css_scale_, device_to_css_scale_);
 
-  canvas->drawImage(snapshot_, plugin_rect().x(), plugin_rect().y());
+  // Position layer at plugin origin before layer scaling.
+  if (!plugin_rect().origin().IsOrigin())
+    canvas->translate(plugin_rect().x(), plugin_rect().y());
+
+  if (snapshot_scale_ != 1.0f)
+    canvas->scale(snapshot_scale_, snapshot_scale_);
+
+  canvas->drawImage(snapshot_, 0, 0);
 }
 
 void PdfViewWebPlugin::UpdateGeometry(const gfx::Rect& window_rect,
@@ -758,6 +781,32 @@ void PdfViewWebPlugin::UpdateSnapshot(sk_sp<SkImage> snapshot) {
     InvalidatePluginContainer();
 }
 
+void PdfViewWebPlugin::UpdateScaledValues() {
+  total_translate_ = snapshot_translate_;
+
+  // Scale translate to compensate for use-zoom-for-DSF.
+  if (viewport_to_dip_scale_ != 1.0f)
+    total_translate_.Scale(1.0f / viewport_to_dip_scale_);
+}
+
+void PdfViewWebPlugin::UpdateScale(float scale) {
+  if (client_->IsUseZoomForDSFEnabled()) {
+    viewport_to_dip_scale_ = scale;
+    device_to_css_scale_ = 1.0f;
+  } else {
+    viewport_to_dip_scale_ = 1.0f;
+    device_to_css_scale_ = scale;
+  }
+  UpdateScaledValues();
+}
+
+void PdfViewWebPlugin::UpdateLayerTransform(float scale,
+                                            const gfx::Vector2dF& translate) {
+  snapshot_translate_ = translate;
+  snapshot_scale_ = scale;
+  UpdateScaledValues();
+}
+
 void PdfViewWebPlugin::EnableAccessibility() {
   PdfViewPluginBase::EnableAccessibility();
 }
@@ -794,7 +843,7 @@ void PdfViewWebPlugin::InitImageData(const gfx::Size& size) {
   mutable_image_data() = CreateN32PremulSkBitmap(gfx::SizeToSkISize(size));
 }
 
-void PdfViewWebPlugin::SetFormFieldInFocus(bool in_focus) {
+void PdfViewWebPlugin::SetFormTextFieldInFocus(bool in_focus) {
   text_input_type_ = in_focus ? blink::WebTextInputType::kWebTextInputTypeText
                               : blink::WebTextInputType::kWebTextInputTypeNone;
   container_wrapper_->UpdateTextInputState();
@@ -847,6 +896,9 @@ void PdfViewWebPlugin::NotifyFindTickmarks(
   if (!find_remote_) {
     mojo::PendingRemote<pdf::mojom::PdfFindInPage> pending_find_remote;
     service->GetPdfFindInPage(&pending_find_remote);
+    if (!pending_find_remote)
+      return;
+
     find_remote_.Bind(std::move(pending_find_remote));
   }
   find_remote_->SetTickmarks(tickmarks);
@@ -916,22 +968,13 @@ void PdfViewWebPlugin::OnViewportChanged(
     const gfx::Rect& plugin_rect_in_css_pixel,
     float new_device_scale) {
   css_plugin_rect_ = plugin_rect_in_css_pixel;
-  float css_to_device_pixel_scale;
-  if (client_->IsUseZoomForDSFEnabled()) {
-    viewport_to_dip_scale_ = 1.0f / new_device_scale;
-    device_to_css_scale_ = 1.0f;
-    css_to_device_pixel_scale = 1.0f;
-  } else {
-    viewport_to_dip_scale_ = 1.0f;
-    device_to_css_scale_ = 1.0f / new_device_scale;
-    css_to_device_pixel_scale = new_device_scale;
-  }
 
   // `plugin_rect_in_css_pixel` needs to be converted to device pixels before
   // getting passed into PdfViewPluginBase::UpdateGeometryOnPluginRectChanged().
   UpdateGeometryOnPluginRectChanged(
-      gfx::ScaleToEnclosingRectSafe(plugin_rect_in_css_pixel,
-                                    css_to_device_pixel_scale),
+      gfx::ScaleToEnclosingRectSafe(
+          plugin_rect_in_css_pixel,
+          client_->IsUseZoomForDSFEnabled() ? 1.0f : new_device_scale),
       new_device_scale);
 }
 

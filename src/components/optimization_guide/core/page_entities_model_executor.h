@@ -15,11 +15,10 @@
 
 namespace optimization_guide {
 
-// The PageEntitiesModelExecutor is responsible for executing the PAGE_ENTITIES
-// model.
-class PageEntitiesModelExecutor {
+// TODO(crbug/1249632): Remove this entirely.
+class HumanReadablePageEntitiesModelExecutor {
  public:
-  virtual ~PageEntitiesModelExecutor() = default;
+  virtual ~HumanReadablePageEntitiesModelExecutor() = default;
 
   using PageEntitiesModelExecutedCallback = base::OnceCallback<void(
       const absl::optional<std::vector<tflite::task::core::Category>>&)>;
@@ -29,6 +28,23 @@ class PageEntitiesModelExecutor {
   virtual void ExecuteModelWithInput(
       const std::string& text,
       PageEntitiesModelExecutedCallback callback) = 0;
+};
+
+// The PageEntitiesModelExecutor is responsible for executing the PAGE_ENTITIES
+// model.
+class PageEntitiesModelExecutor {
+ public:
+  virtual ~PageEntitiesModelExecutor() = default;
+
+  using PageEntitiesMetadataModelExecutedCallback = base::OnceCallback<void(
+      const absl::optional<std::vector<ScoredEntityMetadata>>&)>;
+
+  // Annotates |text| with page entities likely represented on the page,
+  // returning the entity metadata in the reader's locale with associated score.
+  // Invokes |callback| when done.
+  virtual void HumanReadableExecuteModelWithInput(
+      const std::string& text,
+      PageEntitiesMetadataModelExecutedCallback callback) = 0;
 
   using PageEntitiesModelEntityMetadataRetrievedCallback =
       base::OnceCallback<void(const absl::optional<EntityMetadata>&)>;

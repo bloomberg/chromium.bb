@@ -47,21 +47,16 @@ namespace {
 
 using ResolverValidationTest = ResolverTest;
 
-class FakeStmt : public ast::Statement {
+class FakeStmt : public Castable<FakeStmt, ast::Statement> {
  public:
-  FakeStmt(ProgramID program_id, Source source)
-      : ast::Statement(program_id, source) {}
+  FakeStmt(ProgramID pid, Source src) : Base(pid, src) {}
   FakeStmt* Clone(CloneContext*) const override { return nullptr; }
-  void to_str(const sem::Info&, std::ostream& out, size_t) const override {
-    out << "Fake";
-  }
 };
 
 class FakeExpr : public Castable<FakeExpr, ast::Expression> {
  public:
-  FakeExpr(ProgramID program_id, Source source) : Base(program_id, source) {}
+  FakeExpr(ProgramID pid, Source src) : Base(pid, src) {}
   FakeExpr* Clone(CloneContext*) const override { return nullptr; }
-  void to_str(const sem::Info&, std::ostream&, size_t) const override {}
 };
 
 TEST_F(ResolverValidationTest, WorkgroupMemoryUsedInVertexStage) {
@@ -95,10 +90,8 @@ TEST_F(ResolverValidationTest, WorkgroupMemoryUsedInFragmentStage) {
   auto* stmt = Assign(Expr("dst"), Expr(Source{{3, 4}}, "wg"));
 
   Func(Source{{5, 6}}, "f2", {}, ty.void_(), {stmt});
-  Func(Source{{7, 8}}, "f1", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("f2"))});
-  Func(Source{{9, 10}}, "f0", {}, ty.void_(),
-       {create<ast::CallStatement>(Call("f1"))},
+  Func(Source{{7, 8}}, "f1", {}, ty.void_(), {CallStmt(Call("f2"))});
+  Func(Source{{9, 10}}, "f0", {}, ty.void_(), {CallStmt(Call("f1"))},
        ast::DecorationList{Stage(ast::PipelineStage::kFragment)});
 
   EXPECT_FALSE(r()->Resolve());
@@ -118,7 +111,8 @@ TEST_F(ResolverValidationTest, Error_WithEmptySource) {
   EXPECT_FALSE(r()->Resolve());
 
   EXPECT_EQ(r()->error(),
-            "error: unknown statement type for type determination: Fake");
+            "error: unknown statement type for type determination: "
+            "tint::resolver::FakeStmt");
 }
 
 TEST_F(ResolverValidationTest, Stmt_Error_Unknown) {
@@ -128,7 +122,8 @@ TEST_F(ResolverValidationTest, Stmt_Error_Unknown) {
   EXPECT_FALSE(r()->Resolve());
 
   EXPECT_EQ(r()->error(),
-            "2:30 error: unknown statement type for type determination: Fake");
+            "2:30 error: unknown statement type for type determination: "
+            "tint::resolver::FakeStmt");
 }
 
 TEST_F(ResolverValidationTest, Stmt_If_NonBool) {
@@ -1057,4 +1052,5 @@ TEST_F(ResolverTest, Expr_Constructor_Cast_Pointer) {
 }  // namespace resolver
 }  // namespace tint
 
+TINT_INSTANTIATE_TYPEINFO(tint::resolver::FakeStmt);
 TINT_INSTANTIATE_TYPEINFO(tint::resolver::FakeExpr);

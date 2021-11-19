@@ -60,20 +60,23 @@
     box-shadow: inset 0 0 0 2px var(--cr-focus-outline-color);
   }
 
-  #toggle-icon {
+  #toggle-button .icon {
     --cr-icon-button-margin-start: 0;
+    --cr-icon-color: var(--icon-color);
+    --cr-icon-ripple-margin: 0;
+    --cr-icon-ripple-size: 20px;
     transition: transform 300ms;
   }
 
-  :host([expanded_]) #toggle-icon {
+  :host([expanded_]) #toggle-button .icon {
     transform: rotate(180deg);
   }
 </style>
-<url-visit visit="[[visit]]" index="0" is-top-visit
-    has-related-visits$="[[hasRelatedVisits_]]">
+<url-visit visit="[[visit]]" cluster-index="[[clusterIndex]]" index="0"
+    has-related-visits$="[[hasRelatedVisits_]]" is-top-visit>
 </url-visit>
 <template is="dom-repeat" items="[[visibleRelatedVisits_]]">
-  <url-visit visit="[[item]]"
+  <url-visit visit="[[item]]" cluster-index="[[clusterIndex]]"
       index="[[getVisitIndex_(item, visit.relatedVisits.*)]]">
   </url-visit>
 </template>
@@ -81,7 +84,7 @@
      easily handle it. -->
 <iron-collapse opened="[[expanded_]]" no-animation>
   <template is="dom-repeat" items="[[hiddenRelatedVisits_]]">
-    <url-visit visit="[[item]]"
+    <url-visit visit="[[item]]" cluster-index="[[clusterIndex]]"
         index="[[getVisitIndex_(item, visit.relatedVisits.*)]]">
     </url-visit>
   </template>
@@ -99,6 +102,6 @@
   <div id="toggle-button" class="pill pill-icon-end" tabindex="0"
       on-click="onToggleButtonClick_" on-keydown="onToggleButtonKeyDown_">
     <span>[[getToggleButtonLabel_(expanded_)]]</span>
-    <span id="toggle-icon" class="cr-icon icon-expand-more"></span>
+    <span id="toggle-icon" class="icon cr-icon icon-expand-more"></span>
   </div>
 </div>

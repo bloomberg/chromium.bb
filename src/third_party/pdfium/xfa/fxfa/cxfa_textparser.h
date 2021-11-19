@@ -19,7 +19,7 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "fxjs/gc/heap.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/cppgc/garbage-collected.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
@@ -110,8 +110,9 @@ class CXFA_TextParser : public cppgc::GarbageCollected<CXFA_TextParser> {
                       bool bFirst,
                       float fVerScale) const;
 
-  Optional<WideString> GetEmbeddedObj(const CXFA_TextProvider* pTextProvider,
-                                      const CFX_XMLNode* pXMLNode);
+  absl::optional<WideString> GetEmbeddedObj(
+      const CXFA_TextProvider* pTextProvider,
+      const CFX_XMLNode* pXMLNode);
   Context* GetParseContextFromMap(const CFX_XMLNode* pXMLNode);
 
  protected:

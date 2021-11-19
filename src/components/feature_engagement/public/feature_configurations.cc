@@ -66,6 +66,27 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                                Comparator(EQUAL, 0), 180, 180);
     return config;
   }
+
+  if (kIPHDesktopSharedHighlightingFeature.name == feature->name) {
+    // A config that allows the shared highlighting desktop IPH to be shown
+    // when a user receives a highlight:
+    // * Once per 7 days
+    // * Up to 5 times but only if unused in the last 7 days.
+    // * Used fewer than 2 times
+
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("iph_desktop_shared_highlighting_trigger",
+                                  Comparator(LESS_THAN, 5), 360, 360);
+    config->used = EventConfig("iph_desktop_shared_highlighting_used",
+                               Comparator(LESS_THAN, 2), 360, 360);
+    config->event_configs.insert(
+        EventConfig("iph_desktop_shared_highlighting_trigger",
+                    Comparator(EQUAL, 0), 7, 360));
+    return config;
+  }
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
@@ -241,6 +262,8 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("tab_switcher_iph_triggered", Comparator(EQUAL, 0), 90, 90);
     config->used = EventConfig("tab_switcher_button_clicked",
                                Comparator(EQUAL, 0), 14, 90);
+    config->snooze_params.snooze_interval = 7;
+    config->snooze_params.max_limit = 3;
     return config;
   }
   if (kIPHWebFeedFollowFeature.name == feature->name) {
@@ -464,7 +487,7 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // disables the feature for a site in the app menu when:
     // * They have not yet opened auto dark settings.
     // * The dialog has been shown 0 times before.
-    // * They have done so more than 5 times.
+    // * They have done so at least 3 times.
     // TODO(crbug.com/1251737): Update this config from test values; Will
     // likely depend on giving feedback instead of opening settings, since the
     // primary purpose  of the dialog has changed.
@@ -476,8 +499,9 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
         EventConfig("auto_dark_settings_opened", Comparator(EQUAL, 0), 90, 90);
     config->trigger = EventConfig("auto_dark_opt_out_iph_trigger",
                                   Comparator(EQUAL, 0), 90, 90);
-    config->event_configs.insert(EventConfig(
-        "auto_dark_disabled_in_app_menu", Comparator(GREATER_THAN, 5), 90, 90));
+    config->event_configs.insert(
+        EventConfig("auto_dark_disabled_in_app_menu",
+                    Comparator(GREATER_THAN_OR_EQUAL, 3), 90, 90));
     return config;
   }
 

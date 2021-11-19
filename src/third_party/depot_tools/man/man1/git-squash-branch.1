@@ -2,12 +2,12 @@
 .\"     Title: git-squash-branch
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 07/01/2021
+.\"      Date: 10/26/2021
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 906b5026
+.\"    Source: depot_tools 5c9e8b47
 .\"  Language: English
 .\"
-.TH "GIT\-SQUASH\-BRANCH" "1" "07/01/2021" "depot_tools 906b5026" "Chromium depot_tools Manual"
+.TH "GIT\-SQUASH\-BRANCH" "1" "10/26/2021" "depot_tools 5c9e8b47" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -89,7 +89,7 @@ Optional message to use for the first line of the squashed commit\&. If omitted,
 | * \fB27abea4b40\fR	\fB(spleen_tag\fR\fB) \fR2014\-04\-10 ~ Refactor spleen
 | * \fBd8abe739e3\fR	2014\-04\-10 ~ Add widget
 |/
-* \fBbeec6f4746\fR	\fB(origin/main\fR\fB, origin/HEAD\fR\fB) \fR2014\-04\-10 ~ Make ReflectorImpl use mailboxes    <(\fBfixit, cool_feature\fR)
+* \fBbeec6f4746\fR	\fB(origin/main\fR\fB, origin/HEAD\fR\fB) \fR2014\-04\-10 ~ Make ReflectorImpl use mailboxes    <(\fBcool_feature, fixit\fR)
 * \fB41290e02b7\fR	2014\-04\-10 ~ don\*(Aqt use glibc\-specific execinfo\&.h on uclibc builds
 * \fBa76fde7b7b\fR	2014\-04\-10 ~ [fsp] Add requestUnmount() method together with the request manager\&.
 * \fB9de7a713b3\fR	2014\-04\-10 ~ linux_aura: Use system configuration for middle clicking the titlebar\&.
@@ -110,7 +110,7 @@ Some common short\-hand aliases\&. Feel free to add these to your \fI~/\&.gitcon
 .\}
 .nf
 [alias]
-  git squash = squash\-branch
+  squash = squash\-branch
 .fi
 .if n \{\
 .RE

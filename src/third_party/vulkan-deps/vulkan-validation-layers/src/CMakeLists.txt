@@ -33,10 +33,7 @@ enable_testing()
 # This section contains variables that affect development GUIs (e.g. CMake GUI and IDEs), such as option(), folders, and variables
 # with the CACHE property.
 
-option(VVL_CPP_STANDARD "Set the C++ standard to build against. The value will be passed to cmake's CXX_STANDARD property. Default = 11" 11)
-if (NOT VVL_CPP_STANDARD)
-    set(VVL_CPP_STANDARD 11)
-endif()
+set(VVL_CPP_STANDARD 11 CACHE STRING "Set the C++ standard to build against. The value will be passed to cmake's CXX_STANDARD property.")
 
 option(VVL_ENABLE_ASAN "Use address sanitization (specifically -fsanitize=address)" OFF)
 
@@ -405,7 +402,7 @@ endif()
 if(PYTHONINTERP_FOUND)
     add_custom_target(VulkanVL_generated_source
                       COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/generate_source.py
-                              ${VulkanRegistry_DIR} --incremental
+                              ${VulkanRegistry_DIR} ${SPIRV_HEADERS_INSTALL_DIR}/include/spirv/unified1/ --incremental
                       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/layers/generated
                       )
 else()

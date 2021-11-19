@@ -34,9 +34,9 @@ void GenerateWgslOptions(DataBuilder* b, writer::wgsl::Options* options);
 void GenerateHlslOptions(DataBuilder* b, writer::hlsl::Options* options);
 void GenerateMslOptions(DataBuilder* b, writer::msl::Options* options);
 
-enum class InputFormat { kWGSL, kSpv, kNone };
+enum class InputFormat { kWGSL, kSpv };
 
-enum class OutputFormat { kWGSL, kSpv, kHLSL, kMSL, kNone };
+enum class OutputFormat { kWGSL, kSpv, kHLSL, kMSL };
 
 class CommonFuzzer {
  public:
@@ -48,7 +48,6 @@ class CommonFuzzer {
     transform_manager_ = tm;
     transform_inputs_ = inputs;
   }
-  void EnableInspector() { inspector_enabled_ = true; }
 
   void SetDumpInput(bool enabled) { dump_input_ = enabled; }
 
@@ -89,7 +88,6 @@ class CommonFuzzer {
   OutputFormat output_;
   transform::Manager* transform_manager_ = nullptr;
   transform::DataMap* transform_inputs_ = nullptr;
-  bool inspector_enabled_ = false;
   bool dump_input_ = false;
   tint::diag::List diagnostics_;
 
@@ -107,6 +105,9 @@ class CommonFuzzer {
   /// The source file needs to live at least as long as #diagnostics_
   std::unique_ptr<Source::File> file_;
 #endif  // TINT_BUILD_WGSL_READER
+
+  // Run series of reflection operations to exercise the Inspector API.
+  void RunInspector(Program* program);
 };
 
 }  // namespace fuzzers

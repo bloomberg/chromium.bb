@@ -36,5 +36,5 @@ interface PluginRegistry {
   //
   // TODO(crbug.com/850278): We shouldn't rely on the renderer to tell us the main frame origin.
   [Sync]
-  GetPlugins(bool refresh, bool is_main_frame, url.mojom.Origin main_frame_origin) => (array<PluginInfo> plugins);
+  GetPlugins(bool refresh, url.mojom.Origin main_frame_origin) => (array<PluginInfo> plugins);
 };

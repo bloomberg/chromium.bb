@@ -8,6 +8,8 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into depot_tools.
 """
 
+PRESUBMIT_VERSION = '2.0.0'
+
 import fnmatch
 import os
 import sys
@@ -35,8 +37,7 @@ $VerifiedPlatform linux-mips64 linux-mips64le linux-mipsle
 TEST_TIMEOUT_S = 330  # 5m 30s
 
 
-
-def DepotToolsPylint(input_api, output_api):
+def CheckPylint(input_api, output_api):
   """Gather all the pylint logic into one place to make it self-contained."""
   files_to_check = [
     r'^[^/]*\.py$',
@@ -59,36 +60,44 @@ def DepotToolsPylint(input_api, output_api):
     'R0401',  # Cyclic import
     'W0613',  # Unused argument
   ]
-  return input_api.canned_checks.GetPylint(
+  return input_api.RunTests(input_api.canned_checks.GetPylint(
       input_api,
       output_api,
       files_to_check=files_to_check,
       files_to_skip=files_to_skip,
-      disabled_warnings=disabled_warnings)
+      disabled_warnings=disabled_warnings))
 
 
-def CommonChecks(input_api, output_api, tests_to_skip_list):
-  input_api.SetTimeout(TEST_TIMEOUT_S)
-
+def CheckRecipes(input_api, output_api):
   file_filter = lambda x: x.LocalPath() == 'infra/config/recipes.cfg'
-  results = input_api.canned_checks.CheckJsonParses(input_api, output_api,
-                                                    file_filter=file_filter)
+  return input_api.canned_checks.CheckJsonParses(input_api, output_api,
+                                                 file_filter=file_filter)
 
+def CheckPythonVersion(input_api, output_api):
   # The tests here are assuming this is not defined, so raise an error
   # if it is.
   if 'USE_PYTHON3' in globals():
-    results.append(output_api.PresubmitError(
+    return [output_api.PresubmitError(
         'USE_PYTHON3 is defined; update the tests in //PRESUBMIT.py and '
-        '//tests/PRESUBMIT.py.'))
-  elif sys.version_info.major != 2:
-    results.append(output_api.PresubmitError(
-        'Did not use Python2 for //PRESUBMIT.py by default.'))
+        '//tests/PRESUBMIT.py.')]
+  if sys.version_info.major != 2:
+    return [output_api.PresubmitError(
+        'Did not use Python2 for //PRESUBMIT.py by default.')]
+  return []
 
-  results.extend(input_api.canned_checks.CheckJsonParses(
-      input_api, output_api))
+
+def CheckJsonFiles(input_api, output_api):
+  return input_api.canned_checks.CheckJsonParses(
+      input_api, output_api)
+
+
+def CheckUnitTestsOnCommit(input_api, output_api):
+  # Do not run integration tests on upload since they are way too slow.
+  input_api.SetTimeout(TEST_TIMEOUT_S)
 
   # Run only selected tests on Windows.
   test_to_run_list = [r'.*test\.py$']
+  tests_to_skip_list = []
   if input_api.platform.startswith(('cygwin', 'win32')):
     print('Warning: skipping most unit tests on Windows')
     tests_to_skip_list.extend([
@@ -101,16 +110,13 @@ def CommonChecks(input_api, output_api, tests_to_skip_list):
     ])
   tests_to_skip_list.append(r'.*my_activity_test\.py')
 
-  # TODO(maruel): Make sure at least one file is modified first.
-  # TODO(maruel): If only tests are modified, only run them.
-  tests = DepotToolsPylint(input_api, output_api)
-  tests.extend(input_api.canned_checks.GetUnitTestsInDirectory(
+  tests = input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
       files_to_check=test_to_run_list,
       files_to_skip=tests_to_skip_list,
-      run_on_python3=False))
+      run_on_python3=False)
 
   tests.extend(input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
@@ -119,6 +125,10 @@ def CommonChecks(input_api, output_api, tests_to_skip_list):
       files_to_check=[r'.*my_activity_test\.py'],
       run_on_python3=True))
 
+  return input_api.RunTests(tests)
+
+
+def CheckCIPDManifest(input_api, output_api):
   # Validate CIPD manifests.
   root = input_api.os_path.normpath(
     input_api.os_path.abspath(input_api.PresubmitLocalPath()))
@@ -135,6 +145,7 @@ def CommonChecks(input_api, output_api, tests_to_skip_list):
     include_deletes=False,
     file_filter=lambda x:
       input_api.os_path.normpath(x.AbsoluteLocalPath()) in cipd_manifests)
+  tests = []
   for path in affected_manifests:
     path = path.AbsoluteLocalPath()
     if path.endswith('.txt'):
@@ -149,30 +160,17 @@ def CommonChecks(input_api, output_api, tests_to_skip_list):
       tests.append(input_api.canned_checks.CheckCIPDClientDigests(
           input_api, output_api, client_version_file=path))
 
-  results.extend(input_api.RunTests(tests))
-  return results
+  return input_api.RunTests(tests)
 
 
-def CheckChangeOnUpload(input_api, output_api):
-  # Do not run integration tests on upload since they are way too slow.
-  tests_to_skip_list = [
-      r'^checkout_test\.py$',
-      r'^cipd_bootstrap_test\.py$',
-      r'^gclient_smoketest\.py$',
-  ]
-  results = []
-  results.extend(input_api.canned_checks.CheckOwners(
-      input_api, output_api, allow_tbr=False))
-  results.extend(input_api.canned_checks.CheckOwnersFormat(
-      input_api, output_api))
-  results.extend(CommonChecks(input_api, output_api, tests_to_skip_list))
-  return results
+def CheckOwnersFormat(input_api, output_api):
+  return input_api.canned_checks.CheckOwnersFormat(input_api, output_api)
 
 
-def CheckChangeOnCommit(input_api, output_api):
-  output = []
-  output.extend(CommonChecks(input_api, output_api, []))
-  output.extend(input_api.canned_checks.CheckDoNotSubmit(
-      input_api,
-      output_api))
-  return output
+def CheckOwnersOnUpload(input_api, output_api):
+  return input_api.canned_checks.CheckOwners(input_api, output_api,
+                                             allow_tbr=False)
+
+def CheckDoNotSubmitOnCommit(input_api, output_api):
+  return input_api.canned_checks.CheckDoNotSubmit(input_api, output_api)
+

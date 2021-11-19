@@ -534,7 +534,7 @@ void av1_set_mb_ur_variance(AV1_COMP *cpi) {
   const int cq_level = cpi->oxcf.rc_cfg.cq_level;
   if (cq_level < delta_q_avg[0]) {
     model_idx = 0;
-    scaling_factor = 1.0;
+    scaling_factor = (double)cq_level / delta_q_avg[0];
   } else if (cq_level < delta_q_avg[1]) {
     model_idx = 2;
     scaling_factor =

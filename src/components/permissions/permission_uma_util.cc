@@ -246,58 +246,66 @@ void RecordPermissionActionUkm(
       .SetPromptDisposition(static_cast<int64_t>(ui_disposition));
 
   builder
-      .SetStats_LoudPromptsOfType_DenyRate(PredictionService::GetRoundedRatio(
-          loud_ui_actions_counts_for_request_type.denies,
-          loud_ui_prompts_count_for_request_type))
+      .SetStats_LoudPromptsOfType_DenyRate(
+          PredictionService::GetRoundedRatioForUkm(
+              loud_ui_actions_counts_for_request_type.denies,
+              loud_ui_prompts_count_for_request_type))
       .SetStats_LoudPromptsOfType_DismissRate(
-          PredictionService::GetRoundedRatio(
+          PredictionService::GetRoundedRatioForUkm(
               loud_ui_actions_counts_for_request_type.dismissals,
               loud_ui_prompts_count_for_request_type))
-      .SetStats_LoudPromptsOfType_GrantRate(PredictionService::GetRoundedRatio(
-          loud_ui_actions_counts_for_request_type.grants,
-          loud_ui_prompts_count_for_request_type))
-      .SetStats_LoudPromptsOfType_IgnoreRate(PredictionService::GetRoundedRatio(
-          loud_ui_actions_counts_for_request_type.ignores,
-          loud_ui_prompts_count_for_request_type))
+      .SetStats_LoudPromptsOfType_GrantRate(
+          PredictionService::GetRoundedRatioForUkm(
+              loud_ui_actions_counts_for_request_type.grants,
+              loud_ui_prompts_count_for_request_type))
+      .SetStats_LoudPromptsOfType_IgnoreRate(
+          PredictionService::GetRoundedRatioForUkm(
+              loud_ui_actions_counts_for_request_type.ignores,
+              loud_ui_prompts_count_for_request_type))
       .SetStats_LoudPromptsOfType_Count(PredictionService::BucketizeValue(
           loud_ui_prompts_count_for_request_type));
 
   builder
-      .SetStats_LoudPrompts_DenyRate(PredictionService::GetRoundedRatio(
+      .SetStats_LoudPrompts_DenyRate(PredictionService::GetRoundedRatioForUkm(
           loud_ui_actions_counts.denies, loud_ui_prompts_count))
-      .SetStats_LoudPrompts_DismissRate(PredictionService::GetRoundedRatio(
-          loud_ui_actions_counts.dismissals, loud_ui_prompts_count))
-      .SetStats_LoudPrompts_GrantRate(PredictionService::GetRoundedRatio(
+      .SetStats_LoudPrompts_DismissRate(
+          PredictionService::GetRoundedRatioForUkm(
+              loud_ui_actions_counts.dismissals, loud_ui_prompts_count))
+      .SetStats_LoudPrompts_GrantRate(PredictionService::GetRoundedRatioForUkm(
           loud_ui_actions_counts.grants, loud_ui_prompts_count))
-      .SetStats_LoudPrompts_IgnoreRate(PredictionService::GetRoundedRatio(
+      .SetStats_LoudPrompts_IgnoreRate(PredictionService::GetRoundedRatioForUkm(
           loud_ui_actions_counts.ignores, loud_ui_prompts_count))
       .SetStats_LoudPrompts_Count(
           PredictionService::BucketizeValue(loud_ui_prompts_count));
 
   builder
-      .SetStats_AllPromptsOfType_DenyRate(PredictionService::GetRoundedRatio(
-          actions_counts_for_request_type.denies,
-          prompts_count_for_request_type))
-      .SetStats_AllPromptsOfType_DismissRate(PredictionService::GetRoundedRatio(
-          actions_counts_for_request_type.dismissals,
-          prompts_count_for_request_type))
-      .SetStats_AllPromptsOfType_GrantRate(PredictionService::GetRoundedRatio(
-          actions_counts_for_request_type.grants,
-          prompts_count_for_request_type))
-      .SetStats_AllPromptsOfType_IgnoreRate(PredictionService::GetRoundedRatio(
-          actions_counts_for_request_type.ignores,
-          prompts_count_for_request_type))
+      .SetStats_AllPromptsOfType_DenyRate(
+          PredictionService::GetRoundedRatioForUkm(
+              actions_counts_for_request_type.denies,
+              prompts_count_for_request_type))
+      .SetStats_AllPromptsOfType_DismissRate(
+          PredictionService::GetRoundedRatioForUkm(
+              actions_counts_for_request_type.dismissals,
+              prompts_count_for_request_type))
+      .SetStats_AllPromptsOfType_GrantRate(
+          PredictionService::GetRoundedRatioForUkm(
+              actions_counts_for_request_type.grants,
+              prompts_count_for_request_type))
+      .SetStats_AllPromptsOfType_IgnoreRate(
+          PredictionService::GetRoundedRatioForUkm(
+              actions_counts_for_request_type.ignores,
+              prompts_count_for_request_type))
       .SetStats_AllPromptsOfType_Count(
           PredictionService::BucketizeValue(prompts_count_for_request_type));
 
   builder
-      .SetStats_AllPrompts_DenyRate(PredictionService::GetRoundedRatio(
+      .SetStats_AllPrompts_DenyRate(PredictionService::GetRoundedRatioForUkm(
           actions_counts.denies, prompts_count))
-      .SetStats_AllPrompts_DismissRate(PredictionService::GetRoundedRatio(
+      .SetStats_AllPrompts_DismissRate(PredictionService::GetRoundedRatioForUkm(
           actions_counts.dismissals, prompts_count))
-      .SetStats_AllPrompts_GrantRate(PredictionService::GetRoundedRatio(
+      .SetStats_AllPrompts_GrantRate(PredictionService::GetRoundedRatioForUkm(
           actions_counts.grants, prompts_count))
-      .SetStats_AllPrompts_IgnoreRate(PredictionService::GetRoundedRatio(
+      .SetStats_AllPrompts_IgnoreRate(PredictionService::GetRoundedRatioForUkm(
           actions_counts.ignores, prompts_count))
       .SetStats_AllPrompts_Count(
           PredictionService::BucketizeValue(prompts_count));
@@ -346,6 +354,10 @@ std::string GetPromptDispositionString(
       return "LocationBarLeftChip";
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
       return "LocationBarLeftQuietChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
+      return "LocationBarLeftQuietAbusiveChip";
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
+      return "LocationBarLeftChipAutoBubble";
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
       return "LocationBarRightAnimatedIcon";
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
@@ -551,7 +563,10 @@ void PermissionUmaUtil::PermissionPromptResolved(
     base::TimeDelta time_to_decision,
     PermissionPromptDisposition ui_disposition,
     absl::optional<PermissionPromptDispositionReason> ui_reason,
-    absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood) {
+    absl::optional<PredictionGrantLikelihood> predicted_grant_likelihood,
+    bool did_show_prompt,
+    bool did_click_managed,
+    bool did_click_learn_more) {
   switch (permission_action) {
     case PermissionAction::GRANTED:
       RecordPromptDecided(requests, /*accepted=*/true, /*is_one_time=*/false);
@@ -615,7 +630,50 @@ void PermissionUmaUtil::PermissionPromptResolved(
   base::UmaHistogramEnumeration("Permissions.Action.WithDisposition." +
                                     GetPromptDispositionString(ui_disposition),
                                 permission_action, PermissionAction::NUM);
-}
+
+  RequestTypeForUma type =
+      GetUmaValueForRequestType(requests[0]->request_type());
+  if (requests.size() > 1)
+    type = RequestTypeForUma::MULTIPLE;
+
+  std::string permission_type = GetPermissionRequestString(type);
+  std::string permission_disposition =
+      GetPromptDispositionString(ui_disposition);
+
+  base::UmaHistogramEnumeration("Permissions.Prompt." + permission_type + "." +
+                                    permission_disposition + ".Action",
+                                permission_action, PermissionAction::NUM);
+
+  if (!time_to_decision.is_zero()) {
+    base::UmaHistogramLongTimes("Permissions.Prompt." + permission_type + "." +
+                                    permission_disposition + "." +
+                                    action_string + ".TimeToAction",
+                                time_to_decision);
+  }
+
+  if (permission_action == PermissionAction::IGNORED &&
+      ui_disposition !=
+          PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE) {
+    base::UmaHistogramBoolean("Permissions.Prompt." + permission_type + "." +
+                                  permission_disposition +
+                                  ".Ignored.DidShowBubble",
+                              did_show_prompt);
+  }
+
+  if (ui_disposition ==
+      PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP) {
+    base::UmaHistogramBoolean("Permissions.Prompt." + permission_type + "." +
+                                  permission_disposition + "." + action_string +
+                                  ".DidClickManage",
+                              did_click_managed);
+  } else if (ui_disposition == PermissionPromptDisposition::
+                                   LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP) {
+    base::UmaHistogramBoolean("Permissions.Prompt." + permission_type + "." +
+                                  permission_disposition + "." + action_string +
+                                  ".DidClickLearnMore",
+                              did_click_learn_more);
+  }
+}  // namespace permissions
 
 void PermissionUmaUtil::RecordPermissionPromptPriorCount(
     ContentSettingsType permission,
@@ -728,7 +786,7 @@ PermissionUmaUtil::ScopedRevocationReporter::ScopedRevocationReporter(
 PermissionUmaUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
   if (!is_initially_allowed_)
     return;
-  if (!PermissionUtil::IsPermission(content_type_))
+  if (!IsRequestablePermissionType(content_type_))
     return;
   HostContentSettingsMap* settings_map =
       PermissionsClient::Get()->GetSettingsMap(browser_context_);
@@ -736,7 +794,7 @@ PermissionUmaUtil::ScopedRevocationReporter::~ScopedRevocationReporter() {
       primary_url_, secondary_url_, content_type_);
   if (final_content_setting != CONTENT_SETTING_ALLOW) {
     // PermissionUmaUtil takes origins, even though they're typed as GURL.
-    GURL requesting_origin = primary_url_.GetOrigin();
+    GURL requesting_origin = primary_url_.DeprecatedGetOriginAsURL();
     PermissionRevoked(content_type_, source_ui_, requesting_origin,
                       browser_context_);
     if ((content_type_ == ContentSettingsType::GEOLOCATION ||
@@ -790,6 +848,7 @@ void PermissionUmaUtil::RecordPermissionAction(
   PredictionRequestFeatures::ActionCounts actions_counts;
 
   if (permission_actions_history != nullptr) {
+    DCHECK(IsRequestablePermissionType(permission));
     auto loud_ui_actions_per_request_type =
         permission_actions_history->GetHistory(
             cutoff, ContentSettingsTypeToRequestType(permission),
@@ -1035,12 +1094,14 @@ bool PermissionUmaUtil::IsPromptDispositionQuiet(
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
     case PermissionPromptDisposition::MINI_INFOBAR:
     case PermissionPromptDisposition::MESSAGE_UI:
       return true;
     case PermissionPromptDisposition::ANCHORED_BUBBLE:
     case PermissionPromptDisposition::MODAL_DIALOG:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
     case PermissionPromptDisposition::NONE_VISIBLE:
     case PermissionPromptDisposition::CUSTOM_MODAL_DIALOG:
     case PermissionPromptDisposition::NOT_APPLICABLE:
@@ -1055,10 +1116,12 @@ bool PermissionUmaUtil::IsPromptDispositionLoud(
     case PermissionPromptDisposition::ANCHORED_BUBBLE:
     case PermissionPromptDisposition::MODAL_DIALOG:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_CHIP_AUTO_BUBBLE:
       return true;
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_RIGHT_ANIMATED_ICON:
     case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_CHIP:
+    case PermissionPromptDisposition::LOCATION_BAR_LEFT_QUIET_ABUSIVE_CHIP:
     case PermissionPromptDisposition::MINI_INFOBAR:
     case PermissionPromptDisposition::MESSAGE_UI:
     case PermissionPromptDisposition::NONE_VISIBLE:

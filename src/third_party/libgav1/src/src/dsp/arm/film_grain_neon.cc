@@ -52,8 +52,10 @@ inline int16x8_t GetSignedSource8(const uint8_t* src) {
   return ZeroExtend(vld1_u8(src));
 }
 
-inline int16x8_t GetSignedSource8Msan(const uint8_t* src, int valid_range) {
-  return ZeroExtend(Load1MsanU8(src, 8 - valid_range));
+inline int16x8_t GetSignedSource8Msan(const uint8_t* src, int /*valid_range*/) {
+  // TODO(b/194217060): restore |valid_range| usage after correcting call sites
+  // causing test vector failures.
+  return ZeroExtend(Load1MsanU8(src, 0));
 }
 
 inline void StoreUnsigned8(uint8_t* dest, const uint16x8_t data) {
@@ -67,8 +69,11 @@ inline int16x8_t GetSignedSource8(const uint16_t* src) {
   return vreinterpretq_s16_u16(vld1q_u16(src));
 }
 
-inline int16x8_t GetSignedSource8Msan(const uint16_t* src, int valid_range) {
-  return vreinterpretq_s16_u16(Load1QMsanU16(src, 16 - valid_range));
+inline int16x8_t GetSignedSource8Msan(const uint16_t* src,
+                                      int /*valid_range*/) {
+  // TODO(b/194217060): restore |valid_range| usage after correcting call sites
+  // causing test vector failures.
+  return vreinterpretq_s16_u16(Load1QMsanU16(src, 0));
 }
 
 inline void StoreUnsigned8(uint16_t* dest, const uint16x8_t data) {
@@ -193,13 +198,17 @@ inline uint16x8_t GetAverageLuma(const uint8_t* const luma, int subsampling_x) {
 }
 
 inline uint16x8_t GetAverageLumaMsan(const uint8_t* const luma,
-                                     int subsampling_x, int valid_range) {
+                                     int subsampling_x, int /*valid_range*/) {
   if (subsampling_x != 0) {
-    const uint8x16_t src = Load1QMsanU8(luma, 16 - valid_range);
+    // TODO(b/194217060): restore |valid_range| usage after correcting call
+    // sites causing test vector failures.
+    const uint8x16_t src = Load1QMsanU8(luma, 0);
 
     return vrshrq_n_u16(vpaddlq_u8(src), 1);
   }
-  return vmovl_u8(Load1MsanU8(luma, 8 - valid_range));
+  // TODO(b/194217060): restore |valid_range| usage after correcting call sites
+  // causing test vector failures.
+  return vmovl_u8(Load1MsanU8(luma, 0));
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -243,12 +252,16 @@ inline uint16x8_t GetAverageLuma(const uint16_t* const luma,
 }
 
 inline uint16x8_t GetAverageLumaMsan(const uint16_t* const luma,
-                                     int subsampling_x, int valid_range) {
+                                     int subsampling_x, int /*valid_range*/) {
   if (subsampling_x != 0) {
-    const uint16x8x2_t src = Load2QMsanU16(luma, 32 - valid_range);
+    // TODO(b/194217060): restore |valid_range| usage after correcting call
+    // sites causing test vector failures.
+    const uint16x8x2_t src = Load2QMsanU16(luma, 0);
     return vrhaddq_u16(src.val[0], src.val[1]);
   }
-  return Load1QMsanU16(luma, 16 - valid_range);
+  // TODO(b/194217060): restore |valid_range| usage after correcting call sites
+  // causing test vector failures.
+  return Load1QMsanU16(luma, 0);
 }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
 
@@ -688,14 +701,10 @@ inline int16x8_t GetScalingFactors(
   int16_t start_vals[8];
   static_assert(bitdepth <= kBitdepth10,
                 "NEON Film Grain is not yet implemented for 12bpp.");
-  start_vals[0] = scaling_lut[source[0]];
-  start_vals[1] = scaling_lut[source[1]];
-  start_vals[2] = scaling_lut[source[2]];
-  start_vals[3] = scaling_lut[source[3]];
-  start_vals[4] = scaling_lut[source[4]];
-  start_vals[5] = scaling_lut[source[5]];
-  start_vals[6] = scaling_lut[source[6]];
-  start_vals[7] = scaling_lut[source[7]];
+  for (int i = 0; i < 8; ++i) {
+    assert(source[i] < kScalingLookupTableSize << (bitdepth - 2));
+    start_vals[i] = scaling_lut[source[i]];
+  }
   return vld1q_s16(start_vals);
 }
 
@@ -943,6 +952,10 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
   const int chroma_width = (width + subsampling_x) >> subsampling_x;
   const int safe_chroma_width = chroma_width & ~7;
   uint8_t luma_buffer[16];
+#if LIBGAV1_MSAN
+  // Quiet msan warnings.
+  memset(luma_buffer, 0, sizeof(luma_buffer));
+#endif
   const int16x8_t offset = vdupq_n_s16(chroma_offset << 5);
 
   start_height >>= subsampling_y;
@@ -1298,6 +1311,11 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane10bpp_NEON(
   const int chroma_width = (width + subsampling_x) >> subsampling_x;
   const int safe_chroma_width = chroma_width & ~7;
   uint16_t luma_buffer[16];
+#if LIBGAV1_MSAN
+  // TODO(b/194217060): This can be removed if the range calculations below are
+  // fixed.
+  memset(luma_buffer, 0, sizeof(luma_buffer));
+#endif
   // Offset is added before downshifting in order to take advantage of
   // saturation, so it has to be upscaled by 6 bits, plus 2 bits for 10bpp.
   const int32x4_t offset = vdupq_n_s32(chroma_offset << (6 + 2));

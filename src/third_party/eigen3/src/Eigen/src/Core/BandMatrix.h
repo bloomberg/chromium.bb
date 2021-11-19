@@ -10,6 +10,8 @@
 #ifndef EIGEN_BANDMATRIX_H
 #define EIGEN_BANDMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

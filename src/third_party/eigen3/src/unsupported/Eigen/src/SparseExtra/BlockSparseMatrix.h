@@ -11,6 +11,8 @@
 #ifndef EIGEN_SPARSEBLOCKMATRIX_H
 #define EIGEN_SPARSEBLOCKMATRIX_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 /** \ingroup SparseCore_Module
   *

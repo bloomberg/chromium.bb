@@ -7,8 +7,8 @@
 
 #include "src/gpu/geometry/GrTriangulator.h"
 
+#include "src/gpu/BufferWriter.h"
 #include "src/gpu/GrEagerVertexAllocator.h"
-#include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrPathUtils.h"
 
 #include "src/core/SkGeometry.h"
@@ -81,14 +81,14 @@ bool GrTriangulator::Comparator::sweep_lt(const SkPoint& a, const SkPoint& b) co
 }
 
 static inline void* emit_vertex(Vertex* v, bool emitCoverage, void* data) {
-    GrVertexWriter verts{data};
-    verts.write(v->fPoint);
+    skgpu::VertexWriter verts{data};
+    verts << v->fPoint;
 
     if (emitCoverage) {
-        verts.write(GrNormalizeByteToFloat(v->fAlpha));
+        verts << GrNormalizeByteToFloat(v->fAlpha);
     }
 
-    return verts.fPtr;
+    return verts.ptr();
 }
 
 static void* emit_triangle(Vertex* v0, Vertex* v1, Vertex* v2, bool emitCoverage, void* data) {

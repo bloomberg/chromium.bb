@@ -24,6 +24,7 @@
 
 #include "src/castable.h"
 #include "src/debug.h"
+#include "src/program_id.h"
 #include "src/symbol.h"
 #include "src/traits.h"
 
@@ -39,7 +40,7 @@ class Node;
 }  // namespace ast
 
 ProgramID ProgramIDOf(const Program*);
-ProgramID ProgramIDOf(const ast::Node*);
+ProgramID ProgramIDOf(const ProgramBuilder*);
 
 /// Cloneable is the base class for all objects that can be cloned
 class Cloneable : public Castable<Cloneable> {
@@ -47,7 +48,7 @@ class Cloneable : public Castable<Cloneable> {
   /// Performs a deep clone of this object using the CloneContext `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned object
-  virtual Cloneable* Clone(CloneContext* ctx) const = 0;
+  virtual const Cloneable* Clone(CloneContext* ctx) const = 0;
 };
 
 /// @returns an invalid ProgramID
@@ -93,50 +94,19 @@ class CloneContext {
   /// If the CloneContext is cloning from a Program to a ProgramBuilder, then
   /// the Node or sem::Type `a` must be owned by the Program #src.
   ///
-  /// @param a the `Node` or `sem::Type` to clone
+  /// @param object the type deriving from Cloneable to clone
   /// @return the cloned node
   template <typename T>
-  T* Clone(T* a) {
-    // If the input is nullptr, there's nothing to clone - just return nullptr.
-    if (a == nullptr) {
-      return nullptr;
-    }
-
+  const T* Clone(const T* object) {
     if (src) {
-      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, a);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, object);
     }
-
-    // Was Replace() called for this object?
-    auto it = replacements_.find(a);
-    if (it != replacements_.end()) {
-      auto* replacement = it->second();
-      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, replacement);
-      return CheckedCast<T>(replacement);
+    if (auto* cloned = CloneCloneable(object)) {
+      auto* out = CheckedCast<T>(cloned);
+      TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, out);
+      return out;
     }
-
-    Cloneable* cloned = nullptr;
-
-    // Attempt to clone using the registered replacer functions.
-    auto& typeinfo = a->TypeInfo();
-    for (auto& transform : transforms_) {
-      if (!typeinfo.Is(*transform.typeinfo)) {
-        continue;
-      }
-      cloned = transform.function(a);
-      break;
-    }
-
-    if (!cloned) {
-      // No transform for this type, or the transform returned nullptr.
-      // Clone with T::Clone().
-      cloned = a->Clone(this);
-    }
-
-    auto* out = CheckedCast<T>(cloned);
-
-    TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, out);
-
-    return out;
+    return nullptr;
   }
 
   /// Clones the Node or sem::Type `a` into the ProgramBuilder #dst if `a` is
@@ -148,10 +118,10 @@ class CloneContext {
   /// If the CloneContext is cloning from a Program to a ProgramBuilder, then
   /// the Node or sem::Type `a` must be owned by the Program #src.
   ///
-  /// @param a the `Node` or `sem::Type` to clone
+  /// @param a the type deriving from Cloneable to clone
   /// @return the cloned node
   template <typename T>
-  T* CloneWithoutTransform(T* a) {
+  const T* CloneWithoutTransform(const T* a) {
     // If the input is nullptr, there's nothing to clone - just return nullptr.
     if (a == nullptr) {
       return nullptr;
@@ -285,8 +255,8 @@ class CloneContext {
   ///   CloneCtx ctx(&out, in);
   ///   ctx.ReplaceAll([&] (ast::UintLiteral* l) {
   ///       return ctx->dst->create<ast::UintLiteral>(
-  ///           ctx->Clone(l->source()),
-  ///           ctx->Clone(l->type()),
+  ///           ctx->Clone(l->source),
+  ///           ctx->Clone(l->type),
   ///           42);
   ///     });
   ///   ctx.Clone();
@@ -319,7 +289,9 @@ class CloneContext {
     }
     CloneableTransform transform;
     transform.typeinfo = &TypeInfo::Of<T>();
-    transform.function = [=](Cloneable* in) { return replacer(in->As<T>()); };
+    transform.function = [=](const Cloneable* in) {
+      return replacer(in->As<T>());
+    };
     transforms_.emplace_back(std::move(transform));
     return *this;
   }
@@ -359,10 +331,10 @@ class CloneContext {
   template <typename WHAT,
             typename WITH,
             typename = traits::EnableIfIsType<WITH, Cloneable>>
-  CloneContext& Replace(WHAT* what, WITH* with) {
+  CloneContext& Replace(const WHAT* what, const WITH* with) {
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, what);
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, with);
-    replacements_[what] = [with]() -> Cloneable* { return with; };
+    replacements_[what] = [with]() -> const Cloneable* { return with; };
     return *this;
   }
 
@@ -380,7 +352,7 @@ class CloneContext {
   /// assertion in debug builds, and undefined behavior in release builds.
   /// @returns this CloneContext so calls can be chained
   template <typename WHAT, typename WITH, typename = std::result_of_t<WITH()>>
-  CloneContext& Replace(WHAT* what, WITH&& with) {
+  CloneContext& Replace(const WHAT* what, WITH&& with) {
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, what);
     replacements_[what] = with;
     return *this;
@@ -441,7 +413,7 @@ class CloneContext {
   template <typename T, typename BEFORE, typename OBJECT>
   CloneContext& InsertBefore(const std::vector<T>& vector,
                              const BEFORE* before,
-                             OBJECT* object) {
+                             const OBJECT* object) {
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, before);
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, object);
     if (std::find(vector.begin(), vector.end(), before) == vector.end()) {
@@ -465,7 +437,7 @@ class CloneContext {
   template <typename T, typename AFTER, typename OBJECT>
   CloneContext& InsertAfter(const std::vector<T>& vector,
                             const AFTER* after,
-                            OBJECT* object) {
+                            const OBJECT* object) {
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, src, after);
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(Clone, dst, object);
     if (std::find(vector.begin(), vector.end(), after) == vector.end()) {
@@ -503,7 +475,7 @@ class CloneContext {
 
     // TypeInfo of the Cloneable that the transform operates on
     const TypeInfo* typeinfo;
-    std::function<Cloneable*(Cloneable*)> function;
+    std::function<const Cloneable*(const Cloneable*)> function;
   };
 
   CloneContext(const CloneContext&) = delete;
@@ -512,27 +484,32 @@ class CloneContext {
   /// Cast `obj` from type `FROM` to type `TO`, returning the cast object.
   /// Reports an internal compiler error if the cast failed.
   template <typename TO, typename FROM>
-  TO* CheckedCast(FROM* obj) {
+  const TO* CheckedCast(const FROM* obj) {
     if (obj == nullptr) {
       return nullptr;
     }
-    if (TO* cast = obj->template As<TO>()) {
+    if (const TO* cast = obj->template As<TO>()) {
       return cast;
     }
-    TINT_ICE(Clone, Diagnostics())
-        << "Cloned object was not of the expected type\n"
-        << "got:      " << obj->TypeInfo().name << "\n"
-        << "expected: " << TypeInfo::Of<TO>().name;
+    CheckedCastFailure(obj, TypeInfo::Of<TO>());
     return nullptr;
   }
+
+  /// Clones a Cloneable object, using any replacements or transforms that have
+  /// been configured.
+  const Cloneable* CloneCloneable(const Cloneable* object);
+
+  /// Adds an error diagnostic to Diagnostics() that the cloned object was not
+  /// of the expected type.
+  void CheckedCastFailure(const Cloneable* got, const TypeInfo& expected);
 
   /// @returns the diagnostic list of #dst
   diag::List& Diagnostics() const;
 
-  /// A vector of Cloneable*
-  using CloneableList = std::vector<Cloneable*>;
+  /// A vector of const Cloneable*
+  using CloneableList = std::vector<const Cloneable*>;
 
-  // Transformations to be applied to a list (vector)
+  /// Transformations to be applied to a list (vector)
   struct ListTransforms {
     /// Constructor
     ListTransforms();
@@ -563,7 +540,7 @@ class CloneContext {
 
   /// A map of object in #src to functions that create their replacement in
   /// #dst
-  std::unordered_map<const Cloneable*, std::function<Cloneable*()>>
+  std::unordered_map<const Cloneable*, std::function<const Cloneable*()>>
       replacements_;
 
   /// A map of symbol in #src to their cloned equivalent in #dst

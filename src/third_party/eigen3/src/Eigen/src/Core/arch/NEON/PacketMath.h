@@ -12,6 +12,8 @@
 #ifndef EIGEN_PACKET_MATH_NEON_H
 #define EIGEN_PACKET_MATH_NEON_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -3459,7 +3461,7 @@ EIGEN_ALWAYS_INLINE void zip_in_place<Packet4bf>(Packet4bf& p1, Packet4bf& p2) {
 
 EIGEN_STRONG_INLINE Packet4bf F32ToBf16(const Packet4f& p)
 {
-  // See the scalar implemention in BFloat16.h for a comprehensible explanation
+  // See the scalar implementation in BFloat16.h for a comprehensible explanation
   // of this fast rounding algorithm
   Packet4ui input = reinterpret_cast<Packet4ui>(p);
 

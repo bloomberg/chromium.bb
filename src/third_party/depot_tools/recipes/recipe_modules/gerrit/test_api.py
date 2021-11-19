@@ -70,6 +70,13 @@ class GerritTestApi(recipe_test_api.RecipeTestApi):
       "can_delete": True
     })
 
+  def make_gerrit_create_tag_response_data(self):
+    return self._make_gerrit_response_json({
+      "ref": "refs/tags/1.0",
+      "revision": "67ebf73496383c6777035e374d2d664009e2aa5c",
+      "can_delete": True
+    })
+
   def make_gerrit_get_branch_response_data(self):
     return self._make_gerrit_response_json({
       "ref": "refs/heads/main",

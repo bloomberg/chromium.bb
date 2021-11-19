@@ -42,9 +42,6 @@ constexpr uint8_t kSmoothWeights[] = {
 #include "src/dsp/smooth_weights.inc"
 };
 
-// TODO(b/150459137): Keeping the intermediate values in uint16_t would allow
-// processing more values at once. At the high end, it could do 4x4 or 8x2 at a
-// time.
 inline uint16x4_t CalculatePred(const uint16x4_t weighted_top,
                                 const uint16x4_t weighted_left,
                                 const uint16x4_t weighted_bl,
@@ -55,11 +52,11 @@ inline uint16x4_t CalculatePred(const uint16x4_t weighted_top,
   return vrshrn_n_u32(pred_2, kSmoothWeightScale + 1);
 }
 
-template <int width, int height>
-inline void Smooth4Or8xN_NEON(void* LIBGAV1_RESTRICT const dest,
-                              ptrdiff_t stride,
-                              const void* LIBGAV1_RESTRICT const top_row,
-                              const void* LIBGAV1_RESTRICT const left_column) {
+template <int height>
+inline void Smooth4xN_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                           const void* LIBGAV1_RESTRICT const top_row,
+                           const void* LIBGAV1_RESTRICT const left_column) {
+  constexpr int width = 4;
   const auto* const top = static_cast<const uint8_t*>(top_row);
   const auto* const left = static_cast<const uint8_t*>(left_column);
   const uint8_t top_right = top[width - 1];
@@ -67,15 +64,62 @@ inline void Smooth4Or8xN_NEON(void* LIBGAV1_RESTRICT const dest,
   const uint8_t* const weights_y = kSmoothWeights + height - 4;
   auto* dst = static_cast<uint8_t*>(dest);
 
-  uint8x8_t top_v;
-  if (width == 4) {
-    top_v = Load4(top);
-  } else {  // width == 8
-    top_v = vld1_u8(top);
-  }
+  const uint8x8_t top_v = Load4(top);
   const uint8x8_t top_right_v = vdup_n_u8(top_right);
   const uint8x8_t bottom_left_v = vdup_n_u8(bottom_left);
-  // Over-reads for 4xN but still within the array.
+  const uint8x8_t weights_x_v = Load4(kSmoothWeights + width - 4);
+  // 256 - weights = vneg_s8(weights)
+  const uint8x8_t scaled_weights_x =
+      vreinterpret_u8_s8(vneg_s8(vreinterpret_s8_u8(weights_x_v)));
+
+  for (int y = 0; y < height; ++y) {
+    const uint8x8_t left_v = vdup_n_u8(left[y]);
+    const uint8x8_t weights_y_v = vdup_n_u8(weights_y[y]);
+    const uint8x8_t scaled_weights_y =
+        vreinterpret_u8_s8(vneg_s8(vreinterpret_s8_u8(weights_y_v)));
+    const uint16x4_t weighted_bl =
+        vget_low_u16(vmull_u8(scaled_weights_y, bottom_left_v));
+
+    const uint16x4_t weighted_top = vget_low_u16(vmull_u8(weights_y_v, top_v));
+    const uint16x4_t weighted_left =
+        vget_low_u16(vmull_u8(weights_x_v, left_v));
+    const uint16x4_t weighted_tr =
+        vget_low_u16(vmull_u8(scaled_weights_x, top_right_v));
+    const uint16x4_t result =
+        CalculatePred(weighted_top, weighted_left, weighted_bl, weighted_tr);
+
+    StoreLo4(dst, vmovn_u16(vcombine_u16(result, result)));
+    dst += stride;
+  }
+}
+
+inline uint8x8_t CalculatePred(const uint16x8_t weighted_top,
+                               const uint16x8_t weighted_left,
+                               const uint16x8_t weighted_bl,
+                               const uint16x8_t weighted_tr) {
+  // Maximum value: 0xFF00
+  const uint16x8_t pred_0 = vaddq_u16(weighted_top, weighted_bl);
+  // Maximum value: 0xFF00
+  const uint16x8_t pred_1 = vaddq_u16(weighted_left, weighted_tr);
+  const uint16x8_t pred_2 = vhaddq_u16(pred_0, pred_1);
+  return vrshrn_n_u16(pred_2, kSmoothWeightScale);
+}
+
+template <int height>
+inline void Smooth8xN_NEON(void* LIBGAV1_RESTRICT const dest, ptrdiff_t stride,
+                           const void* LIBGAV1_RESTRICT const top_row,
+                           const void* LIBGAV1_RESTRICT const left_column) {
+  constexpr int width = 8;
+  const auto* const top = static_cast<const uint8_t*>(top_row);
+  const auto* const left = static_cast<const uint8_t*>(left_column);
+  const uint8_t top_right = top[width - 1];
+  const uint8_t bottom_left = left[height - 1];
+  const uint8_t* const weights_y = kSmoothWeights + height - 4;
+  auto* dst = static_cast<uint8_t*>(dest);
+
+  const uint8x8_t top_v = vld1_u8(top);
+  const uint8x8_t top_right_v = vdup_n_u8(top_right);
+  const uint8x8_t bottom_left_v = vdup_n_u8(bottom_left);
   const uint8x8_t weights_x_v = vld1_u8(kSmoothWeights + width - 4);
   // 256 - weights = vneg_s8(weights)
   const uint8x8_t scaled_weights_x =
@@ -90,18 +134,10 @@ inline void Smooth4Or8xN_NEON(void* LIBGAV1_RESTRICT const dest,
     const uint16x8_t weighted_top = vmull_u8(weights_y_v, top_v);
     const uint16x8_t weighted_left = vmull_u8(weights_x_v, left_v);
     const uint16x8_t weighted_tr = vmull_u8(scaled_weights_x, top_right_v);
-    const uint16x4_t dest_0 =
-        CalculatePred(vget_low_u16(weighted_top), vget_low_u16(weighted_left),
-                      vget_low_u16(weighted_tr), vget_low_u16(weighted_bl));
+    const uint8x8_t result =
+        CalculatePred(weighted_top, weighted_left, weighted_bl, weighted_tr);
 
-    if (width == 4) {
-      StoreLo4(dst, vmovn_u16(vcombine_u16(dest_0, dest_0)));
-    } else {  // width == 8
-      const uint16x4_t dest_1 = CalculatePred(
-          vget_high_u16(weighted_top), vget_high_u16(weighted_left),
-          vget_high_u16(weighted_tr), vget_high_u16(weighted_bl));
-      vst1_u8(dst, vmovn_u16(vcombine_u16(dest_0, dest_1)));
-    }
+    vst1_u8(dst, result);
     dst += stride;
   }
 }
@@ -114,27 +150,17 @@ inline uint8x16_t CalculateWeightsAndPred(
   const uint16x8_t weighted_left_low = vmull_u8(vget_low_u8(weights_x), left);
   const uint16x8_t weighted_tr_low =
       vmull_u8(vget_low_u8(scaled_weights_x), top_right);
-  const uint16x4_t dest_0 = CalculatePred(
-      vget_low_u16(weighted_top_low), vget_low_u16(weighted_left_low),
-      vget_low_u16(weighted_tr_low), vget_low_u16(weighted_bl));
-  const uint16x4_t dest_1 = CalculatePred(
-      vget_high_u16(weighted_top_low), vget_high_u16(weighted_left_low),
-      vget_high_u16(weighted_tr_low), vget_high_u16(weighted_bl));
-  const uint8x8_t dest_0_u8 = vmovn_u16(vcombine_u16(dest_0, dest_1));
+  const uint8x8_t result_low = CalculatePred(
+      weighted_top_low, weighted_left_low, weighted_bl, weighted_tr_low);
 
   const uint16x8_t weighted_top_high = vmull_u8(weights_y, vget_high_u8(top));
   const uint16x8_t weighted_left_high = vmull_u8(vget_high_u8(weights_x), left);
   const uint16x8_t weighted_tr_high =
       vmull_u8(vget_high_u8(scaled_weights_x), top_right);
-  const uint16x4_t dest_2 = CalculatePred(
-      vget_low_u16(weighted_top_high), vget_low_u16(weighted_left_high),
-      vget_low_u16(weighted_tr_high), vget_low_u16(weighted_bl));
-  const uint16x4_t dest_3 = CalculatePred(
-      vget_high_u16(weighted_top_high), vget_high_u16(weighted_left_high),
-      vget_high_u16(weighted_tr_high), vget_high_u16(weighted_bl));
-  const uint8x8_t dest_1_u8 = vmovn_u16(vcombine_u16(dest_2, dest_3));
+  const uint8x8_t result_high = CalculatePred(
+      weighted_top_high, weighted_left_high, weighted_bl, weighted_tr_high);
 
-  return vcombine_u8(dest_0_u8, dest_1_u8);
+  return vcombine_u8(result_low, result_high);
 }
 
 template <int width, int height>
@@ -442,7 +468,7 @@ void Init8bpp() {
   assert(dsp != nullptr);
   // 4x4
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<4, 4>;
+      Smooth4xN_NEON<4>;
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<4, 4>;
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorSmoothHorizontal] =
@@ -450,7 +476,7 @@ void Init8bpp() {
 
   // 4x8
   dsp->intra_predictors[kTransformSize4x8][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<4, 8>;
+      Smooth4xN_NEON<8>;
   dsp->intra_predictors[kTransformSize4x8][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<4, 8>;
   dsp->intra_predictors[kTransformSize4x8][kIntraPredictorSmoothHorizontal] =
@@ -458,7 +484,7 @@ void Init8bpp() {
 
   // 4x16
   dsp->intra_predictors[kTransformSize4x16][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<4, 16>;
+      Smooth4xN_NEON<16>;
   dsp->intra_predictors[kTransformSize4x16][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<4, 16>;
   dsp->intra_predictors[kTransformSize4x16][kIntraPredictorSmoothHorizontal] =
@@ -466,7 +492,7 @@ void Init8bpp() {
 
   // 8x4
   dsp->intra_predictors[kTransformSize8x4][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<8, 4>;
+      Smooth8xN_NEON<4>;
   dsp->intra_predictors[kTransformSize8x4][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<8, 4>;
   dsp->intra_predictors[kTransformSize8x4][kIntraPredictorSmoothHorizontal] =
@@ -474,7 +500,7 @@ void Init8bpp() {
 
   // 8x8
   dsp->intra_predictors[kTransformSize8x8][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<8, 8>;
+      Smooth8xN_NEON<8>;
   dsp->intra_predictors[kTransformSize8x8][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<8, 8>;
   dsp->intra_predictors[kTransformSize8x8][kIntraPredictorSmoothHorizontal] =
@@ -482,7 +508,7 @@ void Init8bpp() {
 
   // 8x16
   dsp->intra_predictors[kTransformSize8x16][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<8, 16>;
+      Smooth8xN_NEON<16>;
   dsp->intra_predictors[kTransformSize8x16][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<8, 16>;
   dsp->intra_predictors[kTransformSize8x16][kIntraPredictorSmoothHorizontal] =
@@ -490,7 +516,7 @@ void Init8bpp() {
 
   // 8x32
   dsp->intra_predictors[kTransformSize8x32][kIntraPredictorSmooth] =
-      Smooth4Or8xN_NEON<8, 32>;
+      Smooth8xN_NEON<32>;
   dsp->intra_predictors[kTransformSize8x32][kIntraPredictorSmoothVertical] =
       SmoothVertical4Or8xN_NEON<8, 32>;
   dsp->intra_predictors[kTransformSize8x32][kIntraPredictorSmoothHorizontal] =

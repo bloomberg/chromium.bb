@@ -13,16 +13,21 @@
 # limitations under the License.
 """A test to ensure that admin services are registered correctly."""
 
-import logging
-import unittest
 from concurrent.futures import ThreadPoolExecutor
+import logging
+import sys
+import unittest
 
 import grpc
 import grpc_admin
-from grpc_csds import csds_pb2, csds_pb2_grpc
-from grpc_channelz.v1 import channelz_pb2, channelz_pb2_grpc
+from grpc_channelz.v1 import channelz_pb2
+from grpc_channelz.v1 import channelz_pb2_grpc
+from grpc_csds import csds_pb2
+from grpc_csds import csds_pb2_grpc
 
 
+@unittest.skipIf(sys.version_info[0] < 3,
+                 'ProtoBuf descriptor has moved on from Python2')
 class TestAdmin(unittest.TestCase):
 
     def setUp(self):

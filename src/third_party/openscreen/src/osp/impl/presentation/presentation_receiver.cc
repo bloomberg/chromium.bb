@@ -127,8 +127,6 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
 
       response.url_availabilities = delegate_->OnUrlAvailabilityRequest(
           request.watch_id, request.watch_duration, std::move(request.urls));
-      msgs::CborEncodeBuffer buffer;
-
       WritePresentationUrlAvailabilityResponse(
           response, GetProtocolConnection(endpoint_id).get());
       return decode_result;

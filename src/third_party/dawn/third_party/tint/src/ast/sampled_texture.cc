@@ -21,35 +21,29 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::SampledTexture);
 namespace tint {
 namespace ast {
 
-SampledTexture::SampledTexture(ProgramID program_id,
-                               const Source& source,
-                               TextureDimension dim,
-                               Type const* type)
-    : Base(program_id, source, dim), type_(type) {
-  TINT_ASSERT(AST, type_);
+SampledTexture::SampledTexture(ProgramID pid,
+                               const Source& src,
+                               TextureDimension d,
+                               const Type* ty)
+    : Base(pid, src, d), type(ty) {
+  TINT_ASSERT(AST, type);
 }
 
 SampledTexture::SampledTexture(SampledTexture&&) = default;
 
 SampledTexture::~SampledTexture() = default;
 
-std::string SampledTexture::type_name() const {
-  std::ostringstream out;
-  out << "__sampled_texture_" << dim() << type_->type_name();
-  return out.str();
-}
-
 std::string SampledTexture::FriendlyName(const SymbolTable& symbols) const {
   std::ostringstream out;
-  out << "texture_" << dim() << "<" << type_->FriendlyName(symbols) << ">";
+  out << "texture_" << dim << "<" << type->FriendlyName(symbols) << ">";
   return out.str();
 }
 
-SampledTexture* SampledTexture::Clone(CloneContext* ctx) const {
+const SampledTexture* SampledTexture::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* ty = ctx->Clone(type());
-  return ctx->dst->create<SampledTexture>(src, dim(), ty);
+  auto src = ctx->Clone(source);
+  auto* ty = ctx->Clone(type);
+  return ctx->dst->create<SampledTexture>(src, dim, ty);
 }
 
 }  // namespace ast

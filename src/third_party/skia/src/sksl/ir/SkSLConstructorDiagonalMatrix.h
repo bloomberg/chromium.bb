@@ -12,6 +12,7 @@
 #include "src/sksl/SkSLContext.h"
 #include "src/sksl/ir/SkSLConstructor.h"
 #include "src/sksl/ir/SkSLExpression.h"
+#include "src/sksl/ir/SkSLLiteral.h"
 
 #include <memory>
 
@@ -24,7 +25,7 @@ namespace SkSL {
  */
 class ConstructorDiagonalMatrix final : public SingleArgumentConstructor {
 public:
-    static constexpr Kind kExpressionKind = Kind::kConstructorDiagonalMatrix;
+    inline static constexpr Kind kExpressionKind = Kind::kConstructorDiagonalMatrix;
 
     ConstructorDiagonalMatrix(int line, const Type& type, std::unique_ptr<Expression> arg)
         : INHERITED(line, kExpressionKind, &type, std::move(arg))

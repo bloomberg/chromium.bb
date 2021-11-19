@@ -85,7 +85,8 @@ TlsServerHandshaker::DefaultProofSourceHandle::SelectCertificate(
   handshaker_->OnSelectCertificateDone(
       /*ok=*/true, /*is_sync=*/true, chain.get(),
       /*handshake_hints=*/absl::string_view(),
-      /*ticket_encryption_key=*/absl::string_view(), cert_matched_sni);
+      /*ticket_encryption_key=*/absl::string_view(), cert_matched_sni,
+      QuicDelayedSSLConfig());
   if (!handshaker_->select_cert_status().has_value()) {
     QUIC_BUG(quic_bug_12423_1)
         << "select_cert_status() has no value after a synchronous select cert";
@@ -184,8 +185,7 @@ void TlsServerHandshaker::DecryptCallback::Cancel() {
 }
 
 TlsServerHandshaker::TlsServerHandshaker(
-    QuicSession* session,
-    const QuicCryptoServerConfig* crypto_config)
+    QuicSession* session, const QuicCryptoServerConfig* crypto_config)
     : TlsHandshaker(this, session),
       QuicCryptoServerStreamBase(session),
       proof_source_(crypto_config->proof_source()),
@@ -193,6 +193,10 @@ TlsServerHandshaker::TlsServerHandshaker(
       crypto_negotiated_params_(new QuicCryptoNegotiatedParameters),
       tls_connection_(crypto_config->ssl_ctx(), this, session->GetSSLConfig()),
       crypto_config_(crypto_config) {
+  QUIC_DVLOG(1) << "TlsServerHandshaker: support_client_cert:"
+                << session->support_client_cert()
+                << ", client_cert_mode initial value: " << client_cert_mode();
+
   QUICHE_DCHECK_EQ(PROTOCOL_TLS1_3,
                    session->connection()->version().handshake_protocol);
 
@@ -205,14 +209,6 @@ TlsServerHandshaker::TlsServerHandshaker(
     use_legacy_extension = 1;
   }
   SSL_set_quic_use_legacy_codepoint(ssl(), use_legacy_extension);
-
-  if (!session->quic_tls_disable_resumption_refactor()) {
-    if (GetQuicFlag(FLAGS_quic_disable_server_tls_resumption)) {
-      SSL_set_options(ssl(), SSL_OP_NO_TICKET);
-    }
-  } else {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_tls_disable_resumption_refactor);
-  }
 
   if (session->connection()->context()->tracer) {
     tls_connection_.EnableInfoCallback();
@@ -474,17 +470,22 @@ bool TlsServerHandshaker::ProcessTransportParameters(
   // Notify QuicConnectionDebugVisitor.
   session()->connection()->OnTransportParametersReceived(client_params);
 
-  // Chrome clients before 86.0.4233.0 did not send the
-  // key_update_not_yet_supported transport parameter, but they did send a
-  // Google-internal transport parameter with identifier 0x4751. We treat
-  // reception of 0x4751 as having received key_update_not_yet_supported to
-  // ensure we do not use key updates with those older clients.
-  // TODO(dschinazi) remove this workaround once all of our QUIC+TLS Finch
-  // experiments have a min_version greater than 86.0.4233.0.
-  if (client_params.custom_parameters.find(
-          static_cast<TransportParameters::TransportParameterId>(0x4751)) !=
-      client_params.custom_parameters.end()) {
-    client_params.key_update_not_yet_supported = true;
+  if (GetQuicReloadableFlag(quic_ignore_key_update_not_yet_supported)) {
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_ignore_key_update_not_yet_supported, 2,
+                                 2);
+  } else {
+    // Chrome clients before 86.0.4233.0 did not send the
+    // key_update_not_yet_supported transport parameter, but they did send a
+    // Google-internal transport parameter with identifier 0x4751. We treat
+    // reception of 0x4751 as having received key_update_not_yet_supported to
+    // ensure we do not use key updates with those older clients.
+    // TODO(dschinazi) remove this workaround once all of our QUIC+TLS Finch
+    // experiments have a min_version greater than 86.0.4233.0.
+    if (client_params.custom_parameters.find(
+            static_cast<TransportParameters::TransportParameterId>(0x4751)) !=
+        client_params.custom_parameters.end()) {
+      client_params.key_update_not_yet_supported = true;
+    }
   }
 
   // When interoperating with non-Google implementations that do not send
@@ -619,9 +620,18 @@ QuicAsyncStatus TlsServerHandshaker::VerifyCertChain(
     std::unique_ptr<ProofVerifyDetails>* /*details*/,
     uint8_t* /*out_alert*/,
     std::unique_ptr<ProofVerifierCallback> /*callback*/) {
-  QUIC_BUG(quic_bug_10341_5)
-      << "Client certificates are not yet supported on the server";
-  return QUIC_FAILURE;
+  if (!session()->support_client_cert()) {
+    QUIC_BUG(quic_bug_10341_5)
+        << "Client certificates are not yet supported on the server";
+    return QUIC_FAILURE;
+  }
+
+  QUIC_RESTART_FLAG_COUNT_N(quic_tls_server_support_client_cert, 2, 2);
+  QUIC_DVLOG(1) << "VerifyCertChain returning success";
+
+  // No real verification here. A subclass can override this function to verify
+  // the client cert if needed.
+  return QUIC_SUCCESS;
 }
 
 void TlsServerHandshaker::OnProofVerifyDetailsAvailable(
@@ -966,7 +976,7 @@ ssl_select_cert_result_t TlsServerHandshaker::EarlySelectCertCallback(
 void TlsServerHandshaker::OnSelectCertificateDone(
     bool ok, bool is_sync, const ProofSource::Chain* chain,
     absl::string_view handshake_hints, absl::string_view ticket_encryption_key,
-    bool cert_matched_sni) {
+    bool cert_matched_sni, QuicDelayedSSLConfig delayed_ssl_config) {
   QUIC_DVLOG(1) << "OnSelectCertificateDone. ok:" << ok
                 << ", is_sync:" << is_sync
                 << ", len(handshake_hints):" << handshake_hints.size()
@@ -989,6 +999,13 @@ void TlsServerHandshaker::OnSelectCertificateDone(
   ticket_encryption_key_ = std::string(ticket_encryption_key);
   select_cert_status_ = QUIC_FAILURE;
   cert_matched_sni_ = cert_matched_sni;
+  if (session()->support_client_cert()) {
+    if (delayed_ssl_config.client_cert_mode.has_value()) {
+      tls_connection_.SetClientCertMode(*delayed_ssl_config.client_cert_mode);
+      QUIC_DVLOG(1) << "client_cert_mode after cert selection: "
+                    << client_cert_mode();
+    }
+  }
   if (ok) {
     if (chain && !chain->certs.empty()) {
       tls_connection_.SetCertChain(chain->ToCryptoBuffers().value);

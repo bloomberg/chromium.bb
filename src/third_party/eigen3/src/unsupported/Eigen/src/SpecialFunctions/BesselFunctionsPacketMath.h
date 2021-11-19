@@ -10,6 +10,8 @@
 #ifndef EIGEN_BESSELFUNCTIONS_PACKETMATH_H
 #define EIGEN_BESSELFUNCTIONS_PACKETMATH_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

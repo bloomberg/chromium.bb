@@ -14,6 +14,8 @@
 #include <iostream>
 #include <vector>
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal 

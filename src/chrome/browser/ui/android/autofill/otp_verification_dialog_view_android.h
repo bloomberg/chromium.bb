@@ -33,8 +33,9 @@ class OtpVerificationDialogViewAndroid : public CardUnmaskOtpInputDialogView {
 
   // CardUnmaskOtpInputDialogView.
   void ShowPendingState() override;
-  void ShowErrorMessage(const std::u16string error_message) override;
-  void OnControllerDestroying() override;
+  void ShowInvalidState(const std::u16string& invalid_label_text) override;
+  void Dismiss(bool show_confirmation_before_closing,
+               bool user_closed_dialog) override;
 
   // Called by the Java code when the error dialog is dismissed.
   void OnDialogDismissed(JNIEnv* env);
@@ -46,6 +47,7 @@ class OtpVerificationDialogViewAndroid : public CardUnmaskOtpInputDialogView {
   bool ShowDialog(ui::WindowAndroid* windowAndroid);
 
  private:
+  void ShowConfirmationAndDismissDialog(std::u16string confirmation_message);
   CardUnmaskOtpInputDialogController* controller_;
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

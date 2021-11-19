@@ -39,14 +39,6 @@ namespace dawn_native {
         Destroy();
     }
 
-    void CommandBufferBase::DoNextSetValidatedBufferLocationsInternal() {
-        SetValidatedBufferLocationsInternalCmd* cmd =
-            mCommands.NextCommand<SetValidatedBufferLocationsInternalCmd>();
-        for (const DeferredBufferLocationUpdate& update : cmd->updates) {
-            update.location->Set(update.buffer.Get(), update.offset);
-        }
-    }
-
     // static
     CommandBufferBase* CommandBufferBase::MakeError(DeviceBase* device) {
         return new CommandBufferBase(device, ObjectBase::kError);
@@ -59,9 +51,7 @@ namespace dawn_native {
     MaybeError CommandBufferBase::ValidateCanUseInSubmitNow() const {
         ASSERT(!IsError());
 
-        if (mDestroyed) {
-            return DAWN_VALIDATION_ERROR("Command buffer reused in submit");
-        }
+        DAWN_INVALID_IF(mDestroyed, "%s cannot be submitted more than once.", this);
         return {};
     }
 
@@ -73,6 +63,10 @@ namespace dawn_native {
 
     const CommandBufferResourceUsage& CommandBufferBase::GetResourceUsages() const {
         return mResourceUsages;
+    }
+
+    CommandIterator* CommandBufferBase::GetCommandIteratorForTesting() {
+        return &mCommands;
     }
 
     bool IsCompleteSubresourceCopiedTo(const TextureBase* texture,

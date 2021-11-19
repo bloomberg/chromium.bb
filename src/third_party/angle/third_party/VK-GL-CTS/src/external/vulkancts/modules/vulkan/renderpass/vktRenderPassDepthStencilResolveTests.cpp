@@ -536,7 +536,7 @@ Move<VkRenderPass> DepthStencilResolveTest::createRenderPass(VkFormat vkformat, 
 	AttachmentReference2 singlesampleAttachmentRef			// VkAttachmentReference2
 	(
 																// VkStructureType					sType;
-		DE_NULL,												// const void*						pNext;
+		attachmentRefStencil,                                                                   // const void*                                          pNext;
 		((m_config.unusedResolve || renderPassNo != m_numRenderPasses - 1) ? VK_ATTACHMENT_UNUSED : 1u),	// deUint32							attachment;
 		layout,													// VkImageLayout					layout;
 		aspectFlags												// VkImageAspectFlags				aspectMask;
@@ -1551,7 +1551,7 @@ void initTests (tcu::TestCaseGroup* group)
 										0u,
 										useSeparateDepthStencilLayouts,
 										unusedResolve,
-										tcu::nothing<VkFormat>(),
+										tcu::Nothing,
 										false
 									};
 									formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
@@ -1595,7 +1595,7 @@ void initTests (tcu::TestCaseGroup* group)
 										expectedValue,
 										useSeparateDepthStencilLayouts,
 										unusedResolve,
-										tcu::nothing<VkFormat>(),
+										tcu::Nothing,
 										false
 									};
 									formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
@@ -1706,7 +1706,7 @@ void initTests (tcu::TestCaseGroup* group)
 									0u,
 									useSeparateDepthStencilLayouts,
 									unusedResolve,
-									tcu::nothing<VkFormat>(),
+									tcu::Nothing,
 									false
 								};
 								formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));
@@ -1740,7 +1740,7 @@ void initTests (tcu::TestCaseGroup* group)
 									expectedValue,
 									useSeparateDepthStencilLayouts,
 									unusedResolve,
-									tcu::nothing<VkFormat>(),
+									tcu::Nothing,
 									false
 								};
 								formatGroup->addChild(new DSResolveTestInstance(testCtx, tcu::NODETYPE_SELF_VALIDATE, testName, testName, testConfig));

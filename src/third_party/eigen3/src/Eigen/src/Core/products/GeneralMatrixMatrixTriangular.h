@@ -10,6 +10,8 @@
 #ifndef EIGEN_GENERAL_MATRIX_MATRIX_TRIANGULAR_H
 #define EIGEN_GENERAL_MATRIX_MATRIX_TRIANGULAR_H
 
+#include "../InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 template<typename Scalar, typename Index, int StorageOrder, int UpLo, bool ConjLhs, bool ConjRhs>

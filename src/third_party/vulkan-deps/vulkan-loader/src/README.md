@@ -19,9 +19,8 @@ There is also a separate loader, maintained by Google, which is used on Android.
 
 The following components are available in this repository:
 
-- [Vulkan header files (Vulkan-Headers submodule)](https://github.com/KhronosGroup/Vulkan-Headers)
 - [ICD Loader](loader/)
-- [Loader Documentation](loader/LoaderAndLayerInterface.md)
+- [Loader Documentation](docs/LoaderInterfaceArchitecture.md)
 - [Tests](tests/)
 
 ## Contact Information
@@ -41,7 +40,7 @@ management details.
 Includes directions for building all components.
 
 Architecture and interface information for the loader is in
-[loader/LoaderAndLayerInterface.md](loader/LoaderAndLayerInterface.md).
+[docs/LoaderInterfaceArchitecture.md](docs/LoaderInterfaceArchitecture.md).
 
 ## Version Tagging Scheme
 

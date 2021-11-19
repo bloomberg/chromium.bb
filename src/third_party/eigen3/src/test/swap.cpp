@@ -7,7 +7,6 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#define EIGEN_NO_STATIC_ASSERT
 #include "main.h"
 
 template<typename T>
@@ -21,6 +20,20 @@ struct other_matrix_type<Matrix<Scalar_, Rows_, Cols_, Options_, MaxRows_, MaxCo
 {
   typedef Matrix<Scalar_, Rows_, Cols_, Options_^RowMajor, MaxRows_, MaxCols_> type;
 };
+
+template <typename MatrixType>
+typename internal::enable_if<(MatrixType::RowsAtCompileTime==1 || MatrixType::RowsAtCompileTime==Dynamic), void>::type
+check_row_swap(MatrixType& m1) {
+  // test assertion on mismatching size -- matrix case
+  VERIFY_RAISES_ASSERT(m1.swap(m1.row(0)));
+  // test assertion on mismatching size -- xpr case
+  VERIFY_RAISES_ASSERT(m1.row(0).swap(m1));
+}
+
+template <typename MatrixType>
+typename internal::enable_if<!(MatrixType::RowsAtCompileTime==1 || MatrixType::RowsAtCompileTime==Dynamic), void>::type
+check_row_swap(MatrixType& /* unused */) {
+}
 
 template<typename MatrixType> void swap(const MatrixType& m)
 {
@@ -73,14 +86,8 @@ template<typename MatrixType> void swap(const MatrixType& m)
   VERIFY_IS_APPROX(m3,m1_copy);
   m1 = m1_copy;
   m3 = m3_copy;
-  
-  if(m1.rows()>1)
-  {
-    // test assertion on mismatching size -- matrix case
-    VERIFY_RAISES_ASSERT(m1.swap(m1.row(0)));
-    // test assertion on mismatching size -- xpr case
-    VERIFY_RAISES_ASSERT(m1.row(0).swap(m1));
-  }
+
+  check_row_swap(m1);
 }
 
 EIGEN_DECLARE_TEST(swap)

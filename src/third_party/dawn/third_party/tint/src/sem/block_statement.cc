@@ -35,12 +35,12 @@ const ast::BlockStatement* BlockStatement::Declaration() const {
   return Base::Declaration()->As<ast::BlockStatement>();
 }
 
-void BlockStatement::AddDecl(ast::Variable* var) {
+void BlockStatement::AddDecl(const ast::Variable* var) {
   decls_.push_back(var);
 }
 
 FunctionBlockStatement::FunctionBlockStatement(const ast::Function* function)
-    : Base(function->body(), nullptr), function_(function) {}
+    : Base(function->body, nullptr), function_(function) {}
 
 FunctionBlockStatement::~FunctionBlockStatement() = default;
 

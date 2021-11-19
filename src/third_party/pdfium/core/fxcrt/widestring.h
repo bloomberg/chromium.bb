@@ -20,9 +20,9 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/string_data_template.h"
 #include "core/fxcrt/string_view_template.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/check.h"
 #include "third_party/base/compiler_specific.h"
-#include "third_party/base/optional.h"
 #include "third_party/base/span.h"
 
 namespace fxcrt {
@@ -155,6 +155,7 @@ class WideString {
   int Compare(const WideString& str) const;
   int CompareNoCase(const wchar_t* str) const;
 
+  WideString Substr(size_t offset) const;
   WideString Substr(size_t first, size_t count) const;
   WideString First(size_t count) const;
   WideString Last(size_t count) const;
@@ -188,9 +189,9 @@ class WideString {
 
   int GetInteger() const;
 
-  Optional<size_t> Find(WideStringView subStr, size_t start = 0) const;
-  Optional<size_t> Find(wchar_t ch, size_t start = 0) const;
-  Optional<size_t> ReverseFind(wchar_t ch) const;
+  absl::optional<size_t> Find(WideStringView subStr, size_t start = 0) const;
+  absl::optional<size_t> Find(wchar_t ch, size_t start = 0) const;
+  absl::optional<size_t> ReverseFind(wchar_t ch) const;
 
   bool Contains(WideStringView lpszSub, size_t start = 0) const {
     return Find(lpszSub, start).has_value();

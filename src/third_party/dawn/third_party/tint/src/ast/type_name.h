@@ -26,20 +26,14 @@ namespace ast {
 class TypeName : public Castable<TypeName, Type> {
  public:
   /// Constructor
-  /// @param program_id the identifier of the program that owns this node
-  /// @param source the source of this node
+  /// @param pid the identifier of the program that owns this node
+  /// @param src the source of this node
   /// @param name the type name
-  TypeName(ProgramID program_id, const Source& source, Symbol name);
+  TypeName(ProgramID pid, const Source& src, Symbol name);
   /// Move constructor
   TypeName(TypeName&&);
   /// Destructor
   ~TypeName() override;
-
-  /// @return the type name
-  const Symbol& name() const { return name_; }
-
-  /// @returns the name for th type
-  std::string type_name() const override;
 
   /// @param symbols the program's symbol table
   /// @returns the name for this type that closely resembles how it would be
@@ -49,11 +43,10 @@ class TypeName : public Castable<TypeName, Type> {
   /// Clones this type and all transitive types using the `CloneContext` `ctx`.
   /// @param ctx the clone context
   /// @return the newly cloned type
-  TypeName* Clone(CloneContext* ctx) const override;
+  const TypeName* Clone(CloneContext* ctx) const override;
 
- private:
-  Symbol name_;
-  std::string const type_name_;
+  /// The type name
+  Symbol name;
 };
 
 }  // namespace ast

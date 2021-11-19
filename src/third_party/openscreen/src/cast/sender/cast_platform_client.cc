@@ -136,14 +136,14 @@ void CastPlatformClient::OnMessage(VirtualConnectionRouter* router,
   absl::optional<int> request_id =
       MaybeGetInt(dict, JSON_EXPAND_FIND_CONSTANT_ARGS(kMessageKeyRequestId));
   if (request_id) {
-    auto entry = std::find_if(
+    auto socket_map_entry = std::find_if(
         socket_id_by_receiver_id_.begin(), socket_id_by_receiver_id_.end(),
         [socket_id =
              ToCastSocketId(socket)](const std::pair<std::string, int>& entry) {
           return entry.second == socket_id;
         });
-    if (entry != socket_id_by_receiver_id_.end()) {
-      HandleResponse(entry->first, request_id.value(), dict);
+    if (socket_map_entry != socket_id_by_receiver_id_.end()) {
+      HandleResponse(socket_map_entry->first, request_id.value(), dict);
     }
   }
 }

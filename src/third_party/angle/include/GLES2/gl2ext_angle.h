@@ -567,6 +567,33 @@ GL_APICALL void GL_APIENTRY glImportSemaphoreZirconHandleANGLE(GLuint memory,
 #define GL_SERIALIZED_CONTEXT_STRING_ANGLE 0x96B0
 #endif /* GL_ANGLE_get_serialized_context_string */
 
+#ifndef GL_ANGLE_robust_fragment_shader_output
+#define GL_ANGLE_robust_fragment_shader_output
+#define GL_ROBUST_FRAGMENT_SHADER_OUTPUT_ANGLE 0x96B9
+#endif /* GL_ANGLE_robust_fragment_shader_output */
+
 // clang-format on
+
+#ifndef GL_ANGLE_yuv_internal_format
+#define GL_ANGLE_yuv_internal_format
+
+// YUV formats introduced by GL_ANGLE_yuv_internal_format
+// 8-bit YUV formats
+#define GL_G8_B8R8_2PLANE_420_UNORM_ANGLE 0x96B1
+#define GL_G8_B8_R8_3PLANE_420_UNORM_ANGLE 0x96B2
+
+// 10-bit YUV formats
+#define GL_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16_ANGLE 0x96B3
+#define GL_G10X6_B10X6_R10X6_3PLANE_420_UNORM_3PACK16_ANGLE 0x96B4
+
+// 12-bit YUV formats
+#define GL_G12X4_B12X4R12X4_2PLANE_420_UNORM_3PACK16_ANGLE 0x96B5
+#define GL_G12X4_B12X4_R12X4_3PLANE_420_UNORM_3PACK16_ANGLE 0x96B6
+
+// 16-bit YUV formats
+#define GL_G16_B16R16_2PLANE_420_UNORM_ANGLE 0x96B7
+#define GL_G16_B16_R16_3PLANE_420_UNORM_ANGLE 0x96B8
+
+#endif /* GL_ANGLE_yuv_internal_format */
 
 #endif  // INCLUDE_GLES2_GL2EXT_ANGLE_H_

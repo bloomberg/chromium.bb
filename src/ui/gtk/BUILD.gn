@@ -128,7 +128,7 @@ component("gtk") {
     deps += [ "//printing/mojom" ]
   }
 
-  if (use_x11 || ozone_platform_x11) {
+  if (ozone_platform_x11) {
     sources += [
       "x/gtk_event_loop_x11.cc",
       "x/gtk_event_loop_x11.h",
@@ -153,19 +153,4 @@ component("gtk") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
-}
-
-test("gtk_unittests") {
-  sources = [ "native_theme_gtk_unittest.cc" ]
-
-  deps = [
-    ":gtk",
-    "//base/test:run_all_unittests",
-    "//base/test:test_support",
-    "//testing/gtest",
-    "//ui/base:features",
-    "//ui/native_theme",
-    "//ui/native_theme:test_support",
-    "//ui/views",
-  ]
 }

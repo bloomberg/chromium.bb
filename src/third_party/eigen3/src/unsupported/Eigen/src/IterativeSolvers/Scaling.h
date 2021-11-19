@@ -10,6 +10,8 @@
 #ifndef EIGEN_ITERSCALING_H
 #define EIGEN_ITERSCALING_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /**

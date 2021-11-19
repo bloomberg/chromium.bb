@@ -28,6 +28,7 @@
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
@@ -593,6 +594,17 @@ void WienerFilter_NEON(
 
 //------------------------------------------------------------------------------
 // SGR
+
+// SIMD overreads 8 - (width % 8) - 2 * padding pixels, where padding is 3 for
+// Pass 1 and 2 for Pass 2.
+constexpr int kOverreadInBytesPass1 = 2;
+constexpr int kOverreadInBytesPass2 = 4;
+
+// SIMD overreads 16 - (width % 16) - 2 * padding pixels, where padding is 3 for
+// Pass 1 and 2 for Pass 2.
+constexpr int kWideOverreadInBytesPass1 = 10;
+constexpr int kWideOverreadInBytesPass2 = 12;
+
 inline void LoadAligned16x2U16(const uint16_t* const src[2], const ptrdiff_t x,
                                uint16x8_t dst[2]) {
   dst[0] = vld1q_u16(src[0] + x);
@@ -964,15 +976,16 @@ inline uint32x4x2_t Sum565W(const uint16x8_t src[2]) {
 }
 
 inline void BoxSum(const uint8_t* src, const ptrdiff_t src_stride,
-                   const ptrdiff_t /*width*/, const ptrdiff_t sum_stride,
+                   const ptrdiff_t width, const ptrdiff_t sum_stride,
                    const ptrdiff_t sum_width, uint16_t* sum3, uint16_t* sum5,
                    uint32_t* square_sum3, uint32_t* square_sum5) {
+  const ptrdiff_t overread_in_bytes = kOverreadInBytesPass1 - width;
   int y = 2;
   // Don't change loop width to 16, which is even slower.
   do {
     uint8x8_t s[2];
     uint16x8_t sq[2];
-    s[0] = vld1_u8(src);
+    s[0] = Load1MsanU8(src, overread_in_bytes);
     sq[0] = SquareLo8(s[0]);
     ptrdiff_t x = sum_width;
     do {
@@ -980,7 +993,7 @@ inline void BoxSum(const uint8_t* src, const ptrdiff_t src_stride,
       uint32x4x2_t row_sq3, row_sq5;
       x -= 8;
       src += 8;
-      s[1] = vld1_u8(src);
+      s[1] = Load1MsanU8(src, sum_width - x + overread_in_bytes);
       sq[1] = SquareLo8(s[1]);
       SumHorizontal(s, sq, &row3, &row5, &row_sq3, &row_sq5);
       vst1q_u16(sum3, row3);
@@ -1004,16 +1017,19 @@ inline void BoxSum(const uint8_t* src, const ptrdiff_t src_stride,
 
 template <int size>
 inline void BoxSum(const uint8_t* src, const ptrdiff_t src_stride,
-                   const ptrdiff_t /*width*/, const ptrdiff_t sum_stride,
+                   const ptrdiff_t width, const ptrdiff_t sum_stride,
                    const ptrdiff_t sum_width, uint16_t* sums,
                    uint32_t* square_sums) {
   static_assert(size == 3 || size == 5, "");
+  const ptrdiff_t overread_in_bytes =
+      ((size == 5) ? kOverreadInBytesPass1 : kOverreadInBytesPass2) -
+      sizeof(*src) * width;
   int y = 2;
   // Don't change loop width to 16, which is even slower.
   do {
     uint8x8_t s[2];
     uint16x8_t sq[2];
-    s[0] = vld1_u8(src);
+    s[0] = Load1MsanU8(src, overread_in_bytes);
     sq[0] = SquareLo8(s[0]);
     ptrdiff_t x = sum_width;
     do {
@@ -1021,7 +1037,7 @@ inline void BoxSum(const uint8_t* src, const ptrdiff_t src_stride,
       uint32x4x2_t row_sq;
       x -= 8;
       src += 8;
-      s[1] = vld1_u8(src);
+      s[1] = Load1MsanU8(src, sum_width - x + overread_in_bytes);
       sq[1] = SquareLo8(s[1]);
       if (size == 3) {
         row = Sum3Horizontal(s);
@@ -1485,6 +1501,7 @@ inline void BoxSumFilterPreProcess5(const uint8_t* const src0,
                                     uint16_t* const sum5[5],
                                     uint32_t* const square_sum5[5],
                                     uint16_t* ma565, uint32_t* b565) {
+  const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], mas[2];
   uint16x8_t sq[2][4], bs[3];
   // TODO(b/194217060): Future msan load.
@@ -1498,10 +1515,8 @@ inline void BoxSumFilterPreProcess5(const uint8_t* const src0,
     uint16x8_t ma[2];
     uint8x16_t masx[3];
     uint32x4x2_t b[2];
-    // TODO(b/194217060): Future msan load.
-    s[0][1] = vld1q_u8(src0 + x + 16);
-    s[1][1] = vld1q_u8(src1 + x + 16);
-
+    s[0][1] = Load1QMsanU8(src0 + x + 16, x + 16 + overread_in_bytes);
+    s[1][1] = Load1QMsanU8(src1 + x + 16, x + 16 + overread_in_bytes);
     BoxFilterPreProcess5(s, x + 8, scale, sum5, square_sum5, sq, mas, bs + 1);
     Prepare3_8<0>(mas, masx);
     ma[0] = Sum565<0>(masx);
@@ -1532,19 +1547,16 @@ LIBGAV1_ALWAYS_INLINE void BoxSumFilterPreProcess3(
     const uint8_t* const src, const int width, const uint32_t scale,
     uint16_t* const sum3[3], uint32_t* const square_sum3[3], uint16_t* ma343,
     uint16_t* ma444, uint32_t* b343, uint32_t* b444) {
+  const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass2 - width;
   uint8x16_t s[2], mas[2];
   uint16x8_t sq[4], bs[3];
-  // TODO(b/194217060): Future msan load.
-  s[0] = vld1q_u8(src);
-
+  s[0] = Load1QMsanU8(src, overread_in_bytes);
   BoxFilterPreProcess3Lo(&s[0], scale, sum3, square_sum3, sq, &mas[0], &bs[0]);
 
   int x = 0;
   do {
     uint8x16_t ma3x[3];
-    // TODO(b/194217060): Future msan load.
-    s[1] = vld1q_u8(src + x + 16);
-
+    s[1] = Load1QMsanU8(src + x + 16, x + 16 + overread_in_bytes);
     BoxFilterPreProcess3(s, x + 8, scale, sum3, square_sum3, sq + 1, mas,
                          bs + 1);
     Prepare3_8<0>(mas, ma3x);
@@ -1584,6 +1596,7 @@ inline void BoxSumFilterPreProcess(
     uint32_t* const square_sum3[4], uint32_t* const square_sum5[5],
     uint16_t* const ma343[4], uint16_t* const ma444, uint16_t* ma565,
     uint32_t* const b343[4], uint32_t* const b444, uint32_t* b565) {
+  const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], ma3[2][2], ma5[2];
   uint16x8_t sq[2][4], b3[2][3], b5[3];
   // TODO(b/194217060): Future msan load.
@@ -1598,9 +1611,9 @@ inline void BoxSumFilterPreProcess(
     uint16x8_t ma[2];
     uint8x16_t ma3x[3], ma5x[3];
     uint32x4x2_t b[2];
-    // TODO(b/194217060): Future msan load.
-    s[0][1] = vld1q_u8(src0 + x + 16);
-    s[1][1] = vld1q_u8(src1 + x + 16);
+
+    s[0][1] = Load1QMsanU8(src0 + x + 16, x + 16 + overread_in_bytes);
+    s[1][1] = Load1QMsanU8(src1 + x + 16, x + 16 + overread_in_bytes);
     BoxFilterPreProcess(s, x + 8, scales, sum3, sum5, square_sum3, square_sum5,
                         sq, ma3, b3, ma5, b5 + 1);
     Prepare3_8<0>(ma3[0], ma3x);
@@ -1718,11 +1731,11 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass1(
     uint32_t* const square_sum5[5], const int width, const uint32_t scale,
     const int16_t w0, uint16_t* const ma565[2], uint32_t* const b565[2],
     uint8_t* const dst) {
+  const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], mas[2];
   uint16x8_t sq[2][4], bs[3];
-  // TODO(b/194217060): Future msan load.
-  s[0][0] = vld1q_u8(src0);
-  s[1][0] = vld1q_u8(src1);
+  s[0][0] = Load1QMsanU8(src0, overread_in_bytes);
+  s[1][0] = Load1QMsanU8(src1, overread_in_bytes);
 
   BoxFilterPreProcess5Lo(s, scale, sum5, square_sum5, sq, &mas[0], &bs[0]);
 
@@ -1732,10 +1745,8 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass1(
     uint8x16_t masx[3];
     uint32x4x2_t b[2];
     int16x8_t p0, p1;
-    // TODO(b/194217060): Future msan load.
-    s[0][1] = vld1q_u8(src0 + x + 16);
-    s[1][1] = vld1q_u8(src1 + x + 16);
-
+    s[0][1] = Load1QMsanU8(src0 + x + 16, x + 16 + overread_in_bytes);
+    s[1][1] = Load1QMsanU8(src1 + x + 16, x + 16 + overread_in_bytes);
     BoxFilterPreProcess5(s, x + 8, scale, sum5, square_sum5, sq, mas, bs + 1);
     Prepare3_8<0>(mas, masx);
     ma[1] = Sum565<0>(masx);
@@ -1842,6 +1853,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass2(
     uint32_t* const square_sum3[3], uint16_t* const ma343[3],
     uint16_t* const ma444[2], uint32_t* const b343[3], uint32_t* const b444[2],
     uint8_t* const dst) {
+  const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass2 - width;
   uint8x16_t s[2], mas[2];
   uint16x8_t sq[4], bs[3];
   // TODO(b/194217060): Future msan load.
@@ -1854,9 +1866,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilterPass2(
     uint16x8_t ma[3];
     uint8x16_t ma3x[3];
     uint32x4x2_t b[3];
-    // TODO(b/194217060): Future msan load.
-    s[1] = vld1q_u8(src0 + x + 16);
-
+    s[1] = Load1QMsanU8(src0 + x + 16, x + 16 + overread_in_bytes);
     BoxFilterPreProcess3(s, x + 8, scale, sum3, square_sum3, sq + 1, mas,
                          bs + 1);
     Prepare3_8<0>(mas, ma3x);
@@ -1902,6 +1912,7 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
     uint16_t* const ma343[4], uint16_t* const ma444[3],
     uint16_t* const ma565[2], uint32_t* const b343[4], uint32_t* const b444[3],
     uint32_t* const b565[2], uint8_t* const dst) {
+  const ptrdiff_t overread_in_bytes = kWideOverreadInBytesPass1 - width;
   uint8x16_t s[2][2], ma3[2][2], ma5[2];
   uint16x8_t sq[2][4], b3[2][3], b5[3];
   // TODO(b/194217060): Future msan load.
@@ -1917,9 +1928,8 @@ LIBGAV1_ALWAYS_INLINE void BoxFilter(
     uint8x16_t ma3x[2][3], ma5x[3];
     uint32x4x2_t b[3][3];
     int16x8_t p[2][2];
-    // TODO(b/194217060): Future msan load.
-    s[0][1] = vld1q_u8(src0 + x + 16);
-    s[1][1] = vld1q_u8(src1 + x + 16);
+    s[0][1] = Load1QMsanU8(src0 + x + 16, x + 16 + overread_in_bytes);
+    s[1][1] = Load1QMsanU8(src1 + x + 16, x + 16 + overread_in_bytes);
     BoxFilterPreProcess(s, x + 8, scales, sum3, sum5, square_sum3, square_sum5,
                         sq, ma3, b3, ma5, b5 + 1);
     Prepare3_8<0>(ma3[0], ma3x[0]);
@@ -2364,6 +2374,12 @@ void SelfGuidedFilter_NEON(
   const auto* bottom = static_cast<const uint8_t*>(bottom_border);
   auto* const dst = static_cast<uint8_t*>(dest);
   SgrBuffer* const sgr_buffer = &restoration_buffer->sgr_buffer;
+
+#if LIBGAV1_MSAN
+  // Initialize to prevent msan warnings when intermediate overreads occur.
+  memset(sgr_buffer, 0, sizeof(SgrBuffer));
+#endif
+
   if (radius_pass_1 == 0) {
     // |radius_pass_0| and |radius_pass_1| cannot both be 0, so we have the
     // following assertion.

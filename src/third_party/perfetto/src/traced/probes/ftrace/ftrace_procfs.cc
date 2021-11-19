@@ -154,6 +154,11 @@ std::string FtraceProcfs::ReadPageHeaderFormat() const {
   return ReadFileIntoString(path);
 }
 
+base::ScopedFile FtraceProcfs::OpenCpuStats(size_t cpu) const {
+  std::string path = root_ + "per_cpu/cpu" + std::to_string(cpu) + "/stats";
+  return base::OpenFile(path, O_RDONLY);
+}
+
 std::string FtraceProcfs::ReadCpuStats(size_t cpu) const {
   std::string path = root_ + "per_cpu/cpu" + std::to_string(cpu) + "/stats";
   return ReadFileIntoString(path);
@@ -283,9 +288,7 @@ std::set<std::string> FtraceProcfs::AvailableClocks() {
 bool FtraceProcfs::WriteNumberToFile(const std::string& path, size_t value) {
   // 2^65 requires 20 digits to write.
   char buf[21];
-  int res = snprintf(buf, 21, "%zu", value);
-  if (res < 0 || res >= 21)
-    return false;
+  snprintf(buf, sizeof(buf), "%zu", value);
   return WriteToFile(path, std::string(buf));
 }
 

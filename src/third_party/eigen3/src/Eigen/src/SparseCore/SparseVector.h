@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPARSEVECTOR_H
 #define EIGEN_SPARSEVECTOR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \ingroup SparseCore_Module
@@ -256,11 +258,11 @@ class SparseVector
 
     void resizeNonZeros(Index size) { m_data.resize(size); }
 
-    inline SparseVector() : m_size(0) { check_template_parameters(); resize(0); }
+    inline SparseVector() : m_size(0) { resize(0); }
 
-    explicit inline SparseVector(Index size) : m_size(0) { check_template_parameters(); resize(size); }
+    explicit inline SparseVector(Index size) : m_size(0) { resize(size); }
 
-    inline SparseVector(Index rows, Index cols) : m_size(0) { check_template_parameters(); resize(rows,cols); }
+    inline SparseVector(Index rows, Index cols) : m_size(0) { resize(rows,cols); }
 
     template<typename OtherDerived>
     inline SparseVector(const SparseMatrixBase<OtherDerived>& other)
@@ -269,14 +271,12 @@ class SparseVector
       #ifdef EIGEN_SPARSE_CREATE_TEMPORARY_PLUGIN
         EIGEN_SPARSE_CREATE_TEMPORARY_PLUGIN
       #endif
-      check_template_parameters();
       *this = other.derived();
     }
 
     inline SparseVector(const SparseVector& other)
       : Base(other), m_size(0)
     {
-      check_template_parameters();
       *this = other.derived();
     }
 
@@ -393,13 +393,9 @@ class SparseVector
 #   endif
 
 protected:
-  
-    static void check_template_parameters()
-    {
-      EIGEN_STATIC_ASSERT(NumTraits<StorageIndex>::IsSigned,THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE);
-      EIGEN_STATIC_ASSERT((Options_&(ColMajor|RowMajor))==Options,INVALID_MATRIX_TEMPLATE_PARAMETERS);
-    }
-    
+    EIGEN_STATIC_ASSERT(NumTraits<StorageIndex>::IsSigned,THE_INDEX_TYPE_MUST_BE_A_SIGNED_TYPE)
+    EIGEN_STATIC_ASSERT((Options_&(ColMajor|RowMajor))==Options,INVALID_MATRIX_TEMPLATE_PARAMETERS)
+
     Storage m_data;
     Index m_size;
 };

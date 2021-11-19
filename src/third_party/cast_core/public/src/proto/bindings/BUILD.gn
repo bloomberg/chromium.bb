@@ -21,3 +21,13 @@ cast_core_proto_library("api_bindings") {
         "//third_party/cast_core/public/src/proto/web:message_channel_proto",
     ]
 }
+
+cast_core_proto_library("cast_channel") {
+    sources = ["cast_channel.proto"]
+    generate_javascript = true
+}
+
+cast_core_proto_library("media_capabilities") {
+    sources = ["media_capabilities.proto"]
+    generate_javascript = true
+}

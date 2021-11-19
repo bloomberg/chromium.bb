@@ -11,6 +11,8 @@
 #ifndef EIGEN_SPECIALFUNCTIONS_ARRAYAPI_H
 #define EIGEN_SPECIALFUNCTIONS_ARRAYAPI_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 /** \cpp11 \returns an expression of the coefficient-wise igamma(\a a, \a x) to the given arrays.

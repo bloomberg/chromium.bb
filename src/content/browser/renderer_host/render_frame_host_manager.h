@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/renderer_host/stored_page.h"
+#include "content/browser/site_instance_group.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_exposed_isolation_info.h"
 #include "content/common/content_export.h"
@@ -106,9 +107,9 @@ class CONTENT_EXPORT RenderFrameHostManager
     : public SiteInstanceImpl::Observer {
  public:
   using RenderFrameProxyHostMap =
-      std::unordered_map<SiteInstanceId,
+      std::unordered_map<SiteInstanceGroupId,
                          std::unique_ptr<RenderFrameProxyHost>,
-                         SiteInstanceId::Hasher>;
+                         SiteInstanceGroupId::Hasher>;
 
   // Functions implemented by our owner that we need.
   //
@@ -167,6 +168,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   //
   // You must call one of the Init*() methods before using this class.
   RenderFrameHostManager(FrameTreeNode* frame_tree_node, Delegate* delegate);
+
+  RenderFrameHostManager(const RenderFrameHostManager&) = delete;
+  RenderFrameHostManager& operator=(const RenderFrameHostManager&) = delete;
+
   ~RenderFrameHostManager();
 
   // Initialize this frame as the root of a new FrameTree.
@@ -195,7 +200,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   RenderWidgetHostViewBase* GetRenderWidgetHostView() const;
 
   // Returns whether this manager is a main frame and belongs to a FrameTreeNode
-  // that belongs to an inner WebContents.
+  // that belongs to an inner WebContents or inner FrameTree.
   bool IsMainFrameForInnerDelegate();
 
   // If this is a RenderFrameHostManager for a main frame, this method returns
@@ -284,8 +289,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   // SiteInstance.
   void CreateProxiesForChildFrame(FrameTreeNode* child);
 
-  // Returns the RenderFrameProxyHost for the given SiteInstance, if any.
-  RenderFrameProxyHost* GetRenderFrameProxyHost(SiteInstance* instance) const;
+  // Returns the RenderFrameProxyHost for the given SiteInstanceGroup, if any.
+  RenderFrameProxyHost* GetRenderFrameProxyHost(
+      SiteInstanceGroup* site_instance_group) const;
 
   // If |render_frame_host| is on the pending deletion list, this deletes it.
   // Returns whether it was deleted.
@@ -482,7 +488,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       SiteInstance* instance_to_skip = nullptr);
 
   // Returns a const reference to the map of proxy hosts. The keys are
-  // SiteInstance IDs, the values are RenderFrameProxyHosts.
+  // SiteInstanceGroup IDs, the values are RenderFrameProxyHosts.
   const RenderFrameProxyHostMap& GetAllProxyHostsForTesting() const {
     return proxy_hosts_;
   }
@@ -943,7 +949,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Eventually, RenderViewHost will be replaced with a page context.
   std::unique_ptr<RenderFrameHostImpl> render_frame_host_;
 
-  // Proxy hosts, indexed by site instance ID.
+  // Proxy hosts, indexed by SiteInstanceGroup ID.
   RenderFrameProxyHostMap proxy_hosts_;
 
   // A set of RenderFrameHosts waiting to shut down after swapping out.
@@ -971,8 +977,6 @@ class CONTENT_EXPORT RenderFrameHostManager
       AttachToInnerDelegateState::NONE;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManager);
 };
 
 }  // namespace content

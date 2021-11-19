@@ -15,7 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/task_runner_util.h"
+#include "base/task/task_runner_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "cef/libcef/features/runtime.h"
@@ -55,7 +55,6 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_CEF)
-#include "cef/libcef/browser/plugins/plugin_service_filter.h"
 #include "cef/libcef/common/extensions/extensions_util.h"
 #endif
 
@@ -230,15 +229,6 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
     PluginMetadata::SecurityStatus security_status,
     const std::string& plugin_identifier,
     chrome::mojom::PluginStatus* status) const {
-#if BUILDFLAG(ENABLE_CEF)
-  // Don't override the user decision.
-  if (cef::IsAlloyRuntimeEnabled() &&
-      (*status == chrome::mojom::PluginStatus::kBlocked ||
-       *status == chrome::mojom::PluginStatus::kDisabled)) {
-    return;
-  }
-#endif
-
   if (security_status == PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
     *status = chrome::mojom::PluginStatus::kAllowed;
     return;
@@ -320,10 +310,11 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
 #endif
 }
 
+// TODO(crbug.com/850278): Remove unused parameters.
 bool PluginInfoHostImpl::Context::FindEnabledPlugin(
-    int render_frame_id,
+    int /*render_frame_id*/,
     const GURL& url,
-    const url::Origin& main_frame_origin,
+    const url::Origin& /*main_frame_origin*/,
     const std::string& mime_type,
     chrome::mojom::PluginStatus* status,
     WebPluginInfo* plugin,
@@ -346,40 +337,15 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
     return false;
   }
 
-  const bool is_main_frame =
-      main_frame_origin.IsSameOriginWith(url::Origin::Create(url));
-  size_t i = 0;
-
-#if BUILDFLAG(ENABLE_CEF)
-  if (cef::IsAlloyRuntimeEnabled()) {
-    CefPluginServiceFilter* filter = static_cast<CefPluginServiceFilter*>(
-        PluginService::GetInstance()->GetFilter());
-    DCHECK(filter);
-
-    for (; i < matching_plugins.size(); ++i) {
-      if (filter->IsPluginAvailable(render_process_id_, render_frame_id,
-                                    url, is_main_frame, main_frame_origin,
-                                    &matching_plugins[i], status)) {
-        break;
-      }
-    }
-  } else {
-#endif  // BUILDFLAG(ENABLE_CEF)
-
   content::PluginServiceFilter* filter =
       PluginService::GetInstance()->GetFilter();
+  size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
     if (!filter ||
-        filter->IsPluginAvailable(render_process_id_, render_frame_id, url,
-                                  is_main_frame, main_frame_origin,
-                                  &matching_plugins[i])) {
+        filter->IsPluginAvailable(render_process_id_, matching_plugins[i])) {
       break;
     }
   }
-
-#if BUILDFLAG(ENABLE_CEF)
-  }
-#endif
 
   // If we broke out of the loop, we have found an enabled plugin.
   bool enabled = i < matching_plugins.size();

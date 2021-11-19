@@ -7,7 +7,6 @@
 
 #include <alpha-compositing-unstable-v1-client-protocol.h>
 #include <aura-shell-client-protocol.h>
-#include <color-space-unstable-v1-client-protocol.h>
 #include <cursor-shapes-unstable-v1-client-protocol.h>
 #include <extended-drag-unstable-v1-client-protocol.h>
 #include <fullscreen-shell-unstable-v1-client-protocol.h>
@@ -90,7 +89,6 @@ DEFAULT_DELETER_FDECL(zwp_linux_buffer_params_v1)
 DEFAULT_DELETER_FDECL(zwp_linux_dmabuf_v1)
 DEFAULT_DELETER_FDECL(zwp_linux_explicit_synchronization_v1)
 DEFAULT_DELETER_FDECL(zwp_linux_surface_synchronization_v1)
-DEFAULT_DELETER_FDECL(zcr_color_space_v1)
 DEFAULT_DELETER_FDECL(zcr_vsync_feedback_v1)
 DEFAULT_DELETER_FDECL(zcr_vsync_timing_v1)
 DEFAULT_DELETER_FDECL(wl_data_device_manager)
@@ -101,6 +99,7 @@ DEFAULT_DELETER_FDECL(zwp_text_input_manager_v1)
 DEFAULT_DELETER_FDECL(zcr_secure_output_v1)
 DEFAULT_DELETER_FDECL(zcr_alpha_compositing_v1)
 DEFAULT_DELETER_FDECL(zcr_stylus_v2)
+DEFAULT_DELETER_FDECL(zcr_pointer_stylus_v2)
 DEFAULT_DELETER_FDECL(zcr_cursor_shapes_v1)
 DEFAULT_DELETER_FDECL(zcr_gaming_input_v2)
 DEFAULT_DELETER_FDECL(zcr_keyboard_configuration_v1)

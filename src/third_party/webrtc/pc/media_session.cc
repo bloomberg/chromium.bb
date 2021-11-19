@@ -116,33 +116,6 @@ cricket::RtpHeaderExtensions UnstoppedOrPresentRtpHeaderExtensions(
 
 namespace cricket {
 
-// RTP Profile names
-// http://www.iana.org/assignments/rtp-parameters/rtp-parameters.xml
-// RFC4585
-const char kMediaProtocolAvpf[] = "RTP/AVPF";
-// RFC5124
-const char kMediaProtocolDtlsSavpf[] = "UDP/TLS/RTP/SAVPF";
-
-// We always generate offers with "UDP/TLS/RTP/SAVPF" when using DTLS-SRTP,
-// but we tolerate "RTP/SAVPF" in offers we receive, for compatibility.
-const char kMediaProtocolSavpf[] = "RTP/SAVPF";
-
-// Note that the below functions support some protocol strings purely for
-// legacy compatibility, as required by JSEP in Section 5.1.2, Profile Names
-// and Interoperability.
-
-static bool IsDtlsRtp(const std::string& protocol) {
-  // Most-likely values first.
-  return protocol == "UDP/TLS/RTP/SAVPF" || protocol == "TCP/TLS/RTP/SAVPF" ||
-         protocol == "UDP/TLS/RTP/SAVP" || protocol == "TCP/TLS/RTP/SAVP";
-}
-
-static bool IsPlainRtp(const std::string& protocol) {
-  // Most-likely values first.
-  return protocol == "RTP/SAVPF" || protocol == "RTP/AVPF" ||
-         protocol == "RTP/SAVP" || protocol == "RTP/AVP";
-}
-
 static RtpTransceiverDirection NegotiateRtpTransceiverDirection(
     RtpTransceiverDirection offer,
     RtpTransceiverDirection wants) {
@@ -443,10 +416,7 @@ static bool AddStreamParams(
       ContainsFlexfecCodec(content_description->codecs());
 
   for (const SenderOptions& sender : sender_options) {
-    // groupid is empty for StreamParams generated using
-    // MediaSessionDescriptionFactory.
-    StreamParams* param =
-        GetStreamByIds(*current_streams, "" /*group_id*/, sender.track_id);
+    StreamParams* param = GetStreamByIds(*current_streams, sender.track_id);
     if (!param) {
       // This is a new sender.
       StreamParams stream_param =
@@ -1073,10 +1043,16 @@ static Codecs MatchCodecPreference(
     const Codecs& codecs,
     const Codecs& supported_codecs) {
   Codecs filtered_codecs;
-  std::set<std::string> kept_codecs_ids;
   bool want_rtx = false;
   bool want_red = false;
 
+  for (const auto& codec_preference : codec_preferences) {
+    if (IsRtxCodec(codec_preference)) {
+      want_rtx = true;
+    } else if (IsRedCodec(codec_preference)) {
+      want_red = true;
+    }
+  }
   for (const auto& codec_preference : codec_preferences) {
     auto found_codec = absl::c_find_if(
         supported_codecs,
@@ -1096,33 +1072,30 @@ static Codecs MatchCodecPreference(
       if (FindMatchingCodec(supported_codecs, codecs, *found_codec,
                             &found_codec_with_correct_pt)) {
         filtered_codecs.push_back(found_codec_with_correct_pt);
-        kept_codecs_ids.insert(std::to_string(found_codec_with_correct_pt.id));
-      }
-    } else if (IsRtxCodec(codec_preference)) {
-      want_rtx = true;
-    } else if (IsRedCodec(codec_preference)) {
-      want_red = true;
-    }
-  }
-
-  if (want_rtx || want_red) {
-    for (const auto& codec : codecs) {
-      if (IsRtxCodec(codec)) {
-        const auto apt =
-            codec.params.find(cricket::kCodecParamAssociatedPayloadType);
-        if (apt != codec.params.end() &&
-            kept_codecs_ids.count(apt->second) > 0) {
-          filtered_codecs.push_back(codec);
-        }
-      } else if (IsRedCodec(codec)) {
-        const auto fmtp =
-            codec.params.find(cricket::kCodecParamNotInNameValueFormat);
-        if (fmtp != codec.params.end()) {
-          std::vector<std::string> redundant_payloads;
-          rtc::split(fmtp->second, '/', &redundant_payloads);
-          if (redundant_payloads.size() > 0 &&
-              kept_codecs_ids.count(redundant_payloads[0]) > 0) {
-            filtered_codecs.push_back(codec);
+        std::string id = rtc::ToString(found_codec_with_correct_pt.id);
+        // Search for the matching rtx or red codec.
+        if (want_red || want_rtx) {
+          for (const auto& codec : codecs) {
+            if (IsRtxCodec(codec)) {
+              const auto apt =
+                  codec.params.find(cricket::kCodecParamAssociatedPayloadType);
+              if (apt != codec.params.end() && apt->second == id) {
+                filtered_codecs.push_back(codec);
+                break;
+              }
+            } else if (IsRedCodec(codec)) {
+              const auto fmtp =
+                  codec.params.find(cricket::kCodecParamNotInNameValueFormat);
+              if (fmtp != codec.params.end()) {
+                std::vector<std::string> redundant_payloads;
+                rtc::split(fmtp->second, '/', &redundant_payloads);
+                if (redundant_payloads.size() > 0 &&
+                    redundant_payloads[0] == id) {
+                  filtered_codecs.push_back(codec);
+                  break;
+                }
+              }
+            }
           }
         }
       }
@@ -1439,14 +1412,12 @@ static bool IsMediaProtocolSupported(MediaType type,
   }
 
   if (type == MEDIA_TYPE_DATA) {
-    // Check for SCTP, but also for RTP for RTP-based data channels.
-    // TODO(pthatcher): Remove RTP once RTP-based data channels are gone.
+    // Check for SCTP
     if (secure_transport) {
       // Most likely scenarios first.
-      return IsDtlsSctp(protocol) || IsDtlsRtp(protocol) ||
-             IsPlainRtp(protocol);
+      return IsDtlsSctp(protocol);
     } else {
-      return IsPlainSctp(protocol) || IsPlainRtp(protocol);
+      return IsPlainSctp(protocol);
     }
   }
 

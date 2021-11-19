@@ -39,13 +39,12 @@ class UDPPort : public Port {
       rtc::AsyncPacketSocket* socket,
       const std::string& username,
       const std::string& password,
-      const std::string& origin,
       bool emit_local_for_anyaddress,
       absl::optional<int> stun_keepalive_interval) {
     // Using `new` to access a non-public constructor.
-    auto port = absl::WrapUnique(new UDPPort(thread, factory, network, socket,
-                                             username, password, origin,
-                                             emit_local_for_anyaddress));
+    auto port =
+        absl::WrapUnique(new UDPPort(thread, factory, network, socket, username,
+                                     password, emit_local_for_anyaddress));
     port->set_stun_keepalive_delay(stun_keepalive_interval);
     if (!port->Init()) {
       return nullptr;
@@ -61,13 +60,12 @@ class UDPPort : public Port {
       uint16_t max_port,
       const std::string& username,
       const std::string& password,
-      const std::string& origin,
       bool emit_local_for_anyaddress,
       absl::optional<int> stun_keepalive_interval) {
     // Using `new` to access a non-public constructor.
-    auto port = absl::WrapUnique(
-        new UDPPort(thread, factory, network, min_port, max_port, username,
-                    password, origin, emit_local_for_anyaddress));
+    auto port = absl::WrapUnique(new UDPPort(thread, factory, network, min_port,
+                                             max_port, username, password,
+                                             emit_local_for_anyaddress));
     port->set_stun_keepalive_delay(stun_keepalive_interval);
     if (!port->Init()) {
       return nullptr;
@@ -126,7 +124,6 @@ class UDPPort : public Port {
           uint16_t max_port,
           const std::string& username,
           const std::string& password,
-          const std::string& origin,
           bool emit_local_for_anyaddress);
 
   UDPPort(rtc::Thread* thread,
@@ -135,7 +132,6 @@ class UDPPort : public Port {
           rtc::AsyncPacketSocket* socket,
           const std::string& username,
           const std::string& password,
-          const std::string& origin,
           bool emit_local_for_anyaddress);
 
   bool Init();
@@ -274,7 +270,6 @@ class StunPort : public UDPPort {
       const std::string& username,
       const std::string& password,
       const ServerAddresses& servers,
-      const std::string& origin,
       absl::optional<int> stun_keepalive_interval);
 
   void PrepareAddress() override;
@@ -287,8 +282,7 @@ class StunPort : public UDPPort {
            uint16_t max_port,
            const std::string& username,
            const std::string& password,
-           const ServerAddresses& servers,
-           const std::string& origin);
+           const ServerAddresses& servers);
 };
 
 }  // namespace cricket

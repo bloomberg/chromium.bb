@@ -18,8 +18,10 @@
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxge/cfx_cliprgn.h"
 #include "core/fxge/dib/cfx_scanlinecompositor.h"
+#include "third_party/base/check.h"
 #include "third_party/base/check_op.h"
 #include "third_party/base/notreached.h"
+#include "third_party/base/numerics/safe_conversions.h"
 
 CFX_DIBitmap::CFX_DIBitmap() = default;
 
@@ -38,7 +40,7 @@ bool CFX_DIBitmap::Create(int width,
   m_Height = 0;
   m_Pitch = 0;
 
-  Optional<PitchAndSize> pitch_size =
+  absl::optional<PitchAndSize> pitch_size =
       CalculatePitchAndSize(width, height, format, pitch);
   if (!pitch_size.has_value())
     return false;
@@ -102,6 +104,16 @@ pdfium::span<const uint8_t> CFX_DIBitmap::GetScanline(int line) const {
     return pdfium::span<const uint8_t>();
 
   return {m_pBuffer.Get() + line * m_Pitch, m_Pitch};
+}
+
+uint32_t CFX_DIBitmap::GetEstimatedImageMemoryBurden() const {
+  uint32_t result = CFX_DIBBase::GetEstimatedImageMemoryBurden();
+  if (GetBuffer()) {
+    int height = GetHeight();
+    DCHECK(pdfium::base::IsValueInRangeForNumericType<uint32_t>(height));
+    result += static_cast<uint32_t>(height) * GetPitch();
+  }
+  return result;
 }
 
 void CFX_DIBitmap::TakeOver(RetainPtr<CFX_DIBitmap>&& pSrcBitmap) {
@@ -289,7 +301,7 @@ bool CFX_DIBitmap::SetChannelFromBitmap(
     return false;
 
   if (pSrcBitmap->GetBPP() == 1) {
-    pSrcClone = pSrcBitmap->CloneConvert(FXDIB_Format::k8bppMask);
+    pSrcClone = pSrcBitmap->ConvertTo(FXDIB_Format::k8bppMask);
     if (!pSrcClone)
       return false;
   }
@@ -683,17 +695,17 @@ bool CFX_DIBitmap::ConvertColorScale(uint32_t forecolor, uint32_t backcolor) {
 }
 
 // static
-Optional<CFX_DIBitmap::PitchAndSize> CFX_DIBitmap::CalculatePitchAndSize(
+absl::optional<CFX_DIBitmap::PitchAndSize> CFX_DIBitmap::CalculatePitchAndSize(
     int width,
     int height,
     FXDIB_Format format,
     uint32_t pitch) {
   if (width <= 0 || height <= 0)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   int bpp = GetBppFromFormat(format);
   if (!bpp)
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   uint32_t actual_pitch = pitch;
   if (actual_pitch == 0) {
@@ -704,7 +716,7 @@ Optional<CFX_DIBitmap::PitchAndSize> CFX_DIBitmap::CalculatePitchAndSize(
     safe_pitch /= 32;
     safe_pitch *= 4;
     if (!safe_pitch.IsValid())
-      return pdfium::nullopt;
+      return absl::nullopt;
 
     actual_pitch = safe_pitch.ValueOrDie();
   }
@@ -712,7 +724,7 @@ Optional<CFX_DIBitmap::PitchAndSize> CFX_DIBitmap::CalculatePitchAndSize(
   FX_SAFE_UINT32 safe_size = actual_pitch;
   safe_size *= height;
   if (!safe_size.IsValid())
-    return pdfium::nullopt;
+    return absl::nullopt;
 
   return PitchAndSize{actual_pitch, safe_size.ValueOrDie()};
 }
@@ -765,8 +777,8 @@ bool CFX_DIBitmap::CompositeBitmap(int dest_left,
 
   RetainPtr<CFX_DIBitmap> pSrcAlphaMask = pSrcBitmap->GetAlphaMask();
   for (int row = 0; row < height; row++) {
-    uint8_t* dest_scan =
-        m_pBuffer.Get() + (dest_top + row) * m_Pitch + dest_left * dest_Bpp;
+    pdfium::span<uint8_t> dest_scan =
+        GetWritableScanline(dest_top + row).subspan(dest_left * dest_Bpp);
     pdfium::span<const uint8_t> src_scan =
         pSrcBitmap->GetScanline(src_top + row).subspan(src_left * src_Bpp);
     pdfium::span<const uint8_t> src_scan_extra_alpha =
@@ -777,11 +789,10 @@ bool CFX_DIBitmap::CompositeBitmap(int dest_left,
         m_pAlphaMask ? m_pAlphaMask->GetWritableScanline(dest_top + row)
                            .subspan(dest_left)
                      : pdfium::span<uint8_t>();
-    const uint8_t* clip_scan = nullptr;
+    pdfium::span<const uint8_t> clip_scan;
     if (pClipMask) {
-      clip_scan = pClipMask->m_pBuffer.Get() +
-                  (dest_top + row - clip_box.top) * pClipMask->m_Pitch +
-                  (dest_left - clip_box.left);
+      clip_scan = pClipMask->GetWritableScanline(dest_top + row - clip_box.top)
+                      .subspan(dest_left - clip_box.left);
     }
     if (bRgb) {
       compositor.CompositeRgbBitmapLine(dest_scan, src_scan, width, clip_scan,
@@ -842,18 +853,17 @@ bool CFX_DIBitmap::CompositeMask(int dest_left,
     return false;
   }
   for (int row = 0; row < height; row++) {
-    uint8_t* dest_scan =
-        m_pBuffer.Get() + (dest_top + row) * m_Pitch + dest_left * Bpp;
+    pdfium::span<uint8_t> dest_scan =
+        GetWritableScanline(dest_top + row).subspan(dest_left * Bpp);
     pdfium::span<const uint8_t> src_scan = pMask->GetScanline(src_top + row);
     pdfium::span<uint8_t> dst_scan_extra_alpha =
         m_pAlphaMask ? m_pAlphaMask->GetWritableScanline(dest_top + row)
                            .subspan(dest_left)
                      : pdfium::span<uint8_t>();
-    const uint8_t* clip_scan = nullptr;
+    pdfium::span<const uint8_t> clip_scan;
     if (pClipMask) {
-      clip_scan = pClipMask->m_pBuffer.Get() +
-                  (dest_top + row - clip_box.top) * pClipMask->m_Pitch +
-                  (dest_left - clip_box.left);
+      clip_scan = pClipMask->GetScanline(dest_top + row - clip_box.top)
+                      .subspan(dest_left - clip_box.left);
     }
     if (src_bpp == 1) {
       compositor.CompositeBitMaskLine(dest_scan, src_scan, src_left, width,

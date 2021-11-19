@@ -829,20 +829,20 @@ void ProcessRectACS(PassesEncoderState* JXL_RESTRICT enc_state,
   //  const float entropy_mul16X8 = mul8X16 * 0.91195782912371126f;
 
   static const float k16X16mul1 = -0.35;
-  static const float k16X16mul2 = 0.82098067020252011;
+  static const float k16X16mul2 = 0.82;
   static const float k16X16base = 2.0;
   const float entropy_mul16X16 =
       k16X16mul2 + k16X16mul1 / (butteraugli_target + k16X16base);
   //  const float entropy_mul16X16 = mul16X16 * 0.83183417727960129f;
 
   static const float k32X16mul1 = -0.1;
-  static const float k32X16mul2 = 0.86098067020252011;
+  static const float k32X16mul2 = 0.84;
   static const float k32X16base = 2.5;
   const float entropy_mul16X32 =
       k32X16mul2 + k32X16mul1 / (butteraugli_target + k32X16base);
 
-  const float entropy_mul32X32 = 0.9188333021616017f;
-  const float entropy_mul64X64 = 1.50f;
+  const float entropy_mul32X32 = 0.9;
+  const float entropy_mul64X64 = 1.43f;
   // TODO(jyrki): Consider this feedback in further changes:
   // Also effectively when the multipliers for smaller blocks are
   // below 1, this raises the bar for the bigger blocks even higher
@@ -863,8 +863,8 @@ void ProcessRectACS(PassesEncoderState* JXL_RESTRICT enc_state,
       // subdivisions. {AcStrategy::Type::DCT32X32, 5, 1, 5,
       // 0.9822994906548809f},
       // TODO(jyrki): re-enable 64x32 and 64x64 if/when possible.
-      {AcStrategy::Type::DCT64X32, 6, 1, 3, 1.27f},
-      {AcStrategy::Type::DCT32X64, 6, 1, 3, 1.27f},
+      {AcStrategy::Type::DCT64X32, 6, 1, 3, 1.26f},
+      {AcStrategy::Type::DCT32X64, 6, 1, 3, 1.26f},
       // {AcStrategy::Type::DCT64X64, 8, 1, 3, 2.0846542128012948f},
   };
   /*
@@ -887,6 +887,7 @@ void ProcessRectACS(PassesEncoderState* JXL_RESTRICT enc_state,
       continue;
     }
     AcStrategy acs = AcStrategy::FromRawStrategy(tx.type);
+
     for (size_t cy = 0; cy + acs.covered_blocks_y() - 1 < rect.ysize();
          cy += acs.covered_blocks_y()) {
       for (size_t cx = 0; cx + acs.covered_blocks_x() - 1 < rect.xsize();
@@ -1061,11 +1062,10 @@ void AcStrategyHeuristics::Finalize(AuxOut* aux_out) {
   const auto& ac_strategy = enc_state->shared.ac_strategy;
   // Accounting and debug output.
   if (aux_out != nullptr) {
-    aux_out->num_dct2_blocks =
-        32 * (ac_strategy.CountBlocks(AcStrategy::Type::DCT32X64) +
-              ac_strategy.CountBlocks(AcStrategy::Type::DCT64X32));
-    aux_out->num_dct4_blocks =
-        64 * ac_strategy.CountBlocks(AcStrategy::Type::DCT64X64);
+    aux_out->num_small_blocks =
+        ac_strategy.CountBlocks(AcStrategy::Type::IDENTITY) +
+        ac_strategy.CountBlocks(AcStrategy::Type::DCT2X2) +
+        ac_strategy.CountBlocks(AcStrategy::Type::DCT4X4);
     aux_out->num_dct4x8_blocks =
         ac_strategy.CountBlocks(AcStrategy::Type::DCT4X8) +
         ac_strategy.CountBlocks(AcStrategy::Type::DCT8X4);
@@ -1087,6 +1087,11 @@ void AcStrategyHeuristics::Finalize(AuxOut* aux_out) {
         ac_strategy.CountBlocks(AcStrategy::Type::DCT32X16);
     aux_out->num_dct32_blocks =
         ac_strategy.CountBlocks(AcStrategy::Type::DCT32X32);
+    aux_out->num_dct32x64_blocks =
+        ac_strategy.CountBlocks(AcStrategy::Type::DCT32X64) +
+        ac_strategy.CountBlocks(AcStrategy::Type::DCT64X32);
+    aux_out->num_dct64_blocks =
+        ac_strategy.CountBlocks(AcStrategy::Type::DCT64X64);
   }
 
   if (WantDebugOutput(aux_out)) {

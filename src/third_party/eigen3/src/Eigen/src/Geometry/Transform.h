@@ -12,6 +12,8 @@
 #ifndef EIGEN_TRANSFORM_H
 #define EIGEN_TRANSFORM_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

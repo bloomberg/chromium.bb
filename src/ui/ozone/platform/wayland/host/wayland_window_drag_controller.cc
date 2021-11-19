@@ -58,8 +58,8 @@ constexpr uint32_t kDndActionWindowDrag =
 
 class WaylandWindowDragController::ExtendedDragSource {
  public:
-  ExtendedDragSource(const WaylandConnection& connection,
-                     wl_data_source* source) {
+  ExtendedDragSource(WaylandConnection& connection, wl_data_source* source)
+      : connection_(connection) {
     DCHECK(connection.extended_drag_v1());
     uint32_t options = ZCR_EXTENDED_DRAG_V1_OPTIONS_ALLOW_SWALLOW |
                        ZCR_EXTENDED_DRAG_V1_OPTIONS_ALLOW_DROP_NO_TARGET |
@@ -74,10 +74,12 @@ class WaylandWindowDragController::ExtendedDragSource {
     auto* surface = window ? window->root_surface()->surface() : nullptr;
     zcr_extended_drag_source_v1_drag(source_.get(), surface, offset.x(),
                                      offset.y());
+    connection_.ScheduleFlush();
   }
 
  private:
   wl::Object<zcr_extended_drag_source_v1> source_;
+  WaylandConnection& connection_;
 };
 
 WaylandWindowDragController::WaylandWindowDragController(
@@ -102,7 +104,7 @@ bool WaylandWindowDragController::StartDragSession() {
   if (state_ != State::kIdle)
     return true;
 
-  origin_window_ = window_manager_->GetCurrentFocusedWindow();
+  origin_window_ = window_manager_->GetCurrentPointerOrTouchFocusedWindow();
   if (!origin_window_) {
     LOG(ERROR) << "Failed to get origin window.";
     return false;
@@ -175,7 +177,8 @@ void WaylandWindowDragController::StopDragging() {
   // snapped into a tab strip. So switch to |kAttached| state, store the focused
   // window as the pointer grabber and ask to quit the nested loop.
   state_ = State::kAttaching;
-  pointer_grab_owner_ = window_manager_->GetCurrentFocusedWindow();
+  pointer_grab_owner_ =
+      window_manager_->GetCurrentPointerOrTouchFocusedWindow();
   DCHECK(pointer_grab_owner_);
   QuitLoop();
 }

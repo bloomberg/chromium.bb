@@ -13,35 +13,40 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/lens/lens_entrypoints.h"
 #include "content/public/browser/navigation_handle.h"
+#include "net/base/url_util.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
 
-// TODO(crbug/1250542): Refactor this to create OpenURLParams in core_tab_helper
-// instead of replacing query params with GURL API.
-std::unique_ptr<content::OpenURLParams> CreateOpenNewTabURLParamsForNewTab(
-    const content::OpenURLParams& params) {
-  // We want to modify the original GURL to have query parameters pertaining to
-  // this entry point.
-  content::OpenURLParams new_tab_params(params);
-  GURL original_url = params.url;
-  GURL::Replacements replacements;
-  std::string new_query = lens::GetQueryParametersForLensRequest(
-      lens::EntryPoint::CHROME_OPEN_NEW_TAB_SIDE_PANEL,
+GURL CreateURLForNewTab(const GURL& original_url) {
+  // We need to create a new URL with the specified |query_parameters| while
+  // also keeping the payloard parameter in the original URL.
+  if (original_url.is_empty())
+    return GURL();
+
+  std::string payload;
+  // Make sure the payload is present.
+  if (!net::GetValueForKeyInQuery(original_url, lens::kPayloadQueryParameter,
+                                  &payload))
+    return GURL();
+
+  GURL modified_url;
+  // Append or replace query parameters related to entry point.
+  modified_url = lens::AppendOrReplaceQueryParametersForLensRequest(
+      original_url, lens::EntryPoint::CHROME_OPEN_NEW_TAB_SIDE_PANEL,
       /*use_side_panel=*/false);
-  replacements.SetQuery(new_query.c_str(),
-                        url::Component(0, new_query.length()));
-  new_tab_params.url = original_url.ReplaceComponents(replacements);
-  return std::make_unique<content::OpenURLParams>(new_tab_params);
+  return modified_url;
 }
 
 }  // namespace
 
 namespace lens {
 
-LensSidePanelController::LensSidePanelController(SidePanel* side_panel,
-                                                 BrowserView* browser_view)
-    : lens_web_params_(nullptr),
+LensSidePanelController::LensSidePanelController(
+    base::OnceClosure close_callback,
+    SidePanel* side_panel,
+    BrowserView* browser_view)
+    : close_callback_(std::move(close_callback)),
       side_panel_(side_panel),
       browser_view_(browser_view),
       side_panel_view_(
@@ -69,7 +74,6 @@ void LensSidePanelController::OpenWithURL(
   }
   side_panel_view_->GetWebContents()->GetController().LoadURLWithParams(
       content::NavigationController::LoadURLParams(params));
-  lens_web_params_ = CreateOpenNewTabURLParamsForNewTab(params);
   if (side_panel_->GetVisible()) {
     // The user issued a follow-up Lens query.
     base::RecordAction(
@@ -80,9 +84,12 @@ void LensSidePanelController::OpenWithURL(
   }
 }
 
+bool LensSidePanelController::IsShowing() const {
+  return side_panel_->GetVisible();
+}
+
 void LensSidePanelController::Close() {
   if (side_panel_->GetVisible()) {
-    lens_web_params_ = nullptr;
     // Loading an empty URL on close prevents old results from being displayed
     // in the side panel if the side panel is reopened.
     side_panel_view_->GetWebContents()->GetController().LoadURL(
@@ -91,14 +98,25 @@ void LensSidePanelController::Close() {
     side_panel_->SetVisible(false);
     base::RecordAction(base::UserMetricsAction("LensSidePanel.Hide"));
   }
+  std::move(close_callback_).Run();
 }
 
 void LensSidePanelController::LoadResultsInNewTab() {
-  if (lens_web_params_) {
-    browser_view_->browser()
-        ->tab_strip_model()
-        ->GetActiveWebContents()
-        ->OpenURL(*lens_web_params_);
+  if (side_panel_view_ && side_panel_view_->GetWebContents()) {
+    // Open the latest URL visible on the side panel. This accounts for when the
+    // user uploads an image to Lens via drag and drop. This also allows any
+    // region selection changes to transfer to the new tab.
+    GURL url = CreateURLForNewTab(
+        side_panel_view_->GetWebContents()->GetLastCommittedURL());
+    // If there is no payload parameter, we will have an empty URL. This means
+    // we should return on empty and not close the side panel.
+    if (url.is_empty())
+      return;
+    content::OpenURLParams params(url, content::Referrer(),
+                                  WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                  ui::PAGE_TRANSITION_TYPED,
+                                  /*is_renderer_initiated=*/false);
+    browser_view_->browser()->OpenURL(params);
     base::RecordAction(
         base::UserMetricsAction("LensSidePanel.LoadResultsInNewTab"));
   }
@@ -106,7 +124,7 @@ void LensSidePanelController::LoadResultsInNewTab() {
 }
 
 bool LensSidePanelController::HandleContextMenu(
-    content::RenderFrameHost* render_frame_host,
+    content::RenderFrameHost& render_frame_host,
     const content::ContextMenuParams& params) {
   // Disable context menu.
   return true;

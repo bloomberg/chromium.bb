@@ -4134,7 +4134,10 @@ static void build_pc_tree_from_part_decision(
     assert(partitioning >= PARTITION_NONE &&
            partitioning < EXT_PARTITION_TYPES);
     PC_TREE *node = tree_node_queue[q_idx];
-    if (node != NULL) node->partitioning = partitioning;
+    if (node != NULL) {
+      node->partitioning = partitioning;
+      bsize = node->block_size;
+    }
     if (partitioning == PARTITION_SPLIT) {
       const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
       for (int i = 0; i < 4; ++i) {
@@ -4145,7 +4148,6 @@ static void build_pc_tree_from_part_decision(
           ++last_idx;
         }
       }
-      bsize = subsize;
     }
     --num_nodes;
     ++q_idx;
@@ -4206,6 +4208,63 @@ static bool ml_partition_search_whole_tree(AV1_COMP *const cpi, ThreadData *td,
   return true;
 }
 
+// Use a bitmask to represent the valid partition types for the current
+// block. "1" represents the corresponding partition type is vaild.
+// The least significant bit represents "PARTITION_NONE", the
+// largest significant bit represents "PARTITION_VERT_4", follow
+// the enum order for PARTITION_TYPE in "enums.h"
+static int get_valid_partition_types(
+    const AV1_COMP *const cpi,
+    const PartitionSearchState *const part_search_state,
+    const BLOCK_SIZE bsize) {
+  const PartitionCfg *const part_cfg = &cpi->oxcf.part_cfg;
+  const PartitionBlkParams blk_params = part_search_state->part_blk_params;
+  int valid_types = 0;
+  // PARTITION_NONE
+  valid_types |= (part_search_state->partition_none_allowed << 0);
+  // PARTITION_HORZ
+  valid_types |= (part_search_state->partition_rect_allowed[HORZ] << 1);
+  // PARTITION_VERT
+  valid_types |= (part_search_state->partition_rect_allowed[VERT] << 2);
+  // PARTITION_SPLIT
+  valid_types |= (part_search_state->do_square_split << 3);
+  // PARTITION_HORZ_A
+  const int ext_partition_allowed = part_search_state->do_rectangular_split &&
+                                    av1_blk_has_rows_and_cols(&blk_params);
+  const int horzab_partition_allowed =
+      ext_partition_allowed && part_cfg->enable_ab_partitions &&
+      part_search_state->partition_rect_allowed[HORZ];
+  valid_types |= (horzab_partition_allowed << 4);
+  // PARTITION_HORZ_B
+  valid_types |= (horzab_partition_allowed << 5);
+  // PARTITION_VERT_A
+  const int vertab_partition_allowed =
+      ext_partition_allowed && part_cfg->enable_ab_partitions &&
+      part_search_state->partition_rect_allowed[VERT];
+  valid_types |= (vertab_partition_allowed << 6);
+  // PARTITION_VERT_B
+  valid_types |= (vertab_partition_allowed << 7);
+  // PARTITION_HORZ_4
+  const int partition4_allowed = part_cfg->enable_1to4_partitions &&
+                                 ext_partition_allowed &&
+                                 bsize != BLOCK_128X128;
+  const int horz4_allowed =
+      partition4_allowed && part_search_state->partition_rect_allowed[HORZ] &&
+      get_plane_block_size(get_partition_subsize(bsize, PARTITION_HORZ_4),
+                           part_search_state->ss_x,
+                           part_search_state->ss_y) != BLOCK_INVALID;
+  valid_types |= (horz4_allowed << 8);
+  // PARTITION_VERT_4
+  const int vert4_allowed =
+      partition4_allowed && part_search_state->partition_rect_allowed[HORZ] &&
+      get_plane_block_size(get_partition_subsize(bsize, PARTITION_VERT_4),
+                           part_search_state->ss_x,
+                           part_search_state->ss_y) != BLOCK_INVALID;
+  valid_types |= (vert4_allowed << 9);
+
+  return valid_types;
+}
+
 static bool recursive_partition(AV1_COMP *const cpi, ThreadData *td,
                                 TileDataEnc *tile_data, TokenExtra **tp,
                                 SIMPLE_MOTION_DATA_TREE *sms_root,
@@ -4214,24 +4273,13 @@ static bool recursive_partition(AV1_COMP *const cpi, ThreadData *td,
   const AV1_COMMON *const cm = &cpi->common;
   ExtPartController *const ext_part_controller = &cpi->ext_part_controller;
   MACROBLOCK *const x = &td->mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
   if (mi_row >= cm->mi_params.mi_rows || mi_col >= cm->mi_params.mi_cols) {
     return false;
   }
   aom_partition_decision_t partition_decision;
   do {
-    aom_partition_features_t features;
-    features.mi_row = mi_row;
-    features.mi_col = mi_col;
-    features.frame_width = cpi->frame_info.frame_width;
-    features.frame_height = cpi->frame_info.frame_height;
-    features.block_size = bsize;
-    av1_ext_part_send_features(ext_part_controller, &features);
-    const bool valid_decision = av1_ext_part_get_partition_decision(
-        ext_part_controller, &partition_decision);
-    if (!valid_decision) return false;
-    pc_tree->partitioning = partition_decision.current_decision;
     PartitionSearchState part_search_state;
-
     // Initialization of state variables used in partition search.
     // TODO(chengchen): check if there is hidden conditions that don't allow
     // all possible partition types.
@@ -4242,6 +4290,37 @@ static bool recursive_partition(AV1_COMP *const cpi, ThreadData *td,
     PartitionBlkParams blk_params = part_search_state.part_blk_params;
     if (!av1_blk_has_rows_and_cols(&blk_params))
       set_partition_cost_for_edge_blk(cm, &part_search_state);
+    const int orig_rdmult = x->rdmult;
+    setup_block_rdmult(cpi, x, mi_row, mi_col, bsize, NO_AQ, NULL);
+    const int valid_partition_types =
+        get_valid_partition_types(cpi, &part_search_state, bsize);
+    const FRAME_UPDATE_TYPE update_type =
+        get_frame_update_type(&cpi->ppi->gf_group, cpi->gf_frame_index);
+    const int qindex = av1_get_qindex(&cm->seg, xd->mi[0]->segment_id,
+                                      cm->quant_params.base_qindex);
+    // RD multiplier
+    const int rdmult = x->rdmult;
+    // pyramid level
+    const int pyramid_level =
+        cpi->ppi->gf_group.layer_depth[cpi->gf_frame_index];
+    x->rdmult = orig_rdmult;
+
+    aom_partition_features_t features;
+    features.mi_row = mi_row;
+    features.mi_col = mi_col;
+    features.frame_width = cpi->frame_info.frame_width;
+    features.frame_height = cpi->frame_info.frame_height;
+    features.block_size = bsize;
+    features.valid_partition_types = valid_partition_types;
+    features.update_type = update_type;
+    features.qindex = qindex;
+    features.rdmult = rdmult;
+    features.pyramid_level = pyramid_level;
+    av1_ext_part_send_features(ext_part_controller, &features);
+    const bool valid_decision = av1_ext_part_get_partition_decision(
+        ext_part_controller, &partition_decision);
+    if (!valid_decision) return false;
+    pc_tree->partitioning = partition_decision.current_decision;
 
     av1_init_rd_stats(this_rdcost);
     if (partition_decision.current_decision == PARTITION_SPLIT) {
@@ -4254,9 +4333,8 @@ static bool recursive_partition(AV1_COMP *const cpi, ThreadData *td,
           pc_tree->split[i] = av1_alloc_pc_tree_node(subsize);
         pc_tree->split[i]->index = i;
       }
-      const int orig_rdmult = x->rdmult;
+      const int orig_rdmult_tmp = x->rdmult;
       setup_block_rdmult(cpi, x, mi_row, mi_col, bsize, NO_AQ, NULL);
-      (void)orig_rdmult;
       // TODO(chengchen): check boundary conditions
       // top-left
       recursive_partition(cpi, td, tile_data, tp, sms_root, pc_tree->split[0],
@@ -4281,7 +4359,7 @@ static bool recursive_partition(AV1_COMP *const cpi, ThreadData *td,
         this_rdcost->dist += split_rdc[i].dist;
         av1_rd_cost_update(x->rdmult, this_rdcost);
       }
-      x->rdmult = orig_rdmult;
+      x->rdmult = orig_rdmult_tmp;
     } else {
       *this_rdcost = rd_search_for_fixed_partition(
           cpi, td, tile_data, tp, sms_root, mi_row, mi_col, bsize, pc_tree);
@@ -4443,7 +4521,7 @@ static void log_sub_block_var(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
   const int bh = MI_SIZE * mi_size_high[bs] - bottom_overflow;
 
   // Initialize min to a large value and max to 0 at
-  *var_min = 10.0;
+  *var_min = 99.0;
   *var_max = 0.0;
 
   for (i = 0; i < bh; i += 4) {
@@ -4454,13 +4532,13 @@ static void log_sub_block_var(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs,
                           x->plane[0].src.buf + i * x->plane[0].src.stride + j,
                           x->plane[0].src.stride,
                           CONVERT_TO_BYTEPTR(highbd_all_zeros), 0, &sse) /
-                          16);
+                          16.0);
       } else {
         var =
             log(1.0 + cpi->ppi->fn_ptr[BLOCK_4X4].vf(
                           x->plane[0].src.buf + i * x->plane[0].src.stride + j,
                           x->plane[0].src.stride, all_zeros, 0, &sse) /
-                          16);
+                          16.0);
       }
       *var_min = AOMMIN(*var_min, var);
       *var_max = AOMMAX(*var_max, var);
@@ -4654,7 +4732,7 @@ BEGIN_PARTITION_SEARCH:
     double var_min, var_max;
     log_sub_block_var(cpi, x, bsize, &var_min, &var_max);
 
-    if ((var_min < 0.5) && ((var_max - var_min) > 3.0)) {
+    if ((var_min < 0.272) && ((var_max - var_min) > 3.0)) {
       part_search_state.partition_none_allowed = 0;
       part_search_state.terminate_partition_search = 0;
       part_search_state.do_square_split = 1;

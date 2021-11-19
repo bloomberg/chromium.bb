@@ -3,6 +3,7 @@
 #include <ostream>
 
 #include "absl/strings/str_format.h"
+#include "http2/adapter/http2_visitor_interface.h"
 #include "common/quiche_endian.h"
 #include "spdy/core/hpack/hpack_encoder.h"
 #include "spdy/core/spdy_frame_reader.h"
@@ -10,6 +11,11 @@
 namespace http2 {
 namespace adapter {
 namespace test {
+namespace {
+
+using ConnectionError = Http2VisitorInterface::ConnectionError;
+
+}  // anonymous namespace
 
 TestDataFrameSource::TestDataFrameSource(Http2VisitorInterface& visitor,
                                          bool has_fin)
@@ -27,6 +33,9 @@ void TestDataFrameSource::EndData() { end_data_ = true; }
 
 std::pair<int64_t, bool> TestDataFrameSource::SelectPayloadLength(
     size_t max_length) {
+  if (return_error_) {
+    return {DataFrameSource::kError, false};
+  }
   // The stream is done if there's no more data, or if |max_length| is at least
   // as large as the remaining data.
   const bool end_data = end_data_ && (current_fragment_.empty() ||
@@ -46,7 +55,7 @@ bool TestDataFrameSource::Send(absl::string_view frame_header,
   const int64_t result = visitor_.OnReadyToSend(concatenated);
   if (result < 0) {
     // Write encountered error.
-    visitor_.OnConnectionError();
+    visitor_.OnConnectionError(ConnectionError::kSendError);
     current_fragment_ = {};
     payload_fragments_.clear();
     return false;
@@ -57,7 +66,7 @@ bool TestDataFrameSource::Send(absl::string_view frame_header,
     // Probably need to handle this better within this test class.
     QUICHE_LOG(DFATAL)
         << "DATA frame not fully flushed. Connection will be corrupt!";
-    visitor_.OnConnectionError();
+    visitor_.OnConnectionError(ConnectionError::kSendError);
     current_fragment_ = {};
     payload_fragments_.clear();
     return false;

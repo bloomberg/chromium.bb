@@ -22,10 +22,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/notreached.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -49,7 +49,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "net/android/cellular_signal_strength.h"
 #include "net/android/network_library.h"
 #endif  // OS_ANDROID
 

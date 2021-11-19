@@ -10,6 +10,8 @@
 #ifndef EIGEN_POLYNOMIAL_SOLVER_H
 #define EIGEN_POLYNOMIAL_SOLVER_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 /** \ingroup Polynomials_Module

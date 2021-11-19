@@ -30,7 +30,7 @@
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures.
  */
-#define AOM_EXT_PART_ABI_VERSION 3
+#define AOM_EXT_PART_ABI_VERSION 5
 
 #ifdef __cplusplus
 extern "C" {
@@ -240,6 +240,18 @@ typedef struct aom_partition_features {
   int frame_width;                ///< Frame width
   int frame_height;               ///< Frame height
   int block_size;                 ///< As "BLOCK_SIZE" in av1/common/enums.h
+  /*!
+   * Valid partition types. A bitmask is used.  "1" represents the
+   * corresponding type is vaild. The bitmask follows the enum order for
+   * PARTITION_TYPE in "enums.h" to represent one partition type at a bit.
+   * For example, 0x01 stands for only PARTITION_NONE is valid,
+   * 0x09 (00...001001) stands for PARTITION_NONE and PARTITION_SPLIT are valid.
+   */
+  int valid_partition_types;
+  int update_type;    ///< Frame update type, defined in ratectrl.h
+  int qindex;         ///< Quantization index, range: [0, 255]
+  int rdmult;         ///< Rate-distortion multiplier
+  int pyramid_level;  ///< The level of this frame in the hierarchical structure
 } aom_partition_features_t;
 
 /*!\brief Partition decisions received from the external model.

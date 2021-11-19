@@ -21,6 +21,7 @@
 
 namespace quic {
 
+class CachedNetworkParameters;
 class QuicSession;
 
 // Crypto handshake messages in QUIC take place over a reserved stream with the
@@ -113,6 +114,16 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
 
   // Called to validate |token|.
   virtual bool ValidateAddressToken(absl::string_view token) const = 0;
+
+  // Get the last CachedNetworkParameters received from a valid address token.
+  virtual const CachedNetworkParameters* PreviousCachedNetworkParams()
+      const = 0;
+
+  // Set the CachedNetworkParameters that will be returned by
+  // PreviousCachedNetworkParams.
+  // TODO(wub): This function is test only, move it to a test only library.
+  virtual void SetPreviousCachedNetworkParams(
+      CachedNetworkParameters cached_network_params) = 0;
 
   // Returns current handshake state.
   virtual HandshakeState GetHandshakeState() const = 0;
@@ -226,6 +237,12 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
   // data, and false if all data has been acked.
   bool IsWaitingForAcks() const;
 
+  // Helper method for OnDataAvailable. Calls CryptoMessageParser::ProcessInput
+  // with the data available in |sequencer| and |level|, and marks the data
+  // passed to ProcessInput as consumed.
+  virtual void OnDataAvailableInSequencer(QuicStreamSequencer* sequencer,
+                                          EncryptionLevel level);
+
  private:
   // Data sent and received in CRYPTO frames is sent at multiple encryption
   // levels. Some of the state for the single logical crypto stream is split
@@ -237,12 +254,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoStream : public QuicStream {
     QuicStreamSequencer sequencer;
     QuicStreamSendBuffer send_buffer;
   };
-
-  // Helper method for OnDataAvailable. Calls CryptoMessageParser::ProcessInput
-  // with the data available in |sequencer| and |level|, and marks the data
-  // passed to ProcessInput as consumed.
-  void OnDataAvailableInSequencer(QuicStreamSequencer* sequencer,
-                                  EncryptionLevel level);
 
   // Consumed data according to encryption levels.
   // TODO(fayang): This is not needed once switching from QUIC crypto to

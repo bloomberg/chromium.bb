@@ -11,6 +11,8 @@
 #ifndef EIGEN_NESTBYVALUE_H
 #define EIGEN_NESTBYVALUE_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

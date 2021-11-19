@@ -23,7 +23,9 @@ macro(ei_add_test_internal testname testname_with_suffix)
   set(EIGEN_SUBTESTS_LIST "${EIGEN_SUBTESTS_LIST}${targetname}\n")
   set_property(GLOBAL PROPERTY EIGEN_SUBTESTS_LIST "${EIGEN_SUBTESTS_LIST}")
 
+  set(is_gpu_test OFF)
   if(EIGEN_ADD_TEST_FILENAME_EXTENSION STREQUAL cu)
+    set(is_gpu_test ON)
     if(EIGEN_TEST_HIP)
       hip_reset_flags()
       hip_add_executable(${targetname} ${filename} HIPCC_OPTIONS "-DEIGEN_USE_HIP ${ARGV2}")
@@ -57,10 +59,10 @@ macro(ei_add_test_internal testname testname_with_suffix)
     add_executable(${targetname} ${filename})
   endif()
 
-  if (targetname MATCHES "^eigen2_")
-    add_dependencies(eigen2_buildtests ${targetname})
-  else()
-    add_dependencies(buildtests ${targetname})
+  add_dependencies(buildtests ${targetname})
+  
+  if (is_gpu_test)
+    add_dependencies(buildtests_gpu ${targetname})
   endif()
 
   if(EIGEN_NO_ASSERTION_CHECKING)
@@ -118,6 +120,11 @@ macro(ei_add_test_internal testname testname_with_suffix)
     add_dependencies("Build${current_subproject}" ${targetname})
     set_property(TEST ${testname_with_suffix} PROPERTY LABELS "${current_subproject}")
   endif()
+  if (is_gpu_test)
+    # Add gpu tag for testing only GPU tests.
+    set_property(TEST ${testname_with_suffix} APPEND PROPERTY LABELS "gpu")
+  endif()
+  
   if(EIGEN_SYCL)
     # Force include of the SYCL file at the end to avoid errors.
     set_property(TARGET ${targetname} PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
@@ -455,15 +462,7 @@ endmacro()
 
 macro(ei_get_compilerver VAR)
     if(MSVC)
-      # on windows system, we use a modified CMake script
-      include(EigenDetermineVSServicePack)
-      EigenDetermineVSServicePack( my_service_pack )
-
-      if( my_service_pack )
-        set(${VAR} ${my_service_pack})
-      else()
-        set(${VAR} "na")
-      endif()
+      set(${VAR} "${CMAKE_CXX_COMPILER_VERSION}")
     elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "PGI")
       set(${VAR} "${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
     else()
@@ -598,10 +597,7 @@ macro(ei_set_build_string)
   ei_get_compilerver(LOCAL_COMPILER_VERSION)
   ei_get_cxxflags(LOCAL_COMPILER_FLAGS)
 
-  include(EigenDetermineOSVersion)
-  DetermineOSVersion(OS_VERSION)
-
-  set(TMP_BUILD_STRING ${OS_VERSION}-${LOCAL_COMPILER_VERSION})
+  set(TMP_BUILD_STRING ${CMAKE_SYSTEM}-${LOCAL_COMPILER_VERSION})
 
   if (NOT ${LOCAL_COMPILER_FLAGS} STREQUAL  "")
     set(TMP_BUILD_STRING ${TMP_BUILD_STRING}-${LOCAL_COMPILER_FLAGS})
@@ -671,8 +667,8 @@ endmacro()
 # Split all tests listed in EIGEN_TESTS_LIST into num_splits many targets
 # named buildtestspartN with N = { 0, ..., num_splits-1}.
 #
-# The intention behind the existance of this macro is the size of Eigen's
-# testsuite. Together with the relativly big compile-times building all tests
+# The intention behind the existence of this macro is the size of Eigen's
+# testsuite. Together with the relatively big compile-times building all tests
 # can take a substantial amount of time depending on the available hardware.
 # 
 # The last buildtestspartN target will build possible remaining tests.
@@ -775,8 +771,7 @@ macro(ei_add_smoke_tests smoke_test_list)
     if ("${test}" IN_LIST EIGEN_SUBTESTS_LIST)
       add_dependencies("${buildtarget}" "${test}")
       # Add label smoketest to be able to run smoketests using ctest
-      get_property(test_labels TEST ${test} PROPERTY LABELS)
-      set_property(TEST ${test} PROPERTY LABELS "${test_labels};smoketest")
+      set_property(TEST ${test} APPEND PROPERTY LABELS "smoketest")
     endif()
   endforeach()
 endmacro(ei_add_smoke_tests)

@@ -75,10 +75,10 @@ bool Transform::Requires(CloneContext& ctx,
   return true;
 }
 
-void Transform::RemoveStatement(CloneContext& ctx, ast::Statement* stmt) {
+void Transform::RemoveStatement(CloneContext& ctx, const ast::Statement* stmt) {
   auto* sem = ctx.src->Sem().Get(stmt);
   if (auto* block = tint::As<sem::BlockStatement>(sem->Parent())) {
-    ctx.Remove(block->Declaration()->statements(), stmt);
+    ctx.Remove(block->Declaration()->statements, stmt);
     return;
   }
   if (tint::Is<sem::ForLoopStatement>(sem->Parent())) {
@@ -90,7 +90,8 @@ void Transform::RemoveStatement(CloneContext& ctx, ast::Statement* stmt) {
       << sem->TypeInfo().name;
 }
 
-ast::Type* Transform::CreateASTTypeFor(CloneContext& ctx, const sem::Type* ty) {
+const ast::Type* Transform::CreateASTTypeFor(CloneContext& ctx,
+                                             const sem::Type* ty) {
   if (ty->Is<sem::Void>()) {
     return ctx.dst->create<ast::Void>();
   }
@@ -127,7 +128,7 @@ ast::Type* Transform::CreateASTTypeFor(CloneContext& ctx, const sem::Type* ty) {
     }
   }
   if (auto* s = ty->As<sem::Struct>()) {
-    return ctx.dst->create<ast::TypeName>(ctx.Clone(s->Declaration()->name()));
+    return ctx.dst->create<ast::TypeName>(ctx.Clone(s->Declaration()->name));
   }
   if (auto* s = ty->As<sem::Reference>()) {
     return CreateASTTypeFor(ctx, s->StoreType());

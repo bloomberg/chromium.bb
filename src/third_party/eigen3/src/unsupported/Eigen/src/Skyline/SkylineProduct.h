@@ -10,6 +10,8 @@
 #ifndef EIGEN_SKYLINEPRODUCT_H
 #define EIGEN_SKYLINEPRODUCT_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 template<typename Lhs, typename Rhs, int ProductMode>

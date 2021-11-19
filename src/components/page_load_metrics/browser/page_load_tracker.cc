@@ -790,6 +790,15 @@ void PageLoadTracker::OnSubFrameTimingChanged(
   }
 }
 
+void PageLoadTracker::OnSubFrameInputTimingChanged(
+    content::RenderFrameHost* rfh,
+    const mojom::InputTiming& input_timing_delta) {
+  DCHECK(rfh->GetParent());
+  for (const auto& observer : observers_) {
+    observer->OnInputTimingUpdate(rfh, input_timing_delta);
+  }
+}
+
 void PageLoadTracker::OnSubFrameRenderDataChanged(
     content::RenderFrameHost* rfh,
     const mojom::FrameRenderDataUpdate& render_data) {
@@ -985,8 +994,9 @@ PageLoadTracker::GetNormalizedResponsivenessMetrics() const {
 const mojom::InputTiming& PageLoadTracker::GetPageInputTiming() const {
   return metrics_update_dispatcher_.page_input_timing();
 }
-const blink::MobileFriendliness& PageLoadTracker::GetMobileFriendliness()
-    const {
+
+const absl::optional<blink::MobileFriendliness>&
+PageLoadTracker::GetMobileFriendliness() const {
   return metrics_update_dispatcher_.mobile_friendliness();
 }
 
@@ -1029,6 +1039,8 @@ void PageLoadTracker::OnEnterBackForwardCache() {
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnEnterBackForwardCache,
                              metrics_update_dispatcher_.timing());
   metrics_update_dispatcher_.UpdateLayoutShiftNormalizationForBfcache();
+  metrics_update_dispatcher_
+      .UpdateResponsivenessMetricsNormalizationForBfcache();
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
     PageHidden();
   }

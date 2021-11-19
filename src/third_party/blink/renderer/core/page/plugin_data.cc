@@ -96,12 +96,10 @@ void PluginData::RefreshBrowserSidePluginCache() {
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       registry.BindNewPipeAndPassReceiver());
   Vector<mojom::blink::PluginInfoPtr> plugins;
-  registry->GetPlugins(true, true, SecurityOrigin::CreateUniqueOpaque(),
-                       &plugins);
+  registry->GetPlugins(true, SecurityOrigin::CreateUniqueOpaque(), &plugins);
 }
 
-void PluginData::UpdatePluginList(bool is_main_frame,
-                                  const SecurityOrigin* main_frame_origin) {
+void PluginData::UpdatePluginList(const SecurityOrigin* main_frame_origin) {
   SCOPED_UMA_HISTOGRAM_TIMER("Blink.Plugin.UpdateTime");
   ResetPluginData();
   main_frame_origin_ = main_frame_origin;
@@ -110,7 +108,7 @@ void PluginData::UpdatePluginList(bool is_main_frame,
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       registry.BindNewPipeAndPassReceiver());
   Vector<mojom::blink::PluginInfoPtr> plugins;
-  registry->GetPlugins(false, is_main_frame, main_frame_origin_, &plugins);
+  registry->GetPlugins(false, main_frame_origin_, &plugins);
   for (const auto& plugin : plugins) {
     auto* plugin_info = MakeGarbageCollected<PluginInfo>(
         std::move(plugin->name), FilePathToWebString(plugin->filename),

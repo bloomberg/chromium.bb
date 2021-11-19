@@ -177,6 +177,7 @@ cc_library(
         "@com_google_absl//absl/types:span",
         "@llvm-project//mlir:Affine",
         "@llvm-project//mlir:AllPassesAndDialects",
+        "@llvm-project//mlir:ArithmeticDialect",
         "@llvm-project//mlir:LLVMDialect",
         "@llvm-project//mlir:LinalgOps",
         "@llvm-project//mlir:SCFDialect",
@@ -257,6 +258,7 @@ cc_library(
         "//tensorflow/core/platform:stream_executor_no_cuda",
         "@llvm-project//llvm:Core",
         "@llvm-project//llvm:Object",
+        "@llvm-project//llvm:MC",
         "@llvm-project//llvm:Support",
         "@llvm-project//llvm:Target",
         "@llvm-project//llvm:X86CodeGen",  # fixdeps: keep
@@ -565,6 +567,7 @@ cc_library(
         "@llvm-project//mlir:IR",
         "@llvm-project//mlir:LinalgOps",
         "@llvm-project//mlir:LinalgTransforms",
+        "@llvm-project//mlir:Pass",
         "@llvm-project//mlir:StandardOps",
     ],
 )
@@ -1194,6 +1197,7 @@ tf_cc_test(
         "//tensorflow/compiler/xla/tests:hlo_test_base",
         "//tensorflow/compiler/xla/tests:xla_internal_test_main",
         "@llvm-project//llvm:Core",
+        "@llvm-project//llvm:MC",
         "@llvm-project//llvm:Support",
         "@llvm-project//llvm:Target",
     ],

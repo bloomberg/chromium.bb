@@ -321,7 +321,7 @@ void SenderSession::OnAnswer(ReceiverMessage message) {
         SenderMessage{SenderMessage::Type::kGetCapabilities,
                       ++current_sequence_number_, true},
         ReceiverMessage::Type::kCapabilitiesResponse,
-        [this](ReceiverMessage message) { OnCapabilitiesResponse(message); });
+        [this](ReceiverMessage msg) { OnCapabilitiesResponse(msg); });
     if (!result.ok()) {
       config_.client->OnError(
           this, Error(Error::Code::kNegotiationFailure,

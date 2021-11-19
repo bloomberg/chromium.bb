@@ -10,7 +10,7 @@ load("//lib/branches.star", "branches")
 load("//project.star", "settings")
 
 lucicfg.check_version(
-    min = "1.28.0",
+    min = "1.29.1",
     message = "Update depot_tools",
 )
 
@@ -91,6 +91,12 @@ luci.project(
             groups = "project-chromium-admins",
         ),
     ],
+    bindings = [
+        luci.binding(
+            roles = "role/configs.validator",
+            groups = "project-chromium-try-task-accounts",
+        ),
+    ],
 )
 
 luci.cq(
@@ -160,8 +166,12 @@ luci.realm(
     ],
 )
 
-# Launch Swarming tasks in "realms-aware mode", crbug.com/1136313.
-luci.builder.defaults.experiments.set({"luci.use_realms": 100})
+luci.builder.defaults.experiments.set({
+    # TODO(crbug.com/1135718): Promote out of experiment for all builders.
+    "chromium.chromium_tests.use_rdb_results": 100,
+    # Launch Swarming tasks in "realms-aware mode", crbug.com/1136313.
+    "luci.use_realms": 100,
+})
 luci.builder.defaults.test_presentation.set(resultdb.test_presentation(grouping_keys = ["status", "v.test_suite"]))
 
 exec("//swarming.star")

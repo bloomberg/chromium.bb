@@ -63,7 +63,7 @@ class Inspector {
 
   /// @param entry_point name of the entry point to get information about.
   /// @returns the total size of shared storage required by an entry point,
-  //           including all uniforms storage buffers.
+  ///          including all uniform storage buffers.
   uint32_t GetStorageSize(const std::string& entry_point);
 
   /// @param entry_point name of the entry point to get information about.
@@ -107,11 +107,6 @@ class Inspector {
       const std::string& entry_point);
 
   /// @param entry_point name of the entry point to get information about.
-  /// @returns vector of all of the bindings for read-only storage textures.
-  std::vector<ResourceBinding> GetReadOnlyStorageTextureResourceBindings(
-      const std::string& entry_point);
-
-  /// @param entry_point name of the entry point to get information about.
   /// @returns vector of all of the bindings for write-only storage textures.
   std::vector<ResourceBinding> GetWriteOnlyStorageTextureResourceBindings(
       const std::string& entry_point);
@@ -152,7 +147,7 @@ class Inspector {
   /// @param name name of the entry point to find
   /// @returns a pointer to the entry point if it exists, otherwise returns
   ///          nullptr and sets the error string.
-  ast::Function* FindEntryPointByName(const std::string& name);
+  const ast::Function* FindEntryPointByName(const std::string& name);
 
   /// Recursively add entry point IO variables.
   /// If `type` is a struct, recurse into members, appending the member name.
@@ -162,7 +157,7 @@ class Inspector {
   /// @param decorations the variable decorations
   /// @param variables the list to add the variables to
   void AddEntryPointInOutVariables(std::string name,
-                                   sem::Type* type,
+                                   const sem::Type* type,
                                    const ast::DecorationList& decorations,
                                    std::vector<StageVariable>& variables) const;
 
@@ -170,7 +165,7 @@ class Inspector {
   /// If `type` is a struct, recurse into members to check for the decoration.
   /// Otherwise, check `decorations` for the decoration.
   bool ContainsBuiltin(ast::Builtin builtin,
-                       sem::Type* type,
+                       const sem::Type* type,
                        const ast::DecorationList& decorations) const;
 
   /// Gathers all the texture resource bindings of the given type for the given
@@ -202,14 +197,11 @@ class Inspector {
       bool multisampled_only);
 
   /// @param entry_point name of the entry point to get information about.
-  /// @param read_only if true get only read-only bindings, otherwise get
-  ///                  write-only bindings.
   /// @returns vector of all of the bindings for the requested storage textures.
   std::vector<ResourceBinding> GetStorageTextureResourceBindingsImpl(
-      const std::string& entry_point,
-      bool read_only);
+      const std::string& entry_point);
 
-  /// Constructes |sampler_targets_| if it hasn't already been instantiated.
+  /// Constructs |sampler_targets_| if it hasn't already been instantiated.
   void GenerateSamplerTargets();
 
   /// For a N-uple of expressions, resolve to the appropriate global resources

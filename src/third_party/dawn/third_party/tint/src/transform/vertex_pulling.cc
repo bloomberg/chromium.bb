@@ -137,7 +137,7 @@ struct DataType {
   uint32_t width;  // 1 for scalar, 2+ for a vector
 };
 
-DataType DataTypeOf(sem::Type* ty) {
+DataType DataTypeOf(const sem::Type* ty) {
   if (ty->Is<sem::I32>()) {
     return {BaseType::kI32, 1};
   }
@@ -217,15 +217,15 @@ struct State {
   };
 
   struct LocationInfo {
-    std::function<ast::Expression*()> expr;
-    sem::Type* type;
+    std::function<const ast::Expression*()> expr;
+    const sem::Type* type;
   };
 
   CloneContext& ctx;
   VertexPulling::Config const cfg;
   std::unordered_map<uint32_t, LocationInfo> location_info;
-  std::function<ast::Expression*()> vertex_index_expr = nullptr;
-  std::function<ast::Expression*()> instance_index_expr = nullptr;
+  std::function<const ast::Expression*()> vertex_index_expr = nullptr;
+  std::function<const ast::Expression*()> instance_index_expr = nullptr;
   Symbol pulling_position_name;
   Symbol struct_buffer_name;
   std::unordered_map<uint32_t, Symbol> vertex_buffer_names;
@@ -369,7 +369,7 @@ struct State {
           }
         } else if (var_dt.width > fmt_dt.width) {
           // WGSL variable vector width is wider than the loaded vector width
-          ast::Type* ty = nullptr;
+          const ast::Type* ty = nullptr;
           ast::ExpressionList values{fetch};
           switch (var_dt.base_type) {
             case BaseType::kI32:
@@ -416,10 +416,10 @@ struct State {
   /// @param offset the byte offset of the data from `buffer_base`
   /// @param buffer the index of the vertex buffer
   /// @param format the format to read
-  ast::Expression* Fetch(Symbol array_base,
-                         uint32_t offset,
-                         uint32_t buffer,
-                         VertexFormat format) {
+  const ast::Expression* Fetch(Symbol array_base,
+                               uint32_t offset,
+                               uint32_t buffer,
+                               VertexFormat format) {
     using u32 = ProgramBuilder::u32;
     using i32 = ProgramBuilder::i32;
     using f32 = ProgramBuilder::f32;
@@ -642,15 +642,15 @@ struct State {
   /// @param buffer the index of the vertex buffer
   /// @param format VertexFormat::kUint32, VertexFormat::kSint32 or
   /// VertexFormat::kFloat32
-  ast::Expression* LoadPrimitive(Symbol array_base,
-                                 uint32_t offset,
-                                 uint32_t buffer,
-                                 VertexFormat format) {
-    ast::Expression* u32 = nullptr;
+  const ast::Expression* LoadPrimitive(Symbol array_base,
+                                       uint32_t offset,
+                                       uint32_t buffer,
+                                       VertexFormat format) {
+    const ast::Expression* u32 = nullptr;
     if ((offset & 3) == 0) {
       // Aligned load.
 
-      ast ::Expression* index = nullptr;
+      const ast ::Expression* index = nullptr;
       if (offset > 0) {
         index = ctx.dst->Add(array_base, offset / 4);
       } else {
@@ -700,13 +700,13 @@ struct State {
   /// @param base_type underlying AST type
   /// @param base_format underlying vertex format
   /// @param count how many elements the vector has
-  ast::Expression* LoadVec(Symbol array_base,
-                           uint32_t offset,
-                           uint32_t buffer,
-                           uint32_t element_stride,
-                           ast::Type* base_type,
-                           VertexFormat base_format,
-                           uint32_t count) {
+  const ast::Expression* LoadVec(Symbol array_base,
+                                 uint32_t offset,
+                                 uint32_t buffer,
+                                 uint32_t element_stride,
+                                 const ast::Type* base_type,
+                                 VertexFormat base_format,
+                                 uint32_t count) {
     ast::ExpressionList expr_list;
     for (uint32_t i = 0; i < count; ++i) {
       // Offset read position by element_stride for each component
@@ -724,29 +724,30 @@ struct State {
   /// vertex_index and instance_index builtins if present.
   /// @param func the entry point function
   /// @param param the parameter to process
-  void ProcessNonStructParameter(ast::Function* func, ast::Variable* param) {
+  void ProcessNonStructParameter(const ast::Function* func,
+                                 const ast::Variable* param) {
     if (auto* location =
-            ast::GetDecoration<ast::LocationDecoration>(param->decorations())) {
+            ast::GetDecoration<ast::LocationDecoration>(param->decorations)) {
       // Create a function-scope variable to replace the parameter.
-      auto func_var_sym = ctx.Clone(param->symbol());
-      auto* func_var_type = ctx.Clone(param->type());
+      auto func_var_sym = ctx.Clone(param->symbol);
+      auto* func_var_type = ctx.Clone(param->type);
       auto* func_var = ctx.dst->Var(func_var_sym, func_var_type);
-      ctx.InsertFront(func->body()->statements(), ctx.dst->Decl(func_var));
+      ctx.InsertFront(func->body->statements, ctx.dst->Decl(func_var));
       // Capture mapping from location to the new variable.
       LocationInfo info;
       info.expr = [this, func_var]() { return ctx.dst->Expr(func_var); };
       info.type = ctx.src->Sem().Get(param)->Type();
-      location_info[location->value()] = info;
+      location_info[location->value] = info;
     } else if (auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(
-                   param->decorations())) {
+                   param->decorations)) {
       // Check for existing vertex_index and instance_index builtins.
-      if (builtin->value() == ast::Builtin::kVertexIndex) {
+      if (builtin->builtin == ast::Builtin::kVertexIndex) {
         vertex_index_expr = [this, param]() {
-          return ctx.dst->Expr(ctx.Clone(param->symbol()));
+          return ctx.dst->Expr(ctx.Clone(param->symbol));
         };
-      } else if (builtin->value() == ast::Builtin::kInstanceIndex) {
+      } else if (builtin->builtin == ast::Builtin::kInstanceIndex) {
         instance_index_expr = [this, param]() {
-          return ctx.dst->Expr(ctx.Clone(param->symbol()));
+          return ctx.dst->Expr(ctx.Clone(param->symbol));
         };
       }
       new_function_parameters.push_back(ctx.Clone(param));
@@ -764,35 +765,35 @@ struct State {
   /// @param func the entry point function
   /// @param param the parameter to process
   /// @param struct_ty the structure type
-  void ProcessStructParameter(ast::Function* func,
-                              ast::Variable* param,
+  void ProcessStructParameter(const ast::Function* func,
+                              const ast::Variable* param,
                               const ast::Struct* struct_ty) {
-    auto param_sym = ctx.Clone(param->symbol());
+    auto param_sym = ctx.Clone(param->symbol);
 
     // Process the struct members.
     bool has_locations = false;
     ast::StructMemberList members_to_clone;
-    for (auto* member : struct_ty->members()) {
-      auto member_sym = ctx.Clone(member->symbol());
-      std::function<ast::Expression*()> member_expr = [this, param_sym,
-                                                       member_sym]() {
+    for (auto* member : struct_ty->members) {
+      auto member_sym = ctx.Clone(member->symbol);
+      std::function<const ast::Expression*()> member_expr = [this, param_sym,
+                                                             member_sym]() {
         return ctx.dst->MemberAccessor(param_sym, member_sym);
       };
 
       if (auto* location = ast::GetDecoration<ast::LocationDecoration>(
-              member->decorations())) {
+              member->decorations)) {
         // Capture mapping from location to struct member.
         LocationInfo info;
         info.expr = member_expr;
         info.type = ctx.src->Sem().Get(member)->Type();
-        location_info[location->value()] = info;
+        location_info[location->value] = info;
         has_locations = true;
       } else if (auto* builtin = ast::GetDecoration<ast::BuiltinDecoration>(
-                     member->decorations())) {
+                     member->decorations)) {
         // Check for existing vertex_index and instance_index builtins.
-        if (builtin->value() == ast::Builtin::kVertexIndex) {
+        if (builtin->builtin == ast::Builtin::kVertexIndex) {
           vertex_index_expr = member_expr;
-        } else if (builtin->value() == ast::Builtin::kInstanceIndex) {
+        } else if (builtin->builtin == ast::Builtin::kInstanceIndex) {
           instance_index_expr = member_expr;
         }
         members_to_clone.push_back(member);
@@ -809,16 +810,16 @@ struct State {
     }
 
     // Create a function-scope variable to replace the parameter.
-    auto* func_var = ctx.dst->Var(param_sym, ctx.Clone(param->type()));
-    ctx.InsertFront(func->body()->statements(), ctx.dst->Decl(func_var));
+    auto* func_var = ctx.dst->Var(param_sym, ctx.Clone(param->type));
+    ctx.InsertFront(func->body->statements, ctx.dst->Decl(func_var));
 
     if (!members_to_clone.empty()) {
       // Create a new struct without the location attributes.
       ast::StructMemberList new_members;
       for (auto* member : members_to_clone) {
-        auto member_sym = ctx.Clone(member->symbol());
-        auto* member_type = ctx.Clone(member->type());
-        auto member_decos = ctx.Clone(member->decorations());
+        auto member_sym = ctx.Clone(member->symbol);
+        auto* member_type = ctx.Clone(member->type);
+        auto member_decos = ctx.Clone(member->decorations);
         new_members.push_back(
             ctx.dst->Member(member_sym, member_type, std::move(member_decos)));
       }
@@ -831,9 +832,9 @@ struct State {
 
       // Copy values from the new parameter to the function-scope variable.
       for (auto* member : members_to_clone) {
-        auto member_name = ctx.Clone(member->symbol());
+        auto member_name = ctx.Clone(member->symbol);
         ctx.InsertFront(
-            func->body()->statements(),
+            func->body->statements,
             ctx.dst->Assign(ctx.dst->MemberAccessor(func_var, member_name),
                             ctx.dst->MemberAccessor(new_param, member_name)));
       }
@@ -842,13 +843,13 @@ struct State {
 
   /// Process an entry point function.
   /// @param func the entry point function
-  void Process(ast::Function* func) {
-    if (func->body()->empty()) {
+  void Process(const ast::Function* func) {
+    if (func->body->Empty()) {
       return;
     }
 
     // Process entry point parameters.
-    for (auto* param : func->params()) {
+    for (auto* param : func->params) {
       auto* sem = ctx.src->Sem().Get(param);
       if (auto* str = sem->Type()->As<sem::Struct>()) {
         ProcessStructParameter(func, param, str->Declaration());
@@ -885,17 +886,17 @@ struct State {
 
     // Generate vertex pulling preamble.
     if (auto* block = CreateVertexPullingPreamble()) {
-      ctx.InsertFront(func->body()->statements(), block);
+      ctx.InsertFront(func->body->statements, block);
     }
 
     // Rewrite the function header with the new parameters.
-    auto func_sym = ctx.Clone(func->symbol());
-    auto* ret_type = ctx.Clone(func->return_type());
-    auto* body = ctx.Clone(func->body());
-    auto decos = ctx.Clone(func->decorations());
-    auto ret_decos = ctx.Clone(func->return_type_decorations());
+    auto func_sym = ctx.Clone(func->symbol);
+    auto* ret_type = ctx.Clone(func->return_type);
+    auto* body = ctx.Clone(func->body);
+    auto decos = ctx.Clone(func->decorations);
+    auto ret_decos = ctx.Clone(func->return_type_decorations);
     auto* new_func = ctx.dst->create<ast::Function>(
-        func->source(), func_sym, new_function_parameters, ret_type, body,
+        func->source, func_sym, new_function_parameters, ret_type, body,
         std::move(decos), std::move(ret_decos));
     ctx.Replace(func, new_func);
   }

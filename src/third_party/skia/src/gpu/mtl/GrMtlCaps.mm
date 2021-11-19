@@ -30,7 +30,7 @@ GR_NORETAIN_BEGIN
 
 GrMtlCaps::GrMtlCaps(const GrContextOptions& contextOptions, const id<MTLDevice> device)
         : INHERITED(contextOptions) {
-    fShaderCaps.reset(new GrShaderCaps(contextOptions));
+    fShaderCaps = std::make_unique<GrShaderCaps>();
 
     this->initGPUFamily(device);
     this->initGrCaps(device);
@@ -514,6 +514,7 @@ void GrMtlCaps::initShaderCaps() {
     shaderCaps->fInverseHyperbolicSupport = true;
     shaderCaps->fVertexIDSupport = true;
     shaderCaps->fInfinitySupport = true;
+    shaderCaps->fNonconstantArrayIndexSupport = true;
 
     // Metal uses IEEE float and half floats so assuming those values here.
     shaderCaps->fFloatIs32Bits = true;

@@ -23,14 +23,14 @@ using IdentifierExpressionTest = TestHelper;
 
 TEST_F(IdentifierExpressionTest, Creation) {
   auto* i = Expr("ident");
-  EXPECT_EQ(i->symbol(), Symbol(1, ID()));
+  EXPECT_EQ(i->symbol, Symbol(1, ID()));
 }
 
 TEST_F(IdentifierExpressionTest, Creation_WithSource) {
   auto* i = Expr(Source{Source::Location{20, 2}}, "ident");
-  EXPECT_EQ(i->symbol(), Symbol(1, ID()));
+  EXPECT_EQ(i->symbol, Symbol(1, ID()));
 
-  auto src = i->source();
+  auto src = i->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -57,12 +57,6 @@ TEST_F(IdentifierExpressionTest, Assert_DifferentProgramID_Symbol) {
         b1.Expr(b2.Sym("b2"));
       },
       "internal compiler error");
-}
-
-TEST_F(IdentifierExpressionTest, ToStr) {
-  auto* i = Expr("ident");
-  EXPECT_EQ(str(i), R"(Identifier[not set]{ident}
-)");
 }
 
 }  // namespace

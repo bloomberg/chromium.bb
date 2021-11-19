@@ -25,7 +25,6 @@
 <translation id="1145536944570833626">既存のデータを削除します。</translation>
 <translation id="1147031633655575115"><ph name="USER" /> としてログイン</translation>
 <translation id="1154984953698510061">他のタブを表示</translation>
-<translation id="1157749421655780457">位置情報へのアクセスを許可...</translation>
 <translation id="1165039591588034296">エラー</translation>
 <translation id="1172898394251786223">次の項目</translation>
 <translation id="1176932207622159128">画像を保存できません</translation>
@@ -56,6 +55,7 @@
 <translation id="1377321085342047638">カード番号</translation>
 <translation id="1383876407941801731">検索</translation>
 <translation id="1400642268715879018">過去 4 週間</translation>
+<translation id="1404330357948037222">ログアウトしました</translation>
 <translation id="1407135791313364759">すべて開く</translation>
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1434356225517321998">お使いのブラウザは管理されています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
@@ -110,9 +110,11 @@
 <translation id="1941314575388338491">ダブルタップしてコピー。</translation>
 <translation id="1952172573699511566">可能な場合、設定した言語でウェブサイトのテキストを表示します。</translation>
 <translation id="1965935827552890526">開いている別の Chrome ウィンドウでの作業を終了してください。</translation>
+<translation id="196896377990863006">リンク プレビューを表示</translation>
 <translation id="1973912524893600642">データを残す</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1989112275319619282">閲覧</translation>
+<translation id="199425419756152024">パスワードを表示</translation>
 <translation id="2015722694326466240">パスワードを表示するには、まずデバイスにパスワードを設定する必要があります。</translation>
 <translation id="2021670401941426298">検索履歴を削除する場合は、お使いの検索エンジンの手順をご確認ください（該当する場合）。</translation>
 <translation id="2073572773299281212">最終同期: <ph name="DAYS" /> 日前</translation>
@@ -151,7 +153,9 @@
 <translation id="2386793615875593361">1 枚選択されています</translation>
 <translation id="2421004566762153674">サードパーティの Cookie をブロック</translation>
 <translation id="2421044535038393232">編集を続ける</translation>
+<translation id="2434405374328098816"><ph name="WEBSITE" /> の「<ph name="USERNAME" />」のパスワードは保存済みです</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
+<translation id="2473876017985765807"><ph name="WEBSITE" /> のパスワードは保存済みです</translation>
 <translation id="2476359652512522418">選択されていません</translation>
 <translation id="2497852260688568942">同期は管理者により無効にされています</translation>
 <translation id="2500374554657206846">パスワードの保存オプション</translation>
@@ -221,6 +225,7 @@
 <translation id="3080525922482950719">ページを保存して、後で読んだり、オフラインで読んだりできます</translation>
 <translation id="3081338492074632642">保存するパスワードが <ph name="WEBSITE" /> のパスワードと一致していることを確認してください</translation>
 <translation id="3112556859945124369">マーク...</translation>
+<translation id="3122484138405575719"><ph name="BEGIN_LINK" />同期できるアイテムを確認する<ph name="END_LINK" /></translation>
 <translation id="3131206671572504478">すべてブロック</translation>
 <translation id="313283613037595347">新しいシークレット タブを作成します。</translation>
 <translation id="3153862085237805241">カードを保存</translation>
@@ -238,7 +243,6 @@
 <translation id="3240426699337459095">リンクをコピーしました</translation>
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
-<translation id="3261971309013797455">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> &gt; [<ph name="ADD_TO_READING_LIST_TEXT" />] をタップします。</translation>
 <translation id="3268451620468152448">開いているタブ</translation>
 <translation id="3272527697863656322">キャンセル</translation>
 <translation id="3277021493514034324">サイトのアドレスがコピーされました</translation>
@@ -261,7 +265,6 @@
 <translation id="345565170154308620">パスワードを管理...</translation>
 <translation id="3469166899695866866">ダウンロードを中止しますか？</translation>
 <translation id="3470502288861289375">コピーしています...</translation>
-<translation id="3472993688462687965">同期をオンにしても、組織で許可されている内容により、同期されるデータが制限されることがあります。</translation>
 <translation id="3474624961160222204"><ph name="NAME" /> として続行</translation>
 <translation id="3478058380795961209">有効期限（月）</translation>
 <translation id="3482959374254649722">タブを同期しています...</translation>
@@ -283,10 +286,12 @@
 <translation id="3603009562372709545">リンクのURLをコピー</translation>
 <translation id="3607167657931203000">自動入力のデータ</translation>
 <translation id="3609785682760573515">同期しています...</translation>
+<translation id="3631443864840848029">このサイトの現在のパスワードを保存していることをご確認ください。</translation>
 <translation id="3638472932233958418">ウェブページのプリロード</translation>
 <translation id="3661160521073045932">設定プロファイルを使用できます</translation>
 <translation id="3670030362669914947">番号</translation>
 <translation id="3691593122358196899">「<ph name="FOLDER_TITLE" />」にブックマークしました</translation>
+<translation id="369349502275246497">パスワードを保存できるようにする</translation>
 <translation id="3709582977625132201">未読にする</translation>
 <translation id="3740397331642243698">入力された URL を Google Chrome のシークレット モードで開きます。</translation>
 <translation id="3762232513783804601">iPad 向けの設計</translation>
@@ -373,12 +378,10 @@
 
 データは同期パスフレーズで暗号化されます。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="4689564913179979534">お支払い方法を管理...</translation>
-<translation id="469022783543509074">ログアウトしました</translation>
 <translation id="470966556546083668">同期をオンにしない</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4747097190499141774">パスフレーズ暗号化の対象に Google Pay のお支払い方法と住所は含まれません。パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4751645464639803239">新しいシークレット タブ</translation>
-<translation id="4764612367328936189">組織が特定のアカウントでのログインしか許可していません。許可されていないアカウントは非表示になっています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4775879719735953715">既定のブラウザ</translation>
 <translation id="4778644898150334464">他のパスワードを使用</translation>
 <translation id="4802417911091824046">パスフレーズ暗号化の対象に Google Pay のお支払い方法と住所は含まれません。
@@ -465,7 +468,6 @@
 <translation id="5614553682702429503">パスワードを保存しますか？</translation>
 <translation id="5626245204502895507">今回は、ファイルをダウンロードできませんでした。</translation>
 <translation id="5631164295104953411">お支払い方法を追加</translation>
-<translation id="5653058065071344726">組織によって管理されています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5659593005791499971">メール</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">バージョン <ph name="PRODUCT_VERSION" /></translation>
@@ -474,6 +476,7 @@
 <translation id="5711039611392265845">プライバシー、セキュリティ、データ収集に関連するその他の設定については、<ph name="BEGIN_LINK" />同期と Google サービス<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="5724941645893276623">ウェブをプライベートに閲覧するには、新しいタブを追加してください</translation>
 <translation id="5728700505257787410">アカウントへのログイン中に問題が発生しました。</translation>
+<translation id="5731784586962650619">他のアプリのパスワード</translation>
 <translation id="5737974891429562743">アカウントのログイン情報が古くなっています。同期を開始するには更新してください。</translation>
 <translation id="5738887413654608789">この機能を使用すると、周囲で発信されているデータを受信して関連のあるウェブページを表示することができます。</translation>
 <translation id="5758631781033351321">リーディング リストはここに表示されます</translation>
@@ -510,6 +513,7 @@
 <translation id="5988851877894965432">Chrome で URL を開く</translation>
 <translation id="6012140227487808125">暗号化しています...</translation>
 <translation id="6021332621416007159">次で開く...</translation>
+<translation id="6027945736510816438">もしかして: <ph name="WEBSITE" /></translation>
 <translation id="6036514205982097558">1 つのブラウザですべてのタブを管理</translation>
 <translation id="6039429417015973673"><ph name="TITLE" />、<ph name="PUBLISHER_INFORMATION" />、<ph name="PUBLICATION_DATE" /></translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -526,13 +530,13 @@
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
 <translation id="6144589619057374135">${url} をシークレット モードで開く</translation>
+<translation id="6159839020698489198">任意</translation>
 <translation id="6177442314419606057">Chrome で検索</translation>
 <translation id="6184086493125982861">タブを表示</translation>
 <translation id="6187302354554850004">最終同期: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">未読</translation>
 <translation id="6196207969502475924">音声検索</translation>
 <translation id="6202364442240589072">{COUNT,plural, =1{{COUNT} 個のタブを閉じる}other{{COUNT} 個のタブを閉じる}}</translation>
-<translation id="6207754106943147310"><ph name="BEGIN_LINK" />同期できるアイテムはこちらで確認<ph name="END_LINK" />できます。</translation>
 <translation id="6219688215832490856">翻訳しない</translation>
 <translation id="6223816392543092032">ブックマーク、履歴、パスワードなどの設定をどのデバイスでも利用できるようにします。</translation>
 <translation id="6232329973559504466">シークレット検索</translation>
@@ -583,6 +587,7 @@
 各サイトで個別のパスワードを使用することをご検討ください。</translation>
 <translation id="651505212789431520">同期をキャンセルしますか？同期は設定でいつでもオンにできます。</translation>
 <translation id="6524918542306337007">シークレット モードは使用できません</translation>
+<translation id="6537746030088321027">example.com</translation>
 <translation id="6561262006871132942">拡大</translation>
 <translation id="6585618849026997638">重要なページは、ブックマークを追加しておくとすぐにアクセスできます</translation>
 <translation id="6603393121510733479">シークレット ブラウジングは組織によって無効にされています。
@@ -622,9 +627,9 @@
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6842136130964845393">保存したパスワードに常にアクセスできるようにするには、本人確認を行ってください</translation>
 <translation id="6851516051005285358">PC 版サイトを見る</translation>
-<translation id="6856384753476268833">組織によって管理されています。</translation>
 <translation id="6858855187367714033">スキャンされました</translation>
 <translation id="6859944681507688231">QR コードまたはクレジット カードをスキャンするには、設定でカメラを有効にしてください。</translation>
+<translation id="6867369562105931222">パスワード</translation>
 <translation id="6869389390665537774">アクセスしたページを確認したり履歴から消去したりできます</translation>
 <translation id="6873263987691478642">分割表示</translation>
 <translation id="6888009575607455378">変更を破棄してもよろしいですか？</translation>
@@ -690,10 +695,10 @@
 <translation id="7472734401283673885">会社名</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7481312909269577407">進む</translation>
-<translation id="7483467499335917849">現在地を使用</translation>
 <translation id="750493650310597496">選択されていません</translation>
 <translation id="7508728395076009983">シークレット タブをロックするには、Touch ID、Face ID、またはパスコードを設定してください。</translation>
 <translation id="7514365320538308">ダウンロード</translation>
+<translation id="753094929961314545">リンク プレビューを非表示</translation>
 <translation id="7537586195939242955">現在、Passbookにパスをインストールできません。</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
 <translation id="7561196759112975576">常に使用</translation>
@@ -750,6 +755,7 @@
 <translation id="8080028325999236607">すべてのタブを閉じる</translation>
 <translation id="8105368624971345109">オフにする</translation>
 <translation id="8114753159095730575">ファイルのダウンロードが利用可能です。画面の下の方にオプションがあります。</translation>
+<translation id="8132598642024322408">今なら <ph name="PREVIOUS_PRICE" /> が <ph name="PRICE" /></translation>
 <translation id="8156478151976189188">パスワード同期が機能していません</translation>
 <translation id="8193953846147532858"><ph name="BEGIN_LINK" />あなたのデバイス<ph name="END_LINK" /> · <ph name="EMAIL" /></translation>
 <translation id="8197543752516192074">ページを翻訳する</translation>
@@ -766,6 +772,7 @@
 <translation id="8319076807703933069">新しく検索</translation>
 <translation id="8323906514956095947">長押しすると、タブのオプションがさらに表示されます</translation>
 <translation id="8328777765163860529">すべて閉じる</translation>
+<translation id="8378714024927312812">組織によって管理されています</translation>
 <translation id="8386068868580335421">リセット</translation>
 <translation id="8407669440184693619">このサイト用のパスワードが見つかりません</translation>
 <translation id="842017693807136194">ログインに使用した ID プロバイダ</translation>
@@ -814,12 +821,14 @@
 <ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="8840513115188359703">Google アカウントへのログイン状態は維持されます。</translation>
+<translation id="8843129975935593190">同期できるアイテムは組織によって制限されています。</translation>
 <translation id="8868471676553493380">{count,plural, =1{{count} 個のタブ}other{{count} 個のタブ}}</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8876882697946675716">デバイスを同期したままにする</translation>
 <translation id="8881801611828450202">この画像を <ph name="SEARCH_ENGINE" /> で検索</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8917490105272468696">有効にする</translation>
+<translation id="8952559610785099500">パスワードの追加</translation>
 <translation id="895541991026785598">問題の報告</translation>
 <translation id="8976382372951310360">ヘルプ</translation>
 <translation id="8976414606286374109">カードは Google アカウントに保存されます。</translation>
@@ -835,7 +844,6 @@
 <translation id="9081058212938299310"><ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="9083392325882095631">1個のアイテム</translation>
 <translation id="9083838294503912307">カスタマイズした設定を複数のデバイスで同期して使用するには、同期を有効にします。</translation>
-<translation id="9084677839771512880">同期できるデータは組織によって制限されています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="9087108903408689779">Chrome の推奨パスワード:</translation>
 <translation id="9094033019050270033">パスワードを更新</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>

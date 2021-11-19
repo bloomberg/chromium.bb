@@ -13,12 +13,14 @@
 #ifndef EIGEN_IDRS_H
 #define EIGEN_IDRS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen
 {
 
 	namespace internal
 	{
-		/**     \internal Low-level Induced Dimension Reduction algoritm
+		/**     \internal Low-level Induced Dimension Reduction algorithm
 		        \param A The matrix A
 		        \param b The right hand side vector b
 		        \param x On input and initial solution, on output the computed solution.
@@ -370,7 +372,7 @@ namespace Eigen
 
 			/** \internal */
 			/**     Loops over the number of columns of b and does the following:
-			                1. sets the tolerence and maxIterations
+			                1. sets the tolerance and maxIterations
 			                2. Calls the function that has the core solver routine
 			*/
 			template <typename Rhs, typename Dest>

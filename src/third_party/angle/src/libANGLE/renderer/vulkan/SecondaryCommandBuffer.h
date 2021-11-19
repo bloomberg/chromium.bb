@@ -67,7 +67,6 @@ enum class CommandID : uint16_t
     EndDebugUtilsLabel,
     EndQuery,
     EndTransformFeedback,
-    ExecutionBarrier,
     FillBuffer,
     ImageBarrier,
     InsertDebugUtilsLabel,
@@ -331,12 +330,6 @@ struct EndTransformFeedbackParams
     uint32_t bufferCount;
 };
 VERIFY_4_BYTE_ALIGNMENT(EndTransformFeedbackParams)
-
-struct ExecutionBarrierParams
-{
-    VkPipelineStageFlags stageMask;
-};
-VERIFY_4_BYTE_ALIGNMENT(ExecutionBarrierParams)
 
 struct FillBufferParams
 {
@@ -628,8 +621,6 @@ class SecondaryCommandBuffer final : angle::NonCopyable
                               const VkBuffer *counterBuffers,
                               const VkDeviceSize *counterBufferOffsets);
 
-    void executionBarrier(VkPipelineStageFlags stageMask);
-
     void fillBuffer(const Buffer &dstBuffer,
                     VkDeviceSize dstOffset,
                     VkDeviceSize size,
@@ -879,7 +870,7 @@ ANGLE_INLINE void SecondaryCommandBuffer::commonDebugUtilsLabel(CommandID cmd,
     paramStruct->color[1] = label.color[1];
     paramStruct->color[2] = label.color[2];
     paramStruct->color[3] = label.color[3];
-    storePointerParameter(writePtr, label.pLabelName, alignedStringSize);
+    storePointerParameter(writePtr, label.pLabelName, stringSize);
 }
 
 ANGLE_INLINE void SecondaryCommandBuffer::beginDebugUtilsLabelEXT(const VkDebugUtilsLabelEXT &label)
@@ -1294,13 +1285,6 @@ ANGLE_INLINE void SecondaryCommandBuffer::endTransformFeedback(
         CommandID::EndTransformFeedback, bufferSize, &writePtr);
     paramStruct->bufferCount = counterBufferCount;
     storePointerParameter(writePtr, counterBuffers, bufferSize);
-}
-
-ANGLE_INLINE void SecondaryCommandBuffer::executionBarrier(VkPipelineStageFlags stageMask)
-{
-    ExecutionBarrierParams *paramStruct =
-        initCommand<ExecutionBarrierParams>(CommandID::ExecutionBarrier);
-    paramStruct->stageMask = stageMask;
 }
 
 ANGLE_INLINE void SecondaryCommandBuffer::fillBuffer(const Buffer &dstBuffer,

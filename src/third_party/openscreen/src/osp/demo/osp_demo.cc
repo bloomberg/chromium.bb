@@ -222,9 +222,9 @@ class DemoRequestDelegate final : public RequestDelegate {
   DemoRequestDelegate() = default;
   ~DemoRequestDelegate() override = default;
 
-  void OnConnection(std::unique_ptr<Connection> connection) override {
+  void OnConnection(std::unique_ptr<Connection> conn) override {
     OSP_LOG_INFO << "request successful";
-    this->connection = std::move(connection);
+    connection = std::move(conn);
   }
 
   void OnError(const Error& error) override {

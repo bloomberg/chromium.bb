@@ -10,6 +10,8 @@
 #ifndef EIGEN_PACKET_MATH_SSE_H
 #define EIGEN_PACKET_MATH_SSE_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {
@@ -620,7 +622,7 @@ template<> EIGEN_STRONG_INLINE Packet4i pabs(const Packet4i& a)
 #ifdef EIGEN_VECTORIZE_SSE4_1
 template<> EIGEN_STRONG_INLINE Packet4f pround<Packet4f>(const Packet4f& a)
 {
-  // Unfortunatly _mm_round_ps doesn't have a rounding mode to implement numext::round.
+  // Unfortunately _mm_round_ps doesn't have a rounding mode to implement numext::round.
   const Packet4f mask = pset1frombits<Packet4f>(0x80000000u);
   const Packet4f prev0dot5 = pset1frombits<Packet4f>(0x3EFFFFFFu);
   return _mm_round_ps(padd(por(pand(a, mask), prev0dot5), a), _MM_FROUND_TO_ZERO);

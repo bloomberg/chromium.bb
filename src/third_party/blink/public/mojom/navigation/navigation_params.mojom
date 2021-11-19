@@ -89,10 +89,6 @@ struct BeginNavigationParams {
   blink.mojom.RequestContextType request_context_type =
       blink.mojom.RequestContextType.UNSPECIFIED;
 
-  // Indicates the request destination.
-  network.mojom.RequestDestination request_destination =
-      network.mojom.RequestDestination.kEmpty;
-
   // The mixed content context type for potential mixed content checks.
   blink.mojom.MixedContentContextType mixed_content_context_type =
       blink.mojom.MixedContentContextType.kNotMixedContent;
@@ -237,6 +233,10 @@ struct CommonNavigationParams {
   // not always be set; it depends on the creator of the CommonNavigationParams
   // setting it.
   mojo_base.mojom.TimeTicks input_start;
+
+  // Indicates the request destination.
+  network.mojom.RequestDestination request_destination =
+      network.mojom.RequestDestination.kEmpty;
 };
 
 // Provided by the browser -----------------------------------------------------
@@ -382,9 +382,6 @@ struct CommitNavigationParams {
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
-  // The AppCache host id to be used to identify this navigation.
-  mojo_base.mojom.UnguessableToken? appcache_host_id;
-
   // Set to |kYes| if a navigation is following the rules of user activation
   // propagation. This is different from |has_user_gesture|
   // (in CommonNavigationParams) as the activation may have happened before
@@ -476,4 +473,7 @@ struct CommitNavigationParams {
   array<AppHistoryEntry> app_history_forward_entries;
 
   array<url.mojom.Url> early_hints_preloaded_resources;
+
+  // The time the commit was sent from the browser.
+  mojo_base.mojom.TimeTicks commit_sent;
 };

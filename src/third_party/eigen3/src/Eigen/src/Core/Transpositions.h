@@ -10,6 +10,8 @@
 #ifndef EIGEN_TRANSPOSITIONS_H
 #define EIGEN_TRANSPOSITIONS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen {
 
 template<typename Derived>

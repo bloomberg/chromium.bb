@@ -11,6 +11,8 @@
 #ifndef EIGEN_INVERSE_IMPL_H
 #define EIGEN_INVERSE_IMPL_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

@@ -11,17 +11,20 @@
 #include "include/sksl/DSLSymbols.h"
 #include "include/sksl/DSLVar.h"
 #include "src/sksl/SkSLCompiler.h"
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLThreadContext.h"
 #include "src/sksl/dsl/priv/DSLWriter.h"
+#include "src/sksl/ir/SkSLBlock.h"
 #include "src/sksl/ir/SkSLBreakStatement.h"
 #include "src/sksl/ir/SkSLContinueStatement.h"
 #include "src/sksl/ir/SkSLDiscardStatement.h"
 #include "src/sksl/ir/SkSLDoStatement.h"
+#include "src/sksl/ir/SkSLExtension.h"
 #include "src/sksl/ir/SkSLField.h"
 #include "src/sksl/ir/SkSLForStatement.h"
 #include "src/sksl/ir/SkSLFunctionCall.h"
 #include "src/sksl/ir/SkSLIfStatement.h"
+#include "src/sksl/ir/SkSLInterfaceBlock.h"
+#include "src/sksl/ir/SkSLModifiersDeclaration.h"
 #include "src/sksl/ir/SkSLReturnStatement.h"
 #include "src/sksl/ir/SkSLStructDefinition.h"
 #include "src/sksl/ir/SkSLSwitchStatement.h"
@@ -67,25 +70,23 @@ class DSLCore {
 public:
     static std::unique_ptr<SkSL::Program> ReleaseProgram(std::unique_ptr<String> source) {
         ThreadContext& instance = ThreadContext::Instance();
-        SkSL::IRGenerator& ir = ThreadContext::IRGenerator();
-        SkSL::Compiler& compiler = ThreadContext::Compiler();
-        const SkSL::Context& context = ThreadContext::Context();
+        SkSL::Compiler& compiler = *instance.fCompiler;
+        const SkSL::Context& context = *compiler.fContext;
         // Variables defined in the pre-includes need their declaring elements added to the program
-        if (!context.fConfig->fIsBuiltinCode && context.fIntrinsics) {
-            Transform::FindAndDeclareBuiltinVariables(ThreadContext::Context(),
-                    ThreadContext::GetProgramConfig()->fKind, ThreadContext::SharedElements());
+        if (!instance.fConfig->fIsBuiltinCode && context.fIntrinsics) {
+            Transform::FindAndDeclareBuiltinVariables(context, instance.fConfig->fKind,
+                    instance.fSharedElements);
         }
-        IRGenerator::IRBundle bundle = ir.finish();
-        Pool* pool = ThreadContext::Instance().fPool.get();
+        Pool* pool = instance.fPool.get();
         auto result = std::make_unique<SkSL::Program>(std::move(source),
                                                       std::move(instance.fConfig),
                                                       compiler.fContext,
-                                                      std::move(bundle.fElements),
-                                                      std::move(bundle.fSharedElements),
+                                                      std::move(instance.fProgramElements),
+                                                      std::move(instance.fSharedElements),
                                                       std::move(instance.fModifiersPool),
-                                                      std::move(bundle.fSymbolTable),
+                                                      std::move(compiler.fSymbolTable),
                                                       std::move(instance.fPool),
-                                                      bundle.fInputs);
+                                                      instance.fInputs);
         bool success = false;
         if (!compiler.finalize(*result)) {
             // Do not return programs that failed to compile.
@@ -101,7 +102,7 @@ public:
         if (pool) {
             pool->detachFromThread();
         }
-        SkASSERT(ThreadContext::ProgramElements().empty());
+        SkASSERT(instance.fProgramElements.empty());
         SkASSERT(!ThreadContext::SymbolTable());
         return success ? std::move(result) : nullptr;
     }
@@ -129,7 +130,7 @@ public:
         static_cast<void>(unused);
 
         return SkSL::FunctionCall::Convert(ThreadContext::Context(), /*line=*/-1,
-                ThreadContext::IRGenerator().convertIdentifier(-1, name), std::move(argArray));
+                ThreadContext::Compiler().convertIdentifier(-1, name), std::move(argArray));
     }
 
     static DSLStatement Break(PositionInfo pos) {
@@ -212,6 +213,25 @@ public:
                                     ifTrue.release(), ifFalse.releaseIfPossible());
     }
 
+    static void FindRTAdjust(SkSL::InterfaceBlock& intf, PositionInfo pos) {
+        const std::vector<SkSL::Type::Field>& fields =
+                intf.variable().type().componentType().fields();
+        const Context& context = ThreadContext::Context();
+        for (size_t i = 0; i < fields.size(); ++i) {
+            const SkSL::Type::Field& f = fields[i];
+            if (f.fName == SkSL::Compiler::RTADJUST_NAME) {
+                if (*f.fType == *context.fTypes.fFloat4) {
+                    ThreadContext::RTAdjustData& rtAdjust = ThreadContext::RTAdjustState();
+                    rtAdjust.fInterfaceBlock = &intf.variable();
+                    rtAdjust.fFieldIndex = i;
+                } else {
+                    ThreadContext::ReportError("sk_RTAdjust must have type 'float4'", pos);
+                }
+                break;
+            }
+        }
+    }
+
     static DSLGlobalVar InterfaceBlock(const DSLModifiers& modifiers, skstd::string_view typeName,
                                        SkTArray<DSLField> fields, skstd::string_view varName,
                                        int arraySize, PositionInfo pos) {
@@ -225,7 +245,7 @@ public:
             if (baseType->isArray()) {
                 baseType = &baseType->componentType();
             }
-            ThreadContext::IRGenerator().checkVarDeclaration(pos.line(),
+            SkSL::VarDeclaration::ErrorCheck(ThreadContext::Context(), pos.line(),
                     field.fModifiers.fModifiers, baseType, Variable::Storage::kInterfaceBlock);
             GetErrorReporter().reportPendingErrors(field.fPosition);
             skslFields.push_back(SkSL::Type::Field(field.fModifiers.fModifiers, field.fName,
@@ -245,7 +265,7 @@ public:
         if (skslVar) {
             auto intf = std::make_unique<SkSL::InterfaceBlock>(pos.line(),
                     *skslVar, typeName, varName, arraySize, ThreadContext::SymbolTable());
-            ThreadContext::IRGenerator().scanInterfaceBlock(*intf);
+            FindRTAdjust(*intf, pos);
             ThreadContext::ProgramElements().push_back(std::move(intf));
             if (varName.empty()) {
                 const std::vector<SkSL::Type::Field>& structFields = structType->fields();

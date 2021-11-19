@@ -418,12 +418,13 @@ export class DebuggerModel extends SDKModel<EventTypes> {
     return this.agent.invoke_pauseOnAsyncCall({parentStackTraceId: parentStackTraceId});
   }
 
-  async setBreakpointByURL(url: string, lineNumber: number, columnNumber?: number, condition?: string):
-      Promise<SetBreakpointResult> {
+  async setBreakpointByURL(
+      url: Platform.DevToolsPath.RawPathString, lineNumber: number, columnNumber?: number,
+      condition?: string): Promise<SetBreakpointResult> {
     // Convert file url to node-js path.
     let urlRegex;
     if (this.target().type() === Type.Node && url.startsWith('file://')) {
-      const platformPath = Common.ParsedURL.ParsedURL.urlToPlatformPath(url, Host.Platform.isWin());
+      const platformPath = Common.ParsedURL.ParsedURL.capFilePrefix(url, Host.Platform.isWin());
       urlRegex =
           `${Platform.StringUtilities.escapeForRegExp(platformPath)}|${Platform.StringUtilities.escapeForRegExp(url)}`;
     }

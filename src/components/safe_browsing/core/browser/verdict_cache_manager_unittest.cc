@@ -298,7 +298,13 @@ TEST_F(VerdictCacheManagerTest, TestRemoveCachedVerdictOnURLsDeleted) {
                     LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE));
 }
 
-TEST_F(VerdictCacheManagerTest, TestCleanUpExpiredVerdict) {
+// TODO(crbug.com/1264925): This test is flaky on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_TestCleanUpExpiredVerdict TestCleanUpExpiredVerdict
+#else
+#define MAYBE_TestCleanUpExpiredVerdict DISABLED_TestCleanUpExpiredVerdict
+#endif
+TEST_F(VerdictCacheManagerTest, MAYBE_TestCleanUpExpiredVerdict) {
   // Prepare 4 verdicts for PASSWORD_REUSE_EVENT with SIGN_IN_PASSWORD type:
   // (1) "foo.com/abc/" valid
   // (2) "foo.com/def/" expired
@@ -778,6 +784,19 @@ TEST_F(VerdictCacheManagerTest, TestGetPageLoadToken) {
       cache_manager_->GetPageLoadToken(url3);
   // token4 should be empty, because url3 has a different hostname.
   ASSERT_FALSE(token4.has_token_value());
+}
+
+TEST_F(VerdictCacheManagerTest, TestGetExpiredPageLoadToken) {
+  GURL url("https://www.example.com/path");
+  cache_manager_->CreatePageLoadToken(url);
+  ChromeUserPopulation::PageLoadToken token =
+      cache_manager_->GetPageLoadToken(url);
+  ASSERT_TRUE(token.has_token_value());
+
+  task_environment_.FastForwardBy(base::Minutes(6));
+  token = cache_manager_->GetPageLoadToken(url);
+  // Token is not found because it has already expired.
+  ASSERT_FALSE(token.has_token_value());
 }
 
 }  // namespace safe_browsing

@@ -310,8 +310,6 @@ extern const char kChromeOSGestureEducationHelpURL[];
 // Palette help link for Chrome.
 extern const char kChromePaletteHelpURL[];
 
-extern const char kCrosScheme[];
-
 extern const char kCupsPrintLearnMoreURL[];
 
 extern const char kCupsPrintPPDLearnMoreURL[];
@@ -348,6 +346,10 @@ extern const char kAndroidMessagesLearnMoreURL[];
 
 // The URL for the "Learn more" link in the language settings.
 extern const char kLanguageSettingsLearnMoreUrl[];
+
+// The URL for the "Learn more" link in language settings regarding language
+// packs.
+extern const char kLanguagePacksLearnMoreURL[];
 
 // The URL for the Learn More page about enterprise enrolled devices.
 extern const char kLearnMoreEnterpriseURL[];

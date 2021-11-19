@@ -52,7 +52,9 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength) {
 precision mediump float;
 
 
-my_struct b : register(t1, space2);
+layout (binding = 1) buffer my_struct_1 {
+  float a[];
+} b;
 
 void a_func() {
   uint tint_symbol_1 = 0u;
@@ -101,7 +103,10 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_OtherMembersInStruct) {
 precision mediump float;
 
 
-my_struct b : register(t1, space2);
+layout (binding = 1) buffer my_struct_1 {
+  float z;
+  float a[];
+} b;
 
 void a_func() {
   uint tint_symbol_1 = 0u;
@@ -152,7 +157,9 @@ TEST_F(GlslSanitizerTest, Call_ArrayLength_ViaLets) {
 precision mediump float;
 
 
-my_struct b : register(t1, space2);
+layout (binding = 1) buffer my_struct_1 {
+  float a[];
+} b;
 
 void a_func() {
   uint tint_symbol_1 = 0u;
@@ -192,13 +199,13 @@ TEST_F(GlslSanitizerTest, PromoteArrayInitializerToConstVar) {
   auto* expect = R"(#version 310 es
 precision mediump float;
 
-void main() {
-  int tint_symbol[4] = int[4](1, 2, 3, 4);
-  int pos = tint_symbol[3];
+void tint_symbol() {
+  int tint_symbol_1[4] = int[4](1, 2, 3, 4);
+  int pos = tint_symbol_1[3];
   return;
 }
 void main() {
-  main();
+  tint_symbol();
 }
 
 
@@ -239,13 +246,13 @@ struct S {
   int c;
 };
 
-void main() {
-  S tint_symbol = S(1, vec3(2.0f, 3.0f, 4.0f), 4);
-  vec3 pos = tint_symbol.b;
+void tint_symbol() {
+  S tint_symbol_1 = S(1, vec3(2.0f, 3.0f, 4.0f), 4);
+  vec3 pos = tint_symbol_1.b;
   return;
 }
 void main() {
-  main();
+  tint_symbol();
 }
 
 
@@ -280,13 +287,13 @@ TEST_F(GlslSanitizerTest, InlinePtrLetsBasic) {
   auto* expect = R"(#version 310 es
 precision mediump float;
 
-void main() {
+void tint_symbol() {
   int v = 0;
   int x = v;
   return;
 }
 void main() {
-  main();
+  tint_symbol();
 }
 
 
@@ -331,13 +338,13 @@ TEST_F(GlslSanitizerTest, InlinePtrLetsComplexChain) {
   auto* expect = R"(#version 310 es
 precision mediump float;
 
-void main() {
+void tint_symbol() {
   mat4 m = mat4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
   float f = m[2][1];
   return;
 }
 void main() {
-  main();
+  tint_symbol();
 }
 
 

@@ -23,6 +23,7 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/browser/unloaded_extension_reason.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
@@ -48,7 +49,7 @@ struct ActionData;
 }  // namespace api
 }  // namespace extensions
 
-namespace chromeos {
+namespace ash {
 
 class NoteTakingControllerClient;
 
@@ -349,6 +350,12 @@ class NoteTakingHelper : public arc::ArcIntentHelperObserver,
   base::WeakPtrFactory<NoteTakingHelper> weak_ptr_factory_{this};
 };
 
+}  // namespace ash
+
+// TODO(https://crbug.com/1164001): remove after the migration is finished.
+namespace chromeos {
+using ::ash::NoteTakingAppInfo;
+using ::ash::NoteTakingHelper;
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_ASH_NOTE_TAKING_HELPER_H_

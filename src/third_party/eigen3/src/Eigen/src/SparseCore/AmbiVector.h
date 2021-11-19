@@ -10,6 +10,8 @@
 #ifndef EIGEN_AMBIVECTOR_H
 #define EIGEN_AMBIVECTOR_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen { 
 
 namespace internal {

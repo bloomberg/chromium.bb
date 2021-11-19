@@ -7,17 +7,17 @@
 #include "ash/constants/ash_features.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/element_style.h"
+#include "ash/style/button_style.h"
 #include "ash/system/message_center/message_center_constants.h"
 #include "ash/system/message_center/message_center_style.h"
-#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/system/tray/tray_popup_utils.h"
-#include "ash/system/unified/rounded_label_button.h"
 #include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -26,12 +26,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
-#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
-#include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -41,55 +35,29 @@ namespace {
 
 // The label button in the stacked notification bar, can be either a "Clear all"
 // or "See all notifications" button.
-class StackingBarLabelButton : public views::LabelButton {
+class StackingBarLabelButton : public PillButton {
  public:
+  METADATA_HEADER(StackingBarLabelButton);
+
   StackingBarLabelButton(PressedCallback callback,
                          const std::u16string& text,
                          UnifiedMessageCenterView* message_center_view)
-      : views::LabelButton(std::move(callback), text),
+      : PillButton(
+            std::move(callback),
+            text,
+            PillButton::Type::kIconlessAccentFloating,
+            /*icon=*/nullptr,
+            /*use_light_colors=*/!features::IsNotificationsRefreshEnabled(),
+            /*rounded_highlight_path=*/
+            features::IsNotificationsRefreshEnabled()),
         message_center_view_(message_center_view) {
-    SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-    label()->SetSubpixelRenderingEnabled(false);
-    label()->SetFontList(views::Label::GetDefaultFontList().Derive(
-        1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
-    TrayPopupUtils::ConfigureTrayPopupButton(
-        this, TrayPopupInkDropStyle::FILL_BOUNDS, /*highlight_on_hover=*/true,
-        /*highlight_on_focus=*/true);
-
-    if (features::IsNotificationsRefreshEnabled()) {
-      // Need a textured layer here since the parent uses a solid color layer.
-      SetPaintToLayer();
-      layer()->SetFillsBoundsOpaquely(false);
-
-      views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                    kTrayItemSize / 2.f);
-    } else {
-      SetEnabledTextColors(message_center_style::kUnifiedMenuButtonColorActive);
-      // SetCreateHighlightCallback and SetCreateRippleCallback are
-      // explicitly called after ConfigureTrayPopupButton as
-      // ConfigureTrayPopupButton configures the InkDrop and these callbacks
-      // override that behavior.
-      views::InkDrop::Get(this)->SetCreateHighlightCallback(base::BindRepeating(
-          [](Button* host) {
-            auto highlight = std::make_unique<views::InkDropHighlight>(
-                gfx::SizeF(host->size()),
-                message_center_style::kInkRippleColor);
-            highlight->set_visible_opacity(
-                message_center_style::kInkRippleOpacity);
-            return highlight;
-          },
-          this));
-      views::InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
-          [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
-            return std::make_unique<views::FloodFillInkDropRipple>(
-                host->size(),
-                views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
-                message_center_style::kInkRippleColor,
-                message_center_style::kInkRippleOpacity);
-          },
-          this));
-    }
+    const SkColor bg_color =
+        features::IsNotificationsRefreshEnabled()
+            ? gfx::kPlaceholderColor
+            : message_center_style::kUnifiedMenuButtonColorActive;
+    PillButton::ConfigureInkDrop(this, TrayPopupInkDropStyle::FILL_BOUNDS,
+                                 /*highlight_on_hover=*/true,
+                                 /*highlight_on_focus=*/true, bg_color);
   }
 
   StackingBarLabelButton(const StackingBarLabelButton&) = delete;
@@ -97,43 +65,18 @@ class StackingBarLabelButton : public views::LabelButton {
 
   ~StackingBarLabelButton() override = default;
 
-  // views::LabelButton:
+  // PillButton:
   void AboutToRequestFocusFromTabTraversal(bool reverse) override {
     if (message_center_view_->collapsed() && HasFocus())
       message_center_view_->FocusOut(reverse);
   }
 
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(label()->GetPreferredSize().width() +
-                         kStackingNotificationClearAllButtonPadding.width(),
-                     label()->GetPreferredSize().height() +
-                         kStackingNotificationClearAllButtonPadding.height());
-  }
-
-  const char* GetClassName() const override { return "StackingBarLabelButton"; }
-
-  int GetHeightForWidth(int width) const override {
-    return label()->GetPreferredSize().height() +
-           kStackingNotificationClearAllButtonPadding.height();
-  }
-
-  void PaintButtonContents(gfx::Canvas* canvas) override {
-    views::LabelButton::PaintButtonContents(canvas);
-  }
-
-  void OnThemeChanged() override {
-    views::LabelButton::OnThemeChanged();
-    if (features::IsNotificationsRefreshEnabled()) {
-      views::FocusRing::Get(this)->SetColor(
-          AshColorProvider::Get()->GetControlsLayerColor(
-              AshColorProvider::ControlsLayerType::kFocusRingColor));
-      element_style::DecorateIconlessFloatingPillButton(this);
-    }
-  }
-
  private:
   UnifiedMessageCenterView* message_center_view_;
 };
+
+BEGIN_METADATA(StackingBarLabelButton, PillButton)
+END_METADATA
 
 }  // namespace
 
@@ -348,11 +291,11 @@ bool StackedNotificationBar::Update(
     int pinned_notification_count,
     std::vector<message_center::Notification*> stacked_notifications) {
   int stacked_notification_count = stacked_notifications.size();
-
   if (total_notification_count == total_notification_count_ &&
       pinned_notification_count == pinned_notification_count_ &&
-      stacked_notification_count == stacked_notification_count_)
+      stacked_notification_count == stacked_notification_count_) {
     return false;
+  }
 
   total_notification_count_ = total_notification_count;
   pinned_notification_count_ = pinned_notification_count;
@@ -399,11 +342,13 @@ void StackedNotificationBar::AddNotificationIcon(
         std::make_unique<StackedNotificationBarIcon>(notification->id()));
 }
 
-void StackedNotificationBar::OnIconAnimatedOut(
-    message_center::Notification* notification,
-    views::View* icon) {
+void StackedNotificationBar::OnIconAnimatedOut(std::string notification_id,
+                                               views::View* icon) {
   delete icon;
 
+  auto* notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(
+          notification_id);
   // This is only called when icons animate out, so never add icons to the
   // front.
   if (notification)
@@ -470,13 +415,13 @@ void StackedNotificationBar::ShiftIconsLeft(
       // If there are notifications to backfill, do not add the
       // icon until the animation completes, this avoids a jumping overflow
       // label/icons and having more than 3 icons in the stack.
-      message_center::Notification* notification_icon_to_show_on_completion =
+      message_center::Notification* next_notification =
           backfill_start < backfill_end ? stacked_notifications[backfill_start]
                                         : nullptr;
-      icon->AnimateOut(
-          base::BindOnce(&StackedNotificationBar::OnIconAnimatedOut,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         notification_icon_to_show_on_completion));
+      icon->AnimateOut(base::BindOnce(
+          &StackedNotificationBar::OnIconAnimatedOut,
+          weak_ptr_factory_.GetWeakPtr(),
+          next_notification ? next_notification->id() : std::string()));
     }
     return;
   }
@@ -577,21 +522,24 @@ void StackedNotificationBar::UpdateVisibility() {
   // to change):
   //     1. There are more than one notification.
   //     2. There is at least one unpinned notification
-  bool show_clear_all = total_notification_count_ > 1 && unpinned_count >= 1;
+  const bool show_clear_all =
+      total_notification_count_ > 1 && unpinned_count >= 1;
   if (!expand_all_button_->GetVisible())
     clear_all_button_->SetVisible(show_clear_all);
 
   switch (animation_state_) {
     case UnifiedMessageCenterAnimationState::IDLE:
-      SetVisible(stacked_notification_count_ || show_clear_all ||
-                 expand_all_button_->GetVisible());
+      SetVisible(
+          (stacked_notification_count_ && total_notification_count_ > 1) ||
+          show_clear_all || expand_all_button_->GetVisible());
       break;
     case UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR:
       SetVisible(true);
       break;
     case UnifiedMessageCenterAnimationState::COLLAPSE:
-      SetVisible(stacked_notification_count_ || show_clear_all ||
-                 expand_all_button_->GetVisible());
+      SetVisible(
+          (stacked_notification_count_ && total_notification_count_ > 1) ||
+          show_clear_all || expand_all_button_->GetVisible());
       break;
   }
 }

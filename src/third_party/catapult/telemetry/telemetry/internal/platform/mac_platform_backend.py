@@ -24,7 +24,7 @@ class MacPlatformBackend(posix_platform_backend.PosixPlatformBackend):
     try:
       # Since the log file can be very large, only show the last 200 lines.
       return subprocess.check_output(
-          ['tail', '-n', '200', '/var/log/system.log'])
+          ['tail', '-n', '200', '/var/log/system.log']).decode('utf-8')
     except subprocess.CalledProcessError as e:
       return 'Failed to collect system log: %s\nOutput:%s' % (e, e.output)
 
@@ -77,6 +77,8 @@ class MacPlatformBackend(posix_platform_backend.PosixPlatformBackend):
       return os_version_module.CATALINA
     if os_version.startswith('20.'):
       return os_version_module.BIGSUR
+    if os_version.startswith('21.'):
+      return os_version_module.MONTEREY
 
     raise NotImplementedError('Unknown mac version %s.' % os_version)
 

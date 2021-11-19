@@ -1914,19 +1914,6 @@ void TurboAssembler::li(Register rd, Operand j, LiFlags mode) {
     } else {
       li_optimized(rd, j, mode);
     }
-  } else if (IsOnHeap() && RelocInfo::IsEmbeddedObjectMode(j.rmode())) {
-    BlockGrowBufferScope block_growbuffer(this);
-    int offset = pc_offset();
-    Address address = j.immediate();
-    saved_handles_for_raw_object_ptr_.emplace_back(offset, address);
-    Handle<HeapObject> object(reinterpret_cast<Address*>(address));
-    int64_t immediate = object->ptr();
-    RecordRelocInfo(j.rmode(), immediate);
-    lui(rd, (immediate >> 32) & kImm16Mask);
-    ori(rd, rd, (immediate >> 16) & kImm16Mask);
-    dsll(rd, rd, 16);
-    ori(rd, rd, immediate & kImm16Mask);
-    DCHECK(EmbeddedObjectMatches(offset, object));
   } else if (MustUseReg(j.rmode())) {
     int64_t immediate;
     if (j.IsHeapObjectRequest()) {
@@ -4606,6 +4593,46 @@ void TurboAssembler::BranchAndLinkLong(Label* L, BranchDelaySlot bdslot) {
   }
 }
 
+void TurboAssembler::DropArguments(Register count, ArgumentsCountType type,
+                                   ArgumentsCountMode mode, Register scratch) {
+  switch (type) {
+    case kCountIsInteger: {
+      Dlsa(sp, sp, count, kPointerSizeLog2);
+      break;
+    }
+    case kCountIsSmi: {
+      STATIC_ASSERT(kSmiTagSize == 1 && kSmiTag == 0);
+      DCHECK_NE(scratch, no_reg);
+      SmiScale(scratch, count, kPointerSizeLog2);
+      Daddu(sp, sp, scratch);
+      break;
+    }
+    case kCountIsBytes: {
+      Daddu(sp, sp, count);
+      break;
+    }
+  }
+  if (mode == kCountExcludesReceiver) {
+    Daddu(sp, sp, kSystemPointerSize);
+  }
+}
+
+void TurboAssembler::DropArgumentsAndPushNewReceiver(Register argc,
+                                                     Register receiver,
+                                                     ArgumentsCountType type,
+                                                     ArgumentsCountMode mode,
+                                                     Register scratch) {
+  DCHECK(!AreAliased(argc, receiver));
+  if (mode == kCountExcludesReceiver) {
+    // Drop arguments without receiver and override old receiver.
+    DropArguments(argc, type, kCountIncludesReceiver, scratch);
+    Sd(receiver, MemOperand(sp));
+  } else {
+    DropArguments(argc, type, mode, scratch);
+    push(receiver);
+  }
+}
+
 void TurboAssembler::DropAndRet(int drop) {
   int32_t drop_size = drop * kSystemPointerSize;
   DCHECK(is_int31(drop_size));
@@ -4875,8 +4902,10 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
 
   // If the expected parameter count is equal to the adaptor sentinel, no need
   // to push undefined value as arguments.
-  Branch(&regular_invoke, eq, expected_parameter_count,
-         Operand(kDontAdaptArgumentsSentinel));
+  if (kDontAdaptArgumentsSentinel != 0) {
+    Branch(&regular_invoke, eq, expected_parameter_count,
+           Operand(kDontAdaptArgumentsSentinel));
+  }
 
   // If overapplication or if the actual argument count is equal to the
   // formal parameter count, no need to push extra undefined values.
@@ -4903,7 +4932,11 @@ void MacroAssembler::InvokePrologue(Register expected_parameter_count,
     Dsubu(t0, t0, Operand(1));
     Daddu(src, src, Operand(kSystemPointerSize));
     Daddu(dest, dest, Operand(kSystemPointerSize));
-    Branch(&copy, ge, t0, Operand(zero_reg));
+    if (kJSArgcIncludesReceiver) {
+      Branch(&copy, gt, t0, Operand(zero_reg));
+    } else {
+      Branch(&copy, ge, t0, Operand(zero_reg));
+    }
   }
 
   // Fill remaining expected arguments with undefined values.

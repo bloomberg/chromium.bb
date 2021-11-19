@@ -8,7 +8,6 @@
 #ifndef SKSL_BINARYEXPRESSION
 #define SKSL_BINARYEXPRESSION
 
-#include "src/sksl/SkSLIRGenerator.h"
 #include "src/sksl/SkSLLexer.h"
 #include "src/sksl/SkSLOperators.h"
 #include "src/sksl/ir/SkSLExpression.h"
@@ -26,7 +25,7 @@ namespace SkSL {
  */
 class BinaryExpression final : public Expression {
 public:
-    static constexpr Kind kExpressionKind = Kind::kBinary;
+    inline static constexpr Kind kExpressionKind = Kind::kBinary;
 
     BinaryExpression(int line, std::unique_ptr<Expression> left, Operator op,
                      std::unique_ptr<Expression> right, const Type* type)

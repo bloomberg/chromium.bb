@@ -41,6 +41,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 // eslint-disable-next-line rulesdir/es_modules_import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
@@ -460,17 +461,9 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     this.showSettingsPaneSetting.addChangeListener(
         () => settingsPane.element.classList.toggle('hidden', !this.showSettingsPaneSetting.get()));
 
-    this.pinPane = new ConsolePinPane(liveExpressionButton);
+    this.pinPane = new ConsolePinPane(liveExpressionButton, () => this.prompt.focus());
     this.pinPane.element.classList.add('console-view-pinpane');
     this.pinPane.show(this.contentsElement);
-    this.pinPane.element.addEventListener('keydown', event => {
-      if ((event.key === 'Enter' &&
-           UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey((event as KeyboardEvent))) ||
-          event.keyCode === UI.KeyboardShortcut.Keys.Esc.code) {
-        this.prompt.focus();
-        event.consume();
-      }
-    });
 
     this.viewport = new ConsoleViewport(this);
     this.viewport.setStickToBottom(true);
@@ -676,7 +669,7 @@ export class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Sea
     super.wasShown();
     this.updateIssuesToolbarItem();
     this.viewport.refresh();
-    this.registerCSSFiles([consoleViewStyles, objectValueStyles]);
+    this.registerCSSFiles([consoleViewStyles, objectValueStyles, CodeHighlighter.Style.default]);
   }
 
   focus(): void {

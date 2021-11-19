@@ -22,6 +22,10 @@ constexpr size_t kMinRequiredFieldsForHeuristics = 3;
 constexpr size_t kMinRequiredFieldsForQuery = 1;
 constexpr size_t kMinRequiredFieldsForUpload = 1;
 
+// Set a conservative upper bound on the number of forms we are willing to
+// cache, simply to prevent unbounded memory consumption.
+constexpr size_t kAutofillManagerMaxFormCacheSize = 100;
+
 // The maximum number of form fields we are willing to parse, due to
 // computational costs. Several examples of forms with lots of fields that are
 // not relevant to Autofill: (1) the Netflix queue; (2) the Amazon wishlist;
@@ -30,26 +34,9 @@ constexpr size_t kMinRequiredFieldsForUpload = 1;
 // Copied to components/autofill/ios/form_util/resources/fill.js.
 constexpr size_t kMaxParseableFields = 200;
 
-// The maximum number of frames we are willing to parse, due to computational
-// costs.
-constexpr size_t MaxParseableChildFrames(size_t frame_depth) {
-  switch (frame_depth) {
-    case 0:
-      return 20;
-    case 1:
-      return 10;
-    case 2:
-      return 5;
-    default:
-      return 0;
-  }
-}
-
-// The maximum number of frames in an entire frame tree we are willing to parse,
-// due to computational costs.
-constexpr size_t kMaxParseableFramesInTree =
-    MaxParseableChildFrames(0) *
-    (1 + MaxParseableChildFrames(1) * (1 + MaxParseableChildFrames(2)));
+// The maximum number of form fields we are willing to parse, due to
+// computational costs.
+constexpr size_t kMaxParseableChildFrames = 20;
 
 // The maximum number of allowed calls to CreditCard::GetMatchingTypes() and
 // AutofillProfile::GetMatchingTypeAndValidities().

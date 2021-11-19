@@ -5,7 +5,6 @@
 #include "components/autofill/core/browser/payments/payments_requests/unmask_card_request.h"
 
 #include "base/json/json_writer.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +30,8 @@ const char kUnmaskCardRequestFormatWithOtp[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_263_otp=%s";
 
+constexpr size_t kDefaultOtpLength = 6U;
+
 CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
     const base::Value& challenge_option) {
   CardUnmaskChallengeOption card_unmask_challenge_option;
@@ -51,6 +52,12 @@ CardUnmaskChallengeOption ParseCardUnmaskChallengeOption(
     DCHECK(masked_phone_number);
     card_unmask_challenge_option.challenge_info =
         base::UTF8ToUTF16(*masked_phone_number);
+    absl::optional<int> otp_length =
+        sms_challenge_option->FindIntKey("otp_length");
+    if (otp_length.has_value())
+      card_unmask_challenge_option.otp_length = *otp_length;
+    else
+      card_unmask_challenge_option.otp_length = kDefaultOtpLength;
   }
 
   return card_unmask_challenge_option;
@@ -167,19 +174,6 @@ std::string UnmaskCardRequest::GetRequestContent() {
     request_content = base::StringPrintf(
         kUnmaskCardRequestFormat,
         net::EscapeUrlEncodedData(json_request, true).c_str());
-  }
-
-  // Payments is reporting receiving blank or non-standard-length CVCs.
-  // Log CVC length being sent to gauge how often this is happening.
-  if (request_details_.reason == AutofillClient::UnmaskCardReason::kAutofill &&
-      is_cvc_auth) {
-    base::UmaHistogramCounts1000("Autofill.CardUnmask.CvcLength.ForAutofill",
-                                 request_details_.user_response.cvc.length());
-  } else if (request_details_.reason ==
-             AutofillClient::UnmaskCardReason::kPaymentRequest) {
-    base::UmaHistogramCounts1000(
-        "Autofill.CardUnmask.CvcLength.ForPaymentRequest",
-        request_details_.user_response.cvc.length());
   }
 
   VLOG(3) << "getrealpan request body: " << request_content;

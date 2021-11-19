@@ -215,14 +215,14 @@ void WebRTCInternals::OnPeerConnectionUpdated(GlobalRenderFrameHostId frame_id,
   if (it == peer_connection_data_.GetList().end())
     return;
 
-  if (type == "iceConnectionStateChange") {
+  if (type == "iceconnectionstatechange") {
     if (value == "connected" || value == "checking" || value == "completed") {
       MaybeMarkPeerConnectionAsConnected(&*it);
     } else if (value == "failed" || value == "disconnected" ||
                value == "closed" || value == "new") {
       MaybeMarkPeerConnectionAsNotConnected(&*it);
     }
-  } else if (type == "stop") {
+  } else if (type == "close") {
     MaybeClosePeerConnection(&*it);
   } else if (type == "setConfiguration") {
     // Update the configuration we have for this connection.

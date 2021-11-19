@@ -18,7 +18,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics.BottomSheetOpenedSource;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics.MessageClearReason;
-import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignals;
+import org.chromium.chrome.browser.merchant_viewer.proto.MerchantTrustSignalsOuterClass.MerchantTrustSignalsV2;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -54,9 +54,12 @@ public class MerchantTrustSignalsCoordinator
          * @param url The url associated with the just showing {@link MerchantTrustMessageContext}.
          * @param drawable The store icon drawable.
          * @param stringId Resource id of the IPH string.
+         * @param canShowIph Whether it is eligible to show IPH when showing the store icon. For
+         *         example, when user swipes the message, we don't want to show the IPH which may be
+         *         annoying.
          */
-        void showStoreIcon(
-                WindowAndroid window, String url, Drawable drawable, @StringRes int stringId);
+        void showStoreIcon(WindowAndroid window, String url, Drawable drawable,
+                @StringRes int stringId, boolean canShowIph);
     }
 
     private final MerchantTrustSignalsMediator mMediator;
@@ -144,14 +147,16 @@ public class MerchantTrustSignalsCoordinator
     }
 
     @VisibleForTesting
-    void maybeDisplayMessage(MerchantTrustSignals trustSignals, MerchantTrustMessageContext item,
+    void maybeDisplayMessage(MerchantTrustSignalsV2 trustSignals, MerchantTrustMessageContext item,
             boolean shouldExpediteMessage) {
         if (trustSignals == null) return;
         NavigationHandle navigationHandle = item.getNavigationHandle();
         MerchantTrustSignalsEventStorage storage = mStorageFactory.getForLastUsedProfile();
         if (navigationHandle == null || navigationHandle.getUrl() == null || storage == null
                 || MerchantViewerConfig.isTrustSignalsMessageDisabled()
+                || trustSignals.getProactiveMessageDisabled()
                 || isMerchantRatingBelowThreshold(trustSignals)
+                || isNonPersonalizedFamiliarMerchant(trustSignals)
                 || isFamiliarMerchant(navigationHandle.getUrl().getSpec())
                 || hasReachedMaxAllowedMessageNumberInGivenTime()
                 || !isOnSecureWebsite(item.getWebContents())) {
@@ -169,7 +174,7 @@ public class MerchantTrustSignalsCoordinator
         });
     }
 
-    private void scheduleMessage(MerchantTrustSignals trustSignals,
+    private void scheduleMessage(MerchantTrustSignalsV2 trustSignals,
             MerchantTrustMessageContext item, boolean shouldExpediteMessage) {
         assert (trustSignals != null) && (item != null);
         mMessageScheduler.schedule(
@@ -203,9 +208,14 @@ public class MerchantTrustSignalsCoordinator
                 == ConnectionSecurityLevel.SECURE;
     }
 
-    private boolean isMerchantRatingBelowThreshold(MerchantTrustSignals trustSignals) {
+    private boolean isMerchantRatingBelowThreshold(MerchantTrustSignalsV2 trustSignals) {
         return trustSignals.getMerchantStarRating()
                 < MerchantViewerConfig.getTrustSignalsMessageRatingThreshold();
+    }
+
+    private boolean isNonPersonalizedFamiliarMerchant(MerchantTrustSignalsV2 trustSignals) {
+        return trustSignals.getNonPersonalizedFamiliarityScore()
+                > MerchantViewerConfig.getTrustSignalsNonPersonalizedFamiliarityScoreThreshold();
     }
 
     @VisibleForTesting
@@ -229,41 +239,41 @@ public class MerchantTrustSignalsCoordinator
     public void onMessageDismissed(@DismissReason int dismissReason, String messageAssociatedUrl) {
         mMetrics.recordMetricsForMessageDismissed(dismissReason);
         if (dismissReason == DismissReason.TIMER || dismissReason == DismissReason.GESTURE) {
-            maybeShowStoreIcon(messageAssociatedUrl);
+            maybeShowStoreIcon(messageAssociatedUrl, dismissReason == DismissReason.TIMER);
         }
     }
 
     @Override
     public void onMessagePrimaryAction(
-            MerchantTrustSignals trustSignals, String messageAssociatedUrl) {
+            MerchantTrustSignalsV2 trustSignals, String messageAssociatedUrl) {
         mMetrics.recordMetricsForMessageTapped();
         launchDetailsPage(new GURL(trustSignals.getMerchantDetailsPageUrl()),
-                ()
-                        -> onBottomSheetDismissed(
-                                BottomSheetOpenedSource.FROM_MESSAGE, messageAssociatedUrl));
+                BottomSheetOpenedSource.FROM_MESSAGE, messageAssociatedUrl);
     }
 
     // PageInfoStoreInfoController.StoreInfoActionHandler implementation.
     @Override
-    public void onStoreInfoClicked(MerchantTrustSignals trustSignals) {
+    public void onStoreInfoClicked(MerchantTrustSignalsV2 trustSignals) {
         launchDetailsPage(new GURL(trustSignals.getMerchantDetailsPageUrl()),
-                () -> onBottomSheetDismissed(BottomSheetOpenedSource.FROM_PAGE_INFO, null));
+                BottomSheetOpenedSource.FROM_PAGE_INFO, null);
         // If user has clicked the "Store info" row, send a signal to disable {@link
         // FeatureConstants.PAGE_INFO_STORE_INFO_FEATURE}.
         final Tracker tracker = TrackerFactory.getTrackerForProfile(mProfileSupplier.get());
         tracker.notifyEvent(EventConstants.PAGE_INFO_STORE_INFO_ROW_CLICKED);
     }
 
-    private void launchDetailsPage(GURL url, Runnable onBottomSheetDismissed) {
-        mDetailsTabCoordinator.requestOpenSheet(url,
+    private void launchDetailsPage(GURL detailsPageUrl, @BottomSheetOpenedSource int openSource,
+            @Nullable String messageAssociatedUrl) {
+        mMetrics.recordMetricsForBottomSheetOpenedSource(openSource);
+        mDetailsTabCoordinator.requestOpenSheet(detailsPageUrl,
                 mContext.getResources().getString(R.string.merchant_viewer_preview_sheet_title),
-                onBottomSheetDismissed);
+                () -> onBottomSheetDismissed(openSource, messageAssociatedUrl));
     }
 
     private void onBottomSheetDismissed(
             @BottomSheetOpenedSource int openSource, @Nullable String messageAssociatedUrl) {
-        if (openSource == BottomSheetOpenedSource.FROM_MESSAGE && messageAssociatedUrl != null) {
-            maybeShowStoreIcon(messageAssociatedUrl);
+        if (openSource == BottomSheetOpenedSource.FROM_MESSAGE) {
+            maybeShowStoreIcon(messageAssociatedUrl, true);
         }
     }
 
@@ -328,11 +338,11 @@ public class MerchantTrustSignalsCoordinator
     }
 
     @VisibleForTesting
-    void maybeShowStoreIcon(String messageAssociatedUrl) {
+    void maybeShowStoreIcon(@Nullable String messageAssociatedUrl, boolean canShowIph) {
         if (isStoreInfoFeatureEnabled() && mOmniboxIconController != null
                 && messageAssociatedUrl != null) {
             mOmniboxIconController.showStoreIcon(mWindowAndroid, messageAssociatedUrl,
-                    getStoreIconDrawable(), R.string.merchant_viewer_omnibox_icon_iph);
+                    getStoreIconDrawable(), R.string.merchant_viewer_omnibox_icon_iph, canShowIph);
         }
     }
 

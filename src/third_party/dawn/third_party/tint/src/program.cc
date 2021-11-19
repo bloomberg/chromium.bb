@@ -114,7 +114,7 @@ bool Program::IsValid() const {
   return is_valid_;
 }
 
-sem::Type* Program::TypeOf(const ast::Expression* expr) const {
+const sem::Type* Program::TypeOf(const ast::Expression* expr) const {
   auto* sem = Sem().Get(expr);
   return sem ? sem->Type() : nullptr;
 }
@@ -125,19 +125,6 @@ const sem::Type* Program::TypeOf(const ast::Type* type) const {
 
 const sem::Type* Program::TypeOf(const ast::TypeDecl* type_decl) const {
   return Sem().Get(type_decl);
-}
-
-std::string Program::to_str(bool demangle) const {
-  AssertNotMoved();
-  auto str = ast_->to_str(Sem());
-  if (demangle) {
-    str = Demangler().Demangle(Symbols(), str);
-  }
-  return str;
-}
-
-std::string Program::str(const ast::Node* node) const {
-  return Demangler().Demangle(Symbols(), node->str(Sem()));
 }
 
 void Program::AssertNotMoved() const {

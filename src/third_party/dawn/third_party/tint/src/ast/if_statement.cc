@@ -21,20 +21,20 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::IfStatement);
 namespace tint {
 namespace ast {
 
-IfStatement::IfStatement(ProgramID program_id,
-                         const Source& source,
-                         Expression* condition,
-                         BlockStatement* body,
+IfStatement::IfStatement(ProgramID pid,
+                         const Source& src,
+                         const Expression* cond,
+                         const BlockStatement* b,
                          ElseStatementList else_stmts)
-    : Base(program_id, source),
-      condition_(condition),
-      body_(body),
-      else_statements_(std::move(else_stmts)) {
-  TINT_ASSERT(AST, condition_);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, condition_, program_id);
-  TINT_ASSERT(AST, body_);
-  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, body_, program_id);
-  for (auto* el : else_statements_) {
+    : Base(pid, src),
+      condition(cond),
+      body(b),
+      else_statements(std::move(else_stmts)) {
+  TINT_ASSERT(AST, condition);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, condition, program_id);
+  TINT_ASSERT(AST, body);
+  TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, body, program_id);
+  for (auto* el : else_statements) {
     TINT_ASSERT(AST, el);
     TINT_ASSERT_PROGRAM_IDS_EQUAL_IF_VALID(AST, el, program_id);
   }
@@ -44,52 +44,13 @@ IfStatement::IfStatement(IfStatement&&) = default;
 
 IfStatement::~IfStatement() = default;
 
-IfStatement* IfStatement::Clone(CloneContext* ctx) const {
+const IfStatement* IfStatement::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  auto* cond = ctx->Clone(condition_);
-  auto* b = ctx->Clone(body_);
-  auto el = ctx->Clone(else_statements_);
+  auto src = ctx->Clone(source);
+  auto* cond = ctx->Clone(condition);
+  auto* b = ctx->Clone(body);
+  auto el = ctx->Clone(else_statements);
   return ctx->dst->create<IfStatement>(src, cond, b, el);
-}
-
-void IfStatement::to_str(const sem::Info& sem,
-                         std::ostream& out,
-                         size_t indent) const {
-  make_indent(out, indent);
-  out << "If{" << std::endl;
-
-  // Open if conditional
-  make_indent(out, indent + 2);
-  out << "(" << std::endl;
-
-  condition_->to_str(sem, out, indent + 4);
-
-  // Close if conditional
-  make_indent(out, indent + 2);
-  out << ")" << std::endl;
-
-  // Open if body
-  make_indent(out, indent + 2);
-  out << "{" << std::endl;
-
-  if (body_ != nullptr) {
-    for (auto* stmt : *body_) {
-      stmt->to_str(sem, out, indent + 4);
-    }
-  }
-
-  // Close the if body
-  make_indent(out, indent + 2);
-  out << "}" << std::endl;
-
-  // Close the If
-  make_indent(out, indent);
-  out << "}" << std::endl;
-
-  for (auto* e : else_statements_) {
-    e->to_str(sem, out, indent);
-  }
 }
 
 }  // namespace ast

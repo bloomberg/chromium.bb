@@ -13,6 +13,7 @@
 #include "include/core/SkMatrix.h"
 #include "include/core/SkPaint.h"
 #include "include/core/SkPathBuilder.h"
+#include "include/core/SkPicture.h"
 #include "include/core/SkPixelRef.h"
 #include "include/core/SkPixmap.h"
 #include "include/core/SkPoint3.h"
@@ -23,15 +24,17 @@
 #include "include/ports/SkTypeface_win.h"
 #include "include/private/SkColorData.h"
 #include "include/private/SkFloatingPoint.h"
-#include "src/core/SkFontMgrPriv.h"
 #include "src/core/SkFontPriv.h"
 #include "tools/ToolUtils.h"
-#include "tools/flags/CommandLineFlags.h"
-#include "tools/fonts/TestFontMgr.h"
 
 #include <cmath>
 #include <cstring>
-#include <memory>
+
+#if defined(SK_ENABLE_SVG)
+#include "modules/svg/include/SkSVGDOM.h"
+#include "modules/svg/include/SkSVGNode.h"
+#include "src/xml/SkDOM.h"
+#endif
 
 namespace ToolUtils {
 
@@ -371,17 +374,6 @@ void create_tetra_normal_map(SkBitmap* bm, const SkIRect& dst) {
     }
 }
 
-#if !defined(__clang__) && defined(_MSC_VER)
-// MSVC takes ~2 minutes to compile this function with optimization.
-// We don't really care to wait that long for this function.
-#pragma optimize("", off)
-#endif
-SkPath make_big_path() {
-    SkPathBuilder path;
-#include "BigPathBench.inc"  // IWYU pragma: keep
-    return path.detach();
-}
-
 bool copy_to(SkBitmap* dst, SkColorType dstColorType, const SkBitmap& src) {
     SkPixmap srcPM;
     if (!src.peekPixels(&srcPM)) {
@@ -483,23 +475,44 @@ sk_sp<SkSurface> makeSurface(SkCanvas*             canvas,
     return surf;
 }
 
-static DEFINE_bool(nativeFonts, true,
-                   "If true, use native font manager and rendering. "
-                   "If false, fonts will draw as portably as possible.");
-#if defined(SK_BUILD_FOR_WIN)
-    static DEFINE_bool(gdi, false,
-                       "Use GDI instead of DirectWrite for font rendering.");
-#endif
+void sniff_paths(const char filepath[], std::function<PathSniffCallback> callback) {
+    SkFILEStream stream(filepath);
+    if (!stream.isValid()) {
+        SkDebugf("sniff_paths: invalid input file at \"%s\"\n", filepath);
+        return;
+    }
 
-void SetDefaultFontMgr() {
-    if (!FLAGS_nativeFonts) {
-        gSkFontMgr_DefaultFactory = &ToolUtils::MakePortableFontMgr;
-    }
-#if defined(SK_BUILD_FOR_WIN)
-    if (FLAGS_gdi) {
-        gSkFontMgr_DefaultFactory = &SkFontMgr_New_GDI;
-    }
+    class PathSniffer : public SkCanvas {
+    public:
+        PathSniffer(std::function<PathSniffCallback> callback)
+                : SkCanvas(4096, 4096, nullptr)
+                , fPathSniffCallback(callback) {}
+    private:
+        void onDrawPath(const SkPath& path, const SkPaint& paint) override {
+            fPathSniffCallback(this->getTotalMatrix(), path, paint);
+        }
+        std::function<PathSniffCallback> fPathSniffCallback;
+    };
+
+    PathSniffer pathSniffer(callback);
+    if (const char* ext = strrchr(filepath, '.'); ext && !strcmp(ext, ".svg")) {
+#if defined(SK_ENABLE_SVG)
+        sk_sp<SkSVGDOM> svg = SkSVGDOM::MakeFromStream(stream);
+        if (!svg) {
+            SkDebugf("sniff_paths: couldn't load svg at \"%s\"\n", filepath);
+            return;
+        }
+        svg->setContainerSize(SkSize::Make(pathSniffer.getBaseLayerSize()));
+        svg->render(&pathSniffer);
 #endif
+    } else {
+        sk_sp<SkPicture> skp = SkPicture::MakeFromStream(&stream);
+        if (!skp) {
+            SkDebugf("sniff_paths: couldn't load skp at \"%s\"\n", filepath);
+            return;
+        }
+        skp->playback(&pathSniffer);
+    }
 }
 
 }  // namespace ToolUtils

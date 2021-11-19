@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/containers/contains.h"
-#include "base/no_destructor.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service_filter.h"
@@ -30,7 +29,6 @@ void PluginRegistryImpl::Bind(
 }
 
 void PluginRegistryImpl::GetPlugins(bool refresh,
-                                    bool is_main_frame,
                                     const url::Origin& main_frame_origin,
                                     GetPluginsCallback callback) {
   auto* plugin_service = PluginServiceImpl::GetInstance();
@@ -52,12 +50,12 @@ void PluginRegistryImpl::GetPlugins(bool refresh,
 
   plugin_service->GetPlugins(base::BindOnce(
       &PluginRegistryImpl::GetPluginsComplete, weak_factory_.GetWeakPtr(),
-      is_main_frame, main_frame_origin, std::move(callback)));
+      main_frame_origin, std::move(callback)));
 }
 
+// TODO(crbug.com/850278): Remove unused parameters.
 void PluginRegistryImpl::GetPluginsComplete(
-    bool is_main_frame,
-    const url::Origin& main_frame_origin,
+    const url::Origin& /*main_frame_origin*/,
     GetPluginsCallback callback,
     const std::vector<WebPluginInfo>& all_plugins) {
   PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
@@ -72,15 +70,8 @@ void PluginRegistryImpl::GetPluginsComplete(
       GetContentClient()->browser()->GetPluginMimeTypesWithExternalHandlers(
           rph->GetBrowserContext());
 
-  const int routing_id = MSG_ROUTING_NONE;
-  // In this loop, copy the WebPluginInfo (and do not use a reference) because
-  // the filter might mutate it.
-  for (WebPluginInfo plugin : all_plugins) {
-    // TODO(crbug.com/621724): Pass an url::Origin instead of a GURL.
-    if (!filter || filter->IsPluginAvailable(render_process_id_, routing_id,
-                                             main_frame_origin.GetURL(),
-                                             is_main_frame,
-                                             main_frame_origin, &plugin)) {
+  for (const auto& plugin : all_plugins) {
+    if (!filter || filter->IsPluginAvailable(render_process_id_, plugin)) {
       auto plugin_blink = blink::mojom::PluginInfo::New();
       plugin_blink->name = plugin.name;
       plugin_blink->description = plugin.desc;

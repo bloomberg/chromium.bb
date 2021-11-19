@@ -81,6 +81,33 @@ def CMDbranchinfo(parser, args):
 
 
 @subcommand.usage('[args ...]')
+def CMDrawapi(parser, args):
+  """Call an arbitrary Gerrit REST API endpoint."""
+  parser.add_option('--path', dest='path', help='HTTP path of the API endpoint')
+  parser.add_option('--method', dest='method',
+                    help='HTTP method for the API (default: GET)')
+  parser.add_option('--body', dest='body', help='API JSON body contents')
+  parser.add_option('--accept_status',
+                    dest='accept_status',
+                    help='Comma-delimited list of status codes for success.')
+
+  (opt, args) = parser.parse_args(args)
+  assert opt.path, "--path not defined"
+
+  host = urlparse.urlparse(opt.host).netloc
+  kwargs = {}
+  if opt.method:
+    kwargs['reqtype'] = opt.method.upper()
+  if opt.body:
+    kwargs['body'] = json.loads(opt.body)
+  if opt.accept_status:
+    kwargs['accept_statuses'] = [int(x) for x in opt.accept_status.split(',')]
+  result = gerrit_util.CallGerritApi(host, opt.path, **kwargs)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
 def CMDbranch(parser, args):
   """Create a branch in a gerrit project."""
   parser.add_option('--branch', dest='branch', help='branch name')
@@ -94,8 +121,26 @@ def CMDbranch(parser, args):
   project = quote_plus(opt.project)
   host = urlparse.urlparse(opt.host).netloc
   branch = quote_plus(opt.branch)
-  commit = quote_plus(opt.commit)
-  result = gerrit_util.CreateGerritBranch(host, project, branch, commit)
+  result = gerrit_util.CreateGerritBranch(host, project, branch, opt.commit)
+  logging.info(result)
+  write_result(result, opt)
+
+
+@subcommand.usage('[args ...]')
+def CMDtag(parser, args):
+  """Create a tag in a gerrit project."""
+  parser.add_option('--tag', dest='tag', help='tag name')
+  parser.add_option('--commit', dest='commit', help='commit hash')
+
+  (opt, args) = parser.parse_args(args)
+  assert opt.project, "--project not defined"
+  assert opt.tag, "--tag not defined"
+  assert opt.commit, "--commit not defined"
+
+  project = quote_plus(opt.project)
+  host = urlparse.urlparse(opt.host).netloc
+  tag = quote_plus(opt.tag)
+  result = gerrit_util.CreateGerritTag(host, project, tag, opt.commit)
   logging.info(result)
   write_result(result, opt)
 
@@ -371,7 +416,7 @@ def CMDmass_abandon(parser, args):
     logging.warn("[ID: %d] %s" % (change['_number'], change['subject']))
 
   if not opt.force:
-    q = raw_input(
+    q = input(
         'Do you want to move forward with abandoning? [y to confirm] ').strip()
     if q not in ['y', 'Y']:
       logging.warn("Aborting...")

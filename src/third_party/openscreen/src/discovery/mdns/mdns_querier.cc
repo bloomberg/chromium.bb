@@ -333,8 +333,8 @@ const MdnsRecordTracker& MdnsQuerier::RecordTrackerLruCache::StartTracking(
     MdnsRecord record,
     DnsType dns_type) {
   auto expiration_callback = [this](const MdnsRecordTracker* tracker,
-                                    const MdnsRecord& record) {
-    querier_->OnRecordExpired(tracker, record);
+                                    const MdnsRecord& r) {
+    querier_->OnRecordExpired(tracker, r);
   };
 
   while (lru_order_.size() >=
@@ -642,7 +642,7 @@ void MdnsQuerier::ProcessRecord(const MdnsRecord& record) {
   // NSEC records this will be all records which the record dictates the
   // nonexistence of.
   std::vector<DnsType> types;
-  int types_count = 0;
+  size_t types_count = 0;
   const DnsType* types_ptr = nullptr;
   if (record.dns_type() == DnsType::kNSEC) {
     const auto& nsec_rdata = absl::get<NsecRecordRdata>(record.rdata());
@@ -660,7 +660,7 @@ void MdnsQuerier::ProcessRecord(const MdnsRecord& record) {
   }
 
   // Apply the update for each type that the record is associated with.
-  for (int i = 0; i < types_count; ++i) {
+  for (size_t i = 0; i < types_count; ++i) {
     DnsType dns_type = types_ptr[i];
     switch (record.record_type()) {
       case RecordType::kShared: {
@@ -745,7 +745,7 @@ void MdnsQuerier::ProcessSinglyTrackedUniqueRecord(
 
   auto on_rdata_change = [this, r = std::move(record_for_callback),
                           existed_previously,
-                          will_exist](const MdnsRecordTracker& tracker) {
+                          will_exist](const MdnsRecordTracker& t) {
     // If RDATA on the record is different, notify that the record has
     // been updated.
     if (existed_previously && will_exist) {

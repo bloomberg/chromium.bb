@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/mojom/anr.mojom.h"
 #include "components/arc/mojom/metrics.mojom.h"
 #include "components/arc/mojom/process.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -130,6 +131,10 @@ class ArcMetricsService : public KeyedService,
                                 uint32_t number_of_directories) override;
   void ReportMainAccountHashMigrationMetrics(
       mojom::MainAccountHashMigrationStatus status) override;
+  void ReportImageCopyPasteCompatAction(
+      mojom::ArcImageCopyPasteCompatAction action_type) override;
+  void ReportArcNetworkEvent(mojom::ArcNetworkEvent event) override;
+  void ReportArcNetworkError(mojom::ArcNetworkError error) override;
 
   // wm::ActivationChangeObserver overrides.
   // Records to UMA when a user has interacted with an ARC app window.

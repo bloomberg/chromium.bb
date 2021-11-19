@@ -121,15 +121,15 @@ auto Equals(const FormForest& exp) {
 FormData CreateForm() {
   FormData form;
   test::CreateTestCreditCardFormData(&form, true, false, true);
-  DCHECK_EQ(form.fields.size(), 6u);
+  CHECK_EQ(form.fields.size(), 6u);
   return form;
 }
 
 // Creates a field type map for the form with N >= 0 repetitions of the fields
 // from CreateForm().
 auto CreateFieldTypeMap(const FormData& form) {
-  DCHECK_EQ(form.fields.size() % 6, 0u);
-  DCHECK_GT(form.fields.size() / 6, 0u);
+  CHECK_EQ(form.fields.size() % 6, 0u);
+  CHECK_GT(form.fields.size() / 6, 0u);
   base::flat_map<FieldGlobalId, ServerFieldType> map;
   for (size_t i = 0; i < form.fields.size() / 6; ++i) {
     map[form.fields[6 * i + 0].global_id()] = CREDIT_CARD_NAME_FIRST;
@@ -149,8 +149,8 @@ using Profile = base::StrongAlias<struct ProfileTag, size_t>;
 // Fills the fields 0..5 of |form| with data according to |profile|, the
 // fields 6..11 with |profile|+1, etc.
 FormData WithValues(FormData& form, Profile profile = Profile(0)) {
-  DCHECK_EQ(form.fields.size() % 6, 0u);
-  DCHECK_GT(form.fields.size() / 6, 0u);
+  CHECK_EQ(form.fields.size() % 6, 0u);
+  CHECK_GT(form.fields.size() / 6, 0u);
   for (size_t i = 0; i < form.fields.size() / 6; ++i) {
     std::bitset<6> bitset(profile.value() + i);
     form.fields[6 * i + 0].value = bitset.test(0) ? u"Jane" : u"John";
@@ -238,7 +238,7 @@ std::vector<std::vector<T>> Permutations(const std::vector<T>& xs) {
   base::ranges::sort(ps.front());
   while (base::ranges::next_permutation(ps.front()))
     ps.push_back(ps.front());
-  DCHECK_EQ(ps.size(), factorial(xs.size()));
+  CHECK_EQ(ps.size(), factorial(xs.size()));
   return ps;
 }
 
@@ -305,7 +305,7 @@ class FormForestTest : public content::RenderViewHostTestHarness {
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
-    DCHECK(kOpaqueOrigin.opaque());
+    CHECK(kOpaqueOrigin.opaque());
   }
 
   void TearDown() override {
@@ -389,7 +389,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
   };
 
   struct FormSpan {
-    base::StringPiece form;
+    std::string form;
     size_t begin = 0;
     size_t count = base::dynamic_extent;
   };
@@ -408,7 +408,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
       const FrameInfo& frame_info,
       MockContentAutofillDriver* parent_driver = nullptr,
       FormData* parent_form = nullptr) {
-    DCHECK_EQ(!parent_driver, !parent_form);
+    CHECK_EQ(!parent_driver, !parent_form);
     GURL url(!frame_info.url.empty()
                  ? frame_info.url
                  : (!parent_driver ? kMainUrl : kIframeUrl));
@@ -418,7 +418,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
             : CreateAndNavigateChildFrame(parent_driver, url, frame_info.policy,
                                           frame_info.name);
     if (!frame_info.name.empty()) {
-      DCHECK(!base::Contains(drivers_, frame_info.name));
+      CHECK(!base::Contains(drivers_, frame_info.name));
       drivers_.emplace(std::string(frame_info.name), driver);
     }
 
@@ -445,7 +445,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
       }
 
       if (!form_info.name.empty()) {
-        DCHECK(!base::Contains(forms_, form_info.name));
+        CHECK(!base::Contains(forms_, form_info.name));
         forms_.emplace(form_info.name, data.global_id());
       }
       forms.push_back(data);
@@ -457,7 +457,7 @@ class FormForestTestWithMockedTree : public FormForestTest {
       frame_data->parent_form = parent_form->global_id();
     frame_data->driver = driver;
     auto p = frame_datas(mocked_forms_).insert(std::move(frame_data));
-    DCHECK(p.second);
+    CHECK(p.second);
     return driver;
   }
 
@@ -511,22 +511,22 @@ class FormForestTestWithMockedTree : public FormForestTest {
       return d->IsInMainFrame() || d->is_sub_root();
     };
     auto it = base::ranges::find_if(form_fields, IsRoot);
-    DCHECK(it != form_fields.end());
-    DCHECK(base::ranges::all_of(form_fields, [&](FormSpan fs) {
+    CHECK(it != form_fields.end());
+    CHECK(base::ranges::all_of(form_fields, [&](FormSpan fs) {
       return !IsRoot(fs) || fs.form == it->form;
     }));
     GetFlattenedForm(it->form).fields = fields;
 
     // Validate flattening.
-    DCHECK_EQ(frame_datas(flattened_forms_).size(),
-              frame_datas(mocked_forms_).size());
+    CHECK_EQ(frame_datas(flattened_forms_).size(),
+             frame_datas(mocked_forms_).size());
     auto IsRoorOrEmpty = [](const auto& frame) {
       return !frame->parent_form ||
              base::ranges::all_of(frame->child_forms,
                                   &std::vector<FormFieldData>::empty,
                                   &FormData::fields);
     };
-    DCHECK(base::ranges::all_of(frame_datas(flattened_forms_), IsRoorOrEmpty));
+    CHECK(base::ranges::all_of(frame_datas(flattened_forms_), IsRoorOrEmpty));
   }
 
   MockContentAutofillDriver* driver(base::StringPiece frame_or_form_name) {
@@ -544,27 +544,27 @@ class FormForestTestWithMockedTree : public FormForestTest {
 
   FrameData& GetMockedFrame(base::StringPiece frame_or_form_name) {
     MockContentAutofillDriver* d = driver(frame_or_form_name);
-    DCHECK(d) << frame_or_form_name;
+    CHECK(d) << frame_or_form_name;
     FrameData* frame = TestApi(mocked_forms_).GetFrameData(d->token());
-    DCHECK(frame);
+    CHECK(frame);
     return *frame;
   }
 
   FormData& GetMockedForm(base::StringPiece form_name) {
     auto it = forms_.find(form_name);
-    DCHECK(it != forms_.end()) << form_name;
+    CHECK(it != forms_.end()) << form_name;
     FormData* form = TestApi(mocked_forms_).GetFormData(it->second);
-    DCHECK(form);
+    CHECK(form);
     return *form;
   }
 
   FormData& GetFlattenedForm(base::StringPiece form_name) {
-    DCHECK(driver(form_name)->IsInMainFrame() ||
-           driver(form_name)->is_sub_root());
+    CHECK(driver(form_name)->IsInMainFrame() ||
+          driver(form_name)->is_sub_root());
     auto it = forms_.find(form_name);
-    DCHECK(it != forms_.end()) << form_name;
+    CHECK(it != forms_.end()) << form_name;
     FormData* form = TestApi(flattened_forms_).GetFormData(it->second);
-    DCHECK(form);
+    CHECK(form);
     return *form;
   }
 
@@ -629,6 +629,85 @@ TEST_F(FormForestTestUpdateTree, TriggerReparse) {
   UpdateTreeOfRendererForm(ff, "child2");
   EXPECT_CALL(*driver("main2"), TriggerReparse).Times(0);
   UpdateTreeOfRendererForm(ff, "main2");
+  EXPECT_THAT(ff, Equals(flattened_forms_));
+}
+
+// Tests that at most 64 descendants are flattened into their root.
+//
+// The test creates a single root form (FormName(0)) with 30 child frames, each
+// of which contains 3 forms, so there's a total of 90 forms.
+// UpdateTreeOfRendererForm() flattens (only) the first 64 of these descendant
+// forms.
+TEST_F(FormForestTestUpdateTree, SizeLimit) {
+  auto FormName = [](size_t num) -> std::string {
+    return std::string("form") + base::NumberToString(num);
+  };
+  // The number of maximum descendants (= node ranges) according to
+  // FormForest::UpdateTreeOfRendererForm()::kMaxVisits.
+  constexpr size_t kMaxFlattened = 64;
+  // The number of descendants that will actually get flattened. This may be
+  // less than kMaxFlattened because UpdateTreeOfRendererForm() either flattens
+  // all fields from a frame or none at all.
+  constexpr size_t kActualFlattened = kMaxFlattened / 3 * 3;
+  // The number of descendants we generate here, some of which will be flattened
+  // and some of which will not.
+  constexpr size_t kDescendants = 90;
+  static_assert(kActualFlattened < kMaxFlattened, "");
+  static_assert(kDescendants % 3 == 0, "");
+
+  // Generate the tree with kDescendant child forms in groups of three per
+  // frame. Then detach the frames whose forms will not be flattened.
+  MockFormForest([&] {
+    FrameInfo root{.forms = {{.name = FormName(0)}}};
+    for (size_t i = 0; i < kDescendants / 3; ++i) {
+      root.forms.front().frames.push_back(
+          {.forms = {{.name = FormName(3 * i + 1)},
+                     {.name = FormName(3 * i + 2)},
+                     {.name = FormName(3 * i + 3)}}});
+    }
+    return root;
+  }());
+  for (size_t i = kActualFlattened + 1; i <= kDescendants; ++i) {
+    driver(FormName(i))->set_sub_root(true);
+    GetMockedFrame(FormName(i)).parent_form = absl::nullopt;
+  }
+
+  MockFlattening([&] {
+    std::vector<FormSpan> flattened_forms;
+    for (size_t i = 0; i <= kActualFlattened; ++i)
+      flattened_forms.push_back({FormName(i)});
+    return flattened_forms;
+  }());
+  for (size_t i = kActualFlattened + 1; i <= kDescendants; ++i)
+    MockFlattening({{FormName(i)}});
+
+  FormForest ff;
+  for (size_t i = 0; i <= kDescendants; ++i)
+    UpdateTreeOfRendererForm(ff, FormName(i));
+  for (size_t i = kActualFlattened + 1; i <= kDescendants; i += 3) {
+    // At the time FormName(64) was seen, its frame contained only this one
+    // form, so the overall limit of kMaxDescendants was satisfied. Therefore,
+    // its fields were moved to the root and then deleted from the root once
+    // another form was seen and the limit was exceeded. We need to see the form
+    // again to reinstate its fields.
+    //
+    // The same holds for field 67 in the next frame, and so on.
+    UpdateTreeOfRendererForm(ff, FormName(i + 0));
+    // At the time FormName(65) was seen, its frame contained contained two
+    // forms, so the overall limit of kMaxDescendants wasn't satisfied anymore.
+    // Therefore, its fields weren't moved to the root. However, its fields had
+    // been moved to a temporary variable and then lost. We need to see the form
+    // again to reinstate its fields.
+    //
+    // The same holds for field 68 in the next frame, and so on.
+    UpdateTreeOfRendererForm(ff, FormName(i + 1));
+    // We don't need to see FormName(66) again because already when FormName(65)
+    // was seen, the frame's FrameData::parent_form was unset, so FormName(66)
+    // was handled as any ordinary (root) form of a (sub)tree.
+    //
+    // The same holds for field 69 in the next frame, and so on.
+  }
+
   EXPECT_THAT(ff, Equals(flattened_forms_));
 }
 
@@ -845,8 +924,62 @@ INSTANTIATE_TEST_SUITE_P(FormForestTest,
                                  {"grandchild1", "grandchild2"},
                                  {"grandchild3", "grandchild4"}})));
 
+// Tests that erasing a form removes the form and its fields.
+TEST_F(FormForestTestUpdateTree, EraseForm_FieldRemoval) {
+  MockFormForest(
+      {.forms = {
+           {.name = "main",
+            .frames = {
+                {.url = kIframeUrl,
+                 .forms = {{.name = "inner",
+                            .frames = {{.forms = {{.name = "leaf"}}}}}}}}}}});
+  FormForest ff;
+  UpdateTreeOfRendererForm(ff, "main");
+  UpdateTreeOfRendererForm(ff, "inner");
+  UpdateTreeOfRendererForm(ff, "leaf");
+  FormGlobalId removed_form = GetMockedForm("leaf").global_id();
+  ff.EraseForm(removed_form);
+  base::EraseIf(
+      (*frame_datas(mocked_forms_).find(removed_form.frame_token))->child_forms,
+      [&](const FormData& form) { return form.global_id() == removed_form; });
+  MockFlattening({{"main"}, {"inner"}});
+  ASSERT_EQ(GetFlattenedForm("main").fields.size(), 12u);
+  EXPECT_THAT(ff, Equals(flattened_forms_));
+}
+
+// Tests that erasing a frame unsets the children's FrameData::parent_form
+// pointer.
+TEST_F(FormForestTestUpdateTree, EraseForm_ParentReset) {
+  MockFormForest(
+      {.forms = {
+           {.name = "main",
+            .frames = {
+                {.url = kIframeUrl,
+                 .forms = {{.name = "inner",
+                            .frames = {{.forms = {{.name = "leaf"}}}}}}}}}}});
+  FormForest ff;
+  UpdateTreeOfRendererForm(ff, "main");
+  UpdateTreeOfRendererForm(ff, "inner");
+  UpdateTreeOfRendererForm(ff, "leaf");
+  FormGlobalId removed_form = GetMockedForm("inner").global_id();
+  ff.EraseForm(removed_form);
+  base::EraseIf(
+      (*frame_datas(mocked_forms_).find(removed_form.frame_token))->child_forms,
+      [&](const FormData& form) { return form.global_id() == removed_form; });
+  driver("leaf")->set_sub_root(true);
+  GetMockedFrame("leaf").parent_form = absl::nullopt;
+  MockFlattening({{"main"}});
+  MockFlattening({{"leaf"}});
+  base::ranges::copy(GetFlattenedForm("leaf").fields,
+                     std::back_inserter(GetFlattenedForm("main").fields));
+  GetFlattenedForm("leaf").fields.clear();
+  ASSERT_EQ(GetFlattenedForm("main").fields.size(), 12u);
+  ASSERT_EQ(GetFlattenedForm("leaf").fields.size(), 0u);
+  EXPECT_THAT(ff, Equals(flattened_forms_));
+}
+
 // Tests that erasing a frame removes its form and fields.
-TEST_F(FormForestTestUpdateTree, EraseFrame) {
+TEST_F(FormForestTestUpdateTree, EraseFrame_FieldRemoval) {
   MockFormForest(
       {.forms = {
            {.name = "main",
@@ -862,6 +995,34 @@ TEST_F(FormForestTestUpdateTree, EraseFrame) {
   frame_datas(mocked_forms_).erase(GetMockedForm("leaf").host_frame);
   MockFlattening({{"main"}, {"inner"}});
   ASSERT_EQ(GetFlattenedForm("main").fields.size(), 12u);
+  EXPECT_THAT(ff, Equals(flattened_forms_));
+}
+
+// Tests that erasing a frame unsets the children's FrameData::parent_form
+// pointer.
+TEST_F(FormForestTestUpdateTree, EraseFrame_ParentReset) {
+  MockFormForest(
+      {.forms = {
+           {.name = "main",
+            .frames = {
+                {.url = kIframeUrl,
+                 .forms = {{.name = "inner",
+                            .frames = {{.forms = {{.name = "leaf"}}}}}}}}}}});
+  FormForest ff;
+  UpdateTreeOfRendererForm(ff, "main");
+  UpdateTreeOfRendererForm(ff, "inner");
+  UpdateTreeOfRendererForm(ff, "leaf");
+  ff.EraseFrame(GetMockedForm("inner").host_frame);
+  frame_datas(mocked_forms_).erase(GetMockedForm("inner").host_frame);
+  driver("leaf")->set_sub_root(true);
+  GetMockedFrame("leaf").parent_form = absl::nullopt;
+  MockFlattening({{"main"}});
+  MockFlattening({{"leaf"}});
+  base::ranges::copy(GetFlattenedForm("leaf").fields,
+                     std::back_inserter(GetFlattenedForm("main").fields));
+  GetFlattenedForm("leaf").fields.clear();
+  ASSERT_EQ(GetFlattenedForm("main").fields.size(), 12u);
+  ASSERT_EQ(GetFlattenedForm("leaf").fields.size(), 0u);
   EXPECT_THAT(ff, Equals(flattened_forms_));
 }
 
@@ -1137,7 +1298,7 @@ TEST_F(FormForestTestUpdateTree, RemoveFrame) {
   // indirectly "greatgrandchild".
   driver("grandchild2")->set_sub_root(true);
   GetMockedForm("child1").child_frames.pop_back();
-  GetMockedFrame("grandchild2").parent_form.reset();
+  GetMockedFrame("grandchild2").parent_form = absl::nullopt;
   GetMockedForm("grandchild2").fields.clear();
   GetMockedForm("greatgrandchild").fields.clear();
   MockFlattening({{"main"}, {"child1"}, {"grandchild1"}, {"child2"}},

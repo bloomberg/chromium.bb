@@ -9,8 +9,6 @@
 #define GrShaderCaps_DEFINED
 
 #include "include/core/SkRefCnt.h"
-#include "include/private/GrTypesPriv.h"
-#include "src/gpu/GrSwizzle.h"
 #include "src/gpu/glsl/GrGLSL.h"
 
 namespace SkSL {
@@ -21,7 +19,7 @@ class SharedCompiler;
 struct GrContextOptions;
 class SkJSONWriter;
 
-class GrShaderCaps : public SkRefCnt {
+class GrShaderCaps {
 public:
     /**
      * Indicates how GLSL must interact with advanced blend equations. The KHR extension requires
@@ -35,7 +33,7 @@ public:
         kLast_AdvBlendEqInteraction = kGeneralEnable_AdvBlendEqInteraction
     };
 
-    GrShaderCaps(const GrContextOptions&);
+    GrShaderCaps();
 
     void dumpJSON(SkJSONWriter*) const;
 
@@ -81,6 +79,12 @@ public:
 
     // isinf() is defined, and floating point infinities are handled according to IEEE standards.
     bool infinitySupport() const { return fInfinitySupport; }
+
+    // Returns true if `expr` in `myArray[expr]` can be any integer expression. If false, `expr`
+    // must be a constant-index-expression as defined in the OpenGL ES2 specification, Appendix A.5.
+    bool nonconstantArrayIndexSupport() const {
+        return fNonconstantArrayIndexSupport;
+    }
 
     // frexp(), ldexp(), findMSB(), findLSB().
     bool bitManipulationSupport() const { return fBitManipulationSupport; }
@@ -172,13 +176,6 @@ public:
     // constructs. See detailed comments in GrGLCaps.cpp.
     bool mustGuardDivisionEvenAfterExplicitZeroCheck() const {
         return fMustGuardDivisionEvenAfterExplicitZeroCheck;
-    }
-
-    // On Pixel 3, 3a, and 4 devices we've noticed that the simple function:
-    // half4 blend(half4 a, half4 b) { return a.a * b; }
-    // may return (0, 0, 0, 1) when b is (0, 0, 0, 0).
-    bool inBlendModesFailRandomlyForAllZeroVec() const {
-        return fInBlendModesFailRandomlyForAllZeroVec;
     }
 
     // On Nexus 6, the GL context can get lost if a shader does not write a value to gl_FragColor.
@@ -289,6 +286,7 @@ private:
     bool fExternalTextureSupport            : 1;
     bool fVertexIDSupport                   : 1;
     bool fInfinitySupport                   : 1;
+    bool fNonconstantArrayIndexSupport      : 1;
     bool fBitManipulationSupport            : 1;
     bool fFloatIs32Bits                     : 1;
     bool fHalfIs32Bits                      : 1;
@@ -310,7 +308,6 @@ private:
     bool fRequiresLocalOutputColorForFBFetch          : 1;
     bool fMustObfuscateUniformColor                   : 1;
     bool fMustGuardDivisionEvenAfterExplicitZeroCheck : 1;
-    bool fInBlendModesFailRandomlyForAllZeroVec       : 1;
     bool fCanUseFragCoord                             : 1;
     bool fIncompleteShortIntPrecision                 : 1;
     bool fAddAndTrueToLoopCondition                   : 1;

@@ -28,46 +28,6 @@ class UnsafeAPIValidationTest : public ValidationTest {
     }
 };
 
-// Check that DispatchIndirect is disallowed as part of unsafe APIs.
-TEST_F(UnsafeAPIValidationTest, DispatchIndirectDisallowed) {
-    // Create the index and indirect buffers.
-    wgpu::BufferDescriptor indirectBufferDesc;
-    indirectBufferDesc.size = 64;
-    indirectBufferDesc.usage = wgpu::BufferUsage::Indirect;
-    wgpu::Buffer indirectBuffer = device.CreateBuffer(&indirectBufferDesc);
-
-    // Create the dummy compute pipeline.
-    wgpu::ComputePipelineDescriptor pipelineDesc;
-    pipelineDesc.compute.entryPoint = "main";
-    pipelineDesc.compute.module =
-        utils::CreateShaderModule(device, "[[stage(compute), workgroup_size(1)]] fn main() {}");
-    wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
-
-    // Control case: dispatch is allowed.
-    {
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-
-        pass.SetPipeline(pipeline);
-        pass.Dispatch(1, 1, 1);
-
-        pass.EndPass();
-        encoder.Finish();
-    }
-
-    // Error case: dispatch indirect is disallowed.
-    {
-        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-
-        pass.SetPipeline(pipeline);
-        pass.DispatchIndirect(indirectBuffer, 0);
-
-        pass.EndPass();
-        ASSERT_DEVICE_ERROR(encoder.Finish());
-    }
-}
-
 // Check that dynamic storage buffers are disallowed.
 TEST_F(UnsafeAPIValidationTest, DynamicStorageBuffer) {
     wgpu::BindGroupLayoutEntry entry;
@@ -106,12 +66,52 @@ TEST_F(UnsafeAPIValidationTest, DynamicStorageBuffer) {
     }
 }
 
+// Check that pipeline overridable constants are disallowed as part of unsafe APIs.
+// TODO(dawn:1041) Remove when implementation for all backend is added
+TEST_F(UnsafeAPIValidationTest, PipelineOverridableConstants) {
+    // Create the dummy compute pipeline.
+    wgpu::ComputePipelineDescriptor pipelineDescBase;
+    pipelineDescBase.compute.entryPoint = "main";
+
+    // Control case: shader without overridable constant is allowed.
+    {
+        wgpu::ComputePipelineDescriptor pipelineDesc = pipelineDescBase;
+        pipelineDesc.compute.module =
+            utils::CreateShaderModule(device, "[[stage(compute), workgroup_size(1)]] fn main() {}");
+
+        device.CreateComputePipeline(&pipelineDesc);
+    }
+
+    // Error case: shader with overridable constant with default value
+    {
+        ASSERT_DEVICE_ERROR(utils::CreateShaderModule(device, R"(
+[[override(1000)]] let c0: u32 = 1u;
+[[override(1000)]] let c1: u32;
+
+[[stage(compute), workgroup_size(1)]] fn main() {
+    _ = c0;
+    _ = c1;
+})"));
+    }
+
+    // Error case: pipeline stage with constant entry is disallowed
+    {
+        wgpu::ComputePipelineDescriptor pipelineDesc = pipelineDescBase;
+        pipelineDesc.compute.module =
+            utils::CreateShaderModule(device, "[[stage(compute), workgroup_size(1)]] fn main() {}");
+        std::vector<wgpu::ConstantEntry> constants{{nullptr, "c", 1u}};
+        pipelineDesc.compute.constants = constants.data();
+        pipelineDesc.compute.constantCount = constants.size();
+        ASSERT_DEVICE_ERROR(device.CreateComputePipeline(&pipelineDesc));
+    }
+}
+
 class UnsafeQueryAPIValidationTest : public ValidationTest {
   protected:
     WGPUDevice CreateTestDevice() override {
         dawn_native::DeviceDescriptor descriptor;
-        descriptor.requiredFeatures.push_back("pipeline_statistics_query");
-        descriptor.requiredFeatures.push_back("timestamp_query");
+        descriptor.requiredFeatures.push_back("pipeline-statistics-query");
+        descriptor.requiredFeatures.push_back("timestamp-query");
         descriptor.forceEnabledToggles.push_back("disallow_unsafe_apis");
         return adapter.CreateDevice(&descriptor);
     }

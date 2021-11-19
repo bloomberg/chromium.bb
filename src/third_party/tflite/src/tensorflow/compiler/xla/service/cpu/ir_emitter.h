@@ -80,6 +80,10 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   //              index in the profiling array.
   // computation_to_profile_idx: the mapping from HLO computations to their
   //              index in the profiling array.
+  // computation_transitively_contains_custom_call: the mapping from HLO
+  //   computations to whether or not they transitively contain a custom-call
+  //   instruction. All computations in the module must have a key in this
+  //   map.
   // emit_code_for_msan: whether emitted code should be compatible with msan.
   IrEmitter(mlir::MLIRContext* mlir_context, const HloModule& hlo_module,
             const BufferAssignment& assignment, llvm::Module* llvm_module,
@@ -87,6 +91,8 @@ class IrEmitter : public DfsHloVisitorWithDefault,
                 instruction_to_profile_idx,
             std::unordered_map<const HloComputation*, int64_t>
                 computation_to_profile_idx,
+            absl::flat_hash_map<const HloComputation*, bool>
+                computation_transitively_contains_custom_call,
             const TargetMachineFeatures* target_machine,
             bool emit_code_for_msan);
   ~IrEmitter() override;
@@ -485,6 +491,23 @@ class IrEmitter : public DfsHloVisitorWithDefault,
   // Maps HLO computations to their index into the profile counter array.
   const std::unordered_map<const HloComputation*, int64_t>
       computation_to_profile_idx_;
+
+  // Maps HLO computations to whether they contain a custom-call instruction
+  // (either directly, or transitively by e.g. calling another computation that
+  // does).
+  const absl::flat_hash_map<const HloComputation*, bool>
+      computation_transitively_contains_custom_call_;
+
+  // Accessor for the custom-call mapping that enforces the precondition that
+  // all computations must have a key in the map.
+  bool ComputationTransitivelyContainsCustomCall(
+      const HloComputation* computation) const {
+    auto it = computation_transitively_contains_custom_call_.find(computation);
+    CHECK(it != computation_transitively_contains_custom_call_.cend())
+        << "Must provide 'contains CustomCall' annotation for all computations "
+           "in the module";
+    return it->second;
+  }
 
   // Maps HLOs to Values emitted for them.
   absl::flat_hash_map<const HloInstruction*, llvm::Value*> emitted_value_;

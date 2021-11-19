@@ -823,6 +823,11 @@ std::ostream&	operator<<	(std::ostream& s, const VkImageBlit2KHR& value);
 std::ostream&	operator<<	(std::ostream& s, const VkBlitImageInfo2KHR& value);
 std::ostream&	operator<<	(std::ostream& s, const VkImageResolve2KHR& value);
 std::ostream&	operator<<	(std::ostream& s, const VkResolveImageInfo2KHR& value);
+std::ostream&	operator<<	(std::ostream& s, const VkFormatPropertiesExtendedKHR& value);
+std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceMaintenance4FeaturesKHR& value);
+std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceMaintenance4PropertiesKHR& value);
+std::ostream&	operator<<	(std::ostream& s, const VkDeviceBufferMemoryRequirementsKHR& value);
+std::ostream&	operator<<	(std::ostream& s, const VkDeviceImageMemoryRequirementsKHR& value);
 std::ostream&	operator<<	(std::ostream& s, const VkDebugReportCallbackCreateInfoEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkPipelineRasterizationStateRasterizationOrderAMD& value);
 std::ostream&	operator<<	(std::ostream& s, const VkDebugMarkerObjectNameInfoEXT& value);
@@ -1028,6 +1033,7 @@ std::ostream&	operator<<	(std::ostream& s, const VkCommandBufferInheritanceRende
 std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceDeviceMemoryReportFeaturesEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkDeviceMemoryReportCallbackDataEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkDeviceDeviceMemoryReportCreateInfoEXT& value);
+std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceRobustness2FeaturesEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceRobustness2PropertiesEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkSamplerCustomBorderColorCreateInfoEXT& value);
@@ -1080,6 +1086,8 @@ std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceMultiDrawFeatur
 std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceMultiDrawPropertiesEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkMultiDrawInfoEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkMultiDrawIndexedInfoEXT& value);
+std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDeviceBorderColorSwizzleFeaturesEXT& value);
+std::ostream&	operator<<	(std::ostream& s, const VkSamplerBorderColorComponentMappingCreateInfoEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT& value);
 std::ostream&	operator<<	(std::ostream& s, const VkDeviceOrHostAddressKHR& value);
 std::ostream&	operator<<	(std::ostream& s, const VkAccelerationStructureBuildRangeInfoKHR& value);

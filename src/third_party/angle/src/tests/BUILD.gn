@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//build/config/win/control_flow_guard.gni")
 import("//testing/test.gni")
 import("../../gni/angle.gni")
 import("angle_unittests.gni")
@@ -189,9 +190,7 @@ angle_test("angle_unittests") {
   ]
 
   if (angle_enable_vulkan) {
-    if (angle_enable_direct_spirv_gen) {
-      sources += [ "compiler_tests/Precise_test.cpp" ]
-    }
+    sources += [ "compiler_tests/Precise_test.cpp" ]
     deps += [
       "$angle_root/src/common/spirv:angle_spirv_base",
       "$angle_root/src/common/spirv:angle_spirv_headers",
@@ -943,6 +942,14 @@ if (build_angle_gles1_conform_tests) {
 ### dEQP tests
 ###-----------------------------------------------------
 
+config("win_x86_disable_guards_cfg_compiler") {
+  if (is_win && target_cpu == "x86" && win_enable_cfg_guards) {
+    # See crbug.com/1260874 avoid bad unwinding of exceptions when
+    # compiled with cfg guards for x86.
+    configs = [ "//build/config/win:disable_guards_cfg_compiler" ]
+  }
+}
+
 if (build_angle_deqp_tests && !is_fuchsia) {
   import("deqp_support/deqp.gni")
   import("deqp_support/deqp_data_autogen.gni")
@@ -1058,7 +1065,7 @@ if (build_angle_deqp_tests && !is_fuchsia) {
       testonly = true
       forward_variables_from(invoker, "*")
       suppressed_configs += deqp_undefine_configs
-
+      configs += [ ":win_x86_disable_guards_cfg_compiler" ]
       if (is_clang) {
         cflags += [
           # Suppress a spurious header warning. http://crbug.com/995046
@@ -1297,7 +1304,7 @@ if (build_angle_deqp_tests && !is_fuchsia) {
         "$angle_root/util:angle_test_utils",
         "$angle_root/util:angle_util",
       ]
-
+      configs += [ ":win_x86_disable_guards_cfg_compiler" ]
       suppressed_configs += deqp_undefine_configs
       public_configs += [ ":$config_name" ]
 
@@ -1337,6 +1344,7 @@ if (build_angle_deqp_tests && !is_fuchsia) {
         "deqp_support/${expectations_file}",
         "${invoker.mustpass_dir}/${invoker.mustpass_name}",
       ]
+      configs += [ ":win_x86_disable_guards_cfg_compiler" ]
     }
   }
 

@@ -15,6 +15,8 @@
 #ifndef EIGEN_MATH_FUNCTIONS_SSE_H
 #define EIGEN_MATH_FUNCTIONS_SSE_H
 
+#include "../../InternalHeaderCheck.h"
+
 namespace Eigen {
 
 namespace internal {

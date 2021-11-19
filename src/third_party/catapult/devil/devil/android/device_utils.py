@@ -63,7 +63,7 @@ _DEFAULT_RETRIES = 3
 # TODO(agrieve): Would be better to make this timeout based off of data size.
 # Needs to be large for remote devices & speed depends on internet connection.
 # Debug Chrome builds can be 200mb+.
-_FILE_TRANSFER_TIMEOUT = 10 * 60
+_FILE_TRANSFER_TIMEOUT = 7 * 60
 
 
 # A sentinel object for default values
@@ -2434,8 +2434,8 @@ class DeviceUtils(object):
       d = tempfile.mkdtemp()
       host_temp_path = os.path.join(d, 'tmp_ReadFileWithPull')
       self.adb.Pull(device_path, host_temp_path)
-      with open(host_temp_path, 'r') as host_temp:
-        return host_temp.read()
+      with open(host_temp_path, 'rb') as host_temp:
+        return six.ensure_str(host_temp.read(), errors='replace')
     finally:
       if os.path.exists(d):
         shutil.rmtree(d)

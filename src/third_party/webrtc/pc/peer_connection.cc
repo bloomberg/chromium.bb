@@ -276,8 +276,8 @@ bool DtlsEnabled(const PeerConnectionInterface::RTCConfiguration& configuration,
   bool default_enabled =
       (dependencies.cert_generator || !configuration.certificates.empty());
 
-  // The `configuration` can override the default value.
-  return configuration.enable_dtls_srtp.value_or(default_enabled);
+  RTC_DCHECK(default_enabled) << "Configuration error: No certs for DTLS";
+  return default_enabled;
 }
 
 }  // namespace
@@ -300,7 +300,6 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
     bool enable_rtp_data_channel;
     absl::optional<int> screencast_min_bitrate;
     absl::optional<bool> combined_audio_video_bwe;
-    absl::optional<bool> enable_dtls_srtp;
     TcpCandidatePolicy tcp_candidate_policy;
     CandidateNetworkPolicy candidate_network_policy;
     int audio_jitter_buffer_max_packets;
@@ -368,7 +367,6 @@ bool PeerConnectionInterface::RTCConfiguration::operator==(
          disable_link_local_networks == o.disable_link_local_networks &&
          screencast_min_bitrate == o.screencast_min_bitrate &&
          combined_audio_video_bwe == o.combined_audio_video_bwe &&
-         enable_dtls_srtp == o.enable_dtls_srtp &&
          ice_candidate_pool_size == o.ice_candidate_pool_size &&
          prune_turn_ports == o.prune_turn_ports &&
          turn_port_prune_policy == o.turn_port_prune_policy &&
@@ -651,6 +649,10 @@ RTCError PeerConnection::Initialize(
         ReportUsagePattern();
       },
       delay_ms);
+
+  // Record the number of configured ICE servers for all connections.
+  RTC_HISTOGRAM_COUNTS_LINEAR("WebRTC.PeerConnection.IceServers.Configured",
+                              configuration_.servers.size(), 0, 31, 32);
 
   return RTCError::OK();
 }
@@ -1456,7 +1458,7 @@ RTCError PeerConnection::SetConfiguration(
   RTCErrorType parse_error =
       ParseIceServers(configuration.servers, &stun_servers, &turn_servers);
   if (parse_error != RTCErrorType::NONE) {
-    return RTCError(parse_error);
+    return RTCError(parse_error, "ICE server parse failed");
   }
   // Add the turn logging id to all turn servers
   for (cricket::RelayServerConfig& turn_server : turn_servers) {
@@ -1896,6 +1898,10 @@ void PeerConnection::SetConnectionState(
     }
     RTC_HISTOGRAM_ENUMERATION("WebRTC.PeerConnection.ProvisionalAnswer",
                               pranswer, kProvisionalAnswerMax);
+
+    // Record the number of configured ICE servers for connected connections.
+    RTC_HISTOGRAM_COUNTS_LINEAR("WebRTC.PeerConnection.IceServers.Connected",
+                                configuration_.servers.size(), 0, 31, 32);
   }
 }
 
@@ -2872,6 +2878,7 @@ bool PeerConnection::ShouldFireNegotiationNeededEvent(uint32_t event_id) {
 }
 
 void PeerConnection::RequestUsagePatternReportForTesting() {
+  RTC_DCHECK_RUN_ON(signaling_thread());
   message_handler_.RequestUsagePatternReport(
       [this]() {
         RTC_DCHECK_RUN_ON(signaling_thread());

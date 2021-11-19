@@ -23,28 +23,21 @@ TINT_INSTANTIATE_TYPEINFO(tint::ast::LocationDecoration);
 namespace tint {
 namespace ast {
 
-LocationDecoration::LocationDecoration(ProgramID program_id,
-                                       const Source& source,
+LocationDecoration::LocationDecoration(ProgramID pid,
+                                       const Source& src,
                                        uint32_t val)
-    : Base(program_id, source), value_(val) {}
+    : Base(pid, src), value(val) {}
 
 LocationDecoration::~LocationDecoration() = default;
 
-std::string LocationDecoration::name() const {
+std::string LocationDecoration::Name() const {
   return "location";
 }
 
-void LocationDecoration::to_str(const sem::Info&,
-                                std::ostream& out,
-                                size_t indent) const {
-  make_indent(out, indent);
-  out << "LocationDecoration{" << value_ << "}" << std::endl;
-}
-
-LocationDecoration* LocationDecoration::Clone(CloneContext* ctx) const {
+const LocationDecoration* LocationDecoration::Clone(CloneContext* ctx) const {
   // Clone arguments outside of create() call to have deterministic ordering
-  auto src = ctx->Clone(source());
-  return ctx->dst->create<LocationDecoration>(src, value_);
+  auto src = ctx->Clone(source);
+  return ctx->dst->create<LocationDecoration>(src, value);
 }
 
 }  // namespace ast

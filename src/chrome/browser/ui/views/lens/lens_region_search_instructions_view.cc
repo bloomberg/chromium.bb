@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font_list.h"
@@ -27,8 +28,10 @@ namespace lens {
 
 // Spec states a font size of 14px.
 constexpr int kTextFontSize = 14;
+constexpr int kCloseButtonExtraMargin = 4;
 constexpr int kCloseButtonSize = 17;
-constexpr int kCornerRadius = 15;
+constexpr int kCornerRadius = 18;
+constexpr int kLabelExtraLeftMargin = 2;
 
 LensRegionSearchInstructionsView::LensRegionSearchInstructionsView(
     views::View* anchor_view,
@@ -51,6 +54,8 @@ LensRegionSearchInstructionsView::LensRegionSearchInstructionsView(
           },
           base::Passed(std::move(close_callback))),
       views::kIcCloseIcon, kCloseButtonSize);
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
 }
 
 LensRegionSearchInstructionsView::~LensRegionSearchInstructionsView() = default;
@@ -65,11 +70,13 @@ void LensRegionSearchInstructionsView::Init() {
       layout_provider->GetInsetsMetric(views::InsetsMetric::INSETS_LABEL_BUTTON)
           .top(),
       layout_provider->GetDistanceMetric(
-          views::DistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL),
+          views::DistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL) +
+          kLabelExtraLeftMargin,
       layout_provider->GetInsetsMetric(views::InsetsMetric::INSETS_LABEL_BUTTON)
           .bottom(),
       layout_provider->GetDistanceMetric(
-          views::DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN)));
+          views::DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN) +
+          kCloseButtonExtraMargin));
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_close_on_deactivate(false);
   set_corner_radius(kCornerRadius);
@@ -88,6 +95,8 @@ void LensRegionSearchInstructionsView::Init() {
   AddChildView(std::move(label));
 
   close_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
+  close_button_->SetProperty(views::kMarginsKey,
+                             gfx::Insets(0, kCloseButtonExtraMargin, 0, 0));
   AddChildView(std::move(close_button_));
 }
 

@@ -8,6 +8,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_observer_manager.h"
 #include "components/safe_browsing/core/common/features.h"
@@ -522,7 +523,8 @@ TEST_F(SBNavigationObserverTest, TestContentSettingChange) {
   // Simulate content setting change via page info UI.
   navigation_observer_->OnContentSettingChanged(
       ContentSettingsPattern::FromURL(web_content->GetLastCommittedURL()),
-      ContentSettingsPattern::Wildcard(), ContentSettingsType::NOTIFICATIONS);
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsTypeSet(ContentSettingsType::NOTIFICATIONS));
 
   // A user gesture should be recorded.
   ASSERT_EQ(1U, user_gesture_map()->size());
@@ -534,7 +536,8 @@ TEST_F(SBNavigationObserverTest, TestContentSettingChange) {
   // Simulate content setting change that cannot be changed via page info UI.
   navigation_observer_->OnContentSettingChanged(
       ContentSettingsPattern::FromURL(web_content->GetLastCommittedURL()),
-      ContentSettingsPattern::Wildcard(), ContentSettingsType::SITE_ENGAGEMENT);
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsTypeSet(ContentSettingsType::SITE_ENGAGEMENT));
   // No user gesture should be recorded.
   EXPECT_EQ(0U, user_gesture_map()->size());
 }
@@ -623,6 +626,29 @@ TEST_F(SBNavigationObserverTest,
   EXPECT_EQ(GURL("http://B.com"), referrer_chain[10].referrer_url());
   EXPECT_EQ(GURL("http://B.com"), referrer_chain[11].url());
   EXPECT_EQ(GURL("http://A.com"), referrer_chain[11].referrer_url());
+}
+
+TEST_F(SBNavigationObserverTest,
+       RemoveNonUserGestureEntriesWithExcessiveUserGestureEvents) {
+  GURL url = GURL("http://A.com");
+  base::Time half_hour_ago =
+      base::Time::FromDoubleT(base::Time::Now().ToDoubleT() - 30.0 * 60.0);
+  // Append 10 navigation events with user gesture.
+  for (int i = 0; i < 10; i++) {
+    std::unique_ptr<NavigationEvent> navigation_event =
+        std::make_unique<NavigationEvent>();
+    navigation_event->source_url = url;
+    navigation_event->last_updated = half_hour_ago;
+    navigation_event->navigation_initiation =
+        ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE;
+    navigation_event_list()->RecordNavigationEvent(std::move(navigation_event));
+  }
+
+  ReferrerChain referrer_chain;
+  // Get the first 5 events.
+  navigation_observer_manager_->AppendRecentNavigations(5, &referrer_chain);
+  // The length of the referrer chain should not exceed the limit.
+  EXPECT_EQ(5, referrer_chain.size());
 }
 
 TEST_F(SBNavigationObserverTest, RemoveMiddleReferrerChains) {

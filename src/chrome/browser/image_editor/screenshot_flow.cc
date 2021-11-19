@@ -25,6 +25,7 @@
 
 #if defined(OS_MAC)
 #include "chrome/browser/image_editor/event_capture_mac.h"
+#include "components/lens/lens_features.h"
 #include "content/public/browser/render_view_host.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -47,7 +48,8 @@ static constexpr SkColor kColorSelectionRect = SkColorSetRGB(0xEE, 0xEE, 0xEE);
 static constexpr int kMinimumValidSelectionEdgePixels = 30;
 
 ScreenshotFlow::ScreenshotFlow(content::WebContents* web_contents)
-    : web_contents_(web_contents->GetWeakPtr()) {
+    : content::WebContentsObserver(web_contents),
+      web_contents_(web_contents->GetWeakPtr()) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
@@ -232,7 +234,6 @@ void ScreenshotFlow::OnMouseEvent(ui::MouseEvent* event) {
         drag_end_.SetPoint(0, 0);
         if (selection.width() >= kMinimumValidSelectionEdgePixels &&
             selection.height() >= kMinimumValidSelectionEdgePixels) {
-          capture_mode_ = CaptureMode::NOT_CAPTURING;
           CompleteCapture(ScreenshotCaptureResultCode::SUCCESS, selection);
         } else {
           RequestRepaint(gfx::Rect());
@@ -311,6 +312,15 @@ void ScreenshotFlow::SetCursor(ui::mojom::CursorType cursor_type) {
   if (!web_contents_) {
     return;
   }
+
+#if defined(OS_MAC)
+  if (cursor_type == ui::mojom::CursorType::kCross &&
+      lens::features::kRegionSearchMacCursorFix.Get()) {
+    EventCaptureMac::SetCrossCursor();
+    return;
+  }
+#endif
+
   content::RenderWidgetHost* host =
       web_contents_->GetMainFrame()->GetRenderWidgetHost();
   if (host) {
@@ -321,6 +331,18 @@ void ScreenshotFlow::SetCursor(ui::mojom::CursorType cursor_type) {
 
 bool ScreenshotFlow::IsCaptureModeActive() {
   return capture_mode_ != CaptureMode::NOT_CAPTURING;
+}
+
+void ScreenshotFlow::WebContentsDestroyed() {
+  if (IsCaptureModeActive()) {
+    CancelCapture();
+  }
+}
+
+void ScreenshotFlow::OnVisibilityChanged(content::Visibility visibility) {
+  if (IsCaptureModeActive()) {
+    CancelCapture();
+  }
 }
 
 // UnderlyingWebContentsObserver monitors the WebContents and exits screen

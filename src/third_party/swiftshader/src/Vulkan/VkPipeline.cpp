@@ -35,7 +35,7 @@ namespace {
 // optimizeSpirv() applies and freezes specializations into constants, and runs spirv-opt.
 sw::SpirvBinary optimizeSpirv(const vk::PipelineCache::SpirvBinaryKey &key)
 {
-	const sw::SpirvBinary &code = key.getInsns();
+	const sw::SpirvBinary &code = key.getBinary();
 	const VkSpecializationInfo *specializationInfo = key.getSpecializationInfo();
 	bool optimize = key.getOptimization();
 
@@ -219,7 +219,7 @@ void GraphicsPipeline::compileShaders(const VkAllocationCallbacks *pAllocator, c
 		const bool optimize = !dbgctx;
 
 		const ShaderModule *module = vk::Cast(pStage->module);
-		const PipelineCache::SpirvBinaryKey key(module->getCode(), pStage->pSpecializationInfo, optimize);
+		const PipelineCache::SpirvBinaryKey key(module->getBinary(), pStage->pSpecializationInfo, optimize);
 
 		sw::SpirvBinary spirv;
 
@@ -232,14 +232,17 @@ void GraphicsPipeline::compileShaders(const VkAllocationCallbacks *pAllocator, c
 		else
 		{
 			spirv = optimizeSpirv(key);
+
+			// If the pipeline does not have specialization constants, there's a 1-to-1 mapping between the unoptimized and optimized SPIR-V,
+			// so we should use a 1-to-1 mapping of the identifiers to avoid JIT routine recompiles.
+			if(!key.getSpecializationInfo())
+			{
+				spirv.mapOptimizedIdentifier(key.getBinary());
+			}
 		}
 
-		// If the pipeline has specialization constants, assume they're unique and
-		// use a new serial ID so the shader gets recompiled.
-		uint32_t codeSerialID = (key.getSpecializationInfo() ? vk::ShaderModule::nextSerialID() : module->getSerialID());
-
-		// TODO(b/119409619): use allocator.
-		auto shader = std::make_shared<sw::SpirvShader>(codeSerialID, pStage->stage, pStage->pName, spirv,
+		// TODO(b/201798871): use allocator.
+		auto shader = std::make_shared<sw::SpirvShader>(pStage->stage, pStage->pName, spirv,
 		                                                vk::Cast(pCreateInfo->renderPass), pCreateInfo->subpass, robustBufferAccess, dbgctx);
 
 		setShader(pStage->stage, shader);
@@ -276,7 +279,7 @@ void ComputePipeline::compileShaders(const VkAllocationCallbacks *pAllocator, co
 	// instructions.
 	const bool optimize = !dbgctx;
 
-	const PipelineCache::SpirvBinaryKey shaderKey(module->getCode(), stage.pSpecializationInfo, optimize);
+	const PipelineCache::SpirvBinaryKey shaderKey(module->getBinary(), stage.pSpecializationInfo, optimize);
 
 	sw::SpirvBinary spirv;
 
@@ -289,17 +292,20 @@ void ComputePipeline::compileShaders(const VkAllocationCallbacks *pAllocator, co
 	else
 	{
 		spirv = optimizeSpirv(shaderKey);
+
+		// If the pipeline does not have specialization constants, there's a 1-to-1 mapping between the unoptimized and optimized SPIR-V,
+		// so we should use a 1-to-1 mapping of the identifiers to avoid JIT routine recompiles.
+		if(!shaderKey.getSpecializationInfo())
+		{
+			spirv.mapOptimizedIdentifier(shaderKey.getBinary());
+		}
 	}
 
-	// If the pipeline has specialization constants, assume they're unique and
-	// use a new serial ID so the shader gets recompiled.
-	uint32_t codeSerialID = (stage.pSpecializationInfo ? vk::ShaderModule::nextSerialID() : module->getSerialID());
-
-	// TODO(b/119409619): use allocator.
-	shader = std::make_shared<sw::SpirvShader>(codeSerialID, stage.stage, stage.pName, spirv,
+	// TODO(b/201798871): use allocator.
+	shader = std::make_shared<sw::SpirvShader>(stage.stage, stage.pName, spirv,
 	                                           nullptr, 0, robustBufferAccess, dbgctx);
 
-	const PipelineCache::ComputeProgramKey programKey(shader->getSerialID(), layout->identifier);
+	const PipelineCache::ComputeProgramKey programKey(shader->getIdentifier(), layout->identifier);
 
 	if(pPipelineCache)
 	{

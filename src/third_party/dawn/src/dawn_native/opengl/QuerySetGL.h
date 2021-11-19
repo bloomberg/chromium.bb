@@ -28,7 +28,7 @@ namespace dawn_native { namespace opengl {
       private:
         ~QuerySet() override;
 
-        void DestroyImpl() override;
+        void DestroyApiObjectImpl() override;
     };
 
 }}  // namespace dawn_native::opengl

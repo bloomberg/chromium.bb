@@ -66,7 +66,7 @@ void CFFL_FormField::OnDraw(CPDFSDK_PageView* pPageView,
     return;
 
   pWidget->DrawAppearance(pDevice, mtUser2Device,
-                          CPDF_Annot::AppearanceMode::kNormal, nullptr);
+                          CPDF_Annot::AppearanceMode::kNormal);
 }
 
 void CFFL_FormField::OnDrawDeactive(CPDFSDK_PageView* pPageView,
@@ -74,7 +74,7 @@ void CFFL_FormField::OnDrawDeactive(CPDFSDK_PageView* pPageView,
                                     CFX_RenderDevice* pDevice,
                                     const CFX_Matrix& mtUser2Device) {
   pWidget->DrawAppearance(pDevice, mtUser2Device,
-                          CPDF_Annot::AppearanceMode::kNormal, nullptr);
+                          CPDF_Annot::AppearanceMode::kNormal);
 }
 
 void CFFL_FormField::OnMouseEnter(CPDFSDK_PageView* pPageView) {}
@@ -306,7 +306,7 @@ CPWL_Wnd::CreateParams CFFL_FormField::GetCreateParam() {
   if (dwFieldFlag & pdfium::form_flags::kReadOnly)
     dwCreateFlags |= PWS_READONLY;
 
-  Optional<FX_COLORREF> color = m_pWidget->GetFillColor();
+  absl::optional<FX_COLORREF> color = m_pWidget->GetFillColor();
   if (color.has_value())
     cp.sBackgroundColor = CFX_Color(color.value());
   color = m_pWidget->GetBorderColor();

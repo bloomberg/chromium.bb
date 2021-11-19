@@ -133,6 +133,7 @@ void test_stl_iterators(int rows=Rows, int cols=Cols)
   ColMatrixType A = ColMatrixType::Random(rows,cols);
   const ColMatrixType& cA(A);
   RowMatrixType B = RowMatrixType::Random(rows,cols);
+  using Eigen::placeholders::last;
   
   Index i, j;
 

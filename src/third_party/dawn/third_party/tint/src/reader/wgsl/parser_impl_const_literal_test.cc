@@ -49,8 +49,8 @@ TEST_F(ParserImplTest, ConstLiteral_Int) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::SintLiteral>());
-  EXPECT_EQ(c->As<ast::SintLiteral>()->value(), -234);
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 5u}}));
+  EXPECT_EQ(c->As<ast::SintLiteral>()->value, -234);
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 5u}}));
 }
 
 TEST_F(ParserImplTest, ConstLiteral_Uint) {
@@ -61,8 +61,8 @@ TEST_F(ParserImplTest, ConstLiteral_Uint) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::UintLiteral>());
-  EXPECT_EQ(c->As<ast::UintLiteral>()->value(), 234u);
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 5u}}));
+  EXPECT_EQ(c->As<ast::UintLiteral>()->value, 234u);
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 5u}}));
 }
 
 TEST_F(ParserImplTest, ConstLiteral_Float) {
@@ -73,16 +73,45 @@ TEST_F(ParserImplTest, ConstLiteral_Float) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::FloatLiteral>());
-  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value(), 234e12f);
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 8u}}));
+  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value, 234e12f);
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 8u}}));
 }
 
-TEST_F(ParserImplTest, ConstLiteral_InvalidFloat) {
+TEST_F(ParserImplTest, ConstLiteral_InvalidFloat_IncompleteExponent) {
+  auto p = parser("1.0e+");
+  auto c = p->const_literal();
+  EXPECT_FALSE(c.matched);
+  EXPECT_TRUE(c.errored);
+  EXPECT_EQ(p->error(),
+            "1:1: incomplete exponent for floating point literal: 1.0e+");
+  ASSERT_EQ(c.value, nullptr);
+}
+
+TEST_F(ParserImplTest, ConstLiteral_InvalidFloat_TooSmallMagnitude) {
+  auto p = parser("1e-256");
+  auto c = p->const_literal();
+  EXPECT_FALSE(c.matched);
+  EXPECT_TRUE(c.errored);
+  EXPECT_EQ(p->error(),
+            "1:1: f32 (1e-256) magnitude too small, not representable");
+  ASSERT_EQ(c.value, nullptr);
+}
+
+TEST_F(ParserImplTest, ConstLiteral_InvalidFloat_TooLargeNegative) {
+  auto p = parser("-1.2e+256");
+  auto c = p->const_literal();
+  EXPECT_FALSE(c.matched);
+  EXPECT_TRUE(c.errored);
+  EXPECT_EQ(p->error(), "1:1: f32 (-1.2e+256) too large (negative)");
+  ASSERT_EQ(c.value, nullptr);
+}
+
+TEST_F(ParserImplTest, ConstLiteral_InvalidFloat_TooLargePositive) {
   auto p = parser("1.2e+256");
   auto c = p->const_literal();
   EXPECT_FALSE(c.matched);
   EXPECT_TRUE(c.errored);
-  EXPECT_EQ(p->error(), "1:1: f32 (1.2e+256) too large");
+  EXPECT_EQ(p->error(), "1:1: f32 (1.2e+256) too large (positive)");
   ASSERT_EQ(c.value, nullptr);
 }
 
@@ -108,7 +137,7 @@ TEST_P(ParserImplFloatLiteralTest, Parse) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::FloatLiteral>());
-  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value(), params.expected);
+  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value, params.expected);
 }
 
 FloatLiteralTestCase float_literal_test_cases[] = {
@@ -275,6 +304,14 @@ FloatLiteralTestCase hexfloat_literal_test_cases[] = {
     {"-0x123Ep+1", -9340.f},
     {"0x1a2b3cP12", 7.024656e+09f},
     {"-0x1a2b3cP12", -7.024656e+09f},
+
+    // Examples without a binary exponent part.
+    {"0x1.", 1.0f},
+    {"0x.8", 0.5f},
+    {"0x1.8", 1.5f},
+    {"-0x1.", -1.0f},
+    {"-0x.8", -0.5f},
+    {"-0x1.8", -1.5f},
 };
 INSTANTIATE_TEST_SUITE_P(ParserImplFloatLiteralTest_HexFloat,
                          ParserImplFloatLiteralTest,
@@ -326,9 +363,18 @@ INSTANTIATE_TEST_SUITE_P(
     testing::ValuesIn(invalid_hexfloat_exponent_too_large_cases));
 
 InvalidLiteralTestCase invalid_hexfloat_exponent_missing_cases[] = {
+    // Lower case p
     {"0x0p", "1:1: expected an exponent value for hex float"},
+    {"0x0p+", "1:1: expected an exponent value for hex float"},
+    {"0x0p-", "1:1: expected an exponent value for hex float"},
     {"0x1.0p", "1:1: expected an exponent value for hex float"},
     {"0x0.1p", "1:1: expected an exponent value for hex float"},
+    // Upper case p
+    {"0x0P", "1:1: expected an exponent value for hex float"},
+    {"0x0P+", "1:1: expected an exponent value for hex float"},
+    {"0x0P-", "1:1: expected an exponent value for hex float"},
+    {"0x1.0P", "1:1: expected an exponent value for hex float"},
+    {"0x0.1P", "1:1: expected an exponent value for hex float"},
 };
 INSTANTIATE_TEST_SUITE_P(
     ParserImplInvalidLiteralTest_HexFloatExponentMissing,
@@ -349,9 +395,9 @@ TEST_F(ParserImplTest, ConstLiteral_FloatHighest) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::FloatLiteral>());
-  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value(),
+  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value,
                   std::numeric_limits<float>::max());
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 42u}}));
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 42u}}));
 }
 
 TEST_F(ParserImplTest, ConstLiteral_FloatLowest) {
@@ -372,9 +418,9 @@ TEST_F(ParserImplTest, ConstLiteral_FloatLowest) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::FloatLiteral>());
-  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value(),
+  EXPECT_FLOAT_EQ(c->As<ast::FloatLiteral>()->value,
                   std::numeric_limits<float>::lowest());
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 43u}}));
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 43u}}));
 }
 
 TEST_F(ParserImplTest, ConstLiteral_True) {
@@ -385,8 +431,8 @@ TEST_F(ParserImplTest, ConstLiteral_True) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::BoolLiteral>());
-  EXPECT_TRUE(c->As<ast::BoolLiteral>()->IsTrue());
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 5u}}));
+  EXPECT_TRUE(c->As<ast::BoolLiteral>()->value);
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 5u}}));
 }
 
 TEST_F(ParserImplTest, ConstLiteral_False) {
@@ -397,8 +443,8 @@ TEST_F(ParserImplTest, ConstLiteral_False) {
   EXPECT_FALSE(p->has_error()) << p->error();
   ASSERT_NE(c.value, nullptr);
   ASSERT_TRUE(c->Is<ast::BoolLiteral>());
-  EXPECT_TRUE(c->As<ast::BoolLiteral>()->IsFalse());
-  EXPECT_EQ(c->source().range, (Source::Range{{1u, 1u}, {1u, 6u}}));
+  EXPECT_FALSE(c->As<ast::BoolLiteral>()->value);
+  EXPECT_EQ(c->source.range, (Source::Range{{1u, 1u}, {1u, 6u}}));
 }
 
 TEST_F(ParserImplTest, ConstLiteral_NoMatch) {

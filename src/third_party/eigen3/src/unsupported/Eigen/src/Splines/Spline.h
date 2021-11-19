@@ -10,6 +10,8 @@
 #ifndef EIGEN_SPLINE_H
 #define EIGEN_SPLINE_H
 
+#include "./InternalHeaderCheck.h"
+
 #include "SplineFwd.h"
 
 namespace Eigen

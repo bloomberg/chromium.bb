@@ -47,7 +47,6 @@ void BestPractices::PostCallRecordEnumeratePhysicalDevices(
     VkPhysicalDevice*                           pPhysicalDevices,
     VkResult                                    result) {
     ValidationStateTracker::PostCallRecordEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices, result);
-    ManualPostCallRecordEnumeratePhysicalDevices(instance, pPhysicalDeviceCount, pPhysicalDevices, result);
     if (result != VK_SUCCESS) {
         static const std::vector<VkResult> error_codes = {VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_INITIALIZATION_FAILED};
         static const std::vector<VkResult> success_codes = {VK_INCOMPLETE};
@@ -1355,7 +1354,7 @@ void BestPractices::PostCallRecordCreateVideoSessionParametersKHR(
     VkResult                                    result) {
     ValidationStateTracker::PostCallRecordCreateVideoSessionParametersKHR(device, pCreateInfo, pAllocator, pVideoSessionParameters, result);
     if (result != VK_SUCCESS) {
-        static const std::vector<VkResult> error_codes = {VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_TOO_MANY_OBJECTS};
+        static const std::vector<VkResult> error_codes = {VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_OUT_OF_DEVICE_MEMORY,VK_ERROR_TOO_MANY_OBJECTS};
         static const std::vector<VkResult> success_codes = {};
         ValidateReturnCodes("vkCreateVideoSessionParametersKHR", result, error_codes, success_codes);
     }
@@ -2942,6 +2941,75 @@ void BestPractices::PostCallRecordGetSemaphoreZirconHandleFUCHSIA(
         static const std::vector<VkResult> error_codes = {VK_ERROR_TOO_MANY_OBJECTS,VK_ERROR_OUT_OF_HOST_MEMORY};
         static const std::vector<VkResult> success_codes = {};
         ValidateReturnCodes("vkGetSemaphoreZirconHandleFUCHSIA", result, error_codes, success_codes);
+    }
+}
+
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void BestPractices::PostCallRecordCreateBufferCollectionFUCHSIA(
+    VkDevice                                    device,
+    const VkBufferCollectionCreateInfoFUCHSIA*  pCreateInfo,
+    const VkAllocationCallbacks*                pAllocator,
+    VkBufferCollectionFUCHSIA*                  pCollection,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordCreateBufferCollectionFUCHSIA(device, pCreateInfo, pAllocator, pCollection, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INVALID_EXTERNAL_HANDLE,VK_ERROR_INITIALIZATION_FAILED};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkCreateBufferCollectionFUCHSIA", result, error_codes, success_codes);
+    }
+}
+
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void BestPractices::PostCallRecordSetBufferCollectionImageConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkImageConstraintsInfoFUCHSIA*        pImageConstraintsInfo,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordSetBufferCollectionImageConstraintsFUCHSIA(device, collection, pImageConstraintsInfo, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_FORMAT_NOT_SUPPORTED};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkSetBufferCollectionImageConstraintsFUCHSIA", result, error_codes, success_codes);
+    }
+}
+
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void BestPractices::PostCallRecordSetBufferCollectionBufferConstraintsFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    const VkBufferConstraintsInfoFUCHSIA*       pBufferConstraintsInfo,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordSetBufferCollectionBufferConstraintsFUCHSIA(device, collection, pBufferConstraintsInfo, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_INITIALIZATION_FAILED,VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_FORMAT_NOT_SUPPORTED};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkSetBufferCollectionBufferConstraintsFUCHSIA", result, error_codes, success_codes);
+    }
+}
+
+#endif // VK_USE_PLATFORM_FUCHSIA
+
+#ifdef VK_USE_PLATFORM_FUCHSIA
+
+void BestPractices::PostCallRecordGetBufferCollectionPropertiesFUCHSIA(
+    VkDevice                                    device,
+    VkBufferCollectionFUCHSIA                   collection,
+    VkBufferCollectionPropertiesFUCHSIA*        pProperties,
+    VkResult                                    result) {
+    ValidationStateTracker::PostCallRecordGetBufferCollectionPropertiesFUCHSIA(device, collection, pProperties, result);
+    if (result != VK_SUCCESS) {
+        static const std::vector<VkResult> error_codes = {VK_ERROR_OUT_OF_HOST_MEMORY,VK_ERROR_INITIALIZATION_FAILED};
+        static const std::vector<VkResult> success_codes = {};
+        ValidateReturnCodes("vkGetBufferCollectionPropertiesFUCHSIA", result, error_codes, success_codes);
     }
 }
 

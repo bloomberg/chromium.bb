@@ -17,6 +17,7 @@
 class BubbleOwnerDelegate {
  public:
   virtual bool IsBubbleShowing() const = 0;
+  virtual void RecordOnMousePressed() = 0;
 };
 
 // A class for an interface for chip view that is shown in the location bar to
@@ -27,7 +28,8 @@ class PermissionChip : public views::AccessiblePaneView,
  protected:
   // Holds all parameters needed for a chip initialization.
   struct DisplayParams {
-    const gfx::VectorIcon& icon;
+    const gfx::VectorIcon& icon_on;
+    const gfx::VectorIcon& icon_off;
     std::u16string message;
     bool should_start_open;
     bool is_prominent;
@@ -55,6 +57,7 @@ class PermissionChip : public views::AccessiblePaneView,
   // views::View:
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void AddedToWidget() override;
+  void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
@@ -63,6 +66,10 @@ class PermissionChip : public views::AccessiblePaneView,
   bool IsBubbleShowing() const override;
 
   views::Widget* GetPromptBubbleWidgetForTesting();
+
+  views::View* get_prompt_bubble_view_for_testing() {
+    return prompt_bubble_tracker_.view();
+  }
 
   bool should_start_open_for_testing() { return should_start_open_; }
   bool should_expand_for_testing() { return should_expand_; }
@@ -79,16 +86,23 @@ class PermissionChip : public views::AccessiblePaneView,
   views::Widget* GetPromptBubbleWidget();
 
   virtual void Collapse(bool allow_restart);
-  void ShowBlockedBadge();
+  void ShowBlockedIcon();
+
+  virtual void OnPromptBubbleDismissed();
+
+  virtual bool ShouldCloseBubbleOnLostFocus() const;
 
  private:
+  // BubbleOwnerDelegate:
+  void RecordOnMousePressed() override;
+
   void Show(bool always_open_bubble);
   void ExpandAnimationEnded();
   void ChipButtonPressed();
   void RestartTimersOnInteraction();
   void StartCollapseTimer();
   void StartDismissTimer();
-  void Dismiss();
+  void Finalize();
 
   void AnimateCollapse();
   void AnimateExpand();
@@ -110,6 +124,7 @@ class PermissionChip : public views::AccessiblePaneView,
 
   bool should_start_open_ = false;
   bool should_expand_ = true;
+  bool should_dismiss_ = false;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PERMISSION_CHIP_H_

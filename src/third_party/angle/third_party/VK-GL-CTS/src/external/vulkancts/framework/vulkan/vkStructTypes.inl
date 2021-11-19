@@ -3226,6 +3226,44 @@ struct VkResolveImageInfo2KHR
 	const VkImageResolve2KHR*	pRegions;
 };
 
+struct VkFormatPropertiesExtendedKHR
+{
+	VkStructureType				sType;
+	void*						pNext;
+	VkFormatFeatureFlags2KHR	linearTilingFeatures;
+	VkFormatFeatureFlags2KHR	optimalTilingFeatures;
+	VkFormatFeatureFlags2KHR	bufferFeatures;
+};
+
+struct VkPhysicalDeviceMaintenance4FeaturesKHR
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		maintenance4;
+};
+
+struct VkPhysicalDeviceMaintenance4PropertiesKHR
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkDeviceSize	maxBufferSize;
+};
+
+struct VkDeviceBufferMemoryRequirementsKHR
+{
+	VkStructureType				sType;
+	const void*					pNext;
+	const VkBufferCreateInfo*	pCreateInfo;
+};
+
+struct VkDeviceImageMemoryRequirementsKHR
+{
+	VkStructureType				sType;
+	const void*					pNext;
+	const VkImageCreateInfo*	pCreateInfo;
+	VkImageAspectFlagBits		planeAspect;
+};
+
 struct VkDebugReportCallbackCreateInfoEXT
 {
 	VkStructureType					sType;
@@ -5014,6 +5052,13 @@ struct VkDeviceDeviceMemoryReportCreateInfoEXT
 	void*								pUserData;
 };
 
+struct VkPhysicalDeviceRGBA10X6FormatsFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		formatRgba10x6WithoutYCbCrSampler;
+};
+
 struct VkPhysicalDeviceRobustness2FeaturesEXT
 {
 	VkStructureType	sType;
@@ -5428,6 +5473,22 @@ struct VkMultiDrawIndexedInfoEXT
 	uint32_t	firstIndex;
 	uint32_t	indexCount;
 	int32_t		vertexOffset;
+};
+
+struct VkPhysicalDeviceBorderColorSwizzleFeaturesEXT
+{
+	VkStructureType	sType;
+	void*			pNext;
+	VkBool32		borderColorSwizzle;
+	VkBool32		borderColorSwizzleFromImage;
+};
+
+struct VkSamplerBorderColorComponentMappingCreateInfoEXT
+{
+	VkStructureType		sType;
+	const void*			pNext;
+	VkComponentMapping	components;
+	VkBool32			srgb;
 };
 
 struct VkPhysicalDevicePageableDeviceLocalMemoryFeaturesEXT

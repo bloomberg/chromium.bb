@@ -8,6 +8,7 @@
 #include "quic/core/congestion_control/bbr2_sender.h"
 #include "quic/core/quic_bandwidth.h"
 #include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_flag_utils.h"
 #include "quic/platform/api/quic_flags.h"
 #include "quic/platform/api/quic_logging.h"
 
@@ -46,23 +47,30 @@ Bbr2Mode Bbr2StartupMode::OnCongestionEvent(
     const AckedPacketVector& /*acked_packets*/,
     const LostPacketVector& /*lost_packets*/,
     const Bbr2CongestionEvent& congestion_event) {
-  if (!model_->full_bandwidth_reached() && congestion_event.end_of_round_trip) {
-    // TCP BBR always exits upon excessive losses. QUIC BBRv1 does not exits
-    // upon excessive losses, if enough bandwidth growth is observed.
-    Bbr2NetworkModel::BandwidthGrowth bw_growth =
-        model_->CheckBandwidthGrowth(congestion_event);
-
-    if (Params().always_exit_startup_on_excess_loss ||
-        (bw_growth == Bbr2NetworkModel::NO_GROWTH ||
-         bw_growth == Bbr2NetworkModel::EXIT)) {
-      CheckExcessiveLosses(congestion_event);
-    }
+  if (model_->full_bandwidth_reached()) {
+    QUIC_BUG() << "In STARTUP, but full_bandwidth_reached is true.";
+    return Bbr2Mode::DRAIN;
+  }
+  if (!congestion_event.end_of_round_trip) {
+    return Bbr2Mode::STARTUP;
+  }
+  bool has_bandwidth_growth = model_->HasBandwidthGrowth(congestion_event);
+  if (Params().exit_startup_on_persistent_queue && !has_bandwidth_growth) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr2_exit_startup_on_persistent_queue2);
+    model_->CheckPersistentQueue(congestion_event, Params().startup_cwnd_gain);
+  }
+  // TCP BBR always exits upon excessive losses. QUIC BBRv1 does not exit
+  // upon excessive losses, if enough bandwidth growth is observed or if the
+  // sample was app limited.
+  if (Params().always_exit_startup_on_excess_loss ||
+      (!congestion_event.last_packet_send_state.is_app_limited &&
+       !has_bandwidth_growth)) {
+    CheckExcessiveLosses(congestion_event);
   }
 
   if (Params().decrease_startup_pacing_at_end_of_round) {
     QUICHE_DCHECK_GT(model_->pacing_gain(), 0);
-    if (congestion_event.end_of_round_trip &&
-        !congestion_event.last_sample_is_app_limited) {
+    if (!congestion_event.last_packet_send_state.is_app_limited) {
       // Multiply by startup_pacing_gain, so if the bandwidth doubles,
       // the pacing gain will be the full startup_pacing_gain.
       if (max_bw_at_round_beginning_ > QuicBandwidth::Zero()) {

@@ -21,7 +21,7 @@
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_graphstatedata.h"
-#include "third_party/base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/base/span.h"
 
 class CFX_DIBBase;
@@ -43,8 +43,7 @@ struct EncoderIface {
                          int pitch,
                          std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                          uint32_t* dest_size);
-  bool (*pFlateEncodeFunc)(const uint8_t* src_buf,
-                           uint32_t src_size,
+  bool (*pFlateEncodeFunc)(pdfium::span<const uint8_t> src_span,
                            std::unique_ptr<uint8_t, FxFreeDeleter>* dest_buf,
                            uint32_t* dest_size);
   bool (*pJpegEncodeFunc)(const RetainPtr<CFX_DIBBase>& pSource,
@@ -72,18 +71,16 @@ class CFX_PSRenderer {
             RenderingLevel level,
             int width,
             int height);
-  void StartRendering();
-  void EndRendering();
   void SaveState();
   void RestoreState(bool bKeepSaved);
-  void SetClip_PathFill(const CFX_Path* pPath,
+  void SetClip_PathFill(const CFX_Path& path,
                         const CFX_Matrix* pObject2Device,
                         const CFX_FillRenderOptions& fill_options);
-  void SetClip_PathStroke(const CFX_Path* pPath,
+  void SetClip_PathStroke(const CFX_Path& path,
                           const CFX_Matrix* pObject2Device,
                           const CFX_GraphStateData* pGraphState);
   FX_RECT GetClipBox() { return m_ClipBox; }
-  bool DrawPath(const CFX_Path* pPath,
+  bool DrawPath(const CFX_Path& path,
                 const CFX_Matrix* pObject2Device,
                 const CFX_GraphStateData* pGraphState,
                 uint32_t fill_color,
@@ -111,7 +108,7 @@ class CFX_PSRenderer {
                 float font_size,
                 uint32_t color);
 
-  static Optional<ByteString> GenerateType42SfntDataForTesting(
+  static absl::optional<ByteString> GenerateType42SfntDataForTesting(
       const ByteString& psname,
       pdfium::span<const uint8_t> font_data);
 
@@ -124,7 +121,9 @@ class CFX_PSRenderer {
  private:
   struct Glyph;
 
-  void OutputPath(const CFX_Path* pPath, const CFX_Matrix* pObject2Device);
+  void StartRendering();
+  void EndRendering();
+  void OutputPath(const CFX_Path& path, const CFX_Matrix* pObject2Device);
   void SetGraphState(const CFX_GraphStateData* pGraphState);
   void SetColor(uint32_t color);
   void FindPSFontGlyph(CFX_GlyphCache* pGlyphCache,
@@ -160,7 +159,7 @@ class CFX_PSRenderer {
   bool m_bInited = false;
   bool m_bGraphStateSet = false;
   bool m_bColorSet = false;
-  Optional<RenderingLevel> m_Level;
+  absl::optional<RenderingLevel> m_Level;
   uint32_t m_LastColor = 0;
   FX_RECT m_ClipBox;
   CFX_GraphStateData m_CurGraphState;

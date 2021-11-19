@@ -239,6 +239,7 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SPDY_SETTING);
     RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SPDY_FRAME);
     RETURN_STRING_LITERAL(QUIC_HTTP_RECEIVE_SERVER_PUSH);
+    RETURN_STRING_LITERAL(QUIC_HTTP_INVALID_SETTING_VALUE);
     RETURN_STRING_LITERAL(QUIC_HPACK_INDEX_VARINT_ERROR);
     RETURN_STRING_LITERAL(QUIC_HPACK_NAME_LENGTH_VARINT_ERROR);
     RETURN_STRING_LITERAL(QUIC_HPACK_VALUE_LENGTH_VARINT_ERROR);
@@ -274,8 +275,10 @@ const char* QuicErrorCodeToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_TLS_INTERNAL_ERROR);
     RETURN_STRING_LITERAL(QUIC_TLS_UNRECOGNIZED_NAME);
     RETURN_STRING_LITERAL(QUIC_TLS_CERTIFICATE_REQUIRED);
-
     RETURN_STRING_LITERAL(QUIC_INVALID_CHARACTER_IN_FIELD_VALUE);
+    RETURN_STRING_LITERAL(QUIC_TLS_UNEXPECTED_KEYING_MATERIAL_EXPORT_LABEL);
+    RETURN_STRING_LITERAL(QUIC_TLS_KEYING_MATERIAL_EXPORTS_MISMATCH);
+    RETURN_STRING_LITERAL(QUIC_TLS_KEYING_MATERIAL_EXPORT_NOT_AVAILABLE);
 
     RETURN_STRING_LITERAL(QUIC_LAST_ERROR);
     // Intentionally have no default case, so we'll break the build
@@ -694,6 +697,8 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
       return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::ID_ERROR)};
     case QUIC_HTTP_RECEIVE_SPDY_SETTING:
       return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
+    case QUIC_HTTP_INVALID_SETTING_VALUE:
+      return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::SETTINGS_ERROR)};
     case QUIC_HTTP_RECEIVE_SPDY_FRAME:
       return {false,
               static_cast<uint64_t>(QuicHttp3ErrorCode::FRAME_UNEXPECTED)};
@@ -776,6 +781,12 @@ QuicErrorCodeToIetfMapping QuicErrorCodeToTransportErrorCode(
       return {true, static_cast<uint64_t>(INTERNAL_ERROR)};
     case QUIC_INVALID_CHARACTER_IN_FIELD_VALUE:
       return {false, static_cast<uint64_t>(QuicHttp3ErrorCode::MESSAGE_ERROR)};
+    case QUIC_TLS_UNEXPECTED_KEYING_MATERIAL_EXPORT_LABEL:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
+    case QUIC_TLS_KEYING_MATERIAL_EXPORTS_MISMATCH:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
+    case QUIC_TLS_KEYING_MATERIAL_EXPORT_NOT_AVAILABLE:
+      return {true, static_cast<uint64_t>(PROTOCOL_VIOLATION)};
     case QUIC_LAST_ERROR:
       return {false, static_cast<uint64_t>(QUIC_LAST_ERROR)};
   }

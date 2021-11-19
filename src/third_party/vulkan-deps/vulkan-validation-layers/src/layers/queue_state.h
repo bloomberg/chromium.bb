@@ -29,6 +29,9 @@
 #include <vector>
 #include <deque>
 
+class CMD_BUFFER_STATE;
+class QUEUE_STATE;
+
 enum SyncScope {
     kSyncScopeInternal,
     kSyncScopeExternalTemporary,
@@ -37,75 +40,100 @@ enum SyncScope {
 
 enum FENCE_STATUS { FENCE_UNSIGNALED, FENCE_INFLIGHT, FENCE_RETIRED };
 
+struct QUEUE_SIGNALER {
+    QUEUE_STATE *queue{nullptr};
+    uint64_t seq{0};
+};
+
 class FENCE_STATE : public REFCOUNTED_NODE {
   public:
-    VkFenceCreateInfo createInfo;
-    std::pair<VkQueue, uint64_t> signaler;
+    const VkFenceCreateInfo createInfo;
+    QUEUE_SIGNALER signaler;
     FENCE_STATUS state;
-    SyncScope scope;
+    SyncScope scope{kSyncScopeInternal};
 
     // Default constructor
-    FENCE_STATE(VkFence f, const VkFenceCreateInfo* pCreateInfo)
+    FENCE_STATE(VkFence f, const VkFenceCreateInfo *pCreateInfo)
         : REFCOUNTED_NODE(f, kVulkanObjectTypeFence),
           createInfo(*pCreateInfo),
           state((pCreateInfo->flags & VK_FENCE_CREATE_SIGNALED_BIT) ? FENCE_RETIRED : FENCE_UNSIGNALED),
           scope(kSyncScopeInternal) {}
 
     VkFence fence() const { return handle_.Cast<VkFence>(); }
+
+    void Retire();
 };
 
 class SEMAPHORE_STATE : public REFCOUNTED_NODE {
   public:
-    std::pair<VkQueue, uint64_t> signaler;
-    bool signaled;
-    SyncScope scope;
-    VkSemaphoreType type;
+    QUEUE_SIGNALER signaler;
+    bool signaled{false};
+    SyncScope scope{kSyncScopeInternal};
+    const VkSemaphoreType type;
     uint64_t payload;
 
-    SEMAPHORE_STATE(VkSemaphore sem, const VkSemaphoreTypeCreateInfo* type_create_info)
+    SEMAPHORE_STATE(VkSemaphore sem, const VkSemaphoreTypeCreateInfo *type_create_info)
         : REFCOUNTED_NODE(sem, kVulkanObjectTypeSemaphore),
-          signaler(VK_NULL_HANDLE, 0),
-          signaled(false),
-          scope(kSyncScopeInternal),
           type(type_create_info ? type_create_info->semaphoreType : VK_SEMAPHORE_TYPE_BINARY),
           payload(type_create_info ? type_create_info->initialValue : 0) {}
 
     VkSemaphore semaphore() const { return handle_.Cast<VkSemaphore>(); }
+
+    void Retire(uint64_t next_seq);
 };
 
 struct SEMAPHORE_WAIT {
-    VkSemaphore semaphore;
-    VkSemaphoreType type;
-    VkQueue queue;
-    uint64_t payload;
-    uint64_t seq;
+    std::shared_ptr<SEMAPHORE_STATE> semaphore;
+    uint64_t payload{0};
+    uint64_t seq{0};
 };
 
 struct SEMAPHORE_SIGNAL {
-    VkSemaphore semaphore;
-    uint64_t payload;
-    uint64_t seq;
+    std::shared_ptr<SEMAPHORE_STATE> semaphore;
+    uint64_t payload{0};
+    uint64_t seq{0};
 };
 
 struct CB_SUBMISSION {
-    CB_SUBMISSION()
-        : cbs(), waitSemaphores(), signalSemaphores(), externalSemaphores(), fence(VK_NULL_HANDLE), perf_submit_pass(0) {}
+    std::vector<std::shared_ptr<CMD_BUFFER_STATE>> cbs;
+    std::vector<SEMAPHORE_WAIT> wait_semaphores;
+    std::vector<SEMAPHORE_SIGNAL> signal_semaphores;
+    std::shared_ptr<FENCE_STATE> fence;
+    uint32_t perf_submit_pass{0};
 
-    std::vector<VkCommandBuffer> cbs;
-    std::vector<SEMAPHORE_WAIT> waitSemaphores;
-    std::vector<SEMAPHORE_SIGNAL> signalSemaphores;
-    std::vector<VkSemaphore> externalSemaphores;
-    VkFence fence;
-    uint32_t perf_submit_pass;
+    void AddCommandBuffer(std::shared_ptr<CMD_BUFFER_STATE> &&cb_node) { cbs.emplace_back(std::move(cb_node)); }
+
+    void AddSignalSemaphore(std::shared_ptr<SEMAPHORE_STATE> &&semaphore_state, uint64_t value) {
+        SEMAPHORE_SIGNAL signal;
+        signal.semaphore = std::move(semaphore_state);
+        signal.payload = value;
+        signal.seq = 0;
+        signal_semaphores.emplace_back(std::move(signal));
+    }
+
+    void AddWaitSemaphore(std::shared_ptr<SEMAPHORE_STATE> &&semaphore_state, uint64_t value) {
+        SEMAPHORE_WAIT wait;
+        wait.semaphore = std::move(semaphore_state);
+        wait.payload = value;
+        wait_semaphores.emplace_back(std::move(wait));
+    }
+
+    void AddFence(std::shared_ptr<FENCE_STATE> &&fence_state) { fence = std::move(fence_state); }
 };
 
-class QUEUE_STATE {
+class QUEUE_STATE : public BASE_NODE {
   public:
-    VkQueue queue;
-    uint32_t queueFamilyIndex;
+    const uint32_t queueFamilyIndex;
 
     uint64_t seq;
     std::deque<CB_SUBMISSION> submissions;
 
-    QUEUE_STATE(VkQueue q, uint32_t index) : queue(q), queueFamilyIndex(index), seq(0) {}
+    QUEUE_STATE(VkQueue q, uint32_t index) : BASE_NODE(q, kVulkanObjectTypeQueue), queueFamilyIndex(index), seq(0) {}
+
+    VkQueue Queue() const { return handle_.Cast<VkQueue>(); }
+
+    uint64_t Submit(CB_SUBMISSION &&submission);
+
+    void Retire(uint64_t next_seq);
+    void Retire() { Retire(seq + submissions.size()); }
 };

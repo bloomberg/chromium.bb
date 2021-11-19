@@ -12,6 +12,7 @@
 #include "src/gpu/GrGpu.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsTypes.h"
+#include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/ops/FillRectOp.h"
 #include "src/gpu/ops/PathStencilCoverOp.h"
 
@@ -101,7 +102,7 @@ GrRenderTask::ExpectedOutcome AtlasRenderTask::onMakeClosed(GrRecordingContext* 
                     pathList->pathCount(),
                     GrPaint(),
                     GrAAType::kMSAA,
-                    GrTessellationPathFlags::kStencilOnly,
+                    FillPathFlags::kStencilOnly,
                     drawRect);
             this->addAtlasDrawOp(std::move(op), caps);
         }

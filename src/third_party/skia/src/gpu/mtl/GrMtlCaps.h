@@ -86,6 +86,11 @@ public:
                            ProgramDescOverrideFlags) const override;
     MTLPixelFormat getStencilPixelFormat(const GrProgramDesc& desc);
 
+    bool isMac() const { return fGPUFamily == GPUFamily::kMac; }
+    bool isApple() const { return fGPUFamily == GPUFamily::kApple; }
+
+    size_t getMinBufferAlignment() const { return this->isMac() ? 4 : 1; }
+
     // if true, MTLStoreActionStoreAndMultiplesampleResolve is available
     bool storeAndMultisampleResolveSupport() const { return fStoreAndMultisampleResolveSupport; }
 
@@ -165,9 +170,9 @@ private:
         int fColorTypeInfoCount = 0;
     };
 #ifdef SK_BUILD_FOR_IOS
-    static constexpr size_t kNumMtlFormats = 17;
+    inline static constexpr size_t kNumMtlFormats = 17;
 #else
-    static constexpr size_t kNumMtlFormats = 16;
+    inline static constexpr size_t kNumMtlFormats = 16;
 #endif
     static size_t GetFormatIndex(MTLPixelFormat);
     FormatInfo fFormatTable[kNumMtlFormats];
@@ -184,8 +189,6 @@ private:
         kMac,
         kApple,
     };
-    bool isMac() { return fGPUFamily == GPUFamily::kMac; }
-    bool isApple() { return fGPUFamily == GPUFamily::kApple; }
     bool getGPUFamily(id<MTLDevice> device, GPUFamily* gpuFamily, int* group);
     bool getGPUFamilyFromFeatureSet(id<MTLDevice> device, GrMtlCaps::GPUFamily* gpuFamily,
                                     int* group);

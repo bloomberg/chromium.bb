@@ -41,7 +41,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "components/arc/arc_service_manager.h"
+#include "components/arc/session/arc_service_manager.h"
 #include "components/arc/session/arc_session.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -416,7 +416,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
         std::make_unique<arc::ArcSessionRunner>(
             base::BindRepeating(&ArcSessionFactory)));
 
-    chromeos::NoteTakingHelper::Initialize();
+    ash::NoteTakingHelper::Initialize();
 
     InitExtensionSystem(profile());
 
@@ -455,7 +455,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     app_manager_ = nullptr;
     lock_screen_profile_creator_ = nullptr;
     extensions::ExtensionSystem::Get(profile())->Shutdown();
-    chromeos::NoteTakingHelper::Shutdown();
+    ash::NoteTakingHelper::Shutdown();
     arc_session_manager_.reset();
     session_manager_.reset();
     app_window_.reset();

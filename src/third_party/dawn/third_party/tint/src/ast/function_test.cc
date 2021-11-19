@@ -30,10 +30,10 @@ TEST_F(FunctionTest, Creation) {
   auto* var = params[0];
 
   auto* f = Func("func", params, ty.void_(), StatementList{}, DecorationList{});
-  EXPECT_EQ(f->symbol(), Symbols().Get("func"));
-  ASSERT_EQ(f->params().size(), 1u);
-  EXPECT_TRUE(f->return_type()->Is<ast::Void>());
-  EXPECT_EQ(f->params()[0], var);
+  EXPECT_EQ(f->symbol, Symbols().Get("func"));
+  ASSERT_EQ(f->params.size(), 1u);
+  EXPECT_TRUE(f->return_type->Is<ast::Void>());
+  EXPECT_EQ(f->params[0], var);
 }
 
 TEST_F(FunctionTest, Creation_WithSource) {
@@ -42,7 +42,7 @@ TEST_F(FunctionTest, Creation_WithSource) {
 
   auto* f = Func(Source{Source::Location{20, 2}}, "func", params, ty.void_(),
                  StatementList{}, DecorationList{});
-  auto src = f->source();
+  auto src = f->source;
   EXPECT_EQ(src.range.begin.line, 20u);
   EXPECT_EQ(src.range.begin.column, 2u);
 }
@@ -137,97 +137,6 @@ TEST_F(FunctionTest, Assert_NonConstParam) {
         b.Func("f", params, b.ty.void_(), StatementList{}, DecorationList{});
       },
       "internal compiler error");
-}
-
-TEST_F(FunctionTest, ToStr) {
-  auto* f = Func("func", VariableList{}, ty.void_(),
-                 StatementList{
-                     create<DiscardStatement>(),
-                 },
-                 DecorationList{});
-
-  EXPECT_EQ(str(f), R"(Function func -> __void
-()
-{
-  Discard{}
-}
-)");
-}
-
-TEST_F(FunctionTest, ToStr_WithDecoration) {
-  auto* f = Func("func", VariableList{}, ty.void_(),
-                 StatementList{
-                     create<DiscardStatement>(),
-                 },
-                 DecorationList{WorkgroupSize(2, 4, 6)});
-
-  EXPECT_EQ(str(f), R"(Function func -> __void
-WorkgroupDecoration{
-  ScalarConstructor[not set]{2}
-  ScalarConstructor[not set]{4}
-  ScalarConstructor[not set]{6}
-}
-()
-{
-  Discard{}
-}
-)");
-}
-
-TEST_F(FunctionTest, ToStr_WithParams) {
-  VariableList params;
-  params.push_back(Param("var", ty.i32()));
-
-  auto* f = Func("func", params, ty.void_(),
-                 StatementList{
-                     create<DiscardStatement>(),
-                 },
-                 DecorationList{});
-
-  EXPECT_EQ(str(f), R"(Function func -> __void
-(
-  VariableConst{
-    var
-    none
-    undefined
-    __i32
-  }
-)
-{
-  Discard{}
-}
-)");
-}
-
-TEST_F(FunctionTest, TypeName) {
-  auto* f = Func("func", VariableList{}, ty.void_(), StatementList{},
-                 DecorationList{});
-  EXPECT_EQ(f->type_name(), "__func__void");
-}
-
-TEST_F(FunctionTest, TypeName_WithParams) {
-  VariableList params;
-  params.push_back(Param("var1", ty.i32()));
-  params.push_back(Param("var2", ty.f32()));
-
-  auto* f = Func("func", params, ty.void_(), StatementList{}, DecorationList{});
-  EXPECT_EQ(f->type_name(), "__func__void__i32__f32");
-}
-
-TEST_F(FunctionTest, GetLastStatement) {
-  VariableList params;
-  auto* stmt = create<DiscardStatement>();
-  auto* f =
-      Func("func", params, ty.void_(), StatementList{stmt}, DecorationList{});
-
-  EXPECT_EQ(f->get_last_statement(), stmt);
-}
-
-TEST_F(FunctionTest, GetLastStatement_nullptr) {
-  VariableList params;
-  auto* f = Func("func", params, ty.void_(), StatementList{}, DecorationList{});
-
-  EXPECT_EQ(f->get_last_statement(), nullptr);
 }
 
 using FunctionListTest = TestHelper;

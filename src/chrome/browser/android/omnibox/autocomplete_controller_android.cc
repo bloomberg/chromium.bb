@@ -24,6 +24,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/android/autocomplete/tab_matcher_android.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -421,13 +422,11 @@ ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::
 }
 
 ScopedJavaLocalRef<jobject>
-AutocompleteControllerAndroid::FindMatchingTabWithUrl(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& j_gurl) {
-  TabAndroid* tab = provider_client_->GetTabOpenWithURL(
-      *url::GURLAndroid::ToNativeGURL(env, j_gurl), nullptr);
-
-  return tab ? tab->GetJavaObject() : nullptr;
+AutocompleteControllerAndroid::GetMatchingTabForSuggestion(JNIEnv* env,
+                                                           jint index) {
+  const AutocompleteMatch& match =
+      autocomplete_controller_->result().match_at(index);
+  return match.GetMatchingJavaTab().get(env);
 }
 
 void AutocompleteControllerAndroid::Shutdown() {

@@ -240,7 +240,7 @@ class MockWebContentsDelegate : public WebContentsDelegate {
           blink::ProtocolHandlerSecurityLevel::kStrict)
       : security_level_(security_level) {}
   MOCK_METHOD2(HandleContextMenu,
-               bool(RenderFrameHost*, const ContextMenuParams&));
+               bool(RenderFrameHost&, const ContextMenuParams&));
   MOCK_METHOD4(RegisterProtocolHandler,
                void(RenderFrameHost*, const std::string&, const GURL&, bool));
   MOCK_METHOD(void, NavigationStateChanged, (WebContents*, InvalidateTypes));
@@ -382,7 +382,6 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   params->transition = ui::PAGE_TRANSITION_TYPED;
   params->should_update_history = false;
   params->did_create_new_entry = true;
-  params->gesture = NavigationGestureUser;
   params->method = "GET";
   params->page_state = blink::PageState::CreateFromURL(params->url);
 
@@ -588,7 +587,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   TestRenderFrameHost* orig_rfh = main_test_rfh();
   int orig_rvh_delete_count = 0;
   orig_rfh->GetRenderViewHost()->set_delete_counter(&orig_rvh_delete_count);
-  SiteInstance* instance1 = contents()->GetSiteInstance();
+  SiteInstanceImpl* instance1 = contents()->GetSiteInstance();
 
   // Navigate to URL.  First URL should use first RenderViewHost.
   const GURL url("http://www.google.com");
@@ -620,7 +619,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
 
   // DidNavigate from the pending page.
   new_site_navigation->Commit();
-  SiteInstance* instance2 = contents()->GetSiteInstance();
+  SiteInstanceImpl* instance2 = contents()->GetSiteInstance();
 
   // Keep the number of active frames in pending_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
@@ -633,9 +632,9 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(url2, contents()->GetVisibleURL());
   EXPECT_NE(instance1, instance2);
   EXPECT_EQ(nullptr, contents()->GetSpeculativePrimaryMainFrame());
-  // We keep a proxy for the original RFH's SiteInstance.
+  // We keep a proxy for the original RFH's SiteInstanceGroup.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
-      instance1));
+      instance1->group()));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
@@ -657,7 +656,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
   // There should be a proxy for the pending RFH SiteInstance.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
-      instance2));
+      instance2->group()));
   EXPECT_EQ(pending_rvh_delete_count, 0);
 
   // Close contents and ensure RVHs are deleted.
@@ -987,7 +986,7 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   navigation->ReadyToCommit();
   TestRenderFrameHost* pending_rfh =
       contents()->GetSpeculativePrimaryMainFrame();
-  SiteInstance* instance = pending_rfh->GetSiteInstance();
+  SiteInstanceImpl* instance = pending_rfh->GetSiteInstance();
 
   // While it is still pending, simulate opening a new tab with the first tab
   // as its opener.  This will call CreateOpenerProxies on the opener to ensure
@@ -998,19 +997,21 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   contents()->GetRenderManager()->CreateOpenerProxies(instance, nullptr);
 
   // If swapped out is forbidden, a new proxy should be created for the opener
-  // in |instance|, and we should ensure that its routing ID is returned here.
-  // Otherwise, we should find the pending RFH and not create a new proxy.
+  // in the group |instance| belongs to, and we should ensure that its routing
+  // ID is returned here. Otherwise, we should find the pending RFH and not
+  // create a new proxy.
   auto opener_frame_token =
       popup->GetRenderManager()->GetOpenerFrameToken(instance);
   RenderFrameProxyHost* proxy =
-      contents()->GetRenderManager()->GetRenderFrameProxyHost(instance);
+      contents()->GetRenderManager()->GetRenderFrameProxyHost(
+          instance->group());
   EXPECT_TRUE(proxy);
   EXPECT_EQ(*opener_frame_token, proxy->GetFrameToken());
 
   // Ensure that committing the navigation removes the proxy.
   navigation->Commit();
-  EXPECT_FALSE(
-      contents()->GetRenderManager()->GetRenderFrameProxyHost(instance));
+  EXPECT_FALSE(contents()->GetRenderManager()->GetRenderFrameProxyHost(
+      instance->group()));
 }
 
 // Tests that WebContentsImpl uses the current URL, not the SiteInstance's site,
@@ -2115,6 +2116,10 @@ class ContentsZoomChangedDelegate : public WebContentsDelegate {
     last_zoom_in_(false) {
   }
 
+  ContentsZoomChangedDelegate(const ContentsZoomChangedDelegate&) = delete;
+  ContentsZoomChangedDelegate& operator=(const ContentsZoomChangedDelegate&) =
+      delete;
+
   int GetAndResetContentsZoomChangedCallCount() {
     int count = contents_zoom_changed_call_count_;
     contents_zoom_changed_call_count_ = 0;
@@ -2134,8 +2139,6 @@ class ContentsZoomChangedDelegate : public WebContentsDelegate {
  private:
   int contents_zoom_changed_call_count_;
   bool last_zoom_in_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentsZoomChangedDelegate);
 };
 
 // Tests that some mouseehweel events get turned into browser zoom requests.
@@ -2367,9 +2370,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
 class LoadingWebContentsObserver : public WebContentsObserver {
  public:
   explicit LoadingWebContentsObserver(WebContents* contents)
-      : WebContentsObserver(contents),
-        is_loading_(false),
-        did_receive_response_(false) {}
+      : WebContentsObserver(contents), is_loading_(false) {}
 
   LoadingWebContentsObserver(const LoadingWebContentsObserver&) = delete;
   LoadingWebContentsObserver& operator=(const LoadingWebContentsObserver&) =
@@ -2379,26 +2380,18 @@ class LoadingWebContentsObserver : public WebContentsObserver {
 
   // The assertions on these messages ensure that they are received in order.
   void DidStartLoading() override {
-    ASSERT_FALSE(did_receive_response_);
     ASSERT_FALSE(is_loading_);
     is_loading_ = true;
-  }
-  void DidReceiveResponse() override {
-    ASSERT_TRUE(is_loading_);
-    did_receive_response_ = true;
   }
   void DidStopLoading() override {
     ASSERT_TRUE(is_loading_);
     is_loading_ = false;
-    did_receive_response_ = false;
   }
 
   bool is_loading() const { return is_loading_; }
-  bool did_receive_response() const { return did_receive_response_; }
 
  private:
   bool is_loading_;
-  bool did_receive_response_;
 };
 
 // Subclass of WebContentsImplTest for cases that need out-of-process iframes.
@@ -2444,7 +2437,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // The Observer callback implementations contain assertions to ensure that the
   // events arrive in the correct order.
   EXPECT_TRUE(observer.is_loading());
-  EXPECT_TRUE(observer.did_receive_response());
 
   // Create a child frame to navigate multiple times.
   TestRenderFrameHost* subframe = orig_rfh->AppendChild("subframe");
@@ -2461,11 +2453,13 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // expected that the WebContents is still in loading state.
   EXPECT_TRUE(contents()->IsLoading());
   EXPECT_TRUE(observer.is_loading());
-  EXPECT_TRUE(observer.did_receive_response());
 
   // After navigation, the RenderFrameHost may change.
-  subframe = static_cast<TestRenderFrameHost*>(
-      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
+  subframe = static_cast<TestRenderFrameHost*>(contents()
+                                                   ->GetPrimaryFrameTree()
+                                                   .root()
+                                                   ->child_at(0)
+                                                   ->current_frame_host());
   // Navigate the frame again, this time using LoadURLWithParams. This causes
   // RenderFrameHost to call into WebContents::DidStartLoading, which starts
   // the spinner.
@@ -2494,14 +2488,12 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // hasn't sent the DidstopLoading message yet.
   EXPECT_TRUE(contents()->IsLoading());
   EXPECT_TRUE(observer.is_loading());
-  EXPECT_TRUE(observer.did_receive_response());
 
   // Send the DidStopLoading for the main frame and ensure it isn't loading
   // anymore.
   main_frame_navigation->StopLoading();
   EXPECT_FALSE(contents()->IsLoading());
   EXPECT_FALSE(observer.is_loading());
-  EXPECT_FALSE(observer.did_receive_response());
 }
 
 // Tests that WebContentsImpl::IsLoadingToDifferentDocument only reports main
@@ -2775,7 +2767,7 @@ TEST_F(WebContentsImplTest, StartingSandboxFlags) {
   params.starting_sandbox_flags = expected_flags;
   std::unique_ptr<WebContentsImpl> new_contents(
       WebContentsImpl::CreateWithOpener(params, nullptr));
-  FrameTreeNode* root = new_contents->GetFrameTree()->root();
+  FrameTreeNode* root = new_contents->GetPrimaryFrameTree().root();
   network::mojom::WebSandboxFlags pending_flags =
       root->pending_frame_policy().sandbox_flags;
   EXPECT_EQ(pending_flags, expected_flags);
@@ -2808,12 +2800,12 @@ TEST_F(WebContentsImplTest, HandleContextMenuDelegate) {
   MockWebContentsDelegate delegate;
   contents()->SetDelegate(&delegate);
 
-  TestRenderFrameHost* rfh = main_test_rfh();
-  EXPECT_CALL(delegate, HandleContextMenu(rfh, ::testing::_))
+  TestRenderFrameHost& main_rfh = *main_test_rfh();
+  EXPECT_CALL(delegate, HandleContextMenu(::testing::_, ::testing::_))
       .WillOnce(::testing::Return(true));
 
   ContextMenuParams params;
-  contents()->ShowContextMenu(rfh, mojo::NullAssociatedRemote(), params);
+  contents()->ShowContextMenu(main_rfh, mojo::NullAssociatedRemote(), params);
 
   contents()->SetDelegate(nullptr);
 }

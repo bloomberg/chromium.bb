@@ -1,8 +1,8 @@
 /*
  *
- * Copyright (c) 2016 The Khronos Group Inc.
- * Copyright (c) 2016 Valve Corporation
- * Copyright (c) 2016 LunarG, Inc.
+ * Copyright (c) 2016-2021 The Khronos Group Inc.
+ * Copyright (c) 2016-2021 Valve Corporation
+ * Copyright (c) 2016-2021 LunarG, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@
  * limitations under the License.
  *
  * Author: Mark Lobodzinski <mark@lunarg.com>
+ * Author: Charles Giessen <charles@lunarg.com>
  *
  */
 #pragma once
+
+#include <stdbool.h>
+#include <vulkan/vulkan.h>
 
 // Linked list node for tree of debug callbacks
 typedef struct VkDebugReportContent {

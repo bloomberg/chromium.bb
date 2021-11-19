@@ -58,7 +58,7 @@ GrD3DCaps::GrD3DCaps(const GrContextOptions& contextOptions, IDXGIAdapter1* adap
     // TODO: implement
     fDynamicStateArrayGeometryProcessorTextureSupport = false;
 
-    fShaderCaps.reset(new GrShaderCaps(contextOptions));
+    fShaderCaps = std::make_unique<GrShaderCaps>();
 
     this->init(contextOptions, adapter, device);
 }
@@ -245,6 +245,7 @@ void GrD3DCaps::initShaderCaps(int vendorID, const D3D12_FEATURE_DATA_D3D12_OPTI
     shaderCaps->fInverseHyperbolicSupport = false;
     shaderCaps->fVertexIDSupport = true;
     shaderCaps->fInfinitySupport = true;
+    shaderCaps->fNonconstantArrayIndexSupport = true;
     shaderCaps->fBitManipulationSupport = true;
 
     shaderCaps->fFloatIs32Bits = true;
@@ -894,7 +895,7 @@ GrCaps::SupportedWrite GrD3DCaps::supportedWritePixelsColorType(
     }
 
     // Any buffer data needs to be aligned to 512 bytes and that of a single texel.
-    size_t offsetAlignment = GrAlignTo(GrDxgiFormatBytesPerBlock(dxgiFormat),
+    size_t offsetAlignment = SkAlignTo(GrDxgiFormatBytesPerBlock(dxgiFormat),
                                        D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 
     const auto& info = this->getFormatInfo(dxgiFormat);

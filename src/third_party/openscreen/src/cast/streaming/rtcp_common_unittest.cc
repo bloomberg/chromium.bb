@@ -270,7 +270,6 @@ TEST(RtcpCommonTest, ComputesCumulativePacketLossForReportBlocks) {
 // (1/65536 sconds), and also that it saturates to to the valid range of values
 // (0 to 2^32 - 1 ticks).
 TEST(RtcpCommonTest, ComputesDelayForReportBlocks) {
-  RtcpReportBlock report;
   using Delay = RtcpReportBlock::Delay;
 
   const auto ComputeDelay = [](Clock::duration delay_in_wrong_timebase) {

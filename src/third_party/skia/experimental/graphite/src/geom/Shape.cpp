@@ -11,54 +11,50 @@
 #include "src/core/SkRRectPriv.h"
 #include "src/utils/SkPolyUtils.h"
 
-namespace skgpu::geom {
+namespace skgpu {
 
 Shape& Shape::operator=(const Shape& shape) {
     switch (shape.type()) {
-        case Type::kEmpty:
-            this->reset();
-            break;
-        case Type::kRect:
-            this->setRect(shape.rect());
-            break;
-        case Type::kRRect:
-            this->setRRect(shape.rrect());
-            break;
-        case Type::kPath:
-            this->setPath(shape.path());
-            break;
+        case Type::kEmpty: this->reset();                         break;
+        case Type::kLine:  this->setLine(shape.p0(), shape.p1()); break;
+        case Type::kRect:  this->setRect(shape.rect());           break;
+        case Type::kRRect: this->setRRect(shape.rrect());         break;
+        case Type::kPath:  this->setPath(shape.path());           break;
     }
 
     fInverted = shape.fInverted;
     return *this;
 }
 
-bool Shape::conservativeContains(const SkRect& rect) const {
+bool Shape::conservativeContains(const Rect& rect) const {
     switch (fType) {
-        case Type::kEmpty:   return false;
-        case Type::kRect:    return fRect.contains(rect);
-        case Type::kRRect:   return fRRect.contains(rect);
-        case Type::kPath:    return fPath.conservativelyContainsRect(rect);
+        case Type::kEmpty: return false;
+        case Type::kLine:  return false;
+        case Type::kRect:  return fRect.contains(rect);
+        case Type::kRRect: return fRRect.contains(rect.asSkRect());
+        case Type::kPath:  return fPath.conservativelyContainsRect(rect.asSkRect());
     }
     SkUNREACHABLE;
 }
 
-bool Shape::conservativeContains(const SkV2& point) const {
+bool Shape::conservativeContains(float2 point) const {
     switch (fType) {
-        case Type::kEmpty:   return false;
-        case Type::kRect:    return fRect.contains(point.x, point.y);
-        case Type::kRRect:   return SkRRectPriv::ContainsPoint(fRRect, {point.x, point.y});
-        case Type::kPath:    return fPath.contains(point.x, point.y);
+        case Type::kEmpty: return false;
+        case Type::kLine:  return false;
+        case Type::kRect:  return fRect.contains(Rect::Point(point));
+        case Type::kRRect: return SkRRectPriv::ContainsPoint(fRRect, {point.x(), point.y()});
+        case Type::kPath:  return fPath.contains(point.x(), point.y());
     }
     SkUNREACHABLE;
 }
 
 bool Shape::closed() const {
     switch (fType) {
-        case Type::kEmpty:   return true;
-        case Type::kRect:    return true;
-        case Type::kRRect:   return true;
-        case Type::kPath:    return SkPathPriv::IsClosedSingleContour(fPath);
+        case Type::kEmpty: return true;
+        case Type::kLine:  return false;
+        case Type::kRect:  return true;
+        case Type::kRRect: return true;
+        case Type::kPath:  return SkPathPriv::IsClosedSingleContour(fPath);
     }
     SkUNREACHABLE;
 }
@@ -73,15 +69,13 @@ bool Shape::convex(bool simpleFill) const {
     }
 }
 
-SkRect Shape::bounds() const {
-    // Bounds where left == bottom or top == right can indicate a line or point shape. We return
-    // inverted bounds for a truly empty shape.
-    static constexpr SkRect kInverted = SkRect::MakeLTRB(1, 1, -1, -1);
+Rect Shape::bounds() const {
     switch (fType) {
-        case Type::kEmpty:   return kInverted;
-        case Type::kRect:    return fRect.makeSorted();
-        case Type::kRRect:   return fRRect.getBounds();
-        case Type::kPath:    return fPath.getBounds();
+        case Type::kEmpty: return Rect(0, 0, 0, 0);
+        case Type::kLine:  return fRect.makeSorted(); // sorting corners computes bbox of segment
+        case Type::kRect:  return fRect; // assuming it's sorted
+        case Type::kRRect: return fRRect.getBounds();
+        case Type::kPath:  return fPath.getBounds();
     }
     SkUNREACHABLE;
 }
@@ -93,12 +87,14 @@ SkPath Shape::asPath() const {
 
     SkPathBuilder builder(this->fillType());
     switch (fType) {
-        case Type::kEmpty:   /* do nothing */                             break;
-        case Type::kRect:    builder.addRect(fRect);                      break;
-        case Type::kRRect:   builder.addRRect(fRRect);                    break;
-        case Type::kPath:    SkUNREACHABLE;
+        case Type::kEmpty: /* do nothing */                            break;
+        case Type::kLine:  builder.moveTo(fRect.left(), fRect.top())
+                                  .lineTo(fRect.right(), fRect.bot()); break;
+        case Type::kRect:  builder.addRect(fRect.asSkRect());          break;
+        case Type::kRRect: builder.addRRect(fRRect);                   break;
+        case Type::kPath:  SkUNREACHABLE;
     }
     return builder.detach();
 }
 
-} // namespace skgpu::geom
+} // namespace skgpu

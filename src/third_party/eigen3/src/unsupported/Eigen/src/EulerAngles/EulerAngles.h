@@ -10,6 +10,8 @@
 #ifndef EIGEN_EULERANGLESCLASS_H// TODO: Fix previous "EIGEN_EULERANGLES_H" definition?
 #define EIGEN_EULERANGLESCLASS_H
 
+#include "./InternalHeaderCheck.h"
+
 namespace Eigen
 {
   /** \class EulerAngles

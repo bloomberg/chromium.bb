@@ -138,6 +138,8 @@ set(TINT_LIB_SRCS
   ast/node.h
   ast/override_decoration.cc
   ast/override_decoration.h
+  ast/phony_expression.cc
+  ast/phony_expression.h
   ast/pipeline_stage.cc
   ast/pipeline_stage.h
   ast/pointer.cc
@@ -178,6 +180,7 @@ set(TINT_LIB_SRCS
   ast/switch_statement.h
   ast/texture.cc
   ast/texture.h
+  ast/traverse_expressions.h
   ast/type_constructor_expression.cc
   ast/type_constructor_expression.h
   ast/type_name.cc
@@ -326,6 +329,8 @@ set(TINT_LIB_SRCS
   transform/pad_array_elements.h
   transform/promote_initializers_to_const_var.cc
   transform/promote_initializers_to_const_var.h
+  transform/remove_phonies.cc
+  transform/remove_phonies.h
   transform/renamer.cc
   transform/renamer.h
   transform/robustness.cc
@@ -336,6 +341,8 @@ set(TINT_LIB_SRCS
   transform/single_entry_point.h
   transform/transform.cc
   transform/transform.h
+  transform/vectorize_scalar_matrix_constructors.cc
+  transform/vectorize_scalar_matrix_constructors.h
   transform/vertex_pulling.cc
   transform/vertex_pulling.h
   transform/wrap_arrays_in_structs.cc
@@ -391,6 +398,7 @@ set(TINT_LIB_SRCS
   utils/hash.h
   utils/math.h
   utils/scoped_assignment.h
+  utils/string.h
   utils/unique_vector.h
   writer/append_vector.cc
   writer/append_vector.h
@@ -618,6 +626,7 @@ if(${TINT_BUILD_TESTS})
     ast/module_test.cc
     ast/multisampled_texture_test.cc
     ast/override_decoration_test.cc
+    ast/phony_expression_test.cc
     ast/pointer_test.cc
     ast/return_statement_test.cc
     ast/sampled_texture_test.cc
@@ -635,6 +644,7 @@ if(${TINT_BUILD_TESTS})
     ast/switch_statement_test.cc
     ast/test_helper.h
     ast/texture_test.cc
+    ast/traverse_expressions_test.cc
     ast/type_constructor_expression_test.cc
     ast/u32_test.cc
     ast/uint_literal_test.cc
@@ -722,6 +732,7 @@ if(${TINT_BUILD_TESTS})
     utils/math_test.cc
     utils/reverse_test.cc
     utils/scoped_assignment_test.cc
+    utils/string_test.cc
     utils/unique_vector_test.cc
     writer/append_vector_test.cc
     writer/float_to_string_test.cc
@@ -739,7 +750,7 @@ if(${TINT_BUILD_TESTS})
     )
   endif()
 
-  if(${TINT_BUILD_SPV_READER})
+  if(${TINT_BUILD_SPV_READER} AND ${TINT_BUILD_WGSL_WRITER})
     list(APPEND TINT_TEST_SRCS
       reader/spirv/enum_converter_test.cc
       reader/spirv/fail_stream_test.cc
@@ -948,11 +959,13 @@ if(${TINT_BUILD_TESTS})
       transform/num_workgroups_from_uniform_test.cc
       transform/pad_array_elements_test.cc
       transform/promote_initializers_to_const_var_test.cc
+      transform/remove_phonies_test.cc
       transform/renamer_test.cc
       transform/robustness_test.cc
       transform/simplify_test.cc
       transform/single_entry_point_test.cc
       transform/test_helper.h
+      transform/vectorize_scalar_matrix_constructors.cc
       transform/vertex_pulling_test.cc
       transform/wrap_arrays_in_structs_test.cc
       transform/zero_init_workgroup_memory_test.cc
