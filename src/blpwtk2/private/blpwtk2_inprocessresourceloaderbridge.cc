@@ -632,6 +632,11 @@ class NavigationBodyLoader : public blink::WebNavigationBodyLoader {
     {
     }
 
+    ~NavigationBodyLoader() override
+    {
+        d_context->OnBridgeDeleted();
+    }
+
     void SetDefersLoading(blink::WebURLLoader::DeferType defers) override {}
 
     void StartLoadingBody(blink::WebNavigationBodyLoader::Client* client,
