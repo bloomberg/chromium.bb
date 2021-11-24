@@ -335,8 +335,8 @@ class InProcessResourceContext
     void failed() override;
     void finish() override;
 
-    // notified by its owner InProcessResourceLoaderBridge
-    void OnBridgeDeleted();
+    // notified when the peer should no longer be used
+    void OnPeerInvalid();
 };
 
                     // ------------------------------
@@ -611,7 +611,7 @@ void InProcessResourceContext::ensureResponseHeadersSent(const char* buffer,
     d_peer->OnReceivedResponse(std::move(responseInfo));
 }
 
-void InProcessResourceContext::OnBridgeDeleted()
+void InProcessResourceContext::OnPeerInvalid()
 {
     d_peer.reset();
 }
@@ -634,7 +634,7 @@ class NavigationBodyLoader : public blink::WebNavigationBodyLoader {
 
     ~NavigationBodyLoader() override
     {
-        d_context->OnBridgeDeleted();
+        d_context->OnPeerInvalid();
     }
 
     void SetDefersLoading(blink::WebURLLoader::DeferType defers) override {}
