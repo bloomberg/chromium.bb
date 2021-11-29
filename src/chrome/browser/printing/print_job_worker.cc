@@ -188,14 +188,12 @@ void PrintJobWorker::GetSettings(bool ask_user_for_settings,
 
 void PrintJobWorker::SetSettings(base::Value new_settings,
                                  SettingsCallback callback) {
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&PrintJobWorker::UpdatePrintSettings,
                                 base::Unretained(this), std::move(new_settings),
                                 std::move(callback)));
-#endif
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -210,7 +208,6 @@ void PrintJobWorker::SetSettingsFromPOD(
                                 std::move(callback)));
 }
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
                                          SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -255,7 +252,6 @@ void PrintJobWorker::UpdatePrintSettings(base::Value new_settings,
   }
   GetSettingsDone(std::move(callback), result);
 }
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void PrintJobWorker::UpdatePrintSettingsFromPOD(
