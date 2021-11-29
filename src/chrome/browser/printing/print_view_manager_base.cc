@@ -706,6 +706,11 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie) {
 
   PrintManager::PrintingFailed(cookie);
 
+// #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+//  we don't want to show the error dialog in blpwtk2.
+//  ShowPrintErrorDialog();
+// #endif
+
   ReleasePrinterQuery();
 
   content::NotificationService::current()->Notify(
