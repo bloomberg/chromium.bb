@@ -706,10 +706,6 @@ void PrintViewManagerBase::PrintingFailed(int32_t cookie) {
 
   PrintManager::PrintingFailed(cookie);
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  ShowPrintErrorDialog();
-#endif
-
   ReleasePrinterQuery();
 
   content::NotificationService::current()->Notify(
