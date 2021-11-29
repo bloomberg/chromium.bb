@@ -149,10 +149,8 @@ class PrintJobWorker {
                          bool is_scripted,
                          SettingsCallback callback);
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Called on the UI thread to update the print settings.
   void UpdatePrintSettings(base::Value new_settings, SettingsCallback callback);
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Called on the UI thread to update the print settings.
