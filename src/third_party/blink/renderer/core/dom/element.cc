@@ -1638,7 +1638,7 @@ void Element::setScrollLeft(double new_left) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
 
-    // blpwtk2: rount x
+    // blpwtk2: round x
     end_offset.SetWidth(std::roundf(end_offset.Width()));
 
     scrollable_area->SetScrollOffset(end_offset,
@@ -1695,7 +1695,7 @@ void Element::setScrollTop(double new_top) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
 
-    // blpwtk2: rount y
+    // blpwtk2: round y
     end_offset.SetHeight(std::roundf(end_offset.Height()));
 
     scrollable_area->SetScrollOffset(end_offset,
