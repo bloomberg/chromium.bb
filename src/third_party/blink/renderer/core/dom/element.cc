@@ -1637,6 +1637,10 @@ void Element::setScrollLeft(double new_left) {
     if (snap_point.has_value()) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
+
+    // blpwtk2: rount x
+    end_offset.SetWidth(std::roundf(end_offset.Width()));
+
     scrollable_area->SetScrollOffset(end_offset,
                                      mojom::blink::ScrollType::kProgrammatic,
                                      mojom::blink::ScrollBehavior::kAuto);
