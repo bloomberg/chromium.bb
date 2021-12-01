@@ -1632,6 +1632,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
 }
 
 TEST_P(EndToEndTest, AddressToken) {
+  client_extra_copts_.push_back(kTRTT);
   ASSERT_TRUE(Initialize());
   if (!version_.HasIetfQuicFrames()) {
     return;
@@ -1659,13 +1660,41 @@ TEST_P(EndToEndTest, AddressToken) {
   EXPECT_TRUE(client_->client()->EarlyDataAccepted());
 
   server_thread_->Pause();
+  QuicSpdySession* server_session = GetServerSession();
   QuicConnection* server_connection = GetServerConnection();
-  if (server_connection != nullptr) {
+  if (server_session != nullptr && server_connection != nullptr) {
     // Verify address is validated via validating token received in INITIAL
     // packet.
     EXPECT_FALSE(
         server_connection->GetStats().address_validated_via_decrypting_packet);
     EXPECT_TRUE(server_connection->GetStats().address_validated_via_token);
+
+    // Verify the server received a cached min_rtt from the token and used it as
+    // the initial rtt.
+    const CachedNetworkParameters* server_received_network_params =
+        static_cast<const QuicCryptoServerStreamBase*>(
+            server_session->GetCryptoStream())
+            ->PreviousCachedNetworkParams();
+    if (GetQuicReloadableFlag(
+            quic_add_cached_network_parameters_to_address_token)) {
+      ASSERT_NE(server_received_network_params, nullptr);
+      // QuicSentPacketManager::SetInitialRtt clamps the initial_rtt to between
+      // [min_initial_rtt, max_initial_rtt].
+      const QuicTime::Delta min_initial_rtt =
+          QuicTime::Delta::FromMicroseconds(kMinInitialRoundTripTimeUs);
+      const QuicTime::Delta max_initial_rtt =
+          QuicTime::Delta::FromMicroseconds(kMaxInitialRoundTripTimeUs);
+      const QuicTime::Delta expected_initial_rtt =
+          std::max(min_initial_rtt,
+                   std::min(max_initial_rtt,
+                            QuicTime::Delta::FromMilliseconds(
+                                server_received_network_params->min_rtt_ms())));
+      EXPECT_EQ(
+          server_connection->sent_packet_manager().GetRttStats()->initial_rtt(),
+          expected_initial_rtt);
+    } else {
+      EXPECT_EQ(server_received_network_params, nullptr);
+    }
   } else {
     ADD_FAILURE() << "Missing server connection";
   }
@@ -1673,6 +1702,91 @@ TEST_P(EndToEndTest, AddressToken) {
   server_thread_->Resume();
 
   client_->Disconnect();
+}
+
+TEST_P(EndToEndTest, AddressTokenRefreshedByServer) {
+  SetQuicReloadableFlag(quic_add_cached_network_parameters_to_address_token,
+                        true);
+  ASSERT_TRUE(Initialize());
+  if (!version_.HasIetfQuicFrames()) {
+    return;
+  }
+
+  QuicCryptoClientConfig* client_crypto_config =
+      client_->client()->crypto_config();
+  QuicServerId server_id = client_->client()->server_id();
+
+  SendSynchronousFooRequestAndCheckResponse();
+  EXPECT_FALSE(GetClientSession()->EarlyDataAccepted());
+
+  client_->Disconnect();
+
+  std::string old_address_token =
+      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  ASSERT_TRUE(!old_address_token.empty());
+
+  SetQuicReloadableFlag(quic_add_cached_network_parameters_to_address_token,
+                        false);
+
+  // The 0-RTT handshake should succeed.
+  client_->Connect();
+  EXPECT_TRUE(client_->client()->WaitForOneRttKeysAvailable());
+  ASSERT_TRUE(client_->client()->connected());
+  SendSynchronousFooRequestAndCheckResponse();
+
+  EXPECT_TRUE(GetClientSession()->EarlyDataAccepted());
+
+  server_thread_->Pause();
+  QuicSpdySession* server_session = GetServerSession();
+  QuicConnection* server_connection = GetServerConnection();
+  ASSERT_TRUE(server_session != nullptr && server_connection != nullptr);
+  // Verify address is validated via validating token received in INITIAL
+  // packet.
+  EXPECT_FALSE(
+      server_connection->GetStats().address_validated_via_decrypting_packet);
+  EXPECT_TRUE(server_connection->GetStats().address_validated_via_token);
+
+  server_thread_->Resume();
+
+  client_->Disconnect();
+
+  std::string new_address_token =
+      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  ASSERT_TRUE(!new_address_token.empty());
+  ASSERT_NE(new_address_token, old_address_token);
+}
+
+// Verify that client does not reuse a source address token.
+TEST_P(EndToEndTest, AddressTokenNotReusedByClient) {
+  ASSERT_TRUE(Initialize());
+  if (!version_.HasIetfQuicFrames()) {
+    return;
+  }
+
+  QuicCryptoClientConfig* client_crypto_config =
+      client_->client()->crypto_config();
+  QuicServerId server_id = client_->client()->server_id();
+
+  SendSynchronousFooRequestAndCheckResponse();
+  EXPECT_FALSE(GetClientSession()->EarlyDataAccepted());
+
+  client_->Disconnect();
+
+  std::string old_address_token =
+      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  ASSERT_TRUE(!old_address_token.empty());
+
+  // Pause the server thread again to blackhole packets from client.
+  server_thread_->Pause();
+  client_->Connect();
+  EXPECT_FALSE(client_->client()->WaitForOneRttKeysAvailable());
+  EXPECT_FALSE(client_->client()->connected());
+
+  std::string new_address_token =
+      client_crypto_config->LookupOrCreate(server_id)->source_address_token();
+  // TODO(b/206087883): This currently fails, fix the client and uncomment it.
+  // ASSERT_TRUE(new_address_token.empty());
+  server_thread_->Resume();
 }
 
 TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
@@ -3933,6 +4047,112 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   SendSynchronousFooRequestAndCheckResponse();
 
   client_connection->set_debug_visitor(nullptr);
+}
+
+// DowngradePacketWriter is a client writer which will intercept all the client
+// writes for |target_version| and reply to them with version negotiation
+// packets to attempt a version downgrade attack. Once the client has downgraded
+// to a different version, the writer stops intercepting. |server_thread| must
+// start off paused, and will be resumed once interception is done.
+class DowngradePacketWriter : public PacketDroppingTestWriter {
+ public:
+  explicit DowngradePacketWriter(
+      const ParsedQuicVersion& target_version,
+      const ParsedQuicVersionVector& supported_versions, QuicTestClient* client,
+      QuicPacketWriter* server_writer, ServerThread* server_thread)
+      : target_version_(target_version),
+        supported_versions_(supported_versions),
+        client_(client),
+        server_writer_(server_writer),
+        server_thread_(server_thread) {}
+  ~DowngradePacketWriter() override {}
+
+  WriteResult WritePacket(const char* buffer, size_t buf_len,
+                          const QuicIpAddress& self_address,
+                          const QuicSocketAddress& peer_address,
+                          quic::PerPacketOptions* options) override {
+    if (!intercept_enabled_) {
+      return PacketDroppingTestWriter::WritePacket(
+          buffer, buf_len, self_address, peer_address, options);
+    }
+    PacketHeaderFormat format;
+    QuicLongHeaderType long_packet_type;
+    bool version_present, has_length_prefix;
+    QuicVersionLabel version_label;
+    ParsedQuicVersion parsed_version = ParsedQuicVersion::Unsupported();
+    QuicConnectionId destination_connection_id, source_connection_id;
+    absl::optional<absl::string_view> retry_token;
+    std::string detailed_error;
+    if (QuicFramer::ParsePublicHeaderDispatcher(
+            QuicEncryptedPacket(buffer, buf_len),
+            kQuicDefaultConnectionIdLength, &format, &long_packet_type,
+            &version_present, &has_length_prefix, &version_label,
+            &parsed_version, &destination_connection_id, &source_connection_id,
+            &retry_token, &detailed_error) != QUIC_NO_ERROR) {
+      ADD_FAILURE() << "Failed to parse our own packet: " << detailed_error;
+      return WriteResult(WRITE_STATUS_ERROR, 0);
+    }
+    if (!version_present || parsed_version != target_version_) {
+      // Client is sending with another version, the attack has succeeded so we
+      // can stop intercepting.
+      intercept_enabled_ = false;
+      server_thread_->Resume();
+      // Pass the client-sent packet through.
+      return WritePacket(buffer, buf_len, self_address, peer_address, options);
+    }
+    // Send a version negotiation packet.
+    std::unique_ptr<QuicEncryptedPacket> packet(
+        QuicFramer::BuildVersionNegotiationPacket(
+            destination_connection_id, source_connection_id,
+            parsed_version.HasIetfInvariantHeader(), has_length_prefix,
+            supported_versions_));
+    server_writer_->WritePacket(
+        packet->data(), packet->length(), peer_address.host(),
+        client_->client()->network_helper()->GetLatestClientAddress(), nullptr);
+    // Drop the client-sent packet but pretend it was sent.
+    return WriteResult(WRITE_STATUS_OK, buf_len);
+  }
+
+ private:
+  bool intercept_enabled_ = true;
+  ParsedQuicVersion target_version_;
+  ParsedQuicVersionVector supported_versions_;
+  QuicTestClient* client_;           // Unowned.
+  QuicPacketWriter* server_writer_;  // Unowned.
+  ServerThread* server_thread_;      // Unowned.
+};
+
+TEST_P(EndToEndTest, VersionNegotiationDowngradeAttackIsDetected) {
+  ParsedQuicVersion target_version = server_supported_versions_.back();
+  if (!version_.UsesTls() || target_version == version_) {
+    ASSERT_TRUE(Initialize());
+    return;
+  }
+  SetQuicReloadableFlag(quic_version_information, true);
+  connect_to_server_on_initialize_ = false;
+  client_supported_versions_.insert(client_supported_versions_.begin(),
+                                    target_version);
+  ParsedQuicVersionVector downgrade_versions{version_};
+  ASSERT_TRUE(Initialize());
+  ASSERT_TRUE(server_thread_);
+  // Pause the server thread to allow our DowngradePacketWriter to write version
+  // negotiation packets in a thread-safe manner. It will be resumed by the
+  // DowngradePacketWriter.
+  server_thread_->Pause();
+  client_.reset(new QuicTestClient(server_address_, server_hostname_,
+                                   client_config_, client_supported_versions_,
+                                   crypto_test_utils::ProofVerifierForTesting(),
+                                   std::make_unique<SimpleSessionCache>()));
+  delete client_writer_;
+  client_writer_ = new DowngradePacketWriter(target_version, downgrade_versions,
+                                             client_.get(), server_writer_,
+                                             server_thread_.get());
+  client_->UseWriter(client_writer_);
+  // Have the client attempt to send a request.
+  client_->Connect();
+  EXPECT_TRUE(client_->SendSynchronousRequest("/foo").empty());
+  // Make sure the downgrade is detected and the handshake fails.
+  EXPECT_THAT(client_->connection_error(), IsError(QUIC_HANDSHAKE_FAILED));
 }
 
 // A bad header shouldn't tear down the connection, because the receiver can't
@@ -6577,7 +6797,8 @@ TEST_P(EndToEndTest, WebTransportSession404) {
 }
 
 TEST_P(EndToEndTest, InvalidExtendedConnect) {
-  SetQuicReloadableFlag(quic_verify_request_headers, true);
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
   ASSERT_TRUE(Initialize());
 
   if (!version_.UsesHttp3()) {
@@ -6597,7 +6818,8 @@ TEST_P(EndToEndTest, InvalidExtendedConnect) {
 }
 
 TEST_P(EndToEndTest, RejectExtendedConnect) {
-  SetQuicReloadableFlag(quic_verify_request_headers, true);
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
   // Disable extended CONNECT.
   memory_cache_backend_.set_enable_extended_connect(false);
   ASSERT_TRUE(Initialize());
@@ -6626,6 +6848,79 @@ TEST_P(EndToEndTest, RejectExtendedConnect) {
   client_->WaitForResponse();
   // No :path header, so 404.
   CheckResponseHeaders("404");
+}
+
+TEST_P(EndToEndTest, RejectInvalidRequestHeader) {
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
+  ASSERT_TRUE(Initialize());
+
+  spdy::SpdyHeaderBlock headers;
+  headers[":scheme"] = "https";
+  headers[":authority"] = "localhost";
+  headers[":method"] = "GET";
+  headers[":path"] = "/echo";
+  // transfer-encoding header is not allowed.
+  headers["transfer-encoding"] = "chunk";
+
+  client_->SendMessage(headers, "", /*fin=*/false);
+  client_->WaitForResponse();
+  CheckResponseHeaders("400");
+}
+
+TEST_P(EndToEndTest, RejectTransferEncodingResponse) {
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
+  ASSERT_TRUE(Initialize());
+
+  // Add a response with transfer-encoding headers.
+  SpdyHeaderBlock headers;
+  headers[":status"] = "200";
+  headers["transfer-encoding"] = "gzip";
+
+  SpdyHeaderBlock trailers;
+  trailers["some-trailing-header"] = "trailing-header-value";
+
+  memory_cache_backend_.AddResponse(server_hostname_, "/eep",
+                                    std::move(headers), "", trailers.Clone());
+
+  std::string received_response = client_->SendSynchronousRequest("/eep");
+  EXPECT_THAT(client_->stream_error(),
+              IsStreamError(QUIC_BAD_APPLICATION_PAYLOAD));
+}
+
+TEST_P(EndToEndTest, RejectUpperCaseRequest) {
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
+  ASSERT_TRUE(Initialize());
+
+  spdy::SpdyHeaderBlock headers;
+  headers[":scheme"] = "https";
+  headers[":authority"] = "localhost";
+  headers[":method"] = "GET";
+  headers[":path"] = "/echo";
+  headers["UpperCaseHeader"] = "foo";
+
+  client_->SendMessage(headers, "", /*fin=*/false);
+  client_->WaitForResponse();
+  CheckResponseHeaders("400");
+}
+
+TEST_P(EndToEndTest, RejectRequestWithInvalidToken) {
+  SetQuicReloadableFlag(quic_verify_request_headers_2, true);
+  SetQuicReloadableFlag(quic_act_upon_invalid_header, true);
+  ASSERT_TRUE(Initialize());
+
+  spdy::SpdyHeaderBlock headers;
+  headers[":scheme"] = "https";
+  headers[":authority"] = "localhost";
+  headers[":method"] = "GET";
+  headers[":path"] = "/echo";
+  headers["invalid,header"] = "foo";
+
+  client_->SendMessage(headers, "", /*fin=*/false);
+  client_->WaitForResponse();
+  CheckResponseHeaders("400");
 }
 
 }  // namespace

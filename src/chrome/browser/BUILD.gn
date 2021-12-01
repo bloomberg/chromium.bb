@@ -3230,8 +3230,8 @@ static_library("browser") {
       "password_manager/android/password_ui_view_android.h",
       "password_manager/android/save_password_infobar_delegate_android.cc",
       "password_manager/android/save_password_infobar_delegate_android.h",
-      "password_manager/android/save_password_message_delegate.cc",
-      "password_manager/android/save_password_message_delegate.h",
+      "password_manager/android/save_update_password_message_delegate.cc",
+      "password_manager/android/save_update_password_message_delegate.h",
       "password_manager/android/update_password_infobar_delegate_android.cc",
       "password_manager/android/update_password_infobar_delegate_android.h",
       "password_manager/password_scripts_fetcher_factory.cc",
@@ -7541,12 +7541,9 @@ static_library("test_support") {
       "sessions/tab_restore_service_load_waiter.h",
       "speech/fake_speech_recognition_service.cc",
       "speech/fake_speech_recognition_service.h",
-      "speech/speech_recognition_test_helper.cc",
-      "speech/speech_recognition_test_helper.h",
       "ui/tabs/tab_activity_simulator.cc",
       "ui/tabs/tab_activity_simulator.h",
     ]
-    deps += [ "//components/soda" ]
   }
 
   if (is_chromeos_ash) {

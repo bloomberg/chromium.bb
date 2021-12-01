@@ -1425,7 +1425,16 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
   // Need to force requirements update, due to change of stacking order.
   SetNeedsCompositingRequirementsUpdate();
 
+  // TODO(wangxianzhu): Change this to the same pattern as cull rect update
+  // when removing pre-CAP code.
   child->SetNeedsRepaint();
+
+  if (RuntimeEnabledFeatures::CullRectUpdateEnabled()) {
+    if (child->NeedsCullRectUpdate())
+      MarkCompositingContainerChainForNeedsCullRectUpdate();
+    else
+      child->SetNeedsCullRectUpdate();
+  }
 }
 
 void PaintLayer::RemoveChild(PaintLayer* old_child) {
@@ -3890,12 +3899,15 @@ void PaintLayer::MarkCompositingContainerChainForNeedsCullRectUpdate() {
       container = owner->EnclosingLayer();
     }
 
-    DCHECK(!container->GetLayoutObject().ChildPrePaintBlockedByDisplayLock());
-
     if (container->descendant_needs_cull_rect_update_)
       break;
 
     container->descendant_needs_cull_rect_update_ = true;
+
+    // Only propagate the dirty bit up to the display locked ancestor.
+    if (container->GetLayoutObject().ChildPrePaintBlockedByDisplayLock())
+      break;
+
     layer = container;
   }
 }

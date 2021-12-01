@@ -462,7 +462,6 @@
 <translation id="3775705724665058594">ផ្ញើ​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
 <translation id="3778956594442850293">បាន​បញ្ចូលទៅ​អេក្រង់ដើម</translation>
 <translation id="3791957072666773229">{TAB_COUNT,plural, =1{ផ្ទាំង 1}other{ផ្ទាំង #}}</translation>
-<translation id="3803783897442799486">ប្រសិនបើបន្ត នោះមានន័យថា​អ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់<ph name="END_LINK1" />។\nChrome ផ្ញើទិន្នន័យអំពីការគាំង និងការប្រើប្រាស់ទៅ Google ដើម្បីជួយកែលម្អកម្មវិធី។ <ph name="BEGIN_LINK2" />គ្រប់គ្រង<ph name="END_LINK2" /></translation>
 <translation id="3803784507854318295">គ្រប់គ្រងការចាក់ស្វ័យប្រវត្តិ</translation>
 <translation id="3810838688059735925">វីដេអូ</translation>
 <translation id="3810973564298564668">គ្រប់គ្រង</translation>
@@ -605,6 +604,7 @@
 <translation id="4696983787092045100">ផ្ញើសារ​ជាអក្សរ​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
 <translation id="4699172675775169585">រូបភាព និងឯកសារដែលផ្ទុកក្នុងឃ្លាំងសម្ងាត់</translation>
 <translation id="4714588616299687897">សន្សំសំចៃទិន្នន័យរបស់អ្នកបានរហូតដល់ 60%</translation>
+<translation id="471759387343966120">ប្រសិនបើបន្ត មានន័យថា​អ្នកយល់ព្រមតាម<ph name="BEGIN_TOS_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់<ph name="END_TOS_LINK" /> និង<ph name="BEGIN_PRIVACY_LINK" />គោលការណ៍​ឯកជនភាព<ph name="END_PRIVACY_LINK" />។\nChrome ផ្ញើទិន្នន័យ​អំពីការគាំង និង​ការប្រើប្រាស់ទៅ Google ដើម្បីជួយ​កែលម្អកម្មវិធីខ្លួន។ <ph name="BEGIN_UMA_LINK" />គ្រប់គ្រង<ph name="END_UMA_LINK" /></translation>
 <translation id="4719927025381752090">ផ្តល់ជូន​ការ​បកប្រែ</translation>
 <translation id="4720023427747327413">បើកនៅក្នុង <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">ជួយ​កែលម្អ Chrome ។<ph name="BEGIN_LINK" />សូម​ធ្វើការ​ស្ទង់មតិ<ph name="END_LINK" /></translation>
@@ -1206,6 +1206,7 @@
 <translation id="808747664143081553">បានភ្ជាប់​ជាមួយ​ឧបករណ៍</translation>
 <translation id="8088176524274673045">ដើម្បីចែករំលែក​ជាមួយមនុស្ស​នៅជិត សូមអនុញ្ញាត​ឱ្យពួកគេ​ស្កេនកូដ QR នេះ</translation>
 <translation id="8103578431304235997">ផ្ទាំងអនាមិក</translation>
+<translation id="8105613260829665809">ប្រសិនបើបន្ត មានន័យថា​អ្នកយល់ព្រមតាម<ph name="BEGIN_TOS_LINK" />លក្ខខណ្ឌ​ប្រើប្រាស់<ph name="END_TOS_LINK" />។\nChrome ផ្ញើទិន្នន័យ​អំពីការគាំង និង​ការប្រើប្រាស់ទៅ Google ដើម្បីជួយកែលម្អ​កម្មវិធីខ្លួន។ <ph name="BEGIN_UMA_LINK" />គ្រប់គ្រង<ph name="END_UMA_LINK" /></translation>
 <translation id="8105893657415066307"><ph name="DESCRIPTION" /> <ph name="SEPARATOR" /> <ph name="FILE_SIZE" /></translation>
 <translation id="8109613176066109935">ដើម្បី​ទទួលបាន​ចំណាំរបស់អ្នកនៅលើឧបករណ៍​ទាំងអស់​របស់អ្នក សូម​បើក​សមកាលកម្ម</translation>
 <translation id="8110024788458304985">ជួយ​កែលម្អ​មុខងារ និង​ប្រតិបត្តិការ​របស់ Chrome</translation>
@@ -1287,6 +1288,7 @@
 <translation id="8551513938758868521">ចាក់សោ​ផ្ទាំងឯកជន នៅពេលអ្នក​ចាកចេញពី Chrome</translation>
 <translation id="8555836665334561807">តាមរយៈ Wi-Fi</translation>
 <translation id="8559990750235505898">ផ្តល់ជូន​ការ​បកប្រែ​ទំព័រ​ជាភាសា​ផ្សេងទៀត</translation>
+<translation id="8560560256644480257">កំពុង​បង្កើត GIF <ph name="PERCENT" />%%</translation>
 <translation id="8560602726703398413">រកមើលបញ្ជីអានរបស់អ្នកនៅក្នុងចំណាំ</translation>
 <translation id="8562452229998620586">ពាក្យសម្ងាត់ដែលបានរក្សាទុកលេចឡើងទីនេះ។</translation>
 <translation id="856481929701340285">សំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>

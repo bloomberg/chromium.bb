@@ -882,7 +882,7 @@
 <translation id="187145082678092583">Азыраак колдонмолор</translation>
 <translation id="1871534214638631766">Чычкандын оң баскычын чыкылдатканда же мазмунду коё бербей басып турганда тийиштүү маалымат көрүнөт</translation>
 <translation id="1871569928317311284">Караңгы теманы өчүрүү</translation>
-<translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> түзмөгүңүз жаңыртылган</translation>
+<translation id="1871615898038944731"><ph name="DEVICE_TYPE" /> түзмөгүңүз жаңырган</translation>
 <translation id="1874248162548993294">Бардык жарнамаларды көрсөтө алат</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Өтмөктү башка терезеге жылдыруу}other{Өтмөктөрдү башка терезеге жылдыруу}}</translation>
 <translation id="1875386316419689002">Бул өтмөк HID түзмөгүнө туташтырылган.</translation>
@@ -1925,7 +1925,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="2932330436172705843"><ph name="PROFILE_DISPLAY_NAME" /> (Балдардын каттоо эсеби)</translation>
 <translation id="2932483646085333864">Шайкештирип баштоо үчүн каттоо эсебинен чыгып, кайра кириңиз</translation>
 <translation id="2932883381142163287">Адепсиздик тууралуу кабарлоо</translation>
-<translation id="2933632078076743449">Акыркы жолу жаңыртылган убакыт</translation>
+<translation id="2933632078076743449">Акыркы жолу жаңырган убакыт</translation>
 <translation id="2934999512438267372">MIDI түзмөктөрүн толук көзөмөлдөөгө уруксат берилди</translation>
 <translation id="2935225303485967257">Профилдерди башкаруу</translation>
 <translation id="2935654492420446828">Мектеп аккаунтун кийинчерээк кошо аласыз</translation>
@@ -4090,6 +4090,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5265562206369321422">Бир аптадан ашык офлайнда</translation>
 <translation id="5265797726250773323">Орнотуу учурунда ката кетти</translation>
 <translation id="5266113311903163739">Тастыктама борборунун импорттоо катасы</translation>
+<translation id="526622169288322445"><ph name="ADDRESS_SUMMARY" /> боюнча башка аракеттер</translation>
 <translation id="5269977353971873915">Басылып чыкпай калды</translation>
 <translation id="5275352920323889391">Ит</translation>
 <translation id="527605982717517565"><ph name="HOST" /> ичинде JavaScript'ке ар дайым уруксат берилсин</translation>
@@ -5468,6 +5469,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6775163072363532304">Жеткиликтүү түзмөктөр бул жерде көрүнөт.</translation>
 <translation id="6777817260680419853">Багыттоо бөгөттөлгөн</translation>
 <translation id="6778737459546443941">Ата-энеңиз буга уруксат бере элек</translation>
+<translation id="6779092717724412415">Ушул сыяктуу бөлүп көрсөтүү үчүн каалаган текстти тандап, оң баскычты чыкылдатыңыз.</translation>
 <translation id="6779447100905857289">себеттериңиз</translation>
 <translation id="677965093459947883">Өтө кичине</translation>
 <translation id="6781005693196527806">&amp;Издөө каражаттарын башкаруу…</translation>
@@ -6283,11 +6285,12 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7625823789272218216">Сол жакка жаңы өтмөк кошуу</translation>
 <translation id="7628201176665550262">Жаңыртуу ылдамдыгы</translation>
 <translation id="7629827748548208700">Өтмөк: <ph name="TAB_NAME" /></translation>
+<translation id="7630426712700473382">Бул түзмөк <ph name="MANAGER" /> тарабынан башкарылат жана аккаунтка улам кирип турууну талап кылат.</translation>
 <translation id="7631014249255418691">Linux колдонмолору менен файлдарынын камдык көчүрмөлөрү ийгиликтүү сакталды</translation>
 <translation id="7631205654593498032">Түзмөктөрүңүздү туташтыруу менен <ph name="DEVICE_TYPE" /> түзмөгүнө төмөнкүлөрдү аткарууга уруксат бересиз:</translation>
 <translation id="7631887513477658702">Мындай түрдөгү файлдар &amp;ар дайым ачылсын</translation>
 <translation id="7632948528260659758">Төмөнкү киоск колдонмолору жаңырбай калды.</translation>
-<translation id="7633724038415831385">Жаңыртууну ушул жолу гана аягына чыгаруу керек болот. Chromebook'тарда программалар фондо жаңыртылат.</translation>
+<translation id="7633724038415831385">Жаңыртууну ушул жолу гана аягына чыгаруу керек болот. Chromebook'тарда программалар фондо жаңырат.</translation>
 <translation id="7634566076839829401">Бир жерден ката кетти. Кайталап көрүңүз.</translation>
 <translation id="7635048370253485243">Администраторуңуз кадап койду</translation>
 <translation id="763632859238619983">Бардык сайттарга төлөм иштеткичтерин орнотууга тыюу салынсын</translation>
@@ -7365,7 +7368,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8734073480934656039">Бул жөндөө иштетилгенде, киоск колдонмолору автоматтык түрдө ишке киришет.</translation>
 <translation id="8734674662128056360">Үчүнчү тараптын cookie файлдарын бөгөттөө</translation>
 <translation id="873545264931343897"><ph name="PLUGIN_NAME" /> плагини жаңыртылгандан кийин аны иштетүү үчүн баракты кайрадан жүктөңүз</translation>
-<translation id="8736288397686080465">Бул сайт фондо жаңыртылган.</translation>
+<translation id="8736288397686080465">Бул сайт фондо жаңырган.</translation>
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> ордуна <ph name="PROTOCOL" /> шилтемелерин ачуу</translation>
 <translation id="8737709691285775803">Жалган</translation>
 <translation id="8737914367566358838">Барак которула турган тилди тандаңыз</translation>

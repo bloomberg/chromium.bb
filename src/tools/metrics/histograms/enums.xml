@@ -63,16 +63,27 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="AboutThisSiteStatus">
   <summary>Tracks status of AboutThisSite queries.</summary>
-  <int value="0" label="kValid">kValid</int>
-  <int value="1" label="kNoResult">kNoResult</int>
-  <int value="2" label="kMissingSiteInfo">kMissingSiteInfo</int>
-  <int value="3" label="kEmptySiteData">kEmptySiteData</int>
-  <int value="4" label="kIncompleteDescription">kIncompleteDescription</int>
-  <int value="5" label="kIncompleteSource">kIncompleteSource</int>
-  <int value="6" label="kInvalidSource">kInvalidSource</int>
-  <int value="7" label="kIncompleteTimeStamp">kIncompleteTimeStamp</int>
-  <int value="8" label="kInvalidTimeStamp">kInvalidTimeStamp</int>
-  <int value="9" label="kUnknown">kUnknown</int>
+  <int value="0" label="kValid">A valid response.</int>
+  <int value="1" label="kNoResult">No result received.</int>
+  <int value="2" label="kMissingSiteInfo">SiteInfo is missing.</int>
+  <int value="3" label="kEmptySiteInfo">SiteInfo is empty.</int>
+  <int value="4" label="kIncompleteDescription (deprecated)">
+    kIncompleteDescription - deprecated.
+  </int>
+  <int value="5" label="kIncompleteSource">Source is incomplete.</int>
+  <int value="6" label="kInvalidSource">Source URL is invalid.</int>
+  <int value="7" label="kIncompleteTimeStamp">Timestamp is incomplete.</int>
+  <int value="8" label="kInvalidTimeStamp">Timestamp is invalid.</int>
+  <int value="9" label="kUnknown">
+    User has not opted in to Optimization guide.
+  </int>
+  <int value="10" label="kMissingDescription">Description is missing.</int>
+  <int value="11" label="kMissingDescriptionDescription">
+    Description field in description is missing.
+  </int>
+  <int value="12" label="kMissingDescriptionName">Name is missing.</int>
+  <int value="13" label="kMissingDescriptionLang">Lang is missing.</int>
+  <int value="14" label="kMissingDescriptionSource">Source is missing.</int>
 </enum>
 
 <enum name="AcceleratedFixedRootBackground">
@@ -14702,6 +14713,11 @@ Called by update_net_error_codes.py.-->
     Recorded when the alert is popped up, and user clicks the &quot;Cancel&quot;
     button on the alert. This is a subset of &quot;Waiting alert popped
     up&quot;.
+  </int>
+  <int value="6" label="URL copied">
+    Recorded when image data format is not recognized and the URL of the image
+    is copied instead of its data. This is a subset of &quot;Try copying fetched
+    image&quot;.
   </int>
 </enum>
 
@@ -47242,6 +47258,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="yes"/>
 </enum>
 
+<enum name="LightweightReactionsFunnel">
+  <int value="0" label="LR dialog opened"/>
+  <int value="1" label="Editing done (tapped Next)"/>
+  <int value="2" label="GIF generated"/>
+  <int value="3" label="GIF shared"/>
+</enum>
+
 <enum name="LinkGenerationCopiedLinkType">
   <int value="0" label="Copied from new right-click menu generation"/>
   <int value="1" label="Copied from existing highlight right-click menu"/>
@@ -77116,6 +77139,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="11" label="Passwords, manage weak passwords"/>
 </enum>
 
+<enum name="SettingsSearchEnginesInteractions">
+  <int value="0" label="Search engine activated"/>
+  <int value="1" label="Search engine deactivated"/>
+  <int value="2" label="Keyboard shortcut switched to Tab only"/>
+  <int value="3" label="Keyboard shortcut switched to Space or Tab"/>
+</enum>
+
 <enum name="SettingsSections">
   <summary>
     A collection of sections from chrome://settings. Used for metrics about
@@ -90254,6 +90284,8 @@ Called by update_scheduler_enums.py.-->
   <int value="25" label="Chooser object deleted"/>
   <int value="26" label="Reset certificate decisions clicked"/>
   <int value="27" label="Store info clicked"/>
+  <int value="28" label="AboutThisSite section clicked"/>
+  <int value="29" label="AboutThisSite source link clicked"/>
 </enum>
 
 <enum name="WebSiteSettingsAllSitesAction">
@@ -90271,6 +90303,8 @@ Called by update_scheduler_enums.py.-->
   <int value="4" label="Clear Site Group Data"/>
   <int value="5" label="Clear Origin Data"/>
   <int value="6" label="Enter Site Details"/>
+  <int value="7" label="Remove Site Group"/>
+  <int value="8" label="Remove Origin"/>
 </enum>
 
 <enum name="WebsiteSettingsDiscoverabilityAction">
