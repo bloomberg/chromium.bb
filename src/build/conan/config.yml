@@ -1,5 +1,5 @@
 versions:
-    "88.0.4324.206_bb7501":
+    "92.0.4515.159_bb8102":
       folder: "all"
 profiles:
   - vs2019_32_staticCRT_Release

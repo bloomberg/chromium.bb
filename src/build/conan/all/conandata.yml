@@ -1,8 +1,8 @@
 sources:
-  "88.0.4324.206_bb7501":
+  "92.0.4515.159_bb8102":
     url: [
-      "https://buildcache.sotr.dev.bloomberg.com/devkits/blpwtk2/88.0.4324.206_bb7501.7z",
-      "https://s3.dev.obdc.bcs.bloomberg.com/devkits/blpwtk2/88.0.4324.206_bb7501.7z",
-      "https://s3.dev.rrdc.bcs.bloomberg.com/devkits/blpwtk2/88.0.4324.206_bb7501.7z",
+      "https://buildcache.sotr.dev.bloomberg.com/devkits/blpwtk2/92.0.4515.159_bb8102.7z",
+      "https://s3.dev.obdc.bcs.bloomberg.com/devkits/blpwtk2/92.0.4515.159_bb8102.7z",
+      "https://s3.dev.rrdc.bcs.bloomberg.com/devkits/blpwtk2/92.0.4515.159_bb8102.7z",
     ]
-    sha256: "C25ECC276E64330DA94F2C6D8349E70A0A4353B18653D450FB7330CD0101430F"
+    sha256: "7CCA4A3D7FF1859683CD808F70A563F53AEFB88916C33529191FD6E48FD75A3C"
