@@ -366,7 +366,7 @@ LRESULT RenderWebView::windowProcedure(UINT   uMsg,
     auto *toolkitDelegate = Statics::toolkitDelegate;
     LRESULT result;
 
-    if (toolkitDelegate) {
+    if (toolkitDelegate && d_properties.messageInterceptionEnabled) {
         if (toolkitDelegate->onPreHandleMessage(static_cast<unsigned>(reinterpret_cast<uintptr_t>(d_hwnd.get())),
                                                 uMsg,
                                                 wParam,
