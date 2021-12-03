@@ -1786,7 +1786,7 @@ void RenderWebView::findState(WebView *source,
             numberOfMatches,
             activeMatchOrdinal,
             finalUpdate);
-    }    
+    }
 }
 
 #if defined(BLPWTK2_FEATURE_DEVTOOLSINTEGRATION)
