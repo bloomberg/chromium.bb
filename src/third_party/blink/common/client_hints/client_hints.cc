@@ -132,8 +132,15 @@ absl::optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
 }
 
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
+  // blpwtk2: Some ancient web servers do not support request fields with
+  // blank values. The 'sec-ch-ua' field is known to have a blank value
+  // sometimes and this causes the web server to choke. As a temporary
+  // workaround, these fields are not sent by default.
+#if 0
   return (type == network::mojom::WebClientHintsType::kUA ||
           type == network::mojom::WebClientHintsType::kUAMobile);
+#endif
+  return false;
 }
 
 // Add a list of Client Hints headers to be removed to the output vector, based
