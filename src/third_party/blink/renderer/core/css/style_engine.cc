@@ -118,12 +118,17 @@ StyleEngine::StyleEngine(Document& document)
       resolver_(MakeGarbageCollected<StyleResolver>(document)),
       owner_color_scheme_(mojom::blink::ColorScheme::kLight) {
   if (document.GetFrame()) {
-    global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
     font_selector_ = CreateCSSFontSelectorFor(document);
     font_selector_->RegisterForInvalidationCallbacks(this);
     if (const auto* owner = document.GetFrame()->Owner())
       owner_color_scheme_ = owner->GetColorScheme();
   }
+  // blpwtk2: When we create web script contexts for the embedder, the
+  // blink::Document is created without a frame. This Document::Document()
+  // may call UpdateForcedColors(), which then may call
+  // blink::StyleEngine::EnsureUAStyleForForcedColors(), which requires
+  // the existence of global_rule_set_.
+  global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   if (document.IsInMainFrame())
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
   if (auto* settings = GetDocument().GetSettings()) {
