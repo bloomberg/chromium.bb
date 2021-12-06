@@ -24,6 +24,7 @@
 #define INCLUDED_BLPWTK2_RESOURCECONTEXT_H
 
 #include <blpwtk2_config.h>
+#include <blpwtk2_blob.h>
 #include <blpwtk2_string.h>
 
 namespace blpwtk2 {
@@ -39,6 +40,16 @@ class BLPWTK2_EXPORT HTTPHeaderVisitor {
   protected:
 
     virtual ~HTTPHeaderVisitor();
+};
+
+class BLPWTK2_EXPORT HTTPBodyVisitor {
+  public:
+    HTTPBodyVisitor();
+    virtual void visitBodyElement(const Blob& element) = 0;
+
+  protected:
+
+    virtual ~HTTPBodyVisitor();
 };
 
 class BLPWTK2_EXPORT URLRequest {
@@ -71,6 +82,7 @@ class BLPWTK2_EXPORT URLRequest {
     virtual String httpMethod() const = 0;
     virtual String httpHeaderField(const StringRef& name) const = 0;
     virtual void visitHTTPHeaderFields(HTTPHeaderVisitor* visitor) const = 0;
+    virtual void visitHTTPBody(HTTPBodyVisitor* visitor) const = 0;
     virtual bool reportUploadProgress() const = 0;
     virtual bool reportRawHeaders() const = 0;
     virtual bool hasUserGesture() const = 0;

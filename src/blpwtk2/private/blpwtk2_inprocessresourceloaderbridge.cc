@@ -247,8 +247,17 @@ class InProcessURLRequest : public URLRequest {
                 visitor->visitHeader(StringRef(it.name()), StringRef(it.value()));
             } while (it.GetNext());
         }
+    }
 
-        CHECK(!d_requestBody || d_requestBody->elements()->empty());
+    void visitHTTPBody(HTTPBodyVisitor* visitor) const override
+    {
+        if (d_requestBody) {
+            for (const network::DataElement& elem : *(d_requestBody->elements())) {
+                Blob elementBlob;
+                elementBlob.makeStorageDataElement(elem);
+                visitor->visitBodyElement(elementBlob);
+            }
+        }
     }
 
     bool reportUploadProgress() const override
