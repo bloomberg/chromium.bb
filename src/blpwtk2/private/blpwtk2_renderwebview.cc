@@ -1781,12 +1781,12 @@ void RenderWebView::findState(WebView *source,
                                 int      activeMatchOrdinal,
                                 bool     finalUpdate)
 {
-    // The RenderWebView is only used when the embedder lives in another
-    // process.  Instead of filtering out all but the latest response in
-    // this process, we ship all the responses to the process running the
-    // WebViewClientImpl (by using findStateWithReqId) and let it filter out
-    // all but the latest response.
-    NOTREACHED() << "findState should come in via findStateWithReqId";
+    if (d_delegate) {
+        d_delegate->findState(this,
+            numberOfMatches,
+            activeMatchOrdinal,
+            finalUpdate);
+    }
 }
 
 #if defined(BLPWTK2_FEATURE_DEVTOOLSINTEGRATION)
