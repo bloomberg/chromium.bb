@@ -4,11 +4,6 @@
       "chromium": "chromium-m97"
     }
   },
-  "$build/reclient": {
-    "instance": "rbe-chromium-trusted",
-    "jobs": 500,
-    "metrics_project": "chromium-reclient-metrics"
-  },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
     "grouping_keys": [
@@ -16,7 +11,7 @@
       "v.test_suite"
     ]
   },
-  "builder_group": "chromium.fyi",
+  "builder_group": "chromium.mac",
   "recipe": "chromium",
   "sheriff_rotations": [
     "chrome_browser_release"

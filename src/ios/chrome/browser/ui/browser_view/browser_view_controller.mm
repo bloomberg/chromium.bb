@@ -1122,6 +1122,20 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   [self.omniboxHandler cancelOmniboxEdit];
 }
 
+- (int)liveNTPCount {
+  NSUInteger count = 0;
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  for (int i = 0; i < webStateList->count(); i++) {
+    web::WebState* webState = webStateList->GetWebStateAt(i);
+    auto found = _ntpCoordinatorsForWebStates.find(webState);
+    if (found != _ntpCoordinatorsForWebStates.end() &&
+        [found->second isStarted]) {
+      count++;
+    }
+  }
+  return count;
+}
+
 #pragma mark - browser_view_controller+private.h
 
 - (void)setActive:(BOOL)active {
@@ -1158,6 +1172,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!active) {
     if (IsSingleNtpEnabled()) {
       [_ntpCoordinator stop];
+      [_ntpCoordinator disconnect];
     } else {
       for (const auto& element : _ntpCoordinatorsForWebStates)
         [element.second stop];
@@ -2734,11 +2749,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   SnapshotTabHelper::FromWebState(webState)->SetDelegate(nil);
 
   // TODO(crbug.com/1173610): Have BrowserCoordinator manage the NTP.
-  if (IsSingleNtpEnabled()) {
-    if (self.currentWebState == webState) {
-      [_ntpCoordinator stop];
-    }
-  } else {
+  // No need to stop _ntpCoordinator with Single NTP enabled since shutdown will
+  // do that. In addition, uninstallDelegatesForWebState: is called for
+  // individual WebState removals, which should not trigger a stop.
+  if (!IsSingleNtpEnabled()) {
     auto iterator = _ntpCoordinatorsForWebStates.find(webState);
     if (iterator != _ntpCoordinatorsForWebStates.end()) {
       [iterator->second stop];
@@ -4731,6 +4745,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (IsSingleNtpEnabled()) {
     if (NTPHelper->IsActive()) {
       self.ntpCoordinator.webState = webState;
+    } else {
+      // Set to nullptr to save NTP scroll offset before navigation.
+      self.ntpCoordinator.webState = nullptr;
     }
   } else {
     if (NTPHelper->IsActive()) {

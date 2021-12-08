@@ -17196,6 +17196,15 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="1" label="Site marked as legitimate"/>
 </enum>
 
+<enum name="CreditCardSeamlessFill">
+  <int value="0" label=":-D Full fill"/>
+  <int value="1" label=":-) Optional name missing"/>
+  <int value="2" label=":-) Optional CVC missing"/>
+  <int value="3" label=":-) Optional name and CVC missing"/>
+  <int value="4" label=":-| Full fill but exp. date missing"/>
+  <int value="5" label=":-( Partial fill"/>
+</enum>
+
 <enum name="CreditCardUploadDisallowedNetwork">
   <int value="0" label="Elo card"/>
   <int value="1" label="JCB card"/>
@@ -50859,6 +50868,7 @@ from previous Chrome versions.
   <int value="-221649438" label="AllowTouchpadHapticClickSettings:disabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-220298483" label="ImeOptionsInSettings:enabled"/>
+  <int value="-217930860" label="EnableAutomaticSnooze:disabled"/>
   <int value="-217885320" label="CdmFactoryDaemon:disabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-216189310"
@@ -53866,6 +53876,7 @@ from previous Chrome versions.
   <int value="2047503404" label="FilesSWA:enabled"/>
   <int value="2047695652" label="DelegateOverscrollSwipes:enabled"/>
   <int value="2049432745" label="VaapiWebPImageDecodeAcceleration:enabled"/>
+  <int value="2049674680" label="EnableAutomaticSnooze:enabled"/>
   <int value="2050985807" label="AllowPopupsDuringPageUnload:enabled"/>
   <int value="2051403297" label="ShowBluetoothDeviceBattery:disabled"/>
   <int value="2051886966" label="PwaInstallUseBottomSheet:enabled"/>
