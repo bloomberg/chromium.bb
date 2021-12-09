@@ -261,14 +261,19 @@ const char PeerConnectionDependencyFactory::kSupplementName[] =
 PeerConnectionDependencyFactory& PeerConnectionDependencyFactory::From(
     ExecutionContext& context) {
   CHECK(!context.IsContextDestroyed());
-  auto* supplement =
-      Supplement<ExecutionContext>::From<PeerConnectionDependencyFactory>(
-          context);
-  if (!supplement) {
+
+  // blpwtk2: Making PeerConnectionDependencyFactory a singleton again
+  // (pre https://chromium.googlesource.com/chromium/src/+/6b5c3002272fc9a2d6644b9cefbec338999c4f17)
+  // One PeerConnectionDependencyFactory per ExecutionContext
+  // causes problem when contexts are from different frame.
+  static WeakMember<PeerConnectionDependencyFactory> supplement;
+
+  if (!supplement.Get()) {
     supplement = MakeGarbageCollected<PeerConnectionDependencyFactory>(
-        context, PassKey());
-    ProvideTo(context, supplement);
+      context, PassKey());
+    ProvideTo(context, supplement.Get());
   }
+
   return *supplement;
 }
 
