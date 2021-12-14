@@ -54,6 +54,7 @@
 #include <ui/events/blink/web_input_event.h>
 #include <ui/base/cursor/cursor_loader.h>
 #include <ui/base/cursor/win/win_cursor_factory.h>
+#include <ui/base/dragdrop/drag_drop_types.h>
 #include <ui/base/win/session_change_observer.h>
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
@@ -2263,7 +2264,7 @@ void RenderWebView::DragSourceEnded(
   }
   if (blink_frame_widget_) {
     blink_frame_widget_->DragSourceEndedAt(
-        ConvertWindowPointToViewport(client_pt), screen_pt, static_cast<ui::mojom::DragOperation>(drag_operation), 
+        ConvertWindowPointToViewport(client_pt), screen_pt, ui::PreferredDragOperation(drag_operation),
         base::DoNothing());
   }
 }
