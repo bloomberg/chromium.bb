@@ -234,15 +234,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '53f7801cf17fa230a8328fed90acecc0ae51cc98',
+  'skia_revision': 'b4d28b2f35396ae4dd69338254415066629dfd25',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '99bdf2f27002569610a8f868c9f8bdfeeddcbec5',
+  'v8_revision': '96e2674d6126c2ae64d44024aaa7968c853ac4a2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '6b4be8ad99e9f9234cbb1a709798ade2fecd8b66',
+  'angle_revision': '7ccfe9ae7cb9648f4d1eabca14f8cb67fac55739',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -349,7 +349,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '15dc49ce75a5b90c848db9fe99489731b616f526',
+  'dawn_revision': 'b23a8c209c5c96c30baae464f3f70398d1b3069d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -956,7 +956,7 @@ deps = {
   },
 
   'src/third_party/breakpad/breakpad':
-    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + 'ee2ad61263ebc54396df7d7a835e1e3f8455134e',
+    Var('chromium_git') + '/breakpad/breakpad.git' + '@' + '647aa17a7aa8ec0b99ffd005908b8a4ab1995a30',
 
   'src/third_party/byte_buddy': {
       'packages': [
@@ -1396,7 +1396,7 @@ deps = {
   },
 
   'src/third_party/openh264/src':
-    Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
+    Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'b52786888ddce9d6bc06b7825ba9bffc65924e0c',
 
   'src/third_party/openscreen/src':
     Var('chromium_git') + '/openscreen' + '@' + '3ea21022232b0ebedcc4c59d8a97282a8ce4cd56',
@@ -1637,7 +1637,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '2961e70ac940aa861f924efd1ec97405a0afc4e5',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '8ad555b18228a1e667578d04c5e52c067b3cd1e7',
+    Var('webrtc_git') + '/src.git' + '@' + '0941f936e6bf3d4fce05fec82b77518d40516007',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1695,7 +1695,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@0c59c7c6d436dcfba7ed046f6e3d9a24b7610b44',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@ceb8d6b669bb3c1c81842d55adc71a446a90fd5d',
     'condition': 'checkout_src_internal',
   },
 
@@ -4053,21 +4053,6 @@ hooks = [
                '--quiet',
                '--bucket', 'chromium-webrtc-resources',
                '-d', 'src/third_party/opus/tests/resources'],
-  },
-  {
-    'name': 'apache_mac',
-    'pattern': '\\.sha1',
-    'condition': 'checkout_mac',
-    'action': [ 'python3',
-                'src/third_party/depot_tools/download_from_google_storage.py',
-                '--no_resume',
-                '--directory',
-                '--recursive',
-                '--no_auth',
-                '--num_threads=16',
-                '--bucket', 'chromium-apache-mac',
-                'src/third_party/apache-mac',
-    ],
   },
   {
     'name': 'apache_win32',

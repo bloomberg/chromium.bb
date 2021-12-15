@@ -275,6 +275,7 @@ class Resolver {
   bool ValidateBuiltinDecoration(const ast::BuiltinDecoration* deco,
                                  const sem::Type* storage_type,
                                  const bool is_input);
+  bool ValidateBitcast(const ast::BitcastExpression* cast, const sem::Type* to);
   bool ValidateCall(const ast::CallExpression* call);
   bool ValidateCallStatement(const ast::CallStatement* stmt);
   bool ValidateEntryPoint(const ast::Function* func, const FunctionInfo* info);

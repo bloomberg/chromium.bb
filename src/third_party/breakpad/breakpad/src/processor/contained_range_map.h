@@ -62,6 +62,7 @@
 
 
 #include <map>
+#include <vector>
 
 
 namespace google_breakpad {
@@ -75,7 +76,8 @@ class ContainedRangeMap {
   // The default constructor creates a ContainedRangeMap with no geometry
   // and no entry, and as such is only suitable for the root node of a
   // ContainedRangeMap tree.
-  ContainedRangeMap() : base_(), entry_(), map_(NULL) {}
+  explicit ContainedRangeMap(bool allow_equal_range = false)
+      : base_(), entry_(), map_(NULL), allow_equal_range_(allow_equal_range) {}
 
   ~ContainedRangeMap();
 
@@ -95,7 +97,12 @@ class ContainedRangeMap {
   // child ranges, and not the entry contained by |this|.  This is necessary
   // to support a sparsely-populated root range.  If no descendant range
   // encompasses the address, returns false.
-  bool RetrieveRange(const AddressType& address, EntryType* entry) const;
+  bool RetrieveRange(const AddressType& address, EntryType* entries) const;
+
+  // Retrieves the vector of entries encompassing the specified address from the
+  // innermost entry to the outermost entry.
+  bool RetrieveRanges(const AddressType& address,
+                      std::vector<const EntryType*>& entries) const;
 
   // Removes all children.  Note that Clear only removes descendants,
   // leaving the node on which it is called intact.  Because the only
@@ -118,9 +125,14 @@ class ContainedRangeMap {
   // Creates a new ContainedRangeMap with the specified base address, entry,
   // and initial child map, which may be NULL.  This is only used internally
   // by ContainedRangeMap when it creates a new child.
-  ContainedRangeMap(const AddressType& base, const EntryType& entry,
-                    AddressToRangeMap* map)
-      : base_(base), entry_(entry), map_(map) {}
+  ContainedRangeMap(const AddressType& base,
+                    const EntryType& entry,
+                    AddressToRangeMap* map,
+                    bool allow_equal_range)
+      : base_(base),
+        entry_(entry),
+        map_(map),
+        allow_equal_range_(allow_equal_range) {}
 
   // The base address of this range.  The high address does not need to
   // be stored, because it is used as the key to an object in its parent's
@@ -141,6 +153,12 @@ class ContainedRangeMap {
   // address.  This is a pointer to avoid allocating map structures for
   // leaf nodes, where they are not needed.
   AddressToRangeMap* map_;
+
+  // Whether or not we allow storing an entry into a range that equals to
+  // existing range in the map. Default is false.
+  // If this is true, the newly added range will become a child of existing
+  // innermost range which has same base and size.
+  bool allow_equal_range_;
 };
 
 

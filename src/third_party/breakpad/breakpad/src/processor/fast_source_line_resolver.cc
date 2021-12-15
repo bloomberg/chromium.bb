@@ -49,9 +49,8 @@
 #include "processor/module_factory.h"
 #include "processor/simple_serializer-inl.h"
 
-using std::map;
-using std::make_pair;
-using std::vector;
+using std::deque;
+using std::unique_ptr;
 
 namespace google_breakpad {
 
@@ -101,12 +100,78 @@ void FastSourceLineResolver::Module::LookupAddress(
       frame->source_line = line->line;
       frame->source_line_base = frame->module->base_address() + line_base;
     }
+    // Check if this is inlined function call.
+    if (inlined_frames) {
+      ConstructInlineFrames(frame, address, func->inlines, inlined_frames);
+    }
   } else if (public_symbols_.Retrieve(address,
                                       public_symbol_ptr, &public_address) &&
              (!func_ptr || public_address > function_base)) {
     public_symbol.get()->CopyFrom(public_symbol_ptr);
     frame->function_name = public_symbol->name;
     frame->function_base = frame->module->base_address() + public_address;
+  }
+}
+
+void FastSourceLineResolver::Module::ConstructInlineFrames(
+    StackFrame* frame,
+    MemAddr address,
+    const StaticContainedRangeMap<MemAddr, char>& inline_map,
+    std::deque<std::unique_ptr<StackFrame>>* inlined_frames) const {
+  std::vector<const char*> inline_ptrs;
+  if (!inline_map.RetrieveRanges(address, inline_ptrs)) {
+    return;
+  }
+
+  for (const char* inline_ptr : inline_ptrs) {
+    scoped_ptr<Inline> in(new Inline);
+    in.get()->CopyFrom(inline_ptr);
+    unique_ptr<StackFrame> new_frame =
+        unique_ptr<StackFrame>(new StackFrame(*frame));
+    auto origin_iter = inline_origins_.find(in->origin_id);
+    if (origin_iter != inline_origins_.end()) {
+      scoped_ptr<InlineOrigin> origin(new InlineOrigin);
+      origin.get()->CopyFrom(origin_iter.GetValuePtr());
+      new_frame->function_name = origin->name;
+    } else {
+      new_frame->function_name = "<name omitted>";
+    }
+
+    // Store call site file and line in current frame, which will be updated
+    // later.
+    new_frame->source_line = in->call_site_line;
+    if (in->has_call_site_file_id) {
+      auto file_iter = files_.find(in->call_site_file_id);
+      if (file_iter != files_.end()) {
+        new_frame->source_file_name = file_iter.GetValuePtr();
+      }
+    }
+
+    // Use the starting adress of the inlined range as inlined function base.
+    new_frame->function_base = new_frame->module->base_address();
+    for (const auto& range : in->inline_ranges) {
+      if (address >= range.first && address < range.first + range.second) {
+        new_frame->function_base += range.first;
+        break;
+      }
+    }
+    new_frame->trust = StackFrame::FRAME_TRUST_INLINE;
+
+    // The inlines vector has an order from innermost entry to outermost entry.
+    // By push_back, we will have inlined_frames with the same order.
+    inlined_frames->push_back(std::move(new_frame));
+  }
+
+  // Update the source file and source line for each inlined frame.
+  if (!inlined_frames->empty()) {
+    string parent_frame_source_file_name = frame->source_file_name;
+    int parent_frame_source_line = frame->source_line;
+    frame->source_file_name = inlined_frames->back()->source_file_name;
+    frame->source_line = inlined_frames->back()->source_line;
+    for (unique_ptr<StackFrame>& inlined_frame : *inlined_frames) {
+      std::swap(inlined_frame->source_file_name, parent_frame_source_file_name);
+      std::swap(inlined_frame->source_line, parent_frame_source_line);
+    }
   }
 }
 
@@ -184,7 +249,7 @@ bool FastSourceLineResolver::Module::LoadMapFromMemory(
   cfi_initial_rules_ =
       StaticRangeMap<MemAddr, char>(mem_buffer + offsets[map_id++]);
   cfi_delta_rules_ = StaticMap<MemAddr, char>(mem_buffer + offsets[map_id++]);
-
+  inline_origins_ = StaticMap<int, char>(mem_buffer + offsets[map_id++]);
   return true;
 }
 

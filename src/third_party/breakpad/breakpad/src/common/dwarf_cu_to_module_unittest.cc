@@ -1268,12 +1268,12 @@ TEST_F(Specifications, MangledNameRust) {
 
   TestFunctionCount(1);
   TestFunction(0,
-#ifndef HAVE_RUST_DEMANGLE
+#ifndef HAVE_RUSTC_DEMANGLE
                // Rust mangled names should pass through untouched if not
-               // using rust-demangle.
+               // using rustc-demangle.
                kName,
 #else
-               // If rust-demangle is available this should be properly
+               // If rustc-demangle is available this should be properly
                // demangled.
                "rustc_demangle::demangle",
 #endif

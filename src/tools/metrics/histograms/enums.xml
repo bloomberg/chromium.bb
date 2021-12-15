@@ -6699,6 +6699,37 @@ others/histograms.xml -->
              response"/>
 </enum>
 
+<enum name="AutofillPopupHidingReason">
+  <int value="0" label="A suggestion was accepted."/>
+  <int value="1" label="An interstitial page displaces the popup."/>
+  <int value="2"
+      label="A field isn't edited anymore but remains focused for now."/>
+  <int value="3" label="Focus removed from field. Follows kEndEditing."/>
+  <int value="4"
+      label="Scrolling or zooming into the page displaces the popup."/>
+  <int value="5" label="A navigation on the page or frame level."/>
+  <int value="6" label="The popup is or would become empty."/>
+  <int value="7" label="The renderer explicitly requested closing the popup."/>
+  <int value="8"
+      label="The tab with the popup is destroyed, hidden or has become
+             inactive."/>
+  <int value="9" label="The popup contains stale data."/>
+  <int value="10"
+      label="The user explicitly dismissed the popup (e.g. ESC key)."/>
+  <int value="11"
+      label="The popup view (or its controller) goes out of scope."/>
+  <int value="12" label="The platform-native UI changed (e.g. window resize)."/>
+  <int value="13"
+      label="Not enough space in the content area to display at least one row
+             of the popup within the bounds of the content area."/>
+  <int value="14"
+      label="The popup would overlap with another open prompt, and may hide
+             sensitive information in the prompt."/>
+  <int value="15"
+      label="The anchor element for which the popup would be shown is not
+             visible in the content area."/>
+</enum>
+
 <enum name="AutofillPredictionSource">
   <int value="0" label="PREDICTION_SOURCE_UNKNOWN"/>
   <int value="1" label="PREDICTION_SOURCE_HEURISTIC"/>
@@ -7401,6 +7432,7 @@ others/histograms.xml -->
   <int value="131082" label="kContent-kMediaSession"/>
   <int value="131083" label="kContent-kMediaSessionService"/>
   <int value="131084" label="kContent-kMediaPlay"/>
+  <int value="131085" label="kContent-kScreenReader"/>
   <int value="196608" label="kEmbedder-kUnknown"/>
   <int value="196609" label="kEmbedder-kPopupBlockerTabHelper"/>
   <int value="196610" label="kEmbedder-kSafeBrowsingTriggeredPopupBlocker"/>
@@ -41366,6 +41398,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
              gpu_info.can_lose_context=True"/>
 </enum>
 
+<enum name="GridTabSwitcherMessageDisableReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="User taps the primary button on message"/>
+  <int value="2" label="User dismisses the message"/>
+  <int value="3" label="User ignores the message many times"/>
+</enum>
+
 <enum name="GridTabSwitcherThumbnailFetchingResult">
   <summary>The result of thumbnail fetching in the Grid Tab Switcher.</summary>
   <int value="0" label="Got JPEG thumbnail"/>
@@ -43773,7 +43812,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="9" label="Canceled"/>
 </enum>
 
-<enum name="InProductHelp.SnoozeAction">
+<enum name="InProductHelpSnoozeAction">
   <int value="0" label="Unknown"/>
   <int value="1" label="Snooze"/>
   <int value="2" label="Dismiss"/>

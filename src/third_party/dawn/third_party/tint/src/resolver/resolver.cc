@@ -2408,11 +2408,47 @@ bool Resolver::Bitcast(const ast::BitcastExpression* expr) {
   if (!ty) {
     return false;
   }
-  if (ty->Is<sem::Pointer>()) {
-    AddError("cannot cast to a pointer", expr->source);
+
+  SetExprInfo(expr, ty, expr->type->FriendlyName(builder_->Symbols()));
+
+  if (!ValidateBitcast(expr, ty)) {
     return false;
   }
-  SetExprInfo(expr, ty, expr->type->FriendlyName(builder_->Symbols()));
+
+  return true;
+}
+
+bool Resolver::ValidateBitcast(const ast::BitcastExpression* cast,
+                               const sem::Type* to) {
+  auto TypeNameOf = [this](const sem::Type* ty) {
+    return ty->UnwrapRef()->FriendlyName(builder_->Symbols());
+  };
+
+  auto* from = TypeOf(cast->expr)->UnwrapRef();
+  if (!from->is_numeric_scalar_or_vector()) {
+    AddError("'" + TypeNameOf(from) + "' cannot be bitcast",
+             cast->expr->source);
+    return false;
+  }
+  if (!to->is_numeric_scalar_or_vector()) {
+    AddError("cannot bitcast to '" + TypeNameOf(to) + "'", cast->type->source);
+    return false;
+  }
+
+  auto width = [&](const sem::Type* ty) {
+    if (auto* vec = ty->As<sem::Vector>()) {
+      return vec->Width();
+    }
+    return 1u;
+  };
+
+  if (width(from) != width(to)) {
+    AddError("cannot bitcast from '" + TypeNameOf(from) + "' to '" +
+                 TypeNameOf(to) + "'",
+             cast->source);
+    return false;
+  }
+
   return true;
 }
 

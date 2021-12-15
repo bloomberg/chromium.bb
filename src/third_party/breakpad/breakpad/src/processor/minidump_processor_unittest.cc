@@ -761,6 +761,29 @@ TEST_F(MinidumpProcessorTest, Test32BitCrashingAddress) {
   ASSERT_EQ(state.crash_address(), 0x45U);
 }
 
+TEST_F(MinidumpProcessorTest, TestXStateAmd64ContextMinidump) {
+  // This tests if we can passively process a minidump with cet registers in its
+  // context. Dump is captured from a toy executable and is readable by windbg.
+  MinidumpProcessor processor(nullptr, nullptr /*&supplier, &resolver*/);
+
+  string minidump_file = GetTestDataPath()
+                         + "tiny-exe-with-cet-xsave.dmp";
+
+  ProcessState state;
+  ASSERT_EQ(processor.Process(minidump_file, &state),
+            google_breakpad::PROCESS_OK);
+  ASSERT_EQ(state.system_info()->os, "Windows NT");
+  ASSERT_EQ(state.system_info()->os_version, "10.0.22000 282");
+  ASSERT_EQ(state.system_info()->cpu, "amd64");
+  ASSERT_EQ(state.system_info()->cpu_info,
+            "family 6 model 140 stepping 1");
+  ASSERT_FALSE(state.crashed());
+  ASSERT_EQ(state.threads()->size(), size_t(1));
+
+  // TODO: verify cetumsr and cetussp once these are supported by
+  // breakpad.
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
