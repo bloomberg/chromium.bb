@@ -3815,6 +3815,18 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Forwarded to a normal tab"/>
 </enum>
 
+<enum name="ArcDataRestoreStatus">
+  <summary>
+    Tracks status of SELinux contexts restore flows of Android /data for ARC++ P
+    container. This also means ARC++ container boot delay.
+  </summary>
+  <int value="0" label="NotNeeded">
+    SELinux data restoration was not needed.
+  </int>
+  <int value="1" label="Success">SELinux data restoration succeeded.</int>
+  <int value="2" label="Failed">SELinux data restoration failed.</int>
+</enum>
+
 <enum name="ArcEnableState">
   <int value="0" label="Enabled not managed"/>
   <int value="1" label="Disabled not managed"/>
@@ -61702,6 +61714,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Background customization unavailable due to theme"/>
   <int value="3"
       label="Background customization unavailable due to search provider"/>
+</enum>
+
+<enum name="NTPBrokenViewHierarchyRelationship">
+  <int value="0" label="ELM collection containing Content Suggestions fixed"/>
+  <int value="1" label="Discover feed containing ELM collection fixed"/>
+  <int value="2" label="Discover feed wrapper containing Discover feed fixed"/>
+  <int value="3" label="NTP containing Discover feed wrapper fixed"/>
+  <int value="4"
+      label="Content suggestions view controller not cleaned up on restart"/>
 </enum>
 
 <enum name="NTPCustomizeAction">

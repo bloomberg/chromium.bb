@@ -1468,7 +1468,7 @@
 <translation id="2471506181342525583">לאתר יש גישה למיקום שלך</translation>
 <translation id="2473195200299095979">תרגום הדף</translation>
 <translation id="2475982808118771221">אירעה שגיאה</translation>
-<translation id="2476578072172137802">הגדרות אתר</translation>
+<translation id="2476578072172137802">ההגדרות לאתרים</translation>
 <translation id="2476974672882258506">‏יש לכבות את Windows כדי להסיר את <ph name="PARALLELS_DESKTOP" />.</translation>
 <translation id="2477065602824695373">הסריקה האוטומטית מושבתת כי הגדרת כמה מתגים.</translation>
 <translation id="2478176599153288112">הרשאות של קובץ מדיה עבור "<ph name="EXTENSION" />"</translation>
@@ -1742,7 +1742,7 @@
 <translation id="2749881179542288782">בדיקת דקדוק עם איות</translation>
 <translation id="2753677631968972007">שליטה ידנית בהרשאות של האתר.</translation>
 <translation id="2755349111255270002">אתחול של מכשיר <ph name="DEVICE_TYPE" /> זה</translation>
-<translation id="2755367719610958252">ניהול תכונות נגישות</translation>
+<translation id="2755367719610958252">ניהול של תכונות הנגישות</translation>
 <translation id="275662540872599901">מסך כבוי</translation>
 <translation id="2757161511365746634">הצגת המדפסת</translation>
 <translation id="2757338480560142065">יש לוודא שהסיסמה שנשמרת זהה לסיסמה שלך עבור <ph name="WEBSITE" />.</translation>
@@ -3820,7 +3820,7 @@
 <translation id="4966972803217407697">עברת למצב אנונימי</translation>
 <translation id="496888482094675990">‏היישום Files מספק גישה מהירה לקבצים ששמרת ב-Google Drive, באחסון חיצוני או במכשיר שלך עם מערכת הפעלה של Chrome.</translation>
 <translation id="4971412780836297815">פתיחה בסיום ההורדה</translation>
-<translation id="4971735654804503942">‏הגנה פרואקטיבית ומהירה יותר מפני אתרים, הורדות ותוספים מסוכנים. המערכת מזהירה אותך בנוגע לחשיפה של סיסמאות. כשמצב ההגנה הזה בשימוש, נתוני גלישה נשלחים אל Google.</translation>
+<translation id="4971735654804503942">‏הגנה מהירה יותר ואקטיבית מפני אתרים, הורדות ותוספים מסוכנים. המערכת מזהירה אותך בנוגע לחשיפה של סיסמאות. כשמצב ההגנה הזה בשימוש, נתוני גלישה נשלחים אל Google.</translation>
 <translation id="4972129977812092092">עריכת מדפסת</translation>
 <translation id="4972164225939028131">סיסמה שגויה</translation>
 <translation id="4972737347717125191">אתרים יכולים לבקש הרשאה להשתמש בנתונים ובמכשירים של מציאות מדומה</translation>
@@ -5990,7 +5990,7 @@
 <translation id="7329154610228416156">הכניסה נכשלה מפני שהוגדר שימוש בכתובת אתר לא מאובטחת (<ph name="BLOCKED_URL" />). יש ליצור קשר עם מנהל המערכת.</translation>
 <translation id="7332053360324989309">עובד ייעודי: <ph name="SCRIPT_URL" /></translation>
 <translation id="7334014994694414993">בחירת עיצוב הצבע של מרכז האפליקציות, המדף, ההגדרות המהירות ועוד</translation>
-<translation id="7334274148831027933">הפעלת מגדיל במצב מעוגן</translation>
+<translation id="7334274148831027933">הפעלה של זכוכית מגדלת במצב מעוגן</translation>
 <translation id="7335974957018254119">שימוש בבדיקת איות בשביל</translation>
 <translation id="7336799713063880535">התראות נחסמו.</translation>
 <translation id="7338630283264858612">המספר הסידורי של המכשיר אינו חוקי.</translation>
@@ -7185,7 +7185,7 @@
 <translation id="8546186510985480118">חסר שטח אחסון במכשיר</translation>
 <translation id="8546306075665861288">מטמון תמונות</translation>
 <translation id="8546930481464505581">התאמה אישית של סרגל המגע</translation>
-<translation id="8547013269961688403">הפעלת מגדיל למסך מלא</translation>
+<translation id="8547013269961688403">הפעלה של הגדלת כל המסך</translation>
 <translation id="85486688517848470">יש להחזיק את מקש החיפוש כדי לשנות את ההתנהגות של מקשי השורה העליונה</translation>
 <translation id="8549316893834449916">‏הכניסה אל Chromebook תתבצע באמצעות חשבון Google שלך – אותו חשבון שמשמש אותך ב-Gmail, ב-Drive, ב-YouTube ועוד.</translation>
 <translation id="8551388862522347954">רישיונות</translation>

@@ -2049,7 +2049,7 @@
 <translation id="3055590424724986000">Через вибраного вами постачальника</translation>
 <translation id="3058498974290601450">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях</translation>
 <translation id="3058517085907878899">Назвати пристрій</translation>
-<translation id="3060379269883947824">Увімкнути службу Читання з екрана</translation>
+<translation id="3060379269883947824">Увімкнути сервіс Читання з екрана</translation>
 <translation id="3060952009917586498">Змінити мову пристрою. Поточна мова: <ph name="LANGUAGE" />.</translation>
 <translation id="3060987956645097882">Не вдалося підключитися до телефона. Переконайтеся, що ваш телефон поблизу й розблокований, а Bluetooth і Wi-Fi увімкнено.</translation>
 <translation id="3064871050034234884">Сайти можуть відтворювати звук</translation>
@@ -4458,7 +4458,7 @@
 <translation id="5653154844073528838">Збережених принтерів: <ph name="PRINTER_COUNT" />.</translation>
 <translation id="5655296450510165335">Реєстрація пристрою</translation>
 <translation id="5656845498778518563">Надіслати відгук у Google</translation>
-<translation id="5657156137487675418">Дозволити всі cookie-файли</translation>
+<translation id="5657156137487675418">Дозволити всі файли cookie</translation>
 <translation id="5657667036353380798">Для зовнішнього розширення потрібна версія Chrome <ph name="MINIMUM_CHROME_VERSION" /> або новіша.</translation>
 <translation id="5658415415603568799">З міркувань безпеки Smart Lock запропонує ввести пароль через 20 годин.</translation>
 <translation id="5659593005791499971">Ел. пошта</translation>
