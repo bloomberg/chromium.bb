@@ -328,7 +328,8 @@ void ScriptedPrintOnIO(mojom::ScriptedPrintParamsPtr params,
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettings(
       PrinterQuery::GetSettingsAskParam::ASK_USER, params->expected_pages_count,
-      params->has_selection, params->margin_type, 0, params->is_scripted,
+      params->has_selection, params->margin_type,
+      reinterpret_cast<HWND>(params->owner_wnd), params->is_scripted,
       params->is_modifiable,
       base::BindOnce(&ScriptedPrintReplyOnIO, queue, std::move(printer_query),
                      std::move(callback)));
